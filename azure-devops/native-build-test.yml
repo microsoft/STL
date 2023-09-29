@@ -15,6 +15,11 @@ parameters:
 - name: numShards
   type: number
   default: 8
+  # Parameters to pass to ctest to select the test(s) to run
+- name: testSelection
+  type: string
+  # Exclude "stlasan" test by default
+  default: '-E stlasan'
 jobs:
 - job: '${{ parameters.targetPlatform }}'
   variables:
@@ -38,8 +43,10 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       targetArch: ${{ parameters.vsDevCmdArch }}
       hostArch: ${{ parameters.vsDevCmdArch }}
+      benchmarkBuildOutputLocationVar: ${{ parameters.benchmarkBuildOutputLocationVar }}
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.vsDevCmdArch }}
       targetPlatform: ${{ parameters.targetPlatform }}
       targetArch: ${{ parameters.vsDevCmdArch }}
+      testSelection: ${{ parameters.testSelection }}

@@ -181,6 +181,14 @@ class STLTest(Test):
     def _handleEnvlst(self, litConfig):
         envCompiler = self.envlstEntry.getEnvVal('PM_COMPILER', 'cl')
 
+        if self.config.runPLTags and not self.envlstEntry.hasAnyTag(self.config.runPLTags):
+            return Result(SKIPPED, 'This test was skipped because its tags {}'.format(str(self.envlstEntry._env_tags)) +
+                                   ' do not match any of the selected tags {}'.format(str(self.config.runPLTags)))
+
+        if self.config.runPLNotags and self.envlstEntry.hasAnyTag(self.config.runPLNotags):
+            return Result(SKIPPED, 'This test was skipped because its tags {}'.format(str(self.envlstEntry._env_tags)) +
+                                   ' match any of the excluded tags {}'.format(str(self.config.runPLNotags)))
+
         cxx = None
         if os.path.isfile(envCompiler):
             cxx = envCompiler
@@ -252,12 +260,18 @@ class STLTest(Test):
                     self._addCustomFeature('c++17')
                 elif flag[5:] == 'c++14':
                     self._addCustomFeature('c++14')
+            elif flag[1:11] == 'fsanitize=':
+                for sanitizer in flag[11:].split(','):
+                    if sanitizer == 'address':
+                        self._addCustomFeature('asan')
+                    elif sanitizer == 'undefined':
+                        self.requires.append('ubsan') # available for x64, see features.py
+                    else:
+                        pass # :shrug: good luck!
             elif flag[1:] == 'clr:pure':
                 self.requires.append('clr_pure') # TRANSITION, GH-798
             elif flag[1:] == 'clr':
                 self.requires.append('clr') # TRANSITION, GH-797
-            elif flag[1:] == 'fsanitize=undefined':
-                self.requires.append('ubsan') # available for x64, see features.py
             elif flag[1:] == 'BE':
                 self.requires.append('edg') # available for x64, see features.py
             elif flag[1:] == 'arch:AVX2':
@@ -266,8 +280,6 @@ class STLTest(Test):
                 self.requires.append('arch_ia32') # available for x86, see features.py
             elif flag[1:] == 'arch:VFPv4':
                 self.requires.append('arch_vfpv4') # available for arm, see features.py
-            elif flag[1:] == 'fsanitize=address':
-                self._addCustomFeature('asan')
             elif flag[1:] == 'MDd':
                 self._addCustomFeature('MDd')
                 self._addCustomFeature('debug_CRT')

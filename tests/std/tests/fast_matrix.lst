@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # This is for tests that take a long time to execute, so run only one configuration.
+# Keep synchronized with fast_no_asan_matrix.lst.
+
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
 PM_CL="/EHsc /MT /O2 /GL /std:c++latest /permissive- /analyze:autolog- /w14640 /Zc:threadSafeInit-"
+ASAN	PM_CL="/EHsc /MT /O2 /GL /std:c++latest /permissive- /analyze:autolog- /w14640 /Zc:threadSafeInit- -fsanitize=address /Zi" PM_LINK="/debug"

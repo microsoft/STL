@@ -222,10 +222,15 @@ int main() {
         L".gitmodules"sv,
     };
 
+    static constexpr array tabby_extensions{
+        L".lst"sv,
+    };
+
     static_assert(ranges::is_sorted(skipped_directories));
     static_assert(ranges::is_sorted(skipped_extensions));
     static_assert(ranges::is_sorted(bad_extensions));
     static_assert(ranges::is_sorted(tabby_filenames));
+    static_assert(ranges::is_sorted(tabby_extensions));
 
     vector<unsigned char> buffer; // reused for performance
     bool any_errors = false;
@@ -268,8 +273,8 @@ int main() {
             continue;
         }
 
-        const TabPolicy tab_policy =
-            ranges::binary_search(tabby_filenames, filename) ? TabPolicy::Allowed : TabPolicy::Forbidden;
+        const TabPolicy tab_policy{
+            ranges::binary_search(tabby_filenames, filename) || ranges::binary_search(tabby_extensions, extension)};
 
         scan_file(any_errors, filepath, tab_policy, buffer);
     }

@@ -1,0 +1,10 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# This is identical to fast_matrix, but without the ASAN config.
+# TRANSITION, VSO-1886547 (Dev11_1158803_regex_thread_safety leaks memory with ASan)
+
+# This is for tests that take a long time to execute, so run only one configuration.
+RUNALL_INCLUDE .\prefix.lst
+RUNALL_CROSSLIST
+PM_CL="/EHsc /MT /O2 /GL /std:c++latest /permissive- /analyze:autolog- /w14640 /Zc:threadSafeInit-"
