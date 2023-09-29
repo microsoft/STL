@@ -5,15 +5,14 @@
 #include <cassert>
 #include <functional>
 #include <source_location>
-#include <string>
 #include <string_view>
 #include <type_traits>
 using namespace std;
 
 #ifdef _M_IX86
-#define THISCALL_OR_CDECL_STR "__thiscall"s
+#define THISCALL_OR_CDECL "__thiscall"
 #else
-#define THISCALL_OR_CDECL_STR "__cdecl"s
+#define THISCALL_OR_CDECL "__cdecl"
 #endif
 
 static_assert(is_nothrow_default_constructible_v<source_location>);
@@ -122,7 +121,7 @@ constexpr void different_constructor_test() {
     assert(x.loc.column() == 5);
 #endif // ^^^ C1XX ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-    assert(x.loc.function_name() == THISCALL_OR_CDECL_STR + " s::s(int)");
+    assert(x.loc.function_name() == THISCALL_OR_CDECL " s::s(int)"sv);
 #else // ^^^ detailed / basic vvv
     assert(x.loc.function_name() == "s"sv);
 #endif // ^^^ basic ^^^
@@ -161,7 +160,7 @@ constexpr void sub_member_test() {
     assert(s_i.x.loc.column() == 5);
 #endif // ^^^ C1XX ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-    assert(s_i.x.loc.function_name() == THISCALL_OR_CDECL_STR + " s2::s2(int)");
+    assert(s_i.x.loc.function_name() == THISCALL_OR_CDECL " s2::s2(int)"sv);
 #else // ^^^ detailed / basic vvv
     assert(s_i.x.loc.function_name() == "s2"sv);
 #endif // ^^^ basic ^^^
@@ -194,9 +193,9 @@ constexpr void lambda_test() {
 #if !_USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
     assert(fun2 == "operator()"sv);
 #elif defined(__clang__) // ^^^ basic / detailed Clang vvv
-    assert(fun2 == "auto " + THISCALL_OR_CDECL_STR + " lambda_test()::(anonymous class)::operator()(void) const");
+    assert(fun2 == "auto " THISCALL_OR_CDECL " lambda_test()::(anonymous class)::operator()(void) const"sv);
 #else // ^^^ detailed Clang / detailed non-Clang vvv
-    assert(fun2.starts_with("struct std::source_location " + THISCALL_OR_CDECL_STR + " lambda_test::<lambda_"));
+    assert(fun2.starts_with("struct std::source_location " THISCALL_OR_CDECL " lambda_test::<lambda_"sv));
     assert(fun2.ends_with("::operator ()(void) const"sv));
 #endif // ^^^ detailed non-Clang ^^^
     assert(string_view{x1.file_name()}.ends_with(test_cpp));
