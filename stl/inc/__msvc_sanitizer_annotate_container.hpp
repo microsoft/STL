@@ -15,28 +15,42 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#ifdef _DISABLE_ASAN_ANNOTATIONS
+// The following macros change the behavior of this file:
+//   - _DISABLE_STL_ANNOTATION: Disable ASan annotations in the standard library
+//     (this will be auto-defined on unsupported platforms)
+//     + _DISABLE_STRING_ANNOTATION: same, but for only `basic_string`
+//     + _DISABLE_VECTOR_ANNOTATION: same, but for only `vector`
+//   - _ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS: Don't auto-disable ASan annotations
+//   - _ANNOTATE_STL: Even when ASan annotations are disabled, insert the code for annotating into the STL anyways;
+//     this is useful when building static libraries which may be linked against both ASan and non-ASan binaries.
+//     + _ANNOTATE_STRING: same, but only for `basic_string`
+//     + _ANNOTATE_VECTOR: same, but only for `vector`
 
-#ifdef _ENABLE_ASAN_ANNOTATIONS_ON_UNSUPPORTED_PLATFORMS
-#error \
-    "Invalid set of defines - one cannot define both _ENABLE_ASAN_ANNOTATIONS_ON_UNSUPPORTED_PLATFORMS and _DISABLE_ASAN_ANNOTATIONS at the same time"
-#endif
+// if our user hasn't defined `_DISABLE_STL_ANNOTATION`, then we may disable it anyways
+#if !defined(_DISABLE_STL_ANNOTATION) && !defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS)
 
-#else // ^^^ _DISABLE_ASAN_ANNOTATIONS / !_DISABLE_ASAN_ANNOTATIONS vvv
+#if defined(_M_ARM64EC) || defined(_M_ARM64) || defined(_M_ARM) || defined(_M_CEE_PURE)
+#define _DISABLE_STL_ANNOTATION
+#endif // ^^^ unsupported platform
 
-#if defined(_DISABLE_STRING_ANNOTATION) && defined(_DISABLE_VECTOR_ANNOTATION)
-#define _DISABLE_ASAN_ANNOTATIONS
-#elif defined(_M_ARM64EC) || defined(_M_ARM64) || defined(_M_ARM)
+#endif // ^^^ !defined(_DISABLE_STL_ANNOTATION) && !defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORM)
 
-#ifndef _ENABLE_ASAN_ANNOTATIONS_ON_UNSUPPORTED_PLATFORMS
-#define _DISABLE_ASAN_ANNOTATIONS
-#endif
+// this may be user-defined, or we may be on an unsupported platform
+#ifdef _DISABLE_STL_ANNOTATION
 
-#elif defined(_M_CEE_PURE)
-#define _DISABLE_ASAN_ANNOTATIONS
-#endif
+#ifdef _ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS
+#error _ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS and _DISABLE_STL_ANNOTATION are mutually exclusive
+#endif // ^^^ defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS)
 
-#endif // ^^^ !_DISABLE_ASAN_ANNOTATIONS
+#define _DISABLE_STRING_ANNOTATION
+#define _DISABLE_VECTOR_ANNOTATION
+
+#endif // ^^^ defined(_DISABLE_STL_ANNOTATION)
+
+#ifdef _ANNOTATE_STL
+#define _ANNOTATE_STRING
+#define _ANNOTATE_VECTOR
+#endif // ^^^ defined(_ANNOTATE_STL)
 
 #ifdef __SANITIZE_ADDRESS__
 
@@ -55,41 +69,41 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma comment(linker, "/INFERASANLIBS")
 #endif // __has_feature(address_sanitizer)
 
-#else // ^^^ defined(__clang__) / !defined(__clang__) && !defined(__SANITIZE_ADDRESS__) vvv
+#endif // ^^^ defined(__clang__)
+
+
+#ifdef _DISABLE_STRING_ANNOTATION
+#undef _ACTIVATE_STRING_ANNOTATION
+#undef _INSERT_STRING_ANNOTATION
+#endif // ^^^ defined(_DISABLE_STRING_ANNOTATION)
+#ifdef _DISABLE_VECTOR_ANNOTATION
+#undef _ACTIVATE_VECTOR_ANNOTATION
+#undef _INSERT_VECTOR_ANNOTATION
+#endif // ^^^ defined(_DISABLE_VECTOR_ANNOTATION)
 
 #ifdef _ANNOTATE_STRING
 #define _INSERT_STRING_ANNOTATION
-#endif // defined(_ANNOTATE_STRING)
+#endif // ^^^ defined(_ANNOTATE_STRING)
 #ifdef _ANNOTATE_VECTOR
 #define _INSERT_VECTOR_ANNOTATION
-#endif // defined(_ANNOTATE_VECTOR)
+#endif // ^^^ defined(_ANNOTATE_VECTOR)
 
-#endif // ^^^ !defined(__clang__) && !defined(__SANITIZE_ADDRESS__) ^^^
-
-#if defined(_DISABLE_ASAN_ANNOTATION) || defined(_DISABLE_STRING_ANNOTATION)
-#undef _ACTIVATE_STRING_ANNOTATION
-#undef _INSERT_STRING_ANNOTATION
-#endif // defined(_DISABLE_STRING_ANNOTATION)
-#if defined(_DISABLE_ASAN_ANNOTATION) || defined(_DISABLE_VECTOR_ANNOTATION)
-#undef _ACTIVATE_VECTOR_ANNOTATION
-#undef _INSERT_VECTOR_ANNOTATION
-#endif // defined(_DISABLE_VECTOR_ANNOTATION)
 
 #ifndef _INSERT_STRING_ANNOTATION
 #pragma detect_mismatch("annotate_string", "0")
-#endif // !defined(_INSERT_STRING_ANNOTATION)
+#endif // ^^^ !defined(_INSERT_STRING_ANNOTATION)
 #ifndef _INSERT_VECTOR_ANNOTATION
 #pragma detect_mismatch("annotate_vector", "0")
-#endif // !defined(_INSERT_VECTOR_ANNOTATION)
+#endif // ^^^ !defined(_INSERT_VECTOR_ANNOTATION)
 
 #ifdef _ACTIVATE_STRING_ANNOTATION
 #pragma comment(lib, "stl_asan")
 #pragma detect_mismatch("annotate_string", "1")
-#endif // defined(_ACTIVATE_STRING_ANNOTATION)
+#endif // ^^^ defined(_ACTIVATE_STRING_ANNOTATION)
 #ifdef _ACTIVATE_VECTOR_ANNOTATION
 #pragma comment(lib, "stl_asan")
 #pragma detect_mismatch("annotate_vector", "1")
-#endif // defined(_ACTIVATE_VECTOR_ANNOTATION)
+#endif // ^^^ defined(_ACTIVATE_VECTOR_ANNOTATION)
 
 #undef _ACTIVATE_STRING_ANNOTATION
 #undef _ACTIVATE_VECTOR_ANNOTATION
@@ -142,7 +156,7 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 #error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
 
-#endif // insert asan annotations
+#endif // ^^^ insert asan annotations
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
