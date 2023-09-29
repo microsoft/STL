@@ -6,5 +6,5 @@
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/EHsc /MT /O2 /GL /std:c++latest /permissive- /analyze:autolog- /w14640 /Zc:threadSafeInit-"
+*		PM_CL="/EHsc /MT /O2 /GL /std:c++latest /permissive- /analyze:autolog- /w14640 /Zc:threadSafeInit-"
 ASAN	PM_CL="/EHsc /MT /O2 /GL /std:c++latest /permissive- /analyze:autolog- /w14640 /Zc:threadSafeInit- -fsanitize=address /Zi" PM_LINK="/debug"
