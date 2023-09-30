@@ -138,26 +138,25 @@ public:
         : _Base_flat_set(_Tsort, container_type(_First, _Last, _Al)) {}
 
     _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end()), _Comp) {}
+        : _Base_flat_set(container_type(_Ilist), _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
-        : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end(), _Al), _Comp) {}
+        : _Base_flat_set(container_type(_Ilist, _Al), _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
-    _Base_flat_set(initializer_list<_Kty> _Ilist, const _Alloc& _Al)
-        : _Base_flat_set(container_type(_Ilist.begin(), _Ilist.end(), _Al)) {}
+    _Base_flat_set(initializer_list<_Kty> _Ilist, const _Alloc& _Al) : _Base_flat_set(container_type(_Ilist, _Al)) {}
 
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end()), _Comp) {}
+        : _Base_flat_set(_Tsort, container_type(_Ilist), _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
-        : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end(), _Al), _Comp) {}
+        : _Base_flat_set(_Tsort, container_type(_Ilist, _Al), _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const _Alloc& _Al)
-        : _Base_flat_set(_Tsort, container_type(_Ilist.begin(), _Ilist.end(), _Al)) {}
+        : _Base_flat_set(_Tsort, container_type(_Ilist, _Al)) {}
 
     _Deriv& operator=(initializer_list<_Kty> _Ilist) {
         _Clear_guard<_Base_flat_set> _Guard{this};
-        _Mycont.assign(_Ilist.begin(), _Ilist.end());
+        _Mycont.assign(_Ilist);
         _Make_invariants_fulfilled();
         _Guard._Target = nullptr;
         return static_cast<_Deriv&>(*this);
@@ -273,9 +272,7 @@ public:
         if constexpr (requires { _Mycont.append_range(_STD forward<_Rng>(_Range)); }) {
             _Mycont.append_range(_STD forward<_Rng>(_Range));
         } else {
-            for (const auto& _Val : _Range) {
-                _Mycont.insert(_Mycont.end(), _Val);
-            }
+            _Mycont.insert_range(_Mycont.end(), _STD forward<_Rng>(_Range));
         }
         _Restore_invariants_after_insert<false>(_Old_size);
     }
