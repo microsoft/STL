@@ -395,14 +395,75 @@ void test_non_static_comparer() {
     assert_all_requirements_and_equals(a, {9, 7, 5, -1});
 }
 
+template <template <class, class, class> class Set>
+void test_extract_1() {
+    // Test that the container will be emptied, regardless of whether an exception is thrown.
 
-template <class C>
-void test_extract() {
-    constexpr int elements[]{1, 2, 3, 4};
-    C fs{1, 2, 3, 4};
-    auto cont = std::move(fs).extract();
-    assert(fs.empty());
-    assert(ranges::equal(cont, elements));
+    static bool will_throw = false;
+
+    class test_exception : public vector<int> {
+        using base = vector<int>;
+
+    public:
+        using base::base;
+        test_exception(const test_exception&)            = default;
+        test_exception& operator=(const test_exception&) = default;
+        test_exception& operator=(test_exception&&)      = default;
+
+        test_exception(test_exception&& other) : base(static_cast<base&&>(other)) {
+            if (will_throw) {
+                will_throw = false;
+                throw 0; // will be caught by "catch (...)"
+            }
+        }
+    };
+
+    will_throw = false;
+    Set<int, std::less<int>, test_exception> fs{4, 3, 2, 1};
+    assert_all_requirements_and_equals(fs, {1, 2, 3, 4});
+    auto extr = std::move(fs).extract();
+    assert(ranges::equal(extr, vector{1, 2, 3, 4}));
+    assert_all_requirements_and_equals(fs, {}); // assert empty
+
+    fs = {4, 3, 2, 1};
+    assert_all_requirements_and_equals(fs, {1, 2, 3, 4});
+    try {
+        will_throw = true;
+        (void) std::move(fs).extract();
+    } catch (...) {
+        assert_all_requirements_and_equals(fs, {}); // assert empty
+        return;
+    }
+
+    assert(false);
+}
+
+template <template <class, class, class> class Set>
+void test_extract_2() {
+    // Test that the container will be emptied, even if the container's move constructor doesn't empty the container.
+
+    class always_copy : public vector<int> {
+        using base = vector<int>;
+
+    public:
+        using base::base;
+        always_copy(const always_copy&)            = default;
+        always_copy& operator=(const always_copy&) = default;
+
+        // the move ctor & assignment will not empty the container.
+        always_copy(always_copy&& other) noexcept /* intentional */ : always_copy(as_const(other)) {}
+        always_copy& operator=(always_copy&& other) noexcept /* intentional */ {
+            return operator=(as_const(other));
+        }
+    };
+
+    // constexpr int elements[]{1, 2, 3, 4};
+
+    Set<int, std::less<int>, always_copy> fs{4, 3, 2, 1};
+    assert_all_requirements_and_equals(fs, {1, 2, 3, 4});
+    auto extr = std::move(fs).extract();
+    assert(ranges::equal(extr, vector{1, 2, 3, 4}));
+    assert_all_requirements_and_equals(fs, {}); // assert empty
 }
 
 // TRANSITION, too simple
@@ -475,8 +536,10 @@ int main() {
     test_comparer_application();
     test_non_static_comparer();
 
-    test_extract<flat_set<int>>();
-    test_extract<flat_multiset<int>>();
+    test_extract_1<flat_set>();
+    test_extract_1<flat_multiset>();
+    test_extract_2<flat_set>();
+    test_extract_2<flat_multiset>();
 
     test_erase_1();
     test_erase_2();
