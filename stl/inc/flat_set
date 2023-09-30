@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-template <class _Ty, bool _Noexcept = false>
+template <class _Ty>
 struct _NODISCARD _Clear_guard {
     _Ty* _Target;
     ~_Clear_guard() {
@@ -33,11 +33,6 @@ struct _NODISCARD _Clear_guard {
             _Target->clear();
         }
     }
-};
-
-template <class _Ty>
-struct [[maybe_unused]] _NODISCARD _Clear_guard<_Ty, true> {
-    _Ty* _Target; // do nothing as the guarded operations don't throw.
 };
 
 template <class _Alloc, class _Container>
@@ -292,12 +287,12 @@ public:
 
     _NODISCARD container_type extract() && noexcept(is_nothrow_move_constructible_v<_Container>) /* strengthened */ {
         // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
-        _Clear_guard<_Base_flat_set, is_nothrow_move_constructible_v<_Container>> _Guard{this};
+        _Clear_guard<_Base_flat_set> _Guard{this};
         return _STD move(_Mycont);
     }
     void replace(container_type&& _Cont) {
         _STL_ASSERT(_Is_sorted(_Cont.cbegin(), _Cont.cend()), _Msg_not_sorted);
-        _Clear_guard<_Base_flat_set, is_nothrow_move_assignable_v<_Container>> _Guard{this};
+        _Clear_guard<_Base_flat_set> _Guard{this};
         _Mycont        = _STD move(_Cont);
         _Guard._Target = nullptr;
     }
