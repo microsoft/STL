@@ -2448,11 +2448,7 @@ struct uses_allocator<function<_Fty>, _Alloc> : true_type {}; // true_type if co
 inline void _Add_alloc_size(size_t& _Size, const size_t _Size_added, const size_t _Alignment) {
     // moves _Size up to account for storing an object of size _Size_added with alignment _Alignment in a memory buffer
     // assumes that the memory buffer will be allocated for the "worst" alignment used in the resulting buffer
-    const size_t _Align_masked = _Size & (_Alignment - 1u);
-    _Size += _Size_added;
-    if (_Align_masked != 0) {
-        _Size += _Alignment - _Align_masked;
-    }
+    _Size += ((0 - _Size) & (_Alignment - 1u)) + _Size_added;
 }
 
 template <class _Ty>
