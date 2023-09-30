@@ -90,7 +90,7 @@ public:
 
     _Base_flat_set(_Tsorted, container_type _Cont, const key_compare& _Comp = key_compare())
         : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
-        _STL_ASSERT(_Check_sorted(cbegin(), cend()), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted(cbegin(), cend()), _Msg_not_sorted);
     }
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const _Alloc& _Al)
@@ -293,7 +293,7 @@ public:
         return _STD move(_Mycont);
     }
     void replace(container_type&& _Cont) {
-        _STL_ASSERT(_Check_sorted(_Cont.cbegin(), _Cont.cend()), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted(_Cont.cbegin(), _Cont.cend()), _Msg_not_sorted);
         _Clear_guard<_Base_flat_set, is_nothrow_move_assignable_v<_Container>> _Guard{this};
         _Mycont        = _STD move(_Cont);
         _Guard._Target = nullptr;
@@ -445,7 +445,7 @@ public:
     }
 
 private:
-    _NODISCARD bool _Check_sorted(const_iterator _It, const const_iterator _End) const {
+    _NODISCARD bool _Is_sorted(const_iterator _It, const const_iterator _End) const {
         if constexpr (_Multi) {
             return _STD is_sorted(_It, _End, _Pass_comp());
         } else {
@@ -464,7 +464,10 @@ private:
 
     static constexpr const char* _Msg_not_sorted = _Multi ? "Input was not sorted!" : "Input was not sorted-unique!";
 
-    _NODISCARD bool _Check_where(const const_iterator _Where, const _Kty& _Val) const {
+    template <class _Ty>
+    _NODISCARD bool _Can_insert(const const_iterator _Where, const _Ty& _Val) const {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty, _Kty>); // only accepts _Kty
+
         // check that _Val can be inserted before _Where
         if constexpr (_Multi) {
             // check that _Where is the upper_bound for _Val
@@ -497,7 +500,7 @@ private:
                 // for flat_set::insert(auto&&)
                 _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
                 _Kty _Keyval(_STD forward<_Ty>(_Val));
-                _STL_ASSERT(_Check_where(_Where, _Keyval), "The input type was not equivalent to key_type!");
+                _STL_ASSERT(_Can_insert(_Where, _Keyval), "The input type was not equivalent to key_type!");
                 return pair{_Mycont.emplace(_Where, _STD move(_Keyval)), true};
             }
         }
@@ -540,7 +543,7 @@ private:
 
         if constexpr (_Multi) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
-            _STL_INTERNAL_CHECK(_Check_where(_Where, _Val));
+            _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
             return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
         } else {
             if (_Where != _End && !_Compare(_Val, *_Where)) {
@@ -548,13 +551,13 @@ private:
             }
 
             if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
-                _STL_INTERNAL_CHECK(_Check_where(_Where, _Val));
+                _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
                 return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
             } else {
                 // for flat_set::insert(hint,auto&&)
                 _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
                 _Kty _Keyval(_STD forward<_Ty>(_Val));
-                _STL_ASSERT(_Check_where(_Where, _Keyval), "The input type was not equivalent to key_type!");
+                _STL_ASSERT(_Can_insert(_Where, _Keyval), "The input type was not equivalent to key_type!");
                 return _Mycont.emplace(_Where, _STD move(_Keyval));
             }
         }
@@ -615,12 +618,11 @@ private:
 
     void _Erase_dupes_if_not_multi() {
         if constexpr (!_Multi) {
-            const auto _Equal_to = [this](const _Kty& _Lhs, const _Kty& _Rhs) {
+            const auto _Equivalent = [this](const _Kty& _Lhs, const _Kty& _Rhs) {
                 return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
             };
-            const iterator _End     = end();
-            const iterator _New_end = _STD unique(begin(), _End, _Equal_to);
-            _Mycont.erase(_New_end, _End);
+            const iterator _End = end();
+            _Mycont.erase(_STD unique(begin(), _End, _Equivalent), _End);
         }
     }
 
@@ -628,18 +630,18 @@ private:
     void _Restore_invariants_after_insert(const size_type _Old_size) {
         const iterator _Begin   = begin();
         const iterator _Old_end = _Begin + static_cast<difference_type>(_Old_size);
-        const iterator _New_end = end();
+        const iterator _End     = end();
 
         if constexpr (!_Presorted) {
-            _STD sort(_Old_end, _New_end, _Pass_comp());
+            _STD sort(_Old_end, _End, _Pass_comp());
         } else {
-            _STL_ASSERT(_Check_sorted(_Old_end, _New_end), _Msg_not_sorted);
+            _STL_ASSERT(_Is_sorted(_Old_end, _End), _Msg_not_sorted);
         }
 
-        _STD inplace_merge(_Begin, _Old_end, _New_end, _Pass_comp());
+        _STD inplace_merge(_Begin, _Old_end, _End, _Pass_comp());
         _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_Check_sorted(cbegin(), cend()));
+        _STL_INTERNAL_CHECK(_Is_sorted(cbegin(), cend()));
     }
 
     void _Make_invariants_fulfilled() {
@@ -657,7 +659,7 @@ private:
         _STD inplace_merge(_Begin, _Begin_unsorted, _End, _Pass_comp());
         _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_Check_sorted(cbegin(), cend()));
+        _STL_INTERNAL_CHECK(_Is_sorted(cbegin(), cend()));
     }
 
     template <class _Lty, class _Rty>
