@@ -483,83 +483,93 @@ private:
     }
 
     template <class _Ty>
-    auto _Emplace(_Ty&& _Val) {
-        if constexpr (_Multi) {
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
-            return _Mycont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
-        } else {
-            const iterator _End   = end();
-            const iterator _Where = lower_bound(_Val);
-            if (_Where != _End && !_Compare(_Val, *_Where)) {
-                return pair{_Where, false};
-            }
+        requires _Multi // flat_multiset
+    iterator _Emplace(_Ty&& _Val) {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
+        return _Mycont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
+    }
 
-            if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
-                return pair{_Mycont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
-            } else {
-                // for flat_set::insert(auto&&)
-                _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
-                _Kty _Keyval(_STD forward<_Ty>(_Val));
-                _STL_ASSERT(_Can_insert(_Where, _Keyval), "The input type was not equivalent to key_type!");
-                return pair{_Mycont.emplace(_Where, _STD move(_Keyval)), true};
-            }
+    template <class _Ty>
+        requires (!_Multi) // flat_set
+    pair<iterator, bool> _Emplace(_Ty&& _Val) {
+        const iterator _Where = lower_bound(_Val);
+        if (_Where != end() && !_Compare(_Val, *_Where)) {
+            return pair{_Where, false};
+        }
+
+        if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
+            return pair{_Mycont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
+        } else {
+            // heterogeneous insertion
+            _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
+            _Kty _Keyval(_STD forward<_Ty>(_Val));
+            _STL_ASSERT(_Can_insert(_Where, _Keyval), "The conversion from the heterogeneous key to key_type should "
+                                                      "be consistent with the heterogeneous lookup!");
+            return pair{_Mycont.emplace(_Where, _STD move(_Keyval)), true};
         }
     }
 
     template <class _Ty>
+        requires _Multi // flat_multiset
+    iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
+
+        const const_iterator _Begin = cbegin();
+        const const_iterator _End   = cend();
+
+        // look for upper_bound(_Val)
+        if (_Where == _End || _Compare(_Val, *_Where)) {
+            // _Val < *_Where
+            if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
+                // _Val >= *(_Where-1) ~ upper_bound is _Where
+            } else {
+                // _Val < *(_Where-1) ~ upper_bound is in [_Begin,_Where-1]
+                _Where = _STD upper_bound(_Begin, _Where - 1, _Val, _Pass_comp());
+            }
+        } else {
+            // _Val >= *_Where ~ upper_bound is in [_Where+1,_End]
+            _Where = _STD upper_bound(_Where + 1, _End, _Val, _Pass_comp());
+        }
+
+        _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
+        return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
+    }
+
+    template <class _Ty>
+        requires (!_Multi) // flat_set
     iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
-        if constexpr (_Multi) {
-            // look for the upper_bound for flat_multiset
-            if (_Where == _End || _Compare(_Val, *_Where)) {
-                // _Val < *_Where
-                if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
-                    // _Val >= *(_Where-1) ~ upper_bound is _Where
-                } else {
-                    // _Val < *(_Where-1) ~ upper_bound is in [_Begin,_Where-1]
-                    _Where = _STD upper_bound(_Begin, _Where - 1, _Val, _Pass_comp());
-                }
+        // look for lower_bound(_Val)
+        if (_Where == _End || !_Compare(*_Where, _Val)) {
+            // _Val <= *_Where
+            if (_Where == _Begin || _Compare(*(_Where - 1), _Val)) {
+                // _Val > *(_Where-1) ~ lower_bound is _Where
             } else {
-                // _Val >= *_Where ~ upper_bound is in [_Where+1,_End]
-                _Where = _STD upper_bound(_Where + 1, _End, _Val, _Pass_comp());
+                // _Val <= *(_Where-1) ~ lower_bound is in [_Begin,_Where-1]
+                _Where = _STD lower_bound(_Begin, _Where - 1, _Val, _Pass_comp());
             }
         } else {
-            // look for the lower_bound for flat_set
-            if (_Where == _End || !_Compare(*_Where, _Val)) {
-                // _Val <= *_Where
-                if (_Where == _Begin || _Compare(*(_Where - 1), _Val)) {
-                    // _Val > *(_Where-1) ~ lower_bound is _Where
-                } else {
-                    // _Val <= *(_Where-1) ~ lower_bound is in [_Begin,_Where-1]
-                    _Where = _STD lower_bound(_Begin, _Where - 1, _Val, _Pass_comp());
-                }
-            } else {
-                // _Val > *_Where ~ lower_bound is in [_Where+1,_End]
-                _Where = _STD lower_bound(_Where + 1, _End, _Val, _Pass_comp());
-            }
+            // _Val > *_Where ~ lower_bound is in [_Where+1,_End]
+            _Where = _STD lower_bound(_Where + 1, _End, _Val, _Pass_comp());
         }
 
-        if constexpr (_Multi) {
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
+        if (_Where != _End && !_Compare(_Val, *_Where)) {
+            // convert const_iterator to iterator
+            return _Mycont.begin() + (_Where - _Begin);
+        }
+
+        if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
             _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
             return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
         } else {
-            if (_Where != _End && !_Compare(_Val, *_Where)) {
-                return _Mycont.begin() + (_Where - _Begin);
-            }
-
-            if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
-                _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
-                return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
-            } else {
-                // for flat_set::insert(hint,auto&&)
-                _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
-                _Kty _Keyval(_STD forward<_Ty>(_Val));
-                _STL_ASSERT(_Can_insert(_Where, _Keyval), "The input type was not equivalent to key_type!");
-                return _Mycont.emplace(_Where, _STD move(_Keyval));
-            }
+            // heterogeneous insertion
+            _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
+            _Kty _Keyval(_STD forward<_Ty>(_Val));
+            _STL_ASSERT(_Can_insert(_Where, _Keyval), "The conversion from the heterogeneous key to key_type should "
+                                                      "be consistent with the heterogeneous lookup!");
+            return _Mycont.emplace(_Where, _STD move(_Keyval));
         }
     }
 
