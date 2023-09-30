@@ -70,17 +70,16 @@ public:
     static_assert(random_access_iterator<iterator>, "The C++ Standard forbids containers without random "
                                                     "access iterators from being adapted. See [flatset.overview].");
 
-    _Base_flat_set() : _My_pair(_Zero_then_variadic_args_t{}) {}
+    _Base_flat_set() : _Mycont(), _Mycomp() {}
 
     template <_Allocator_for<container_type> _Alloc>
-    _Base_flat_set(const _Deriv& _Set, const _Alloc& _Al)
-        : _My_pair(_One_then_variadic_args_t{}, _Set._Get_comp(), _Set._Get_cont(), _Al) {}
+    _Base_flat_set(const _Deriv& _Set, const _Alloc& _Al) : _Mycont(_Set._Mycont, _Al), _Mycomp(_Set._Mycomp) {}
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Deriv&& _Set, const _Alloc& _Al)
-        : _My_pair(_One_then_variadic_args_t{}, _STD move(_Set._Get_comp()), _STD move(_Set._Get_cont()), _Al) {}
+        : _Mycont(_STD move(_Set._Mycont), _Al), _Mycomp(_STD move(_Set._Mycomp)) {}
 
     explicit _Base_flat_set(container_type _Cont, const key_compare& _Comp = key_compare())
-        : _My_pair(_One_then_variadic_args_t{}, _Comp, _STD move(_Cont)) {
+        : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
     template <_Allocator_for<container_type> _Alloc>
@@ -90,7 +89,7 @@ public:
         : _Base_flat_set(container_type(_Cont, _Al), _Comp) {}
 
     _Base_flat_set(_Tsorted, container_type _Cont, const key_compare& _Comp = key_compare())
-        : _My_pair(_One_then_variadic_args_t{}, _Comp, _STD move(_Cont)) {
+        : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
         _STL_ASSERT(_Check_sorted(cbegin(), cend()), _Msg_not_sorted);
     }
     template <_Allocator_for<container_type> _Alloc>
@@ -100,11 +99,11 @@ public:
     _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, container_type(_Cont, _Al), _Comp) {}
 
-    explicit _Base_flat_set(const key_compare& _Comp) : _My_pair(_One_then_variadic_args_t{}, _Comp) {}
+    explicit _Base_flat_set(const key_compare& _Comp) : _Mycont(), _Mycomp(_Comp) {}
     template <_Allocator_for<container_type> _Alloc>
-    _Base_flat_set(const key_compare& _Comp, const _Alloc& _Al) : _My_pair(_One_then_variadic_args_t{}, _Comp, _Al) {}
+    _Base_flat_set(const key_compare& _Comp, const _Alloc& _Al) : _Mycont(_Al), _Mycomp(_Comp) {}
     template <_Allocator_for<container_type> _Alloc>
-    explicit _Base_flat_set(const _Alloc& _Al) : _My_pair(_Zero_then_variadic_args_t{}, _Al) {}
+    explicit _Base_flat_set(const _Alloc& _Al) : _Mycont(_Al), _Mycomp() {}
 
     template <input_iterator _Iter>
     _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
@@ -158,7 +157,7 @@ public:
 
     _Deriv& operator=(initializer_list<_Kty> _Ilist) {
         _Clear_guard<_Base_flat_set> _Guard{this};
-        _Get_cont().assign(_Ilist.begin(), _Ilist.end());
+        _Mycont.assign(_Ilist.begin(), _Ilist.end());
         _Make_invariants_fulfilled();
         _Guard._Target = nullptr;
         return static_cast<_Deriv&>(*this);
@@ -166,16 +165,16 @@ public:
 
     // iterators
     _NODISCARD iterator begin() noexcept {
-        return _Get_cont().begin();
+        return _Mycont.begin();
     }
     _NODISCARD const_iterator begin() const noexcept {
-        return _Get_cont().begin();
+        return _Mycont.begin();
     }
     _NODISCARD iterator end() noexcept {
-        return _Get_cont().end();
+        return _Mycont.end();
     }
     _NODISCARD const_iterator end() const noexcept {
-        return _Get_cont().end();
+        return _Mycont.end();
     }
 
     _NODISCARD reverse_iterator rbegin() noexcept {
@@ -206,13 +205,13 @@ public:
 
     // capacity
     _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
-        return _Get_cont().empty();
+        return _Mycont.empty();
     }
     _NODISCARD size_type size() const noexcept {
-        return _Get_cont().size();
+        return _Mycont.size();
     }
     _NODISCARD size_type max_size() const noexcept {
-        return _Get_cont().max_size();
+        return _Mycont.max_size();
     }
 
     // modifiers
@@ -271,12 +270,11 @@ public:
     void insert_range(_Rng&& _Range) {
         const size_type _Old_size = size();
 
-        _Container& _Cont = _Get_cont();
-        if constexpr (requires { _Cont.append_range(_STD forward<_Rng>(_Range)); }) {
-            _Cont.append_range(_STD forward<_Rng>(_Range));
+        if constexpr (requires { _Mycont.append_range(_STD forward<_Rng>(_Range)); }) {
+            _Mycont.append_range(_STD forward<_Rng>(_Range));
         } else {
             for (const auto& _Val : _Range) {
-                _Cont.insert(_Cont.end(), _Val);
+                _Mycont.insert(_Mycont.end(), _Val);
             }
         }
         _Restore_invariants_after_insert<false>(_Old_size);
@@ -292,20 +290,20 @@ public:
     _NODISCARD container_type extract() && noexcept(is_nothrow_move_constructible_v<_Container>) /* strengthened */ {
         // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
         _Clear_guard<_Base_flat_set, is_nothrow_move_constructible_v<_Container>> _Guard{this};
-        return _STD move(_Get_cont());
+        return _STD move(_Mycont);
     }
     void replace(container_type&& _Cont) {
         _STL_ASSERT(_Check_sorted(_Cont.cbegin(), _Cont.cend()), _Msg_not_sorted);
         _Clear_guard<_Base_flat_set, is_nothrow_move_assignable_v<_Container>> _Guard{this};
-        _Get_cont()    = _STD move(_Cont);
+        _Mycont        = _STD move(_Cont);
         _Guard._Target = nullptr;
     }
 
     iterator erase(iterator _Where) {
-        return _Get_cont().erase(_Where);
+        return _Mycont.erase(_Where);
     }
     iterator erase(const_iterator _Where) {
-        return _Get_cont().erase(_Where);
+        return _Mycont.erase(_Where);
     }
     size_type erase(const _Kty& _Val) {
         return _Erase(_Val);
@@ -317,23 +315,23 @@ public:
         return _Erase(_Val);
     }
     iterator erase(const_iterator _First, const_iterator _Last) {
-        return _Get_cont().erase(_First, _Last);
+        return _Mycont.erase(_First, _Last);
     }
 
     void swap(_Deriv& _Other) noexcept {
-        _RANGES swap(_Get_comp(), _Other._Get_comp());
-        _RANGES swap(_Get_cont(), _Other._Get_cont());
+        _RANGES swap(_Mycomp, _Other._Mycomp);
+        _RANGES swap(_Mycont, _Other._Mycont);
     }
     void clear() noexcept {
-        _Get_cont().clear();
+        _Mycont.clear();
     }
 
     // observers
     _NODISCARD key_compare key_comp() const {
-        return _Get_comp();
+        return _Mycomp;
     }
     _NODISCARD value_compare value_comp() const {
-        return _Get_comp();
+        return _Mycomp;
     }
 
     // set operations
@@ -434,7 +432,7 @@ public:
     }
 
     _NODISCARD friend bool operator==(const _Deriv& _Lhs, const _Deriv& _Rhs) {
-        return _RANGES equal(_Lhs._Get_cont(), _Rhs._Get_cont());
+        return _RANGES equal(_Lhs._Mycont, _Rhs._Mycont);
     }
 
     _NODISCARD friend auto operator<=>(const _Deriv& _Lhs, const _Deriv& _Rhs) {
@@ -483,10 +481,9 @@ private:
 
     template <class _Ty>
     auto _Emplace(_Ty&& _Val) {
-        _Container& _Cont = _Get_cont();
         if constexpr (_Multi) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
-            return _Cont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
+            return _Mycont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
         } else {
             const iterator _End   = end();
             const iterator _Where = lower_bound(_Val);
@@ -495,21 +492,19 @@ private:
             }
 
             if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
-                return pair{_Cont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
+                return pair{_Mycont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
             } else {
                 // for flat_set::insert(auto&&)
                 _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
                 _Kty _Keyval(_STD forward<_Ty>(_Val));
                 _STL_ASSERT(_Check_where(_Where, _Keyval), "The input type was not equivalent to key_type!");
-                return pair{_Cont.emplace(_Where, _STD move(_Keyval)), true};
+                return pair{_Mycont.emplace(_Where, _STD move(_Keyval)), true};
             }
         }
     }
 
     template <class _Ty>
     iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
-        _Container& _Cont           = _Get_cont();
-        auto _Comp                  = _Get_comp_v();
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
@@ -521,11 +516,11 @@ private:
                     // _Val >= *(_Where-1) ~ upper_bound is _Where
                 } else {
                     // _Val < *(_Where-1) ~ upper_bound is in [_Begin,_Where-1]
-                    _Where = _STD upper_bound(_Begin, _Where - 1, _Val, _Comp);
+                    _Where = _STD upper_bound(_Begin, _Where - 1, _Val, _Get_comp_v());
                 }
             } else {
                 // _Val >= *_Where ~ upper_bound is in [_Where+1,_End]
-                _Where = _STD upper_bound(_Where + 1, _End, _Val, _Comp);
+                _Where = _STD upper_bound(_Where + 1, _End, _Val, _Get_comp_v());
             }
         } else {
             // look for the lower_bound for flat_set
@@ -535,32 +530,32 @@ private:
                     // _Val > *(_Where-1) ~ lower_bound is _Where
                 } else {
                     // _Val <= *(_Where-1) ~ lower_bound is in [_Begin,_Where-1]
-                    _Where = _STD lower_bound(_Begin, _Where - 1, _Val, _Comp);
+                    _Where = _STD lower_bound(_Begin, _Where - 1, _Val, _Get_comp_v());
                 }
             } else {
                 // _Val > *_Where ~ lower_bound is in [_Where+1,_End]
-                _Where = _STD lower_bound(_Where + 1, _End, _Val, _Comp);
+                _Where = _STD lower_bound(_Where + 1, _End, _Val, _Get_comp_v());
             }
         }
 
         if constexpr (_Multi) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
             _STL_INTERNAL_CHECK(_Check_where(_Where, _Val));
-            return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
+            return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
         } else {
             if (_Where != _End && !_Compare(_Val, *_Where)) {
-                return _Cont.begin() + (_Where - _Begin);
+                return _Mycont.begin() + (_Where - _Begin);
             }
 
             if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
                 _STL_INTERNAL_CHECK(_Check_where(_Where, _Val));
-                return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
+                return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
             } else {
                 // for flat_set::insert(hint,auto&&)
                 _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
                 _Kty _Keyval(_STD forward<_Ty>(_Val));
                 _STL_ASSERT(_Check_where(_Where, _Keyval), "The input type was not equivalent to key_type!");
-                return _Cont.emplace(_Where, _STD move(_Keyval));
+                return _Mycont.emplace(_Where, _STD move(_Keyval));
             }
         }
     }
@@ -568,8 +563,7 @@ private:
     template <bool _Presorted, class _Iter>
     void _Insert_range(const _Iter _First, const _Iter _Last) {
         const size_type _Old_size = size();
-        _Container& _Cont         = _Get_cont();
-        _Cont.insert(_Cont.end(), _First, _Last);
+        _Mycont.insert(_Mycont.end(), _First, _Last);
         _Restore_invariants_after_insert<_Presorted>(_Old_size);
     }
 
@@ -580,7 +574,7 @@ private:
         if constexpr (!_Multi && is_same_v<_Ty, _Kty>) {
             const iterator _Where = lower_bound(_Val);
             if (_Where != end() && !_Compare(_Val, *_Where)) {
-                _Get_cont().erase(_Where);
+                _Mycont.erase(_Where);
                 return 1;
             }
             return 0;
@@ -588,7 +582,7 @@ private:
             const auto [_First, _Last] = equal_range(_Val);
 
             const auto _Removed = static_cast<size_type>(_Last - _First);
-            _Get_cont().erase(_First, _Last);
+            _Mycont.erase(_First, _Last);
             return _Removed;
         }
     }
@@ -626,24 +620,23 @@ private:
             };
             const iterator _End     = end();
             const iterator _New_end = _STD unique(begin(), _End, _Equal_to);
-            _Get_cont().erase(_New_end, _End);
+            _Mycont.erase(_New_end, _End);
         }
     }
 
     template <bool _Presorted>
     void _Restore_invariants_after_insert(const size_type _Old_size) {
-        auto _Comp              = _Get_comp_v();
         const iterator _Begin   = begin();
         const iterator _Old_end = _Begin + static_cast<difference_type>(_Old_size);
         const iterator _New_end = end();
 
         if constexpr (!_Presorted) {
-            _STD sort(_Old_end, _New_end, _Comp);
+            _STD sort(_Old_end, _New_end, _Get_comp_v());
         } else {
             _STL_ASSERT(_Check_sorted(_Old_end, _New_end), _Msg_not_sorted);
         }
 
-        _STD inplace_merge(_Begin, _Old_end, _New_end, _Comp);
+        _STD inplace_merge(_Begin, _Old_end, _New_end, _Get_comp_v());
         _Erase_dupes_if_not_multi();
 
         _STL_INTERNAL_CHECK(_Check_sorted(cbegin(), cend()));
@@ -658,11 +651,10 @@ private:
         }
 
         // O(N) if already sorted.
-        auto _Comp                     = _Get_comp_v();
-        const iterator _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Comp);
+        const iterator _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Get_comp_v());
 
-        _STD sort(_Begin_unsorted, _End, _Comp);
-        _STD inplace_merge(_Begin, _Begin_unsorted, _End, _Comp);
+        _STD sort(_Begin_unsorted, _End, _Get_comp_v());
+        _STD inplace_merge(_Begin, _Begin_unsorted, _End, _Get_comp_v());
         _Erase_dupes_if_not_multi();
 
         _STL_INTERNAL_CHECK(_Check_sorted(cbegin(), cend()));
@@ -670,33 +662,18 @@ private:
 
     template <class _Lty, class _Rty>
     _NODISCARD bool _Compare(const _Lty& _Lhs, const _Rty& _Rhs) const
-        noexcept(noexcept(_DEBUG_LT_PRED(_My_pair._Get_first(), _Lhs, _Rhs))) {
+        noexcept(noexcept(_DEBUG_LT_PRED(_Mycomp, _Lhs, _Rhs))) {
         _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || (is_same_v<_Kty, _Lty> && is_same_v<_Kty, _Rty>) );
 
-        return _DEBUG_LT_PRED(_My_pair._Get_first(), _Lhs, _Rhs);
-    }
-
-    _NODISCARD const _Container& _Get_cont() const noexcept {
-        return _My_pair._Myval2;
-    }
-
-    _NODISCARD _Container& _Get_cont() noexcept {
-        return _My_pair._Myval2;
-    }
-
-    _NODISCARD const key_compare& _Get_comp() const noexcept {
-        return _My_pair._Get_first();
-    }
-
-    _NODISCARD key_compare& _Get_comp() noexcept {
-        return _My_pair._Get_first();
+        return _DEBUG_LT_PRED(_Mycomp, _Lhs, _Rhs);
     }
 
     _NODISCARD auto _Get_comp_v() const noexcept {
-        return _STD _Pass_fn(_My_pair._Get_first());
+        return _STD _Pass_fn(_Mycomp);
     }
 
-    _Compressed_pair<key_compare, container_type> _My_pair;
+    container_type _Mycont;
+    /* [[no_unique_address]] */ key_compare _Mycomp;
 };
 
 _EXPORT_STD struct sorted_unique_t {

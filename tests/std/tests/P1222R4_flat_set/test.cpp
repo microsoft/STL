@@ -68,22 +68,9 @@ void assert_reversible_container_requirements(const T& s) {
 }
 
 template <class T>
-void test_ebco() {
-    // This tests an implementation-specific optimization.
-    using key_compare    = T::key_compare;
-    using container_type = T::container_type;
-    if constexpr (is_empty_v<key_compare> && !is_final_v<key_compare>) {
-        static_assert(sizeof(container_type) == sizeof(T));
-    } else {
-        static_assert(sizeof(container_type) < sizeof(T));
-    }
-}
-
-template <class T>
 void assert_all_requirements_and_equals(const T& s, const initializer_list<typename T::value_type>& il) {
     assert_container_requirements(s);
     assert_reversible_container_requirements(s);
-    test_ebco<T>();
 
     auto val_comp = s.value_comp();
     auto begin_it = s.cbegin();
