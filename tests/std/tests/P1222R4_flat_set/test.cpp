@@ -457,8 +457,6 @@ void test_extract_2() {
         }
     };
 
-    // constexpr int elements[]{1, 2, 3, 4};
-
     Set<int, std::less<int>, always_copy> fs{4, 3, 2, 1};
     assert_all_requirements_and_equals(fs, {1, 2, 3, 4});
     auto extr = std::move(fs).extract();

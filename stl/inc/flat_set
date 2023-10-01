@@ -86,7 +86,7 @@ public:
 
     _Base_flat_set(_Tsorted, container_type _Cont, const key_compare& _Comp = key_compare())
         : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
-        _STL_ASSERT(_Is_sorted(cbegin(), cend()), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted(_Mycont), _Msg_not_sorted);
     }
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const _Alloc& _Al)
@@ -189,10 +189,10 @@ public:
     }
 
     _NODISCARD const_iterator cbegin() const noexcept {
-        return begin();
+        return _Mycont.cbegin();
     }
     _NODISCARD const_iterator cend() const noexcept {
-        return end();
+        return _Mycont.cend();
     }
     _NODISCARD const_reverse_iterator crbegin() const noexcept {
         return rbegin();
@@ -285,13 +285,14 @@ public:
         _Insert_range<true>(_Ilist.begin(), _Ilist.end());
     }
 
-    _NODISCARD container_type extract() && noexcept(is_nothrow_move_constructible_v<_Container>) /* strengthened */ {
+    _NODISCARD container_type extract() && noexcept(
+        is_nothrow_move_constructible_v<container_type>) /* strengthened */ {
         // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
         _Clear_guard<_Base_flat_set> _Guard{this};
         return _STD move(_Mycont);
     }
     void replace(container_type&& _Cont) {
-        _STL_ASSERT(_Is_sorted(_Cont.cbegin(), _Cont.cend()), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted(_Cont), _Msg_not_sorted);
         _Clear_guard<_Base_flat_set> _Guard{this};
         _Mycont        = _STD move(_Cont);
         _Guard._Target = nullptr;
@@ -458,6 +459,10 @@ private:
             }
             return true;
         }
+    }
+
+    _NODISCARD bool _Is_sorted(const container_type& _Cont) const {
+        return _Is_sorted(_Cont.cbegin(), _Cont.cend());
     }
 
     static constexpr const char* _Msg_not_sorted = _Multi ? "Input was not sorted!" : "Input was not sorted-unique!";
@@ -651,7 +656,7 @@ private:
         _STD inplace_merge(_Begin, _Old_end, _End, _Pass_comp());
         _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_Is_sorted(cbegin(), cend()));
+        _STL_INTERNAL_CHECK(_Is_sorted(_Mycont));
     }
 
     void _Make_invariants_fulfilled() {
@@ -669,7 +674,7 @@ private:
         _STD inplace_merge(_Begin, _Begin_unsorted, _End, _Pass_comp());
         _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_Is_sorted(cbegin(), cend()));
+        _STL_INTERNAL_CHECK(_Is_sorted(_Mycont));
     }
 
     template <class _Lty, class _Rty>
