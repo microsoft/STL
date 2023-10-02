@@ -8,12 +8,11 @@ variables:
   buildOutputLocation: 'D:\build'
   benchmarkBuildOutputLocation: 'D:\benchmark'
 
-pool:
-  name: 'StlBuild-2023-09-14T1251-Pool'
-  demands: EnableSpotVM -equals true
-
 pr:
   drafts: false
+
+extends:
+  template: azure-devops/pool.yml
 
 stages:
   - stage: Code_Format

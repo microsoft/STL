@@ -9,11 +9,10 @@ variables:
   # Restrict to "stlasan" test
   testSelection: '-R stlasan'
 
-pool:
-  name: 'StlBuild-2023-09-14T1251-Pool'
-  demands: EnableSpotVM -equals true
-
 pr: none
+
+extends:
+  template: pool.yml
 
 stages:
   - stage: Build_And_Test_x64

@@ -1,0 +1,3 @@
+pool:
+  name: 'StlBuild-2023-09-14T1251-Pool'
+  demands: EnableSpotVM -equals true
