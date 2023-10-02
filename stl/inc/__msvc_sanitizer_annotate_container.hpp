@@ -30,36 +30,36 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #if defined(_M_ARM64EC) || defined(_M_ARM64) || defined(_M_ARM) || defined(_M_CEE_PURE)
 #define _DISABLE_STL_ANNOTATION
-#endif // ^^^ unsupported platform
+#endif // ^^^ unsupported platform ^^^
 
-#endif // ^^^ !defined(_DISABLE_STL_ANNOTATION) && !defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORM)
+#endif // ^^^ !defined(_DISABLE_STL_ANNOTATION) && !defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS) ^^^
 
 #ifdef _DISABLE_STL_ANNOTATION
 
 #ifdef _ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS
 #error _ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS and _DISABLE_STL_ANNOTATION are mutually exclusive
-#endif // ^^^ defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS)
+#endif // ^^^ defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS) ^^^
 
 #ifndef _DISABLE_STRING_ANNOTATION
 #define _DISABLE_STRING_ANNOTATION
-#endif // ^^^ !defined(_DISABLE_STRING_ANNOTATION)
+#endif // ^^^ !defined(_DISABLE_STRING_ANNOTATION) ^^^
 #ifndef _DISABLE_VECTOR_ANNOTATION
 #define _DISABLE_VECTOR_ANNOTATION
-#endif // ^^^ !defined(_DISABLE_VECTOR_ANNOTATION)
+#endif // ^^^ !defined(_DISABLE_VECTOR_ANNOTATION) ^^^
 
-#endif // ^^^ defined(_DISABLE_STL_ANNOTATION)
+#endif // ^^^ defined(_DISABLE_STL_ANNOTATION) ^^^
 
 #ifdef _ANNOTATE_STL
 
 #ifdef _ANNOTATE_STRING
 #define _ANNOTATE_STRING
-#endif // ^^^ defined(_ANNOTATE_STRING)
+#endif // ^^^ defined(_ANNOTATE_STRING) ^^^
 
 #ifdef _ANNOTATE_VECTOR
 #define _ANNOTATE_VECTOR
-#endif // ^^^ defined(_ANNOTATE_VECTOR)
+#endif // ^^^ defined(_ANNOTATE_VECTOR) ^^^
 
-#endif // ^^^ defined(_ANNOTATE_STL)
+#endif // ^^^ defined(_ANNOTATE_STL) ^^^
 
 #ifdef __SANITIZE_ADDRESS__
 
@@ -78,41 +78,41 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma comment(linker, "/INFERASANLIBS")
 #endif // __has_feature(address_sanitizer)
 
-#endif // ^^^ defined(__clang__)
+#endif // ^^^ defined(__clang__) ^^^
 
 
 #ifdef _DISABLE_STRING_ANNOTATION
 #undef _ACTIVATE_STRING_ANNOTATION
 #undef _INSERT_STRING_ANNOTATION
-#endif // ^^^ defined(_DISABLE_STRING_ANNOTATION)
+#endif // ^^^ defined(_DISABLE_STRING_ANNOTATION) ^^^
 #ifdef _DISABLE_VECTOR_ANNOTATION
 #undef _ACTIVATE_VECTOR_ANNOTATION
 #undef _INSERT_VECTOR_ANNOTATION
-#endif // ^^^ defined(_DISABLE_VECTOR_ANNOTATION)
+#endif // ^^^ defined(_DISABLE_VECTOR_ANNOTATION) ^^^
 
 #ifdef _ANNOTATE_STRING
 #define _INSERT_STRING_ANNOTATION
-#endif // ^^^ defined(_ANNOTATE_STRING)
+#endif // ^^^ defined(_ANNOTATE_STRING) ^^^
 #ifdef _ANNOTATE_VECTOR
 #define _INSERT_VECTOR_ANNOTATION
-#endif // ^^^ defined(_ANNOTATE_VECTOR)
+#endif // ^^^ defined(_ANNOTATE_VECTOR) ^^^
 
 
 #ifndef _INSERT_STRING_ANNOTATION
 #pragma detect_mismatch("annotate_string", "0")
-#endif // ^^^ !defined(_INSERT_STRING_ANNOTATION)
+#endif // ^^^ !defined(_INSERT_STRING_ANNOTATION) ^^^
 #ifndef _INSERT_VECTOR_ANNOTATION
 #pragma detect_mismatch("annotate_vector", "0")
-#endif // ^^^ !defined(_INSERT_VECTOR_ANNOTATION)
+#endif // ^^^ !defined(_INSERT_VECTOR_ANNOTATION) ^^^
 
 #ifdef _ACTIVATE_STRING_ANNOTATION
 #pragma comment(lib, "stl_asan")
 #pragma detect_mismatch("annotate_string", "1")
-#endif // ^^^ defined(_ACTIVATE_STRING_ANNOTATION)
+#endif // ^^^ defined(_ACTIVATE_STRING_ANNOTATION) ^^^
 #ifdef _ACTIVATE_VECTOR_ANNOTATION
 #pragma comment(lib, "stl_asan")
 #pragma detect_mismatch("annotate_vector", "1")
-#endif // ^^^ defined(_ACTIVATE_VECTOR_ANNOTATION)
+#endif // ^^^ defined(_ACTIVATE_VECTOR_ANNOTATION) ^^^
 
 #undef _ACTIVATE_STRING_ANNOTATION
 #undef _ACTIVATE_VECTOR_ANNOTATION
@@ -165,7 +165,7 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 #error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
 
-#endif // ^^^ insert ASan annotations
+#endif // ^^^ insert ASan annotations ^^^
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
