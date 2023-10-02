@@ -395,9 +395,9 @@ void test_non_static_comparer() {
     assert_all_requirements_and_equals(a, {9, 7, 5, -1});
 }
 
-template <template <class, class, class> class Set>
+template <template <class...> class Set>
 void test_extract_1() {
-    // Test that the container will be emptied, regardless of whether an exception is thrown.
+    // Test that the container will be emptied, even if the container's move ctor exits via an exception.
 
     static bool will_throw = false;
 
@@ -412,7 +412,6 @@ void test_extract_1() {
 
         test_exception(test_exception&& other) : base(static_cast<base&&>(other)) {
             if (will_throw) {
-                will_throw = false;
                 throw 0; // will be caught by "catch (...)"
             }
         }
@@ -431,6 +430,7 @@ void test_extract_1() {
         will_throw = true;
         (void) std::move(fs).extract();
     } catch (...) {
+        will_throw = false;
         assert_all_requirements_and_equals(fs, {}); // assert empty
         return;
     }
@@ -438,9 +438,9 @@ void test_extract_1() {
     assert(false);
 }
 
-template <template <class, class, class> class Set>
+template <template <class...> class Set>
 void test_extract_2() {
-    // Test that the container will be emptied, even if the container's move constructor doesn't empty the container.
+    // Test that the container will be emptied, even if the container's move ctor doesn't empty the container.
 
     class always_copy : public vector<int> {
         using base = vector<int>;
