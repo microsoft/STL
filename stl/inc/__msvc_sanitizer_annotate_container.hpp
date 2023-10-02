@@ -26,7 +26,6 @@ _STL_DISABLE_CLANG_WARNINGS
 //     + _ANNOTATE_STRING: same, but only for `basic_string`
 //     + _ANNOTATE_VECTOR: same, but only for `vector`
 
-// if our user hasn't defined `_DISABLE_STL_ANNOTATION`, then we may disable it anyways
 #if !defined(_DISABLE_STL_ANNOTATION) && !defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS)
 
 #if defined(_M_ARM64EC) || defined(_M_ARM64) || defined(_M_ARM) || defined(_M_CEE_PURE)
@@ -35,7 +34,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #endif // ^^^ !defined(_DISABLE_STL_ANNOTATION) && !defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORM)
 
-// this may be user-defined, or we may be on an unsupported platform
 #ifdef _DISABLE_STL_ANNOTATION
 
 #ifdef _ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS
@@ -156,7 +154,7 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 #error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
 
-#endif // ^^^ insert asan annotations
+#endif // ^^^ insert ASan annotations
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
