@@ -10,6 +10,7 @@ variables:
   testSelection: '-R stlasan'
 
 pr: none
+trigger: none
 
 extends:
   template: pool.yml
