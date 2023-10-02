@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <random>
+#include <utility>
 #include <vector>
 
 using namespace std;
@@ -402,6 +403,7 @@ void test_extract_1() {
     static bool will_throw = false;
 
     class test_exception : public vector<int> {
+    private:
         using base = vector<int>;
 
     public:
@@ -443,6 +445,7 @@ void test_extract_2() {
     // Test that the container will be emptied, even if the container's move ctor doesn't empty the container.
 
     class always_copy : public vector<int> {
+    private:
         using base = vector<int>;
 
     public:
@@ -450,7 +453,7 @@ void test_extract_2() {
         always_copy(const always_copy&)            = default;
         always_copy& operator=(const always_copy&) = default;
 
-        // the move ctor & assignment will not empty the container.
+        // the move ctor and assignment will not empty the container.
         always_copy(always_copy&& other) noexcept /* intentional */ : always_copy(as_const(other)) {}
         always_copy& operator=(always_copy&& other) noexcept /* intentional */ {
             return operator=(as_const(other));

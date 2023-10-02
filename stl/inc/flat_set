@@ -67,7 +67,7 @@ public:
 
     _Base_flat_set() : _Mycont(), _Mycomp() {}
 
-    // TRANSITION, "_My_comp" may need to be copied, even in move construction / assignment.
+    // TRANSITION, "_Mycomp" may need to be copied, even in move construction / assignment.
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(const _Deriv& _Set, const _Alloc& _Al) : _Mycont(_Set._Mycont, _Al), _Mycomp(_Set._Mycomp) {}
     template <_Allocator_for<container_type> _Alloc>
