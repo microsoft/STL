@@ -51,13 +51,13 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifdef _ANNOTATE_STL
 
-#ifdef _ANNOTATE_STRING
+#ifndef _ANNOTATE_STRING
 #define _ANNOTATE_STRING
-#endif // ^^^ defined(_ANNOTATE_STRING) ^^^
+#endif // ^^^ !defined(_ANNOTATE_STRING) ^^^
 
-#ifdef _ANNOTATE_VECTOR
+#ifndef _ANNOTATE_VECTOR
 #define _ANNOTATE_VECTOR
-#endif // ^^^ defined(_ANNOTATE_VECTOR) ^^^
+#endif // ^^^ !defined(_ANNOTATE_VECTOR) ^^^
 
 #endif // ^^^ defined(_ANNOTATE_STL) ^^^
 
