@@ -1,0 +1,18 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# Common configuration used by both pipelines
+
+variables:
+- name: poolName
+  value: 'StlBuild-2023-09-14T1251-Pool'
+  readonly: true
+- name: poolDemands
+  value: 'EnableSpotVM -equals true'
+  readonly: true
+- name: tmpDir
+  value: 'D:\Temp'
+- name: buildOutputLocation
+  value: 'D:\build'
+- name: benchmarkBuildOutputLocation
+  value: 'D:\benchmark'
