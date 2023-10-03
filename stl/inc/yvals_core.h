@@ -793,7 +793,7 @@
 // warning C4702: unreachable code
 // warning C4793: function compiled as native
 // warning C4820: 'N' bytes padding added after data member 'meow' (/Wall)
-// warning C4868: compiler may not enforce left-to-right evaluation order in braced initializer list
+// warning C4868: compiler may not enforce left-to-right evaluation order in braced initializer list (/Wall)
 // warning C4988: variable declared outside class/function scope (/Wall /d1WarnOnGlobals)
 // warning C5026: move constructor was implicitly defined as deleted (/Wall)
 // warning C5027: move assignment operator was implicitly defined as deleted (/Wall)
