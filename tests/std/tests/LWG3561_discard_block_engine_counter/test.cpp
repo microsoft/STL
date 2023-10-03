@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <climits>
 #include <cstddef>
 #include <iosfwd>
 #include <random>
@@ -13,8 +14,8 @@
 
 using namespace std;
 
-constexpr size_t large_block_size = static_cast<size_t>(UINT_MAX) - 16;
-constexpr size_t large_used_block = static_cast<size_t>(UINT_MAX) - 20;
+constexpr size_t large_block_size = UINT_MAX - 16;
+constexpr size_t large_used_block = UINT_MAX - 20;
 
 struct trivial_engine {
     using result_type = size_t;
