@@ -42,7 +42,7 @@ public:
         : _Mycont(static_cast<const _Mydeque*>(_Pdeque)), _Myoff(_Off) {}
 
     _NODISCARD reference operator*() const noexcept {
-        return _Mycont->_At(_Myoff);
+        return _Mycont->_Subscript(_Myoff);
     }
 
     _NODISCARD pointer operator->() const noexcept {
@@ -261,7 +261,7 @@ public:
             "cannot deference out of range deque iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-        return _Mycont->_At(_Myoff);
+        return _Mycont->_Subscript(_Myoff);
     }
 
     _NODISCARD pointer operator->() const noexcept {
@@ -560,19 +560,19 @@ public:
         return static_cast<_Map_difference_type>((_Off / _Block_size) & (_Mapsize - 1));
     }
 
-    reference _At(size_type _Off) noexcept {
+    reference _Subscript(size_type _Off) noexcept {
         const auto _Block     = _Getblock(_Off);
         const auto _Block_off = static_cast<difference_type>(_Off % _Block_size);
         return _Map[_Block][_Block_off];
     }
 
-    const_reference _At(size_type _Off) const noexcept {
+    const_reference _Subscript(size_type _Off) const noexcept {
         const auto _Block     = _Getblock(_Off);
         const auto _Block_off = static_cast<difference_type>(_Off % _Block_size);
         return _Map[_Block][_Block_off];
     }
 
-    value_type* _Address_at(size_type _Off) noexcept {
+    value_type* _Address_subscript(size_type _Off) noexcept {
         const auto _Block     = _Getblock(_Off);
         const auto _Block_off = static_cast<difference_type>(_Off % _Block_size);
         return _STD _Unfancy(_Map[_Block] + _Block_off);
@@ -1005,7 +1005,7 @@ public:
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Get_data()._At(_Myoff() + _Pos);
+        return _Get_data()._Subscript(_Myoff() + _Pos);
     }
 
     _NODISCARD reference operator[](size_type _Pos) noexcept /* strengthened */ {
@@ -1013,7 +1013,7 @@ public:
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Get_data()._At(_Myoff() + _Pos);
+        return _Get_data()._Subscript(_Myoff() + _Pos);
     }
 
     _NODISCARD const_reference at(size_type _Pos) const {
@@ -1021,7 +1021,7 @@ public:
             _Xran();
         }
 
-        return _Get_data()._At(_Myoff() + _Pos);
+        return _Get_data()._Subscript(_Myoff() + _Pos);
     }
 
     _NODISCARD reference at(size_type _Pos) {
@@ -1029,7 +1029,7 @@ public:
             _Xran();
         }
 
-        return _Get_data()._At(_Myoff() + _Pos);
+        return _Get_data()._Subscript(_Myoff() + _Pos);
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
@@ -1077,7 +1077,7 @@ private:
             _Map()[_Block] = _Getal().allocate(_Block_size);
         }
 
-        _Alty_traits::construct(_Getal(), _Get_data()._Address_at(_Newoff), _STD forward<_Tys>(_Vals)...);
+        _Alty_traits::construct(_Getal(), _Get_data()._Address_subscript(_Newoff), _STD forward<_Tys>(_Vals)...);
 
         ++_Mysize();
     }
@@ -1094,7 +1094,7 @@ private:
             _Map()[_Block] = _Getal().allocate(_Block_size);
         }
 
-        _Alty_traits::construct(_Getal(), _Get_data()._Address_at(_Newoff), _STD forward<_Tys>(_Vals)...);
+        _Alty_traits::construct(_Getal(), _Get_data()._Address_subscript(_Newoff), _STD forward<_Tys>(_Vals)...);
 
         _Myoff() = _Newoff;
         ++_Mysize();
@@ -1417,7 +1417,7 @@ public:
             _STL_REPORT_ERROR("deque empty before pop");
         } else { // something to erase, do it
             _Orphan_off(_Myoff());
-            _Alty_traits::destroy(_Getal(), _Get_data()._Address_at(_Myoff()));
+            _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Myoff()));
             if (--_Mysize() == 0) {
                 _Myoff() = 0;
             } else {
@@ -1426,7 +1426,7 @@ public:
         }
 
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-        _Alty_traits::destroy(_Getal(), _Get_data()._Address_at(_Myoff()));
+        _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Myoff()));
         if (--_Mysize() == 0) {
             _Myoff() = 0;
         } else {
@@ -1442,7 +1442,7 @@ public:
         } else { // something to erase, do it
             size_type _Newoff = _Myoff() + _Mysize() - 1;
             _Orphan_off(_Newoff);
-            _Alty_traits::destroy(_Getal(), _Get_data()._Address_at(_Newoff));
+            _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Newoff));
             if (--_Mysize() == 0) {
                 _Myoff() = 0;
             }
@@ -1450,7 +1450,7 @@ public:
 
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         size_type _Newoff = _Myoff() + _Mysize() - 1;
-        _Alty_traits::destroy(_Getal(), _Get_data()._Address_at(_Newoff));
+        _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Newoff));
         if (--_Mysize() == 0) {
             _Myoff() = 0;
         }

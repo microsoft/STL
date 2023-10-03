@@ -215,6 +215,7 @@ struct ptr_counting_allocator {
 #endif // !_HAS_CXX20
 };
 
+// GH-2769 <deque>: For allocators where allocator_traits<T>::pointer is an object, destructors aren't always called
 void test_gh_2769() {
     {
         deque<int, ptr_counting_allocator<int>> dq{3, 1, 4, 1, 5, 9};
