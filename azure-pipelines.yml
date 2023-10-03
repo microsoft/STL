@@ -13,47 +13,46 @@ pr:
 
 extends:
   template: azure-devops/pool.yml
+  parameters:
+    stages:
+      - stage: Code_Format
+        displayName: 'Code Format'
+        jobs:
+          - template: azure-devops/format-validation.yml
 
-pipeline:
-  stages:
-    - stage: Code_Format
-      displayName: 'Code Format'
-      jobs:
-        - template: azure-devops/format-validation.yml
+      - stage: Build_And_Test_x64
+        dependsOn: Code_Format
+        displayName: 'Build and Test'
+        jobs:
+          - template: azure-devops/native-build-test.yml
+            parameters:
+              targetPlatform: x64
+              vsDevCmdArch: amd64
 
-    - stage: Build_And_Test_x64
-      dependsOn: Code_Format
-      displayName: 'Build and Test'
-      jobs:
-        - template: azure-devops/native-build-test.yml
-          parameters:
-            targetPlatform: x64
-            vsDevCmdArch: amd64
+      - stage: Build_And_Test_x86
+        dependsOn: Build_And_Test_x64
+        displayName: 'Build and Test'
+        jobs:
+          - template: azure-devops/native-build-test.yml
+            parameters:
+              targetPlatform: x86
+              vsDevCmdArch: x86
 
-    - stage: Build_And_Test_x86
-      dependsOn: Build_And_Test_x64
-      displayName: 'Build and Test'
-      jobs:
-        - template: azure-devops/native-build-test.yml
-          parameters:
-            targetPlatform: x86
-            vsDevCmdArch: x86
+      - stage: Build_ARM
+        dependsOn: Build_And_Test_x64
+        displayName: 'Build'
+        jobs:
+          - template: azure-devops/cross-build.yml
+            parameters:
+              targetPlatform: arm
+              vsDevCmdArch: arm
+              benchmarkBuildOutputLocationVar: ''
 
-    - stage: Build_ARM
-      dependsOn: Build_And_Test_x64
-      displayName: 'Build'
-      jobs:
-        - template: azure-devops/cross-build.yml
-          parameters:
-            targetPlatform: arm
-            vsDevCmdArch: arm
-            benchmarkBuildOutputLocationVar: ''
-
-    - stage: Build_ARM64
-      dependsOn: Build_And_Test_x64
-      displayName: 'Build'
-      jobs:
-        - template: azure-devops/cross-build.yml
-          parameters:
-            targetPlatform: arm64
-            vsDevCmdArch: arm64
+      - stage: Build_ARM64
+        dependsOn: Build_And_Test_x64
+        displayName: 'Build'
+        jobs:
+          - template: azure-devops/cross-build.yml
+            parameters:
+              targetPlatform: arm64
+              vsDevCmdArch: arm64

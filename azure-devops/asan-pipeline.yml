@@ -14,27 +14,26 @@ trigger: none
 
 extends:
   template: pool.yml
+  parameters:
+    stages:
+      - stage: Build_And_Test_x64
+        displayName: 'Build and Test'
+        jobs:
+          - template: native-build-test.yml
+            parameters:
+              targetPlatform: x64
+              vsDevCmdArch: amd64
+              benchmarkBuildOutputLocationVar: ''
+              testSelection: ${{ variables.testSelection }}
 
-pipeline:
-  stages:
-    - stage: Build_And_Test_x64
-      displayName: 'Build and Test'
-      jobs:
-        - template: native-build-test.yml
-          parameters:
-            targetPlatform: x64
-            vsDevCmdArch: amd64
-            benchmarkBuildOutputLocationVar: ''
-            testSelection: ${{ variables.testSelection }}
+      - stage: Build_And_Test_x86
+        displayName: 'Build and Test'
+        jobs:
+          - template: native-build-test.yml
+            parameters:
+              targetPlatform: x86
+              vsDevCmdArch: x86
+              benchmarkBuildOutputLocationVar: ''
+              testSelection: ${{ variables.testSelection }}
 
-    - stage: Build_And_Test_x86
-      displayName: 'Build and Test'
-      jobs:
-        - template: native-build-test.yml
-          parameters:
-            targetPlatform: x86
-            vsDevCmdArch: x86
-            benchmarkBuildOutputLocationVar: ''
-            testSelection: ${{ variables.testSelection }}
-
-    # no coverage for ARM and ARM64
+      # no coverage for ARM and ARM64
