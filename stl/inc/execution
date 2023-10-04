@@ -1867,9 +1867,6 @@ struct _Static_partitioned_mismatch3 {
     }
 };
 
-#pragma warning(push)
-#pragma warning(disable : 4868) // compiler may not enforce left-to-right evaluation order
-                                // in braced initializer list (/Wall)
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
@@ -1911,7 +1908,6 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _Seek_wrapped(_First1, _Result.first);
     return {_First1, _First2};
 }
-#pragma warning(pop)
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
@@ -2396,9 +2392,6 @@ struct _Static_partitioned_binary_transform2 {
     }
 };
 
-#pragma warning(push)
-#pragma warning(disable : 4868) // compiler may not enforce left-to-right evaluation order
-                                // in braced initializer list (/Wall)
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Fn,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt3 transform(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _FwdIt3 _Dest,
@@ -2443,7 +2436,6 @@ _FwdIt3 transform(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _F
         return _Dest;
     }
 }
-#pragma warning(pop)
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval, const _Ty& _Newval) noexcept
@@ -4162,9 +4154,6 @@ struct _Static_partitioned_transform_reduce_binary2 { // transform-reduction tas
     }
 };
 
-#pragma warning(push)
-#pragma warning(disable : 4868) // compiler may not enforce left-to-right evaluation order
-                                // in braced initializer list (/Wall)
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp1, class _BinOp2,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Ty _Val, _BinOp1 _Reduce_op,
@@ -4219,7 +4208,6 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt
         _Get_unwrapped_n(_First2, _Idl_distance<_FwdIt1>(_UFirst1, _ULast1)), _STD move(_Val), _Pass_fn(_Reduce_op),
         _Pass_fn(_Transform_op));
 }
-#pragma warning(pop)
 
 template <class _FwdIt, class _Ty, class _BinOp, class _UnaryOp>
 struct _Static_partitioned_transform_reduce2 { // transformed reduction task scheduled on the system thread pool

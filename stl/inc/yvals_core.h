@@ -794,6 +794,7 @@
 // warning C4702: unreachable code
 // warning C4793: function compiled as native
 // warning C4820: 'N' bytes padding added after data member 'meow' (/Wall)
+// warning C4868: compiler may not enforce left-to-right evaluation order in braced initializer list (/Wall)
 // warning C4988: variable declared outside class/function scope (/Wall /d1WarnOnGlobals)
 // warning C5026: move constructor was implicitly defined as deleted (/Wall)
 // warning C5027: move assignment operator was implicitly defined as deleted (/Wall)
@@ -806,8 +807,8 @@
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
     4180 4412 4455 4494 4514 4574 4582 4583 4587 4588 \
-    4619 4623 4625 4626 4643 4648 4702 4793 4820 4988 \
-    5026 5027 5045 5220 6294                          \
+    4619 4623 4625 4626 4643 4648 4702 4793 4820 4868 \
+    4988 5026 5027 5045 5220 6294                     \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
