@@ -242,6 +242,7 @@ tests\LWG3234_math_special_overloads
 tests\LWG3422_seed_seq_ctors
 tests\LWG3480_directory_iterator_range
 tests\LWG3545_pointer_traits_sfinae
+tests\LWG3561_discard_block_engine_counter
 tests\LWG3610_iota_view_size_and_integer_class
 tests\P0009R18_mdspan_default_accessor
 tests\P0009R18_mdspan_extents

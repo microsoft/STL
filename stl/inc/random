@@ -1437,13 +1437,99 @@ private:
     int _Nx;
 };
 
+template <class _Engine, size_t _Px, size_t _Rx>
+class _Discard_block_base { // TRANSITION, ABI, should be merged into discard_block_engine
+public:
+    using base_type   = _Engine;
+    using result_type = typename _Engine::result_type;
+
+    _Discard_block_base() : _Eng(), _Nx(0) {}
+
+    explicit _Discard_block_base(const _Engine& _Ex) : _Eng(_Ex), _Nx(0) {}
+
+    explicit _Discard_block_base(result_type _Seed) : _Eng(_Seed), _Nx(0) {}
+
+    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, _Discard_block_base, _Engine> = 0>
+    explicit _Discard_block_base(_Seed_seq& _Seq) : _Eng(_Seq), _Nx(0) {}
+
+    void seed() { // seed engine from default value
+        _Eng.seed();
+        _Nx = 0;
+    }
+
+    void seed(result_type _Xx0) { // seed engine from specified value
+        _Eng.seed(_Xx0);
+        _Nx = 0;
+    }
+
+    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, _Discard_block_base> = 0>
+    void seed(_Seed_seq& _Seq) { // seed engine from seed sequence
+        _Eng.seed(_Seq);
+        _Nx = 0;
+    }
+
+    _NODISCARD const base_type& base() const noexcept {
+        return _Eng;
+    }
+
+    _NODISCARD result_type operator()() {
+        if (_Rx <= _Nx) { // discard values
+            while (_Nx++ < _Px) {
+                (void) _Eng();
+            }
+
+            _Nx = 0;
+        }
+        ++_Nx;
+        return _Eng();
+    }
+
+    void discard(unsigned long long _Nskip) { // discard _Nskip elements
+        for (; 0 < _Nskip; --_Nskip) {
+            (void) (*this)();
+        }
+    }
+
+    _NODISCARD_FRIEND bool operator==(const _Discard_block_base& _Left, const _Discard_block_base& _Right) {
+        return _Left._Eng == _Right._Eng && _Left._Nx == _Right._Nx;
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const _Discard_block_base& _Left, const _Discard_block_base& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(
+        basic_istream<_Elem, _Traits>& _Istr, _Discard_block_base& _Eng) { // read state from _Istr
+        return _Istr >> _Eng._Eng >> _Eng._Nx;
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(
+        basic_ostream<_Elem, _Traits>& _Ostr, const _Discard_block_base& _Eng) { // write state to _Ostr
+        return _Ostr << _Eng._Eng << ' ' << _Eng._Nx;
+    }
+
+private:
+    base_type _Eng;
+    size_t _Nx;
+};
+
 _EXPORT_STD template <class _Engine, size_t _Px, size_t _Rx>
-class discard_block_engine : public discard_block<_Engine, _Px, _Rx> { // discard_block_engine compound engine
+class discard_block_engine // discard_block_engine compound engine
+    : public conditional_t<_Px <= INT_MAX, discard_block<_Engine, static_cast<int>(_Px), static_cast<int>(_Rx)>,
+          _Discard_block_base<_Engine, _Px, _Rx>> {
 public:
     static_assert(0 < _Rx && _Rx <= _Px, "invalid template argument for discard_block_engine");
 
-    using _Mybase     = discard_block<_Engine, _Px, _Rx>;
+    using _Mybase = conditional_t<_Px <= INT_MAX, discard_block<_Engine, static_cast<int>(_Px), static_cast<int>(_Rx)>,
+        _Discard_block_base<_Engine, _Px, _Rx>>;
     using result_type = typename _Engine::result_type;
+
+    static constexpr size_t block_size = _Px;
+    static constexpr size_t used_block = _Rx;
 
     discard_block_engine() : _Mybase() {}
 
