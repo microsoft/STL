@@ -346,9 +346,6 @@ std/strings/string.conversions/stol.pass.cpp:1 FAIL
 std/depr/depr.c.headers/uchar_h.compile.pass.cpp FAIL
 std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
-# P1169R4 static operator()
-std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp FAIL
-
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 
@@ -367,6 +364,10 @@ std/utilities/format/format.tuple/set_separator.pass.cpp FAIL
 # *** MISSING COMPILER FEATURES ***
 # MSVC doesn't properly support [[no_unique_address]]
 std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp SKIPPED
+
+# P1169R4 static operator()
+std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp:0 FAIL
+std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp:0 FAIL
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -1150,7 +1151,6 @@ std/ranges/range.factories/range.single.view/cpo.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 std/utilities/format/format.functions/escaped_output.ascii.pass.cpp FAIL
 std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.inv/invoke.pass.cpp:0 FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.inv/invoke.pass.cpp:1 FAIL
 std/utilities/function.objects/refwrap/refwrap.const/type_conv_ctor.pass.cpp:0 FAIL

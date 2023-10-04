@@ -509,6 +509,7 @@ tests\P1135R6_latch
 tests\P1135R6_semaphore
 tests\P1147R1_printing_volatile_pointers
 tests\P1165R1_consistently_propagating_stateful_allocators
+tests\P1169R4_static_call_operator
 tests\P1206R7_deque_append_range
 tests\P1206R7_deque_assign_range
 tests\P1206R7_deque_from_range
