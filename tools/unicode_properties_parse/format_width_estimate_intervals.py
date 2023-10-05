@@ -32,10 +32,12 @@ class UnicodeWidthTable:
 
     def width_estimate_intervals(self):
         """
-        Divide [0..MAX_CODE_POINT] into ranges with different width estimations.
-        Represent each range with their starting values.
-        The starting value of the first range is always 0 and omitted.
-        The width estimation should be 1 for the first range, then alternate between 2 and 1.
+        Creates a string representation of the map (in `self.table`) from
+        unicode code points to their width, using hexadecimal unsigned integer literals.
+        Since there are long runs of code points of one width or the other,
+        this representation is a list of code points where the width switches.
+        Additionally, the width is assumed to start at `1` from the beginning of the list.
+        For example, `[1, 1, 2, 2, 2, 1]` would be represented as `"0x2u, 0x5u"`.
         """
         values = []
         assert self.table[0] == UnicodeWidth.IS_1
