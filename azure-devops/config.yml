@@ -12,7 +12,10 @@ variables:
   readonly: true
 - name: tmpDir
   value: 'D:\Temp'
+  readonly: true
 - name: buildOutputLocation
   value: 'D:\build'
+  readonly: true
 - name: benchmarkBuildOutputLocation
   value: 'D:\benchmark'
+  readonly: true
