@@ -1364,7 +1364,7 @@ private:
                     push_front(_Val); // push excess values
                 }
                 for (_Num = _Off; _Num > 0; --_Num) {
-                    push_front(_Subscript(_Count - 1));
+                    push_front(_Subscript(_Count - 1)); // push prefix
                 }
 
                 _Mid = _Unchecked_begin() + static_cast<difference_type>(_Count);
