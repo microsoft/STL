@@ -1006,7 +1006,7 @@ public:
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _At(_Pos);
+        return _Subscript(_Pos);
     }
 
     _NODISCARD reference operator[](size_type _Pos) noexcept /* strengthened */ {
@@ -1014,7 +1014,7 @@ public:
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _At(_Pos);
+        return _Subscript(_Pos);
     }
 
     _NODISCARD const_reference at(size_type _Pos) const {
@@ -1022,7 +1022,7 @@ public:
             _Xran();
         }
 
-        return _At(_Pos);
+        return _Subscript(_Pos);
     }
 
     _NODISCARD reference at(size_type _Pos) {
@@ -1030,7 +1030,7 @@ public:
             _Xran();
         }
 
-        return _At(_Pos);
+        return _Subscript(_Pos);
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
@@ -1038,7 +1038,7 @@ public:
         _STL_VERIFY(!empty(), "front() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _At(0);
+        return _Subscript(0);
     }
 
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
@@ -1046,7 +1046,7 @@ public:
         _STL_VERIFY(!empty(), "front() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _At(0);
+        return _Subscript(0);
     }
 
     _NODISCARD reference back() noexcept /* strengthened */ {
@@ -1054,7 +1054,7 @@ public:
         _STL_VERIFY(!empty(), "back() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _At(_Mysize() - 1);
+        return _Subscript(_Mysize() - 1);
     }
 
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
@@ -1062,7 +1062,7 @@ public:
         _STL_VERIFY(!empty(), "back() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _At(_Mysize() - 1);
+        return _Subscript(_Mysize() - 1);
     }
 
 private:
@@ -1364,14 +1364,14 @@ private:
                     push_front(_Val); // push excess values
                 }
                 for (_Num = _Off; _Num > 0; --_Num) {
-                    push_front(_At(_Count - 1));
+                    push_front(_Subscript(_Count - 1));
                 }
 
                 _Mid = _Unchecked_begin() + static_cast<difference_type>(_Count);
                 _STD fill_n(_Mid, _Off, _Val); // fill in rest of values
             } else { // insert not longer than prefix
                 for (_Num = _Count; _Num > 0; --_Num) {
-                    push_front(_At(_Count - 1)); // push part of prefix
+                    push_front(_Subscript(_Count - 1)); // push part of prefix
                 }
 
                 _Mid = _Unchecked_begin() + static_cast<difference_type>(_Count);
@@ -1390,14 +1390,14 @@ private:
                     _Emplace_back_internal(_Val); // push excess values
                 }
                 for (_Num = 0; _Num < _Rem; ++_Num) {
-                    _Emplace_back_internal(_At(_Off + _Num)); // push suffix
+                    _Emplace_back_internal(_Subscript(_Off + _Num)); // push suffix
                 }
 
                 _Mid = _Unchecked_begin() + static_cast<difference_type>(_Off);
                 _STD fill_n(_Mid, _Rem, _Val); // fill in rest of values
             } else { // insert not longer than prefix
                 for (_Num = 0; _Num < _Count; ++_Num) {
-                    _Emplace_back_internal(_At(_Off + _Rem - _Count + _Num)); // push part of prefix
+                    _Emplace_back_internal(_Subscript(_Off + _Rem - _Count + _Num)); // push part of prefix
                 }
 
                 _Mid = _Unchecked_begin() + static_cast<difference_type>(_Off);
@@ -1695,11 +1695,11 @@ private:
         return static_cast<_Map_difference_type>(_Get_data()._Mapsize);
     }
 
-    reference _At(size_type _Pos) noexcept {
+    reference _Subscript(size_type _Pos) noexcept {
         return _Get_data()._Subscript(_Myoff() + _Pos);
     }
 
-    const_reference _At(size_type _Pos) const noexcept {
+    const_reference _Subscript(size_type _Pos) const noexcept {
         return _Get_data()._Subscript(_Myoff() + _Pos);
     }
 
