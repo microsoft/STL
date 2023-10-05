@@ -995,7 +995,8 @@ public:
 
         if ((empty() && _Mapsize() > 0)
             || (!empty() && size() <= _Newcapacity && _Newcapacity < _Oldcapacity)) { // worth shrinking, do it
-            deque _Tmp(_STD make_move_iterator(begin()), _STD make_move_iterator(end()));
+            deque _Tmp(
+                _STD make_move_iterator(_Unchecked_begin()), _STD make_move_iterator(_Unchecked_end()), _Getal());
             swap(_Tmp);
         }
     }
@@ -1005,7 +1006,7 @@ public:
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Get_data()._Subscript(_Myoff() + _Pos);
+        return _At(_Pos);
     }
 
     _NODISCARD reference operator[](size_type _Pos) noexcept /* strengthened */ {
@@ -1013,7 +1014,7 @@ public:
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Get_data()._Subscript(_Myoff() + _Pos);
+        return _At(_Pos);
     }
 
     _NODISCARD const_reference at(size_type _Pos) const {
@@ -1021,7 +1022,7 @@ public:
             _Xran();
         }
 
-        return _Get_data()._Subscript(_Myoff() + _Pos);
+        return _At(_Pos);
     }
 
     _NODISCARD reference at(size_type _Pos) {
@@ -1029,7 +1030,7 @@ public:
             _Xran();
         }
 
-        return _Get_data()._Subscript(_Myoff() + _Pos);
+        return _At(_Pos);
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
@@ -1037,7 +1038,7 @@ public:
         _STL_VERIFY(!empty(), "front() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *_Unchecked_begin();
+        return _At(0);
     }
 
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
@@ -1045,7 +1046,7 @@ public:
         _STL_VERIFY(!empty(), "front() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *_Unchecked_begin();
+        return _At(0);
     }
 
     _NODISCARD reference back() noexcept /* strengthened */ {
@@ -1053,7 +1054,7 @@ public:
         _STL_VERIFY(!empty(), "back() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *_Prev_iter(_Unchecked_end());
+        return _At(_Mysize() - 1);
     }
 
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
@@ -1061,7 +1062,7 @@ public:
         _STL_VERIFY(!empty(), "back() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *_Prev_iter(_Unchecked_end());
+        return _At(_Mysize() - 1);
     }
 
 private:
@@ -1201,7 +1202,7 @@ public:
             }
 
             const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
-            _STD reverse(begin(), begin() + _Num);
+            _STD reverse(_Unchecked_begin(), _Unchecked_begin() + _Num);
         }
         _Guard._Container = nullptr;
     }
@@ -1346,7 +1347,7 @@ private:
     }
 
     void _Insert_n(const_iterator _Where, size_type _Count, const _Ty& _Val) { // insert _Count * _Val at _Where
-        iterator _Mid;
+        _Unchecked_iterator _Mid;
         size_type _Num;
         size_type _Off     = static_cast<size_type>(_Where - begin());
         size_type _Oldsize = _Mysize();
@@ -1363,22 +1364,22 @@ private:
                     push_front(_Val); // push excess values
                 }
                 for (_Num = _Off; _Num > 0; --_Num) {
-                    push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push prefix
+                    push_front(_At(_Count - 1));
                 }
 
-                _Mid = begin() + static_cast<difference_type>(_Count);
+                _Mid = _Unchecked_begin() + static_cast<difference_type>(_Count);
                 _STD fill_n(_Mid, _Off, _Val); // fill in rest of values
             } else { // insert not longer than prefix
                 for (_Num = _Count; _Num > 0; --_Num) {
-                    push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push part of prefix
+                    push_front(_At(_Count - 1)); // push part of prefix
                 }
 
-                _Mid = begin() + static_cast<difference_type>(_Count);
+                _Mid = _Unchecked_begin() + static_cast<difference_type>(_Count);
                 _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
                 _STD move(_Mid + static_cast<difference_type>(_Count), _Mid + static_cast<difference_type>(_Off),
                     _Mid); // copy rest of prefix
-                _STD fill(begin() + static_cast<difference_type>(_Off), _Mid + static_cast<difference_type>(_Off),
-                    _Tmp._Get_value()); // fill in values
+                _STD fill(_Unchecked_begin() + static_cast<difference_type>(_Off),
+                    _Mid + static_cast<difference_type>(_Off), _Tmp._Get_value()); // fill in values
             }
             _Guard._Container = nullptr;
         } else { // closer to back
@@ -1389,18 +1390,17 @@ private:
                     _Emplace_back_internal(_Val); // push excess values
                 }
                 for (_Num = 0; _Num < _Rem; ++_Num) {
-                    _Emplace_back_internal(begin()[static_cast<difference_type>(_Off + _Num)]); // push suffix
+                    _Emplace_back_internal(_At(_Off + _Num)); // push suffix
                 }
 
-                _Mid = begin() + static_cast<difference_type>(_Off);
+                _Mid = _Unchecked_begin() + static_cast<difference_type>(_Off);
                 _STD fill_n(_Mid, _Rem, _Val); // fill in rest of values
             } else { // insert not longer than prefix
                 for (_Num = 0; _Num < _Count; ++_Num) {
-                    _Emplace_back_internal(
-                        begin()[static_cast<difference_type>(_Off + _Rem - _Count + _Num)]); // push part of prefix
+                    _Emplace_back_internal(_At(_Off + _Rem - _Count + _Num)); // push part of prefix
                 }
 
-                _Mid = begin() + static_cast<difference_type>(_Off);
+                _Mid = _Unchecked_begin() + static_cast<difference_type>(_Off);
                 _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
                 _STD move_backward(_Mid, _Mid + static_cast<difference_type>(_Rem - _Count),
                     _Mid + static_cast<difference_type>(_Rem)); // copy rest of prefix
@@ -1483,13 +1483,16 @@ public:
             return _First;
         }
 
-        if (_Off < static_cast<size_type>(end() - _Last)) { // closer to front
-            _STD move_backward(begin(), _First, _Last); // copy over hole
+        auto _Unchecked_first = _First._Unwrapped();
+        auto _Unchecked_last  = _Last._Unwrapped();
+
+        if (_Off < static_cast<size_type>(_Unchecked_end() - _Unchecked_last)) { // closer to front
+            _STD move_backward(_Unchecked_begin(), _Unchecked_first, _Unchecked_last); // copy over hole
             for (; _Count > 0; --_Count) {
                 pop_front(); // pop copied elements
             }
         } else { // closer to back
-            _STD move(_Last, end(), _First); // copy over hole
+            _STD move(_Unchecked_last, _Unchecked_end(), _Unchecked_first); // copy over hole
             for (; _Count > 0; --_Count) {
                 pop_back(); // pop copied elements
             }
@@ -1690,6 +1693,14 @@ private:
 
     _Map_difference_type _Map_distance() const noexcept {
         return static_cast<_Map_difference_type>(_Get_data()._Mapsize);
+    }
+
+    reference _At(size_type _Pos) noexcept {
+        return _Get_data()._Subscript(_Myoff() + _Pos);
+    }
+
+    const_reference _At(size_type _Pos) const noexcept {
+        return _Get_data()._Subscript(_Myoff() + _Pos);
     }
 
     _Compressed_pair<_Alty, _Scary_val> _Mypair;
