@@ -128,7 +128,7 @@ static constexpr swchar_t whw_s[]{L'H', L'e', L'l', L'l', L'o', L',', L' ', L'w'
 static constexpr auto span_whw_s = span{whw_s}.first<span{whw_s}.size() - 1>();
 
 static constexpr uwchar_t whw_u[]{L'H', L'e', L'l', L'l', L'o', L',', L' ', L'w', L'o', L'r', L'l', L'd', L'!', L'\0'};
-static constexpr auto span_whw_u = span{whw_u}.first<span{whw_s}.size() - 1>();
+static constexpr auto span_whw_u = span{whw_u}.first<span{whw_u}.size() - 1>();
 
 struct wstring_instantiator {
     template <ranges::input_range R>
@@ -303,7 +303,7 @@ constexpr bool test_lvalue_vector() {
     test_lvalue_vector_helper(span_hw, hw_u8);
     test_lvalue_vector_helper(span_hw_s, hw_u8);
     test_lvalue_vector_helper(span_hw_u, hw_u8);
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
     test_lvalue_vector_helper(span_hw_u16, hw_u16);
     test_lvalue_vector_helper(span_hw_u16s, hw_u16);
@@ -331,17 +331,17 @@ void test_lvalue_forward_list() {
     }
 #ifdef __cpp_char8_t
     {
-        forward_list vec(span_hw.data(), span_hw.data() + span_hw.size());
-        test_string(vec, hw);
+        forward_list lst(span_hw_u8.data(), span_hw_u8.data() + span_hw_u8.size());
+        test_string(lst, hw_u8);
     }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
     {
-        forward_list vec(span_hw_u16.data(), span_hw_u16.data() + span_hw_u16.size());
-        test_string(vec, hw_u16);
+        forward_list lst(span_hw_u16.data(), span_hw_u16.data() + span_hw_u16.size());
+        test_string(lst, hw_u16);
     }
     {
-        forward_list vec(span_hw_u32.data(), span_hw_u32.data() + span_hw_u32.size());
-        test_string(vec, hw_u32);
+        forward_list lst(span_hw_u32.data(), span_hw_u32.data() + span_hw_u32.size());
+        test_string(lst, hw_u32);
     }
     {
         forward_list lst(span_whw.data(), span_whw.data() + span_whw.size());
