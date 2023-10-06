@@ -4,13 +4,7 @@
 # Build STL targeting x86, x64, arm, arm64
 
 variables:
-  tmpDir: 'D:\Temp'
-  buildOutputLocation: 'D:\build'
-  benchmarkBuildOutputLocation: 'D:\benchmark'
-
-pool:
-  name: 'StlBuild-2023-09-14T1251-Pool'
-  demands: EnableSpotVM -equals true
+  - template: azure-devops/config.yml
 
 pr:
   drafts: false
@@ -18,12 +12,18 @@ pr:
 stages:
   - stage: Code_Format
     displayName: 'Code Format'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/format-validation.yml
 
   - stage: Build_And_Test_x64
     dependsOn: Code_Format
-    displayName: 'Build and Test'
+    displayName: 'Build and Test x64'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/native-build-test.yml
         parameters:
@@ -32,7 +32,10 @@ stages:
 
   - stage: Build_And_Test_x86
     dependsOn: Build_And_Test_x64
-    displayName: 'Build and Test'
+    displayName: 'Build and Test x86'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/native-build-test.yml
         parameters:
@@ -41,17 +44,23 @@ stages:
 
   - stage: Build_ARM
     dependsOn: Build_And_Test_x64
-    displayName: 'Build'
+    displayName: 'Build ARM'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/cross-build.yml
         parameters:
           targetPlatform: arm
           vsDevCmdArch: arm
-          benchmarkBuildOutputLocationVar: ''
+          buildBenchmarks: false
 
   - stage: Build_ARM64
     dependsOn: Build_And_Test_x64
-    displayName: 'Build'
+    displayName: 'Build ARM64'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/cross-build.yml
         parameters:
