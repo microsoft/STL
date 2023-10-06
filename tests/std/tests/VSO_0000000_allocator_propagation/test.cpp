@@ -488,6 +488,33 @@ _CONSTEXPR20 bool test_sequence() {
 }
 
 
+template <class Alloc>
+void test_deque_shrink_to_fit_per_alloc() {
+    {
+        deque<int, Alloc> d(1729, 0, Alloc{42});
+        d.resize(0);
+        d.shrink_to_fit();
+        assert(d.get_allocator().id() == 42);
+    }
+    {
+        deque<int, Alloc> d(1729, 0, Alloc{42});
+        d.resize(128);
+        d.shrink_to_fit();
+        assert(d.get_allocator().id() == 42);
+    }
+}
+
+void test_deque_shrink_to_fit() { // MSVC STL's deque::shrink_to_fit relies on swap
+    test_deque_shrink_to_fit_per_alloc<StationaryAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<CopyAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<CopyEqualAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<MoveAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<MoveEqualAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<SwapAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<SwapEqualAlloc<int>>();
+}
+
+
 void test_flist_copy_ctor() {
     forward_list<int, StationaryAlloc<int>> src({10, 20, 30}, StationaryAlloc<int>(11));
     auto src_it = src.begin();
@@ -1849,6 +1876,7 @@ int main() {
     static_assert(test_string());
 #endif // _HAS_CXX20
 
+    test_deque_shrink_to_fit();
     test_flist();
     test_string();
     test_vb();
