@@ -2695,10 +2695,12 @@ private:
 
     template <class _Iter, class _Sent, class _Size = nullptr_t>
     _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Sent _Last, _Size _Count = {}) {
-        // Pre: _First models input_iterator or meets the Cpp17InputIterator requirements
-        // Pre: [_First, _Last) is a valid range
+        // Pre: _Iter models input_iterator or meets the Cpp17InputIterator requirements.
+        // Pre: [_First, _Last) is a valid range.
+        // Pre: if _Iter models forward_iterator or meets the Cpp17ForwardIterator requirements,
+        //      then is_same_v<_Size, size_type> holds.
         // Pre: if is_same_v<_Size, size_type>, _Count is the length of [_First, _Last).
-        // Pre: *this is in small mode; the lifetime of the SSO elements has already begun
+        // Pre: *this is in small mode; the lifetime of the SSO elements has already begun.
 
         auto& _My_data  = _Mypair._Myval2;
         auto& _Al       = _Getal();
