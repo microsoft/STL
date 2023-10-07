@@ -15,6 +15,8 @@
 #include <type_traits>
 #include <vector>
 
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
 #ifdef __cpp_lib_concepts
 #include <ranges>
 #endif
@@ -448,7 +450,47 @@ void test_various_containers() {
     test_one_container<list<int>>(); // bidi, not vectorizable
 }
 
+#if _HAS_CXX20
+constexpr bool test_constexpr() {
+    int data[] = {2, 1, 3, 3, 3, 3, 4, 6, 5};
+
+    assert(count(begin(data), end(data), 3) == 4);
+#if defined(__cpp_lib_concepts)
+    assert(ranges::count(data, 3) == 4);
+#endif
+
+    assert(find(begin(data), end(data), 3) == begin(data) + 2);
+#if defined(__cpp_lib_concepts)
+    assert(ranges::find(data, 3) == begin(data) + 2);
+#endif
+
+#if defined(__cpp_lib_concepts) && _HAS_CXX23
+    assert(begin(ranges::find_last(data, 3)) == begin(data) + 5);
+#endif
+
+    assert(min_element(begin(data), end(data)) == begin(data) + 1);
+    assert(max_element(begin(data), end(data)) == end(data) - 2);
+    assert(get<0>(minmax_element(begin(data), end(data))) == begin(data) + 1);
+    assert(get<1>(minmax_element(begin(data), end(data))) == end(data) - 2);
+
+#if defined(__cpp_lib_concepts)
+    assert(ranges::min_element(data) == begin(data) + 1);
+    assert(ranges::max_element(data) == end(data) - 2);
+    assert(ranges::minmax_element(data).min == begin(data) + 1);
+    assert(ranges::minmax_element(data).max == end(data) - 2);
+#endif
+
+    return true;
+}
+
+STATIC_ASSERT(test_constexpr());
+#endif // _HAS_CXX20
+
 int main() {
+#if _HAS_CXX20
+    assert(test_constexpr());
+#endif // _HAS_CXX20
+
     mt19937_64 gen;
     initialize_randomness(gen);
 
