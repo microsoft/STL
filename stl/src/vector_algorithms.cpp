@@ -1440,7 +1440,7 @@ namespace {
 
                 if (_Bingo != 0) {
                     const unsigned long _Offset = _lzcnt_u32(_Bingo);
-                    _Advance_bytes(_Last, 31 - _Offset);
+                    _Advance_bytes(_Last, _Offset ^ 0x1F);
                     return _Last;
                 }
 
