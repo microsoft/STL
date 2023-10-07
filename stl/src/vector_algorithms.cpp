@@ -76,13 +76,13 @@ namespace {
         _Target = static_cast<const unsigned char*>(_Target) - _Offset;
     }
 
-    template <class Integer>
-    void _Advance_bytes(void*& _Target, Integer _Offset) noexcept {
+    template <class _Integral>
+    void _Advance_bytes(void*& _Target, _Integral _Offset) noexcept {
         _Target = static_cast<unsigned char*>(_Target) + _Offset;
     }
 
-    template <class Integer>
-    void _Advance_bytes(const void*& _Target, Integer _Offset) noexcept {
+    template <class _Integral>
+    void _Advance_bytes(const void*& _Target, _Integral _Offset) noexcept {
         _Target = static_cast<const unsigned char*>(_Target) + _Offset;
     }
 } // unnamed namespace
@@ -1468,6 +1468,7 @@ namespace {
             } while (_Last != _Stop_at);
         }
 #endif // !_M_ARM64EC
+
         return _Find_trivial_last_tail(_First, _Last, _Real_last, _Val);
     }
 
