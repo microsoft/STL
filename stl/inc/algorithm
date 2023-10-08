@@ -2871,7 +2871,7 @@ namespace ranges {
                     if constexpr (is_pointer_v<_It>) {
                         return {_First + (_Result - _First_ptr), _Last};
                     } else {
-                        return {_STD move(_Result), _STD move(_Last)};
+                        return {_STD move(_First) + (_Result - _First_ptr), _STD move(_Last)};
                     }
                 }
             }
