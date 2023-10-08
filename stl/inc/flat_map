@@ -47,6 +47,10 @@ template <class _Alloc, class _Key_container, class _Mapped_container>
 concept _Valid_Allocator_for_flat_map =
     uses_allocator_v<_Key_container, _Alloc> && uses_allocator_v<_Mapped_container, _Alloc>;
 
+template <class _Compare, class _Key_container>
+concept _Valid_Compare_for_container = is_invocable_v<const _Compare&, const typename _Key_container::value_type&,
+    const typename _Key_container::value_type&>;
+
 template <class _Compare>
 concept _Compare_is_transparent = requires { typename _Compare::is_transparent; };
 
@@ -250,8 +254,8 @@ public:
         : _Key_compare(_Comp), _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc),
                                    .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc)} {}
 
-    flat_map(key_container_type _Key_cont, mapped_container_type _Mapped_cont)
-        : flat_map(sorted_unique_t(), _Key_cont, _Mapped_cont) {
+    flat_map(key_container_type _Key_cont, mapped_container_type _Mapped_cont, const key_compare& _Comp = key_compare())
+        : flat_map(sorted_unique_t(), _Key_cont, _Mapped_cont, _Comp) {
         _SortAndDedup();
     }
 
@@ -261,13 +265,28 @@ public:
         _SortAndDedup();
     }
 
-    flat_map(sorted_unique_t, key_container_type _Key_cont, mapped_container_type _Mapped_cont)
-        : _Key_compare(key_compare()), _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)} {}
+    template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont, const key_compare& _Comp,
+        const Allocator& _Alloc)
+        : flat_map(sorted_unique_t(), _Key_cont, _Mapped_cont, _Comp, _Alloc) {
+        _SortAndDedup();
+    }
+
+    flat_map(sorted_unique_t, key_container_type _Key_cont, mapped_container_type _Mapped_cont,
+        const key_compare& _Comp = key_compare())
+        : _Key_compare(_Comp), _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)} {}
 
     template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
     flat_map(sorted_unique_t, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
         const Allocator& _Alloc)
         : _Key_compare(key_compare()),
+          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)} {}
+
+    template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> Allocator>
+    flat_map(sorted_unique_t, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
+        const key_compare& _Comp, const Allocator& _Alloc)
+        : _Key_compare(_Comp),
           _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)} {}
 
@@ -899,21 +918,37 @@ private:
     }
 };
 
-template <class _KeyContainer, class _MappedContainer>
-flat_map(_KeyContainer, _MappedContainer) -> flat_map<typename _KeyContainer::value_type,
-    typename _MappedContainer::value_type, less<typename _KeyContainer::value_type>, _KeyContainer, _MappedContainer>;
+template <class _KeyContainer, class _MappedContainer,
+    _Valid_Compare_for_container<_KeyContainer> _Compare = less<typename _KeyContainer::value_type>>
+flat_map(_KeyContainer, _MappedContainer, _Compare = _Compare()) -> flat_map<typename _KeyContainer::value_type,
+    typename _MappedContainer::value_type, _Compare, _KeyContainer, _MappedContainer>;
 
-template <class _KeyContainer, class _MappedContainer, class _Allocator>
+template <class _KeyContainer, class _MappedContainer,
+    _Valid_Allocator_for_flat_map<_KeyContainer, _MappedContainer> _Allocator>
 flat_map(_KeyContainer, _MappedContainer, _Allocator) -> flat_map<typename _KeyContainer::value_type,
     typename _MappedContainer::value_type, less<typename _KeyContainer::value_type>, _KeyContainer, _MappedContainer>;
 
-template <class _KeyContainer, class _MappedContainer>
-flat_map(sorted_unique_t, _KeyContainer, _MappedContainer) -> flat_map<typename _KeyContainer::value_type,
-    typename _MappedContainer::value_type, less<typename _KeyContainer::value_type>, _KeyContainer, _MappedContainer>;
+template <class _KeyContainer, class _MappedContainer, _Valid_Compare_for_container<_KeyContainer> _Compare,
+    _Valid_Allocator_for_flat_map<_KeyContainer, _MappedContainer> _Allocator>
+flat_map(_KeyContainer, _MappedContainer, _Compare, _Allocator) -> flat_map<typename _KeyContainer::value_type,
+    typename _MappedContainer::value_type, _Compare, _KeyContainer, _MappedContainer>;
 
-template <class _KeyContainer, class _MappedContainer, class _Allocator>
+template <class _KeyContainer, class _MappedContainer,
+    _Valid_Compare_for_container<_KeyContainer> _Compare = less<typename _KeyContainer::value_type>>
+flat_map(sorted_unique_t, _KeyContainer, _MappedContainer, _Compare = _Compare())
+    -> flat_map<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
+        _MappedContainer>;
+
+template <class _KeyContainer, class _MappedContainer,
+    _Valid_Allocator_for_flat_map<_KeyContainer, _MappedContainer> _Allocator>
 flat_map(sorted_unique_t, _KeyContainer, _MappedContainer, _Allocator) -> flat_map<typename _KeyContainer::value_type,
     typename _MappedContainer::value_type, less<typename _KeyContainer::value_type>, _KeyContainer, _MappedContainer>;
+
+template <class _KeyContainer, class _MappedContainer, _Valid_Compare_for_container<_KeyContainer> _Compare,
+    _Valid_Allocator_for_flat_map<_KeyContainer, _MappedContainer> _Allocator>
+flat_map(sorted_unique_t, _KeyContainer, _MappedContainer, _Compare, _Allocator)
+    -> flat_map<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
+        _MappedContainer>;
 
 template <class _InputIterator, class _Compare = less<typename iter_value_t<_InputIterator>::first_type>>
 flat_map(_InputIterator, _InputIterator, _Compare = _Compare())

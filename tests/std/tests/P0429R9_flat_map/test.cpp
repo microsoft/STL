@@ -108,6 +108,7 @@ private:
 public:
     Packaged() : value() {}
     template <typename U>
+        requires std::constructible_from<T, U&&>
     Packaged(U&& u) : value(std::forward<U>(u)) {}
 
     T get() const {
@@ -128,6 +129,10 @@ public:
 
     friend bool operator==(const T& lhs, const Packaged& rhs) {
         return lhs == rhs.value;
+    }
+
+    friend auto operator<=>(const Packaged& lhs, const Packaged& rhs) {
+        return lhs.value <=> rhs.value;
     }
 };
 
@@ -220,13 +225,10 @@ void test_construction() {
         MyAllocator<Packaged<int>> alloc;
         std::vector<Packaged<int>, MyAllocator<Packaged<int>>> keys = {0, 1, 2, 3, 4, 2};
         std::vector<Packaged<int>, MyAllocator<Packaged<int>>> vals = {44, 2324, 635462, 433, 5, 7};
-        std::flat_map<Packaged<int>, Packaged<int>, PackagedCompare<int>,
-            std::vector<Packaged<int>, MyAllocator<Packaged<int>>>,
-            std::vector<Packaged<int>, MyAllocator<Packaged<int>>>>
-            map(comp, alloc);
+        std::flat_map map(keys, vals, comp, alloc);
         assert(check_requirements(map));
-        assert(check_key_content(map, {}));
-        assert(check_value_content(map, {}));
+        assert(check_key_content(map, {0, 1, 2, 3, 4}));
+        assert(check_value_content(map, {44, 2324, 635462, 433, 5}));
     }
 }
 
@@ -240,5 +242,6 @@ void test_pointer_to_incomplete_type() {
 
 int main() {
     test_construction();
+    test_pointer_to_incomplete_type();
     return 0;
 }
