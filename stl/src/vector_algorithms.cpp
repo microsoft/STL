@@ -1440,7 +1440,7 @@ namespace {
 
                 if (_Bingo != 0) {
                     const unsigned long _Offset = _lzcnt_u32(_Bingo);
-                    _Advance_bytes(_Last, _Offset ^ 0x1F);
+                    _Advance_bytes(_Last, _Offset ^ 0x1F - (sizeof(_Ty) - 1));
                     return _Last;
                 }
 
@@ -1461,7 +1461,7 @@ namespace {
                 if (_Bingo != 0) {
                     unsigned long _Offset;
                     _BitScanReverse(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
-                    _Advance_bytes(_Last, _Offset);
+                    _Advance_bytes(_Last, _Offset - (sizeof(_Ty) - 1));
                     return _Last;
                 }
 
