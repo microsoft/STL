@@ -2869,7 +2869,7 @@ namespace ranges {
 
                     const auto _Result = __std_find_last_trivial(_First_ptr, _Last_ptr, _Value);
                     if constexpr (is_pointer_v<_It>) {
-                        return {_Result, _Last};
+                        return {_Result, _STD move(_Last)};
                     } else {
                         return {_STD move(_First) + (_Result - _First_ptr), _STD move(_Last)};
                     }
