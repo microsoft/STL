@@ -7,6 +7,9 @@
 #define _FLAT_MAP_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#if !_HAS_CXX23 || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
+_EMIT_STL_WARNING(STL4038, "The contents of <flat_map> are available only with C++23 or later.");
+#else // ^^^ not supported / supported language mode vvv
 
 #include <algorithm>
 #include <compare>
@@ -957,5 +960,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
+#endif // ^^^ supported language mode ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FLAT_MAP_
