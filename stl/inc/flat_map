@@ -923,14 +923,22 @@ flat_map(sorted_unique_t, _InputIterator, _InputIterator, _Compare = _Compare())
         _Compare>;
 
 template <_RANGES input_range _R, class _Compare = less<typename _RANGES range_value_t<_R>::first_type>,
-    class _Allocator>
+    class _Allocator = allocator<byte>>
 flat_map(from_range_t, _R&&, _Compare = _Compare(), _Allocator = _Allocator())
     -> flat_map<typename _RANGES range_value_t<_R>::first_type, typename _RANGES range_value_t<_R>::second_type,
-        _Compare>;
+        _Compare,
+        vector<typename _RANGES range_value_t<_R>::first_type,
+            _Rebind_alloc_t<_Allocator, typename _RANGES range_value_t<_R>::first_type>>,
+        vector<typename _RANGES range_value_t<_R>::second_type,
+            _Rebind_alloc_t<_Allocator, typename _RANGES range_value_t<_R>::second_type>>>;
 
 template <_RANGES input_range _R, class _Allocator>
-flat_map(from_range_t, _R&&, _Allocator)
-    -> flat_map<typename _RANGES range_value_t<_R>::first_type, typename _RANGES range_value_t<_R>::second_type>;
+flat_map(from_range_t, _R&&, _Allocator) -> flat_map<typename _RANGES range_value_t<_R>::first_type,
+    typename _RANGES range_value_t<_R>::second_type, less<typename _RANGES range_value_t<_R>::first_type>,
+    vector<typename _RANGES range_value_t<_R>::first_type,
+        _Rebind_alloc_t<_Allocator, typename _RANGES range_value_t<_R>::first_type>>,
+    vector<typename _RANGES range_value_t<_R>::second_type,
+        _Rebind_alloc_t<_Allocator, typename _RANGES range_value_t<_R>::second_type>>>;
 
 template <class _Key, class _T, class _Compare = less<_Key>>
 flat_map(initializer_list<pair<_Key, _T>>, _Compare = _Compare()) -> flat_map<_Key, _T, _Compare>;
