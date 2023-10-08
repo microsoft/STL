@@ -236,12 +236,14 @@ void test_filesystem() {
     assert(info.capacity != static_cast<decltype(info.capacity)>(-1));
 }
 
+#if TEST_STANDARD >= 23
 void test_flatmap() {
     using namespace std;
-    puts("Testing <flat_set>.");
+    puts("Testing <flat_map>.");
 
     // FIXME! ADD TEST COVERAGE HERE!
 }
+#endif // TEST_STANDARD >= 23
 
 void test_format() {
     using namespace std;
