@@ -148,6 +148,10 @@ public:
     using PackagedCompare<T>::PackagedCompare;
     using is_transparent = void;
 
+    bool operator()(const Packaged<T>& lhs, const Packaged<T>& rhs) const {
+        return PackagedCompare<T>::operator()(lhs, rhs);
+    }
+
     bool operator()(const T& lhs, const Packaged<T>& rhs) const {
         return lhs < rhs.get();
     }
@@ -221,10 +225,29 @@ void test_construction() {
         assert(check_value_content(map, {}));
     }
     {
-        PackagedCompare<int> comp;
         MyAllocator<Packaged<int>> alloc;
+        std::flat_map<Packaged<int>, int, PackagedCompare<int>, std::vector<Packaged<int>, MyAllocator<Packaged<int>>>,
+            std::vector<int, MyAllocator<int>>>
+            map(alloc);
+        assert(check_requirements(map));
+        assert(check_key_content(map, {}));
+        assert(check_value_content(map, {}));
+    }
+    {
+        PackagedCompare<int> comp;
+        MyAllocator<int> alloc;
         std::vector<Packaged<int>, MyAllocator<Packaged<int>>> keys = {0, 1, 2, 3, 4, 2};
-        std::vector<Packaged<int>, MyAllocator<Packaged<int>>> vals = {44, 2324, 635462, 433, 5, 7};
+        std::vector<int, MyAllocator<int>> vals                     = {44, 2324, 635462, 433, 5, 7};
+        std::flat_map map(keys, vals, comp, alloc);
+        assert(check_requirements(map));
+        assert(check_key_content(map, {0, 1, 2, 3, 4}));
+        assert(check_value_content(map, {44, 2324, 635462, 433, 5}));
+    }
+    {
+        TransparentPackagedCompare<int> comp;
+        MyAllocator<int> alloc;
+        std::vector<Packaged<int>, MyAllocator<Packaged<int>>> keys = {0, 1, 2, 3, 4, 2};
+        std::vector<int, MyAllocator<int>> vals                     = {44, 2324, 635462, 433, 5, 7};
         std::flat_map map(keys, vals, comp, alloc);
         assert(check_requirements(map));
         assert(check_key_content(map, {0, 1, 2, 3, 4}));
