@@ -571,11 +571,9 @@ public:
             return {begin() + _STD distance(_Data.keys.begin(), _Key_It), false};
         } else {
             // Need to insert
-            value_type _Val{piecewise_construct,
-                forward_as_tuple(_STD forward<_Key_constructible_t>(_Key_constructible)),
-                forward_as_tuple(_STD forward<_Args_t>(_Args)...)};
             auto _Index = _STD distance(_Data.keys.begin(), _Key_It);
-            _Insert_exact(begin() + _Index, _STD move(_Val));
+            _Insert_exact(cbegin() + _Index, key_type{_STD forward<_Key_constructible_t>(_Key_constructible)},
+                mapped_type{_STD forward<_Args_t>(_Args)...});
             return {begin() + _Index, true};
         }
     }
@@ -824,10 +822,10 @@ private:
         _Guard._Clearable = nullptr;
     }
 
-    void _Insert_exact(const_iterator _Position, value_type&& _Val) {
+    void _Insert_exact(const_iterator _Position, key_type&& _Key, mapped_type&& _Mapped) {
         _Clear_flat_map_scope_guard _Guard{this};
-        _Data.keys.insert(_Position._Key_it, _STD move(_Val.first));
-        _Data.values.insert(_Position._Mapped_it, _STD move(_Val.second));
+        _Data.keys.insert(_Position._Key_it, _STD move(_Key));
+        _Data.values.insert(_Position._Mapped_it, _STD move(_Mapped));
         _Guard._Clearable = nullptr;
     }
 
@@ -855,8 +853,8 @@ private:
 
         if (_Hint_is_accurate) {
             auto _Dist = _STD distance(_Begin._Key_it, _Position._Key_it);
-            _Insert_exact(_Position, value_type{piecewise_construct, forward_as_tuple(_STD forward<_K>(_Key)),
-                                         forward_as_tuple(_STD forward<_Mapped_args_t>(_Args)...)});
+            _Insert_exact(
+                _Position, key_type{_STD forward<_K>(_Key)}, mapped_type{_STD forward<_Mapped_args_t>(_Args)...});
             return begin() + _Dist;
         } else {
             if constexpr (_Overwrite_if_exists) {
@@ -876,8 +874,8 @@ private:
                 return _It;
             } else {
                 auto _Dist = _STD distance(_Begin._Key_it, _Position._Key_it);
-                _Insert_exact(_Position, value_type{piecewise_construct, forward_as_tuple(_STD forward<_K>(_Key)),
-                                             forward_as_tuple(_STD forward<_Mapped_args_t>(_Args)...)});
+                _Insert_exact(
+                    _Position, key_type{_STD forward<_K>(_Key)}, mapped_type{_STD forward<_Mapped_args_t>(_Args)...});
                 return begin() + _Dist;
             }
         }
