@@ -2725,27 +2725,12 @@ private:
 
         _Tidy_deallocate_guard<basic_string> _Guard{this};
 
-        constexpr bool _Can_construct_by_memcpy = _Is_specialization_v<_Traits, char_traits> && _Is_EcharT<_Elem>
-                                               && _Iterator_is_contiguous<_Iter> && !_Iterator_is_volatile<_Iter>
-                                               && is_integral_v<_Iter_value_t<_Iter>>
-                                               && sizeof(_Iter_value_t<_Iter>) == sizeof(_Elem);
+        constexpr bool _Can_construct_by_copy =
+            _Is_specialization_v<_Traits, char_traits> && _Is_EcharT<_Elem> && is_same_v<_Size, size_type>;
 
-        if constexpr (_Can_construct_by_memcpy) {
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Size, size_type>);
-
-            const auto _Data     = _My_data._Myptr();
-            const auto _Src_data = _STD _To_address(_First);
-
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) {
-                for (size_type _Idx = 0; _Idx != _Count; ++_Idx) {
-                    _Data[_Idx] = static_cast<_Elem>(_Src_data[_Idx]);
-                }
-            } else
-#endif // _HAS_CXX20
-            {
-                _CSTD memcpy(_Data, _Src_data, _Count * sizeof(_Elem));
-            }
+        if constexpr (_Can_construct_by_copy) {
+            const auto _Data = _My_data._Myptr();
+            _STD _Copy_n_unchecked4(_STD move(_First), _Count, _Data);
             _My_data._Mysize = _Count;
             _Data[_Count]    = _Elem();
         } else {
