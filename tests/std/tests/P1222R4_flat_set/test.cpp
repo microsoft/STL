@@ -64,15 +64,42 @@ void assert_reversible_container_requirements(const T& s) {
     static_assert(is_same_v<reverse_iterator<typename T::const_iterator>, typename T::const_reverse_iterator>);
     static_assert(is_same_v<decltype(T{}.rbegin()), typename T::reverse_iterator>);
     static_assert(is_same_v<decltype(T{}.rend()), typename T::reverse_iterator>);
+    static_assert(is_same_v<decltype(s.rbegin()), typename T::const_reverse_iterator>);
+    static_assert(is_same_v<decltype(s.rend()), typename T::const_reverse_iterator>);
     static_assert(is_same_v<decltype(s.crbegin()), typename T::const_reverse_iterator>);
     static_assert(is_same_v<decltype(s.crend()), typename T::const_reverse_iterator>);
     static_assert(is_convertible_v<typename T::reverse_iterator, typename T::const_reverse_iterator>);
 }
 
 template <class T>
+void assert_noexcept_requirements(T& s) {
+    static_assert(noexcept(s.begin()));
+    static_assert(noexcept(s.end()));
+    static_assert(noexcept(s.cbegin()));
+    static_assert(noexcept(s.cend()));
+    static_assert(noexcept(s.rbegin()));
+    static_assert(noexcept(s.rend()));
+    static_assert(noexcept(s.crbegin()));
+    static_assert(noexcept(s.crend()));
+
+    static_assert(noexcept(s.empty()));
+    static_assert(noexcept(s.size()));
+    static_assert(noexcept(s.max_size()));
+
+    if constexpr (!is_const_v<T>) {
+        static_assert(noexcept(s.swap(s)));
+        static_assert(noexcept(ranges::swap(s, s))); // using ADL-swap
+        static_assert(noexcept(s.clear()));
+    }
+}
+
+template <class T>
 void assert_all_requirements_and_equals(const T& s, const initializer_list<typename T::value_type>& il) {
     assert_container_requirements(s);
     assert_reversible_container_requirements(s);
+
+    assert_noexcept_requirements(s);
+    assert_noexcept_requirements(const_cast<T&>(s));
 
     auto val_comp = s.value_comp();
     auto begin_it = s.cbegin();
@@ -130,6 +157,30 @@ void test_constructors() {
     assert_all_requirements_and_equals(b, {-1, 1, 2, 7, 7, 7, 100});
     assert_all_requirements_and_equals(flat_multiset<int>(b, allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
     assert_all_requirements_and_equals(flat_multiset<int>(std::move(b), allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
+}
+
+template <template <class...> class Set>
+void test_always_reversible() {
+    // Test that flat_meow is unconditionally reversible.
+    class not_reversible : public vector<int> {
+    private:
+        using base = vector<int>;
+
+        using base::const_reverse_iterator;
+        using base::crbegin;
+        using base::crend;
+        using base::rbegin;
+        using base::rend;
+        using base::reverse_iterator;
+
+    public:
+        using base::base;
+    };
+
+    Set<int, std::greater<int>, not_reversible> fs({1, 2, 3});
+    assert_all_requirements_and_equals(fs, {3, 2, 1});
+    assert(fs.rbegin() + 3 == fs.rend());
+    assert(fs.crend() - fs.crbegin() == 3);
 }
 
 template <class C>
@@ -640,6 +691,9 @@ int main() {
 
     test_constructors<vector<int>>();
     test_constructors<deque<int>>();
+
+    test_always_reversible<flat_set>();
+    test_always_reversible<flat_multiset>();
 
     test_insert_1<vector<int>>();
     test_insert_1<deque<int>>();
