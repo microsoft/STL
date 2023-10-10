@@ -487,14 +487,14 @@ private:
 
     template <class _Ty>
         requires _Multi // flat_multiset
-    iterator _Emplace(_Ty&& _Val) {
+    _NODISCARD iterator _Emplace(_Ty&& _Val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
         return _Mycont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
     }
 
     template <class _Ty>
         requires (!_Multi) // flat_set
-    pair<iterator, bool> _Emplace(_Ty&& _Val) {
+    _NODISCARD pair<iterator, bool> _Emplace(_Ty&& _Val) {
         const iterator _Where = lower_bound(_Val);
         if (_Where != end() && !_Compare(_Val, *_Where)) {
             return pair{_Where, false};
@@ -515,7 +515,7 @@ private:
 
     template <class _Ty>
         requires _Multi // flat_multiset
-    iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
+    _NODISCARD iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
 
         const const_iterator _Begin = cbegin();
@@ -541,7 +541,7 @@ private:
 
     template <class _Ty>
         requires (!_Multi) // flat_set
-    iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
+    _NODISCARD iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
@@ -586,7 +586,7 @@ private:
     }
 
     template <class _Ty>
-    size_type _Erase(const _Ty& _Val) {
+    _NODISCARD size_type _Erase(const _Ty& _Val) {
         _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Ty, _Kty>);
 
         if constexpr (!_Multi && is_same_v<_Ty, _Kty>) {
