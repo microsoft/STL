@@ -15,8 +15,6 @@
 #include <type_traits>
 #include <vector>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 #ifdef __cpp_lib_concepts
 #include <ranges>
 #endif
@@ -513,7 +511,7 @@ constexpr bool test_constexpr() {
     return true;
 }
 
-STATIC_ASSERT(test_constexpr());
+static_assert(test_constexpr());
 #endif // _HAS_CXX20
 
 int main() {
