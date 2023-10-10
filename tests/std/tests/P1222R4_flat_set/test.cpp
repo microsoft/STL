@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <random>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -505,13 +506,126 @@ void test_erase_if() {
     assert(ranges::equal(fs, erased_result));
 }
 
-// TRANSITION, too simple
-void test_count() {
-    flat_set<int> fs{2};
-    assert(fs.count(1) == 0);
+template <template <class...> class Set>
+void test_observers() {
+    struct lt_with_state {
+        int state = 0;
+        bool operator()(int l, int r) const {
+            return l < r;
+        }
+    };
 
-    flat_multiset<int> fs2{10, 20, 20, 30};
-    assert(fs2.count(20) == 2);
+    using SetT = Set<int, lt_with_state>;
+
+    SetT fs;
+    static_assert(is_same_v<typename SetT::key_compare, typename SetT::value_compare>);
+    static_assert(is_same_v<decltype(fs.key_comp()), typename SetT::key_compare>);
+    static_assert(is_same_v<decltype(fs.value_comp()), typename SetT::value_compare>);
+    assert(fs.key_comp().state == 0);
+    assert(fs.value_comp().state == 0);
+
+    SetT fs2(lt_with_state{2});
+    assert(fs2.key_comp().state == 2);
+    assert(fs2.value_comp().state == 2);
+}
+
+template <template <class...> class Set>
+void test_set_operations() {
+    using SetT           = Set<int>;
+    using iterator       = SetT::iterator;
+    using const_iterator = SetT::const_iterator;
+
+    SetT fs{3, 2, 11, 11, 3, 8, 11, 20};
+
+    static_assert(is_same_v<decltype(fs.find(0)), iterator>);
+    static_assert(is_same_v<decltype(as_const(fs).find(0)), const_iterator>);
+
+    static_assert(is_same_v<decltype(fs.count(0)), typename SetT::size_type>);
+    static_assert(is_same_v<decltype(fs.contains(0)), bool>);
+
+    static_assert(is_same_v<decltype(fs.lower_bound(0)), iterator>);
+    static_assert(is_same_v<decltype(as_const(fs).lower_bound(0)), const_iterator>);
+    static_assert(is_same_v<decltype(fs.upper_bound(0)), iterator>);
+    static_assert(is_same_v<decltype(as_const(fs).upper_bound(0)), const_iterator>);
+
+    static_assert(is_same_v<decltype(fs.equal_range(0)), pair<iterator, iterator>>);
+    static_assert(is_same_v<decltype(as_const(fs).equal_range(0)), pair<const_iterator, const_iterator>>);
+
+    if constexpr (!_Is_specialization_v<SetT, flat_multiset>) {
+        // flat_set:
+        assert_all_requirements_and_equals(fs, {2, 3, 8, 11, 20});
+
+        assert(fs.find(3) != fs.end());
+        assert(fs.find(4) == fs.end());
+
+        assert(fs.count(1) == 0);
+        assert(fs.count(11) == 1);
+        assert(fs.contains(8));
+        assert(!fs.contains(12));
+
+        assert(fs.lower_bound(-1) == fs.begin());
+        assert(fs.lower_bound(3) == fs.find(3));
+        assert(fs.lower_bound(19) == fs.find(20));
+        assert(fs.lower_bound(20) + 1 == fs.end());
+
+        assert(fs.upper_bound(-1) == fs.begin());
+        assert(fs.upper_bound(20) == fs.end());
+        assert(fs.lower_bound(2) + 2 == fs.upper_bound(3));
+        assert(fs.upper_bound(8) == fs.find(11));
+
+        auto [first, last] = fs.equal_range(3);
+        assert(first + 1 == last);
+        tie(first, last) = fs.equal_range(12);
+        assert(first == last);
+    } else {
+        // flat_multiset:
+        assert_all_requirements_and_equals(fs, {2, 3, 3, 8, 11, 11, 11, 20});
+
+        assert(fs.find(3) != fs.end());
+        assert(fs.find(4) == fs.end());
+
+        assert(fs.count(1) == 0);
+        assert(fs.count(11) == 3);
+        assert(fs.contains(8));
+        assert(!fs.contains(12));
+
+        assert(fs.lower_bound(-1) == fs.begin());
+        assert(fs.lower_bound(3) == fs.find(3));
+        assert(fs.lower_bound(19) == fs.find(20));
+        assert(fs.lower_bound(11) + 4 == fs.end());
+
+        assert(fs.upper_bound(-1) == fs.begin());
+        assert(fs.upper_bound(20) == fs.end());
+        assert(fs.lower_bound(3) + 6 == fs.upper_bound(11));
+        assert(fs.upper_bound(11) == fs.find(20));
+
+        auto [first, last] = fs.equal_range(3);
+        assert(first + 2 == last);
+        tie(first, last) = fs.equal_range(12);
+        assert(first == last);
+    }
+}
+
+template <template <class...> class Set>
+void test_set_operations_transparent() {
+    struct shouldnt_convert {
+        int key;
+        /* implicit */ [[noreturn]] operator int() const {
+            abort();
+        }
+    };
+
+    Set<int, key_comparer> fs{0, 3, 5};
+    assert_all_requirements_and_equals(fs, {0, 3, 5});
+
+    assert(fs.find(shouldnt_convert{0}) != fs.end());
+    assert(fs.count(shouldnt_convert{3}) == 1);
+    assert(!fs.contains(shouldnt_convert{1}));
+    assert(fs.lower_bound(shouldnt_convert{-1}) == fs.begin());
+    assert(fs.lower_bound(shouldnt_convert{8}) == fs.end());
+    assert(fs.upper_bound(shouldnt_convert{2}) == fs.find(3));
+    auto [first, last] = fs.equal_range(shouldnt_convert{5});
+    assert(first != last);
 }
 
 int main() {
@@ -548,5 +662,11 @@ int main() {
     test_erase_if<flat_set<int>>();
     test_erase_if<flat_multiset<int>>();
 
-    test_count();
+    test_observers<flat_set>();
+    test_observers<flat_multiset>();
+
+    test_set_operations<flat_set>();
+    test_set_operations<flat_multiset>();
+    test_set_operations_transparent<flat_set>();
+    test_set_operations_transparent<flat_multiset>();
 }
