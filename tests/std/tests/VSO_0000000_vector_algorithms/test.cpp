@@ -146,6 +146,7 @@ void test_case_find_last(const vector<T>& input, T v) {
     auto range    = ranges::find_last(input.begin(), input.end(), v);
     auto actual   = range.begin();
     assert(expected == actual);
+    assert(range.end() == input.end());
 }
 
 template <class T>
@@ -466,6 +467,7 @@ constexpr bool test_constexpr() {
 
 #if defined(__cpp_lib_concepts) && _HAS_CXX23
     assert(begin(ranges::find_last(a, 30)) == begin(a) + 5);
+    assert(end(ranges::find_last(a, 30)) == end(a));
 #endif // defined(__cpp_lib_concepts) && _HAS_CXX23
 
     assert(min_element(begin(a), end(a)) == begin(a) + 1);
