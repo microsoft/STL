@@ -2730,7 +2730,10 @@ private:
 
         if constexpr (_Can_construct_by_copy) {
             const auto _Data = _My_data._Myptr();
+#pragma warning(push)
+#pragma warning(disable : 4365) // suppress the warning from signedness mismatch in assignment
             _STD _Copy_n_unchecked4(_STD move(_First), _Count, _Data);
+#pragma warning(pop)
             _My_data._Mysize = _Count;
             _Data[_Count]    = _Elem();
         } else {
