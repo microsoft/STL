@@ -394,6 +394,35 @@ void test_insert_using_invalid_hint() {
     }
 }
 
+void test_insert_upper_bound() {
+    // For flat_multiset's single-element insertion, the key should be inserted before the upper_bound.
+    struct test_position {
+        int key;
+        int extra;
+        bool operator==(const test_position& other) const {
+            return key == other.key && extra == other.extra;
+        }
+    };
+
+    mt19937 eng(24);
+    uniform_int_distribution<int> dist_seq(0, 20);
+
+    vector<test_position> seq(200);
+    for (int e = 0; auto& [key, extra] : seq) {
+        key   = dist_seq(eng);
+        extra = e++;
+    }
+
+    flat_multiset<test_position, key_comparer> fs;
+    for (const auto& val : seq) {
+        fs.insert(val);
+    }
+
+    // The result should be identical to as if doing stable_sort on seq.
+    ranges::stable_sort(seq, key_comparer{});
+    assert(ranges::equal(fs, seq));
+}
+
 template <class T>
 void test_spaceship_operator() {
     static constexpr bool multi  = _Is_specialization_v<T, flat_multiset>;
@@ -701,6 +730,7 @@ int main() {
     test_insert_2<deque<int>>();
     test_insert_transparent();
     test_insert_using_invalid_hint();
+    test_insert_upper_bound();
 
     test_comparer_application();
     test_non_static_comparer();
