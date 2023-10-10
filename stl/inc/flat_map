@@ -44,6 +44,11 @@ struct sorted_unique_t {
 };
 inline constexpr sorted_unique_t sorted_unique{};
 
+struct sorted_equivalent_t {
+    explicit sorted_equivalent_t() = default;
+};
+inline constexpr sorted_equivalent_t sorted_equivalent{};
+
 template <class _Alloc, class _Key_container, class _Mapped_container>
 concept _Valid_Allocator_for_flat_map =
     uses_allocator_v<_Key_container, _Alloc> && uses_allocator_v<_Mapped_container, _Alloc>;
