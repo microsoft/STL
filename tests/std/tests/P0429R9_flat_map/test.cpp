@@ -255,12 +255,23 @@ void test_construction() {
     }
 }
 
+
+struct Incomplete;
+template <class T>
+struct MyType {
+    T* ptr;
+
+    bool operator==(const MyType&) const  = default;
+    auto operator<=>(const MyType&) const = default;
+};
+
 void test_pointer_to_incomplete_type() {
     struct Test {
         std::unique_ptr<std::flat_map<Test, Test>> ptr;
     };
 
     Test t;
+    std::flat_map<MyType<Incomplete>, std::shared_ptr<MyType<Incomplete>>> map;
 }
 
 int main() {
