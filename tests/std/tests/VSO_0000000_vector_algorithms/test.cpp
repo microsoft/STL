@@ -452,33 +452,61 @@ void test_various_containers() {
 
 #if _HAS_CXX20
 constexpr bool test_constexpr() {
-    int data[] = {2, 1, 3, 3, 3, 3, 4, 6, 5};
+    const int a[] = {20, 10, 30, 30, 30, 30, 40, 60, 50};
 
-    assert(count(begin(data), end(data), 3) == 4);
-#if defined(__cpp_lib_concepts)
-    assert(ranges::count(data, 3) == 4);
-#endif
+    assert(count(begin(a), end(a), 30) == 4);
+#ifdef __cpp_lib_concepts
+    assert(ranges::count(a, 30) == 4);
+#endif // defined(__cpp_lib_concepts)
 
-    assert(find(begin(data), end(data), 3) == begin(data) + 2);
-#if defined(__cpp_lib_concepts)
-    assert(ranges::find(data, 3) == begin(data) + 2);
-#endif
+    assert(find(begin(a), end(a), 30) == begin(a) + 2);
+#ifdef __cpp_lib_concepts
+    assert(ranges::find(a, 30) == begin(a) + 2);
+#endif // defined(__cpp_lib_concepts)
 
 #if defined(__cpp_lib_concepts) && _HAS_CXX23
-    assert(begin(ranges::find_last(data, 3)) == begin(data) + 5);
-#endif
+    assert(begin(ranges::find_last(a, 30)) == begin(a) + 5);
+#endif // defined(__cpp_lib_concepts) && _HAS_CXX23
 
-    assert(min_element(begin(data), end(data)) == begin(data) + 1);
-    assert(max_element(begin(data), end(data)) == end(data) - 2);
-    assert(get<0>(minmax_element(begin(data), end(data))) == begin(data) + 1);
-    assert(get<1>(minmax_element(begin(data), end(data))) == end(data) - 2);
+    assert(min_element(begin(a), end(a)) == begin(a) + 1);
+    assert(max_element(begin(a), end(a)) == end(a) - 2);
+    assert(get<0>(minmax_element(begin(a), end(a))) == begin(a) + 1);
+    assert(get<1>(minmax_element(begin(a), end(a))) == end(a) - 2);
 
-#if defined(__cpp_lib_concepts)
-    assert(ranges::min_element(data) == begin(data) + 1);
-    assert(ranges::max_element(data) == end(data) - 2);
-    assert(ranges::minmax_element(data).min == begin(data) + 1);
-    assert(ranges::minmax_element(data).max == end(data) - 2);
-#endif
+#ifdef __cpp_lib_concepts
+    assert(ranges::min_element(a) == begin(a) + 1);
+    assert(ranges::max_element(a) == end(a) - 2);
+    assert(ranges::minmax_element(a).min == begin(a) + 1);
+    assert(ranges::minmax_element(a).max == end(a) - 2);
+#endif // defined(__cpp_lib_concepts)
+
+    int b[size(a)];
+    reverse_copy(begin(a), end(a), begin(b));
+    assert(equal(rbegin(a), rend(a), begin(b)));
+
+    int c[size(a)];
+#ifdef __cpp_lib_concepts
+    ranges::reverse_copy(a, c);
+    assert(equal(rbegin(a), rend(a), begin(c)));
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+    reverse_copy(begin(a), end(a), begin(c)); // for swap_ranges test below
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+
+    reverse(begin(b), end(b));
+    assert(equal(begin(a), end(a), begin(b)));
+
+    swap_ranges(begin(b), end(b), begin(c));
+    assert(equal(rbegin(a), rend(a), begin(b)));
+    assert(equal(begin(a), end(a), begin(c)));
+
+#ifdef __cpp_lib_concepts
+    ranges::swap_ranges(b, c);
+    assert(equal(begin(a), end(a), begin(b)));
+    assert(equal(rbegin(a), rend(a), begin(c)));
+
+    ranges::reverse(c);
+    assert(equal(begin(a), end(a), begin(c)));
+#endif // defined(__cpp_lib_concepts)
 
     return true;
 }
