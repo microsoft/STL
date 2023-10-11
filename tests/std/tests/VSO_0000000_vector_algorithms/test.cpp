@@ -482,30 +482,30 @@ constexpr bool test_constexpr() {
 
     int b[size(a)];
     reverse_copy(begin(a), end(a), begin(b));
-    assert(equal(rbegin(a), rend(a), begin(b)));
+    assert(equal(rbegin(a), rend(a), begin(b), end(b)));
 
     int c[size(a)];
 #ifdef __cpp_lib_concepts
     ranges::reverse_copy(a, c);
-    assert(equal(rbegin(a), rend(a), begin(c)));
+    assert(equal(rbegin(a), rend(a), begin(c), end(c)));
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     reverse_copy(begin(a), end(a), begin(c)); // for swap_ranges test below
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     reverse(begin(b), end(b));
-    assert(equal(begin(a), end(a), begin(b)));
+    assert(equal(begin(a), end(a), begin(b), end(b)));
 
     swap_ranges(begin(b), end(b), begin(c));
-    assert(equal(rbegin(a), rend(a), begin(b)));
-    assert(equal(begin(a), end(a), begin(c)));
+    assert(equal(rbegin(a), rend(a), begin(b), end(b)));
+    assert(equal(begin(a), end(a), begin(c), end(c)));
 
 #ifdef __cpp_lib_concepts
     ranges::swap_ranges(b, c);
-    assert(equal(begin(a), end(a), begin(b)));
-    assert(equal(rbegin(a), rend(a), begin(c)));
+    assert(equal(begin(a), end(a), begin(b), end(b)));
+    assert(equal(rbegin(a), rend(a), begin(c), end(c)));
 
     ranges::reverse(c);
-    assert(equal(begin(a), end(a), begin(c)));
+    assert(equal(begin(a), end(a), begin(c), end(c)));
 #endif // defined(__cpp_lib_concepts)
 
     return true;
