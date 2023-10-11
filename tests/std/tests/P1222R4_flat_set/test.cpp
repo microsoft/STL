@@ -362,6 +362,32 @@ void test_insert_transparent() {
     assert(detector.converted);
 }
 
+void test_insert_transparent_partially_inconsistent() {
+    // `broken_key` makes inconsistency between transparent searching and conversion.
+    // however, the standard's current specification (per N4958 [flat.set.modifiers]/2) is unable to prohibit types like
+    // this.
+    struct broken_key {
+        int key;
+        explicit operator int() const {
+            return key - 10;
+        }
+    };
+
+    flat_set<int, key_comparer> fs{0, 3, 5};
+
+    // fs.find(10) == fs.end(), but fs.find(10-10) != fs.end(), so this is a precondition violation:
+    // fs.insert(broken_key{ 10 });
+    // fs.find(0) != fs.end(), but fs.find(0-10) == fs.end(), so this is a precondition violation:
+    // fs.insert(broken_key{ 0 });
+
+    // fs.find(2) == fs.end(), and fs.find(2-10) == fs.end(), so this is allowed by the standard:
+    fs.insert(broken_key{2});
+    assert_all_requirements_and_equals(fs, {-8, 0, 3, 5});
+    // fs.find(9) == fs.end(), and fs.find(9-10) == fs.end(), so this is allowed by the standard:
+    fs.insert(fs.end(), broken_key{9});
+    assert_all_requirements_and_equals(fs, {-8, -1, 0, 3, 5});
+}
+
 void test_insert_using_invalid_hint() {
     mt19937 eng(42);
 
@@ -877,6 +903,7 @@ int main() {
     test_insert_2<vector<int>>();
     test_insert_2<deque<int>>();
     test_insert_transparent();
+    test_insert_transparent_partially_inconsistent();
     test_insert_using_invalid_hint();
     test_insert_upper_bound();
 
