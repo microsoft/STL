@@ -185,14 +185,14 @@ _END_EXTERN_C_UNLESS_PURE
 #pragma float_control(except, on, push)
 #endif
 
-template <typename T>
+template <class T>
 [[nodiscard]] T _Xfe_overflow(const T sign) noexcept {
     static_assert(_STD is_floating_point_v<T>, "Expected is_floating_point_v<T>.");
     constexpr T huge = _STD numeric_limits<T>::max();
     return _STD copysign(huge, sign) * huge;
 }
 
-template <typename T>
+template <class T>
 [[nodiscard]] T _Xfe_underflow(const T sign) noexcept {
     static_assert(_STD is_floating_point_v<T>, "Expected is_floating_point_v<T>.");
     constexpr T tiny = _STD numeric_limits<T>::min();

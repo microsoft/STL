@@ -153,7 +153,7 @@ namespace filesystem {
         else if constexpr (is_same_v<_EcharT, char8_t>) {
             return _Convert_wide_to_narrow<_Traits>(__std_code_page::_Utf8, _Input, _Al);
         }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
         else if constexpr (is_same_v<_EcharT, char32_t>) {
             return _Convert_wide_to_utf32<_Traits>(_Input, _Al);
         } else { // wchar_t, char16_t
@@ -215,7 +215,7 @@ namespace filesystem {
         const string_view _Input_as_char{reinterpret_cast<const char*>(_Input.data()), _Input.size()};
         return _Convert_narrow_to_wide(__std_code_page::_Utf8, _Input_as_char);
     }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const u16string_view _Input, _Conversion) {
@@ -947,9 +947,9 @@ namespace filesystem {
         _NODISCARD auto u8string() const { // convert the native path from this instance into a UTF-8 string
 #ifdef __cpp_lib_char8_t
             using _U8Ty = char8_t;
-#else // ^^^ __cpp_lib_char8_t / !__cpp_lib_char8_t vvv
+#else // ^^^ defined(__cpp_lib_char8_t) / !defined(__cpp_lib_char8_t) vvv
             using _U8Ty = char;
-#endif // __cpp_lib_char8_t
+#endif // ^^^ !defined(__cpp_lib_char8_t) ^^^
             return _Convert_wide_to_narrow<char_traits<_U8Ty>>(__std_code_page::_Utf8, _Text, allocator<_U8Ty>{});
         }
 
@@ -1374,7 +1374,7 @@ namespace filesystem {
         _NODISCARD_FRIEND bool operator>=(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) >= 0;
         }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
         _NODISCARD_FRIEND path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
             path _Tmp = _Left;
@@ -2454,7 +2454,7 @@ namespace filesystem {
         _NODISCARD bool operator>=(const directory_entry& _Rhs) const noexcept {
             return _Path >= _Rhs._Path;
         }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
         // [fs.dir.entry.io], inserter
         template <class _Elem, class _Traits>
@@ -2700,7 +2700,7 @@ namespace filesystem {
         _NODISCARD bool operator==(default_sentinel_t) const noexcept {
             return !_Impl;
         }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -2956,7 +2956,7 @@ namespace filesystem {
         _NODISCARD bool operator==(default_sentinel_t) const noexcept {
             return !_Impl;
         }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -4422,7 +4422,7 @@ namespace ranges {
     template <>
     inline constexpr bool enable_view<filesystem::recursive_directory_iterator> = true;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _STD_END
 
@@ -4430,6 +4430,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX17
+#endif // ^^^ _HAS_CXX17 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FILESYSTEM_

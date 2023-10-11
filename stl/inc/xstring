@@ -9,14 +9,13 @@
 #define _XSTRING_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_sanitizer_annotate_container.hpp>
 #include <iosfwd>
 #include <xmemory>
 
 #if _HAS_CXX17
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
-
-#include <__msvc_sanitizer_annotate_container.hpp>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -247,10 +246,10 @@ public:
         } else {
             return _Primary_char_traits::compare(_First1, _First2, _Count);
         }
-#else // _HAS_CXX17
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return _CSTD wmemcmp(
             reinterpret_cast<const wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     _NODISCARD static _CONSTEXPR17 size_t length(_In_z_ const _Elem* _First) noexcept /* strengthened */ {
@@ -261,9 +260,9 @@ public:
         } else {
             return _Primary_char_traits::length(_First);
         }
-#else // _HAS_CXX17
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return _CSTD wcslen(reinterpret_cast<const wchar_t*>(_First));
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     _NODISCARD static _CONSTEXPR17 const _Elem* find(
@@ -275,9 +274,9 @@ public:
         } else {
             return _Primary_char_traits::find(_First, _Count, _Ch);
         }
-#else // _HAS_CXX17
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return reinterpret_cast<const _Elem*>(_CSTD wmemchr(reinterpret_cast<const wchar_t*>(_First), _Ch, _Count));
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     static _CONSTEXPR20 _Elem* assign(
@@ -345,7 +344,7 @@ struct char_traits<wchar_t> : _WChar_traits<wchar_t> {};
 #ifdef _CRTBLD
 template <>
 struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 #if defined(__cpp_char8_t) && !defined(__EDG__) && !defined(__clang__)
 #define _HAS_U8_INTRINSICS 1
@@ -378,9 +377,9 @@ public:
         // compare [_First1, _First1 + _Count) with [_First2, ...)
 #if _HAS_CXX17
         return __builtin_memcmp(_First1, _First2, _Count);
-#else // _HAS_CXX17
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return _CSTD memcmp(_First1, _First2, _Count);
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     _NODISCARD static _CONSTEXPR17 size_t length(_In_z_ const _Elem* const _First) noexcept /* strengthened */ {
@@ -392,15 +391,15 @@ public:
             return __builtin_u8strlen(_First);
 #else // ^^^ use u8 intrinsics / no u8 intrinsics vvv
             return _Primary_char_traits::length(_First);
-#endif // _HAS_U8_INTRINSICS
+#endif // ^^^ no u8 intrinsics ^^^
         } else
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
         {
             return __builtin_strlen(_First);
         }
-#else // _HAS_CXX17
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return _CSTD strlen(reinterpret_cast<const char*>(_First));
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     _NODISCARD static _CONSTEXPR17 const _Elem* find(_In_reads_(_Count) const _Elem* const _First, const size_t _Count,
@@ -413,15 +412,15 @@ public:
             return __builtin_u8memchr(_First, _Ch, _Count);
 #else // ^^^ use u8 intrinsics / no u8 intrinsics vvv
             return _Primary_char_traits::find(_First, _Count, _Ch);
-#endif // _HAS_U8_INTRINSICS
+#endif // ^^^ no u8 intrinsics ^^^
         } else
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
         {
             return __builtin_char_memchr(_First, _Ch, _Count);
         }
-#else // _HAS_CXX17
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         return static_cast<const _Elem*>(_CSTD memchr(_First, _Ch, _Count));
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     static _CONSTEXPR20 _Elem* assign(
@@ -483,7 +482,7 @@ struct char_traits<char> : _Narrow_char_traits<char, int> {}; // properties of a
 #ifdef __cpp_char8_t
 template <>
 struct char_traits<char8_t> : _Narrow_char_traits<char8_t, unsigned int> {};
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
 template <class _Elem, class _Traits, class _SizeT>
 basic_ostream<_Elem, _Traits>& _Insert_string(
@@ -684,7 +683,7 @@ template <class _Elem>
 class _String_bitmap<_Elem, false> { // _String_bitmap for wchar_t/unsigned short/char16_t/char32_t/etc. types
 public:
     static_assert(is_unsigned_v<_Elem>,
-        "Standard char_traits is only provided for char, wchar_t, char16_t, and char32_t. See N5687 [char.traits]. "
+        "Standard char_traits is only provided for char, wchar_t, char16_t, and char32_t. See N4950 [char.traits]. "
         "Visual C++ accepts other unsigned integral types as an extension.");
 
     constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) noexcept {
@@ -890,7 +889,7 @@ template <class _Ty>
 _INLINE_VAR constexpr bool _Is_EcharT = _Is_any_of_v<_Ty, char, wchar_t,
 #ifdef __cpp_char8_t
     char8_t,
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
     char16_t, char32_t>;
 
 #if _HAS_CXX17
@@ -902,7 +901,7 @@ class _String_view_iterator {
 public:
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Traits::char_type;
     using difference_type   = ptrdiff_t;
@@ -919,7 +918,7 @@ private:
         : _Mydata(_Data), _Mysize(_Size), _Myoff(_Off) {}
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
     constexpr explicit _String_view_iterator(const pointer _Ptr) noexcept : _Myptr(_Ptr) {}
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
 
 public:
     _NODISCARD constexpr reference operator*() const noexcept {
@@ -929,7 +928,7 @@ public:
         return _Mydata[_Myoff];
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return *_Myptr;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     _NODISCARD constexpr pointer operator->() const noexcept {
@@ -939,7 +938,7 @@ public:
         return _Mydata + _Myoff;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     constexpr _String_view_iterator& operator++() noexcept {
@@ -949,7 +948,7 @@ public:
         ++_Myoff;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         ++_Myptr;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
         return *this;
     }
 
@@ -966,7 +965,7 @@ public:
         --_Myoff;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         --_Myptr;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
         return *this;
     }
 
@@ -992,7 +991,7 @@ public:
         }
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         (void) _Off;
-#endif // _ITERATOR_DEBUG_LEVEL >= 1
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     constexpr _String_view_iterator& operator+=(const difference_type _Off) noexcept {
@@ -1001,7 +1000,7 @@ public:
         _Myoff += static_cast<size_t>(_Off);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         _Myptr += _Off;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
 
         return *this;
     }
@@ -1036,7 +1035,7 @@ public:
         _Myoff -= static_cast<size_t>(_Off);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         _Myptr -= _Off;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
 
         return *this;
     }
@@ -1054,7 +1053,7 @@ public:
         return static_cast<difference_type>(_Myoff - _Right._Myoff);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr - _Right._Myptr;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     _NODISCARD constexpr reference operator[](const difference_type _Off) const noexcept {
@@ -1068,7 +1067,7 @@ public:
         return _Myoff == _Right._Myoff;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr == _Right._Myptr;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
 #if _HAS_CXX20
@@ -1079,7 +1078,7 @@ public:
         return _Myoff <=> _Right._Myoff;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr <=> _Right._Myptr;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD constexpr bool operator!=(const _String_view_iterator& _Right) const noexcept {
@@ -1093,7 +1092,7 @@ public:
         return _Myoff < _Right._Myoff;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr < _Right._Myptr;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     _NODISCARD constexpr bool operator>(const _String_view_iterator& _Right) const noexcept {
@@ -1124,7 +1123,7 @@ public:
         return _Mydata + _Myoff;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return _Myptr;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     static constexpr bool _Unwrap_when_unverified = _ITERATOR_DEBUG_LEVEL == 0;
@@ -1134,7 +1133,7 @@ public:
         _Myoff = static_cast<size_t>(_It - _Mydata);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         _Myptr = _It;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
 private:
@@ -1144,7 +1143,7 @@ private:
     size_t _Myoff   = 0;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
     pointer _Myptr = nullptr;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
 };
 
 #if _HAS_CXX20
@@ -1233,14 +1232,14 @@ public:
         : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<size_t>(_RANGES size(_Rng))) {}
     // clang-format on
 #endif // _HAS_CXX23
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     _NODISCARD constexpr const_iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return const_iterator(_Mydata, _Mysize, 0);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return const_iterator(_Mydata);
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     _NODISCARD constexpr const_iterator end() const noexcept {
@@ -1248,7 +1247,7 @@ public:
         return const_iterator(_Mydata, _Mysize, _Mysize);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return const_iterator(_Mydata + _Mysize);
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     _NODISCARD constexpr const_iterator cbegin() const noexcept {
@@ -1642,7 +1641,7 @@ namespace ranges {
     template <class _Elem, class _Traits>
     inline constexpr bool enable_borrowed_range<basic_string_view<_Elem, _Traits>> = true;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator==(
@@ -1789,7 +1788,7 @@ _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
 _EXPORT_STD using string_view = basic_string_view<char>;
 #ifdef __cpp_lib_char8_t
 _EXPORT_STD using u8string_view = basic_string_view<char8_t>;
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
 _EXPORT_STD using u16string_view = basic_string_view<char16_t>;
 _EXPORT_STD using u32string_view = basic_string_view<char32_t>;
 _EXPORT_STD using wstring_view   = basic_string_view<wchar_t>;
@@ -1822,7 +1821,7 @@ inline namespace literals {
             const char8_t* _Str, size_t _Len) noexcept {
             return basic_string_view<char8_t>(_Str, _Len);
         }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
         _EXPORT_STD _NODISCARD constexpr u16string_view operator""sv(const char16_t* _Str, size_t _Len) noexcept {
             return u16string_view(_Str, _Len);
@@ -1840,7 +1839,7 @@ class _String_const_iterator : public _Iterator_base {
 public:
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Mystr::value_type;
     using difference_type   = typename _Mystr::difference_type;
@@ -1935,7 +1934,7 @@ public:
         }
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         (void) _Off;
-#endif // _ITERATOR_DEBUG_LEVEL >= 1
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     _CONSTEXPR20 _String_const_iterator& operator+=(const difference_type _Off) noexcept {
@@ -2017,7 +2016,7 @@ public:
                                                            " point to different string instances)");
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         (void) _Right;
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
 #if _ITERATOR_DEBUG_LEVEL >= 1
@@ -2079,7 +2078,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Mystr::value_type;
     using difference_type   = typename _Mystr::difference_type;
@@ -2212,38 +2211,40 @@ public:
 
     _CONSTEXPR20 _String_val() noexcept : _Bx() {}
 
-    // length of internal buffer, [1, 16]:
+    // length of internal buffer, [1, 16] (NB: used by the debugger visualizer)
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
-    // roundup mask for allocated buffers, [0, 15]:
-    static constexpr size_type _ALLOC_MASK = sizeof(value_type) <= 1 ? 15
+    // roundup mask for allocated buffers, [0, 15]
+    static constexpr size_type _Alloc_mask = sizeof(value_type) <= 1 ? 15
                                            : sizeof(value_type) <= 2 ? 7
                                            : sizeof(value_type) <= 4 ? 3
                                            : sizeof(value_type) <= 8 ? 1
                                                                      : 0;
+    // capacity in small mode
+    static constexpr size_type _Small_string_capacity = _BUF_SIZE - 1;
 
-    _CONSTEXPR20 value_type* _Myptr() noexcept {
+    _NODISCARD _CONSTEXPR20 value_type* _Myptr() noexcept {
         value_type* _Result = _Bx._Buf;
-        if (_Large_string_engaged()) {
+        if (_Large_mode_engaged()) {
             _Result = _Unfancy(_Bx._Ptr);
         }
 
         return _Result;
     }
 
-    _CONSTEXPR20 const value_type* _Myptr() const noexcept {
+    _NODISCARD _CONSTEXPR20 const value_type* _Myptr() const noexcept {
         const value_type* _Result = _Bx._Buf;
-        if (_Large_string_engaged()) {
+        if (_Large_mode_engaged()) {
             _Result = _Unfancy(_Bx._Ptr);
         }
 
         return _Result;
     }
 
-    _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
-        return _BUF_SIZE <= _Myres;
+    _NODISCARD _CONSTEXPR20 bool _Large_mode_engaged() const noexcept {
+        return _Myres > _Small_string_capacity;
     }
 
-    constexpr void _Activate_SSO_buffer() noexcept {
+    _CONSTEXPR20 void _Activate_SSO_buffer() noexcept {
         // start the lifetime of the array elements
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
@@ -2272,7 +2273,7 @@ public:
         _Xout_of_range("invalid string position");
     }
 
-    _CONSTEXPR20 size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
+    _NODISCARD _CONSTEXPR20 size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
         return (_STD min)(_Size, _Mysize - _Off);
     }
@@ -2289,8 +2290,10 @@ public:
     };
     _Bxty _Bx;
 
-    size_type _Mysize = 0; // current length of string
-    size_type _Myres  = 0; // current storage reserved for string
+    // invariant: _Myres >= _Mysize, and _Myres >= _Small_string_capacity (after string's construction)
+    // neither _Mysize nor _Myres takes account of the extra null terminator
+    size_type _Mysize = 0; // current length of string (size)
+    size_type _Myres  = 0; // current storage reserved for string (capacity)
 };
 
 // get _Ty's size after being EBCO'd
@@ -2360,8 +2363,12 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
 private:
-    static constexpr auto _BUF_SIZE   = _Scary_val::_BUF_SIZE;
-    static constexpr auto _ALLOC_MASK = _Scary_val::_ALLOC_MASK;
+    static constexpr size_type _BUF_SIZE              = _Scary_val::_BUF_SIZE;
+    static constexpr size_type _Alloc_mask            = _Scary_val::_Alloc_mask;
+    static constexpr size_type _Small_string_capacity = _Scary_val::_Small_string_capacity;
+
+    // least real allocation size, including space reserved for terminating null
+    static constexpr size_type _Least_allocation_size = _Small_string_capacity + 1 + 1;
 
     // When doing _String_val operations by memcpy, we are touching:
     //   _String_val::_Bx::_Buf (type is array of _Elem)
@@ -2421,7 +2428,7 @@ private:
         }
 #endif // _HAS_CXX20
        // Don't annotate small strings; only annotate on the heap.
-        if (_Capacity == _BUF_SIZE - 1 || !_Asan_string_should_annotate) {
+        if (_Capacity <= _Small_string_capacity || !_Asan_string_should_annotate) {
             return;
         }
 
@@ -2472,7 +2479,7 @@ private:
 #define _ASAN_STRING_REMOVE(_Str)
 #define _ASAN_STRING_CREATE(_Str)
 #define _ASAN_STRING_MODIFY(_Str, _Old_size, _New_size)
-#endif // !_INSERT_STRING_ANNOTATION
+#endif // ^^^ !_INSERT_STRING_ANNOTATION ^^^
 
 public:
     _CONSTEXPR20
@@ -2539,10 +2546,6 @@ public:
         _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
 
-#if _HAS_CXX23
-    basic_string(nullptr_t) = delete;
-#endif // _HAS_CXX23
-
 #if _HAS_CXX17
     template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
 #endif // _HAS_CXX17
@@ -2550,6 +2553,10 @@ public:
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
+
+#if _HAS_CXX23
+    basic_string(nullptr_t) = delete;
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch)
         : _Mypair(_Zero_then_variadic_args_t{}) { // construct from _Count * _Ch
@@ -2588,19 +2595,39 @@ public:
     }
 
 private:
-    static constexpr void _Start_element_lifetimes(_Elem* const _Ptr, const size_type _Size) {
+    enum class _Allocation_policy { _At_least, _Exactly };
+
+    template <_Allocation_policy _Policy = _Allocation_policy::_At_least>
+    _NODISCARD static _CONSTEXPR20 pointer _Allocate_for_capacity(_Alty& _Al, size_type& _Capacity) {
+        _STL_INTERNAL_CHECK(_Capacity > _Small_string_capacity);
+        ++_Capacity; // Take null terminator into consideration
+
+        pointer _Fancy_ptr;
+        if constexpr (_Policy == _Allocation_policy::_At_least) {
+            _Fancy_ptr = _Allocate_at_least_helper(_Al, _Capacity);
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(_Policy == _Allocation_policy::_Exactly);
+            _Fancy_ptr = _Al.allocate(_Capacity);
+        }
+
+#if _HAS_CXX20
         // Start element lifetimes to avoid UB. This is a more general mechanism than _String_val::_Activate_SSO_buffer,
         // but likely more impactful to throughput.
-#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
-            for (size_type _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Elem* const _Ptr = _Unfancy(_Fancy_ptr);
+            for (size_type _Idx = 0; _Idx < _Capacity; ++_Idx) {
                 _STD construct_at(_Ptr + _Idx);
             }
         }
-#else // ^^^ C++20-or-later / pre-C++20 vvv
-        (void) _Ptr;
-        (void) _Size;
 #endif // _HAS_CXX20
+        --_Capacity;
+        return _Fancy_ptr;
+    }
+
+    static _CONSTEXPR20 void _Deallocate_for_capacity(
+        _Alty& _Al, const pointer _Old_ptr, const size_type _Capacity) noexcept {
+        _STL_INTERNAL_CHECK(_Capacity > _Small_string_capacity);
+        _Al.deallocate(_Old_ptr, _Capacity + 1); // +1 for null terminator
     }
 
     enum class _Construct_strategy : uint8_t { _From_char, _From_ptr, _From_string };
@@ -2608,7 +2635,7 @@ private:
     template <_Construct_strategy _Strat, class _Char_or_ptr>
     _CONSTEXPR20 void _Construct(const _Char_or_ptr _Arg, _CRT_GUARDOVERFLOW const size_type _Count) {
         auto& _My_data = _Mypair._Myval2;
-        _STL_INTERNAL_CHECK(!_My_data._Large_string_engaged());
+        _STL_INTERNAL_CHECK(!_My_data._Large_mode_engaged());
 
         if constexpr (_Strat == _Construct_strategy::_From_char) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Char_or_ptr, _Elem>);
@@ -2624,9 +2651,9 @@ private:
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
-        if (_Count < _BUF_SIZE) {
+        if (_Count <= _Small_string_capacity) {
             _My_data._Mysize = _Count;
-            _My_data._Myres  = _BUF_SIZE - 1;
+            _My_data._Myres  = _Small_string_capacity;
 
             if constexpr (_Strat == _Construct_strategy::_From_char) {
                 _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
@@ -2639,21 +2666,16 @@ private:
                 _Traits::copy(_My_data._Bx._Buf, _Arg, _Count + 1);
 #else // ^^^ _INSERT_STRING_ANNOTATION / !_INSERT_STRING_ANNOTATION vvv
                 _Traits::copy(_My_data._Bx._Buf, _Arg, _BUF_SIZE);
-#endif // !_INSERT_STRING_ANNOTATION
+#endif // ^^^ !_INSERT_STRING_ANNOTATION ^^^
             }
 
             _Proxy._Release();
             return;
         }
 
-        _My_data._Myres         = _BUF_SIZE - 1;
-        size_type _New_capacity = _Calculate_growth(_Count);
-        ++_New_capacity;
-        const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
-        --_New_capacity;
+        size_type _New_capacity = _Calculate_growth(_Count, _Small_string_capacity, max_size());
+        const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
-
-        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
 
         _My_data._Mysize = _Count;
         _My_data._Myres  = _New_capacity;
@@ -2676,7 +2698,7 @@ private:
         // Pre: _First models input_iterator or meets the Cpp17InputIterator requirements
         // Pre: [_First, _Last) is a valid range
         // Pre: if is_same_v<_Size, size_type>, _Count is the length of [_First, _Last).
-        // Pre: *this is in SSO mode; the lifetime of the SSO elements has already begun
+        // Pre: *this is in small mode; the lifetime of the SSO elements has already begun
 
         auto& _My_data  = _Mypair._Myval2;
         auto& _Al       = _Getal();
@@ -2684,22 +2706,18 @@ private:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
         _My_data._Mysize = 0;
-        _My_data._Myres  = _BUF_SIZE - 1;
+        _My_data._Myres  = _Small_string_capacity;
 
         if constexpr (is_same_v<_Size, size_type>) {
             if (_Count > max_size()) {
                 _Xlen_string(); // result too long
             }
 
-            if (_Count >= _BUF_SIZE) {
+            if (_Count > _Small_string_capacity) {
                 size_type _New_capacity = _Calculate_growth(_Count);
-                ++_New_capacity;
-                const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
-                --_New_capacity;
+                const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
                 _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
                 _My_data._Myres = _New_capacity;
-
-                _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
             }
         }
 
@@ -2711,16 +2729,13 @@ private:
                         _Xlen_string(); // result too long
                     }
 
-                    const auto _Old_ptr     = _My_data._Myptr();
-                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize);
-                    ++_New_capacity;
-                    const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
-                    --_New_capacity;
+                    _Elem* const _Old_ptr   = _My_data._Myptr();
+                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize + 1);
+                    const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
 
-                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
                     _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
-                    if (_My_data._Myres >= _BUF_SIZE) { // Need to deallocate old storage
-                        _Al.deallocate(_My_data._Bx._Ptr, _My_data._Myres + 1);
+                    if (_My_data._Large_mode_engaged()) { // Need to deallocate old storage
+                        _Deallocate_for_capacity(_Al, _My_data._Bx._Ptr, _My_data._Myres);
                         _My_data._Bx._Ptr = _New_ptr;
                     } else {
                         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
@@ -2790,21 +2805,17 @@ public:
         _STL_INTERNAL_CHECK(_Right_size <= max_size());
         _STL_INTERNAL_CHECK(_Right_size <= max_size() - _Left_size);
         const auto _New_size    = static_cast<size_type>(_Left_size + _Right_size);
-        size_type _New_capacity = _BUF_SIZE - 1;
+        size_type _New_capacity = _Small_string_capacity;
         auto& _My_data          = _Mypair._Myval2;
         _Elem* _Ptr             = _My_data._Bx._Buf;
         auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
 
         if (_New_capacity < _New_size) {
-            _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
-            ++_New_capacity;
-            const pointer _Fancyptr = _Allocate_at_least_helper(_Getal(), _New_capacity); // throws
-            --_New_capacity;
-            _Ptr = _Unfancy(_Fancyptr);
+            _New_capacity           = _Calculate_growth(_New_size, _Small_string_capacity, max_size());
+            const pointer _Fancyptr = _Allocate_for_capacity(_Getal(), _New_capacity); // throws
+            _Ptr                    = _Unfancy(_Fancyptr);
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
-
-            _Start_element_lifetimes(_Ptr, _New_capacity + 1);
         }
 
         _My_data._Mysize = _New_size;
@@ -2852,8 +2863,8 @@ public:
             // therefore: (by the distributive property)
             // (!_Fits_in_left && _Fits_in_right)  // implying _Right has more capacity
             //     || (_Right_capacity > _Left_capacity && _Fits_in_right)  // tests that _Right has more capacity
-            // therefore: _Right must have more than the minimum capacity, so it must be _Large_string_engaged()
-            _STL_INTERNAL_CHECK(_Right_data._Large_string_engaged());
+            // therefore: _Right must have more than the minimum capacity, so it must be _Large_mode_engaged()
+            _STL_INTERNAL_CHECK(_Right_data._Large_mode_engaged());
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
             _Take_contents(_Right);
             const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
@@ -2870,14 +2881,11 @@ public:
             _Xlen_string();
         }
 
-        auto _New_capacity = _Calculate_growth(_New_size, _BUF_SIZE - 1, _Max);
-        auto&& _Alproxy    = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        size_type _New_capacity = _Calculate_growth(_New_size, _Small_string_capacity, _Max);
+        auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
-        ++_New_capacity;
-        const pointer _Fancyptr = _Allocate_at_least_helper(_Getal(), _New_capacity); // throws
-        --_New_capacity;
+        const pointer _Fancyptr = _Allocate_for_capacity(_Getal(), _New_capacity); // throws
         // nothrow hereafter
-        _Start_element_lifetimes(_Unfancy(_Fancyptr), _New_capacity + 1);
         _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
         _My_data._Mysize = _New_size;
         _My_data._Myres  = _New_capacity;
@@ -2914,24 +2922,25 @@ public:
         _Tidy_init();
     }
 
-    _NODISCARD bool _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
-        // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_string_engaged()
+    _NODISCARD bool _Move_assign_from_buffer(
+        _Elem* const _Right, const size_type _Size, const size_type _Actual_allocation_size) {
+        // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_mode_engaged()
         auto& _My_data = _Mypair._Myval2;
-        _STL_INTERNAL_CHECK(!_My_data._Large_string_engaged() && _My_data._Mysize == 0);
-        _STL_INTERNAL_CHECK(_Size < _Res); // So there is room for null terminator
+        _STL_INTERNAL_CHECK(!_My_data._Large_mode_engaged() && _My_data._Mysize == 0);
+        _STL_INTERNAL_CHECK(_Size < _Actual_allocation_size); // So there is room for null terminator
         _Traits::assign(_Right[_Size], _Elem());
 
-        const bool _Is_large = _Res > _BUF_SIZE; // Note: _BUF_SIZE because _Res now includes the null terminator
+        const bool _Is_large = _Actual_allocation_size >= _Least_allocation_size;
         if (_Is_large) {
             _ASAN_STRING_REMOVE(*this);
             _Construct_in_place(_My_data._Bx._Ptr, _Refancy<pointer>(_Right));
             _My_data._Mysize = _Size;
-            _My_data._Myres  = _Res - 1;
+            _My_data._Myres  = _Actual_allocation_size - 1;
             _ASAN_STRING_CREATE(*this);
         } else {
-            _Traits::copy(_My_data._Bx._Buf, _Right, _Res);
+            _Traits::copy(_My_data._Bx._Buf, _Right, _Actual_allocation_size);
             _My_data._Mysize = _Size;
-            _My_data._Myres  = _BUF_SIZE - 1;
+            _My_data._Myres  = _Small_string_capacity;
         }
 
         return _Is_large;
@@ -2941,7 +2950,7 @@ public:
     struct _Released_buffer {
         pointer _Ptr;
         size_type _Size;
-        size_type _Res;
+        size_type _Actual_allocation_size;
     };
 
     _NODISCARD _Released_buffer _Release_to_buffer(_Alloc& _Al) {
@@ -2950,15 +2959,15 @@ public:
         auto& _My_data = _Mypair._Myval2;
         _Result._Size  = _My_data._Mysize;
         _ASAN_STRING_REMOVE(*this);
-        if (_My_data._Large_string_engaged()) {
-            _Result._Ptr = _My_data._Bx._Ptr;
-            _Result._Res = _My_data._Myres + 1;
+        if (_My_data._Large_mode_engaged()) {
+            _Result._Ptr                    = _My_data._Bx._Ptr;
+            _Result._Actual_allocation_size = _My_data._Myres + 1;
         } else {
-            // use _BUF_SIZE + 1 to avoid SSO, if the buffer is assigned back
-            size_type _Allocated = _BUF_SIZE + 1;
+            // use _Least_allocation_size to avoid small mode, if the buffer is assigned back
+            size_type _Allocated = _Least_allocation_size;
             _Result._Ptr         = _Allocate_at_least_helper(_Al, _Allocated);
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
-            _Result._Res = _Allocated;
+            _Result._Actual_allocation_size = _Allocated;
         }
         _My_data._Orphan_all();
         _Tidy_init();
@@ -3000,15 +3009,6 @@ public:
     }
 
 private:
-    void _Memcpy_val_from(const basic_string& _Right) noexcept {
-        _STL_INTERNAL_CHECK(_Can_memcpy_val);
-        const auto _My_data_mem =
-            reinterpret_cast<unsigned char*>(_STD addressof(_Mypair._Myval2)) + _Memcpy_val_offset;
-        const auto _Right_data_mem =
-            reinterpret_cast<const unsigned char*>(_STD addressof(_Right._Mypair._Myval2)) + _Memcpy_val_offset;
-        _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
-    }
-
     _CONSTEXPR20 void _Take_contents(basic_string& _Right) noexcept {
         // assign by stealing _Right's buffer
         // pre: this != &_Right
@@ -3025,7 +3025,7 @@ private:
 #endif // _HAS_CXX20
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                if (_Right_data._Large_string_engaged()) {
+                if (_Right_data._Large_mode_engaged()) {
                     // take ownership of _Right's iterators along with its buffer
                     _Swap_proxy_and_iterators(_Right);
                 } else {
@@ -3033,17 +3033,22 @@ private:
                 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-                _Memcpy_val_from(_Right);
+                const auto _My_data_mem =
+                    reinterpret_cast<unsigned char*>(_STD addressof(_Mypair._Myval2)) + _Memcpy_val_offset;
+                const auto _Right_data_mem =
+                    reinterpret_cast<const unsigned char*>(_STD addressof(_Right._Mypair._Myval2)) + _Memcpy_val_offset;
+                _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
                 _Right._Tidy_init();
                 return;
             }
         }
 #endif // !defined(_INSERT_STRING_ANNOTATION)
 
-        if (_Right_data._Large_string_engaged()) { // steal buffer
+        if (_Right_data._Large_mode_engaged()) { // steal buffer
             _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
-            _Right_data._Bx._Ptr = nullptr;
             _Swap_proxy_and_iterators(_Right);
+
+            _Destroy_in_place(_Right_data._Bx._Ptr);
         } else { // copy small string buffer
             _My_data._Activate_SSO_buffer();
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
@@ -3064,13 +3069,13 @@ private:
         const auto _Result_size = _Right_data._Clamp_suffix_size(_Roff, _Size_max);
         const auto _Right_ptr   = _Right_data._Myptr();
         auto& _Al               = _Getal();
-        if (_Allocators_equal(_Al, _Right._Getal()) && _Result_size >= _BUF_SIZE) {
+        if (_Allocators_equal(_Al, _Right._Getal()) && _Result_size > _Small_string_capacity) {
+            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al));
+
             if (_Roff != 0) {
                 _Traits::move(_Right_ptr, _Right_ptr + _Roff, _Result_size);
             }
             _Right._Eos(_Result_size);
-
-            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al));
             _Take_contents(_Right);
         } else {
             _Construct<_Construct_strategy::_From_ptr>(_Right_ptr + _Roff, _Result_size);
@@ -3081,11 +3086,7 @@ private:
 public:
     _CONSTEXPR20 basic_string(initializer_list<_Elem> _Ilist, const _Alloc& _Al = allocator_type())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Ilist.begin(), _Convert_size<size_type>(_Ilist.size()));
-        _Proxy._Release();
+        _Construct<_Construct_strategy::_From_ptr>(_Ilist.begin(), _Convert_size<size_type>(_Ilist.size()));
     }
 
     _CONSTEXPR20 basic_string& operator=(initializer_list<_Elem> _Ilist) {
@@ -3137,31 +3138,6 @@ public:
 
     static constexpr auto npos{static_cast<size_type>(-1)};
 
-private:
-    _CONSTEXPR20 void _Copy_assign_val_from_small(const basic_string& _Right) {
-        // TRANSITION, VSO-761321; inline into only caller when that's fixed
-        _Tidy_deallocate();
-#if !defined(_INSERT_STRING_ANNOTATION)
-        if constexpr (_Can_memcpy_val) {
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
-                _Memcpy_val_from(_Right);
-                return;
-            }
-        }
-#endif // !defined(_INSERT_STRING_ANNOTATION)
-
-        auto& _My_data    = _Mypair._Myval2;
-        auto& _Right_data = _Right._Mypair._Myval2;
-
-        _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
-        _My_data._Mysize = _Right_data._Mysize;
-        _My_data._Myres  = _Right_data._Myres;
-    }
-
-public:
     _CONSTEXPR20 basic_string& operator=(const basic_string& _Right) {
         if (this == _STD addressof(_Right)) {
             return *this;
@@ -3175,23 +3151,24 @@ public:
                 auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Right_al);
                 _Container_proxy_ptr<_Alty> _New_proxy(_Right_alproxy, _Leave_proxy_unbound{}); // throws
 
-                if (_Right._Mypair._Myval2._Large_string_engaged()) {
-                    const auto _New_size     = _Right._Mypair._Myval2._Mysize;
-                    auto _New_capacity       = _Calculate_growth(_New_size, 0, _Right.max_size());
+                const size_type _Right_size   = _Right._Mypair._Myval2._Mysize;
+                const _Elem* const _Right_ptr = _Right._Mypair._Myval2._Myptr();
+                if (_Right_size > _Small_string_capacity) {
+                    size_type _New_capacity = _Calculate_growth(_Right_size, _Small_string_capacity, _Right.max_size());
                     auto _Right_al_non_const = _Right_al;
-                    ++_New_capacity;
-                    const auto _New_ptr = _Allocate_at_least_helper(_Right_al_non_const, _New_capacity); // throws
-                    --_New_capacity;
+                    const pointer _New_ptr   = _Allocate_for_capacity(_Right_al_non_const, _New_capacity); // throws
+                    _Traits::copy(_Unfancy(_New_ptr), _Right_ptr, _Right_size + 1);
 
-                    _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
-
-                    _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_Right._Mypair._Myval2._Bx._Ptr), _New_size + 1);
                     _Tidy_deallocate();
-                    _Mypair._Myval2._Bx._Ptr = _New_ptr;
-                    _Mypair._Myval2._Mysize  = _New_size;
-                    _Mypair._Myval2._Myres   = _New_capacity;
+                    _Construct_in_place(_Mypair._Myval2._Bx._Ptr, _New_ptr);
+                    _Mypair._Myval2._Mysize = _Right_size;
+                    _Mypair._Myval2._Myres  = _New_capacity;
+                    _ASAN_STRING_CREATE(*this);
                 } else {
-                    _Copy_assign_val_from_small(_Right);
+                    _Tidy_deallocate();
+                    _Traits::copy(_Mypair._Myval2._Bx._Buf, _Right_ptr, _Right_size + 1);
+                    _Mypair._Myval2._Mysize = _Right_size;
+                    _Mypair._Myval2._Myres  = _Small_string_capacity;
                 }
 
                 _Pocca(_Al, _Right_al);
@@ -3386,11 +3363,12 @@ public:
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
         // assign [_Ptr, _Ptr + _Count)
         if (_Count <= _Mypair._Myval2._Myres) {
-            _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _Count);
+            _ASAN_STRING_REMOVE(*this);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Mypair._Myval2._Mysize = _Count;
             _Traits::move(_Old_ptr, _Ptr, _Count);
             _Traits::assign(_Old_ptr[_Count], _Elem());
+            _ASAN_STRING_CREATE(*this);
             return *this;
         }
 
@@ -3507,7 +3485,7 @@ public:
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size && !_STD is_constant_evaluated();
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size;
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
         if (_Check_overlap) {
             _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
@@ -3997,26 +3975,25 @@ public:
     _CONSTEXPR20 void shrink_to_fit() { // reduce capacity
         auto& _My_data = _Mypair._Myval2;
 
-        if (!_My_data._Large_string_engaged()) { // can't shrink from small mode
+        if (!_My_data._Large_mode_engaged()) { // can't shrink from small mode
             return;
         }
 
-        if (_My_data._Mysize < _BUF_SIZE) {
+        if (_My_data._Mysize <= _Small_string_capacity) {
             _Become_small();
             return;
         }
 
-        const size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
+        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _Alloc_mask, max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
-            auto& _Al              = _Getal();
-            const pointer _New_ptr = _Al.allocate(_Target_capacity + 1); // throws
+            auto& _Al = _Getal();
+            const pointer _New_ptr =
+                _Allocate_for_capacity<_Allocation_policy::_Exactly>(_Al, _Target_capacity); // throws
             _ASAN_STRING_REMOVE(*this);
-
-            _Start_element_lifetimes(_Unfancy(_New_ptr), _Target_capacity + 1);
 
             _My_data._Orphan_all();
             _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_My_data._Bx._Ptr), _My_data._Mysize + 1);
-            _Al.deallocate(_My_data._Bx._Ptr, _My_data._Myres + 1);
+            _Deallocate_for_capacity(_Al, _My_data._Bx._Ptr, _My_data._Myres);
             _My_data._Bx._Ptr = _New_ptr;
             _My_data._Myres   = _Target_capacity;
             _ASAN_STRING_CREATE(*this);
@@ -4157,28 +4134,40 @@ public:
         }
     }
 
-#if _HAS_CXX23
-#pragma warning(push)
-#pragma warning(disable : 4018) // '<=': signed/unsigned mismatch (we compare to 0 before _New_size below, so it's safe)
     template <class _Operation>
-    constexpr void resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
+    constexpr void
+#if _HAS_CXX23
+        resize_and_overwrite
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+        _Resize_and_overwrite
+#endif // ^^^ !_HAS_CXX23 ^^^
+        (_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
         if (_Mypair._Myval2._Myres < _New_size) {
             _Reallocate_grow_by(_New_size - _Mypair._Myval2._Mysize,
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) {
                     _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1);
                 });
+        } else {
+            _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
         }
 
-        auto _Arg_ptr           = _Mypair._Myval2._Myptr();
-        auto _Arg_size          = _New_size;
-        const auto _Result_size = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        auto _Arg_ptr                   = _Mypair._Myval2._Myptr();
+        auto _Arg_size                  = _New_size;
+        const auto _Result_size         = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
-        _STL_VERIFY(_Result_size <= _New_size, "the returned size can't be greater than the passed size");
+        _STL_VERIFY(_Result_as_size_type <= _New_size, "the returned size can't be greater than the passed size");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        _Eos(static_cast<size_type>(_Result_size));
+        _Eos(_Result_as_size_type);
     }
-#pragma warning(pop)
+
+#if _HAS_CXX23
+    template <class _Operation>
+    constexpr void _Resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
+        resize_and_overwrite(_New_size, _Op);
+    }
 #endif // _HAS_CXX23
 
     _NODISCARD _CONSTEXPR20 size_type capacity() const noexcept {
@@ -4202,11 +4191,11 @@ public:
     }
 
     _CXX20_DEPRECATE_STRING_RESERVE_WITHOUT_ARGUMENT void reserve() {
-        if (_Mypair._Myval2._Mysize == 0 && _Mypair._Myval2._Large_string_engaged()) {
+        if (_Mypair._Myval2._Mysize == 0 && _Mypair._Myval2._Large_mode_engaged()) {
             _Become_small();
         }
     }
-#else // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     void reserve(_CRT_GUARDOVERFLOW const size_type _Newcap = 0) { // determine new minimum length of allocated storage
         if (_Mypair._Myval2._Mysize > _Newcap) { // requested capacity is not large enough for current size, ignore
             return; // nothing to do
@@ -4227,15 +4216,15 @@ public:
             return;
         }
 
-        if (_BUF_SIZE > _Newcap && _Mypair._Myval2._Large_string_engaged()) {
+        if (_Newcap <= _Small_string_capacity && _Mypair._Myval2._Large_mode_engaged()) {
             // deallocate everything; switch back to "small" mode
             _Become_small();
             return;
         }
 
-        // ignore requests to reserve to [_BUF_SIZE, _Myres)
+        // ignore requests to reserve to [_Small_string_capacity + 1, _Myres)
     }
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
         return _Mypair._Myval2._Mysize == 0;
@@ -4277,9 +4266,6 @@ public:
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
 
-        const bool _My_large    = _My_data._Large_string_engaged();
-        const bool _Right_large = _Right_data._Large_string_engaged();
-
 #if !defined(_INSERT_STRING_ANNOTATION)
         if constexpr (_Can_memcpy_val) {
 #if _HAS_CXX20
@@ -4299,6 +4285,9 @@ public:
             }
         }
 #endif // !defined(_INSERT_STRING_ANNOTATION)
+
+        const bool _My_large    = _My_data._Large_mode_engaged();
+        const bool _Right_large = _Right_data._Large_mode_engaged();
 
         if (_My_large && _Right_large) { // swap buffers, iterators preserved
             swap(_My_data._Bx._Ptr, _Right_data._Bx._Ptr); // intentional ADL
@@ -4325,11 +4314,11 @@ public:
             auto& _My_data    = _Mypair._Myval2;
             auto& _Right_data = _Right._Mypair._Myval2;
 
-            if (!_My_data._Large_string_engaged()) {
+            if (!_My_data._Large_mode_engaged()) {
                 _My_data._Orphan_all();
             }
 
-            if (!_Right_data._Large_string_engaged()) {
+            if (!_Right_data._Large_mode_engaged()) {
                 _Right_data._Orphan_all();
             }
 
@@ -4577,9 +4566,9 @@ public:
     _NODISCARD _CONSTEXPR20 basic_string substr(const size_type _Off = 0, const size_type _Count = npos)
 #if _HAS_CXX23
         const&
-#else // _HAS_CXX23
+#else
         const
-#endif // _HAS_CXX23
+#endif
     {
         // return [_Off, _Off + _Count) as new string, default-constructing its allocator
         return basic_string{*this, _Off, _Count};
@@ -4724,7 +4713,7 @@ public:
 private:
     _NODISCARD static _CONSTEXPR20 size_type _Calculate_growth(
         const size_type _Requested, const size_type _Old, const size_type _Max) noexcept {
-        const size_type _Masked = _Requested | _ALLOC_MASK;
+        const size_type _Masked = _Requested | _Alloc_mask;
         if (_Masked > _Max) { // the mask overflows, settle for max_size()
             return _Max;
         }
@@ -4751,18 +4740,15 @@ private:
         const size_type _Old_capacity = _Mypair._Myval2._Myres;
         size_type _New_capacity       = _Calculate_growth(_New_size);
         auto& _Al                     = _Getal();
-        ++_New_capacity;
-        const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
-        --_New_capacity;
+        const pointer _New_ptr        = _Allocate_for_capacity(_Al, _New_capacity); // throws
 
-        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
         _Mypair._Myval2._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
         _Mypair._Myval2._Mysize = _New_size;
         _Mypair._Myval2._Myres  = _New_capacity;
         _Fn(_Unfancy(_New_ptr), _New_size, _Args...);
-        if (_BUF_SIZE <= _Old_capacity) {
-            _Al.deallocate(_Mypair._Myval2._Bx._Ptr, _Old_capacity + 1);
+        if (_Old_capacity > _Small_string_capacity) {
+            _Deallocate_for_capacity(_Al, _Mypair._Myval2._Bx._Ptr, _Old_capacity);
             _Mypair._Myval2._Bx._Ptr = _New_ptr;
         } else {
             _Construct_in_place(_Mypair._Myval2._Bx._Ptr, _New_ptr);
@@ -4786,20 +4772,17 @@ private:
         const size_type _Old_capacity = _My_data._Myres;
         size_type _New_capacity       = _Calculate_growth(_New_size);
         auto& _Al                     = _Getal();
-        ++_New_capacity;
-        const pointer _New_ptr = _Allocate_at_least_helper(_Al, _New_capacity); // throws
-        --_New_capacity;
+        const pointer _New_ptr        = _Allocate_for_capacity(_Al, _New_capacity); // throws
 
-        _Start_element_lifetimes(_Unfancy(_New_ptr), _New_capacity + 1);
         _My_data._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
         _My_data._Mysize      = _New_size;
         _My_data._Myres       = _New_capacity;
         _Elem* const _Raw_new = _Unfancy(_New_ptr);
-        if (_BUF_SIZE <= _Old_capacity) {
+        if (_Old_capacity > _Small_string_capacity) {
             const pointer _Old_ptr = _My_data._Bx._Ptr;
             _Fn(_Raw_new, _Unfancy(_Old_ptr), _Old_size, _Args...);
-            _Al.deallocate(_Old_ptr, _Old_capacity + 1);
+            _Deallocate_for_capacity(_Al, _Old_ptr, _Old_capacity);
             _My_data._Bx._Ptr = _New_ptr;
         } else {
             _Fn(_Raw_new, _My_data._Bx._Buf, _Old_size, _Args...);
@@ -4810,11 +4793,11 @@ private:
         return *this;
     }
 
-    _CONSTEXPR20 void _Become_small() {
+    _CONSTEXPR20 void _Become_small() noexcept {
         // release any held storage and return to small string mode
         auto& _My_data = _Mypair._Myval2;
-        _STL_INTERNAL_CHECK(_My_data._Large_string_engaged());
-        _STL_INTERNAL_CHECK(_My_data._Mysize < _BUF_SIZE);
+        _STL_INTERNAL_CHECK(_My_data._Large_mode_engaged());
+        _STL_INTERNAL_CHECK(_My_data._Mysize <= _Small_string_capacity);
 
         _My_data._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
@@ -4823,8 +4806,8 @@ private:
         _Destroy_in_place(_My_data._Bx._Ptr);
         _My_data._Activate_SSO_buffer();
         _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), _My_data._Mysize + 1);
-        _Al.deallocate(_Ptr, _My_data._Myres + 1);
-        _My_data._Myres = _BUF_SIZE - 1;
+        _Deallocate_for_capacity(_Al, _Ptr, _My_data._Myres);
+        _My_data._Myres = _Small_string_capacity;
     }
 
     _CONSTEXPR20 void _Eos(const size_type _New_size) noexcept { // set new length and null terminator
@@ -4836,7 +4819,7 @@ private:
         // initialize basic_string data members
         auto& _My_data   = _Mypair._Myval2;
         _My_data._Mysize = 0;
-        _My_data._Myres  = _BUF_SIZE - 1;
+        _My_data._Myres  = _Small_string_capacity;
         _My_data._Activate_SSO_buffer();
 
         // the _Traits::assign is last so the codegen doesn't think the char write can alias this
@@ -4846,17 +4829,17 @@ private:
     _CONSTEXPR20 void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
         auto& _My_data = _Mypair._Myval2;
         _My_data._Orphan_all();
-        if (_My_data._Large_string_engaged()) {
+        if (_My_data._Large_mode_engaged()) {
             _ASAN_STRING_REMOVE(*this);
             const pointer _Ptr = _My_data._Bx._Ptr;
             auto& _Al          = _Getal();
             _Destroy_in_place(_My_data._Bx._Ptr);
             _My_data._Activate_SSO_buffer();
-            _Al.deallocate(_Ptr, _My_data._Myres + 1);
+            _Deallocate_for_capacity(_Al, _Ptr, _My_data._Myres);
         }
 
         _My_data._Mysize = 0;
-        _My_data._Myres  = _BUF_SIZE - 1;
+        _My_data._Myres  = _Small_string_capacity;
         // the _Traits::assign is last so the codegen doesn't think the char write can alias this
         _Traits::assign(_My_data._Bx._Buf[0], _Elem());
     }
@@ -5030,7 +5013,7 @@ _NODISCARD _CONSTEXPR20 bool operator==(
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 bool operator==(
-    const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+    const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept /* strengthened */ {
     return _Left._Equal(_Right);
 }
 
@@ -5043,12 +5026,13 @@ _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
-    const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+    const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept /* strengthened */ {
     return static_cast<_Get_comparison_category_t<_Traits>>(_Left.compare(_Right) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator==(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator==(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return _Right._Equal(_Left);
 }
 
@@ -5059,12 +5043,14 @@ _NODISCARD bool operator!=(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator!=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator!=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return !(_Left == _Right);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator!=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+_NODISCARD bool operator!=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept
+/* strengthened */ {
     return !(_Left == _Right);
 }
 
@@ -5075,12 +5061,14 @@ _NODISCARD bool operator<(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator<(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator<(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return _Right.compare(_Left) > 0;
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator<(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+_NODISCARD bool operator<(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept
+/* strengthened */ {
     return _Left.compare(_Right) < 0;
 }
 
@@ -5091,12 +5079,14 @@ _NODISCARD bool operator>(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator>(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator>(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return _Right < _Left;
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator>(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+_NODISCARD bool operator>(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept
+/* strengthened */ {
     return _Right < _Left;
 }
 
@@ -5107,12 +5097,14 @@ _NODISCARD bool operator<=(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator<=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator<=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return !(_Right < _Left);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator<=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+_NODISCARD bool operator<=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept
+/* strengthened */ {
     return !(_Right < _Left);
 }
 
@@ -5123,12 +5115,14 @@ _NODISCARD bool operator>=(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator>=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+_NODISCARD bool operator>=(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     return !(_Left < _Right);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+_NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) noexcept
+/* strengthened */ {
     return !(_Left < _Right);
 }
 #endif // ^^^ !_HAS_CXX20 ^^^
@@ -5137,7 +5131,7 @@ _EXPORT_STD using string  = basic_string<char, char_traits<char>, allocator<char
 _EXPORT_STD using wstring = basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
 #ifdef __cpp_lib_char8_t
 _EXPORT_STD using u8string = basic_string<char8_t, char_traits<char8_t>, allocator<char8_t>>;
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
 _EXPORT_STD using u16string = basic_string<char16_t, char_traits<char16_t>, allocator<char16_t>>;
 _EXPORT_STD using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32_t>>;
 
@@ -5218,7 +5212,7 @@ inline namespace literals {
         _EXPORT_STD _NODISCARD _CONSTEXPR20 basic_string<char8_t> operator""s(const char8_t* _Str, size_t _Len) {
             return basic_string<char8_t>{_Str, _Len};
         }
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
         _EXPORT_STD _NODISCARD _CONSTEXPR20 u16string operator""s(const char16_t* _Str, size_t _Len) {
             return u16string{_Str, _Len};
@@ -5252,7 +5246,7 @@ namespace pmr {
     _EXPORT_STD using string = basic_string<char>;
 #ifdef __cpp_lib_char8_t
     _EXPORT_STD using u8string = basic_string<char8_t>;
-#endif // __cpp_lib_char8_t
+#endif // defined(__cpp_lib_char8_t)
     _EXPORT_STD using u16string = basic_string<char16_t>;
     _EXPORT_STD using u32string = basic_string<char32_t>;
     _EXPORT_STD using wstring   = basic_string<wchar_t>;

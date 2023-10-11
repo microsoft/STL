@@ -12,6 +12,7 @@
 #include <iterator>
 #include <list>
 #include <map>
+#include <memory>
 #include <new>
 #include <set>
 #include <string>
@@ -33,6 +34,160 @@ _CONSTEXPR20 void assert_is_permutation(const Container& cont, initializer_list<
     assert(is_permutation(cont.begin(), cont.end(), il.begin(), il.end()));
 }
 
+class test_leak {
+private:
+    char* res;
+
+public:
+    test_leak(const test_leak&)            = delete;
+    test_leak& operator=(const test_leak&) = delete;
+
+    _CONSTEXPR20 test_leak() noexcept /* terminates */ : res(allocator<char>{}.allocate(1)) {}
+    _CONSTEXPR20 ~test_leak() {
+        allocator<char>{}.deallocate(res, 1);
+    }
+};
+
+template <class T>
+class nontrivial_pointer : private test_leak {
+public:
+    T* ptr;
+    _CONSTEXPR20 nontrivial_pointer() noexcept : ptr(nullptr) {}
+    _CONSTEXPR20 explicit nontrivial_pointer(T* ptr_) noexcept : ptr(ptr_) {}
+    _CONSTEXPR20 /*implicit*/ nontrivial_pointer(nullptr_t) noexcept : ptr(nullptr) {}
+
+    _CONSTEXPR20 nontrivial_pointer(const nontrivial_pointer& other) noexcept : ptr(other.ptr) {}
+    template <class U, enable_if_t<is_convertible_v<U*, T*>, int> = 0>
+    _CONSTEXPR20 nontrivial_pointer(const nontrivial_pointer<U>& other) noexcept : ptr(other.ptr) {}
+    _CONSTEXPR20 nontrivial_pointer& operator=(const nontrivial_pointer& other) noexcept {
+        ptr = other.ptr;
+        return *this;
+    }
+
+    _CONSTEXPR20 ~nontrivial_pointer() = default;
+
+    _CONSTEXPR20 explicit operator bool() const noexcept {
+#ifdef __EDG__ // TRANSITION, VSO-1888157
+        return static_cast<bool>(ptr);
+#else // ^^^ workaround / no workaround vvv
+        return ptr != nullptr;
+#endif // ^^^ no workaround ^^^
+    }
+    _CONSTEXPR20 add_lvalue_reference_t<T> operator*() const noexcept {
+        return *ptr;
+    }
+    _CONSTEXPR20 T* operator->() const noexcept {
+        return ptr;
+    }
+    template <class I, enable_if_t<is_integral_v<I>, int> = 0>
+    _CONSTEXPR20 add_lvalue_reference_t<T> operator[](I off) const noexcept {
+        return ptr[off];
+    }
+
+    _CONSTEXPR20 nontrivial_pointer& operator++() noexcept {
+        ++ptr;
+        return *this;
+    }
+    _CONSTEXPR20 nontrivial_pointer operator++(int) noexcept {
+        return nontrivial_pointer(ptr++);
+    }
+    _CONSTEXPR20 nontrivial_pointer& operator--() noexcept {
+        --ptr;
+        return *this;
+    }
+    _CONSTEXPR20 nontrivial_pointer operator--(int) noexcept {
+        return nontrivial_pointer(ptr--);
+    }
+    template <class I, enable_if_t<is_integral_v<I>, int> = 0>
+    _CONSTEXPR20 nontrivial_pointer& operator+=(I diff) noexcept {
+        ptr += diff;
+        return *this;
+    }
+    template <class I, enable_if_t<is_integral_v<I>, int> = 0>
+    _CONSTEXPR20 nontrivial_pointer& operator-=(I diff) noexcept {
+        ptr -= diff;
+        return *this;
+    }
+
+    template <class I, enable_if_t<is_integral_v<I>, int> = 0>
+    friend _CONSTEXPR20 nontrivial_pointer operator+(nontrivial_pointer ptr, I diff) noexcept {
+        return ptr += diff;
+    }
+    template <class I, enable_if_t<is_integral_v<I>, int> = 0>
+    friend _CONSTEXPR20 nontrivial_pointer operator+(I diff, nontrivial_pointer ptr) noexcept {
+        return ptr += diff;
+    }
+    friend _CONSTEXPR20 ptrdiff_t operator-(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+        return lhs.ptr - rhs.ptr;
+    }
+    template <class I, enable_if_t<is_integral_v<I>, int> = 0>
+    friend _CONSTEXPR20 nontrivial_pointer operator-(nontrivial_pointer ptr, I diff) noexcept {
+        return ptr -= diff;
+    }
+
+    friend _CONSTEXPR20 bool operator==(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+        return lhs.ptr == rhs.ptr;
+    }
+    friend _CONSTEXPR20 bool operator==(nontrivial_pointer ptr, nullptr_t) noexcept {
+        return !ptr;
+    }
+    friend _CONSTEXPR20 bool operator==(nullptr_t, nontrivial_pointer ptr) noexcept {
+        return !ptr;
+    }
+    friend _CONSTEXPR20 bool operator!=(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+        return lhs.ptr != rhs.ptr;
+    }
+    friend _CONSTEXPR20 bool operator!=(nontrivial_pointer ptr, nullptr_t) noexcept {
+        return static_cast<bool>(ptr);
+    }
+    friend _CONSTEXPR20 bool operator!=(nullptr_t, nontrivial_pointer ptr) noexcept {
+        return static_cast<bool>(ptr);
+    }
+    friend _CONSTEXPR20 bool operator<(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+        return lhs.ptr < rhs.ptr;
+    }
+    friend _CONSTEXPR20 bool operator<=(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+        return lhs.ptr <= rhs.ptr;
+    }
+    friend _CONSTEXPR20 bool operator>(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+        return lhs.ptr > rhs.ptr;
+    }
+    friend _CONSTEXPR20 bool operator>=(nontrivial_pointer lhs, nontrivial_pointer rhs) noexcept {
+        return lhs.ptr >= rhs.ptr;
+    }
+};
+
+template <class T, bool IsVoid = is_void_v<T>>
+struct impl_pointer_to {
+    // no pointer_to for void
+};
+
+template <class T>
+struct impl_pointer_to<T, false> {
+    static constexpr nontrivial_pointer<T> pointer_to(T& r) noexcept {
+        return nontrivial_pointer<T>(addressof(r));
+    }
+};
+
+template <class T>
+struct std::pointer_traits<nontrivial_pointer<T>> : impl_pointer_to<T> {
+    using pointer         = nontrivial_pointer<T>;
+    using element_type    = T;
+    using difference_type = ptrdiff_t;
+
+    template <class U>
+    using rebind = nontrivial_pointer<U>;
+};
+
+template <class T>
+struct std::iterator_traits<nontrivial_pointer<T>> {
+    using iterator_category = random_access_iterator_tag;
+    using difference_type   = ptrdiff_t;
+    using value_type        = remove_const_t<T>;
+    using reference         = add_lvalue_reference_t<T>;
+    using pointer           = nontrivial_pointer<T>;
+};
+
 template <class T, class POCCA, class POCMA, class POCS, class EQUAL>
 class MyAlloc {
 private:
@@ -48,6 +203,7 @@ public:
     }
 
     using value_type = T;
+    using pointer    = nontrivial_pointer<T>;
 
     using propagate_on_container_copy_assignment = POCCA;
     using propagate_on_container_move_assignment = POCMA;
@@ -69,12 +225,12 @@ public:
         return equal_id() != other.equal_id();
     }
 
-    [[nodiscard]] constexpr T* allocate(const size_t numElements) {
-        return allocator<T>{}.allocate(numElements + equal_id()) + equal_id();
+    [[nodiscard]] constexpr pointer allocate(const size_t numElements) {
+        return pointer(allocator<T>{}.allocate(numElements + equal_id()) + equal_id());
     }
 
-    constexpr void deallocate(T* const first, const size_t numElements) noexcept {
-        allocator<T>{}.deallocate(first - equal_id(), numElements + equal_id());
+    constexpr void deallocate(pointer const first, const size_t numElements) noexcept {
+        allocator<T>{}.deallocate(_Unfancy(first - equal_id()), numElements + equal_id());
     }
 };
 
@@ -306,7 +462,12 @@ _CONSTEXPR20 bool test_sequence() {
     test_sequence_copy_assign<Sequence, CopyAlloc<int>>(11, 22, 11); // POCCA, non-equal allocators
     test_sequence_copy_assign<Sequence, CopyEqualAlloc<int>>(11, 22, 11); // POCCA, always-equal allocators
 
-    test_sequence_move_ctor<Sequence>();
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1888462
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
+    {
+        test_sequence_move_ctor<Sequence>();
+    }
 
     test_sequence_move_alloc_ctor<Sequence>(11, 11); // equal allocators
     test_sequence_move_alloc_ctor<Sequence>(11, 22); // non-equal allocators
@@ -324,6 +485,33 @@ _CONSTEXPR20 bool test_sequence() {
     test_sequence_swap<Sequence, SwapEqualAlloc<int>>(11, 22); // POCS, always-equal allocators
 
     return true;
+}
+
+
+template <class Alloc>
+void test_deque_shrink_to_fit_per_alloc() {
+    {
+        deque<int, Alloc> d(1729, 0, Alloc{42});
+        d.resize(0);
+        d.shrink_to_fit();
+        assert(d.get_allocator().id() == 42);
+    }
+    {
+        deque<int, Alloc> d(1729, 0, Alloc{42});
+        d.resize(128);
+        d.shrink_to_fit();
+        assert(d.get_allocator().id() == 42);
+    }
+}
+
+void test_deque_shrink_to_fit() { // MSVC STL's deque::shrink_to_fit relies on swap
+    test_deque_shrink_to_fit_per_alloc<StationaryAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<CopyAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<CopyEqualAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<MoveAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<MoveEqualAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<SwapAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<SwapEqualAlloc<int>>();
 }
 
 
@@ -558,7 +746,7 @@ void test_flist() {
 
 // NOTE: Having 4 elements of type char32_t bypasses the Small String Optimization.
 
-void test_string_copy_ctor() {
+_CONSTEXPR20 void test_string_copy_ctor() {
     basic_string<char32_t, char_traits<char32_t>, StationaryAlloc<char32_t>> src(
         {5, 10, 20, 30}, StationaryAlloc<char32_t>(11));
     auto src_it = src.begin();
@@ -582,7 +770,7 @@ void test_string_copy_ctor() {
     assert(dst.get_allocator().id() == 11);
 }
 
-void test_string_copy_alloc_ctor(const size_t id1, const size_t id2) {
+_CONSTEXPR20 void test_string_copy_alloc_ctor(const size_t id1, const size_t id2) {
     basic_string<char32_t, char_traits<char32_t>, StationaryAlloc<char32_t>> src(
         {5, 10, 20, 30}, StationaryAlloc<char32_t>(id1));
     auto src_it = src.begin();
@@ -607,7 +795,7 @@ void test_string_copy_alloc_ctor(const size_t id1, const size_t id2) {
 }
 
 template <class Alloc>
-void test_string_copy_assign(const size_t id1, const size_t id2, const size_t id3) {
+_CONSTEXPR20 void test_string_copy_assign(const size_t id1, const size_t id2, const size_t id3) {
 
     basic_string<char32_t, char_traits<char32_t>, Alloc> src({5, 10, 20, 30}, Alloc(id1));
     basic_string<char32_t, char_traits<char32_t>, Alloc> dst({0, 0, 0, 0}, Alloc(id2));
@@ -635,7 +823,32 @@ void test_string_copy_assign(const size_t id1, const size_t id2, const size_t id
     assert(dst.get_allocator().id() == id3);
 }
 
-void test_string_move_ctor() {
+_CONSTEXPR20 void test_string_copy_assign_pocca_sso() {
+    // GH-3862 fixed a bug where the POCCA codepath in basic_string's copy assignment operator mishandled
+    // the scenario where the string on the right hand side has a large capacity but a small size - so while
+    // the RHS has dynamically allocated memory, the LHS should activate the Small String Optimization.
+
+    using Al  = CopyAlloc<char>;
+    using Str = basic_string<char, char_traits<char>, Al>;
+
+    Str left{Al{11}};
+    Str right{Al{22}};
+
+    left.assign(5, 'a');
+
+    right.assign(1729, 'x');
+    right.assign(7, 'y');
+
+    assert(left == "aaaaa");
+    assert(right == "yyyyyyy");
+
+    left = right;
+
+    assert(left == "yyyyyyy");
+    assert(right == "yyyyyyy");
+}
+
+_CONSTEXPR20 void test_string_move_ctor() {
     basic_string<char32_t, char_traits<char32_t>, StationaryAlloc<char32_t>> src(
         {5, 10, 20, 30}, StationaryAlloc<char32_t>(11));
     auto it1 = src.begin();
@@ -664,7 +877,7 @@ void test_string_move_ctor() {
     assert(dst.get_allocator().id() == 11);
 }
 
-void test_string_move_alloc_ctor(const size_t id1, const size_t id2) {
+_CONSTEXPR20 void test_string_move_alloc_ctor(const size_t id1, const size_t id2) {
     basic_string<char32_t, char_traits<char32_t>, StationaryAlloc<char32_t>> src(
         {5, 10, 20, 30}, StationaryAlloc<char32_t>(id1));
     auto it1 = src.begin();
@@ -695,7 +908,7 @@ void test_string_move_alloc_ctor(const size_t id1, const size_t id2) {
 }
 
 template <class Alloc>
-void test_string_move_assign(const size_t id1, const size_t id2, const size_t id3) {
+_CONSTEXPR20 void test_string_move_assign(const size_t id1, const size_t id2, const size_t id3) {
 
     basic_string<char32_t, char_traits<char32_t>, Alloc> src({5, 10, 20, 30}, Alloc(id1));
     basic_string<char32_t, char_traits<char32_t>, Alloc> dst({0, 0, 0, 0}, Alloc(id2));
@@ -729,7 +942,7 @@ void test_string_move_assign(const size_t id1, const size_t id2, const size_t id
 }
 
 template <class Alloc>
-void test_string_swap(const size_t id1, const size_t id2) {
+_CONSTEXPR20 void test_string_swap(const size_t id1, const size_t id2) {
 
     basic_string<char32_t, char_traits<char32_t>, Alloc> src({5, 10, 20, 30}, Alloc(id1));
     basic_string<char32_t, char_traits<char32_t>, Alloc> dst({6, 40, 50, 60}, Alloc(id2));
@@ -758,7 +971,7 @@ void test_string_swap(const size_t id1, const size_t id2) {
     assert(dst.get_allocator().id() == id1);
 }
 
-void test_string() {
+_CONSTEXPR20 bool test_string() {
     test_string_copy_ctor();
 
     test_string_copy_alloc_ctor(11, 11); // equal allocators
@@ -769,6 +982,8 @@ void test_string() {
     test_string_copy_assign<CopyAlloc<char32_t>>(11, 11, 11); // POCCA, equal allocators
     test_string_copy_assign<CopyAlloc<char32_t>>(11, 22, 11); // POCCA, non-equal allocators
     test_string_copy_assign<CopyEqualAlloc<char32_t>>(11, 22, 11); // POCCA, always-equal allocators
+
+    test_string_copy_assign_pocca_sso();
 
     test_string_move_ctor();
 
@@ -786,6 +1001,8 @@ void test_string() {
     test_string_swap<SwapAlloc<char32_t>>(11, 11); // POCS, equal allocators
     test_string_swap<SwapAlloc<char32_t>>(11, 22); // POCS, non-equal allocators
     test_string_swap<SwapEqualAlloc<char32_t>>(11, 22); // POCS, always-equal allocators
+
+    return true;
 }
 
 
@@ -1652,10 +1869,14 @@ int main() {
     test_sequence<deque>();
     test_sequence<list>();
     test_sequence<vector>();
+
 #if _HAS_CXX20
     static_assert(test_sequence<vector>());
+
+    static_assert(test_string());
 #endif // _HAS_CXX20
 
+    test_deque_shrink_to_fit();
     test_flist();
     test_string();
     test_vb();

@@ -53,6 +53,19 @@
       "cacheVariables": {
         "TESTS_BUILD_ONLY": true
       }
+    },
+    {
+      "name": "ARM64EC",
+      "inherits": "base",
+      "description": "ARM64EC Ninja Config",
+      "architecture": {
+        "strategy": "external",
+        "value": "ARM64EC"
+      },
+      "cacheVariables": {
+        "TESTS_BUILD_ONLY": true,
+        "VCLIBS_TARGET_ARCHITECTURE": "ARM64EC"
+      }
     }
   ],
   "buildPresets": [
@@ -75,6 +88,11 @@
       "name": "ARM64",
       "configurePreset": "ARM64",
       "description": "Build ARM64 STL"
+    },
+    {
+      "name": "ARM64EC",
+      "configurePreset": "ARM64EC",
+      "description": "Build ARM64EC STL"
     }
   ]
 }

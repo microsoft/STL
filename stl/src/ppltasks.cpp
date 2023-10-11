@@ -204,7 +204,7 @@ namespace Concurrency {
             }
         }
 
-#else
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool) {}
 
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskCompleted() {}
@@ -216,7 +216,7 @@ namespace Concurrency {
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemStarted() {}
 
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemCompleted() {}
-#endif
+#endif // ^^^ !defined(_CRT_APP) ^^^
 
 #if defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
         using namespace ABI::Windows::Foundation;
@@ -317,7 +317,8 @@ namespace Concurrency {
             return false;
         }
 
-#else
+#else // ^^^ defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
+      //                                         / !defined(_CRT_APP) && !defined(UNDOCKED_WINDOWS_UCRT) vvv
         _CRTIMP2 void __thiscall _ContextCallback::_CallInContext(_CallbackFunction _Func, bool) const {
             _Func();
         }
@@ -335,16 +336,16 @@ namespace Concurrency {
         _CRTIMP2 bool __cdecl _Task_impl_base::_IsNonBlockingThread() {
             return false;
         }
-#endif
+#endif // ^^^ !defined(_CRT_APP) && !defined(UNDOCKED_WINDOWS_UCRT) ^^^
     } // namespace details
 
 #ifdef _CRT_APP
     _CRTIMP2 __thiscall task_continuation_context::task_continuation_context()
         : _ContextCallback(true), _M_RunInline(false) {}
-#else
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     _CRTIMP2 __thiscall task_continuation_context::task_continuation_context()
         : _ContextCallback(false), _M_RunInline(false) {}
-#endif
+#endif // ^^^ !defined(_CRT_APP) ^^^
 
 } // namespace Concurrency
 

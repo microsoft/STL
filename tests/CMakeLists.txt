@@ -32,6 +32,12 @@ endif()
 get_property(STL_LIT_TEST_DIRS GLOBAL PROPERTY STL_LIT_TEST_DIRS)
 list(APPEND STL_LIT_COMMAND "${STL_LIT_OUTPUT}"
                             "${LIT_FLAGS}"
+                            "-D" "notags=ASAN"
                             "${STL_LIT_TEST_DIRS}")
+list(APPEND STLASAN_LIT_COMMAND "${STL_LIT_OUTPUT}"
+                                "${LIT_FLAGS}"
+                                "-D" "tags=ASAN"
+                                "${STL_LIT_TEST_DIRS}")
 
 add_test(NAME stl COMMAND ${Python_EXECUTABLE} ${STL_LIT_COMMAND} COMMAND_EXPAND_LISTS)
+add_test(NAME stlasan COMMAND ${Python_EXECUTABLE} ${STLASAN_LIT_COMMAND} COMMAND_EXPAND_LISTS)

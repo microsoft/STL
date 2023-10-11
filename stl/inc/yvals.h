@@ -15,7 +15,7 @@
 #ifdef _ENFORCE_ONLY_CORE_HEADERS
 _EMIT_STL_ERROR(
     STL1005, "Tried to include a non-core C++ Standard Library header file with _ENFORCE_ONLY_CORE_HEADERS defined.");
-#endif // _ENFORCE_ONLY_CORE_HEADERS
+#endif // defined(_ENFORCE_ONLY_CORE_HEADERS)
 
 #include <crtdbg.h>
 #include <crtdefs.h>
@@ -47,15 +47,15 @@ _STL_DISABLE_CLANG_WARNINGS
 #else
 #define _CRT_MSVCP_CURRENT "msvcp_win.dll"
 #endif
-#else
+#else // ^^^ defined(_CRT_WINDOWS) / !defined(_CRT_WINDOWS) vvv
 // Visual Studio
 #ifdef _DEBUG
 #define _CRT_MSVCP_CURRENT "msvcp140d.dll"
 #else
 #define _CRT_MSVCP_CURRENT "msvcp140.dll"
 #endif
-#endif
-#endif
+#endif // ^^^ !defined(_CRT_WINDOWS) ^^^
+#endif // !defined(_CRT_MSVCP_CURRENT)
 
 #ifdef _ITERATOR_DEBUG_LEVEL // A. _ITERATOR_DEBUG_LEVEL is already defined.
 
@@ -79,7 +79,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #else
 #define _HAS_ITERATOR_DEBUGGING 0
 #endif
-#endif // _HAS_ITERATOR_DEBUGGING
+#endif // ^^^ !defined(_HAS_ITERATOR_DEBUGGING) ^^^
 
 // A3. Inspect _SECURE_SCL.
 #ifdef _SECURE_SCL // A3i. _SECURE_SCL is already defined, validate it.
@@ -94,7 +94,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #else
 #define _SECURE_SCL 0
 #endif
-#endif // _SECURE_SCL
+#endif // ^^^ !defined(_SECURE_SCL) ^^^
 
 #else // B. _ITERATOR_DEBUG_LEVEL is not yet defined.
 
@@ -111,7 +111,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #else
 #define _HAS_ITERATOR_DEBUGGING 0
 #endif
-#endif // _HAS_ITERATOR_DEBUGGING
+#endif // ^^^ !defined(_HAS_ITERATOR_DEBUGGING) ^^^
 
 // B2. Inspect _SECURE_SCL.
 #ifdef _SECURE_SCL // B2i. _SECURE_SCL is already defined, validate it.
@@ -124,26 +124,26 @@ _STL_DISABLE_CLANG_WARNINGS
 #else
 #define _SECURE_SCL 0
 #endif
-#endif // _SECURE_SCL
+#endif // ^^^ !defined(_SECURE_SCL) ^^^
 
 // B3. Derive _ITERATOR_DEBUG_LEVEL.
 #if _HAS_ITERATOR_DEBUGGING
 #define _ITERATOR_DEBUG_LEVEL 2
 #elif _SECURE_SCL
 #define _ITERATOR_DEBUG_LEVEL 1
-#else
+#else // ^^^ _SECURE_SCL / !_SECURE_SCL vvv
 #define _ITERATOR_DEBUG_LEVEL 0
-#endif
+#endif // ^^^ !_HAS_ITERATOR_DEBUGGING && !_SECURE_SCL ^^^
 
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ !defined(_ITERATOR_DEBUG_LEVEL) ^^^
 
 #ifndef _ALLOW_MSC_VER_MISMATCH
 #pragma detect_mismatch("_MSC_VER", "1900")
-#endif // _ALLOW_MSC_VER_MISMATCH
+#endif // !defined(_ALLOW_MSC_VER_MISMATCH)
 
 #ifndef _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH
 #pragma detect_mismatch("_ITERATOR_DEBUG_LEVEL", _STRINGIZE(_ITERATOR_DEBUG_LEVEL))
-#endif // _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH
+#endif // !defined(_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH)
 
 #ifndef _ALLOW_RUNTIME_LIBRARY_MISMATCH
 #if !defined(_DLL) && !defined(_DEBUG)
@@ -155,7 +155,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #elif defined(_DLL) && defined(_DEBUG)
 #pragma detect_mismatch("RuntimeLibrary", "MDd_DynamicDebug")
 #endif // defined(_DLL) etc.
-#endif // _ALLOW_RUNTIME_LIBRARY_MISMATCH
+#endif // !defined(_ALLOW_RUNTIME_LIBRARY_MISMATCH)
 
 #ifndef _CONTAINER_DEBUG_LEVEL
 #if _ITERATOR_DEBUG_LEVEL == 0
@@ -163,7 +163,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
 #define _CONTAINER_DEBUG_LEVEL 1
 #endif // _ITERATOR_DEBUG_LEVEL == 0
-#endif // _CONTAINER_DEBUG_LEVEL
+#endif // !defined(_CONTAINER_DEBUG_LEVEL)
 
 #if _ITERATOR_DEBUG_LEVEL != 0 && _CONTAINER_DEBUG_LEVEL == 0
 #error _ITERATOR_DEBUG_LEVEL != 0 must imply _CONTAINER_DEBUG_LEVEL == 1.
@@ -174,10 +174,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CSTD abort()
 #elif defined(_DEBUG) // avoid emitting unused long strings for function names; see GH-1956
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
-#else // _DEBUG
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
-#endif // _DEBUG
-#endif // _STL_CRT_SECURE_INVALID_PARAMETER
+#endif // ^^^ !defined(_DEBUG) ^^^
+#endif // !defined(_STL_CRT_SECURE_INVALID_PARAMETER)
 
 #define _STL_REPORT_ERROR(mesg)                  \
     do {                                         \
@@ -211,23 +211,23 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifdef _DEBUG
 #define _STL_ASSERT(cond, mesg) _STL_VERIFY(cond, mesg)
-#else // ^^^ _DEBUG / !_DEBUG vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _STL_ASSERT(cond, mesg) _Analysis_assume_(cond)
-#endif // _DEBUG
+#endif // ^^^ !defined(_DEBUG) ^^^
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
 #define _STL_INTERNAL_CHECK(...) _STL_VERIFY(__VA_ARGS__, "STL internal check: " #__VA_ARGS__)
-#else // ^^^ _ENABLE_STL_INTERNAL_CHECK / !_ENABLE_STL_INTERNAL_CHECK vvv
+#else // ^^^ defined(_ENABLE_STL_INTERNAL_CHECK) / !defined(_ENABLE_STL_INTERNAL_CHECK) vvv
 #define _STL_INTERNAL_CHECK(...) _Analysis_assume_(__VA_ARGS__)
-#endif // _ENABLE_STL_INTERNAL_CHECK
+#endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
 #ifndef _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
 #ifdef _DEBUG
 #define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 1
-#else // ^^^ _DEBUG / !_DEBUG vvv
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 0
-#endif // _DEBUG
-#endif // _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
+#endif // ^^^ !defined(_DEBUG) ^^^
+#endif // !defined(_ENABLE_ATOMIC_REF_ALIGNMENT_CHECK)
 
 #if _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
 #define _ATOMIC_REF_CHECK_ALIGNMENT(cond, mesg) _STL_VERIFY(cond, mesg)
@@ -245,11 +245,11 @@ _EMIT_STL_WARNING(STL4000, "_STATIC_CPPLIB is deprecated and will be REMOVED.");
 #ifdef _M_CEE_MIXED
 #error _STATIC_CPPLIB is not supported while building with /clr
 #endif
-#endif // !_DISABLE_DEPRECATE_STATIC_CPPLIB
+#endif // !defined(_DISABLE_DEPRECATE_STATIC_CPPLIB)
 #ifdef _M_CEE_PURE
 #error _STATIC_CPPLIB cannot be used with /clr:pure (the resulting assembly would not be pure)
 #endif
-#endif // _STATIC_CPPLIB
+#endif // defined(_STATIC_CPPLIB)
 
 #if defined(_M_CEE_PURE) && !defined(_SILENCE_CLR_PURE_DEPRECATION_WARNING)
 _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
@@ -261,7 +261,7 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #else
 #define _MRTIMP2_PURE _MRTIMP2
 #endif
-#endif // _MRTIMP2_PURE
+#endif // !defined(_MRTIMP2_PURE)
 
 #if defined(_DLL) && !defined(_STATIC_CPPLIB) && !defined(_M_CEE_PURE)
 #define _DLL_CPPLIB
@@ -273,25 +273,17 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #else
 #define _CRTIMP2_PURE _CRTIMP2
 #endif
-#endif // _CRTIMP2_PURE
-
-#ifdef _CRTBLD
-// These functions are for enabling STATIC_CPPLIB functionality
-#define _cpp_stdin         (__acrt_iob_func(0))
-#define _cpp_stdout        (__acrt_iob_func(1))
-#define _cpp_stderr        (__acrt_iob_func(2))
-#define _cpp_isleadbyte(c) (__pctype_func()[static_cast<unsigned char>(c)] & _LEADBYTE)
-#endif // _CRTBLD
+#endif // !defined(_CRTIMP2_PURE)
 
 #ifndef _CRTIMP2_IMPORT
 #if defined(CRTDLL2) && defined(_CRTBLD)
 #define _CRTIMP2_IMPORT __declspec(dllexport)
 #elif defined(_DLL) && !defined(_STATIC_CPPLIB)
 #define _CRTIMP2_IMPORT __declspec(dllimport)
-#else
+#else // ^^^ defined(_DLL) && !defined(_STATIC_CPPLIB) / !defined(_DLL) || defined(_STATIC_CPPLIB) vvv
 #define _CRTIMP2_IMPORT
-#endif
-#endif // _CRTIMP2_IMPORT
+#endif // ^^^ !defined(_DLL) || defined(_STATIC_CPPLIB) ^^^
+#endif // !defined(_CRTIMP2_IMPORT)
 
 #ifndef _CRTIMP2_PURE_IMPORT
 #ifdef _M_CEE_PURE
@@ -299,7 +291,7 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #else
 #define _CRTIMP2_PURE_IMPORT _CRTIMP2_IMPORT
 #endif
-#endif // _CRTIMP2_PURE_IMPORT
+#endif // !defined(_CRTIMP2_PURE_IMPORT)
 
 #ifndef _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE
 #ifdef _BUILDING_SATELLITE_CODECVT_IDS
@@ -307,7 +299,7 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #else
 #define _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CRTIMP2_PURE_IMPORT
 #endif
-#endif // _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE
+#endif // !defined(_CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE)
 
 #ifndef _CRTDATA2_IMPORT
 #if defined(MRTDLL) && defined(_CRTBLD)
@@ -315,7 +307,7 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #else
 #define _CRTDATA2_IMPORT _CRTIMP2_IMPORT
 #endif
-#endif // _CRTDATA2_IMPORT
+#endif // !defined(_CRTDATA2_IMPORT)
 
 #define _LOCK_LOCALE         0
 #define _LOCK_MALLOC         1
@@ -329,7 +321,7 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #else // ^^^ modern 64-bit / less modern or 32-bit vvv
 #define _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B 0
 #endif // _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WINBLUE && defined(_WIN64)
-#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B
+#endif // !defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B)
 
 #if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 && defined(_M_ARM64)
 #error ARM64 requires _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B to be 1.
@@ -359,11 +351,11 @@ public:
         _Lockit_dtor(this);
     }
 
-#else // _M_CEE_PURE
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     __thiscall _Lockit() noexcept;
     explicit __thiscall _Lockit(int) noexcept; // set the lock
     __thiscall ~_Lockit() noexcept; // clear the lock
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     static void __cdecl _Lockit_ctor(int) noexcept;
     static void __cdecl _Lockit_dtor(int) noexcept;
@@ -386,16 +378,16 @@ class _CRTIMP2_PURE_IMPORT _EmptyLockit { // empty lock class used for bin compa
 private:
     int _Locktype;
 };
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #ifdef _M_CEE
 #ifndef _PREPARE_CONSTRAINED_REGIONS
 #ifdef _M_CEE_PURE
 #define _PREPARE_CONSTRAINED_REGIONS 1
-#else // _M_CEE_PURE
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 #define _PREPARE_CONSTRAINED_REGIONS 0
-#endif // _M_CEE_PURE
-#endif // _PREPARE_CONSTRAINED_REGIONS
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
+#endif // !defined(_PREPARE_CONSTRAINED_REGIONS)
 
 #if _PREPARE_CONSTRAINED_REGIONS
 #define _BEGIN_LOCK(_Kind)                                                                  \
@@ -420,14 +412,14 @@ private:
     }                                              \
     }
 
-#else // _PREPARE_CONSTRAINED_REGIONS
+#else // ^^^ _PREPARE_CONSTRAINED_REGIONS / !_PREPARE_CONSTRAINED_REGIONS vvv
 #define _BEGIN_LOCK(_Kind) \
     {                      \
         _STD _Lockit _Lock(_Kind);
 
 #define _END_LOCK() }
 
-#endif // _PREPARE_CONSTRAINED_REGIONS
+#endif // ^^^ !_PREPARE_CONSTRAINED_REGIONS ^^^
 
 #define _BEGIN_LOCINFO(_VarName) \
     _BEGIN_LOCK(_LOCK_LOCALE)    \
@@ -435,7 +427,7 @@ private:
 
 #define _END_LOCINFO() _END_LOCK()
 
-#else // _M_CEE
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 #define _BEGIN_LOCK(_Kind) \
     {                      \
         _STD _Lockit _Lock(_Kind);
@@ -447,20 +439,7 @@ private:
         _Locinfo _VarName;
 
 #define _END_LOCINFO() }
-#endif // _M_CEE
-
-#ifdef _CRTBLD
-
-#ifdef _M_CEE
-#define _RELIABILITY_CONTRACT                                                    \
-    [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
-        System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
-        System::Runtime::ConstrainedExecution::Cer::Success)]
-#else // _M_CEE
-#define _RELIABILITY_CONTRACT
-#endif // _M_CEE
-
-#endif // _CRTBLD
+#endif // ^^^ !defined(_M_CEE) ^^^
 
 #if _HAS_EXCEPTIONS
 #define _TRY_BEGIN try {
@@ -475,7 +454,7 @@ private:
 #define _RERAISE  throw
 #define _THROW(x) throw x
 
-#else // _HAS_EXCEPTIONS
+#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
 #define _TRY_BEGIN \
     {              \
         if (1) {
@@ -491,13 +470,13 @@ private:
 
 #ifdef _DEBUG
 #define _RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
-#else // _DEBUG
+#else
 #define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
-#endif // _DEBUG
+#endif
 
 #define _RERAISE
 #define _THROW(x) x._Raise()
-#endif // _HAS_EXCEPTIONS
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
 _STD_END
 
 #pragma pop_macro("new")

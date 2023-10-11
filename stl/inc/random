@@ -26,9 +26,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifdef _ALLOW_RANDOM_DISTRIBUTION_CONST_OPERATOR
 #define _DISTRIBUTION_CONST const
-#else // ^^^ _ALLOW_RANDOM_DISTRIBUTION_CONST_OPERATOR / !_ALLOW_RANDOM_DISTRIBUTION_CONST_OPERATOR vvv
+#else
 #define _DISTRIBUTION_CONST
-#endif // _ALLOW_RANDOM_DISTRIBUTION_CONST_OPERATOR
+#endif
 
 _STD_BEGIN
 #define _RNG_PROHIBIT_CHAR(_CheckedType)               \
@@ -656,7 +656,13 @@ struct _Circ_buf { // holds historical values for generators
     }
 
     size_t _Base(size_t _Ix = 0) const noexcept {
-        return (_Ix += _Idx) < _Nw ? (_Ix + _Nw) : (_Ix - _Nw);
+        _Ix += _Idx;
+
+        if (_Ix < _Nw) {
+            return _Ix + _Nw;
+        } else {
+            return _Ix - _Nw;
+        }
     }
 
     unsigned int _Idx;
@@ -999,7 +1005,7 @@ public:
 };
 
 #if _HAS_TR1_NAMESPACE
-_CONSTEVAL double _Cx_exp2(const int _Exp) noexcept {
+constexpr double _Cx_exp2(const int _Exp) noexcept {
     double _Ret = 1.0;
     for (int _Count = _Exp; _Count > 0; --_Count) {
         _Ret *= 2.0;
@@ -1431,13 +1437,99 @@ private:
     int _Nx;
 };
 
+template <class _Engine, size_t _Px, size_t _Rx>
+class _Discard_block_base { // TRANSITION, ABI, should be merged into discard_block_engine
+public:
+    using base_type   = _Engine;
+    using result_type = typename _Engine::result_type;
+
+    _Discard_block_base() : _Eng(), _Nx(0) {}
+
+    explicit _Discard_block_base(const _Engine& _Ex) : _Eng(_Ex), _Nx(0) {}
+
+    explicit _Discard_block_base(result_type _Seed) : _Eng(_Seed), _Nx(0) {}
+
+    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, _Discard_block_base, _Engine> = 0>
+    explicit _Discard_block_base(_Seed_seq& _Seq) : _Eng(_Seq), _Nx(0) {}
+
+    void seed() { // seed engine from default value
+        _Eng.seed();
+        _Nx = 0;
+    }
+
+    void seed(result_type _Xx0) { // seed engine from specified value
+        _Eng.seed(_Xx0);
+        _Nx = 0;
+    }
+
+    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, _Discard_block_base> = 0>
+    void seed(_Seed_seq& _Seq) { // seed engine from seed sequence
+        _Eng.seed(_Seq);
+        _Nx = 0;
+    }
+
+    _NODISCARD const base_type& base() const noexcept {
+        return _Eng;
+    }
+
+    _NODISCARD result_type operator()() {
+        if (_Rx <= _Nx) { // discard values
+            while (_Nx++ < _Px) {
+                (void) _Eng();
+            }
+
+            _Nx = 0;
+        }
+        ++_Nx;
+        return _Eng();
+    }
+
+    void discard(unsigned long long _Nskip) { // discard _Nskip elements
+        for (; 0 < _Nskip; --_Nskip) {
+            (void) (*this)();
+        }
+    }
+
+    _NODISCARD_FRIEND bool operator==(const _Discard_block_base& _Left, const _Discard_block_base& _Right) {
+        return _Left._Eng == _Right._Eng && _Left._Nx == _Right._Nx;
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const _Discard_block_base& _Left, const _Discard_block_base& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(
+        basic_istream<_Elem, _Traits>& _Istr, _Discard_block_base& _Eng) { // read state from _Istr
+        return _Istr >> _Eng._Eng >> _Eng._Nx;
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(
+        basic_ostream<_Elem, _Traits>& _Ostr, const _Discard_block_base& _Eng) { // write state to _Ostr
+        return _Ostr << _Eng._Eng << ' ' << _Eng._Nx;
+    }
+
+private:
+    base_type _Eng;
+    size_t _Nx;
+};
+
 _EXPORT_STD template <class _Engine, size_t _Px, size_t _Rx>
-class discard_block_engine : public discard_block<_Engine, _Px, _Rx> { // discard_block_engine compound engine
+class discard_block_engine // discard_block_engine compound engine
+    : public conditional_t<_Px <= INT_MAX, discard_block<_Engine, static_cast<int>(_Px), static_cast<int>(_Rx)>,
+          _Discard_block_base<_Engine, _Px, _Rx>> {
 public:
     static_assert(0 < _Rx && _Rx <= _Px, "invalid template argument for discard_block_engine");
 
-    using _Mybase     = discard_block<_Engine, _Px, _Rx>;
+    using _Mybase = conditional_t<_Px <= INT_MAX, discard_block<_Engine, static_cast<int>(_Px), static_cast<int>(_Rx)>,
+        _Discard_block_base<_Engine, _Px, _Rx>>;
     using result_type = typename _Engine::result_type;
+
+    static constexpr size_t block_size = _Px;
+    static constexpr size_t used_block = _Rx;
 
     discard_block_engine() : _Mybase() {}
 
@@ -2187,9 +2279,9 @@ _NODISCARD _Flt _Float_upper_bound(_Ty _Val) noexcept {
 #ifdef _M_CEE_PURE
         constexpr auto _Ty_32or64_digits = numeric_limits<_Ty_32or64>::digits;
         const auto _Log_plus1 = _Ty_32or64_digits - _Countl_zero_internal(static_cast<_Ty_32or64>(_Val | _Ty{1}));
-#else // _M_CEE_PURE
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
         const auto _Log_plus1 = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
         const auto _Shifted_mask = _Mask >> (_Ty_digits - _Log_plus1);
         const auto _Ceil_ulp     = _Shifted_mask & -_Shifted_mask;
         _Val &= _Shifted_mask;

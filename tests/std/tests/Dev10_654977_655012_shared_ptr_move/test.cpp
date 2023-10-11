@@ -24,7 +24,7 @@ private:
 
 class Derived : public Base {
 public:
-    virtual string str() const {
+    string str() const override {
         return "Derived";
     }
 };

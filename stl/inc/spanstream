@@ -12,7 +12,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <spanstream> are available only with
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 #ifdef __cpp_lib_concepts
 #include <concepts>
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #include <istream>
 #include <ostream>
 #include <span>
@@ -224,7 +224,7 @@ public:
         : basic_ispanstream(
             _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(_Range)), static_cast<size_t>(_RANGES size(_Range))}) {}
     // clang-format on
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     basic_ispanstream& operator=(const basic_ispanstream&) = delete;
 
@@ -263,7 +263,7 @@ public:
             _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(_Range)), static_cast<size_t>(_RANGES size(_Range))});
     }
     // clang-format on
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 private:
     _Mysb _Buf;
@@ -401,6 +401,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX23
+#endif // ^^^ _HAS_CXX23 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _SPANSTREAM_

@@ -117,7 +117,7 @@ public:
             const bool _Zero_uncaught_exceptions = !_STD uncaught_exception(); // TRANSITION, ArchivedOS-12000909
 #else // ^^^ _HAS_DEPRECATED_UNCAUGHT_EXCEPTION / !_HAS_DEPRECATED_UNCAUGHT_EXCEPTION vvv
             const bool _Zero_uncaught_exceptions = _STD uncaught_exceptions() == 0;
-#endif // !_HAS_DEPRECATED_UNCAUGHT_EXCEPTION
+#endif // ^^^ !_HAS_DEPRECATED_UNCAUGHT_EXCEPTION ^^^
 
             if (_Zero_uncaught_exceptions) {
                 this->_Myostr._Osfx();
@@ -137,7 +137,7 @@ public:
     };
 
     // TRANSITION, ABI: non-Standard opfx() is preserved for binary compatibility
-    bool __CLR_OR_THIS_CALL opfx() { // test stream state and flush tie stream as needed
+    _DEPRECATE_IO_PFX_SFX bool __CLR_OR_THIS_CALL opfx() { // test stream state and flush tie stream as needed
         if (!this->good()) {
             return false;
         }
@@ -152,7 +152,7 @@ public:
     }
 
     // TRANSITION, ABI: non-Standard osfx() is preserved for binary compatibility
-    void __CLR_OR_THIS_CALL osfx() noexcept { // perform any wrapup
+    _DEPRECATE_IO_PFX_SFX void __CLR_OR_THIS_CALL osfx() noexcept { // perform any wrapup
         _Osfx();
     }
 
@@ -184,7 +184,7 @@ public:
         _Pfn(*this);
         return *this;
     }
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
     basic_ostream& __CLR_OR_THIS_CALL operator<<(basic_ostream&(__cdecl* _Pfn)(basic_ostream&) ) {
         // call basic_ostream manipulator
@@ -679,7 +679,7 @@ template class _CRTIMP2_PURE_IMPORT basic_ostream<wchar_t, char_traits<wchar_t>>
 
 #ifdef __FORCE_INSTANCE
 template class _CRTIMP2_PURE_IMPORT basic_ostream<unsigned short, char_traits<unsigned short>>;
-#endif // __FORCE_INSTANCE
+#endif // defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 
 _EXPORT_STD template <class _Elem, class _Traits>
@@ -959,7 +959,7 @@ _EXPORT_STD template <class _Traits>
 basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>&, char8_t) = delete;
 _EXPORT_STD template <class _Traits>
 basic_ostream<wchar_t, _Traits>& operator<<(basic_ostream<wchar_t, _Traits>&, char8_t) = delete;
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
 
 #if !_HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 #ifdef _NATIVE_WCHAR_T_DEFINED
@@ -1066,14 +1066,14 @@ basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>& _Ostr) 
     }
     return _Ostr;
 }
-#else // _CPPRTTI
+#else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
 _EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
 _EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
 _EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>&) = delete; // requires /GR option
-#endif // _CPPRTTI
+#endif // ^^^ !defined(_CPPRTTI) ^^^
 #endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Elem, class _Traits>
@@ -1275,7 +1275,7 @@ _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void vprint_nonunicode(ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
     _STD _Vprint_nonunicode_impl(_Add_newline::_Nope, _Ostr, _Fmt_str, _Fmt_args);
 }
-#else // ^^^ _CPPRTTI / !_CPPRTTI vvv
+#else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
 _EXPORT_STD template <class... _Types>
 void print(ostream&, format_string<_Types...>, _Types&&...) = delete; // requires /GR option
 
@@ -1284,8 +1284,8 @@ void println(ostream&, format_string<_Types...>, _Types&&...) = delete; // requi
 
 _EXPORT_STD void vprint_unicode(ostream&, string_view, format_args)    = delete; // requires /GR option
 _EXPORT_STD void vprint_nonunicode(ostream&, string_view, format_args) = delete; // requires /GR option
-#endif // !_CPPRTTI
-#endif // __cpp_lib_print
+#endif // ^^^ !defined(_CPPRTTI) ^^^
+#endif // defined(__cpp_lib_print)
 
 _STD_END
 

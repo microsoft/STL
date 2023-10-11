@@ -32,10 +32,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 namespace stdext {
-    using _STD basic_string;
-    using _STD less;
-    using _STD size_t;
-
     template <class _Kty>
     _NODISCARD size_t hash_value(const _Kty& _Keyval) noexcept {
         if constexpr (_STD is_pointer_v<_Kty> || _STD is_null_pointer_v<_Kty>) {
@@ -46,7 +42,7 @@ namespace stdext {
     }
 
     template <class _Elem, class _Traits, class _Alloc>
-    _NODISCARD size_t hash_value(const basic_string<_Elem, _Traits, _Alloc>& _Str) noexcept {
+    _NODISCARD size_t hash_value(const _STD basic_string<_Elem, _Traits, _Alloc>& _Str) noexcept {
         return _STD _Hash_array_representation(_Str.c_str(), _Str.size());
     }
 
@@ -58,7 +54,7 @@ namespace stdext {
         return _STD _Hash_array_representation(_Str, _CSTD wcslen(_Str));
     }
 
-    template <class _Kty, class _Pr = less<_Kty>>
+    template <class _Kty, class _Pr = _STD less<_Kty>>
     class hash_compare { // traits class for hash containers
     public:
         enum { // parameters for hash table
@@ -1021,7 +1017,7 @@ private:
         _Mylist& _List;
         const _Nodeptr _Predecessor;
         _Nodeptr _Next;
-#endif
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 2 ^^^
     };
 
     _Nodeptr _Unchecked_erase(_Nodeptr _First, const _Nodeptr _Last) noexcept(_Nothrow_hash<_Traits, key_type>) {
@@ -1940,9 +1936,9 @@ public:
         // a copy; otherwise, allow allocators that support only homogeneous compare.
 #ifdef _USE_HETEROGENEOUS_ALLOCATOR_COMPARE_IN_INTERNAL_CHECK
         _STL_INTERNAL_CHECK(_List._Getal() == _Vec._Mypair._Get_first());
-#else // _USE_HETEROGENEOUS_ALLOCATOR_COMPARE_IN_INTERNAL_CHECK
+#else
         _STL_INTERNAL_CHECK(static_cast<_Aliter>(_List._Getal()) == _Vec._Mypair._Get_first());
-#endif // _USE_HETEROGENEOUS_ALLOCATOR_COMPARE_IN_INTERNAL_CHECK
+#endif
 #ifdef _STL_INTERNAL_CHECK_EXHAUSTIVE
         size_type _Elements = 0;
         const auto _End     = _Unchecked_end();

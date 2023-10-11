@@ -50,7 +50,7 @@ constexpr bool test_one(Rng&& rng) {
     // ... with lvalue argument
     STATIC_ASSERT(CanViewElements<Rng&>);
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
-    if constexpr (CanViewElements<Rng&>) { // Validate lvalue
+    { // Validate lvalue
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::elements<0>(rng)), R>);
@@ -438,12 +438,10 @@ int main() {
         instantiation_test();
     }
 
-#ifndef _M_CEE // TRANSITION, VSO-1666180
     { // Validate a view borrowed range
         constexpr auto v = views::iota(0ull, ranges::size(expected_keys))
                          | views::transform([](auto i) { return make_pair(expected_keys[i], expected_values[i]); });
         STATIC_ASSERT(test_one(v));
         test_one(v);
     }
-#endif // _M_CEE
 }

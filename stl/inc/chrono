@@ -35,7 +35,7 @@
 #include <concepts>
 #include <format>
 #include <iomanip>
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -1917,7 +1917,7 @@ namespace chrono {
         const time_zone& _Left, const time_zone& _Right) noexcept {
         return _Left.name() <=> _Right.name();
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     // [time.zone.leap]
 
@@ -2008,7 +2008,7 @@ namespace chrono {
         const leap_second& _Left, const leap_second& _Right) noexcept {
         return _Left.date() <=> _Right.date();
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     // [time.zone.link]
 
@@ -2041,7 +2041,7 @@ namespace chrono {
         const time_zone_link& _Left, const time_zone_link& _Right) noexcept {
         return _Left.name() <=> _Right.name();
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     // [time.zone.db]
 
@@ -5293,14 +5293,14 @@ namespace chrono {
             if constexpr (_Is_specialization_v<_Ty, duration>) {
                 if constexpr (!treat_as_floating_point_v<typename _Ty::rep>) {
                     if (_Specs._Precision != -1) {
-                        _THROW(format_error("Precision specification invalid for chrono::duration type with "
-                                            "integral representation type, see N4950 [time.format]/1."));
+                        _Throw_format_error("Precision specification invalid for chrono::duration type with "
+                                            "integral representation type, see N4950 [time.format]/1.");
                     }
                 }
             } else {
                 if (_Specs._Precision != -1) {
-                    _THROW(format_error("Precision specification invalid for non-chrono::duration type, "
-                                        "see N4950 [time.format]/1."));
+                    _Throw_format_error("Precision specification invalid for non-chrono::duration type, "
+                                        "see N4950 [time.format]/1.");
                 }
             }
 
@@ -5747,8 +5747,7 @@ namespace chrono {
                         return true;
                     } else if constexpr (is_same_v<_Ty, month_day_last>) {
                         if (_Val.month() >= February) {
-                            _THROW(
-                                format_error("The day of year for a month_day_last other than January is ambiguous"));
+                            _Throw_format_error("The day of year for a month_day_last other than January is ambiguous");
                         }
                         return true;
                     } else if constexpr (_Is_ymd) {
@@ -5987,7 +5986,7 @@ namespace chrono {
         return _STD move(_Os).str();
     }
 } // namespace chrono
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 inline namespace literals {
     inline namespace chrono_literals {

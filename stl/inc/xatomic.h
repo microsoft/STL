@@ -30,9 +30,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _INTRIN_ACQ_REL(x) x
 #ifdef _M_CEE_PURE
 #define _YIELD_PROCESSOR()
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 #define _YIELD_PROCESSOR() _mm_pause()
-#endif // ^^^ !_M_CEE_PURE ^^^
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 #elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _INTRIN_RELAXED(x) _CONCAT(x, _nf)
@@ -89,7 +89,7 @@ _EXPORT_STD inline constexpr memory_order memory_order_acquire = memory_order::a
 _EXPORT_STD inline constexpr memory_order memory_order_release = memory_order::release;
 _EXPORT_STD inline constexpr memory_order memory_order_acq_rel = memory_order::acq_rel;
 _EXPORT_STD inline constexpr memory_order memory_order_seq_cst = memory_order::seq_cst;
-#else // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 enum memory_order {
     memory_order_relaxed,
     memory_order_consume,
@@ -98,7 +98,7 @@ enum memory_order {
     memory_order_acq_rel,
     memory_order_seq_cst
 };
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 using _Atomic_counter_t = unsigned long;
 

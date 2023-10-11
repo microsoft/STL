@@ -15,7 +15,7 @@ extern "C" long __isa_enabled;
 
 #ifndef _DEBUG
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
-#endif // !_DEBUG
+#endif // !defined(_DEBUG)
 
 namespace {
     bool _Use_avx2() noexcept {
@@ -31,7 +31,7 @@ namespace {
         return __isa_enabled & (1 << __ISA_AVAILABLE_SSE2);
 #else
         return true;
-#endif // _M_IX86
+#endif
     }
 
     struct [[nodiscard]] _Zeroupper_on_exit { // TRANSITION, DevCom-10331414

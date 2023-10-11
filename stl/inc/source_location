@@ -20,15 +20,25 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#ifndef _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
+#ifdef __EDG__ // TRANSITION, DevCom-10199227
+#define _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION 0
+#elif defined(__clang__) // TRANSITION, Clang 17 has this builtin
+#define _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION __has_builtin(__builtin_FUNCSIG)
+#else // ^^^ Clang / MSVC vvv
+#define _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION 1
+#endif // ^^^ MSVC ^^^
+#endif // ^^^ !defined(_USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION) ^^^
+
 _STD_BEGIN
 _EXPORT_STD struct source_location {
     _NODISCARD static consteval source_location current(const uint_least32_t _Line_ = __builtin_LINE(),
         const uint_least32_t _Column_ = __builtin_COLUMN(), const char* const _File_ = __builtin_FILE(),
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10199227 and LLVM-58951
-        const char* const _Function_ = __builtin_FUNCTION()
-#else // ^^^ workaround / no workaround vvv
+#if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
         const char* const _Function_ = __builtin_FUNCSIG()
-#endif // TRANSITION, DevCom-10199227 and LLVM-58951
+#else // ^^^ detailed / basic vvv
+        const char* const _Function_ = __builtin_FUNCTION()
+#endif // ^^^ basic ^^^
             ) noexcept {
         source_location _Result{};
         _Result._Line     = _Line_;
@@ -65,6 +75,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX20
+#endif // ^^^ _HAS_CXX20 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _SOURCE_LOCATION_

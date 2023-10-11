@@ -1227,9 +1227,9 @@ public:
 
 #if _HAS_CXX20
         return _Removed;
-#else // _HAS_CXX20
+#else
         (void) _Removed;
-#endif // _HAS_CXX20
+#endif
     }
 
     auto unique() { // erase each element matching previous
@@ -1257,9 +1257,9 @@ public:
 
 #if _HAS_CXX20
         return _Removed;
-#else // _HAS_CXX20
+#else
         (void) _Removed;
-#endif // _HAS_CXX20
+#endif
     }
 
     void merge(forward_list& _Right) { // merge in elements from _Right, both ordered by operator<
@@ -1468,7 +1468,7 @@ private:
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         if (this != _STD addressof(_Right)) {
@@ -1497,7 +1497,7 @@ private:
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
 
         if (_First == _Last) {
             return;

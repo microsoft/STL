@@ -14,7 +14,7 @@ static std::_Init_locks initlocks;
 
 _STD_BEGIN
 
-__PURE_APPDOMAIN_GLOBAL static wfilebuf wfout(_cpp_stdout);
+__PURE_APPDOMAIN_GLOBAL static wfilebuf wfout(stdout);
 #if defined(_M_CEE_PURE)
 __PURE_APPDOMAIN_GLOBAL extern wostream wcout(&wfout);
 #else

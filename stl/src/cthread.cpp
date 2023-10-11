@@ -12,8 +12,6 @@
 
 #include <Windows.h>
 
-#include "awint.hpp"
-
 namespace {
     using _Thrd_start_t = int (*)(void*);
 
@@ -42,17 +40,17 @@ namespace {
 _EXTERN_C
 
 // TRANSITION, ABI: _Thrd_exit() is preserved for binary compatibility
-[[noreturn]] _CRTIMP2_PURE void _Thrd_exit(int res) { // terminate execution of calling thread
+[[noreturn]] _CRTIMP2_PURE void __cdecl _Thrd_exit(int res) { // terminate execution of calling thread
     _endthreadex(res);
 }
 
 // TRANSITION, ABI: _Thrd_start() is preserved for binary compatibility
-_CRTIMP2_PURE _Thrd_result _Thrd_start(_Thrd_t* thr, _Thrd_callback_t func, void* b) { // start a thread
+_CRTIMP2_PURE _Thrd_result __cdecl _Thrd_start(_Thrd_t* thr, _Thrd_callback_t func, void* b) { // start a thread
     thr->_Hnd = reinterpret_cast<HANDLE>(_beginthreadex(nullptr, 0, func, b, 0, &thr->_Id));
     return thr->_Hnd == nullptr ? _Thrd_result::_Error : _Thrd_result::_Success;
 }
 
-_Thrd_result _Thrd_join(_Thrd_t thr, int* code) { // returns when thread terminates
+_CRTIMP2_PURE _Thrd_result __cdecl _Thrd_join(_Thrd_t thr, int* code) { // returns when thread terminates
     if (WaitForSingleObjectEx(thr._Hnd, INFINITE, FALSE) == WAIT_FAILED) {
         return _Thrd_result::_Error;
     }
@@ -68,11 +66,12 @@ _Thrd_result _Thrd_join(_Thrd_t thr, int* code) { // returns when thread termina
     return CloseHandle(thr._Hnd) ? _Thrd_result::_Success : _Thrd_result::_Error;
 }
 
-_Thrd_result _Thrd_detach(_Thrd_t thr) { // tell OS to release thread's resources when it terminates
+_CRTIMP2_PURE _Thrd_result __cdecl _Thrd_detach(_Thrd_t thr) {
+    // tell OS to release thread's resources when it terminates
     return CloseHandle(thr._Hnd) ? _Thrd_result::_Success : _Thrd_result::_Error;
 }
 
-void _Thrd_sleep(const _timespec64* xt) { // suspend thread until time xt
+_CRTIMP2_PURE void __cdecl _Thrd_sleep(const _timespec64* xt) { // suspend thread until time xt
     _timespec64 now;
     _Timespec64_get_sys(&now);
     do { // sleep and check time
@@ -81,35 +80,35 @@ void _Thrd_sleep(const _timespec64* xt) { // suspend thread until time xt
     } while (now.tv_sec < xt->tv_sec || now.tv_sec == xt->tv_sec && now.tv_nsec < xt->tv_nsec);
 }
 
-void _Thrd_yield() { // surrender remainder of timeslice
+_CRTIMP2_PURE void __cdecl _Thrd_yield() { // surrender remainder of timeslice
     SwitchToThread();
 }
 
 // TRANSITION, ABI: _Thrd_equal() is preserved for binary compatibility
-_CRTIMP2_PURE int _Thrd_equal(_Thrd_t thr0, _Thrd_t thr1) { // return 1 if thr0 and thr1 identify same thread
+_CRTIMP2_PURE int __cdecl _Thrd_equal(_Thrd_t thr0, _Thrd_t thr1) { // return 1 if thr0 and thr1 identify same thread
     return thr0._Id == thr1._Id;
 }
 
 // TRANSITION, ABI: _Thrd_current() is preserved for binary compatibility
-_CRTIMP2_PURE _Thrd_t _Thrd_current() { // return _Thrd_t identifying current thread
+_CRTIMP2_PURE _Thrd_t __cdecl _Thrd_current() { // return _Thrd_t identifying current thread
     _Thrd_t result;
     result._Hnd = nullptr;
     result._Id  = GetCurrentThreadId();
     return result;
 }
 
-_Thrd_id_t _Thrd_id() { // return unique id for current thread
+_CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id() { // return unique id for current thread
     return GetCurrentThreadId();
 }
 
-unsigned int _Thrd_hardware_concurrency() { // return number of processors
+_CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() { // return number of processors
     SYSTEM_INFO info;
     GetNativeSystemInfo(&info);
     return info.dwNumberOfProcessors;
 }
 
 // TRANSITION, ABI: _Thrd_create() is preserved for binary compatibility
-_CRTIMP2_PURE _Thrd_result _Thrd_create(_Thrd_t* thr, _Thrd_start_t func, void* d) { // create thread
+_CRTIMP2_PURE _Thrd_result __cdecl _Thrd_create(_Thrd_t* thr, _Thrd_start_t func, void* d) { // create thread
     _Thrd_result res;
     _Thrd_binder b;
     int started = 0;

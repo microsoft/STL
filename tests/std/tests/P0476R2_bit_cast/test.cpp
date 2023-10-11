@@ -32,7 +32,7 @@ struct middle_class_2 {
 };
 
 struct derived_class : middle_class_1, middle_class_2 {
-    virtual void a_member_function_2() override {}
+    void a_member_function_2() override {}
 };
 
 struct test_struct_1 {
