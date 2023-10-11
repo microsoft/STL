@@ -2864,14 +2864,15 @@ namespace ranges {
             if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
+                    const auto _Count     = _Last - _First;
                     const auto _First_ptr = _To_address(_First);
-                    const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                    const auto _Last_ptr  = _First_ptr + _Count;
 
                     const auto _Result = __std_find_last_trivial(_First_ptr, _Last_ptr, _Value);
                     if constexpr (is_pointer_v<_It>) {
-                        return {_Result, _STD move(_Last)};
+                        return {_Result, _Last_ptr};
                     } else {
-                        return {_STD move(_First) + (_Result - _First_ptr), _STD move(_Last)};
+                        return {_First + (_Result - _First_ptr), _First + _Count};
                     }
                 }
             }
