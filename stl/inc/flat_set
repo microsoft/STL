@@ -101,7 +101,7 @@ public:
     template <_Allocator_for<container_type> _Alloc>
     explicit _Base_flat_set(const _Alloc& _Al) : _Mycont(_Al), _Mycomp() {}
 
-    // FIXME, an allocator-aware container may not support "C(_First, _Last, _Al)".
+    // TRANSITION, an allocator-aware container may not support "C(_First, _Last, _Al)".
     template <input_iterator _Iter>
     _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
         : _Base_flat_set(container_type(_First, _Last), _Comp) {}
@@ -111,7 +111,7 @@ public:
     template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Base_flat_set(container_type(_First, _Last, _Al)) {}
 
-    // FIXME, an allocator-aware container may not support "C(from_range, _STD forward<_Rng>(_Range), _Al)".
+    // TRANSITION, an allocator-aware container may not support "C(from_range, _STD forward<_Rng>(_Range), _Al)".
     template <_Container_compatible_range<_Kty> _Rng>
     _Base_flat_set(from_range_t, _Rng&& _Range)
         : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range))) {}
@@ -135,7 +135,7 @@ public:
     _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, container_type(_First, _Last, _Al)) {}
 
-    // FIXME, an allocator-aware container may not support "C(_Ilist, _Al)".
+    // TRANSITION, an allocator-aware container may not support "C(_Ilist, _Al)".
     _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
         : _Base_flat_set(container_type(_Ilist), _Comp) {}
     template <_Allocator_for<container_type> _Alloc>
@@ -237,7 +237,7 @@ public:
     }
 
     // modifiers
-    // FIXME, the "insert" and "erase" methods may not be able to restore the invariant, if the underlying
+    // TRANSITION, the "insert" and "erase" methods may not be able to restore the invariant, if the underlying
     // container is unable to provide strong guarantee for "erase" and "insert" methods.
     template <class... _Args>
     auto emplace(_Args&&... _Vals) {
@@ -511,17 +511,16 @@ private:
 
     template <class _Ty>
         requires _Multi // flat_multiset
-    _NODISCARD iterator _Emplace(_Ty&& _Val) {
+    iterator _Emplace(_Ty&& _Val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
         return _Mycont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
     }
 
     template <class _Ty>
         requires (!_Multi) // flat_set
-    _NODISCARD pair<iterator, bool> _Emplace(_Ty&& _Val) {
+    pair<iterator, bool> _Emplace(_Ty&& _Val) {
         const iterator _Where = lower_bound(_Val);
         if (_Where != end() && !_Compare(_Val, *_Where)) {
-            // the set already contains _Val.
             return pair{_Where, false};
         }
 
@@ -529,18 +528,18 @@ private:
             return pair{_Mycont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
         } else {
             // heterogeneous insertion
+            // TRANSITION, the requirements may be stricter than needed by the standard.
             _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
             _Kty _Keyval(_STD forward<_Ty>(_Val));
-            // precondition: `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2)
-            // the precondition cannot guarantee `_Can_insert(_Where, _Keyval)` here.
-            _STL_ASSERT(!contains(_Keyval), "find(_Val) == end(), but find(_Keyval) != end()");
-            return pair{_Emplace_hint(_Where, _STD move(_Keyval)), true};
+            _STL_ASSERT(_Can_insert(_Where, _Keyval), "The conversion from the heterogeneous key to key_type should "
+                                                      "be consistent with the heterogeneous lookup!");
+            return pair{_Mycont.emplace(_Where, _STD move(_Keyval)), true};
         }
     }
 
     template <class _Ty>
         requires _Multi // flat_multiset
-    _NODISCARD iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
+    iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
 
         const const_iterator _Begin = cbegin();
@@ -566,7 +565,7 @@ private:
 
     template <class _Ty>
         requires (!_Multi) // flat_set
-    _NODISCARD iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
+    iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
@@ -585,7 +584,7 @@ private:
         }
 
         if (_Where != _End && !_Compare(_Val, *_Where)) {
-            // the set already contains _Val; return _Where as iterator type.
+            // convert const_iterator to iterator
             return _Mycont.begin() + (_Where - _Begin);
         }
 
@@ -594,12 +593,12 @@ private:
             return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
         } else {
             // heterogeneous insertion
+            // TRANSITION, the requirements may be stricter than needed by the standard.
             _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
             _Kty _Keyval(_STD forward<_Ty>(_Val));
-            // precondition: `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2)
-            // the precondition cannot guarantee `_Can_insert(_Where, _Keyval)` here.
-            _STL_ASSERT(!contains(_Keyval), "find(_Val) == end(), but find(_Keyval) != end()");
-            return _Emplace_hint(_Where, _STD move(_Keyval));
+            _STL_ASSERT(_Can_insert(_Where, _Keyval), "The conversion from the heterogeneous key to key_type should "
+                                                      "be consistent with the heterogeneous lookup!");
+            return _Mycont.emplace(_Where, _STD move(_Keyval));
         }
     }
 
@@ -611,7 +610,7 @@ private:
     }
 
     template <class _Ty>
-    _NODISCARD size_type _Erase(const _Ty& _Val) {
+    size_type _Erase(const _Ty& _Val) {
         _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Ty, _Kty>);
 
         if constexpr (!_Multi && is_same_v<_Ty, _Kty>) {
