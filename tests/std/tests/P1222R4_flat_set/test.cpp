@@ -94,7 +94,7 @@ void assert_noexcept_requirements(T& s) {
 }
 
 template <class T>
-void assert_all_requirements_and_equals(const T& s, const initializer_list<typename T::value_type>& il) {
+void assert_all_requirements(const T& s) {
     assert_container_requirements(s);
     assert_reversible_container_requirements(s);
 
@@ -113,6 +113,11 @@ void assert_all_requirements_and_equals(const T& s, const initializer_list<typen
             }
         }
     }
+}
+
+template <class T>
+void assert_all_requirements_and_equals(const T& s, const initializer_list<typename T::value_type>& il) {
+    assert_all_requirements(s);
 
     if (!std::equal(s.begin(), s.end(), il.begin(), il.end())) {
         cout << "Expected: {";
@@ -548,6 +553,131 @@ void test_extract_2() {
     assert_all_requirements_and_equals(fs, {}); // assert empty
 }
 
+void test_invariant_robustness() {
+    static int control_throw        = 0;
+    static constexpr int wont_throw = INT_MAX;
+
+    struct weird_elem {
+        static void countdown() {
+            if (control_throw == wont_throw) {
+                return;
+            }
+            if (--control_throw <= 0) {
+                throw 0; // will be caught by "catch (...)".
+            }
+        }
+
+        int key;
+
+        weird_elem(int k = 0) : key(k) {}
+        bool operator==(const weird_elem& other) const {
+            return key == other.key;
+        }
+
+        weird_elem(const weird_elem& other) : key(other.key) {
+            countdown();
+        }
+
+        weird_elem(weird_elem&& other) : key(exchange(other.key, 0)) {
+            countdown();
+        }
+
+        weird_elem& operator=(const weird_elem& other) {
+            countdown();
+            key = other.key;
+            return *this;
+        }
+
+        weird_elem& operator=(weird_elem&& other) {
+            countdown();
+            key = exchange(other.key, 0);
+            return *this;
+        }
+    };
+
+    class weird_container : public vector<weird_elem> {
+    private:
+        using base = vector<weird_elem>;
+
+    public:
+        using base::base;
+        weird_container(const weird_container&) = default;
+
+        // this copy-assigment cannot provide strong-guarantee for `this`:
+        weird_container& operator=(const weird_container&) = default;
+
+        // this move-ctor cannot provide strong-guarantee for `other`, and even successful, will leave elements of other
+        // in moved state:
+        weird_container(weird_container&& other) noexcept(false) {
+            reserve(other.size());
+            for (auto& e : other) {
+                push_back(std::move(e));
+            }
+        }
+
+        // this move-assignment cannot provide strong-guarantee for `this` and `other`, and even successful, will leave
+        // elements of other in moved state:
+        weird_container& operator=(weird_container&& other) noexcept(false) {
+            if (size() >= other.size()) {
+                for (size_t i = 0; i < other.size(); ++i) {
+                    at(i) = std::move(other.at(i));
+                }
+                resize(other.size());
+            } else {
+                base::operator=(static_cast<base&&>(other));
+            }
+            return *this;
+        }
+    };
+
+    using SetT = flat_set<weird_elem, key_comparer, weird_container>;
+
+    // copy-assignment
+    {
+        control_throw = wont_throw;
+        SetT fs{1, 2, 3, 4, 5};
+        SetT fs2{6, 7, 8, 9};
+
+        try {
+            control_throw = 3;
+            fs            = fs2;
+        } catch (...) {
+            control_throw = wont_throw;
+            assert_all_requirements(fs);
+        }
+    }
+    // move-ctor
+    {
+        control_throw = wont_throw;
+        SetT fs{1, 2, 3, 4, 5};
+        SetT fs2{std::move(fs)};
+        assert_all_requirements(fs);
+
+        try {
+            control_throw = 2;
+            SetT fs3{std::move(fs2)};
+        } catch (...) {
+            control_throw = wont_throw;
+            assert_all_requirements(fs2);
+        }
+    }
+    // move-assignment
+    {
+        control_throw = wont_throw;
+        SetT fs{1, 2, 3, 4, 5};
+        SetT fs2{6, 7, 8, 9};
+
+        try {
+            control_throw = 2;
+            fs            = std::move(fs2);
+        } catch (...) {
+            control_throw = wont_throw;
+            assert_all_requirements(fs);
+            assert_all_requirements(fs2);
+        }
+    }
+}
+
 // TRANSITION, too simple
 void test_erase_1() {
     flat_set<int> fs{1};
@@ -742,6 +872,7 @@ int main() {
 
     test_erase_1();
     test_erase_2();
+    test_invariant_robustness();
 
     test_erase_if<flat_set<int>>();
     test_erase_if<flat_multiset<int>>();
