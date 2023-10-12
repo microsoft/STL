@@ -8,6 +8,9 @@
 #include <Windows.h>
 
 _STD_BEGIN
+// Returns BOOL, nonzero to indicate success, zero for failure
+using _Execute_once_fp_t = int(__stdcall*)(void*, void*, void**);
+
 // TRANSITION, ABI
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
     once_flag& _Flag, _Execute_once_fp_t _Callback, void* _Pv) noexcept { // wrap Win32 InitOnceExecuteOnce()
