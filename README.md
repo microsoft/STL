@@ -6,8 +6,8 @@ which ships as part of the MSVC toolset and the Visual Studio IDE.
 * Our [Changelog][] tracks which updates to this repository appear in each VS release.
 * Our [Status Chart][] displays our overall progress over time.
 * Join our [Discord server][].
-
-[![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=main)][Pipelines]
+* [![Build Status][STL-CI-badge]][STL-CI-link] (STL-CI build status)
+* [![Build Status][STL-ASan-CI-badge]][STL-ASan-CI-link] (STL-ASan-CI build status)
 
 # What This Repo Is Useful For
 
@@ -535,7 +535,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [N4958]: https://wg21.link/n4958
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
-[Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
+[STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"
+[STL-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
+[STL-ASan-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-ASan-CI?branchName=main "STL-ASan-CI"
+[STL-ASan-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=5&branchName=main
 [Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Status Chart]: https://microsoft.github.io/STL/
