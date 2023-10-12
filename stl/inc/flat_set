@@ -497,15 +497,17 @@ private:
     _NODISCARD pair<iterator, bool> _Emplace(_Ty&& _Val) {
         const iterator _Where = lower_bound(_Val);
         if (_Where != end() && !_Compare(_Val, *_Where)) {
-            // the set already contains _Val.
+            // *_Where is equivalent to _Val.
             return pair{_Where, false};
         }
 
         if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
+            _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
             return pair{_Mycont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
         } else {
             // heterogeneous insertion
             _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
+            _STL_INTERNAL_CHECK(!contains(_Val));
             _Kty _Keyval(_STD forward<_Ty>(_Val));
             // precondition: `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2)
             // the precondition cannot guarantee `_Can_insert(_Where, _Keyval)` here.
@@ -561,7 +563,7 @@ private:
         }
 
         if (_Where != _End && !_Compare(_Val, *_Where)) {
-            // the set already contains _Val; return _Where as iterator type.
+            // *_Where is equivalent to _Val; convert _Where to iterator type.
             return _Mycont.begin() + (_Where - _Begin);
         }
 
@@ -571,6 +573,7 @@ private:
         } else {
             // heterogeneous insertion
             _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
+            _STL_INTERNAL_CHECK(!contains(_Val));
             _Kty _Keyval(_STD forward<_Ty>(_Val));
             // precondition: `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2)
             // the precondition cannot guarantee `_Can_insert(_Where, _Keyval)` here.

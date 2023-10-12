@@ -359,8 +359,7 @@ void test_insert_transparent() {
 
 void test_insert_transparent_partially_inconsistent() {
     // `broken_key` makes inconsistency between transparent searching and conversion.
-    // however, the standard's current specification (per N4958 [flat.set.modifiers]/2) is unable to prohibit types like
-    // this.
+    // however, the specification (per (N4958 [flat.set.modifiers]/2) is not strict enough to reject types like this.
     struct broken_key {
         int key;
         explicit operator int() const {
@@ -371,13 +370,16 @@ void test_insert_transparent_partially_inconsistent() {
     flat_set<int, key_comparer> fs{0, 3, 5};
 
     // fs.find(10) == fs.end(), but fs.find(10-10) != fs.end(), so this is a precondition violation:
-    // fs.insert(broken_key{ 10 });
+    // fs.insert(broken_key{10});
     // fs.find(0) != fs.end(), but fs.find(0-10) == fs.end(), so this is a precondition violation:
-    // fs.insert(broken_key{ 0 });
+    // fs.insert(broken_key{0});
 
     // fs.find(2) == fs.end(), and fs.find(2-10) == fs.end(), so this is allowed by the standard:
     fs.insert(broken_key{2});
     assert_all_requirements_and_equals(fs, {-8, 0, 3, 5});
+    // fs.find(2) == fs.end(), and fs.find(2-10) != fs.end(), the same expression becomes invalid now:
+    // fs.insert(broken_key{2});
+
     // fs.find(9) == fs.end(), and fs.find(9-10) == fs.end(), so this is allowed by the standard:
     fs.insert(fs.end(), broken_key{9});
     assert_all_requirements_and_equals(fs, {-8, -1, 0, 3, 5});
@@ -625,8 +627,8 @@ void test_observers() {
 
     SetT fs;
     static_assert(is_same_v<typename SetT::key_compare, typename SetT::value_compare>);
-    static_assert(is_same_v<decltype(fs.key_comp()), typename SetT::key_compare>);
-    static_assert(is_same_v<decltype(fs.value_comp()), typename SetT::value_compare>);
+    static_assert(is_same_v<decltype(as_const(fs).key_comp()), typename SetT::key_compare>);
+    static_assert(is_same_v<decltype(as_const(fs).value_comp()), typename SetT::value_compare>);
     assert(fs.key_comp().state == 0);
     assert(fs.value_comp().state == 0);
 
@@ -646,8 +648,8 @@ void test_set_operations() {
     static_assert(is_same_v<decltype(fs.find(0)), iterator>);
     static_assert(is_same_v<decltype(as_const(fs).find(0)), const_iterator>);
 
-    static_assert(is_same_v<decltype(fs.count(0)), typename SetT::size_type>);
-    static_assert(is_same_v<decltype(fs.contains(0)), bool>);
+    static_assert(is_same_v<decltype(as_const(fs).count(0)), typename SetT::size_type>);
+    static_assert(is_same_v<decltype(as_const(fs).contains(0)), bool>);
 
     static_assert(is_same_v<decltype(fs.lower_bound(0)), iterator>);
     static_assert(is_same_v<decltype(as_const(fs).lower_bound(0)), const_iterator>);
@@ -657,7 +659,7 @@ void test_set_operations() {
     static_assert(is_same_v<decltype(fs.equal_range(0)), pair<iterator, iterator>>);
     static_assert(is_same_v<decltype(as_const(fs).equal_range(0)), pair<const_iterator, const_iterator>>);
 
-    if constexpr (!_Is_specialization_v<SetT, flat_multiset>) {
+    if constexpr (_Is_specialization_v<SetT, flat_set>) {
         // flat_set:
         assert_all_requirements_and_equals(fs, {2, 3, 8, 11, 20});
 
@@ -731,7 +733,7 @@ void test_set_operations_transparent() {
     assert(fs.lower_bound(shouldnt_convert{8}) == fs.end());
     assert(fs.upper_bound(shouldnt_convert{2}) == fs.find(3));
     auto [first, last] = fs.equal_range(shouldnt_convert{5});
-    assert(first != last);
+    assert(first + 1 == last);
 }
 
 int main() {
