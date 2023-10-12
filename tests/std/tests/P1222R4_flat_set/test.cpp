@@ -529,8 +529,8 @@ void test_invariant_robustness() {
         // this copy-assignment cannot provide strong-guarantee for `this`:
         odd_container& operator=(const odd_container&) = default;
 
-        // this move-ctor cannot provide strong-guarantee for `other`, and even successful, will leave elements of
-        // `other` in moved state:
+        // this move-ctor cannot provide strong-guarantee for `other`, and even successful, can leave elements of
+        // `other` in moved-from state:
         odd_container(odd_container&& other) {
             reserve(other.size());
             for (auto& e : other) {
@@ -538,8 +538,8 @@ void test_invariant_robustness() {
             }
         }
 
-        // this move-assignment cannot provide strong-guarantee for `this` and `other`, and even successful, will leave
-        // elements of `other` in moved state:
+        // this move-assignment cannot provide strong-guarantee for `this` and `other`, and even successful, can leave
+        // elements of `other` in moved-from state:
         odd_container& operator=(odd_container&& other) {
             if (size() >= other.size()) {
                 std::move(other.begin(), other.end(), begin());
