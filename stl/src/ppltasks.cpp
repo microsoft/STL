@@ -113,23 +113,15 @@ namespace Concurrency {
             }
 
             bool isCausalitySupported() {
-                // TRANSITION, ABI
-                _Execute_once(
-                    m_stateFlag,
-                    [](void*, void* _This_raw, void**) -> int {
-                        const auto _This = static_cast<AsyncCausalityTracer*>(_This_raw);
-                        ComPtr<IAsyncCausalityTracerStatics> causalityAPIs;
-                        if (SUCCEEDED(GetActivationFactory(
-                                HStringReference(RuntimeClass_Windows_Foundation_Diagnostics_AsyncCausalityTracer)
-                                    .Get(),
-                                &causalityAPIs))) {
-                            _This->m_causalityAPIs = causalityAPIs.Detach();
-                            _This->m_isSupported   = true;
-                        }
-
-                        return 1;
-                    },
-                    this);
+                std::call_once(m_stateFlag, [this] {
+                    ComPtr<IAsyncCausalityTracerStatics> causalityAPIs;
+                    if (SUCCEEDED(GetActivationFactory(
+                            HStringReference(RuntimeClass_Windows_Foundation_Diagnostics_AsyncCausalityTracer).Get(),
+                            &causalityAPIs))) {
+                        this->m_causalityAPIs = causalityAPIs.Detach();
+                        this->m_isSupported   = true;
+                    }
+                });
                 return m_isSupported;
             }
         };
