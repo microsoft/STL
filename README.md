@@ -6,8 +6,8 @@ which ships as part of the MSVC toolset and the Visual Studio IDE.
 * Our [Changelog][] tracks which updates to this repository appear in each VS release.
 * Our [Status Chart][] displays our overall progress over time.
 * Join our [Discord server][].
-* [![Build Status][STL-CI-badge]][STL-CI-link] (STL-CI build status)
-* [![Build Status][STL-ASan-CI-badge]][STL-ASan-CI-link] (STL-ASan-CI build status)
+* [![CI Status Badge][STL-CI-badge]][STL-CI-link] (STL-CI build status)
+* [![ASan CI Status Badge][STL-ASan-CI-badge]][STL-ASan-CI-link] (STL-ASan-CI build status)
 
 # What This Repo Is Useful For
 
