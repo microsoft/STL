@@ -477,15 +477,15 @@ void test_extract_2() {
 }
 
 void test_invariant_robustness() {
-    static int control_throw        = 0;
-    static constexpr int wont_throw = INT_MAX;
+    static int copy_limit          = 2;
+    static constexpr int unlimited = INT_MAX;
 
     struct odd_key {
         static void countdown() {
-            if (control_throw == wont_throw) {
+            if (copy_limit == unlimited) {
                 return;
             }
-            if (--control_throw <= 0) {
+            if (--copy_limit < 0) {
                 throw 0; // will be caught by "catch (...)".
             }
         }
@@ -497,12 +497,14 @@ void test_invariant_robustness() {
             return key == other.key;
         }
 
-        odd_key(const odd_key& other) : key(other.key) {
+        odd_key(const odd_key& other) {
             countdown();
+            key = other.key;
         }
 
-        odd_key(odd_key&& other) : key(exchange(other.key, 0)) {
+        odd_key(odd_key&& other) {
             countdown();
+            key = exchange(other.key, 0);
         }
 
         odd_key& operator=(const odd_key& other) {
@@ -527,9 +529,13 @@ void test_invariant_robustness() {
         odd_container(const odd_container&) = default;
 
         // this copy-assignment cannot provide strong-guarantee for `this`:
-        odd_container& operator=(const odd_container&) = default;
+        odd_container& operator=(const odd_container& other) {
+            resize(other.size());
+            std::copy(other.begin(), other.end(), begin());
+            return *this;
+        }
 
-        // this move-ctor cannot provide strong-guarantee for `other`, and even successful, can leave elements of
+        // this move-ctor cannot provide strong-guarantee for `other`, and even successful, will leave elements of
         // `other` in moved-from state:
         odd_container(odd_container&& other) {
             reserve(other.size());
@@ -538,15 +544,11 @@ void test_invariant_robustness() {
             }
         }
 
-        // this move-assignment cannot provide strong-guarantee for `this` and `other`, and even successful, can leave
+        // this move-assignment cannot provide strong-guarantee for `this` and `other`, and even successful, will leave
         // elements of `other` in moved-from state:
         odd_container& operator=(odd_container&& other) {
-            if (size() >= other.size()) {
-                std::move(other.begin(), other.end(), begin());
-                resize(other.size());
-            } else {
-                base::operator=(static_cast<base&&>(other));
-            }
+            resize(other.size());
+            std::move(other.begin(), other.end(), begin());
             return *this;
         }
     };
@@ -555,39 +557,39 @@ void test_invariant_robustness() {
 
     // copy-assignment
     {
-        control_throw = wont_throw;
-        SetT fs{1, 2, 3, 4, 5};
-        SetT fs2{6, 7, 8, 9};
+        copy_limit = unlimited;
+        SetT fs1{0, 1, 2, 3, 4};
+        SetT fs2{5, 6, 7, 8, 9};
 
-        assert(ranges::equal(fs, vector{1, 2, 3, 4, 5}, {}, &odd_key::key));
-        assert(ranges::equal(fs2, vector{6, 7, 8, 9}, {}, &odd_key::key));
+        assert(ranges::equal(fs1, vector{0, 1, 2, 3, 4}, {}, &odd_key::key));
+        assert(ranges::equal(fs2, vector{5, 6, 7, 8, 9}, {}, &odd_key::key));
 
         bool caught = false;
         try {
-            control_throw = 2;
-            fs            = fs2;
+            copy_limit = 2;
+            fs1        = fs2; // will throw after copying 2 odd_key.
         } catch (...) {
-            control_throw = wont_throw;
-            assert_all_requirements(fs);
+            copy_limit = unlimited;
+            assert_all_requirements(fs1);
             caught = true;
         }
         assert(caught);
     }
     // move-ctor
     {
-        control_throw = wont_throw;
-        SetT fs{1, 2, 3, 4, 5};
-        SetT fs2{std::move(fs)};
+        copy_limit = unlimited;
+        SetT fs1{0, 1, 2, 3, 4};
+        SetT fs2{std::move(fs1)};
 
-        assert_all_requirements(fs);
-        assert(ranges::equal(fs2, vector{1, 2, 3, 4, 5}, {}, &odd_key::key));
+        assert_all_requirements(fs1);
+        assert(ranges::equal(fs2, vector{0, 1, 2, 3, 4}, {}, &odd_key::key));
 
         bool caught = false;
         try {
-            control_throw = 2;
-            SetT fs3{std::move(fs2)};
+            copy_limit = 2;
+            SetT fs3{std::move(fs2)}; // will throw after moving 2 odd_key.
         } catch (...) {
-            control_throw = wont_throw;
+            copy_limit = unlimited;
             assert_all_requirements(fs2);
             caught = true;
         }
@@ -595,22 +597,22 @@ void test_invariant_robustness() {
     }
     // move-assignment
     {
-        control_throw = wont_throw;
-        SetT fs{1, 2, 3, 4, 5};
+        copy_limit = unlimited;
+        SetT fs1{0, 1, 2, 3, 4};
         SetT fs2;
-        SetT fs3{6, 7, 8, 9};
-        fs2 = std::move(fs);
+        SetT fs3{5, 6, 7, 8, 9};
+        fs2 = std::move(fs1);
 
-        assert_all_requirements(fs);
-        assert(ranges::equal(fs2, vector{1, 2, 3, 4, 5}, {}, &odd_key::key));
-        assert(ranges::equal(fs3, vector{6, 7, 8, 9}, {}, &odd_key::key));
+        assert_all_requirements(fs1);
+        assert(ranges::equal(fs2, vector{0, 1, 2, 3, 4}, {}, &odd_key::key));
+        assert(ranges::equal(fs3, vector{5, 6, 7, 8, 9}, {}, &odd_key::key));
 
         bool caught = false;
         try {
-            control_throw = 2;
-            fs2           = std::move(fs3);
+            copy_limit = 2;
+            fs2        = std::move(fs3); // will throw after moving 2 odd_key.
         } catch (...) {
-            control_throw = wont_throw;
+            copy_limit = unlimited;
             assert_all_requirements(fs2);
             assert_all_requirements(fs3);
             caught = true;
