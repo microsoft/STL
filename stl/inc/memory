@@ -2693,15 +2693,16 @@ private:
     void _Delete_this() noexcept override { // destroy self
         constexpr size_t _Align = alignof(_Ref_count_unbounded_array_alloc);
         using _Storage          = _Alignas_storage_unit<_Align>;
+        using _Rebound_alloc    = _Rebind_alloc_t<_Alloc, _Storage>;
 
-        _Rebind_alloc_t<_Alloc, _Storage> _Al(this->_Get_val());
+        _Rebound_alloc _Al(this->_Get_val());
         const size_t _Bytes =
             _Calculate_bytes_for_flexible_array<_Ref_count_unbounded_array_alloc, _Check_overflow::_Nope>(_Size);
         const size_t _Storage_units = _Bytes / sizeof(_Storage);
 
         this->~_Ref_count_unbounded_array_alloc();
 
-        _Al.deallocate(reinterpret_cast<_Storage*>(this), _Storage_units);
+        _Al.deallocate(_STD _Refancy<_Alloc_ptr_t<_Rebound_alloc>>(reinterpret_cast<_Storage*>(this)), _Storage_units);
     }
 };
 

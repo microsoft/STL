@@ -1026,10 +1026,7 @@ _NODISCARD inline uint64_t _Right_shift_with_rounding(
     constexpr uint32_t _Total_number_of_bits = 64;
     if (_Shift >= _Total_number_of_bits) {
         if (_Shift == _Total_number_of_bits) {
-#pragma warning(push)
-#pragma warning(disable : 26454) // TRANSITION, VSO-1826196
             constexpr uint64_t _Extra_bits_mask = (1ULL << (_Total_number_of_bits - 1)) - 1;
-#pragma warning(pop)
             constexpr uint64_t _Round_bit_mask  = (1ULL << (_Total_number_of_bits - 1));
 
             const bool _Round_bit = (_Value & _Round_bit_mask) != 0;
