@@ -2718,10 +2718,12 @@ private:
 
     template <class _Iter, class _Sent, class _Size = nullptr_t>
     _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Sent _Last, _Size _Count = {}) {
-        // Pre: _First models input_iterator or meets the Cpp17InputIterator requirements
-        // Pre: [_First, _Last) is a valid range
+        // Pre: _Iter models input_iterator or meets the Cpp17InputIterator requirements.
+        // Pre: [_First, _Last) is a valid range.
+        // Pre: if _Iter models forward_iterator or meets the Cpp17ForwardIterator requirements,
+        //      then is_same_v<_Size, size_type> holds.
         // Pre: if is_same_v<_Size, size_type>, _Count is the length of [_First, _Last).
-        // Pre: *this is in small mode; the lifetime of the SSO elements has already begun
+        // Pre: *this is in small mode; the lifetime of the SSO elements has already begun.
 
         auto& _My_data  = _Mypair._Myval2;
         auto& _Al       = _Getal();
@@ -2745,35 +2747,47 @@ private:
         }
 
         _Tidy_deallocate_guard<basic_string> _Guard{this};
-        for (; _First != _Last; ++_First) {
-            if constexpr (!is_same_v<_Size, size_type>) {
-                if (_My_data._Mysize == _My_data._Myres) { // Need to grow
-                    if (_My_data._Mysize == max_size()) {
-                        _Xlen_string(); // result too long
-                    }
 
-                    _Elem* const _Old_ptr   = _My_data._Myptr();
-                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize + 1);
-                    const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
+        constexpr bool _Can_construct_by_copy =
+            _Is_specialization_v<_Traits, char_traits> && _Is_EcharT<_Elem> && is_same_v<_Size, size_type>;
 
-                    _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
-                    if (_My_data._Large_mode_engaged()) { // Need to deallocate old storage
-                        _Deallocate_for_capacity(_Al, _My_data._Bx._Ptr, _My_data._Myres);
-                        _My_data._Bx._Ptr = _New_ptr;
-                    } else {
-                        _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
+        if constexpr (_Can_construct_by_copy) {
+            const auto _Data = _My_data._Myptr();
+            _STD _Copy_n_unchecked4(_STD move(_First), _Count, _Data);
+            _My_data._Mysize = _Count;
+            _Data[_Count]    = _Elem();
+        } else {
+            for (; _First != _Last; ++_First) {
+                if constexpr (!is_same_v<_Size, size_type>) {
+                    if (_My_data._Mysize == _My_data._Myres) { // Need to grow
+                        if (_My_data._Mysize == max_size()) {
+                            _Xlen_string(); // result too long
+                        }
+
+                        _Elem* const _Old_ptr   = _My_data._Myptr();
+                        size_type _New_capacity = _Calculate_growth(_My_data._Mysize + 1);
+                        const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
+
+                        _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
+                        if (_My_data._Large_mode_engaged()) { // Need to deallocate old storage
+                            _Deallocate_for_capacity(_Al, _My_data._Bx._Ptr, _My_data._Myres);
+                            _My_data._Bx._Ptr = _New_ptr;
+                        } else {
+                            _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
+                        }
+                        _My_data._Myres = _New_capacity;
                     }
-                    _My_data._Myres = _New_capacity;
                 }
+
+                _Elem* const _Ptr = _My_data._Myptr();
+                _Traits::assign(_Ptr[_My_data._Mysize], *_First);
+                ++_My_data._Mysize;
             }
 
             _Elem* const _Ptr = _My_data._Myptr();
-            _Traits::assign(_Ptr[_My_data._Mysize], *_First);
-            ++_My_data._Mysize;
+            _Traits::assign(_Ptr[_My_data._Mysize], _Elem());
         }
 
-        _Elem* const _Ptr = _My_data._Myptr();
-        _Traits::assign(_Ptr[_My_data._Mysize], _Elem());
         _ASAN_STRING_CREATE(*this);
         _Guard._Target = nullptr;
         _Proxy._Release();
