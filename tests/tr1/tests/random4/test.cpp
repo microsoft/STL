@@ -231,7 +231,7 @@ static void tsubtract() {
 }
 
 static void tdiscard() {
-    int i;
+    STD size_t i;
     typedef STD subtract_with_carry_engine<Uint32, 24, 10, 24> rng_base_t;
     typedef STD discard_block_engine<rng_base_t, 223, 24> rng_t;
     CHECK_INT(rng_t::block_size, 223);
