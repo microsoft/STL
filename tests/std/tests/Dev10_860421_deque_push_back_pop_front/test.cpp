@@ -283,9 +283,19 @@ void test_gh_4072() {
 
     // ensure that the circular buffer is correctly handled
     {
-        std::deque<int> deq(128);
+        deque<ThrowingMovable> deq(128);
         deq.pop_back();
-        deq.push_front(0);
+        deq.emplace_front(0);
+        deq.shrink_to_fit();
+    }
+    {
+        deque<ThrowingMovable> deq(128);
+        for (int i = 0; i < 120; i++) {
+            deq.pop_back();
+        }
+        for (int i = 0; i < 5; i++) {
+            deq.emplace_front(0);
+        }
         deq.shrink_to_fit();
     }
 }
