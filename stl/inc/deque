@@ -986,19 +986,58 @@ public:
     }
 
     void shrink_to_fit() {
-        size_type _Oldcapacity = _Block_size * _Mapsize();
-        size_type _Newcapacity = _Oldcapacity / 2;
-
-        if (_Newcapacity < _Block_size * _Minimum_map_size) {
-            _Newcapacity = _Block_size * _Minimum_map_size;
+        if (empty()) {
+            if (_Map() != nullptr) {
+                _Delete_map();
+            }
+            return;
         }
 
-        if ((empty() && _Mapsize() > 0)
-            || (!empty() && size() <= _Newcapacity && _Newcapacity < _Oldcapacity)) { // worth shrinking, do it
-            deque _Tmp(
-                _STD make_move_iterator(_Unchecked_begin()), _STD make_move_iterator(_Unchecked_end()), _Getal());
-            swap(_Tmp);
+        const auto _First_block_ptr = _Map() + static_cast<_Map_difference_type>(_Myoff() / _Block_size);
+        const auto _Last_block_ptr =
+            _Map() + static_cast<_Map_difference_type>((_Myoff() + _Mysize() - 1) / _Block_size + 1);
+        const auto _Used_block_count = static_cast<size_type>(_Last_block_ptr - _First_block_ptr);
+
+        // deallocate unused blocks
+        for (auto _Block_it = _Map(); _Block_it != _First_block_ptr; ++_Block_it) {
+            if (*_Block_it != nullptr) {
+                _Getal().deallocate(*_Block_it, _Block_size);
+                *_Block_it = nullptr;
+            }
         }
+        for (auto _Block_it = _Last_block_ptr; _Block_it != _Map() + _Map_distance(); ++_Block_it) {
+            if (*_Block_it != nullptr) {
+                _Getal().deallocate(*_Block_it, _Block_size);
+                *_Block_it = nullptr;
+            }
+        }
+
+        size_type _New_block_count = 1; // should be power of 2
+        for (; _New_block_count < _Used_block_count || _New_block_count < _Minimum_map_size; _New_block_count *= 2)
+            ;
+        if (_New_block_count >= _Mapsize()) {
+            return;
+        }
+
+        // worth shrinking the internal map, do it
+
+        _Alpty _Almap(_Getal());
+        const auto _New_map = _Almap.allocate(_New_block_count);
+
+        _Orphan_all(); // the map can be shrinked, invalidate all iterators
+
+        const auto _Copy_end = _STD _Uninitialized_copy_unchecked(
+            _First_block_ptr, _Last_block_ptr, _New_map); // transfer the ownership of blocks to pointers in the new map
+        _STD _Uninitialized_value_construct_n_unchecked1(
+            _Copy_end, _New_block_count - _Used_block_count); // zero out the rest of the new map
+        _STD fill(
+            _First_block_ptr, _Last_block_ptr, nullptr); // zero out the old map because the ownership is transferred
+
+        _Delete_map();
+
+        _Map()     = _New_map;
+        _Mapsize() = _New_block_count;
+        _Myoff() %= _Block_size;
     }
 
     _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
@@ -1591,23 +1630,28 @@ private:
         _Mapsize() += _Count;
     }
 
+    void _Delete_map() noexcept {
+        _Alpty _Almap(_Getal());
+
+        for (auto _Block = _Map_distance(); _Block > 0;) { // free storage for a block and destroy pointer
+            if (_Map()[--_Block]) { // free block
+                _Getal().deallocate(_Map()[_Block], _Block_size);
+            }
+            _STD _Destroy_in_place(_Map()[_Block]); // destroy pointer to block
+        }
+
+        _Almap.deallocate(_Map(), _Mapsize()); // free storage for map
+    }
+
     void _Tidy() noexcept { // free all storage
         _Orphan_all();
 
-        _Alpty _Almap(_Getal());
         while (!empty()) {
             pop_back();
         }
 
         if (_Map() != nullptr) {
-            for (auto _Block = _Map_distance(); _Block > 0;) { // free storage for a block and destroy pointer
-                if (_Map()[--_Block]) { // free block
-                    _Getal().deallocate(_Map()[_Block], _Block_size);
-                }
-                _Destroy_in_place(_Map()[_Block]); // destroy pointer to block
-            }
-
-            _Almap.deallocate(_Map(), _Mapsize()); // free storage for map
+            _Delete_map();
         }
 
         _Mapsize() = 0;

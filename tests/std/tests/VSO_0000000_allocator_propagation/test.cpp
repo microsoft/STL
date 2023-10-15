@@ -506,7 +506,7 @@ void test_deque_shrink_to_fit_per_alloc() {
     }
 }
 
-void test_deque_shrink_to_fit() { // MSVC STL's deque::shrink_to_fit relies on swap
+void test_deque_shrink_to_fit() { // regression test: MSVC STL's deque::shrink_to_fit used to rely on swap
     test_deque_shrink_to_fit_per_alloc<StationaryAlloc<int>>();
     test_deque_shrink_to_fit_per_alloc<CopyAlloc<int>>();
     test_deque_shrink_to_fit_per_alloc<CopyEqualAlloc<int>>();
