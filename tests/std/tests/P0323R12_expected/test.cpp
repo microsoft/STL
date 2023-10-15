@@ -1283,7 +1283,7 @@ namespace test_expected {
         constexpr payload_swap(payload_swap&& other) noexcept(IsYes(nothrowMoveConstructible))
             : _val(other._val + 42) {}
         // Note: cannot declare friends of function local structs
-        constexpr friend void swap(payload_swap& left, payload_swap& right) noexcept(IsYes(nothrowSwappable)) {
+        friend constexpr void swap(payload_swap& left, payload_swap& right) noexcept(IsYes(nothrowSwappable)) {
             left._val = exchange(right._val, left._val);
         }
 
