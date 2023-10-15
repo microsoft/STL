@@ -224,7 +224,7 @@ struct Always_zero {
     }
 
     template <class Duration>
-    [[nodiscard]] sys_time<common_type_t<Duration, seconds>> to_sys(const local_time<Duration>&, const choose) const {
+    [[nodiscard]] sys_time<common_type_t<Duration, seconds>> to_sys(const local_time<Duration>&, choose) const {
         return sys_time<common_type_t<Duration, seconds>>{};
     }
 
