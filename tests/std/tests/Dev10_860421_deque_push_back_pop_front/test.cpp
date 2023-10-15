@@ -280,6 +280,14 @@ void test_gh_4072() {
 
     d.shrink_to_fit(); // additionally ensures that no constructor or assignment operator of the element type is called
     assert(d == d2);
+
+    // ensure that the circular buffer is correctly handled
+    {
+        std::deque<int> deq(128);
+        deq.pop_back();
+        deq.push_front(0);
+        deq.shrink_to_fit();
+    }
 }
 
 int main() {

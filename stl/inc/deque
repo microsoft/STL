@@ -993,27 +993,33 @@ public:
             return;
         }
 
-        const auto _First_block_ptr = _Map() + static_cast<_Map_difference_type>(_Myoff() / _Block_size);
-        const auto _Last_block_ptr =
-            _Map() + static_cast<_Map_difference_type>((_Myoff() + _Mysize() - 1) / _Block_size + 1);
-        const auto _Used_block_count = static_cast<size_type>(_Last_block_ptr - _First_block_ptr);
+        const auto _First_block_idx = static_cast<_Map_difference_type>(_Myoff() / _Block_size);
+        const auto _Last_block_idx =
+            static_cast<_Map_difference_type>(((_Myoff() + _Mysize() - 1) / _Block_size + 1) & (_Mapsize() - 1));
 
         // deallocate unused blocks
-        for (auto _Block_it = _Map(); _Block_it != _First_block_ptr; ++_Block_it) {
-            if (*_Block_it != nullptr) {
-                _Getal().deallocate(*_Block_it, _Block_size);
-                *_Block_it = nullptr;
-            }
-        }
-        for (auto _Block_it = _Last_block_ptr; _Block_it != _Map() + _Map_distance(); ++_Block_it) {
-            if (*_Block_it != nullptr) {
-                _Getal().deallocate(*_Block_it, _Block_size);
-                *_Block_it = nullptr;
+
+        for (auto _Block_idx = _Map_difference_type{0}; _Block_idx != _First_block_idx; ++_Block_idx) {
+            auto& _Block_ptr = _Map()[static_cast<_Map_difference_type>(_Block_idx & (_Mapsize() - 1))];
+            if (_Block_ptr != nullptr) {
+                _Getal().deallocate(_Block_ptr, _Block_size);
+                _Block_ptr = nullptr;
             }
         }
 
-        size_type _New_block_count = 1; // should be power of 2
-        for (; _New_block_count < _Used_block_count || _New_block_count < _Minimum_map_size; _New_block_count *= 2)
+        for (auto _Block_idx = _Last_block_idx; _Block_idx != _Map_distance(); ++_Block_idx) {
+            auto& _Block_ptr = _Map()[static_cast<_Map_difference_type>(_Block_idx & (_Mapsize() - 1))];
+            if (_Block_ptr != nullptr) {
+                _Getal().deallocate(_Block_ptr, _Block_size);
+                _Block_ptr = nullptr;
+            }
+        }
+
+        const auto _Used_block_count =
+            static_cast<size_type>((_Myoff() + _Mysize() - 1) / _Block_size + 1 - _Myoff() / _Block_size);
+
+        size_type _New_block_count = _Minimum_map_size; // should be power of 2
+        for (; _New_block_count < _Used_block_count; _New_block_count *= 2)
             ;
         if (_New_block_count >= _Mapsize()) {
             return;
@@ -1026,12 +1032,16 @@ public:
 
         _Orphan_all(); // the map can be shrinked, invalidate all iterators
 
-        const auto _Copy_end = _STD _Uninitialized_copy_unchecked(
-            _First_block_ptr, _Last_block_ptr, _New_map); // transfer the ownership of blocks to pointers in the new map
-        _STD _Uninitialized_value_construct_n_unchecked1(
-            _Copy_end, _New_block_count - _Used_block_count); // zero out the rest of the new map
-        _STD fill(
-            _First_block_ptr, _Last_block_ptr, nullptr); // zero out the old map because the ownership is transferred
+        _Map_difference_type _New_block_idx = 0;
+        for (_Map_difference_type _Block_idx = _First_block_idx; _Block_idx != _Last_block_idx;
+             ++_Block_idx, ++_New_block_idx) {
+            // transfer the ownership of blocks to pointers in the new map
+            _STD _Construct_in_place(_New_map[_New_block_idx],
+                _STD exchange(_Map()[static_cast<_Map_difference_type>(_Block_idx & (_Mapsize() - 1))], nullptr));
+        }
+        for (; _New_block_idx != static_cast<_Map_difference_type>(_New_block_count); ++_New_block_idx) {
+            _STD _Construct_in_place(_New_map[_New_block_idx]); // zero out the rest of the new map
+        }
 
         _Reset_map();
 
