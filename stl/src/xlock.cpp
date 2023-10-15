@@ -39,7 +39,7 @@ __thiscall _Init_locks::~_Init_locks() noexcept { // clean up locks
     }
 }
 
-#endif
+#endif // ^^^ !defined(MRTDLL) ^^^
 
 void __cdecl _Init_locks::_Init_locks_ctor(_Init_locks*) noexcept { // initialize locks
     if (InterlockedIncrement(&init) == 0) {
@@ -85,7 +85,7 @@ __thiscall _Lockit::~_Lockit() noexcept { // unlock the mutex
     }
 }
 
-#endif
+#endif // ^^^ !defined(MRTDLL) ^^^
 
 void __cdecl _Lockit::_Lockit_ctor(_Lockit*) noexcept { // lock default mutex
     _Mtxlock(&mtx[0]);

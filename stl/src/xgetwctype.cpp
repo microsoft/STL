@@ -36,6 +36,6 @@ _CRTIMP2_PURE const unsigned short* __CLRCALL_PURE_OR_CDECL _Getwctypes(
     return reinterpret_cast<const unsigned short*>(
         _Getwctypes(reinterpret_cast<const wchar_t*>(_First), reinterpret_cast<const wchar_t*>(_Last), _Dest, _Ctype));
 }
-#endif
+#endif // ^^^ defined(MRTDLL) ^^^
 
 _END_EXTERN_C_UNLESS_PURE
