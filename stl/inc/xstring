@@ -1856,8 +1856,8 @@ public:
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot dereference value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-        _STL_VERIFY(_Mycont, "cannot dereference string iterator because the iterator was"
-                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        _STL_VERIFY(_Mycont, "cannot dereference string iterator because the iterator was "
+                             "invalidated (e.g. reallocation occurred, or the string was destroyed)");
         const auto _Contptr = _Mycont->_Myptr();
         const auto _Rawptr  = _Unfancy(_Ptr);
         _STL_VERIFY(_Contptr <= _Rawptr && _Rawptr < _Contptr + _Mycont->_Mysize,
@@ -1876,8 +1876,8 @@ public:
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot increment value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-        _STL_VERIFY(_Mycont, "cannot increment string iterator because the iterator was"
-                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        _STL_VERIFY(_Mycont, "cannot increment string iterator because the iterator was "
+                             "invalidated (e.g. reallocation occurred, or the string was destroyed)");
         _STL_VERIFY(_Unfancy(_Ptr) < _Mycont->_Myptr() + _Mycont->_Mysize, "cannot increment string iterator past end");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 
@@ -1895,8 +1895,8 @@ public:
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot decrement value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-        _STL_VERIFY(_Mycont, "cannot decrement string iterator because the iterator was"
-                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        _STL_VERIFY(_Mycont, "cannot decrement string iterator because the iterator was "
+                             "invalidated (e.g. reallocation occurred, or the string was destroyed)");
         _STL_VERIFY(_Mycont->_Myptr() < _Unfancy(_Ptr), "cannot decrement string iterator before begin");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 
@@ -1918,8 +1918,8 @@ public:
 
         _STL_ASSERT(_Ptr, "cannot seek value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot seek string iterator because the iterator was"
-                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        _STL_ASSERT(_Mycont, "cannot seek string iterator because the iterator was "
+                             "invalidated (e.g. reallocation occurred, or the string was destroyed)");
         const auto _Contptr = _Mycont->_Myptr();
         const auto _Rawptr  = _Unfancy(_Ptr);
 
