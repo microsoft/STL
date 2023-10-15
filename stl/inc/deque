@@ -988,7 +988,7 @@ public:
     void shrink_to_fit() {
         if (empty()) {
             if (_Map() != nullptr) {
-                _Delete_map();
+                _Reset_map();
             }
             return;
         }
@@ -1033,7 +1033,7 @@ public:
         _STD fill(
             _First_block_ptr, _Last_block_ptr, nullptr); // zero out the old map because the ownership is transferred
 
-        _Delete_map();
+        _Reset_map();
 
         _Map()     = _New_map;
         _Mapsize() = _New_block_count;
@@ -1630,7 +1630,9 @@ private:
         _Mapsize() += _Count;
     }
 
-    void _Delete_map() noexcept {
+    void _Reset_map() noexcept {
+        // pre: each block pointer is either null or pointing to a block without constructed elements
+
         _Alpty _Almap(_Getal());
 
         for (auto _Block = _Map_distance(); _Block > 0;) { // free storage for a block and destroy pointer
@@ -1641,6 +1643,9 @@ private:
         }
 
         _Almap.deallocate(_Map(), _Mapsize()); // free storage for map
+
+        _Map()     = nullptr;
+        _Mapsize() = 0;
     }
 
     void _Tidy() noexcept { // free all storage
@@ -1651,7 +1656,7 @@ private:
         }
 
         if (_Map() != nullptr) {
-            _Delete_map();
+            _Reset_map();
         }
 
         _Mapsize() = 0;
