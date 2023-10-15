@@ -2012,8 +2012,8 @@ public:
     _CONSTEXPR20 void _Compat(const _String_const_iterator& _Right) const noexcept {
         // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL >= 1
-        _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "string iterators incompatible (e.g."
-                                                           " point to different string instances)");
+        _STL_VERIFY(this->_Getcont() == _Right._Getcont(),
+            "string iterators incompatible (e.g. point to different string instances)");
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         (void) _Right;
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
