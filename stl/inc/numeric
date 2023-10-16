@@ -530,10 +530,8 @@ namespace ranges {
     _EXPORT_STD template <class _Out, class _Ty>
     using iota_result = out_value_result<_Out, _Ty>;
 
-    class _Iota_fn : private _Not_quite_object {
+    class _Iota_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <input_or_output_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Ty>
             requires indirectly_writable<_It, const _Ty&>
         constexpr iota_result<_It, _Ty> operator()(_It _First, _Se _Last, _Ty _Val) const {
@@ -565,7 +563,7 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Iota_fn iota{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Iota_fn iota;
 } // namespace ranges
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
