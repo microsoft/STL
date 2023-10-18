@@ -4856,7 +4856,8 @@ private:
 
     _CONSTEXPR20 void _Eos(const size_type _New_size) noexcept { // set new length and null terminator
         _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
-        _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _New_size], _Elem());
+        _Mypair._Myval2._Mysize = _New_size;
+        _Traits::assign(_Mypair._Myval2._Myptr()[_New_size], _Elem());
     }
 
     _CONSTEXPR20 void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
