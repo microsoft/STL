@@ -1362,6 +1362,8 @@ public:
 
     explicit discard_block(const _Engine& _Ex) : _Eng(_Ex), _Nx(0) {}
 
+    explicit discard_block(_Engine&& _Ex) : _Eng(_STD move(_Ex)), _Nx(0) {}
+
     explicit discard_block(result_type _Seed) : _Eng(_Seed), _Nx(0) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block, _Engine> = 0>
@@ -1448,6 +1450,8 @@ public:
     _Discard_block_base() : _Eng(), _Nx(0) {}
 
     explicit _Discard_block_base(const _Engine& _Ex) : _Eng(_Ex), _Nx(0) {}
+
+    explicit _Discard_block_base(_Engine&& _Ex) : _Eng(_STD move(_Ex)), _Nx(0) {}
 
     explicit _Discard_block_base(result_type _Seed) : _Eng(_Seed), _Nx(0) {}
 
