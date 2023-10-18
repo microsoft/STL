@@ -67,12 +67,12 @@ public:
 
     _Base_flat_set() : _Mycont(), _Mycomp() {}
 
-    // TRANSITION, "_Mycomp" may need to be copied, even in move construction / assignment.
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(const _Deriv& _Set, const _Alloc& _Al) : _Mycont(_Set._Mycont, _Al), _Mycomp(_Set._Mycomp) {}
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Deriv&& _Set, const _Alloc& _Al)
-        : _Mycont(_STD move(_Set._Mycont), _Al), _Mycomp(_STD move(_Set._Mycomp)) {}
+        : _Mycont(_STD move(_Set).extract(), _Al), _Mycomp(_Set._Mycomp) // intentionally copy comparator, see LWG-2227
+    {}
 
     explicit _Base_flat_set(container_type _Cont, const key_compare& _Comp = key_compare())
         : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
@@ -152,6 +152,32 @@ public:
     template <_Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, container_type(_Ilist, _Al)) {}
+
+    _Base_flat_set(const _Base_flat_set&) = default;
+    _Base_flat_set(_Base_flat_set&& _Other) noexcept(
+        is_nothrow_move_constructible_v<container_type>&& is_nothrow_copy_constructible_v<key_compare>) // strengthened
+        : _Mycont(_STD move(_Other).extract()), _Mycomp(_Other._Mycomp) // intentionally copy comparator, see LWG-2227
+    {}
+
+    _Base_flat_set& operator=(const _Base_flat_set& _Other) {
+        _Clear_guard<_Base_flat_set> _Guard{this};
+        _Mycont        = _Other._Mycont;
+        _Mycomp        = _Other._Mycomp;
+        _Guard._Target = nullptr;
+        return *this;
+    }
+    _Base_flat_set& operator=(_Base_flat_set&& _Other) noexcept(
+        is_nothrow_move_assignable_v<container_type>&& is_nothrow_copy_assignable_v<key_compare>) // strengthened
+    {
+        if (this != _STD addressof(_Other)) {
+            _Clear_guard<_Base_flat_set> _Guard{this};
+            _Clear_guard<_Base_flat_set> _Always_clear{_STD addressof(_Other)};
+            _Mycont        = _STD move(_Other._Mycont);
+            _Mycomp        = _Other._Mycomp; // intentionally copy comparator, see LWG-2227
+            _Guard._Target = nullptr;
+        }
+        return *this;
+    }
 
     _Deriv& operator=(initializer_list<_Kty> _Ilist) {
         _Clear_guard<_Base_flat_set> _Guard{this};
@@ -288,7 +314,7 @@ public:
     _NODISCARD container_type extract() && noexcept(
         is_nothrow_move_constructible_v<container_type>) /* strengthened */ {
         // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
-        _Clear_guard<_Base_flat_set> _Guard{this};
+        _Clear_guard<_Base_flat_set> _Always_clear{this};
         return _STD move(_Mycont);
     }
     void replace(container_type&& _Cont) {
@@ -715,7 +741,12 @@ private:
 
 public:
     using _Mybase::_Mybase;
+    flat_set(const flat_set&) = default;
+    flat_set(flat_set&&)      = default;
+
     using _Mybase::operator=;
+    flat_set& operator=(const flat_set&) = default;
+    flat_set& operator=(flat_set&&)      = default;
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
@@ -726,7 +757,12 @@ private:
 
 public:
     using _Mybase::_Mybase;
+    flat_multiset(const flat_multiset&) = default;
+    flat_multiset(flat_multiset&&)      = default;
+
     using _Mybase::operator=;
+    flat_multiset& operator=(const flat_multiset&) = default;
+    flat_multiset& operator=(flat_multiset&&)      = default;
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>

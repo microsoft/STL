@@ -2287,6 +2287,19 @@ public:
         value_type _Buf[_BUF_SIZE];
         pointer _Ptr;
         char _Alias[_BUF_SIZE]; // TRANSITION, ABI: _Alias is preserved for binary compatibility (especially /clr)
+
+        _CONSTEXPR20 void _Switch_to_buf() noexcept {
+            _STD _Destroy_in_place(_Ptr);
+
+#if _HAS_CXX20
+            // start the lifetime of the array elements
+            if (_STD is_constant_evaluated()) {
+                for (size_type _Idx = 0; _Idx < _BUF_SIZE; ++_Idx) {
+                    _Buf[_Idx] = value_type();
+                }
+            }
+#endif // _HAS_CXX20
+        }
     };
     _Bxty _Bx;
 
@@ -2484,13 +2497,11 @@ private:
 public:
     _CONSTEXPR20
     basic_string() noexcept(is_nothrow_default_constructible_v<_Alty>) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-        _Tidy_init();
+        _Construct_empty();
     }
 
     _CONSTEXPR20 explicit basic_string(const _Alloc& _Al) noexcept : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-        _Tidy_init();
+        _Construct_empty();
     }
 
     _CONSTEXPR20 basic_string(const basic_string& _Right)
@@ -2578,8 +2589,7 @@ public:
         auto _UFirst = _Get_unwrapped(_First);
         auto _ULast  = _Get_unwrapped(_Last);
         if (_UFirst == _ULast) {
-            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-            _Tidy_init();
+            _Construct_empty();
         } else {
             if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
                 _Construct<_Construct_strategy::_From_ptr>(
@@ -2628,6 +2638,19 @@ private:
         _Alty& _Al, const pointer _Old_ptr, const size_type _Capacity) noexcept {
         _STL_INTERNAL_CHECK(_Capacity > _Small_string_capacity);
         _Al.deallocate(_Old_ptr, _Capacity + 1); // +1 for null terminator
+    }
+
+    _CONSTEXPR20 void _Construct_empty() {
+        auto& _My_data = _Mypair._Myval2;
+        _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
+
+        // initialize basic_string data members
+        _My_data._Mysize = 0;
+        _My_data._Myres  = _Small_string_capacity;
+        _My_data._Activate_SSO_buffer();
+
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
     }
 
     enum class _Construct_strategy : uint8_t { _From_char, _From_ptr, _From_string };
@@ -2695,10 +2718,12 @@ private:
 
     template <class _Iter, class _Sent, class _Size = nullptr_t>
     _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Sent _Last, _Size _Count = {}) {
-        // Pre: _First models input_iterator or meets the Cpp17InputIterator requirements
-        // Pre: [_First, _Last) is a valid range
+        // Pre: _Iter models input_iterator or meets the Cpp17InputIterator requirements.
+        // Pre: [_First, _Last) is a valid range.
+        // Pre: if _Iter models forward_iterator or meets the Cpp17ForwardIterator requirements,
+        //      then is_same_v<_Size, size_type> holds.
         // Pre: if is_same_v<_Size, size_type>, _Count is the length of [_First, _Last).
-        // Pre: *this is in small mode; the lifetime of the SSO elements has already begun
+        // Pre: *this is in small mode; the lifetime of the SSO elements has already begun.
 
         auto& _My_data  = _Mypair._Myval2;
         auto& _Al       = _Getal();
@@ -2722,35 +2747,47 @@ private:
         }
 
         _Tidy_deallocate_guard<basic_string> _Guard{this};
-        for (; _First != _Last; ++_First) {
-            if constexpr (!is_same_v<_Size, size_type>) {
-                if (_My_data._Mysize == _My_data._Myres) { // Need to grow
-                    if (_My_data._Mysize == max_size()) {
-                        _Xlen_string(); // result too long
-                    }
 
-                    _Elem* const _Old_ptr   = _My_data._Myptr();
-                    size_type _New_capacity = _Calculate_growth(_My_data._Mysize + 1);
-                    const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
+        constexpr bool _Can_construct_by_copy =
+            _Is_specialization_v<_Traits, char_traits> && _Is_EcharT<_Elem> && is_same_v<_Size, size_type>;
 
-                    _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
-                    if (_My_data._Large_mode_engaged()) { // Need to deallocate old storage
-                        _Deallocate_for_capacity(_Al, _My_data._Bx._Ptr, _My_data._Myres);
-                        _My_data._Bx._Ptr = _New_ptr;
-                    } else {
-                        _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
+        if constexpr (_Can_construct_by_copy) {
+            const auto _Data = _My_data._Myptr();
+            _STD _Copy_n_unchecked4(_STD move(_First), _Count, _Data);
+            _My_data._Mysize = _Count;
+            _Data[_Count]    = _Elem();
+        } else {
+            for (; _First != _Last; ++_First) {
+                if constexpr (!is_same_v<_Size, size_type>) {
+                    if (_My_data._Mysize == _My_data._Myres) { // Need to grow
+                        if (_My_data._Mysize == max_size()) {
+                            _Xlen_string(); // result too long
+                        }
+
+                        _Elem* const _Old_ptr   = _My_data._Myptr();
+                        size_type _New_capacity = _Calculate_growth(_My_data._Mysize + 1);
+                        const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
+
+                        _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
+                        if (_My_data._Large_mode_engaged()) { // Need to deallocate old storage
+                            _Deallocate_for_capacity(_Al, _My_data._Bx._Ptr, _My_data._Myres);
+                            _My_data._Bx._Ptr = _New_ptr;
+                        } else {
+                            _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
+                        }
+                        _My_data._Myres = _New_capacity;
                     }
-                    _My_data._Myres = _New_capacity;
                 }
+
+                _Elem* const _Ptr = _My_data._Myptr();
+                _Traits::assign(_Ptr[_My_data._Mysize], *_First);
+                ++_My_data._Mysize;
             }
 
             _Elem* const _Ptr = _My_data._Myptr();
-            _Traits::assign(_Ptr[_My_data._Mysize], *_First);
-            ++_My_data._Mysize;
+            _Traits::assign(_Ptr[_My_data._Mysize], _Elem());
         }
 
-        _Elem* const _Ptr = _My_data._Myptr();
-        _Traits::assign(_Ptr[_My_data._Mysize], _Elem());
         _ASAN_STRING_CREATE(*this);
         _Guard._Target = nullptr;
         _Proxy._Release();
@@ -2918,8 +2955,7 @@ public:
     basic_string(_String_constructor_rvalue_allocator_tag, _Alloc&& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Al)) {
         // Used exclusively by basic_stringbuf
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-        _Tidy_init();
+        _Construct_empty();
     }
 
     _NODISCARD bool _Move_assign_from_buffer(
@@ -2958,10 +2994,13 @@ public:
         _Released_buffer _Result;
         auto& _My_data = _Mypair._Myval2;
         _Result._Size  = _My_data._Mysize;
+        _My_data._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
         if (_My_data._Large_mode_engaged()) {
             _Result._Ptr                    = _My_data._Bx._Ptr;
             _Result._Actual_allocation_size = _My_data._Myres + 1;
+
+            _My_data._Bx._Switch_to_buf();
         } else {
             // use _Least_allocation_size to avoid small mode, if the buffer is assigned back
             size_type _Allocated = _Least_allocation_size;
@@ -2969,8 +3008,9 @@ public:
             _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
             _Result._Actual_allocation_size = _Allocated;
         }
-        _My_data._Orphan_all();
-        _Tidy_init();
+        _My_data._Mysize = 0;
+        _My_data._Myres  = _Small_string_capacity;
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
         return _Result;
     }
 #endif // _HAS_CXX20
@@ -3038,27 +3078,34 @@ private:
                 const auto _Right_data_mem =
                     reinterpret_cast<const unsigned char*>(_STD addressof(_Right._Mypair._Myval2)) + _Memcpy_val_offset;
                 _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
-                _Right._Tidy_init();
+
+                _Right_data._Mysize = 0;
+                _Right_data._Myres  = _Small_string_capacity;
+                _Right_data._Activate_SSO_buffer();
+                _Traits::assign(_Right_data._Bx._Buf[0], _Elem());
                 return;
             }
         }
 #endif // !defined(_INSERT_STRING_ANNOTATION)
 
         if (_Right_data._Large_mode_engaged()) { // steal buffer
-            _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
             _Swap_proxy_and_iterators(_Right);
 
-            _Destroy_in_place(_Right_data._Bx._Ptr);
+            _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
+            _Right_data._Bx._Switch_to_buf();
         } else { // copy small string buffer
+            _Right_data._Orphan_all();
+
             _My_data._Activate_SSO_buffer();
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
-            _Right_data._Orphan_all();
         }
 
         _My_data._Myres  = _Right_data._Myres;
         _My_data._Mysize = _Right_data._Mysize;
 
-        _Right._Tidy_init();
+        _Right_data._Mysize = 0;
+        _Right_data._Myres  = _Small_string_capacity;
+        _Traits::assign(_Right_data._Bx._Buf[0], _Elem());
     }
 
 #if _HAS_CXX23
@@ -4252,9 +4299,7 @@ public:
     static _CONSTEXPR20 void _Swap_bx_large_with_small(_Scary_val& _Starts_large, _Scary_val& _Starts_small) noexcept {
         // exchange a string in large mode with one in small mode
         const pointer _Ptr = _Starts_large._Bx._Ptr;
-        _Destroy_in_place(_Starts_large._Bx._Ptr);
-
-        _Starts_large._Activate_SSO_buffer();
+        _Starts_large._Bx._Switch_to_buf();
         _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _BUF_SIZE);
 
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);
@@ -4802,10 +4847,9 @@ private:
         _My_data._Orphan_all();
         _ASAN_STRING_REMOVE(*this);
         const pointer _Ptr = _My_data._Bx._Ptr;
-        auto& _Al          = _Getal();
-        _Destroy_in_place(_My_data._Bx._Ptr);
-        _My_data._Activate_SSO_buffer();
+        _My_data._Bx._Switch_to_buf();
         _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), _My_data._Mysize + 1);
+        auto& _Al = _Getal();
         _Deallocate_for_capacity(_Al, _Ptr, _My_data._Myres);
         _My_data._Myres = _Small_string_capacity;
     }
@@ -4815,27 +4859,14 @@ private:
         _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _New_size], _Elem());
     }
 
-    _CONSTEXPR20 void _Tidy_init() noexcept {
-        // initialize basic_string data members
-        auto& _My_data   = _Mypair._Myval2;
-        _My_data._Mysize = 0;
-        _My_data._Myres  = _Small_string_capacity;
-        _My_data._Activate_SSO_buffer();
-
-        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
-    }
-
     _CONSTEXPR20 void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
         auto& _My_data = _Mypair._Myval2;
         _My_data._Orphan_all();
         if (_My_data._Large_mode_engaged()) {
             _ASAN_STRING_REMOVE(*this);
-            const pointer _Ptr = _My_data._Bx._Ptr;
-            auto& _Al          = _Getal();
-            _Destroy_in_place(_My_data._Bx._Ptr);
-            _My_data._Activate_SSO_buffer();
-            _Deallocate_for_capacity(_Al, _Ptr, _My_data._Myres);
+            auto& _Al = _Getal();
+            _Deallocate_for_capacity(_Al, _My_data._Bx._Ptr, _My_data._Myres);
+            _My_data._Bx._Switch_to_buf();
         }
 
         _My_data._Mysize = 0;

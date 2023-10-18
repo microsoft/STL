@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <climits>
 #include <deque>
 #include <flat_set>
 #include <functional>
@@ -94,7 +95,7 @@ void assert_noexcept_requirements(T& s) {
 }
 
 template <class T>
-void assert_all_requirements_and_equals(const T& s, const initializer_list<typename T::value_type>& il) {
+void assert_all_requirements(const T& s) {
     assert_container_requirements(s);
     assert_reversible_container_requirements(s);
 
@@ -113,6 +114,11 @@ void assert_all_requirements_and_equals(const T& s, const initializer_list<typen
             }
         }
     }
+}
+
+template <class T>
+void assert_all_requirements_and_equals(const T& s, const initializer_list<typename T::value_type>& il) {
+    assert_all_requirements(s);
 
     if (!std::equal(s.begin(), s.end(), il.begin(), il.end())) {
         cout << "Expected: {";
@@ -576,6 +582,151 @@ void test_extract_2() {
     assert_all_requirements_and_equals(fs, {}); // assert empty
 }
 
+void test_invariant_robustness() {
+    static int copy_limit   = 2;
+    constexpr int unlimited = INT_MAX;
+
+    struct odd_key {
+        static void countdown() {
+            if (copy_limit == unlimited) {
+                return;
+            }
+
+            if (--copy_limit < 0) {
+                throw 0; // will be caught by "catch (...)".
+            }
+        }
+
+        int key;
+
+        odd_key(int k = 0) : key(k) {}
+
+        bool operator==(const odd_key&) const = default;
+
+        odd_key(const odd_key& other) {
+            countdown();
+            key = other.key;
+        }
+
+        odd_key(odd_key&& other) {
+            countdown();
+            key = exchange(other.key, 0);
+        }
+
+        odd_key& operator=(const odd_key& other) {
+            countdown();
+            key = other.key;
+            return *this;
+        }
+
+        odd_key& operator=(odd_key&& other) {
+            countdown();
+            key = exchange(other.key, 0);
+            return *this;
+        }
+    };
+
+    class odd_container : public vector<odd_key> {
+    private:
+        using base = vector<odd_key>;
+
+    public:
+        using base::base;
+        odd_container(const odd_container&) = default;
+
+        // this copy-assignment cannot provide strong-guarantee for `this`:
+        odd_container& operator=(const odd_container& other) {
+            resize(other.size());
+            std::copy(other.begin(), other.end(), begin());
+            return *this;
+        }
+
+        // this move-ctor cannot provide strong-guarantee for `other`, and even successful, will leave elements of
+        // `other` in moved-from state:
+        odd_container(odd_container&& other) {
+            reserve(other.size());
+            for (auto& e : other) {
+                push_back(std::move(e));
+            }
+        }
+
+        // this move-assignment cannot provide strong-guarantee for `this` and `other`, and even successful, will leave
+        // elements of `other` in moved-from state:
+        odd_container& operator=(odd_container&& other) {
+            resize(other.size());
+            std::move(other.begin(), other.end(), begin());
+            return *this;
+        }
+    };
+
+    using SetT = flat_set<odd_key, key_comparer, odd_container>;
+
+    // copy-assignment
+    {
+        copy_limit = unlimited;
+        SetT fs1{0, 1, 2, 3, 4};
+        SetT fs2{5, 6, 7, 8, 9};
+
+        assert(ranges::equal(fs1, vector{0, 1, 2, 3, 4}, {}, &odd_key::key));
+        assert(ranges::equal(fs2, vector{5, 6, 7, 8, 9}, {}, &odd_key::key));
+
+        bool caught = false;
+        try {
+            copy_limit = 2;
+            fs1        = fs2; // will throw after copying 2 odd_key.
+        } catch (...) {
+            copy_limit = unlimited;
+            assert_all_requirements(fs1);
+            caught = true;
+        }
+        assert(caught);
+    }
+    // move-ctor
+    {
+        copy_limit = unlimited;
+        SetT fs1{0, 1, 2, 3, 4};
+        SetT fs2{std::move(fs1)};
+
+        assert_all_requirements(fs1);
+        assert(ranges::equal(fs2, vector{0, 1, 2, 3, 4}, {}, &odd_key::key));
+
+        bool caught = false;
+        try {
+            copy_limit = 2;
+            SetT fs3{std::move(fs2)}; // will throw after moving 2 odd_key.
+        } catch (...) {
+            copy_limit = unlimited;
+            assert_all_requirements(fs2);
+            caught = true;
+        }
+        assert(caught);
+    }
+    // move-assignment
+    {
+        copy_limit = unlimited;
+        SetT fs1{0, 1, 2, 3, 4};
+        SetT fs2;
+        SetT fs3{5, 6, 7, 8, 9};
+        fs2 = std::move(fs1);
+
+        assert_all_requirements(fs1);
+        assert(ranges::equal(fs2, vector{0, 1, 2, 3, 4}, {}, &odd_key::key));
+        assert(ranges::equal(fs3, vector{5, 6, 7, 8, 9}, {}, &odd_key::key));
+
+        bool caught = false;
+        try {
+            copy_limit = 2;
+            fs2        = std::move(fs3); // will throw after moving 2 odd_key.
+        } catch (...) {
+            copy_limit = unlimited;
+            assert_all_requirements(fs2);
+            assert_all_requirements(fs3);
+            caught = true;
+        }
+        assert(caught);
+    }
+}
+
 // TRANSITION, too simple
 void test_erase_1() {
     flat_set<int> fs{1};
@@ -771,6 +922,7 @@ int main() {
 
     test_erase_1();
     test_erase_2();
+    test_invariant_robustness();
 
     test_erase_if<flat_set<int>>();
     test_erase_if<flat_multiset<int>>();
