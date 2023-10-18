@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <climits>
 #include <deque>
 #include <flat_set>
 #include <functional>
@@ -73,7 +74,7 @@ void assert_all_requirements(const T& s) {
     assert_container_requirements(s);
     assert_reversible_container_requirements(s);
 
-    // in pr4084
+    // FIXME, in GH-4084
     // assert_noexcept_requirements(s);
     // assert_noexcept_requirements(const_cast<T&>(s));
 
@@ -477,14 +478,15 @@ void test_extract_2() {
 }
 
 void test_invariant_robustness() {
-    static int copy_limit          = 2;
-    static constexpr int unlimited = INT_MAX;
+    static int copy_limit   = 2;
+    constexpr int unlimited = INT_MAX;
 
     struct odd_key {
         static void countdown() {
             if (copy_limit == unlimited) {
                 return;
             }
+
             if (--copy_limit < 0) {
                 throw 0; // will be caught by "catch (...)".
             }
@@ -493,9 +495,8 @@ void test_invariant_robustness() {
         int key;
 
         odd_key(int k = 0) : key(k) {}
-        bool operator==(const odd_key& other) const {
-            return key == other.key;
-        }
+
+        bool operator==(const odd_key&) const = default;
 
         odd_key(const odd_key& other) {
             countdown();
