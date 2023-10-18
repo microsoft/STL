@@ -37,7 +37,7 @@ void __cdecl _Smtx_unlock_shared(_Smtx_t* smtx) { // unlock non-exclusive shared
     ReleaseSRWLockShared(reinterpret_cast<PSRWLOCK>(smtx));
 }
 
-void __stdcall _Thrd_sleep_for(const unsigned long ms) { // suspend current thread
+void __stdcall _Thrd_sleep_for(const unsigned long ms) noexcept { // suspend current thread for `ms` milliseconds
     Sleep(ms);
 }
 }

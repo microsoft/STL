@@ -196,7 +196,10 @@ namespace this_thread {
             if (_Abs_time <= _Now) {
                 return;
             }
+
+            // _Clamp must be less than 2^32 - 1 (INFINITE) milliseconds, but is otherwise arbitrary.
             constexpr chrono::milliseconds _Clamp{chrono::hours{24}};
+
             const auto _Rel = _Abs_time - _Now;
             if (_Rel >= _Clamp) {
                 _Thrd_sleep_for(static_cast<unsigned long>(_Clamp.count()));
