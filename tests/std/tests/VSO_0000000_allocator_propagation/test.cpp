@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <crtdbg.h>
 #include <cstdlib>
 #include <cstring>
 #include <deque>
@@ -15,6 +16,7 @@
 #include <memory>
 #include <new>
 #include <set>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -488,6 +490,33 @@ _CONSTEXPR20 bool test_sequence() {
 }
 
 
+template <class Alloc>
+void test_deque_shrink_to_fit_per_alloc() {
+    {
+        deque<int, Alloc> d(1729, 0, Alloc{42});
+        d.resize(0);
+        d.shrink_to_fit();
+        assert(d.get_allocator().id() == 42);
+    }
+    {
+        deque<int, Alloc> d(1729, 0, Alloc{42});
+        d.resize(128);
+        d.shrink_to_fit();
+        assert(d.get_allocator().id() == 42);
+    }
+}
+
+void test_deque_shrink_to_fit() { // MSVC STL's deque::shrink_to_fit relies on swap
+    test_deque_shrink_to_fit_per_alloc<StationaryAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<CopyAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<CopyEqualAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<MoveAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<MoveEqualAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<SwapAlloc<int>>();
+    test_deque_shrink_to_fit_per_alloc<SwapEqualAlloc<int>>();
+}
+
+
 void test_flist_copy_ctor() {
     forward_list<int, StationaryAlloc<int>> src({10, 20, 30}, StationaryAlloc<int>(11));
     auto src_it = src.begin();
@@ -944,6 +973,20 @@ _CONSTEXPR20 void test_string_swap(const size_t id1, const size_t id2) {
     assert(dst.get_allocator().id() == id1);
 }
 
+#if _HAS_CXX20
+void test_string_move_to_stringbuf() {
+    // GH-4047 fixed a bug where basic_string forgets to destroy the pointer before switching to small
+    // mode. This will turn problematic if the pointer is non-trivial.
+    assert(!_CrtDumpMemoryLeaks());
+    {
+        using Alloc = StationaryAlloc<char>;
+        basic_string<char, char_traits<char>, Alloc> str(50, '0', Alloc(10));
+        basic_stringbuf<char, char_traits<char>, Alloc> strbuf(move(str));
+    }
+    assert(!_CrtDumpMemoryLeaks());
+}
+#endif // _HAS_CXX20
+
 _CONSTEXPR20 bool test_string() {
     test_string_copy_ctor();
 
@@ -975,6 +1018,11 @@ _CONSTEXPR20 bool test_string() {
     test_string_swap<SwapAlloc<char32_t>>(11, 22); // POCS, non-equal allocators
     test_string_swap<SwapEqualAlloc<char32_t>>(11, 22); // POCS, always-equal allocators
 
+#if _HAS_CXX20
+    if (!is_constant_evaluated()) {
+        test_string_move_to_stringbuf();
+    }
+#endif // _HAS_CXX20
     return true;
 }
 
@@ -1849,6 +1897,7 @@ int main() {
     static_assert(test_string());
 #endif // _HAS_CXX20
 
+    test_deque_shrink_to_fit();
     test_flist();
     test_string();
     test_vb();

@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
-<!--
-Copyright (c) Microsoft Corporation.
-SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
--->
-
-    <PropertyGroup>
-        <CrtBuildModel>xmd</CrtBuildModel>
-        <MsvcpFlavor>onecore</MsvcpFlavor>
-        <Arm64X>true</Arm64X>
-    </PropertyGroup>
-
-    <Import Project="$(MSBuildThisFileDirectory)..\..\msvcp_1.settings.targets"/>
-
+<Project DefaultTargets="Build" ToolsVersion="Dogfood" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+  Copyright (c) Microsoft Corporation.
+  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+  -->
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6E55B52D-472B-4A51-AC94-B1E391ECAAD7}</ProjectGuid>
+    <UseRetailTargets>false</UseRetailTargets>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Cpp.Default.props))" />
+  <PropertyGroup>
+    <CrtBuildModel>xmd</CrtBuildModel>
+    <MsvcpFlavor>onecore</MsvcpFlavor>
+    <Arm64X>true</Arm64X>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(msvcp_1.settings.targets))" />
 </Project>

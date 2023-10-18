@@ -2,9 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 parameters:
-- name: buildOutputLocationVar
-  type: string
-  default: buildOutputLocation
 - name: targetPlatform
   type: string
 - name: hostArch
@@ -14,28 +11,31 @@ parameters:
 - name: displayName
   type: string
   default: 'Run Tests'
+  # Parameters to pass to ctest to select the test(s) to run
+- name: testSelection
+  type: string
 steps:
 - task: CmdLine@2
   displayName: ${{ parameters.displayName }}
   timeoutInMinutes: 20
   condition: succeeded()
   inputs:
-    workingDirectory: $(${{ parameters.buildOutputLocationVar }})
+    workingDirectory: $(buildOutputLocation)
     script: |
       call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
       -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-      ctest -V
+      ctest -V ${{ parameters.testSelection }}
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
   timeoutInMinutes: 5
   condition: succeededOrFailed()
   inputs:
-    searchFolder: $(${{ parameters.buildOutputLocationVar }})
+    searchFolder: $(buildOutputLocation)
     testResultsFormat: JUnit
     testResultsFiles: '**/test-results.xml'
     testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'
-- publish: $(${{ parameters.buildOutputLocationVar }})/test-results.xml
+- publish: $(buildOutputLocation)/test-results.xml
   artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
   condition: failed()
   displayName: 'Publish XML Artifact'
