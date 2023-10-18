@@ -18,29 +18,25 @@
 #if !defined(_ONECORE)
 namespace {
 
-    enum wrapKERNEL32Functions {
+// Use this macro for defining the following function pointers
+#define DEFINEFUNCTIONPOINTER(fn_name) decltype(&fn_name) __KERNEL32Function_##fn_name = nullptr
+
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-        eGetCurrentPackageId,
+    DEFINEFUNCTIONPOINTER(GetCurrentPackageId);
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
-        eGetSystemTimePreciseAsFileTime,
+    DEFINEFUNCTIONPOINTER(GetSystemTimePreciseAsFileTime);
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
-        eGetTempPath2W,
-
-        eMaxKernel32Function
-    };
-
-    PVOID __KERNEL32Functions[eMaxKernel32Function]{};
+    DEFINEFUNCTIONPOINTER(GetTempPath2W);
 
 // Use this macro for caching a function pointer from a DLL
-#define STOREFUNCTIONPOINTER(instance, function_name) \
-    __KERNEL32Functions[e##function_name] = reinterpret_cast<PVOID>(GetProcAddress(instance, #function_name))
+#define STOREFUNCTIONPOINTER(instance, fn_name) \
+    __KERNEL32Function_##fn_name = reinterpret_cast<decltype(&fn_name)>(GetProcAddress(instance, #fn_name))
 
 // Use this macro for retrieving a cached function pointer from a DLL
-#define IFDYNAMICGETCACHEDFUNCTION(name) \
-    if (const auto pf##name = reinterpret_cast<decltype(&name)>(__KERNEL32Functions[e##name]); pf##name)
+#define IFDYNAMICGETCACHEDFUNCTION(fn_name) if (const auto pf##fn_name = __KERNEL32Function_##fn_name; pf##fn_name)
 
 } // unnamed namespace
 #endif // ^^^ !defined(_ONECORE) ^^^
