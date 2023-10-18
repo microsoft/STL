@@ -524,7 +524,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_algorithms == 201806L);
 #ifndef __cpp_lib_constexpr_bitset
 #error __cpp_lib_constexpr_bitset is not defined
 #elif __cpp_lib_constexpr_bitset != 202207L
-#error __cpp_lib_constexpr_bitset  is not 202207L
+#error __cpp_lib_constexpr_bitset is not 202207L
 #else
 STATIC_ASSERT(__cpp_lib_constexpr_bitset == 202207L);
 #endif
@@ -538,7 +538,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_bitset == 202207L);
 #ifndef __cpp_lib_constexpr_charconv
 #error __cpp_lib_constexpr_charconv is not defined
 #elif __cpp_lib_constexpr_charconv != 202207L
-#error __cpp_lib_constexpr_charconv  is not 202207L
+#error __cpp_lib_constexpr_charconv is not 202207L
 #else
 STATIC_ASSERT(__cpp_lib_constexpr_charconv == 202207L);
 #endif
