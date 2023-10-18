@@ -8,39 +8,41 @@
 
 #include "awint.hpp"
 
-constexpr long _Nsec_per_sec  = 1000000000L;
-constexpr long _Nsec_per_msec = 1000000L;
-constexpr int _Msec_per_sec   = 1000;
+namespace {
+    constexpr long _Nsec_per_sec  = 1000000000L;
+    constexpr long _Nsec_per_msec = 1000000L;
+    constexpr int _Msec_per_sec   = 1000;
 
-static void _timespec64_normalize(_timespec64* xt) { // adjust so that 0 <= tv_nsec < 1 000 000 000
-    while (xt->tv_nsec < 0) { // normalize target time
-        xt->tv_sec -= 1;
-        xt->tv_nsec += _Nsec_per_sec;
-    }
-    while (_Nsec_per_sec <= xt->tv_nsec) { // normalize target time
-        xt->tv_sec += 1;
-        xt->tv_nsec -= _Nsec_per_sec;
-    }
-}
-
-// return _timespec64 object holding difference between xt and now, treating negative difference as 0
-static _timespec64 _timespec64_diff(const _timespec64* xt, const _timespec64* now) {
-    _timespec64 diff = *xt;
-    _timespec64_normalize(&diff);
-    if (diff.tv_nsec < now->tv_nsec) { // avoid underflow
-        diff.tv_sec -= now->tv_sec + 1;
-        diff.tv_nsec += _Nsec_per_sec - now->tv_nsec;
-    } else { // no underflow
-        diff.tv_sec -= now->tv_sec;
-        diff.tv_nsec -= now->tv_nsec;
+    void _timespec64_normalize(_timespec64* xt) { // adjust so that 0 <= tv_nsec < 1 000 000 000
+        while (xt->tv_nsec < 0) { // normalize target time
+            xt->tv_sec -= 1;
+            xt->tv_nsec += _Nsec_per_sec;
+        }
+        while (_Nsec_per_sec <= xt->tv_nsec) { // normalize target time
+            xt->tv_sec += 1;
+            xt->tv_nsec -= _Nsec_per_sec;
+        }
     }
 
-    if (diff.tv_sec < 0 || (diff.tv_sec == 0 && diff.tv_nsec <= 0)) { // time is zero
-        diff.tv_sec  = 0;
-        diff.tv_nsec = 0;
+    // return _timespec64 object holding difference between xt and now, treating negative difference as 0
+    _timespec64 _timespec64_diff(const _timespec64* xt, const _timespec64* now) {
+        _timespec64 diff = *xt;
+        _timespec64_normalize(&diff);
+        if (diff.tv_nsec < now->tv_nsec) { // avoid underflow
+            diff.tv_sec -= now->tv_sec + 1;
+            diff.tv_nsec += _Nsec_per_sec - now->tv_nsec;
+        } else { // no underflow
+            diff.tv_sec -= now->tv_sec;
+            diff.tv_nsec -= now->tv_nsec;
+        }
+
+        if (diff.tv_sec < 0 || (diff.tv_sec == 0 && diff.tv_nsec <= 0)) { // time is zero
+            diff.tv_sec  = 0;
+            diff.tv_nsec = 0;
+        }
+        return diff;
     }
-    return diff;
-}
+} // namespace
 
 _EXTERN_C
 
