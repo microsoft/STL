@@ -1712,7 +1712,7 @@ namespace chrono {
 
     template <class _Duration>
     [[noreturn]] void _Throw_nonexistent_local_time(const local_time<_Duration>& _Tp, const local_info& _Info) {
-        _THROW((nonexistent_local_time{_Tp, _Info}));
+        _THROW(nonexistent_local_time{_Tp, _Info});
     }
 
     _EXPORT_STD class ambiguous_local_time : public runtime_error {
@@ -1735,7 +1735,7 @@ namespace chrono {
 
     template <class _Duration>
     [[noreturn]] void _Throw_ambiguous_local_time(const local_time<_Duration>& _Tp, const local_info& _Info) {
-        _THROW((ambiguous_local_time{_Tp, _Info}));
+        _THROW(ambiguous_local_time{_Tp, _Info});
     }
 
     // [time.zone.timezone]
