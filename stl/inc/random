@@ -1349,7 +1349,10 @@ public:
 template <class _Engine, int _Px, int _Rx>
 class discard_block { // discard_block compound engine
 public:
-    using base_type   = _Engine;
+#if _HAS_TR1_NAMESPACE
+    using base_type _DEPRECATE_TR1_NAMESPACE = _Engine; // TR1-only typedef
+#endif // _HAS_TR1_NAMESPACE
+
     using result_type = typename _Engine::result_type;
 
     static constexpr int block_size = _Px;
@@ -1380,7 +1383,7 @@ public:
         _Nx = 0;
     }
 
-    _NODISCARD const base_type& base() const noexcept {
+    _NODISCARD const _Engine& base() const noexcept {
         return _Eng;
     }
 
@@ -1433,14 +1436,13 @@ public:
     }
 
 private:
-    base_type _Eng;
+    _Engine _Eng;
     int _Nx;
 };
 
 template <class _Engine, size_t _Px, size_t _Rx>
 class _Discard_block_base { // TRANSITION, ABI, should be merged into discard_block_engine
 public:
-    using base_type   = _Engine;
     using result_type = typename _Engine::result_type;
 
     _Discard_block_base() : _Eng(), _Nx(0) {}
@@ -1468,7 +1470,7 @@ public:
         _Nx = 0;
     }
 
-    _NODISCARD const base_type& base() const noexcept {
+    _NODISCARD const _Engine& base() const noexcept {
         return _Eng;
     }
 
@@ -1513,7 +1515,7 @@ public:
     }
 
 private:
-    base_type _Eng;
+    _Engine _Eng;
     size_t _Nx;
 };
 
@@ -1559,7 +1561,6 @@ public:
     static_assert(
         0 < _Wx && _Wx <= numeric_limits<_UIntType>::digits, "invalid template argument for independent_bits_engine");
 
-    using base_type   = _Engine;
     using result_type = _UIntType;
     using _Eres       = typename _Engine::result_type;
 
@@ -1707,7 +1708,6 @@ class shuffle_order_engine { // shuffle_order_engine compound engine
 public:
     static_assert(0 < _Kx, "invalid template argument for shuffle_order_engine");
 
-    using base_type   = _Engine;
     using result_type = typename _Engine::result_type;
 
     static constexpr size_t table_size = _Kx;
