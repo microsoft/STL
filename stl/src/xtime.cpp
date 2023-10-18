@@ -42,12 +42,11 @@ static _timespec64 _timespec64_diff(const _timespec64* xt, const _timespec64* no
     return diff;
 }
 
-constexpr long long _Epoch      = 0x19DB1DED53E8000LL;
-constexpr long _Nsec100_per_sec = _Nsec_per_sec / 100;
-
 _EXTERN_C
 
 _CRTIMP2_PURE long long __cdecl _Xtime_get_ticks() { // get system time in 100-nanosecond intervals since the epoch
+    constexpr long long _Epoch = 0x19DB1DED53E8000LL;
+
     FILETIME ft;
     __crtGetSystemTimePreciseAsFileTime(&ft);
     return ((static_cast<long long>(ft.dwHighDateTime)) << 32) + static_cast<long long>(ft.dwLowDateTime) - _Epoch;
@@ -55,6 +54,8 @@ _CRTIMP2_PURE long long __cdecl _Xtime_get_ticks() { // get system time in 100-n
 
 // Used by several src files, but not dllexported.
 void _Timespec64_get_sys(_timespec64* xt) { // get system time with nanosecond resolution
+    constexpr long _Nsec100_per_sec = _Nsec_per_sec / 100;
+
     unsigned long long now = _Xtime_get_ticks();
     xt->tv_sec             = static_cast<__time64_t>(now / _Nsec100_per_sec);
     xt->tv_nsec            = static_cast<long>(now % _Nsec100_per_sec) * 100;
