@@ -218,9 +218,7 @@ STATIC_ASSERT(__cpp_lib_char8_t == 201907L);
 #endif
 #endif
 
-#ifndef __cpp_lib_chrono
-#error __cpp_lib_chrono is not defined
-#elif defined(__cpp_lib_concepts)
+#if defined(__cpp_lib_concepts)
 STATIC_ASSERT(__cpp_lib_chrono == 201907L);
 #elif _HAS_CXX17
 STATIC_ASSERT(__cpp_lib_chrono == 201611L);
@@ -1052,9 +1050,7 @@ STATIC_ASSERT(__cpp_lib_semaphore == 201907L);
 
 STATIC_ASSERT(__cpp_lib_shared_mutex == 201505L);
 
-#ifndef __cpp_lib_shared_ptr_arrays
-#error __cpp_lib_shared_ptr_arrays is not defined
-#elif _HAS_CXX20
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201707L);
 #else
 STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201611L);
