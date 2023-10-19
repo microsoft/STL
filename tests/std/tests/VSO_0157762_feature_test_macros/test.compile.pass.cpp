@@ -1745,16 +1745,10 @@ STATIC_ASSERT(__cpp_lib_shared_timed_mutex == 201402L);
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#ifndef __cpp_lib_shift
-#error __cpp_lib_shift is not defined
-#elif __cpp_lib_shift != 202202L
-#if __cpp_lib_shift == 201806L
-#error __cpp_lib_shift is 201806L when it should be 202202L
-#else
-#error __cpp_lib_shift is not 202202L
-#endif
-#else
+#ifdef __cpp_lib_shift
 STATIC_ASSERT(__cpp_lib_shift == 202202L);
+#else
+#error __cpp_lib_shift is not defined
 #endif
 #elif _HAS_CXX20
 #ifdef __cpp_lib_shift
