@@ -345,23 +345,11 @@ STATIC_ASSERT(__cpp_lib_char8_t == 201907L);
 #ifndef __cpp_lib_chrono
 #error __cpp_lib_chrono is not defined
 #elif defined(__cpp_lib_concepts)
-#if __cpp_lib_chrono != 201907L
-#error __cpp_lib_chrono is not 201907L
-#else
 STATIC_ASSERT(__cpp_lib_chrono == 201907L);
-#endif
 #elif _HAS_CXX17
-#if __cpp_lib_chrono != 201611L
-#error __cpp_lib_chrono is not 201611L
-#else
 STATIC_ASSERT(__cpp_lib_chrono == 201611L);
-#endif
-#else
-#if __cpp_lib_chrono != 201510L
-#error __cpp_lib_chrono is not 201510L
 #else
 STATIC_ASSERT(__cpp_lib_chrono == 201510L);
-#endif
 #endif
 
 #ifdef __cpp_lib_chrono_udls
@@ -1727,17 +1715,9 @@ STATIC_ASSERT(__cpp_lib_shared_mutex == 201505L);
 #ifndef __cpp_lib_shared_ptr_arrays
 #error __cpp_lib_shared_ptr_arrays is not defined
 #elif _HAS_CXX20
-#if __cpp_lib_shared_ptr_arrays != 201707L
-#error __cpp_lib_shared_ptr_arrays is not 201707L
-#else
 STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201707L);
-#endif
-#else
-#if __cpp_lib_shared_ptr_arrays != 201611L
-#error __cpp_lib_shared_ptr_arrays is not 201611L
 #else
 STATIC_ASSERT(__cpp_lib_shared_ptr_arrays == 201611L);
-#endif
 #endif
 
 #if _HAS_CXX17
