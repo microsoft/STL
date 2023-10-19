@@ -828,12 +828,10 @@ STATIC_ASSERT(__cpp_lib_shared_ptr_weak_type == 201606L);
 #error __cpp_lib_shared_ptr_weak_type is defined
 #endif
 
-#ifdef _M_CEE_PURE
-#ifdef __cpp_lib_shared_timed_mutex
-#error __cpp_lib_shared_timed_mutex is defined
-#endif
-#else
+#ifndef _M_CEE_PURE
 STATIC_ASSERT(__cpp_lib_shared_timed_mutex == 201402L);
+#elif defined(__cpp_lib_shared_timed_mutex)
+#error __cpp_lib_shared_timed_mutex is defined
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
