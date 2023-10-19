@@ -502,12 +502,10 @@ STATIC_ASSERT(__cpp_lib_is_invocable == 201703L);
 #error __cpp_lib_is_invocable is defined
 #endif
 
-#if _HAS_CXX20
-#ifndef __clang__ // TRANSITION, LLVM-48860
+#if _HAS_CXX20 && !defined(__clang__) // TRANSITION, LLVM-48860
 STATIC_ASSERT(__cpp_lib_is_layout_compatible == 201907L);
 #elif defined(__cpp_lib_is_layout_compatible)
 #error __cpp_lib_is_layout_compatible is defined
-#endif
 #endif
 
 #if _HAS_CXX20
@@ -518,12 +516,10 @@ STATIC_ASSERT(__cpp_lib_is_nothrow_convertible == 201806L);
 
 STATIC_ASSERT(__cpp_lib_is_null_pointer == 201309L);
 
-#if _HAS_CXX20
-#ifndef __clang__ // TRANSITION, LLVM-48860
+#if _HAS_CXX20 && !defined(__clang__) // TRANSITION, LLVM-48860
 STATIC_ASSERT(__cpp_lib_is_pointer_interconvertible == 201907L);
 #elif defined(__cpp_lib_is_pointer_interconvertible)
 #error __cpp_lib_is_pointer_interconvertible is defined
-#endif
 #endif
 
 #if _HAS_CXX23
