@@ -611,7 +611,7 @@ STATIC_ASSERT(__cpp_lib_containers_ranges == 202202L);
 #error __cpp_lib_containers_ranges is not defined
 #endif
 #else
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_containers_ranges
 #error __cpp_lib_containers_ranges is defined
 #endif
 #endif
