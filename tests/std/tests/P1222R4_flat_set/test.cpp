@@ -405,9 +405,7 @@ void test_insert_upper_bound() {
     struct test_position {
         int key;
         int extra;
-        bool operator==(const test_position& other) const {
-            return key == other.key && extra == other.extra;
-        }
+        bool operator==(const test_position& other) const = default;
     };
 
     mt19937 eng(24);
