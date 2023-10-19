@@ -5,7 +5,6 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-// LIBRARY FEATURE-TEST MACROS
 #if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_adaptor_iterator_pair_constructor == 202106L);
 #elif defined(__cpp_lib_adaptor_iterator_pair_constructor)
