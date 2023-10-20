@@ -81,19 +81,6 @@ namespace Concurrency {
 
         } // namespace platform
 
-#if defined(_CRT_APP)
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool _IsContinuation) {}
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskCompleted() {}
-
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogCancelTask() {}
-
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskExecutionCompleted() {}
-
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemStarted() {}
-
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemCompleted() {}
-
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool) {}
 
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskCompleted() {}
@@ -105,7 +92,6 @@ namespace Concurrency {
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemStarted() {}
 
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemCompleted() {}
-#endif // ^^^ !defined(_CRT_APP) ^^^
 
 #if defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
         using namespace ABI::Windows::Foundation;
