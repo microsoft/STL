@@ -1139,12 +1139,14 @@ public:
 
         if constexpr (_Is_ordinary_literal_encoding_utf8()) {
             return _Decode_utf(_First, _Last, _Val);
+#ifdef _MSVC_EXECUTION_CHARACTER_SET // TRANSITION, VSO-1468747 (EDG)
         } else if constexpr (_Is_execution_charset_self_synchronizing()) {
             wchar_t _Wide;
             const auto _Res =
                 __std_fs_convert_narrow_to_wide(__std_code_page{_MSVC_EXECUTION_CHARACTER_SET}, _First, 1, &_Wide, 1);
             _Val = _Wide;
             return {_First + 1, _Res._Len != 0};
+#endif // defined(_MSVC_EXECUTION_CHARACTER_SET)
         } else {
             if (*_First == '\0') {
                 _Val = U'\0';

@@ -702,7 +702,6 @@ void extended_math_functions_test(T value) {
     (void) tanh(value);
 }
 
-// TRANSITION, VSO-251998
 // cbegin() calls begin() fully qualified, so cannot
 // find valarray non-member begin().
 
