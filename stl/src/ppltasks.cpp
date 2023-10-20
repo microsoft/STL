@@ -112,18 +112,7 @@ namespace Concurrency {
             0x7A76B220, 0xA758, 0x4E6E, 0xB0, 0xE0, 0xD7, 0xC6, 0xD7, 0x4A, 0x88, 0xFE};
 
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool _IsContinuation) {}
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskCompleted() {
-            if (_M_scheduled) {
-                AsyncStatus status;
-                if (_M_task->_IsCompleted()) {
-                    status = AsyncStatus::Completed;
-                } else if (_M_task->_HasUserException()) {
-                    status = AsyncStatus::Error;
-                } else {
-                    status = AsyncStatus::Canceled;
-                }
-            }
-        }
+        _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskCompleted() {}
 
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogCancelTask() {}
 
