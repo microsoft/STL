@@ -82,35 +82,6 @@ namespace Concurrency {
         } // namespace platform
 
 #if defined(_CRT_APP)
-        using namespace ABI::Windows::Foundation;
-        using namespace ABI::Windows::Foundation::Diagnostics;
-        using namespace Microsoft::WRL;
-        using namespace Microsoft::WRL::Wrappers;
-
-        class AsyncCausalityTracer {
-            IAsyncCausalityTracerStatics* m_causalityAPIs;
-            std::once_flag m_stateFlag;
-            bool m_isSupported;
-
-        public:
-            IAsyncCausalityTracerStatics* get() const {
-                return nullptr;
-            }
-
-            AsyncCausalityTracer() : m_causalityAPIs(nullptr), m_isSupported(false) {}
-
-            void release() {}
-
-            bool isCausalitySupported() {
-                return false;
-            }
-        };
-        AsyncCausalityTracer asyncCausalityTracer;
-
-        // GUID used for identifying causality logs from PPLTask
-        const GUID PPLTaskCausalityPlatformID = {
-            0x7A76B220, 0xA758, 0x4E6E, 0xB0, 0xE0, 0xD7, 0xC6, 0xD7, 0x4A, 0x88, 0xFE};
-
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool _IsContinuation) {}
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskCompleted() {}
 
