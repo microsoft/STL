@@ -320,9 +320,3 @@ namespace Concurrency {
 #endif // ^^^ !defined(_CRT_APP) ^^^
 
 } // namespace Concurrency
-
-#ifdef _CRT_APP
-extern "C" void __cdecl __crtCleanupCausalityStaticFactories() {
-    Concurrency::details::asyncCausalityTracer.release();
-}
-#endif
