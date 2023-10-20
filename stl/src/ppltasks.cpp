@@ -111,17 +111,7 @@ namespace Concurrency {
         const GUID PPLTaskCausalityPlatformID = {
             0x7A76B220, 0xA758, 0x4E6E, 0xB0, 0xE0, 0xD7, 0xC6, 0xD7, 0x4A, 0x88, 0xFE};
 
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool _IsContinuation) {
-            if (asyncCausalityTracer.isCausalitySupported()) {
-                asyncCausalityTracer.get()->TraceOperationCreation(CausalityTraceLevel_Required,
-                    CausalitySource_Library, PPLTaskCausalityPlatformID, reinterpret_cast<unsigned long long>(_M_task),
-                    HStringReference(_IsContinuation ? L"Concurrency::PPLTask::ScheduleContinuationTask"
-                                                     : L"Concurrency::PPLTask::ScheduleTask")
-                        .Get(),
-                    0);
-                _M_scheduled = true;
-            }
-        }
+        _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool _IsContinuation) {}
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskCompleted() {
             if (_M_scheduled) {
                 AsyncStatus status;
@@ -132,49 +122,16 @@ namespace Concurrency {
                 } else {
                     status = AsyncStatus::Canceled;
                 }
-
-                if (asyncCausalityTracer.isCausalitySupported()) {
-                    asyncCausalityTracer.get()->TraceOperationCompletion(CausalityTraceLevel_Required,
-                        CausalitySource_Library, PPLTaskCausalityPlatformID,
-                        reinterpret_cast<unsigned long long>(_M_task), status);
-                }
             }
         }
 
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogCancelTask() {
-            if (asyncCausalityTracer.isCausalitySupported()) {
-                asyncCausalityTracer.get()->TraceOperationRelation(CausalityTraceLevel_Important,
-                    CausalitySource_Library, PPLTaskCausalityPlatformID, reinterpret_cast<unsigned long long>(_M_task),
-                    CausalityRelation_Cancel);
-            }
-        }
+        _CRTIMP2 void __thiscall _TaskEventLogger::_LogCancelTask() {}
 
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskExecutionCompleted() {
-            if (asyncCausalityTracer.isCausalitySupported()) {
-                asyncCausalityTracer.get()->TraceSynchronousWorkCompletion(CausalityTraceLevel_Required,
-                    CausalitySource_Library, CausalitySynchronousWork_CompletionNotification);
-            }
-        }
+        _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskExecutionCompleted() {}
 
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemStarted() {
-            if (asyncCausalityTracer.isCausalitySupported()) {
-                asyncCausalityTracer.get()->TraceSynchronousWorkStart(CausalityTraceLevel_Required,
-                    CausalitySource_Library, PPLTaskCausalityPlatformID, reinterpret_cast<unsigned long long>(_M_task),
-                    CausalitySynchronousWork_Execution);
-            }
-        }
+        _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemStarted() {}
 
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemCompleted() {
-            if (asyncCausalityTracer.isCausalitySupported()) {
-                asyncCausalityTracer.get()->TraceSynchronousWorkCompletion(
-                    CausalityTraceLevel_Required, CausalitySource_Library, CausalitySynchronousWork_Execution);
-
-                asyncCausalityTracer.get()->TraceSynchronousWorkStart(CausalityTraceLevel_Required,
-                    CausalitySource_Library, PPLTaskCausalityPlatformID, reinterpret_cast<unsigned long long>(_M_task),
-                    CausalitySynchronousWork_CompletionNotification);
-                _M_taskPostEventStarted = true;
-            }
-        }
+        _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemCompleted() {}
 
 #else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool) {}
