@@ -156,7 +156,8 @@ class STLTestFormat:
             ('Build', self.getBuildSteps(test, litConfig, shared), True),
             ('Intellisense response file', self.getIsenseRspFileSteps(test, litConfig, shared), False),
             ('Test setup', self.getTestSetupSteps(test, litConfig, shared), False),
-            ('Test', self.getTestSteps(test, litConfig, shared), False)]
+            ('Test', self.getTestSteps(test, litConfig, shared), False),
+            ('Clean', self.getCleanSteps(test, litConfig, shared), True)]
 
     def getBuildSetupSteps(self, test, litConfig, shared):
         shutil.rmtree(shared.execDir, ignore_errors=True)
@@ -203,6 +204,11 @@ class STLTestFormat:
 
         shouldFail = TestType.FAIL in test.testType
         yield TestStep([shared.execFile], shared.execDir, shared.env, shouldFail)
+
+    def getCleanSteps(self, test, litConfig, shared):
+        shutil.rmtree(shared.execDir, ignore_errors=True)
+
+        yield from []
 
     def execute(self, test, litConfig):
         try:

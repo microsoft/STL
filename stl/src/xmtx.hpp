@@ -9,21 +9,22 @@
 
 #include <Windows.h>
 
+#ifdef _M_CEE
+#define _RELIABILITY_CONTRACT                                                    \
+    [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
+        System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
+        System::Runtime::ConstrainedExecution::Cer::Success)]
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
+#define _RELIABILITY_CONTRACT
+#endif // ^^^ !defined(_M_CEE) ^^^
+
 _EXTERN_C_UNLESS_PURE
 
 using _Rmtx = CRITICAL_SECTION;
 
-#ifdef _M_CEE_PURE
-void __clrcall _Mtxinit(_Rmtx*) noexcept;
-void __clrcall _Mtxdst(_Rmtx*) noexcept;
-void __clrcall _Mtxlock(_Rmtx*) noexcept;
-void __clrcall _Mtxunlock(_Rmtx*) noexcept;
-
-#else // _M_CEE_PURE
-_MRTIMP2 void __cdecl _Mtxinit(_Rmtx*) noexcept;
-_MRTIMP2 void __cdecl _Mtxdst(_Rmtx*) noexcept;
-_MRTIMP2 void __cdecl _Mtxlock(_Rmtx*) noexcept;
-_MRTIMP2 void __cdecl _Mtxunlock(_Rmtx*) noexcept;
-#endif // _M_CEE_PURE
+_MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Mtxinit(_Rmtx*) noexcept;
+_MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Mtxdst(_Rmtx*) noexcept;
+_MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Mtxlock(_Rmtx*) noexcept;
+_MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Mtxunlock(_Rmtx*) noexcept;
 
 _END_EXTERN_C_UNLESS_PURE

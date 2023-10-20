@@ -52,10 +52,8 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_copy_result = in_out_result<_In, _Out>;
 
-    class _Uninitialized_copy_fn : private _Not_quite_object {
+    class _Uninitialized_copy_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
@@ -120,9 +118,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Uninitialized_copy_fn uninitialized_copy{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Uninitialized_copy_fn uninitialized_copy;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
@@ -170,10 +168,8 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_copy_n_result = in_out_result<_In, _Out>;
 
-    class _Uninitialized_copy_n_fn : private _Not_quite_object {
+    class _Uninitialized_copy_n_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
         uninitialized_copy_n_result<_It, _Out> operator()(
@@ -214,9 +210,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Uninitialized_copy_n_fn uninitialized_copy_n{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Uninitialized_copy_n_fn uninitialized_copy_n;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _InIt, class _NoThrowFwdIt>
@@ -243,10 +239,8 @@ _NoThrowFwdIt uninitialized_move(_ExPo&&, const _FwdIt _First, const _FwdIt _Las
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    class _Uninitialized_move_fn : private _Not_quite_object {
+    class _Uninitialized_move_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
@@ -275,9 +269,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Uninitialized_move_fn uninitialized_move{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Uninitialized_move_fn uninitialized_move;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _InIt, class _Diff, class _NoThrowFwdIt>
 pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
@@ -336,10 +330,8 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_move_n_result = in_out_result<_In, _Out>;
 
-    class _Uninitialized_move_n_fn : private _Not_quite_object {
+    class _Uninitialized_move_n_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
         uninitialized_move_n_result<_It, _Out> operator()(
@@ -380,12 +372,10 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Uninitialized_move_n_fn uninitialized_move_n{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Uninitialized_move_n_fn uninitialized_move_n;
 
-    class _Uninitialized_fill_fn : private _Not_quite_object {
+    class _Uninitialized_fill_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
         _It operator()(_It _First, _Se _Last, const _Ty& _Val) const {
@@ -434,9 +424,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Uninitialized_fill_fn uninitialized_fill{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Uninitialized_fill_fn uninitialized_fill;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) {
@@ -489,10 +479,8 @@ _NoThrowFwdIt uninitialized_fill_n(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    class _Uninitialized_fill_n_fn : private _Not_quite_object {
+    class _Uninitialized_fill_n_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <_No_throw_forward_iterator _It, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
         _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Val) const {
@@ -525,12 +513,10 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Uninitialized_fill_n_fn uninitialized_fill_n{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Uninitialized_fill_n_fn uninitialized_fill_n;
 
-    class _Construct_at_fn : private _Not_quite_object {
+    class _Construct_at_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         // clang-format off
         template <class _Ty, class... _Types>
             requires requires(_Ty* _Ptr, _Types&&... _Args) {
@@ -544,16 +530,14 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Construct_at_fn construct_at{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Construct_at_fn construct_at;
 
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
     _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
 
-    class _Destroy_at_fn : private _Not_quite_object {
+    class _Destroy_at_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <destructible _Ty>
         constexpr void operator()(_Ty* const _Location) const noexcept {
             if constexpr (is_array_v<_Ty>) {
@@ -564,9 +548,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Destroy_at_fn destroy_at{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Destroy_at_fn destroy_at;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _NoThrowFwdIt>
@@ -595,10 +579,8 @@ namespace ranges {
         return _First;
     }
 
-    class _Destroy_fn : private _Not_quite_object {
+    class _Destroy_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
         constexpr _It operator()(_It _First, _Se _Last) const noexcept {
@@ -618,9 +600,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Destroy_fn destroy{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Destroy_fn destroy;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
@@ -648,10 +630,8 @@ _NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) n
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    class _Destroy_n_fn : private _Not_quite_object {
+    class _Destroy_n_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
         constexpr _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
@@ -676,9 +656,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Destroy_n_fn destroy_n{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Destroy_n_fn destroy_n;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
@@ -701,10 +681,8 @@ void uninitialized_default_construct(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThr
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    class _Uninitialized_default_construct_fn : private _Not_quite_object {
+    class _Uninitialized_default_construct_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
         _It operator()(_It _First, _Se _Last) const {
@@ -747,10 +725,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Uninitialized_default_construct_fn uninitialized_default_construct{
-        _Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Uninitialized_default_construct_fn uninitialized_default_construct;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
@@ -781,10 +758,8 @@ _NoThrowFwdIt uninitialized_default_construct_n(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    class _Uninitialized_default_construct_n_fn : private _Not_quite_object {
+    class _Uninitialized_default_construct_n_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
         _It operator()(_It _First, iter_difference_t<_It> _Count) const {
@@ -808,10 +783,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Uninitialized_default_construct_n_fn uninitialized_default_construct_n{
-        _Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Uninitialized_default_construct_n_fn uninitialized_default_construct_n;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _NoThrowFwdIt>
 void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
@@ -837,10 +811,8 @@ void uninitialized_value_construct(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrow
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    class _Uninitialized_value_construct_fn : private _Not_quite_object {
+    class _Uninitialized_value_construct_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
         _It operator()(_It _First, _Se _Last) const {
@@ -881,10 +853,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Uninitialized_value_construct_fn uninitialized_value_construct{
-        _Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Uninitialized_value_construct_fn uninitialized_value_construct;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
@@ -904,10 +875,8 @@ _NoThrowFwdIt uninitialized_value_construct_n(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    class _Uninitialized_value_construct_n_fn : private _Not_quite_object {
+    class _Uninitialized_value_construct_n_fn {
     public:
-        using _Not_quite_object::_Not_quite_object;
-
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
         _It operator()(_It _First, iter_difference_t<_It> _Count) const {
@@ -931,10 +900,9 @@ namespace ranges {
         }
     };
 
-    _EXPORT_STD inline constexpr _Uninitialized_value_construct_n_fn uninitialized_value_construct_n{
-        _Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Uninitialized_value_construct_n_fn uninitialized_value_construct_n;
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
@@ -956,9 +924,9 @@ public:
     using value_type        = void;
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-#else
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     using difference_type = void;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
     using pointer   = void;
     using reference = void;
 
@@ -1132,10 +1100,10 @@ private:
     virtual void _Delete_this() noexcept {
         _CSTD abort();
     }
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     virtual void _Destroy() noexcept     = 0; // destroy managed resource
     virtual void _Delete_this() noexcept = 0; // destroy self
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     _Atomic_counter_t _Uses  = 1;
     _Atomic_counter_t _Weaks = 1;
@@ -1228,9 +1196,9 @@ public:
         if (_Typeid == typeid(_Dx)) {
             return const_cast<_Dx*>(_STD addressof(_Mypair._Get_first()));
         }
-#else // _HAS_STATIC_RTTI
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
         (void) _Typeid;
-#endif // _HAS_STATIC_RTTI
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
         return nullptr;
     }
@@ -1262,9 +1230,9 @@ public:
         if (_Typeid == typeid(_Dx)) {
             return const_cast<_Dx*>(_STD addressof(_Mypair._Get_first()));
         }
-#else // _HAS_STATIC_RTTI
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
         (void) _Typeid;
-#endif // _HAS_STATIC_RTTI
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
         return nullptr;
     }
@@ -1843,7 +1811,7 @@ private:
 
     template <class _Ty0, class _Alloc, class... _Types>
     friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     template <class _Ux>
     void _Set_ptr_rep_and_enable_shared(_Ux* const _Px, _Ref_count_base* const _Rx) noexcept { // take ownership of _Px
@@ -2051,12 +2019,12 @@ _NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&& _Other) noex
 
     return {};
 }
-#else // _CPPRTTI
+#else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
 _EXPORT_STD template <class _Ty1, class _Ty2>
 shared_ptr<_Ty1> dynamic_pointer_cast(const shared_ptr<_Ty2>&) noexcept = delete; // requires /GR option
 _EXPORT_STD template <class _Ty1, class _Ty2>
 shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&&) noexcept = delete; // requires /GR option
-#endif // _CPPRTTI
+#endif // ^^^ !defined(_CPPRTTI) ^^^
 
 #if _HAS_STATIC_RTTI
 _EXPORT_STD template <class _Dx, class _Ty>
@@ -2068,10 +2036,10 @@ _NODISCARD _Dx* get_deleter(const shared_ptr<_Ty>& _Sx) noexcept {
 
     return nullptr;
 }
-#else // _HAS_STATIC_RTTI
+#else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
 _EXPORT_STD template <class _Dx, class _Ty>
 _Dx* get_deleter(const shared_ptr<_Ty>&) noexcept = delete; // requires static RTTI
-#endif // _HAS_STATIC_RTTI
+#endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
 #if _HAS_CXX20
 struct _For_overwrite_tag {
@@ -2167,7 +2135,7 @@ _NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         return static_cast<_Refc*>(::operator new(_Bytes, align_val_t{_Align}));
     } else
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
     {
         return static_cast<_Refc*>(::operator new(_Bytes));
     }
@@ -2180,7 +2148,7 @@ void _Deallocate_flexible_array(_Refc* const _Ptr) noexcept {
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete(static_cast<void*>(_Ptr), align_val_t{_Align});
     } else
-#endif // __cpp_aligned_new
+#endif // defined(__cpp_aligned_new)
     {
         ::operator delete(static_cast<void*>(_Ptr));
     }
@@ -2693,15 +2661,16 @@ private:
     void _Delete_this() noexcept override { // destroy self
         constexpr size_t _Align = alignof(_Ref_count_unbounded_array_alloc);
         using _Storage          = _Alignas_storage_unit<_Align>;
+        using _Rebound_alloc    = _Rebind_alloc_t<_Alloc, _Storage>;
 
-        _Rebind_alloc_t<_Alloc, _Storage> _Al(this->_Get_val());
+        _Rebound_alloc _Al(this->_Get_val());
         const size_t _Bytes =
             _Calculate_bytes_for_flexible_array<_Ref_count_unbounded_array_alloc, _Check_overflow::_Nope>(_Size);
         const size_t _Storage_units = _Bytes / sizeof(_Storage);
 
         this->~_Ref_count_unbounded_array_alloc();
 
-        _Al.deallocate(reinterpret_cast<_Storage*>(this), _Storage_units);
+        _Al.deallocate(_STD _Refancy<_Alloc_ptr_t<_Rebound_alloc>>(reinterpret_cast<_Storage*>(this)), _Storage_units);
     }
 };
 
@@ -2762,9 +2731,9 @@ _EXPORT_STD template <class _Ty, class... _Types>
 _NODISCARD_SMART_PTR_ALLOC
 #if _HAS_CXX20
     enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
-#else // _HAS_CXX20
+#else
     shared_ptr<_Ty>
-#endif // _HAS_CXX20
+#endif
     make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
     const auto _Rx = new _Ref_count_obj2<_Ty>(_STD forward<_Types>(_Args)...);
     shared_ptr<_Ty> _Ret;
@@ -2857,9 +2826,9 @@ _EXPORT_STD template <class _Ty, class _Alloc, class... _Types>
 _NODISCARD_SMART_PTR_ALLOC
 #if _HAS_CXX20
     enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
-#else // _HAS_CXX20
+#else
     shared_ptr<_Ty>
-#endif // _HAS_CXX20
+#endif
     allocate_shared(const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr to non-array object
     // Note: As of 2019-05-28, this implements the proposed resolution of LWG-3210 (which controls whether
     // allocator::construct sees T or const T when _Ty is const qualified)
@@ -3009,7 +2978,7 @@ public:
     static constexpr bool
         _Must_avoid_expired_conversions_from<_Ty2, decltype(static_cast<const _Ty2*>(static_cast<_Ty*>(nullptr)))> =
             false;
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     constexpr weak_ptr() noexcept {}
 
@@ -3026,9 +2995,9 @@ public:
     weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept {
 #ifdef _M_CEE_PURE
         constexpr bool _Avoid_expired_conversions = true; // slow, but always safe; avoids error LNK1179
-#else // _M_CEE_PURE
+#else
         constexpr bool _Avoid_expired_conversions = _Must_avoid_expired_conversions_from<_Ty2>;
-#endif // _M_CEE_PURE
+#endif
 
         if constexpr (_Avoid_expired_conversions) {
             this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other);
@@ -3045,9 +3014,9 @@ public:
     weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept {
 #ifdef _M_CEE_PURE
         constexpr bool _Avoid_expired_conversions = true; // slow, but always safe; avoids error LNK1179
-#else // _M_CEE_PURE
+#else
         constexpr bool _Avoid_expired_conversions = _Must_avoid_expired_conversions_from<_Ty2>;
-#endif // _M_CEE_PURE
+#endif
 
         if constexpr (_Avoid_expired_conversions) {
             this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other));
@@ -3543,7 +3512,7 @@ _NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer,
     // clang-format on
     return _Left.get() <=> _Right.get();
 }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _EXPORT_STD template <class _Ty, class _Dx>
 _NODISCARD _CONSTEXPR23 bool operator==(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
@@ -3616,7 +3585,7 @@ _NODISCARD _CONSTEXPR23 compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>
     const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
     return _Left.get() <=> static_cast<typename unique_ptr<_Ty, _Dx>::pointer>(nullptr);
 }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 template <class _OutTy, class _PxTy, class = void>
 struct _Can_stream_unique_ptr : false_type {};

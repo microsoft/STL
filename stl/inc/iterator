@@ -30,9 +30,9 @@ public:
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-#else
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     using difference_type = void;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     _CONSTEXPR20 explicit back_insert_iterator(_Container& _Cont) noexcept /* strengthened */
         : container(_STD addressof(_Cont)) {}
@@ -81,9 +81,9 @@ public:
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-#else
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     using difference_type = void;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     _CONSTEXPR20 explicit front_insert_iterator(_Container& _Cont) : container(_STD addressof(_Cont)) {}
 
@@ -134,7 +134,7 @@ public:
 #else // ^^^ implementing Ranges / no Ranges vvv
     using difference_type = void;
     using _Wrapped_iter   = typename _Container::iterator;
-#endif // __cpp_lib_concepts
+#endif // ^^^ no Ranges ^^^
 
     _CONSTEXPR20 insert_iterator(_Container& _Cont, _Wrapped_iter _Where)
         : container(_STD addressof(_Cont)), iter(_STD move(_Where)) {}
@@ -230,7 +230,7 @@ public:
 private:
     _Se _Last{};
 };
-#endif // __cpp_lib_concepts
+#endif // ^^^ Ranges ^^^
 
 _EXPORT_STD template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
 class istream_iterator {
@@ -253,7 +253,7 @@ public:
 #ifdef __cpp_lib_concepts
     constexpr istream_iterator(default_sentinel_t) noexcept(
         is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     istream_iterator(istream_type& _Istr) : _Myistr(_STD addressof(_Istr)) {
         _Getval();
@@ -288,7 +288,7 @@ public:
     _NODISCARD_FRIEND bool operator==(const istream_iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
         return !_Left._Myistr;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 private:
     void _Getval() { // get a _Ty value if possible
@@ -378,7 +378,7 @@ public:
     constexpr istreambuf_iterator() noexcept : _Strbuf(nullptr), _Got(true), _Val() {}
 #ifdef __cpp_lib_concepts
     constexpr istreambuf_iterator(default_sentinel_t) noexcept : _Strbuf(nullptr), _Got(true), _Val() {}
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     istreambuf_iterator(istream_type& _Istr) noexcept : _Strbuf(_Istr.rdbuf()), _Got(!_Strbuf), _Val() {}
 
@@ -455,7 +455,7 @@ public:
 
         return !_Left._Strbuf;
     }
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 private:
     void _Inc() { // skip to next input element
@@ -1461,13 +1461,11 @@ template <input_iterator _Iter>
 struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
     using pointer = conditional_t<contiguous_iterator<_Iter>, add_pointer_t<iter_reference_t<_Iter>>, void>;
 };
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
 _STD_END
 
 _STDEXT_BEGIN
-using _STD size_t;
-
 template <class _Ptr>
 class _DEPRECATE_STDEXT_ARR_ITERS checked_array_iterator { // wrap a pointer with checking
 private:
@@ -1483,7 +1481,7 @@ public:
     using reference         = _Pointee_type&;
 #ifdef __cpp_lib_concepts
     using iterator_concept = _STD contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     constexpr checked_array_iterator() = default;
 
@@ -1637,7 +1635,7 @@ public:
     _NODISCARD constexpr bool operator>=(const checked_array_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     friend constexpr void _Verify_range(
         const checked_array_iterator& _First, const checked_array_iterator& _Last) noexcept {
@@ -1697,7 +1695,7 @@ public:
     using reference         = _Pointee_type&;
 #ifdef __cpp_lib_concepts
     using iterator_concept = _STD contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // defined(__cpp_lib_concepts)
 
     constexpr unchecked_array_iterator() = default;
 
@@ -1806,7 +1804,7 @@ public:
     _NODISCARD constexpr bool operator>=(const unchecked_array_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #if _ITERATOR_DEBUG_LEVEL != 0
     friend constexpr void _Verify_range(

@@ -34,9 +34,9 @@ namespace filesystem {
 #ifndef _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 #ifdef _M_CEE
 #define _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM 0
-#else // _M_CEE
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 #define _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM 1
-#endif // _M_CEE
+#endif // ^^^ !defined(_M_CEE) ^^^
 #endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 
 #if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
@@ -63,10 +63,6 @@ _INLINE_VAR constexpr bool _Is_any_path = _Is_any_of_v<_Ty
 
 extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
 extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
-
-#ifdef _CRTBLD
-extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
-#endif // _CRTBLD
 
 template <class _Elem>
 bool _Fgetc(_Elem& _Ch, FILE* _File) { // get an element from a C stream
@@ -106,7 +102,7 @@ inline bool _Fgetc(unsigned short& _Wchar, FILE* _File) { // get an unsigned sho
         return true;
     }
 }
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 template <class _Elem>
 bool _Fputc(_Elem _Ch, FILE* _File) { // put an element to a C stream
@@ -128,7 +124,7 @@ template <>
 inline bool _Fputc(unsigned short _Wchar, FILE* _File) { // put an unsigned short element to a C stream
     return _CSTD fputwc(_Wchar, _File) != WEOF;
 }
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 template <class _Elem>
 bool _Ungetc(const _Elem&, FILE*) { // put back an arbitrary element to a C stream (always fail)
@@ -160,7 +156,7 @@ template <>
 inline bool _Ungetc(const unsigned short& _Wchar, FILE* _File) { // put back an unsigned short element to a C stream
     return _CSTD ungetwc(_Wchar, _File) != WEOF;
 }
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
 _EXPORT_STD template <class _Elem, class _Traits>
 class basic_filebuf : public basic_streambuf<_Elem, _Traits> { // stream buffer associated with a C stream
@@ -353,32 +349,6 @@ public:
         return open(_Filename, static_cast<ios_base::openmode>(_Mode));
     }
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
-
-#ifdef _CRTBLD
-    basic_filebuf* open(
-        const unsigned short* _Filename, ios_base::openmode _Mode, int _Prot = ios_base::_Default_open_prot) {
-        // in standard as const std::filesystem::path::value_type *; _Prot is an extension
-        if (_Myfile) {
-            return nullptr;
-        }
-
-        const auto _File = _Fiopen(_Filename, _Mode, _Prot);
-        if (!_File) {
-            return nullptr; // open failed
-        }
-
-        _Init(_File, _Openfl);
-        _Initcvt(_STD use_facet<_Cvt>(_Mysb::getloc()));
-        return this; // open succeeded
-    }
-
-#if _HAS_OLD_IOSTREAMS_MEMBERS
-    basic_filebuf* open(const unsigned short* _Filename, ios_base::open_mode _Mode) {
-        // in standard as const std::filesystem::path::value_type *
-        return open(_Filename, static_cast<ios_base::openmode>(_Mode));
-    }
-#endif // _HAS_OLD_IOSTREAMS_MEMBERS
-#endif // _CRTBLD
 
     basic_filebuf* close() {
         basic_filebuf* _Ans;

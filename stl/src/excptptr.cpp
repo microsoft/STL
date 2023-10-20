@@ -8,7 +8,7 @@
 
 #ifndef _VCRT_ALLOW_INTERNALS
 #define _VCRT_ALLOW_INTERNALS
-#endif // _VCRT_ALLOW_INTERNALS
+#endif // !defined(_VCRT_ALLOW_INTERNALS)
 
 #include <Unknwn.h>
 #include <cstdlib> // for abort
@@ -43,7 +43,7 @@ namespace {
         /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
         return reinterpret_cast<_Ty&>(_Static._Storage);
     }
-#elif !defined(_M_CEE) // _M_CEE test is TRANSITION, VSO-1153256
+#elif !defined(_M_CEE)
     template <class _Ty>
     struct _Constexpr_excptptr_immortalize_impl {
         union {
@@ -67,7 +67,7 @@ namespace {
     [[nodiscard]] _Ty& _Immortalize() noexcept {
         return _Immortalize_impl<_Ty>._Storage;
     }
-#else // choose immortalize strategy
+#else // ^^^ !defined(_M_CEE) / defined(_M_CEE), TRANSITION, VSO-1153256 vvv
     template <class _Ty>
     int __stdcall _Immortalize_impl(void*, void* _Storage_ptr, void**) noexcept {
         // adapt True Placement New to _Execute_once
@@ -86,7 +86,7 @@ namespace {
 
         return reinterpret_cast<_Ty&>(_Storage);
     }
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) && defined(_M_CEE), TRANSITION, VSO-1153256 ^^^
 
     void _PopulateCppExceptionRecord(
         _EXCEPTION_RECORD& _Record, const void* const _PExcept, ThrowInfo* _PThrow) noexcept {
@@ -171,21 +171,21 @@ namespace {
         const auto _CopyFunc = reinterpret_cast<void*>(_ThrowImageBase + _PType->copyFunction);
 #else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
         const auto _CopyFunc = _PType->copyFunction;
-#endif // _EH_RELATIVE_TYPEINFO
+#endif // ^^^ !_EH_RELATIVE_TYPEINFO ^^^
 
         const auto _Adjusted = __AdjustPointer(const_cast<void*>(_Src), _PType->thisDisplacement);
         if (_PType->properties & CT_HasVirtualBase) {
 #ifdef _M_CEE_PURE
             reinterpret_cast<void(__clrcall*)(void*, void*, int)>(_CopyFunc)(_Dest, _Adjusted, 1);
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
             _CallMemberFunction2(_Dest, _CopyFunc, _Adjusted, 1);
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
         } else {
 #ifdef _M_CEE_PURE
             reinterpret_cast<void(__clrcall*)(void*, void*)>(_CopyFunc)(_Dest, _Adjusted);
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
             _CallMemberFunction1(_Dest, _CopyFunc, _Adjusted);
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
         }
     }
 } // unnamed namespace
@@ -270,7 +270,7 @@ namespace {
                 static_cast<uintptr_t>(_CatchableTypeArray->arrayOfCatchableTypes[0]) + _ThrowImageBase);
 #else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
             const auto _PType = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
-#endif // _EH_RELATIVE_TYPEINFO
+#endif // ^^^ !_EH_RELATIVE_TYPEINFO ^^^
 
             if (_PThrow->pmfnUnwind) {
                 // The exception was a user defined type with a nontrivial destructor, call it
@@ -281,7 +281,7 @@ namespace {
                     reinterpret_cast<void*>(_PThrow->pmfnUnwind + _ThrowImageBase));
 #else // ^^^ _EH_RELATIVE_TYPEINFO && !defined(_M_CEE_PURE) / !_EH_RELATIVE_TYPEINFO && !defined(_M_CEE_PURE) vvv
                 _CallMemberFunction0(_CppEhRecord.params.pExceptionObject, _PThrow->pmfnUnwind);
-#endif
+#endif // ^^^ !_EH_RELATIVE_TYPEINFO && !defined(_M_CEE_PURE) ^^^
             } else if (_PType->properties & CT_IsWinRTHandle) {
                 const auto _PUnknown = *static_cast<IUnknown* const*>(_CppEhRecord.params.pExceptionObject);
                 if (_PUnknown) {
@@ -337,7 +337,7 @@ namespace {
             static_cast<uintptr_t>(_CatchableTypeArray->arrayOfCatchableTypes[0]) + _ThrowImageBase);
 #else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
         const auto _PType = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
-#endif // _EH_RELATIVE_TYPEINFO
+#endif // ^^^ !_EH_RELATIVE_TYPEINFO ^^^
 
         const auto _ExceptionObjectSize = static_cast<size_t>(_PType->sizeOrOffset);
         const auto _AllocSize           = sizeof(_ExceptionPtr_normal) + _ExceptionObjectSize;
@@ -386,7 +386,7 @@ namespace {
                 static_cast<uintptr_t>(_InnerCatchableTypeArray->arrayOfCatchableTypes[0]) + _InnerThrowImageBase);
 #else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
             const auto _PInnerType = _PInnerThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
-#endif // _EH_RELATIVE_TYPEINFO
+#endif // ^^^ !_EH_RELATIVE_TYPEINFO ^^^
 
             const auto _InnerExceptionSize = static_cast<size_t>(_PInnerType->sizeOrOffset);
             const auto _InnerAllocSize     = sizeof(_ExceptionPtr_normal) + _InnerExceptionSize;
@@ -496,9 +496,9 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
         const auto _ThrowImageBase = reinterpret_cast<uintptr_t>(_CppRecord.params.pThrowImageBase);
         const auto _CatchableTypeArray =
             reinterpret_cast<const CatchableTypeArray*>(_ThrowImageBase + _PThrow->pCatchableTypeArray);
-#else
+#else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
         const auto _CatchableTypeArray = _PThrow->pCatchableTypeArray;
-#endif // _EH_RELATIVE_TYPEINFO
+#endif // ^^^ !_EH_RELATIVE_TYPEINFO ^^^
 
         if (_CatchableTypeArray->nCatchableTypes <= 0) {
             // Ditto corrupted.
@@ -511,7 +511,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
             static_cast<uintptr_t>(_CatchableTypeArray->arrayOfCatchableTypes[0]) + _ThrowImageBase);
 #else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
         const auto _PType              = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
-#endif // _EH_RELATIVE_TYPEINFO
+#endif // ^^^ !_EH_RELATIVE_TYPEINFO ^^^
 
         // Alloc memory on stack for exception object. This might cause a stack overflow SEH exception, or another C++
         // exception when copying the C++ exception object. In that case, we just let that become the thrown exception.

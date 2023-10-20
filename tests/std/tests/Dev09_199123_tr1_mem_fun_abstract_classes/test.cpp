@@ -25,7 +25,7 @@ private:
 
 class Derived : public Base {
 private:
-    virtual void purr() {}
+    void purr() override {}
 };
 
 int main() {

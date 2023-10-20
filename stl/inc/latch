@@ -10,7 +10,7 @@
 
 #ifdef _M_CEE_PURE
 #error <latch> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #if !_HAS_CXX20
 _EMIT_STL_WARNING(STL4038, "The contents of <latch> are available only with C++20 or later.");
@@ -31,7 +31,7 @@ _STD_BEGIN
 _EXPORT_STD class latch {
 public:
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
-        return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
+        return PTRDIFF_MAX;
     }
 
     constexpr explicit latch(const ptrdiff_t _Expected) noexcept /* strengthened */ : _Counter{_Expected} {

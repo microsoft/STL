@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
-<!--
-Copyright (c) Microsoft Corporation.
-SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
--->
-
-    <PropertyGroup>
-        <CrtBuildModel>xmt1</CrtBuildModel>
-        <MsvcpFlavor>kernel32</MsvcpFlavor>
-        <Arm64X>true</Arm64X>
-    </PropertyGroup>
-
-    <Import Project="$(MSBuildThisFileDirectory)..\..\libcp.settings.targets"/>
-
+<Project DefaultTargets="Build" ToolsVersion="Dogfood" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+  Copyright (c) Microsoft Corporation.
+  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+  -->
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C5C4581F-36C6-4327-BB54-6C1DFF52A60F}</ProjectGuid>
+    <UseRetailTargets>false</UseRetailTargets>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Cpp.Default.props))" />
+  <PropertyGroup>
+    <CrtBuildModel>xmt1</CrtBuildModel>
+    <MsvcpFlavor>kernel32</MsvcpFlavor>
+    <Arm64X>true</Arm64X>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(libcp.settings.targets))" />
 </Project>

@@ -25,7 +25,7 @@
 
 #ifdef _M_CEE_PURE
 #error <thread> is not supported when compiling with /clr:pure.
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -197,9 +197,16 @@ namespace this_thread {
                 return;
             }
 
-            _timespec64 _Tgt;
-            (void) _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
-            _Thrd_sleep(&_Tgt);
+            // _Clamp must be less than 2^32 - 1 (INFINITE) milliseconds, but is otherwise arbitrary.
+            constexpr chrono::milliseconds _Clamp{chrono::hours{24}};
+
+            const auto _Rel = _Abs_time - _Now;
+            if (_Rel >= _Clamp) {
+                _Thrd_sleep_for(static_cast<unsigned long>(_Clamp.count()));
+            } else {
+                const auto _Rel_ms = chrono::ceil<chrono::milliseconds>(_Rel);
+                _Thrd_sleep_for(static_cast<unsigned long>(_Rel_ms.count()));
+            }
         }
     }
 
@@ -231,7 +238,7 @@ private:
     friend strong_ordering operator<=>(thread::id _Left, thread::id _Right) noexcept;
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     friend bool operator<(thread::id _Left, thread::id _Right) noexcept;
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
     template <class _Ch, class _Tr>
     friend basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id);
     friend hash<thread::id>;
@@ -277,7 +284,7 @@ _NODISCARD inline bool operator>(thread::id _Left, thread::id _Right) noexcept {
 _NODISCARD inline bool operator>=(thread::id _Left, thread::id _Right) noexcept {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Ch, class _Tr>
 basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id) {

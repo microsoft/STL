@@ -43,7 +43,7 @@ struct _Fac_node { // node for lazy facet recording
     void operator delete(void* _Ptr) noexcept { // replace operator delete
         _free_dbg(_Ptr, _CRT_BLOCK);
     }
-#endif // _DEBUG
+#endif // defined(_DEBUG)
 
     _Fac_node* _Next;
     _Facet_base* _Facptr;
@@ -65,9 +65,9 @@ __PURE_APPDOMAIN_GLOBAL const _Fac_tidy_reg_t _Fac_tidy_reg;
 
 #if defined(_M_CEE)
 void __CLRCALL_OR_CDECL _Facet_Register_m(_Facet_base* _This)
-#else // defined(_M_CEE)
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
 void __CLRCALL_OR_CDECL _Facet_Register(_Facet_base* _This)
-#endif // defined(_M_CEE)
+#endif // ^^^ !defined(_M_CEE) ^^^
 { // queue up lazy facet for destruction
     _Fac_head = new _Fac_node(_Fac_head, _This);
 }
@@ -179,7 +179,7 @@ _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_in
         ::new (&classic_locale) locale{ptr};
 #if defined(_M_CEE_PURE)
         locale::_Locimp::_Clocptr = ptr;
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
         const auto mem      = reinterpret_cast<volatile intptr_t*>(&locale::_Locimp::_Clocptr);
         const auto as_bytes = reinterpret_cast<intptr_t>(ptr);
         _Compiler_or_memory_barrier();

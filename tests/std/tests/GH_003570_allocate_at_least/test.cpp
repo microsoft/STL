@@ -51,7 +51,7 @@ struct signalling_allocator {
 
     allocation_result<T*> allocate_at_least(size_t count) {
         allocate_at_least_signal.set();
-        return {allocate(count * 2), count * 2};
+        return {allocate(count * 2 + 1), count * 2 + 1};
     }
 
     void deallocate(T* ptr, size_t) noexcept {
@@ -72,10 +72,15 @@ void test_container() {
 }
 
 void test_deque() {
-    deque<int, signalling_allocator<int>> d;
-    d.resize(100);
+    deque<size_t, signalling_allocator<size_t>> d;
+    for (size_t i = 0; i < 100; ++i) {
+        d.push_back(i);
+    }
     assert(allocate_at_least_signal.consume());
     assert(d.size() == 100);
+    for (size_t i = 0; i < 100; ++i) {
+        assert(d[i] == i);
+    }
 }
 
 void test_stream_overflow(auto& stream) {
