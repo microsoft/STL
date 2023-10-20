@@ -94,35 +94,15 @@ namespace Concurrency {
 
         public:
             IAsyncCausalityTracerStatics* get() const {
-                return m_causalityAPIs;
+                return nullptr;
             }
 
             AsyncCausalityTracer() : m_causalityAPIs(nullptr), m_isSupported(false) {}
 
-            void release() {
-                if (m_causalityAPIs) {
-                    APTTYPE aptType;
-                    APTTYPEQUALIFIER aptTypeQualifier;
-                    if (CoGetApartmentType(&aptType, &aptTypeQualifier) == S_OK) {
-                        // Release causality APIs only if current apartment is still RoInitialized
-                        m_causalityAPIs->Release();
-                        m_causalityAPIs = nullptr;
-                        m_isSupported   = false;
-                    }
-                }
-            }
+            void release() {}
 
             bool isCausalitySupported() {
-                std::call_once(m_stateFlag, [this] {
-                    ComPtr<IAsyncCausalityTracerStatics> causalityAPIs;
-                    if (SUCCEEDED(GetActivationFactory(
-                            HStringReference(RuntimeClass_Windows_Foundation_Diagnostics_AsyncCausalityTracer).Get(),
-                            &causalityAPIs))) {
-                        this->m_causalityAPIs = causalityAPIs.Detach();
-                        this->m_isSupported   = true;
-                    }
-                });
-                return m_isSupported;
+                return false;
             }
         };
         AsyncCausalityTracer asyncCausalityTracer;
