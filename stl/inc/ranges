@@ -3644,6 +3644,10 @@ namespace ranges {
         return static_cast<_Ty&>(_Val);
     }
 
+    struct _Construct_tag {
+        explicit _Construct_tag() = default;
+    };
+
     _EXPORT_STD template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
     class join_view;
@@ -3653,7 +3657,7 @@ namespace ranges {
     private:
         struct _Cache_wrapper {
             template <input_iterator _Iter>
-            constexpr _Cache_wrapper(_Not_quite_object::_Construct_tag, const _Iter& _It) noexcept(
+            constexpr _Cache_wrapper(_Construct_tag, const _Iter& _It) noexcept(
                 noexcept(static_cast<decltype(_Val)>(*_It)))
                 : _Val(*_It) {}
 
@@ -3772,7 +3776,7 @@ namespace ranges {
                 if constexpr (_Deref_is_glvalue) {
                     return *_Get_outer();
                 } else {
-                    return _Parent->_Inner._Emplace(_Not_quite_object::_Construct_tag{}, _Get_outer())._Val;
+                    return _Parent->_Inner._Emplace(_Construct_tag{}, _Get_outer())._Val;
                 }
             }
 
@@ -4091,7 +4095,7 @@ namespace ranges {
     private:
         struct _Cache_wrapper {
             template <input_iterator _Iter>
-            constexpr _Cache_wrapper(_Not_quite_object::_Construct_tag, const _Iter& _It) noexcept(
+            constexpr _Cache_wrapper(_Construct_tag, const _Iter& _It) noexcept(
                 noexcept(static_cast<decltype(_Val)>(*_It)))
                 : _Val(*_It) {}
 
@@ -4224,7 +4228,7 @@ namespace ranges {
                 if constexpr (_Deref_is_glvalue) {
                     return _As_lvalue(*_Get_outer());
                 } else {
-                    return _Parent->_Inner._Emplace(_Not_quite_object::_Construct_tag{}, _Get_outer())._Val;
+                    return _Parent->_Inner._Emplace(_Construct_tag{}, _Get_outer())._Val;
                 }
             }
 
