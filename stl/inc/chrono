@@ -5550,11 +5550,15 @@ namespace chrono {
             case 'q':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Write_unit_suffix<typename _Ty::period>(_Os);
+                } else {
+                    _STL_INTERNAL_CHECK(false);
                 }
                 return true;
             case 'Q':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Os << _STD abs(_Val.count());
+                } else {
+                    _STL_INTERNAL_CHECK(false);
                 }
                 return true;
             case 'm': // Print months as a decimal, even if invalid.
