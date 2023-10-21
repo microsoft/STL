@@ -3728,15 +3728,14 @@ namespace chrono {
             }
         }
 
-        template <class _InIt>
-        _NODISCARD _InIt _Parse_time_field(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
-            const char _Flag, const char _Modifier, const unsigned int _Width,
-            const unsigned int _Subsecond_precision) {
-            using _CharT = _InIt::value_type;
+        template <class _CharT, class _Traits>
+        _NODISCARD istreambuf_iterator<_CharT, _Traits> _Parse_time_field(istreambuf_iterator<_CharT, _Traits> _First,
+            ios_base& _Iosbase, ios_base::iostate& _State, const char _Flag, const char _Modifier,
+            const unsigned int _Width, const unsigned int _Subsecond_precision) {
 
             const auto& _Ctype_fac = _STD use_facet<ctype<_CharT>>(_Iosbase.getloc());
             const auto& _Time_fac  = _STD use_facet<time_get<_CharT>>(_Iosbase.getloc());
-            constexpr _InIt _Last{};
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
 
             int _Val{0};
             switch (_Flag) {
@@ -4054,10 +4053,11 @@ namespace chrono {
             return _First;
         }
 
-        template <class _InIt>
-        _NODISCARD _InIt _Parse_time_field_restricted(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
+        template <class _CharT, class _Traits>
+        _NODISCARD istreambuf_iterator<_CharT, _Traits> _Parse_time_field_restricted(
+            istreambuf_iterator<_CharT, _Traits> _First, ios_base& _Iosbase, ios_base::iostate& _State,
             const char* _Fmt, const unsigned int _Subsecond_precision = 0) {
-            using _Ctype = ctype<typename _InIt::value_type>;
+            using _Ctype = ctype<_CharT>;
             // Parses a restricted format string. It generally doesn't handle anything parsed outside of
             // _Parse_time_field:
             //   (a) any whitespace (' ', %n, %t)
@@ -4066,7 +4066,7 @@ namespace chrono {
             //   (d) width parameter
             // It also assumes a valid format string, specifically that '%' is always followed by a flag.
             const _Ctype& _Ctype_fac{_STD use_facet<_Ctype>(_Iosbase.getloc())};
-            constexpr _InIt _Last{};
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
 
             while (*_Fmt != '\0' && (_State & ~ios_base::eofbit) == ios_base::goodbit) {
                 if (_First == _Last) {
@@ -4082,11 +4082,10 @@ namespace chrono {
             return _First;
         }
 
-        template <class _InIt>
-        _NODISCARD ios_base::iostate _Get_fixed(_InIt& _First, unsigned int _Width,
-            const ctype<typename _InIt::value_type>& _Ctype_fac,
-            const numpunct<typename _InIt::value_type>& _Numpunct_fac) {
-            constexpr _InIt _Last{};
+        template <class _CharT, class _Traits>
+        _NODISCARD ios_base::iostate _Get_fixed(istreambuf_iterator<_CharT, _Traits>& _First, unsigned int _Width,
+            const ctype<_CharT>& _Ctype_fac, const numpunct<_CharT>& _Numpunct_fac) {
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
 
             while (_First != _Last && _Ctype_fac.is(ctype_base::space, *_First) && _Width > 0) {
                 ++_First;
@@ -4135,10 +4134,10 @@ namespace chrono {
             return _State;
         }
 
-        template <class _InIt>
-        _NODISCARD ios_base::iostate _Get_int(
-            _InIt& _First, unsigned int _Width, int& _Val, const ctype<typename _InIt::value_type>& _Ctype_fac) {
-            constexpr _InIt _Last{};
+        template <class _CharT, class _Traits>
+        _NODISCARD ios_base::iostate _Get_int(istreambuf_iterator<_CharT, _Traits>& _First, unsigned int _Width,
+            int& _Val, const ctype<_CharT>& _Ctype_fac) {
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
 
             while (_First != _Last && _Ctype_fac.is(ctype_base::space, *_First) && _Width > 0) {
                 ++_First;
@@ -4197,10 +4196,10 @@ namespace chrono {
             return _State;
         }
 
-        template <class _InIt>
-        _NODISCARD ios_base::iostate _Get_tz_offset(
-            _InIt& _First, const ctype<typename _InIt::value_type>& _Ctype_fac, const bool _Is_modified, int& _Offset) {
-            constexpr _InIt _Last{};
+        template <class _CharT, class _Traits>
+        _NODISCARD ios_base::iostate _Get_tz_offset(istreambuf_iterator<_CharT, _Traits>& _First,
+            const ctype<_CharT>& _Ctype_fac, const bool _Is_modified, int& _Offset) {
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
             if (_First == _Last) {
                 return ios_base::eofbit;
             }
@@ -4270,10 +4269,10 @@ namespace chrono {
             return ios_base::goodbit;
         }
 
-        template <class _InIt>
+        template <class _CharT, class _Traits>
         _NODISCARD ios_base::iostate _Get_tz_name(
-            _InIt& _First, const ctype<typename _InIt::value_type>& _Ctype_fac, string& _Tz_name) {
-            constexpr _InIt _Last{};
+            istreambuf_iterator<_CharT, _Traits>& _First, const ctype<_CharT>& _Ctype_fac, string& _Tz_name) {
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
             _Tz_name.clear();
             while (_First != _Last) {
                 const char _Ch{_Ctype_fac.narrow(*_First)};
