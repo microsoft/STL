@@ -1740,6 +1740,25 @@ namespace chrono {
 
     // [time.zone.timezone]
 
+    template <auto& _Get_tzdb_info, class... _Types>
+    _NODISCARD auto _Make_unique_tzdb_info(_Types&&... _Args) {
+        const auto _Raw_ptr = _Get_tzdb_info(_STD forward<_Types>(_Args)...);
+
+        using _Tzdb_info = remove_pointer_t<decltype(_Raw_ptr)>;
+
+        unique_ptr<_Tzdb_info, _Tzdb_deleter<_Tzdb_info>> _Info{_Raw_ptr};
+
+        if (_Info == nullptr) {
+            _Xbad_alloc();
+        } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
+            _XGetLastError();
+        } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
+            _Xruntime_error("Internal error loading IANA database information");
+        }
+
+        return _Info;
+    }
+
     _EXPORT_STD enum class choose { earliest, latest };
 
     struct _Secret_time_zone_construct_tag {
@@ -1815,16 +1834,8 @@ namespace chrono {
 
             const auto _Tz_len = _Name.length();
 
-            const unique_ptr<__std_tzdb_sys_info, _Tzdb_deleter<__std_tzdb_sys_info>> _Info{
-                __std_tzdb_get_sys_info(_Tz_arg.c_str(), _Tz_len, _Internal_dur.count())};
-
-            if (_Info == nullptr) {
-                _Xbad_alloc();
-            } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
-                _XGetLastError();
-            } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
-                _Xruntime_error("Internal error loading IANA database information");
-            }
+            const auto _Info =
+                _Make_unique_tzdb_info<__std_tzdb_get_sys_info>(_Tz_arg.c_str(), _Tz_len, _Internal_dur.count());
 
             constexpr auto _Min_internal =
                 _CHRONO duration_cast<_Internal_duration>(_Min_seconds.time_since_epoch()).count();
@@ -2055,15 +2066,7 @@ namespace chrono {
     // [time.zone.db]
 
     _NODISCARD inline string _Tzdb_generate_current_zone() {
-        unique_ptr<__std_tzdb_current_zone_info, _Tzdb_deleter<__std_tzdb_current_zone_info>> _Info{
-            __std_tzdb_get_current_zone()};
-        if (_Info == nullptr) {
-            _Xbad_alloc();
-        } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
-            _XGetLastError();
-        } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
-            _Xruntime_error("Internal error loading IANA database information");
-        }
+        auto _Info = _Make_unique_tzdb_info<__std_tzdb_get_current_zone>();
 
         return _Info->_Tz_name;
     }
@@ -2104,15 +2107,7 @@ namespace chrono {
     };
 
     _NODISCARD inline tuple<string, vector<time_zone>, vector<time_zone_link>> _Tzdb_generate_time_zones() {
-        unique_ptr<__std_tzdb_time_zones_info, _Tzdb_deleter<__std_tzdb_time_zones_info>> _Info{
-            __std_tzdb_get_time_zones()};
-        if (_Info == nullptr) {
-            _Xbad_alloc();
-        } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
-            _XGetLastError();
-        } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
-            _Xruntime_error("Internal error loading IANA database information");
-        }
+        auto _Info = _Make_unique_tzdb_info<__std_tzdb_get_time_zones>();
 
         vector<time_zone> _Time_zones;
         vector<time_zone_link> _Time_zone_links;
