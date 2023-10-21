@@ -2065,7 +2065,7 @@ namespace chrono {
             _Xruntime_error("Internal error loading IANA database information");
         }
 
-        return {_Info->_Tz_name};
+        return _Info->_Tz_name;
     }
 
     template <class _Ty>
