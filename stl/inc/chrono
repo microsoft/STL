@@ -5721,7 +5721,7 @@ namespace chrono {
                 case 'Y':
                     if constexpr (is_same_v<_Ty, year>) {
                         return _Val.ok();
-                    } else if constexpr (_Is_any_of_v<_Ty, year_month> || _Is_ymd) {
+                    } else if constexpr (is_same_v<_Ty, year_month> || _Is_ymd) {
                         return _Val.year().ok();
                     }
                     break;
