@@ -1474,6 +1474,7 @@ namespace {
             } while (_First != _Stop_at);
         }
 #endif // !_M_ARM64EC
+        _Result >>= _Traits::_Shift;
         auto _Ptr = static_cast<const _Ty*>(_First);
         for (; _Ptr != _Last; ++_Ptr) {
             if (*_Ptr == _Val) {
