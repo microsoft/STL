@@ -469,7 +469,7 @@ void test_year_formatter() {
 
 template <typename CharT>
 void test_weekday_formatter() {
-    weekday invalid{10};
+    constexpr weekday invalid{10};
     empty_braces_helper(weekday{3}, STR("Wed"));
     empty_braces_helper(invalid, STR("10 is not a valid weekday"));
 
@@ -607,7 +607,7 @@ void test_year_month_formatter() {
 
 template <typename CharT>
 void test_year_month_day_formatter() {
-    year_month_day invalid{year{1234}, month{0}, day{31}};
+    constexpr year_month_day invalid{year{1234}, month{0}, day{31}};
     empty_braces_helper(year_month_day{year{1900}, month{2}, day{1}}, STR("1900-02-01"));
     empty_braces_helper(invalid, STR("1234-00-31 is not a valid date"));
 
