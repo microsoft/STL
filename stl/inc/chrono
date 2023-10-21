@@ -3170,12 +3170,12 @@ namespace chrono {
                 }
             }
 
-            if (!_Val.has_value()) {
-                _Val = _New;
-                return true;
-            } else {
+            if (_Val.has_value()) {
                 return _STD exchange(*_Val, _New) == _New;
             }
+
+            _Val = _New;
+            return true;
         }
 
         _NODISCARD static pair<int, int> _Decompose_year(const int _Year) {
