@@ -3585,7 +3585,6 @@ namespace chrono {
 
         template <class _DurationType>
         _NODISCARD bool _Make_time_point(_DurationType& _Dur, _Leap_second_rep _Leap) {
-
             const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields() && _Calculate_ymd()};
             if (!_Consistent || !_Apply_duration_fields<_Parse_tp_or_duration::_Time_point>(_Dur)) {
                 return false;
