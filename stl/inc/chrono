@@ -1742,9 +1742,13 @@ namespace chrono {
 
     _EXPORT_STD enum class choose { earliest, latest };
 
+    struct _Secret_time_zone_construct_tag {
+        explicit _Secret_time_zone_construct_tag() = default;
+    };
+
     _EXPORT_STD class time_zone {
     public:
-        explicit time_zone(string_view _Name_) : _Name(_Name_) {}
+        explicit time_zone(_Secret_time_zone_construct_tag, string_view _Name_) : _Name(_Name_) {}
 
         time_zone(time_zone&&)            = default;
         time_zone& operator=(time_zone&&) = default;
@@ -2012,9 +2016,14 @@ namespace chrono {
 
     // [time.zone.link]
 
+    struct _Secret_time_zone_link_construct_tag {
+        explicit _Secret_time_zone_link_construct_tag() = default;
+    };
+
     _EXPORT_STD class time_zone_link {
     public:
-        explicit time_zone_link(string_view _Name_, string_view _Target_) : _Name(_Name_), _Target(_Target_) {}
+        explicit time_zone_link(_Secret_time_zone_link_construct_tag, string_view _Name_, string_view _Target_)
+            : _Name(_Name_), _Target(_Target_) {}
 
         time_zone_link(time_zone_link&&)            = default;
         time_zone_link& operator=(time_zone_link&&) = default;
@@ -2110,10 +2119,10 @@ namespace chrono {
         for (size_t _Idx = 0; _Idx < _Info->_Num_time_zones; ++_Idx) {
             const string_view _Name{_Info->_Names[_Idx]};
             if (_Info->_Links[_Idx] == nullptr) {
-                _Time_zones.emplace_back(_Name);
+                _Time_zones.emplace_back(_Secret_time_zone_construct_tag{}, _Name);
             } else {
                 const string_view _Target{_Info->_Links[_Idx]};
-                _Time_zone_links.emplace_back(_Name, _Target);
+                _Time_zone_links.emplace_back(_Secret_time_zone_link_construct_tag{}, _Name, _Target);
             }
         }
 
@@ -2259,13 +2268,13 @@ namespace chrono {
                 vector<time_zone> _Zones;
                 _Zones.reserve(_Tzdb.zones.size());
                 for (const auto& _Tz : _Tzdb.zones) {
-                    _Zones.emplace_back(_Tz.name());
+                    _Zones.emplace_back(_Secret_time_zone_construct_tag{}, _Tz.name());
                 }
 
                 vector<time_zone_link> _Links;
                 _Links.reserve(_Tzdb.links.size());
                 for (const auto& _Link : _Tzdb.links) {
-                    _Links.emplace_back(_Link.name(), _Link.target());
+                    _Links.emplace_back(_Secret_time_zone_link_construct_tag{}, _Link.name(), _Link.target());
                 }
 
                 auto _Version = _Tzdb_update_version(_Tzdb.version, _Leap_sec.size());
