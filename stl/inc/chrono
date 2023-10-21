@@ -5525,9 +5525,9 @@ namespace chrono {
                     _CharT _Fmt_str[4];
                     _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}, _Fmt_str));
                     return true;
+                } else {
+                    return false;
                 }
-
-                return false;
             case 'r':
                 // put_time uses _Strftime in order to bypass reference-counting that locale uses. This function
                 // takes the locale information by pointer, but the pointer (from _Gettnames) returns a copy.
@@ -5545,8 +5545,9 @@ namespace chrono {
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Os << _STD abs(_Duration_cast_underflow_to_zero<days>(_Val).count());
                     return true;
+                } else {
+                    return false;
                 }
-                return false;
             case 'q':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Write_unit_suffix<typename _Ty::period>(_Os);
