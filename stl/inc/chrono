@@ -4787,7 +4787,6 @@ public:
     }
 
     constexpr void _On_conversion_spec(char _Modifier, _CharT _Type) {
-        // NOTE: same performance note from _Basic_format_specs also applies here
         if (_Modifier != '\0' && _Modifier != 'E' && _Modifier != 'O') {
             _Throw_format_error("Invalid modifier specification.");
         }
