@@ -21,7 +21,7 @@
 #include <windows.foundation.diagnostics.h>
 #endif
 
-// This IID is exported by ole32.dll; we cannot depend on ole32.dll on OneCore.
+// This IID is exported by ole32.dll; we cannot depend on ole32.dll.
 static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
     0x0A299774, 0x3E4E, 0xFC42, {0x1D, 0x9D, 0x72, 0xCE, 0xE1, 0x05, 0xCA, 0x57}};
 
