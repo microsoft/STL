@@ -4880,6 +4880,8 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 
     // chrono-spec
     while (_Begin != _End && *_Begin != '}') {
+        // Note that in this loop, ++_Begin is safe (and we don't need _Fmt_codec)
+        // because '%' isn't used as a non-lead-byte in any supported multibyte encoding.
         if (*_Begin == '%') { // conversion-spec
             if (++_Begin == _End) {
                 _Throw_format_error("Invalid format string - missing type after %");
