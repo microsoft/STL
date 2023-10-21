@@ -4057,7 +4057,6 @@ namespace chrono {
         _NODISCARD istreambuf_iterator<_CharT, _Traits> _Parse_time_field_restricted(
             istreambuf_iterator<_CharT, _Traits> _First, ios_base& _Iosbase, ios_base::iostate& _State,
             const char* _Fmt, const unsigned int _Subsecond_precision = 0) {
-            using _Ctype = ctype<_CharT>;
             // Parses a restricted format string. It generally doesn't handle anything parsed outside of
             // _Parse_time_field:
             //   (a) any whitespace (' ', %n, %t)
@@ -4065,7 +4064,7 @@ namespace chrono {
             //   (c) E or O modifiers
             //   (d) width parameter
             // It also assumes a valid format string, specifically that '%' is always followed by a flag.
-            const _Ctype& _Ctype_fac{_STD use_facet<_Ctype>(_Iosbase.getloc())};
+            const auto& _Ctype_fac{_STD use_facet<ctype<_CharT>>(_Iosbase.getloc())};
             constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
 
             while (*_Fmt != '\0' && (_State & ~ios_base::eofbit) == ios_base::goodbit) {
