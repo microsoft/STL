@@ -2094,7 +2094,7 @@ namespace chrono {
         }
     };
 
-    _NODISCARD inline tuple<string, decltype(tzdb::zones), decltype(tzdb::links)> _Tzdb_generate_time_zones() {
+    _NODISCARD inline tuple<string, vector<time_zone>, vector<time_zone_link>> _Tzdb_generate_time_zones() {
         unique_ptr<__std_tzdb_time_zones_info, _Tzdb_deleter<__std_tzdb_time_zones_info>> _Info{
             __std_tzdb_get_time_zones()};
         if (_Info == nullptr) {
@@ -2105,8 +2105,8 @@ namespace chrono {
             _Xruntime_error("Internal error loading IANA database information");
         }
 
-        decltype(tzdb::zones) _Time_zones;
-        decltype(tzdb::links) _Time_zone_links;
+        vector<time_zone> _Time_zones;
+        vector<time_zone_link> _Time_zone_links;
         for (size_t _Idx = 0; _Idx < _Info->_Num_time_zones; ++_Idx) {
             const string_view _Name{_Info->_Names[_Idx]};
             if (_Info->_Links[_Idx] == nullptr) {
