@@ -3612,7 +3612,7 @@ namespace chrono {
                     return false;
                 } else {
                     // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
-                    // leap second insertion or (b) _Seconds >= 59 and there *is* a leap second subtraction.
+                    // leap second insertion or (b) _Seconds >= 59 and there *is* a leap second deletion.
                     const auto& _Tzdb{_CHRONO get_tzdb()};
 
                     const bool _Possible_insertion{_Second == 60};
