@@ -3174,7 +3174,7 @@ namespace chrono {
                 _Val = _New;
                 return true;
             } else {
-                return _STD exchange(_Val, _New) == _New;
+                return _STD exchange(*_Val, _New) == _New;
             }
         }
 
