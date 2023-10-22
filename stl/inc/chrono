@@ -4389,7 +4389,7 @@ namespace chrono {
                     }
                 }
 
-                _CATCH_IO_(_Myis, _Istr)
+                _CATCH_IO_(ios_base, _Istr)
             }
 
             if (!_Is_complete()) {
