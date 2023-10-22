@@ -2229,6 +2229,29 @@ public:
     }
 };
 
+#if _HAS_CXX23
+template <class _CharT>
+struct _Phony_fmt_iter_for {
+    using iterator_category = output_iterator_tag;
+    using value_type        = _CharT;
+    using difference_type   = ptrdiff_t;
+    using pointer           = _CharT*;
+    using reference         = _CharT&;
+
+    reference operator*() const;
+    pointer operator->() const;
+
+    _Phony_fmt_iter_for& operator++();
+    _Phony_fmt_iter_for operator++(int);
+
+    bool operator==(const _Phony_fmt_iter_for&) const;
+};
+
+_EXPORT_STD template <class _Ty, class _CharT>
+concept formattable =
+    _Formattable_with<remove_reference_t<_Ty>, basic_format_context<_Phony_fmt_iter_for<_CharT>, _CharT>>;
+#endif // _HAS_CXX23
+
 template <class _Ty>
 class _Fmt_buffer {
 private:
