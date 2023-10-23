@@ -81,13 +81,10 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
     + We update it every Friday, although nothing bad will happen if we skip a week or update it on a different day.
     + `vso` is the number of Active work items under the STL's Area Path.
     + `libcxx` is the number of skipped/failing tests in `tests/libcxx/expected_results.txt`, excluding
-    "Missing STL Features".
-    To determine this number:
-        1. Copy the file's contents.
-        2. Delete the "Missing STL Features" section.
-        3. Sort the remaining lines.
-        4. Find the last occurrence of `#`, so you can delete all of the empty lines and comments.
-        5. Count the remaining lines.
+    "Missing STL Features" and ignoring configurations (plain/ASAN/Clang). To determine this number, run:
+      ```
+      python tools/count_libcxx.py STL_REPO/tests/libcxx/expected_results.txt
+      ```
 * Update `video_table.ts` if any [code review videos][] have been recorded or uploaded.
 * Run `npm run gather` to compile `gather_stats.ts` and then regenerate `daily_table.ts` and `monthly_table.ts`.
     + This regenerates the files from scratch, but the diff should be small because the data is stable and the process
