@@ -378,14 +378,14 @@ _EXTERN_C
 
     _Info->_Num_time_zones = static_cast<size_t>(_Num_time_zones);
     // value-init to ensure __std_tzdb_delete_time_zones() cleanup is valid
-    if (const auto _Names = new (_STD nothrow) const char* [_Info->_Num_time_zones] {}; _Names) {
+    if (const auto _Names = new (_STD nothrow) const char* [_Info->_Num_time_zones] {}) {
         _Info->_Names = _Names;
     } else {
         return nullptr;
     }
 
     // value-init to ensure __std_tzdb_delete_time_zones() cleanup is valid
-    if (const auto _Links = new (_STD nothrow) const char* [_Info->_Num_time_zones] {}; _Links) {
+    if (const auto _Links = new (_STD nothrow) const char* [_Info->_Num_time_zones] {}) {
         _Info->_Links = _Links;
     } else {
         return nullptr;

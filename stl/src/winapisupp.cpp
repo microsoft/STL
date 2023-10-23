@@ -36,7 +36,7 @@ namespace {
     __KERNEL32Function_##fn_name = reinterpret_cast<decltype(&fn_name)>(GetProcAddress(instance, #fn_name))
 
 // Use this macro for retrieving a cached function pointer from a DLL
-#define IFDYNAMICGETCACHEDFUNCTION(fn_name) if (const auto pf##fn_name = __KERNEL32Function_##fn_name; pf##fn_name)
+#define IFDYNAMICGETCACHEDFUNCTION(fn_name) if (const auto pf##fn_name = __KERNEL32Function_##fn_name)
 
 } // unnamed namespace
 #endif // ^^^ !defined(_ONECORE) ^^^
