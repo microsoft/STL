@@ -351,8 +351,6 @@ std/language.support/support.limits/support.limits.general/type_traits.version.c
 
 # P2286R8 Formatting Ranges
 std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtkind/format_kind.compile.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtkind/range_format.compile.pass.cpp FAIL
 std/utilities/format/format.tuple/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.tuple/format.functions.vformat.pass.cpp FAIL
 std/utilities/format/format.tuple/format.pass.cpp FAIL
