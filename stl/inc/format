@@ -2243,8 +2243,6 @@ struct _Phony_fmt_iter_for {
 
     _Phony_fmt_iter_for& operator++();
     _Phony_fmt_iter_for operator++(int);
-
-    bool operator==(const _Phony_fmt_iter_for&) const;
 };
 
 _EXPORT_STD template <class _Ty, class _CharT>
@@ -2461,7 +2459,7 @@ struct _Invalid_format_kind {
 };
 
 _EXPORT_STD template <class _Ty>
-constexpr auto format_kind = _Invalid_format_kind<_Ty>{};
+constexpr _Invalid_format_kind<_Ty> format_kind{};
 
 template <class _Ty>
 inline constexpr bool _Is_two_tuple = false;

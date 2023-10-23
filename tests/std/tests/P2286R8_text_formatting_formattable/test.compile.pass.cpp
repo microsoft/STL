@@ -12,20 +12,11 @@
 // derived from libc++'s test files:
 // * std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp
 // * std/utilities/format/format.formattable/concept.formattable.float.compile.pass.cpp
-//===----------------------------------------------------------------------===//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===----------------------------------------------------------------------===//
 
 #include <array>
-#include <bitset>
 #include <chrono>
-#include <complex>
 #include <concepts>
 #include <deque>
-#include <filesystem>
 #include <format>
 #include <forward_list>
 #include <list>
@@ -33,19 +24,21 @@
 #include <memory>
 #include <optional>
 #include <queue>
-#include <regex>
 #include <set>
 #include <span>
 #include <stack>
 #include <stacktrace>
-#include <system_error>
+#include <string>
+#include <string_view>
 #include <thread>
 #include <tuple>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <valarray>
 #include <variant>
+#include <vector>
 
 using namespace std;
 
@@ -105,10 +98,10 @@ void test_P0645() {
     assert_is_formattable<bool, CharT>();
 
     assert_is_formattable<signed char, CharT>();
-    assert_is_formattable<signed short, CharT>();
-    assert_is_formattable<signed int, CharT>();
-    assert_is_formattable<signed long, CharT>();
-    assert_is_formattable<signed long long, CharT>();
+    assert_is_formattable<short, CharT>();
+    assert_is_formattable<int, CharT>();
+    assert_is_formattable<long, CharT>();
+    assert_is_formattable<long long, CharT>();
 
     assert_is_formattable<unsigned char, CharT>();
     assert_is_formattable<unsigned short, CharT>();
@@ -134,9 +127,9 @@ void test_P0645_char_wchar_t() {
 template <class CharT>
 void test_P1361() {
     // The chrono formatters require localization support.
-    // [time.format]/7
+    // N4964 [time.format]/7
     //   If the chrono-specs is omitted, the chrono object is formatted as if by
-    //   streaming it to ostringstream os with the formatting
+    //   streaming it to basic_ostringstream<charT> os with the formatting
     //   locale imbued and copying os.str() through the output iterator of the
     //   context with additional padding and adjustments as specified by the format
     //   specifiers.
@@ -197,7 +190,7 @@ void test_LWG3631() {
 
     assert_is_not_formattable<volatile bool, CharT>();
 
-    assert_is_not_formattable<volatile signed int, CharT>();
+    assert_is_not_formattable<volatile int, CharT>();
     assert_is_not_formattable<volatile unsigned int, CharT>();
 
     assert_is_not_formattable<volatile chrono::microseconds, CharT>();
