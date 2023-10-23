@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <climits>
+#include <cstdlib>
 #include <deque>
 #include <flat_set>
 #include <functional>
@@ -405,7 +406,7 @@ void test_insert_upper_bound() {
     struct test_position {
         int key;
         int extra;
-        bool operator==(const test_position& other) const = default;
+        bool operator==(const test_position&) const = default;
     };
 
     mt19937 eng(24);
