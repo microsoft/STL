@@ -350,7 +350,7 @@ namespace Concurrency {
 } // namespace Concurrency
 
 #ifdef _CRT_APP
-extern "C" void __cdecl __crtCleanupCausalityStaticFactories() noexcept {
+extern "C" void __cdecl __crtCleanupCausalityStaticFactories() {
     Concurrency::details::asyncCausalityTracer.release();
 }
 #endif
