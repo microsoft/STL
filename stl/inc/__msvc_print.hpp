@@ -8,9 +8,8 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#ifndef __cpp_lib_concepts
-#error The contents of <format> are available only with C++20 or later, and the contents of <print> \
-are available only with C++23 or later. (Also, you should not include this internal header.)
+#ifndef __cpp_lib_concepts // note: <format> includes this header in C++20 mode
+#error The contents of <print> are available only with C++23. (Also, you should not include this internal header.)
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #include <cstdio>
