@@ -1136,7 +1136,7 @@ _Min_max_element_t __stdcall __std_minmax_element_8(
 
 namespace {
     template <class _Ty>
-    const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) noexcept {
+    const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) {
         auto _Ptr = static_cast<const _Ty*>(_First);
         while (*_Ptr != _Val) {
             ++_Ptr;
@@ -1145,7 +1145,7 @@ namespace {
     }
 
     template <class _Ty>
-    const void* _Find_trivial_tail(const void* _First, const void* _Last, _Ty _Val) noexcept {
+    const void* _Find_trivial_tail(const void* _First, const void* _Last, _Ty _Val) {
         auto _Ptr = static_cast<const _Ty*>(_First);
         while (_Ptr != _Last && *_Ptr != _Val) {
             ++_Ptr;
@@ -1154,8 +1154,7 @@ namespace {
     }
 
     template <class _Ty>
-    const void* _Find_trivial_last_tail(
-        const void* _First, const void* _Last, const void* _Real_last, _Ty _Val) noexcept {
+    const void* _Find_trivial_last_tail(const void* _First, const void* _Last, const void* _Real_last, _Ty _Val) {
         auto _Ptr = static_cast<const _Ty*>(_Last);
         for (;;) {
             if (_Ptr == _First) {
@@ -1169,8 +1168,7 @@ namespace {
     }
 
     template <class _Ty>
-    __declspec(noalias) size_t
-        _Count_trivial_tail(const void* _First, const void* _Last, size_t _Current, _Ty _Val) noexcept {
+    __declspec(noalias) size_t _Count_trivial_tail(const void* _First, const void* _Last, size_t _Current, _Ty _Val) {
         auto _Ptr = static_cast<const _Ty*>(_First);
         for (; _Ptr != _Last; ++_Ptr) {
             if (*_Ptr == _Val) {
