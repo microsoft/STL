@@ -45,9 +45,9 @@ public:
     static constexpr int hexfloat = 0x3000; // TRANSITION, ABI, GH-3296
 
     static constexpr int boolalpha   = 0x4000;
-    static constexpr int adjustfield = 0x01C0; // left | right | internal
-    static constexpr int basefield   = 0x0E00; // dec | oct | hex
-    static constexpr int floatfield  = 0x3000; // scientific | fixed
+    static constexpr int adjustfield = left | right | internal;
+    static constexpr int basefield   = dec | oct | hex;
+    static constexpr int floatfield  = scientific | fixed;
 
     enum _Iostate { // constants for stream states
         _Statmask = 0x17
