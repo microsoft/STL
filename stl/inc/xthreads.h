@@ -83,10 +83,10 @@ enum class _Thrd_result : int { _Success, _Nomem, _Timedout, _Busy, _Error };
 // threads
 _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_detach(_Thrd_t) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_join(_Thrd_t, int*) noexcept;
-_CRTIMP2_PURE void __cdecl _Thrd_sleep(const _timespec64*) noexcept;
 _CRTIMP2_PURE void __cdecl _Thrd_yield() noexcept;
 _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept;
 _CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id() noexcept;
+void __stdcall _Thrd_sleep_for(unsigned long /*ms*/) noexcept;
 
 // mutexes
 enum { // mutex types

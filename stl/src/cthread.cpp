@@ -72,6 +72,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_detach(_Thrd_t thr) noexcept {
     return CloseHandle(thr._Hnd) ? _Thrd_result::_Success : _Thrd_result::_Error;
 }
 
+// TRANSITION, ABI: _Thrd_sleep() is preserved for binary compatibility
 _CRTIMP2_PURE void __cdecl _Thrd_sleep(const _timespec64* xt) noexcept { // suspend thread until time xt
     _timespec64 now;
     _Timespec64_get_sys(&now);

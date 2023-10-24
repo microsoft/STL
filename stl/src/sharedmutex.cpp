@@ -36,4 +36,8 @@ void __cdecl _Smtx_unlock_exclusive(_Smtx_t* smtx) noexcept { // unlock exclusiv
 void __cdecl _Smtx_unlock_shared(_Smtx_t* smtx) noexcept { // unlock non-exclusive shared mutex
     ReleaseSRWLockShared(reinterpret_cast<PSRWLOCK>(smtx));
 }
+
+void __stdcall _Thrd_sleep_for(const unsigned long ms) noexcept { // suspend current thread for `ms` milliseconds
+    Sleep(ms);
+}
 }

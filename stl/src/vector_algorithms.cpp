@@ -68,11 +68,21 @@ namespace {
         return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
     }
 
-    void _Advance_bytes(void*& _Target, ptrdiff_t _Offset) noexcept {
+    void _Rewind_bytes(void*& _Target, size_t _Offset) noexcept {
+        _Target = static_cast<unsigned char*>(_Target) - _Offset;
+    }
+
+    void _Rewind_bytes(const void*& _Target, size_t _Offset) noexcept {
+        _Target = static_cast<const unsigned char*>(_Target) - _Offset;
+    }
+
+    template <class _Integral>
+    void _Advance_bytes(void*& _Target, _Integral _Offset) noexcept {
         _Target = static_cast<unsigned char*>(_Target) + _Offset;
     }
 
-    void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
+    template <class _Integral>
+    void _Advance_bytes(const void*& _Target, _Integral _Offset) noexcept {
         _Target = static_cast<const unsigned char*>(_Target) + _Offset;
     }
 } // unnamed namespace
@@ -1144,6 +1154,21 @@ namespace {
     }
 
     template <class _Ty>
+    const void* _Find_trivial_last_tail(
+        const void* _First, const void* _Last, const void* _Real_last, _Ty _Val) noexcept {
+        auto _Ptr = static_cast<const _Ty*>(_Last);
+        for (;;) {
+            if (_Ptr == _First) {
+                return _Real_last;
+            }
+            --_Ptr;
+            if (*_Ptr == _Val) {
+                return _Ptr;
+            }
+        }
+    }
+
+    template <class _Ty>
     __declspec(noalias) size_t
         _Count_trivial_tail(const void* _First, const void* _Last, size_t _Current, _Ty _Val) noexcept {
         auto _Ptr = static_cast<const _Ty*>(_First);
@@ -1398,6 +1423,58 @@ namespace {
     }
 
     template <class _Traits, class _Ty>
+    const void* __stdcall __std_find_last_trivial(const void* _First, const void* _Last, _Ty _Val) noexcept {
+        const void* const _Real_last = _Last;
+#ifndef _M_ARM64EC
+        size_t _Size_bytes = _Byte_length(_First, _Last);
+
+        const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
+        if (_Avx_size != 0 && _Use_avx2()) {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+            const __m256i _Comparand = _Traits::_Set_avx(_Val);
+            const void* _Stop_at     = _Last;
+            _Rewind_bytes(_Stop_at, _Avx_size);
+            do {
+                _Rewind_bytes(_Last, 32);
+                const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
+                const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+
+                if (_Bingo != 0) {
+                    const unsigned long _Offset = _lzcnt_u32(_Bingo);
+                    _Advance_bytes(_Last, (31 - _Offset) - (sizeof(_Ty) - 1));
+                    return _Last;
+                }
+
+            } while (_Last != _Stop_at);
+            _Size_bytes &= 0x1F;
+        }
+
+        const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
+        if (_Sse_size != 0 && _Traits::_Sse_available()) {
+            const __m128i _Comparand = _Traits::_Set_sse(_Val);
+            const void* _Stop_at     = _Last;
+            _Rewind_bytes(_Stop_at, _Sse_size);
+            do {
+                _Rewind_bytes(_Last, 16);
+                const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
+                const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+
+                if (_Bingo != 0) {
+                    unsigned long _Offset;
+                    _BitScanReverse(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
+                    _Advance_bytes(_Last, _Offset - (sizeof(_Ty) - 1));
+                    return _Last;
+                }
+
+            } while (_Last != _Stop_at);
+        }
+#endif // !_M_ARM64EC
+
+        return _Find_trivial_last_tail(_First, _Last, _Real_last, _Val);
+    }
+
+    template <class _Traits, class _Ty>
     __declspec(noalias) size_t
         __stdcall __std_count_trivial(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
         size_t _Result = 0;
@@ -1475,6 +1552,26 @@ const void* __stdcall __std_find_trivial_4(
 const void* __stdcall __std_find_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
     return __std_find_trivial<_Find_traits_8>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_last_trivial_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+    return __std_find_last_trivial<_Find_traits_1>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_last_trivial_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+    return __std_find_last_trivial<_Find_traits_2>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_last_trivial_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+    return __std_find_last_trivial<_Find_traits_4>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_last_trivial_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+    return __std_find_last_trivial<_Find_traits_8>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
