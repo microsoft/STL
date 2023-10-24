@@ -21,7 +21,7 @@ extern "C" {
 }
 
 [[nodiscard]] PTP_WORK __stdcall __std_create_threadpool_work(
-    __std_PTP_WORK_CALLBACK _Callback, void* _Context, PTP_CALLBACK_ENVIRON _Callback_environ) noexcept {
+    PTP_WORK_CALLBACK _Callback, void* _Context, PTP_CALLBACK_ENVIRON _Callback_environ) noexcept {
     return CreateThreadpoolWork(_Callback, _Context, _Callback_environ);
 }
 
