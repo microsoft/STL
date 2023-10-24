@@ -32,7 +32,7 @@
 // V4 and later managed exception code
 #define MANAGED_EXCEPTION_CODE_V4 0XE0434352
 
-extern "C" _CRTIMP2 void* __cdecl __AdjustPointer(void*, const PMD&) noexcept; // defined in frame.cpp
+extern "C" _CRTIMP2 void* __cdecl __AdjustPointer(void*, const PMD&); // defined in frame.cpp
 
 using namespace std;
 

@@ -173,8 +173,8 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t mtx) noexcept { // attemp
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_timedlock(
-    _Mtx_t mtx, const _timespec64* xt) noexcept { // attempt to lock timed mutex
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_timedlock(_Mtx_t mtx, const _timespec64* xt) noexcept {
+    // attempt to lock timed mutex
     _Thrd_result res;
 
     _THREAD_ASSERT((mtx->_Type & _Mtx_timed) != 0, "timedlock not supported by mutex");

@@ -11,7 +11,7 @@
 #include <roerrorapi.h>
 #include <trnsctrl.h>
 
-extern "C" void* __GetPlatformExceptionInfo(int*) noexcept;
+extern "C" void* __GetPlatformExceptionInfo(int*);
 
 namespace Concurrency {
     namespace details {

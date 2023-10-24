@@ -83,7 +83,7 @@ _END_EXTERN_C_UNLESS_PURE
 
 _EXTERN_C
 // These _should_ be explicitly `noexcept` but cannot be made so here because
-// the primary declaration in the C runtime headers is not.
+// the primary declarations in the C runtime headers are not.
 
 _Success_(return != 0) _Ret_z_ _ACRTIMP char* __cdecl _Getdays();
 
