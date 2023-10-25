@@ -361,8 +361,7 @@ _EXPORT_STD template <class _Ty>
 
     if constexpr (is_class_v<_Uty> && !is_base_of_v<nested_exception, _Uty> && !is_final_v<_Uty>) {
         // throw user exception glued to nested_exception
-        using _Glued = _With_nested_v2<_Uty>;
-        _THROW(_Glued(_STD forward<_Ty>(_Arg)));
+        _THROW(_With_nested_v2<_Uty>(_STD forward<_Ty>(_Arg)));
     } else {
         // throw user exception by itself
         _THROW(_STD forward<_Ty>(_Arg));

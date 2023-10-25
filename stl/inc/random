@@ -1548,11 +1548,11 @@ public:
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block_engine, _Engine> = 0>
     explicit discard_block_engine(_Seed_seq& _Seq) : _Mybase(_Seq) {}
 
-    _NODISCARD static constexpr typename _Engine::result_type(min)() noexcept /* strengthened */ {
+    _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
         return (_Engine::min)();
     }
 
-    _NODISCARD static constexpr typename _Engine::result_type(max)() noexcept /* strengthened */ {
+    _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
         return (_Engine::max)();
     }
 };
