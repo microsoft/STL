@@ -399,7 +399,7 @@ namespace {
                             try {
                                 (void) nmr.allocate(size, align);
                                 CHECK(false);
-                            } catch (std::bad_alloc&) {
+                            } catch (const std::bad_alloc&) {
                             }
                         }
                     }
@@ -617,7 +617,7 @@ namespace {
                     try {
                         (void) alloc.allocate(size_max / sizeof(T) + 1);
                         CHECK(false);
-                    } catch (std::bad_alloc&) {
+                    } catch (const std::bad_alloc&) {
                     }
                 }
 
@@ -1114,7 +1114,7 @@ namespace {
                     try {
                         (void) mbr.allocate(1, 1);
                         CHECK(false);
-                    } catch (std::bad_alloc&) {
+                    } catch (const std::bad_alloc&) {
                         // nothing to do
                     }
                 }
@@ -1150,7 +1150,7 @@ namespace {
                         do {
                             (void) mbr.allocate(1, 1);
                         } while (rr.allocations_.size() < N);
-                    } catch (std::bad_alloc&) {
+                    } catch (const std::bad_alloc&) {
                     }
 
                     std::vector<std::size_t> sizes;
@@ -1324,7 +1324,7 @@ namespace {
                     do {
                         (void) upr.allocate(block_size, block_size);
                     } while (rr.allocations_.size() < N + idl);
-                } catch (std::bad_alloc&) {
+                } catch (const std::bad_alloc&) {
                 }
 
                 auto const n = rr.allocations_.size() - idl;

@@ -37,7 +37,7 @@ public:
 
     void __CLR_OR_THIS_CALL clear(iostate _State = goodbit, bool _Reraise = false) {
         // set state, possibly reraise exception
-        ios_base::clear(_State | (_Mystrbuf ? ios_base::_Iostate{} : ios_base::badbit), _Reraise);
+        ios_base::clear(_State | (_Mystrbuf ? ios_base::goodbit : ios_base::badbit), _Reraise);
     }
 
 #if _HAS_OLD_IOSTREAMS_MEMBERS

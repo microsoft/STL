@@ -130,7 +130,7 @@ extern const bool _Asan_string_should_annotate;
 #if defined(_INSERT_VECTOR_ANNOTATION) || defined(_INSERT_STRING_ANNOTATION)
 extern "C" {
 void __cdecl __sanitizer_annotate_contiguous_container(
-    const void* _First, const void* _End, const void* _Old_last, const void* _New_last);
+    const void* _First, const void* _End, const void* _Old_last, const void* _New_last) noexcept;
 }
 
 #ifdef _M_ARM64EC

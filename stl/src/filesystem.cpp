@@ -786,8 +786,8 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 }
 
 namespace {
-    _Success_(return > 0 && return < nBufferLength) DWORD WINAPI
-        _Stl_GetTempPath2W(_In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) {
+    _Success_(return > 0 && return < nBufferLength) DWORD WINAPI _Stl_GetTempPath2W(
+        _In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) noexcept {
         // See GH-3011: This is intentionally not attempting to cache the function pointer.
         // TRANSITION, ABI: This should use __crtGetTempPath2W after this code is moved into the STL's DLL.
         using _Fun_ptr = decltype(&::GetTempPath2W);

@@ -535,28 +535,28 @@ void test_valueless_iterator() {
     try {
         it2 = it;
         assert(false);
-    } catch (throwing_iterator::tag&) {
+    } catch (const throwing_iterator::tag&) {
     }
 
     try {
         (void) *it2;
         assert(false);
-    } catch (bad_variant_access&) {
+    } catch (const bad_variant_access&) {
     }
     try {
         (void) ++it2;
         assert(false);
-    } catch (bad_variant_access&) {
+    } catch (const bad_variant_access&) {
     }
     try {
         (void) --it2;
         assert(false);
-    } catch (bad_variant_access&) {
+    } catch (const bad_variant_access&) {
     }
     try {
         (void) ranges::iter_move(it2);
         assert(false);
-    } catch (bad_variant_access&) {
+    } catch (const bad_variant_access&) {
     }
 }
 

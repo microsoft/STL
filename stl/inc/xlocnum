@@ -23,13 +23,14 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C_UNLESS_PURE
 
-_CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
+_CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(
+    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*) noexcept;
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
-    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
+    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*) noexcept;
 _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
-    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
+    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*) noexcept;
 _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
-    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
+    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*) noexcept;
 
 _END_EXTERN_C_UNLESS_PURE
 
