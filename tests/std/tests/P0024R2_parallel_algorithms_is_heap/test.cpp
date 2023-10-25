@@ -35,7 +35,7 @@ void test_case_is_heap_parallel(const size_t testSize) {
     v[0] = 0;
 
     // (0, testSize - 1]
-    const auto limit = std::min(testSize, quadratic_complexity_case_limit);
+    const auto limit = min(testSize, quadratic_complexity_case_limit);
     for (auto i = 1U; i < limit; ++i) {
         v[i] = 1;
         assert(!is_heap(par, v.begin(), v.end()));
