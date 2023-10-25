@@ -5848,8 +5848,8 @@ namespace ranges {
                     if constexpr (_Is_sized) {
                         return _RANGES next(_STD move(_First), _Last);
                     } else {
-                        _STL_ASSERT(false, "Tried to find a value in a range with unreachable sentinel"
-                                           " that cannot be represented by the range's value type");
+                        _STL_ASSERT(false, "Tried to find a value in a range with unreachable sentinel "
+                                           "that cannot be represented by the range's value type");
                     }
                 }
 
