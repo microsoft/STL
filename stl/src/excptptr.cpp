@@ -69,21 +69,10 @@ namespace {
     }
 #else // ^^^ !defined(_M_CEE) / defined(_M_CEE), TRANSITION, VSO-1153256 vvv
     template <class _Ty>
-    int __stdcall _Immortalize_impl(void*, void* _Storage_ptr, void**) noexcept {
-        // adapt True Placement New to _Execute_once
-        ::new (_Storage_ptr) _Ty();
-        return 1;
-    }
-
-    template <class _Ty>
     _Ty& _Immortalize() { // return a reference to an object that will live forever
         static once_flag _Flag;
         alignas(_Ty) static unsigned char _Storage[sizeof(_Ty)];
-        if (!_Execute_once(_Flag, _Immortalize_impl<_Ty>, &_Storage)) {
-            // _Execute_once should never fail if the callback never fails
-            _CSTD abort();
-        }
-
+        call_once(_Flag, [&_Storage] { ::new (static_cast<void*>(&_Storage)) _Ty(); });
         return reinterpret_cast<_Ty&>(_Storage);
     }
 #endif // ^^^ !defined(_M_CEE_PURE) && defined(_M_CEE), TRANSITION, VSO-1153256 ^^^
