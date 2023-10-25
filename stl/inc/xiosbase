@@ -75,6 +75,13 @@ public:
     static constexpr int end = 2;
 
     static constexpr int _Default_open_prot = _SH_DENYNO; // constant for default file opening protection
+
+    // TRANSITION, ABI: These enums don't appear in the STL DLL's export surface, but MaxMPDCompat
+    // in the MSVC-internal build detects that they appear in the CompatibilityData baseline.
+    enum _Dummy_enum { _Dummy_enum_val = 1 };
+    enum _Openmode { _Openmask = 0xff };
+    enum _Seekdir { _Seekbeg, _Seekcur, _Seekend };
+    enum { _Openprot = _SH_DENYNO };
 };
 
 _EXPORT_STD extern "C++" class _CRTIMP2_PURE_IMPORT ios_base : public _Iosb<int> { // base class for ios
