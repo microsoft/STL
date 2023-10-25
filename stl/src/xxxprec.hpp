@@ -29,7 +29,7 @@ _EXTERN_C
 #if 0
 #include <cstdio>
 
-static void printit(const char* s, FTYPE* p, int n) { // print xp array
+static void printit(const char* s, FTYPE* p, int n) noexcept { // print xp array
     int i;
     printf(s);
     for (i = 0; i < n && (p[i] != FLIT(0.0) || i == 0); ++i) {

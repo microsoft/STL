@@ -810,7 +810,7 @@ namespace {
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
 
-        static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) {
+        static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][2] = {
                 0x8000'0000'0000'0000ULL, 0x8000'0000'0000'0000ULL, {}};
             return _mm_sub_epi64(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));

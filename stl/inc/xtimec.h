@@ -20,18 +20,18 @@ _STL_DISABLE_CLANG_WARNINGS
 _EXTERN_C
 
 #ifdef _CRTBLD
-_CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const _timespec64*, const _timespec64*);
+_CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const _timespec64*, const _timespec64*) noexcept;
 #endif // _CRTBLD
 
-_CRTIMP2_PURE long long __cdecl _Xtime_get_ticks();
+_CRTIMP2_PURE long long __cdecl _Xtime_get_ticks() noexcept;
 
 #ifdef _CRTBLD
 // Used by several src files, but not dllexported.
-void _Timespec64_get_sys(_timespec64*);
+void _Timespec64_get_sys(_timespec64*) noexcept;
 #endif // defined(_CRTBLD)
 
-_CRTIMP2_PURE long long __cdecl _Query_perf_counter();
-_CRTIMP2_PURE long long __cdecl _Query_perf_frequency();
+_CRTIMP2_PURE long long __cdecl _Query_perf_counter() noexcept;
+_CRTIMP2_PURE long long __cdecl _Query_perf_frequency() noexcept;
 
 _END_EXTERN_C
 
