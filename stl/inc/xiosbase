@@ -22,7 +22,6 @@ _STD_BEGIN
 template <class _Dummy>
 class _Iosb { // define templatized bitmask/enumerated types, instantiate on demand
 public:
-    enum _Dummy_enum { _Dummy_enum_val = 1 }; // don't ask, TRANSITION, ABI
     enum _Fmtflags { // constants for formatting options
         _Fmtmask = 0xffff,
         _Fmtzero = 0
@@ -46,10 +45,9 @@ public:
     static constexpr int hexfloat = 0x3000; // TRANSITION, ABI, GH-3296
 
     static constexpr int boolalpha   = 0x4000;
-    static constexpr int _Stdio      = 0x8000;
-    static constexpr int adjustfield = 0x01C0; // left | right | internal
-    static constexpr int basefield   = 0x0E00; // dec | oct | hex
-    static constexpr int floatfield  = 0x3000; // scientific | fixed
+    static constexpr int adjustfield = left | right | internal;
+    static constexpr int basefield   = dec | oct | hex;
+    static constexpr int floatfield  = scientific | fixed;
 
     enum _Iostate { // constants for stream states
         _Statmask = 0x17
@@ -59,10 +57,6 @@ public:
     static constexpr int eofbit  = 0x1;
     static constexpr int failbit = 0x2;
     static constexpr int badbit  = 0x4;
-
-    enum _Openmode { // constants for file opening options
-        _Openmask = 0xff
-    };
 
     static constexpr int in         = 0x01;
     static constexpr int out        = 0x02;
@@ -76,21 +70,18 @@ public:
     static constexpr int noreplace = _Noreplace;
 #endif
 
-    enum _Seekdir { // constants for file positioning options
-        _Seekbeg,
-        _Seekcur,
-        _Seekend
-    };
-
-    static constexpr int beg = _Seekbeg;
-    static constexpr int cur = _Seekcur;
-    static constexpr int end = _Seekend;
-
-    enum { // TRANSITION, ABI
-        _Openprot = _SH_DENYNO
-    };
+    static constexpr int beg = 0;
+    static constexpr int cur = 1;
+    static constexpr int end = 2;
 
     static constexpr int _Default_open_prot = _SH_DENYNO; // constant for default file opening protection
+
+    // TRANSITION, ABI: These enums don't appear in the STL DLL's export surface, but MaxMPDCompat
+    // in the MSVC-internal build detects that they appear in the CompatibilityData baseline.
+    enum _Dummy_enum { _Dummy_enum_val = 1 };
+    enum _Openmode { _Openmask = 0xff };
+    enum _Seekdir { _Seekbeg, _Seekcur, _Seekend };
+    enum { _Openprot = _SH_DENYNO };
 };
 
 _EXPORT_STD extern "C++" class _CRTIMP2_PURE_IMPORT ios_base : public _Iosb<int> { // base class for ios
