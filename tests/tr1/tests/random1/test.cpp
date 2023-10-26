@@ -466,9 +466,11 @@ static void tdiscard() {
     typedef STD discard_block<rng_base_t, 223, 24> rng_t;
     CHECK_INT(rng_t::block_size, 223);
     CHECK_INT(rng_t::used_block, 24);
+#if _HAS_TR1_NAMESPACE
     CHECK_INT(rng_t::base_type::modulus, 1 << 24);
     CHECK_INT(rng_t::base_type::long_lag, 24);
     CHECK_INT(rng_t::base_type::short_lag, 10);
+#endif // _HAS_TR1_NAMESPACE
     bool st = STD is_same<rng_t::result_type, Uint32>::value;
     CHECK(st);
 

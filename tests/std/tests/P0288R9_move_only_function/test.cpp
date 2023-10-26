@@ -532,14 +532,14 @@ void test_except() {
     try {
         move_only_function<void()> f{throwing{}};
         assert(false); // unreachable
-    } catch (runtime_error&) {
+    } catch (const runtime_error&) {
     }
 
     try {
         fail_allocations = true;
         move_only_function<void()> f{not_throwing{}};
         assert(false); // unreachable
-    } catch (bad_alloc&) {
+    } catch (const bad_alloc&) {
         fail_allocations = false;
     }
 }

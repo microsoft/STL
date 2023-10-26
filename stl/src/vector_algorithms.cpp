@@ -543,46 +543,6 @@ namespace {
         _Mode_both = _Mode_min | _Mode_max,
     };
 
-    template <_Min_max_mode _Mode, class _Ty>
-    auto _Minmax_tail_f(
-        const void* _First, const void* _Last, _Min_max_element_t& _Res, _Ty _Cur_min, _Ty _Cur_max) noexcept {
-
-        if constexpr (_Mode == _Mode_min) {
-            return _Min_tail(_First, _Last, _Res._Min, _Cur_min);
-        } else if constexpr (_Mode == _Mode_max) {
-            return _Max_tail(_First, _Last, _Res._Max, _Cur_max);
-        } else {
-            return _Both_tail(_First, _Last, _Res, _Cur_min, _Cur_max);
-        }
-    }
-
-    template <_Min_max_mode _Mode, class _STy, class _UTy>
-    auto _Minmax_tail(const void* _First, const void* _Last, _Min_max_element_t& _Res, bool _Sign, _UTy _Cur_min,
-        _UTy _Cur_max) noexcept {
-        constexpr _UTy _Correction = _UTy{1} << (sizeof(_UTy) * 8 - 1);
-
-        if constexpr (_Mode == _Mode_min) {
-            if (_Sign) {
-                return _Min_tail(_First, _Last, _Res._Min, static_cast<_STy>(_Cur_min));
-            } else {
-                return _Min_tail(_First, _Last, _Res._Min, static_cast<_UTy>(_Cur_min + _Correction));
-            }
-        } else if constexpr (_Mode == _Mode_max) {
-            if (_Sign) {
-                return _Max_tail(_First, _Last, _Res._Max, static_cast<_STy>(_Cur_max));
-            } else {
-                return _Max_tail(_First, _Last, _Res._Max, static_cast<_UTy>(_Cur_max + _Correction));
-            }
-        } else {
-            if (_Sign) {
-                return _Both_tail(_First, _Last, _Res, static_cast<_STy>(_Cur_min), static_cast<_STy>(_Cur_max));
-            } else {
-                return _Both_tail(_First, _Last, _Res, static_cast<_UTy>(_Cur_min + _Correction),
-                    static_cast<_UTy>(_Cur_max + _Correction));
-            }
-        }
-    }
-
     struct _Minmax_traits_1 {
         static constexpr bool _Is_floating = false;
 
@@ -871,7 +831,7 @@ namespace {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
 
-        static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) {
+        static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
             alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][2] = {
                 0x8000'0000'0000'0000ULL, 0x8000'0000'0000'0000ULL, {}};
             return _mm_sub_epi64(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
@@ -1328,10 +1288,40 @@ namespace {
         }
 #endif // !_M_ARM64EC
         if constexpr (_Traits::_Is_floating) {
-            return _Minmax_tail_f<_Mode, typename _Traits::_Signed_t>(_First, _Last, _Res, _Cur_min_val, _Cur_max_val);
+            if constexpr (_Mode == _Mode_min) {
+                return _Min_tail(_First, _Last, _Res._Min, _Cur_min_val);
+            } else if constexpr (_Mode == _Mode_max) {
+                return _Max_tail(_First, _Last, _Res._Max, _Cur_min_val);
+            } else {
+                return _Both_tail(_First, _Last, _Res, _Cur_min_val, _Cur_min_val);
+            }
         } else {
-            return _Minmax_tail<_Mode, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>(
-                _First, _Last, _Res, _Sign, _Cur_min_val, _Cur_max_val);
+            using _STy = _Traits::_Signed_t;
+            using _UTy = _Traits::_Unsigned_t;
+
+            constexpr _UTy _Correction = _UTy{1} << (sizeof(_UTy) * 8 - 1);
+
+            if constexpr (_Mode == _Mode_min) {
+                if (_Sign) {
+                    return _Min_tail(_First, _Last, _Res._Min, static_cast<_STy>(_Cur_min_val));
+                } else {
+                    return _Min_tail(_First, _Last, _Res._Min, static_cast<_UTy>(_Cur_min_val + _Correction));
+                }
+            } else if constexpr (_Mode == _Mode_max) {
+                if (_Sign) {
+                    return _Max_tail(_First, _Last, _Res._Max, static_cast<_STy>(_Cur_max_val));
+                } else {
+                    return _Max_tail(_First, _Last, _Res._Max, static_cast<_UTy>(_Cur_max_val + _Correction));
+                }
+            } else {
+                if (_Sign) {
+                    return _Both_tail(
+                        _First, _Last, _Res, static_cast<_STy>(_Cur_min_val), static_cast<_STy>(_Cur_max_val));
+                } else {
+                    return _Both_tail(_First, _Last, _Res, static_cast<_UTy>(_Cur_min_val + _Correction),
+                        static_cast<_UTy>(_Cur_max_val + _Correction));
+                }
+            }
         }
     }
 
@@ -1431,49 +1421,6 @@ _Min_max_element_t __stdcall __std_minmax_element_d(
 } // extern "C"
 
 namespace {
-    template <class _Ty>
-    const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) {
-        auto _Ptr = static_cast<const _Ty*>(_First);
-        while (*_Ptr != _Val) {
-            ++_Ptr;
-        }
-        return _Ptr;
-    }
-
-    template <class _Ty>
-    const void* _Find_trivial_tail(const void* _First, const void* _Last, _Ty _Val) {
-        auto _Ptr = static_cast<const _Ty*>(_First);
-        while (_Ptr != _Last && *_Ptr != _Val) {
-            ++_Ptr;
-        }
-        return _Ptr;
-    }
-
-    template <class _Ty>
-    const void* _Find_trivial_last_tail(const void* _First, const void* _Last, const void* _Real_last, _Ty _Val) {
-        auto _Ptr = static_cast<const _Ty*>(_Last);
-        for (;;) {
-            if (_Ptr == _First) {
-                return _Real_last;
-            }
-            --_Ptr;
-            if (*_Ptr == _Val) {
-                return _Ptr;
-            }
-        }
-    }
-
-    template <class _Ty>
-    __declspec(noalias) size_t _Count_trivial_tail(const void* _First, const void* _Last, size_t _Current, _Ty _Val) {
-        auto _Ptr = static_cast<const _Ty*>(_First);
-        for (; _Ptr != _Last; ++_Ptr) {
-            if (*_Ptr == _Val) {
-                ++_Current;
-            }
-        }
-        return _Current;
-    }
-
     struct _Find_traits_1 {
         static constexpr size_t _Shift = 0;
 
@@ -1661,8 +1608,11 @@ namespace {
             }
         }
 #endif // !_M_ARM64EC
-
-        return _Find_trivial_unsized_fallback(_First, _Val);
+        auto _Ptr = static_cast<const _Ty*>(_First);
+        while (*_Ptr != _Val) {
+            ++_Ptr;
+        }
+        return _Ptr;
     }
 
     template <class _Traits, class _Ty>
@@ -1712,8 +1662,11 @@ namespace {
             } while (_First != _Stop_at);
         }
 #endif // !_M_ARM64EC
-
-        return _Find_trivial_tail(_First, _Last, _Val);
+        auto _Ptr = static_cast<const _Ty*>(_First);
+        while (_Ptr != _Last && *_Ptr != _Val) {
+            ++_Ptr;
+        }
+        return _Ptr;
     }
 
     template <class _Traits, class _Ty>
@@ -1739,7 +1692,6 @@ namespace {
                     _Advance_bytes(_Last, (31 - _Offset) - (sizeof(_Ty) - 1));
                     return _Last;
                 }
-
             } while (_Last != _Stop_at);
             _Size_bytes &= 0x1F;
         }
@@ -1760,12 +1712,19 @@ namespace {
                     _Advance_bytes(_Last, _Offset - (sizeof(_Ty) - 1));
                     return _Last;
                 }
-
             } while (_Last != _Stop_at);
         }
 #endif // !_M_ARM64EC
-
-        return _Find_trivial_last_tail(_First, _Last, _Real_last, _Val);
+        auto _Ptr = static_cast<const _Ty*>(_Last);
+        for (;;) {
+            if (_Ptr == _First) {
+                return _Real_last;
+            }
+            --_Ptr;
+            if (*_Ptr == _Val) {
+                return _Ptr;
+            }
+        }
     }
 
     template <class _Traits, class _Ty>
@@ -1805,8 +1764,14 @@ namespace {
             } while (_First != _Stop_at);
         }
 #endif // !_M_ARM64EC
-
-        return _Count_trivial_tail(_First, _Last, _Result >> _Traits::_Shift, _Val);
+        _Result >>= _Traits::_Shift;
+        auto _Ptr = static_cast<const _Ty*>(_First);
+        for (; _Ptr != _Last; ++_Ptr) {
+            if (*_Ptr == _Val) {
+                ++_Result;
+            }
+        }
+        return _Result;
     }
 } // unnamed namespace
 

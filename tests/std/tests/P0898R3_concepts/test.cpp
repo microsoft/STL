@@ -33,7 +33,7 @@ template <class>
 constexpr bool always_false = false;
 
 namespace detail {
-    static constexpr bool permissive() {
+    constexpr bool permissive() {
         return false;
     }
 

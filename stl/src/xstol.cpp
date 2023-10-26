@@ -12,10 +12,10 @@
 
 _EXTERN_C_UNLESS_PURE
 
-_CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(const char*, char**, int, int*);
+_CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(const char*, char**, int, int*) noexcept;
 
-_CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(
-    const char* s, char** endptr, int base, int* perr) { // convert string to long, with checking
+_CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(const char* s, char** endptr, int base, int* perr) noexcept {
+    // convert string to long, with checking
     const char* sc;
     char* se;
     char sign;

@@ -4588,16 +4588,13 @@ _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
 #endif // _HAS_CXX20
             {
 #ifdef __cpp_lib_concepts
-                if constexpr (is_same_v<_InIt, _Sent>)
+                if constexpr (!is_same_v<_InIt, _Sent>) {
+                    return _Copy_memmove_n(_First, static_cast<size_t>(_Last - _First), _Dest);
+                } else
 #endif // defined(__cpp_lib_concepts)
                 {
                     return _Copy_memmove(_First, _Last, _Dest);
                 }
-#ifdef __cpp_lib_concepts
-                else {
-                    return _Copy_memmove_n(_First, static_cast<size_t>(_Last - _First), _Dest);
-                }
-#endif // defined(__cpp_lib_concepts)
             }
         }
 
@@ -5874,8 +5871,8 @@ namespace ranges {
                     if constexpr (_Is_sized) {
                         return _RANGES next(_STD move(_First), _Last);
                     } else {
-                        _STL_ASSERT(false, "Tried to find a value in a range with unreachable sentinel"
-                                           " that cannot be represented by the range's value type");
+                        _STL_ASSERT(false, "Tried to find a value in a range with unreachable sentinel "
+                                           "that cannot be represented by the range's value type");
                     }
                 }
 

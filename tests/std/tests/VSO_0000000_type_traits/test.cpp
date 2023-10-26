@@ -1271,7 +1271,7 @@ namespace {
     constexpr bool is_trait<T, void_t<typename T::type>> = true;
 
     namespace detail {
-        static constexpr bool permissive() {
+        constexpr bool permissive() {
             return false;
         }
 

@@ -75,7 +75,7 @@ namespace test_unexpected {
 
             int _val = 0;
         };
-        using Unexpect = std::unexpected<test_error>;
+        using Unexpect = unexpected<test_error>;
 
         // [expected.un.ctor]
         const int& input = 1;
@@ -113,7 +113,7 @@ namespace test_unexpected {
         static_assert(noexcept(in_place_lvalue_constructed == in_place_lvalue_constructed) == compare_is_noexcept);
         static_assert(noexcept(in_place_lvalue_constructed != in_place_lvalue_constructed) == compare_is_noexcept);
 
-        const auto converted = std::unexpected<convertible>{convertible{3}};
+        const auto converted = unexpected<convertible>{convertible{3}};
         assert(base_error_constructed == converted);
         assert(conversion_error_constructed != converted);
         static_assert(noexcept(base_error_constructed == converted) == compare_is_noexcept);
@@ -148,7 +148,7 @@ namespace test_unexpected {
         static_assert(is_same_v<decltype(const_rvalue_error), const test_error&&>);
 
         // deduction guide
-        std::unexpected deduced(test_error{42});
+        unexpected deduced(test_error{42});
         static_assert(same_as<decltype(deduced), Unexpect>);
     }
 
@@ -182,7 +182,7 @@ namespace test_expected {
             using Expected = expected<value_tag, error_tag>;
             static_assert(same_as<typename Expected::value_type, value_tag>);
             static_assert(same_as<typename Expected::error_type, error_tag>);
-            static_assert(same_as<typename Expected::unexpected_type, std::unexpected<error_tag>>);
+            static_assert(same_as<typename Expected::unexpected_type, unexpected<error_tag>>);
 
             static_assert(same_as<typename Expected::rebind<int>, expected<int, error_tag>>);
         }
@@ -191,7 +191,7 @@ namespace test_expected {
             using Expected = expected<void, error_tag>;
             static_assert(same_as<typename Expected::value_type, void>);
             static_assert(same_as<typename Expected::error_type, error_tag>);
-            static_assert(same_as<typename Expected::unexpected_type, std::unexpected<error_tag>>);
+            static_assert(same_as<typename Expected::unexpected_type, unexpected<error_tag>>);
 
             static_assert(same_as<typename Expected::rebind<int>, expected<int, error_tag>>);
         }
@@ -535,7 +535,7 @@ namespace test_expected {
         }
 
         { // converting from unexpected
-            using Input    = std::unexpected<convertible>;
+            using Input    = unexpected<convertible>;
             using Expected = expected<int, payload_constructors>;
 
             const Input const_input{in_place};
@@ -616,7 +616,7 @@ namespace test_expected {
         }
 
         { // expected<void, E>: converting from unexpected
-            using Input    = std::unexpected<convertible>;
+            using Input    = unexpected<convertible>;
             using Expected = expected<void, payload_constructors>;
 
             const Input const_input{in_place};
@@ -668,8 +668,8 @@ namespace test_expected {
         struct BaseError {};
         struct DerivedError : BaseError {};
 
-        std::expected<bool, DerivedError> e1(false);
-        std::expected<bool, BaseError> e2(e1);
+        expected<bool, DerivedError> e1(false);
+        expected<bool, BaseError> e2(e1);
         assert(!e2.value());
     }
 
@@ -980,7 +980,7 @@ namespace test_expected {
         { // assign error type const ref
             constexpr bool should_be_noexcept = nothrow_copy_constructible && nothrow_copy_assignable;
             using Expected                    = expected<int, payload_assign>;
-            using Unexpected                  = std::unexpected<payload_assign>;
+            using Unexpected                  = unexpected<payload_assign>;
             const Unexpected input_error{42};
 
             Expected assign_error_to_value{in_place, 1};
@@ -999,7 +999,7 @@ namespace test_expected {
         { // assign expected<void> error type const ref
             constexpr bool should_be_noexcept = nothrow_copy_constructible && nothrow_copy_assignable;
             using Expected                    = expected<void, payload_assign>;
-            using Unexpected                  = std::unexpected<payload_assign>;
+            using Unexpected                  = unexpected<payload_assign>;
             const Unexpected input_error{42};
 
             Expected assign_error_to_value{in_place};
@@ -1018,7 +1018,7 @@ namespace test_expected {
         { // assign error type rvalue
             constexpr bool should_be_noexcept = nothrow_move_constructible && nothrow_move_assignable;
             using Expected                    = expected<int, payload_assign>;
-            using Unexpected                  = std::unexpected<payload_assign>;
+            using Unexpected                  = unexpected<payload_assign>;
 
             Expected assign_error_to_value{in_place, 1};
             assign_error_to_value = Unexpected{42};
@@ -1036,7 +1036,7 @@ namespace test_expected {
         { // assign expected<void> error type rvalue
             constexpr bool should_be_noexcept = nothrow_move_constructible && nothrow_move_assignable;
             using Expected                    = expected<void, payload_assign>;
-            using Unexpected                  = std::unexpected<payload_assign>;
+            using Unexpected                  = unexpected<payload_assign>;
 
             Expected assign_error_to_value{in_place};
             assign_error_to_value = Unexpected{42};
@@ -1054,7 +1054,7 @@ namespace test_expected {
         { // assign convertible error const ref
             constexpr bool should_be_noexcept = nothrow_copy_constructible && nothrow_copy_assignable;
             using Expected                    = expected<int, payload_assign>;
-            using Unexpected                  = std::unexpected<convertible>;
+            using Unexpected                  = unexpected<convertible>;
             const Unexpected input_error{42};
 
             Expected assign_error_to_value{in_place, 1};
@@ -1073,7 +1073,7 @@ namespace test_expected {
         { // assign expected<void> convertible error const ref
             constexpr bool should_be_noexcept = nothrow_copy_constructible && nothrow_copy_assignable;
             using Expected                    = expected<void, payload_assign>;
-            using Unexpected                  = std::unexpected<convertible>;
+            using Unexpected                  = unexpected<convertible>;
             const Unexpected input_error{42};
 
             Expected assign_error_to_value{in_place};
@@ -1092,7 +1092,7 @@ namespace test_expected {
         { // assign convertible error rvalue
             constexpr bool should_be_noexcept = nothrow_move_constructible && nothrow_move_assignable;
             using Expected                    = expected<int, payload_assign>;
-            using Unexpected                  = std::unexpected<convertible>;
+            using Unexpected                  = unexpected<convertible>;
 
             Expected assign_error_to_value{in_place, 1};
             assign_error_to_value = Unexpected{42};
@@ -1110,7 +1110,7 @@ namespace test_expected {
         { // assign expected<void> convertible error rvalue
             constexpr bool should_be_noexcept = nothrow_move_constructible && nothrow_move_assignable;
             using Expected                    = expected<void, payload_assign>;
-            using Unexpected                  = std::unexpected<convertible>;
+            using Unexpected                  = unexpected<convertible>;
 
             Expected assign_error_to_value{in_place};
             assign_error_to_value = Unexpected{42};
@@ -1283,7 +1283,7 @@ namespace test_expected {
         constexpr payload_swap(payload_swap&& other) noexcept(IsYes(nothrowMoveConstructible))
             : _val(other._val + 42) {}
         // Note: cannot declare friends of function local structs
-        constexpr friend void swap(payload_swap& left, payload_swap& right) noexcept(IsYes(nothrowSwappable)) {
+        friend constexpr void swap(payload_swap& left, payload_swap& right) noexcept(IsYes(nothrowSwappable)) {
             left._val = exchange(right._val, left._val);
         }
 
@@ -1941,7 +1941,7 @@ namespace test_expected {
 
         { // compare against unexpected with same base
             using Base       = payload_equality;
-            using Unexpected = std::unexpected<Base>;
+            using Unexpected = unexpected<Base>;
             using Expected   = expected<int, Base>;
 
             const Expected with_value{in_place, 42};
@@ -1960,7 +1960,7 @@ namespace test_expected {
 
         { // expected<void> compare against unexpected with same base
             using Base       = payload_equality;
-            using Unexpected = std::unexpected<Base>;
+            using Unexpected = unexpected<Base>;
             using Expected   = expected<void, Base>;
 
             const Expected with_value{in_place};
@@ -1976,7 +1976,7 @@ namespace test_expected {
 
         { // compare against unexpected with different base
             using Base       = payload_equality;
-            using Unexpected = std::unexpected<int>;
+            using Unexpected = unexpected<int>;
             using Expected   = expected<int, Base>;
 
             const Expected with_value{in_place, 42};
@@ -1995,7 +1995,7 @@ namespace test_expected {
 
         { // expected<void> compare against unexpected with different base
             using Base       = payload_equality;
-            using Unexpected = std::unexpected<int>;
+            using Unexpected = unexpected<int>;
             using Expected   = expected<void, Base>;
 
             const Expected with_value{in_place};

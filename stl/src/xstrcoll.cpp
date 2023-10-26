@@ -39,7 +39,7 @@ _EXTERN_C_UNLESS_PURE
 //     _NLSCMPERROR = error
 //     errno = EINVAL
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
-    const char* string1, const char* end1, const char* string2, const char* end2, const _Collvec* ploc) {
+    const char* string1, const char* end1, const char* string2, const char* end2, const _Collvec* ploc) noexcept {
     int ret = 0;
     UINT codepage;
     int n1 = static_cast<int>(end1 - string1);
@@ -72,7 +72,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
 }
 
 // _Collvec _Getcoll() - get collation info for current locale
-_CRTIMP2_PURE _Collvec __CLRCALL_PURE_OR_CDECL _Getcoll() {
+_CRTIMP2_PURE _Collvec __CLRCALL_PURE_OR_CDECL _Getcoll() noexcept {
     _Collvec coll;
 
     coll._Page       = ___lc_collate_cp_func();
