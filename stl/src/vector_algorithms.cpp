@@ -556,7 +556,7 @@ namespace {
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 256;
 
-        static __m128i _Load(const void* _Src) {
+        static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
 
@@ -646,7 +646,7 @@ namespace {
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 65536;
 
-        static __m128i _Load(const void* _Src) {
+        static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
 
@@ -741,7 +741,7 @@ namespace {
         static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
 
-        static __m128i _Load(const void* _Src) {
+        static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
 
@@ -827,7 +827,7 @@ namespace {
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
 
-        static __m128i _Load(const void* _Src) {
+        static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
 
@@ -925,7 +925,7 @@ namespace {
         static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
 
-        static __m128 _Load(const void* _Src) {
+        static __m128 _Load(const void* _Src) noexcept {
             return _mm_loadu_ps(reinterpret_cast<const float*>(_Src));
         }
 
@@ -1016,7 +1016,7 @@ namespace {
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
 
-        static __m128d _Load(const void* _Src) {
+        static __m128d _Load(const void* _Src) noexcept {
             return _mm_loadu_pd(reinterpret_cast<const double*>(_Src));
         }
 
