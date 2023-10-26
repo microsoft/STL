@@ -1291,9 +1291,9 @@ namespace {
             if constexpr (_Mode == _Mode_min) {
                 return _Min_tail(_First, _Last, _Res._Min, _Cur_min_val);
             } else if constexpr (_Mode == _Mode_max) {
-                return _Max_tail(_First, _Last, _Res._Max, _Cur_min_val);
+                return _Max_tail(_First, _Last, _Res._Max, _Cur_max_val);
             } else {
-                return _Both_tail(_First, _Last, _Res, _Cur_min_val, _Cur_min_val);
+                return _Both_tail(_First, _Last, _Res, _Cur_min_val, _Cur_max_val);
             }
         } else {
             using _STy = _Traits::_Signed_t;
