@@ -56,8 +56,8 @@ public:
     using const_reference        = const value_type&;
     using size_type              = _Container::size_type;
     using difference_type        = _Container::difference_type;
-    using iterator               = _Container::iterator;
     using const_iterator         = _Container::const_iterator;
+    using iterator               = const_iterator;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
     using container_type         = _Container;
@@ -324,7 +324,9 @@ public:
         _Guard._Target = nullptr;
     }
 
-    iterator erase(iterator _Where) {
+    iterator erase(iterator _Where)
+        requires (!is_same_v<iterator, const_iterator>)
+    {
         return _Mycont.erase(_Where);
     }
     iterator erase(const_iterator _Where) {
@@ -357,6 +359,10 @@ public:
     }
     _NODISCARD value_compare value_comp() const {
         return _Mycomp;
+    }
+
+    _NODISCARD const container_type& _Get_container() const {
+        return _Mycont;
     }
 
     // set operations
@@ -666,16 +672,16 @@ private:
             const auto _Equivalent = [this](const _Kty& _Lhs, const _Kty& _Rhs) {
                 return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
             };
-            const iterator _End = end();
-            _Mycont.erase(_STD unique(begin(), _End, _Equivalent), _End);
+            const auto _End = _Mycont.end();
+            _Mycont.erase(_STD unique(_Mycont.begin(), _End, _Equivalent), _End);
         }
     }
 
     template <bool _Presorted>
     void _Restore_invariants_after_insert(const size_type _Old_size) {
-        const iterator _Begin   = begin();
-        const iterator _Old_end = _Begin + static_cast<difference_type>(_Old_size);
-        const iterator _End     = end();
+        const auto _Begin   = _Mycont.begin();
+        const auto _Old_end = _Begin + static_cast<difference_type>(_Old_size);
+        const auto _End     = _Mycont.end();
 
         if constexpr (!_Presorted) {
             _STD sort(_Old_end, _End, _Pass_comp());
@@ -690,15 +696,15 @@ private:
     }
 
     void _Make_invariants_fulfilled() {
-        const iterator _Begin = begin();
-        const iterator _End   = end();
+        const auto _Begin = _Mycont.begin();
+        const auto _End   = _Mycont.end();
 
         if (_Begin == _End) {
             return;
         }
 
         // O(N) if already sorted.
-        const iterator _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Pass_comp());
+        const auto _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Pass_comp());
 
         _STD sort(_Begin_unsorted, _End, _Pass_comp());
         _STD inplace_merge(_Begin, _Begin_unsorted, _End, _Pass_comp());
@@ -769,8 +775,9 @@ _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.set.erasure]/5)
     _Clear_guard<flat_set<_Kty, _Keylt, _Container>> _Guard{_STD addressof(_Val)};
-    const auto _Erased_count = _STD _Erase_remove_if(_Val, _STD _Pass_fn(_Predicate));
-    _Guard._Target           = nullptr;
+    const auto _Erased_count =
+        _STD _Erase_remove_if(const_cast<_Container&>(_Val._Get_container()), _STD _Pass_fn(_Predicate));
+    _Guard._Target = nullptr;
     return _Erased_count;
 }
 
@@ -778,8 +785,9 @@ _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.multiset.erasure]/5)
     _Clear_guard<flat_multiset<_Kty, _Keylt, _Container>> _Guard{_STD addressof(_Val)};
-    const auto _Erased_count = _STD _Erase_remove_if(_Val, _STD _Pass_fn(_Predicate));
-    _Guard._Target           = nullptr;
+    const auto _Erased_count =
+        _STD _Erase_remove_if(const_cast<_Container&>(_Val._Get_container()), _STD _Pass_fn(_Predicate));
+    _Guard._Target = nullptr;
     return _Erased_count;
 }
 
