@@ -85,7 +85,7 @@ void assert_set_requirements() {
 
     // additionally:
     static_assert(is_same_v<key_type, value_type>);
-    static_assert(_Constant_iterator<iterator>);
+    static_assert(same_as<std::const_iterator<iterator>, iterator>);
     static_assert(is_convertible_v<const_iterator, iterator>);
 }
 

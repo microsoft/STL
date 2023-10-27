@@ -189,16 +189,16 @@ public:
 
     // iterators
     _NODISCARD iterator begin() noexcept {
-        return cbegin();
+        return _Mycont.cbegin();
     }
     _NODISCARD const_iterator begin() const noexcept {
-        return cbegin();
+        return _Mycont.cbegin();
     }
     _NODISCARD iterator end() noexcept {
-        return cend();
+        return _Mycont.cend();
     }
     _NODISCARD const_iterator end() const noexcept {
-        return cend();
+        return _Mycont.cend();
     }
 
     _NODISCARD reverse_iterator rbegin() noexcept {
@@ -529,7 +529,6 @@ private:
     _NODISCARD pair<iterator, bool> _Emplace(_Ty&& _Val) {
         const const_iterator _Where = lower_bound(_Val);
         if (_Where != cend() && !_Compare(_Val, *_Where)) {
-            // *_Where is equivalent to _Val.
             return pair{_Where, false};
         }
 
