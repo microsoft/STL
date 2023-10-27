@@ -80,7 +80,7 @@ void assert_set_requirements() {
     using key_type       = T::key_type;
     using value_type     = T::value_type;
 
-    static_assert(_Constant_iterator<const_iterator>);
+    static_assert(same_as<std::const_iterator<const_iterator>, const_iterator>);
     static_assert(is_convertible_v<iterator, const_iterator>);
 
     // additionally:

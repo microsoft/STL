@@ -58,8 +58,8 @@ public:
     using difference_type        = _Container::difference_type;
     using const_iterator         = _Container::const_iterator;
     using iterator               = const_iterator;
-    using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+    using reverse_iterator       = const_reverse_iterator;
     using container_type         = _Container;
 
     static_assert(random_access_iterator<iterator>, "The C++ Standard forbids containers without random "
@@ -188,8 +188,6 @@ public:
     }
 
     // iterators
-    // for flat_meow, `const_iterator` is required to be convertible to `iterator` (per N4958
-    // [associative.reqmts.general]/6)
     _NODISCARD iterator begin() noexcept {
         return cbegin();
     }
@@ -597,8 +595,6 @@ private:
         }
 
         if (_Where != _End && !_Compare(_Val, *_Where)) {
-            // *_Where is equivalent to _Val.
-            // for flat_meow, _Where should be convertible to iterator type.
             return _Where;
         }
 
