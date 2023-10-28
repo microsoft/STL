@@ -646,7 +646,7 @@ struct _Format_arg_traits {
 
     // Function template _Type_eraser mirrors the type dispatching mechanism in the construction of basic_format_arg
     // (N4950 [format.arg]). They determine the mapping from "raw" to "erased" argument type for _Format_arg_store.
-    template <_Formattable_with<_Context> _Ty>
+    template <class _Ty>
     static auto _Type_eraser();
 
     template <class _Ty>
@@ -810,7 +810,7 @@ private:
 };
 
 template <class _Context>
-template <_Formattable_with<_Context> _Ty>
+template <class _Ty>
 auto _Format_arg_traits<_Context>::_Type_eraser() {
     using _Td = remove_const_t<_Ty>;
     // See N4950 [format.arg]/6
@@ -3578,9 +3578,8 @@ struct _Format_handler {
 };
 
 template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
-constexpr auto _Formatter_base<_Ty, _CharT, _ArgType>::parse(basic_format_parse_context<_CharT>& _ParseCtx) {
-    using _Pc = basic_format_parse_context<_CharT>;
-
+template <class _Pc>
+constexpr _Pc::iterator _Formatter_base<_Ty, _CharT, _ArgType>::parse(type_identity_t<_Pc&> _ParseCtx) {
     _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
     const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
     if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {

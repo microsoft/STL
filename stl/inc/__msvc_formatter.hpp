@@ -113,7 +113,8 @@ public:
     }
 #endif // _HAS_CXX23
 
-    constexpr auto parse(basic_format_parse_context<_CharT>& _ParseCtx);
+    template <class _Pc = basic_format_parse_context<_CharT>>
+    constexpr _Pc::iterator parse(type_identity_t<_Pc&> _ParseCtx);
 
     template <class _FormatContext>
     _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const;
