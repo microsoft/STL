@@ -18,9 +18,9 @@
 #include <stop_token>
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #include <__msvc_formatter.hpp>
-#endif // _HAS_CXX23
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #ifdef _M_CEE_PURE
 #error <thread> is not supported when compiling with /clr:pure.
