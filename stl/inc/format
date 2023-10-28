@@ -3970,8 +3970,8 @@ _NODISCARD constexpr const _CharT* _Parse_fill_align_and_width_specs(
 }
 
 template <class _CharT>
-_NODISCARD constexpr auto _Fill_align_and_width_formatter<_CharT>::parse(
-    basic_format_parse_context<_CharT>& _Parse_ctx) {
+template <class _Pc>
+_NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter<_CharT>::parse(type_identity_t<_Pc&> _Parse_ctx) {
     _Fill_align_and_width_specs_setter<_CharT> _Callback{_Specs, _Parse_ctx};
     const auto _It =
         _Parse_fill_align_and_width_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
