@@ -10,7 +10,6 @@
 #include <__msvc_chrono.hpp>
 #include <memory>
 #include <process.h>
-#include <string>
 #include <tuple>
 #include <xthreads.h>
 
@@ -20,7 +19,7 @@
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
-#include <format>
+#include <__msvc_formatter.hpp>
 #endif // _HAS_CXX23
 
 #ifdef _M_CEE_PURE
