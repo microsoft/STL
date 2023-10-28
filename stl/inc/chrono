@@ -5806,7 +5806,8 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl;
 };
 
-// Per LWG-3997, the _CharT template parameter is constrained to supported character types.
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
 
 template <class _Rep, class _Period, _Format_supported_charT _CharT>
 struct formatter<_CHRONO duration<_Rep, _Period>, _CharT>

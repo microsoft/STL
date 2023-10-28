@@ -2232,14 +2232,9 @@ public:
 #if _HAS_CXX23
 template <class _CharT>
 struct _Phony_fmt_iter_for {
-    using iterator_category = output_iterator_tag;
-    using value_type        = _CharT;
-    using difference_type   = ptrdiff_t;
-    using pointer           = _CharT*;
-    using reference         = _CharT&;
+    using difference_type = ptrdiff_t;
 
-    reference operator*() const;
-    pointer operator->() const;
+    _CharT& operator*() const;
 
     _Phony_fmt_iter_for& operator++();
     _Phony_fmt_iter_for operator++(int);
@@ -2459,7 +2454,7 @@ struct _Invalid_format_kind {
 };
 
 _EXPORT_STD template <class _Ty>
-constexpr _Invalid_format_kind<_Ty> format_kind{};
+inline constexpr _Invalid_format_kind<_Ty> format_kind;
 
 template <class _Ty>
 inline constexpr bool _Is_two_tuple = false;
@@ -2472,7 +2467,7 @@ inline constexpr bool _Is_two_tuple<tuple<_Ty, _Uty>> = true;
 
 template <_RANGES input_range _Rng>
     requires same_as<_Rng, remove_cvref_t<_Rng>>
-constexpr range_format format_kind<_Rng> = []() consteval {
+inline constexpr range_format format_kind<_Rng> = []() consteval {
     using _Ref_value_t = remove_cvref_t<_RANGES range_reference_t<_Rng>>;
     if constexpr (same_as<_Ref_value_t, _Rng>) {
         return range_format::disabled;
