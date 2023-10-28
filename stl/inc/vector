@@ -15,6 +15,10 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#include <__msvc_formatter.hpp>
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -3584,6 +3588,26 @@ namespace pmr {
     using vector = _STD vector<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <class _Ty, class _CharT>
+    requires _Is_specialization_v<_Ty, _Vb_reference>
+struct formatter<_Ty, _CharT> {
+private:
+    formatter<bool, _CharT> _Underlying;
+
+public:
+    template <class _ParseContext>
+    constexpr typename _ParseContext::iterator parse(_ParseContext& _Ctx) {
+        return _Underlying.parse(_Ctx);
+    }
+
+    template <class _FormatContext>
+    typename _FormatContext::iterator format(const _Ty& _Ref, _FormatContext& _Ctx) const {
+        return _Underlying.format(_Ref, _Ctx);
+    }
+};
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class _Alloc, bool _RequiresMutable>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutable> = true;
