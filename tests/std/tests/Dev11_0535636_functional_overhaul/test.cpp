@@ -1049,8 +1049,7 @@ void test_reference_wrapper_invocation() {
 }
 
 
-// Test C++17 invoke().
-#if _HAS_CXX17
+// Test invoke().
 constexpr bool test_invoke_constexpr() {
     // MSVC implements LWG-2894 in C++17 and later
     Thing thing;
@@ -1076,13 +1075,10 @@ constexpr bool test_invoke_constexpr() {
     assert(invoke(&cube_constexpr, 7) == 343);
     return true;
 }
-#endif // _HAS_CXX17
 
 void test_invoke() {
-#if _HAS_CXX17
     assert(test_invoke_constexpr());
     STATIC_ASSERT(test_invoke_constexpr());
-#endif // _HAS_CXX17
 
     auto sp = make_shared<Thing>();
 
