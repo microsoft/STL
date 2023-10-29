@@ -1377,8 +1377,24 @@ namespace filesystem {
 #endif // ^^^ !_HAS_CXX20 ^^^
 
         _NODISCARD_FRIEND path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
-            path _Tmp = _Left;
+            path _Tmp;
+            const auto _Right_size  = _Right._Text.size();
+            const auto _Right_first = _Right._Text.data();
+            const auto _Right_last  = _Right_first + _Right_size;
+
+            // Preallocate memory for the most common case
+            if (!_Has_drive_letter_prefix(_Right_first, _Right_last) && !_Is_slash(*_Right_first)) {
+                // !has_root_name(_Right) && !has_root_directory(_Right)
+                const auto _Left_size               = _Left._Text.size();
+                const auto _Left_last               = _Left._Text.data() + _Left_size;
+                const bool _Left_has_trailing_slash = _Left_size && _Is_slash(_Left_last[-1]);
+
+                _Tmp._Text.reserve(_Left_size + !_Left_has_trailing_slash + _Right_size);
+            }
+
+            _Tmp = _Left;
             _Tmp /= _Right;
+
             return _Tmp;
         }
 
