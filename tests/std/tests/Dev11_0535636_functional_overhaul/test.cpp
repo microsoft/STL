@@ -2356,6 +2356,62 @@ _CONSTEXPR20 bool test_not_fn() {
     return true;
 }
 
+// Also test the invocability of the return type of std::not_fn before and after the changes in P0356R5.
+#if _HAS_CXX17
+struct ConstOnlyFunctor {
+    bool operator()() = delete;
+    bool operator()() const {
+        return true;
+    }
+};
+
+struct ConstOnlyBooleanTester {
+    void operator()() {}
+    bool operator()() const {
+        return true;
+    }
+};
+
+struct GetPinnedNegatable {
+    struct PinnedNegatable {
+        PinnedNegatable() = default;
+
+        PinnedNegatable(const PinnedNegatable&)            = delete;
+        PinnedNegatable& operator=(const PinnedNegatable&) = delete;
+
+        friend bool operator!(PinnedNegatable) {
+            return false;
+        }
+    };
+
+    PinnedNegatable operator()() const {
+        return {};
+    }
+};
+
+using NegatedConstOnlyFunctor       = decltype(not_fn(ConstOnlyFunctor{}));
+using NegatedConstOnlyBooleanTester = decltype(not_fn(ConstOnlyBooleanTester{}));
+using NegatedGetPinnedNegatable     = decltype(not_fn(GetPinnedNegatable{}));
+
+#if _HAS_CXX20
+constexpr bool not_fn_is_perfect_forwarding = true;
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+constexpr bool not_fn_is_perfect_forwarding = false;
+#endif // ^^^ !_HAS_CXX20 ^^^
+
+static_assert(is_invocable_v<const NegatedConstOnlyFunctor>);
+static_assert(is_invocable_v<const NegatedConstOnlyFunctor&>);
+static_assert(is_invocable_v<const NegatedConstOnlyBooleanTester>);
+static_assert(is_invocable_v<const NegatedConstOnlyBooleanTester&>);
+
+static_assert(is_invocable_v<NegatedConstOnlyFunctor> == !not_fn_is_perfect_forwarding);
+static_assert(is_invocable_v<NegatedConstOnlyFunctor&> == !not_fn_is_perfect_forwarding);
+static_assert(is_invocable_v<NegatedConstOnlyBooleanTester> == !not_fn_is_perfect_forwarding);
+static_assert(is_invocable_v<NegatedConstOnlyBooleanTester&> == !not_fn_is_perfect_forwarding);
+
+static_assert(is_invocable_v<NegatedGetPinnedNegatable> == not_fn_is_perfect_forwarding);
+#endif // _HAS_CXX17
+
 int main() {
     // Test addressof() with functions.
     assert(addressof(triple) == &triple);

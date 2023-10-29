@@ -151,6 +151,11 @@ public:
     void deallocate(_Ty* const _Ptr, size_t) noexcept {
         __std_free_crt(_Ptr);
     }
+
+    template <class _Other>
+    _NODISCARD bool operator==(const _Crt_allocator<_Other>&) const noexcept {
+        return true;
+    }
 };
 
 _STD_END

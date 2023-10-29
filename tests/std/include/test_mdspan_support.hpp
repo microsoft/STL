@@ -235,7 +235,7 @@ constexpr void check_members_with_various_extents(Fn&& fn) {
 }
 
 namespace details {
-    static constexpr bool permissive() {
+    constexpr bool permissive() {
         return false;
     }
 

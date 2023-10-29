@@ -89,7 +89,7 @@ _In_range_(0, maxsig) int _Stoflt(
     const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig) noexcept;
 _In_range_(0, maxsig) int _Stoxflt(
     const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig) noexcept;
-int _WStopfx(const wchar_t**, wchar_t**);
+int _WStopfx(const wchar_t**, wchar_t**) noexcept;
 _In_range_(0, maxsig) int _WStoflt(
     const wchar_t*, const wchar_t*, wchar_t**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig) noexcept;
 _In_range_(0, maxsig) int _WStoxflt(

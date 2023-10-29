@@ -37,6 +37,10 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#if !_HAS_CXX17
+#error The contents of <charconv> are only available with C++17. (Also, you should not include this internal header.)
+#endif // !_HAS_CXX17
+
 #include <cstring>
 #include <type_traits>
 #include <utility>
@@ -53,10 +57,6 @@
 #if _HAS_CHARCONV_INTRINSICS
 #include _STL_INTRIN_HEADER // for _umul128() and __shiftright128()
 #endif // ^^^ intrinsics available ^^^
-
-#if !_HAS_CXX17
-#error The contents of <charconv> are only available with C++17. (Also, you should not include this internal header.)
-#endif // !_HAS_CXX17
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

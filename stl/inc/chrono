@@ -1712,7 +1712,7 @@ namespace chrono {
 
     template <class _Duration>
     [[noreturn]] void _Throw_nonexistent_local_time(const local_time<_Duration>& _Tp, const local_info& _Info) {
-        _THROW((nonexistent_local_time{_Tp, _Info}));
+        _THROW(nonexistent_local_time{_Tp, _Info});
     }
 
     _EXPORT_STD class ambiguous_local_time : public runtime_error {
@@ -1735,16 +1735,39 @@ namespace chrono {
 
     template <class _Duration>
     [[noreturn]] void _Throw_ambiguous_local_time(const local_time<_Duration>& _Tp, const local_info& _Info) {
-        _THROW((ambiguous_local_time{_Tp, _Info}));
+        _THROW(ambiguous_local_time{_Tp, _Info});
     }
 
     // [time.zone.timezone]
 
+    template <auto& _Get_tzdb_info, class... _Types>
+    _NODISCARD auto _Make_unique_tzdb_info(_Types&&... _Args) {
+        const auto _Raw_ptr = _Get_tzdb_info(_STD forward<_Types>(_Args)...);
+
+        using _Tzdb_info = remove_pointer_t<decltype(_Raw_ptr)>;
+
+        unique_ptr<_Tzdb_info, _Tzdb_deleter<_Tzdb_info>> _Info{_Raw_ptr};
+
+        if (_Info == nullptr) {
+            _Xbad_alloc();
+        } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
+            _XGetLastError();
+        } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
+            _Xruntime_error("Internal error loading IANA database information");
+        }
+
+        return _Info;
+    }
+
     _EXPORT_STD enum class choose { earliest, latest };
+
+    struct _Secret_time_zone_construct_tag {
+        explicit _Secret_time_zone_construct_tag() = default;
+    };
 
     _EXPORT_STD class time_zone {
     public:
-        explicit time_zone(string_view _Name_) : _Name(_Name_) {}
+        explicit time_zone(_Secret_time_zone_construct_tag, string_view _Name_) : _Name(_Name_) {}
 
         time_zone(time_zone&&)            = default;
         time_zone& operator=(time_zone&&) = default;
@@ -1811,16 +1834,8 @@ namespace chrono {
 
             const auto _Tz_len = _Name.length();
 
-            const unique_ptr<__std_tzdb_sys_info, _Tzdb_deleter<__std_tzdb_sys_info>> _Info{
-                __std_tzdb_get_sys_info(_Tz_arg.c_str(), _Tz_len, _Internal_dur.count())};
-
-            if (_Info == nullptr) {
-                _Xbad_alloc();
-            } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
-                _XGetLastError();
-            } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
-                _Xruntime_error("Internal error loading IANA database information");
-            }
+            const auto _Info =
+                _Make_unique_tzdb_info<__std_tzdb_get_sys_info>(_Tz_arg.c_str(), _Tz_len, _Internal_dur.count());
 
             constexpr auto _Min_internal =
                 _CHRONO duration_cast<_Internal_duration>(_Min_seconds.time_since_epoch()).count();
@@ -2012,9 +2027,14 @@ namespace chrono {
 
     // [time.zone.link]
 
+    struct _Secret_time_zone_link_construct_tag {
+        explicit _Secret_time_zone_link_construct_tag() = default;
+    };
+
     _EXPORT_STD class time_zone_link {
     public:
-        explicit time_zone_link(string_view _Name_, string_view _Target_) : _Name(_Name_), _Target(_Target_) {}
+        explicit time_zone_link(_Secret_time_zone_link_construct_tag, string_view _Name_, string_view _Target_)
+            : _Name(_Name_), _Target(_Target_) {}
 
         time_zone_link(time_zone_link&&)            = default;
         time_zone_link& operator=(time_zone_link&&) = default;
@@ -2046,17 +2066,9 @@ namespace chrono {
     // [time.zone.db]
 
     _NODISCARD inline string _Tzdb_generate_current_zone() {
-        unique_ptr<__std_tzdb_current_zone_info, _Tzdb_deleter<__std_tzdb_current_zone_info>> _Info{
-            __std_tzdb_get_current_zone()};
-        if (_Info == nullptr) {
-            _Xbad_alloc();
-        } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
-            _XGetLastError();
-        } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
-            _Xruntime_error("Internal error loading IANA database information");
-        }
+        auto _Info = _Make_unique_tzdb_info<__std_tzdb_get_current_zone>();
 
-        return {_Info->_Tz_name};
+        return _Info->_Tz_name;
     }
 
     template <class _Ty>
@@ -2094,26 +2106,18 @@ namespace chrono {
         }
     };
 
-    _NODISCARD inline tuple<string, decltype(tzdb::zones), decltype(tzdb::links)> _Tzdb_generate_time_zones() {
-        unique_ptr<__std_tzdb_time_zones_info, _Tzdb_deleter<__std_tzdb_time_zones_info>> _Info{
-            __std_tzdb_get_time_zones()};
-        if (_Info == nullptr) {
-            _Xbad_alloc();
-        } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
-            _XGetLastError();
-        } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
-            _Xruntime_error("Internal error loading IANA database information");
-        }
+    _NODISCARD inline tuple<string, vector<time_zone>, vector<time_zone_link>> _Tzdb_generate_time_zones() {
+        auto _Info = _Make_unique_tzdb_info<__std_tzdb_get_time_zones>();
 
-        decltype(tzdb::zones) _Time_zones;
-        decltype(tzdb::links) _Time_zone_links;
+        vector<time_zone> _Time_zones;
+        vector<time_zone_link> _Time_zone_links;
         for (size_t _Idx = 0; _Idx < _Info->_Num_time_zones; ++_Idx) {
             const string_view _Name{_Info->_Names[_Idx]};
             if (_Info->_Links[_Idx] == nullptr) {
-                _Time_zones.emplace_back(_Name);
+                _Time_zones.emplace_back(_Secret_time_zone_construct_tag{}, _Name);
             } else {
                 const string_view _Target{_Info->_Links[_Idx]};
-                _Time_zone_links.emplace_back(_Name, _Target);
+                _Time_zone_links.emplace_back(_Secret_time_zone_link_construct_tag{}, _Name, _Target);
             }
         }
 
@@ -2259,13 +2263,13 @@ namespace chrono {
                 vector<time_zone> _Zones;
                 _Zones.reserve(_Tzdb.zones.size());
                 for (const auto& _Tz : _Tzdb.zones) {
-                    _Zones.emplace_back(_Tz.name());
+                    _Zones.emplace_back(_Secret_time_zone_construct_tag{}, _Tz.name());
                 }
 
                 vector<time_zone_link> _Links;
                 _Links.reserve(_Tzdb.links.size());
                 for (const auto& _Link : _Tzdb.links) {
-                    _Links.emplace_back(_Link.name(), _Link.target());
+                    _Links.emplace_back(_Secret_time_zone_link_construct_tag{}, _Link.name(), _Link.target());
                 }
 
                 auto _Version = _Tzdb_update_version(_Tzdb.version, _Leap_sec.size());
@@ -3166,12 +3170,12 @@ namespace chrono {
                 }
             }
 
-            if (!_Val.has_value()) {
-                _Val = _New;
-                return true;
-            } else {
-                return _STD exchange(_Val, _New) == _New;
+            if (_Val.has_value()) {
+                return _STD exchange(*_Val, _New) == _New;
             }
+
+            _Val = _New;
+            return true;
         }
 
         _NODISCARD static pair<int, int> _Decompose_year(const int _Year) {
@@ -3581,7 +3585,6 @@ namespace chrono {
 
         template <class _DurationType>
         _NODISCARD bool _Make_time_point(_DurationType& _Dur, _Leap_second_rep _Leap) {
-
             const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields() && _Calculate_ymd()};
             if (!_Consistent || !_Apply_duration_fields<_Parse_tp_or_duration::_Time_point>(_Dur)) {
                 return false;
@@ -3609,7 +3612,7 @@ namespace chrono {
                     return false;
                 } else {
                     // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
-                    // leap second insertion or (b) _Seconds >= 59 and there *is* a leap second subtraction.
+                    // leap second insertion or (b) _Seconds >= 59 and there *is* a leap second deletion.
                     const auto& _Tzdb{_CHRONO get_tzdb()};
 
                     const bool _Possible_insertion{_Second == 60};
@@ -3725,15 +3728,14 @@ namespace chrono {
             }
         }
 
-        template <class _InIt>
-        _NODISCARD _InIt _Parse_time_field(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
-            const char _Flag, const char _Modifier, const unsigned int _Width,
-            const unsigned int _Subsecond_precision) {
-            using _CharT = _InIt::value_type;
+        template <class _CharT, class _Traits>
+        _NODISCARD istreambuf_iterator<_CharT, _Traits> _Parse_time_field(istreambuf_iterator<_CharT, _Traits> _First,
+            ios_base& _Iosbase, ios_base::iostate& _State, const char _Flag, const char _Modifier,
+            const unsigned int _Width, const unsigned int _Subsecond_precision) {
 
             const auto& _Ctype_fac = _STD use_facet<ctype<_CharT>>(_Iosbase.getloc());
             const auto& _Time_fac  = _STD use_facet<time_get<_CharT>>(_Iosbase.getloc());
-            constexpr _InIt _Last{};
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
 
             int _Val{0};
             switch (_Flag) {
@@ -4051,10 +4053,10 @@ namespace chrono {
             return _First;
         }
 
-        template <class _InIt>
-        _NODISCARD _InIt _Parse_time_field_restricted(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
+        template <class _CharT, class _Traits>
+        _NODISCARD istreambuf_iterator<_CharT, _Traits> _Parse_time_field_restricted(
+            istreambuf_iterator<_CharT, _Traits> _First, ios_base& _Iosbase, ios_base::iostate& _State,
             const char* _Fmt, const unsigned int _Subsecond_precision = 0) {
-            using _Ctype = ctype<typename _InIt::value_type>;
             // Parses a restricted format string. It generally doesn't handle anything parsed outside of
             // _Parse_time_field:
             //   (a) any whitespace (' ', %n, %t)
@@ -4062,8 +4064,8 @@ namespace chrono {
             //   (c) E or O modifiers
             //   (d) width parameter
             // It also assumes a valid format string, specifically that '%' is always followed by a flag.
-            const _Ctype& _Ctype_fac{_STD use_facet<_Ctype>(_Iosbase.getloc())};
-            constexpr _InIt _Last{};
+            const auto& _Ctype_fac{_STD use_facet<ctype<_CharT>>(_Iosbase.getloc())};
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
 
             while (*_Fmt != '\0' && (_State & ~ios_base::eofbit) == ios_base::goodbit) {
                 if (_First == _Last) {
@@ -4079,11 +4081,10 @@ namespace chrono {
             return _First;
         }
 
-        template <class _InIt>
-        _NODISCARD ios_base::iostate _Get_fixed(_InIt& _First, unsigned int _Width,
-            const ctype<typename _InIt::value_type>& _Ctype_fac,
-            const numpunct<typename _InIt::value_type>& _Numpunct_fac) {
-            constexpr _InIt _Last{};
+        template <class _CharT, class _Traits>
+        _NODISCARD ios_base::iostate _Get_fixed(istreambuf_iterator<_CharT, _Traits>& _First, unsigned int _Width,
+            const ctype<_CharT>& _Ctype_fac, const numpunct<_CharT>& _Numpunct_fac) {
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
 
             while (_First != _Last && _Ctype_fac.is(ctype_base::space, *_First) && _Width > 0) {
                 ++_First;
@@ -4132,10 +4133,10 @@ namespace chrono {
             return _State;
         }
 
-        template <class _InIt>
-        _NODISCARD ios_base::iostate _Get_int(
-            _InIt& _First, unsigned int _Width, int& _Val, const ctype<typename _InIt::value_type>& _Ctype_fac) {
-            constexpr _InIt _Last{};
+        template <class _CharT, class _Traits>
+        _NODISCARD ios_base::iostate _Get_int(istreambuf_iterator<_CharT, _Traits>& _First, unsigned int _Width,
+            int& _Val, const ctype<_CharT>& _Ctype_fac) {
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
 
             while (_First != _Last && _Ctype_fac.is(ctype_base::space, *_First) && _Width > 0) {
                 ++_First;
@@ -4194,10 +4195,10 @@ namespace chrono {
             return _State;
         }
 
-        template <class _InIt>
-        _NODISCARD ios_base::iostate _Get_tz_offset(
-            _InIt& _First, const ctype<typename _InIt::value_type>& _Ctype_fac, const bool _Is_modified, int& _Offset) {
-            constexpr _InIt _Last{};
+        template <class _CharT, class _Traits>
+        _NODISCARD ios_base::iostate _Get_tz_offset(istreambuf_iterator<_CharT, _Traits>& _First,
+            const ctype<_CharT>& _Ctype_fac, const bool _Is_modified, int& _Offset) {
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
             if (_First == _Last) {
                 return ios_base::eofbit;
             }
@@ -4267,10 +4268,10 @@ namespace chrono {
             return ios_base::goodbit;
         }
 
-        template <class _InIt>
+        template <class _CharT, class _Traits>
         _NODISCARD ios_base::iostate _Get_tz_name(
-            _InIt& _First, const ctype<typename _InIt::value_type>& _Ctype_fac, string& _Tz_name) {
-            constexpr _InIt _Last{};
+            istreambuf_iterator<_CharT, _Traits>& _First, const ctype<_CharT>& _Ctype_fac, string& _Tz_name) {
+            constexpr istreambuf_iterator<_CharT, _Traits> _Last{};
             _Tz_name.clear();
             while (_First != _Last) {
                 const char _Ch{_Ctype_fac.narrow(*_First)};
@@ -4388,7 +4389,7 @@ namespace chrono {
                     }
                 }
 
-                _CATCH_IO_(_Myis, _Istr)
+                _CATCH_IO_(ios_base, _Istr)
             }
 
             if (!_Is_complete()) {
@@ -4786,7 +4787,6 @@ public:
     }
 
     constexpr void _On_conversion_spec(char _Modifier, _CharT _Type) {
-        // NOTE: same performance note from _Basic_format_specs also applies here
         if (_Modifier != '\0' && _Modifier != 'E' && _Modifier != 'O') {
             _Throw_format_error("Invalid modifier specification.");
         }
@@ -4880,6 +4880,8 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 
     // chrono-spec
     while (_Begin != _End && *_Begin != '}') {
+        // Note that in this loop, ++_Begin is safe (and we don't need _Fmt_codec)
+        // because '%' isn't used as a non-lead-byte in any supported multibyte encoding.
         if (*_Begin == '%') { // conversion-spec
             if (++_Begin == _End) {
                 _Throw_format_error("Invalid format string - missing type after %");
@@ -5524,9 +5526,9 @@ namespace chrono {
                     _CharT _Fmt_str[4];
                     _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}, _Fmt_str));
                     return true;
+                } else {
+                    return false;
                 }
-
-                return false;
             case 'r':
                 // put_time uses _Strftime in order to bypass reference-counting that locale uses. This function
                 // takes the locale information by pointer, but the pointer (from _Gettnames) returns a copy.
@@ -5544,16 +5546,21 @@ namespace chrono {
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Os << _STD abs(_Duration_cast_underflow_to_zero<days>(_Val).count());
                     return true;
+                } else {
+                    return false;
                 }
-                return false;
             case 'q':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Write_unit_suffix<typename _Ty::period>(_Os);
+                } else {
+                    _STL_INTERNAL_CHECK(false);
                 }
                 return true;
             case 'Q':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Os << _STD abs(_Val.count());
+                } else {
+                    _STL_INTERNAL_CHECK(false);
                 }
                 return true;
             case 'm': // Print months as a decimal, even if invalid.
@@ -5715,7 +5722,7 @@ namespace chrono {
                 case 'Y':
                     if constexpr (is_same_v<_Ty, year>) {
                         return _Val.ok();
-                    } else if constexpr (_Is_any_of_v<_Ty, year_month> || _Is_ymd) {
+                    } else if constexpr (is_same_v<_Ty, year_month> || _Is_ymd) {
                         return _Val.year().ok();
                     }
                     break;
@@ -5799,67 +5806,69 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl;
 };
 
-template <class _Rep, class _Period, class _CharT>
+// Per LWG-3997, the _CharT template parameter is constrained to supported character types.
+
+template <class _Rep, class _Period, _Format_supported_charT _CharT>
 struct formatter<_CHRONO duration<_Rep, _Period>, _CharT>
     : _Fill_tm_formatter<_CHRONO duration<_Rep, _Period>, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO day, _CharT> : _Fill_tm_formatter<_CHRONO day, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO month, _CharT> : _Fill_tm_formatter<_CHRONO month, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year, _CharT> : _Fill_tm_formatter<_CHRONO year, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO weekday, _CharT> : _Fill_tm_formatter<_CHRONO weekday, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO weekday_indexed, _CharT> : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO weekday_last, _CharT> : _Fill_tm_formatter<_CHRONO weekday_last, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO month_day, _CharT> : _Fill_tm_formatter<_CHRONO month_day, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO month_day_last, _CharT> : _Fill_tm_formatter<_CHRONO month_day_last, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO month_weekday, _CharT> : _Fill_tm_formatter<_CHRONO month_weekday, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO month_weekday_last, _CharT> : _Fill_tm_formatter<_CHRONO month_weekday_last, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year_month, _CharT> : _Fill_tm_formatter<_CHRONO year_month, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year_month_day, _CharT> : _Fill_tm_formatter<_CHRONO year_month_day, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year_month_day_last, _CharT> : _Fill_tm_formatter<_CHRONO year_month_day_last, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year_month_weekday, _CharT> : _Fill_tm_formatter<_CHRONO year_month_weekday, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year_month_weekday_last, _CharT>
     : _Fill_tm_formatter<_CHRONO year_month_weekday_last, _CharT> {};
 
-template <class _Rep, class _Period, class _CharT>
+template <class _Rep, class _Period, _Format_supported_charT _CharT>
 struct formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT>
     : _Fill_tm_formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO sys_info, _CharT> : _Fill_tm_formatter<_CHRONO sys_info, _CharT> {};
 
-template <class _CharT>
+template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO local_info, _CharT> : _Fill_tm_formatter<_CHRONO local_info, _CharT> {};
 
-template <class _Duration, class _CharT>
+template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
     constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO sys_time<_Duration>>(_Parse_ctx);
@@ -5874,7 +5883,7 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
-template <class _Duration, class _CharT>
+template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
     constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO utc_time<_Duration>>(_Parse_ctx);
@@ -5890,7 +5899,7 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
-template <class _Duration, class _CharT>
+template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO tai_time<_Duration>, _CharT> {
     constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO tai_time<_Duration>>(_Parse_ctx);
@@ -5909,7 +5918,7 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "TAI")};
 };
 
-template <class _Duration, class _CharT>
+template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO gps_time<_Duration>, _CharT> {
     constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO gps_time<_Duration>>(_Parse_ctx);
@@ -5928,7 +5937,7 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "GPS")};
 };
 
-template <class _Duration, class _CharT>
+template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO file_time<_Duration>, _CharT> {
     constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO file_time<_Duration>>(_Parse_ctx);
@@ -5945,14 +5954,14 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
-template <class _Duration, class _CharT>
+template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO local_time<_Duration>, _CharT> : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
 
-template <class _Duration, class _CharT>
+template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>
     : _Fill_tm_formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT> {};
 
-template <class _Duration, class _TimeZonePtr, class _CharT>
+template <class _Duration, class _TimeZonePtr, _Format_supported_charT _CharT>
 struct formatter<_CHRONO zoned_time<_Duration, _TimeZonePtr>, _CharT>
     : formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT> {
 

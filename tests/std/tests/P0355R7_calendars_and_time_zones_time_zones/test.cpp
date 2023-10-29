@@ -109,9 +109,9 @@ void timezone_names_test() {
     try_locate_invalid_zone(my_tzdb, "AEST");
 
     // Comparison operators
-    const time_zone tz1{"Earlier"};
-    const time_zone tz2{"Earlier"};
-    const time_zone tz3{"Later"};
+    const time_zone tz1{_Secret_time_zone_construct_tag{}, "Earlier"};
+    const time_zone tz2{_Secret_time_zone_construct_tag{}, "Earlier"};
+    const time_zone tz3{_Secret_time_zone_construct_tag{}, "Later"};
     assert(tz1 == tz2);
     assert(tz1 != tz3);
 #ifdef __cpp_lib_concepts
@@ -120,9 +120,9 @@ void timezone_names_test() {
     assert(tz3 <=> tz1 == strong_ordering::greater);
 #endif // __cpp_lib_concepts
 
-    const time_zone_link link1{"Earlier", "Target"};
-    const time_zone_link link2{"Earlier", "Is"};
-    const time_zone_link link3{"Later", "Ignored"};
+    const time_zone_link link1{_Secret_time_zone_link_construct_tag{}, "Earlier", "Target"};
+    const time_zone_link link2{_Secret_time_zone_link_construct_tag{}, "Earlier", "Is"};
+    const time_zone_link link3{_Secret_time_zone_link_construct_tag{}, "Later", "Ignored"};
     assert(link1 == link2);
     assert(link1 != link3);
 #ifdef __cpp_lib_concepts

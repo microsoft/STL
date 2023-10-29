@@ -12,10 +12,10 @@
 
 _EXTERN_C_UNLESS_PURE
 
-_CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(const char*, char**, int, int*);
+_CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(const char*, char**, int, int*) noexcept;
 
-_CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
-    const char* s, char** endptr, int base, int* perr) { // convert string to long long, with checking
+_CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(const char* s, char** endptr, int base, int* perr) noexcept {
+    // convert string to long long, with checking
     const char* sc;
     char* se;
     char sign;
@@ -48,8 +48,8 @@ _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
     return static_cast<long long>(sign == '-' ? 0 - x : x);
 }
 
-_CRTIMP2_PURE long long(__CLRCALL_PURE_OR_CDECL _Stoll)(
-    const char* s, char** endptr, int base) { // convert string, discard error code
+_CRTIMP2_PURE long long(__CLRCALL_PURE_OR_CDECL _Stoll)(const char* s, char** endptr, int base) noexcept {
+    // convert string, discard error code
     return _Stollx(s, endptr, base, nullptr);
 }
 

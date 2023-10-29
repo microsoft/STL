@@ -64,7 +64,7 @@ void disable_instructions(ISA_AVAILABILITY isa) {
 constexpr size_t dataCount = 1024;
 
 template <class FwdIt, class T>
-inline ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
+ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
     ptrdiff_t result = 0;
     for (; first != last; ++first) {
         result += (*first == v);
@@ -94,13 +94,27 @@ void test_count(mt19937_64& gen) {
 }
 
 template <class FwdIt, class T>
-inline auto last_known_good_find(FwdIt first, FwdIt last, T v) {
+auto last_known_good_find(FwdIt first, FwdIt last, T v) {
     for (; first != last; ++first) {
         if (*first == v) {
             break;
         }
     }
     return first;
+}
+
+template <class FwdIt, class T>
+auto last_known_good_find_last(FwdIt first, FwdIt last, T v) {
+    FwdIt last_save = last;
+    for (;;) {
+        if (last == first) {
+            return last_save;
+        }
+        --last;
+        if (*last == v) {
+            return last;
+        }
+    }
 }
 
 template <class T>
@@ -122,6 +136,30 @@ void test_find(mt19937_64& gen) {
         test_case_find(input, static_cast<T>(dis(gen)));
     }
 }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+template <class T>
+void test_case_find_last(const vector<T>& input, T v) {
+    auto expected = last_known_good_find_last(input.begin(), input.end(), v);
+    auto range    = ranges::find_last(input.begin(), input.end(), v);
+    auto actual   = range.begin();
+    assert(expected == actual);
+    assert(range.end() == input.end());
+}
+
+template <class T>
+void test_find_last(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    binomial_distribution<TD> dis(10);
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_find_last(input, static_cast<T>(dis(gen)));
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+        test_case_find_last(input, static_cast<T>(dis(gen)));
+    }
+}
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class T>
 void test_min_max_element(mt19937_64& gen) {
@@ -201,7 +239,7 @@ void test_min_max_element_special_cases() {
 }
 
 template <class BidIt>
-inline void last_known_good_reverse(BidIt first, BidIt last) {
+void last_known_good_reverse(BidIt first, BidIt last) {
     for (; first != last && first != --last; ++first) {
         iter_swap(first, last);
     }
@@ -249,7 +287,7 @@ void test_reverse_copy(mt19937_64& gen) {
 }
 
 template <class FwdIt1, class FwdIt2>
-inline FwdIt2 last_known_good_swap_ranges(FwdIt1 first1, const FwdIt1 last1, FwdIt2 dest) {
+FwdIt2 last_known_good_swap_ranges(FwdIt1 first1, const FwdIt1 last1, FwdIt2 dest) {
     for (; first1 != last1; ++first1, ++dest) {
         iter_swap(first1, dest);
     }
@@ -304,6 +342,18 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_find<unsigned int>(gen);
     test_find<long long>(gen);
     test_find<unsigned long long>(gen);
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    test_find_last<char>(gen);
+    test_find_last<signed char>(gen);
+    test_find_last<unsigned char>(gen);
+    test_find_last<short>(gen);
+    test_find_last<unsigned short>(gen);
+    test_find_last<int>(gen);
+    test_find_last<unsigned int>(gen);
+    test_find_last<long long>(gen);
+    test_find_last<unsigned long long>(gen);
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     test_min_max_element<char>(gen);
     test_min_max_element<signed char>(gen);
@@ -399,7 +449,76 @@ void test_various_containers() {
     test_one_container<list<int>>(); // bidi, not vectorizable
 }
 
+#if _HAS_CXX20
+constexpr bool test_constexpr() {
+    const int a[] = {20, 10, 30, 30, 30, 30, 40, 60, 50};
+
+    assert(count(begin(a), end(a), 30) == 4);
+#ifdef __cpp_lib_concepts
+    assert(ranges::count(a, 30) == 4);
+#endif // defined(__cpp_lib_concepts)
+
+    assert(find(begin(a), end(a), 30) == begin(a) + 2);
+#ifdef __cpp_lib_concepts
+    assert(ranges::find(a, 30) == begin(a) + 2);
+#endif // defined(__cpp_lib_concepts)
+
+#if defined(__cpp_lib_concepts) && _HAS_CXX23
+    assert(begin(ranges::find_last(a, 30)) == begin(a) + 5);
+    assert(end(ranges::find_last(a, 30)) == end(a));
+#endif // defined(__cpp_lib_concepts) && _HAS_CXX23
+
+    assert(min_element(begin(a), end(a)) == begin(a) + 1);
+    assert(max_element(begin(a), end(a)) == end(a) - 2);
+    assert(get<0>(minmax_element(begin(a), end(a))) == begin(a) + 1);
+    assert(get<1>(minmax_element(begin(a), end(a))) == end(a) - 2);
+
+#ifdef __cpp_lib_concepts
+    assert(ranges::min_element(a) == begin(a) + 1);
+    assert(ranges::max_element(a) == end(a) - 2);
+    assert(ranges::minmax_element(a).min == begin(a) + 1);
+    assert(ranges::minmax_element(a).max == end(a) - 2);
+#endif // defined(__cpp_lib_concepts)
+
+    int b[size(a)];
+    reverse_copy(begin(a), end(a), begin(b));
+    assert(equal(rbegin(a), rend(a), begin(b), end(b)));
+
+    int c[size(a)];
+#ifdef __cpp_lib_concepts
+    ranges::reverse_copy(a, c);
+    assert(equal(rbegin(a), rend(a), begin(c), end(c)));
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+    reverse_copy(begin(a), end(a), begin(c)); // for swap_ranges test below
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+
+    reverse(begin(b), end(b));
+    assert(equal(begin(a), end(a), begin(b), end(b)));
+
+    swap_ranges(begin(b), end(b), begin(c));
+    assert(equal(rbegin(a), rend(a), begin(b), end(b)));
+    assert(equal(begin(a), end(a), begin(c), end(c)));
+
+#ifdef __cpp_lib_concepts
+    ranges::swap_ranges(b, c);
+    assert(equal(begin(a), end(a), begin(b), end(b)));
+    assert(equal(rbegin(a), rend(a), begin(c), end(c)));
+
+    ranges::reverse(c);
+    assert(equal(begin(a), end(a), begin(c), end(c)));
+#endif // defined(__cpp_lib_concepts)
+
+    return true;
+}
+
+static_assert(test_constexpr());
+#endif // _HAS_CXX20
+
 int main() {
+#if _HAS_CXX20
+    assert(test_constexpr());
+#endif // _HAS_CXX20
+
     mt19937_64 gen;
     initialize_randomness(gen);
 

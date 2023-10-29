@@ -7,11 +7,12 @@
 #define _XNODE_HANDLE_H
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <xmemory>
 
 #if !_HAS_CXX17
 #error Node handles are only available with C++17. (Also, you should not include this internal header.)
 #endif // _HAS_CXX17
+
+#include <xmemory>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

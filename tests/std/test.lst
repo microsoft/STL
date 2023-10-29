@@ -243,6 +243,7 @@ tests\LWG3234_math_special_overloads
 tests\LWG3422_seed_seq_ctors
 tests\LWG3480_directory_iterator_range
 tests\LWG3545_pointer_traits_sfinae
+tests\LWG3561_discard_block_engine_counter
 tests\LWG3610_iota_view_size_and_integer_class
 tests\P0009R18_mdspan_default_accessor
 tests\P0009R18_mdspan_extents
@@ -510,6 +511,7 @@ tests\P1135R6_latch
 tests\P1135R6_semaphore
 tests\P1147R1_printing_volatile_pointers
 tests\P1165R1_consistently_propagating_stateful_allocators
+tests\P1169R4_static_call_operator
 tests\P1206R7_deque_append_range
 tests\P1206R7_deque_assign_range
 tests\P1206R7_deque_from_range
@@ -599,6 +601,7 @@ tests\P2286R8_text_formatting_debug_enabled_specializations
 tests\P2286R8_text_formatting_escaping
 tests\P2286R8_text_formatting_escaping_legacy_text_encoding
 tests\P2286R8_text_formatting_escaping_utf8
+tests\P2286R8_text_formatting_formattable
 tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
