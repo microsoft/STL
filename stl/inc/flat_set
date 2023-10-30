@@ -345,7 +345,7 @@ public:
         return _Mycomp;
     }
 
-    _NODISCARD const container_type& _Get_container() const {
+    _NODISCARD container_type& _Get_container_for_erase_if() noexcept {
         return _Mycont;
     }
 
@@ -708,7 +708,7 @@ public:
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.set.erasure]/5)
-    _Container& _Cont = const_cast<_Container&>(_Val._Get_container());
+    _Container& _Cont = _Val._Get_container_for_erase_if();
     _Clear_guard<_Container> _Guard{_STD addressof(_Cont)};
     const auto _Erased_count = _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Predicate));
     _Guard._Target           = nullptr;
@@ -718,7 +718,7 @@ _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.multiset.erasure]/5)
-    _Container& _Cont = const_cast<_Container&>(_Val._Get_container());
+    _Container& _Cont = _Val._Get_container_for_erase_if();
     _Clear_guard<_Container> _Guard{_STD addressof(_Cont)};
     const auto _Erased_count = _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Predicate));
     _Guard._Target           = nullptr;
