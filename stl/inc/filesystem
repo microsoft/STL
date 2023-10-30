@@ -1377,24 +1377,38 @@ namespace filesystem {
 #endif // ^^^ !_HAS_CXX20 ^^^
 
         _NODISCARD_FRIEND path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
-            path _Tmp;
             const auto _Right_size  = _Right._Text.size();
             const auto _Right_first = _Right._Text.data();
             const auto _Right_last  = _Right_first + _Right_size;
 
-            // Preallocate memory for the most common case
+            // Handle the most common case
             if (!_Has_drive_letter_prefix(_Right_first, _Right_last) && !_Is_slash(*_Right_first)) {
                 // !has_root_name(_Right) && !has_root_directory(_Right)
-                const auto _Left_size               = _Left._Text.size();
-                const auto _Left_last               = _Left._Text.data() + _Left_size;
-                const bool _Left_has_trailing_slash = _Left_size != 0 && _Is_slash(_Left_last[-1]);
+                const auto _Left_size  = _Left._Text.size();
+                const auto _Left_first = _Left._Text.data();
+                const auto _Left_last  = _Left._Text.data() + _Left_size;
 
-                _Tmp._Text.reserve(_Left_size + !_Left_has_trailing_slash + _Right_size);
+                // Appending a slash to "X:" would've made it an absolute path
+                const bool _Left_is_just_drive = _Left_size == 2 && _Is_drive_prefix(_Left_first);
+                const bool _Is_slash_needed    = _Left_size != 0 && !_Left_is_just_drive && !_Is_slash(_Left_last[-1]);
+
+                const auto _Total_size = _Left_size + _Is_slash_needed + _Right_size;
+
+                path _Tmp;
+                _Tmp._Text._Resize_and_overwrite(_Total_size, [&](wchar_t* _Ptr, size_t _Size) {
+                    _CSTD memcpy(_Ptr, _Left_first, _Left_size * sizeof(wchar_t));
+                    _Ptr += _Left_size;
+                    if (_Is_slash_needed) {
+                        *_Ptr++ = preferred_separator;
+                    }
+                    _CSTD memcpy(_Ptr, _Right_first, _Right_size * sizeof(wchar_t));
+                    return _Size;
+                });
+                return _Tmp;
             }
 
-            _Tmp = _Left;
+            path _Tmp = _Left;
             _Tmp /= _Right;
-
             return _Tmp;
         }
 
