@@ -188,27 +188,16 @@ public:
     }
 
     // iterators
-    _NODISCARD iterator begin() noexcept {
-        return _Mycont.cbegin();
-    }
+    // NB: The non-const overloads are intentionally removed for brevity. This will not result in behavioral changes.
     _NODISCARD const_iterator begin() const noexcept {
-        return _Mycont.cbegin();
-    }
-    _NODISCARD iterator end() noexcept {
-        return _Mycont.cend();
+        return _Mycont.begin();
     }
     _NODISCARD const_iterator end() const noexcept {
-        return _Mycont.cend();
+        return _Mycont.end();
     }
 
-    _NODISCARD reverse_iterator rbegin() noexcept {
-        return reverse_iterator(end());
-    }
     _NODISCARD const_reverse_iterator rbegin() const noexcept {
         return const_reverse_iterator(end());
-    }
-    _NODISCARD reverse_iterator rend() noexcept {
-        return reverse_iterator(begin());
     }
     _NODISCARD const_reverse_iterator rend() const noexcept {
         return const_reverse_iterator(begin());
@@ -324,11 +313,7 @@ public:
         _Guard._Target = nullptr;
     }
 
-    iterator erase(iterator _Where)
-        requires (!is_same_v<iterator, const_iterator>)
-    {
-        return _Mycont.erase(_Where);
-    }
+    // NB: `erase(iterator)` is identical to `erase(const_iterator)`
     iterator erase(const_iterator _Where) {
         return _Mycont.erase(_Where);
     }
@@ -336,8 +321,7 @@ public:
         return _Erase(_Val);
     }
     template <_Different_from<_Kty> _Other>
-        requires (
-            _Keylt_transparent && !is_convertible_v<_Other, iterator> && !is_convertible_v<_Other, const_iterator>)
+        requires (_Keylt_transparent && !is_convertible_v<_Other, const_iterator>)
     size_type erase(_Other&& _Val) {
         return _Erase(_Val);
     }
@@ -366,16 +350,8 @@ public:
     }
 
     // set operations
-    _NODISCARD iterator find(const _Kty& _Val) {
-        return _Find(_Val);
-    }
+    // NB: The non-const overloads are intentionally removed for brevity. This will not result in behavioral changes.
     _NODISCARD const_iterator find(const _Kty& _Val) const {
-        return _Find(_Val);
-    }
-
-    template <class _Other>
-        requires _Keylt_transparent
-    _NODISCARD iterator find(const _Other& _Val) {
         return _Find(_Val);
     }
     template <class _Other>
@@ -408,17 +384,8 @@ public:
         return _STD binary_search(cbegin(), cend(), _Val, _Pass_comp());
     }
 
-    _NODISCARD iterator lower_bound(const _Kty& _Val) {
-        return _STD lower_bound(begin(), end(), _Val, _Pass_comp());
-    }
     _NODISCARD const_iterator lower_bound(const _Kty& _Val) const {
         return _STD lower_bound(cbegin(), cend(), _Val, _Pass_comp());
-    }
-
-    template <class _Other>
-        requires _Keylt_transparent
-    _NODISCARD iterator lower_bound(const _Other& _Val) {
-        return _STD lower_bound(begin(), end(), _Val, _Pass_comp());
     }
     template <class _Other>
         requires _Keylt_transparent
@@ -426,17 +393,8 @@ public:
         return _STD lower_bound(cbegin(), cend(), _Val, _Pass_comp());
     }
 
-    _NODISCARD iterator upper_bound(const _Kty& _Val) {
-        return _STD upper_bound(begin(), end(), _Val, _Pass_comp());
-    }
     _NODISCARD const_iterator upper_bound(const _Kty& _Val) const {
         return _STD upper_bound(cbegin(), cend(), _Val, _Pass_comp());
-    }
-
-    template <class _Other>
-        requires _Keylt_transparent
-    _NODISCARD iterator upper_bound(const _Other& _Val) {
-        return _STD upper_bound(begin(), end(), _Val, _Pass_comp());
     }
     template <class _Other>
         requires _Keylt_transparent
@@ -444,17 +402,8 @@ public:
         return _STD upper_bound(cbegin(), cend(), _Val, _Pass_comp());
     }
 
-    _NODISCARD pair<iterator, iterator> equal_range(const _Kty& _Val) {
-        return _STD equal_range(begin(), end(), _Val, _Pass_comp());
-    }
     _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Kty& _Val) const {
         return _STD equal_range(cbegin(), cend(), _Val, _Pass_comp());
-    }
-
-    template <class _Other>
-        requires _Keylt_transparent
-    _NODISCARD pair<iterator, iterator> equal_range(const _Other& _Val) {
-        return _STD equal_range(begin(), end(), _Val, _Pass_comp());
     }
     template <class _Other>
         requires _Keylt_transparent
