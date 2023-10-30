@@ -1051,7 +1051,7 @@ void test_reference_wrapper_invocation() {
 
 // Test invoke().
 constexpr bool test_invoke_constexpr() {
-    // MSVC implements LWG-2894 in C++17 and later
+    // MSVC implements LWG-2894 unconditionally
     Thing thing;
     auto p = &thing;
 
