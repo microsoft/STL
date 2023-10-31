@@ -2653,7 +2653,7 @@ namespace ranges {
                 auto _ULast  = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
 
                 optional<_Uty> _Init{in_place, *_UFirst};
-                _Uty& _Init_ref = *_Init;
+                _Uty& _Init_ref = _Init.operator*(); // per LWG-3969
                 for (++_UFirst; _UFirst != _ULast; ++_UFirst) {
                     _Init_ref = _STD invoke(_Func, _STD move(_Init_ref), *_UFirst);
                 }
