@@ -1346,9 +1346,10 @@ _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     using _UFwdIt = _Unwrapped_t<const _FwdIt&>;
     _STD _Adl_verify_range(_First, _Last);
-    _STD _Seek_wrapped(_First,
-        _STD _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last),
-            [&](const _UFwdIt _LFirst, const _UFwdIt _LLast) { return _STD _Find_unchecked(_LFirst, _LLast, _Val); }));
+    _STD _Seek_wrapped(_First, _STD _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First),
+                                   _STD _Get_unwrapped(_Last), [&](const _UFwdIt _LFirst, const _UFwdIt _LLast) {
+                                       return _STD _Find_unchecked(_LFirst, _LLast, _Val);
+                                   }));
     return _First;
 }
 
@@ -1359,9 +1360,10 @@ _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr 
     using _UFwdIt = _Unwrapped_t<const _FwdIt&>;
     _STD _Adl_verify_range(_First, _Last);
     auto _Pass_pred = _STD _Pass_fn(_Pred);
-    _STD _Seek_wrapped(_First,
-        _STD _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last),
-            [=](const _UFwdIt _LFirst, const _UFwdIt _LLast) { return _STD find_if(_LFirst, _LLast, _Pass_pred); }));
+    _STD _Seek_wrapped(_First, _STD _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First),
+                                   _STD _Get_unwrapped(_Last), [=](const _UFwdIt _LFirst, const _UFwdIt _LLast) {
+                                       return _STD find_if(_LFirst, _LLast, _Pass_pred);
+                                   }));
     return _First;
 }
 
@@ -1373,9 +1375,9 @@ _NODISCARD _FwdIt find_if_not(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, 
     _STD _Adl_verify_range(_First, _Last);
     auto _Pass_pred = _STD _Pass_fn(_Pred);
     _STD _Seek_wrapped(_First, _STD _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First),
-                              _STD _Get_unwrapped(_Last), [=](const _UFwdIt _LFirst, const _UFwdIt _LLast) {
-                                  return _STD find_if_not(_LFirst, _LLast, _Pass_pred);
-                              }));
+                                   _STD _Get_unwrapped(_Last), [=](const _UFwdIt _LFirst, const _UFwdIt _LLast) {
+                                       return _STD find_if_not(_LFirst, _LLast, _Pass_pred);
+                                   }));
     return _First;
 }
 
@@ -1599,9 +1601,9 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _
 
     auto _Pass_pred = _STD _Pass_fn(_Pred);
     _STD _Seek_wrapped(_Last1, _STD _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First1),
-                              _STD _Get_unwrapped(_Last1), [=](const _UFwdIt1 _LFirst1, const _UFwdIt1 _LLast1) {
-                                  return _STD find_first_of(_LFirst1, _LLast1, _UFirst2, _ULast2, _Pass_pred);
-                              }));
+                                   _STD _Get_unwrapped(_Last1), [=](const _UFwdIt1 _LFirst1, const _UFwdIt1 _LLast1) {
+                                       return _STD find_first_of(_LFirst1, _LLast1, _UFirst2, _ULast2, _Pass_pred);
+                                   }));
     return _Last1;
 }
 
@@ -1827,8 +1829,8 @@ struct _Static_partitioned_mismatch3 {
     _Static_partitioned_mismatch3(
         const size_t _Hw_threads, const _Diff _Count, const _FwdIt1 _First1, const _FwdIt2 _First2, const _Pr _Pred_)
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
-          _Results(
-              _STD _Get_unwrapped(_Basis1._Populate(_Team, _First1)), _STD _Get_unwrapped(_Basis2._Populate(_Team, _First2))),
+          _Results(_STD _Get_unwrapped(_Basis1._Populate(_Team, _First1)),
+              _STD _Get_unwrapped(_Basis2._Populate(_Team, _First2))),
           _Pred(_Pred_) {}
 
     _Cancellation_status _Process_chunk() {
@@ -1902,8 +1904,8 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
         }
     }
 
-    const auto _Result = _STD mismatch(
-        _UFirst1, _ULast1, _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_FwdIt1>(_UFirst1, _ULast1)), _STD _Pass_fn(_Pred));
+    const auto _Result = _STD mismatch(_UFirst1, _ULast1,
+        _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_FwdIt1>(_UFirst1, _ULast1)), _STD _Pass_fn(_Pred));
     _STD _Seek_wrapped(_First2, _Result.second);
     _STD _Seek_wrapped(_First1, _Result.first);
     return {_First1, _First2};
@@ -1925,7 +1927,8 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) {
-            const auto _Count = static_cast<_Iter_diff_t<_FwdIt1>>(_STD _Distance_min(_UFirst1, _ULast1, _UFirst2, _ULast2));
+            const auto _Count =
+                static_cast<_Iter_diff_t<_FwdIt1>>(_STD _Distance_min(_UFirst1, _ULast1, _UFirst2, _ULast2));
             if (_Count >= 2) {
                 _TRY_BEGIN
                 _Static_partitioned_mismatch3 _Operation{_Hw_threads, _Count, _UFirst1, _UFirst2, _STD _Pass_fn(_Pred)};
