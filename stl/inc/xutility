@@ -6550,9 +6550,9 @@ namespace ranges {
             _STL_INTERNAL_CHECK(_RANGES distance(_First2, _Last2) == _Count2);
 
             for (; _Count1 >= _Count2; ++_First1, (void) --_Count1) {
-                auto [_Match, _Mid1] = _RANGES _Equal_rev_pred(_First1, _First2, _Last2, _Pred, _Proj1, _Proj2);
-                if (_Match) {
-                    return {_STD move(_First1), _STD move(_Mid1)};
+                auto _Match_and_mid1 = _RANGES _Equal_rev_pred(_First1, _First2, _Last2, _Pred, _Proj1, _Proj2);
+                if (_Match_and_mid1.first) {
+                    return {_STD move(_First1), _STD move(_Match_and_mid1.second)};
                 }
             }
 

@@ -3060,10 +3060,10 @@ namespace ranges {
                 const auto _Count2_as1 = static_cast<iter_difference_t<_It1>>(_Count2);
 
                 for (auto _Candidate = _First1 + (_Count1 - _Count2_as1);; --_Candidate) {
-                    auto [_Match, _Mid1] =
+                    auto _Match_and_mid1 =
                         _RANGES _Equal_rev_pred(_Candidate, _First2, _First2 + _Count2, _Pred, _Proj1, _Proj2);
-                    if (_Match) {
-                        return {_STD move(_Candidate), _STD move(_Mid1)};
+                    if (_Match_and_mid1.first) {
+                        return {_STD move(_Candidate), _STD move(_Match_and_mid1.second)};
                     }
 
                     if (_Candidate == _First1) {
