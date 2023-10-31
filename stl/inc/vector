@@ -3598,12 +3598,12 @@ private:
 
 public:
     template <class _ParseContext>
-    constexpr typename _ParseContext::iterator parse(_ParseContext& _Ctx) {
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
         return _Underlying.parse(_Ctx);
     }
 
     template <class _FormatContext>
-    typename _FormatContext::iterator format(const _Ty& _Ref, _FormatContext& _Ctx) const {
+    _FormatContext::iterator format(const _Ty& _Ref, _FormatContext& _Ctx) const {
         return _Underlying.format(_Ref, _Ctx);
     }
 };

@@ -68,6 +68,11 @@ struct alternative_allocator {
     void deallocate(T* p, size_t n) {
         allocator<T>{}.deallocate(p, n);
     }
+
+    template <class U>
+    bool operator==(const alternative_allocator<U>&) const noexcept {
+        return true;
+    }
 };
 
 template <class T, class CharT>
@@ -351,6 +356,7 @@ void test() {
     test_P0645<CharT>();
     test_P1361<CharT>();
     test_P2693<CharT>();
+    test_P2286<CharT>();
     test_LWG3631<CharT>();
     test_abstract_class<CharT>();
     test_disabled<CharT>();

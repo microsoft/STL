@@ -6,8 +6,8 @@
 #include <format>
 #include <locale>
 #include <memory>
+#include <memory_resource>
 #include <string>
-#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -39,7 +39,18 @@ struct alternative_allocator {
     void deallocate(T* p, size_t n) {
         allocator<T>{}.deallocate(p, n);
     }
+
+    template <class U>
+    bool operator==(const alternative_allocator<U>&) const noexcept {
+        return true;
+    }
 };
+
+#ifdef _DEBUG
+#define DEFAULT_IDL_SETTING 2
+#else
+#define DEFAULT_IDL_SETTING 0
+#endif
 
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 template <class CharT>
@@ -56,7 +67,7 @@ struct yes_no_punct : numpunct<CharT> {
 
 template <class CharT, class Alloc>
 void test_formatting_vector_bool_reference() {
-    std::vector<bool, Alloc> vb{false, true};
+    vector<bool, Alloc> vb{false, true};
 
     assert(format(STR("{}, {}"), vb[0], vb[1]) == format(STR("{}, {}"), false, true));
     assert(format(STR("{:}, {:}"), vb[0], vb[1]) == format(STR("{:}, {:}"), false, true));

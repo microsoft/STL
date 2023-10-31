@@ -68,15 +68,6 @@ _STL_DISABLE_CLANG_WARNINGS
 extern "C" _NODISCARD __std_win_error __stdcall __std_get_cvt(__std_code_page _Codepage, _Cvtvec* _Pcvt) noexcept;
 
 _STD_BEGIN
-
-#if _HAS_CXX23
-#define _FMT_P2286_BEGIN inline namespace __p2286 {
-#define _FMT_P2286_END   }
-#else // ^^^ C++23 / C++20 vvv
-#define _FMT_P2286_BEGIN
-#define _FMT_P2286_END
-#endif // ^^^ C++20 ^^^
-
 template <class _CharT>
 _NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const wchar_t* const _WStr) noexcept {
     if constexpr (is_same_v<_CharT, char>) {
@@ -3995,10 +3986,6 @@ _NODISCARD constexpr auto _Fill_align_and_width_formatter<_CharT>::_Format(
     return _Write_aligned(_Format_ctx.out(), _Width, _Format_specs, _Default_align, _STD forward<_Func>(_Fn));
 }
 #endif // _HAS_CXX23
-
-#undef _FMT_P2286_END
-#undef _FMT_P2286_BEGIN
-
 _STD_END
 
 #pragma pop_macro("new")
