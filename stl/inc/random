@@ -1681,9 +1681,8 @@ private:
             _Mx = 1;
             --_Tmp;
         }
-        for (; 1 < _Tmp; _Tmp >>= 1) {
-            ++_Mx; // compute _Mx = floor(log2(_Rx))
-        }
+
+        _Mx += sizeof(_Tmp) * CHAR_BIT - std::countl_zero(_Tmp); // compute _Mx = floor(log2(_Rx))
 
         for (size_t _Nfix = 0;; ++_Nfix) { // compute consistent set of parameters
             _Nx  = (_Wx + _Mx - 1) / _Mx + _Nfix; // trial _Nx
