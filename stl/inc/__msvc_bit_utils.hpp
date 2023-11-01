@@ -140,9 +140,25 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 
 #if defined(_M_ARM) || defined(_M_ARM64)
 #ifdef __clang__ // TRANSITION, GH-1586
+#ifdef _M_ARM64
+_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned char _Val) {
+    // TODO: Revert back to __builtin_clzs once clang longer generates worse code than __builtin_clz
+    return __builtin_clz(_Val) - (_Unsigned_integer_digits<unsigned int> - _Unsigned_integer_digits<unsigned char>);
+}
+
+_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned short _Val) {
+    // TODO: Revert back to __builtin_clzs once clang longer generates worse code than __builtin_clz
+    return __builtin_clz(_Val) - (_Unsigned_integer_digits<unsigned int> - _Unsigned_integer_digits<unsigned short>);
+}
+#else
+_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned char _Val) {
+    return __builtin_clzs(_Val) - (_Unsigned_integer_digits<unsigned short> - _Unsigned_integer_digits<unsigned char>);
+}
+
 _NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned short _Val) {
     return __builtin_clzs(_Val);
 }
+#endif
 
 _NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned int _Val) {
     return __builtin_clz(_Val);
@@ -165,12 +181,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
     }
 
 #ifdef __clang__ // TRANSITION, GH-1586
-    if constexpr (is_same_v<remove_cv_t<_Ty>, unsigned char>) {
-        return _Clang_arm_arm64_countl_zero(static_cast<unsigned short>(_Val))
-             - (_Unsigned_integer_digits<unsigned short> - _Digits);
-    } else {
-        return _Clang_arm_arm64_countl_zero(_Val);
-    }
+    return _Clang_arm_arm64_countl_zero(_Val);
 #else // ^^^ workaround / no workaround vvv
     if constexpr (_Digits <= 32) {
         return static_cast<int>(_CountLeadingZeros(_Val)) - (_Unsigned_integer_digits<unsigned long> - _Digits);
