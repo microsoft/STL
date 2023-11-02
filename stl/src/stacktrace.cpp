@@ -13,10 +13,12 @@
 
 // The below function pointer types must be in sync with <stacktrace>
 
+extern "C" {
 using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char* _Data, size_t _Size, void* _Context) _NOEXCEPT_FNPTR;
 
 using _Stacktrace_string_fill = size_t(__stdcall*)(
     size_t _Size, void* _String, void* _Context, _Stacktrace_string_fill_callback _Callback);
+} // extern "C"
 
 namespace {
     template <class F>
