@@ -6,7 +6,7 @@
 #include "xmath.hpp"
 
 #if !defined(MRTDLL)
-_EXTERN_C
+extern "C" {
 #endif // defined(MRTDLL)
 
 // macros
@@ -89,5 +89,5 @@ FTYPE FNAME(Dtento)(FTYPE* xpx, long n, int* perr) noexcept { // compute *px * 1
 }
 
 #if !defined(MRTDLL)
-_END_EXTERN_C
+} // extern "C"
 #endif // !defined(MRTDLL)

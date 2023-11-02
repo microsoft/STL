@@ -122,13 +122,13 @@ void __cdecl _Lockit::_Lockit_dtor(int kind) noexcept { // unlock the mutex
     }
 }
 
-_EXTERN_C
+extern "C" {
 void _Lock_at_thread_exit_mutex() noexcept { // lock the at-thread-exit mutex
     _Mtxlock(&mtx[_LOCK_AT_THREAD_EXIT]);
 }
 void _Unlock_at_thread_exit_mutex() noexcept { // unlock the at-thread-exit mutex
     _Mtxunlock(&mtx[_LOCK_AT_THREAD_EXIT]);
 }
-_END_EXTERN_C
+} // extern "C"
 
 _STD_END

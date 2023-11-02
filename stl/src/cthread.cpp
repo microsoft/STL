@@ -37,7 +37,7 @@ namespace {
     }
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 
 // TRANSITION, ABI: _Thrd_exit() is preserved for binary compatibility
 [[noreturn]] _CRTIMP2_PURE void __cdecl _Thrd_exit(int res) noexcept { // terminate execution of calling thread
@@ -136,7 +136,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_create(_Thrd_t* thr, _Thrd_start_t func
     return res;
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 /*
  * This file is derived from software bearing the following

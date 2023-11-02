@@ -44,7 +44,7 @@ namespace {
     }
 } // namespace
 
-_EXTERN_C
+extern "C" {
 
 _CRTIMP2_PURE long long __cdecl _Xtime_get_ticks() noexcept {
     // get system time in 100-nanosecond intervals since the epoch
@@ -106,7 +106,7 @@ _CRTIMP2_PURE long long __cdecl _Query_perf_frequency() noexcept { // get freque
     return freq;
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 /*
  * This file is derived from software bearing the following

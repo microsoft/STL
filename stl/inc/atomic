@@ -282,9 +282,9 @@ extern "C" inline void _Atomic_thread_fence(const unsigned int _Order) noexcept 
 
 // End of code shared with vcruntime
 
-_EXTERN_C
+extern "C" {
 _Smtx_t* __stdcall __std_atomic_get_mutex(const void* _Key) noexcept;
-_END_EXTERN_C
+} // extern "C"
 // Padding bits should not participate in cmpxchg comparison starting in C++20.
 // Clang does not have __builtin_zero_non_value_bits to exclude these bits to implement this C++20 feature.
 // The EDG front-end substitutes everything and runs into incomplete types passed to atomic<T>.

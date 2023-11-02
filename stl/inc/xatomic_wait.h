@@ -21,7 +21,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _INLINE_VAR constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 _INLINE_VAR constexpr unsigned long _Atomic_wait_no_timeout       = 0xFFFF'FFFF; // Pass as partial timeout
 
-_EXTERN_C
+extern "C" {
 enum class __std_atomic_api_level : unsigned long {
     __not_set,
     __detecting,
@@ -61,7 +61,7 @@ void __stdcall __std_atomic_notify_all_indirect(const void* _Storage) noexcept;
 unsigned long long __stdcall __std_atomic_wait_get_deadline(unsigned long long _Timeout) noexcept;
 unsigned long __stdcall __std_atomic_wait_get_remaining_timeout(unsigned long long _Deadline) noexcept;
 
-_END_EXTERN_C
+} // extern "C"
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

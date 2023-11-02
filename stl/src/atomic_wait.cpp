@@ -219,7 +219,7 @@ namespace {
     }
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 int __stdcall __std_atomic_wait_direct(const void* const _Storage, void* const _Comparand, const size_t _Size,
     const unsigned long _Remaining_timeout) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
@@ -431,4 +431,4 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     return _Value;
 #endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
 }
-_END_EXTERN_C
+} // extern "C"

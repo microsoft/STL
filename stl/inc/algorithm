@@ -28,7 +28,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #if _USE_STD_VECTOR_ALGORITHMS
 
-_EXTERN_C
+extern "C" {
 struct _Min_max_element_t {
     const void* _Min;
     const void* _Max;
@@ -59,7 +59,7 @@ const void* __stdcall __std_find_last_trivial_1(const void* _First, const void* 
 const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
-_END_EXTERN_C
+} // extern "C"
 
 template <class _Ty>
 _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {

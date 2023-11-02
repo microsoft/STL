@@ -245,7 +245,7 @@ namespace {
     }
 } // namespace
 
-_EXTERN_C
+extern "C" {
 #pragma optimize("", off) // inhibit tail call optimization to have consistent _Frames_to_skip adjustment here
 [[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(unsigned long _Frames_to_skip,
     const unsigned long _Frames_to_capture, void** const _Back_trace, unsigned long* const _Back_trace_hash) noexcept {
@@ -330,4 +330,4 @@ void __stdcall __std_stacktrace_to_string(const void* const* const _Addresses, c
         off = locked_data.address_to_string(_Addresses[i], _Str, off, _Fill);
     }
 }
-_END_EXTERN_C
+} // extern "C"
