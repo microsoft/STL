@@ -40,4 +40,4 @@ void __cdecl _Smtx_unlock_shared(_Smtx_t* smtx) noexcept { // unlock non-exclusi
 void __stdcall _Thrd_sleep_for(const unsigned long ms) noexcept { // suspend current thread for `ms` milliseconds
     Sleep(ms);
 }
-}
+} // extern "C"
