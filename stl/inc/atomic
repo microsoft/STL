@@ -83,6 +83,7 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 // should be mirrored. Also: if any macros are added they should be
 // #undefed in vcruntime as well
 
+extern "C" {
 enum {
     _Atomic_memory_order_relaxed,
     _Atomic_memory_order_consume,
@@ -91,6 +92,7 @@ enum {
     _Atomic_memory_order_acq_rel,
     _Atomic_memory_order_seq_cst,
 };
+} // extern "C"
 
 #ifndef _INVALID_MEMORY_ORDER
 #ifdef _DEBUG
