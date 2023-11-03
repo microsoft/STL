@@ -11,6 +11,7 @@
 #include <Windows.h>
 
 namespace {
+    constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 
     constexpr size_t _Wait_table_size_power = 8;
     constexpr size_t _Wait_table_size       = 1 << _Wait_table_size_power;
