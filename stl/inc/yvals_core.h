@@ -1941,16 +1941,49 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STRINGIZE(x)   _STRINGIZEX(x)
 #define _EMPTY_ARGUMENT // for empty macro argument
 
-#define _STD_BEGIN namespace std {
-#define _STD_END   }
-#define _STD       ::std::
-#define _CHRONO    ::std::chrono::
-#define _RANGES    ::std::ranges::
+// extern "C++" attaches declarations to the global module, see N4964 [module.unit]/7.2.
+// It has no effect in C++14/17.
+
+// In the STL's headers (which might be used to build the named module std), we unconditionally
+// and directly mark declarations of our separately compiled machinery as extern "C++", allowing
+// the named module to work with the separately compiled code (which is always built classically).
+
+// TRANSITION: _USE_EXTERN_CXX_EVERYWHERE_FOR_STL controls whether we also wrap the STL's
+// header-only code in this linkage-specification, as a temporary workaround to allow
+// the named module to coexist with classic includes in the same translation unit.
+
+#ifndef _USE_EXTERN_CXX_EVERYWHERE_FOR_STL
+#define _USE_EXTERN_CXX_EVERYWHERE_FOR_STL _HAS_CXX20
+#endif // ^^^ !defined(_USE_EXTERN_CXX_EVERYWHERE_FOR_STL) ^^^
+
+#if _USE_EXTERN_CXX_EVERYWHERE_FOR_STL
+#define _EXTERN_CXX_WORKAROUND     extern "C++" {
+#define _END_EXTERN_CXX_WORKAROUND }
+#else // ^^^ _USE_EXTERN_CXX_EVERYWHERE_FOR_STL / !_USE_EXTERN_CXX_EVERYWHERE_FOR_STL vvv
+#define _EXTERN_CXX_WORKAROUND
+#define _END_EXTERN_CXX_WORKAROUND
+#endif // ^^^ !_USE_EXTERN_CXX_EVERYWHERE_FOR_STL ^^^
+
+#define _STD_BEGIN         \
+    _EXTERN_CXX_WORKAROUND \
+    namespace std {
+#define _STD_END \
+    }            \
+    _END_EXTERN_CXX_WORKAROUND
+
+#define _STD    ::std::
+#define _CHRONO ::std::chrono::
+#define _RANGES ::std::ranges::
 
 // We use the stdext (standard extension) namespace to contain extensions that are not part of the current standard
-#define _STDEXT_BEGIN namespace stdext {
-#define _STDEXT_END   }
-#define _STDEXT       ::stdext::
+#define _STDEXT_BEGIN      \
+    _EXTERN_CXX_WORKAROUND \
+    namespace stdext {
+#define _STDEXT_END \
+    }               \
+    _END_EXTERN_CXX_WORKAROUND
+
+#define _STDEXT ::stdext::
 
 #define _CSTD ::
 
