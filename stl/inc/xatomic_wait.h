@@ -18,9 +18,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_INLINE_VAR constexpr unsigned long _Atomic_wait_no_timeout = 0xFFFF'FFFF; // Pass as partial timeout
-
 _EXTERN_C
+inline constexpr unsigned long __std_atomic_wait_no_timeout = 0xFFFF'FFFF; // Pass as partial timeout
+
 enum class __std_atomic_api_level : unsigned long {
     __not_set,
     __detecting,
