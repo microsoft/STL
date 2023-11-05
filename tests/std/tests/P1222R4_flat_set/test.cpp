@@ -11,12 +11,116 @@
 #include <iostream>
 #include <memory>
 #include <random>
+#include <ranges>
 #include <tuple>
 #include <utility>
 #include <vector>
 
+#define TEST_ASSERT(...) assert((__VA_ARGS__))
+
 using namespace std;
 using namespace ranges;
+
+template <class R, class T>
+concept container_compatible_range = input_range<R> && convertible_to<range_reference_t<R>, T>;
+
+template <class T, class Alloc = allocator<T>>
+class alternative_vector : private vector<T, Alloc> { // not allocator-aware, but can be used-allocator constructed
+private:
+    using base_type = vector<T, Alloc>;
+
+public:
+    using base_type::allocator_type;
+    using base_type::const_iterator;
+    using base_type::const_pointer;
+    using base_type::const_reference;
+    using base_type::const_reverse_iterator;
+    using base_type::difference_type;
+    using base_type::iterator;
+    using base_type::pointer;
+    using base_type::reference;
+    using base_type::reverse_iterator;
+    using base_type::size_type;
+    using base_type::value_type;
+
+    constexpr alternative_vector() noexcept(noexcept(Alloc())) : base_type(Alloc()) {}
+    constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a) : base_type(a) {}
+    constexpr explicit alternative_vector(size_type n) : base_type(n) {}
+    constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a, size_type n) : base_type(n, a) {}
+    constexpr alternative_vector(size_type n, const T& v) : base_type(n, v) {}
+    constexpr alternative_vector(allocator_arg_t, const Alloc& a, size_type n, const T& v) : base_type(n, v, a) {}
+    template <class InputIt>
+    constexpr alternative_vector(InputIt first, InputIt last) : base_type(first, last) {}
+    template <class InputIt>
+    constexpr alternative_vector(allocator_arg_t, const Alloc& a, InputIt first, InputIt last)
+        : base_type(first, last, a) {}
+    template <container_compatible_range<T> R>
+    constexpr alternative_vector(from_range_t, R&& rg) : base_type(from_range, forward<R>(rg)) {}
+    template <container_compatible_range<T> R>
+    constexpr alternative_vector(allocator_arg_t, const Alloc& a, from_range_t, R&& rg)
+        : base_type(from_range, forward<R>(rg), a) {}
+
+    constexpr alternative_vector(allocator_arg_t, const type_identity_t<Alloc>& a, const alternative_vector& other)
+        : base_type(other, a) {}
+    constexpr alternative_vector(allocator_arg_t, const type_identity_t<Alloc>& a, alternative_vector&& other)
+        : base_type(std::move(other), a) {}
+    constexpr alternative_vector(initializer_list<T> il) : base_type(il) {}
+    constexpr alternative_vector(allocator_arg_t, const Alloc& a, initializer_list<T> il) : base_type(il, a) {}
+
+    alternative_vector(const alternative_vector&) = default;
+    alternative_vector(alternative_vector&&)      = default;
+
+    alternative_vector& operator=(const alternative_vector&) = default;
+    alternative_vector& operator=(alternative_vector&&)      = default;
+    constexpr alternative_vector& operator=(initializer_list<T> il) {
+        base_type::operator=(il);
+        return *this;
+    }
+
+    using base_type::assign;
+    using base_type::assign_range;
+    using base_type::get_allocator;
+
+    using base_type::begin;
+    using base_type::end;
+    using base_type::rbegin;
+    using base_type::rend;
+
+    using base_type::cbegin;
+    using base_type::cend;
+    using base_type::crbegin;
+    using base_type::crend;
+
+    using base_type::capacity;
+    using base_type::empty;
+    using base_type::max_size;
+    using base_type::reserve;
+    using base_type::resize;
+    using base_type::shrink_to_fit;
+    using base_type::size;
+
+    using base_type::operator[];
+    using base_type::at;
+    using base_type::back;
+    using base_type::front;
+
+    using base_type::data;
+
+    using base_type::append_range;
+    using base_type::emplace_back;
+    using base_type::pop_back;
+    using base_type::push_back;
+
+    using base_type::emplace;
+    using base_type::erase;
+    using base_type::insert;
+    using base_type::insert_range;
+    using base_type::swap;
+
+    using base_type::clear;
+
+    friend auto operator<=>(const alternative_vector&, const alternative_vector&) = default;
+};
 
 template <class T>
 void assert_container_requirements(const T& s) {
@@ -164,6 +268,70 @@ void test_constructors() {
     assert_all_requirements_and_equals(b, {-1, 1, 2, 7, 7, 7, 100});
     assert_all_requirements_and_equals(flat_multiset<int>(b, allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
     assert_all_requirements_and_equals(flat_multiset<int>(std::move(b), allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
+}
+
+void test_allocator_extended_constructors() {
+    constexpr allocator<int> ator;
+    constexpr std::less<int> comp;
+    {
+        using fs = flat_set<int, std::less<int>, alternative_vector<int>>;
+
+        fs s0{1, 1, 2, 3, 5, 8};
+        alternative_vector<int> v{1, 1, 2, 3, 5, 8};
+        alternative_vector<int> v2{1, 2, 3, 5, 8};
+
+        TEST_ASSERT(fs{comp, ator} == fs{});
+
+        TEST_ASSERT(fs{s0, ator} == s0);
+        TEST_ASSERT(fs{fs{s0}, ator} == s0);
+
+        TEST_ASSERT(fs{v, ator} == s0);
+        TEST_ASSERT(fs{{1, 1, 2, 3, 5, 8}, ator} == s0);
+        TEST_ASSERT(fs{v.begin(), v.end(), ator} == s0);
+        TEST_ASSERT(fs{from_range, v, ator} == s0);
+
+        TEST_ASSERT(fs{v, comp, ator} == s0);
+        TEST_ASSERT(fs{{1, 1, 2, 3, 5, 8}, comp, ator} == s0);
+        TEST_ASSERT(fs{v.begin(), v.end(), comp, ator} == s0);
+        TEST_ASSERT(fs{from_range, v, comp, ator} == s0);
+
+        TEST_ASSERT(fs{sorted_unique, v2, ator} == s0);
+        TEST_ASSERT(fs{sorted_unique, {1, 2, 3, 5, 8}, ator} == s0);
+        TEST_ASSERT(fs{sorted_unique, v2.begin(), v2.end(), ator} == s0);
+
+        TEST_ASSERT(fs{sorted_unique, v2, comp, ator} == s0);
+        TEST_ASSERT(fs{sorted_unique, {1, 2, 3, 5, 8}, comp, ator} == s0);
+        TEST_ASSERT(fs{sorted_unique, v2.begin(), v2.end(), comp, ator} == s0);
+    }
+    {
+        using fms = flat_multiset<int, std::less<int>, alternative_vector<int>>;
+
+        fms s0{1, 1, 2, 3, 5, 8};
+        alternative_vector<int> v{1, 1, 2, 3, 5, 8};
+
+        TEST_ASSERT(fms{comp, ator} == fms{});
+
+        TEST_ASSERT(fms{s0, ator} == s0);
+        TEST_ASSERT(fms{fms{s0}, ator} == s0);
+
+        TEST_ASSERT(fms{v, ator} == s0);
+        TEST_ASSERT(fms{{1, 1, 2, 3, 5, 8}, ator} == s0);
+        TEST_ASSERT(fms{v.begin(), v.end(), ator} == s0);
+        TEST_ASSERT(fms{from_range, v, ator} == s0);
+
+        TEST_ASSERT(fms{v, comp, ator} == s0);
+        TEST_ASSERT(fms{{1, 1, 2, 3, 5, 8}, comp, ator} == s0);
+        TEST_ASSERT(fms{v.begin(), v.end(), comp, ator} == s0);
+        TEST_ASSERT(fms{from_range, v, comp, ator} == s0);
+
+        TEST_ASSERT(fms{sorted_equivalent, v, ator} == s0);
+        TEST_ASSERT(fms{sorted_equivalent, {1, 1, 2, 3, 5, 8}, ator} == s0);
+        TEST_ASSERT(fms{sorted_equivalent, v.begin(), v.end(), ator} == s0);
+
+        TEST_ASSERT(fms{sorted_equivalent, v, comp, ator} == s0);
+        TEST_ASSERT(fms{sorted_equivalent, {1, 1, 2, 3, 5, 8}, comp, ator} == s0);
+        TEST_ASSERT(fms{sorted_equivalent, v.begin(), v.end(), comp, ator} == s0);
+    }
 }
 
 template <template <class...> class Set>
@@ -870,6 +1038,7 @@ int main() {
 
     test_constructors<vector<int>>();
     test_constructors<deque<int>>();
+    test_allocator_extended_constructors();
 
     test_always_reversible<flat_set>();
     test_always_reversible<flat_multiset>();
