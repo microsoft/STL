@@ -30,18 +30,18 @@ private:
     using base_type = vector<T, Alloc>;
 
 public:
-    using base_type::allocator_type;
-    using base_type::const_iterator;
-    using base_type::const_pointer;
-    using base_type::const_reference;
-    using base_type::const_reverse_iterator;
-    using base_type::difference_type;
-    using base_type::iterator;
-    using base_type::pointer;
-    using base_type::reference;
-    using base_type::reverse_iterator;
-    using base_type::size_type;
-    using base_type::value_type;
+    using allocator_type         = base_type::allocator_type;
+    using const_iterator         = base_type::const_iterator;
+    using const_pointer          = base_type::const_pointer;
+    using const_reference        = base_type::const_reference;
+    using const_reverse_iterator = base_type::const_reverse_iterator;
+    using difference_type        = base_type::difference_type;
+    using iterator               = base_type::iterator;
+    using pointer                = base_type::pointer;
+    using reference              = base_type::reference;
+    using reverse_iterator       = base_type::reverse_iterator;
+    using size_type              = base_type::size_type;
+    using value_type             = base_type::value_type;
 
     constexpr alternative_vector() noexcept(noexcept(Alloc())) : base_type(Alloc()) {}
     constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a) : base_type(a) {}
