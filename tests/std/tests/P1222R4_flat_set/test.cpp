@@ -120,6 +120,10 @@ public:
     using base_type::clear;
 
     friend auto operator<=>(const alternative_vector&, const alternative_vector&) = default;
+
+    friend constexpr void swap(alternative_vector& lhs, alternative_vector& rhs) noexcept(noexcept(lhs.swap(rhs))) {
+        lhs.swap(rhs);
+    }
 };
 
 template <class T>
