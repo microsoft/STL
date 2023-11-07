@@ -1240,7 +1240,7 @@ namespace {
     // In optimized builds it avoids an extra call, as this function is too large to inline.
 
     template <class _Traits, class _Ty>
-    const void* __stdcall __std_find_trivial_unsized(const void* _First, const _Ty _Val) noexcept {
+    const void* __stdcall __std_find_trivial_unsized_impl(const void* _First, const _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
         if (_Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
@@ -1326,7 +1326,7 @@ namespace {
     }
 
     template <class _Traits, class _Ty>
-    const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, _Ty _Val) noexcept {
+    const void* __stdcall __std_find_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
         size_t _Size_bytes = _Byte_length(_First, _Last);
 
@@ -1380,7 +1380,7 @@ namespace {
     }
 
     template <class _Traits, class _Ty>
-    const void* __stdcall __std_find_last_trivial(const void* _First, const void* _Last, _Ty _Val) noexcept {
+    const void* __stdcall __std_find_last_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
         const void* const _Real_last = _Last;
 #ifndef _M_ARM64EC
         size_t _Size_bytes = _Byte_length(_First, _Last);
@@ -1439,7 +1439,7 @@ namespace {
 
     template <class _Traits, class _Ty>
     __declspec(noalias) size_t
-        __stdcall __std_count_trivial(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
+        __stdcall __std_count_trivial_impl(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
         size_t _Result = 0;
 
 #ifndef _M_ARM64EC
@@ -1488,79 +1488,79 @@ namespace {
 extern "C" {
 
 const void* __stdcall __std_find_trivial_unsized_1(const void* const _First, const uint8_t _Val) noexcept {
-    return __std_find_trivial_unsized<_Find_traits_1>(_First, _Val);
+    return __std_find_trivial_unsized_impl<_Find_traits_1>(_First, _Val);
 }
 
 const void* __stdcall __std_find_trivial_unsized_2(const void* const _First, const uint16_t _Val) noexcept {
-    return __std_find_trivial_unsized<_Find_traits_2>(_First, _Val);
+    return __std_find_trivial_unsized_impl<_Find_traits_2>(_First, _Val);
 }
 
 const void* __stdcall __std_find_trivial_unsized_4(const void* const _First, const uint32_t _Val) noexcept {
-    return __std_find_trivial_unsized<_Find_traits_4>(_First, _Val);
+    return __std_find_trivial_unsized_impl<_Find_traits_4>(_First, _Val);
 }
 
 const void* __stdcall __std_find_trivial_unsized_8(const void* const _First, const uint64_t _Val) noexcept {
-    return __std_find_trivial_unsized<_Find_traits_8>(_First, _Val);
+    return __std_find_trivial_unsized_impl<_Find_traits_8>(_First, _Val);
 }
 
 const void* __stdcall __std_find_trivial_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_find_trivial<_Find_traits_1>(_First, _Last, _Val);
+    return __std_find_trivial_impl<_Find_traits_1>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_find_trivial<_Find_traits_2>(_First, _Last, _Val);
+    return __std_find_trivial_impl<_Find_traits_2>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_trivial_4(
     const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_find_trivial<_Find_traits_4>(_First, _Last, _Val);
+    return __std_find_trivial_impl<_Find_traits_4>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_find_trivial<_Find_traits_8>(_First, _Last, _Val);
+    return __std_find_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_find_last_trivial<_Find_traits_1>(_First, _Last, _Val);
+    return __std_find_last_trivial_impl<_Find_traits_1>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_find_last_trivial<_Find_traits_2>(_First, _Last, _Val);
+    return __std_find_last_trivial_impl<_Find_traits_2>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_4(
     const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_find_last_trivial<_Find_traits_4>(_First, _Last, _Val);
+    return __std_find_last_trivial_impl<_Find_traits_4>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_find_last_trivial<_Find_traits_8>(_First, _Last, _Val);
+    return __std_find_last_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_1(const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_count_trivial<_Find_traits_1>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Find_traits_1>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_2(const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_count_trivial<_Find_traits_2>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Find_traits_2>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_4(const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_count_trivial<_Find_traits_4>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Find_traits_4>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_8(const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_count_trivial<_Find_traits_8>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
 }
 
 } // extern "C"
