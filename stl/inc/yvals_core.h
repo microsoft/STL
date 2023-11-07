@@ -68,6 +68,8 @@
 // P0935R0 Eradicating Unnecessarily Explicit Default Constructors
 // P0941R2 Feature-Test Macros
 // P0972R0 noexcept For <chrono> zero(), min(), max()
+// P1065R2 constexpr INVOKE
+//     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
 // P1164R1 Making create_directory() Intuitive
 // P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
@@ -126,8 +128,6 @@
 // P0682R1 Repairing Elementary String Conversions
 // P0739R0 Improving Class Template Argument Deduction For The STL
 // P0858R0 Constexpr Iterator Requirements
-// P1065R2 constexpr INVOKE
-//     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
 // P1169R4 static operator()
 // P1518R2 Stop Overconstraining Allocators In Container Deduction Guides
 // P2162R2 Inheriting From variant
@@ -224,7 +224,7 @@
 // P1032R1 Miscellaneous constexpr
 // P1035R7 Input Range Adaptors
 // P1065R2 constexpr INVOKE
-//     (except the std::invoke function which is implemented in C++17)
+//     (except the std::invoke function which is implemented unconditionally)
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
 // P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
