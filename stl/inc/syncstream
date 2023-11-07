@@ -24,10 +24,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 #undef emit
 
-_EXTERN_C
+extern "C" {
 _NODISCARD _STD shared_mutex* __stdcall __std_acquire_shared_mutex_for_instance(void* _Ptr) noexcept;
 void __stdcall __std_release_shared_mutex_for_instance(void* _Ptr) noexcept;
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 

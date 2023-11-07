@@ -40,6 +40,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _C_COMPLEX_T
 #define _C_COMPLEX_T // Also defined by UCRT <complex.h>
 
+extern "C" {
 struct _C_double_complex {
     double _Val[2];
 };
@@ -51,6 +52,7 @@ struct _C_float_complex {
 struct _C_ldouble_complex {
     long double _Val[2];
 };
+} // extern "C"
 #endif // _C_COMPLEX_T
 
 // complex _Val offsets

@@ -28,7 +28,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #if _USE_STD_VECTOR_ALGORITHMS
 
-_EXTERN_C
+extern "C" {
 struct _Min_max_element_t {
     const void* _Min;
     const void* _Max;
@@ -59,8 +59,9 @@ const void* __stdcall __std_find_last_trivial_1(const void* _First, const void* 
 const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
-_END_EXTERN_C
+} // extern "C"
 
+_STD_BEGIN
 template <class _Ty>
 _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
@@ -102,6 +103,7 @@ _Ty* __std_find_last_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
 }
+_STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
@@ -9848,7 +9850,7 @@ namespace ranges {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_First);
                     const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                    const auto _Result    = _CSTD __std_minmax_element(_First_ptr, _Last_ptr);
+                    const auto _Result    = _STD __std_minmax_element(_First_ptr, _Last_ptr);
                     if constexpr (is_pointer_v<_It>) {
                         return {_Result.first, _Result.second};
                     } else {
@@ -10046,7 +10048,7 @@ namespace ranges {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_First);
                     const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                    const auto _Result    = _CSTD __std_minmax_element(_First_ptr, _Last_ptr);
+                    const auto _Result    = _STD __std_minmax_element(_First_ptr, _Last_ptr);
                     return {static_cast<_Vty>(*_Result.first), static_cast<_Vty>(*_Result.second)};
                 }
             }
