@@ -3579,7 +3579,10 @@ struct _Format_checker {
     consteval explicit _Format_checker(basic_string_view<_CharT> _Fmt) noexcept
         : _Parse_context(_Fmt, _Num_args), _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _ParseContext>...} {}
     constexpr void _On_text(const _CharT*, const _CharT*) const noexcept {}
-    constexpr void _On_replacement_field(size_t, const _CharT*) const noexcept {}
+    constexpr void _On_replacement_field(const size_t _Id, const _CharT*) const {
+        _ParseContext _Parse_ctx({});
+        (void) _Parse_funcs[_Id](_Parse_ctx);
+    }
     constexpr const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT*) {
         _Parse_context.advance_to(_Parse_context.begin() + (_First - _Parse_context.begin()._Unwrapped()));
         if (_Id < _Num_args) {

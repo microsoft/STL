@@ -17,7 +17,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_EXTERN_C
+extern "C" {
 
 #ifdef _CRTBLD
 _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const _timespec64*, const _timespec64*) noexcept;
@@ -33,7 +33,7 @@ void _Timespec64_get_sys(_timespec64*) noexcept;
 _CRTIMP2_PURE long long __cdecl _Query_perf_counter() noexcept;
 _CRTIMP2_PURE long long __cdecl _Query_perf_frequency() noexcept;
 
-_END_EXTERN_C
+} // extern "C"
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

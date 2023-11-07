@@ -61,7 +61,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ defined(_USE_STD_VECTOR_FLOATING_ALGORITHMS) ^^^
 
 #if _USE_STD_VECTOR_ALGORITHMS
-_EXTERN_C
+extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
 // those pointers. The optimizer also assumes in that case that a pointer parameter is not returned to the caller via
@@ -108,8 +108,9 @@ const void* __stdcall __std_max_element_4(const void* _First, const void* _Last,
 const void* __stdcall __std_max_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 const void* __stdcall __std_max_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
-_END_EXTERN_C
+} // extern "C"
 
+_STD_BEGIN
 template <class _Ty, class _TVal>
 __declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
@@ -212,6 +213,7 @@ _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
 }
+_STD_END
 
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
