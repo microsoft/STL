@@ -33,7 +33,7 @@ void assert_container_requirements(const T& s) {
     static_assert(is_same_v<decltype(m.begin() <=> m.end()), strong_ordering>);
     static_assert(is_same_v<decltype(s.size()), typename T::size_type>);
     static_assert(is_same_v<decltype(s.max_size()), typename T::size_type>);
-    static_assert(is_same_v<decltype(*m.begin()), typename T::value_type&>);
+    static_assert(is_same_v<decltype(*m.begin()), const typename T::value_type&>);
     static_assert(is_same_v<decltype(*m.cbegin()), const typename T::value_type&>);
 
     T my_moved = std::move(m);
@@ -74,6 +74,22 @@ void assert_reversible_container_requirements(const T& s) {
 }
 
 template <class T>
+void assert_set_requirements() {
+    using iterator       = T::iterator;
+    using const_iterator = T::const_iterator;
+    using key_type       = T::key_type;
+    using value_type     = T::value_type;
+
+    static_assert(same_as<std::const_iterator<const_iterator>, const_iterator>);
+    static_assert(is_convertible_v<iterator, const_iterator>);
+
+    // additionally:
+    static_assert(is_same_v<key_type, value_type>);
+    static_assert(same_as<std::const_iterator<iterator>, iterator>);
+    static_assert(is_convertible_v<const_iterator, iterator>);
+}
+
+template <class T>
 void assert_noexcept_requirements(T& s) {
     static_assert(noexcept(s.begin()));
     static_assert(noexcept(s.end()));
@@ -99,6 +115,7 @@ template <class T>
 void assert_all_requirements(const T& s) {
     assert_container_requirements(s);
     assert_reversible_container_requirements(s);
+    assert_set_requirements<T>();
 
     assert_noexcept_requirements(s);
     assert_noexcept_requirements(const_cast<T&>(s));

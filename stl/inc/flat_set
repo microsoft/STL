@@ -56,10 +56,10 @@ public:
     using const_reference        = const value_type&;
     using size_type              = _Container::size_type;
     using difference_type        = _Container::difference_type;
-    using iterator               = _Container::iterator;
     using const_iterator         = _Container::const_iterator;
-    using reverse_iterator       = _STD reverse_iterator<iterator>;
+    using iterator               = const_iterator;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+    using reverse_iterator       = const_reverse_iterator;
     using container_type         = _Container;
 
     static_assert(random_access_iterator<iterator>, "The C++ Standard forbids containers without random "
@@ -160,7 +160,7 @@ public:
     {}
 
     _Base_flat_set& operator=(const _Base_flat_set& _Other) {
-        _Clear_guard<_Base_flat_set> _Guard{this};
+        _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};
         _Mycont        = _Other._Mycont;
         _Mycomp        = _Other._Mycomp;
         _Guard._Target = nullptr;
@@ -170,8 +170,8 @@ public:
         is_nothrow_move_assignable_v<container_type>&& is_nothrow_copy_assignable_v<key_compare>) // strengthened
     {
         if (this != _STD addressof(_Other)) {
-            _Clear_guard<_Base_flat_set> _Guard{this};
-            _Clear_guard<_Base_flat_set> _Always_clear{_STD addressof(_Other)};
+            _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};
+            _Clear_guard<container_type> _Always_clear{_STD addressof(_Other._Mycont)};
             _Mycont        = _STD move(_Other._Mycont);
             _Mycomp        = _Other._Mycomp; // intentionally copy comparator, see LWG-2227
             _Guard._Target = nullptr;
@@ -180,7 +180,7 @@ public:
     }
 
     _Deriv& operator=(initializer_list<_Kty> _Ilist) {
-        _Clear_guard<_Base_flat_set> _Guard{this};
+        _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};
         _Mycont.assign(_Ilist);
         _Make_invariants_fulfilled();
         _Guard._Target = nullptr;
@@ -188,27 +188,16 @@ public:
     }
 
     // iterators
-    _NODISCARD iterator begin() noexcept {
-        return _Mycont.begin();
-    }
+    // NB: The non-const overloads are intentionally removed for brevity. This will not result in behavioral changes.
     _NODISCARD const_iterator begin() const noexcept {
         return _Mycont.begin();
-    }
-    _NODISCARD iterator end() noexcept {
-        return _Mycont.end();
     }
     _NODISCARD const_iterator end() const noexcept {
         return _Mycont.end();
     }
 
-    _NODISCARD reverse_iterator rbegin() noexcept {
-        return reverse_iterator(end());
-    }
     _NODISCARD const_reverse_iterator rbegin() const noexcept {
         return const_reverse_iterator(end());
-    }
-    _NODISCARD reverse_iterator rend() noexcept {
-        return reverse_iterator(begin());
     }
     _NODISCARD const_reverse_iterator rend() const noexcept {
         return const_reverse_iterator(begin());
@@ -314,19 +303,17 @@ public:
     _NODISCARD container_type extract() && noexcept(
         is_nothrow_move_constructible_v<container_type>) /* strengthened */ {
         // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
-        _Clear_guard<_Base_flat_set> _Always_clear{this};
+        _Clear_guard<container_type> _Always_clear{_STD addressof(_Mycont)};
         return _STD move(_Mycont);
     }
     void replace(container_type&& _Cont) {
         _STL_ASSERT(_Is_sorted(_Cont), _Msg_not_sorted);
-        _Clear_guard<_Base_flat_set> _Guard{this};
+        _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};
         _Mycont        = _STD move(_Cont);
         _Guard._Target = nullptr;
     }
 
-    iterator erase(iterator _Where) {
-        return _Mycont.erase(_Where);
-    }
+    // NB: `erase(iterator)` is identical to `erase(const_iterator)`
     iterator erase(const_iterator _Where) {
         return _Mycont.erase(_Where);
     }
@@ -334,8 +321,7 @@ public:
         return _Erase(_Val);
     }
     template <_Different_from<_Kty> _Other>
-        requires (
-            _Keylt_transparent && !is_convertible_v<_Other, iterator> && !is_convertible_v<_Other, const_iterator>)
+        requires (_Keylt_transparent && !is_convertible_v<_Other, const_iterator>)
     size_type erase(_Other&& _Val) {
         return _Erase(_Val);
     }
@@ -359,17 +345,13 @@ public:
         return _Mycomp;
     }
 
-    // set operations
-    _NODISCARD iterator find(const _Kty& _Val) {
-        return _Find(_Val);
-    }
-    _NODISCARD const_iterator find(const _Kty& _Val) const {
-        return _Find(_Val);
+    _NODISCARD container_type& _Get_container_for_erase_if() noexcept {
+        return _Mycont;
     }
 
-    template <class _Other>
-        requires _Keylt_transparent
-    _NODISCARD iterator find(const _Other& _Val) {
+    // set operations
+    // NB: The non-const overloads are intentionally removed for brevity. This will not result in behavioral changes.
+    _NODISCARD const_iterator find(const _Kty& _Val) const {
         return _Find(_Val);
     }
     template <class _Other>
@@ -402,17 +384,8 @@ public:
         return _STD binary_search(cbegin(), cend(), _Val, _Pass_comp());
     }
 
-    _NODISCARD iterator lower_bound(const _Kty& _Val) {
-        return _STD lower_bound(begin(), end(), _Val, _Pass_comp());
-    }
     _NODISCARD const_iterator lower_bound(const _Kty& _Val) const {
         return _STD lower_bound(cbegin(), cend(), _Val, _Pass_comp());
-    }
-
-    template <class _Other>
-        requires _Keylt_transparent
-    _NODISCARD iterator lower_bound(const _Other& _Val) {
-        return _STD lower_bound(begin(), end(), _Val, _Pass_comp());
     }
     template <class _Other>
         requires _Keylt_transparent
@@ -420,17 +393,8 @@ public:
         return _STD lower_bound(cbegin(), cend(), _Val, _Pass_comp());
     }
 
-    _NODISCARD iterator upper_bound(const _Kty& _Val) {
-        return _STD upper_bound(begin(), end(), _Val, _Pass_comp());
-    }
     _NODISCARD const_iterator upper_bound(const _Kty& _Val) const {
         return _STD upper_bound(cbegin(), cend(), _Val, _Pass_comp());
-    }
-
-    template <class _Other>
-        requires _Keylt_transparent
-    _NODISCARD iterator upper_bound(const _Other& _Val) {
-        return _STD upper_bound(begin(), end(), _Val, _Pass_comp());
     }
     template <class _Other>
         requires _Keylt_transparent
@@ -438,17 +402,8 @@ public:
         return _STD upper_bound(cbegin(), cend(), _Val, _Pass_comp());
     }
 
-    _NODISCARD pair<iterator, iterator> equal_range(const _Kty& _Val) {
-        return _STD equal_range(begin(), end(), _Val, _Pass_comp());
-    }
     _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Kty& _Val) const {
         return _STD equal_range(cbegin(), cend(), _Val, _Pass_comp());
-    }
-
-    template <class _Other>
-        requires _Keylt_transparent
-    _NODISCARD pair<iterator, iterator> equal_range(const _Other& _Val) {
-        return _STD equal_range(begin(), end(), _Val, _Pass_comp());
     }
     template <class _Other>
         requires _Keylt_transparent
@@ -521,9 +476,8 @@ private:
     template <class _Ty>
         requires (!_Multi) // flat_set
     _NODISCARD pair<iterator, bool> _Emplace(_Ty&& _Val) {
-        const iterator _Where = lower_bound(_Val);
-        if (_Where != end() && !_Compare(_Val, *_Where)) {
-            // *_Where is equivalent to _Val.
+        const const_iterator _Where = lower_bound(_Val);
+        if (_Where != cend() && !_Compare(_Val, *_Where)) {
             return pair{_Where, false};
         }
 
@@ -589,8 +543,7 @@ private:
         }
 
         if (_Where != _End && !_Compare(_Val, *_Where)) {
-            // *_Where is equivalent to _Val; convert _Where to iterator type.
-            return _Mycont.begin() + (_Where - _Begin);
+            return _Where;
         }
 
         if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
@@ -620,8 +573,8 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Ty, _Kty>);
 
         if constexpr (!_Multi && is_same_v<_Ty, _Kty>) {
-            const iterator _Where = lower_bound(_Val);
-            if (_Where != end() && !_Compare(_Val, *_Where)) {
+            const const_iterator _Where = lower_bound(_Val);
+            if (_Where != cend() && !_Compare(_Val, *_Where)) {
                 _Mycont.erase(_Where);
                 return 1;
             }
@@ -632,19 +585,6 @@ private:
             const auto _Removed = static_cast<size_type>(_Last - _First);
             _Mycont.erase(_First, _Last);
             return _Removed;
-        }
-    }
-
-    template <class _Ty>
-    _NODISCARD iterator _Find(const _Ty& _Val) {
-        _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Ty, _Kty>);
-
-        const iterator _End   = end();
-        const iterator _Where = lower_bound(_Val);
-        if (_Where != _End && !_Compare(_Val, *_Where)) {
-            return _Where;
-        } else {
-            return _End;
         }
     }
 
@@ -666,16 +606,16 @@ private:
             const auto _Equivalent = [this](const _Kty& _Lhs, const _Kty& _Rhs) {
                 return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
             };
-            const iterator _End = end();
-            _Mycont.erase(_STD unique(begin(), _End, _Equivalent), _End);
+            const auto _End = _Mycont.end();
+            _Mycont.erase(_STD unique(_Mycont.begin(), _End, _Equivalent), _End);
         }
     }
 
     template <bool _Presorted>
     void _Restore_invariants_after_insert(const size_type _Old_size) {
-        const iterator _Begin   = begin();
-        const iterator _Old_end = _Begin + static_cast<difference_type>(_Old_size);
-        const iterator _End     = end();
+        const auto _Begin   = _Mycont.begin();
+        const auto _Old_end = _Begin + static_cast<difference_type>(_Old_size);
+        const auto _End     = _Mycont.end();
 
         if constexpr (!_Presorted) {
             _STD sort(_Old_end, _End, _Pass_comp());
@@ -690,15 +630,15 @@ private:
     }
 
     void _Make_invariants_fulfilled() {
-        const iterator _Begin = begin();
-        const iterator _End   = end();
+        const auto _Begin = _Mycont.begin();
+        const auto _End   = _Mycont.end();
 
         if (_Begin == _End) {
             return;
         }
 
         // O(N) if already sorted.
-        const iterator _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Pass_comp());
+        const auto _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Pass_comp());
 
         _STD sort(_Begin_unsorted, _End, _Pass_comp());
         _STD inplace_merge(_Begin, _Begin_unsorted, _End, _Pass_comp());
@@ -768,8 +708,9 @@ public:
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.set.erasure]/5)
-    _Clear_guard<flat_set<_Kty, _Keylt, _Container>> _Guard{_STD addressof(_Val)};
-    const auto _Erased_count = _STD _Erase_remove_if(_Val, _STD _Pass_fn(_Predicate));
+    _Container& _Cont = _Val._Get_container_for_erase_if();
+    _Clear_guard<_Container> _Guard{_STD addressof(_Cont)};
+    const auto _Erased_count = _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Predicate));
     _Guard._Target           = nullptr;
     return _Erased_count;
 }
@@ -777,8 +718,9 @@ _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.multiset.erasure]/5)
-    _Clear_guard<flat_multiset<_Kty, _Keylt, _Container>> _Guard{_STD addressof(_Val)};
-    const auto _Erased_count = _STD _Erase_remove_if(_Val, _STD _Pass_fn(_Predicate));
+    _Container& _Cont = _Val._Get_container_for_erase_if();
+    _Clear_guard<_Container> _Guard{_STD addressof(_Cont)};
+    const auto _Erased_count = _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Predicate));
     _Guard._Target           = nullptr;
     return _Erased_count;
 }
