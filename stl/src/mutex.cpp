@@ -13,7 +13,7 @@
 
 #include "primitives.hpp"
 
-_EXTERN_C
+extern "C" {
 
 // TRANSITION, ABI: exported only for ABI compat
 [[noreturn]] _CRTIMP2_PURE void __cdecl _Thrd_abort(const char* msg) noexcept { // abort on precondition failure
@@ -191,7 +191,7 @@ _CRTIMP2_PURE void* __cdecl _Mtx_getconcrtcs(_Mtx_t mtx) noexcept { // get inter
     return &mtx->_Critical_section;
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 /*
  * This file is derived from software bearing the following

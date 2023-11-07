@@ -39,12 +39,12 @@ _STL_DISABLE_CLANG_WARNINGS
 // string buffer for cases when the size is not known before an attempt to fill it -- this potentially avoids both an
 // extra fill attempt and an extra allocation if the reserved size is enough.
 
+extern "C" {
 using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char* _Data, size_t _Size, void* _Context) _NOEXCEPT_FNPTR;
 
 using _Stacktrace_string_fill = size_t(__stdcall*)(
     size_t _Size, void* _String, void* _Context, _Stacktrace_string_fill_callback _Callback);
 
-_EXTERN_C
 _NODISCARD unsigned short __stdcall __std_stacktrace_capture(unsigned long _Frames_to_skip,
     unsigned long _Frames_to_capture, void** _Back_trace, unsigned long* _Back_trace_hash) noexcept;
 
@@ -64,7 +64,7 @@ _NODISCARD unsigned int __stdcall __std_stacktrace_source_line(const void* _Addr
 
 void __stdcall __std_stacktrace_to_string(
     const void* const* _Addresses, size_t _Size, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 inline size_t __stdcall _Stacktrace_string_fill_impl(

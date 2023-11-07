@@ -1954,15 +1954,12 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 
 #define _CSTD ::
 
-#define _EXTERN_C     extern "C" {
-#define _END_EXTERN_C }
-
 #ifdef _M_CEE_PURE
 #define _EXTERN_C_UNLESS_PURE
 #define _END_EXTERN_C_UNLESS_PURE
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
-#define _EXTERN_C_UNLESS_PURE     _EXTERN_C
-#define _END_EXTERN_C_UNLESS_PURE _END_EXTERN_C
+#define _EXTERN_C_UNLESS_PURE     extern "C" {
+#define _END_EXTERN_C_UNLESS_PURE } // extern "C"
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 #if defined(MRTDLL) && !defined(_CRTBLD)

@@ -11,7 +11,7 @@
 
 #include "primitives.hpp"
 
-_EXTERN_C
+extern "C" {
 
 struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
     typename std::_Aligned_storage<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment>::type cv;
@@ -102,7 +102,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(const _Cnd_t cond) noexcept { 
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 /*
  * This file is derived from software bearing the following

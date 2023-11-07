@@ -125,14 +125,14 @@ extern const bool _Asan_vector_should_annotate;
 #ifdef _INSERT_STRING_ANNOTATION
 extern const bool _Asan_string_should_annotate;
 #endif
-}
+} // extern "C"
 
 #if defined(_INSERT_VECTOR_ANNOTATION) || defined(_INSERT_STRING_ANNOTATION)
 extern "C" {
 // This must match ASan's primary declaration, which isn't marked `noexcept`.
 void __cdecl __sanitizer_annotate_contiguous_container(
     const void* _First, const void* _End, const void* _Old_last, const void* _New_last);
-}
+} // extern "C"
 
 #ifdef _M_ARM64EC
 #pragma comment(linker, \

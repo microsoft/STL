@@ -338,7 +338,7 @@ namespace {
     }
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 
 [[nodiscard]] __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noexcept {
     // On exit---
@@ -640,4 +640,4 @@ void __stdcall __std_free_crt(void* p) noexcept {
     _free_crt(p);
 }
 
-_END_EXTERN_C
+} // extern "C"

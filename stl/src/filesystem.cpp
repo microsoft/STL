@@ -187,7 +187,7 @@ namespace {
     }
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 
 [[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_full_path_name(_In_z_ const wchar_t* _Source,
     _In_ unsigned long _Target_size, _Out_writes_z_(_Target_size) wchar_t* _Target) noexcept { // calls GetFullPathNameW
@@ -1028,4 +1028,4 @@ namespace {
     return __std_win_error{GetLastError()};
 }
 
-_END_EXTERN_C
+} // extern "C"
