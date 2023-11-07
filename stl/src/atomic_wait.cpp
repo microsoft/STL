@@ -11,6 +11,7 @@
 #include <Windows.h>
 
 namespace {
+    constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 
     constexpr size_t _Wait_table_size_power = 8;
     constexpr size_t _Wait_table_size       = 1 << _Wait_table_size_power;
@@ -317,7 +318,7 @@ int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand,
             return FALSE;
         }
 
-        if (_Remaining_timeout != _Atomic_wait_no_timeout) {
+        if (_Remaining_timeout != __std_atomic_wait_no_timeout) {
             // spurious wake to recheck the clock
             return TRUE;
         }
@@ -333,8 +334,8 @@ unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long 
 }
 
 unsigned long __stdcall __std_atomic_wait_get_remaining_timeout(unsigned long long _Deadline) noexcept {
-    static_assert(_Atomic_wait_no_timeout == INFINITE,
-        "_Atomic_wait_no_timeout is passed directly to underlying API, so should match it");
+    static_assert(__std_atomic_wait_no_timeout == INFINITE,
+        "__std_atomic_wait_no_timeout is passed directly to underlying API, so should match it");
 
     if (_Deadline == _Atomic_wait_no_deadline) {
         return INFINITE;

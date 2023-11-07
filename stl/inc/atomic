@@ -516,7 +516,7 @@ void _Atomic_wait_direct(
             return;
         }
 
-        __std_atomic_wait_direct(_Storage_ptr, &_Expected_bytes, sizeof(_Value_type), _Atomic_wait_no_timeout);
+        __std_atomic_wait_direct(_Storage_ptr, &_Expected_bytes, sizeof(_Value_type), __std_atomic_wait_no_timeout);
     }
 }
 #endif // _HAS_CXX20
@@ -716,7 +716,7 @@ struct _Atomic_storage {
             } // unlock
 
             __std_atomic_wait_indirect(_Storage_ptr, _Expected_ptr, sizeof(_TVal), &_Spinlock,
-                &_Atomic_wait_compare_non_lock_free<decltype(_Spinlock)>, _Atomic_wait_no_timeout);
+                &_Atomic_wait_compare_non_lock_free<decltype(_Spinlock)>, __std_atomic_wait_no_timeout);
         }
     }
 
@@ -1356,7 +1356,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
             }
 
             __std_atomic_wait_indirect(_Storage_ptr, _Expected_ptr, sizeof(_TVal), nullptr,
-                &_Atomic_wait_compare_16_bytes, _Atomic_wait_no_timeout);
+                &_Atomic_wait_compare_16_bytes, __std_atomic_wait_no_timeout);
         }
     }
 
