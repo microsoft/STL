@@ -13,6 +13,7 @@
 #include <random>
 #include <ranges>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -28,23 +29,23 @@ concept container_compatible_range = input_range<R> && convertible_to<range_refe
 
 template <class T, class Alloc = allocator<T>,
     iterator_pair_construction Choice = iterator_pair_construction::with_allocator>
-class alternative_vector : private vector<T, Alloc> { // not allocator-aware, but can be used-allocator constructed
+class alternative_vector : private vector<T, Alloc> { // not allocator-aware, but can be uses-allocator constructed
 private:
     using base_type = vector<T, Alloc>;
 
 public:
-    using allocator_type         = base_type::allocator_type;
-    using const_iterator         = base_type::const_iterator;
-    using const_pointer          = base_type::const_pointer;
-    using const_reference        = base_type::const_reference;
-    using const_reverse_iterator = base_type::const_reverse_iterator;
-    using difference_type        = base_type::difference_type;
-    using iterator               = base_type::iterator;
-    using pointer                = base_type::pointer;
-    using reference              = base_type::reference;
-    using reverse_iterator       = base_type::reverse_iterator;
-    using size_type              = base_type::size_type;
-    using value_type             = base_type::value_type;
+    using typename base_type::allocator_type;
+    using typename base_type::const_iterator;
+    using typename base_type::const_pointer;
+    using typename base_type::const_reference;
+    using typename base_type::const_reverse_iterator;
+    using typename base_type::difference_type;
+    using typename base_type::iterator;
+    using typename base_type::pointer;
+    using typename base_type::reference;
+    using typename base_type::reverse_iterator;
+    using typename base_type::size_type;
+    using typename base_type::value_type;
 
     constexpr alternative_vector() noexcept(noexcept(Alloc())) : base_type(Alloc()) {}
     constexpr alternative_vector(allocator_arg_t, const Alloc& a) : base_type(a) {}
@@ -281,64 +282,70 @@ void test_allocator_extended_constructors() {
     {
         using fs = flat_set<int, std::less<int>, vec>;
 
-        fs s0{1, 1, 2, 3, 5, 8};
-        vec v{1, 1, 2, 3, 5, 8};
-        vec v2{1, 2, 3, 5, 8};
+        fs s{3, 7, 1, 85, 222, 1};
+        fs s_expected{1, 3, 7, 85, 222};
+        vec v_raw{3, 7, 1, 85, 222, 1};
+        vec v_sorted_unique{1, 3, 7, 85, 222};
 
         TEST_ASSERT(fs{comp, ator} == fs{});
 
-        TEST_ASSERT(fs{s0, ator} == s0);
-        TEST_ASSERT(fs{fs{s0}, ator} == s0);
+        TEST_ASSERT(fs{s, ator} == s_expected);
+        TEST_ASSERT(fs{s_expected, ator} == s_expected);
+        TEST_ASSERT(fs{std::move(s), ator} == s_expected);
+        TEST_ASSERT(fs{fs{s_expected}, ator} == s_expected);
 
-        TEST_ASSERT(fs{v, ator} == s0);
-        TEST_ASSERT(fs{{1, 1, 2, 3, 5, 8}, ator} == s0);
-        TEST_ASSERT(fs{v.begin(), v.end(), ator} == s0);
-        TEST_ASSERT(fs{from_range, v, ator} == s0);
+        TEST_ASSERT(fs{v_raw, ator} == s_expected);
+        TEST_ASSERT(fs{{3, 7, 1, 85, 222, 1}, ator} == s_expected);
+        TEST_ASSERT(fs{v_raw.begin(), v_raw.end(), ator} == s_expected);
+        TEST_ASSERT(fs{from_range, v_raw, ator} == s_expected);
 
-        TEST_ASSERT(fs{v, comp, ator} == s0);
-        TEST_ASSERT(fs{{1, 1, 2, 3, 5, 8}, comp, ator} == s0);
-        TEST_ASSERT(fs{v.begin(), v.end(), comp, ator} == s0);
-        TEST_ASSERT(fs{from_range, v, comp, ator} == s0);
+        TEST_ASSERT(fs{v_raw, comp, ator} == s_expected);
+        TEST_ASSERT(fs{{3, 7, 1, 85, 222, 1}, comp, ator} == s_expected);
+        TEST_ASSERT(fs{v_raw.begin(), v_raw.end(), comp, ator} == s_expected);
+        TEST_ASSERT(fs{from_range, v_raw, comp, ator} == s_expected);
 
-        TEST_ASSERT(fs{sorted_unique, v2, ator} == s0);
-        TEST_ASSERT(fs{sorted_unique, v2, comp, ator} == s0);
+        TEST_ASSERT(fs{sorted_unique, v_sorted_unique, ator} == s_expected);
+        TEST_ASSERT(fs{sorted_unique, v_sorted_unique, comp, ator} == s_expected);
         if constexpr (Choice == iterator_pair_construction::with_allocator) {
-            TEST_ASSERT(fs{sorted_unique, {1, 2, 3, 5, 8}, ator} == s0);
-            TEST_ASSERT(fs{sorted_unique, {1, 2, 3, 5, 8}, comp, ator} == s0);
+            TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, ator} == s_expected);
+            TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, comp, ator} == s_expected);
 
-            TEST_ASSERT(fs{sorted_unique, v2.begin(), v2.end(), ator} == s0);
-            TEST_ASSERT(fs{sorted_unique, v2.begin(), v2.end(), comp, ator} == s0);
+            TEST_ASSERT(fs{sorted_unique, v_sorted_unique.begin(), v_sorted_unique.end(), ator} == s_expected);
+            TEST_ASSERT(fs{sorted_unique, v_sorted_unique.begin(), v_sorted_unique.end(), comp, ator} == s_expected);
         }
     }
     {
         using fms = flat_multiset<int, std::less<int>, vec>;
 
-        fms s0{1, 1, 2, 3, 5, 8};
-        vec v{1, 1, 2, 3, 5, 8};
+        fms s{3, 7, 1, 85, 222, 1};
+        fms s_expected{1, 1, 3, 7, 85, 222};
+        vec v_sorted_eq{1, 1, 3, 7, 85, 222};
 
         TEST_ASSERT(fms{comp, ator} == fms{});
 
-        TEST_ASSERT(fms{s0, ator} == s0);
-        TEST_ASSERT(fms{fms{s0}, ator} == s0);
+        TEST_ASSERT(fms{s, ator} == s_expected);
+        TEST_ASSERT(fms{s_expected, ator} == s_expected);
+        TEST_ASSERT(fms{std::move(s), ator} == s_expected);
+        TEST_ASSERT(fms{fms{s_expected}, ator} == s_expected);
 
-        TEST_ASSERT(fms{v, ator} == s0);
-        TEST_ASSERT(fms{{1, 1, 2, 3, 5, 8}, ator} == s0);
-        TEST_ASSERT(fms{v.begin(), v.end(), ator} == s0);
-        TEST_ASSERT(fms{from_range, v, ator} == s0);
+        TEST_ASSERT(fms{v_sorted_eq, ator} == s_expected);
+        TEST_ASSERT(fms{{3, 7, 1, 85, 222, 1}, ator} == s_expected);
+        TEST_ASSERT(fms{v_sorted_eq.begin(), v_sorted_eq.end(), ator} == s_expected);
+        TEST_ASSERT(fms{from_range, v_sorted_eq, ator} == s_expected);
 
-        TEST_ASSERT(fms{v, comp, ator} == s0);
-        TEST_ASSERT(fms{{1, 1, 2, 3, 5, 8}, comp, ator} == s0);
-        TEST_ASSERT(fms{v.begin(), v.end(), comp, ator} == s0);
-        TEST_ASSERT(fms{from_range, v, comp, ator} == s0);
+        TEST_ASSERT(fms{v_sorted_eq, comp, ator} == s_expected);
+        TEST_ASSERT(fms{{3, 7, 1, 85, 222, 1}, comp, ator} == s_expected);
+        TEST_ASSERT(fms{v_sorted_eq.begin(), v_sorted_eq.end(), comp, ator} == s_expected);
+        TEST_ASSERT(fms{from_range, v_sorted_eq, comp, ator} == s_expected);
 
-        TEST_ASSERT(fms{sorted_equivalent, v, ator} == s0);
-        TEST_ASSERT(fms{sorted_equivalent, v, comp, ator} == s0);
+        TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq, ator} == s_expected);
+        TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq, comp, ator} == s_expected);
         if constexpr (Choice == iterator_pair_construction::with_allocator) {
-            TEST_ASSERT(fms{sorted_equivalent, {1, 1, 2, 3, 5, 8}, ator} == s0);
-            TEST_ASSERT(fms{sorted_equivalent, {1, 1, 2, 3, 5, 8}, comp, ator} == s0);
+            TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, ator} == s_expected);
+            TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, comp, ator} == s_expected);
 
-            TEST_ASSERT(fms{sorted_equivalent, v.begin(), v.end(), ator} == s0);
-            TEST_ASSERT(fms{sorted_equivalent, v.begin(), v.end(), comp, ator} == s0);
+            TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq.begin(), v_sorted_eq.end(), ator} == s_expected);
+            TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq.begin(), v_sorted_eq.end(), comp, ator} == s_expected);
         }
     }
 }
