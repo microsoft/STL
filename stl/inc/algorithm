@@ -1164,7 +1164,7 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            return _All_of_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _Proj);
+            return _All_of_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
     private:
