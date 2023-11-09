@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#ifndef _M_CEE // TRANSITION, VSO-1659496
 #include <algorithm>
 #include <cstddef>
 #if _HAS_CXX17
@@ -196,7 +197,7 @@ void test_parallel_algorithms() {
 }
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) && !defined(_M_CEE) // TRANSITION, GH-395, VSO-1659496
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 void test_ranges_non_projected_algorithms() {
     using namespace std::ranges;
 
@@ -233,4 +234,5 @@ void test_ranges_non_projected_algorithms() {
     (void) fold_left_first_with_iter(iarr, iarr, validating_left_selector{});
     (void) fold_left_first_with_iter(iarr, validating_left_selector{});
 }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts) && !defined(_M_CEE)
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _M_CEE
