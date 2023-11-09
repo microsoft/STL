@@ -98,7 +98,7 @@ _STD_BEGIN
 template <class _Ty, class _TVal>
 __declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
-        return ::__std_count_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
+        return _STD __std_count_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
         return ::__std_count_trivial_1(_First, _Last, static_cast<uint8_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 2) {
@@ -115,7 +115,7 @@ __declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _T
 template <class _Ty, class _TVal>
 _Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
-        return ::__std_find_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
+        return _STD __std_find_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_1(_First, _Last, static_cast<uint8_t>(_Val))));
@@ -136,7 +136,7 @@ _Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
 template <class _Ty, class _TVal>
 _Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
-        return ::__std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
+        return _STD __std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_unsized_1(_First, static_cast<uint8_t>(_Val))));
@@ -5786,7 +5786,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
             }
 #if _USE_STD_VECTOR_ALGORITHMS
             const auto _First_ptr = _STD _To_address(_First);
-            const auto _Result    = ::__std_find_trivial(_First_ptr, _STD _To_address(_Last), _Val);
+            const auto _Result    = _STD __std_find_trivial(_First_ptr, _STD _To_address(_Last), _Val);
             if constexpr (is_pointer_v<_InIt>) {
                 return _Result;
             } else {
@@ -5868,9 +5868,9 @@ namespace ranges {
                 if constexpr (_Is_sized) {
                     const auto _Last_ptr = _First_ptr + (_Last - _First);
 
-                    _Result = ::__std_find_trivial(_First_ptr, _Last_ptr, _Val);
+                    _Result = _STD __std_find_trivial(_First_ptr, _Last_ptr, _Val);
                 } else {
-                    _Result = ::__std_find_trivial_unsized(_First_ptr, _Val);
+                    _Result = _STD __std_find_trivial_unsized(_First_ptr, _Val);
                 }
 
                 if constexpr (is_pointer_v<_It>) {
@@ -5967,7 +5967,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
                 }
 
                 return static_cast<_Iter_diff_t<_InIt>>(
-                    ::__std_count_trivial(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Val));
+                    _STD __std_count_trivial(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Val));
             }
         }
 #endif // _USE_STD_VECTOR_ALGORITHMS
@@ -6615,7 +6615,7 @@ constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
     if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _To_address(_First);
-            const auto _Result    = __std_max_element(_First_ptr, _To_address(_Last));
+            const auto _Result    = _STD __std_max_element(_First_ptr, _To_address(_Last));
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
@@ -6680,7 +6680,7 @@ namespace ranges {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
                 const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                const auto _Result    = __std_max_element(_First_ptr, _Last_ptr);
+                const auto _Result    = _STD __std_max_element(_First_ptr, _Last_ptr);
                 if constexpr (is_pointer_v<_It>) {
                     return _Result;
                 } else {
@@ -6807,7 +6807,7 @@ constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
     if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _To_address(_First);
-            const auto _Result    = __std_min_element(_First_ptr, _To_address(_Last));
+            const auto _Result    = _STD __std_min_element(_First_ptr, _To_address(_Last));
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
@@ -6872,7 +6872,7 @@ namespace ranges {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
                 const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                const auto _Result    = __std_min_element(_First_ptr, _Last_ptr);
+                const auto _Result    = _STD __std_min_element(_First_ptr, _Last_ptr);
                 if constexpr (is_pointer_v<_It>) {
                     return _Result;
                 } else {
