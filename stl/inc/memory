@@ -3717,10 +3717,10 @@ _NODISCARD_ASSUME_ALIGNED constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcep
 }
 #endif // _HAS_CXX20
 
-_EXTERN_C
+extern "C" {
 _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() noexcept;
 _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() noexcept;
-_END_EXTERN_C
+} // extern "C"
 
 struct _Shared_ptr_spin_lock { // class to manage a spin lock for shared_ptr atomic operations
     _Shared_ptr_spin_lock() { // lock the spin lock
@@ -3839,7 +3839,7 @@ protected:
             if (!_Equal) {
                 break;
             }
-            __std_atomic_wait_direct(&_Ptr, &_Old, sizeof(_Old), _Atomic_wait_no_timeout);
+            __std_atomic_wait_direct(&_Ptr, &_Old, sizeof(_Old), __std_atomic_wait_no_timeout);
         }
     }
 

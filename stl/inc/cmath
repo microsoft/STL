@@ -911,7 +911,7 @@ _EXPORT_STD using _CSTD isunordered;
 _STD_END
 
 #if _HAS_CXX17
-_EXTERN_C
+extern "C" {
 _NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_assoc_laguerre(unsigned int, unsigned int, double) noexcept;
 _NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_assoc_laguerref(unsigned int, unsigned int, float) noexcept;
 _NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_assoc_legendre(unsigned int, unsigned int, double) noexcept;
@@ -956,7 +956,7 @@ _NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_sph_neumann(unsigned int,
 _NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_sph_neumannf(unsigned int, float) noexcept;
 _NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_hypot3(double, double, double) noexcept;
 _NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_hypot3f(float, float, float) noexcept;
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 _EXPORT_STD _NODISCARD inline double assoc_laguerre(

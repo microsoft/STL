@@ -81,7 +81,7 @@ _CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towupper(wchar_t, const _Ctypevec
 
 _END_EXTERN_C_UNLESS_PURE
 
-_EXTERN_C
+extern "C" {
 // These _should_ be explicitly `noexcept` but cannot be made so here because
 // the primary declarations in the C runtime headers are not.
 
@@ -102,7 +102,7 @@ _ACRTIMP void* __cdecl _W_Gettnames();
 
 _Success_(return > 0) _ACRTIMP size_t __cdecl _Wcsftime(
     _Out_writes_z_(_Maxsize) wchar_t*, _In_ size_t _Maxsize, _In_z_ const wchar_t*, _In_ const tm*, _In_opt_ void*);
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 extern "C++" class _CRTIMP2_PURE_IMPORT _Timevec { // smart pointer to information used by _Strftime

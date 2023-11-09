@@ -711,9 +711,9 @@ _EXPORT_STD _NODISCARD inline const error_category& system_category() noexcept {
 _STD_END
 
 #if _HAS_CXX17
-_EXTERN_C
+extern "C" {
 enum class __std_win_error : unsigned long;
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 // We would really love to use the proper way of building error_code by specializing
