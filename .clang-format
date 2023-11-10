@@ -265,6 +265,8 @@ SpaceBeforeParensOptions:
 # NOTE: _STD_BEGIN, _STD_END, etc. aren't macros for complete statements, but telling
 # clang-format that they are produces the behavior that we want (with no block indentation).
 StatementMacros:
+  - _EXTERN_CXX_WORKAROUND
+  - _END_EXTERN_CXX_WORKAROUND
   - _STD_BEGIN
   - _STD_END
   - _STDEXT_BEGIN

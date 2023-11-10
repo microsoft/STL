@@ -78,7 +78,9 @@ enum class __std_fs_file_attr : unsigned long {
 };
 } // extern "C"
 
+_EXTERN_CXX_WORKAROUND
 _BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_file_attr)
+_END_EXTERN_CXX_WORKAROUND
 
 extern "C" {
 enum class __std_fs_reparse_tag : unsigned long {
@@ -123,7 +125,9 @@ enum class __std_fs_stats_flags : unsigned long {
 };
 } // extern "C"
 
+_EXTERN_CXX_WORKAROUND
 _BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_stats_flags)
+_END_EXTERN_CXX_WORKAROUND
 
 extern "C" {
 struct __std_fs_stats {
@@ -199,7 +203,9 @@ enum class __std_access_rights : unsigned long {
 };
 } // extern "C"
 
+_EXTERN_CXX_WORKAROUND
 _BITMASK_OPS(_EMPTY_ARGUMENT, __std_access_rights)
+_END_EXTERN_CXX_WORKAROUND
 
 extern "C" {
 enum class __std_fs_file_flags : unsigned long {
@@ -209,7 +215,9 @@ enum class __std_fs_file_flags : unsigned long {
 };
 } // extern "C"
 
+_EXTERN_CXX_WORKAROUND
 _BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_file_flags)
+_END_EXTERN_CXX_WORKAROUND
 
 extern "C" {
 enum class __std_fs_file_handle : intptr_t { _Invalid = -1 };
@@ -236,7 +244,9 @@ enum class __std_fs_copy_options {
 };
 } // extern "C"
 
+_EXTERN_CXX_WORKAROUND
 _BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_copy_options)
+_END_EXTERN_CXX_WORKAROUND
 
 extern "C" {
 _NODISCARD __std_ulong_and_error __stdcall __std_fs_get_full_path_name(_In_z_ const wchar_t* _Source,

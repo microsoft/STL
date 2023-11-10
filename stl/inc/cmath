@@ -33,6 +33,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+_EXTERN_CXX_WORKAROUND
 _NODISCARD _Check_return_ inline float acos(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD acosf(_Xx);
 }
@@ -552,6 +553,7 @@ _NODISCARD _Check_return_ inline long double trunc(_In_ long double _Xx) noexcep
     return _CSTD truncl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
+_END_EXTERN_CXX_WORKAROUND
 
 _STD_BEGIN
 template <class _Ty1, class _Ty2>
@@ -560,6 +562,7 @@ using _Common_float_type_t = conditional_t<is_same_v<_Ty1, long double> || is_sa
         double>>; // find type for two-argument math function
 _STD_END
 
+_EXTERN_CXX_WORKAROUND
 template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
 double frexp(_Ty _Value, _Out_ int* const _Exp) noexcept /* strengthened */ {
     return _CSTD frexp(static_cast<double>(_Value), _Exp);
@@ -709,6 +712,7 @@ _GENERIC_MATH2(fmin)
 #undef _GENERIC_MATH2
 #undef _GENERIC_MATH2I
 #undef _HAS_CMATH_INTRINSICS
+_END_EXTERN_CXX_WORKAROUND
 
 _STD_BEGIN
 _EXPORT_STD using _CSTD abs;
