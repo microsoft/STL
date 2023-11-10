@@ -578,6 +578,10 @@ _EXPORT_STD template <class _Ty, class _CharT = char>
 struct formatter;
 
 inline void _You_see_this_error_because_arg_id_is_out_of_range() noexcept {}
+inline void _Invalid_arg_type_for_dynamic_width_or_precision() noexcept {}
+
+template <class _CharT>
+class _Compile_time_parse_context;
 
 _EXPORT_STD template <class _CharT>
 class basic_format_parse_context {
@@ -645,6 +649,23 @@ public:
         _Next_arg_id = -1;
     }
 
+    constexpr void _Check_dynamic_spec_integral(const size_t _Idx) noexcept {
+        if (_STD is_constant_evaluated()) {
+            if (_Idx >= _Num_args) {
+                _You_see_this_error_because_arg_id_is_out_of_range();
+            }
+
+            // This downcast might seem UB-prone, but since it only happens at compile-time,
+            // the compiler will produce an error if it is invalid.
+            auto& _Ctx = static_cast<_Compile_time_parse_context<_CharT>&>(*this);
+
+            _STL_INTERNAL_CHECK(_Ctx._Arg_type[_Idx] != _Basic_format_arg_type::_None);
+            if (_Ctx._Arg_type[_Idx] > _Basic_format_arg_type::_ULong_long_type) {
+                _Invalid_arg_type_for_dynamic_width_or_precision();
+            }
+        }
+    }
+
 private:
     basic_string_view<_CharT> _Format_string;
     size_t _Num_args;
@@ -656,6 +677,19 @@ private:
 
 _EXPORT_STD using format_parse_context  = basic_format_parse_context<char>;
 _EXPORT_STD using wformat_parse_context = basic_format_parse_context<wchar_t>;
+
+template <class _CharT>
+class _Compile_time_parse_context : public basic_format_parse_context<_CharT> {
+    friend basic_format_parse_context<_CharT>;
+
+public:
+    constexpr _Compile_time_parse_context(const basic_string_view<_CharT> _Fmt, const size_t _Num_args,
+        const _Basic_format_arg_type* const _Arg_type_) noexcept
+        : basic_format_parse_context<_CharT>(_Fmt, _Num_args), _Arg_type(_Arg_type_) {}
+
+private:
+    const _Basic_format_arg_type* const _Arg_type;
+};
 
 template <class _Ty, class _Context, class _Formatter = _Context::template formatter_type<remove_const_t<_Ty>>>
 concept _Formattable_with = semiregular<_Formatter>
@@ -877,6 +911,41 @@ auto _Format_arg_traits<_Context>::_Type_eraser() {
     } else {
         int _Dummy{};
         return typename basic_format_arg<_Context>::handle{_Dummy};
+    }
+}
+
+template <class _Context, class _Ty>
+_NODISCARD consteval _Basic_format_arg_type _Get_format_arg_type() noexcept {
+    using _CharType    = _Context::char_type;
+    using _Erased_type = _Format_arg_traits<_Context>::template _Storage_type<_Ty>;
+
+    if constexpr (is_same_v<_Erased_type, bool>) {
+        return _Basic_format_arg_type::_Bool_type;
+    } else if constexpr (is_same_v<_Erased_type, _CharType>) {
+        return _Basic_format_arg_type::_Char_type;
+    } else if constexpr (is_same_v<_Erased_type, int>) {
+        return _Basic_format_arg_type::_Int_type;
+    } else if constexpr (is_same_v<_Erased_type, unsigned int>) {
+        return _Basic_format_arg_type::_UInt_type;
+    } else if constexpr (is_same_v<_Erased_type, long long>) {
+        return _Basic_format_arg_type::_Long_long_type;
+    } else if constexpr (is_same_v<_Erased_type, unsigned long long>) {
+        return _Basic_format_arg_type::_ULong_long_type;
+    } else if constexpr (is_same_v<_Erased_type, float>) {
+        return _Basic_format_arg_type::_Float_type;
+    } else if constexpr (is_same_v<_Erased_type, double>) {
+        return _Basic_format_arg_type::_Double_type;
+    } else if constexpr (is_same_v<_Erased_type, long double>) {
+        return _Basic_format_arg_type::_Long_double_type;
+    } else if constexpr (is_same_v<_Erased_type, const void*>) {
+        return _Basic_format_arg_type::_Pointer_type;
+    } else if constexpr (is_same_v<_Erased_type, const _CharType*>) {
+        return _Basic_format_arg_type::_CString_type;
+    } else if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
+        return _Basic_format_arg_type::_String_type;
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Erased_type, typename basic_format_arg<_Context>::handle>);
+        return _Basic_format_arg_type::_Custom_type;
     }
 }
 
@@ -1716,20 +1785,26 @@ public:
 
     constexpr void _On_dynamic_width(const size_t _Arg_id) {
         _Parse_ctx.check_arg_id(_Arg_id);
+        _Parse_ctx._Check_dynamic_spec_integral(_Arg_id);
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
     constexpr void _On_dynamic_width(_Auto_id_tag) {
-        _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+        const size_t _Arg_id = _Parse_ctx.next_arg_id();
+        _Parse_ctx._Check_dynamic_spec_integral(_Arg_id);
+        _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
     constexpr void _On_dynamic_precision(const size_t _Arg_id) {
         _Parse_ctx.check_arg_id(_Arg_id);
+        _Parse_ctx._Check_dynamic_spec_integral(_Arg_id);
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
     constexpr void _On_dynamic_precision(_Auto_id_tag) {
-        _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+        const size_t _Arg_id = _Parse_ctx.next_arg_id();
+        _Parse_ctx._Check_dynamic_spec_integral(_Arg_id);
+        _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
 private:
@@ -2015,37 +2090,8 @@ private:
 
     template <class _Ty>
     void _Store(const size_t _Arg_index, _Ty&& _Val) noexcept {
-        using _Erased_type = _Traits::template _Storage_type<_Ty>;
-
-        _Basic_format_arg_type _Arg_type;
-        if constexpr (is_same_v<_Erased_type, bool>) {
-            _Arg_type = _Basic_format_arg_type::_Bool_type;
-        } else if constexpr (is_same_v<_Erased_type, _CharType>) {
-            _Arg_type = _Basic_format_arg_type::_Char_type;
-        } else if constexpr (is_same_v<_Erased_type, int>) {
-            _Arg_type = _Basic_format_arg_type::_Int_type;
-        } else if constexpr (is_same_v<_Erased_type, unsigned int>) {
-            _Arg_type = _Basic_format_arg_type::_UInt_type;
-        } else if constexpr (is_same_v<_Erased_type, long long>) {
-            _Arg_type = _Basic_format_arg_type::_Long_long_type;
-        } else if constexpr (is_same_v<_Erased_type, unsigned long long>) {
-            _Arg_type = _Basic_format_arg_type::_ULong_long_type;
-        } else if constexpr (is_same_v<_Erased_type, float>) {
-            _Arg_type = _Basic_format_arg_type::_Float_type;
-        } else if constexpr (is_same_v<_Erased_type, double>) {
-            _Arg_type = _Basic_format_arg_type::_Double_type;
-        } else if constexpr (is_same_v<_Erased_type, long double>) {
-            _Arg_type = _Basic_format_arg_type::_Long_double_type;
-        } else if constexpr (is_same_v<_Erased_type, const void*>) {
-            _Arg_type = _Basic_format_arg_type::_Pointer_type;
-        } else if constexpr (is_same_v<_Erased_type, const _CharType*>) {
-            _Arg_type = _Basic_format_arg_type::_CString_type;
-        } else if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
-            _Arg_type = _Basic_format_arg_type::_String_type;
-        } else {
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Erased_type, typename basic_format_arg<_Context>::handle>);
-            _Arg_type = _Basic_format_arg_type::_Custom_type;
-        }
+        constexpr _Basic_format_arg_type _Arg_type = _STD _Get_format_arg_type<_Context, _Ty>();
+        using _Erased_type                         = _Traits::template _Storage_type<_Ty>;
 
 #if !_HAS_CXX23
         // Workaround towards N4950 [format.arg]/6.8 in C++20
@@ -3573,11 +3619,12 @@ struct _Format_checker {
     using _ParseFunc    = _ParseContext::iterator (*)(_ParseContext&);
 
     static constexpr size_t _Num_args = sizeof...(_Args);
-    _ParseContext _Parse_context;
+    _Compile_time_parse_context<_CharT> _Parse_context;
     _ParseFunc _Parse_funcs[_Num_args > 0 ? _Num_args : 1];
 
-    consteval explicit _Format_checker(basic_string_view<_CharT> _Fmt) noexcept
-        : _Parse_context(_Fmt, _Num_args), _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _ParseContext>...} {}
+    consteval explicit _Format_checker(basic_string_view<_CharT> _Fmt, const _Basic_format_arg_type* _Arg_type) noexcept
+        : _Parse_context(_Fmt, _Num_args, _Arg_type),
+          _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _ParseContext>...} {}
     constexpr void _On_text(const _CharT*, const _CharT*) const noexcept {}
     constexpr void _On_replacement_field(const size_t _Id, const _CharT*) const {
         _ParseContext _Parse_ctx({});
@@ -3802,7 +3849,12 @@ public:
         requires convertible_to<const _Ty&, basic_string_view<_CharT>>
     consteval basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
         if (_Is_execution_charset_self_synchronizing()) {
-            _Parse_format_string(_Str, _Format_checker<_CharT, remove_cvref_t<_Args>...>{_Str});
+            using _Context             = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
+            constexpr size_t _Num_args = sizeof...(_Args);
+            constexpr _Basic_format_arg_type _Arg_types[_Num_args > 0 ? _Num_args : 1] = {
+                _STD _Get_format_arg_type<_Context, _Args>()...};
+
+            _Parse_format_string(_Str, _Format_checker<_CharT, remove_cvref_t<_Args>...>{_Str, _Arg_types});
         }
     }
 
@@ -4129,11 +4181,14 @@ public:
 
     constexpr void _On_dynamic_width(const size_t _Arg_id) {
         _Parse_ctx.check_arg_id(_Arg_id);
+        _Parse_ctx._Check_dynamic_spec_integral(_Arg_id);
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
     constexpr void _On_dynamic_width(_Auto_id_tag) {
-        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+        const size_t _Arg_id = _Parse_ctx.next_arg_id();
+        _Parse_ctx._Check_dynamic_spec_integral(_Arg_id);
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
 private:
