@@ -1000,7 +1000,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     }
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
-        const auto _Mem = _Atomic_address_as<int>(_Storage);
+        const auto _Mem = _STD _Atomic_address_as<int>(_Storage);
         int _As_bytes;
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
         _ATOMIC_LOAD_ARM64(_As_bytes, 32, _Mem, static_cast<unsigned int>(_Order))
@@ -1021,16 +1021,17 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
     bool compare_exchange_strong(_TVal& _Expected, const _TVal _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
-        long _Expected_bytes = _Atomic_reinterpret_as<long>(_Expected); // read before atomic operation
+        long _Expected_bytes = _STD _Atomic_reinterpret_as<long>(_Expected); // read before atomic operation
         long _Prev_bytes;
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_TVal>) {
             _Storage_for<_TVal> _Mask{_Form_mask};
-            const long _Mask_val = _Atomic_reinterpret_as<long>(_Mask);
+            const long _Mask_val = _STD _Atomic_reinterpret_as<long>(_Mask);
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange,
-                    _Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
+                    _STD _Atomic_address_as<long>(_Storage), _STD _Atomic_reinterpret_as<long>(_Desired),
+                    _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
@@ -1044,7 +1045,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange,
-            _Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
+            _STD _Atomic_address_as<long>(_Storage), _STD _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
@@ -1111,7 +1112,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     }
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
-        const auto _Mem = _Atomic_address_as<long long>(_Storage);
+        const auto _Mem = _STD _Atomic_address_as<long long>(_Storage);
         long long _As_bytes;
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
         _ATOMIC_LOAD_ARM64(_As_bytes, 64, _Mem, static_cast<unsigned int>(_Order))
@@ -1149,17 +1150,17 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
     bool compare_exchange_strong(_TVal& _Expected, const _TVal _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
-        long long _Expected_bytes = _Atomic_reinterpret_as<long long>(_Expected); // read before atomic operation
+        long long _Expected_bytes = _STD _Atomic_reinterpret_as<long long>(_Expected); // read before atomic operation
         long long _Prev_bytes;
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_TVal>) {
             _Storage_for<_TVal> _Mask{_Form_mask};
-            const long long _Mask_val = _Atomic_reinterpret_as<long long>(_Mask);
+            const long long _Mask_val = _STD _Atomic_reinterpret_as<long long>(_Mask);
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange64,
-                    _Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Desired),
+                    _STD _Atomic_address_as<long long>(_Storage), _STD _Atomic_reinterpret_as<long long>(_Desired),
                     _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
@@ -1174,7 +1175,8 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange64,
-            _Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Desired), _Expected_bytes);
+            _STD _Atomic_address_as<long long>(_Storage), _STD _Atomic_reinterpret_as<long long>(_Desired),
+            _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
