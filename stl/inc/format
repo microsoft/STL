@@ -651,10 +651,6 @@ public:
 
     constexpr void _Check_dynamic_spec_integral(const size_t _Idx) noexcept {
         if (_STD is_constant_evaluated()) {
-            if (_Idx >= _Num_args) {
-                _You_see_this_error_because_arg_id_is_out_of_range();
-            }
-
             // This downcast might seem UB-prone, but since it only happens at compile-time,
             // the compiler will produce an error if it is invalid.
             auto& _Ctx = static_cast<_Compile_time_parse_context<_CharT>&>(*this);
