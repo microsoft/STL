@@ -319,6 +319,7 @@ void test_allocator_extended_constructors() {
 
         fms s{3, 7, 1, 85, 222, 1};
         fms s_expected{1, 1, 3, 7, 85, 222};
+        vec v_raw{3, 7, 1, 85, 222, 1};
         vec v_sorted_eq{1, 1, 3, 7, 85, 222};
 
         TEST_ASSERT(fms{comp, ator} == fms{});
@@ -328,15 +329,15 @@ void test_allocator_extended_constructors() {
         TEST_ASSERT(fms{std::move(s), ator} == s_expected);
         TEST_ASSERT(fms{fms{s_expected}, ator} == s_expected);
 
-        TEST_ASSERT(fms{v_sorted_eq, ator} == s_expected);
+        TEST_ASSERT(fms{v_raw, ator} == s_expected);
         TEST_ASSERT(fms{{3, 7, 1, 85, 222, 1}, ator} == s_expected);
-        TEST_ASSERT(fms{v_sorted_eq.begin(), v_sorted_eq.end(), ator} == s_expected);
-        TEST_ASSERT(fms{from_range, v_sorted_eq, ator} == s_expected);
+        TEST_ASSERT(fms{v_raw.begin(), v_raw.end(), ator} == s_expected);
+        TEST_ASSERT(fms{from_range, v_raw, ator} == s_expected);
 
-        TEST_ASSERT(fms{v_sorted_eq, comp, ator} == s_expected);
+        TEST_ASSERT(fms{v_raw, comp, ator} == s_expected);
         TEST_ASSERT(fms{{3, 7, 1, 85, 222, 1}, comp, ator} == s_expected);
-        TEST_ASSERT(fms{v_sorted_eq.begin(), v_sorted_eq.end(), comp, ator} == s_expected);
-        TEST_ASSERT(fms{from_range, v_sorted_eq, comp, ator} == s_expected);
+        TEST_ASSERT(fms{v_raw.begin(), v_raw.end(), comp, ator} == s_expected);
+        TEST_ASSERT(fms{from_range, v_raw, comp, ator} == s_expected);
 
         TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq, ator} == s_expected);
         TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq, comp, ator} == s_expected);
