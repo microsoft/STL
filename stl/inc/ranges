@@ -10387,7 +10387,7 @@ namespace ranges {
             }
             _RANGES copy(_Range, _Container_inserter<range_reference_t<_Rng>>(_Cont));
             return _Cont;
-        } else if constexpr (input_range<range_reference_t<_Rng>>) {
+        } else if constexpr (!_Ref_converts<_Rng, _Container> && input_range<range_reference_t<_Rng>>) {
             const auto _Xform = [](auto&& _Elem) {
                 return _RANGES to<range_value_t<_Container>>(_STD forward<decltype(_Elem)>(_Elem));
             };
