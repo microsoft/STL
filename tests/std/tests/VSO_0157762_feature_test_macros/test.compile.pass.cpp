@@ -674,7 +674,7 @@ STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-STATIC_ASSERT(__cpp_lib_ranges_as_const == 202207L);
+STATIC_ASSERT(__cpp_lib_ranges_as_const == 202311L);
 #elif defined(__cpp_lib_ranges_as_const)
 #error __cpp_lib_ranges_as_const is defined
 #endif

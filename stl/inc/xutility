@@ -2155,6 +2155,19 @@ public:
         return _Current == _Se;
     }
 
+    template <_Not_a_const_iterator _Other>
+        requires _Constant_iterator<_Other> && convertible_to<const _Iter&, _Other>
+    _NODISCARD constexpr operator _Other() const& noexcept(
+        is_nothrow_convertible_v<const _Iter&, _Other>) /* strengthened */ {
+        return _Current;
+    }
+
+    template <_Not_a_const_iterator _Other>
+        requires _Constant_iterator<_Other> && convertible_to<_Iter, _Other>
+    _NODISCARD constexpr operator _Other() && noexcept(is_nothrow_convertible_v<_Iter, _Other>) /* strengthened */ {
+        return _STD move(_Current);
+    }
+
     _NODISCARD constexpr bool operator<(const basic_const_iterator& _Right) const
         noexcept(noexcept(_Fake_copy_init<bool>(_Current < _Right._Current))) // strengthened
         requires random_access_iterator<_Iter>

@@ -383,6 +383,7 @@
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
+// P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -1831,7 +1832,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                  202106L
 #define __cpp_lib_print                    202207L
-#define __cpp_lib_ranges_as_const          202207L
+#define __cpp_lib_ranges_as_const          202311L
 #define __cpp_lib_ranges_as_rvalue         202207L
 #define __cpp_lib_ranges_cartesian_product 202207L
 #define __cpp_lib_ranges_chunk             202202L
