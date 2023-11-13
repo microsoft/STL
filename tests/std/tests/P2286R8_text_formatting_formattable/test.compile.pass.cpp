@@ -297,12 +297,12 @@ struct abstract {
 template <formatter_supporting_character_type CharT>
 struct formatter<abstract, CharT> {
     template <class ParseContext>
-    constexpr typename ParseContext::iterator parse(ParseContext& parse_ctx) {
+    constexpr ParseContext::iterator parse(ParseContext& parse_ctx) {
         return parse_ctx.begin();
     }
 
     template <class FormatContext>
-    typename FormatContext::iterator format(const abstract&, FormatContext& ctx) const {
+    FormatContext::iterator format(const abstract&, FormatContext& ctx) const {
         return ctx.out();
     }
 };

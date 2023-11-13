@@ -773,18 +773,18 @@ constexpr bool is_forward_list<std::forward_list<T, A>> = true;
 
 template <class T, class IterConcept>
 constexpr bool test_std_container() {
-    using I  = typename T::iterator;
+    using I  = T::iterator;
     using D  = std::iter_difference_t<I>;
-    using CI = typename T::const_iterator;
+    using CI = T::const_iterator;
     STATIC_ASSERT(std::same_as<std::iter_difference_t<CI>, D>);
 
-    using Category = typename std::iterator_traits<I>::iterator_category;
+    using Category = std::iterator_traits<I>::iterator_category;
     STATIC_ASSERT(std::derived_from<IterConcept, Category>);
 
     using RI  = std::conditional_t<std::bidirectional_iterator<I>, std::reverse_iterator<I>, invalid_type>;
     using RCI = std::conditional_t<std::bidirectional_iterator<I>, std::reverse_iterator<CI>, invalid_type>;
 
-    using V = typename T::value_type;
+    using V = T::value_type;
 
     STATIC_ASSERT(test_begin<T>());
     STATIC_ASSERT(test_end<T>());

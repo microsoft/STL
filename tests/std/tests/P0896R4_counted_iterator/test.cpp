@@ -48,7 +48,7 @@ concept CountedCompare = Counted<I1, I2>
 struct instantiator {
     template <input_or_output_iterator Iter>
     static constexpr void call() {
-        using ConstIter = typename Iter::Consterator;
+        using ConstIter = Iter::Consterator;
 
         int input[5] = {1, 2, 3, 4, 5};
         // [counted.iter.const]

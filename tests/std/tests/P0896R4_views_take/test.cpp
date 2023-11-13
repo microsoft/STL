@@ -82,7 +82,7 @@ struct mapped<ranges::subrange<I, S, ranges::subrange_kind::sized>> {
 };
 
 template <ranges::viewable_range Rng>
-using mapped_t = typename mapped<remove_cvref_t<Rng>>::template apply<Rng>;
+using mapped_t = mapped<remove_cvref_t<Rng>>::template apply<Rng>;
 
 template <ranges::viewable_range Rng>
 using pipeline_t = mapped_t<mapped_t<mapped_t<mapped_t<Rng>>>>;

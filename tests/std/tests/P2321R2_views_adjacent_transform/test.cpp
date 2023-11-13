@@ -32,7 +32,7 @@ struct repeated_tuple_impl<T, index_sequence<Indices...>> {
 };
 
 template <class T, size_t N>
-using repeated_tuple = typename repeated_tuple_impl<T, make_index_sequence<N>>::type;
+using repeated_tuple = repeated_tuple_impl<T, make_index_sequence<N>>::type;
 
 STATIC_ASSERT(same_as<repeated_tuple<int, 0>, tuple<>>);
 STATIC_ASSERT(same_as<repeated_tuple<int, 3>, tuple<int, int, int>>);
@@ -67,7 +67,7 @@ struct invoke_result_with_repeated_type_impl<Fn, Ty, 0, Repeated...> {
 };
 
 template <class Fn, class Ty, size_t Nx>
-using invoke_result_with_repeated_type = typename invoke_result_with_repeated_type_impl<Fn, Ty, Nx>::type;
+using invoke_result_with_repeated_type = invoke_result_with_repeated_type_impl<Fn, Ty, Nx>::type;
 
 static_assert(same_as<invoke_result_with_repeated_type<plus<int>, int, 2>, int>);
 static_assert(same_as<invoke_result_with_repeated_type<equal_to<int>, int, 2>, bool>);
@@ -389,11 +389,11 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
         STATIC_ASSERT(forward_iterator<I>);
 
         // Check iterator_category
-        using IterCat = typename I::iterator_category;
+        using IterCat = I::iterator_category;
         if constexpr (!is_reference_v<invoke_result_with_repeated_type<Fn, range_reference_t<V>, N>>) {
             STATIC_ASSERT(same_as<IterCat, input_iterator_tag>);
         } else {
-            using BaseCat = typename iterator_traits<BI>::iterator_category;
+            using BaseCat = iterator_traits<BI>::iterator_category;
             if constexpr (derived_from<BaseCat, random_access_iterator_tag>) {
                 STATIC_ASSERT(same_as<IterCat, random_access_iterator_tag>);
             } else if constexpr (derived_from<BaseCat, bidirectional_iterator_tag>) {
@@ -406,7 +406,7 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
         }
 
         // Check iterator_concept
-        using IterConcept = typename I::iterator_concept;
+        using IterConcept = I::iterator_concept;
         STATIC_ASSERT(same_as<IterConcept, typename iterator_t<adjacent_view<V, N>>::iterator_concept>);
 
         // Check value_type
@@ -567,11 +567,11 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
         STATIC_ASSERT(forward_iterator<CI>);
 
         // Check iterator_category
-        using IterCat = typename CI::iterator_category;
+        using IterCat = CI::iterator_category;
         if constexpr (!is_reference_v<invoke_result_with_repeated_type<Fn, range_reference_t<const V>, N>>) {
             STATIC_ASSERT(same_as<IterCat, input_iterator_tag>);
         } else {
-            using BaseCat = typename iterator_traits<CBI>::iterator_category;
+            using BaseCat = iterator_traits<CBI>::iterator_category;
             if constexpr (derived_from<BaseCat, random_access_iterator_tag>) {
                 STATIC_ASSERT(same_as<IterCat, random_access_iterator_tag>);
             } else if constexpr (derived_from<BaseCat, bidirectional_iterator_tag>) {
@@ -584,7 +584,7 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
         }
 
         // Check iterator_concept
-        using IterConcept = typename CI::iterator_concept;
+        using IterConcept = CI::iterator_concept;
         STATIC_ASSERT(same_as<IterConcept, typename iterator_t<const adjacent_view<V, N>>::iterator_concept>);
 
         // Check value_type

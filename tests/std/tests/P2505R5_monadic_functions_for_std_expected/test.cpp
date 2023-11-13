@@ -49,7 +49,7 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
     assert(engaged.has_value());
     assert(!unengaged.has_value());
     static_assert(is_same_v<typename remove_cvref_t<Expected>::error_type, int>);
-    using Val = typename remove_cvref_t<Expected>::value_type;
+    using Val = remove_cvref_t<Expected>::value_type;
 
     const auto succeed = [](auto...) { return expected<int, int>{33}; };
     const auto fail    = [](auto...) { return expected<int, int>{unexpect, 44}; };
@@ -357,11 +357,11 @@ constexpr bool is_specialization_of<Tmpl<Args...>, Tmpl> = true;
 
 template <class T>
     requires is_specialization_of<remove_cvref_t<T>, expected>
-using expected_value_t = typename remove_cvref_t<T>::value_type;
+using expected_value_t = remove_cvref_t<T>::value_type;
 
 template <class T>
     requires is_specialization_of<remove_cvref_t<T>, expected>
-using expected_error_t = typename remove_cvref_t<T>::error_type;
+using expected_error_t = remove_cvref_t<T>::error_type;
 
 template <class R>
 struct DefaultTransformer {
