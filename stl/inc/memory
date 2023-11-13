@@ -4244,6 +4244,10 @@ public:
     ~inout_ptr_t() {
         if constexpr (!is_pointer_v<_SmartPtr>) {
             _Smart_ptr.release();
+
+            if (!_Get_ptr()) {
+                return;
+            }
         }
 
         _STD apply(
@@ -4251,17 +4255,11 @@ public:
                 using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
                 if constexpr (is_pointer_v<_SmartPtr>) {
                     _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
+                    _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else {
-                    if (!_Get_ptr()) {
-                        return;
-                    }
-
-                    if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
-                        _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
-                    } else {
-                        static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4950 [inout.ptr.t]/11.4)");
-                        _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
-                    }
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4950 [inout.ptr.t]/11.4)");
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 }
             },
             _STD move(_Get_args()));
