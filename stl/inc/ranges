@@ -5721,13 +5721,11 @@ namespace ranges {
     template <class _Tuple, size_t _Index>
     concept _Returnable_element = is_reference_v<_Tuple> || move_constructible<tuple_element_t<_Index, _Tuple>>;
 
-    // clang-format off
     _EXPORT_STD template <input_range _Vw, size_t _Index>
         requires view<_Vw> && _Has_tuple_element<range_value_t<_Vw>, _Index>
-            && _Has_tuple_element<remove_reference_t<range_reference_t<_Vw>>, _Index>
-            && _Returnable_element<range_reference_t<_Vw>, _Index>
+              && _Has_tuple_element<remove_reference_t<range_reference_t<_Vw>>, _Index>
+              && _Returnable_element<range_reference_t<_Vw>, _Index>
     class elements_view : public view_interface<elements_view<_Vw, _Index>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
 
@@ -10307,15 +10305,13 @@ namespace ranges {
     } // namespace views
 
 #ifdef __cpp_lib_ranges_to_container
-    // clang-format off
     template <class _Range, class _Container>
     concept _Sized_and_reservable = sized_range<_Range> && sized_range<_Container>
-        && requires(_Container& _Cont, const range_size_t<_Container> _Count) {
-            _Cont.reserve(_Count);
-            { _Cont.capacity() } -> same_as<range_size_t<_Container>>;
-            { _Cont.max_size() } -> same_as<range_size_t<_Container>>;
-        };
-    // clang-format on
+                                 && requires(_Container& _Cont, const range_size_t<_Container> _Count) {
+                                        _Cont.reserve(_Count);
+                                        { _Cont.capacity() } -> same_as<range_size_t<_Container>>;
+                                        { _Cont.max_size() } -> same_as<range_size_t<_Container>>;
+                                    };
 
     template <class _Rng, class _Container>
     concept _Ref_converts =
