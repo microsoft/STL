@@ -33,6 +33,19 @@ void test_raw_ptr() {
 
         assert(*int_ptr == 15);
     }
+    // LWG-3897 inout_ptr will not update raw pointer to null
+    {
+        const auto delete_nullify = [](int** ptr) {
+            delete *ptr;
+            *ptr = nullptr;
+        };
+
+        int* ptr_allocated = new int{};
+
+        delete_nullify(inout_ptr(ptr_allocated));
+
+        assert(ptr_allocated == nullptr);
+    }
 }
 
 void test_shared_ptr() {
