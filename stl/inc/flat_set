@@ -111,13 +111,15 @@ public:
         : _Base_flat_set(container_type(_First, _Last), _Comp) {}
     template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
-        : _Base_flat_set(_STD make_obj_using_allocator<container_type>(_Al), _Comp) {
-        insert(_First, _Last);
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {
+        _Mycont.assign(_First, _Last);
+        _Make_invariants_fulfilled();
     }
     template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
     _Base_flat_set(_Iter _First, _Iter _Last, const _Alloc& _Al)
-        : _Base_flat_set(_STD make_obj_using_allocator<container_type>(_Al)) {
-        insert(_First, _Last);
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {
+        _Mycont.assign(_First, _Last);
+        _Make_invariants_fulfilled();
     }
 
     template <_Container_compatible_range<_Kty> _Rng>
@@ -125,16 +127,18 @@ public:
         : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range))) {}
     template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
     _Base_flat_set(from_range_t, _Rng&& _Range, const _Alloc& _Al)
-        : _Base_flat_set(_STD make_obj_using_allocator<container_type>(_Al)) {
-        insert_range(_STD forward<_Rng>(_Range));
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {
+        _Mycont.assign_range(_STD forward<_Rng>(_Range));
+        _Make_invariants_fulfilled();
     }
     template <_Container_compatible_range<_Kty> _Rng>
     _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp)
         : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range)), _Comp) {}
     template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
     _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
-        : _Base_flat_set(_STD make_obj_using_allocator<container_type>(_Al), _Comp) {
-        insert_range(_STD forward<_Rng>(_Range));
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {
+        _Mycont.assign_range(_STD forward<_Rng>(_Range));
+        _Make_invariants_fulfilled();
     }
 
     template <input_iterator _Iter>
