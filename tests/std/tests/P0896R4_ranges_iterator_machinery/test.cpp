@@ -420,11 +420,9 @@ struct sentinel_archetype : semiregular_archetype<I> {
         requires (I != 5);
     COPYABLE_OPS(sentinel);
 
-    // clang-format off
     template <std::size_t J>
         requires (I != 6)
     bool operator==(iterator_archetype<J> const&) const;
-    // clang-format on
 };
 
 inline constexpr std::size_t sentinel_archetype_max = 7;
@@ -1770,7 +1768,6 @@ namespace unreachable_sentinel_test {
     STATIC_ASSERT(std::is_nothrow_copy_assignable_v<unreachable_sentinel_t>);
     STATIC_ASSERT(std::is_nothrow_move_assignable_v<unreachable_sentinel_t>);
 
-    // clang-format off
     template <class T>
     concept Comparable = requires(T const& t) {
         { t == unreachable_sentinel } -> std::same_as<bool>;
@@ -1778,7 +1775,6 @@ namespace unreachable_sentinel_test {
         { unreachable_sentinel == t } -> std::same_as<bool>;
         { unreachable_sentinel != t } -> std::same_as<bool>;
     };
-    // clang-format on
 
     STATIC_ASSERT(Comparable<int>);
 

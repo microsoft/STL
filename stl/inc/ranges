@@ -115,12 +115,10 @@ namespace ranges {
         template <class _Ty>
         _Ty* _Derived_from_range_adaptor_closure(_Base<_Ty>&); // not defined
 
-        // clang-format off
         template <class _Ty>
         concept _Range_adaptor_closure_object = !range<remove_cvref_t<_Ty>> && requires(remove_cvref_t<_Ty>& __t) {
             { _Pipe::_Derived_from_range_adaptor_closure(__t) } -> same_as<remove_cvref_t<_Ty>*>;
         };
-        // clang-format on
 
         template <class _ClosureLeft, class _ClosureRight>
         struct _Pipeline : _Base<_Pipeline<_ClosureLeft, _ClosureRight>> {
@@ -2871,12 +2869,10 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
                 : _Last(_STD move(_Last_)) {}
 
-            // clang-format off
             constexpr _Sentinel(_Sentinel<!_Const, _Wrapped> _That) noexcept(
                 is_nothrow_constructible_v<_Base_sentinel, _Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>>) // strengthened
                 requires _Const && convertible_to<_Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>, _Base_sentinel>
                 : _Last(_STD move(_That._Last)) {}
-            // clang-format on
 
             _NODISCARD constexpr _Base_sentinel base() const
                 noexcept(is_nothrow_copy_constructible_v<_Base_sentinel>) /* strengthened */ {
@@ -3168,12 +3164,10 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
                 : _Last(_STD move(_Last_)), _Pred(_Pred_) {}
 
-            // clang-format off
             constexpr _Sentinel(_Sentinel<!_Const, _Wrapped> _That) noexcept(
                 is_nothrow_constructible_v<_Base_sentinel, _Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>>) // strengthened
                 requires _Const && convertible_to<_Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>, _Base_sentinel>
                 : _Last(_STD move(_That._Last)), _Pred(_That._Pred) {}
-            // clang-format on
 
             _NODISCARD constexpr _Base_sentinel base() const
                 noexcept(is_nothrow_copy_constructible_v<_Base_sentinel>) /* strengthened */ {
@@ -5264,12 +5258,10 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_It>();
 
         public:
-            // clang-format off
             template <class _It>
                 requires (input_or_output_iterator<decay_t<_It>> && _Choice<_It>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_It&& _First, const iter_difference_t<decay_t<_It>> _Count) const
                 noexcept(_Choice<_It>._No_throw) {
-                // clang-format on
                 _STL_ASSERT(_Count >= 0, "The size passed to views::counted must be non-negative");
                 constexpr _St _Strat = _Choice<_It>._Strategy;
 

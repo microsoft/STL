@@ -676,13 +676,11 @@ namespace ranges {
 
 // iter_swap defined below since it depends on indirectly_movable_storable
 
-// clang-format off
 _EXPORT_STD template <class _Ty>
     requires _Dereferenceable<_Ty> && requires(_Ty& __t) {
         { _RANGES iter_move(__t) } -> _Can_reference;
     }
 using iter_rvalue_reference_t = decltype(_RANGES iter_move(_STD declval<_Ty&>()));
-// clang-format on
 
 template <class _It>
 concept _Indirectly_readable_impl =
@@ -1692,11 +1690,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator==(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() == _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() == _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() == _Right._Get_current();
@@ -1707,11 +1703,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator!=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() != _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() != _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() != _Right._Get_current();
@@ -1722,11 +1716,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator<(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() > _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() > _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() > _Right._Get_current();
@@ -1737,11 +1729,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator>(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() < _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() < _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() < _Right._Get_current();
@@ -1752,11 +1742,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator<=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() >= _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() >= _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() >= _Right._Get_current();
@@ -1767,11 +1755,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator>=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() <= _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() <= _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() <= _Right._Get_current();
@@ -3080,7 +3066,6 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
-            // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr bool operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
@@ -3096,7 +3081,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _Empty
 
@@ -3967,14 +3951,12 @@ class move_sentinel;
 template <class>
 struct _Move_iterator_category {};
 
-// clang-format off
 template <class _Iter>
     requires requires { typename _Iter_cat_t<_Iter>; }
 struct _Move_iterator_category<_Iter> {
     using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
         random_access_iterator_tag, _Iter_cat_t<_Iter>>;
 };
-// clang-format on
 #else // ^^^ Ranges / no Ranges vvv
 template <class _Iter>
 struct _Move_iterator_category {
@@ -4234,11 +4216,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator==(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left.base() == _Right.base()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left.base() == _Right.base() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left.base() == _Right.base();
@@ -4257,11 +4237,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator<(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left.base() < _Right.base()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left.base() < _Right.base() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left.base() < _Right.base();
@@ -4317,11 +4295,9 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter>
     operator+(typename move_iterator<_Iter>::difference_type _Off, const move_iterator<_Iter>& _Right) noexcept(
         noexcept(move_iterator<_Iter>(_Right.base() + _Off))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Right.base() + _Off } -> same_as<_Iter>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return move_iterator<_Iter>(_Right.base() + _Off);
@@ -5378,12 +5354,10 @@ namespace ranges {
     _EXPORT_STD template <class _In1, class _In2>
     using mismatch_result = in_in_result<_In1, _In2>;
 
-    // clang-format off
     template <input_iterator _It1, input_iterator _It2, class _Pr, class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
     _NODISCARD constexpr mismatch_result<_It1, _It2> _Mismatch_n(
         _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-        // clang-format on
         _STL_INTERNAL_CHECK(_Count >= 0);
         for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
             if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
@@ -5928,11 +5902,9 @@ namespace ranges {
 
     class _Find_fn {
     public:
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
-            // clang-format on
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _RANGES _Find_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
                 _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Val, _STD _Pass_fn(_Proj));

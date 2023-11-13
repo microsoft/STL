@@ -3362,14 +3362,12 @@ namespace test_relation {
     STATIC_ASSERT(test<Equivalent, B<0>>());
     STATIC_ASSERT(!test<Equivalent, B<1>>());
 
-    // clang-format off
     template <unsigned int I>
         requires (2 != I)
     bool operator==(A<I>, B<I>); // A<2> == B<2> rewrites to B<2> == A<2>
     template <unsigned int I>
         requires (3 != I)
     bool operator==(B<I>, A<I>); // B<3> == A<3> rewrites to A<3> == B<3>
-    // clang-format on
 
     STATIC_ASSERT(!test<Equivalent, A<0>, B<0>>());
     STATIC_ASSERT(!test<Equivalent, A<1>, B<1>>());
