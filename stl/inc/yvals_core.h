@@ -306,6 +306,7 @@
 // P2711R1 Making Multi-Param Constructors Of Views explicit
 // P2736R2 Referencing The Unicode Standard
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
+// P2909R4 Fix Formatting Of Code Units As Integers
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -1748,6 +1749,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_format              202207L
+#define __cpp_lib_format_uchar        202311L
 #define __cpp_lib_freestanding_ranges 202306L
 #endif // defined(__cpp_lib_concepts)
 

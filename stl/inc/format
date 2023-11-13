@@ -744,12 +744,15 @@ public:
     template <_Formattable_with<_Context> _Ty>
     static basic_format_arg _Make_from(_Ty& _Val) noexcept {
         using _Erased_type = _Format_arg_traits<_Context>::template _Storage_type<_Ty>;
+        if constexpr (is_same_v<remove_const_t<_Ty>, char> && is_same_v<_CharType, wchar_t>) {
+            return basic_format_arg(static_cast<_Erased_type>(static_cast<unsigned char>(_Val)));
+        }
 #if !_HAS_CXX23
-        if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
+        else if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
             return basic_format_arg(_Erased_type{_Val.data(), _Val.size()});
-        } else
+        }
 #endif // !_HAS_CXX23
-        {
+        else {
             return basic_format_arg(static_cast<_Erased_type>(_Val));
         }
     }
@@ -2047,13 +2050,17 @@ private:
             _Arg_type = _Basic_format_arg_type::_Custom_type;
         }
 
+        if constexpr (is_same_v<remove_const_t<remove_reference_t<_Ty>>, char> && is_same_v<_CharType, wchar_t>) {
+            _Store_impl<_Erased_type>(
+                _Arg_index, _Arg_type, static_cast<_Erased_type>(static_cast<unsigned char>(_Val)));
+        }
 #if !_HAS_CXX23
         // Workaround towards N4950 [format.arg]/6.8 in C++20
-        if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
+        else if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
             _Store_impl<_Erased_type>(_Arg_index, _Arg_type, _Erased_type{_Val.data(), _Val.size()});
-        } else
+        }
 #endif // !_HAS_CXX23
-        {
+        else {
             _Store_impl<_Erased_type>(_Arg_index, _Arg_type, static_cast<_Erased_type>(_Val));
         }
     }
@@ -2941,7 +2948,7 @@ _NODISCARD _OutputIt _Fmt_write(
         && _Specs._Type != '?'
 #endif // _HAS_CXX23
     ) {
-        return _Write_integral(_STD move(_Out), _Value, _Specs, _Locale);
+        return _Write_integral(_STD move(_Out), static_cast<make_unsigned_t<_CharT>>(_Value), _Specs, _Locale);
     }
 
     _STL_INTERNAL_CHECK(_Specs._Precision == -1);
