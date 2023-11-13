@@ -2410,12 +2410,12 @@ namespace test_boolean_testable {
 
     template <unsigned int Select> // values in [0, Archetype_max) select a requirement to violate
     struct Archetype {
-        // clang-format off
-        operator bool() const requires (Select != 0); // Archetype<0> is not implicitly convertible to bool
-        explicit operator bool() const requires (Select < 2); // Archetype<1> is not explicitly convertible
-                                                              // to bool (ambiguity)
-        void operator!() const requires (Select == 2); // !Archetype<2> does not model _Boolean_testable_impl
-        // clang-format on
+        operator bool() const
+            requires (Select != 0); // Archetype<0> is not implicitly convertible to bool
+        explicit operator bool() const
+            requires (Select < 2); // Archetype<1> is not explicitly convertible to bool (ambiguity)
+        void operator!() const
+            requires (Select == 2); // !Archetype<2> does not model _Boolean_testable_impl
     };
 
     STATIC_ASSERT(!_Boolean_testable<Archetype<0>>);
