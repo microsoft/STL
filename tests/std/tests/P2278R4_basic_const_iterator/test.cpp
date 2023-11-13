@@ -299,7 +299,7 @@ constexpr void instantiation_test() {
 }
 
 template <class T>
-struct tracking_input_iterator {
+class tracking_input_iterator {
 public:
     using value_type      = remove_const_t<T>;
     using difference_type = ptrdiff_t;
@@ -325,12 +325,12 @@ public:
     constexpr void operator++(int); // not defined
     T& operator*() const; // not defined
 
-    constexpr bool is_moved() const {
-        return moved;
-    }
-
     constexpr bool is_copied() const {
         return copied;
+    }
+
+    constexpr bool is_moved() const {
+        return moved;
     }
 
 private:
@@ -345,10 +345,10 @@ static_assert(_Constant_iterator<tracking_input_iterator<const int>>);
 // P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
 constexpr void test_p2836r1() {
     { // Code from P2836R1
-        std::vector<int> v;
-        auto t  = v | views::take_while([](int const x) { return x < 100; });
-        auto f  = [](std::vector<int>::const_iterator) {};
-        auto i2 = std::ranges::cbegin(t);
+        vector<int> v;
+        auto t  = v | views::take_while([](const int x) { return x < 100; });
+        auto f  = [](vector<int>::const_iterator) {};
+        auto i2 = ranges::cbegin(t);
         f(i2); // Error before P2836R1
     }
 
