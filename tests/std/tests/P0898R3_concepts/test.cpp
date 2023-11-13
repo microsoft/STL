@@ -184,9 +184,9 @@ template <class First, class Second = IncompleteClass>
 struct ConvertsFrom {
     ConvertsFrom() = default;
     constexpr ConvertsFrom(First) noexcept {}
-    // clang-format off
-    constexpr ConvertsFrom(Second) noexcept requires (!std::is_same_v<IncompleteClass, Second>) {}
-    // clang-format on
+    constexpr ConvertsFrom(Second) noexcept
+        requires (!std::is_same_v<IncompleteClass, Second>)
+    {}
 };
 
 template <int>
@@ -2112,56 +2112,58 @@ namespace test_swappable_with {
 
     namespace example {
         // The example from [concept.swappable] with changes per the proposed resolution of LWG-3175:
-        // clang-format off
         namespace ranges = std::ranges;
 
         template <class T, std::swappable_with<T> U>
         void value_swap(T&& t, U&& u) {
-          ranges::swap(std::forward<T>(t), std::forward<U>(u));
+            ranges::swap(std::forward<T>(t), std::forward<U>(u));
         }
 
         template <std::swappable T>
         void lv_swap(T& t1, T& t2) {
-          ranges::swap(t1, t2);
+            ranges::swap(t1, t2);
         }
 
         namespace N {
-          struct A { int m; };
-          struct Proxy {
-            A* a;
-            Proxy(A& a) : a{&a} {}
-            friend void swap(Proxy x, Proxy y) {
-              ranges::swap(*x.a, *y.a);
+            struct A {
+                int m;
+            };
+            struct Proxy {
+                A* a;
+                Proxy(A& a) : a{&a} {}
+                friend void swap(Proxy x, Proxy y) {
+                    ranges::swap(*x.a, *y.a);
+                }
+            };
+            Proxy proxy(A& a) {
+                return Proxy{a};
             }
-          };
-          Proxy proxy(A& a) { return Proxy{a}; }
-        }
+        } // namespace N
 
         void test() {
-          int i = 1, j = 2;
-          lv_swap(i, j);
-          assert(i == 2 && j == 1);
+            int i = 1, j = 2;
+            lv_swap(i, j);
+            assert(i == 2 && j == 1);
 
-          N::A a1 = { 5 };
-          N::A a2 = { -5 };
-          value_swap(a1, proxy(a2));
-          assert(a1.m == -5 && a2.m == 5);
+            N::A a1 = {5};
+            N::A a2 = {-5};
+            value_swap(a1, proxy(a2));
+            assert(a1.m == -5 && a2.m == 5);
 
-          // additional test cases not from [concept.swappable] for completeness:
-          STATIC_ASSERT(std::is_same_v<std::common_reference_t<N::Proxy, N::A&>, N::Proxy>);
-          STATIC_ASSERT(swappable_with<N::A&, N::Proxy>);
+            // additional test cases not from [concept.swappable] for completeness:
+            STATIC_ASSERT(std::is_same_v<std::common_reference_t<N::Proxy, N::A&>, N::Proxy>);
+            STATIC_ASSERT(swappable_with<N::A&, N::Proxy>);
 
-          value_swap(proxy(a1), a2);
-          assert(a1.m == 5 && a2.m == -5);
+            value_swap(proxy(a1), a2);
+            assert(a1.m == 5 && a2.m == -5);
 
-          value_swap(proxy(a1), proxy(a2));
-          assert(a1.m == -5 && a2.m == 5);
+            value_swap(proxy(a1), proxy(a2));
+            assert(a1.m == -5 && a2.m == 5);
 
-          value_swap(a1, a2);
-          assert(a1.m == 5 && a2.m == -5);
-          // end additional test cases
+            value_swap(a1, a2);
+            assert(a1.m == 5 && a2.m == -5);
+            // end additional test cases
         }
-        // clang-format on
     } // namespace example
 } // namespace test_swappable_with
 
@@ -3332,13 +3334,12 @@ namespace test_relation {
     STATIC_ASSERT(test<std::less<>, int*, void*>());
 
     struct Equivalent {
-        // clang-format off
         template <class T, class U>
         constexpr decltype(auto) operator()(T&& t, U&& u) const
-            requires requires { static_cast<T&&>(t) == static_cast<U&&>(u); } {
+            requires requires { static_cast<T&&>(t) == static_cast<U&&>(u); }
+        {
             return static_cast<T&&>(t) == static_cast<U&&>(u);
         }
-        // clang-format on
     };
     STATIC_ASSERT(test<Equivalent, int, long>());
 
