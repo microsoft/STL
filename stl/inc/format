@@ -141,7 +141,6 @@ struct _Auto_id_tag {
     explicit _Auto_id_tag() = default;
 };
 
-// clang-format off
 template <class _Ty, class _CharT>
 concept _Parse_arg_id_callbacks = requires(_Ty _At) {
     { _At._On_auto_id() } -> same_as<void>;
@@ -184,6 +183,7 @@ concept _Precision_adapter_callbacks = requires(_Ty _At) {
     { _At._On_dynamic_precision(size_t{}) } -> same_as<void>;
 };
 
+// clang-format off
 template <class _Ty, class _CharT>
 concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
                                 && _Parse_width_callbacks<_Ty, _CharT>
