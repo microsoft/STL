@@ -1399,7 +1399,7 @@ namespace ranges {
             }
         }
 
-        _NODISCARD_EMPTY_MEMBER constexpr bool empty() const noexcept(noexcept(_Value == _Bound)) /* strengthened */ {
+        _NODISCARD constexpr bool empty() const noexcept(noexcept(_Value == _Bound)) /* strengthened */ {
             return _Value == _Bound;
         }
 

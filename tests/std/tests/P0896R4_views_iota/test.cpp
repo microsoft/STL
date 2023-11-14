@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <ranges>
 #include <type_traits>
