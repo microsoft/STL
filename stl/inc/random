@@ -695,7 +695,8 @@ public:
     }
 
     void seed(_Seed_t _Value = default_seed, bool _Readcy = false) { // set initial values from specified seed value
-        linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{_Value == 0U ? default_seed : _Value};
+        linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{
+            static_cast<uint_least32_t>(_Value == 0U ? default_seed : _Value)};
         _Reset(_Lc, _Readcy);
     }
 
