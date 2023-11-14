@@ -9691,7 +9691,7 @@ namespace ranges {
             : _Func(in_place, _STD move(_Func_)), _Inner(_STD move(_Range_)) {}
 
         _NODISCARD constexpr _Vw base() const& noexcept(noexcept(_Inner.base())) // strengthened
-            requires copy_constructible<_Inner_view>
+            requires copy_constructible<_Vw>
         {
             return _Inner.base();
         }

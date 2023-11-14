@@ -5,6 +5,7 @@
 #include <array>
 #include <cassert>
 #include <forward_list>
+#include <functional>
 #include <ranges>
 #include <span>
 #include <tuple>
@@ -966,6 +967,23 @@ int main() {
         constexpr auto to_float = [](int x, int y, int z) { return static_cast<float>(x + y + z); };
         STATIC_ASSERT(test_one<3>(span<const int>{}, to_float, span<float>{}));
         test_one<3>(span<const int>{}, to_float, span<float>{});
+    }
+
+    { // LWG-3947 Unexpected constraints on adjacent_transform_view::base()
+        struct weird_span : span<int>, ranges::view_base {
+            weird_span()                  = default;
+            weird_span(const weird_span&) = default;
+            weird_span(weird_span&)       = delete;
+
+            weird_span& operator=(const weird_span&) = default;
+        };
+        STATIC_ASSERT(!copy_constructible<weird_span>);
+
+        using weird_adjacent_transform_view = ranges::adjacent_transform_view<weird_span, ranges::equal_to, 2>;
+        STATIC_ASSERT(!CanMemberBase<weird_adjacent_transform_view&>);
+        STATIC_ASSERT(!CanMemberBase<const weird_adjacent_transform_view&>);
+        STATIC_ASSERT(!CanMemberBase<const weird_adjacent_transform_view>);
+        STATIC_ASSERT(CanMemberBase<weird_adjacent_transform_view>);
     }
 
     STATIC_ASSERT((instantiation_test(), true));
