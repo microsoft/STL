@@ -1399,6 +1399,10 @@ namespace ranges {
             }
         }
 
+        _NODISCARD_EMPTY_MEMBER constexpr bool empty() const noexcept(noexcept(_Value == _Bound)) /* strengthened */ {
+            return _Value == _Bound;
+        }
+
 #pragma warning(push)
 #pragma warning(disable : 4146) // unary minus operator applied to unsigned type, result still unsigned
         // clang-format off
