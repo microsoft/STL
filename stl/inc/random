@@ -677,9 +677,9 @@ public:
     using _Mybase     = _Circ_buf<_Ty, _Rx>;
     using _Seed_t     = typename _Swc_Traits::_Seed_t;
 
-    static constexpr size_t short_lag     = _Sx;
-    static constexpr size_t long_lag      = _Rx;
-    static constexpr _Seed_t default_seed = static_cast<_Seed_t>(19780503U);
+    static constexpr size_t short_lag            = _Sx;
+    static constexpr size_t long_lag             = _Rx;
+    static constexpr uint_least32_t default_seed = 19780503u;
 
     _Swc_base() {
         seed();
@@ -695,7 +695,7 @@ public:
     }
 
     void seed(_Seed_t _Value = default_seed, bool _Readcy = false) { // set initial values from specified seed value
-        linear_congruential<_Seed_t, 40014U, 0U, 2147483563U> _Lc{_Value == 0U ? default_seed : _Value};
+        linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{_Value == 0U ? default_seed : _Value};
         _Reset(_Lc, _Readcy);
     }
 
@@ -805,7 +805,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
 
     static constexpr _Cy_t _Cy   = 1;
     static constexpr _Mod_t _Mod = _Mx;
-    static constexpr _Ty _Max    = _Mx - 1;
+    static constexpr _Ty _Max    = static_cast<_Ty>(_Mx - 1);
 
     static int _Get_wc() noexcept { // compute number of 32-bit words per element
         int _Kx;
@@ -901,7 +901,8 @@ public:
 };
 
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
-class subtract_with_carry_engine : public subtract_with_carry<_Ty, (_Ty{1} << (_Wx - 1)) << 1, _Sx, _Rx> {
+class subtract_with_carry_engine
+    : public subtract_with_carry<_Ty, static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1), _Sx, _Rx> {
     // subtract_with_carry generator
 public:
     _RNG_REQUIRE_UINTTYPE(subtract_with_carry_engine, _Ty);
@@ -909,7 +910,7 @@ public:
     static_assert(0U < _Sx && _Sx < _Rx && 0 < _Wx && _Wx <= numeric_limits<_Ty>::digits,
         "invalid template argument for subtract_with_carry_engine");
 
-    static constexpr _Ty _Mx          = (_Ty{1} << (_Wx - 1)) << 1;
+    static constexpr _Ty _Mx          = static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1);
     static constexpr size_t word_size = _Wx;
     static constexpr size_t short_lag = _Sx;
     static constexpr size_t long_lag  = _Rx;
@@ -920,7 +921,7 @@ public:
 
     using _Mybase::default_seed;
 
-    subtract_with_carry_engine() : _Mybase(default_seed) {}
+    subtract_with_carry_engine() : _Mybase(0u) {}
 
     explicit subtract_with_carry_engine(_Ty _Xx0) : _Mybase(_Xx0) {}
 
@@ -929,7 +930,7 @@ public:
         seed(_Seq);
     }
 
-    void seed(_Ty _Value = default_seed) { // set initial values from specified seed value
+    void seed(_Ty _Value = 0u) { // set initial values from specified seed value
         _Mybase::seed(_Value);
     }
 
