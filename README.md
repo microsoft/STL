@@ -164,7 +164,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     * Make sure [Python][] 3.12 or later is available to CMake.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
-4. `git clone https://github.com/microsoft/STL --recurse-submodules`
+4. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
 
 To build the x86 target:
 
