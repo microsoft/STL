@@ -306,6 +306,7 @@
 // P2711R1 Making Multi-Param Constructors Of Views explicit
 // P2736R2 Referencing The Unicode Standard
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
+// P2905R2 Runtime Format Strings
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features

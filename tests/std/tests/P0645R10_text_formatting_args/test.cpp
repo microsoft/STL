@@ -248,7 +248,8 @@ void test_visit_monostate() {
 
 template <class Context>
 void test_lwg3810() {
-    [[maybe_unused]] auto args_store = make_format_args<Context>(1, 2, 3);
+    int args[]{1, 2, 3};
+    [[maybe_unused]] auto args_store = make_format_args<Context>(args[0], args[1], args[2]);
     static_assert(same_as<decltype(basic_format_args{args_store}), basic_format_args<Context>>);
 }
 
@@ -264,6 +265,32 @@ void test_lvalue_only_visitation() {
     visit_format_arg(lvalue_only_visitor{}, basic_format_arg<Context>{});
 }
 
+template <class Context, class... Args>
+concept CanMakeFormatArgs = requires(Args&&... args) { make_format_args<Context>(static_cast<Args&&>(args)...); };
+
+// P2905R2 Runtime format strings (make make_(w)format_args only take lvalue references)
+template <class Context>
+void test_lvalue_reference_parameters() { // COMPILE-ONLY
+    using char_type = Context::char_type;
+
+    static_assert(CanMakeFormatArgs<Context, int&, long long&, double&, char_type&, char_type*&, const char_type*&,
+        basic_string<char_type>&, basic_string_view<char_type>&>);
+    static_assert(
+        CanMakeFormatArgs<Context, const int&, const long long&, const double&, const char_type&, char_type* const&,
+            const char_type* const&, const basic_string<char_type>&, const basic_string_view<char_type>&>);
+
+    static_assert(CanMakeFormatArgs<Context, const int, const long long, const double, const char_type,
+        char_type* const, const char_type* const, const basic_string<char_type>, const basic_string_view<char_type>>);
+
+    static_assert(!CanMakeFormatArgs<Context, int>);
+    static_assert(!CanMakeFormatArgs<Context, long long>);
+    static_assert(!CanMakeFormatArgs<Context, double>);
+    static_assert(!CanMakeFormatArgs<Context, char_type>);
+    static_assert(!CanMakeFormatArgs<Context, const char_type*>);
+    static_assert(!CanMakeFormatArgs<Context, basic_string<char_type>>);
+    static_assert(!CanMakeFormatArgs<Context, basic_string_view<char_type>>);
+}
+
 int main() {
     test_basic_format_arg<format_context>();
     test_basic_format_arg<wformat_context>();
@@ -277,4 +304,7 @@ int main() {
 
     test_lvalue_only_visitation<format_context>();
     test_lvalue_only_visitation<wformat_context>();
+
+    test_lvalue_reference_parameters<format_context>();
+    test_lvalue_reference_parameters<wformat_context>();
 }

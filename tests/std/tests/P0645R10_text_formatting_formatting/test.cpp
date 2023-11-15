@@ -65,9 +65,9 @@ using alternative_basic_string = basic_string<CharT, alternative_char_traits<Cha
 template <class charT, class... Args>
 auto make_testing_format_args(Args&&... vals) {
     if constexpr (is_same_v<charT, wchar_t>) {
-        return make_wformat_args(forward<Args>(vals)...);
+        return make_wformat_args(vals...);
     } else {
-        return make_format_args(forward<Args>(vals)...);
+        return make_format_args(vals...);
     }
 }
 

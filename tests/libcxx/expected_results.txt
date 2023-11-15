@@ -189,6 +189,16 @@ std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp FAIL
 std/re/re.iter/re.regiter/iterator_concept_conformance.compile.pass.cpp FAIL
 std/re/re.iter/re.tokiter/iterator_concept_conformance.compile.pass.cpp FAIL
 
+# libc++ doesn't implement P2905R2 "Runtime Format Strings"
+std/utilities/format/format.arguments/format.arg.store/make_format_args.pass.cpp FAIL
+std/utilities/format/format.arguments/format.arg.store/make_format_args.sh.cpp FAIL
+std/utilities/format/format.arguments/format.arg.store/make_wformat_args.pass.cpp FAIL
+std/utilities/format/format.arguments/format.args/ctor.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/arg.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/ctor.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/locale.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.string.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
