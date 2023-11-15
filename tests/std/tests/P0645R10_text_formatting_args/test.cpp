@@ -265,6 +265,27 @@ void test_lvalue_only_visitation() {
     visit_format_arg(lvalue_only_visitor{}, basic_format_arg<Context>{});
 }
 
+namespace detail {
+    constexpr bool permissive() {
+        return false;
+    }
+
+    template <class>
+    struct DependentBase {
+        static constexpr bool permissive() {
+            return true;
+        }
+    };
+
+    template <class T>
+    struct Derived : DependentBase<T> {
+        static constexpr bool test() {
+            return permissive();
+        }
+    };
+} // namespace detail
+constexpr bool is_permissive = detail::Derived<int>::test();
+
 template <class Context, class... Args>
 concept CanMakeFormatArgs = requires(Args&&... args) { make_format_args<Context>(static_cast<Args&&>(args)...); };
 
@@ -287,8 +308,8 @@ void test_lvalue_reference_parameters() { // COMPILE-ONLY
     static_assert(!CanMakeFormatArgs<Context, double>);
     static_assert(!CanMakeFormatArgs<Context, char_type>);
     static_assert(!CanMakeFormatArgs<Context, const char_type*>);
-    static_assert(!CanMakeFormatArgs<Context, basic_string<char_type>>);
-    static_assert(!CanMakeFormatArgs<Context, basic_string_view<char_type>>);
+    static_assert(CanMakeFormatArgs<Context, basic_string<char_type>> == is_permissive);
+    static_assert(CanMakeFormatArgs<Context, basic_string_view<char_type>> == is_permissive);
 }
 
 int main() {
