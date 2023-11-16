@@ -80,6 +80,7 @@
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (except for __cpp_lib_freestanding_charconv)
 // P2401R0 Conditional noexcept For exchange()
+// P2937R0 Freestanding Library: Remove strtok
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -1604,7 +1605,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_exchange_function                201304L
 #define __cpp_lib_freestanding_char_traits         202306L
 #define __cpp_lib_freestanding_cstdlib             202306L
-#define __cpp_lib_freestanding_cstring             202306L
+#define __cpp_lib_freestanding_cstring             202311L
 #define __cpp_lib_freestanding_cwchar              202306L
 #define __cpp_lib_freestanding_errc                202306L
 #define __cpp_lib_freestanding_feature_test_macros 202306L

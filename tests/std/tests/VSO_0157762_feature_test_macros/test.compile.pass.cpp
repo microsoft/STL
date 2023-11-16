@@ -383,7 +383,7 @@ STATIC_ASSERT(__cpp_lib_freestanding_charconv == 202306L);
 
 STATIC_ASSERT(__cpp_lib_freestanding_cstdlib == 202306L);
 
-STATIC_ASSERT(__cpp_lib_freestanding_cstring == 202306L);
+STATIC_ASSERT(__cpp_lib_freestanding_cstring == 202311L);
 
 STATIC_ASSERT(__cpp_lib_freestanding_cwchar == 202306L);
 
