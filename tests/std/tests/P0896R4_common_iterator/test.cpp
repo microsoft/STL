@@ -315,6 +315,24 @@ constexpr bool test_lwg_3574() {
     return true;
 }
 
+template <class It, class Se>
+concept common_iterator_has_iterator_category =
+    requires { typename iterator_traits<common_iterator<It, Se>>::iterator_category; };
+
+// LWG-3749 common_iterator should handle integer-class difference types
+void test_lwg_3749() { // COMPILE-ONLY
+    static_assert(common_iterator_has_iterator_category<int*, const int*>);
+    static_assert(common_iterator_has_iterator_category<int*, unreachable_sentinel_t>);
+
+    using small_unbounded_iota = decltype(views::iota(42));
+    static_assert(common_iterator_has_iterator_category<ranges::iterator_t<small_unbounded_iota>,
+        ranges::sentinel_t<small_unbounded_iota>>);
+
+    using large_unbounded_iota = decltype(views::iota(42ull));
+    static_assert(!common_iterator_has_iterator_category<ranges::iterator_t<large_unbounded_iota>,
+                  ranges::sentinel_t<large_unbounded_iota>>);
+}
+
 // Validate that _Variantish works when fed with a non-trivially-destructible type
 void test_non_trivially_destructible_type() { // COMPILE-ONLY
     struct non_trivially_destructible_input_iterator {
