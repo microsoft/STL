@@ -10,8 +10,8 @@
 
 _EXTERN_C_UNLESS_PURE
 
-_CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towupper(
-    wchar_t _Ch, const _Ctypevec* _Ctype) { // convert element to upper case
+_CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towupper(wchar_t _Ch, const _Ctypevec* _Ctype) noexcept {
+    // convert element to upper case
     wchar_t _Res = _Ch;
     if (_Ch != WEOF) {
         if (_Ctype->_LocaleName == nullptr && _Ch < 256) { // handle ASCII character in C locale
@@ -27,7 +27,7 @@ _CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towupper(
 }
 
 #ifdef MRTDLL
-_CRTIMP2_PURE unsigned short __CLRCALL_PURE_OR_CDECL _Towupper(unsigned short _Ch, const _Ctypevec* _Ctype) {
+_CRTIMP2_PURE unsigned short __CLRCALL_PURE_OR_CDECL _Towupper(unsigned short _Ch, const _Ctypevec* _Ctype) noexcept {
     return _Towupper(static_cast<wchar_t>(_Ch), _Ctype);
 }
 #endif

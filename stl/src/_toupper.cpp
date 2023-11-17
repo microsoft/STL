@@ -32,7 +32,7 @@ _EXTERN_C_UNLESS_PURE
 //
 // Exceptions:
 //     None.
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int c, const _Ctypevec* ploc) {
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int c, const _Ctypevec* ploc) noexcept {
     int size;
     unsigned char inbuffer[3];
     unsigned char outbuffer[3];

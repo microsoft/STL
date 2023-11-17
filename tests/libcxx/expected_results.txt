@@ -351,8 +351,6 @@ std/language.support/support.limits/support.limits.general/type_traits.version.c
 
 # P2286R8 Formatting Ranges
 std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtkind/format_kind.compile.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtkind/range_format.compile.pass.cpp FAIL
 std/utilities/format/format.tuple/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.tuple/format.functions.vformat.pass.cpp FAIL
 std/utilities/format/format.tuple/format.pass.cpp FAIL
@@ -409,10 +407,6 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_se
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:1 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.create/make_unique.array.pass.cpp:0 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.create/make_unique.array.pass.cpp:1 FAIL
-
-# DevCom-10138792: C4455 'operator ""s': literal suffix identifiers that do not start with an underscore are reserved
-std/strings/basic.string.literals/noexcept.compile.pass.cpp:0 FAIL
-std/strings/basic.string.literals/noexcept.compile.pass.cpp:1 FAIL
 
 # DevCom-1626139 "compile-time NaN comparison"
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp:0 FAIL
@@ -1066,8 +1060,6 @@ std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:1 FAIL
 std/containers/sequences/vector.bool/emplace_back.pass.cpp FAIL
 std/containers/sequences/vector.bool/enabled_hash.pass.cpp FAIL
-std/containers/sequences/vector.bool/move.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/move.pass.cpp:1 FAIL
 std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
 std/containers/sequences/vector/iterators.pass.cpp:0 FAIL
 std/containers/sequences/vector/iterators.pass.cpp:1 FAIL

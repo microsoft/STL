@@ -1724,13 +1724,13 @@ template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
 
 _EXPORT_STD template <class _Callable>
-_CONSTEXPR17 auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
+constexpr auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
     -> decltype(static_cast<_Callable&&>(_Obj)()) {
     return static_cast<_Callable&&>(_Obj)();
 }
 
 _EXPORT_STD template <class _Callable, class _Ty1, class... _Types2>
-_CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
+constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
     noexcept(_Invoker1<_Callable, _Ty1>::_Call(
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
     -> decltype(_Invoker1<_Callable, _Ty1>::_Call(

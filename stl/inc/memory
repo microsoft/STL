@@ -3717,10 +3717,10 @@ _NODISCARD_ASSUME_ALIGNED constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcep
 }
 #endif // _HAS_CXX20
 
-_EXTERN_C
-_CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock();
-_CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock();
-_END_EXTERN_C
+extern "C" {
+_CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() noexcept;
+_CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() noexcept;
+} // extern "C"
 
 struct _Shared_ptr_spin_lock { // class to manage a spin lock for shared_ptr atomic operations
     _Shared_ptr_spin_lock() { // lock the spin lock
@@ -3839,7 +3839,7 @@ protected:
             if (!_Equal) {
                 break;
             }
-            __std_atomic_wait_direct(&_Ptr, &_Old, sizeof(_Old), _Atomic_wait_no_timeout);
+            __std_atomic_wait_direct(&_Ptr, &_Old, sizeof(_Old), __std_atomic_wait_no_timeout);
         }
     }
 
@@ -4137,7 +4137,6 @@ struct _Pointer_of_or_helper<_Ty, _Uty> {
 template <class _Ty, class _Uty>
 using _Pointer_of_or = _Pointer_of_or_helper<_Ty, _Uty>::type;
 
-// TRANSITION, requires expression support
 template <class _SmartPtr, class _Sp, class _Pointer, class... _ArgsT>
 concept _Resettable_pointer = requires(_SmartPtr& _Smart_ptr, _Pointer _Ptr, _ArgsT&&... _Args) {
     _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args)...);
@@ -4245,10 +4244,10 @@ public:
     ~inout_ptr_t() {
         if constexpr (!is_pointer_v<_SmartPtr>) {
             _Smart_ptr.release();
-        }
 
-        if (!_Get_ptr()) {
-            return;
+            if (!_Get_ptr()) {
+                return;
+            }
         }
 
         _STD apply(

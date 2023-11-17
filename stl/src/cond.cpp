@@ -11,7 +11,7 @@
 
 #include "primitives.hpp"
 
-_EXTERN_C
+extern "C" {
 
 struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
     typename std::_Aligned_storage<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment>::type cv;
@@ -22,13 +22,13 @@ struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
     }
 };
 
-_CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(const _Cnd_t cond) { // initialize condition variable in situ
+_CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(const _Cnd_t cond) noexcept { // initialize condition variable in situ
     Concurrency::details::create_stl_condition_variable(cond->_get_cv());
 }
 
-_CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) {} // destroy condition variable in situ
+_CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) noexcept {} // destroy condition variable in situ
 
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t* const pcond) { // initialize
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t* const pcond) noexcept { // initialize
     *pcond = nullptr;
 
     const auto cond = static_cast<_Cnd_t>(_calloc_crt(1, sizeof(_Cnd_internal_imp_t)));
@@ -41,7 +41,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t* const pcond) { // initializ
     return _Thrd_result::_Success;
 }
 
-_CRTIMP2_PURE void __cdecl _Cnd_destroy(const _Cnd_t cond) { // clean up
+_CRTIMP2_PURE void __cdecl _Cnd_destroy(const _Cnd_t cond) noexcept { // clean up
     if (cond) { // something to do, do it
         _Cnd_destroy_in_situ(cond);
         _free_crt(cond);
@@ -49,18 +49,18 @@ _CRTIMP2_PURE void __cdecl _Cnd_destroy(const _Cnd_t cond) { // clean up
 }
 
 // TRANSITION, ABI: should be static; dllexported for binary compatibility
-_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t mtx) { // set owner to nobody
+_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t mtx) noexcept { // set owner to nobody
     mtx->_Thread_id = -1;
     --mtx->_Count;
 }
 
 // TRANSITION, ABI: should be static; dllexported for binary compatibility
-_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t mtx) { // set owner to current thread
+_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t mtx) noexcept { // set owner to current thread
     mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
     ++mtx->_Count;
 }
 
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) { // wait until signaled
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) noexcept { // wait until signaled
     const auto cs = &mtx->_Critical_section;
     _Mtx_clear_owner(mtx);
     cond->_get_cv()->wait(cs);
@@ -70,7 +70,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx
 
 // wait until signaled or timeout
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(
-    const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const target) {
+    const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const target) noexcept {
     _Thrd_result res = _Thrd_result::_Success;
     const auto cs    = &mtx->_Critical_section;
     if (target == nullptr) { // no target time specified, wait on mutex
@@ -92,17 +92,17 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(
     return res;
 }
 
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(const _Cnd_t cond) { // release one waiting thread
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(const _Cnd_t cond) noexcept { // release one waiting thread
     cond->_get_cv()->notify_one();
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(const _Cnd_t cond) { // release all waiting threads
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(const _Cnd_t cond) noexcept { // release all waiting threads
     cond->_get_cv()->notify_all();
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 /*
  * This file is derived from software bearing the following

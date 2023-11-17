@@ -36,7 +36,7 @@ void test_push_back_pop_front() {
 
 // Also test Dev10-391805 "STL: Prefast error in deque".
 
-void test_391805() {
+void test_Dev10_391805() {
     deque<int> d;
 
     d.push_back(10);
@@ -262,7 +262,7 @@ void test_exception_safety_for_throwing_movable() {
 int main() {
     test_push_back_pop_front();
 
-    test_391805();
+    test_Dev10_391805();
 
     test_exception_safety_for_nonswappable_movable();
     test_exception_safety_for_throwing_movable();

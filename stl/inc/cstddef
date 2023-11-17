@@ -98,7 +98,9 @@ _NODISCARD _MSVC_INTRINSIC constexpr _IntType to_integer(const byte _Arg) noexce
 
 _STD_END
 
+_EXTERN_CXX_WORKAROUND
 using _STD max_align_t; // intentional, for historical reasons
+_END_EXTERN_CXX_WORKAROUND
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma pop_macro("intrinsic")

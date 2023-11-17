@@ -360,8 +360,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     {
         // Check iterator_category
         if constexpr (forward_range<R>) {
-            using IterCat = typename iterator_t<R>::iterator_category;
-            using C       = typename iterator_traits<iterator_t<V>>::iterator_category;
+            using IterCat = iterator_t<R>::iterator_category;
+            using C       = iterator_traits<iterator_t<V>>::iterator_category;
             STATIC_ASSERT((derived_from<C, random_access_iterator_tag> && same_as<IterCat, random_access_iterator_tag>)
                           || same_as<IterCat, C>);
         }
@@ -454,8 +454,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (CanMemberBegin<const R>) {
         // Check iterator_category
         if constexpr (forward_range<const R>) {
-            using IterCat = typename iterator_t<const R>::iterator_category;
-            using C       = typename iterator_traits<iterator_t<const V>>::iterator_category;
+            using IterCat = iterator_t<const R>::iterator_category;
+            using C       = iterator_traits<iterator_t<const V>>::iterator_category;
             STATIC_ASSERT((derived_from<C, random_access_iterator_tag> && same_as<IterCat, random_access_iterator_tag>)
                           || same_as<IterCat, C>);
         }

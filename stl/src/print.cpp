@@ -12,7 +12,7 @@
 
 #include <Windows.h>
 
-_EXTERN_C
+extern "C" {
 
 [[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result
     __stdcall __std_get_unicode_console_handle_from_file_stream(_In_ FILE* const _Stream) noexcept {
@@ -52,7 +52,7 @@ _EXTERN_C
         ._Error = __std_win_error::_Success};
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 namespace {
     class _Allocated_string {
@@ -222,7 +222,7 @@ namespace {
     }
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_print_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle,
@@ -266,4 +266,4 @@ _EXTERN_C
     }
 }
 
-_END_EXTERN_C
+} // extern "C"

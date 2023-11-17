@@ -33,7 +33,7 @@ _EXTERN_C_UNLESS_PURE
 //
 // Exceptions:
 //     None.
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc) {
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc) noexcept {
     int size;
     unsigned char inbuffer[3];
     unsigned char outbuffer[3];
@@ -98,7 +98,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
     }
 }
 
-_CRTIMP2_PURE _Ctypevec __CLRCALL_PURE_OR_CDECL _Getctype() {
+_CRTIMP2_PURE _Ctypevec __CLRCALL_PURE_OR_CDECL _Getctype() noexcept {
     // get ctype info for current locale
     _Ctypevec ctype;
 

@@ -13,10 +13,12 @@
 
 // The below function pointer types must be in sync with <stacktrace>
 
+extern "C" {
 using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char* _Data, size_t _Size, void* _Context) _NOEXCEPT_FNPTR;
 
 using _Stacktrace_string_fill = size_t(__stdcall*)(
     size_t _Size, void* _String, void* _Context, _Stacktrace_string_fill_callback _Callback);
+} // extern "C"
 
 namespace {
     template <class F>
@@ -245,7 +247,7 @@ namespace {
     }
 } // namespace
 
-_EXTERN_C
+extern "C" {
 #pragma optimize("", off) // inhibit tail call optimization to have consistent _Frames_to_skip adjustment here
 [[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(unsigned long _Frames_to_skip,
     const unsigned long _Frames_to_capture, void** const _Back_trace, unsigned long* const _Back_trace_hash) noexcept {
@@ -330,4 +332,4 @@ void __stdcall __std_stacktrace_to_string(const void* const* const _Addresses, c
         off = locked_data.address_to_string(_Addresses[i], _Str, off, _Fill);
     }
 }
-_END_EXTERN_C
+} // extern "C"

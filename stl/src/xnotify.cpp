@@ -27,12 +27,12 @@ namespace {
     _At_thread_exit_block _Thread_exit_data;
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 
-void _Lock_at_thread_exit_mutex();
-void _Unlock_at_thread_exit_mutex();
+void _Lock_at_thread_exit_mutex() noexcept;
+void _Unlock_at_thread_exit_mutex() noexcept;
 
-_CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t cnd, _Mtx_t mtx, int* p) {
+_CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t cnd, _Mtx_t mtx, int* p) noexcept {
     // register condition variable and mutex for cleanup at thread exit
 
     // find block with available space
@@ -63,7 +63,7 @@ _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t cnd, _Mtx_t mtx, 
     _Unlock_at_thread_exit_mutex();
 }
 
-_CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t mtx) {
+_CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t mtx) noexcept {
     // unregister condition variable/mutex for cleanup at thread exit
 
     // find condition variables waiting for this thread to exit
@@ -83,7 +83,7 @@ _CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t mtx) {
     _Unlock_at_thread_exit_mutex();
 }
 
-_CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() {
+_CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() noexcept {
     // notify condition variables waiting for this thread to exit
 
     // find condition variables waiting for this thread to exit
@@ -109,7 +109,7 @@ _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() {
     _Unlock_at_thread_exit_mutex();
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 /*
  * This file is derived from software bearing the following

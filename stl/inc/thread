@@ -297,7 +297,8 @@ basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _I
 }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-template <class _CharT>
+// Per LWG-3997, the _CharT template parameter is constrained to supported character types.
+template <_Format_supported_charT _CharT>
 struct formatter<thread::id, _CharT> {
 private:
     using _Pc = basic_format_parse_context<_CharT>;

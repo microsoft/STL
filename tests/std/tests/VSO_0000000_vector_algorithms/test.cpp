@@ -64,7 +64,7 @@ void disable_instructions(ISA_AVAILABILITY isa) {
 constexpr size_t dataCount = 1024;
 
 template <class FwdIt, class T>
-inline ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
+ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
     ptrdiff_t result = 0;
     for (; first != last; ++first) {
         result += (*first == v);
@@ -94,7 +94,7 @@ void test_count(mt19937_64& gen) {
 }
 
 template <class FwdIt, class T>
-inline auto last_known_good_find(FwdIt first, FwdIt last, T v) {
+auto last_known_good_find(FwdIt first, FwdIt last, T v) {
     for (; first != last; ++first) {
         if (*first == v) {
             break;
@@ -104,7 +104,7 @@ inline auto last_known_good_find(FwdIt first, FwdIt last, T v) {
 }
 
 template <class FwdIt, class T>
-inline auto last_known_good_find_last(FwdIt first, FwdIt last, T v) {
+auto last_known_good_find_last(FwdIt first, FwdIt last, T v) {
     FwdIt last_save = last;
     for (;;) {
         if (last == first) {
@@ -239,7 +239,7 @@ void test_min_max_element_special_cases() {
 }
 
 template <class BidIt>
-inline void last_known_good_reverse(BidIt first, BidIt last) {
+void last_known_good_reverse(BidIt first, BidIt last) {
     for (; first != last && first != --last; ++first) {
         iter_swap(first, last);
     }
@@ -287,7 +287,7 @@ void test_reverse_copy(mt19937_64& gen) {
 }
 
 template <class FwdIt1, class FwdIt2>
-inline FwdIt2 last_known_good_swap_ranges(FwdIt1 first1, const FwdIt1 last1, FwdIt2 dest) {
+FwdIt2 last_known_good_swap_ranges(FwdIt1 first1, const FwdIt1 last1, FwdIt2 dest) {
     for (; first1 != last1; ++first1, ++dest) {
         iter_swap(first1, dest);
     }
