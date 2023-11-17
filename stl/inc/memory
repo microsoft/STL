@@ -4244,10 +4244,10 @@ public:
     ~inout_ptr_t() {
         if constexpr (!is_pointer_v<_SmartPtr>) {
             _Smart_ptr.release();
-        }
 
-        if (!_Get_ptr()) {
-            return;
+            if (!_Get_ptr()) {
+                return;
+            }
         }
 
         _STD apply(

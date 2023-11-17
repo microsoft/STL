@@ -514,9 +514,7 @@ void test_sph_neumann() {
 
 // Also test GH-3076 <cmath>: Invalid output for incomplete elliptic integral of the second kind with k = 1
 void test_gh_3076() {
-#if !defined(_MSVC_INTERNAL_TESTING) || !defined(_DLL) // TRANSITION, 17.6 Preview 2 unlocked redist
     assert(isclose(ellint_2(1, 6.2831853071795862), 4.0));
-#endif // !defined(_MSVC_INTERNAL_TESTING) || !defined(_DLL)
 }
 
 int main() {

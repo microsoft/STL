@@ -63,7 +63,7 @@ constexpr bool validate_iterators_sentinels(
         if constexpr (ranges::forward_range<BaseType>) {
             STATIC_ASSERT(HasIteratorCategory<LocalZipTransformType>);
 
-            using Cat                = typename ranges::iterator_t<LocalZipTransformType>::iterator_category;
+            using Cat                = ranges::iterator_t<LocalZipTransformType>::iterator_category;
             using transform_result_t = TransformResultType<is_const, TransformType, RangeTypes...>;
 
             if constexpr (!is_reference_v<transform_result_t>) {
@@ -687,7 +687,7 @@ class instantiator_impl : private range_type_solver<IsMoveOnly> {
 private:
     template <class OtherCategory, class Element, test::Sized OtherIsSized, test::Common OtherIsCommon,
         test::CanDifference OtherDiff>
-    using range_type = typename range_type_solver<IsMoveOnly>::template range_type<OtherCategory, Element, OtherIsSized,
+    using range_type = range_type_solver<IsMoveOnly>::template range_type<OtherCategory, Element, OtherIsSized,
         OtherIsCommon, OtherDiff>;
 
     using standard_range_type = range_type<Category, const int, IsSized, IsCommon, Diff>;

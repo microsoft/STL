@@ -34,7 +34,7 @@ struct instantiator {
     template <input_or_output_iterator Iter>
     static constexpr void call() {
         if constexpr (copyable<Iter>) {
-            using ConstIter = typename Iter::Consterator;
+            using ConstIter = Iter::Consterator;
             using Sen       = test::sentinel<iter_value_t<Iter>>;
             using OSen      = test::sentinel<const iter_value_t<Iter>>;
             using Cit       = common_iterator<Iter, Sen>;
@@ -43,21 +43,21 @@ struct instantiator {
 
             // [common.iter.types]
             {
-                using iconcept = typename iterator_traits<Cit>::iterator_concept;
+                using iconcept = iterator_traits<Cit>::iterator_concept;
                 if constexpr (forward_iterator<Iter>) {
                     STATIC_ASSERT(same_as<iconcept, forward_iterator_tag>);
                 } else {
                     STATIC_ASSERT(same_as<typename iterator_traits<Cit>::iterator_concept, input_iterator_tag>);
                 }
 
-                using icat = typename iterator_traits<Cit>::iterator_category;
+                using icat = iterator_traits<Cit>::iterator_category;
                 if constexpr (derived_from<icat, forward_iterator_tag>) {
                     STATIC_ASSERT(same_as<icat, forward_iterator_tag>);
                 } else {
                     STATIC_ASSERT(same_as<icat, input_iterator_tag>);
                 }
 
-                using ipointer = typename iterator_traits<Cit>::pointer;
+                using ipointer = iterator_traits<Cit>::pointer;
                 if constexpr (CanArrow<Cit>) {
                     STATIC_ASSERT(same_as<ipointer, decltype(declval<const Cit&>().operator->())>);
                 } else {
@@ -313,6 +313,24 @@ constexpr bool test_lwg_3574() {
     assert(arr[2] == 11);
 
     return true;
+}
+
+template <class It, class Se>
+concept common_iterator_has_iterator_category =
+    requires { typename iterator_traits<common_iterator<It, Se>>::iterator_category; };
+
+// LWG-3749 common_iterator should handle integer-class difference types
+void test_lwg_3749() { // COMPILE-ONLY
+    static_assert(common_iterator_has_iterator_category<int*, const int*>);
+    static_assert(common_iterator_has_iterator_category<int*, unreachable_sentinel_t>);
+
+    using small_unbounded_iota = decltype(views::iota(42));
+    static_assert(common_iterator_has_iterator_category<ranges::iterator_t<small_unbounded_iota>,
+        ranges::sentinel_t<small_unbounded_iota>>);
+
+    using large_unbounded_iota = decltype(views::iota(42ull));
+    static_assert(!common_iterator_has_iterator_category<ranges::iterator_t<large_unbounded_iota>,
+                  ranges::sentinel_t<large_unbounded_iota>>);
 }
 
 // Validate that _Variantish works when fed with a non-trivially-destructible type

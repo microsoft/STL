@@ -62,12 +62,9 @@ struct mapped<basic_string_view<CharT, Traits>> {
     template <class>
     using apply = basic_string_view<CharT, Traits>;
 };
-// clang-format off
 template <class W, class B>
-    requires ranges::random_access_range<ranges::iota_view<W, B>>
-        && ranges::sized_range<ranges::iota_view<W, B>>
+    requires ranges::random_access_range<ranges::iota_view<W, B>> && ranges::sized_range<ranges::iota_view<W, B>>
 struct mapped<ranges::iota_view<W, B>> {
-    // clang-format on
     template <class>
     using apply = ranges::iota_view<W, B>;
 };
@@ -79,7 +76,7 @@ struct mapped<ranges::subrange<I, S, ranges::subrange_kind::sized>> {
 };
 
 template <ranges::viewable_range Rng>
-using mapped_t = typename mapped<remove_cvref_t<Rng>>::template apply<Rng>;
+using mapped_t = mapped<remove_cvref_t<Rng>>::template apply<Rng>;
 
 template <ranges::viewable_range Rng>
 using pipeline_t = mapped_t<mapped_t<mapped_t<mapped_t<Rng>>>>;

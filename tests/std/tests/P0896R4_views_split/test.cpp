@@ -35,8 +35,7 @@ struct delimiter_view_impl<false> {
 };
 template <class Base, class Delimiter>
 using delimiter_view_t =
-    typename delimiter_view_impl<is_convertible_v<Delimiter, ranges::range_value_t<Base>>>::template apply<Base,
-        Delimiter>;
+    delimiter_view_impl<is_convertible_v<Delimiter, ranges::range_value_t<Base>>>::template apply<Base, Delimiter>;
 
 template <ranges::forward_range Base, class Delimiter, ranges::forward_range Expected>
 constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected) {
