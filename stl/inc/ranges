@@ -1395,6 +1395,10 @@ namespace ranges {
             }
         }
 
+        _NODISCARD constexpr bool empty() const noexcept(noexcept(_Value == _Bound)) /* strengthened */ {
+            return _Value == _Bound;
+        }
+
 #pragma warning(push)
 #pragma warning(disable : 4146) // unary minus operator applied to unsigned type, result still unsigned
         _NODISCARD constexpr auto size() const noexcept(noexcept(_Bound - _Value)) /* strengthened */
