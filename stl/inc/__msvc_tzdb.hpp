@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_EXTERN_C
+extern "C" {
 
 using __std_tzdb_epoch_milli = double;
 
@@ -92,7 +92,7 @@ void __stdcall __std_tzdb_delete_leap_seconds(__std_tzdb_leap_info* _Info) noexc
 _NODISCARD void* __stdcall __std_calloc_crt(size_t _Count, size_t _Size) noexcept;
 void __stdcall __std_free_crt(void* _Ptr) noexcept;
 
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 

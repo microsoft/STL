@@ -27,7 +27,7 @@ struct repeat_type_injection_impl<Template, T, N, index_sequence<Indices...>> {
 };
 
 template <template <class...> class Template, class T, size_t N>
-using repeat_type_injection = typename repeat_type_injection_impl<Template, T, N>::type;
+using repeat_type_injection = repeat_type_injection_impl<Template, T, N>::type;
 
 static_assert(same_as<repeat_type_injection<tuple, int, 0>, tuple<>>);
 static_assert(same_as<repeat_type_injection<pair, int, 2>, pair<int, int>>);
@@ -292,7 +292,7 @@ struct TupleLikeArrayImpl<Head, Rest...> {
 };
 
 template <class... Ts>
-using TupleLikeArray = typename TupleLikeArrayImpl<Ts...>::type;
+using TupleLikeArray = TupleLikeArrayImpl<Ts...>::type;
 
 int main() {
     static_assert(tester<0, TupleLikeArray>::run());
