@@ -922,12 +922,11 @@ public:
         return *_Val._Get_first();
     }
 
-    // clang-format off
     _NODISCARD constexpr auto operator->() const
         requires indirectly_readable<const _Iter>
-            && (_Has_member_arrow<const _Iter&> || is_reference_v<iter_reference_t<_Iter>>
-                || constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>) {
-        // clang-format on
+              && (_Has_member_arrow<const _Iter&> || is_reference_v<iter_reference_t<_Iter>>
+                  || constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>)
+    {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");

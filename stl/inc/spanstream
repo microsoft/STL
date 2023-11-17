@@ -216,14 +216,12 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    // clang-format off
     template <_RANGES borrowed_range _ReadOnlyRange>
-        requires (!convertible_to<_ReadOnlyRange, _STD span<_Elem>>
-                && convertible_to<_ReadOnlyRange, _STD span<const _Elem>>)
+        requires (
+            !convertible_to<_ReadOnlyRange, _STD span<_Elem>> && convertible_to<_ReadOnlyRange, _STD span<const _Elem>>)
     explicit basic_ispanstream(_ReadOnlyRange&& _Range)
         : basic_ispanstream(
             _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(_Range)), static_cast<size_t>(_RANGES size(_Range))}) {}
-    // clang-format on
 #endif // defined(__cpp_lib_concepts)
 
     basic_ispanstream& operator=(const basic_ispanstream&) = delete;
@@ -254,15 +252,13 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    // clang-format off
     template <_RANGES borrowed_range _ReadOnlyRange>
-        requires (!convertible_to<_ReadOnlyRange, _STD span<_Elem>>
-                && convertible_to<_ReadOnlyRange, _STD span<const _Elem>>)
+        requires (
+            !convertible_to<_ReadOnlyRange, _STD span<_Elem>> && convertible_to<_ReadOnlyRange, _STD span<const _Elem>>)
     void span(_ReadOnlyRange&& _Range) noexcept {
         this->span(
             _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(_Range)), static_cast<size_t>(_RANGES size(_Range))});
     }
-    // clang-format on
 #endif // defined(__cpp_lib_concepts)
 
 private:

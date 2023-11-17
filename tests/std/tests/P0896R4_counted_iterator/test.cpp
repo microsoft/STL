@@ -21,29 +21,26 @@ inline constexpr bool must_be_countable<I> = true;
 template <class... Is>
 concept Counted = (must_be_countable<Is> && ...);
 
-// clang-format off
 template <class I1, class I2>
-concept CountedCompare = Counted<I1, I2>
-    && requires(const counted_iterator<I1>& c1, const counted_iterator<I2>& c2) {
-        c1 == c2;
-        c1 != c2;
-        c1 < c2;
-        c1 > c2;
-        c1 <= c2;
-        c1 >= c2;
-        c1 <=> c2;
-        c1 - c2;
+concept CountedCompare = Counted<I1, I2> && requires(const counted_iterator<I1>& c1, const counted_iterator<I2>& c2) {
+    c1 == c2;
+    c1 != c2;
+    c1 < c2;
+    c1 > c2;
+    c1 <= c2;
+    c1 >= c2;
+    c1 <=> c2;
+    c1 - c2;
 
-        c2 == c1;
-        c2 != c1;
-        c2 < c1;
-        c2 > c1;
-        c2 <= c1;
-        c2 >= c1;
-        c2 <=> c1;
-        c2 - c1;
-    };
-// clang-format on
+    c2 == c1;
+    c2 != c1;
+    c2 < c1;
+    c2 > c1;
+    c2 <= c1;
+    c2 >= c1;
+    c2 <=> c1;
+    c2 - c1;
+};
 
 struct instantiator {
     template <input_or_output_iterator Iter>

@@ -54,14 +54,12 @@ concept encoded_character_type = same_as<CharT, char>
 
 template <class T, class CharT>
 void assert_is_not_formattable() {
-    // clang-format off
-    static_assert(!formattable<      T   , CharT>);
-    static_assert(!formattable<      T&  , CharT>);
-    static_assert(!formattable<      T&& , CharT>);
-    static_assert(!formattable<const T   , CharT>);
-    static_assert(!formattable<const T&  , CharT>);
-    static_assert(!formattable<const T&& , CharT>);
-    // clang-format on
+    static_assert(!formattable<T, CharT>);
+    static_assert(!formattable<T&, CharT>);
+    static_assert(!formattable<T&&, CharT>);
+    static_assert(!formattable<const T, CharT>);
+    static_assert(!formattable<const T&, CharT>);
+    static_assert(!formattable<const T&&, CharT>);
 }
 
 template <class T, class CharT>
@@ -69,14 +67,12 @@ void assert_is_formattable() {
     // Only formatters for CharT == char || CharT == wchar_t are enabled for the standard formatters. When CharT is a
     // different type the formatter should be disabled.
     if constexpr (formatter_supporting_character_type<CharT>) {
-        // clang-format off
-        static_assert(formattable<      T   , CharT>);
-        static_assert(formattable<      T&  , CharT>);
-        static_assert(formattable<      T&& , CharT>);
-        static_assert(formattable<const T   , CharT>);
-        static_assert(formattable<const T&  , CharT>);
-        static_assert(formattable<const T&& , CharT>);
-        // clang-format on
+        static_assert(formattable<T, CharT>);
+        static_assert(formattable<T&, CharT>);
+        static_assert(formattable<T&&, CharT>);
+        static_assert(formattable<const T, CharT>);
+        static_assert(formattable<const T&, CharT>);
+        static_assert(formattable<const T&&, CharT>);
     } else {
         assert_is_not_formattable<T, CharT>();
     }

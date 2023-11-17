@@ -5185,16 +5185,12 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Ur
 }
 
 #ifdef __cpp_lib_concepts
-// clang-format off
 _EXPORT_STD template <class _Ty>
-concept uniform_random_bit_generator = invocable<_Ty&>
-    && unsigned_integral<invoke_result_t<_Ty&>>
-    && requires {
-        { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
-        { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-        requires bool_constant<(_Ty::min)() < (_Ty::max)()>::value;
-    };
-// clang-format on
+concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
+    { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
+    { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
+    requires bool_constant<(_Ty::min)() < (_Ty::max)()>::value;
+};
 
 namespace ranges {
     class _Sample_fn {
