@@ -361,6 +361,12 @@ STATIC_ASSERT(__cpp_lib_format == 202207L);
 #error __cpp_lib_format is defined
 #endif
 
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+STATIC_ASSERT(__cpp_lib_format_uchar == 202311L);
+#elif defined(__cpp_lib_format_uchar)
+#error __cpp_lib_format_uchar is defined
+#endif
+
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 STATIC_ASSERT(__cpp_lib_formatters == 202302L);
 #elif defined(__cpp_lib_formatters)
