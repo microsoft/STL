@@ -41,7 +41,7 @@ constexpr void test_one(It iter) {
     static_assert(same_as<typename ConstIt::value_type, iter_value_t<It>>);
     static_assert(same_as<typename ConstIt::difference_type, iter_difference_t<It>>);
     if constexpr (forward_iterator<It>) {
-        using Cat = typename iterator_traits<It>::iterator_category;
+        using Cat = iterator_traits<It>::iterator_category;
         static_assert(same_as<typename ConstIt::iterator_category, Cat>);
     }
 

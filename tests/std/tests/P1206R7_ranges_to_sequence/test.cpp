@@ -55,7 +55,7 @@ struct sequence_instantiator {
     };
 
     template <template <class...> class C, class T, class... Args>
-    using deduce_container = typename deduce_container_impl<C>::template apply<T, Args...>;
+    using deduce_container = deduce_container_impl<C>::template apply<T, Args...>;
 
     static constexpr auto meow = "meow"sv;
 

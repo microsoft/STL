@@ -235,7 +235,7 @@ void test_mixed_custom_formattable_type() {
 
 template <class OutIt, class CharT>
 void test_basic_format_arg_handle_construction() {
-    using handle = typename basic_format_arg<basic_format_context<OutIt, CharT>>::handle;
+    using handle = basic_format_arg<basic_format_context<OutIt, CharT>>::handle;
 
     static_assert(is_constructible_v<handle, int&>);
     static_assert(is_constructible_v<handle, const int&>);

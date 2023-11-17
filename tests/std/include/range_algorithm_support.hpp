@@ -932,7 +932,7 @@ namespace test {
             return elements_.data();
         }
 
-        using UI = typename I::unwrap;
+        using UI = I::unwrap;
         using US = conditional_t<to_bool(IsCommon), UI, sentinel<Element, WrappedState::unwrapped>>;
 
         [[nodiscard]] constexpr UI _Unchecked_begin() const noexcept {

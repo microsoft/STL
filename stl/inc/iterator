@@ -1117,7 +1117,7 @@ struct iterator_traits<common_iterator<_Iter, _Se>> : _Common_iterator_category_
     using iterator_concept = conditional_t<forward_iterator<_Iter>, forward_iterator_tag, input_iterator_tag>;
     using value_type       = iter_value_t<_Iter>;
     using difference_type  = iter_difference_t<_Iter>;
-    using pointer          = typename _Common_iterator_pointer_type<_Iter, _Se>::pointer;
+    using pointer          = _Common_iterator_pointer_type<_Iter, _Se>::pointer;
     using reference        = iter_reference_t<_Iter>;
 };
 
@@ -1134,7 +1134,7 @@ struct _Counted_iterator_category_base : _Counted_iterator_value_type_base<_Iter
 
 template <_Has_member_iterator_category _Iter>
 struct _Counted_iterator_category_base<_Iter> : _Counted_iterator_value_type_base<_Iter> {
-    using iterator_category = typename _Iter::iterator_category;
+    using iterator_category = _Iter::iterator_category;
 };
 
 template <class _Iter>
@@ -1142,7 +1142,7 @@ struct _Counted_iterator_concept_base : _Counted_iterator_category_base<_Iter> {
 
 template <_Has_member_iterator_concept _Iter>
 struct _Counted_iterator_concept_base<_Iter> : _Counted_iterator_category_base<_Iter> {
-    using iterator_concept = typename _Iter::iterator_concept;
+    using iterator_concept = _Iter::iterator_concept;
 };
 
 _EXPORT_STD template <input_or_output_iterator _Iter>
