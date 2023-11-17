@@ -19,3 +19,6 @@ variables:
 - name: benchmarkBuildOutputLocation
   value: 'D:\benchmark'
   readonly: true
+- name: Codeql.Enabled
+  value: false
+  readonly: true
