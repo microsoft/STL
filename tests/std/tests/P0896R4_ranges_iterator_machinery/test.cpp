@@ -420,11 +420,9 @@ struct sentinel_archetype : semiregular_archetype<I> {
         requires (I != 5);
     COPYABLE_OPS(sentinel);
 
-    // clang-format off
     template <std::size_t J>
         requires (I != 6)
     bool operator==(iterator_archetype<J> const&) const;
-    // clang-format on
 };
 
 inline constexpr std::size_t sentinel_archetype_max = 7;
@@ -1179,11 +1177,10 @@ namespace iterator_cust_swap_test {
 
     // N4928 [iterator.cust.swap]/4.2: "Otherwise, if the types of E1 and E2 each model indirectly_readable,
     // and if the reference types of E1 and E2 model swappable_with, then ranges::swap(*E1, *E2)."
-    // clang-format off
     template <class T, class U = T>
-    concept bullet2 = !bullet1<T, U> && indirectly_readable<remove_reference_t<T>>
-        && indirectly_readable<remove_reference_t<U>> && swappable_with<iter_reference_t<T>, iter_reference_t<U>>;
-    // clang-format on
+    concept bullet2 =
+        !bullet1<T, U> && indirectly_readable<remove_reference_t<T>> && indirectly_readable<remove_reference_t<U>>
+        && swappable_with<iter_reference_t<T>, iter_reference_t<U>>;
 
     constexpr bool test() {
         // This test notably executes both at runtime and at compiletime.
@@ -1770,7 +1767,6 @@ namespace unreachable_sentinel_test {
     STATIC_ASSERT(std::is_nothrow_copy_assignable_v<unreachable_sentinel_t>);
     STATIC_ASSERT(std::is_nothrow_move_assignable_v<unreachable_sentinel_t>);
 
-    // clang-format off
     template <class T>
     concept Comparable = requires(T const& t) {
         { t == unreachable_sentinel } -> std::same_as<bool>;
@@ -1778,7 +1774,6 @@ namespace unreachable_sentinel_test {
         { unreachable_sentinel == t } -> std::same_as<bool>;
         { unreachable_sentinel != t } -> std::same_as<bool>;
     };
-    // clang-format on
 
     STATIC_ASSERT(Comparable<int>);
 
@@ -1954,14 +1949,13 @@ namespace iter_ops {
             return *this;
         }
 
-        // clang-format off
         constexpr trace_iterator& operator=(default_sentinel_t) noexcept(NoThrow == nothrow::yes)
-            requires (Assign == assign::yes) {
+            requires (Assign == assign::yes)
+        {
             ++trace_->assignments_;
             pos_ = sentinel_position;
             return *this;
         }
-        // clang-format on
 
         int operator*() const noexcept(NoThrow == nothrow::yes);
 
@@ -3148,17 +3142,13 @@ namespace reverse_iterator_test {
     STATIC_ASSERT(same_as<reverse_iterator<xvalue_bidi_iter>::iterator_category, bidirectional_iterator_tag>);
 
     // Validate operator-> for a pointer, and for non-pointers with and without operator->()
-    // clang-format off
     template <class I, class P>
     concept has_arrow = requires(I i) {
         { i.operator->() } -> same_as<P>;
     };
 
     template <class I>
-    concept has_no_arrow = !requires(I i) {
-        i.operator->();
-    };
-    // clang-format on
+    concept has_no_arrow = !requires(I i) { i.operator->(); };
 
     STATIC_ASSERT(has_arrow<reverse_iterator<int*>, int*>);
     STATIC_ASSERT(same_as<reverse_iterator<int*>::pointer, int*>);

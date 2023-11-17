@@ -676,7 +676,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static _Constexpr_immortalize_impl<_Ty> _Static;
     return _Static._Storage;
 }
-#else // ^^^ !defined(_M_CEE) / defined(_M_CEE), TRANSITION, VSO-1153256  vvv
+#else // ^^^ !defined(_M_CEE) / defined(_M_CEE), TRANSITION, VSO-1153256 vvv
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     // return reference to a memcpy'd default-initialized _Ty
@@ -711,9 +711,9 @@ _EXPORT_STD _NODISCARD inline const error_category& system_category() noexcept {
 _STD_END
 
 #if _HAS_CXX17
-_EXTERN_C
+extern "C" {
 enum class __std_win_error : unsigned long;
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 // We would really love to use the proper way of building error_code by specializing

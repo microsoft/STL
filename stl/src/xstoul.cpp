@@ -24,7 +24,7 @@ static const char ndigs[_Base_max + 1] = {0, 0, 33, 21, 17, 14, 13, 12, 11, 11, 
     8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7};
 
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
-    const char* s, char** endptr, int base, int* perr) { // convert string to unsigned long, with checking
+    const char* s, char** endptr, int base, int* perr) noexcept { // convert string to unsigned long, with checking
     const char* sc;
     const char* sd;
     const char* s1;
@@ -109,8 +109,8 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     return x;
 }
 
-_CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoul(
-    const char* s, char** endptr, int base) { // convert string, discard error code
+_CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoul(const char* s, char** endptr, int base) noexcept {
+    // convert string, discard error code
     return _Stoulx(s, endptr, base, nullptr);
 }
 

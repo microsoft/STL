@@ -181,7 +181,7 @@ inline constexpr bool has_synth_ordered<SynthOrdered> = true;
 template <class Container>
 constexpr void ordered_containers_test(
     const Container& smaller, const Container& smaller_equal, const Container& larger) {
-    using Elem = typename Container::value_type;
+    using Elem = Container::value_type;
 
     if constexpr (has_synth_ordered<Elem>) {
         spaceship_test<std::weak_ordering>(smaller, smaller_equal, larger);

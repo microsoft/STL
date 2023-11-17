@@ -68,6 +68,8 @@
 // P0935R0 Eradicating Unnecessarily Explicit Default Constructors
 // P0941R2 Feature-Test Macros
 // P0972R0 noexcept For <chrono> zero(), min(), max()
+// P1065R2 constexpr INVOKE
+//     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
 // P1164R1 Making create_directory() Intuitive
 // P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
@@ -78,6 +80,7 @@
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (except for __cpp_lib_freestanding_charconv)
 // P2401R0 Conditional noexcept For exchange()
+// P2937R0 Freestanding Library: Remove strtok
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -126,8 +129,6 @@
 // P0682R1 Repairing Elementary String Conversions
 // P0739R0 Improving Class Template Argument Deduction For The STL
 // P0858R0 Constexpr Iterator Requirements
-// P1065R2 constexpr INVOKE
-//     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
 // P1169R4 static operator()
 // P1518R2 Stop Overconstraining Allocators In Container Deduction Guides
 // P2162R2 Inheriting From variant
@@ -224,7 +225,7 @@
 // P1032R1 Miscellaneous constexpr
 // P1035R7 Input Range Adaptors
 // P1065R2 constexpr INVOKE
-//     (except the std::invoke function which is implemented in C++17)
+//     (except the std::invoke function which is implemented unconditionally)
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
 // P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
@@ -306,6 +307,7 @@
 // P2711R1 Making Multi-Param Constructors Of Views explicit
 // P2736R2 Referencing The Unicode Standard
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
+// P2909R4 Fix Formatting Of Code Units As Integers
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -384,6 +386,7 @@
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
+// P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -893,8 +896,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 16.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1938 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.38 or newer.");
+#if _MSC_VER < 1939 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.39 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1605,7 +1608,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_exchange_function                201304L
 #define __cpp_lib_freestanding_char_traits         202306L
 #define __cpp_lib_freestanding_cstdlib             202306L
-#define __cpp_lib_freestanding_cstring             202306L
+#define __cpp_lib_freestanding_cstring             202311L
 #define __cpp_lib_freestanding_cwchar              202306L
 #define __cpp_lib_freestanding_errc                202306L
 #define __cpp_lib_freestanding_feature_test_macros 202306L
@@ -1749,6 +1752,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_format              202207L
+#define __cpp_lib_format_uchar        202311L
 #define __cpp_lib_freestanding_ranges 202306L
 #endif // defined(__cpp_lib_concepts)
 
@@ -1833,7 +1837,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                  202106L
 #define __cpp_lib_print                    202207L
-#define __cpp_lib_ranges_as_const          202207L
+#define __cpp_lib_ranges_as_const          202311L
 #define __cpp_lib_ranges_as_rvalue         202207L
 #define __cpp_lib_ranges_cartesian_product 202207L
 #define __cpp_lib_ranges_chunk             202202L
@@ -1943,28 +1947,58 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STRINGIZE(x)   _STRINGIZEX(x)
 #define _EMPTY_ARGUMENT // for empty macro argument
 
-#define _STD_BEGIN namespace std {
-#define _STD_END   }
-#define _STD       ::std::
-#define _CHRONO    ::std::chrono::
-#define _RANGES    ::std::ranges::
+// extern "C++" attaches declarations to the global module, see N4964 [module.unit]/7.2.
+// It has no effect in C++14/17.
+
+// In the STL's headers (which might be used to build the named module std), we unconditionally
+// and directly mark declarations of our separately compiled machinery as extern "C++", allowing
+// the named module to work with the separately compiled code (which is always built classically).
+
+// TRANSITION: _USE_EXTERN_CXX_EVERYWHERE_FOR_STL controls whether we also wrap the STL's
+// header-only code in this linkage-specification, as a temporary workaround to allow
+// the named module to coexist with classic includes in the same translation unit.
+
+#ifndef _USE_EXTERN_CXX_EVERYWHERE_FOR_STL
+#define _USE_EXTERN_CXX_EVERYWHERE_FOR_STL _HAS_CXX20
+#endif // ^^^ !defined(_USE_EXTERN_CXX_EVERYWHERE_FOR_STL) ^^^
+
+#if _USE_EXTERN_CXX_EVERYWHERE_FOR_STL
+#define _EXTERN_CXX_WORKAROUND     extern "C++" {
+#define _END_EXTERN_CXX_WORKAROUND }
+#else // ^^^ _USE_EXTERN_CXX_EVERYWHERE_FOR_STL / !_USE_EXTERN_CXX_EVERYWHERE_FOR_STL vvv
+#define _EXTERN_CXX_WORKAROUND
+#define _END_EXTERN_CXX_WORKAROUND
+#endif // ^^^ !_USE_EXTERN_CXX_EVERYWHERE_FOR_STL ^^^
+
+#define _STD_BEGIN         \
+    _EXTERN_CXX_WORKAROUND \
+    namespace std {
+#define _STD_END \
+    }            \
+    _END_EXTERN_CXX_WORKAROUND
+
+#define _STD    ::std::
+#define _CHRONO ::std::chrono::
+#define _RANGES ::std::ranges::
 
 // We use the stdext (standard extension) namespace to contain extensions that are not part of the current standard
-#define _STDEXT_BEGIN namespace stdext {
-#define _STDEXT_END   }
-#define _STDEXT       ::stdext::
+#define _STDEXT_BEGIN      \
+    _EXTERN_CXX_WORKAROUND \
+    namespace stdext {
+#define _STDEXT_END \
+    }               \
+    _END_EXTERN_CXX_WORKAROUND
+
+#define _STDEXT ::stdext::
 
 #define _CSTD ::
-
-#define _EXTERN_C     extern "C" {
-#define _END_EXTERN_C }
 
 #ifdef _M_CEE_PURE
 #define _EXTERN_C_UNLESS_PURE
 #define _END_EXTERN_C_UNLESS_PURE
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
-#define _EXTERN_C_UNLESS_PURE     _EXTERN_C
-#define _END_EXTERN_C_UNLESS_PURE _END_EXTERN_C
+#define _EXTERN_C_UNLESS_PURE     extern "C" {
+#define _END_EXTERN_C_UNLESS_PURE } // extern "C"
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 #if defined(MRTDLL) && !defined(_CRTBLD)

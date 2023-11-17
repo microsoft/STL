@@ -78,9 +78,9 @@ _STD_END
 #include <cstdlib>
 #include <locale>
 
-_EXTERN_C
+extern "C" {
 
-void __CLRCALL_OR_CDECL _Deletegloballocale(void* ptr) { // delete a global locale reference
+void __CLRCALL_OR_CDECL _Deletegloballocale(void* ptr) noexcept { // delete a global locale reference
     std::locale::_Locimp* locptr = *static_cast<std::locale::_Locimp**>(ptr);
     if (locptr != nullptr) {
         delete locptr->_Decref();
@@ -89,14 +89,14 @@ void __CLRCALL_OR_CDECL _Deletegloballocale(void* ptr) { // delete a global loca
 
 __PURE_APPDOMAIN_GLOBAL static std::locale::_Locimp* global_locale = nullptr; // pointer to current locale
 
-static void __CLRCALL_PURE_OR_CDECL tidy_global() { // delete static global locale reference
+static void __CLRCALL_PURE_OR_CDECL tidy_global() noexcept { // delete static global locale reference
     _BEGIN_LOCK(_LOCK_LOCALE) // prevent double delete
     _Deletegloballocale(&global_locale);
     global_locale = nullptr;
     _END_LOCK()
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 _MRTIMP2 void __cdecl _Atexit(void(__cdecl*)());
 

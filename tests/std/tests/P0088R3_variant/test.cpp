@@ -7227,17 +7227,17 @@ namespace msvc {
                 try {
                     std::visit(very_useful_visitor, v);
                     abort();
-                } catch (std::bad_variant_access&) {
+                } catch (const std::bad_variant_access&) {
                 }
                 try {
                     std::visit(very_useful_visitor, my_variant{42}, v);
                     abort();
-                } catch (std::bad_variant_access&) {
+                } catch (const std::bad_variant_access&) {
                 }
                 try {
                     std::visit(very_useful_visitor, v, my_variant{42});
                     abort();
-                } catch (std::bad_variant_access&) {
+                } catch (const std::bad_variant_access&) {
                 }
             }
         }

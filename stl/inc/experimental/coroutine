@@ -36,9 +36,9 @@ headers do not support Clang, but the C++20 <coroutine> header does.
 #endif // defined(__cpp_impl_coroutine)
 
 // intrinsics used in implementation of coroutine_handle
-extern "C" size_t _coro_resume(void*);
-extern "C" void _coro_destroy(void*);
-extern "C" size_t _coro_done(void*);
+extern "C" size_t _coro_resume(void*) noexcept;
+extern "C" void _coro_destroy(void*) noexcept;
+extern "C" size_t _coro_done(void*) noexcept;
 #pragma intrinsic(_coro_resume)
 #pragma intrinsic(_coro_destroy)
 #pragma intrinsic(_coro_done)
@@ -262,15 +262,15 @@ _STD_END
 
 // resumable functions support intrinsics
 
-extern "C" size_t _coro_frame_size();
-extern "C" void* _coro_frame_ptr();
-extern "C" void _coro_init_block();
-extern "C" void* _coro_resume_addr();
-extern "C" void _coro_init_frame(void*);
-extern "C" void _coro_save(size_t);
-extern "C" void _coro_suspend(size_t);
-extern "C" void _coro_cancel();
-extern "C" void _coro_resume_block();
+extern "C" size_t _coro_frame_size() noexcept;
+extern "C" void* _coro_frame_ptr() noexcept;
+extern "C" void _coro_init_block() noexcept;
+extern "C" void* _coro_resume_addr() noexcept;
+extern "C" void _coro_init_frame(void*) noexcept;
+extern "C" void _coro_save(size_t) noexcept;
+extern "C" void _coro_suspend(size_t) noexcept;
+extern "C" void _coro_cancel() noexcept;
+extern "C" void _coro_resume_block() noexcept;
 
 #pragma intrinsic(_coro_frame_size)
 #pragma intrinsic(_coro_frame_ptr)

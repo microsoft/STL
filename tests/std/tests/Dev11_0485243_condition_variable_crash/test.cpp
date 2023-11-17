@@ -24,7 +24,7 @@ void assert_no_leaks() {
 #endif
 }
 
-void test_484720();
+void test_DevDiv_484720();
 
 int main() {
     // DevDiv-452211 "<thread>: init_at_thread_exit_mutex() creates a spurious memory leak"
@@ -80,7 +80,7 @@ int main() {
 
     assert_no_leaks();
 
-    test_484720();
+    test_DevDiv_484720();
 
     assert_no_leaks();
 
@@ -183,7 +183,7 @@ void f2(locked_list<elt<int>>& lst) {
     assert(i == lst.end());
 }
 
-void test_484720() {
+void test_DevDiv_484720() {
     locked_list<elt<int>> lst;
     lst.emplace_back(1);
 

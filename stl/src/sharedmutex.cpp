@@ -5,39 +5,39 @@
 
 // these declarations must be in sync with those in xthreads.h
 
-using _Smtx_t = void*;
-
 extern "C" {
+
+using _Smtx_t = void*;
 
 static_assert(sizeof(_Smtx_t) == sizeof(SRWLOCK), "_Smtx_t must be the same size as SRWLOCK.");
 static_assert(alignof(_Smtx_t) == alignof(SRWLOCK), "_Smtx_t must be the same alignment as SRWLOCK.");
 
-void __cdecl _Smtx_lock_exclusive(_Smtx_t* smtx) { // lock shared mutex exclusively
+void __cdecl _Smtx_lock_exclusive(_Smtx_t* smtx) noexcept { // lock shared mutex exclusively
     AcquireSRWLockExclusive(reinterpret_cast<PSRWLOCK>(smtx));
 }
 
-void __cdecl _Smtx_lock_shared(_Smtx_t* smtx) { // lock shared mutex non-exclusively
+void __cdecl _Smtx_lock_shared(_Smtx_t* smtx) noexcept { // lock shared mutex non-exclusively
     AcquireSRWLockShared(reinterpret_cast<PSRWLOCK>(smtx));
 }
 
-int __cdecl _Smtx_try_lock_exclusive(_Smtx_t* smtx) { // try to lock shared mutex exclusively
+int __cdecl _Smtx_try_lock_exclusive(_Smtx_t* smtx) noexcept { // try to lock shared mutex exclusively
     return TryAcquireSRWLockExclusive(reinterpret_cast<PSRWLOCK>(smtx));
 }
 
-int __cdecl _Smtx_try_lock_shared(_Smtx_t* smtx) { // try to lock shared mutex non-exclusively
+int __cdecl _Smtx_try_lock_shared(_Smtx_t* smtx) noexcept { // try to lock shared mutex non-exclusively
     return TryAcquireSRWLockShared(reinterpret_cast<PSRWLOCK>(smtx));
 }
 
-void __cdecl _Smtx_unlock_exclusive(_Smtx_t* smtx) { // unlock exclusive shared mutex
+void __cdecl _Smtx_unlock_exclusive(_Smtx_t* smtx) noexcept { // unlock exclusive shared mutex
     _Analysis_assume_lock_held_(*reinterpret_cast<PSRWLOCK>(smtx));
     ReleaseSRWLockExclusive(reinterpret_cast<PSRWLOCK>(smtx));
 }
 
-void __cdecl _Smtx_unlock_shared(_Smtx_t* smtx) { // unlock non-exclusive shared mutex
+void __cdecl _Smtx_unlock_shared(_Smtx_t* smtx) noexcept { // unlock non-exclusive shared mutex
     ReleaseSRWLockShared(reinterpret_cast<PSRWLOCK>(smtx));
 }
 
 void __stdcall _Thrd_sleep_for(const unsigned long ms) noexcept { // suspend current thread for `ms` milliseconds
     Sleep(ms);
 }
-}
+} // extern "C"

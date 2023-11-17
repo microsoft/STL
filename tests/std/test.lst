@@ -189,6 +189,7 @@ tests\GH_001277_num_get_bad_grouping
 tests\GH_001411_core_headers
 tests\GH_001530_binomial_accuracy
 tests\GH_001541_case_sensitive_boolalpha
+tests\GH_001596_adl_proof_algorithms
 tests\GH_001638_dllexport_derived_classes
 tests\GH_001850_clog_tied_to_cout
 tests\GH_001858_iostream_exception
@@ -601,6 +602,7 @@ tests\P2286R8_text_formatting_debug_enabled_specializations
 tests\P2286R8_text_formatting_escaping
 tests\P2286R8_text_formatting_escaping_legacy_text_encoding
 tests\P2286R8_text_formatting_escaping_utf8
+tests\P2286R8_text_formatting_formattable
 tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference

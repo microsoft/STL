@@ -6,7 +6,7 @@
 #include "xmath.hpp"
 
 #if !defined(MRTDLL)
-_EXTERN_C
+extern "C" {
 #endif // defined(MRTDLL)
 
 // macros
@@ -41,7 +41,7 @@ static const FTYPE tenth[] = {
 #error Unexpected value for FBITS
 #endif // ^^^ FBITS != 24 && FBITS != 53 ^^^
 
-FTYPE FNAME(Dtento)(FTYPE* xpx, long n, int* perr) { // compute *px * 10**n
+FTYPE FNAME(Dtento)(FTYPE* xpx, long n, int* perr) noexcept { // compute *px * 10**n
     FTYPE xpf[ACSIZE];
     FTYPE x;
 
@@ -87,6 +87,7 @@ FTYPE FNAME(Dtento)(FTYPE* xpx, long n, int* perr) { // compute *px * 10**n
     }
     return x;
 }
+
 #if !defined(MRTDLL)
-_END_EXTERN_C
+} // extern "C"
 #endif // !defined(MRTDLL)

@@ -38,8 +38,8 @@ public:
 template <class Ty, class Alloc = void, bool ThrowOnSync = false>
 void test_osyncstream_manipulators(
     string_buffer<typename Ty::char_type, ThrowOnSync>* buf = nullptr, bool buffer_can_sync = true) {
-    using char_type   = typename Ty::char_type;
-    using traits_type = typename Ty::traits_type;
+    using char_type   = Ty::char_type;
+    using traits_type = Ty::traits_type;
 
     static_assert(is_base_of_v<basic_ostream<char_type, traits_type>, Ty>);
 

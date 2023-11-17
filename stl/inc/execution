@@ -27,7 +27,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_EXTERN_C
+extern "C" {
 #ifdef _M_CEE
 using __std_TP_WORK              = void;
 using __std_TP_CALLBACK_INSTANCE = void;
@@ -62,7 +62,7 @@ void __stdcall __std_execution_wait_on_uchar(
     _In_ const volatile unsigned char* _Address, _In_ unsigned char _Compare) noexcept;
 
 void __stdcall __std_execution_wake_by_address_all(_In_ const volatile void* _Address) noexcept;
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 inline constexpr size_t _Oversubscription_multiplier = 32;
@@ -181,7 +181,7 @@ class _Work_ptr {
 public:
     template <class _Work, enable_if_t<!is_same_v<remove_cv_t<_Work>, _Work_ptr>, int> = 0>
     explicit _Work_ptr(_Work& _Operation)
-        : _Ptp_work(__std_create_threadpool_work(&_Work::_Threadpool_callback, _STD addressof(_Operation), nullptr)) {
+        : _Ptp_work(::__std_create_threadpool_work(&_Work::_Threadpool_callback, _STD addressof(_Operation), nullptr)) {
         // register work with the thread pool
         // usually, after _Work_ptr is constructed, a parallel algorithm runs to completion or terminates
         static_assert(noexcept(_Work::_Threadpool_callback(_STD declval<__std_PTP_CALLBACK_INSTANCE>(),
@@ -229,7 +229,7 @@ void _Run_chunked_parallel_work(const size_t _Hw_threads, _Work& _Operation) {
     const _Work_ptr _Work_op{_Operation};
     // setup complete, hereafter nothrow or terminate
     _Work_op._Submit_for_chunks(_Hw_threads, _Operation._Team._Chunks);
-    _Run_available_chunked_work(_Operation);
+    _STD _Run_available_chunked_work(_Operation);
 }
 
 // The parallel algorithms library below assumes that distance(first, last) fits into a size_t;
@@ -840,15 +840,15 @@ struct _Static_partition_range<_RanIt, _Diff, true> {
         // statically partition a random-access iterator range and return next(_First, _Team._Count)
         // pre: _Populate hasn't yet been called on this instance
         auto _Result = _First + static_cast<_Target_diff>(_Team._Count); // does verification
-        _Start_at    = _Get_unwrapped(_First);
+        _Start_at    = _STD _Get_unwrapped(_First);
         return _Result;
     }
 
     bool _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _First, _RanIt _Last) {
         // statically partition a random-access iterator range and check if the range ends at _Last
         // pre: _Populate hasn't yet been called on this instance
-        _Adl_verify_range(_First, _Last);
-        _Start_at = _Get_unwrapped(_First);
+        _STD _Adl_verify_range(_First, _Last);
+        _Start_at = _STD _Get_unwrapped(_First);
         return _Team._Count == _Last - _First;
     }
 
@@ -883,16 +883,16 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
         const auto _Chunk_size      = static_cast<_Target_diff>(_Team._Chunk_size);
         const auto _Unchunked_items = _Team._Unchunked_items;
         auto _Result                = _Division_points.begin();
-        *_Result                    = _Get_unwrapped(_First);
+        *_Result                    = _STD _Get_unwrapped(_First);
         for (_Diff _Idx{}; _Idx < _Unchunked_items; ++_Idx) { // record bounds of chunks with an extra item
             _STD advance(_First, static_cast<_Target_diff>(_Chunk_size + 1));
-            *++_Result = _Get_unwrapped(_First);
+            *++_Result = _STD _Get_unwrapped(_First);
         }
 
         const auto _Diff_chunks = static_cast<_Diff>(_Chunks);
         for (_Diff _Idx = _Unchunked_items; _Idx < _Diff_chunks; ++_Idx) { // record bounds of chunks with no extra item
             _STD advance(_First, _Chunk_size);
-            *++_Result = _Get_unwrapped(_First);
+            *++_Result = _STD _Get_unwrapped(_First);
         }
 
         return _First;
@@ -906,7 +906,7 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
         const auto _Chunk_size      = _Team._Chunk_size;
         const auto _Unchunked_items = _Team._Unchunked_items;
         auto _Result                = _Division_points.begin();
-        *_Result                    = _Get_unwrapped(_First);
+        *_Result                    = _STD _Get_unwrapped(_First);
         for (_Diff _Idx{}; _Idx < _Unchunked_items; ++_Idx) { // record bounds of chunks with an extra item
             for (_Diff _This_chunk_size = _Chunk_size + 1; 0 < _This_chunk_size--;) {
                 if (_First == _Last) {
@@ -916,7 +916,7 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
                 ++_First;
             }
 
-            *++_Result = _Get_unwrapped(_First);
+            *++_Result = _STD _Get_unwrapped(_First);
         }
 
         const auto _Diff_chunks = static_cast<_Diff>(_Chunks);
@@ -929,7 +929,7 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
                 ++_First;
             }
 
-            *++_Result = _Get_unwrapped(_First);
+            *++_Result = _STD _Get_unwrapped(_First);
         }
 
         return _First == _Last;
@@ -960,7 +960,7 @@ struct _Static_partition_range_backward<_RanIt, _Diff, true> {
     void _Populate(const _Static_partition_team<_Diff>& _Team, _RanIt _Last) {
         // statically partition a random-access iterator range ending at _Last
         // pre: _Populate hasn't yet been called on this instance
-        _Start_at = _Get_unwrapped_n(_Last, -static_cast<_Target_diff>(_Team._Count));
+        _Start_at = _STD _Get_unwrapped_n(_Last, -static_cast<_Target_diff>(_Team._Count));
     }
 
     _Chunk_type _Get_chunk(const _Static_partition_key<_Diff> _Key) const {
@@ -986,10 +986,10 @@ struct _Static_partition_range_backward<_BidIt, _Diff, false> {
         const auto _Neg_chunk_size  = static_cast<_Target_diff>(-_Team._Chunk_size);
         const auto _Unchunked_items = _Team._Unchunked_items;
         auto _Result = _Division_points.begin(); // does range checking by incrementing in the checked domain
-        *_Result     = _Get_unwrapped(_Last);
+        *_Result     = _STD _Get_unwrapped(_Last);
         for (_Diff _Idx{}; _Idx < _Unchunked_items; ++_Idx) {
             _STD advance(_Last, static_cast<_Target_diff>(_Neg_chunk_size - 1));
-            *++_Result = _Get_unwrapped(_Last);
+            *++_Result = _STD _Get_unwrapped(_Last);
         }
 
         const auto _Diff_chunks = static_cast<_Diff>(_Chunks);
@@ -1085,7 +1085,7 @@ struct _Static_partitioned_all_of_family2 { // all_of/any_of/none_of task schedu
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_all_of_family2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_all_of_family2*>(_Context));
     }
 };
 
@@ -1098,7 +1098,7 @@ bool _All_of_family_parallel(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
         if (_Count >= 2) { // ... with at least 2 elements
             _TRY_BEGIN
             _Static_partitioned_all_of_family2<_Invert, _FwdIt, _Pr> _Operation{_First, _Hw_threads, _Count, _Pred};
-            _Run_chunked_parallel_work(_Hw_threads, _Operation);
+            _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
             return !_Operation._Cancel_token._Is_canceled_relaxed();
             _CATCH(const _Parallelism_resources_exhausted&)
             // fall through to serial case below
@@ -1119,13 +1119,13 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD bool all_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if all elements in [_First, _Last) satisfy _Pred with the indicated execution policy
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        return _All_of_family_parallel<false>(_UFirst, _ULast, _Pass_fn(_Pred));
+        return _STD _All_of_family_parallel<false>(_UFirst, _ULast, _STD _Pass_fn(_Pred));
     } else {
-        return _STD all_of(_UFirst, _ULast, _Pass_fn(_Pred));
+        return _STD all_of(_UFirst, _ULast, _STD _Pass_fn(_Pred));
     }
 }
 
@@ -1133,13 +1133,13 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD bool any_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if any element in [_First, _Last) satisfies _Pred with the indicated execution policy
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        return !_All_of_family_parallel<true>(_UFirst, _ULast, _Pass_fn(_Pred));
+        return !_STD _All_of_family_parallel<true>(_UFirst, _ULast, _STD _Pass_fn(_Pred));
     } else {
-        return _STD any_of(_UFirst, _ULast, _Pass_fn(_Pred));
+        return _STD any_of(_UFirst, _ULast, _STD _Pass_fn(_Pred));
     }
 }
 
@@ -1147,13 +1147,13 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD bool none_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if no element in [_First, _Last) satisfies _Pred with the indicated execution policy
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        return _All_of_family_parallel<true>(_UFirst, _ULast, _Pass_fn(_Pred));
+        return _STD _All_of_family_parallel<true>(_UFirst, _ULast, _STD _Pass_fn(_Pred));
     } else {
-        return _STD none_of(_UFirst, _ULast, _Pass_fn(_Pred));
+        return _STD none_of(_UFirst, _ULast, _STD _Pass_fn(_Pred));
     }
 }
 
@@ -1179,7 +1179,7 @@ struct _Static_partitioned_for_each2 { // for_each task scheduled on the system 
         const auto _Key = _Team._Get_next_key();
         if (_Key) {
             const auto _Chunk = _Basis._Get_chunk(_Key);
-            _For_each_ivdep(_Chunk._First, _Chunk._Last, _Func);
+            _STD _For_each_ivdep(_Chunk._First, _Chunk._Last, _Func);
             return _Cancellation_status::_Running;
         }
 
@@ -1188,7 +1188,7 @@ struct _Static_partitioned_for_each2 { // for_each task scheduled on the system 
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_for_each2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_for_each2*>(_Context));
     }
 };
 
@@ -1196,20 +1196,20 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution
 void for_each(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* terminates */ {
     // perform function for each element [_First, _Last) with the indicated execution policy
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
             auto _Count = _STD distance(_UFirst, _ULast);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
-                auto _Passed_fn = _Pass_fn(_Func);
+                auto _Passed_fn = _STD _Pass_fn(_Func);
                 _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Passed_fn)> _Operation{
                     _Hw_threads, _Count, _Passed_fn};
                 _Operation._Basis._Populate(_Operation._Team, _UFirst);
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
@@ -1217,9 +1217,9 @@ void for_each(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* termi
             }
         }
 
-        _For_each_ivdep(_UFirst, _ULast, _Pass_fn(_Func));
+        _STD _For_each_ivdep(_UFirst, _ULast, _STD _Pass_fn(_Func));
     } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
-        _For_each_ivdep(_UFirst, _ULast, _Pass_fn(_Func));
+        _STD _For_each_ivdep(_UFirst, _ULast, _STD _Pass_fn(_Func));
     } else {
         for (; _UFirst != _ULast; ++_UFirst) {
             _Func(*_UFirst);
@@ -1244,31 +1244,31 @@ _FwdIt for_each_n(_ExPo&&, _FwdIt _First, const _Diff _Count_raw, _Fn _Func) noe
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
-        auto _UFirst = _Get_unwrapped_n(_First, _Count);
+        auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
         if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
             const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
             if (_Hw_threads > 1 && _Count >= 2) { // parallelize on multiprocessor machines with at least 2 elements
                 _TRY_BEGIN
-                auto _Passed_fn = _Pass_fn(_Func);
+                auto _Passed_fn = _STD _Pass_fn(_Func);
                 _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Passed_fn)> _Operation{
                     _Hw_threads, _Count, _Passed_fn};
-                _Seek_wrapped(_First, _Operation._Basis._Populate(_Operation._Team, _UFirst));
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Seek_wrapped(_First, _Operation._Basis._Populate(_Operation._Team, _UFirst));
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return _First;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
-            _Seek_wrapped(_First, _For_each_n_ivdep(_UFirst, _Count, _Pass_fn(_Func)));
+            _STD _Seek_wrapped(_First, _STD _For_each_n_ivdep(_UFirst, _Count, _STD _Pass_fn(_Func)));
         } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
-            _Seek_wrapped(_First, _For_each_n_ivdep(_UFirst, _Count, _Pass_fn(_Func)));
+            _STD _Seek_wrapped(_First, _STD _For_each_n_ivdep(_UFirst, _Count, _STD _Pass_fn(_Func)));
         } else {
             for (; 0 < _Count; --_Count, (void) ++_UFirst) {
                 _Func(*_UFirst);
             }
 
-            _Seek_wrapped(_First, _UFirst);
+            _STD _Seek_wrapped(_First, _UFirst);
         }
     }
 
@@ -1313,7 +1313,7 @@ struct _Static_partitioned_find3 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_find3*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_find3*>(_Context));
     }
 };
 
@@ -1328,7 +1328,7 @@ _FwdIt _Find_parallel_unchecked(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
                 _TRY_BEGIN
                 _Static_partitioned_find3 _Operation{_Hw_threads, _Count, _Last, _Fx};
                 _Operation._Basis._Populate(_Operation._Team, _First);
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return _Operation._Results._Get_result();
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to _Fx below
@@ -1345,10 +1345,11 @@ _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _
     // find first matching _Val
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     using _UFwdIt = _Unwrapped_t<const _FwdIt&>;
-    _Adl_verify_range(_First, _Last);
-    _Seek_wrapped(_First,
-        _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _Get_unwrapped(_First), _Get_unwrapped(_Last),
-            [&](const _UFwdIt _LFirst, const _UFwdIt _LLast) { return _STD _Find_unchecked(_LFirst, _LLast, _Val); }));
+    _STD _Adl_verify_range(_First, _Last);
+    _STD _Seek_wrapped(_First, _STD _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First),
+                                   _STD _Get_unwrapped(_Last), [&](const _UFwdIt _LFirst, const _UFwdIt _LLast) {
+                                       return _STD _Find_unchecked(_LFirst, _LLast, _Val);
+                                   }));
     return _First;
 }
 
@@ -1357,11 +1358,12 @@ _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr 
     // find first satisfying _Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     using _UFwdIt = _Unwrapped_t<const _FwdIt&>;
-    _Adl_verify_range(_First, _Last);
-    auto _Pass_pred = _Pass_fn(_Pred);
-    _Seek_wrapped(_First,
-        _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _Get_unwrapped(_First), _Get_unwrapped(_Last),
-            [=](const _UFwdIt _LFirst, const _UFwdIt _LLast) { return _STD find_if(_LFirst, _LLast, _Pass_pred); }));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _Pass_pred = _STD _Pass_fn(_Pred);
+    _STD _Seek_wrapped(_First, _STD _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First),
+                                   _STD _Get_unwrapped(_Last), [=](const _UFwdIt _LFirst, const _UFwdIt _LLast) {
+                                       return _STD find_if(_LFirst, _LLast, _Pass_pred);
+                                   }));
     return _First;
 }
 
@@ -1370,12 +1372,12 @@ _NODISCARD _FwdIt find_if_not(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, 
     // find first satisfying !_Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     using _UFwdIt = _Unwrapped_t<const _FwdIt&>;
-    _Adl_verify_range(_First, _Last);
-    auto _Pass_pred = _Pass_fn(_Pred);
-    _Seek_wrapped(_First, _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _Get_unwrapped(_First),
-                              _Get_unwrapped(_Last), [=](const _UFwdIt _LFirst, const _UFwdIt _LLast) {
-                                  return _STD find_if_not(_LFirst, _LLast, _Pass_pred);
-                              }));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _Pass_pred = _STD _Pass_fn(_Pred);
+    _STD _Seek_wrapped(_First, _STD _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First),
+                                   _STD _Get_unwrapped(_Last), [=](const _UFwdIt _LFirst, const _UFwdIt _LLast) {
+                                       return _STD find_if_not(_LFirst, _LLast, _Pass_pred);
+                                   }));
     return _First;
 }
 
@@ -1508,7 +1510,7 @@ struct _Static_partitioned_find_end_backward3 {
         auto _Last1              = _Range._Last;
         do {
             --_Last1;
-            if (_Equal_rev_pred_unchecked(_Last1, _Range2._First, _Range2._Last, _Pred)) {
+            if (_STD _Equal_rev_pred_unchecked(_Last1, _Range2._First, _Range2._Last, _Pred)) {
                 _Results._Imbue(_Chunk_number, _Last1);
                 return _Cancellation_status::_Canceled;
             }
@@ -1518,7 +1520,7 @@ struct _Static_partitioned_find_end_backward3 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_find_end_backward3*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_find_end_backward3*>(_Context));
     }
 };
 
@@ -1529,20 +1531,20 @@ _NODISCARD _FwdIt1 find_end(_ExPo&&, _FwdIt1 _First1, const _FwdIt1 _Last1, cons
     // find last [_First2, _Last2) satisfying _Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
-    const auto _UFirst2 = _Get_unwrapped(_First2);
-    const auto _ULast2  = _Get_unwrapped(_Last2);
+    _STD _Adl_verify_range(_First1, _Last1);
+    _STD _Adl_verify_range(_First2, _Last2);
+    const auto _UFirst1 = _STD _Get_unwrapped(_First1);
+    const auto _ULast1  = _STD _Get_unwrapped(_Last1);
+    const auto _UFirst2 = _STD _Get_unwrapped(_First2);
+    const auto _ULast2  = _STD _Get_unwrapped(_Last2);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) {
             if constexpr (_Is_ranges_bidi_iter_v<_FwdIt1>) {
                 const auto _Partition_start =
-                    _Get_find_end_backward_partition_start(_UFirst1, _ULast1, _UFirst2, _ULast2);
+                    _STD _Get_find_end_backward_partition_start(_UFirst1, _ULast1, _UFirst2, _ULast2);
                 if (_UFirst1 == _Partition_start) {
-                    _Seek_wrapped(_First1, _ULast1);
+                    _STD _Seek_wrapped(_First1, _ULast1);
                     return _First1;
                 }
 
@@ -1550,24 +1552,24 @@ _NODISCARD _FwdIt1 find_end(_ExPo&&, _FwdIt1 _First1, const _FwdIt1 _Last1, cons
                 if (_Count >= 2) {
                     _TRY_BEGIN
                     _Static_partitioned_find_end_backward3 _Operation{
-                        _Hw_threads, _Count, _ULast1, _UFirst2, _ULast2, _Pass_fn(_Pred)};
+                        _Hw_threads, _Count, _ULast1, _UFirst2, _ULast2, _STD _Pass_fn(_Pred)};
                     _Operation._Basis._Populate(_Operation._Team, _Partition_start);
-                    _Run_chunked_parallel_work(_Hw_threads, _Operation);
-                    _Seek_wrapped(_First1, _Operation._Results._Get_result());
+                    _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                    _STD _Seek_wrapped(_First1, _Operation._Results._Get_result());
                     return _First1;
                     _CATCH(const _Parallelism_resources_exhausted&)
                     // fall through to serial case below
                     _CATCH_END
                 }
             } else {
-                const auto _Count = _Get_find_end_forward_partition_size(_UFirst1, _ULast1, _UFirst2, _ULast2);
+                const auto _Count = _STD _Get_find_end_forward_partition_size(_UFirst1, _ULast1, _UFirst2, _ULast2);
                 if (_Count >= 2) {
                     _TRY_BEGIN
                     _Static_partitioned_find_end_forward2 _Operation{
-                        _Hw_threads, _Count, _ULast1, _UFirst2, _ULast2, _Pass_fn(_Pred)};
+                        _Hw_threads, _Count, _ULast1, _UFirst2, _ULast2, _STD _Pass_fn(_Pred)};
                     _Operation._Basis._Populate(_Operation._Team, _UFirst1);
-                    _Run_chunked_parallel_work(_Hw_threads, _Operation);
-                    _Seek_wrapped(_First1, _Operation._Results._Get_result());
+                    _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                    _STD _Seek_wrapped(_First1, _Operation._Results._Get_result());
                     return _First1;
                     _CATCH(const _Parallelism_resources_exhausted&)
                     // fall through to serial case below
@@ -1577,7 +1579,7 @@ _NODISCARD _FwdIt1 find_end(_ExPo&&, _FwdIt1 _First1, const _FwdIt1 _Last1, cons
         }
     }
 
-    _Seek_wrapped(_First1, _STD find_end(_UFirst1, _ULast1, _UFirst2, _ULast2, _Pass_fn(_Pred)));
+    _STD _Seek_wrapped(_First1, _STD find_end(_UFirst1, _ULast1, _UFirst2, _ULast2, _STD _Pass_fn(_Pred)));
     return _First1;
 }
 
@@ -1589,19 +1591,19 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     using _UFwdIt1 = _Unwrapped_t<const _FwdIt1&>;
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    const auto _UFirst2 = _Get_unwrapped(_First2);
-    const auto _ULast2  = _Get_unwrapped(_Last2);
+    _STD _Adl_verify_range(_First1, _Last1);
+    _STD _Adl_verify_range(_First2, _Last2);
+    const auto _UFirst2 = _STD _Get_unwrapped(_First2);
+    const auto _ULast2  = _STD _Get_unwrapped(_Last2);
     if (_UFirst2 == _ULast2) {
         return _Last1;
     }
 
-    auto _Pass_pred = _Pass_fn(_Pred);
-    _Seek_wrapped(_Last1, _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _Get_unwrapped(_First1),
-                              _Get_unwrapped(_Last1), [=](const _UFwdIt1 _LFirst1, const _UFwdIt1 _LLast1) {
-                                  return _STD find_first_of(_LFirst1, _LLast1, _UFirst2, _ULast2, _Pass_pred);
-                              }));
+    auto _Pass_pred = _STD _Pass_fn(_Pred);
+    _STD _Seek_wrapped(_Last1, _STD _Find_parallel_unchecked(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First1),
+                                   _STD _Get_unwrapped(_Last1), [=](const _UFwdIt1 _LFirst1, const _UFwdIt1 _LLast1) {
+                                       return _STD find_first_of(_LFirst1, _LLast1, _UFirst2, _ULast2, _Pass_pred);
+                                   }));
     return _Last1;
 }
 
@@ -1645,7 +1647,7 @@ struct _Static_partitioned_adjacent_find3 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_adjacent_find3*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_adjacent_find3*>(_Context));
     }
 };
 
@@ -1653,19 +1655,19 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD _FwdIt adjacent_find(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find first satisfying _Pred with successor
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) {
             const auto _Count = static_cast<_Iter_diff_t<_FwdIt>>(_STD distance(_UFirst, _ULast) - 1);
             if (_Count >= 2) {
                 _TRY_BEGIN
-                _Static_partitioned_adjacent_find3 _Operation{_Hw_threads, _Count, _ULast, _Pass_fn(_Pred)};
+                _Static_partitioned_adjacent_find3 _Operation{_Hw_threads, _Count, _ULast, _STD _Pass_fn(_Pred)};
                 _Operation._Basis._Populate(_Operation._Team, _UFirst);
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
-                _Seek_wrapped(_Last, _Operation._Results._Get_result());
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Seek_wrapped(_Last, _Operation._Results._Get_result());
                 return _Last;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to adjacent_find below
@@ -1674,7 +1676,7 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred)
         }
     }
 
-    _Seek_wrapped(_Last, _STD adjacent_find(_UFirst, _ULast, _Pass_fn(_Pred)));
+    _STD _Seek_wrapped(_Last, _STD adjacent_find(_UFirst, _ULast, _STD _Pass_fn(_Pred)));
     return _Last;
 }
 
@@ -1713,9 +1715,9 @@ _NODISCARD _Iter_diff_t<_FwdIt> count_if(_ExPo&&, const _FwdIt _First, const _Fw
 /* terminates */ {
     // count elements satisfying _Pred
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) {
@@ -1723,7 +1725,7 @@ _NODISCARD _Iter_diff_t<_FwdIt> count_if(_ExPo&&, const _FwdIt _First, const _Fw
             if (_Count >= 2) {
                 const auto _Chunks = _Get_chunked_work_chunk_count(_Hw_threads, _Count);
                 _TRY_BEGIN
-                _Static_partitioned_count_if2 _Operation{_Count, _Chunks, _UFirst, _Pass_fn(_Pred)};
+                _Static_partitioned_count_if2 _Operation{_Count, _Chunks, _UFirst, _STD _Pass_fn(_Pred)};
                 _Iter_diff_t<_FwdIt> _Foreground_count;
                 {
                     const _Work_ptr _Work{_Operation};
@@ -1740,7 +1742,7 @@ _NODISCARD _Iter_diff_t<_FwdIt> count_if(_ExPo&&, const _FwdIt _First, const _Fw
         }
     }
 
-    return _STD count_if(_UFirst, _ULast, _Pass_fn(_Pred));
+    return _STD count_if(_UFirst, _ULast, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
@@ -1748,8 +1750,8 @@ _NODISCARD _Iter_diff_t<_FwdIt> count(_ExPo&& _Exec, const _FwdIt _First, const 
 /* terminates */ {
     // count elements that match _Val
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _Adl_verify_range(_First, _Last);
-    return _STD count_if(_STD forward<_ExPo>(_Exec), _Get_unwrapped(_First), _Get_unwrapped(_Last),
+    _STD _Adl_verify_range(_First, _Last);
+    return _STD count_if(_STD forward<_ExPo>(_Exec), _STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last),
         [&_Val](auto&& _Iter_val) { return _STD forward<decltype(_Iter_val)>(_Iter_val) == _Val; });
 }
 
@@ -1809,8 +1811,8 @@ struct _Static_partitioned_mismatch_results<_FwdIt1, _FwdIt2, false, false> {
 
     pair<_FwdIt1, _FwdIt2> _Get_result(_FwdIt1 _First1, _FwdIt2 _First2) const {
         const auto _Result = _Storage._Get_result();
-        _Seek_wrapped(_First2, _Result.second);
-        _Seek_wrapped(_First1, _Result.first);
+        _STD _Seek_wrapped(_First2, _Result.second);
+        _STD _Seek_wrapped(_First1, _Result.first);
         return {_First1, _First2};
     }
 };
@@ -1827,8 +1829,8 @@ struct _Static_partitioned_mismatch3 {
     _Static_partitioned_mismatch3(
         const size_t _Hw_threads, const _Diff _Count, const _FwdIt1 _First1, const _FwdIt2 _First2, const _Pr _Pred_)
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
-          _Results(
-              _Get_unwrapped(_Basis1._Populate(_Team, _First1)), _Get_unwrapped(_Basis2._Populate(_Team, _First2))),
+          _Results(_STD _Get_unwrapped(_Basis1._Populate(_Team, _First1)),
+              _STD _Get_unwrapped(_Basis2._Populate(_Team, _First2))),
           _Pred(_Pred_) {}
 
     _Cancellation_status _Process_chunk() {
@@ -1863,7 +1865,7 @@ struct _Static_partitioned_mismatch3 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_mismatch3*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_mismatch3*>(_Context));
     }
 };
 
@@ -1874,38 +1876,38 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     // return [_First1, _Last1)/[_First2, ...) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First1, _Last1);
-    const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
+    _STD _Adl_verify_range(_First1, _Last1);
+    const auto _UFirst1 = _STD _Get_unwrapped(_First1);
+    const auto _ULast1  = _STD _Get_unwrapped(_Last1);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) {
             const auto _Count   = _STD distance(_UFirst1, _ULast1);
-            const auto _UFirst2 = _Get_unwrapped_n(_First2, _Count);
+            const auto _UFirst2 = _STD _Get_unwrapped_n(_First2, _Count);
             if (_Count >= 2) {
                 _TRY_BEGIN
-                _Static_partitioned_mismatch3 _Operation{_Hw_threads, _Count, _UFirst1, _UFirst2, _Pass_fn(_Pred)};
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _Static_partitioned_mismatch3 _Operation{_Hw_threads, _Count, _UFirst1, _UFirst2, _STD _Pass_fn(_Pred)};
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 const auto _Result = _Operation._Results._Get_result(_UFirst1, _UFirst2);
-                _Seek_wrapped(_First2, _Result.second);
-                _Seek_wrapped(_First1, _Result.first);
+                _STD _Seek_wrapped(_First2, _Result.second);
+                _STD _Seek_wrapped(_First1, _Result.first);
                 return {_First1, _First2};
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
-            const auto _Result = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _Pass_fn(_Pred));
-            _Seek_wrapped(_First2, _Result.second);
-            _Seek_wrapped(_First1, _Result.first);
+            const auto _Result = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _STD _Pass_fn(_Pred));
+            _STD _Seek_wrapped(_First2, _Result.second);
+            _STD _Seek_wrapped(_First1, _Result.first);
             return {_First1, _First2};
         }
     }
 
-    const auto _Result = _STD mismatch(
-        _UFirst1, _ULast1, _Get_unwrapped_n(_First2, _Idl_distance<_FwdIt1>(_UFirst1, _ULast1)), _Pass_fn(_Pred));
-    _Seek_wrapped(_First2, _Result.second);
-    _Seek_wrapped(_First1, _Result.first);
+    const auto _Result = _STD mismatch(_UFirst1, _ULast1,
+        _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_FwdIt1>(_UFirst1, _ULast1)), _STD _Pass_fn(_Pred));
+    _STD _Seek_wrapped(_First2, _Result.second);
+    _STD _Seek_wrapped(_First1, _Result.first);
     return {_First1, _First2};
 }
 
@@ -1916,23 +1918,24 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
-    const auto _UFirst2 = _Get_unwrapped(_First2);
-    const auto _ULast2  = _Get_unwrapped(_Last2);
+    _STD _Adl_verify_range(_First1, _Last1);
+    _STD _Adl_verify_range(_First2, _Last2);
+    const auto _UFirst1 = _STD _Get_unwrapped(_First1);
+    const auto _ULast1  = _STD _Get_unwrapped(_Last1);
+    const auto _UFirst2 = _STD _Get_unwrapped(_First2);
+    const auto _ULast2  = _STD _Get_unwrapped(_Last2);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) {
-            const auto _Count = static_cast<_Iter_diff_t<_FwdIt1>>(_Distance_min(_UFirst1, _ULast1, _UFirst2, _ULast2));
+            const auto _Count =
+                static_cast<_Iter_diff_t<_FwdIt1>>(_STD _Distance_min(_UFirst1, _ULast1, _UFirst2, _ULast2));
             if (_Count >= 2) {
                 _TRY_BEGIN
-                _Static_partitioned_mismatch3 _Operation{_Hw_threads, _Count, _UFirst1, _UFirst2, _Pass_fn(_Pred)};
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _Static_partitioned_mismatch3 _Operation{_Hw_threads, _Count, _UFirst1, _UFirst2, _STD _Pass_fn(_Pred)};
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 const auto _Result = _Operation._Results._Get_result(_UFirst1, _UFirst2);
-                _Seek_wrapped(_First2, _Result.second);
-                _Seek_wrapped(_First1, _Result.first);
+                _STD _Seek_wrapped(_First2, _Result.second);
+                _STD _Seek_wrapped(_First1, _Result.first);
                 return {_First1, _First2};
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial below
@@ -1941,9 +1944,9 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
         }
     }
 
-    const auto _Result = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _ULast2, _Pass_fn(_Pred));
-    _Seek_wrapped(_First2, _Result.second);
-    _Seek_wrapped(_First1, _Result.first);
+    const auto _Result = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _ULast2, _STD _Pass_fn(_Pred));
+    _STD _Seek_wrapped(_First2, _Result.second);
+    _STD _Seek_wrapped(_First1, _Result.first);
     return {_First1, _First2};
 }
 
@@ -1983,7 +1986,7 @@ struct _Static_partitioned_equal2 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_equal2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_equal2*>(_Context));
     }
 };
 
@@ -1994,31 +1997,31 @@ _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, cons
     // compare [_First1, _Last1) to [_First2, ...)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First1, _Last1);
-    const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
+    _STD _Adl_verify_range(_First1, _Last1);
+    const auto _UFirst1 = _STD _Get_unwrapped(_First1);
+    const auto _ULast1  = _STD _Get_unwrapped(_Last1);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) {
             const auto _Count   = _STD distance(_UFirst1, _ULast1);
-            const auto _UFirst2 = _Get_unwrapped_n(_First2, _Count);
+            const auto _UFirst2 = _STD _Get_unwrapped_n(_First2, _Count);
             if (_Count >= 2) {
                 _TRY_BEGIN
-                _Static_partitioned_equal2 _Operation{_Hw_threads, _Count, _Pass_fn(_Pred), _UFirst1, _UFirst2};
+                _Static_partitioned_equal2 _Operation{_Hw_threads, _Count, _STD _Pass_fn(_Pred), _UFirst1, _UFirst2};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst1);
                 _Operation._Basis2._Populate(_Operation._Team, _UFirst2);
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return !_Operation._Cancel_token._Is_canceled_relaxed();
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
-            return _STD equal(_UFirst1, _ULast1, _UFirst2, _Pass_fn(_Pred));
+            return _STD equal(_UFirst1, _ULast1, _UFirst2, _STD _Pass_fn(_Pred));
         }
     }
 
-    return _STD equal(_UFirst1, _ULast1, _First2, _Pass_fn(_Pred));
+    return _STD equal(_UFirst1, _ULast1, _First2, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr,
@@ -2028,19 +2031,19 @@ _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, cons
     // compare [_First1, _Last1) to [_First2, _Last2)
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
-    const auto _UFirst2 = _Get_unwrapped(_First2);
-    const auto _ULast2  = _Get_unwrapped(_Last2);
+    _STD _Adl_verify_range(_First1, _Last1);
+    _STD _Adl_verify_range(_First2, _Last2);
+    const auto _UFirst1 = _STD _Get_unwrapped(_First1);
+    const auto _ULast1  = _STD _Get_unwrapped(_Last1);
+    const auto _UFirst2 = _STD _Get_unwrapped(_First2);
+    const auto _ULast2  = _STD _Get_unwrapped(_Last2);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) {
-            const auto _Count = _Distance_any(_UFirst1, _ULast1, _UFirst2, _ULast2);
+            const auto _Count = _STD _Distance_any(_UFirst1, _ULast1, _UFirst2, _ULast2);
             if (_Count >= 2) {
                 _TRY_BEGIN
-                _Static_partitioned_equal2 _Operation{_Hw_threads, _Count, _Pass_fn(_Pred), _UFirst1, _UFirst2};
+                _Static_partitioned_equal2 _Operation{_Hw_threads, _Count, _STD _Pass_fn(_Pred), _UFirst1, _UFirst2};
                 if (!_Operation._Basis1._Populate(_Operation._Team, _UFirst1, _ULast1)) {
                     // left sequence didn't have length _Count
                     return false;
@@ -2051,7 +2054,7 @@ _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, cons
                     return false;
                 }
 
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return !_Operation._Cancel_token._Is_canceled_relaxed();
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to equal below
@@ -2060,7 +2063,7 @@ _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, cons
         }
     }
 
-    return _STD equal(_UFirst1, _ULast1, _UFirst2, _ULast2, _Pass_fn(_Pred));
+    return _STD equal(_UFirst1, _ULast1, _UFirst2, _ULast2, _STD _Pass_fn(_Pred));
 }
 
 template <class _FwdItHaystack, class _FwdItPat, class _Pr>
@@ -2093,7 +2096,7 @@ struct _Static_partitioned_search3 {
 
         const auto _Range = _Basis._Get_chunk(_Key);
         for (auto _Candidate = _Range._First; _Candidate != _Range._Last; ++_Candidate) {
-            if (_Equal_rev_pred_unchecked(_Candidate, _First2, _Last2, _Pred)) {
+            if (_STD _Equal_rev_pred_unchecked(_Candidate, _First2, _Last2, _Pred)) {
                 _Results._Imbue(_Key._Chunk_number, _Candidate);
                 return _Cancellation_status::_Canceled;
             }
@@ -2104,7 +2107,7 @@ struct _Static_partitioned_search3 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_search3*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_search3*>(_Context));
     }
 };
 
@@ -2115,16 +2118,16 @@ _NODISCARD _FwdItHaystack search(_ExPo&&, const _FwdItHaystack _First1, _FwdItHa
     // find first [_First2, _Last2) match
     _REQUIRE_PARALLEL_ITERATOR(_FwdItHaystack);
     _REQUIRE_PARALLEL_ITERATOR(_FwdItPat);
-    _Adl_verify_range(_First2, _Last2);
-    const auto _UFirst2 = _Get_unwrapped(_First2);
-    const auto _ULast2  = _Get_unwrapped(_Last2);
+    _STD _Adl_verify_range(_First2, _Last2);
+    const auto _UFirst2 = _STD _Get_unwrapped(_First2);
+    const auto _ULast2  = _STD _Get_unwrapped(_Last2);
     if (_UFirst2 == _ULast2) {
         return _First1;
     }
 
-    _Adl_verify_range(_First1, _Last1);
-    const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
+    _STD _Adl_verify_range(_First1, _Last1);
+    const auto _UFirst1 = _STD _Get_unwrapped(_First1);
+    const auto _ULast1  = _STD _Get_unwrapped(_Last1);
 
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
@@ -2162,7 +2165,7 @@ _NODISCARD _FwdItHaystack search(_ExPo&&, const _FwdItHaystack _First1, _FwdItHa
             if (_Count == 1) {
                 // 1 match possible == ranges are of equal length -- do better than serial search because we've done the
                 // work to calculate distance() of the inputs
-                if (_Equal_rev_pred_unchecked(_UFirst1, _UFirst2, _ULast2, _Pass_fn(_Pred))) {
+                if (_STD _Equal_rev_pred_unchecked(_UFirst1, _UFirst2, _ULast2, _STD _Pass_fn(_Pred))) {
                     return _First1;
                 }
 
@@ -2171,9 +2174,9 @@ _NODISCARD _FwdItHaystack search(_ExPo&&, const _FwdItHaystack _First1, _FwdItHa
 
             _TRY_BEGIN
             _Static_partitioned_search3 _Operation{
-                _Hw_threads, _Count, _UFirst1, _ULast1, _UFirst2, _ULast2, _Pass_fn(_Pred)};
-            _Run_chunked_parallel_work(_Hw_threads, _Operation);
-            _Seek_wrapped(_Last1, _Operation._Results._Get_result());
+                _Hw_threads, _Count, _UFirst1, _ULast1, _UFirst2, _ULast2, _STD _Pass_fn(_Pred)};
+            _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
+            _STD _Seek_wrapped(_Last1, _Operation._Results._Get_result());
             return _Last1;
             _CATCH(const _Parallelism_resources_exhausted&)
             // fall through to search, below
@@ -2181,7 +2184,7 @@ _NODISCARD _FwdItHaystack search(_ExPo&&, const _FwdItHaystack _First1, _FwdItHa
         }
     }
 
-    _Seek_wrapped(_Last1, _STD search(_UFirst1, _ULast1, _UFirst2, _ULast2, _Pass_fn(_Pred)));
+    _STD _Seek_wrapped(_Last1, _STD search(_UFirst1, _ULast1, _UFirst2, _ULast2, _STD _Pass_fn(_Pred)));
     return _Last1;
 }
 
@@ -2234,7 +2237,7 @@ struct _Static_partitioned_search_n3 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_search_n3*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_search_n3*>(_Context));
     }
 };
 
@@ -2255,9 +2258,9 @@ _NODISCARD _FwdIt search_n(_ExPo&&, const _FwdIt _First, _FwdIt _Last, const _Di
         return _Last;
     }
 
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) {
@@ -2270,9 +2273,9 @@ _NODISCARD _FwdIt search_n(_ExPo&&, const _FwdIt _First, _FwdIt _Last, const _Di
             const auto _Candidates = static_cast<_Iter_diff_t<_FwdIt>>(_Haystack_count - _Count + 1);
             _TRY_BEGIN
             _Static_partitioned_search_n3 _Operation{_Hw_threads, _Candidates, _UFirst, _ULast,
-                static_cast<_Iter_diff_t<_FwdIt>>(_Count), _Val, _Pass_fn(_Pred)};
-            _Run_chunked_parallel_work(_Hw_threads, _Operation);
-            _Seek_wrapped(_Last, _Operation._Results._Get_result());
+                static_cast<_Iter_diff_t<_FwdIt>>(_Count), _Val, _STD _Pass_fn(_Pred)};
+            _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
+            _STD _Seek_wrapped(_Last, _Operation._Results._Get_result());
             return _Last;
             _CATCH(const _Parallelism_resources_exhausted&)
             // fall through to search_n, below
@@ -2280,7 +2283,7 @@ _NODISCARD _FwdIt search_n(_ExPo&&, const _FwdIt _First, _FwdIt _Last, const _Di
         }
     }
 
-    _Seek_wrapped(_Last, _STD search_n(_UFirst, _ULast, _Count, _Val, _Pass_fn(_Pred)));
+    _STD _Seek_wrapped(_Last, _STD search_n(_UFirst, _ULast, _Count, _Val, _STD _Pass_fn(_Pred)));
     return _Last;
 }
 

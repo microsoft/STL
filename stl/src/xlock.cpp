@@ -39,7 +39,7 @@ __thiscall _Init_locks::~_Init_locks() noexcept { // clean up locks
     }
 }
 
-#endif
+#endif // ^^^ !defined(MRTDLL) ^^^
 
 void __cdecl _Init_locks::_Init_locks_ctor(_Init_locks*) noexcept { // initialize locks
     if (InterlockedIncrement(&init) == 0) {
@@ -85,7 +85,7 @@ __thiscall _Lockit::~_Lockit() noexcept { // unlock the mutex
     }
 }
 
-#endif
+#endif // ^^^ !defined(MRTDLL) ^^^
 
 void __cdecl _Lockit::_Lockit_ctor(_Lockit*) noexcept { // lock default mutex
     _Mtxlock(&mtx[0]);
@@ -122,13 +122,13 @@ void __cdecl _Lockit::_Lockit_dtor(int kind) noexcept { // unlock the mutex
     }
 }
 
-_EXTERN_C
-void _Lock_at_thread_exit_mutex() { // lock the at-thread-exit mutex
+extern "C" {
+void _Lock_at_thread_exit_mutex() noexcept { // lock the at-thread-exit mutex
     _Mtxlock(&mtx[_LOCK_AT_THREAD_EXIT]);
 }
-void _Unlock_at_thread_exit_mutex() { // unlock the at-thread-exit mutex
+void _Unlock_at_thread_exit_mutex() noexcept { // unlock the at-thread-exit mutex
     _Mtxunlock(&mtx[_LOCK_AT_THREAD_EXIT]);
 }
-_END_EXTERN_C
+} // extern "C"
 
 _STD_END
