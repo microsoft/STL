@@ -1046,7 +1046,7 @@ public:
         }
     }
 
-    _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
+    _NODISCARD_FRIEND constexpr decltype(auto) iter_move(const common_iterator& _Right) noexcept(
         noexcept(_RANGES iter_move(_Right._Val._Get_first())))
         requires input_iterator<_Iter>
     {
@@ -1362,7 +1362,7 @@ public:
     }
 
     // [counted.iter.cust]
-    _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_Iter> iter_move(const counted_iterator& _Right) noexcept(
+    _NODISCARD_FRIEND constexpr decltype(auto) iter_move(const counted_iterator& _Right) noexcept(
         noexcept(_RANGES iter_move(_Right._Current)))
         requires input_iterator<_Iter>
     {
