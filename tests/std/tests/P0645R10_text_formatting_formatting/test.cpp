@@ -725,6 +725,17 @@ void test_char_specs() {
     test_type(STR("{:X}"), charT{'X'});
 
     test_type(STR("{:+d}"), charT{'X'});
+
+    // P2909R4 Fix formatting of code units as integers
+    constexpr charT irregular_code_unit     = static_cast<charT>(255);
+    constexpr int irregular_code_unit_value = static_cast<make_unsigned_t<charT>>(irregular_code_unit);
+    assert(format(STR("{:b}"), irregular_code_unit) == format(STR("{:b}"), irregular_code_unit_value));
+    assert(format(STR("{:B}"), irregular_code_unit) == format(STR("{:B}"), irregular_code_unit_value));
+    assert(format(STR("{:d}"), irregular_code_unit) == format(STR("{:d}"), irregular_code_unit_value));
+    assert(format(STR("{:o}"), irregular_code_unit) == format(STR("{:o}"), irregular_code_unit_value));
+    assert(format(STR("{:x}"), irregular_code_unit) == format(STR("{:x}"), irregular_code_unit_value));
+    assert(format(STR("{:X}"), irregular_code_unit) == format(STR("{:X}"), irregular_code_unit_value));
+    assert(format(STR("{:+d}"), irregular_code_unit) == format(STR("{:+d}"), irregular_code_unit_value));
 }
 
 template <class charT, class Float>

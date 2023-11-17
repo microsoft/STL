@@ -34,7 +34,7 @@ struct repeated_tuple_impl<T, index_sequence<Indices...>> {
 };
 
 template <class T, size_t N>
-using repeated_tuple = typename repeated_tuple_impl<T, make_index_sequence<N>>::type;
+using repeated_tuple = repeated_tuple_impl<T, make_index_sequence<N>>::type;
 
 STATIC_ASSERT(same_as<repeated_tuple<int, 0>, tuple<>>);
 STATIC_ASSERT(same_as<repeated_tuple<int, 3>, tuple<int, int, int>>);
@@ -330,7 +330,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<typename I::iterator_category, input_iterator_tag>);
 
         // Check iterator_concept
-        using IterConcept = typename I::iterator_concept;
+        using IterConcept = I::iterator_concept;
         STATIC_ASSERT(random_access_range<V> == same_as<IterConcept, random_access_iterator_tag>);
         STATIC_ASSERT(
             (bidirectional_range<V> && !random_access_range<V>) == same_as<IterConcept, bidirectional_iterator_tag>);
@@ -511,7 +511,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<typename CI::iterator_category, input_iterator_tag>);
 
         // Check iterator_concept
-        using IterConcept = typename CI::iterator_concept;
+        using IterConcept = CI::iterator_concept;
         STATIC_ASSERT(random_access_range<const V> == same_as<IterConcept, random_access_iterator_tag>);
         STATIC_ASSERT((bidirectional_range<const V> && !random_access_range<const V>)
                       == same_as<IterConcept, bidirectional_iterator_tag>);

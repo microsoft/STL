@@ -617,17 +617,13 @@ namespace ranges {
         void iter_move();
 #endif // ^^^ workaround ^^^
 
-        // clang-format off
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty&& __t) {
             iter_move(static_cast<_Ty&&>(__t)); // intentional ADL
         };
 
         template <class _Ty>
-        concept _Can_deref = requires(_Ty&& __t) {
-            *static_cast<_Ty&&>(__t);
-        };
-        // clang-format on
+        concept _Can_deref = requires(_Ty&& __t) { *static_cast<_Ty&&>(__t); };
 
         class _Cpo {
         private:
@@ -676,13 +672,11 @@ namespace ranges {
 
 // iter_swap defined below since it depends on indirectly_movable_storable
 
-// clang-format off
 _EXPORT_STD template <class _Ty>
     requires _Dereferenceable<_Ty> && requires(_Ty& __t) {
         { _RANGES iter_move(__t) } -> _Can_reference;
     }
 using iter_rvalue_reference_t = decltype(_RANGES iter_move(_STD declval<_Ty&>()));
-// clang-format on
 
 template <class _It>
 concept _Indirectly_readable_impl =
@@ -915,14 +909,11 @@ struct _Indirect_value_impl<_ProjTy> {
 _EXPORT_STD template <class _In, class _Out>
 concept indirectly_movable = indirectly_readable<_In> && indirectly_writable<_Out, iter_rvalue_reference_t<_In>>;
 
-// clang-format off
 _EXPORT_STD template <class _In, class _Out>
-concept indirectly_movable_storable = indirectly_movable<_In, _Out>
-    && indirectly_writable<_Out, iter_value_t<_In>>
-    && movable<iter_value_t<_In>>
+concept indirectly_movable_storable =
+    indirectly_movable<_In, _Out> && indirectly_writable<_Out, iter_value_t<_In>> && movable<iter_value_t<_In>>
     && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
-    && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In> >;
-// clang-format on
+    && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In>>;
 
 _EXPORT_STD template <class _In, class _Out>
 concept indirectly_copyable = indirectly_readable<_In> && indirectly_writable<_Out, iter_reference_t<_In>>;
@@ -1018,16 +1009,14 @@ namespace ranges {
     }
 } // namespace ranges
 
-// clang-format off
 _EXPORT_STD template <class _It1, class _It2 = _It1>
-concept indirectly_swappable = indirectly_readable<_It1> && indirectly_readable<_It2>
-    && requires(const _It1 __i1, const _It2 __i2) {
+concept indirectly_swappable =
+    indirectly_readable<_It1> && indirectly_readable<_It2> && requires(const _It1 __i1, const _It2 __i2) {
         _RANGES iter_swap(__i1, __i1);
         _RANGES iter_swap(__i2, __i2);
         _RANGES iter_swap(__i1, __i2);
         _RANGES iter_swap(__i2, __i1);
     };
-// clang-format on
 
 _EXPORT_STD template <class _It1, class _It2, class _Rel, class _Proj1 = identity, class _Proj2 = identity>
 concept indirectly_comparable = indirect_binary_predicate<_Rel, projected<_It1, _Proj1>, projected<_It2, _Proj2>>;
@@ -1529,26 +1518,25 @@ public:
         is_nothrow_move_constructible_v<_BidIt>) // strengthened
         : current(_STD move(_Right)) {}
 
-    // clang-format off
     template <class _Other>
 #ifdef __cpp_lib_concepts
         requires (!is_same_v<_Other, _BidIt>) && convertible_to<const _Other&, _BidIt>
 #endif // defined(__cpp_lib_concepts)
     _CONSTEXPR17 reverse_iterator(const reverse_iterator<_Other>& _Right) noexcept(
         is_nothrow_constructible_v<_BidIt, const _Other&>) // strengthened
-        : current(_Right.current) {}
+        : current(_Right.current) {
+    }
 
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        requires (!is_same_v<_Other, _BidIt>) && convertible_to<const _Other&, _BidIt>
-            && assignable_from<_BidIt&, const _Other&>
+        requires (!is_same_v<_Other, _BidIt>)
+              && convertible_to<const _Other&, _BidIt> && assignable_from<_BidIt&, const _Other&>
 #endif // defined(__cpp_lib_concepts)
     _CONSTEXPR17 reverse_iterator& operator=(const reverse_iterator<_Other>& _Right) noexcept(
         is_nothrow_assignable_v<_BidIt&, const _Other&>) /* strengthened */ {
         current = _Right.current;
         return *this;
     }
-    // clang-format on
 
     _NODISCARD _CONSTEXPR17 _BidIt base() const noexcept(is_nothrow_copy_constructible_v<_BidIt>) /* strengthened */ {
         return current;
@@ -1692,11 +1680,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator==(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() == _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() == _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() == _Right._Get_current();
@@ -1707,11 +1693,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator!=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() != _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() != _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() != _Right._Get_current();
@@ -1722,11 +1706,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator<(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() > _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() > _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() > _Right._Get_current();
@@ -1737,11 +1719,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator>(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() < _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() < _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() < _Right._Get_current();
@@ -1752,11 +1732,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator<=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() >= _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() >= _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() >= _Right._Get_current();
@@ -1767,11 +1745,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator>=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() <= _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left._Get_current() <= _Right._Get_current() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left._Get_current() <= _Right._Get_current();
@@ -2153,6 +2129,19 @@ public:
     _NODISCARD constexpr bool operator==(const _Sent& _Se) const
         noexcept(noexcept(_Fake_copy_init<bool>(_Current == _Se))) /* strengthened */ {
         return _Current == _Se;
+    }
+
+    template <_Not_a_const_iterator _Other>
+        requires _Constant_iterator<_Other> && convertible_to<const _Iter&, _Other>
+    _NODISCARD constexpr operator _Other() const& noexcept(
+        is_nothrow_convertible_v<const _Iter&, _Other>) /* strengthened */ {
+        return _Current;
+    }
+
+    template <_Not_a_const_iterator _Other>
+        requires _Constant_iterator<_Other> && convertible_to<_Iter, _Other>
+    _NODISCARD constexpr operator _Other() && noexcept(is_nothrow_convertible_v<_Iter, _Other>) /* strengthened */ {
+        return _STD move(_Current);
     }
 
     _NODISCARD constexpr bool operator<(const basic_const_iterator& _Right) const
@@ -3080,7 +3069,6 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_Ty>();
 
         public:
-            // clang-format off
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr bool operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
@@ -3096,7 +3084,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _Empty
 
@@ -3365,14 +3352,14 @@ namespace ranges {
 
     class _Ssize_fn {
     public:
-        // clang-format off
         template <class _Rng>
-        _NODISCARD constexpr auto operator()(_Rng&& _Range) const requires requires { _RANGES size(_Range); } {
+        _NODISCARD constexpr auto operator()(_Rng&& _Range) const
+            requires requires { _RANGES size(_Range); }
+        {
             using _Sty = _Make_signed_like_t<decltype(_RANGES size(_Range))>;
             using _Ty  = common_type_t<conditional_t<is_integral_v<_Sty>, ptrdiff_t, _Sty>, _Sty>;
             return static_cast<_Ty>(_RANGES size(_Range));
         }
-        // clang-format on
     };
 
     inline namespace _Cpos {
@@ -3446,40 +3433,34 @@ namespace ranges {
     }
 
     _EXPORT_STD struct equal_to {
-        // clang-format off
         template <class _Ty1, class _Ty2>
             requires equality_comparable_with<_Ty1, _Ty2>
-        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
-            static_cast<bool>(static_cast<_Ty1&&>(_Left) == static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(
+            noexcept(static_cast<bool>(static_cast<_Ty1&&>(_Left) == static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
             return static_cast<bool>(static_cast<_Ty1&&>(_Left) == static_cast<_Ty2&&>(_Right));
         }
-        // clang-format on
 
         using is_transparent = int;
     };
 
     _EXPORT_STD struct less {
-        // clang-format off
         template <class _Ty1, class _Ty2>
             requires totally_ordered_with<_Ty1, _Ty2>
-        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
-            static_cast<bool>(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(
+            noexcept(static_cast<bool>(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right)))) /* strengthened */ {
             return static_cast<bool>(static_cast<_Ty1&&>(_Left) < static_cast<_Ty2&&>(_Right));
         }
-        // clang-format on
 
         using is_transparent = int;
     };
 
     _EXPORT_STD struct greater {
-        // clang-format off
         template <class _Ty1, class _Ty2>
             requires totally_ordered_with<_Ty1, _Ty2>
-        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
-            static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left)))) /* strengthened */ {
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(
+            noexcept(static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left)))) /* strengthened */ {
             return static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left));
         }
-        // clang-format on
 
         using is_transparent = int;
     };
@@ -3967,14 +3948,12 @@ class move_sentinel;
 template <class>
 struct _Move_iterator_category {};
 
-// clang-format off
 template <class _Iter>
     requires requires { typename _Iter_cat_t<_Iter>; }
 struct _Move_iterator_category<_Iter> {
     using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
         random_access_iterator_tag, _Iter_cat_t<_Iter>>;
 };
-// clang-format on
 #else // ^^^ Ranges / no Ranges vvv
 template <class _Iter>
 struct _Move_iterator_category {
@@ -4018,26 +3997,25 @@ public:
     _CONSTEXPR17 explicit move_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Current(_STD move(_Right)) {}
 
-    // clang-format off
     template <class _Other>
 #ifdef __cpp_lib_concepts
         requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
 #endif // defined(__cpp_lib_concepts)
     _CONSTEXPR17 move_iterator(const move_iterator<_Other>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _Other&>) // strengthened
-        : _Current(_Right.base()) {}
+        : _Current(_Right.base()) {
+    }
 
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
-            && assignable_from<_Iter&, const _Other&>
+        requires (!is_same_v<_Other, _Iter>)
+              && convertible_to<const _Other&, _Iter> && assignable_from<_Iter&, const _Other&>
 #endif // defined(__cpp_lib_concepts)
     _CONSTEXPR17 move_iterator& operator=(const move_iterator<_Other>& _Right) noexcept(
         is_nothrow_assignable_v<_Iter&, const _Other&>) /* strengthened */ {
         _Current = _Right.base();
         return *this;
     }
-    // clang-format on
 
 #ifdef __cpp_lib_concepts
     _NODISCARD constexpr const iterator_type& base() const& noexcept {
@@ -4234,11 +4212,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator==(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left.base() == _Right.base()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left.base() == _Right.base() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left.base() == _Right.base();
@@ -4257,11 +4233,9 @@ _NODISCARD _CONSTEXPR17 bool
     operator<(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left.base() < _Right.base()))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Left.base() < _Right.base() } -> _Implicitly_convertible_to<bool>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return _Left.base() < _Right.base();
@@ -4317,11 +4291,9 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter>
     operator+(typename move_iterator<_Iter>::difference_type _Off, const move_iterator<_Iter>& _Right) noexcept(
         noexcept(move_iterator<_Iter>(_Right.base() + _Off))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    // clang-format off
     requires requires {
         { _Right.base() + _Off } -> same_as<_Iter>;
     }
-// clang-format on
 #endif // defined(__cpp_lib_concepts)
 {
     return move_iterator<_Iter>(_Right.base() + _Off);
@@ -5378,12 +5350,10 @@ namespace ranges {
     _EXPORT_STD template <class _In1, class _In2>
     using mismatch_result = in_in_result<_In1, _In2>;
 
-    // clang-format off
     template <input_iterator _It1, input_iterator _It2, class _Pr, class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
     _NODISCARD constexpr mismatch_result<_It1, _It2> _Mismatch_n(
         _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-        // clang-format on
         _STL_INTERNAL_CHECK(_Count >= 0);
         for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
             if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
@@ -5411,13 +5381,11 @@ namespace ranges {
 
     class _Mismatch_fn {
     public:
-        // clang-format off
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr mismatch_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1,
-            _It2 _First2, _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            // clang-format on
+        _NODISCARD constexpr mismatch_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
+            _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _STD _Adl_verify_range(_First1, _Last1);
             _STD _Adl_verify_range(_First2, _Last2);
 
@@ -5928,11 +5896,9 @@ namespace ranges {
 
     class _Find_fn {
     public:
-        // clang-format off
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
-            // clang-format on
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _RANGES _Find_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
                 _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Val, _STD _Pass_fn(_Proj));
@@ -6469,16 +6435,14 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Adjacent_find_fn adjacent_find;
 
-    // clang-format off
     template <class _It1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
     concept _Equal_rev_pred_can_memcmp = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>
-        && sized_sentinel_for<_Se2, _It2> && _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
+                                      && sized_sentinel_for<_Se2, _It2> && _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
 
     template <forward_iterator _It1, input_iterator _It2, sentinel_for<_It2> _Se2, class _Pr, class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
     _NODISCARD constexpr pair<bool, _It1> _Equal_rev_pred(
         _It1 _First1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-        // clang-format on
         // Returns {true, _First1 + (_Last2 - _First2)} if [_First1, ...) equals [_First2, _Last2), and {false, {}}
         // otherwise.
         constexpr bool _Optimize = _Equal_rev_pred_can_memcmp<_It1, _It2, _Se2, _Pr, _Pj1, _Pj2>;

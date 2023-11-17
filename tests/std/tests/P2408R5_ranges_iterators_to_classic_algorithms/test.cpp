@@ -29,7 +29,7 @@ struct iterator_adaptor {
     iterator_adaptor(size_t n) : v(n) {}
 
     using iterator       = I;
-    using const_iterator = typename I::Consterator;
+    using const_iterator = I::Consterator;
 
     iterator begin() {
         return iterator{v.data()};
@@ -182,7 +182,7 @@ struct instantiator {
             C<cpp17_random_iter, Its...>::call();
         }
     };
-    using curry = typename curry_t<>::curry;
+    using curry = curry_t<>::curry;
 
     static void call() {
         curry_t<>::call();

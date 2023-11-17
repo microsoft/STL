@@ -5,10 +5,12 @@
 #include <cassert>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <ranges>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -19,6 +21,14 @@ concept CanViewIota = requires(W w, B b) { views::iota(w, b); };
 
 template <class R>
 concept CanSize = requires(R& r) { ranges::size(r); };
+
+template <class R>
+concept CanEmpty = requires(const R& r) { ranges::empty(r); };
+
+template <class R>
+concept CanMemberEmpty = requires(const R& r) {
+    { r.empty() } -> same_as<bool>;
+};
 
 struct empty_type {};
 
@@ -374,6 +384,16 @@ int main() {
             views::iota(begin(as_const(objects)), end(objects)), objects, ranges::equal_to{}, identity{}, address));
         assert(ranges::equal(
             views::iota(begin(objects), end(as_const(objects))), objects, ranges::equal_to{}, identity{}, address));
+
+        using FirstConstIota = decltype(views::iota(begin(as_const(objects)), end(objects)));
+        static_assert(CanEmpty<FirstConstIota>);
+        static_assert(CanMemberEmpty<FirstConstIota>);
+        static_assert(noexcept(declval<const FirstConstIota&>().empty())); // strengthened
+
+        using SecondConstIota = decltype(views::iota(begin(objects), end(as_const(objects))));
+        static_assert(CanEmpty<SecondConstIota>);
+        static_assert(CanMemberEmpty<SecondConstIota>);
+        static_assert(noexcept(declval<const SecondConstIota&>().empty())); // strengthened
     }
     {
         // Iterator and sentinel of a non-common range
@@ -387,6 +407,25 @@ int main() {
         auto r = views::iota(ranges::begin(f), ranges::end(f));
 
         assert(ranges::equal(r, even_ints, ranges::equal_to{}, deref));
+
+        using FilteredIota = decltype(r);
+        static_assert(CanEmpty<FilteredIota>);
+        static_assert(CanMemberEmpty<FilteredIota>);
+    }
+    // LWG-4001 iota_view should provide empty
+    {
+        using BackInsertingIota = decltype(views::iota(back_inserter(declval<vector<int>&>())));
+        static_assert(CanEmpty<BackInsertingIota>);
+        static_assert(CanMemberEmpty<BackInsertingIota>);
+        static_assert(noexcept(declval<const BackInsertingIota&>().empty())); // strengthened
+
+        constexpr auto test_back_inserting_iota_nonempty = [] {
+            vector<int> v;
+            auto vw = views::iota(back_inserter(v));
+            return !vw.empty();
+        };
+        assert(test_back_inserting_iota_nonempty());
+        static_assert(test_back_inserting_iota_nonempty());
     }
 
     test_difference();

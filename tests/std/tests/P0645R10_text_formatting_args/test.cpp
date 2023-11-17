@@ -52,7 +52,7 @@ enum class Arg_type : uint8_t {
 template <class Context>
 constexpr auto visitor = [](auto&& arg) {
     using T         = decay_t<decltype(arg)>;
-    using char_type = typename Context::char_type;
+    using char_type = Context::char_type;
     if constexpr (is_same_v<T, monostate>) {
         return Arg_type::none;
     } else if constexpr (is_same_v<T, int>) {
@@ -84,7 +84,7 @@ constexpr auto visitor = [](auto&& arg) {
 
 template <class Context>
 void test_basic_format_arg() {
-    using char_type = typename Context::char_type;
+    using char_type = Context::char_type;
 
     { // construction
         basic_format_arg<Context> default_constructed;
@@ -161,7 +161,7 @@ void test_single_format_arg(Type value) {
 
 template <class Context>
 void test_format_arg_store() {
-    using char_type = typename Context::char_type;
+    using char_type = Context::char_type;
 
     test_empty_format_arg<Context>();
 

@@ -80,6 +80,7 @@
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (except for __cpp_lib_freestanding_charconv)
 // P2401R0 Conditional noexcept For exchange()
+// P2937R0 Freestanding Library: Remove strtok
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -307,6 +308,7 @@
 // P2736R2 Referencing The Unicode Standard
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
 // P2905R2 Runtime Format Strings
+// P2909R4 Fix Formatting Of Code Units As Integers
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -384,6 +386,7 @@
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
+// P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -893,8 +896,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 16.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1938 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.38 or newer.");
+#if _MSC_VER < 1939 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.39 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1605,7 +1608,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_exchange_function                201304L
 #define __cpp_lib_freestanding_char_traits         202306L
 #define __cpp_lib_freestanding_cstdlib             202306L
-#define __cpp_lib_freestanding_cstring             202306L
+#define __cpp_lib_freestanding_cstring             202311L
 #define __cpp_lib_freestanding_cwchar              202306L
 #define __cpp_lib_freestanding_errc                202306L
 #define __cpp_lib_freestanding_feature_test_macros 202306L
@@ -1749,6 +1752,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_format              202207L
+#define __cpp_lib_format_uchar        202311L
 #define __cpp_lib_freestanding_ranges 202306L
 #endif // defined(__cpp_lib_concepts)
 
@@ -1832,7 +1836,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                  202106L
 #define __cpp_lib_print                    202207L
-#define __cpp_lib_ranges_as_const          202207L
+#define __cpp_lib_ranges_as_const          202311L
 #define __cpp_lib_ranges_as_rvalue         202207L
 #define __cpp_lib_ranges_cartesian_product 202207L
 #define __cpp_lib_ranges_chunk             202202L
