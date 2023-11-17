@@ -42,10 +42,10 @@ namespace ranges {
 
 #if _HAS_CXX23
     _EXPORT_STD template <range _Rng>
-    using const_iterator_t = const_iterator<iterator_t<_Rng>>;
+    using const_iterator_t = decltype(_RANGES cbegin(_STD declval<_Rng&>()));
 
     _EXPORT_STD template <range _Rng>
-    using const_sentinel_t = const_sentinel<sentinel_t<_Rng>>;
+    using const_sentinel_t = decltype(_RANGES cend(_STD declval<_Rng&>()));
 
     _EXPORT_STD template <range _Rng>
     using range_const_reference_t = iter_const_reference_t<iterator_t<_Rng>>;
