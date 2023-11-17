@@ -286,9 +286,7 @@ inline void test_atomic_wait() {
 #ifndef __clang__ // TRANSITION, LLVM-46685
     test_pad_bits<with_padding_bits<2>>(waiting_duration);
     test_pad_bits<with_padding_bits<4>>(waiting_duration);
-#if !(defined(_M_CEE) && defined(_M_IX86)) // TRANSITION, VSO-1881472
     test_pad_bits<with_padding_bits<8>>(waiting_duration);
-#endif // ^^^ no workaround ^^^
 #ifndef _M_ARM
     test_pad_bits<with_padding_bits<16>>(waiting_duration);
     test_pad_bits<with_padding_bits<32>>(waiting_duration);
