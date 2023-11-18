@@ -11,18 +11,11 @@
 #include <type_traits>
 #include <vector>
 
+#include <test_format_support.hpp>
+
 using namespace std;
 
-template <typename CharT>
-[[nodiscard]] constexpr const CharT* choose_literal(const char* const str, const wchar_t* const wstr) noexcept {
-    if constexpr (is_same_v<CharT, char>) {
-        return str;
-    } else {
-        return wstr;
-    }
-}
-
-#define STR(Literal) (choose_literal<CharT>(Literal, L##Literal))
+#define STR(Str) TYPED_LITERAL(CharT, Str)
 
 template <class T>
 struct alternative_allocator {
