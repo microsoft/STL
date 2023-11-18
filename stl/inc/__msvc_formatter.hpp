@@ -254,32 +254,6 @@ struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     }
 #endif // _HAS_CXX23
 };
-
-#if _HAS_CXX23
-template <class _CharT>
-struct _Fill_align_and_width_specs { // used by thread::id and stacktrace_entry formatters
-    int _Width               = -1;
-    int _Dynamic_width_index = -1;
-    _Fmt_align _Alignment    = _Fmt_align::_None;
-    uint8_t _Fill_length     = 1;
-    // At most one codepoint (so one char32_t or four utf-8 char8_t).
-    _CharT _Fill[4 / sizeof(_CharT)] = {' '};
-};
-
-template <class _CharT>
-struct _Fill_align_and_width_formatter {
-public:
-    template <class _Pc = basic_format_parse_context<_CharT>>
-    _NODISCARD constexpr _Pc::iterator _Parse(type_identity_t<_Pc&> _Parse_ctx);
-
-    template <class _FormatContext, class _Func>
-    _NODISCARD constexpr auto _Format(
-        _FormatContext& _Format_ctx, int _Width, _Fmt_align _Default_align, _Func&& _Fn) const;
-
-private:
-    _Fill_align_and_width_specs<_CharT> _Specs;
-};
-#endif // _HAS_CXX23
 _STD_END
 
 #pragma pop_macro("new")
