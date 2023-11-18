@@ -133,6 +133,14 @@ struct formatter {
 };
 
 _FMT_P2286_BEGIN
+// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
+template <_Basic_format_arg_type _ArgType, class _CharT, class _Pc>
+constexpr _Pc::iterator _Formatter_base_parse(_Dynamic_format_specs<_CharT>& _Specs, _Pc& _ParseCtx);
+
+template <class _Ty, class _CharT, class _FormatContext>
+_FormatContext::iterator _Formatter_base_format(
+    const _Dynamic_format_specs<_CharT>& _Specs, const _Ty& _Val, _FormatContext& _FormatCtx);
+
 template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
 public:
@@ -145,10 +153,14 @@ public:
 #endif // _HAS_CXX23
 
     template <class _Pc = basic_format_parse_context<_CharT>>
-    constexpr _Pc::iterator parse(type_identity_t<_Pc&> _ParseCtx);
+    constexpr _Pc::iterator parse(type_identity_t<_Pc&> _ParseCtx) {
+        return _Formatter_base_parse<_ArgType>(_Specs, _ParseCtx);
+    }
 
     template <class _FormatContext>
-    _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const;
+    _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
+        return _Formatter_base_format(_Specs, _Val, _FormatCtx);
+    }
 
 private:
     _Dynamic_format_specs<_CharT> _Specs;

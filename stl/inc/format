@@ -3621,9 +3621,8 @@ struct _Format_handler {
     }
 };
 
-template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
-template <class _Pc>
-constexpr _Pc::iterator _Formatter_base<_Ty, _CharT, _ArgType>::parse(type_identity_t<_Pc&> _ParseCtx) {
+template <_Basic_format_arg_type _ArgType, class _CharT, class _Pc>
+constexpr _Pc::iterator _Formatter_base_parse(_Dynamic_format_specs<_CharT>& _Specs, _Pc& _ParseCtx) {
     _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
     const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
     if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
@@ -3632,10 +3631,9 @@ constexpr _Pc::iterator _Formatter_base<_Ty, _CharT, _ArgType>::parse(type_ident
     return _ParseCtx.begin() + (_It - _ParseCtx._Unchecked_begin());
 }
 
-template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
-template <class _FormatContext>
-_FormatContext::iterator _Formatter_base<_Ty, _CharT, _ArgType>::format(
-    const _Ty& _Val, _FormatContext& _FormatCtx) const {
+template <class _Ty, class _CharT, class _FormatContext>
+_FormatContext::iterator _Formatter_base_format(
+    const _Dynamic_format_specs<_CharT>& _Specs, const _Ty& _Val, _FormatContext& _FormatCtx) {
     _Dynamic_format_specs<_CharT> _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =
