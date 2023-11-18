@@ -270,7 +270,7 @@ template <class _CharT>
 struct _Fill_align_and_width_formatter {
 public:
     template <class _Pc = basic_format_parse_context<_CharT>>
-    _NODISCARD constexpr _Pc::iterator parse(type_identity_t<_Pc&> _Parse_ctx);
+    _NODISCARD constexpr _Pc::iterator _Parse(type_identity_t<_Pc&> _Parse_ctx);
 
     template <class _FormatContext, class _Func>
     _NODISCARD constexpr auto _Format(

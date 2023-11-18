@@ -353,7 +353,7 @@ ostream& operator<<(ostream& _Os, const basic_stacktrace<_Alloc>& _St) {
 template <>
 struct formatter<stacktrace_entry> {
     constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
-        return _Impl.parse(_Parse_ctx);
+        return _Impl._Parse(_Parse_ctx);
     }
 
     template <class _FormatContext>
