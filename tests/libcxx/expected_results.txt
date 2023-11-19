@@ -304,17 +304,108 @@ std/strings/string.conversions/stol.pass.cpp:1 FAIL
 std/depr/depr.c.headers/uchar_h.compile.pass.cpp FAIL
 std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
+# P1759R6 Native Handles And File Streams
+std/language.support/support.limits/support.limits.general/fstream.version.compile.pass.cpp FAIL
+
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 
 # P2286R8 Formatting Ranges
+std/containers/container.adaptors/container.adaptors.format/format.functions.format.pass.cpp FAIL
+std/containers/container.adaptors/container.adaptors.format/format.functions.vformat.pass.cpp FAIL
+std/containers/container.adaptors/container.adaptors.format/format.pass.cpp FAIL
+std/containers/container.adaptors/container.adaptors.format/parse.pass.cpp FAIL
+std/containers/container.adaptors/container.adaptors.format/types.compile.pass.cpp FAIL
+std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.format.pass.cpp FAIL
+std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.vformat.pass.cpp FAIL
+std/containers/sequences/vector.bool/vector.bool.fmt/format.pass.cpp FAIL
+std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
 std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtdef/format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtdef/parse.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtdef/set_brackets.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtdef/set_separator.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtmap/format.functions.format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtmap/format.functions.vformat.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtmap/format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtmap/parse.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtset/format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtset/parse.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtstr/format.functions.format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtstr/format.functions.vformat.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtstr/format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtstr/parse.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/format.functions.format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/format.functions.vformat.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/parse.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/set_brackets.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/set_separator.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/underlying.pass.cpp FAIL
 std/utilities/format/format.tuple/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.tuple/format.functions.vformat.pass.cpp FAIL
 std/utilities/format/format.tuple/format.pass.cpp FAIL
 std/utilities/format/format.tuple/parse.pass.cpp FAIL
 std/utilities/format/format.tuple/set_brackets.pass.cpp FAIL
 std/utilities/format/format.tuple/set_separator.pass.cpp FAIL
+std/utilities/format/types.compile.pass.cpp FAIL
+
+# P2363R5 Extending Associative Containers With The Remaining Heterogeneous Overloads
+std/language.support/support.limits/support.limits.general/map.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/set.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/unordered_map.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/unordered_set.version.compile.pass.cpp FAIL
+
+# P2407R5 Freestanding Library: Partial Classes
+std/language.support/support.limits/support.limits.general/array.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/optional.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/string_view.version.compile.pass.cpp FAIL
+
+# P2447R6 Constructing span<const T> From initializer_list<T>
+std/language.support/support.limits/support.limits.general/span.version.compile.pass.cpp FAIL
+
+# P2495R3 Interfacing stringstreams With string_view
+std/language.support/support.limits/support.limits.general/sstream.version.compile.pass.cpp FAIL
+
+# P2497R0 Testing For Success Or Failure Of <charconv> Functions
+std/language.support/support.limits/support.limits.general/charconv.version.compile.pass.cpp FAIL
+std/utilities/charconv/charconv.syn/from_chars_result.operator_bool.pass.cpp FAIL
+std/utilities/charconv/charconv.syn/to_chars_result.operator_bool.pass.cpp FAIL
+
+# P2510R3 Formatting Pointers
+std/utilities/format/format.functions/format.locale.pass.cpp FAIL
+std/utilities/format/format.functions/format.pass.cpp FAIL
+std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
+std/utilities/format/format.functions/vformat.pass.cpp FAIL
+
+# P2587R3 Redefining to_string To Use to_chars
+std/language.support/support.limits/support.limits.general/string.version.compile.pass.cpp FAIL
+
+# P2697R1 Interfacing bitset With string_view
+std/language.support/support.limits/support.limits.general/bitset.version.compile.pass.cpp FAIL
+std/utilities/template.bitset/bitset.cons/string_view_ctor.pass.cpp FAIL
+
+# P2734R0 Adding The New SI Prefixes
+std/language.support/support.limits/support.limits.general/ratio.version.compile.pass.cpp FAIL
+
+# P2819R2 Add The Tuple Protocol To complex
+std/language.support/support.limits/support.limits.general/tuple.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/utility.version.compile.pass.cpp FAIL
+
+# P2833R2 Freestanding Library: inout expected span
+std/language.support/support.limits/support.limits.general/mdspan.version.compile.pass.cpp FAIL
+
+# P2905R2 Runtime Format Strings
+std/utilities/format/format.arguments/format.arg.store/make_format_args.pass.cpp FAIL
+std/utilities/format/format.arguments/format.arg.store/make_wformat_args.pass.cpp FAIL
+
+# P2918R2 Runtime Format Strings II
+std/utilities/format/format.fmt.string/ctor.runtime-format-string.pass.cpp FAIL
+std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp FAIL
+std/utilities/format/format.functions/format.runtime_format.pass.cpp FAIL
+std/utilities/format/format.syn/runtime_format_string.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
