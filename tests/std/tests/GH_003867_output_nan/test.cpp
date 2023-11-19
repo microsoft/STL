@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <iomanip>
 #include <limits>
 #include <locale>
 #include <sstream>
@@ -54,8 +55,56 @@ void test_gh_3867() {
 #endif // TEST_CUSTOM_FACET
 }
 
+// Also test GH-4210: With setprecision(0) showpoint fixed, a bogus '.' is emitted for infinity and NaN
+
+template <class FloatingPoint>
+void test_output_nonfinite_value(FloatingPoint x) {
+    auto s1 = [x] {
+        ostringstream os;
+        os << setprecision(0) << showpoint << fixed;
+        os << x;
+        return os.str();
+    }();
+    auto s2 = [x] {
+        ostringstream os;
+        os << setprecision(0) << noshowpoint << fixed;
+        os << x;
+        return os.str();
+    }();
+    assert(s1 == s2);
+
+    auto s3 = [x] {
+        ostringstream os;
+        os << setprecision(0) << showpoint << fixed << showpos;
+        os << x;
+        return os.str();
+    }();
+    auto s4 = [x] {
+        ostringstream os;
+        os << setprecision(0) << noshowpoint << fixed << showpos;
+        os << x;
+        return os.str();
+    }();
+    assert(s3 == s3);
+}
+
+template <class FloatingPoint>
+void test_gh_4210() {
+    constexpr auto inf_dbl = numeric_limits<FloatingPoint>::infinity();
+    constexpr auto nan_dbl = numeric_limits<FloatingPoint>::quiet_NaN();
+
+    test_output_nonfinite_value(inf_dbl);
+    test_output_nonfinite_value(-inf_dbl);
+    test_output_nonfinite_value(nan_dbl);
+    test_output_nonfinite_value(-nan_dbl);
+}
+
 int main() {
     test_gh_3867<float>();
     test_gh_3867<double>();
     test_gh_3867<long double>();
+
+    test_gh_4210<float>();
+    test_gh_4210<double>();
+    test_gh_4210<long double>();
 }
