@@ -2,6 +2,26 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # *** ISSUES REPORTED/KNOWN UPSTREAM ***
+# LLVM-73836: warning C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
+std/time/time.syn/formatter.duration.pass.cpp:0 FAIL
+std/time/time.syn/formatter.duration.pass.cpp:1 FAIL
+std/time/time.syn/formatter.file_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.file_time.pass.cpp:1 FAIL
+std/time/time.syn/formatter.hh_mm_ss.pass.cpp:0 FAIL
+std/time/time.syn/formatter.hh_mm_ss.pass.cpp:1 FAIL
+std/time/time.syn/formatter.local_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.local_time.pass.cpp:1 FAIL
+std/time/time.syn/formatter.sys_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.sys_time.pass.cpp:1 FAIL
+std/time/time.syn/formatter.year.pass.cpp:0 FAIL
+std/time/time.syn/formatter.year.pass.cpp:1 FAIL
+std/time/time.syn/formatter.year_month.pass.cpp:0 FAIL
+std/time/time.syn/formatter.year_month.pass.cpp:1 FAIL
+std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
+std/time/time.syn/formatter.year_month_day_last.pass.cpp:1 FAIL
+std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
+std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -627,14 +647,6 @@ std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get
 
 # libc++ speculatively implements LWG-3645
 std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
-
-# warning C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
-std/time/time.syn/formatter.year_month.pass.cpp:0 FAIL
-std/time/time.syn/formatter.year_month.pass.cpp:1 FAIL
-std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
-std/time/time.syn/formatter.year_month_day_last.pass.cpp:1 FAIL
-std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
-std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
 
 # This test assumes that array<int, 0> is not const-default-constructible.
 std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp FAIL
