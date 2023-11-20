@@ -1399,7 +1399,7 @@ protected:
 
         _Buf.resize(_Bufsize + 50); // add fudge factor
         const bool _Is_finite      = (_STD isfinite)(_Val);
-        const auto _Adjusted_flags = // TRANSITION,  DevCom-10519861
+        const auto _Adjusted_flags = // TRANSITION, DevCom-10519861
             _Is_finite ? _Iosbase.flags() : _Iosbase.flags() & ~ios_base::showpoint;
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
             &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 'L', _Adjusted_flags), static_cast<int>(_Precision), _Val));
