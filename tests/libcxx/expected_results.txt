@@ -90,6 +90,9 @@ std/utilities/function.objects/range.cmp/less.pass.cpp FAIL
 std/utilities/function.objects/range.cmp/less_equal.pass.cpp FAIL
 std/utilities/function.objects/range.cmp/not_equal_to.pass.cpp FAIL
 
+# libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
+std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
+
 # Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL
