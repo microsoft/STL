@@ -6616,7 +6616,8 @@ constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD constexpr _FwdIt max_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
     _STD _Adl_verify_range(_First, _Last);
-    _STD _Seek_wrapped(_First, _STD _Max_element_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _STD _Pass_fn(_Pred)));
+    _STD _Seek_wrapped(_First,
+        _STD _Max_element_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _STD _Pass_fn(_Pred)));
     return _First;
 }
 
@@ -6686,16 +6687,17 @@ namespace ranges {
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _STD _Adl_verify_range(_First, _Last);
-            _STD _Seek_wrapped(_First, _RANGES _Max_element_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
-                                      _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
+            _STD _Seek_wrapped(
+                _First, _RANGES _Max_element_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                            _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
             return _First;
         }
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _UResult =
-                _RANGES _Max_element_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            auto _UResult = _RANGES _Max_element_unchecked(
+                _Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
@@ -6808,7 +6810,8 @@ constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD constexpr _FwdIt min_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
     _STD _Adl_verify_range(_First, _Last);
-    _STD _Seek_wrapped(_First, _STD _Min_element_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _STD _Pass_fn(_Pred)));
+    _STD _Seek_wrapped(_First,
+        _STD _Min_element_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _STD _Pass_fn(_Pred)));
     return _First;
 }
 
@@ -6878,16 +6881,17 @@ namespace ranges {
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _STD _Adl_verify_range(_First, _Last);
-            _STD _Seek_wrapped(_First, _RANGES _Min_element_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
-                                      _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
+            _STD _Seek_wrapped(
+                _First, _RANGES _Min_element_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                            _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
             return _First;
         }
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _UResult =
-                _RANGES _Min_element_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            auto _UResult = _RANGES _Min_element_unchecked(
+                _Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
