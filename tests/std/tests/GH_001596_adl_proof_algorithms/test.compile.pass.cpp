@@ -121,6 +121,11 @@ void test_algorithms() {
 
     (void) std::search(varr, varr, varr, varr);
     (void) std::search(iarr, iarr, iarr, iarr, validating_equal{});
+
+    (void) std::remove(varr, varr, validator{});
+
+    (void) std::remove_if(varr, varr, simple_truth{});
+    (void) std::remove_if(iarr, iarr, validating_truth{});
 }
 
 #if _HAS_CXX17

@@ -2215,9 +2215,9 @@ _NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 typename allocator_traits<_Alloc>::pointer
 _EXPORT_STD template <class _FwdIt, class _Ty>
 _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // remove each matching _Val
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     _UFirst           = _STD _Find_unchecked(_UFirst, _ULast, _Val);
     auto _UNext       = _UFirst;
     if (_UFirst != _ULast) {
@@ -2229,17 +2229,17 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
         }
     }
 
-    _Seek_wrapped(_First, _UNext);
+    _STD _Seek_wrapped(_First, _UNext);
     return _First;
 }
 
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    _UFirst           = _STD find_if(_UFirst, _ULast, _Pass_fn(_Pred));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    _UFirst           = _STD find_if(_UFirst, _ULast, _STD _Pass_fn(_Pred));
     auto _UNext       = _UFirst;
     if (_UFirst != _ULast) {
         while (++_UFirst != _ULast) {
@@ -2250,7 +2250,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt 
         }
     }
 
-    _Seek_wrapped(_First, _UNext);
+    _STD _Seek_wrapped(_First, _UNext);
     return _First;
 }
 
@@ -2260,7 +2260,7 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove(_Container& _Cont, con
     auto _First          = _Cont.begin();
     const auto _Last     = _Cont.end();
     const auto _Old_size = _Cont.size();
-    _Seek_wrapped(_First, _STD remove(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val));
+    _STD _Seek_wrapped(_First, _STD remove(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Val));
     _Cont.erase(_First, _Last);
     return _Old_size - _Cont.size();
 }
@@ -2271,7 +2271,7 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove_if(_Container& _Cont, 
     auto _First          = _Cont.begin();
     const auto _Last     = _Cont.end();
     const auto _Old_size = _Cont.size();
-    _Seek_wrapped(_First, _STD remove_if(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pred));
+    _STD _Seek_wrapped(_First, _STD remove_if(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Pred));
     _Cont.erase(_First, _Last);
     return _Old_size - _Cont.size();
 }
