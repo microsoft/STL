@@ -181,7 +181,11 @@ constexpr void lambda_test() {
     assert(x1.column() == 53);
     assert(x2.column() == 58);
 #else // ^^^ EDG / C1XX vvv
+#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, VS 2022 17.10 Preview 1
+    assert(x1.column() == 45);
+#else // ^^^ no workaround / workaround vvv
     assert(x1.column() == 52);
+#endif // ^^^ workaround ^^^
     assert(x2.column() == 50);
 #endif // ^^^ C1XX ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
