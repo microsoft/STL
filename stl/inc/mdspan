@@ -1140,8 +1140,8 @@ _NODISCARD constexpr _IndexType _Mdspan_checked_index_cast(_OtherIndexType&& _Id
     using _Arg_value_t = remove_cvref_t<_OtherIndexType>;
     if constexpr (is_integral_v<_Arg_value_t> && !is_same_v<_Arg_value_t, bool>) {
         _STL_VERIFY(_STD in_range<_IndexType>(_Idx),
-            "The index must be representable by index_type in order to be in a valid "
-            "multidimensional index (N4964 [mdspan.mdspan.members]/3).");
+            "Each argument to operator[] must be representable by index_type in order for the pack of arguments to be "
+            "a valid multidimensional index (N4964 [mdspan.mdspan.members]/3).");
     }
     return static_cast<_IndexType>(_STD forward<_OtherIndexType>(_Idx));
 }
