@@ -10305,7 +10305,7 @@ namespace ranges {
         } else if constexpr (_Converts_tag_constructible<_Rng, _Container, _Types...>) {
             return _Container(from_range, _STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
         } else if constexpr (_Converts_and_common_constructible<_Rng, _Container, _Types...>) {
-            return _Container(_RANGES begin(_Range), _RANGES end(_Range), _STD forward<_Types...>(_Args)...);
+            return _Container(_RANGES begin(_Range), _RANGES end(_Range), _STD forward<_Types>(_Args)...);
         } else if constexpr (_Converts_constructible_insertable<_Rng, _Container, _Types...>) {
             _Container _Cont(_STD forward<_Types>(_Args)...);
             if constexpr (_Sized_and_reservable<_Rng, _Container>) {
