@@ -243,13 +243,13 @@ protected:
         }
 
         // grow buffer and store element
-        size_t _Oldsize    = 0;
-        const auto _Oldptr = _Mysb::eback();
+        _Mysize_type _Oldsize = 0;
+        const auto _Oldptr    = _Mysb::eback();
         if (_Pptr) {
-            _Oldsize = static_cast<size_t>(_Epptr - _Oldptr);
+            _Oldsize = static_cast<_Mysize_type>(_Epptr - _Oldptr);
         }
 
-        size_t _Newsize;
+        _Mysize_type _Newsize;
         if (_Oldsize < _MINSIZE) {
             _Newsize = _MINSIZE;
         } else if (_Oldsize < INT_MAX / 2) { // grow by 50 percent

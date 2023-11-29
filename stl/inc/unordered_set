@@ -387,7 +387,7 @@ void swap(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
 _EXPORT_STD template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
 unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
     unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+    return _STD _Erase_nodes_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -730,7 +730,7 @@ void swap(unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
 _EXPORT_STD template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
 unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
     unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+    return _STD _Erase_nodes_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
