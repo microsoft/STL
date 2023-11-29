@@ -68,6 +68,25 @@ struct convertible_type {
     T m_val;
 };
 
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+template <typename T>
+struct tagged_falsity {
+    template <typename U>
+    bool operator()(U&&) const {
+        return false;
+    }
+};
+
+template <typename T>
+struct holder {
+    T t;
+};
+
+struct incomplete;
+
+using validating_falsity = tagged_falsity<holder<incomplete>>;
+#endif // _M_CEE
+
 template <typename T, typename U>
 void math_operators_test(T lhs, U rhs) {
     USE_VALUE(lhs * rhs);
@@ -219,8 +238,14 @@ template <typename T>
 void erase_if_test(T value) {
     auto pr1 = [](auto) { return false; };
     std::experimental::fundamentals_v2::erase_if(value, pr1);
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    std::experimental::fundamentals_v2::erase_if(value, validating_falsity{});
+#endif // _M_CEE
 #if _HAS_CXX20
     std::erase_if(value, pr1);
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    std::erase_if(value, validating_falsity{});
+#endif // _M_CEE
 #endif // _HAS_CXX20
 }
 
