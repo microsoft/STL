@@ -1131,6 +1131,22 @@ struct _Mdspan_accessor_base<_AccessorPolicy> {
     static constexpr _AccessorPolicy _Acc{};
 };
 
+#if _CONTAINER_DEBUG_LEVEL > 0
+template <class _IndexType, class _OtherIndexType>
+_NODISCARD constexpr _IndexType _Mdspan_checked_index_cast(_OtherIndexType&& _Idx) noexcept(
+    is_nothrow_constructible_v<_IndexType, _OtherIndexType>) {
+    _STL_INTERNAL_STATIC_ASSERT(is_integral_v<_IndexType> && is_constructible_v<_IndexType, _OtherIndexType>);
+
+    using _Arg_value_t = remove_cvref_t<_OtherIndexType>;
+    if constexpr (is_integral_v<_Arg_value_t> && !is_same_v<_Arg_value_t, bool>) {
+        _STL_VERIFY(_STD in_range<_IndexType>(_Idx),
+            "Each argument to operator[] must be representable by index_type in order for the pack of arguments to be "
+            "a valid multidimensional index (N4964 [mdspan.mdspan.members]/3).");
+    }
+    return static_cast<_IndexType>(_STD forward<_OtherIndexType>(_Idx));
+}
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
 _EXPORT_STD template <class _ElementType, class _Extents, class _LayoutPolicy = layout_right,
     class _AccessorPolicy = default_accessor<_ElementType>>
 class __declspec(empty_bases) mdspan : private _Mdspan_mapping_base<_Extents, _LayoutPolicy>,
@@ -1278,7 +1294,11 @@ public:
               && (sizeof...(_OtherIndexTypes) == rank())
     _NODISCARD constexpr reference operator[](_OtherIndexTypes... _Indices) const
         noexcept(noexcept(_Access_impl(static_cast<index_type>(_STD move(_Indices))...))) /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        return _Access_impl(_STD _Mdspan_checked_index_cast<index_type>(_STD move(_Indices))...);
+#else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL <= 0 vvv
         return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
+#endif // ^^^ _CONTAINER_DEBUG_LEVEL <= 0 ^^^
     }
 #endif // ^^^ defined(__cpp_multidimensional_subscript) ^^^
 
@@ -1287,7 +1307,11 @@ private:
     _NODISCARD constexpr reference _Multidimensional_subscript(
         span<_OtherIndexType, rank()> _Indices, index_sequence<_Seq...>) const
         noexcept(noexcept(_Access_impl(static_cast<index_type>(_STD as_const(_Indices[_Seq]))...))) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        return _Access_impl(_STD _Mdspan_checked_index_cast<index_type>(_STD as_const(_Indices[_Seq]))...);
+#else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL <= 0 vvv
         return _Access_impl(static_cast<index_type>(_STD as_const(_Indices[_Seq]))...);
+#endif // ^^^ _CONTAINER_DEBUG_LEVEL <= 0 ^^^
     }
 
 public:
