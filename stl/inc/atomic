@@ -1396,49 +1396,49 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         char _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd8,
-            _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
+            _STD _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_and(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         char _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedAnd8,
-            _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
+            _STD _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_or(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         char _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedOr8,
-            _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
+            _STD _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_xor(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         char _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedXor8,
-            _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
+            _STD _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal operator++(int) noexcept {
-        return static_cast<_TVal>(_InterlockedExchangeAdd8(_Atomic_address_as<char>(this->_Storage), 1));
+        return static_cast<_TVal>(_InterlockedExchangeAdd8(_STD _Atomic_address_as<char>(this->_Storage), 1));
     }
 
     _TVal operator++() noexcept {
         unsigned char _Before =
-            static_cast<unsigned char>(_InterlockedExchangeAdd8(_Atomic_address_as<char>(this->_Storage), 1));
+            static_cast<unsigned char>(_InterlockedExchangeAdd8(_STD _Atomic_address_as<char>(this->_Storage), 1));
         ++_Before;
         return static_cast<_TVal>(_Before);
     }
 
     _TVal operator--(int) noexcept {
-        return static_cast<_TVal>(_InterlockedExchangeAdd8(_Atomic_address_as<char>(this->_Storage), -1));
+        return static_cast<_TVal>(_InterlockedExchangeAdd8(_STD _Atomic_address_as<char>(this->_Storage), -1));
     }
 
     _TVal operator--() noexcept {
         unsigned char _Before =
-            static_cast<unsigned char>(_InterlockedExchangeAdd8(_Atomic_address_as<char>(this->_Storage), -1));
+            static_cast<unsigned char>(_InterlockedExchangeAdd8(_STD _Atomic_address_as<char>(this->_Storage), -1));
         --_Before;
         return static_cast<_TVal>(_Before);
     }
@@ -1454,51 +1454,51 @@ struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral oper
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         short _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd16,
-            _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
+            _STD _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_and(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         short _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedAnd16,
-            _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
+            _STD _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_or(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         short _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedOr16,
-            _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
+            _STD _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_xor(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         short _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedXor16,
-            _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
+            _STD _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal operator++(int) noexcept {
         unsigned short _After =
-            static_cast<unsigned short>(_InterlockedIncrement16(_Atomic_address_as<short>(this->_Storage)));
+            static_cast<unsigned short>(_InterlockedIncrement16(_STD _Atomic_address_as<short>(this->_Storage)));
         --_After;
         return static_cast<_TVal>(_After);
     }
 
     _TVal operator++() noexcept {
-        return static_cast<_TVal>(_InterlockedIncrement16(_Atomic_address_as<short>(this->_Storage)));
+        return static_cast<_TVal>(_InterlockedIncrement16(_STD _Atomic_address_as<short>(this->_Storage)));
     }
 
     _TVal operator--(int) noexcept {
         unsigned short _After =
-            static_cast<unsigned short>(_InterlockedDecrement16(_Atomic_address_as<short>(this->_Storage)));
+            static_cast<unsigned short>(_InterlockedDecrement16(_STD _Atomic_address_as<short>(this->_Storage)));
         ++_After;
         return static_cast<_TVal>(_After);
     }
 
     _TVal operator--() noexcept {
-        return static_cast<_TVal>(_InterlockedDecrement16(_Atomic_address_as<short>(this->_Storage)));
+        return static_cast<_TVal>(_InterlockedDecrement16(_STD _Atomic_address_as<short>(this->_Storage)));
     }
 };
 
@@ -1512,51 +1512,51 @@ struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral oper
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd,
-            _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
+            _STD _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_and(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedAnd,
-            _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
+            _STD _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_or(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedOr,
-            _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
+            _STD _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_xor(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedXor,
-            _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
+            _STD _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal operator++(int) noexcept {
         unsigned long _After =
-            static_cast<unsigned long>(_InterlockedIncrement(_Atomic_address_as<long>(this->_Storage)));
+            static_cast<unsigned long>(_InterlockedIncrement(_STD _Atomic_address_as<long>(this->_Storage)));
         --_After;
         return static_cast<_TVal>(_After);
     }
 
     _TVal operator++() noexcept {
-        return static_cast<_TVal>(_InterlockedIncrement(_Atomic_address_as<long>(this->_Storage)));
+        return static_cast<_TVal>(_InterlockedIncrement(_STD _Atomic_address_as<long>(this->_Storage)));
     }
 
     _TVal operator--(int) noexcept {
         unsigned long _After =
-            static_cast<unsigned long>(_InterlockedDecrement(_Atomic_address_as<long>(this->_Storage)));
+            static_cast<unsigned long>(_InterlockedDecrement(_STD _Atomic_address_as<long>(this->_Storage)));
         ++_After;
         return static_cast<_TVal>(_After);
     }
 
     _TVal operator--() noexcept {
-        return static_cast<_TVal>(_InterlockedDecrement(_Atomic_address_as<long>(this->_Storage)));
+        return static_cast<_TVal>(_InterlockedDecrement(_STD _Atomic_address_as<long>(this->_Storage)));
     }
 };
 
@@ -1624,51 +1624,51 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd64,
-            _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
+            _STD _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_and(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedAnd64,
-            _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
+            _STD _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_or(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedOr64,
-            _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
+            _STD _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_xor(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedXor64,
-            _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
+            _STD _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal operator++(int) noexcept {
-        unsigned long long _After =
-            static_cast<unsigned long long>(_InterlockedIncrement64(_Atomic_address_as<long long>(this->_Storage)));
+        unsigned long long _After = static_cast<unsigned long long>(
+            _InterlockedIncrement64(_STD _Atomic_address_as<long long>(this->_Storage)));
         --_After;
         return static_cast<_TVal>(_After);
     }
 
     _TVal operator++() noexcept {
-        return static_cast<_TVal>(_InterlockedIncrement64(_Atomic_address_as<long long>(this->_Storage)));
+        return static_cast<_TVal>(_InterlockedIncrement64(_STD _Atomic_address_as<long long>(this->_Storage)));
     }
 
     _TVal operator--(int) noexcept {
-        unsigned long long _After =
-            static_cast<unsigned long long>(_InterlockedDecrement64(_Atomic_address_as<long long>(this->_Storage)));
+        unsigned long long _After = static_cast<unsigned long long>(
+            _InterlockedDecrement64(_STD _Atomic_address_as<long long>(this->_Storage)));
         ++_After;
         return static_cast<_TVal>(_After);
     }
 
     _TVal operator--() noexcept {
-        return static_cast<_TVal>(_InterlockedDecrement64(_Atomic_address_as<long long>(this->_Storage)));
+        return static_cast<_TVal>(_InterlockedDecrement64(_STD _Atomic_address_as<long long>(this->_Storage)));
     }
 #endif // ^^^ !defined(_M_IX86) ^^^
 };
