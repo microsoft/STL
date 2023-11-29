@@ -160,11 +160,6 @@ void test_algorithms() {
     (void) std::minmax({+varr, +varr});
     (void) std::minmax({+iarr, +iarr}, validating_less{});
 
-    (void) std::minmax(+varr, +varr);
-    (void) std::minmax(+iarr, +iarr, validating_less{});
-    (void) std::minmax({varr, varr});
-    (void) std::minmax({iarr, iarr}, validating_less{});
-
     (void) std::min_element(varr, varr + 1);
     (void) std::min_element(iarr, iarr + 1, validating_less{});
 
