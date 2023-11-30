@@ -421,6 +421,10 @@ std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cp
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp:0 FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp:1 FAIL
 
+# P2128R6 Multidimensional Subscript Operator
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
+
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
 # LWG-2192 "Validity and return type of std::abs(0u) is unclear" (resolution is missing in UCRT, DevCom-10331466)
