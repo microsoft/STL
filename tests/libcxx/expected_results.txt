@@ -494,6 +494,22 @@ std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:1 FAIL
 
+# VSO-1513409: Bogus `warning C4100: '<_Args_0>': unreferenced formal parameter` when `if constexpr` selects another branch
+std/containers/views/mdspan/mdspan/ctor.dh_integers.pass.cpp:0 FAIL
+std/containers/views/mdspan/mdspan/ctor.dh_integers.pass.cpp:1 FAIL
+
+# VSO-1923988: constexpr evaluation performs an assignment with a derived type when it should use a base type
+std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move_backward.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move_backward.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
