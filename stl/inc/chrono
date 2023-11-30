@@ -2202,6 +2202,10 @@ namespace chrono {
         return _STD move(_Icu_version) + "." + _STD to_string(_Num_leap_seconds);
     }
 
+    struct _Secret_tzdb_list_construct_tag {
+        explicit _Secret_tzdb_list_construct_tag() = default;
+    };
+
     _EXPORT_STD class tzdb_list {
     private:
         using _ListType = forward_list<tzdb, _Crt_allocator<tzdb>>;
@@ -2212,7 +2216,7 @@ namespace chrono {
         tzdb_list(const tzdb_list&)            = delete;
         tzdb_list& operator=(const tzdb_list&) = delete;
 
-        tzdb_list() {
+        explicit tzdb_list(_Secret_tzdb_list_construct_tag) {
             auto [_Icu_version, _Zones, _Links] = _Tzdb_generate_time_zones();
             auto [_Leap_sec, _All_ls_positive]  = _Tzdb_generate_leap_seconds(0);
             auto _Version                       = _Icu_version + "." + _STD to_string(_Leap_sec.size());
@@ -2328,7 +2332,7 @@ namespace chrono {
         }
 
         _TRY_BEGIN
-        _STD construct_at(_My_tzdb);
+        _STD construct_at(_My_tzdb, _Secret_tzdb_list_construct_tag{});
         _CATCH(const runtime_error&)
         __std_free_crt(_My_tzdb);
         _RERAISE;
