@@ -538,7 +538,7 @@ public:
         if constexpr (extents_type::rank() > 0) {
             index_type _Prod = 1;
             for (size_t _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
-                _STL_VERIFY(_Other.stride(_Idx) == _Prod,
+                _STL_VERIFY(_STD cmp_equal(_Other.stride(_Idx), _Prod),
                     "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "
                     "extents().fwd-prod-of-extents(r) (N4950 [mdspan.layout.left.cons]/10.1).");
                 _Prod = static_cast<index_type>(_Prod * this->_Exts.extent(_Idx));
@@ -690,7 +690,7 @@ public:
         if constexpr (extents_type::rank() > 0) {
             index_type _Prod = 1;
             for (size_t _Idx = extents_type::_Rank; _Idx-- > 0;) {
-                _STL_VERIFY(_Prod == _Other.stride(_Idx),
+                _STL_VERIFY(_STD cmp_equal(_Prod, _Other.stride(_Idx)),
                     "For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to "
                     "extents().rev-prod-of-extents(r) (N4950 [mdspan.layout.right.cons]/10.1).");
                 _Prod = static_cast<index_type>(_Prod * this->_Exts.extent(_Idx));
