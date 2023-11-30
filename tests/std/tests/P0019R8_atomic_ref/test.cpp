@@ -330,8 +330,8 @@ void test_incomplete_associated_class() { // COMPILE-ONLY
     a.notify_all();
 
     if constexpr (std::is_pointer_v<T>) {
-        std::remove_pointer_t<T> o{};
-        a = std::addressof(o);
+        std::remove_pointer_t<T> pointee{};
+        a = std::addressof(pointee);
 
         (void) a.operator+=(0); // a += 0 triggers ADL
         (void) a.operator-=(0); // a -= 0 triggers ADL
