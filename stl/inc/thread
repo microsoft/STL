@@ -7,6 +7,11 @@
 #define _THREAD_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+
+#ifdef _M_CEE_PURE
+#error <thread> is not supported when compiling with /clr:pure.
+#endif // defined(_M_CEE_PURE)
+
 #include <__msvc_chrono.hpp>
 #include <memory>
 #include <process.h>
@@ -21,10 +26,6 @@
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #include <format>
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
-
-#ifdef _M_CEE_PURE
-#error <thread> is not supported when compiling with /clr:pure.
-#endif // defined(_M_CEE_PURE)
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
