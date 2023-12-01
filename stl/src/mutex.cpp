@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// mutex functions
-
 #include <cstdio>
 #include <cstdlib>
 #include <internal_shared.h>
