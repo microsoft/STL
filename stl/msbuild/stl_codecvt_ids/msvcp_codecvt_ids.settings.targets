@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
     <PropertyGroup Label="Configuration">
         <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <GenerateImportLib>true</GenerateImportLib>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -32,7 +33,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ClDefines Condition="'$(MsvcpFlavor)' == 'app'">$(ClDefines);_CRT_APP</ClDefines>
 
         <UseMsvcrt>false</UseMsvcrt>
-        <GenerateImportLib>true</GenerateImportLib>
         <RCIntermediateOutputDirectory>$(IntermediateOutputDirectory)</RCIntermediateOutputDirectory>
         <IntermediateImportLibOutput>$(CrtBuildDir)\msvcprt$(BuildSuffix)_codecvt_ids.$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
         <DllDefName>$(LibOutputFileName).$(MsvcpFlavor)</DllDefName>
@@ -64,7 +64,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Condition="'$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd'" Include="$(VCToolsRootPath)\crt\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)$(CrtSpectreSuffix)\msvcp.nativeproj"/>
+        <ProjectReference Condition="'$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd'" Include="$(VCToolsRootPath)\crt\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)\msvcp.vcxproj"/>
         <TargetLib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
