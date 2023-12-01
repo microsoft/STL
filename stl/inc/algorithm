@@ -10444,7 +10444,6 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
         const _Ty& _Tmp = _DEBUG_LT_PRED(_Pred, _Val, _Min_val) ? _Min_val : _Val;
         return _DEBUG_LT_PRED(_Pred, _Max_val, _Val) ? _Max_val : _Tmp;
     } else {
-
         if (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) {
             return _Max_val;
         }
