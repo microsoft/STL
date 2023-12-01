@@ -3408,7 +3408,6 @@ public:
         _STL_VERIFY(end() > _Where, "vector<bool> erase iterator outside range");
         _STD copy(_Next_iter(_Where), end(), _Where);
         _Orphan_range(static_cast<size_type>(_Off), this->_Mysize);
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         _STD copy(_Next_iter(_Where), end(), _Where);
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
@@ -3430,7 +3429,6 @@ public:
             const auto _Newsize = static_cast<size_type>(_Next - begin());
             _Orphan_range(_Newsize, this->_Mysize);
             _Trim(_Newsize);
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
             iterator _Next = _STD copy(_Last, end(), _First);
             _Trim(static_cast<size_type>(_Next - begin()));

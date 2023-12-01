@@ -350,7 +350,6 @@ public:
     __CLR_OR_THIS_CALL ~_Lockit() noexcept { // clear the lock
         _Lockit_dtor(this);
     }
-
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     __thiscall _Lockit() noexcept;
     explicit __thiscall _Lockit(int) noexcept; // set the lock

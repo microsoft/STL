@@ -17,7 +17,6 @@ public:
     __CLR_OR_THIS_CALL ~_Init_locks() noexcept {
         _Init_locks_dtor(this);
     }
-
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     __thiscall _Init_locks() noexcept;
     __thiscall ~_Init_locks() noexcept;
