@@ -1319,8 +1319,7 @@ public:
         requires is_convertible_v<const _OtherIndexType&, index_type>
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     _NODISCARD constexpr reference operator[](span<_OtherIndexType, rank()> _Indices) const
-        noexcept(noexcept(_Multidimensional_subscript(_Indices, make_index_sequence<rank()>{}))) /* strengthened */
-    {
+        noexcept(noexcept(_Multidimensional_subscript(_Indices, make_index_sequence<rank()>{}))) /* strengthened */ {
         return _Multidimensional_subscript(_Indices, make_index_sequence<rank()>{});
     }
 
@@ -1328,8 +1327,7 @@ public:
         requires is_convertible_v<const _OtherIndexType&, index_type>
               && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
     _NODISCARD constexpr reference operator[](const array<_OtherIndexType, rank()>& _Indices) const noexcept(
-        noexcept(_Multidimensional_subscript(span{_Indices}, make_index_sequence<rank()>{}))) /* strengthened */
-    {
+        noexcept(_Multidimensional_subscript(span{_Indices}, make_index_sequence<rank()>{}))) /* strengthened */ {
         return _Multidimensional_subscript(span{_Indices}, make_index_sequence<rank()>{});
     }
 
