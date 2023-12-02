@@ -48,7 +48,8 @@ _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(const char* s, char** en
     return static_cast<long long>(sign == '-' ? 0 - x : x);
 }
 
-_CRTIMP2_PURE long long(__CLRCALL_PURE_OR_CDECL _Stoll)(const char* s, char** endptr, int base) noexcept {
+// TRANSITION, ABI: preserved for binary compatibility
+_CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stoll(const char* s, char** endptr, int base) noexcept {
     // convert string, discard error code
     return _Stollx(s, endptr, base, nullptr);
 }

@@ -109,6 +109,7 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     return x;
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoul(const char* s, char** endptr, int base) noexcept {
     // convert string, discard error code
     return _Stoulx(s, endptr, base, nullptr);
