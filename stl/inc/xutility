@@ -3353,7 +3353,7 @@ namespace ranges {
     class _Ssize_fn {
     public:
         template <class _Rng>
-        _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept
+        _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(noexcept(_RANGES size(_Range)))
             requires requires { _RANGES size(_Range); }
         {
             using _Sty = _Make_signed_like_t<decltype(_RANGES size(_Range))>;
