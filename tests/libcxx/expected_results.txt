@@ -132,9 +132,6 @@ std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitiali
 # libc++ doesn't implement LWG-3940
 std/utilities/expected/expected.void/observers/value.pass.cpp FAIL
 
-# libc++ doesn't implement P1957R2 "Converting from `T*` to `bool` should be considered narrowing"
-std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
-
 # libc++ is missing a requires-clause on variant's operator<=> (LLVM-58192)
 std/utilities/variant/variant.relops/three_way.pass.cpp FAIL
 
@@ -766,6 +763,16 @@ std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.
 
 
 # *** NOT YET ANALYZED ***
+# Not analyzed. Clang instantiates BoomOnAnything during template argument substitution.
+std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp:2 FAIL
+
+# Not analyzed. MSVC emits "warning C4310: cast truncates constant value" for char(0xc3).
+std/input.output/filesystems/class.path/path.member/path.charconv.pass.cpp:0 FAIL
+std/input.output/filesystems/class.path/path.member/path.charconv.pass.cpp:1 FAIL
+
+# Not analyzed. Clang is attempting to default construct cpp17_input_iterator<int *>.
+std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp:2 FAIL
+
 # Not analyzed. Asserting about alloc_count.
 std/thread/futures/futures.promise/alloc_ctor.pass.cpp FAIL
 std/thread/futures/futures.promise/move_assign.pass.cpp FAIL
@@ -796,9 +803,6 @@ std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
 
 # Not analyzed. Failing after LLVM-D75622.
 std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
-
-# Not analyzed. Many diagnostics.
-std/input.output/filesystems/class.path/path.member/path.charconv.pass.cpp FAIL
 
 # Not analyzed. Possibly C1XX constexpr bug.
 std/utilities/function.objects/func.invoke/invoke_constexpr.pass.cpp:0 FAIL
@@ -925,7 +929,6 @@ std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_lte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_spaceship.pass.cpp FAIL
-std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
 std/ranges/range.adaptors/range.join.view/adaptor.pass.cpp:0 FAIL
