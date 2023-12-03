@@ -79,9 +79,9 @@ function load_charts() {
                 new DatasetInfo('cxx26', 'C++26 Features', 'smallAxis', '--color-severe-emphasis'),
                 new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '--color-success-emphasis'),
                 new DatasetInfo('pr', 'Pull Requests', 'smallAxis', '--color-fg-default'),
-                new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '--color-scale-red-7'),
-                new DatasetInfo('bug', 'GitHub Bugs', 'largeAxis', '--color-danger-emphasis'),
-                new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '--color-neutral-emphasis'),
+                new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '--color-scale-red-7', true),
+                new DatasetInfo('bug', 'GitHub Bugs', 'largeAxis', '--color-danger-emphasis', true),
+                new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '--color-neutral-emphasis', true),
                 new DatasetInfo('libcxx', 'Skipped Libcxx Tests', 'largeAxis', '--color-attention-emphasis'),
 
                 new DatasetInfo('avg_age', 'Average Age', 'leftAxis', '--color-neutral-emphasis', true),
