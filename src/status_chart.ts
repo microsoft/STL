@@ -79,7 +79,6 @@ function load_charts() {
                 new DatasetInfo('cxx26', 'C++26 Features', 'smallAxis', '--color-severe-emphasis'),
                 new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '--color-success-emphasis'),
                 new DatasetInfo('pr', 'Pull Requests', 'smallAxis', '--color-fg-default'),
-                new DatasetInfo('video', 'Videos', 'smallAxis', '--color-accent-emphasis'),
                 new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '--color-scale-red-7'),
                 new DatasetInfo('bug', 'GitHub Bugs', 'largeAxis', '--color-danger-emphasis'),
                 new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '--color-neutral-emphasis'),
@@ -182,10 +181,6 @@ function load_charts() {
             {
                 data: get_daily_values('pr'),
                 ...get_dataset_properties('pr'),
-            },
-            {
-                data: get_daily_values('video'),
-                ...get_dataset_properties('video'),
             },
             {
                 data: get_weekly_values('vso'),
@@ -390,7 +385,7 @@ function load_charts() {
         scales: {
             x: make_xAxis(timeframes[timeframe_idx]),
             largeAxis: make_yAxis('left', 'Bugs, Issues, Libcxx', 0, 800, 100),
-            smallAxis: make_yAxis('right', 'Features, LWG, PRs, Videos', 0, 80, 10),
+            smallAxis: make_yAxis('right', 'Features, LWG, PRs', 0, 80, 10),
         },
     };
 
@@ -537,7 +532,6 @@ function load_charts() {
         'cxx26',
         'lwg',
         'pr',
-        'video',
         'bug',
         'issue',
         'avg_age',

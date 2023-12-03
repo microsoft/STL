@@ -85,7 +85,6 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
       ```
       python tools/count_libcxx.py STL_REPO/tests/libcxx/expected_results.txt
       ```
-* Update `video_table.ts` if any [code review videos][] have been recorded or uploaded.
 * Run `npm run gather` to compile `gather_stats.ts` and then regenerate `daily_table.ts` and `monthly_table.ts`.
     + This regenerates the files from scratch, but the diff should be small because the data is stable and the process
     is deterministic.
@@ -113,7 +112,6 @@ Copyright (c) Microsoft Corporation.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 [Chart.js]: https://www.chartjs.org/
-[code review videos]: https://github.com/microsoft/STL/wiki/Code-Review-Videos
 [Node.js]: https://nodejs.org/en/
 [Personal Access Tokens]: https://github.com/settings/tokens
 [Status Chart]: https://microsoft.github.io/STL/
