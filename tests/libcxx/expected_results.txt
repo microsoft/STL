@@ -532,6 +532,18 @@ std/utilities/expected/expected.void/equality/equality.other_expected.pass.cpp:2
 
 
 # *** STL BUGS ***
+# GH-1035 <forward_list>, <string>, <vector>: Debug mode STL causes terminate() to be called under low memory
+std/containers/container.adaptors/priority.queue/priqueue.members/push_range.pass.cpp FAIL
+std/containers/sequences/forwardlist/forwardlist.modifiers/assign_range.pass.cpp FAIL
+std/containers/sequences/forwardlist/forwardlist.modifiers/insert_range_after.pass.cpp FAIL
+std/containers/sequences/forwardlist/forwardlist.modifiers/prepend_range.pass.cpp FAIL
+std/containers/sequences/vector.bool/construct_from_range.pass.cpp FAIL
+std/containers/sequences/vector/vector.modifiers/append_range.pass.cpp FAIL
+std/containers/sequences/vector/vector.modifiers/assign_range.pass.cpp FAIL
+std/strings/basic.string/string.modifiers/string_append/append_range.pass.cpp FAIL
+std/strings/basic.string/string.modifiers/string_assign/assign_range.pass.cpp FAIL
+std/strings/basic.string/string.modifiers/string_insert/insert_range.pass.cpp FAIL
+
 # GH-1112 <locale>: the enum value of std::money_base is not correct
 std/localization/locale.categories/category.monetary/locale.moneypunct/money_base.pass.cpp FAIL
 
@@ -592,6 +604,21 @@ std/strings/basic.string/string.modifiers/robust_against_adl.pass.cpp FAIL
 
 # GH-3100: <memory> etc.: ADL should be avoided when calling _Construct_in_place and its friends
 std/utilities/function.objects/func.wrap/func.wrap.func/robust_against_adl.pass.cpp FAIL
+
+# GH-4232: <sstream>: basic_stringbuf shouldn't implement moving with swapping
+std/input.output/string.streams/stringbuf/stringbuf.cons/move.alloc.pass.cpp FAIL
+
+# GH-4238: <chrono>: file_clock::to_utc() overflows for file_time<nanoseconds>
+# This test also has a bogus assumption about the file_time epoch, and file_time<nanoseconds> is doomed on Windows.
+std/time/time.clock/time.clock.file/ostream.pass.cpp FAIL
+
+# GH-4248: <chrono>: format() %y mishandles negative year values
+# LLVM-74727: [libc++] Should formatting year{-99} with %C produce "-1" or "-01"?
+std/time/time.syn/formatter.year.pass.cpp:2 FAIL
+
+# GH-4251: <ranges>: repeat_view<T, unsigned int> emits truncation warnings
+std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:0 FAIL
+std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:1 FAIL
 
 
 # *** CRT BUGS ***
