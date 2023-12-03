@@ -76,7 +76,7 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
     `npm install [package1]@latest [package2]@latest [...]` for all of the packages listed
     as `dependencies` in `package.json` (e.g. `@octokit/graphql@latest dotenv@latest`).
     + Ensure that the `importmap` in `index.html` remains synchronized to the same versions.
-* Update other dependencies in `index.html` (e.g. Primer CSS and es-module-shims).
+* Update other dependencies in `index.html` (e.g. Primer CSS).
 * Update `weekly_table.ts` by adding a new row.
     + We update it every Friday, although nothing bad will happen if we skip a week or update it on a different day.
     + `vso` is the number of Active work items under the STL's Area Path.
