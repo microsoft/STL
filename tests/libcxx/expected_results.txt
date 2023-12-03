@@ -290,6 +290,10 @@ std/containers/unord/unord.set/max_size.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.apply/apply_large_arity.pass.cpp SKIPPED
 std/utilities/tuple/tuple.tuple/tuple.cnstr/recursion_depth.pass.cpp SKIPPED
 
+# Our GitHub and MSVC-internal test harnesses would need special machinery to build the Standard Library Modules.
+std/modules/std.compat.pass.cpp FAIL
+std/modules/std.pass.cpp FAIL
+
 
 # *** ASAN FAILURES ***
 # ASAN runtime warns about an overlarge allocation and panics when it should throw bad_alloc instead
