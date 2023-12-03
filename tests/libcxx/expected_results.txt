@@ -26,6 +26,10 @@ std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
 std/time/time.clock/time.clock.local/ostream.pass.cpp FAIL
 std/time/time.clock/time.clock.system/ostream.pass.cpp FAIL
 
+# LLVM-74221: [libc++][test] nasty_char_traits::move is incompatible with constexpr
+std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:2 FAIL
+std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:2 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
