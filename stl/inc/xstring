@@ -1969,7 +1969,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 difference_type operator-(const _String_const_iterator& _Right) const noexcept {
         _Compat(_Right);
-        return _Ptr - _Right._Ptr;
+        return static_cast<difference_type>(_Ptr - _Right._Ptr);
     }
 
     _NODISCARD _CONSTEXPR20 reference operator[](const difference_type _Off) const noexcept {
