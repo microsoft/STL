@@ -937,7 +937,8 @@ namespace ranges {
             if constexpr (bidirectional_iterator<_It1> && bidirectional_iterator<_It2>) {
                 // determine final iterator values
                 auto _Final1 = _RANGES _Find_last_iterator(_First1, _Last1, _Count);
-                auto _Final2 = _RANGES _Find_last_iterator(_First2, _Last2, _Count);
+                using _Diff2 = iter_difference_t<_It2>; // avoid truncation warnings; ranges are the same length
+                auto _Final2 = _RANGES _Find_last_iterator(_First2, _Last2, static_cast<_Diff2>(_Count));
 
                 for (;;) { // trim matching suffixes
                     --_Final1;
