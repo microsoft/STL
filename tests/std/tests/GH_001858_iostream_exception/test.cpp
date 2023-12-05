@@ -325,6 +325,7 @@ STATIC_ASSERT(is_nothrow_move_assignable_v<wstringstream>);
 
 // GH-4232: <sstream>: basic_stringbuf shouldn't implement moving with swapping
 // These operations need to be able to throw exceptions when the source and target allocators are unequal.
+#if _HAS_CXX17
 STATIC_ASSERT(
     !is_nothrow_move_assignable_v<basic_stringbuf<char, char_traits<char>, pmr::polymorphic_allocator<char>>>);
 STATIC_ASSERT(
@@ -341,6 +342,7 @@ STATIC_ASSERT(
     !is_nothrow_move_assignable_v<basic_stringstream<char, char_traits<char>, pmr::polymorphic_allocator<char>>>);
 STATIC_ASSERT(!is_nothrow_move_assignable_v<
               basic_stringstream<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
+#endif // _HAS_CXX17
 
 STATIC_ASSERT(is_nothrow_std_swappable<stringbuf>);
 STATIC_ASSERT(is_nothrow_std_swappable<wstringbuf>);

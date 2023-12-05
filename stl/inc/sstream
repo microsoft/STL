@@ -18,6 +18,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 _STD_BEGIN
 
+#if !_HAS_CXX20
+struct _Stringbuf_from_allocator_tag {
+    explicit _Stringbuf_from_allocator_tag() = default;
+};
+#endif // !_HAS_CXX20
+
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 class basic_stringbuf
     : public basic_streambuf<_Elem, _Traits> { // stream buffer maintaining an allocated character array
@@ -76,7 +82,13 @@ public:
 
         _Take_contents(_STD move(_Right));
     }
-#endif // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    basic_stringbuf(_Stringbuf_from_allocator_tag _Tag, const _Alloc& _Al_)
+        : basic_stringbuf(_Tag, ios_base::in | ios_base::out, _Al_) {}
+
+    basic_stringbuf(_Stringbuf_from_allocator_tag, ios_base::openmode _Mode, const _Alloc& _Al_)
+        : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al(_Al_) {}
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     basic_stringbuf(basic_stringbuf&& _Right)
         : _Seekhigh(_STD exchange(_Right._Seekhigh, nullptr)), _Mystate(_STD exchange(_Right._Mystate, 0)),
@@ -287,7 +299,11 @@ public:
     _NODISCARD allocator_type get_allocator() const noexcept {
         return _Al;
     }
-#endif // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    _NODISCARD allocator_type _Get_allocator() const noexcept {
+        return _Al;
+    }
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 protected:
     int_type overflow(int_type _Meta = _Traits::eof()) override { // put an element to stream
@@ -650,7 +666,13 @@ public:
 #endif // _HAS_CXX20
 
     basic_istringstream(basic_istringstream&& _Right)
-        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Right._Stringbuffer.get_allocator()) {
+        : _Mybase(_STD addressof(_Stringbuffer)),
+#if _HAS_CXX20
+          _Stringbuffer(_Right._Stringbuffer.get_allocator())
+#else // ^^^ _HAS_CXX20 / !_HAX_CXX20 vvv
+          _Stringbuffer(_Stringbuf_from_allocator_tag{}, _Right._Stringbuffer._Get_allocator())
+#endif // ^^^ !_HAS_CXX20 ^^^
+    {
         _Mybase::swap(_Right);
         _Stringbuffer._Take_contents(_STD move(_Right._Stringbuffer));
     }
@@ -769,7 +791,13 @@ public:
 #endif // _HAS_CXX20
 
     basic_ostringstream(basic_ostringstream&& _Right)
-        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Right._Stringbuffer.get_allocator()) {
+        : _Mybase(_STD addressof(_Stringbuffer)),
+#if _HAS_CXX20
+          _Stringbuffer(_Right._Stringbuffer.get_allocator())
+#else // ^^^ _HAS_CXX20 / !_HAX_CXX20 vvv
+          _Stringbuffer(_Stringbuf_from_allocator_tag{}, _Right._Stringbuffer._Get_allocator())
+#endif // ^^^ !_HAS_CXX20 ^^^
+    {
         _Mybase::swap(_Right);
         _Stringbuffer._Take_contents(_STD move(_Right._Stringbuffer));
     }
@@ -894,7 +922,13 @@ public:
 #endif // _HAS_CXX20
 
     basic_stringstream(basic_stringstream&& _Right)
-        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Right._Stringbuffer.get_allocator()) {
+        : _Mybase(_STD addressof(_Stringbuffer)),
+#if _HAS_CXX20
+          _Stringbuffer(_Right._Stringbuffer.get_allocator())
+#else // ^^^ _HAS_CXX20 / !_HAX_CXX20 vvv
+          _Stringbuffer(_Stringbuf_from_allocator_tag{}, _Right._Stringbuffer._Get_allocator())
+#endif // ^^^ !_HAS_CXX20 ^^^
+    {
         _Mybase::swap(_Right);
         _Stringbuffer._Take_contents(_STD move(_Right._Stringbuffer));
     }
