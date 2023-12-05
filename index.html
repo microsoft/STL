@@ -7,13 +7,13 @@
     <!-- SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>STL Status Chart</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@primer/css@21.0.9/dist/primer.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@primer/css@21.1.0/dist/primer.min.css" />
     <script type="importmap">
         { "imports": {
             "@kurkle/color": "https://cdn.jsdelivr.net/npm/@kurkle/color@0.3.2/dist/color.esm.min.js",
-            "chart.js": "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js",
+            "chart.js": "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.min.js",
             "chartjs-adapter-luxon": "https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.esm.min.js",
-            "luxon": "https://cdn.jsdelivr.net/npm/luxon@3.4.3/build/es6/luxon.min.js"
+            "luxon": "https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/es6/luxon.min.js"
         } }
     </script>
     <script type="module" src="built/status_chart.mjs"></script>
@@ -65,10 +65,6 @@
                         style="background-color:var(--color-fg-default) !important; color: var(--color-canvas-default) !important;"
                         id="currentValue-pr"></span>
                     <a href="https://github.com/microsoft/STL/pulls">Open pull requests.</a>
-                </li>
-                <li><span class="Counter color-bg-accent-emphasis color-fg-on-emphasis" id="currentValue-video"></span>
-                    <a href="https://github.com/microsoft/STL/wiki/Code-Review-Videos">Code review videos</a>
-                    that have been recorded but not yet transcribed and uploaded.
                 </li>
             </ul>
         </li>

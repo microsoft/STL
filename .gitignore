@@ -6,7 +6,6 @@
 
 # Ignore the TypeScript compiler's output.
 /built/gather_stats.js
-/built/video_table.js
 
 # Ignore installed packages.
 /node_modules/
