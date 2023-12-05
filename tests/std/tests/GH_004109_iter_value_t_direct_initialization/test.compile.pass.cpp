@@ -525,7 +525,7 @@ void test_gh_4109() {
     ranges::fill_n(nil, zero, val);
 
     ranges::transform(nil, nil, nil, unop);
-    // ranges::transform(nil, nil, nil, nil, binop);
+    ranges::transform(nil, nil, nil, nil, nil, binop);
 
     ranges::generate(nil, nil, gen);
 
