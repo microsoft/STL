@@ -8,6 +8,7 @@
 #include <ios>
 #include <iostream>
 #include <istream>
+#include <memory_resource>
 #include <ostream>
 #include <sstream>
 #include <streambuf>
@@ -321,6 +322,25 @@ STATIC_ASSERT(is_nothrow_move_assignable_v<ostringstream>);
 STATIC_ASSERT(is_nothrow_move_assignable_v<wostringstream>);
 STATIC_ASSERT(is_nothrow_move_assignable_v<stringstream>);
 STATIC_ASSERT(is_nothrow_move_assignable_v<wstringstream>);
+
+// GH-4232: <sstream>: basic_stringbuf shouldn't implement moving with swapping
+// These operations need to be able to throw exceptions when the source and target allocators are unequal.
+STATIC_ASSERT(
+    !is_nothrow_move_assignable_v<basic_stringbuf<char, char_traits<char>, pmr::polymorphic_allocator<char>>>);
+STATIC_ASSERT(
+    !is_nothrow_move_assignable_v<basic_stringbuf<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
+STATIC_ASSERT(
+    !is_nothrow_move_assignable_v<basic_istringstream<char, char_traits<char>, pmr::polymorphic_allocator<char>>>);
+STATIC_ASSERT(!is_nothrow_move_assignable_v<
+              basic_istringstream<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
+STATIC_ASSERT(
+    !is_nothrow_move_assignable_v<basic_ostringstream<char, char_traits<char>, pmr::polymorphic_allocator<char>>>);
+STATIC_ASSERT(!is_nothrow_move_assignable_v<
+              basic_ostringstream<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
+STATIC_ASSERT(
+    !is_nothrow_move_assignable_v<basic_stringstream<char, char_traits<char>, pmr::polymorphic_allocator<char>>>);
+STATIC_ASSERT(!is_nothrow_move_assignable_v<
+              basic_stringstream<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
 
 STATIC_ASSERT(is_nothrow_std_swappable<stringbuf>);
 STATIC_ASSERT(is_nothrow_std_swappable<wstringbuf>);
