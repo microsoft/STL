@@ -1855,20 +1855,20 @@ public:
         return rend();
     }
 
-    _NODISCARD _CONSTEXPR20 pointer _Unchecked_begin() noexcept {
-        return _Mypair._Myval2._Myfirst;
+    _NODISCARD _CONSTEXPR20 _Ty* _Unchecked_begin() noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
     }
 
-    _NODISCARD _CONSTEXPR20 const_pointer _Unchecked_begin() const noexcept {
-        return _Mypair._Myval2._Myfirst;
+    _NODISCARD _CONSTEXPR20 const _Ty* _Unchecked_begin() const noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
     }
 
-    _NODISCARD _CONSTEXPR20 pointer _Unchecked_end() noexcept {
-        return _Mypair._Myval2._Mylast;
+    _NODISCARD _CONSTEXPR20 _Ty* _Unchecked_end() noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Mylast);
     }
 
-    _NODISCARD _CONSTEXPR20 const_pointer _Unchecked_end() const noexcept {
-        return _Mypair._Myval2._Mylast;
+    _NODISCARD _CONSTEXPR20 const _Ty* _Unchecked_end() const noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Mylast);
     }
 
     _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
