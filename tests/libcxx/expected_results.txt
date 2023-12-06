@@ -937,6 +937,9 @@ std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp:2 FAIL
 # Our monotonic_buffer_resource takes "user" space for metadata, which it probably should not do.
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_with_initial_size.pass.cpp FAIL
 
+# Likely STL bug in layout_stride::mapping::is_exhaustive().
+std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
+
 
 # *** NOT YET ANALYZED ***
 # Not analyzed. Clang instantiates BoomOnAnything during template argument substitution.
