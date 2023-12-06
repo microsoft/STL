@@ -93,7 +93,7 @@ public:
     basic_stringbuf(basic_stringbuf&& _Right)
         : _Seekhigh(_STD exchange(_Right._Seekhigh, nullptr)), _Mystate(_STD exchange(_Right._Mystate, 0)),
           _Al(_Right._Al) {
-        _Take_contents(_STD move(_Right));
+        _Mysb::swap(_Right);
     }
 
     basic_stringbuf& operator=(basic_stringbuf&& _Right) noexcept(
