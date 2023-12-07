@@ -646,7 +646,7 @@ namespace ranges {
         public:
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
@@ -1464,7 +1464,8 @@ constexpr _InIt _Next_iter(_InIt _First) { // increment iterator
 }
 
 _EXPORT_STD template <class _InIt>
-_NODISCARD _CONSTEXPR17 _InIt next(_InIt _First, _Iter_diff_t<_InIt> _Off = 1) { // increment iterator
+_NODISCARD _CONSTEXPR17 _InIt next(
+    _InIt _First, typename iterator_traits<_InIt>::difference_type _Off = 1) { // increment iterator
     static_assert(_Is_ranges_input_iter_v<_InIt>, "next requires input iterator");
 
     _STD advance(_First, _Off);
@@ -1477,7 +1478,8 @@ constexpr _BidIt _Prev_iter(_BidIt _First) { // decrement iterator
 }
 
 _EXPORT_STD template <class _BidIt>
-_NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1) { // decrement iterator
+_NODISCARD _CONSTEXPR17 _BidIt prev(
+    _BidIt _First, typename iterator_traits<_BidIt>::difference_type _Off = 1) { // decrement iterator
     static_assert(_Is_ranges_bidi_iter_v<_BidIt>, "prev requires bidirectional iterator");
 
     _STD advance(_First, -_Off);
@@ -1625,7 +1627,8 @@ public:
 
     template <indirectly_swappable<_BidIt> _BidIt2>
     friend constexpr void iter_swap(const reverse_iterator& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
-        is_nothrow_copy_constructible_v<_BidIt>&& is_nothrow_copy_constructible_v<_BidIt2>&& noexcept(
+        is_nothrow_copy_constructible_v<_BidIt>
+        && is_nothrow_copy_constructible_v<_BidIt2>&& noexcept(
             _RANGES iter_swap(--_STD declval<_BidIt&>(), --_STD declval<_BidIt2&>()))) {
         auto _LTmp = _Left.current;
         auto _RTmp = _Right.base();
@@ -5137,7 +5140,7 @@ _INLINE_VAR constexpr bool _Is_pointer_address_comparable =
 #pragma warning(push)
 #pragma warning(disable : 4806) // no value of type 'bool' promoted to type 'char' can equal the given constant
 template <class _Elem1, class _Elem2,
-    bool = sizeof(_Elem1) == sizeof(_Elem2) && is_integral_v<_Elem1>&& is_integral_v<_Elem2>>
+    bool = sizeof(_Elem1) == sizeof(_Elem2) && is_integral_v<_Elem1> && is_integral_v<_Elem2>>
 _INLINE_VAR constexpr bool _Can_memcmp_elements =
     is_same_v<_Elem1, bool> || is_same_v<_Elem2, bool> || static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 #pragma warning(pop)
