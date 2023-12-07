@@ -609,6 +609,10 @@ std/depr/depr.c.headers/float_h.compile.pass.cpp:1 FAIL
 std/language.support/support.limits/c.limits/cfloat.pass.cpp:0 FAIL
 std/language.support/support.limits/c.limits/cfloat.pass.cpp:1 FAIL
 
+# DevCom-10299797 VSO-1760401 "max_align_t is not provided by stddef.h"
+std/depr/depr.c.headers/stddef_h.compile.pass.cpp:0 FAIL
+std/depr/depr.c.headers/stddef_h.compile.pass.cpp:1 FAIL
+
 
 # *** LIKELY BOGUS TESTS ***
 
