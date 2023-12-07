@@ -159,13 +159,13 @@ _Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_min_element_1(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_1(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_min_element_2(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_2(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_min_element_4(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_min_element_8(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
@@ -176,13 +176,13 @@ _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_max_element_1(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_1(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_max_element_2(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_2(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_max_element_4(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_max_element_8(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
@@ -1366,10 +1366,10 @@ using _Unwrap_enum_t = typename _Unwrap_enum<_Elem>::type;
 #define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred)
 
 #else // ^^^ _ITERATOR_DEBUG_LEVEL < 2 / _ITERATOR_DEBUG_LEVEL == 2 vvv
-#define _DEBUG_LT_PRED(pred, x, y)                _Debug_lt_pred(pred, x, y)
-#define _DEBUG_ORDER_UNWRAPPED(first, last, pred) _Debug_order_unchecked(first, last, pred)
+#define _DEBUG_LT_PRED(pred, x, y)                _STD _Debug_lt_pred(pred, x, y)
+#define _DEBUG_ORDER_UNWRAPPED(first, last, pred) _STD _Debug_order_unchecked(first, last, pred)
 #define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred) \
-    _Debug_order_set_unchecked<otherIter>(first, last, pred)
+    _STD _Debug_order_set_unchecked<otherIter>(first, last, pred)
 
 template <class _Pr, class _Ty1, class _Ty2,
     enable_if_t<is_same_v<_Remove_cvref_t<_Ty1>, _Remove_cvref_t<_Ty2>>, int> = 0>
@@ -1407,7 +1407,7 @@ template <class _OtherIt, class _InIt, class _Pr>
 constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
     if constexpr (is_same_v<_Iter_value_t<_OtherIt>, _Iter_value_t<_InIt>>) {
-        _Debug_order_unchecked(_First, _Last, _Pred);
+        _STD _Debug_order_unchecked(_First, _Last, _Pred);
     }
 }
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^
@@ -5511,12 +5511,12 @@ _EXPORT_STD template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
     const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // order [_First1, _Last1) vs. [_First2, _Last2)
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    auto _UFirst1      = _Get_unwrapped(_First1);
-    const auto _ULast1 = _Get_unwrapped(_Last1);
-    auto _UFirst2      = _Get_unwrapped(_First2);
-    const auto _ULast2 = _Get_unwrapped(_Last2);
+    _STD _Adl_verify_range(_First1, _Last1);
+    _STD _Adl_verify_range(_First2, _Last2);
+    auto _UFirst1      = _STD _Get_unwrapped(_First1);
+    const auto _ULast1 = _STD _Get_unwrapped(_Last1);
+    auto _UFirst2      = _STD _Get_unwrapped(_First2);
+    const auto _ULast2 = _STD _Get_unwrapped(_Last2);
 
     using _Memcmp_pred = _Lex_compare_memcmp_classify<decltype(_UFirst1), decltype(_UFirst2), _Pr>;
     if constexpr (!is_void_v<_Memcmp_pred>) {
@@ -5526,7 +5526,7 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
         {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
+            const int _Ans   = _STD _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
             return _Memcmp_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
         }
     }
@@ -5557,7 +5557,7 @@ _NODISCARD bool lexicographical_compare(_ExPo&&, const _FwdIt1 _First1, const _F
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    return _STD lexicographical_compare(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
+    return _STD lexicographical_compare(_First1, _Last1, _First2, _Last2, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -5614,19 +5614,19 @@ using _Lex_compare_three_way_memcmp_classify =
 _EXPORT_STD template <class _InIt1, class _InIt2, class _Cmp>
 _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1, const _InIt1 _Last1,
     const _InIt2 _First2, const _InIt2 _Last2, _Cmp _Comp) -> decltype(_Comp(*_First1, *_First2)) {
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    auto _UFirst1      = _Get_unwrapped(_First1);
-    const auto _ULast1 = _Get_unwrapped(_Last1);
-    auto _UFirst2      = _Get_unwrapped(_First2);
-    const auto _ULast2 = _Get_unwrapped(_Last2);
+    _STD _Adl_verify_range(_First1, _Last1);
+    _STD _Adl_verify_range(_First2, _Last2);
+    auto _UFirst1      = _STD _Get_unwrapped(_First1);
+    const auto _ULast1 = _STD _Get_unwrapped(_Last1);
+    auto _UFirst2      = _STD _Get_unwrapped(_First2);
+    const auto _ULast2 = _STD _Get_unwrapped(_Last2);
 
     using _Memcmp_pred = _Lex_compare_three_way_memcmp_classify<decltype(_UFirst1), decltype(_UFirst2), _Cmp>;
     if constexpr (!is_void_v<_Memcmp_pred>) {
         if (!_STD is_constant_evaluated()) {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
+            const int _Ans   = _STD _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
             if (_Ans == 0) {
                 return _Num1 <=> _Num2;
             } else {
@@ -6590,8 +6590,8 @@ constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
-            const auto _First_ptr = _To_address(_First);
-            const auto _Result    = _STD __std_max_element(_First_ptr, _To_address(_Last));
+            const auto _First_ptr = _STD _To_address(_First);
+            const auto _Result    = _STD __std_max_element(_First_ptr, _STD _To_address(_Last));
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
@@ -6615,8 +6615,9 @@ constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD constexpr _FwdIt max_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
-    _Adl_verify_range(_First, _Last);
-    _Seek_wrapped(_First, _STD _Max_element_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred)));
+    _STD _Adl_verify_range(_First, _Last);
+    _STD _Seek_wrapped(_First,
+        _STD _Max_element_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _STD _Pass_fn(_Pred)));
     return _First;
 }
 
@@ -6631,7 +6632,7 @@ _NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) n
     // find largest element
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    return _STD max_element(_First, _Last, _Pass_fn(_Pred));
+    return _STD max_element(_First, _Last, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -6685,18 +6686,19 @@ namespace ranges {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            _Seek_wrapped(_First, _RANGES _Max_element_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                                      _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj)));
+            _STD _Adl_verify_range(_First, _Last);
+            _STD _Seek_wrapped(
+                _First, _RANGES _Max_element_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                            _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
             return _First;
         }
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _UResult =
-                _RANGES _Max_element_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_iterator(_Range, _STD move(_UResult));
+            auto _UResult = _RANGES _Max_element_unchecked(
+                _Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
@@ -6708,7 +6710,7 @@ namespace ranges {
 _EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/largest
-    const _Ty* _Res = _STD _Max_element_unchecked(_Ilist.begin(), _Ilist.end(), _Pass_fn(_Pred));
+    const _Ty* _Res = _STD _Max_element_unchecked(_Ilist.begin(), _Ilist.end(), _STD _Pass_fn(_Pred));
     return *_Res;
 }
 
@@ -6746,7 +6748,7 @@ namespace ranges {
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::max must not be empty. (N4950 [alg.min.max]/13)");
-            return *_RANGES _Max_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return *_RANGES _Max_element_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
         template <input_range _Rng, class _Pj = identity,
@@ -6759,7 +6761,7 @@ namespace ranges {
                 _UFirst != _ULast, "A range passed to std::ranges::max must not be empty. (N4950 [alg.min.max]/13)");
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Max_element_unchecked(
-                    _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj)));
+                    _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
             } else {
                 range_value_t<_Rng> _Found(*_UFirst);
                 while (++_UFirst != _ULast) {
@@ -6782,8 +6784,8 @@ constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
-            const auto _First_ptr = _To_address(_First);
-            const auto _Result    = _STD __std_min_element(_First_ptr, _To_address(_Last));
+            const auto _First_ptr = _STD _To_address(_First);
+            const auto _Result    = _STD __std_min_element(_First_ptr, _STD _To_address(_Last));
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
@@ -6807,8 +6809,9 @@ constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
 
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD constexpr _FwdIt min_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
-    _Adl_verify_range(_First, _Last);
-    _Seek_wrapped(_First, _STD _Min_element_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred)));
+    _STD _Adl_verify_range(_First, _Last);
+    _STD _Seek_wrapped(_First,
+        _STD _Min_element_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _STD _Pass_fn(_Pred)));
     return _First;
 }
 
@@ -6823,7 +6826,7 @@ _NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) n
     // find smallest element
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    return _STD min_element(_First, _Last, _Pass_fn(_Pred));
+    return _STD min_element(_First, _Last, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -6877,18 +6880,19 @@ namespace ranges {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            _Seek_wrapped(_First, _RANGES _Min_element_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                                      _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj)));
+            _STD _Adl_verify_range(_First, _Last);
+            _STD _Seek_wrapped(
+                _First, _RANGES _Min_element_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                            _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
             return _First;
         }
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _UResult =
-                _RANGES _Min_element_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_iterator(_Range, _STD move(_UResult));
+            auto _UResult = _RANGES _Min_element_unchecked(
+                _Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
@@ -6900,7 +6904,7 @@ namespace ranges {
 _EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/smallest
-    const _Ty* _Res = _STD _Min_element_unchecked(_Ilist.begin(), _Ilist.end(), _Pass_fn(_Pred));
+    const _Ty* _Res = _STD _Min_element_unchecked(_Ilist.begin(), _Ilist.end(), _STD _Pass_fn(_Pred));
     return *_Res;
 }
 
@@ -6932,7 +6936,7 @@ namespace ranges {
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::min must not be empty. (N4950 [alg.min.max]/5)");
-            return *_RANGES _Min_element_unchecked(_First, _Last, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return *_RANGES _Min_element_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
         template <input_range _Rng, class _Pj = identity,
@@ -6945,7 +6949,7 @@ namespace ranges {
                 _UFirst != _ULast, "A range passed to std::ranges::min must not be empty. (N4950 [alg.min.max]/5)");
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Min_element_unchecked(
-                    _STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj)));
+                    _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
             } else {
                 range_value_t<_Rng> _Found(*_UFirst);
                 while (++_UFirst != _ULast) {

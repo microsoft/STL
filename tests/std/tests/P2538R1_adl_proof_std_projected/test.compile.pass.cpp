@@ -26,6 +26,14 @@ struct tagged_equal {
 };
 
 template <class Tag>
+struct tagged_less {
+    template <class T, class U>
+    constexpr auto operator()(T&& t, U&& u) const -> decltype(std::forward<T>(t) < std::forward<U>(u)) {
+        return std::forward<T>(t) < std::forward<U>(u);
+    }
+};
+
+template <class Tag>
 struct tagged_identity {
     template <class T>
     constexpr T&& operator()(T&& t) const noexcept {
@@ -54,6 +62,7 @@ using simple_identity = tagged_identity<void>;
 using validator           = holder<incomplete>*;
 using validating_truth    = tagged_truth<holder<incomplete>>;
 using validating_equal    = tagged_equal<holder<incomplete>>;
+using validating_less     = tagged_less<holder<incomplete>>;
 using validating_identity = tagged_identity<holder<incomplete>>;
 
 void test_ranges_algorithms() {
@@ -200,6 +209,50 @@ void test_ranges_algorithms() {
     (void) ends_with(iarr, iarr, iarr, iarr, validating_equal{});
     (void) ends_with(iarr, iarr, validating_equal{});
 #endif // _HAS_CXX23
+
+    (void) min(+varr, +varr);
+    (void) min({+varr, +varr});
+    (void) min(varr);
+    (void) min(+iarr, +iarr, validating_less{});
+    (void) min({+iarr, +iarr}, {}, validating_identity{});
+    (void) min(iarr, validating_less{});
+
+    (void) max(+varr, +varr);
+    (void) max({+varr, +varr});
+    (void) max(varr);
+    (void) max(+iarr, +iarr, validating_less{});
+    (void) max({+iarr, +iarr}, {}, validating_identity{});
+    (void) max(iarr, validating_less{});
+
+    (void) minmax(+varr, +varr);
+    (void) minmax({+varr, +varr});
+    (void) minmax(varr);
+    (void) minmax(+iarr, +iarr, validating_less{});
+    (void) minmax({+iarr, +iarr}, {}, validating_identity{});
+    (void) minmax(iarr, validating_less{});
+
+    (void) min_element(varr, varr + 1);
+    (void) min_element(varr);
+    (void) min_element(iarr, iarr + 1, validating_less{});
+    (void) min_element(iarr, {}, validating_identity{});
+
+    (void) max_element(varr, varr + 1);
+    (void) max_element(varr);
+    (void) max_element(iarr, iarr + 1, validating_less{});
+    (void) max_element(iarr, {}, validating_identity{});
+
+    (void) minmax_element(varr, varr + 1);
+    (void) minmax_element(varr);
+    (void) minmax_element(iarr, iarr + 1, validating_less{});
+    (void) minmax_element(iarr, {}, validating_identity{});
+
+    (void) clamp(+varr, +varr, +varr);
+    (void) clamp(+iarr, +iarr, +iarr, validating_less{});
+
+    (void) lexicographical_compare(varr, varr, varr, varr);
+    (void) lexicographical_compare(varr, varr);
+    (void) lexicographical_compare(iarr, iarr, iarr, iarr, validating_less{});
+    (void) lexicographical_compare(iarr, iarr, validating_less{});
 }
 
 // Separated test for ranges::count and equality
