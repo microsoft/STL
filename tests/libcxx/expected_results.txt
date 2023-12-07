@@ -30,6 +30,10 @@ std/time/time.clock/time.clock.system/ostream.pass.cpp FAIL
 std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:2 FAIL
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:2 FAIL
 
+# LLVM-74756: [libc++][test] overload_compare_iterator doesn't support its claimed iterator_category
+std/utilities/memory/specialized.algorithms/uninitialized.copy/uninitialized_copy.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_move.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
