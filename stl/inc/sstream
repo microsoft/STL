@@ -146,7 +146,7 @@ public:
             }
         } else {
             if constexpr (_Choose_pocma_v<_Alloc> == _Pocma_values::_Propagate_allocators) {
-                _Al = _STD move(_Al);
+                _Al = _STD move(_Right._Al);
             }
             _Take_contents(_STD move(_Right));
         }
