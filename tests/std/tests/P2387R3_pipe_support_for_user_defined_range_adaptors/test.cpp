@@ -267,7 +267,6 @@ void test_perfect_forwarding_properties() { // COMPILE-ONLY
         static_assert(same_as<decltype(move(as_const(raco))(TestRange{})), const Pinned&>);
     }
     {
-
         auto combined_pipeline = RangeIdentity{} | PinnedReturningRaco{};
 
         static_assert(same_as<decltype(TestRange{} | combined_pipeline), const Pinned&>);

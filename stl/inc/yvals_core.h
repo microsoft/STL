@@ -1954,7 +1954,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 
 // TRANSITION: _USE_EXTERN_CXX_EVERYWHERE_FOR_STL controls whether we also wrap the STL's
 // header-only code in this linkage-specification, as a temporary workaround to allow
-// the named module to coexist with classic includes in the same translation unit.
+// importing the named module in a translation unit with classic includes.
 
 #ifndef _USE_EXTERN_CXX_EVERYWHERE_FOR_STL
 #define _USE_EXTERN_CXX_EVERYWHERE_FOR_STL _HAS_CXX20

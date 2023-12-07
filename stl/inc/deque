@@ -1424,7 +1424,6 @@ public:
                 ++_Myoff();
             }
         }
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Myoff()));
         if (--_Mysize() == 0) {
@@ -1447,7 +1446,6 @@ public:
                 _Myoff() = 0;
             }
         }
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         size_type _Newoff = _Myoff() + _Mysize() - 1;
         _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Newoff));
@@ -1473,7 +1471,6 @@ public:
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
         bool _Moved = _Off > 0 && _Off + _Count < _Mysize();
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
