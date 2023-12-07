@@ -327,7 +327,9 @@ public:
 
     constexpr _Unicode_codepoint_iterator(const _CharT* _First_val, const _CharT* _Last_val) noexcept
         : _First(_First_val), _Last(_Last_val) {
-        _Next = _Decode_utf(_First, _Last, _Val)._Next_ptr;
+        if (_First != _Last) {
+            _Next = _Decode_utf(_First, _Last, _Val)._Next_ptr;
+        }
     }
 
     constexpr _Unicode_codepoint_iterator() = default;
