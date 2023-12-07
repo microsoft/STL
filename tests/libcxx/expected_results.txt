@@ -637,7 +637,7 @@ std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
 
 # This test assumes that array<int, 0> is not const-default-constructible.
-std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp:2 FAIL
+std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
