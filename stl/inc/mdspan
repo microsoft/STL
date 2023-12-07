@@ -1075,6 +1075,8 @@ struct _Mdspan_mapping_base {
 
     constexpr explicit _Mdspan_mapping_base(const _Extents& _Exts) : _Map(_Exts) {}
 
+    constexpr explicit _Mdspan_mapping_base(_Extents&& _Exts) : _Map(_STD move(_Exts)) {}
+
     template <class _OtherMapping>
     constexpr explicit _Mdspan_mapping_base(const _OtherMapping& _Map_) : _Map(_Map_) {}
 
@@ -1090,6 +1092,8 @@ struct _Mdspan_mapping_base<_Extents, _LayoutPolicy> {
     constexpr _Mdspan_mapping_base() noexcept = default;
 
     constexpr explicit _Mdspan_mapping_base(const _Extents&) noexcept {}
+
+    constexpr explicit _Mdspan_mapping_base(_Extents&&) noexcept {}
 
     template <class _OtherMapping>
     constexpr explicit _Mdspan_mapping_base(const _OtherMapping& _Map_) {
