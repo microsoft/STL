@@ -171,10 +171,6 @@ std/utilities/expected/expected.void/observers/value.pass.cpp FAIL
 std/utilities/variant/variant.relops/three_way.pass.cpp FAIL
 
 # libc++ doesn't implement P2602R2 "Poison Pills Are Too Toxic"
-std/ranges/range.access/begin.pass.cpp FAIL
-std/ranges/range.access/end.pass.cpp FAIL
-std/ranges/range.access/rbegin.pass.cpp FAIL
-std/ranges/range.access/rend.pass.cpp FAIL
 std/ranges/range.access/size.pass.cpp FAIL
 
 # libc++ doesn't implement P2652R2 "Disallowing User Specialization Of allocator_traits"
@@ -496,8 +492,6 @@ std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:1 FAIL
 std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:0 FAIL
 std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:1 FAIL
-std/utilities/tuple/tuple.tuple/tuple.rel/three_way.pass.cpp:0 FAIL
-std/utilities/tuple/tuple.tuple/tuple.rel/three_way.pass.cpp:1 FAIL
 
 # DevCom-1638563: icky static analysis false positive
 std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
@@ -934,7 +928,6 @@ std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.
 std/time/time.syn/formatter.month_day_last.pass.cpp FAIL
 
 # Likely STL bug in `join_view::_Iterator`: constexpr weirdness
-std/ranges/range.adaptors/range.join.view/end.pass.cpp:2 FAIL
 std/ranges/range.adaptors/range.join.view/iterator/decrement.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join.view/iterator/decrement.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join.view/iterator/increment.pass.cpp:0 FAIL
@@ -944,7 +937,6 @@ std/ranges/range.adaptors/range.join.view/iterator/iter.swap.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join.view/iterator/star.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join.view/iterator/star.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join.view/sentinel/ctor.parent.pass.cpp:2 FAIL
-std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp:2 FAIL
 
 # Our monotonic_buffer_resource takes "user" space for metadata, which it probably should not do.
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_with_initial_size.pass.cpp FAIL
