@@ -301,6 +301,14 @@ std/modules/std.pass.cpp FAIL
 std/strings/basic.string/string.capacity/max_size.pass.cpp:1 FAIL
 
 # ASAN runtime warns about an overlarge allocation and doesn't call new_handler (VSO-1854235, VSO-1854568, VSO-1854400, VSO-1854248)
+std/language.support/support.dynamic/new.delete/new.delete.array/new.size.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/new.size.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align_nothrow.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/new.size_nothrow.pass.cpp:1 FAIL
 
 # ASAN runtime intercepts `strtol` and breaks LWG-2009 (VSO-1875597)
 std/strings/string.conversions/stol.pass.cpp:1 FAIL
