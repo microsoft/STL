@@ -183,6 +183,9 @@ std/ranges/range.adaptors/range.join.view/iterator/ctor.parent.outer.pass.cpp FA
 std/ranges/range.adaptors/range.join.view/iterator/eq.pass.cpp FAIL
 std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp FAIL
 
+# If any feature-test macro test is failing, this consolidated test will also fail.
+std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -271,9 +274,6 @@ std/input.output/filesystems/fs.op.funcs/fs.op.status/status.pass.cpp SKIPPED
 std/input.output/filesystems/fs.op.funcs/fs.op.symlink_status/symlink_status.pass.cpp SKIPPED
 std/input.output/filesystems/fs.op.funcs/fs.op.temp_dir_path/temp_directory_path.pass.cpp SKIPPED
 std/input.output/filesystems/fs.op.funcs/fs.op.weakly_canonical/weakly_canonical.pass.cpp SKIPPED
-
-# generate_feature_test_macro_components.py needs to learn about C1XX
-std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
 
 # These tests set an allocator with a max_size() too small to default construct an unordered container
 # (due to our minimum bucket size).
