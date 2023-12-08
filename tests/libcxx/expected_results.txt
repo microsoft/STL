@@ -167,9 +167,6 @@ std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitiali
 # libc++ doesn't implement LWG-3940
 std/utilities/expected/expected.void/observers/value.pass.cpp FAIL
 
-# libc++ is missing a requires-clause on variant's operator<=> (LLVM-58192)
-std/utilities/variant/variant.relops/three_way.pass.cpp FAIL
-
 # libc++ doesn't implement P2602R2 "Poison Pills Are Too Toxic"
 std/ranges/range.access/size.pass.cpp FAIL
 
@@ -1311,6 +1308,9 @@ std/algorithms/alg.sorting/alg.set.operations/set.symmetric.difference/ranges_se
 std/algorithms/alg.sorting/alg.set.operations/set.symmetric.difference/ranges_set_symmetric_difference.pass.cpp:1 SKIPPED
 std/algorithms/alg.sorting/alg.set.operations/set.union/ranges_set_union.pass.cpp:0 SKIPPED
 std/algorithms/alg.sorting/alg.set.operations/set.union/ranges_set_union.pass.cpp:1 SKIPPED
+
+# Not analyzed. Clang emits a -Wundefined-inline warning.
+std/utilities/variant/variant.relops/three_way.pass.cpp:2 FAIL
 
 
 # *** XFAILs WHICH PASS ***
