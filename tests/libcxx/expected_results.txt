@@ -976,16 +976,20 @@ std/thread/futures/futures.unique_future/dtor.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_incomplete.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_structured_bindings.pass.cpp FAIL
 
-# Not analyzed. Possibly testing nonstandard deduction guides.
+# Not analyzed. Expects implicit deduction guides to SFINAE away when allocators are passed where comparators should be.
 std/containers/associative/map/map.cons/deduct.pass.cpp FAIL
-std/containers/associative/map/map.cons/deduct_const.pass.cpp FAIL
 std/containers/associative/multimap/multimap.cons/deduct.pass.cpp FAIL
-std/containers/associative/multimap/multimap.cons/deduct_const.pass.cpp FAIL
 std/containers/container.adaptors/priority.queue/priqueue.cons/deduct.pass.cpp FAIL
 std/containers/unord/unord.map/unord.map.cnstr/deduct.pass.cpp FAIL
-std/containers/unord/unord.map/unord.map.cnstr/deduct_const.pass.cpp FAIL
 std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct.pass.cpp FAIL
+
+# Not analyzed. Possibly testing nonstandard deduction guides involving pair<const K, V> and pair<const K, const V>.
+std/containers/associative/map/map.cons/deduct_const.pass.cpp FAIL
+std/containers/associative/multimap/multimap.cons/deduct_const.pass.cpp FAIL
+std/containers/unord/unord.map/unord.map.cnstr/deduct_const.pass.cpp FAIL
 std/containers/unord/unord.multimap/unord.multimap.cnstr/deduct_const.pass.cpp FAIL
+
+# Not analyzed. Possible MSVC compiler bug, as Clang is unaffected.
 std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:0 FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:1 FAIL
 
