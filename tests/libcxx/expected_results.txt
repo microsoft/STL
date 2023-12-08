@@ -129,13 +129,11 @@ std/language.support/support.limits/support.limits.general/iterator.version.comp
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 std/language.support/support.limits/support.limits.general/chrono.version.compile.pass.cpp FAIL
 
-# libc++ doesn't implement P2273R3 constexpr unique_ptr
-std/language.support/support.limits/support.limits.general/memory.version.compile.pass.cpp FAIL
-
 # libc++ doesn't implement P2231R1 Add further constexpr support for variant
 std/language.support/support.limits/support.limits.general/variant.version.compile.pass.cpp FAIL
 
 # libc++ is missing various Ranges DRs
+std/language.support/support.limits/support.limits.general/memory.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/ranges.version.compile.pass.cpp FAIL
 
 # libc++ is missing various <format> DRs
