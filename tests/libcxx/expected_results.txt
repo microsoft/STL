@@ -358,7 +358,8 @@ std/atomics/atomics.types.generic/copy_semantics_traits.pass.cpp FAIL
 
 
 # *** C1XX COMPILER BUGS ***
-# DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
+# DevCom-409222 VSO-752709 "Constructing rvalue reference from non-reference-related lvalue reference"
+# Reportedly fixed in VS 2019 16.10, test is still failing, need to investigate.
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:1 FAIL
 
@@ -366,13 +367,13 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:1 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
 
-# DevCom-1436243 constexpr new initialized array
+# DevCom-1436243 VSO-1335743 constexpr new initialized array
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:1 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.create/make_unique.array.pass.cpp:0 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.create/make_unique.array.pass.cpp:1 FAIL
 
-# DevCom-1626139 "compile-time NaN comparison"
+# DevCom-1626139 VSO-1456427 "compile-time NaN comparison"
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp:0 FAIL
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp:1 FAIL
 std/library/description/conventions/expos.only.func/synth_three_way.pass.cpp:0 FAIL
@@ -386,26 +387,27 @@ std/utilities/utility/pairs/pairs.spec/three_way_comparison.pass.cpp:1 FAIL
 std/utilities/variant/variant.relops/three_way.pass.cpp:0 FAIL
 std/utilities/variant/variant.relops/three_way.pass.cpp:1 FAIL
 
-# DevCom-1626727: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
+# DevCom-1626727 VSO-1457307: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
 std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
 std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
 
-# DevCom-1638496: C1XX doesn't properly reject int <=> unsigned
+# DevCom-1638563 VSO-1457836: icky static analysis false positive
+# Resolved wontfix, need to report again.
+std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
+
+# DevCom-1638496 VSO-1462745: C1XX doesn't properly reject int <=> unsigned
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:0 FAIL
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:1 FAIL
 std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:0 FAIL
 std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:1 FAIL
 
-# DevCom-1638563: icky static analysis false positive
-std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
-
-# DevCom-10026599: conditional expression has two different types
-std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
-std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:1 FAIL
-
 # VSO-1513409: Bogus `warning C4100: '<_Args_0>': unreferenced formal parameter` when `if constexpr` selects another branch
 std/containers/views/mdspan/mdspan/ctor.dh_integers.pass.cpp:0 FAIL
 std/containers/views/mdspan/mdspan/ctor.dh_integers.pass.cpp:1 FAIL
+
+# DevCom-10026599 VSO-1532879: conditional expression has two different types
+std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
+std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:1 FAIL
 
 # VSO-1923988: constexpr evaluation performs an assignment with a derived type when it should use a base type
 std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
