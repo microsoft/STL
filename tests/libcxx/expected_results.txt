@@ -443,6 +443,16 @@ std/utilities/expected/expected.void/equality/equality.other_expected.pass.cpp:2
 
 
 # *** STL BUGS ***
+# GH-519 <cmath>: signbit() misses overloads for integer types
+std/depr/depr.c.headers/math_h.pass.cpp FAIL
+std/numerics/c.math/cmath.pass.cpp FAIL
+
+# GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
+std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp FAIL
+
+# GH-1006 <algorithm>: debug checks for predicates are observable
+std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp FAIL
+
 # GH-1035 <forward_list>, <string>, <vector>: Debug mode STL causes terminate() to be called under low memory
 std/containers/container.adaptors/priority.queue/priqueue.members/push_range.pass.cpp FAIL
 std/containers/sequences/forwardlist/forwardlist.modifiers/assign_range.pass.cpp FAIL
@@ -462,8 +472,11 @@ std/localization/locale.categories/category.monetary/locale.moneypunct/money_bas
 std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.pass.cpp FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 
-# GH-1006 <algorithm>: debug checks for predicates are observable
-std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp FAIL
+# GH-1190 <future>: incorrectly used copy assignment instead of copy construction in set_value
+std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
+
+# GH-1264 <locale>: wbuffer_convert does not implement seek
+std/localization/locales/locale.convenience/conversions/conversions.buffer/seekoff.pass.cpp FAIL
 
 # GH-1275 <locale>: missing some locale names
 # We don't have the locale names libcxx wants specialized in platform_support.hpp
@@ -486,19 +499,6 @@ std/localization/locale.categories/category.time/locale.time.get.byname/get_week
 std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday_wide.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp FAIL
 std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/thousands_sep.pass.cpp FAIL
-
-# GH-1264 <locale>: wbuffer_convert does not implement seek
-std/localization/locales/locale.convenience/conversions/conversions.buffer/seekoff.pass.cpp FAIL
-
-# GH-1190 <future>: incorrectly used copy assignment instead of copy construction in set_value
-std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
-
-# GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
-std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp FAIL
-
-# GH-519 <cmath>: signbit() misses overloads for integer types
-std/depr/depr.c.headers/math_h.pass.cpp FAIL
-std/numerics/c.math/cmath.pass.cpp FAIL
 
 # GH-1374: Spaceship CPO wording in [cmp.alg] needs an overhaul
 # (Technically an STL bug until the wording in the working draft is fixed to agree.)
