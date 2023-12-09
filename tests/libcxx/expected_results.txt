@@ -968,7 +968,6 @@ std/utilities/format/format.functions/ascii.pass.cpp FAIL
 # Not analyzed
 std/algorithms/alg.modifying.operations/alg.rotate/ranges_rotate.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/ranges_inplace_merge.pass.cpp FAIL
-std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.pass.cpp:2 FAIL
 std/algorithms/algorithms.results/in_found_result.pass.cpp:0 FAIL
 std/algorithms/algorithms.results/in_found_result.pass.cpp:1 FAIL
 std/algorithms/algorithms.results/min_max_result.pass.cpp:0 FAIL
