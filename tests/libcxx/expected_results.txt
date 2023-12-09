@@ -969,15 +969,28 @@ std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.
 # Not analyzed. These tests use characters that cannot be represented in legacy character encodings
 std/utilities/format/format.functions/ascii.pass.cpp FAIL
 
-# Not analyzed
+# Not analyzed. Failing assert(swaps <= expected).
 std/algorithms/alg.modifying.operations/alg.rotate/ranges_rotate.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: numberOfComp <= static_cast<int>(in.size() - 1)
 std/algorithms/alg.sorting/alg.merge/ranges_inplace_merge.pass.cpp FAIL
+
+# Not analyzed. error C2397: conversion from 'const _In' to '_In' requires a narrowing conversion
 std/algorithms/algorithms.results/in_found_result.pass.cpp:0 FAIL
 std/algorithms/algorithms.results/in_found_result.pass.cpp:1 FAIL
+
+# Not analyzed. error C2397: conversion from 'const _Ty' to '_Ty' requires a narrowing conversion
 std/algorithms/algorithms.results/min_max_result.pass.cpp:0 FAIL
 std/algorithms/algorithms.results/min_max_result.pass.cpp:1 FAIL
+
+# Not analyzed.
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
+
+# Not analyzed. MSVC doesn't define __SIZE_WIDTH__. Clang does, but this is inspecting sizeof(deque) which is non-portable.
 std/containers/sequences/deque/abi.compile.pass.cpp FAIL
+
+# Not analyzed. Possible MSVC constexpr bug.
+# note: failure was caused by a read of a variable outside its lifetime
 std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:1 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:0 FAIL
@@ -988,11 +1001,22 @@ std/containers/sequences/vector.bool/construct_size_value.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_size_value.pass.cpp:1 FAIL
 std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:1 FAIL
+
+# Not analyzed. Possible STL bug, _Vb_reference derives from _Vb_iter_base and is adopted by the container, but _Orphan_range_unlocked assumes every child is a const_iterator.
+# note: failure was caused by cast of object of dynamic type 'Ref' to type 'const std::_Vb_const_iterator<std::_Wrap_alloc<std::allocator<std::_Vbase>>>'
 std/containers/sequences/vector.bool/emplace_back.pass.cpp FAIL
+
+# Not analyzed. Looks like a test bug, assuming that hash<vector<bool>> is constexpr.
 std/containers/sequences/vector.bool/enabled_hash.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
+
+# Not analyzed. Appears to involve constexpr dynamic allocation.
+# note: failure was caused by a read of an uninitialized symbol
 std/containers/sequences/vector/iterators.pass.cpp:0 FAIL
 std/containers/sequences/vector/iterators.pass.cpp:1 FAIL
+
+# Not analyzed. Possible MSVC constexpr bug.
+# note: failure was caused by a read of a variable outside its lifetime
 std/containers/sequences/vector/reverse_iterators.pass.cpp:0 FAIL
 std/containers/sequences/vector/reverse_iterators.pass.cpp:1 FAIL
 std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:0 FAIL
@@ -1005,32 +1029,75 @@ std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:0 FAIL
 std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:1 FAIL
 std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:0 FAIL
 std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:1 FAIL
+
+# Not analyzed.
+# error C4854: binding dereferenced null pointer to reference has undefined behavior
+# note: while evaluating constexpr function 'std::_Refancy'
 std/containers/sequences/vector/vector.erasure/erase.pass.cpp:0 FAIL
 std/containers/sequences/vector/vector.erasure/erase.pass.cpp:1 FAIL
 std/containers/sequences/vector/vector.erasure/erase_if.pass.cpp:0 FAIL
 std/containers/sequences/vector/vector.erasure/erase_if.pass.cpp:1 FAIL
+
+# Not analyzed. Inspecting shift operators for quoted().
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
+
+# Not analyzed. error C7500: '->': no function satisfied its constraints
 std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
+
+# Not analyzed.
+# MSVC warning C5046: 'test_undefined_internal::A::operator *': Symbol involving type with internal linkage not defined
+# Clang error: function 'test_undefined_internal()::A::operator*' has internal linkage but is not defined [-Werror,-Wundefined-internal]
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.move/iter_rvalue_reference_t.compile.pass.cpp FAIL
+
+# Not analyzed. Failing assert(arr[0].moves() == 1 && arr[1].moves() == 3).
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.pass.cpp FAIL
+
+# Not analyzed. error C2678: binary '>': no operator found which takes a left-hand operand of type 'const std::move_iterator<CustomIt>' (or there is no acceptable conversion)
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gt.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_lte.pass.cpp FAIL
+
+# Not analyzed.
+# MSVC warning C5046: 'test_spaceshippable_but_not_three_way_comparable::B::operator *': Symbol involving type with internal linkage not defined
+# Clang error: function 'test_spaceshippable_but_not_three_way_comparable()::A::operator*' has internal linkage but is not defined [-Werror,-Wundefined-internal]
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_spaceship.pass.cpp FAIL
+
+# Not analyzed.
 std/ranges/range.adaptors/range.join.view/adaptor.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join.view/adaptor.pass.cpp:1 FAIL
+
+# Not analyzed. error C2280: 'std::ranges::lazy_split_view<InputView,ForwardTinyView>::lazy_split_view(const std::ranges::lazy_split_view<InputView,ForwardTinyView> &)': attempting to reference a deleted function
 std/ranges/range.adaptors/range.lazy.split/ctor.copy_move.pass.cpp FAIL
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass.cpp FAIL
+
+# Not analyzed.
+# error: deduced type 'iota_view<_Vt, _Vt>' (aka 'iota_view<int, int>') does not satisfy 'same_as<Result>'
+# note: because '_Same_impl<std::ranges::iota_view<int, int>, std::ranges::iota_view<int, long long> >' evaluated to false
 std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
+
+# Not analyzed. Checking whether packaged_task is constructible from an allocator and a packaged_task of a different type.
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
+
+# Not analyzed. MSVC emits truncation warnings, Clang fails a runtime assertion.
 std/utilities/format/format.functions/escaped_output.ascii.pass.cpp FAIL
 std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
+
+# Not analyzed.
+# MSVC warning C4305: 'specialization': truncation from 'const int' to 'bool'
+# Clang error: non-type template argument evaluates to -1, which cannot be narrowed to type 'bool' [-Wc++11-narrowing]
 std/utilities/meta/meta.logical/conjunction.compile.pass.cpp FAIL
 std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
+
+# Not analyzed. Possible MSVC compiler bug, this is inspecting type trait behavior.
 std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:1 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:1 FAIL
+
+# Not analyzed.
+# MSVC error C2131: expression did not evaluate to a constant
+# MSVC note: failure was caused by a read of an uninitialized symbol
+# Clang error: non-type template argument is not a constant expression
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
 
 # Not analyzed, probably MSVC constexpr issue(s)
