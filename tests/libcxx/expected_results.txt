@@ -108,13 +108,6 @@ std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_allocate.pass
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_allocate_overaligned_request.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_deallocate_matches_allocate.pass.cpp FAIL
 
-# Too many constexpr operations
-std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
-
 # libc++ tests strengthened assignment operators (not compatible with P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects")
 std/utilities/tuple/tuple.tuple/tuple.assign/const_pair.pass.cpp FAIL
 
@@ -1076,6 +1069,11 @@ std/containers/sequences/vector.bool/assign_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/insert_range.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/insert_range.pass.cpp FAIL
 std/strings/basic.string/string.modifiers/string_replace/replace_with_range.pass.cpp FAIL
+std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
+std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
+std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
+std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
+std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
 
 # Not analyzed. Assertion failed: _CrtIsValidHeapPointer(block)
 std/input.output/string.streams/stringbuf/stringbuf.members/str.pass.cpp FAIL
