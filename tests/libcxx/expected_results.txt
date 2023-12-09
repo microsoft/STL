@@ -1001,6 +1001,18 @@ std/containers/sequences/vector.bool/construct_size_value.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_size_value.pass.cpp:1 FAIL
 std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:1 FAIL
+std/containers/sequences/vector/reverse_iterators.pass.cpp:0 FAIL
+std/containers/sequences/vector/reverse_iterators.pass.cpp:1 FAIL
+std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:0 FAIL
+std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:1 FAIL
+std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:0 FAIL
+std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:1 FAIL
+std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:0 FAIL
+std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:1 FAIL
+std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:0 FAIL
+std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:1 FAIL
+std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:0 FAIL
+std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:1 FAIL
 
 # Not analyzed. Possible STL bug, _Vb_reference derives from _Vb_iter_base and is adopted by the container, but _Orphan_range_unlocked assumes every child is a const_iterator.
 # note: failure was caused by cast of object of dynamic type 'Ref' to type 'const std::_Vb_const_iterator<std::_Wrap_alloc<std::allocator<std::_Vbase>>>'
@@ -1014,21 +1026,6 @@ std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
 # note: failure was caused by a read of an uninitialized symbol
 std/containers/sequences/vector/iterators.pass.cpp:0 FAIL
 std/containers/sequences/vector/iterators.pass.cpp:1 FAIL
-
-# Not analyzed. Possible MSVC constexpr bug.
-# note: failure was caused by a read of a variable outside its lifetime
-std/containers/sequences/vector/reverse_iterators.pass.cpp:0 FAIL
-std/containers/sequences/vector/reverse_iterators.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:1 FAIL
 
 # Not analyzed.
 # error C4854: binding dereferenced null pointer to reference has undefined behavior
@@ -1048,6 +1045,7 @@ std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.ac
 # MSVC warning C5046: 'test_undefined_internal::A::operator *': Symbol involving type with internal linkage not defined
 # Clang error: function 'test_undefined_internal()::A::operator*' has internal linkage but is not defined [-Werror,-Wundefined-internal]
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.move/iter_rvalue_reference_t.compile.pass.cpp FAIL
+std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_spaceship.pass.cpp FAIL
 
 # Not analyzed. Failing assert(arr[0].moves() == 1 && arr[1].moves() == 3).
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.pass.cpp FAIL
@@ -1056,11 +1054,6 @@ std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.p
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gt.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_lte.pass.cpp FAIL
-
-# Not analyzed.
-# MSVC warning C5046: 'test_spaceshippable_but_not_three_way_comparable::B::operator *': Symbol involving type with internal linkage not defined
-# Clang error: function 'test_spaceshippable_but_not_three_way_comparable()::A::operator*' has internal linkage but is not defined [-Werror,-Wundefined-internal]
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_spaceship.pass.cpp FAIL
 
 # Not analyzed.
 std/ranges/range.adaptors/range.join.view/adaptor.pass.cpp:0 FAIL
