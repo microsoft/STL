@@ -72,6 +72,20 @@ std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 
+# Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
+std/language.support/support.limits/support.limits.general/chrono.version.compile.pass.cpp FAIL
+
+# Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
+std/language.support/support.limits/support.limits.general/algorithm.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/functional.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/iterator.version.compile.pass.cpp FAIL
+
+# libc++ tests strengthened assignment operators (not compatible with P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects")
+std/utilities/tuple/tuple.tuple/tuple.assign/const_pair.pass.cpp FAIL
+
+# libc++ doesn't implement P2231R1 Add further constexpr support for variant
+std/language.support/support.limits/support.limits.general/variant.version.compile.pass.cpp FAIL
+
 # libc++ has not implemented P2278R4: "cbegin should always return a constant iterator"
 std/containers/views/views.span/types.pass.cpp FAIL
 std/ranges/range.access/begin.pass.cpp FAIL
@@ -90,6 +104,22 @@ std/utilities/function.objects/range.cmp/less.pass.cpp FAIL
 std/utilities/function.objects/range.cmp/less_equal.pass.cpp FAIL
 std/utilities/function.objects/range.cmp/not_equal_to.pass.cpp FAIL
 
+# libc++ doesn't implement P2588R3 barrier's Phase Completion Guarantees
+std/language.support/support.limits/support.limits.general/barrier.version.compile.pass.cpp FAIL
+
+# libc++ doesn't implement P2602R2 "Poison Pills Are Too Toxic"
+std/ranges/range.access/size.pass.cpp FAIL
+
+# libc++ doesn't implement P2652R2 "Disallowing User Specialization Of allocator_traits"
+std/utilities/memory/allocator.traits/allocate_at_least.pass.cpp FAIL
+
+# libc++ doesn't implement P2770R0 "Stashing stashing iterators for proper flattening"
+std/ranges/range.adaptors/range.join.view/end.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/iterator/ctor.other.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/iterator/ctor.parent.outer.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/iterator/eq.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp FAIL
+
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
 
@@ -107,23 +137,6 @@ std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/sync_deallocate_matc
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_allocate.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_allocate_overaligned_request.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_deallocate_matches_allocate.pass.cpp FAIL
-
-# libc++ tests strengthened assignment operators (not compatible with P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects")
-std/utilities/tuple/tuple.tuple/tuple.assign/const_pair.pass.cpp FAIL
-
-# libc++ doesn't implement P2588R3 barrier's Phase Completion Guarantees
-std/language.support/support.limits/support.limits.general/barrier.version.compile.pass.cpp FAIL
-
-# Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
-std/language.support/support.limits/support.limits.general/algorithm.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/functional.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/iterator.version.compile.pass.cpp FAIL
-
-# Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
-std/language.support/support.limits/support.limits.general/chrono.version.compile.pass.cpp FAIL
-
-# libc++ doesn't implement P2231R1 Add further constexpr support for variant
-std/language.support/support.limits/support.limits.general/variant.version.compile.pass.cpp FAIL
 
 # libc++ is missing various Ranges DRs
 std/language.support/support.limits/support.limits.general/memory.version.compile.pass.cpp FAIL
@@ -154,19 +167,6 @@ std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitiali
 
 # libc++ doesn't implement LWG-3940
 std/utilities/expected/expected.void/observers/value.pass.cpp FAIL
-
-# libc++ doesn't implement P2602R2 "Poison Pills Are Too Toxic"
-std/ranges/range.access/size.pass.cpp FAIL
-
-# libc++ doesn't implement P2652R2 "Disallowing User Specialization Of allocator_traits"
-std/utilities/memory/allocator.traits/allocate_at_least.pass.cpp FAIL
-
-# libc++ doesn't implement P2770R0 "Stashing stashing iterators for proper flattening"
-std/ranges/range.adaptors/range.join.view/end.pass.cpp FAIL
-std/ranges/range.adaptors/range.join.view/iterator/ctor.other.pass.cpp FAIL
-std/ranges/range.adaptors/range.join.view/iterator/ctor.parent.outer.pass.cpp FAIL
-std/ranges/range.adaptors/range.join.view/iterator/eq.pass.cpp FAIL
-std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp FAIL
 
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
