@@ -213,6 +213,10 @@ std/strings/string.conversions/stol.pass.cpp:1 FAIL
 std/depr/depr.c.headers/uchar_h.compile.pass.cpp FAIL
 std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
+# P0533R9 constexpr For <cmath> And <cstdlib>
+std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
+
 # P1759R6 Native Handles And File Streams
 std/language.support/support.limits/support.limits.general/fstream.version.compile.pass.cpp FAIL
 
@@ -1013,8 +1017,6 @@ std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_lte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_spaceship.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
 std/ranges/range.adaptors/range.join.view/adaptor.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join.view/adaptor.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.lazy.split/ctor.copy_move.pass.cpp FAIL
