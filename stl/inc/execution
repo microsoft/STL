@@ -2336,7 +2336,8 @@ _FwdIt2 transform(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _D
             const auto _UDest = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
-                _Static_partitioned_unary_transform2 _Operation{_Hw_threads, _Count, _UFirst, _STD _Pass_fn(_Func), _UDest};
+                _Static_partitioned_unary_transform2 _Operation{
+                    _Hw_threads, _Count, _UFirst, _STD _Pass_fn(_Func), _UDest};
                 _STD _Seek_wrapped(_Dest, _Operation._Dest_basis._Populate(_Operation._Team, _UDest));
                 _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return _Dest;
@@ -2348,14 +2349,15 @@ _FwdIt2 transform(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _D
             _STD _Seek_wrapped(_Dest, _STD transform(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Func)));
             return _Dest;
         } else {
-            _STD _Seek_wrapped(
-                _Dest, _STD transform(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-                           _STD _Pass_fn(_Func)));
+            _STD _Seek_wrapped(_Dest,
+                _STD transform(_UFirst, _ULast,
+                    _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _STD _Pass_fn(_Func)));
             return _Dest;
         }
     } else {
-        _STD _Seek_wrapped(_Dest, _STD transform(_UFirst, _ULast,
-                                 _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _STD _Pass_fn(_Func)));
+        _STD _Seek_wrapped(_Dest,
+            _STD transform(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+                _STD _Pass_fn(_Func)));
         return _Dest;
     }
 }
@@ -2429,13 +2431,13 @@ _FwdIt3 transform(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _F
         } else {
             const auto _Count = _STD _Idl_distance<_FwdIt1>(_UFirst1, _ULast1);
             _STD _Seek_wrapped(_Dest, _STD transform(_UFirst1, _ULast1, _STD _Get_unwrapped_n(_First2, _Count),
-                                     _STD _Get_unwrapped_n(_Dest, _Count), _STD _Pass_fn(_Func)));
+                                          _STD _Get_unwrapped_n(_Dest, _Count), _STD _Pass_fn(_Func)));
             return _Dest;
         }
     } else {
         const auto _Count = _STD _Idl_distance<_FwdIt1>(_UFirst1, _ULast1);
         _STD _Seek_wrapped(_Dest, _STD transform(_UFirst1, _ULast1, _STD _Get_unwrapped_n(_First2, _Count),
-                                 _STD _Get_unwrapped_n(_Dest, _Count), _STD _Pass_fn(_Func)));
+                                      _STD _Get_unwrapped_n(_Dest, _Count), _STD _Pass_fn(_Func)));
         return _Dest;
     }
 }
@@ -2458,12 +2460,11 @@ void replace_if(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, _Pr _Pre
     // replace each satisfying _Pred with _Val
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     auto _Lambda_pred = _STD _Pass_fn(_Pred); // TRANSITION, DevCom-10456445
-    _STD for_each(
-        _STD forward<_ExPo>(_Exec), _First, _Last, [&_Val, _Lambda_pred](auto&& _Value) mutable {
-            if (_Lambda_pred(_STD forward<decltype(_Value)>(_Value))) {
-                _STD forward<decltype(_Value)>(_Value) = _Val;
-            }
-        });
+    _STD for_each(_STD forward<_ExPo>(_Exec), _First, _Last, [&_Val, _Lambda_pred](auto&& _Value) mutable {
+        if (_Lambda_pred(_STD forward<decltype(_Value)>(_Value))) {
+            _STD forward<decltype(_Value)>(_Value) = _Val;
+        }
+    });
 }
 
 template <class _FwdIt, class _Pr>

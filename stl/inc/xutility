@@ -4714,8 +4714,8 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         constexpr copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
             _STD _Adl_verify_range(_First, _Last);
-            auto _UResult = _RANGES _Copy_unchecked(
-                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result));
+            auto _UResult = _RANGES _Copy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result));
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
@@ -4723,9 +4723,9 @@ namespace ranges {
         template <input_range _Rng, weakly_incrementable _Out>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
         constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
-            auto _First = _RANGES begin(_Range);
-            auto _UResult =
-                _RANGES _Copy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _STD move(_Result));
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _RANGES _Copy_unchecked(
+                _RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _STD move(_Result));
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
