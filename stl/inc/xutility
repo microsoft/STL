@@ -4447,13 +4447,13 @@ _CONSTEXPR20 void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Se
 #endif // _HAS_CXX20
 
         const auto _Offset     = _Last1 - _First1;
-        const auto _Ptr1Offset = _Offset * sizeof(*_To_address(_First1));
-        const auto _Ptr2Offset = _Offset * sizeof(*_To_address(_First2));
+        const auto _Ptr1Offset = _Offset * sizeof(*_STD _To_address(_First1));
+        const auto _Ptr2Offset = _Offset * sizeof(*_STD _To_address(_First2));
         // This cast to `cv char*` allows us to compare pointers to distinct types,
         // in case one range provides storage for the other.
-        const auto _PtrFirst1 = reinterpret_cast<const volatile char*>(_To_address(_First1));
+        const auto _PtrFirst1 = reinterpret_cast<const volatile char*>(_STD _To_address(_First1));
         const auto _PtrLast1  = _PtrFirst1 + _Ptr1Offset;
-        const auto _PtrFirst2 = reinterpret_cast<const volatile char*>(_To_address(_First2));
+        const auto _PtrFirst2 = reinterpret_cast<const volatile char*>(_STD _To_address(_First2));
         const auto _PtrLast2  = _PtrFirst2 + _Ptr2Offset;
         _STL_VERIFY(_PtrLast1 <= _PtrFirst2 || _PtrLast2 <= _PtrFirst1, "ranges should not overlap each other");
     }
@@ -4466,9 +4466,9 @@ _CONSTEXPR20 void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Se
 
 template <class _CtgIt, class _OutCtgIt>
 _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
-    auto _FirstPtr              = _To_address(_First);
-    auto _LastPtr               = _To_address(_Last);
-    auto _DestPtr               = _To_address(_Dest);
+    auto _FirstPtr              = _STD _To_address(_First);
+    auto _LastPtr               = _STD _To_address(_Last);
+    auto _DestPtr               = _STD _To_address(_Dest);
     const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_FirstPtr));
     const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_LastPtr));
     char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<const volatile char*>(_DestPtr));
@@ -4483,7 +4483,7 @@ _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
 
 template <class _CtgIt, class _OutCtgIt>
 _OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Count, _OutCtgIt _Dest) {
-    const auto _Result = _Copy_memmove(_First, _First + _Count, _Dest);
+    const auto _Result = _STD _Copy_memmove(_First, _First + _Count, _Dest);
     if constexpr (is_pointer_v<_OutCtgIt>) {
         return _Result;
     } else { // _Result is unused so the compiler can optimize it away
@@ -4553,11 +4553,11 @@ _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
             {
 #ifdef __cpp_lib_concepts
                 if constexpr (!is_same_v<_InIt, _Sent>) {
-                    return _Copy_memmove_n(_First, static_cast<size_t>(_Last - _First), _Dest);
+                    return _STD _Copy_memmove_n(_First, static_cast<size_t>(_Last - _First), _Dest);
                 } else
 #endif // defined(__cpp_lib_concepts)
                 {
-                    return _Copy_memmove(_First, _Last, _Dest);
+                    return _STD _Copy_memmove(_First, _Last, _Dest);
                 }
             }
         }
@@ -4572,11 +4572,11 @@ _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
 
 _EXPORT_STD template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy [_First, _Last) to [_Dest, ...)
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    const auto _UDest  = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst, _ULast, _UDest));
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
+    const auto _UDest  = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
+    _STD _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
 
@@ -4690,11 +4690,11 @@ namespace ranges {
         if constexpr (_Sent_copy_cat<_It, _Se, _Out>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
                 if constexpr (is_same_v<_It, _Se>) {
-                    _Result = _Copy_memmove(_STD move(_First), _Last, _STD move(_Result));
+                    _Result = _STD _Copy_memmove(_STD move(_First), _Last, _STD move(_Result));
                     return {_STD move(_Last), _STD move(_Result)};
                 } else {
                     const auto _Count = static_cast<size_t>(_Last - _First);
-                    _Result           = _Copy_memmove_n(_First, _Count, _STD move(_Result));
+                    _Result           = _STD _Copy_memmove_n(_First, _Count, _STD move(_Result));
                     _First += _Count;
                     return {_STD move(_First), _STD move(_Result)};
                 }
@@ -4713,10 +4713,10 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_copyable<_It, _Out>
         constexpr copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
-            _Adl_verify_range(_First, _Last);
+            _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _RANGES _Copy_unchecked(
-                _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result));
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
@@ -4725,8 +4725,8 @@ namespace ranges {
         constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
             auto _First = _RANGES begin(_Range);
             auto _UResult =
-                _RANGES _Copy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _STD move(_Result));
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+                _RANGES _Copy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _STD move(_Result));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
     };
@@ -4743,15 +4743,15 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
         if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true>) {
             return _STD _Copy_vbool(_First, _First + _Count, _Dest);
         } else {
-            auto _UFirst = _Get_unwrapped_n(_First, _Count);
-            auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
+            auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
+            auto _UDest  = _STD _Get_unwrapped_n(_Dest, _Count);
             if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_assignable) {
 #if _HAS_CXX20
                 if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
                 {
-                    _UDest = _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
-                    _Seek_wrapped(_Dest, _UDest);
+                    _UDest = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
+                    _STD _Seek_wrapped(_Dest, _UDest);
                     return _Dest;
                 }
             }
@@ -4768,7 +4768,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
                 ++_UFirst;
             }
 
-            _Seek_wrapped(_Dest, _UDest);
+            _STD _Seek_wrapped(_Dest, _UDest);
         }
     }
 
@@ -4789,9 +4789,9 @@ _FwdIt2 copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _FwdIt2 _Dest) noexcep
 template <class _CtgIt1, class _CtgIt2>
 _CtgIt2 _Copy_backward_memmove(_CtgIt1 _First, _CtgIt1 _Last, _CtgIt2 _Dest) {
     // implement copy_backward-like function as memmove
-    auto _FirstPtr              = _To_address(_First);
-    auto _LastPtr               = _To_address(_Last);
-    auto _DestPtr               = _To_address(_Dest);
+    auto _FirstPtr              = _STD _To_address(_First);
+    auto _LastPtr               = _STD _To_address(_Last);
+    auto _DestPtr               = _STD _To_address(_Dest);
     const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_FirstPtr));
     const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_LastPtr));
     char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<const volatile char*>(_DestPtr));
@@ -4806,7 +4806,7 @@ _CtgIt2 _Copy_backward_memmove(_CtgIt1 _First, _CtgIt1 _Last, _CtgIt2 _Dest) {
 
 template <class _BidIt1, class _BidIt2>
 _BidIt2 _Copy_backward_memmove(move_iterator<_BidIt1> _First, move_iterator<_BidIt1> _Last, _BidIt2 _Dest) {
-    return _Copy_backward_memmove(_First.base(), _Last.base(), _Dest);
+    return _STD _Copy_backward_memmove(_First.base(), _Last.base(), _Dest);
 }
 
 template <class _BidIt1, class _BidIt2>
@@ -4817,7 +4817,7 @@ _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            return _Copy_backward_memmove(_First, _Last, _Dest);
+            return _STD _Copy_backward_memmove(_First, _Last, _Dest);
         }
     }
 
@@ -4831,11 +4831,11 @@ _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1
 _EXPORT_STD template <class _BidIt1, class _BidIt2>
 _CONSTEXPR20 _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // copy [_First, _Last) backwards to [..., _Dest)
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    const auto _UDest  = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
-    _Seek_wrapped(_Dest, _Copy_backward_unchecked(_UFirst, _ULast, _UDest));
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
+    const auto _UDest  = _STD _Get_unwrapped_n(_Dest, -_STD _Idl_distance<_BidIt1>(_UFirst, _ULast));
+    _STD _Seek_wrapped(_Dest, _STD _Copy_backward_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
 
@@ -4851,7 +4851,7 @@ _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
             if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
             {
-                return _Copy_memmove(_First, _Last, _Dest);
+                return _STD _Copy_memmove(_First, _Last, _Dest);
             }
         }
 
@@ -4866,11 +4866,11 @@ _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
 _EXPORT_STD template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt move(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    const auto _UDest  = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    _Seek_wrapped(_Dest, _STD _Move_unchecked(_UFirst, _ULast, _UDest));
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
+    const auto _UDest  = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
+    _STD _Seek_wrapped(_Dest, _STD _Move_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
 
@@ -4894,7 +4894,7 @@ _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _Bi
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            return _Copy_backward_memmove(_First, _Last, _Dest);
+            return _STD _Copy_backward_memmove(_First, _Last, _Dest);
         }
     }
 
@@ -4908,11 +4908,11 @@ _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _Bi
 _EXPORT_STD template <class _BidIt1, class _BidIt2>
 _CONSTEXPR20 _BidIt2 move_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest)
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    const auto _UDest  = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
-    _Seek_wrapped(_Dest, _Move_backward_unchecked(_UFirst, _ULast, _UDest));
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
+    const auto _UDest  = _STD _Get_unwrapped_n(_Dest, -_STD _Idl_distance<_BidIt1>(_UFirst, _ULast));
+    _STD _Seek_wrapped(_Dest, _STD _Move_backward_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
 
@@ -4969,12 +4969,12 @@ template <class _CtgIt, class _Ty>
 void _Fill_memset(_CtgIt _Dest, const _Ty _Val, const size_t _Count) {
     // implicitly convert (a cast would suppress warnings); also handles _Iter_value_t<_CtgIt> being bool
     _Iter_value_t<_CtgIt> _Dest_val = _Val;
-    _CSTD memset(_To_address(_Dest), static_cast<unsigned char>(_Dest_val), _Count);
+    _CSTD memset(_STD _To_address(_Dest), static_cast<unsigned char>(_Dest_val), _Count);
 }
 
 template <class _CtgIt>
 void _Fill_zero_memset(_CtgIt _Dest, const size_t _Count) {
-    _CSTD memset(_To_address(_Dest), 0, _Count * sizeof(_Iter_value_t<_CtgIt>));
+    _CSTD memset(_STD _To_address(_Dest), 0, _Count * sizeof(_Iter_value_t<_CtgIt>));
 }
 
 template <class _Ty>
@@ -4992,22 +4992,22 @@ _NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
 _EXPORT_STD template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // copy _Val through [_First, _Last)
-    _Adl_verify_range(_First, _Last);
+    _STD _Adl_verify_range(_First, _Last);
     if constexpr (_Is_vb_iterator<_FwdIt, true>) {
         _STD _Fill_vbool(_First, _Last, _Val);
     } else {
-        auto _UFirst      = _Get_unwrapped(_First);
-        const auto _ULast = _Get_unwrapped(_Last);
+        auto _UFirst      = _STD _Get_unwrapped(_First);
+        const auto _ULast = _STD _Get_unwrapped(_Last);
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
             if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-                _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
+                _STD _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
                 return;
             } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
-                if (_Is_all_bits_zero(_Val)) {
-                    _Fill_zero_memset(_UFirst, static_cast<size_t>(_ULast - _UFirst));
+                if (_STD _Is_all_bits_zero(_Val)) {
+                    _STD _Fill_zero_memset(_UFirst, static_cast<size_t>(_ULast - _UFirst));
                     return;
                 }
             }
@@ -5039,19 +5039,19 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
             _STD _Fill_vbool(_Dest, _Last, _Val);
             return _Last;
         } else {
-            auto _UDest = _Get_unwrapped_n(_Dest, _Count);
+            auto _UDest = _STD _Get_unwrapped_n(_Dest, _Count);
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
             {
                 if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
-                    _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
-                    _Seek_wrapped(_Dest, _UDest + _Count);
+                    _STD _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
+                    _STD _Seek_wrapped(_Dest, _UDest + _Count);
                     return _Dest;
                 } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UDest), _Ty>) {
-                    if (_Is_all_bits_zero(_Val)) {
-                        _Fill_zero_memset(_UDest, static_cast<size_t>(_Count));
-                        _Seek_wrapped(_Dest, _UDest + _Count);
+                    if (_STD _Is_all_bits_zero(_Val)) {
+                        _STD _Fill_zero_memset(_UDest, static_cast<size_t>(_Count));
+                        _STD _Seek_wrapped(_Dest, _UDest + _Count);
                         return _Dest;
                     }
                 }
@@ -5061,7 +5061,7 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
                 *_UDest = _Val;
             }
 
-            _Seek_wrapped(_Dest, _UDest);
+            _STD _Seek_wrapped(_Dest, _UDest);
         }
     }
     return _Dest;
@@ -5084,16 +5084,16 @@ namespace ranges {
         template <class _Ty, output_iterator<const _Ty&> _It>
         constexpr _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Value) const {
             if (_Count > 0) {
-                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+                auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
                 if (!_STD is_constant_evaluated()) {
                     if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-                        _Fill_memset(_UFirst, _Value, static_cast<size_t>(_Count));
-                        _Seek_wrapped(_First, _UFirst + _Count); // no need to move since _UFirst is a pointer
+                        _STD _Fill_memset(_UFirst, _Value, static_cast<size_t>(_Count));
+                        _STD _Seek_wrapped(_First, _UFirst + _Count); // no need to move since _UFirst is a pointer
                         return _First;
                     } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
-                        if (_Is_all_bits_zero(_Value)) {
-                            _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
-                            _Seek_wrapped(_First, _UFirst + _Count); // no need to move since _UFirst is a pointer
+                        if (_STD _Is_all_bits_zero(_Value)) {
+                            _STD _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
+                            _STD _Seek_wrapped(_First, _UFirst + _Count); // no need to move since _UFirst is a pointer
                             return _First;
                         }
                     }
@@ -5103,7 +5103,7 @@ namespace ranges {
                     *_UFirst = _Value;
                 }
 
-                _Seek_wrapped(_First, _STD move(_UFirst));
+                _STD _Seek_wrapped(_First, _STD move(_UFirst));
             }
 
             return _First;
@@ -6134,9 +6134,9 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
 
 _EXPORT_STD template <class _BidIt>
 _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse elements in [_First, _Last)
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst = _Get_unwrapped(_First);
-    auto _ULast  = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst = _STD _Get_unwrapped(_First);
+    auto _ULast  = _STD _Get_unwrapped(_Last);
 #if _USE_STD_VECTOR_ALGORITHMS
     using _Elem                         = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
     constexpr bool _Allow_vectorization = conjunction_v<bool_constant<_Iterator_is_contiguous<decltype(_UFirst)>>,
@@ -6149,13 +6149,13 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
 #endif // _HAS_CXX20
         {
             if constexpr (_Nx == 1) {
-                __std_reverse_trivially_swappable_1(_To_address(_UFirst), _To_address(_ULast));
+                ::__std_reverse_trivially_swappable_1(_STD _To_address(_UFirst), _STD _To_address(_ULast));
             } else if constexpr (_Nx == 2) {
-                __std_reverse_trivially_swappable_2(_To_address(_UFirst), _To_address(_ULast));
+                ::__std_reverse_trivially_swappable_2(_STD _To_address(_UFirst), _STD _To_address(_ULast));
             } else if constexpr (_Nx == 4) {
-                __std_reverse_trivially_swappable_4(_To_address(_UFirst), _To_address(_ULast));
+                ::__std_reverse_trivially_swappable_4(_STD _To_address(_UFirst), _STD _To_address(_ULast));
             } else {
-                __std_reverse_trivially_swappable_8(_To_address(_UFirst), _To_address(_ULast));
+                ::__std_reverse_trivially_swappable_8(_STD _To_address(_UFirst), _STD _To_address(_ULast));
             }
 
             return;
@@ -6194,11 +6194,11 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
     // exchange the ranges [_First, _Mid) and [_Mid, _Last)
     // that is, rotates [_First, _Last) left by distance(_First, _Mid) positions
     // returns the iterator pointing at *_First's new home
-    _Adl_verify_range(_First, _Mid);
-    _Adl_verify_range(_Mid, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    auto _UMid        = _Get_unwrapped(_Mid);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Mid);
+    _STD _Adl_verify_range(_Mid, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    auto _UMid        = _STD _Get_unwrapped(_Mid);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if (_UFirst == _UMid) {
         return _Last;
     }
@@ -6211,13 +6211,13 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
         _STD reverse(_UFirst, _UMid);
         _STD reverse(_UMid, _ULast);
         _STD reverse(_UFirst, _ULast);
-        _Seek_wrapped(_First, _UFirst + (_ULast - _UMid));
+        _STD _Seek_wrapped(_First, _UFirst + (_ULast - _UMid));
     } else if constexpr (_Is_cpp17_bidi_iter_v<_FwdIt>) {
         _STD reverse(_UFirst, _UMid);
         _STD reverse(_UMid, _ULast);
-        auto _Tmp = _Reverse_until_sentinel_unchecked(_UFirst, _UMid, _ULast);
+        auto _Tmp = _STD _Reverse_until_sentinel_unchecked(_UFirst, _UMid, _ULast);
         _STD reverse(_Tmp.first, _Tmp.second);
-        _Seek_wrapped(_First, _UMid != _Tmp.first ? _Tmp.first : _Tmp.second);
+        _STD _Seek_wrapped(_First, _UMid != _Tmp.first ? _Tmp.first : _Tmp.second);
     } else {
         auto _UNext = _UMid;
         do { // rotate the first cycle
@@ -6228,7 +6228,7 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
                 _UMid = _UNext;
             }
         } while (_UNext != _ULast);
-        _Seek_wrapped(_First, _UFirst);
+        _STD _Seek_wrapped(_First, _UFirst);
         while (_UMid != _ULast) { // rotate subsequent cycles
             _UNext = _UMid;
             do {
@@ -7035,8 +7035,8 @@ _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            __std_swap_ranges_trivially_swappable_noalias(
-                _To_address(_First1), _To_address(_Last1), _To_address(_First2));
+            ::__std_swap_ranges_trivially_swappable_noalias(
+                _STD _To_address(_First1), _STD _To_address(_Last1), _STD _To_address(_First2));
             return _First2 + (_Last1 - _First1);
         }
     }
