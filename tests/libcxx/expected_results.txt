@@ -113,13 +113,6 @@ std/ranges/range.access/size.pass.cpp FAIL
 # libc++ doesn't implement P2652R2 "Disallowing User Specialization Of allocator_traits"
 std/utilities/memory/allocator.traits/allocate_at_least.pass.cpp FAIL
 
-# libc++ doesn't implement P2770R0 "Stashing stashing iterators for proper flattening"
-std/ranges/range.adaptors/range.join.view/end.pass.cpp FAIL
-std/ranges/range.adaptors/range.join.view/iterator/ctor.other.pass.cpp FAIL
-std/ranges/range.adaptors/range.join.view/iterator/ctor.parent.outer.pass.cpp FAIL
-std/ranges/range.adaptors/range.join.view/iterator/eq.pass.cpp FAIL
-std/ranges/range.adaptors/range.join.view/sentinel/eq.pass.cpp FAIL
-
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
 
@@ -832,17 +825,6 @@ std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.
 # Likely STL bugs in <format>
 std/time/time.syn/formatter.month_day_last.pass.cpp FAIL
 
-# Likely STL bug in `join_view::_Iterator`: constexpr weirdness
-std/ranges/range.adaptors/range.join.view/iterator/decrement.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join.view/iterator/decrement.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.join.view/iterator/increment.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join.view/iterator/increment.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.join.view/iterator/iter.swap.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join.view/iterator/iter.swap.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.join.view/iterator/star.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join.view/iterator/star.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.join.view/sentinel/ctor.parent.pass.cpp:2 FAIL
-
 # Our monotonic_buffer_resource takes "user" space for metadata, which it probably should not do.
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_with_initial_size.pass.cpp FAIL
 
@@ -1056,10 +1038,6 @@ std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.p
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gt.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_lte.pass.cpp FAIL
-
-# Not analyzed.
-std/ranges/range.adaptors/range.join.view/adaptor.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join.view/adaptor.pass.cpp:1 FAIL
 
 # Not analyzed. error C2280: 'std::ranges::lazy_split_view<InputView,ForwardTinyView>::lazy_split_view(const std::ranges::lazy_split_view<InputView,ForwardTinyView> &)': attempting to reference a deleted function
 std/ranges/range.adaptors/range.lazy.split/ctor.copy_move.pass.cpp FAIL
