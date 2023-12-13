@@ -78,13 +78,31 @@ struct tagged_falsity {
 };
 
 template <typename T>
+struct tagged_less {
+    template <typename U, typename V>
+    bool operator()(const U& u, const V& v) const {
+        return u < v;
+    }
+};
+
+template <typename Tag>
+struct tagged_converter {
+    template <typename T, enable_if_t<is_scalar_v<T> || !is_convertible_v<T, bool>, int> = 0>
+    operator T() const {
+        return T{};
+    }
+};
+
+template <typename T>
 struct holder {
     T t;
 };
 
 struct incomplete;
 
-using validating_falsity = tagged_falsity<holder<incomplete>>;
+using validating_falsity   = tagged_falsity<holder<incomplete>>;
+using validating_less      = tagged_less<holder<incomplete>>;
+using validating_converter = tagged_converter<holder<incomplete>>;
 #endif // _M_CEE
 
 template <typename T, typename U>
@@ -152,9 +170,14 @@ template <typename T>
 void construct_from_iterators_test(T value) {
     auto containers = get_all_iterator_types_for(value);
 
-    for_each_tuple_element(containers, [](auto c) {
+    for_each_tuple_element(containers, [&](auto c) {
         T another(begin(c), end(c));
-        T another2(begin(c), end(c));
+        T another2(begin(c), end(c), value.get_allocator());
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+        validating_converter arr[1]{};
+        T another_no_adl(+arr, +arr);
+        T another_no_adl2(+arr, +arr, value.get_allocator());
+#endif // _M_CEE
     });
 }
 
@@ -166,6 +189,12 @@ void construct_tree_containers_from_iterators_test(T value) {
         T another(begin(c), end(c));
         T another2(begin(c), end(c), value.key_comp());
         T another3(begin(c), end(c), value.key_comp(), value.get_allocator());
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+        validating_converter arr[1]{};
+        T another_no_adl(+arr, +arr);
+        T another_no_adl2(+arr, +arr, value.key_comp());
+        T another_no_adl3(+arr, +arr, value.key_comp(), value.get_allocator());
+#endif // _M_CEE
     });
 }
 
@@ -180,6 +209,15 @@ void construct_hash_containers_from_iterators_test(T value) {
         T another4(begin(c), end(c), value.bucket_count(), value.hash_function(), value.key_eq());
         T another5(
             begin(c), end(c), value.bucket_count(), value.hash_function(), value.key_eq(), value.get_allocator());
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+        validating_converter arr[1]{};
+        T another_no_adl(+arr, +arr);
+        T another_no_adl2(+arr, +arr, value.bucket_count());
+        T another_no_adl3(+arr, +arr, value.bucket_count(), value.hash_function());
+        T another_no_adl4(+arr, +arr, value.bucket_count(), value.hash_function(), value.key_eq());
+        T another_no_adl5(
+            +arr, +arr, value.bucket_count(), value.hash_function(), value.key_eq(), value.get_allocator());
+#endif // _M_CEE
     });
 }
 
@@ -226,12 +264,20 @@ template <typename T>
 void assign_test(T value) {
     T another{};
     another.assign(begin(value), end(value));
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    validating_converter arr[1]{};
+    another.assign(+arr, +arr);
+#endif // _M_CEE
 }
 
 template <typename T>
 void insert_with_iterator_test(T value) {
     T another{};
     another.insert(begin(value), end(value));
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    validating_converter arr[1]{};
+    another.insert(+arr, +arr);
+#endif // _M_CEE
 }
 
 template <typename T>
@@ -261,6 +307,10 @@ template <typename T>
 void insert_with_iterator_specific_location_test(T value) {
     T another{};
     another.insert(cbegin(another), begin(value), end(value));
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    validating_converter arr[1]{};
+    another.insert(cbegin(another), +arr, +arr);
+#endif // _M_CEE
 }
 
 template <typename T>
@@ -281,6 +331,13 @@ void list_operation_test(T value) {
     value.merge(another, pr2);
     value.merge(move(another), pr2);
     value.sort(pr2);
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    value.remove_if(validating_falsity{});
+    value.unique(validating_less{});
+    value.merge(another, validating_less{});
+    value.merge(move(another), validating_less{});
+    value.sort(validating_less{});
+#endif // _M_CEE
 }
 
 template <typename T>
@@ -399,6 +456,11 @@ void forward_list_test() {
     list_operation_test(value);
     erase_if_test(value);
     erase_test(value);
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    validating_converter arr[1]{};
+    another.insert_after(cbegin(another), +arr, +arr);
+#endif // _M_CEE
 }
 
 // Note about hash*_test:
@@ -623,6 +685,12 @@ void string_test_impl(const CharType* data) {
 
     erase_if_test(value);
     erase_test(value);
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    validating_converter arr[1]{};
+    another.append(+arr, +arr);
+    another.replace(cbegin(value), cbegin(value), +arr, +arr);
+#endif // _M_CEE
 }
 
 void string_test() {
