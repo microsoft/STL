@@ -200,10 +200,10 @@ private:
                                                       is_convertible<expected<_Uty, _UErr>&, _Ty>, //
                                                       is_convertible<expected<_Uty, _UErr>&&, _Ty>, //
                                                       is_convertible<const expected<_Uty, _UErr>&, _Ty>, //
-                                                      is_convertible<const expected<_Uty, _UErr>&&, _Ty>>>> //
-                                           && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>&> //
-                                           && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>> //
-                                           && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&> //
+                                                      is_convertible<const expected<_Uty, _UErr>&&, _Ty>>>>
+                                           && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>&>
+                                           && !is_constructible_v<unexpected<_Err>, expected<_Uty, _UErr>>
+                                           && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>&>
                                            && !is_constructible_v<unexpected<_Err>, const expected<_Uty, _UErr>>;
 
 public:
@@ -257,7 +257,7 @@ public:
         requires _Different_from<expected<_Uty, _UErr>, expected> && is_constructible_v<_Ty, const _Uty&>
               && is_constructible_v<_Err, const _UErr&> && _Allow_unwrapping<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<const _Uty&, _Ty> || !is_convertible_v<const _UErr&, _Err>) expected(
-        const expected<_Uty, _UErr>& _Other) noexcept(is_nothrow_constructible_v<_Ty, const _Uty&> //
+        const expected<_Uty, _UErr>& _Other) noexcept(is_nothrow_constructible_v<_Ty, const _Uty&>
                                                       && is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
         : _Has_value(_Other._Has_value) {
         if (_Has_value) {
@@ -388,7 +388,7 @@ public:
     }
 
     constexpr expected& operator=(const expected& _Other) noexcept(
-        is_nothrow_copy_constructible_v<_Ty> && is_nothrow_copy_constructible_v<_Err> //
+        is_nothrow_copy_constructible_v<_Ty> && is_nothrow_copy_constructible_v<_Err>
         && is_nothrow_copy_assignable_v<_Ty> && is_nothrow_copy_assignable_v<_Err>) // strengthened
         requires is_copy_assignable_v<_Ty> && is_copy_constructible_v<_Ty> //
               && is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err>
@@ -409,7 +409,7 @@ public:
     }
 
     constexpr expected& operator=(expected&& _Other) noexcept(
-        is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_constructible_v<_Err> //
+        is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_constructible_v<_Err>
         && is_nothrow_move_assignable_v<_Ty> && is_nothrow_move_assignable_v<_Err>)
         requires is_move_assignable_v<_Ty> && is_move_constructible_v<_Ty> //
               && is_move_assignable_v<_Err> && is_move_constructible_v<_Err>
@@ -1358,7 +1358,7 @@ public:
 
     // [expected.void.swap]
     constexpr void swap(expected& _Other) noexcept(
-        is_nothrow_move_constructible_v<_Err> && is_nothrow_swappable_v<_Err>) //
+        is_nothrow_move_constructible_v<_Err> && is_nothrow_swappable_v<_Err>)
         requires is_swappable_v<_Err> && is_move_constructible_v<_Err>
     {
         using _STD swap;
