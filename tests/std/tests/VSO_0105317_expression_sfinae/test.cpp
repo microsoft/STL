@@ -625,7 +625,7 @@ NonMovable getNonMovable() noexcept(Nothrow);
 STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getNonMovable<false>)>);
 STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<false>)>);
-STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)>);
+STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)> == noexcept_in_the_type_system);
 
 template <bool Nothrow>
 struct ConvertsToNonMovable {
@@ -642,7 +642,8 @@ STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<tru
 STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, false>)>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, true>)>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, false>)>);
-STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, true>)>);
+STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, true>)>
+              == noexcept_in_the_type_system);
 #endif // _HAS_CXX17
 
 
