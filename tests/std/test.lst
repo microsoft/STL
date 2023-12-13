@@ -670,6 +670,7 @@ tests\VSO_0000000_instantiate_containers
 tests\VSO_0000000_instantiate_cvt
 tests\VSO_0000000_instantiate_iterators_misc
 tests\VSO_0000000_instantiate_type_traits
+tests\VSO_1925201_iter_traits
 tests\VSO_0000000_list_iterator_debugging
 tests\VSO_0000000_list_unique_self_reference
 tests\VSO_0000000_matching_npos_address
