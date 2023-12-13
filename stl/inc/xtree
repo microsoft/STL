@@ -1256,8 +1256,8 @@ protected:
 public:
     template <class _Iter>
     void insert(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        _Insert_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        _Insert_range_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395

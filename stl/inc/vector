@@ -630,17 +630,17 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst = _Get_unwrapped(_First);
-        auto _ULast  = _Get_unwrapped(_Last);
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst = _STD _Get_unwrapped(_First);
+        auto _ULast  = _STD _Get_unwrapped(_Last);
         if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
 #ifdef __cpp_lib_concepts
         } else if constexpr (forward_iterator<_Iter>) {
-            const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
 #endif // defined(__cpp_lib_concepts)
         } else {
@@ -1133,28 +1133,28 @@ private:
             const size_type _Newsize = _Oldsize + _Count;
             size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
+            const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
             _TRY_BEGIN
-            _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Whereoff, _Al);
+            _STD _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Whereoff, _Al);
             _Constructed_first = _Newvec + _Whereoff;
 
             if (_Count == 1 && _Whereptr == _Oldlast) { // one at back, provide strong guarantee
                 if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-                    _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Al);
+                    _STD _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Al);
                 } else {
-                    _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Al);
+                    _STD _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Al);
                 }
             } else { // provide basic guarantee
-                _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Al);
+                _STD _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Al);
                 _Constructed_first = _Newvec;
-                _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Al);
+                _STD _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Al);
             }
             _CATCH_ALL
-            _Destroy_range(_Constructed_first, _Constructed_last, _Al);
+            _STD _Destroy_range(_Constructed_first, _Constructed_last, _Al);
             _Al.deallocate(_Newvec, _Newcapacity);
             _RERAISE;
             _CATCH_END
@@ -1168,51 +1168,51 @@ private:
 
             _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _Oldfirst) + _Count);
             if (_Count < _Affected_elements) { // some affected elements must be assigned
-                _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
-                _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
-                _Destroy_range(_Whereptr, _Whereptr + _Count, _Al);
+                _Mylast = _STD _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
+                _STD _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
+                _STD _Destroy_range(_Whereptr, _Whereptr + _Count, _Al);
 
                 _TRY_BEGIN
-                _Uninitialized_copy_n(_STD move(_First), _Count, _Whereptr, _Al);
+                _STD _Uninitialized_copy_n(_STD move(_First), _Count, _Whereptr, _Al);
                 _CATCH_ALL
                 // glue the broken pieces back together
 
                 _TRY_BEGIN
-                _Uninitialized_move(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr, _Al);
+                _STD _Uninitialized_move(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr, _Al);
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
-                _Destroy_range(_Whereptr + _Count, _Mylast, _Al);
+                _STD _Destroy_range(_Whereptr + _Count, _Mylast, _Al);
                 _Mylast = _Whereptr;
                 _RERAISE;
                 _CATCH_END
 
                 _STD _Move_unchecked(_Whereptr + 2 * _Count, _Mylast, _Whereptr + _Count);
-                _Destroy_range(_Oldlast, _Mylast, _Al);
+                _STD _Destroy_range(_Oldlast, _Mylast, _Al);
                 _Mylast = _Oldlast;
                 _RERAISE;
                 _CATCH_END
             } else { // affected elements don't overlap before/after
                 const pointer _Relocated = _Whereptr + _Count;
-                _Mylast                  = _Uninitialized_move(_Whereptr, _Oldlast, _Relocated, _Al);
-                _Destroy_range(_Whereptr, _Oldlast, _Al);
+                _Mylast                  = _STD _Uninitialized_move(_Whereptr, _Oldlast, _Relocated, _Al);
+                _STD _Destroy_range(_Whereptr, _Oldlast, _Al);
 
                 _TRY_BEGIN
-                _Uninitialized_copy_n(_STD move(_First), _Count, _Whereptr, _Al);
+                _STD _Uninitialized_copy_n(_STD move(_First), _Count, _Whereptr, _Al);
                 _CATCH_ALL
                 // glue the broken pieces back together
 
                 _TRY_BEGIN
-                _Uninitialized_move(_Relocated, _Mylast, _Whereptr, _Al);
+                _STD _Uninitialized_move(_Relocated, _Mylast, _Whereptr, _Al);
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
-                _Destroy_range(_Relocated, _Mylast, _Al);
+                _STD _Destroy_range(_Relocated, _Mylast, _Al);
                 _Mylast = _Whereptr;
                 _RERAISE;
                 _CATCH_END
 
-                _Destroy_range(_Relocated, _Mylast, _Al);
+                _STD _Destroy_range(_Relocated, _Mylast, _Al);
                 _Mylast = _Oldlast;
                 _RERAISE;
                 _CATCH_END
@@ -1235,17 +1235,17 @@ public:
             "vector insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst         = _Get_unwrapped(_First);
-        auto _ULast          = _Get_unwrapped(_Last);
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst         = _STD _Get_unwrapped(_First);
+        auto _ULast          = _STD _Get_unwrapped(_Last);
         const auto _Whereoff = static_cast<size_type>(_Whereptr - _Oldfirst);
         if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             _Insert_counted_range(_Where, _UFirst, _Count);
 #ifdef __cpp_lib_concepts
         } else if constexpr (forward_iterator<_Iter>) {
-            const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Insert_counted_range(_Where, _UFirst, _Count);
 #endif // defined(__cpp_lib_concepts)
@@ -1396,11 +1396,11 @@ private:
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
             if constexpr (_Nothrow_construct) {
-                _Mylast = _Uninitialized_copy_n(_STD move(_First), _Newsize, _Myfirst, _Al);
+                _Mylast = _STD _Uninitialized_copy_n(_STD move(_First), _Newsize, _Myfirst, _Al);
                 _ASAN_VECTOR_CREATE;
             } else {
                 _ASAN_VECTOR_CREATE_GUARD;
-                _Mylast = _Uninitialized_copy_n(_STD move(_First), _Newsize, _Myfirst, _Al);
+                _Mylast = _STD _Uninitialized_copy_n(_STD move(_First), _Newsize, _Myfirst, _Al);
             }
             return;
         }
@@ -1427,16 +1427,16 @@ private:
 
             if constexpr (_Nothrow_construct) {
                 _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
-                _Mylast = _Uninitialized_copy_n(_STD move(_First), _Newsize - _Oldsize, _Mylast, _Al);
+                _Mylast = _STD _Uninitialized_copy_n(_STD move(_First), _Newsize - _Oldsize, _Mylast, _Al);
             } else {
                 _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
-                _Mylast = _Uninitialized_copy_n(_STD move(_First), _Newsize - _Oldsize, _Mylast, _Al);
+                _Mylast = _STD _Uninitialized_copy_n(_STD move(_First), _Newsize - _Oldsize, _Mylast, _Al);
                 _ASAN_VECTOR_RELEASE_GUARD;
             }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
-            _Copy_n_unchecked4(_STD move(_First), _Newsize, _Myfirst);
-            _Destroy_range(_Newlast, _Mylast, _Al);
+            _STD _Copy_n_unchecked4(_STD move(_First), _Newsize, _Myfirst);
+            _STD _Destroy_range(_Newlast, _Mylast, _Al);
             _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
@@ -1445,17 +1445,17 @@ private:
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 void assign(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst = _Get_unwrapped(_First);
-        auto _ULast  = _Get_unwrapped(_Last);
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst = _STD _Get_unwrapped(_First);
+        auto _ULast  = _STD _Get_unwrapped(_Last);
         if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             _Assign_counted_range(_UFirst, _Count);
 #ifdef __cpp_lib_concepts
         } else if constexpr (forward_iterator<_Iter>) {
-            const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             _Assign_counted_range(_UFirst, _Count);
 #endif // defined(__cpp_lib_concepts)
         } else {
@@ -2078,12 +2078,12 @@ private:
             _Buy_nonzero(_Count);
             _Tidy_guard<vector> _Guard{this};
             if constexpr (sizeof...(_Val) == 0) {
-                _My_data._Mylast = _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Al);
+                _My_data._Mylast = _STD _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Al);
             } else if constexpr (sizeof...(_Val) == 1) {
                 _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Valty..., const _Ty&>);
-                _My_data._Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val..., _Al);
+                _My_data._Mylast = _STD _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val..., _Al);
             } else if constexpr (sizeof...(_Val) == 2) {
-                _My_data._Mylast = _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
+                _My_data._Mylast = _STD _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
             } else {
                 static_assert(_Always_false<_Ty>, "Should be unreachable");
             }
@@ -3343,19 +3343,19 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         const difference_type _Saved_offset = _Where - begin();
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst      = _Get_unwrapped(_First);
-        const auto _ULast = _Get_unwrapped(_Last);
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst      = _STD _Get_unwrapped(_First);
+        const auto _ULast = _STD _Get_unwrapped(_Last);
 
         if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _STD _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
 #ifdef __cpp_lib_concepts
         } else if constexpr (forward_iterator<_Iter>) {
-            const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _STD _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
 #endif // defined(__cpp_lib_concepts)

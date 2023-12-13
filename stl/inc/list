@@ -873,14 +873,14 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     list(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Adl_verify_range(_First, _Last);
-        _Construct_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        _Construct_range_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     list(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Adl_verify_range(_First, _Last);
-        _Construct_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        _Construct_range_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -1331,8 +1331,8 @@ private:
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        _Assign_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        _Assign_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -1388,9 +1388,9 @@ public:
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
         _List_node_insert_op2<_Alnode> _Op(_Getal());
-        _Op._Append_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _Op._Append_range_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
         return _Make_iter(_Op._Attach_before(_Mypair._Myval2, _Where._Ptr));
     }
 

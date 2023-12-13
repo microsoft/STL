@@ -1869,7 +1869,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
     // note: only called internally from elsewhere in the STL
     using _Ptrval = typename _Alloc::value_type*;
 
-    auto _UFirst = _Get_unwrapped(_STD move(_First));
+    auto _UFirst = _STD _Get_unwrapped(_STD move(_First));
 
     constexpr bool _Can_memmove =
         conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
@@ -1880,7 +1880,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _Copy_memmove_n(_UFirst, _Count, _Unfancy(_Dest));
+            _STD _Copy_memmove_n(_UFirst, _Count, _STD _Unfancy(_Dest));
             _Dest += _Count;
             return _Dest;
         }
