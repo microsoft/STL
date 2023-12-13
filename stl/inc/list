@@ -1428,7 +1428,7 @@ private:
 
 public:
     iterator erase(const const_iterator _First, const const_iterator _Last) noexcept /* strengthened */ {
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
         return _Make_iter(_Unchecked_erase(_First._Ptr, _Last._Ptr));
     }
 

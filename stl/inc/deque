@@ -1466,7 +1466,7 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_First <= _Last && begin() <= _First && _Last <= end(), "deque erase iterator outside range");
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);

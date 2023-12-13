@@ -3164,7 +3164,7 @@ public:
     _CONSTEXPR20 basic_string& replace(
         const const_iterator _First, const const_iterator _Last, const initializer_list<_Elem> _Ilist) {
         // replace with initializer_list
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -3697,7 +3697,7 @@ public:
 
     _CONSTEXPR20 iterator erase(const const_iterator _First, const const_iterator _Last) noexcept
     /* strengthened */ {
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -3855,7 +3855,7 @@ public:
     _CONSTEXPR20 basic_string& replace(
         const const_iterator _First, const const_iterator _Last, const basic_string& _Right) {
         // replace [_First, _Last) with _Right
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -3868,7 +3868,7 @@ public:
     _CONSTEXPR20 basic_string& replace(
         const const_iterator _First, const const_iterator _Last, const _StringViewIsh& _Right) {
         // replace [_First, _Last) with _Right
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -3880,7 +3880,7 @@ public:
     _CONSTEXPR20 basic_string& replace(const const_iterator _First, const const_iterator _Last,
         _In_reads_(_Count) const _Elem* const _Ptr, const size_type _Count) {
         // replace [_First, _Last) with [_Ptr, _Ptr + _Count)
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -3891,7 +3891,7 @@ public:
     _CONSTEXPR20 basic_string& replace(
         const const_iterator _First, const const_iterator _Last, _In_z_ const _Elem* const _Ptr) {
         // replace [_First, _Last) with [_Ptr, <null>)
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -3902,7 +3902,7 @@ public:
     _CONSTEXPR20 basic_string& replace(
         const const_iterator _First, const const_iterator _Last, const size_type _Count, const _Elem _Ch) {
         // replace [_First, _Last) with _Count * _Ch
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -3935,7 +3935,7 @@ public:
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string& replace_with_range(const const_iterator _First, const const_iterator _Last, _Rng&& _Range) {
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
