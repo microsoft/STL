@@ -1830,8 +1830,8 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     // In pre-concepts world, _Uninitialized_copy should only ever be called with an iterator
     // and sentinel of the same type, so `_Get_unwrapped` is fine to call.
-    auto _UFirst = _Get_unwrapped(_STD move(_First));
-    auto _ULast  = _Get_unwrapped(_STD move(_Last));
+    auto _UFirst = _STD _Get_unwrapped(_STD move(_First));
+    auto _ULast  = _STD _Get_unwrapped(_STD move(_Last));
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
@@ -1843,11 +1843,11 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 #endif // _HAS_CXX20
         {
             if constexpr (is_same_v<decltype(_UFirst), decltype(_ULast)>) {
-                _Copy_memmove(_To_address(_UFirst), _To_address(_ULast), _Unfancy(_Dest));
+                _STD _Copy_memmove(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
                 _Dest += _ULast - _UFirst;
             } else {
                 const auto _Count = static_cast<size_t>(_ULast - _UFirst);
-                _Copy_memmove_n(_To_address(_UFirst), _Count, _Unfancy(_Dest));
+                _STD _Copy_memmove_n(_STD _To_address(_UFirst), _Count, _STD _Unfancy(_Dest));
                 _Dest += _Count;
             }
             return _Dest;
