@@ -1542,14 +1542,15 @@ public:
         return current;
     }
 
-    _NODISCARD _CONSTEXPR17 reference operator*() const
-        noexcept(is_nothrow_copy_constructible_v<_BidIt>&& noexcept(*--(_STD declval<_BidIt&>()))) /* strengthened */ {
+    _NODISCARD _CONSTEXPR17 reference operator*() const noexcept(is_nothrow_copy_constructible_v<_BidIt> //
+            && noexcept(*--(_STD declval<_BidIt&>()))) /* strengthened */ {
         _BidIt _Tmp = current;
         return *--_Tmp;
     }
 
     _NODISCARD _CONSTEXPR17 pointer operator->() const
-        noexcept(is_nothrow_copy_constructible_v<_BidIt>&& noexcept(--(_STD declval<_BidIt&>()))
+        noexcept(is_nothrow_copy_constructible_v<_BidIt> //
+                     && noexcept(--(_STD declval<_BidIt&>()))
                  && _Has_nothrow_operator_arrow<_BidIt&, pointer>) /* strengthened */
 #ifdef __cpp_lib_concepts
         requires (is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); })
@@ -1569,8 +1570,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 reverse_iterator operator++(int) noexcept(
-        is_nothrow_copy_constructible_v<_BidIt>&& noexcept(--current)) /* strengthened */ {
+    _CONSTEXPR17 reverse_iterator operator++(int) noexcept(is_nothrow_copy_constructible_v<_BidIt> //
+            && noexcept(--current)) /* strengthened */ {
         reverse_iterator _Tmp = *this;
         --current;
         return _Tmp;
@@ -1581,8 +1582,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 reverse_iterator operator--(int) noexcept(
-        is_nothrow_copy_constructible_v<_BidIt>&& noexcept(++current)) /* strengthened */ {
+    _CONSTEXPR17 reverse_iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_BidIt> //
+            && noexcept(++current)) /* strengthened */ {
         reverse_iterator _Tmp = *this;
         ++current;
         return _Tmp;
@@ -1617,7 +1618,8 @@ public:
 
 #ifdef __cpp_lib_concepts
     _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
-        is_nothrow_copy_constructible_v<_BidIt>&& noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
+        is_nothrow_copy_constructible_v<_BidIt> //
+            && noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
         auto _Tmp = _It.current;
         --_Tmp;
         return _RANGES iter_move(_Tmp);
@@ -1626,8 +1628,8 @@ public:
     template <indirectly_swappable<_BidIt> _BidIt2>
     friend constexpr void iter_swap(const reverse_iterator& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         is_nothrow_copy_constructible_v<_BidIt>
-        && is_nothrow_copy_constructible_v<_BidIt2>&& noexcept(
-            _RANGES iter_swap(--_STD declval<_BidIt&>(), --_STD declval<_BidIt2&>()))) {
+        && is_nothrow_copy_constructible_v<_BidIt2> //
+            && noexcept(_RANGES iter_swap(--_STD declval<_BidIt&>(), --_STD declval<_BidIt2&>()))) {
         auto _LTmp = _Left.current;
         auto _RTmp = _Right.base();
         --_LTmp;
@@ -4053,8 +4055,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 auto operator++(int) noexcept(
-        is_nothrow_copy_constructible_v<_Iter>&& noexcept(++_Current)) /* strengthened */ {
+    _CONSTEXPR17 auto operator++(int) noexcept(is_nothrow_copy_constructible_v<_Iter> //
+            && noexcept(++_Current)) /* strengthened */ {
 #ifdef __cpp_lib_concepts
         if constexpr (forward_iterator<_Iter>) {
 #endif // defined(__cpp_lib_concepts)
@@ -4073,8 +4075,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 move_iterator operator--(int) noexcept(
-        is_nothrow_copy_constructible_v<_Iter>&& noexcept(--_Current)) /* strengthened */ {
+    _CONSTEXPR17 move_iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Iter> //
+            && noexcept(--_Current)) /* strengthened */ {
         move_iterator _Tmp = *this;
         --_Current;
         return _Tmp;
