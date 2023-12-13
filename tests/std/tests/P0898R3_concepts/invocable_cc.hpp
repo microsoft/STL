@@ -818,7 +818,7 @@ void NAME() {
         STATIC_ASSERT(!test<PMF1PCVRR, S&, int>());
         STATIC_ASSERT(!test<PMF1PCVRR, S&, int, long>());
     }
-// clang-format on
+    // clang-format on
 }
 
 #undef CALLCONV
