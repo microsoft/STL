@@ -728,13 +728,11 @@ public:
         return *this;
     }
 
-    // clang-format off
     template <class _Uty1, class _Uty2>
         requires _Different_from<_Variantish<_Uty1, _Uty2>, _Variantish>
     constexpr _Variantish& operator=(const _Variantish<_Uty1, _Uty2>& _That) noexcept(
         is_nothrow_constructible_v<_Ty1, const _Uty1&> && is_nothrow_constructible_v<_Ty2, const _Uty2&>
-            && is_nothrow_assignable_v<_Ty1&, const _Uty1&> && is_nothrow_assignable_v<_Ty2&, const _Uty2&>) {
-        // clang-format on
+        && is_nothrow_assignable_v<_Ty1&, const _Uty1&> && is_nothrow_assignable_v<_Ty2&, const _Uty2&>) {
         if (_Contains == _That._Contains) {
             switch (_Contains) {
             case _Variantish_state::_Holds_first:
@@ -890,15 +888,13 @@ public:
         && is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
         : _Val{_Right._Get_val()} {}
 
-    // clang-format off
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
-            && assignable_from<_Iter&, const _OIter&> && assignable_from<_Se&, const _OSe&>
+              && assignable_from<_Iter&, const _OIter&> && assignable_from<_Se&, const _OSe&>
     constexpr common_iterator& operator=(const common_iterator<_OIter, _OSe>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>
-            && is_nothrow_assignable_v<_Iter&, const _OIter&>
-            && is_nothrow_assignable_v<_Se&, const _OSe&>) /* strengthened */ {
-        // clang-format on
+        && is_nothrow_assignable_v<_Iter&, const _OIter&>
+        && is_nothrow_assignable_v<_Se&, const _OSe&>) /* strengthened */ {
         _Val = _Right._Get_val();
         return *this;
     }

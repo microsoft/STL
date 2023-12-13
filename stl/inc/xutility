@@ -941,17 +941,17 @@ namespace ranges {
             && requires(_Ty1&& __t1, _Ty2&& __t2) {
                 iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2)); // intentional ADL
             };
+        // clang-format on
 
         template <class _Ty1, class _Ty2>
-        concept _Can_swap_references = indirectly_readable<remove_reference_t<_Ty1>>
-            && indirectly_readable<remove_reference_t<_Ty2>>
+        concept _Can_swap_references =
+            indirectly_readable<remove_reference_t<_Ty1>> && indirectly_readable<remove_reference_t<_Ty2>>
             && swappable_with<iter_reference_t<_Ty1>, iter_reference_t<_Ty2>>;
 
         template <class _Ty1, class _Ty2>
         concept _Symmetric_indirectly_movable_storable =
-               indirectly_movable_storable<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>
+            indirectly_movable_storable<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>
             && indirectly_movable_storable<remove_reference_t<_Ty2>, remove_reference_t<_Ty1>>;
-        // clang-format on
 
         template <class _Xty, class _Yty>
         _NODISCARD constexpr iter_value_t<remove_reference_t<_Xty>> _Iter_exchange_move(_Xty&& _XVal,
