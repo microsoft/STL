@@ -575,13 +575,11 @@ public:
         is_nothrow_constructible_v<_Ty2, _Types...>)
         : _Second(_STD forward<_Types>(_Args)...), _Contains{_Variantish_state::_Holds_second} {}
 
-    // clang-format off
     template <class _Uty1, class _Uty2>
         requires _Different_from<_Variantish<_Uty1, _Uty2>, _Variantish>
     constexpr _Variantish(const _Variantish<_Uty1, _Uty2>& _That) noexcept(
         is_nothrow_constructible_v<_Ty1, const _Uty1&> && is_nothrow_constructible_v<_Ty2, const _Uty2&>)
         : _Contains{_That._Contains} {
-        // clang-format on
         switch (_That._Contains) {
         case _Variantish_state::_Holds_first:
             _STD _Construct_in_place(_First, _That._Get_first());
