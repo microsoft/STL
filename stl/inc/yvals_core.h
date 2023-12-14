@@ -882,7 +882,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202310L
+#define _MSVC_STL_UPDATE  202312L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -892,8 +892,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 16
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 16.0.0 or newer.");
+#if __clang_major__ < 17
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 17.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1939 // Coarse-grained, not inspecting _MSC_FULL_VER
@@ -1956,7 +1956,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 
 // TRANSITION: _USE_EXTERN_CXX_EVERYWHERE_FOR_STL controls whether we also wrap the STL's
 // header-only code in this linkage-specification, as a temporary workaround to allow
-// the named module to coexist with classic includes in the same translation unit.
+// importing the named module in a translation unit with classic includes.
 
 #ifndef _USE_EXTERN_CXX_EVERYWHERE_FOR_STL
 #define _USE_EXTERN_CXX_EVERYWHERE_FOR_STL _HAS_CXX20

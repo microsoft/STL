@@ -7,6 +7,11 @@
 #define _CONDITION_VARIABLE_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+
+#ifdef _M_CEE_PURE
+#error <condition_variable> is not supported when compiling with /clr:pure.
+#endif // defined(_M_CEE_PURE)
+
 #include <__msvc_chrono.hpp>
 #include <memory>
 #include <mutex>
@@ -21,10 +26,6 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
-
-#ifdef _M_CEE_PURE
-#error <condition_variable> is not supported when compiling with /clr:pure.
-#endif // defined(_M_CEE_PURE)
 
 _STD_BEGIN
 template <class _Lock>

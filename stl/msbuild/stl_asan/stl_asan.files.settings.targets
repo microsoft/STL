@@ -6,11 +6,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
     <ItemGroup>
-        <BuildFiles Include="
-            $(CrtRoot)\github\stl\src\asan.cpp;
-            ">
-            <BuildAs>nativecpp</BuildAs>
-        </BuildFiles>
+        <ClCompile Include="$(CrtRoot)\github\stl\src\asan.cpp" />
     </ItemGroup>
 
 </Project>
