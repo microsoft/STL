@@ -147,7 +147,7 @@ void test_case_incorrect_special_case_reasoning() {
 }
 
 void test_case_narrowing_conversion() {
-    size_t a[] = {1, 2, 3};
+    size_t a[]         = {1, 2, 3};
     auto return_itself = [](size_t a) { return a; };
     // Initializing a smaller type (int here) with a larger type (size_t here).
     // According to [transform.reduce](7.1-7.4),
