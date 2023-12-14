@@ -670,7 +670,6 @@ tests\VSO_0000000_instantiate_containers
 tests\VSO_0000000_instantiate_cvt
 tests\VSO_0000000_instantiate_iterators_misc
 tests\VSO_0000000_instantiate_type_traits
-tests\VSO_1925201_iter_traits
 tests\VSO_0000000_list_iterator_debugging
 tests\VSO_0000000_list_unique_self_reference
 tests\VSO_0000000_matching_npos_address
@@ -733,3 +732,4 @@ tests\VSO_0849827_multicontainer_emplace_hint_position
 tests\VSO_0938757_attribute_order
 tests\VSO_0961751_hash_range_erase
 tests\VSO_0971246_legacy_await_headers
+tests\VSO_1925201_iter_traits

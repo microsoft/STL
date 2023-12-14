@@ -3,12 +3,11 @@
 
 #include <algorithm>
 #include <concepts>
-#include <execution>
 #include <iterator>
 
 // Defend against regression of DevCom-10532126, in which several function templates used
 // `_Iter_diff_t<meow>` as a parameter type instead of the specified
-// `typename iterator_traits<meow>::difference_type. The two are equivalent in C++17, but in C++20
+// `typename iterator_traits<meow>::difference_type`. The two are equivalent in C++17, but in C++20
 // _Iter_diff_t<meow> becomes iter_difference_t<meow>. We thought the difference was not observable,
 // but it interferes with concept overloading.
 
