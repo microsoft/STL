@@ -1457,7 +1457,7 @@ struct _Can_scalar_delete<_Yty, void_t<decltype(delete _STD declval<_Yty*>())>> 
 template <class _Yty, class = void>
 struct _Can_array_delete : false_type {};
 template <class _Yty>
-struct _Can_array_delete<_Yty, void_t<decltype(delete[] _STD declval<_Yty*>())>> : true_type{};
+struct _Can_array_delete<_Yty, void_t<decltype(delete[] _STD declval<_Yty*>())>> : true_type {};
 
 template <class _Fx, class _Arg, class = void>
 struct _Can_call_function_object : false_type {};
@@ -4233,8 +4233,8 @@ private:
 
 public:
     explicit inout_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
-        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>&& noexcept(
-            _Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
+        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...> //
+            && noexcept(_Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
         : _Smart_ptr(_Smart_ptr_),
           _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...},
               _Get_ptr_from_smart(_Smart_ptr_)) {}

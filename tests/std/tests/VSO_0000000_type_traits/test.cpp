@@ -1387,12 +1387,10 @@ STATIC_ASSERT(is_same_v<common_reference_t<simple_base const&&, simple_derived c
 STATIC_ASSERT(is_same_v<common_reference_t<simple_base const&&, simple_derived&&>, simple_base const&&>);
 STATIC_ASSERT(is_same_v<common_reference_t<simple_base const&&, simple_derived const&&>, simple_base const&&>);
 
-#if !(defined(__EDG__) && defined(_MSVC_INTERNAL_TESTING)) // TRANSITION, remove after EDG is updated internally
 STATIC_ASSERT(is_same_v<common_reference_t<int (&)(), int (&)()>, int (&)()>);
 STATIC_ASSERT(is_same_v<common_reference_t<int (&&)(), int (&)()>, int (&)()>);
 STATIC_ASSERT(is_same_v<common_reference_t<int (&)(), int (&&)()>, int (&)()>);
 STATIC_ASSERT(is_same_v<common_reference_t<int (&&)(), int (&&)()>, int (&&)()>);
-#endif // ^^^ no workaround ^^^
 
 STATIC_ASSERT(is_same_v<common_reference_t<int const volatile&&, int volatile&&>, int const volatile&&>);
 STATIC_ASSERT(is_same_v<common_reference_t<int&&, int const&, int volatile&>, int const volatile&>);
