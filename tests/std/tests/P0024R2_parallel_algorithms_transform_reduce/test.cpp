@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // test_case_incorrect_special_case_reasoning & test_case_narrowing_conversion tests narrowing on purpose
-#pragma warning(disable : 4242 4244 4365)
+#pragma warning(disable : 4242 4244 4267 4365)
 
 #include <algorithm>
 #include <cassert>
