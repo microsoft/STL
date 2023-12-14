@@ -171,7 +171,7 @@ public:
 
     _Base_flat_set(const _Base_flat_set&) = default;
     _Base_flat_set(_Base_flat_set&& _Other) noexcept(
-        is_nothrow_move_constructible_v<container_type>&& is_nothrow_copy_constructible_v<key_compare>) // strengthened
+        is_nothrow_move_constructible_v<container_type> && is_nothrow_copy_constructible_v<key_compare>) // strengthened
         : _Mycont(_STD move(_Other).extract()), _Mycomp(_Other._Mycomp) // intentionally copy comparator, see LWG-2227
     {}
 
@@ -183,7 +183,7 @@ public:
         return *this;
     }
     _Base_flat_set& operator=(_Base_flat_set&& _Other) noexcept(
-        is_nothrow_move_assignable_v<container_type>&& is_nothrow_copy_assignable_v<key_compare>) // strengthened
+        is_nothrow_move_assignable_v<container_type> && is_nothrow_copy_assignable_v<key_compare>) // strengthened
     {
         if (this != _STD addressof(_Other)) {
             _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};

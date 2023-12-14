@@ -404,12 +404,35 @@ void test_map() {
 void test_mdspan() {
     using namespace std;
     puts("Testing <mdspan>.");
-    int arr[] = {10, 0, 0, 0, 20, 0, 0, 0, 30};
-    layout_right::mapping<extents<int, 3, 3>> mp;
-    assert(arr[mp(0, 0)] == 10);
-    assert(arr[mp(1, 1)] == 20);
-    assert(arr[mp(2, 2)] == 30);
-    // TRANSITION, test std::mdspan too (DevCom-10359857)
+
+    {
+        int arr[] = {10, 0, 0, 0, 20, 0, 0, 0, 30};
+        layout_right::mapping<extents<int, 3, 3>> mp;
+        assert(arr[mp(0, 0)] == 10);
+        assert(arr[mp(1, 1)] == 20);
+        assert(arr[mp(2, 2)] == 30);
+    }
+
+    {
+        array<int, 15> arr{//
+            50, 60, 70, 80, 90, //
+            51, 61, 71, 81, 91, //
+            52, 62, 72, 82, 92};
+
+        mdspan md{arr.data(), extents<size_t, 3, 5>{}};
+
+        static_assert(is_same_v<decltype(md), mdspan<int, extents<size_t, 3, 5>>>);
+
+        assert((md[array{0, 0}] == 50));
+        assert((md[array{0, 4}] == 90));
+        assert((md[array{1, 1}] == 61));
+        assert((md[array{2, 0}] == 52));
+        assert((md[array{2, 4}] == 92));
+
+        md[array{2, 4}] = 1729;
+
+        assert(arr.back() == 1729);
+    }
 }
 #endif // TEST_STANDARD >= 23
 

@@ -10,8 +10,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ProjectFile Condition="'$(SpectreBuildMode)' == '' or
                                 '$(Configuration)' == 'chk' or
                                 '$(Configuration)' == 'dbg'"
-                     Include="libcpmt_kernel32\libcpmt.nativeproj" />
-        <ProjectFile Condition="'$(SpectreBuildMode)' == ''" Include="libcpmt_onecore\libcpmt.nativeproj" />
+                     Include="libcpmt_kernel32\libcpmt.vcxproj" />
+        <ProjectFile Condition="'$(SpectreBuildMode)' == ''" Include="libcpmt_onecore\libcpmt.vcxproj" />
     </ItemGroup>
 
     <Import Project="$(RepoSrc)\tools\Microsoft.DevDiv.Traversal.targets" />

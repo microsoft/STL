@@ -1529,6 +1529,7 @@ namespace nothrow_testing {
         STATIC_ASSERT(noexcept(ranges::crend(t)) == Nothrow);
         STATIC_ASSERT(noexcept(ranges::empty(t)) == Nothrow);
         STATIC_ASSERT(noexcept(ranges::size(t)) == Nothrow);
+        STATIC_ASSERT(noexcept(ranges::ssize(t)) == Nothrow);
         STATIC_ASSERT(noexcept(ranges::data(t)) == Nothrow);
         STATIC_ASSERT(noexcept(ranges::cdata(t)) == Nothrow);
 

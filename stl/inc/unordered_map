@@ -254,8 +254,9 @@ public:
 
     unordered_map(unordered_map&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    unordered_map& operator=(unordered_map&& _Right) noexcept(_Alnode_traits::is_always_equal::value&&
-            is_nothrow_move_assignable_v<_Hasher>&& is_nothrow_move_assignable_v<_Keyeq>) {
+    unordered_map& operator=(unordered_map&& _Right) noexcept(_Alnode_traits::is_always_equal::value
+                                                              && is_nothrow_move_assignable_v<_Hasher>
+                                                              && is_nothrow_move_assignable_v<_Keyeq>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -532,7 +533,7 @@ void swap(unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
 _EXPORT_STD template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
 unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
     unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+    return _STD _Erase_nodes_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -741,8 +742,9 @@ public:
 
     unordered_multimap(unordered_multimap&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    unordered_multimap& operator=(unordered_multimap&& _Right) noexcept(_Alnode_traits::is_always_equal::value&&
-            is_nothrow_move_assignable_v<_Hasher>&& is_nothrow_move_assignable_v<_Keyeq>) {
+    unordered_multimap& operator=(unordered_multimap&& _Right) noexcept(_Alnode_traits::is_always_equal::value
+                                                                        && is_nothrow_move_assignable_v<_Hasher>
+                                                                        && is_nothrow_move_assignable_v<_Keyeq>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -903,7 +905,7 @@ void swap(unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Left,
 _EXPORT_STD template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
 unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>::size_type erase_if(
     unordered_multimap<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+    return _STD _Erase_nodes_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

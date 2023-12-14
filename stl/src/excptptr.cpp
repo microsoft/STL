@@ -499,7 +499,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
         const auto _PType = reinterpret_cast<CatchableType*>(
             static_cast<uintptr_t>(_CatchableTypeArray->arrayOfCatchableTypes[0]) + _ThrowImageBase);
 #else // ^^^ _EH_RELATIVE_TYPEINFO / !_EH_RELATIVE_TYPEINFO vvv
-        const auto _PType              = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
+        const auto _PType = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
 #endif // ^^^ !_EH_RELATIVE_TYPEINFO ^^^
 
         // Alloc memory on stack for exception object. This might cause a stack overflow SEH exception, or another C++

@@ -143,7 +143,7 @@ public:
 
     set(set&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    set& operator=(set&& _Right) noexcept(_Alnode_traits::is_always_equal::value&& is_nothrow_move_assignable_v<_Pr>) {
+    set& operator=(set&& _Right) noexcept(_Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<_Pr>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -256,7 +256,7 @@ void swap(set<_Kty, _Pr, _Alloc>& _Left, set<_Kty, _Pr, _Alloc>& _Right) noexcep
 #if _HAS_CXX20
 _EXPORT_STD template <class _Kty, class _Keylt, class _Alloc, class _Pr>
 set<_Kty, _Keylt, _Alloc>::size_type erase_if(set<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+    return _STD _Erase_nodes_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -354,7 +354,7 @@ public:
     multiset(multiset&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
     multiset& operator=(multiset&& _Right) noexcept(
-        _Alnode_traits::is_always_equal::value&& is_nothrow_move_assignable_v<_Pr>) {
+        _Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<_Pr>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -474,7 +474,7 @@ void swap(multiset<_Kty, _Pr, _Alloc>& _Left, multiset<_Kty, _Pr, _Alloc>& _Righ
 #if _HAS_CXX20
 _EXPORT_STD template <class _Kty, class _Keylt, class _Alloc, class _Pr>
 multiset<_Kty, _Keylt, _Alloc>::size_type erase_if(multiset<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+    return _STD _Erase_nodes_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

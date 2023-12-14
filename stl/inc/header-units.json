@@ -10,6 +10,7 @@
         "__msvc_cxx_stdatomic.hpp",
         "__msvc_filebuf.hpp",
         "__msvc_format_ucd_tables.hpp",
+        "__msvc_formatter.hpp",
         "__msvc_int128.hpp",
         "__msvc_iter_core.hpp",
         "__msvc_print.hpp",

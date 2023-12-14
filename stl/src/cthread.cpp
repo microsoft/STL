@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// thread functions
-
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>

@@ -69,13 +69,13 @@ _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
     _Min_max_element_t _Res;
 
     if constexpr (sizeof(_Ty) == 1) {
-        _Res = __std_minmax_element_1(_First, _Last, _Signed);
+        _Res = ::__std_minmax_element_1(_First, _Last, _Signed);
     } else if constexpr (sizeof(_Ty) == 2) {
-        _Res = __std_minmax_element_2(_First, _Last, _Signed);
+        _Res = ::__std_minmax_element_2(_First, _Last, _Signed);
     } else if constexpr (sizeof(_Ty) == 4) {
-        _Res = __std_minmax_element_4(_First, _Last, _Signed);
+        _Res = ::__std_minmax_element_4(_First, _Last, _Signed);
     } else if constexpr (sizeof(_Ty) == 8) {
-        _Res = __std_minmax_element_8(_First, _Last, _Signed);
+        _Res = ::__std_minmax_element_8(_First, _Last, _Signed);
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
@@ -937,7 +937,8 @@ namespace ranges {
             if constexpr (bidirectional_iterator<_It1> && bidirectional_iterator<_It2>) {
                 // determine final iterator values
                 auto _Final1 = _RANGES _Find_last_iterator(_First1, _Last1, _Count);
-                auto _Final2 = _RANGES _Find_last_iterator(_First2, _Last2, _Count);
+                using _Diff2 = iter_difference_t<_It2>; // avoid truncation warnings; ranges are the same length
+                auto _Final2 = _RANGES _Find_last_iterator(_First2, _Last2, static_cast<_Diff2>(_Count));
 
                 for (;;) { // trim matching suffixes
                     --_Final1;
@@ -5411,7 +5412,8 @@ void random_shuffle(_RanIt _First, _RanIt _Last) { // shuffle [_First, _Last) us
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _FwdIt>
-constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
+constexpr _FwdIt shift_left(
+    _FwdIt _First, const _FwdIt _Last, typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) {
     // shift [_First, _Last) left by _Pos_to_shift
     // positions; returns the end of the resulting range
     _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
@@ -5445,7 +5447,8 @@ constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fwd
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) noexcept /* terminates */ {
+_FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last,
+    typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) left by _Pos_to_shift positions
     // not parallelized as benchmarks show it isn't worth it
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
@@ -5453,7 +5456,8 @@ _FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Po
 }
 
 _EXPORT_STD template <class _FwdIt>
-constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
+constexpr _FwdIt shift_right(
+    _FwdIt _First, const _FwdIt _Last, typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) {
     // shift [_First, _Last) right by _Pos_to_shift
     // positions; returns the beginning of the resulting range
     _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/5)");
@@ -5527,7 +5531,8 @@ constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fw
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) noexcept /* terminates */ {
+_FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last,
+    typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) right by _Pos_to_shift positions
     // not parallelized as benchmarks show it isn't worth it
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
@@ -9729,8 +9734,8 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
-            const auto _First_ptr = _To_address(_First);
-            const auto _Result    = _STD __std_minmax_element(_First_ptr, _To_address(_Last));
+            const auto _First_ptr = _STD _To_address(_First);
+            const auto _Result    = _STD __std_minmax_element(_First_ptr, _STD _To_address(_Last));
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
@@ -9781,10 +9786,11 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD constexpr pair<_FwdIt, _FwdIt> minmax_element(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find smallest and largest elements
-    _Adl_verify_range(_First, _Last);
-    const auto _Result = _STD _Minmax_element_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred));
-    _Seek_wrapped(_Last, _Result.second);
-    _Seek_wrapped(_First, _Result.first);
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _Result =
+        _STD _Minmax_element_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _STD _Pass_fn(_Pred));
+    _STD _Seek_wrapped(_Last, _Result.second);
+    _STD _Seek_wrapped(_First, _Result.first);
     return {_First, _Last};
 }
 
@@ -9801,7 +9807,7 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
     // find smallest and largest elements
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    return _STD minmax_element(_First, _Last, _Pass_fn(_Pred));
+    return _STD minmax_element(_First, _Last, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -9838,8 +9844,8 @@ namespace ranges {
             _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UResult = _Minmax_element_fwd_unchecked(
                 _RANGES _Ubegin(_Range), _RANGES _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
-            return {
-                _Rewrap_iterator(_Range, _STD move(_UResult.min)), _Rewrap_iterator(_Range, _STD move(_UResult.max))};
+            return {_RANGES _Rewrap_iterator(_Range, _STD move(_UResult.min)),
+                _RANGES _Rewrap_iterator(_Range, _STD move(_UResult.max))};
         }
 
     private:
@@ -9929,7 +9935,8 @@ _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left _MSVC_
 _EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return {leftmost/smallest, rightmost/largest}
-    pair<const _Ty*, const _Ty*> _Res = _STD _Minmax_element_unchecked(_Ilist.begin(), _Ilist.end(), _Pass_fn(_Pred));
+    pair<const _Ty*, const _Ty*> _Res =
+        _STD _Minmax_element_unchecked(_Ilist.begin(), _Ilist.end(), _STD _Pass_fn(_Pred));
     return pair<_Ty, _Ty>(*_Res.first, *_Res.second);
 }
 
@@ -10444,7 +10451,6 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
         const _Ty& _Tmp = _DEBUG_LT_PRED(_Pred, _Val, _Min_val) ? _Min_val : _Val;
         return _DEBUG_LT_PRED(_Pred, _Max_val, _Val) ? _Max_val : _Tmp;
     } else {
-
         if (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) {
             return _Max_val;
         }
@@ -10498,12 +10504,13 @@ namespace ranges {
             indirect_strict_weak_order<projected<_It1, _Pj1>, projected<_It2, _Pj2>> _Pr = ranges::less>
         _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
             _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            _Adl_verify_range(_First1, _Last1);
-            _Adl_verify_range(_First2, _Last2);
+            _STD _Adl_verify_range(_First1, _Last1);
+            _STD _Adl_verify_range(_First2, _Last2);
 
-            return _Lexicographical_compare_unchecked(_Unwrap_iter<_Se1>(_STD move(_First1)),
-                _Unwrap_sent<_It1>(_STD move(_Last1)), _Unwrap_iter<_Se2>(_STD move(_First2)),
-                _Unwrap_sent<_It2>(_STD move(_Last2)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            return _Lexicographical_compare_unchecked(_RANGES _Unwrap_iter<_Se1>(_STD move(_First1)),
+                _RANGES _Unwrap_sent<_It1>(_STD move(_Last1)), _RANGES _Unwrap_iter<_Se2>(_STD move(_First2)),
+                _RANGES _Unwrap_sent<_It2>(_STD move(_Last2)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj1),
+                _STD _Pass_fn(_Proj2));
         }
 
         template <input_range _Rng1, input_range _Rng2, class _Pj1 = identity, class _Pj2 = identity,
@@ -10512,7 +10519,7 @@ namespace ranges {
         _NODISCARD constexpr bool operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             return _Lexicographical_compare_unchecked(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2),
-                _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                _Uend(_Range2), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj1), _STD _Pass_fn(_Proj2));
         }
 
     private:
@@ -10546,7 +10553,7 @@ namespace ranges {
                         _Num2 = SIZE_MAX;
                     }
 
-                    const int _Ans = _Memcmp_count(_First1, _First2, (_STD min)(_Num1, _Num2));
+                    const int _Ans = _STD _Memcmp_count(_First1, _First2, (_STD min)(_Num1, _Num2));
                     return _Memcmp_classification_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
                 }
             }

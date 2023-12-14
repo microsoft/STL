@@ -2089,12 +2089,7 @@ private:
     static _Uty _Adjust(_Uty _Uval) noexcept { // convert signed ranges to unsigned ranges and vice versa
         if constexpr (is_signed_v<_Ty>) {
             constexpr _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
-
-            if (_Uval < _Adjuster) {
-                return static_cast<_Uty>(_Uval + _Adjuster);
-            } else {
-                return static_cast<_Uty>(_Uval - _Adjuster);
-            }
+            return static_cast<_Uty>(_Uval ^ _Adjuster);
         } else { // _Ty is already unsigned, do nothing
             return _Uval;
         }
