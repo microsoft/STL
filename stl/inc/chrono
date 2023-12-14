@@ -5402,7 +5402,7 @@ namespace chrono {
                     || _Is_valid_type<month>(_Type) || _Is_valid_type<day>(_Type) || _Is_valid_type<weekday>(_Type);
             } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                 return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
-                    || _Type == 'T' || _Type == 'p';
+                    || _Type == 'T' || _Type == 'p' || _Type == 'X';
             } else if constexpr (_Is_any_of_v<_Ty, sys_info, local_info>) {
                 return _Type == 'z' || _Type == 'Z';
             } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
@@ -5411,7 +5411,7 @@ namespace chrono {
                         return true;
                     }
                 }
-                return _Type == 'c' || _Type == 'X' || _Is_valid_type<year_month_day>(_Type)
+                return _Type == 'c' || _Is_valid_type<year_month_day>(_Type)
                     || _Is_valid_type<hh_mm_ss<seconds>>(_Type);
             } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return _Type == 'z' || _Type == 'Z' || _Is_valid_type<decltype(_Ty::_Time)>(_Type);
