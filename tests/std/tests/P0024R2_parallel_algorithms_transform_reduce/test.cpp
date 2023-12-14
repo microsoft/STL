@@ -174,4 +174,5 @@ int main() {
     parallel_test_case([](const size_t testSize) { test_case_move_only(seq, testSize); });
     parallel_test_case([](const size_t testSize) { test_case_move_only(par, testSize); });
     test_case_incorrect_special_case_reasoning();
+    test_case_narrowing_conversion();
 }
