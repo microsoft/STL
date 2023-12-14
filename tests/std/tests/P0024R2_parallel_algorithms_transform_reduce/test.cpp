@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma warning(disable : 4242 4244 4365) // test_case_incorrect_special_case_reasoning tests narrowing on purpose
+// test_case_incorrect_special_case_reasoning & test_case_narrowing_conversion tests narrowing on purpose
+#pragma warning(disable : 4242 4244 4365)
+
 #include <algorithm>
 #include <cassert>
 #include <execution>
@@ -142,6 +144,25 @@ void test_case_incorrect_special_case_reasoning() {
     unsigned char d[] = {128, 10};
     // (128 + 128 mod 256 == 0) * (10 + 10 mod 256) == 0, Usual Arithmetic Conversions would say 5120
     assert(transform_reduce(begin(c), end(c), d, 0, multiplies<>{}, plus<unsigned char>{}) == 0);
+}
+
+void test_case_narrowing_conversion() {
+    size_t a[] = {1, 2, 3};
+    auto return_itself = [](size_t a) { return a; };
+    // Initializing a smaller type (int here) with a larger type (size_t here).
+    // According to [transform.reduce](7.1-7.4),
+    // this narrowing conversion should compile without error.
+    assert(transform_reduce(begin(a), end(a), 0, plus<size_t>{}, return_itself) == 6);
+    assert(transform_reduce(seq, begin(a), end(a), 0, plus<size_t>{}, return_itself) == 6);
+    assert(transform_reduce(par, begin(a), end(a), 0, plus<size_t>{}, return_itself) == 6);
+
+    size_t b[] = {1, 2, 3};
+    // Initializing a smaller type (int here) with a larger type (size_t here).
+    // According to [transform.reduce](3.1-3.4),
+    // this narrowing conversion should compile without error.
+    assert(transform_reduce(begin(a), end(a), b, 0, plus<size_t>{}, plus<size_t>{}) == 12);
+    assert(transform_reduce(seq, begin(a), end(a), b, 0, plus<size_t>{}, plus<size_t>{}) == 12);
+    assert(transform_reduce(par, begin(a), end(a), b, 0, plus<size_t>{}, plus<size_t>{}) == 12);
 }
 
 int main() {
