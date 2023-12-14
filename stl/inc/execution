@@ -4235,6 +4235,7 @@ struct _Static_partitioned_transform_reduce2 { // transformed reduction task sch
             auto& _Transform_op = _This->_Transform_op;
             auto _Chunk         = _This->_Basis._Get_chunk(_Key);
             auto _Next          = _Chunk._First;
+
             _Ty _Val = _Reduce_op(_Transform_op(*_Chunk._First), _Transform_op(*++_Next));
             while (++_Next != _Chunk._Last) {
                 _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_Next));
