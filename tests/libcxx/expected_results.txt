@@ -699,6 +699,12 @@ std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
 # This test assumes that array<int, 0> is not const-default-constructible.
 std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp FAIL
 
+# contiguous_iterator requires to_address() which calls operator->(), but this bogus test uses an iterator that lacks operator->().
+std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
+
+# Bogus test expects to_address() to SFINAE away for int.
+std/utilities/memory/pointer.conversion/to_address_without_pointer_traits.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
@@ -1002,9 +1008,6 @@ std/containers/sequences/vector/vector.erasure/erase_if.pass.cpp:1 FAIL
 # Not analyzed. Inspecting shift operators for quoted().
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
 
-# Not analyzed. error C7500: '->': no function satisfied its constraints
-std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
-
 # Not analyzed.
 # MSVC warning C5046: 'test_undefined_internal::A::operator *': Symbol involving type with internal linkage not defined
 # Clang error: function 'test_undefined_internal()::A::operator*' has internal linkage but is not defined [-Werror,-Wundefined-internal]
@@ -1227,9 +1230,6 @@ std/strings/char.traits/char.traits.specializations/char.traits.specializations.
 # Not analyzed. static_assert failed: '!std::is_assignable_v<volatile std::atomic<T>&, const std::atomic<T>&>'
 # The Standard depicts `atomic& operator=(const atomic&) volatile = delete;` which we seem to be missing.
 std/atomics/atomics.types.generic/atomics.types.float/copy.compile.pass.cpp FAIL
-
-# Not analyzed. Possibly bogus test, appears to be expecting to_address() to SFINAE away for int.
-std/utilities/memory/pointer.conversion/to_address_without_pointer_traits.pass.cpp FAIL
 
 # Not analyzed.
 # MSVC error C2087: 'abstract declarator': missing subscript
