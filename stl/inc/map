@@ -166,7 +166,7 @@ public:
 
     map(map&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    map& operator=(map&& _Right) noexcept(_Alnode_traits::is_always_equal::value&& is_nothrow_move_assignable_v<_Pr>) {
+    map& operator=(map&& _Right) noexcept(_Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<_Pr>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -547,7 +547,7 @@ public:
     multimap(multimap&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
     multimap& operator=(multimap&& _Right) noexcept(
-        _Alnode_traits::is_always_equal::value&& is_nothrow_move_assignable_v<_Pr>) {
+        _Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<_Pr>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }

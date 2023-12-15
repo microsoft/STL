@@ -127,7 +127,7 @@ _STL_INTERNAL_STATIC_ASSERT(_Is_pow_2(_Big_allocation_alignment));
 #ifdef _DEBUG
 _INLINE_VAR constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
 #else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
-_INLINE_VAR constexpr size_t _Non_user_size           = sizeof(void*) + _Big_allocation_alignment - 1;
+_INLINE_VAR constexpr size_t _Non_user_size = sizeof(void*) + _Big_allocation_alignment - 1;
 #endif // ^^^ !defined(_DEBUG) ^^^
 
 #ifdef _WIN64
