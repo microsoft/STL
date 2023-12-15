@@ -1371,3 +1371,41 @@ std/time/time.syn/formatter.weekday_last.pass.cpp:2 SKIPPED
 std/time/time.syn/formatter.weekday.pass.cpp:0 SKIPPED
 std/time/time.syn/formatter.weekday.pass.cpp:2 SKIPPED
 std/time/time.syn/formatter.year_month_day.pass.cpp:2 SKIPPED
+
+
+# *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
+
+# These tests need ADDITIONAL_COMPILE_FLAGS(cl-style-warnings) and/or ADDITIONAL_COMPILE_FLAGS(gcc-style-warnings)
+# to silence warnings, but the MSVC-internal test harness doesn't yet parse ADDITIONAL_COMPILE_FLAGS.
+std/algorithms/alg.modifying.operations/alg.replace/ranges.replace.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find/find.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find/ranges.find.pass.cpp:9 SKIPPED
+std/depr/depr.c.headers/setjmp_h.compile.pass.cpp:9 SKIPPED
+std/input.output/file.streams/fstreams/ifstream.members/buffered_reads.pass.cpp:9 SKIPPED
+std/input.output/file.streams/fstreams/ofstream.members/buffered_writes.pass.cpp:9 SKIPPED
+std/language.support/support.runtime/csetjmp.pass.cpp:9 SKIPPED
+std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPED
+std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
+std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
+std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
+
+# This test is marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
+std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED
+
+# Similarly, this test is marked as `XFAIL: msvc, target={{.+}}-windows-gnu`
+# because it calls an `fmemopen` function that doesn't exist on Windows.
+std/input.output/iostream.format/print.fun/no_file_description.pass.cpp:9 SKIPPED
+
+# This test is marked as `REQUIRES: large_tests`. The GitHub test harness doesn't define that feature, so it doesn't
+# run this test. However, the MSVC-internal test harness doesn't yet parse REQUIRES, and simply runs everything.
+std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cpp:9 SKIPPED
+
+# Similarly, this test is marked as `REQUIRES: 32-bit-pointer`.
+std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
+
+# LLVM-75577 [libc++][test] support.limits.general/.version.compile.pass.cpp is malformed
+std/language.support/support.limits/support.limits.general/.version.compile.pass.cpp:9 SKIPPED
+
+# x86chk ICE not yet reported. Assertion failed: isIndirection()
+std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:9 SKIPPED
