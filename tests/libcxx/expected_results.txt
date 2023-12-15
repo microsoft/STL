@@ -681,26 +681,6 @@ std/iterators/iterator.primitives/iterator.operations/robust_against_adl.pass.cp
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 std/input.output/filesystems/fs.filesystem.synopsis/file_time_type_resolution.compile.pass.cpp FAIL
 
-# Tests non-portable behavior
-# These formatter tests need to create basic_format_contexts.
-# I believe that if we provide test_format_context_create in test_format_context.h, some of these tests can work.
-# (Some of these use std::__format_context_create. They need to be changed to use test_format_context_create.)
-std/utilities/format/format.formatter/format.context/format.context/advance_to.pass.cpp FAIL
-std/utilities/format/format.formatter/format.context/format.context/arg.pass.cpp FAIL
-std/utilities/format/format.formatter/format.context/format.context/ctor.pass.cpp FAIL
-std/utilities/format/format.formatter/format.context/format.context/locale.pass.cpp FAIL
-std/utilities/format/format.formatter/format.context/format.context/out.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.bool.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.char_array.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.c_string.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.handle.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.pointer.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.signed_integral.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.string.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.unsigned_integral.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.char.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.floating_point.pass.cpp FAIL
-
 # libc++ requires bind_front to be SFINAE-friendly, although the Standard uses "Mandates:" for constructibility.
 std/utilities/function.objects/func.bind_front/bind_front.pass.cpp FAIL
 
@@ -1128,11 +1108,28 @@ std/input.output/string.streams/istringstream/istringstream.members/str.allocato
 std/input.output/string.streams/ostringstream/ostringstream.members/str.allocator_propagation.pass.cpp FAIL
 std/input.output/string.streams/stringstream/stringstream.members/str.allocator_propagation.pass.cpp FAIL
 
-# Not analyzed. test_format_context.h says "Please create a vendor specific version of the test functions".
+# These formatter tests need to create basic_format_contexts, so test_format_context.h
+# says "Please create a vendor specific version of the test functions".
+# If we do, some of these tests should be able to work.
 std/thread/thread.threads/thread.thread.class/thread.thread.id/format.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.id/parse.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/advance_to.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/arg.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/ctor.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/locale.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/out.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.bool.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.c_string.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.char_array.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.char.fsigned-char.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.char.funsigned-char.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.char.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.floating_point.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.handle.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.pointer.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.signed_integral.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.string.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.unsigned_integral.pass.cpp FAIL
 
 # Not analyzed. Apparent false positives from static analysis where it thinks that array indexing is out of bounds.
 # warning C28020: The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call.
