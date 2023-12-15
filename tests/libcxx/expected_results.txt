@@ -1346,4 +1346,27 @@ std/input.output/filesystems/fs.op.funcs/fs.op.weakly_canonical/weakly_canonical
 
 
 # *** XFAILs WHICH PASS ***
-# Nothing here! :-)
+# These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
+# However, for ARM and ARM64, they successfully compile, then we don't run them.
+# Our test harness properly handles the ambiguity of whether a FAIL line in this file means "fails to compile"
+# or "fails to run", combined with the `build_only` setting that we use for ARM and ARM64.
+# The upstream logic that parses `// XFAIL: msvc` bypasses this, so it's interpreted as "this always fails",
+# so compilation success for ARM and ARM64 is reported as unexpectedly passing.
+# The test harness should be fixed to treat `// XFAIL: msvc` the same way that FAIL lines here are treated.
+# In the meantime, because this is platform-dependent and we don't have a way to express that in this file,
+# we need to mark these tests as SKIPPED.
+# Finally, note that only :0 (MSVC) and :2 (Clang) configurations are mentioned here,
+# because we don't run :1 (ASAN) for ARM and ARM64.
+std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:0 SKIPPED
+std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:2 SKIPPED
+std/time/time.syn/formatter.day.pass.cpp:0 SKIPPED
+std/time/time.syn/formatter.day.pass.cpp:2 SKIPPED
+std/time/time.syn/formatter.month_day.pass.cpp:0 SKIPPED
+std/time/time.syn/formatter.month_day.pass.cpp:2 SKIPPED
+std/time/time.syn/formatter.weekday_index.pass.cpp:0 SKIPPED
+std/time/time.syn/formatter.weekday_index.pass.cpp:2 SKIPPED
+std/time/time.syn/formatter.weekday_last.pass.cpp:0 SKIPPED
+std/time/time.syn/formatter.weekday_last.pass.cpp:2 SKIPPED
+std/time/time.syn/formatter.weekday.pass.cpp:0 SKIPPED
+std/time/time.syn/formatter.weekday.pass.cpp:2 SKIPPED
+std/time/time.syn/formatter.year_month_day.pass.cpp:2 SKIPPED
