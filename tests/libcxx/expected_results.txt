@@ -62,6 +62,7 @@ std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
 # Tests with undefined behavior under N4842 [basic.start.term]/6 (detached threads)
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
+std/thread/thread.jthread/detach.pass.cpp SKIPPED
 
 # libcxx is incorrect on what the type passed to allocator::construct should be (LLVM-D61364)
 std/containers/associative/map/map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp FAIL
