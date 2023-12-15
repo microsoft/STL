@@ -508,28 +508,16 @@ public:
         return try_emplace(_STD forward<_K>(_Key_val)).first->second;
     }
 
-    template <class _K>
-    _NODISCARD mapped_type& at(const _K& _Key_val)
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    _NODISCARD mapped_type& at(const key_type& _Key_val)
     {
-        iterator _Position = find(_Key_val);
-        if (_Position == end()) {
-            _Xout_of_range("std::flat_map::at: the specified key does not exist.");
-        } else {
-            return _Position->second;
-        }
+        return _At(_Key_val);
     }
 
     template <class _K>
     _NODISCARD const mapped_type& at(const _K& _Key_val) const
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        const_iterator _Position = find(_Key_val);
-        if (_Position == cend()) {
-            _Xout_of_range("std::flat_map::at: the specified key does not exist.");
-        } else {
-            return _Position->second;
-        }
+        return _At(_Key_val);
     }
 
     // [flat.map.modifiers] Modifiers
@@ -709,100 +697,124 @@ public:
     }
 
     // map operations
+    iterator find(const key_type& _X)
+    {
+        return _Find(_X);
+    }
+
     template <class _K>
     iterator find(const _K& _X)
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        iterator _Position = lower_bound(_X);
-        if (_Position != end() && _Key_equal(_Position->first, _X)) {
-            return _Position;
-        } else {
-            return end();
-        }
+        return _Find(_X);
+    }
+
+    const_iterator find(const key_type& _X) const
+    {
+        return _Find(_X);
     }
 
     template <class _K>
     const_iterator find(const _K& _X) const
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        const_iterator _Position = lower_bound(_X);
-        if (_Position != cend() && _Key_equal(_Position->first, _X)) {
-            return _Position;
-        } else {
-            return cend();
-        }
+        return _Find(_X);
+    }
+
+    size_type count(const key_type& _X) const
+    {
+        return _Count(_X);
     }
 
     template <class _K>
     size_type count(const _K& _X) const
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        return upper_bound(_X) - lower_bound(_X);
+        return _Count(_X);
+    }
+
+    bool contains(const key_type& _X) const
+    {
+        return _Contains(_X);
     }
 
     template <class _K>
     bool contains(const _K& _X) const
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        return find(_X) != cend();
+        return _Contains(_X);
+    }
+
+    iterator lower_bound(const key_type& _X)
+    {
+        return _Lower_bound(_X);
     }
 
     template <class _K>
     iterator lower_bound(const _K& _X)
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        typename key_container_type::const_iterator _Key_it =
-            _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
-        auto _Dist                                       = _STD distance(_Data.keys.cbegin(), _Key_it);
-        typename mapped_container_type::iterator _Val_it = _Data.values.begin() + _Dist;
-        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+        return _Lower_bound(_X);
+    }
+
+    const_iterator lower_bound(const key_type& _X) const
+    {
+        return _Lower_bound(_X);
     }
 
     template <class _K>
     const_iterator lower_bound(const _K& _X) const
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        typename key_container_type::const_iterator _Key_it =
-            _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
-        auto _Dist                                             = _STD distance(_Data.keys.cbegin(), _Key_it);
-        typename mapped_container_type::const_iterator _Val_it = _Data.values.cbegin() + _Dist;
-        return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
+        return _Lower_bound(_X);
+    }
+
+    iterator upper_bound(const key_type& _X)
+    {
+        return _Upper_bound(_X);
     }
 
     template <class _K>
     iterator upper_bound(const _K& _X)
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        typename key_container_type::const_iterator _Key_it =
-            _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
-        auto _Dist                                       = _STD distance(_Data.keys.cbegin(), _Key_it);
-        typename mapped_container_type::iterator _Val_it = _Data.values.begin() + _Dist;
-        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+        return _Upper_bound(_X);
+    }
+
+    const_iterator upper_bound(const key_type& _X) const
+    {
+        return _Upper_bound(_X);
     }
 
     template <class _K>
     const_iterator upper_bound(const _K& _X) const
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        typename key_container_type::const_iterator _Key_it =
-            _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
-        auto _Dist                                             = _STD distance(_Data.keys.cbegin(), _Key_it);
-        typename mapped_container_type::const_iterator _Val_it = _Data.values.cbegin() + _Dist;
-        return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
+        return _Upper_bound(_X);
+    }
+
+    pair<iterator, iterator> equal_range(const key_type& _X)
+    {
+        return _Equal_range(_X);
     }
 
     template <class _K>
     pair<iterator, iterator> equal_range(const _K& _X)
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        return {lower_bound(_X), upper_bound(_X)};
+        return _Equal_range(_X);
+    }
+
+    pair<const_iterator, const_iterator> equal_range(const key_type& _X) const
+    {
+        return _Equal_range(_X);
     }
 
     template <class _K>
     pair<const_iterator, const_iterator> equal_range(const _K& _X) const
-        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+        requires _Is_transparent_v<key_compare>
     {
-        return {lower_bound(_X), upper_bound(_X)};
+        return _Equal_range(_X);
     }
 
     friend bool operator==(const _Derived& _X, const _Derived& _Y) {
@@ -942,6 +954,115 @@ private:
 
         _Guard._Clearable = nullptr;
     }
+
+    template <class _K>
+    _NODISCARD mapped_type& _At(const _K& _Key_val)
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        iterator _Position = find(_Key_val);
+        if (_Position == end()) {
+            _Xout_of_range("std::flat_map::at: the specified key does not exist.");
+        } else {
+            return _Position->second;
+        }
+    }
+
+    template <class _K>
+    iterator _Find(const _K& _X)
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        iterator _Position = lower_bound(_X);
+        if (_Position != end() && _Key_equal(_Position->first, _X)) {
+            return _Position;
+        } else {
+            return end();
+        }
+    }
+
+    template <class _K>
+    const_iterator _Find(const _K& _X) const
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        const_iterator _Position = lower_bound(_X);
+        if (_Position != cend() && _Key_equal(_Position->first, _X)) {
+            return _Position;
+        } else {
+            return cend();
+        }
+    }
+
+    template <class _K>
+    size_type _Count(const _K& _X) const
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        return upper_bound(_X) - lower_bound(_X);
+    }
+
+    template <class _K>
+    bool _Contains(const _K& _X) const
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        return find(_X) != cend();
+    }
+
+    template <class _K>
+    iterator _Lower_bound(const _K& _X)
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        typename key_container_type::const_iterator _Key_it =
+            _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist                                       = _STD distance(_Data.keys.cbegin(), _Key_it);
+        typename mapped_container_type::iterator _Val_it = _Data.values.begin() + _Dist;
+        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    }
+
+    template <class _K>
+    const_iterator _Lower_bound(const _K& _X) const
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        typename key_container_type::const_iterator _Key_it =
+            _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist                                             = _STD distance(_Data.keys.cbegin(), _Key_it);
+        typename mapped_container_type::const_iterator _Val_it = _Data.values.cbegin() + _Dist;
+        return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    }
+
+    template <class _K>
+    iterator _Upper_bound(const _K& _X)
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        typename key_container_type::const_iterator _Key_it =
+            _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist                                       = _STD distance(_Data.keys.cbegin(), _Key_it);
+        typename mapped_container_type::iterator _Val_it = _Data.values.begin() + _Dist;
+        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    }
+
+    template <class _K>
+    const_iterator _Upper_bound(const _K& _X) const
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        typename key_container_type::const_iterator _Key_it =
+            _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist                                             = _STD distance(_Data.keys.cbegin(), _Key_it);
+        typename mapped_container_type::const_iterator _Val_it = _Data.values.cbegin() + _Dist;
+        return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    }
+
+    template <class _K>
+    pair<iterator, iterator> _Equal_range(const _K& _X)
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        return {lower_bound(_X), upper_bound(_X)};
+    }
+
+    template <class _K>
+    pair<const_iterator, const_iterator> _Equal_range(const _K& _X) const
+        requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
+    {
+        return {lower_bound(_X), upper_bound(_X)};
+    }
+
 };
 
 template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
