@@ -808,7 +808,8 @@ std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_encoding.pass.cpp FAIL
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_max_length.pass.cpp FAIL
 
-# Likely STL bugs in <format>
+# Implementation divergence, see LWG-3856 "Unclear which conversion specifiers are valid for each chrono type".
+# For %d, %e, and %j with month_day_last, libc++ thinks they're invalid, while MSVC's STL thinks they're valid.
 std/time/time.syn/formatter.month_day_last.pass.cpp FAIL
 
 # Our monotonic_buffer_resource takes "user" space for metadata, which it probably should not do.
