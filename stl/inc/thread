@@ -7,10 +7,14 @@
 #define _THREAD_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+
+#ifdef _M_CEE_PURE
+#error <thread> is not supported when compiling with /clr:pure.
+#endif // defined(_M_CEE_PURE)
+
 #include <__msvc_chrono.hpp>
 #include <memory>
 #include <process.h>
-#include <string>
 #include <tuple>
 #include <xthreads.h>
 
@@ -19,13 +23,9 @@
 #include <stop_token>
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #include <format>
-#endif // _HAS_CXX23
-
-#ifdef _M_CEE_PURE
-#error <thread> is not supported when compiling with /clr:pure.
-#endif // defined(_M_CEE_PURE)
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -197,9 +197,16 @@ namespace this_thread {
                 return;
             }
 
-            _timespec64 _Tgt;
-            (void) _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
-            _Thrd_sleep(&_Tgt);
+            // _Clamp must be less than 2^32 - 1 (INFINITE) milliseconds, but is otherwise arbitrary.
+            constexpr chrono::milliseconds _Clamp{chrono::hours{24}};
+
+            const auto _Rel = _Abs_time - _Now;
+            if (_Rel >= _Clamp) {
+                _Thrd_sleep_for(static_cast<unsigned long>(_Clamp.count()));
+            } else {
+                const auto _Rel_ms = chrono::ceil<chrono::milliseconds>(_Rel);
+                _Thrd_sleep_for(static_cast<unsigned long>(_Rel_ms.count()));
+            }
         }
     }
 
@@ -290,14 +297,16 @@ basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _I
 }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-template <class _CharT>
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+template <_Format_supported_charT _CharT>
 struct formatter<thread::id, _CharT> {
 private:
     using _Pc = basic_format_parse_context<_CharT>;
 
 public:
     constexpr _Pc::iterator parse(_Pc& _Parse_ctx) {
-        return _Impl.parse(_Parse_ctx);
+        return _Impl._Parse(_Parse_ctx);
     }
 
     template <class _FormatContext>

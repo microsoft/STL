@@ -561,6 +561,9 @@ public:
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     forward_list(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct list from _Count * _Val, allocator
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
@@ -1619,7 +1622,7 @@ forward_list<_Ty, _Alloc>::size_type erase(forward_list<_Ty, _Alloc>& _Cont, con
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
 forward_list<_Ty, _Alloc>::size_type erase_if(forward_list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    return _Cont.remove_if(_Pass_fn(_Pred));
+    return _Cont.remove_if(_STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

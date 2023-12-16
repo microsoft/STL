@@ -37,6 +37,10 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#if !_HAS_CXX17
+#error The contents of <charconv> are only available with C++17. (Also, you should not include this internal header.)
+#endif // !_HAS_CXX17
+
 #include <cstring>
 #include <type_traits>
 #include <utility>
@@ -44,19 +48,19 @@
 #include <xcharconv_ryu_tables.h>
 #include <xutility>
 
-#if defined(_M_X64) && !defined(_M_ARM64EC)
+#if defined(_M_X64) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #define _HAS_CHARCONV_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_CHARCONV_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_CHARCONV_INTRINSICS
-#include _STL_INTRIN_HEADER // for _umul128() and __shiftright128()
+#if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
+#include <intrin.h> // TRANSITION, VSO-1918426
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64) / defined(_M_X64) vvv
+#include _STL_INTRIN_HEADER // for _umul128(), __umulh(), and __shiftright128()
+#endif // ^^^ defined(_M_X64) ^^^
 #endif // ^^^ intrinsics available ^^^
-
-#if !_HAS_CXX17
-#error The contents of <charconv> are only available with C++17. (Also, you should not include this internal header.)
-#endif // !_HAS_CXX17
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -145,19 +149,12 @@ inline constexpr int __DOUBLE_POW5_BITCOUNT = 121;
 #if _HAS_CHARCONV_INTRINSICS
 
 _NODISCARD inline uint64_t __ryu_umul128(const uint64_t __a, const uint64_t __b, uint64_t* const __productHi) {
+#if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
+  *__productHi = __umulh(__a, __b);
+  return __a * __b;
+#else // ^^^ not native X64 / native X64 vvv
   return _umul128(__a, __b, __productHi);
-}
-
-_NODISCARD inline uint64_t __ryu_shiftright128(const uint64_t __lo, const uint64_t __hi, const uint32_t __dist) {
-  // For the __shiftright128 intrinsic, the shift value is always
-  // modulo 64.
-  // In the current implementation of the double-precision version
-  // of Ryu, the shift value is always < 64.
-  // (The shift value is in the range [49, 58].)
-  // Check this here in case a future change requires larger shift
-  // values. In this case this function needs to be adjusted.
-  _STL_INTERNAL_CHECK(__dist < 64);
-  return __shiftright128(__lo, __hi, static_cast<unsigned char>(__dist));
+#endif // defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 }
 
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
@@ -193,20 +190,33 @@ _NODISCARD __forceinline uint64_t __ryu_umul128(const uint64_t __a, const uint64
   return __pLo;
 }
 
+#endif // ^^^ intrinsics unavailable ^^^
+
 _NODISCARD inline uint64_t __ryu_shiftright128(const uint64_t __lo, const uint64_t __hi, const uint32_t __dist) {
+#if defined(_M_X64) && !defined(_M_ARM64EC)
+  // For the __shiftright128 intrinsic, the shift value is always
+  // modulo 64.
+  // In the current implementation of the double-precision version
+  // of Ryu, the shift value is always < 64.
+  // (The shift value is in the range [49, 58].)
+  // Check this here in case a future change requires larger shift
+  // values. In this case this function needs to be adjusted.
+  _STL_INTERNAL_CHECK(__dist < 64);
+  return __shiftright128(__lo, __hi, static_cast<unsigned char>(__dist));
+#else // ^^^ defined(_M_X64) && !defined(_M_ARM64EC) / !defined(_M_X64) || defined(_M_ARM64EC) vvv
   // We don't need to handle the case __dist >= 64 here (see above).
   _STL_INTERNAL_CHECK(__dist < 64);
-#ifdef _WIN64
+#if defined(_WIN64) || defined(_M_HYBRID_X86_ARM64)
   _STL_INTERNAL_CHECK(__dist > 0);
   return (__hi << (64 - __dist)) | (__lo >> __dist);
-#else // ^^^ 64-bit / 32-bit vvv
+#else // ^^^ 64-bit or _M_HYBRID_X86_ARM64 / 32-bit vvv
   // Avoid a 64-bit shift by taking advantage of the range of shift values.
   _STL_INTERNAL_CHECK(__dist >= 32);
   return (__hi << (64 - __dist)) | (static_cast<uint32_t>(__lo >> 32) >> (__dist - 32));
 #endif // ^^^ 32-bit ^^^
+#endif // defined(_M_X64) && !defined(_M_ARM64EC)
 }
 
-#endif // ^^^ intrinsics unavailable ^^^
 
 #ifndef _WIN64
 

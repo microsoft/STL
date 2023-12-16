@@ -235,7 +235,7 @@ constexpr void check_members_with_various_extents(Fn&& fn) {
 }
 
 namespace details {
-    static constexpr bool permissive() {
+    constexpr bool permissive() {
         return false;
     }
 
@@ -258,7 +258,7 @@ inline constexpr bool is_permissive = details::PermissiveTest<int>::test();
 
 template <class Mapping>
 struct MappingProperties {
-    typename Mapping::index_type req_span_size;
+    Mapping::index_type req_span_size;
     bool uniqueness;
     bool exhaustiveness;
     bool strideness;
@@ -267,7 +267,7 @@ struct MappingProperties {
 template <class Mapping>
     requires (!details::PermissiveTest<Mapping>::test())
 MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
-    using IndexType     = typename Mapping::index_type;
+    using IndexType     = Mapping::index_type;
     constexpr auto rank = Mapping::extents_type::rank();
     constexpr std::make_index_sequence<rank> rank_indices;
 

@@ -30,7 +30,7 @@
 //        Failure: 0
 extern "C" _CRTIMP2 int __cdecl __crtLCMapStringA(_In_opt_z_ LPCWSTR LocaleName, _In_ DWORD dwMapFlags,
     _In_reads_(cchSrc) LPCSTR lpSrcStr, _In_ int cchSrc, _Out_writes_opt_(cchDest) char* lpDestStr, _In_ int cchDest,
-    _In_ int code_page, _In_ BOOL bError) {
+    _In_ int code_page, _In_ BOOL bError) noexcept {
     // LCMapString will map past the null terminator.  We must find the null
     // terminator if it occurs in the string before cchSrc characters
     // and cap the number of characters to be considered.

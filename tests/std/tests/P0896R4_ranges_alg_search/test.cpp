@@ -159,8 +159,8 @@ constexpr bool run_tests() {
     {
         // Validate the memcmp optimization
         const int haystack[] = {1, 2, 3, 1, 2, 3, 1, 2, 3};
-        const int needle[]   = {1, 2, 3};
-        const auto result    = ranges::search(span<const int>{haystack}, needle);
+        const int needle[] = {1, 2, 3};
+        const auto result = ranges::search(span<const int>{haystack}, needle);
         STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<span<const int>::iterator>>);
         assert(to_address(result.begin()) == haystack + 0);
         assert(to_address(result.end()) == haystack + 3);

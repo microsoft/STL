@@ -1856,8 +1856,8 @@ public:
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot dereference value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-        _STL_VERIFY(_Mycont, "cannot dereference string iterator because the iterator was"
-                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        _STL_VERIFY(_Mycont, "cannot dereference string iterator because the iterator was "
+                             "invalidated (e.g. reallocation occurred, or the string was destroyed)");
         const auto _Contptr = _Mycont->_Myptr();
         const auto _Rawptr  = _Unfancy(_Ptr);
         _STL_VERIFY(_Contptr <= _Rawptr && _Rawptr < _Contptr + _Mycont->_Mysize,
@@ -1876,8 +1876,8 @@ public:
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot increment value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-        _STL_VERIFY(_Mycont, "cannot increment string iterator because the iterator was"
-                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        _STL_VERIFY(_Mycont, "cannot increment string iterator because the iterator was "
+                             "invalidated (e.g. reallocation occurred, or the string was destroyed)");
         _STL_VERIFY(_Unfancy(_Ptr) < _Mycont->_Myptr() + _Mycont->_Mysize, "cannot increment string iterator past end");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 
@@ -1895,8 +1895,8 @@ public:
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot decrement value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-        _STL_VERIFY(_Mycont, "cannot decrement string iterator because the iterator was"
-                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        _STL_VERIFY(_Mycont, "cannot decrement string iterator because the iterator was "
+                             "invalidated (e.g. reallocation occurred, or the string was destroyed)");
         _STL_VERIFY(_Mycont->_Myptr() < _Unfancy(_Ptr), "cannot decrement string iterator before begin");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 
@@ -1918,8 +1918,8 @@ public:
 
         _STL_ASSERT(_Ptr, "cannot seek value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot seek string iterator because the iterator was"
-                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        _STL_ASSERT(_Mycont, "cannot seek string iterator because the iterator was "
+                             "invalidated (e.g. reallocation occurred, or the string was destroyed)");
         const auto _Contptr = _Mycont->_Myptr();
         const auto _Rawptr  = _Unfancy(_Ptr);
 
@@ -1969,7 +1969,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 difference_type operator-(const _String_const_iterator& _Right) const noexcept {
         _Compat(_Right);
-        return _Ptr - _Right._Ptr;
+        return static_cast<difference_type>(_Ptr - _Right._Ptr);
     }
 
     _NODISCARD _CONSTEXPR20 reference operator[](const difference_type _Off) const noexcept {
@@ -2012,8 +2012,8 @@ public:
     _CONSTEXPR20 void _Compat(const _String_const_iterator& _Right) const noexcept {
         // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL >= 1
-        _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "string iterators incompatible (e.g."
-                                                           " point to different string instances)");
+        _STL_VERIFY(this->_Getcont() == _Right._Getcont(),
+            "string iterators incompatible (e.g. point to different string instances)");
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         (void) _Right;
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
@@ -2547,6 +2547,9 @@ public:
         _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Count);
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     _CONSTEXPR20 basic_string(
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
@@ -4856,7 +4859,8 @@ private:
 
     _CONSTEXPR20 void _Eos(const size_type _New_size) noexcept { // set new length and null terminator
         _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
-        _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _New_size], _Elem());
+        _Mypair._Myval2._Mysize = _New_size;
+        _Traits::assign(_Mypair._Myval2._Myptr()[_New_size], _Elem());
     }
 
     _CONSTEXPR20 void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
@@ -5259,13 +5263,13 @@ inline namespace literals {
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc, class _Uty>
 constexpr basic_string<_Elem, _Traits, _Alloc>::size_type erase(
     basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
-    return _Erase_remove(_Cont, _Val);
+    return _STD _Erase_remove(_Cont, _Val);
 }
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc, class _Pr>
 constexpr basic_string<_Elem, _Traits, _Alloc>::size_type erase_if(
     basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+    return _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

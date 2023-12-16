@@ -9,11 +9,11 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <ios>
 
-#if _HAS_CXX23
+#ifdef __cpp_lib_print
 #include <__msvc_filebuf.hpp>
 #include <__msvc_print.hpp>
 #include <format>
-#endif // _HAS_CXX23
+#endif // ^^^ defined(__cpp_lib_print) ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

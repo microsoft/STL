@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// mutex functions
-
 #include <cstdio>
 #include <cstdlib>
 #include <internal_shared.h>
@@ -13,9 +11,10 @@
 
 #include "primitives.hpp"
 
-_EXTERN_C
+extern "C" {
 
-[[noreturn]] _CRTIMP2_PURE void __cdecl _Thrd_abort(const char* msg) { // abort on precondition failure
+// TRANSITION, ABI: exported only for ABI compat
+[[noreturn]] _CRTIMP2_PURE void __cdecl _Thrd_abort(const char* msg) noexcept { // abort on precondition failure
     fputs(msg, stderr);
     fputc('\n', stderr);
     abort();
@@ -31,26 +30,26 @@ _EXTERN_C
 
 // TRANSITION, ABI: preserved for binary compatibility
 enum class __stl_sync_api_modes_enum { normal, win7, vista, concrt };
-_CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_enum) {}
+_CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_enum) noexcept {}
 
-[[nodiscard]] static PSRWLOCK get_srw_lock(_Mtx_t mtx) {
+[[nodiscard]] static PSRWLOCK get_srw_lock(_Mtx_t mtx) noexcept {
     return reinterpret_cast<PSRWLOCK>(&mtx->_Critical_section._M_srw_lock);
 }
 
 // TRANSITION, only used when constexpr mutex constructor is not enabled
-_CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t mtx, int type) { // initialize mutex in situ
+_CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t mtx, int type) noexcept { // initialize mutex in situ
     Concurrency::details::create_stl_critical_section(&mtx->_Critical_section);
     mtx->_Thread_id = -1;
     mtx->_Type      = type;
     mtx->_Count     = 0;
 }
 
-_CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t mtx) { // destroy mutex in situ
+_CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t mtx) noexcept { // destroy mutex in situ
     _THREAD_ASSERT(mtx->_Count == 0, "mutex destroyed while busy");
     (void) mtx;
 }
 
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t* mtx, int type) noexcept { // initialize mutex
     *mtx = nullptr;
 
     _Mtx_t mutex = static_cast<_Mtx_t>(_calloc_crt(1, sizeof(_Mtx_internal_imp_t)));
@@ -65,14 +64,14 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t* mtx, int type) { // initial
     return _Thrd_result::_Success;
 }
 
-_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t mtx) { // destroy mutex
+_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t mtx) noexcept { // destroy mutex
     if (mtx) { // something to do, do it
         _Mtx_destroy_in_situ(mtx);
         _free_crt(mtx);
     }
 }
 
-static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock mutex
+static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) noexcept { // lock mutex
     // TRANSITION, ABI: the use of `const _timespec64*` is preserved for `_Mtx_timedlock`
     const auto current_thread_id = static_cast<long>(GetCurrentThreadId());
     if ((mtx->_Type & ~_Mtx_recursive) == _Mtx_plain) { // set the lock
@@ -145,7 +144,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) { // lock
     }
 }
 
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t mtx) { // unlock mutex
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t mtx) noexcept { // unlock mutex
     _THREAD_ASSERT(
         1 <= mtx->_Count && mtx->_Thread_id == static_cast<long>(GetCurrentThreadId()), "unlock of unowned mutex");
 
@@ -159,11 +158,11 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t mtx) { // unlock mutex
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t mtx) { // lock mutex
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t mtx) noexcept { // lock mutex
     return mtx_do_lock(mtx, nullptr);
 }
 
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t mtx) { // attempt to lock try_mutex
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t mtx) noexcept { // attempt to lock try_mutex
     _timespec64 xt;
     _THREAD_ASSERT((mtx->_Type & (_Mtx_try | _Mtx_timed)) != 0, "trylock not supported by mutex");
     xt.tv_sec  = 0;
@@ -172,7 +171,8 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t mtx) { // attempt to lock
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_timedlock(_Mtx_t mtx, const _timespec64* xt) { // attempt to lock timed mutex
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_timedlock(_Mtx_t mtx, const _timespec64* xt) noexcept {
+    // attempt to lock timed mutex
     _Thrd_result res;
 
     _THREAD_ASSERT((mtx->_Type & _Mtx_timed) != 0, "timedlock not supported by mutex");
@@ -180,16 +180,16 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_timedlock(_Mtx_t mtx, const _timespec64*
     return res == _Thrd_result::_Busy ? _Thrd_result::_Timedout : res;
 }
 
-_CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t mtx) { // test if current thread owns mutex
+_CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t mtx) noexcept { // test if current thread owns mutex
     return mtx->_Count != 0 && mtx->_Thread_id == static_cast<long>(GetCurrentThreadId());
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-_CRTIMP2_PURE void* __cdecl _Mtx_getconcrtcs(_Mtx_t mtx) { // get internal cs impl
+_CRTIMP2_PURE void* __cdecl _Mtx_getconcrtcs(_Mtx_t mtx) noexcept { // get internal cs impl
     return &mtx->_Critical_section;
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 /*
  * This file is derived from software bearing the following

@@ -624,7 +624,7 @@ struct LerpNaNTestCase {
 
 template <typename Ty>
 struct LerpCases { // TRANSITION, VSO-934633
-    static inline constexpr LerpTestCase<Ty> lerpTestCases[] = {
+    static constexpr LerpTestCase<Ty> lerpTestCases[] = {
         {Ty(-1.0), Ty(1.0), Ty(2.0), Ty(3.0)},
         {Ty(0.0), Ty(1.0), Ty(2.0), Ty(2.0)},
         {Ty(-1.0), Ty(0.0), Ty(2.0), Ty(1.0)},
@@ -794,12 +794,12 @@ struct LerpCases { // TRANSITION, VSO-934633
         {Ty(1.0), -limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::infinity()},
     };
 
-    static inline constexpr LerpTestCase<Ty> lerpOverflowTestCases[] = {
+    static constexpr LerpTestCase<Ty> lerpOverflowTestCases[] = {
         {limits<Ty>::lowest(), limits<Ty>::max(), Ty(2.0), limits<Ty>::infinity()},
         {limits<Ty>::max(), limits<Ty>::lowest(), Ty(2.0), -limits<Ty>::infinity()},
     };
 
-    static inline constexpr LerpNaNTestCase<Ty> lerpInvalidTestCases[] = {
+    static constexpr LerpNaNTestCase<Ty> lerpInvalidTestCases[] = {
         // if the values are equal and T is an infinity, NaN
         {Ty(0), Ty(0), limits<Ty>::infinity()},
         {Ty(0), Ty(0), -limits<Ty>::infinity()},
@@ -855,7 +855,7 @@ struct LerpCases { // TRANSITION, VSO-934633
         {Ty(1.0), -limits<Ty>::infinity(), -Ty(0.0)},
     };
 
-    static inline constexpr LerpNaNTestCase<Ty> lerpNaNTestCases[] = {
+    static constexpr LerpNaNTestCase<Ty> lerpNaNTestCases[] = {
         {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729),
             {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729)}},
         {Ty(1.0), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729), {mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729)}},

@@ -350,7 +350,6 @@ public:
     __CLR_OR_THIS_CALL ~_Lockit() noexcept { // clear the lock
         _Lockit_dtor(this);
     }
-
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     __thiscall _Lockit() noexcept;
     explicit __thiscall _Lockit(int) noexcept; // set the lock
@@ -451,8 +450,8 @@ private:
     catch (...) {
 #define _CATCH_END }
 
-#define _RERAISE  throw
-#define _THROW(x) throw x
+#define _RERAISE    throw
+#define _THROW(...) throw(__VA_ARGS__)
 
 #else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
 #define _TRY_BEGIN \
@@ -475,7 +474,7 @@ private:
 #endif
 
 #define _RERAISE
-#define _THROW(x) x._Raise()
+#define _THROW(...) (__VA_ARGS__)._Raise()
 #endif // ^^^ !_HAS_EXCEPTIONS ^^^
 _STD_END
 

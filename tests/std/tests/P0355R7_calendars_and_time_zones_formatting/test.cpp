@@ -282,6 +282,10 @@ void test_duration_formatter() {
     assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-119:30:00 4"));
     assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("37:11:59 1"));
     assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-37:11:59 1"));
+
+    // GH-4247: <chrono>: format() should accept %X and %EX for duration and hh_mm_ss
+    assert(format(STR("{:%X}"), 9h + 7min + 5s) == STR("09:07:05"));
+    assert(format(STR("{:%EX}"), 9h + 7min + 5s) == STR("09:07:05"));
 }
 
 template <typename CharT>
@@ -385,51 +389,36 @@ void test_day_formatter() {
 
     // 2 digits
     day d0{27};
-    auto res = format(s0, d0);
-    assert(res == a0);
-    res = format(s1, d0);
-    assert(res == a0);
+    assert(format(s0, d0) == a0);
+    assert(format(s1, d0) == a0);
 
     // 1 digit
     day d1{5};
-    res = format(s0, d1);
-    assert(res == a1);
-    res = format(s1, d1);
-    assert(res == a2);
+    assert(format(s0, d1) == a1);
+    assert(format(s1, d1) == a2);
 
     // O modifier
-    res = format(s2, d0);
-    assert(res == a0);
-    res = format(s3, d0);
-    assert(res == a0);
-    res = format(s2, d1);
-    assert(res == a1);
-    res = format(s3, d1);
-    assert(res == a2);
+    assert(format(s2, d0) == a0);
+    assert(format(s3, d0) == a0);
+    assert(format(s2, d1) == a1);
+    assert(format(s3, d1) == a2);
 
     // [time.format]/6
     day d2{50};
-    res = format(s4, d0);
-    assert(res == a0);
-    res = format(s4, d2);
-    assert(res == a3);
+    assert(format(s4, d0) == a0);
+    assert(format(s4, d2) == a3);
 
     // width/align
-    res = format(s5, d0);
-    assert(res == a4);
-    res = format(s5, d1);
-    assert(res == a5);
-    res = format(s5, d2);
-    assert(res == a3);
+    assert(format(s5, d0) == a4);
+    assert(format(s5, d1) == a5);
+    assert(format(s5, d2) == a3);
 
     // chrono-spec must begin with conversion-spec
     throw_helper(s6, d0);
 
     // lit chars
-    res = format(s7, d0);
-    assert(res == a7);
-    res = format(s8, d0);
-    assert(res == a8);
+    assert(format(s7, d0) == a7);
+    assert(format(s8, d0) == a8);
 
     assert(format(STR("{:%d %d %d}"), day{27}) == STR("27 27 27"));
     assert(format(STR("{:%d}"), day{200}) == STR("200"));
@@ -484,7 +473,7 @@ void test_year_formatter() {
 
 template <typename CharT>
 void test_weekday_formatter() {
-    weekday invalid{10};
+    constexpr weekday invalid{10};
     empty_braces_helper(weekday{3}, STR("Wed"));
     empty_braces_helper(invalid, STR("10 is not a valid weekday"));
 
@@ -622,7 +611,7 @@ void test_year_month_formatter() {
 
 template <typename CharT>
 void test_year_month_day_formatter() {
-    year_month_day invalid{year{1234}, month{0}, day{31}};
+    constexpr year_month_day invalid{year{1234}, month{0}, day{31}};
     empty_braces_helper(year_month_day{year{1900}, month{2}, day{1}}, STR("1900-02-01"));
     empty_braces_helper(invalid, STR("1234-00-31 is not a valid date"));
 
@@ -780,6 +769,10 @@ void test_hh_mm_ss_formatter() {
     assert(format(STR("{:%H}"), hh_mm_ss{24h}) == STR("24"));
     assert(format(STR("{:%H}"), hh_mm_ss{-24h}) == STR("-24"));
     assert(format(STR("{:%M %S}"), hh_mm_ss{27h + 12min + 30s}) == STR("12 30"));
+
+    // GH-4247: <chrono>: format() should accept %X and %EX for duration and hh_mm_ss
+    assert(format(STR("{:%X}"), hh_mm_ss{9h + 7min + 5s}) == STR("09:07:05"));
+    assert(format(STR("{:%EX}"), hh_mm_ss{9h + 7min + 5s}) == STR("09:07:05"));
 }
 
 void test_exception_classes() {

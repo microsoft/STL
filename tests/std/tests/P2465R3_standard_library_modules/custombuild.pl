@@ -16,7 +16,7 @@ sub CustomBuildHook()
     my $stdCompatIxx = "$stlModulesDir\\std.compat.ixx";
 
     # Dependency order is important here:
-    my @inputPaths = ($stdIxx, $stdCompatIxx, "test.cpp", "test2.cpp", "classic.cpp");
+    my @inputPaths = ($stdIxx, $stdCompatIxx, "test.cpp", "test2.cpp", "test3.cpp", "test4.cpp", "classic.cpp");
 
     Run::ExecuteCL(join(" ", @inputPaths, "/Fe$cwd.exe"));
 }

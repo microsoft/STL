@@ -69,7 +69,7 @@ struct B {
 
 struct X : public B {};
 
-void test_294051() {
+void test_DevDiv_294051() {
     shared_ptr<B> b(new B);
     shared_ptr<X> x(new X);
 
@@ -121,5 +121,5 @@ void test_294051() {
 int main() {
     test_orig();
 
-    test_294051();
+    test_DevDiv_294051();
 }

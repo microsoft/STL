@@ -142,8 +142,6 @@ struct std::common_type<three_way_archetype<I1, Cat1>, three_way_archetype<I2, C
     using type = conditional_t<I1 == 5 || I2 == 5, ::common_incomparable, ::common_comparable>;
 };
 
-// clang-format off
-
 // 6: not _Weakly_equality_comparable_with
 template <int I1, class Cat1, int I2, class Cat2>
     requires ((I1 != I2 || !same_as<Cat1, Cat2>) && (I1 == 6 || I2 == 6))
@@ -168,8 +166,6 @@ bool operator<=(three_way_archetype<I1, Cat1> const&, three_way_archetype<I2, Ca
 template <int I1, class Cat1, int I2, class Cat2>
     requires (I1 != I2 || !same_as<Cat1, Cat2>)
 bool operator>=(three_way_archetype<I1, Cat1> const&, three_way_archetype<I2, Cat2> const&);
-
-// clang-format on
 
 // 8: <=> isn't defined
 template <int I1, class Cat1, int I2, class Cat2>

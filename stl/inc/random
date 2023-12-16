@@ -677,9 +677,9 @@ public:
     using _Mybase     = _Circ_buf<_Ty, _Rx>;
     using _Seed_t     = typename _Swc_Traits::_Seed_t;
 
-    static constexpr size_t short_lag     = _Sx;
-    static constexpr size_t long_lag      = _Rx;
-    static constexpr _Seed_t default_seed = static_cast<_Seed_t>(19780503U);
+    static constexpr size_t short_lag            = _Sx;
+    static constexpr size_t long_lag             = _Rx;
+    static constexpr uint_least32_t default_seed = 19780503u;
 
     _Swc_base() {
         seed();
@@ -694,8 +694,9 @@ public:
         seed(_Gx);
     }
 
-    void seed(_Seed_t _Value = default_seed, bool _Readcy = false) { // set initial values from specified seed value
-        linear_congruential<_Seed_t, 40014U, 0U, 2147483563U> _Lc{_Value == 0U ? default_seed : _Value};
+    void seed(_Seed_t _Value = 0u, bool _Readcy = false) { // set initial values from specified seed value
+        linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{
+            static_cast<uint_least32_t>(_Value == 0U ? default_seed : _Value)};
         _Reset(_Lc, _Readcy);
     }
 
@@ -805,7 +806,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
 
     static constexpr _Cy_t _Cy   = 1;
     static constexpr _Mod_t _Mod = _Mx;
-    static constexpr _Ty _Max    = _Mx - 1;
+    static constexpr _Ty _Max    = static_cast<_Ty>(_Mx - 1);
 
     static int _Get_wc() noexcept { // compute number of 32-bit words per element
         int _Kx;
@@ -892,7 +893,7 @@ public:
 
     using _Mybase::default_seed;
 
-    subtract_with_carry() : _Mybase(default_seed) {}
+    subtract_with_carry() : _Mybase(0u) {}
 
     explicit subtract_with_carry(_Ty _Xx0) : _Mybase(_Xx0) {}
 
@@ -901,7 +902,8 @@ public:
 };
 
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
-class subtract_with_carry_engine : public subtract_with_carry<_Ty, (_Ty{1} << (_Wx - 1)) << 1, _Sx, _Rx> {
+class subtract_with_carry_engine
+    : public subtract_with_carry<_Ty, static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1), _Sx, _Rx> {
     // subtract_with_carry generator
 public:
     _RNG_REQUIRE_UINTTYPE(subtract_with_carry_engine, _Ty);
@@ -909,7 +911,7 @@ public:
     static_assert(0U < _Sx && _Sx < _Rx && 0 < _Wx && _Wx <= numeric_limits<_Ty>::digits,
         "invalid template argument for subtract_with_carry_engine");
 
-    static constexpr _Ty _Mx          = (_Ty{1} << (_Wx - 1)) << 1;
+    static constexpr _Ty _Mx          = static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1);
     static constexpr size_t word_size = _Wx;
     static constexpr size_t short_lag = _Sx;
     static constexpr size_t long_lag  = _Rx;
@@ -920,7 +922,7 @@ public:
 
     using _Mybase::default_seed;
 
-    subtract_with_carry_engine() : _Mybase(default_seed) {}
+    subtract_with_carry_engine() : _Mybase(0u) {}
 
     explicit subtract_with_carry_engine(_Ty _Xx0) : _Mybase(_Xx0) {}
 
@@ -929,7 +931,7 @@ public:
         seed(_Seq);
     }
 
-    void seed(_Ty _Value = default_seed) { // set initial values from specified seed value
+    void seed(_Ty _Value = 0u) { // set initial values from specified seed value
         _Mybase::seed(_Value);
     }
 
@@ -1349,7 +1351,10 @@ public:
 template <class _Engine, int _Px, int _Rx>
 class discard_block { // discard_block compound engine
 public:
-    using base_type   = _Engine;
+#if _HAS_TR1_NAMESPACE
+    using base_type _DEPRECATE_TR1_NAMESPACE = _Engine; // TR1-only typedef
+#endif // _HAS_TR1_NAMESPACE
+
     using result_type = typename _Engine::result_type;
 
     static constexpr int block_size = _Px;
@@ -1358,6 +1363,8 @@ public:
     discard_block() : _Eng(), _Nx(0) {}
 
     explicit discard_block(const _Engine& _Ex) : _Eng(_Ex), _Nx(0) {}
+
+    explicit discard_block(_Engine&& _Ex) : _Eng(_STD move(_Ex)), _Nx(0) {}
 
     explicit discard_block(result_type _Seed) : _Eng(_Seed), _Nx(0) {}
 
@@ -1380,7 +1387,7 @@ public:
         _Nx = 0;
     }
 
-    _NODISCARD const base_type& base() const noexcept {
+    _NODISCARD const _Engine& base() const noexcept {
         return _Eng;
     }
 
@@ -1433,19 +1440,20 @@ public:
     }
 
 private:
-    base_type _Eng;
+    _Engine _Eng;
     int _Nx;
 };
 
 template <class _Engine, size_t _Px, size_t _Rx>
 class _Discard_block_base { // TRANSITION, ABI, should be merged into discard_block_engine
 public:
-    using base_type   = _Engine;
     using result_type = typename _Engine::result_type;
 
     _Discard_block_base() : _Eng(), _Nx(0) {}
 
     explicit _Discard_block_base(const _Engine& _Ex) : _Eng(_Ex), _Nx(0) {}
+
+    explicit _Discard_block_base(_Engine&& _Ex) : _Eng(_STD move(_Ex)), _Nx(0) {}
 
     explicit _Discard_block_base(result_type _Seed) : _Eng(_Seed), _Nx(0) {}
 
@@ -1468,7 +1476,7 @@ public:
         _Nx = 0;
     }
 
-    _NODISCARD const base_type& base() const noexcept {
+    _NODISCARD const _Engine& base() const noexcept {
         return _Eng;
     }
 
@@ -1513,7 +1521,7 @@ public:
     }
 
 private:
-    base_type _Eng;
+    _Engine _Eng;
     size_t _Nx;
 };
 
@@ -1542,11 +1550,11 @@ public:
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block_engine, _Engine> = 0>
     explicit discard_block_engine(_Seed_seq& _Seq) : _Mybase(_Seq) {}
 
-    _NODISCARD static constexpr typename _Engine::result_type(min)() noexcept /* strengthened */ {
+    _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
         return (_Engine::min)();
     }
 
-    _NODISCARD static constexpr typename _Engine::result_type(max)() noexcept /* strengthened */ {
+    _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
         return (_Engine::max)();
     }
 };
@@ -1559,7 +1567,6 @@ public:
     static_assert(
         0 < _Wx && _Wx <= numeric_limits<_UIntType>::digits, "invalid template argument for independent_bits_engine");
 
-    using base_type   = _Engine;
     using result_type = _UIntType;
     using _Eres       = typename _Engine::result_type;
 
@@ -1707,7 +1714,6 @@ class shuffle_order_engine { // shuffle_order_engine compound engine
 public:
     static_assert(0 < _Kx, "invalid template argument for shuffle_order_engine");
 
-    using base_type   = _Engine;
     using result_type = typename _Engine::result_type;
 
     static constexpr size_t table_size = _Kx;
@@ -2083,12 +2089,7 @@ private:
     static _Uty _Adjust(_Uty _Uval) noexcept { // convert signed ranges to unsigned ranges and vice versa
         if constexpr (is_signed_v<_Ty>) {
             constexpr _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
-
-            if (_Uval < _Adjuster) {
-                return static_cast<_Uty>(_Uval + _Adjuster);
-            } else {
-                return static_cast<_Uty>(_Uval - _Adjuster);
-            }
+            return static_cast<_Uty>(_Uval ^ _Adjuster);
         } else { // _Ty is already unsigned, do nothing
             return _Uval;
         }

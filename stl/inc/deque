@@ -650,6 +650,9 @@ public:
         _Construct_n(_Count, _Val);
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     deque(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_n(_Count, _Val);
@@ -1468,7 +1471,6 @@ public:
                 ++_Myoff();
             }
         }
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Myoff()));
         if (--_Mysize() == 0) {
@@ -1491,7 +1493,6 @@ public:
                 _Myoff() = 0;
             }
         }
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         size_type _Newoff = _Myoff() + _Mysize() - 1;
         _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Newoff));
@@ -1517,7 +1518,6 @@ public:
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
         bool _Moved = _Off > 0 && _Off + _Count < _Mysize();
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
@@ -1822,12 +1822,12 @@ _NODISCARD bool operator>=(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Al
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
 deque<_Ty, _Alloc>::size_type erase(deque<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    return _Erase_remove(_Cont, _Val);
+    return _STD _Erase_remove(_Cont, _Val);
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
 deque<_Ty, _Alloc>::size_type erase_if(deque<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+    return _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

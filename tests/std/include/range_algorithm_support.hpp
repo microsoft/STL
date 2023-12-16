@@ -20,7 +20,7 @@ template <class>
 inline constexpr bool always_false = false;
 
 namespace detail {
-    static constexpr bool permissive() {
+    constexpr bool permissive() {
         return false;
     }
 
@@ -231,11 +231,11 @@ namespace test {
             return *this;
         }
 
-        // clang-format off
-        constexpr operator Element&() const requires derived_from<Category, input> {
+        constexpr operator Element&() const
+            requires derived_from<Category, input>
+        {
             return ref_;
         }
-        // clang-format on
 
         template <class T>
             requires (!std::same_as<std::remove_cvref_t<T>, proxy_reference> && assignable_from<Element&, T>)
@@ -674,26 +674,23 @@ namespace test {
         }
 
         // sized_sentinel_for operations:
-        // clang-format off
         [[nodiscard]] constexpr ptrdiff_t operator-(iterator const& that) const noexcept
-            requires at_least<random> || (to_bool(Diff) && to_bool(Eq)) {
-            // clang-format on
+            requires at_least<random> || (to_bool(Diff) && to_bool(Eq))
+        {
             return ptr_ - that.ptr_;
         }
 
-        // clang-format off
         template <WrappedState OtherWrapped>
         [[nodiscard]] constexpr ptrdiff_t operator-(sentinel<Element, OtherWrapped> const& s) const noexcept
-            requires compatible_wrapped_state<Wrapped, OtherWrapped> && (to_bool(Diff)) {
-            // clang-format on
+            requires compatible_wrapped_state<Wrapped, OtherWrapped> && (to_bool(Diff))
+        {
             return ptr_ - s.peek();
         }
-        // clang-format off
         template <WrappedState OtherWrapped>
         [[nodiscard]] friend constexpr ptrdiff_t operator-(
             sentinel<Element, OtherWrapped> const& s, iterator const& i) noexcept
-            requires compatible_wrapped_state<Wrapped, OtherWrapped> && (to_bool(Diff)) {
-            // clang-format on
+            requires compatible_wrapped_state<Wrapped, OtherWrapped> && (to_bool(Diff))
+        {
             return -(i - s);
         }
 
@@ -871,7 +868,6 @@ namespace test {
         };
     } // namespace detail
 
-    // clang-format off
     template <class Category, class Element,
         // Implement member size? (NB: Not equivalent to "Is this a sized_range?")
         Sized IsSized = Sized::no,
@@ -887,10 +883,9 @@ namespace test {
         CanView IsView = CanView::no,
         // Should this range type be copyable/movable/neither?
         Copyability Copy = IsView == CanView::yes ? Copyability::move_only : Copyability::immobile>
-        requires (!to_bool(IsCommon) || to_bool(Eq))
-            && (to_bool(Eq) || !derived_from<Category, fwd>)
-            && (Proxy == ProxyRef::no || !derived_from<Category, contiguous>)
-            && (!to_bool(IsView) || Copy != Copyability::immobile)
+        requires (!to_bool(IsCommon) || to_bool(Eq)) && (to_bool(Eq) || !derived_from<Category, fwd>)
+              && (Proxy == ProxyRef::no || !derived_from<Category, contiguous>)
+              && (!to_bool(IsView) || Copy != Copyability::immobile)
     class range : public detail::range_base<Element, Copy> {
     private:
         mutable bool begin_called_ = false;
@@ -901,8 +896,8 @@ namespace test {
     public:
         using I = iterator<Category, Element, Diff, Eq, Proxy, WrappedState::wrapped>;
         using S = conditional_t<to_bool(IsCommon), I, sentinel<Element, WrappedState::wrapped>>;
-        using RebindAsMoveOnly = range<Category, Element, IsSized, Diff, IsCommon, Eq, Proxy, IsView,
-            Copyability::move_only>;
+        using RebindAsMoveOnly =
+            range<Category, Element, IsSized, Diff, IsCommon, Eq, Proxy, IsView, Copyability::move_only>;
 
         using detail::range_base<Element, Copy>::range_base;
 
@@ -919,7 +914,9 @@ namespace test {
             return S{elements_.data() + elements_.size()};
         }
 
-        [[nodiscard]] constexpr ptrdiff_t size() const noexcept requires (to_bool(IsSized)) {
+        [[nodiscard]] constexpr ptrdiff_t size() const noexcept
+            requires (to_bool(IsSized))
+        {
             assert(!moved_from());
             if constexpr (!derived_from<Category, fwd>) {
                 assert(!begin_called_);
@@ -927,12 +924,14 @@ namespace test {
             return static_cast<ptrdiff_t>(elements_.size());
         }
 
-        [[nodiscard]] constexpr Element* data() const noexcept requires derived_from<Category, contiguous> {
+        [[nodiscard]] constexpr Element* data() const noexcept
+            requires derived_from<Category, contiguous>
+        {
             assert(!moved_from());
             return elements_.data();
         }
 
-        using UI = typename I::unwrap;
+        using UI = I::unwrap;
         using US = conditional_t<to_bool(IsCommon), UI, sentinel<Element, WrappedState::unwrapped>>;
 
         [[nodiscard]] constexpr UI _Unchecked_begin() const noexcept {
@@ -955,7 +954,6 @@ namespace test {
             STATIC_ASSERT(always_false<Category>);
         }
     };
-    // clang-format on
 } // namespace test
 
 template <class Category, class Element, test::Sized IsSized, test::CanDifference Diff, test::Common IsCommon,

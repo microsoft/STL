@@ -12,7 +12,7 @@ using namespace std;
 
 // TRANSITION, DevCom-1457457
 namespace detail {
-    static constexpr bool permissive() {
+    constexpr bool permissive() {
         return false;
     }
 

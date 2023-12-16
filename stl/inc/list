@@ -845,6 +845,9 @@ public:
         _Construct_n(_Count, _Val);
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     list(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct list from _Count * _Val, allocator
         _Construct_n(_Count, _Val);
@@ -1722,12 +1725,12 @@ public:
 
     template <class _Pr2>
     void merge(list& _Right, _Pr2 _Pred) { // merge in elements from _Right, both ordered by _Pred
-        _Merge1(_Right, _Pass_fn(_Pred));
+        _Merge1(_Right, _STD _Pass_fn(_Pred));
     }
 
     template <class _Pr2>
     void merge(list&& _Right, _Pr2 _Pred) { // merge in elements from _Right, both ordered by _Pred
-        _Merge1(_Right, _Pass_fn(_Pred));
+        _Merge1(_Right, _STD _Pass_fn(_Pred));
     }
 
 private:
@@ -1773,7 +1776,7 @@ public:
     template <class _Pr2>
     void sort(_Pr2 _Pred) { // order sequence
         auto& _My_data = _Mypair._Myval2;
-        _Scary_val::_Sort(_My_data._Myhead->_Next, _My_data._Mysize, _Pass_fn(_Pred));
+        _Scary_val::_Sort(_My_data._Myhead->_Next, _My_data._Mysize, _STD _Pass_fn(_Pred));
     }
 
     void reverse() noexcept { // reverse sequence
@@ -1921,7 +1924,7 @@ list<_Ty, _Alloc>::size_type erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
 list<_Ty, _Alloc>::size_type erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    return _Cont.remove_if(_Pass_fn(_Pred));
+    return _Cont.remove_if(_STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

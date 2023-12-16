@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// exception handling support functions
-
 #include <functional>
 #include <new>
 #include <regex>
