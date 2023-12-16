@@ -370,6 +370,7 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:1 FAIL
 
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
 
@@ -399,6 +400,7 @@ std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
 
 # DevCom-1638563 VSO-1457836: icky static analysis false positive
 # Resolved wontfix, need to report again.
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
 
 # DevCom-1638496 VSO-1462745: C1XX doesn't properly reject int <=> unsigned
@@ -1145,6 +1147,7 @@ std/utilities/format/format.formatter/format.formatter.spec/formatter.unsigned_i
 
 # Not analyzed. Apparent false positives from static analysis where it thinks that array indexing is out of bounds.
 # warning C28020: The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call.
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/containers/views/mdspan/extents/ctor_default.pass.cpp:0 FAIL
 std/containers/views/mdspan/extents/ctor_from_array.pass.cpp:0 FAIL
 std/containers/views/mdspan/extents/ctor_from_integral.pass.cpp:0 FAIL
@@ -1164,6 +1167,7 @@ std/containers/views/mdspan/mdspan/ctor.dh_span.pass.cpp:0 FAIL
 
 # Not analyzed. Apparent false positives from static analysis where it thinks `new (std::nothrow)` could return null, despite an assert().
 # warning C28182: Dereferencing NULL pointer.
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.pass.cpp:0 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.pass.cpp:0 FAIL
 
