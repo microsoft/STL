@@ -150,7 +150,7 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
 
     template <class _Ty2>
     _CONSTEXPR20 void _Assign(_Ty2&& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty&, _Ty2>&& is_nothrow_constructible_v<_Ty, _Ty2>) {
+        is_nothrow_assignable_v<_Ty&, _Ty2> && is_nothrow_constructible_v<_Ty, _Ty2>) {
         // assign / initialize the contained value from _Right
         if (this->_Has_value) {
             static_cast<_Ty&>(this->_Value) = _STD forward<_Ty2>(_Right);
@@ -170,8 +170,8 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
 
     template <class _Self>
     _CONSTEXPR20 void _Assign_from(_Self&& _Right) noexcept(
-        is_nothrow_constructible_v<_Ty, decltype(*_STD forward<_Self>(_Right))>&&
-            is_nothrow_assignable_v<_Ty&, decltype(*_STD forward<_Self>(_Right))>) {
+        is_nothrow_constructible_v<_Ty, decltype(*_STD forward<_Self>(_Right))>
+        && is_nothrow_assignable_v<_Ty&, decltype(*_STD forward<_Self>(_Right))>) {
         // assign/initialize/destroy contained value from _Right
         if (_Right._Has_value) {
             _Assign(*_STD forward<_Self>(_Right));
@@ -290,7 +290,7 @@ public:
                                                 is_constructible<_Ty, _Ty2>, is_assignable<_Ty&, _Ty2>>,
                                     int> = 0>
     _CONSTEXPR20 optional& operator=(_Ty2&& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty&, _Ty2>&& is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty&, _Ty2> && is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
         this->_Assign(_STD forward<_Ty2>(_Right));
         return *this;
     }
@@ -305,7 +305,7 @@ public:
                                           is_constructible<_Ty, const _Ty2&>, is_assignable<_Ty&, const _Ty2&>>,
                               int> = 0>
     _CONSTEXPR20 optional& operator=(const optional<_Ty2>& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty&, const _Ty2&>&& is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty&, const _Ty2&> && is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
         if (_Right) {
             this->_Assign(*_Right);
         } else {
@@ -319,7 +319,7 @@ public:
                                           is_assignable<_Ty&, _Ty2>>,
                               int> = 0>
     _CONSTEXPR20 optional& operator=(optional<_Ty2>&& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty&, _Ty2>&& is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty&, _Ty2> && is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
         if (_Right) {
             this->_Assign(_STD move(*_Right));
         } else {
@@ -345,7 +345,7 @@ public:
     }
 
     _CONSTEXPR20 void swap(optional& _Right) noexcept(
-        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_swappable_v<_Ty>) {
+        is_nothrow_move_constructible_v<_Ty> && is_nothrow_swappable_v<_Ty>) {
         static_assert(is_move_constructible_v<_Ty>,
             "optional<T>::swap requires T to be move constructible (N4950 [optional.swap]/1).");
         static_assert(!is_move_constructible_v<_Ty> || is_swappable_v<_Ty>,
@@ -693,7 +693,7 @@ _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
     noexcept(_Fake_copy_init<bool>(*_Left <= *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
-    requires requires(const _Ty1& _Elem1, const _Ty2& _Elem2) {
+    requires requires {
         { *_Left <= *_Right } -> _Implicitly_convertible_to<bool>;
     }
 #endif // defined(__cpp_lib_concepts)

@@ -40,7 +40,7 @@ constexpr bool is_range_adaptor_closure() {
 
 struct IdentityRangeAdaptorClosure : ranges::range_adaptor_closure<IdentityRangeAdaptorClosure> {
     template <class T>
-    constexpr decltype(auto) operator()(T&& range) const {
+    constexpr decltype(auto) operator()(T && range) const {
         return forward<T>(range);
     }
 };
@@ -267,7 +267,6 @@ void test_perfect_forwarding_properties() { // COMPILE-ONLY
         static_assert(same_as<decltype(move(as_const(raco))(TestRange{})), const Pinned&>);
     }
     {
-
         auto combined_pipeline = RangeIdentity{} | PinnedReturningRaco{};
 
         static_assert(same_as<decltype(TestRange{} | combined_pipeline), const Pinned&>);

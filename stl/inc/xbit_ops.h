@@ -35,7 +35,6 @@ _NODISCARD inline unsigned long _Floor_of_log_2(size_t _Value) noexcept { // ret
     while ((size_t{1} << _Result) > _Value) {
         --_Result;
     }
-
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 #ifdef _WIN64
     _BitScanReverse64(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
