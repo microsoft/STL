@@ -53,7 +53,8 @@ std/utilities/memory/default.allocator/allocator.ctor.pass.cpp FAIL
 # LWG-3197 "std::prev should not require BidirectionalIterator" (New)
 std/iterators/iterator.primitives/iterator.operations/prev.pass.cpp FAIL
 
-# Itanium ABI assumptions that current_exception and rethrow_exception don't copy the exception object
+# Itanium ABI assumptions that current_exception and rethrow_exception don't copy the exception object.
+# The SKIPPED tests contain `XFAIL: msvc`, which is not well understood by the test harness.
 std/language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp SKIPPED
 std/language.support/support.exception/propagation/current_exception.pass.cpp SKIPPED
 std/language.support/support.exception/propagation/make_exception_ptr.pass.cpp FAIL
@@ -320,9 +321,6 @@ std/utilities/format/format.syn/runtime_format_string.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
-# MSVC doesn't properly support [[no_unique_address]]
-std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp SKIPPED
-
 # P1169R4 static operator()
 std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp:0 FAIL
 std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp:1 FAIL
@@ -924,16 +922,23 @@ std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp 
 std/language.support/support.limits/limits/numeric.limits.members/tinyness_before.pass.cpp SKIPPED
 
 # Not analyzed. the test fails on x64 but passes on x86
+# warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+# warning C4244: 'initializing': conversion from 'unsigned __int64' to 'int', possible loss of data
 std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
 std/containers/associative/map/map.access/iterator.pass.cpp:1 SKIPPED
+
+# Not analyzed. the test fails on x64 but passes on x86
+# warning C4244: 'return': conversion from '__int64' to 'CustomIt::difference_type', possible loss of data
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:1 SKIPPED
+
+# Not analyzed. the test fails on x64 but passes on x86
+# warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:1 SKIPPED
 
 # Not analyzed. the test fails on x86 but passes on x64
-std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:0 SKIPPED
-std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:1 SKIPPED
+# warning C4389: '==': signed/unsigned mismatch
 std/algorithms/alg.modifying.operations/alg.unique/ranges_unique.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.unique/ranges_unique.pass.cpp:1 SKIPPED
 
@@ -1244,6 +1249,8 @@ std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.ra
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.range.pass.cpp:1 SKIPPED
 std/algorithms/alg.sorting/alg.merge/ranges_merge.pass.cpp:0 SKIPPED
 std/algorithms/alg.sorting/alg.merge/ranges_merge.pass.cpp:1 SKIPPED
+std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:0 SKIPPED
+std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:1 SKIPPED
 std/algorithms/alg.sorting/alg.set.operations/set.difference/ranges_set_difference.pass.cpp:0 SKIPPED
 std/algorithms/alg.sorting/alg.set.operations/set.difference/ranges_set_difference.pass.cpp:1 SKIPPED
 std/algorithms/alg.sorting/alg.set.operations/set.intersection/ranges_set_intersection.pass.cpp:0 SKIPPED
@@ -1389,6 +1396,10 @@ std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
 
 # This test is marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED
+
+# Similarly, this test is marked as `XFAIL: msvc`
+# MSVC doesn't properly support [[no_unique_address]]
+std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp:9 SKIPPED
 
 # Similarly, this test is marked as `XFAIL: msvc, target={{.+}}-windows-gnu`
 # because it calls an `fmemopen` function that doesn't exist on Windows.
