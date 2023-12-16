@@ -120,9 +120,12 @@ std/utilities/memory/allocator.traits/allocate_at_least.pass.cpp FAIL
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
 
-# Various bogosity (LLVM-D141004)
+# Various bogosity (LLVM-D141004), warning C6011: Dereferencing NULL pointer
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL
+
+# Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/resource.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/select_on_container_copy_construction.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
