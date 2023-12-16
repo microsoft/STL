@@ -12,7 +12,6 @@
 #include <utility.hpp>
 
 namespace {
-
     template <typename Contained>
     void handwritten_loop(benchmark::State& state) {
         const size_t r0      = static_cast<size_t>(state.range(0));

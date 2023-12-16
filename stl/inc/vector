@@ -15,6 +15,10 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#include <__msvc_formatter.hpp>
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -150,7 +154,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 difference_type operator-(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
-        return _Ptr - _Right._Ptr;
+        return static_cast<difference_type>(_Ptr - _Right._Ptr);
     }
 
     _NODISCARD _CONSTEXPR20 reference operator[](const difference_type _Off) const noexcept {
@@ -618,6 +622,9 @@ public:
         _Construct_n(_Count);
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     _CONSTEXPR20 vector(_CRT_GUARDOVERFLOW const size_type _Count, const _Ty& _Val, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_n(_Count, _Val);
@@ -1851,20 +1858,20 @@ public:
         return rend();
     }
 
-    _NODISCARD _CONSTEXPR20 pointer _Unchecked_begin() noexcept {
-        return _Mypair._Myval2._Myfirst;
+    _NODISCARD _CONSTEXPR20 _Ty* _Unchecked_begin() noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
     }
 
-    _NODISCARD _CONSTEXPR20 const_pointer _Unchecked_begin() const noexcept {
-        return _Mypair._Myval2._Myfirst;
+    _NODISCARD _CONSTEXPR20 const _Ty* _Unchecked_begin() const noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
     }
 
-    _NODISCARD _CONSTEXPR20 pointer _Unchecked_end() noexcept {
-        return _Mypair._Myval2._Mylast;
+    _NODISCARD _CONSTEXPR20 _Ty* _Unchecked_end() noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Mylast);
     }
 
-    _NODISCARD _CONSTEXPR20 const_pointer _Unchecked_end() const noexcept {
-        return _Mypair._Myval2._Mylast;
+    _NODISCARD _CONSTEXPR20 const _Ty* _Unchecked_end() const noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Mylast);
     }
 
     _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
@@ -2365,12 +2372,12 @@ _CONSTEXPR20 void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
 constexpr vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    return _Erase_remove(_Cont, _Val);
+    return _STD _Erase_remove(_Cont, _Val);
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
 constexpr vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+    return _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -3404,7 +3411,6 @@ public:
         _STL_VERIFY(end() > _Where, "vector<bool> erase iterator outside range");
         _STD copy(_Next_iter(_Where), end(), _Where);
         _Orphan_range(static_cast<size_type>(_Off), this->_Mysize);
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         _STD copy(_Next_iter(_Where), end(), _Where);
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
@@ -3426,7 +3432,6 @@ public:
             const auto _Newsize = static_cast<size_type>(_Next - begin());
             _Orphan_range(_Newsize, this->_Mysize);
             _Trim(_Newsize);
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
             iterator _Next = _STD copy(_Last, end(), _First);
             _Trim(static_cast<size_type>(_Next - begin()));
@@ -3584,6 +3589,26 @@ namespace pmr {
     using vector = _STD vector<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <class _Ty, class _CharT>
+    requires _Is_specialization_v<_Ty, _Vb_reference>
+struct formatter<_Ty, _CharT> {
+private:
+    formatter<bool, _CharT> _Underlying;
+
+public:
+    template <class _ParseContext>
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
+        return _Underlying.parse(_Ctx);
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(const _Ty& _Ref, _FormatContext& _Ctx) const {
+        return _Underlying.format(_Ref, _Ctx);
+    }
+};
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class _Alloc, bool _RequiresMutable>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutable> = true;

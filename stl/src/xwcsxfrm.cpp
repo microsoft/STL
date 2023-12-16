@@ -64,7 +64,6 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string
         }
         size = n2;
     } else {
-
         // When using LCMAP_SORTKEY, LCMapStringW handles BYTES not wide
         // chars. We use a byte buffer to hold bytes and then convert the
         // byte string to a wide char string and return this so it can be

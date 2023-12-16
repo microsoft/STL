@@ -16,6 +16,7 @@
 #include <array>
 #include <chrono>
 #include <concepts>
+#include <cstddef>
 #include <deque>
 #include <format>
 #include <forward_list>
@@ -51,6 +52,28 @@ concept encoded_character_type = same_as<CharT, char>
                               || same_as<CharT, char8_t>
 #endif // defined(__cpp_char8_t)
                               || same_as<CharT, char16_t> || same_as<CharT, char32_t> || same_as<CharT, wchar_t>;
+
+template <class T>
+struct alternative_allocator {
+    using value_type = T;
+
+    alternative_allocator() = default;
+    template <class U>
+    constexpr alternative_allocator(const alternative_allocator<U>&) noexcept {}
+
+    T* allocate(size_t n) {
+        return allocator<T>{}.allocate(n);
+    }
+
+    void deallocate(T* p, size_t n) {
+        allocator<T>{}.deallocate(p, n);
+    }
+
+    template <class U>
+    bool operator==(const alternative_allocator<U>&) const noexcept {
+        return true;
+    }
+};
 
 template <class T, class CharT>
 void assert_is_not_formattable() {
@@ -177,6 +200,22 @@ void test_P2693() {
         assert_is_not_formattable<stacktrace_entry, CharT>();
         assert_is_not_formattable<stacktrace, CharT>();
     }
+}
+
+template <class CharT, class Vector>
+void test_P2286_vector_bool() {
+    assert_is_formattable<typename Vector::reference, CharT>();
+
+    // The const_reference shall be bool.
+    assert_is_formattable<typename Vector::const_reference, CharT>();
+}
+
+// Tests for P2286 Formatting ranges
+template <class CharT>
+void test_P2286() {
+    test_P2286_vector_bool<CharT, vector<bool>>();
+    test_P2286_vector_bool<CharT, pmr::vector<bool>>();
+    test_P2286_vector_bool<CharT, vector<bool, alternative_allocator<bool>>>();
 }
 
 // Tests volatile qualified objects are no longer formattable.
@@ -313,6 +352,7 @@ void test() {
     test_P0645<CharT>();
     test_P1361<CharT>();
     test_P2693<CharT>();
+    test_P2286<CharT>();
     test_LWG3631<CharT>();
     test_abstract_class<CharT>();
     test_disabled<CharT>();

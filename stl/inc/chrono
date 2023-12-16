@@ -2202,6 +2202,10 @@ namespace chrono {
         return _STD move(_Icu_version) + "." + _STD to_string(_Num_leap_seconds);
     }
 
+    struct _Secret_tzdb_list_construct_tag {
+        explicit _Secret_tzdb_list_construct_tag() = default;
+    };
+
     _EXPORT_STD class tzdb_list {
     private:
         using _ListType = forward_list<tzdb, _Crt_allocator<tzdb>>;
@@ -2212,7 +2216,7 @@ namespace chrono {
         tzdb_list(const tzdb_list&)            = delete;
         tzdb_list& operator=(const tzdb_list&) = delete;
 
-        tzdb_list() {
+        explicit tzdb_list(_Secret_tzdb_list_construct_tag) {
             auto [_Icu_version, _Zones, _Links] = _Tzdb_generate_time_zones();
             auto [_Leap_sec, _All_ls_positive]  = _Tzdb_generate_leap_seconds(0);
             auto _Version                       = _Icu_version + "." + _STD to_string(_Leap_sec.size());
@@ -2328,7 +2332,7 @@ namespace chrono {
         }
 
         _TRY_BEGIN
-        _STD construct_at(_My_tzdb);
+        _STD construct_at(_My_tzdb, _Secret_tzdb_list_construct_tag{});
         _CATCH(const runtime_error&)
         __std_free_crt(_My_tzdb);
         _RERAISE;
@@ -5398,7 +5402,7 @@ namespace chrono {
                     || _Is_valid_type<month>(_Type) || _Is_valid_type<day>(_Type) || _Is_valid_type<weekday>(_Type);
             } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                 return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
-                    || _Type == 'T' || _Type == 'p';
+                    || _Type == 'T' || _Type == 'p' || _Type == 'X';
             } else if constexpr (_Is_any_of_v<_Ty, sys_info, local_info>) {
                 return _Type == 'z' || _Type == 'Z';
             } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
@@ -5407,7 +5411,7 @@ namespace chrono {
                         return true;
                     }
                 }
-                return _Type == 'c' || _Type == 'X' || _Is_valid_type<year_month_day>(_Type)
+                return _Type == 'c' || _Is_valid_type<year_month_day>(_Type)
                     || _Is_valid_type<hh_mm_ss<seconds>>(_Type);
             } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return _Type == 'z' || _Type == 'Z' || _Is_valid_type<decltype(_Ty::_Time)>(_Type);
@@ -5812,7 +5816,8 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl;
 };
 
-// Per LWG-3997, the _CharT template parameter is constrained to supported character types.
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
 
 template <class _Rep, class _Period, _Format_supported_charT _CharT>
 struct formatter<_CHRONO duration<_Rep, _Period>, _CharT>

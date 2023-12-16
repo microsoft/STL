@@ -282,6 +282,10 @@ void test_duration_formatter() {
     assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-119:30:00 4"));
     assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("37:11:59 1"));
     assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-37:11:59 1"));
+
+    // GH-4247: <chrono>: format() should accept %X and %EX for duration and hh_mm_ss
+    assert(format(STR("{:%X}"), 9h + 7min + 5s) == STR("09:07:05"));
+    assert(format(STR("{:%EX}"), 9h + 7min + 5s) == STR("09:07:05"));
 }
 
 template <typename CharT>
@@ -765,6 +769,10 @@ void test_hh_mm_ss_formatter() {
     assert(format(STR("{:%H}"), hh_mm_ss{24h}) == STR("24"));
     assert(format(STR("{:%H}"), hh_mm_ss{-24h}) == STR("-24"));
     assert(format(STR("{:%M %S}"), hh_mm_ss{27h + 12min + 30s}) == STR("12 30"));
+
+    // GH-4247: <chrono>: format() should accept %X and %EX for duration and hh_mm_ss
+    assert(format(STR("{:%X}"), hh_mm_ss{9h + 7min + 5s}) == STR("09:07:05"));
+    assert(format(STR("{:%EX}"), hh_mm_ss{9h + 7min + 5s}) == STR("09:07:05"));
 }
 
 void test_exception_classes() {
