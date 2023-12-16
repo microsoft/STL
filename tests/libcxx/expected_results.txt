@@ -1182,11 +1182,17 @@ std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
 
 # Not analyzed. constexpr evaluation fails with "vector iterators incompatible".
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails with note: subobject '_Val' is not initialized
 std/ranges/range.adaptors/range.join/end.pass.cpp:2 FAIL
@@ -1195,27 +1201,36 @@ std/ranges/range.adaptors/range.join/range.join.sentinel/eq.pass.cpp:2 FAIL
 
 # Not analyzed. constexpr evaluation fails with note: failure was caused by out of range index MEOW; allowed range is 0 <= index < 2
 std/ranges/range.adaptors/range.join/adaptor.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join/adaptor.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join/range.join.iterator/increment.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join/range.join.iterator/increment.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails in assert(*--iter == i).
 std/ranges/range.adaptors/range.join/range.join.iterator/decrement.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join/range.join.iterator/decrement.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails in assert(*iter++ == i).
 std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails in ranges::swap.
 std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:1 FAIL
 
 # Not analyzed. Fails static_assert(std::is_default_constructible_v<JoinIterator>).
 std/ranges/range.adaptors/range.join/range.join.iterator/ctor.default.pass.cpp FAIL
 
 # Not analyzed. constexpr evaluation fails in assert(element_moved == 1).
 std/ranges/range.adaptors/range.lazy.split/ctor.range.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.lazy.split/ctor.range.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.split/ctor.range.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.split/ctor.range.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails in assert(view_moved == 1).
 std/ranges/range.adaptors/range.lazy.split/ctor.view.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.lazy.split/ctor.view.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.split/ctor.view.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.split/ctor.view.pass.cpp:1 FAIL
 
 # Not analyzed. Testing split_view with an empty pattern, might be an MSVC constexpr bug.
 std/ranges/range.adaptors/range.split/begin.pass.cpp:0 FAIL
