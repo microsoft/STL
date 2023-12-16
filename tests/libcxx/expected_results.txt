@@ -542,7 +542,7 @@ std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:1 FAIL
 
 # *** VCRUNTIME BUGS ***
 # DevCom-10373274 VSO-1824997 "vcruntime nothrow array operator new falls back on the wrong function"
-# This passes for ASAN, surprisingly.
+# This passes for the :1 (ASAN) configuration, surprisingly.
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:0 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:2 FAIL
 
