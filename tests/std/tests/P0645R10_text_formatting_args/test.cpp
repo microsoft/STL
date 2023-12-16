@@ -291,7 +291,7 @@ concept CanMakeFormatArgs = requires(Args&&... args) { make_format_args<Context>
 
 // P2905R2 Runtime format strings (make make_(w)format_args only take lvalue references)
 template <class Context>
-void test_lvalue_reference_parameters() { // COMPILE-ONLY
+void test_lvalue_reference_parameters() {
     using char_type = Context::char_type;
 
     static_assert(CanMakeFormatArgs<Context, int&, long long&, double&, char_type&, char_type*&, const char_type*&,
@@ -307,6 +307,7 @@ void test_lvalue_reference_parameters() { // COMPILE-ONLY
     static_assert(!CanMakeFormatArgs<Context, long long>);
     static_assert(!CanMakeFormatArgs<Context, double>);
     static_assert(!CanMakeFormatArgs<Context, char_type>);
+    static_assert(!CanMakeFormatArgs<Context, char_type*>);
     static_assert(!CanMakeFormatArgs<Context, const char_type*>);
     static_assert(CanMakeFormatArgs<Context, basic_string<char_type>> == is_permissive);
     static_assert(CanMakeFormatArgs<Context, basic_string_view<char_type>> == is_permissive);

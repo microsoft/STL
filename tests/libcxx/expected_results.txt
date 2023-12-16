@@ -168,16 +168,6 @@ std/utilities/expected/expected.void/observers/value.pass.cpp FAIL
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
 
-# libc++ doesn't implement P2905R2 "Runtime Format Strings"
-std/utilities/format/format.arguments/format.arg.store/make_format_args.pass.cpp FAIL
-std/utilities/format/format.arguments/format.arg.store/make_format_args.sh.cpp FAIL
-std/utilities/format/format.arguments/format.arg.store/make_wformat_args.pass.cpp FAIL
-std/utilities/format/format.arguments/format.args/ctor.pass.cpp FAIL
-std/utilities/format/format.formatter/format.context/format.context/arg.pass.cpp FAIL
-std/utilities/format/format.formatter/format.context/format.context/ctor.pass.cpp FAIL
-std/utilities/format/format.formatter/format.context/format.context/locale.pass.cpp FAIL
-std/utilities/format/format.formatter/format.formatter.spec/formatter.string.pass.cpp FAIL
-
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # These tests set an allocator with a max_size() too small to default construct an unordered container
@@ -317,10 +307,6 @@ std/language.support/support.limits/support.limits.general/utility.version.compi
 # P2833R2 Freestanding Library: inout expected span
 std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/mdspan.version.compile.pass.cpp FAIL
-
-# P2905R2 Runtime Format Strings
-std/utilities/format/format.arguments/format.arg.store/make_format_args.pass.cpp FAIL
-std/utilities/format/format.arguments/format.arg.store/make_wformat_args.pass.cpp FAIL
 
 # P2918R2 Runtime Format Strings II
 std/utilities/format/format.fmt.string/ctor.runtime-format-string.pass.cpp FAIL
