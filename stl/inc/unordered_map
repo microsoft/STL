@@ -254,8 +254,9 @@ public:
 
     unordered_map(unordered_map&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    unordered_map& operator=(unordered_map&& _Right) noexcept(_Alnode_traits::is_always_equal::value&&
-            is_nothrow_move_assignable_v<_Hasher>&& is_nothrow_move_assignable_v<_Keyeq>) {
+    unordered_map& operator=(unordered_map&& _Right) noexcept(_Alnode_traits::is_always_equal::value
+                                                              && is_nothrow_move_assignable_v<_Hasher>
+                                                              && is_nothrow_move_assignable_v<_Keyeq>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -741,8 +742,9 @@ public:
 
     unordered_multimap(unordered_multimap&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    unordered_multimap& operator=(unordered_multimap&& _Right) noexcept(_Alnode_traits::is_always_equal::value&&
-            is_nothrow_move_assignable_v<_Hasher>&& is_nothrow_move_assignable_v<_Keyeq>) {
+    unordered_multimap& operator=(unordered_multimap&& _Right) noexcept(_Alnode_traits::is_always_equal::value
+                                                                        && is_nothrow_move_assignable_v<_Hasher>
+                                                                        && is_nothrow_move_assignable_v<_Keyeq>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }

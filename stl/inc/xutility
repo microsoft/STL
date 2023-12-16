@@ -646,7 +646,7 @@ namespace ranges {
         public:
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) const noexcept(_Choice<_Ty>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
@@ -941,17 +941,17 @@ namespace ranges {
             && requires(_Ty1&& __t1, _Ty2&& __t2) {
                 iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2)); // intentional ADL
             };
+        // clang-format on
 
         template <class _Ty1, class _Ty2>
-        concept _Can_swap_references = indirectly_readable<remove_reference_t<_Ty1>>
-            && indirectly_readable<remove_reference_t<_Ty2>>
+        concept _Can_swap_references =
+            indirectly_readable<remove_reference_t<_Ty1>> && indirectly_readable<remove_reference_t<_Ty2>>
             && swappable_with<iter_reference_t<_Ty1>, iter_reference_t<_Ty2>>;
 
         template <class _Ty1, class _Ty2>
         concept _Symmetric_indirectly_movable_storable =
-               indirectly_movable_storable<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>
+            indirectly_movable_storable<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>
             && indirectly_movable_storable<remove_reference_t<_Ty2>, remove_reference_t<_Ty1>>;
-        // clang-format on
 
         template <class _Xty, class _Yty>
         _NODISCARD constexpr iter_value_t<remove_reference_t<_Xty>> _Iter_exchange_move(_Xty&& _XVal,
@@ -1464,7 +1464,8 @@ constexpr _InIt _Next_iter(_InIt _First) { // increment iterator
 }
 
 _EXPORT_STD template <class _InIt>
-_NODISCARD _CONSTEXPR17 _InIt next(_InIt _First, _Iter_diff_t<_InIt> _Off = 1) { // increment iterator
+_NODISCARD _CONSTEXPR17 _InIt next(
+    _InIt _First, typename iterator_traits<_InIt>::difference_type _Off = 1) { // increment iterator
     static_assert(_Is_ranges_input_iter_v<_InIt>, "next requires input iterator");
 
     _STD advance(_First, _Off);
@@ -1477,7 +1478,8 @@ constexpr _BidIt _Prev_iter(_BidIt _First) { // decrement iterator
 }
 
 _EXPORT_STD template <class _BidIt>
-_NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1) { // decrement iterator
+_NODISCARD _CONSTEXPR17 _BidIt prev(
+    _BidIt _First, typename iterator_traits<_BidIt>::difference_type _Off = 1) { // decrement iterator
     static_assert(_Is_ranges_bidi_iter_v<_BidIt>, "prev requires bidirectional iterator");
 
     _STD advance(_First, -_Off);
@@ -1542,14 +1544,15 @@ public:
         return current;
     }
 
-    _NODISCARD _CONSTEXPR17 reference operator*() const
-        noexcept(is_nothrow_copy_constructible_v<_BidIt>&& noexcept(*--(_STD declval<_BidIt&>()))) /* strengthened */ {
+    _NODISCARD _CONSTEXPR17 reference operator*() const noexcept(is_nothrow_copy_constructible_v<_BidIt> //
+            && noexcept(*--(_STD declval<_BidIt&>()))) /* strengthened */ {
         _BidIt _Tmp = current;
         return *--_Tmp;
     }
 
     _NODISCARD _CONSTEXPR17 pointer operator->() const
-        noexcept(is_nothrow_copy_constructible_v<_BidIt>&& noexcept(--(_STD declval<_BidIt&>()))
+        noexcept(is_nothrow_copy_constructible_v<_BidIt> //
+                     && noexcept(--(_STD declval<_BidIt&>()))
                  && _Has_nothrow_operator_arrow<_BidIt&, pointer>) /* strengthened */
 #ifdef __cpp_lib_concepts
         requires (is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); })
@@ -1569,8 +1572,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 reverse_iterator operator++(int) noexcept(
-        is_nothrow_copy_constructible_v<_BidIt>&& noexcept(--current)) /* strengthened */ {
+    _CONSTEXPR17 reverse_iterator operator++(int) noexcept(is_nothrow_copy_constructible_v<_BidIt> //
+            && noexcept(--current)) /* strengthened */ {
         reverse_iterator _Tmp = *this;
         --current;
         return _Tmp;
@@ -1581,8 +1584,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 reverse_iterator operator--(int) noexcept(
-        is_nothrow_copy_constructible_v<_BidIt>&& noexcept(++current)) /* strengthened */ {
+    _CONSTEXPR17 reverse_iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_BidIt> //
+            && noexcept(++current)) /* strengthened */ {
         reverse_iterator _Tmp = *this;
         ++current;
         return _Tmp;
@@ -1617,7 +1620,8 @@ public:
 
 #ifdef __cpp_lib_concepts
     _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
-        is_nothrow_copy_constructible_v<_BidIt>&& noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
+        is_nothrow_copy_constructible_v<_BidIt> //
+            && noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
         auto _Tmp = _It.current;
         --_Tmp;
         return _RANGES iter_move(_Tmp);
@@ -1625,8 +1629,9 @@ public:
 
     template <indirectly_swappable<_BidIt> _BidIt2>
     friend constexpr void iter_swap(const reverse_iterator& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
-        is_nothrow_copy_constructible_v<_BidIt>&& is_nothrow_copy_constructible_v<_BidIt2>&& noexcept(
-            _RANGES iter_swap(--_STD declval<_BidIt&>(), --_STD declval<_BidIt2&>()))) {
+        is_nothrow_copy_constructible_v<_BidIt>
+        && is_nothrow_copy_constructible_v<_BidIt2> //
+            && noexcept(_RANGES iter_swap(--_STD declval<_BidIt&>(), --_STD declval<_BidIt2&>()))) {
         auto _LTmp = _Left.current;
         auto _RTmp = _Right.base();
         --_LTmp;
@@ -4052,8 +4057,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 auto operator++(int) noexcept(
-        is_nothrow_copy_constructible_v<_Iter>&& noexcept(++_Current)) /* strengthened */ {
+    _CONSTEXPR17 auto operator++(int) noexcept(is_nothrow_copy_constructible_v<_Iter> //
+            && noexcept(++_Current)) /* strengthened */ {
 #ifdef __cpp_lib_concepts
         if constexpr (forward_iterator<_Iter>) {
 #endif // defined(__cpp_lib_concepts)
@@ -4072,8 +4077,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 move_iterator operator--(int) noexcept(
-        is_nothrow_copy_constructible_v<_Iter>&& noexcept(--_Current)) /* strengthened */ {
+    _CONSTEXPR17 move_iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Iter> //
+            && noexcept(--_Current)) /* strengthened */ {
         move_iterator _Tmp = *this;
         --_Current;
         return _Tmp;
@@ -5137,7 +5142,7 @@ _INLINE_VAR constexpr bool _Is_pointer_address_comparable =
 #pragma warning(push)
 #pragma warning(disable : 4806) // no value of type 'bool' promoted to type 'char' can equal the given constant
 template <class _Elem1, class _Elem2,
-    bool = sizeof(_Elem1) == sizeof(_Elem2) && is_integral_v<_Elem1>&& is_integral_v<_Elem2>>
+    bool = sizeof(_Elem1) == sizeof(_Elem2) && is_integral_v<_Elem1> && is_integral_v<_Elem2>>
 _INLINE_VAR constexpr bool _Can_memcmp_elements =
     is_same_v<_Elem1, bool> || is_same_v<_Elem2, bool> || static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 #pragma warning(pop)

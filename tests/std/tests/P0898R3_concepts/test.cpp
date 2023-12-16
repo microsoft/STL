@@ -3335,7 +3335,7 @@ namespace test_relation {
 
     struct Equivalent {
         template <class T, class U>
-        constexpr decltype(auto) operator()(T&& t, U&& u) const
+        constexpr decltype(auto) operator()(T && t, U && u) const
             requires requires { static_cast<T&&>(t) == static_cast<U&&>(u); }
         {
             return static_cast<T&&>(t) == static_cast<U&&>(u);

@@ -1204,9 +1204,9 @@ public:
         return this->_Map.extents().extent(_Idx);
     }
 
-    constexpr mdspan() noexcept(
-        is_nothrow_default_constructible_v<data_handle_type>&& is_nothrow_default_constructible_v<mapping_type>&&
-            is_nothrow_default_constructible_v<accessor_type>) // strengthened
+    constexpr mdspan() noexcept(is_nothrow_default_constructible_v<data_handle_type>
+                                && is_nothrow_default_constructible_v<mapping_type>
+                                && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         requires (rank_dynamic() > 0) && is_default_constructible_v<data_handle_type>
               && is_default_constructible_v<mapping_type> && is_default_constructible_v<accessor_type>
     {}
@@ -1220,8 +1220,8 @@ public:
                   && (sizeof...(_OtherIndexTypes) == rank() || sizeof...(_OtherIndexTypes) == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit mdspan(data_handle_type _Ptr_, _OtherIndexTypes... _Exts) noexcept(
-        is_nothrow_constructible_v<mapping_type, extents_type>&&
-            is_nothrow_default_constructible_v<accessor_type>) // strengthened
+        is_nothrow_constructible_v<mapping_type, extents_type>
+        && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         : _Mapping_base(extents_type{static_cast<index_type>(_STD move(_Exts))...}), _Accessor_base(),
           _Ptr(_STD move(_Ptr_)) {}
 
@@ -1230,9 +1230,10 @@ public:
                   && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
                   && (_Size == rank() || _Size == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
-    constexpr explicit(_Size != rank_dynamic()) mdspan(data_handle_type _Ptr_,
-        span<_OtherIndexType, _Size> _Exts) noexcept(is_nothrow_constructible_v<mapping_type, extents_type>&&
-            is_nothrow_default_constructible_v<accessor_type>) // strengthened
+    constexpr explicit(_Size != rank_dynamic())
+        mdspan(data_handle_type _Ptr_, span<_OtherIndexType, _Size> _Exts) noexcept(
+            is_nothrow_constructible_v<mapping_type, extents_type>
+            && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         : _Mapping_base(extents_type{_Exts}), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
     template <class _OtherIndexType, size_t _Size>
@@ -1240,25 +1241,26 @@ public:
                   && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
                   && (_Size == rank() || _Size == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
-    constexpr explicit(_Size != rank_dynamic()) mdspan(data_handle_type _Ptr_,
-        const array<_OtherIndexType, _Size>& _Exts) noexcept(is_nothrow_constructible_v<mapping_type, extents_type>&&
-            is_nothrow_default_constructible_v<accessor_type>) // strengthened
+    constexpr explicit(_Size != rank_dynamic())
+        mdspan(data_handle_type _Ptr_, const array<_OtherIndexType, _Size>& _Exts) noexcept(
+            is_nothrow_constructible_v<mapping_type, extents_type>
+            && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         : _Mapping_base(extents_type{_Exts}), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
     constexpr mdspan(data_handle_type _Ptr_, const extents_type& _Exts) noexcept(
-        is_nothrow_constructible_v<mapping_type,
-            const extents_type&>&& is_nothrow_default_constructible_v<accessor_type>) // strengthened
+        is_nothrow_constructible_v<mapping_type, const extents_type&>
+        && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         requires is_constructible_v<mapping_type, const extents_type&> && is_default_constructible_v<accessor_type>
         : _Mapping_base(_Exts), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
     constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_) noexcept(
-        is_nothrow_copy_constructible_v<mapping_type>&&
-            is_nothrow_default_constructible_v<accessor_type>) // strengthened
+        is_nothrow_copy_constructible_v<mapping_type>
+        && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         requires is_default_constructible_v<accessor_type>
         : _Mapping_base(_Map_), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
     constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_, const accessor_type& _Acc_) noexcept(
-        is_nothrow_copy_constructible_v<mapping_type>&& is_nothrow_copy_constructible_v<accessor_type>) // strengthened
+        is_nothrow_copy_constructible_v<mapping_type> && is_nothrow_copy_constructible_v<accessor_type>) // strengthened
         : _Mapping_base(_Map_), _Accessor_base(_Acc_), _Ptr(_STD move(_Ptr_)) {}
 
     template <class _OtherElementType, class _OtherExtents, class _OtherLayoutPolicy, class _OtherAccessor>
@@ -1268,10 +1270,10 @@ public:
         !is_convertible_v<const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&, mapping_type>
         || !is_convertible_v<const _OtherAccessor&, accessor_type>)
         mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other) noexcept(
-            is_nothrow_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>&&
-                is_nothrow_constructible_v<mapping_type,
-                    const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&>&&
-                    is_nothrow_constructible_v<accessor_type, const _OtherAccessor&>) // strengthened
+            is_nothrow_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>
+            && is_nothrow_constructible_v<mapping_type,
+                const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&>
+            && is_nothrow_constructible_v<accessor_type, const _OtherAccessor&>) // strengthened
         : _Mapping_base(_Other.mapping()), _Accessor_base(_Other.accessor()), _Ptr(_Other.data_handle()) {
         static_assert(is_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>,
             "The data_handle_type must be constructible from const typename OtherAccessor::data_handle_type& (N4950 "

@@ -5435,7 +5435,8 @@ void random_shuffle(_RanIt _First, _RanIt _Last) { // shuffle [_First, _Last) us
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _FwdIt>
-constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
+constexpr _FwdIt shift_left(
+    _FwdIt _First, const _FwdIt _Last, typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) {
     // shift [_First, _Last) left by _Pos_to_shift
     // positions; returns the end of the resulting range
     _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
@@ -5469,7 +5470,8 @@ constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fwd
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) noexcept /* terminates */ {
+_FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last,
+    typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) left by _Pos_to_shift positions
     // not parallelized as benchmarks show it isn't worth it
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
@@ -5477,7 +5479,8 @@ _FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Po
 }
 
 _EXPORT_STD template <class _FwdIt>
-constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
+constexpr _FwdIt shift_right(
+    _FwdIt _First, const _FwdIt _Last, typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) {
     // shift [_First, _Last) right by _Pos_to_shift
     // positions; returns the beginning of the resulting range
     _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/5)");
@@ -5551,7 +5554,8 @@ constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fw
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
-_FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) noexcept /* terminates */ {
+_FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last,
+    typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) right by _Pos_to_shift positions
     // not parallelized as benchmarks show it isn't worth it
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);

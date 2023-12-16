@@ -1682,7 +1682,7 @@ protected:
 
     template <class _Other>
     pair<_Nodeptr, _Nodeptr> _Eqrange(const _Other& _Keyval) const
-        noexcept(_Nothrow_compare<key_compare, key_type, _Other>&& _Nothrow_compare<key_compare, _Other, key_type>) {
+        noexcept(_Nothrow_compare<key_compare, key_type, _Other> && _Nothrow_compare<key_compare, _Other, key_type>) {
         // find range of nodes equivalent to _Keyval
         const auto _Scary = _Get_scary();
         const auto& _Comp = _Getcomp();
