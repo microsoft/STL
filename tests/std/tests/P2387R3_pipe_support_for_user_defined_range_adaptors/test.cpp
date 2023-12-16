@@ -40,7 +40,7 @@ constexpr bool is_range_adaptor_closure() {
 
 struct IdentityRangeAdaptorClosure : ranges::range_adaptor_closure<IdentityRangeAdaptorClosure> {
     template <class T>
-    constexpr decltype(auto) operator()(T&& range) const {
+    constexpr decltype(auto) operator()(T && range) const {
         return forward<T>(range);
     }
 };

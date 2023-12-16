@@ -249,8 +249,9 @@ public:
 
     unordered_set(unordered_set&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    unordered_set& operator=(unordered_set&& _Right) noexcept(_Alnode_traits::is_always_equal::value&&
-            is_nothrow_move_assignable_v<_Hasher>&& is_nothrow_move_assignable_v<_Keyeq>) {
+    unordered_set& operator=(unordered_set&& _Right) noexcept(_Alnode_traits::is_always_equal::value
+                                                              && is_nothrow_move_assignable_v<_Hasher>
+                                                              && is_nothrow_move_assignable_v<_Keyeq>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -590,8 +591,9 @@ public:
     }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-    unordered_multiset& operator=(unordered_multiset&& _Right) noexcept(_Alnode_traits::is_always_equal::value&&
-            is_nothrow_move_assignable_v<_Hasher>&& is_nothrow_move_assignable_v<_Keyeq>) {
+    unordered_multiset& operator=(unordered_multiset&& _Right) noexcept(_Alnode_traits::is_always_equal::value
+                                                                        && is_nothrow_move_assignable_v<_Hasher>
+                                                                        && is_nothrow_move_assignable_v<_Keyeq>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }

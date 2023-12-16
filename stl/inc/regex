@@ -907,7 +907,7 @@ _NODISCARD bool operator==(
 _EXPORT_STD template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD auto operator<=>(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
-    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
+    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left._Compare(_Right.data(), _Right.size()) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt, class _Traits, class _Alloc>

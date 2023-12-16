@@ -99,9 +99,17 @@ class STLTest(Test):
                                                        lit.TestRunner.ParserKind.LIST,
                                                        initial_value=fileDependencies),
             lit.TestRunner.IntegratedTestKeywordParser('ADDITIONAL_COMPILE_FLAGS:',
-                                                       lit.TestRunner.ParserKind.LIST,
+                                                       lit.TestRunner.ParserKind.SPACE_LIST,
                                                        initial_value=additionalCompileFlags)
         ]
+
+        for feature in self.config.available_features:
+            parser = lit.TestRunner.IntegratedTestKeywordParser(
+                "ADDITIONAL_COMPILE_FLAGS({}):".format(feature),
+                lit.TestRunner.ParserKind.SPACE_LIST,
+                initial_value=additionalCompileFlags,
+            )
+            parsers.append(parser)
 
         lit.TestRunner.parseIntegratedTestScript(self, additional_parsers=parsers, require_script=False)
         self.compileFlags.extend(additionalCompileFlags)
@@ -214,6 +222,7 @@ class STLTest(Test):
 
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('clang')
+            self._addCustomFeature('gcc-style-warnings')
 
             targetArch = litConfig.target_arch.casefold()
             if (targetArch == 'x64'.casefold()):
@@ -230,7 +239,7 @@ class STLTest(Test):
             # nvcc only supports targeting x64
             self.requires.append('x64')
         else:
-            self._addCustomFeature('cl')
+            self._addCustomFeature('cl-style-warnings')
 
         self.cxx = os.path.normpath(cxx)
         return None

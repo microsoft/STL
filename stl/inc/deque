@@ -650,6 +650,9 @@ public:
         _Construct_n(_Count, _Val);
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     deque(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_n(_Count, _Val);
