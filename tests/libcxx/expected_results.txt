@@ -34,6 +34,9 @@ std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:2 FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.copy/uninitialized_copy.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_move.pass.cpp FAIL
 
+# LLVM-75611: [libc++] views::take behaves incorrectly for iota_view
+std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -62,6 +65,7 @@ std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
 # Tests with undefined behavior under N4842 [basic.start.term]/6 (detached threads)
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
+std/thread/thread.jthread/detach.pass.cpp SKIPPED
 
 # libcxx is incorrect on what the type passed to allocator::construct should be (LLVM-D61364)
 std/containers/associative/map/map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp FAIL
@@ -1026,11 +1030,6 @@ std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op
 # Not analyzed. error C2280: 'std::ranges::lazy_split_view<InputView,ForwardTinyView>::lazy_split_view(const std::ranges::lazy_split_view<InputView,ForwardTinyView> &)': attempting to reference a deleted function
 std/ranges/range.adaptors/range.lazy.split/ctor.copy_move.pass.cpp FAIL
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass.cpp FAIL
-
-# Not analyzed.
-# error: deduced type 'iota_view<_Vt, _Vt>' (aka 'iota_view<int, int>') does not satisfy 'same_as<Result>'
-# note: because '_Same_impl<std::ranges::iota_view<int, int>, std::ranges::iota_view<int, long long> >' evaluated to false
-std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
 
 # Not analyzed. Checking whether packaged_task is constructible from an allocator and a packaged_task of a different type.
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
