@@ -1206,9 +1206,6 @@ std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:0 FAIL
 # Not analyzed. constexpr evaluation fails in ranges::swap.
 std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:0 FAIL
 
-# Not analyzed. Fails static_assert(std::is_default_constructible_v<JoinIterator>).
-std/ranges/range.adaptors/range.join/range.join.iterator/ctor.default.pass.cpp FAIL
-
 # Not analyzed. constexpr evaluation fails in assert(element_moved == 1).
 std/ranges/range.adaptors/range.lazy.split/ctor.range.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.split/ctor.range.pass.cpp:0 FAIL
