@@ -17,6 +17,8 @@ using namespace std;
 enum class IsDefaultConstructible : bool { Not, Yes };
 enum class IsTriviallyCopyConstructible : bool { Not, Yes };
 enum class IsTriviallyMoveConstructible : bool { Not, Yes };
+enum class IsTriviallyCopyAssignable : bool { Not, Yes };
+enum class IsTriviallyMoveAssignable : bool { Not, Yes };
 enum class IsTriviallyDestructible : bool { Not, Yes };
 
 enum class IsNothrowConstructible : bool { Not, Yes };
@@ -1186,6 +1188,267 @@ namespace test_expected {
         test_assignment<NCC::Yes, NMC::Yes, NCA::Yes, NMA::Yes>();
     }
 
+    // per unnumbered LWG issue submitted on 2023-12-16, see also LLVM-74768
+    template <class PODType, IsTriviallyCopyConstructible CopyCtorTriviality,
+        IsTriviallyMoveConstructible MoveCtorTriviality, IsTriviallyCopyAssignable CopyAssignTriviality,
+        IsTriviallyMoveAssignable MoveAssignTriviality, IsTriviallyDestructible DtorTriviality>
+    struct TrivialityTester {
+        PODType val{};
+
+        TrivialityTester() = default;
+
+        constexpr explicit TrivialityTester(PODType v) noexcept : val{v} {}
+
+        constexpr TrivialityTester(const TrivialityTester& other) noexcept : val{other.val} {}
+        constexpr TrivialityTester(const TrivialityTester&)
+            requires (CopyCtorTriviality == IsTriviallyCopyConstructible::Yes)
+        = default;
+
+        constexpr TrivialityTester(TrivialityTester&& other) noexcept : val{other.val} {}
+        TrivialityTester(TrivialityTester&&)
+            requires (MoveCtorTriviality == IsTriviallyMoveConstructible::Yes)
+        = default;
+
+        constexpr TrivialityTester& operator=(const TrivialityTester& other) noexcept {
+            val = other.val;
+            return *this;
+        }
+        TrivialityTester& operator=(const TrivialityTester&)
+            requires (CopyAssignTriviality == IsTriviallyCopyAssignable::Yes)
+        = default;
+
+        constexpr TrivialityTester& operator=(TrivialityTester&& other) noexcept {
+            val = other.val;
+            return *this;
+        }
+        TrivialityTester& operator=(TrivialityTester&&)
+            requires (MoveAssignTriviality == IsTriviallyMoveAssignable::Yes)
+        = default;
+
+        constexpr ~TrivialityTester() {}
+        ~TrivialityTester()
+            requires (DtorTriviality == IsTriviallyDestructible::Yes)
+        = default;
+    };
+
+    template <class Val1, IsTriviallyCopyConstructible CopyCtorTriviality,
+        IsTriviallyMoveConstructible MoveCtorTriviality, IsTriviallyCopyAssignable CopyAssignTriviality,
+        IsTriviallyMoveAssignable MoveAssignTriviality, IsTriviallyDestructible DtorTriviality>
+    constexpr void test_triviality_of_assignment_binary() {
+        using Val2 = TrivialityTester<char, CopyCtorTriviality, MoveCtorTriviality, CopyAssignTriviality,
+            MoveAssignTriviality, DtorTriviality>;
+        using E    = expected<Val1, Val2>;
+
+        static_assert(is_trivially_copy_assignable_v<E>
+                      == (is_trivially_copy_constructible_v<Val1> && is_trivially_copy_assignable_v<Val1>
+                          && is_trivially_destructible_v<Val1> && is_trivially_copy_constructible_v<Val2>
+                          && is_trivially_copy_assignable_v<Val2> && is_trivially_destructible_v<Val2>) );
+        static_assert(is_trivially_move_assignable_v<E>
+                      == (is_trivially_move_constructible_v<Val1> && is_trivially_move_assignable_v<Val1>
+                          && is_trivially_destructible_v<Val1> && is_trivially_move_constructible_v<Val2>
+                          && is_trivially_move_assignable_v<Val2> && is_trivially_destructible_v<Val2>) );
+
+        {
+            E e1{Val1{42}};
+            E e2{unexpect, Val2{'^'}};
+            e1 = e2;
+            assert(!e1.has_value());
+            assert(e1.error().val == '^');
+        }
+        {
+            E e1{Val1{42}};
+            E e2{unexpect, Val2{'^'}};
+            e1 = move(e2);
+            assert(!e1.has_value());
+            assert(e1.error().val == '^');
+        }
+        {
+            E e1{Val1{42}};
+            E e2{unexpect, Val2{'^'}};
+            e2 = e1;
+            assert(e2.has_value());
+            assert(e2.value().val == 42);
+        }
+        {
+            E e1{Val1{42}};
+            E e2{unexpect, Val2{'^'}};
+            e2 = move(e1);
+            assert(e2.has_value());
+            assert(e2.value().val == 42);
+        }
+    }
+
+    template <IsTriviallyCopyConstructible CopyCtorTriviality, IsTriviallyMoveConstructible MoveCtorTriviality,
+        IsTriviallyCopyAssignable CopyAssignTriviality, IsTriviallyMoveAssignable MoveAssignTriviality,
+        IsTriviallyDestructible DtorTriviality>
+    constexpr void test_triviality_of_assignment() {
+        using Val = TrivialityTester<int, CopyCtorTriviality, MoveCtorTriviality, CopyAssignTriviality,
+            MoveAssignTriviality, DtorTriviality>;
+        using E   = expected<void, Val>;
+
+        static_assert(is_trivially_copy_assignable_v<E>
+                      == (is_trivially_copy_constructible_v<Val> && is_trivially_copy_assignable_v<Val>
+                          && is_trivially_destructible_v<Val>) );
+        static_assert(is_trivially_move_assignable_v<E>
+                      == (is_trivially_move_constructible_v<Val> && is_trivially_move_assignable_v<Val>
+                          && is_trivially_destructible_v<Val>) );
+
+        {
+            E e1{};
+            E e2{unexpect, Val{42}};
+            e1 = e2;
+            assert(!e1.has_value());
+            assert(e1.error().val == 42);
+        }
+        {
+            E e1{};
+            E e2{unexpect, Val{42}};
+            e1 = move(e2);
+            assert(!e1.has_value());
+            assert(e1.error().val == 42);
+        }
+
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment_binary<Val, IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+    }
+
+    constexpr bool test_triviality_of_assignment_all() {
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Not,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Not>();
+        test_triviality_of_assignment<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+            IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>();
+
+        return true;
+    }
+
     constexpr void test_emplace() noexcept {
         struct payload_emplace {
             constexpr payload_emplace(bool& destructor_called) noexcept : _destructor_called(destructor_called) {}
@@ -2020,6 +2283,7 @@ namespace test_expected {
         test_special_members();
         test_constructors();
         test_assignment();
+        test_triviality_of_assignment_all(); // per unnumbered LWG issue submitted on 2023-12-16, see also LLVM-74768
         test_emplace();
         test_swap();
         test_access();

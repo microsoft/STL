@@ -182,6 +182,18 @@ struct _Check_expected_argument : true_type {
         "T must not be a (possibly cv-qualified) specialization of unexpected. (N4950 [expected.object.general]/2)");
 };
 
+template <class _Ty, class _Err>
+concept _Expected_binary_copy_assignable =
+    is_copy_assignable_v<_Ty> && is_copy_constructible_v<_Ty> //
+    && is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err>
+    && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>);
+
+template <class _Ty, class _Err>
+concept _Expected_binary_move_assignable =
+    is_move_assignable_v<_Ty> && is_move_constructible_v<_Ty> //
+    && is_move_assignable_v<_Err> && is_move_constructible_v<_Err>
+    && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>);
+
 _EXPORT_STD template <class _Ty, class _Err>
 class expected {
 private:
@@ -390,9 +402,7 @@ public:
     constexpr expected& operator=(const expected& _Other) noexcept(
         is_nothrow_copy_constructible_v<_Ty> && is_nothrow_copy_constructible_v<_Err>
         && is_nothrow_copy_assignable_v<_Ty> && is_nothrow_copy_assignable_v<_Err>) // strengthened
-        requires is_copy_assignable_v<_Ty> && is_copy_constructible_v<_Ty> //
-              && is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err>
-              && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
+        requires _Expected_binary_copy_assignable<_Ty, _Err>
     {
         if (_Has_value && _Other._Has_value) {
             _Value = _Other._Value;
@@ -408,12 +418,19 @@ public:
         return *this;
     }
 
+    expected& operator=(const expected&)
+        requires _Expected_binary_copy_assignable<_Ty, _Err> //
+                  && is_trivially_copy_constructible_v<_Ty> && is_trivially_copy_assignable_v<_Ty>
+                  && is_trivially_destructible_v<_Ty>
+                  // clang-format off
+                  && is_trivially_copy_constructible_v<_Err> && is_trivially_copy_assignable_v<_Err>
+                  && is_trivially_destructible_v<_Err> = default;
+    // clang-format on
+
     constexpr expected& operator=(expected&& _Other) noexcept(
         is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_constructible_v<_Err>
         && is_nothrow_move_assignable_v<_Ty> && is_nothrow_move_assignable_v<_Err>)
-        requires is_move_assignable_v<_Ty> && is_move_constructible_v<_Ty> //
-              && is_move_assignable_v<_Err> && is_move_constructible_v<_Err>
-              && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
+        requires _Expected_binary_move_assignable<_Ty, _Err>
     {
         if (_Has_value && _Other._Has_value) {
             _Value = _STD move(_Other._Value);
@@ -428,6 +445,15 @@ public:
         _Has_value = _Other._Has_value;
         return *this;
     }
+
+    expected& operator=(expected&&)
+        requires _Expected_binary_move_assignable<_Ty, _Err> //
+                  && is_trivially_move_constructible_v<_Ty> && is_trivially_move_assignable_v<_Ty>
+                  && is_trivially_destructible_v<_Ty>
+                  // clang-format off
+                  && is_trivially_move_constructible_v<_Err> && is_trivially_move_assignable_v<_Err>
+                  && is_trivially_destructible_v<_Err> = default;
+    // clang-format on
 
     template <class _Uty = _Ty>
         requires (!is_same_v<remove_cvref_t<_Uty>, expected> && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
@@ -1162,6 +1188,12 @@ private:
     bool _Has_value;
 };
 
+template <class _Err>
+concept _Expected_unary_copy_assignable = is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err>;
+
+template <class _Err>
+concept _Expected_unary_move_assignable = is_move_assignable_v<_Err> && is_move_constructible_v<_Err>;
+
 template <class _Ty, class _Err>
     requires is_void_v<_Ty>
 class expected<_Ty, _Err> {
@@ -1278,7 +1310,7 @@ public:
     // [expected.void.assign]
     constexpr expected& operator=(const expected& _Other) noexcept(
         is_nothrow_copy_constructible_v<_Err> && is_nothrow_copy_assignable_v<_Err>) // strengthened
-        requires is_copy_assignable_v<_Err> && is_copy_constructible_v<_Err>
+        requires _Expected_unary_copy_assignable<_Err>
     {
         if (_Has_value && _Other._Has_value) {
             // nothing to do
@@ -1297,9 +1329,16 @@ public:
         return *this;
     }
 
+    expected& operator=(const expected&)
+        requires _Expected_unary_copy_assignable<_Err>
+                  // clang-format off
+                  && is_trivially_copy_constructible_v<_Err> && is_trivially_copy_assignable_v<_Err>
+                  && is_trivially_destructible_v<_Err> = default;
+    // clang-format on
+
     constexpr expected& operator=(expected&& _Other) noexcept(
         is_nothrow_move_constructible_v<_Err> && is_nothrow_move_assignable_v<_Err>)
-        requires is_move_assignable_v<_Err> && is_move_constructible_v<_Err>
+        requires _Expected_unary_move_assignable<_Err>
     {
         if (_Has_value && _Other._Has_value) {
             // nothing to do
@@ -1317,6 +1356,13 @@ public:
 
         return *this;
     }
+
+    expected& operator=(expected&&)
+        requires _Expected_unary_move_assignable<_Err>
+                  // clang-format off
+                  && is_trivially_move_constructible_v<_Err> && is_trivially_move_assignable_v<_Err>
+                  && is_trivially_destructible_v<_Err> = default;
+    // clang-format on
 
     template <class _UErr>
         requires is_constructible_v<_Err, const _UErr&> && is_assignable_v<_Err&, const _UErr&>
