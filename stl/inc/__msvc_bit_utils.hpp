@@ -14,8 +14,8 @@
 #include _STL_INTRIN_HEADER
 
 // TRANSITION, GH-2129, move down to _Arm64_popcount
-#if (defined(_M_ARM64) || defined(_M_ARM64EC)) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
-    && !defined(__INTEL_COMPILER) && !defined(__clang__) // TRANSITION, LLVM-51488
+#if (defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)) && !defined(_M_CEE_PURE) \
+    && !defined(__CUDACC__) && !defined(__INTEL_COMPILER) && !defined(__clang__) // TRANSITION, LLVM-51488
 #define _HAS_NEON_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_NEON_INTRINSICS 0
@@ -70,7 +70,7 @@ _NODISCARD constexpr int _Countl_zero_fallback(_Ty _Val) noexcept {
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_COUNTL_ZERO_INTRINSICS
-#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+#if (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))
 template <class _Ty>
 _NODISCARD int _Countl_zero_lzcnt(const _Ty _Val) noexcept {
     constexpr int _Digits = _Unsigned_integer_digits<_Ty>;
@@ -136,9 +136,9 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
     }
 #endif // ^^^ !defined(__AVX2__) ^^^
 }
-#endif // defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+#endif // (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))
 
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #ifdef __clang__ // TRANSITION, GH-1586
 _NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned short _Val) {
     return __builtin_clzs(_Val);
@@ -179,7 +179,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
     }
 #endif // TRANSITION, GH-1586
 }
-#endif // defined(_M_ARM) || defined(_M_ARM64)
+#endif // defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #endif // _HAS_COUNTL_ZERO_INTRINSICS
 
 // Implementation of countr_zero without using specialized CPU instructions.
@@ -196,14 +196,14 @@ _NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
 template <class _Ty>
 _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
     constexpr int _Digits = _Unsigned_integer_digits<_Ty>;
-#if defined(_M_IX86) || defined(_M_ARM)
+#if (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || defined(_M_ARM)
     if constexpr (_Digits == 64) {
         // 64-bit bit operations on architectures without 64-bit registers are less efficient,
         // hence we split the value so that it fits in 32-bit registers
         return _Popcount_fallback(static_cast<unsigned long>(_Val))
              + _Popcount_fallback(static_cast<unsigned long>(_Val >> 32));
     }
-#endif // defined(_M_IX86) || defined(_M_ARM)
+#endif // (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || defined(_M_ARM)
     // we static_cast these bit patterns in order to truncate them to the correct size
     _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
     _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
@@ -215,8 +215,8 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
     return static_cast<int>(_Val >> (_Digits - 8));
 }
 
-#if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
-    && !defined(__INTEL_COMPILER)
+#if ((defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))) \
+    && !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
 #define _HAS_TZCNT_BSF_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_TZCNT_BSF_INTRINSICS 0
@@ -310,8 +310,8 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 
 #endif // _HAS_TZCNT_BSF_INTRINSICS
 
-#if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
-    && !defined(__INTEL_COMPILER)
+#if ((defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))) \
+    && !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
 #define _HAS_POPCNT_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_POPCNT_INTRINSICS 0

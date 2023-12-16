@@ -54,7 +54,7 @@ public:
     template <class _Alloc2>
     basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al_)
         : _Al(_Al_) {
-        _Init(_Str.c_str(), _Str.size(), _Getstate(_Mode));
+        _Init(_Str.c_str(), _Convert_size<_Mysize_type>(_Str.size()), _Getstate(_Mode));
     }
 
     template <class _Alloc2>
