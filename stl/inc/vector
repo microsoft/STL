@@ -218,7 +218,7 @@ public:
     }
 
     _CONSTEXPR20 void _Seek_to(const value_type* _It) noexcept {
-        _Ptr = _Refancy<_Tptr>(const_cast<value_type*>(_It));
+        _Ptr = _It == nullptr ? _Tptr() : _Refancy<_Tptr>(const_cast<value_type*>(_It));
     }
 
     _Tptr _Ptr; // pointer to element in vector

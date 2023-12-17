@@ -1002,14 +1002,6 @@ std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
 std/containers/sequences/vector/iterators.pass.cpp:0 FAIL
 std/containers/sequences/vector/iterators.pass.cpp:1 FAIL
 
-# Not analyzed.
-# error C4854: binding dereferenced null pointer to reference has undefined behavior
-# note: while evaluating constexpr function 'std::_Refancy'
-std/containers/sequences/vector/vector.erasure/erase.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.erasure/erase.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.erasure/erase_if.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.erasure/erase_if.pass.cpp:1 FAIL
-
 # Not analyzed. Inspecting shift operators for quoted().
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
 
