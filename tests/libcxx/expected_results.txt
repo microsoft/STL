@@ -869,10 +869,6 @@ std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
 # Not analyzed. Failing after LLVM-D75622.
 std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
 
-# Not analyzed. Possibly C1XX constexpr bug.
-std/utilities/function.objects/func.invoke/invoke_constexpr.pass.cpp:0 FAIL
-std/utilities/function.objects/func.invoke/invoke_constexpr.pass.cpp:1 FAIL
-
 # Not analyzed. Failing for "[a[.ch.]z]".
 std/re/re.alg/re.alg.match/awk.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.match/basic.locale.pass.cpp FAIL
