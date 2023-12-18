@@ -1286,7 +1286,7 @@ private:
 
     template <class _Keyty>
     _NODISCARD _Equal_range_result _Equal_range(const _Keyty& _Keyval, const size_t _Hashval) const
-        noexcept(_Nothrow_compare<_Traits, key_type, _Keyty>&& _Nothrow_compare<_Traits, _Keyty, key_type>) {
+        noexcept(_Nothrow_compare<_Traits, key_type, _Keyty> && _Nothrow_compare<_Traits, _Keyty, key_type>) {
         const size_type _Bucket              = _Hashval & _Mask;
         _Unchecked_const_iterator _Where     = _Vec._Mypair._Myval2._Myfirst[_Bucket << 1];
         const _Unchecked_const_iterator _End = _Unchecked_end();

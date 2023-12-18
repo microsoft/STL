@@ -52,7 +52,6 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Getdateorder() noexcept;
 [System::Runtime::InteropServices::DllImport(_CRT_MSVCP_CURRENT, EntryPoint = "_Mbrtowc",
     CallingConvention = System::Runtime::InteropServices::CallingConvention::Cdecl)] extern "C" int
     _Mbrtowc(_Out_opt_ wchar_t*, const char*, size_t, mbstate_t*, const _Cvtvec*) noexcept;
-
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(_When_(_Max_multibyte != 0, _Out_) wchar_t*, const char*,
     size_t _Max_multibyte, mbstate_t*, const _Cvtvec*) noexcept;

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/16.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/17.0.1/tools/clang/docs/ClangFormatStyleOptions.html
 
 ---
 # Language:        Cpp
@@ -38,6 +38,11 @@ AlignConsecutiveAssignments: Consecutive
 #   AlignCompound:   false
 #   PadOperators:    false
 AlignConsecutiveMacros: Consecutive
+# AlignConsecutiveShortCaseStatements:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCaseColons: false
 # AlignEscapedNewlines: Right
 AlignEscapedNewlines: Left
 # AlignOperands:   Align
@@ -176,6 +181,7 @@ InsertNewlineAtEOF: true
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
 # KeepEmptyLinesAtTheStartOfBlocks: true
+# KeepEmptyLinesAtEOF: false
 # LambdaBodyIndentation: Signature
 # LineEnding:      DeriveLF
 LineEnding:      CRLF
@@ -209,6 +215,7 @@ PointerAlignment: Left
 # ReferenceAlignment: Pointer
 # ReflowComments:  true
 # RemoveBracesLLVM: false
+# RemoveParentheses: Leave
 # RemoveSemicolon: false
 RemoveSemicolon: true
 # RequiresClausePosition: OwnLine
@@ -228,6 +235,7 @@ SpaceAfterCStyleCast: true
 # SpaceBeforeCpp11BracedList: false
 # SpaceBeforeCtorInitializerColon: true
 # SpaceBeforeInheritanceColon: true
+# SpaceBeforeJsonColon: false
 # SpaceBeforeParens: ControlStatements
 # SpaceBeforeParensOptions:
 #   AfterControlStatements: true
@@ -245,16 +253,18 @@ SpaceBeforeParensOptions:
 # SpaceBeforeRangeBasedForLoopColon: true
 # SpaceBeforeSquareBrackets: false
 # SpaceInEmptyBlock: false
-# SpaceInEmptyParentheses: false
 # SpacesBeforeTrailingComments: 1
 # SpacesInAngles:  Never
-# SpacesInConditionalStatement: false
 # SpacesInContainerLiterals: true
-# SpacesInCStyleCastParentheses: false
 # SpacesInLineCommentPrefix:
 #   Minimum:         1
 #   Maximum:         -1
-# SpacesInParentheses: false
+# SpacesInParens:  Never
+# SpacesInParensOptions:
+#   InCStyleCasts:   false
+#   InConditionalStatements: false
+#   InEmptyParentheses: false
+#   Other:           false
 # SpacesInSquareBrackets: false
 # Standard:        Latest
 # StatementAttributeLikeMacros:
@@ -277,6 +287,7 @@ StatementMacros:
   - _END_EXTERN_C_UNLESS_PURE
 # TabWidth:        8
 # UseTab:          Never
+# VerilogBreakBetweenInstancePorts: true
 # WhitespaceSensitiveMacros:
 #   - BOOST_PP_STRINGIZE
 #   - CF_SWIFT_NAME

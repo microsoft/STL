@@ -226,7 +226,7 @@ public:
         _Newimp->_Addfac(_Facptr, _Facet::id);
         _Newimp->_Catmask = none;
         _Newimp->_Name    = "*";
-        return locale{_Newimp};
+        return locale{_Secret_locale_construct_tag{}, _Newimp};
     }
 
     template <class _Facet>
@@ -391,7 +391,11 @@ public:
     static _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL empty(); // empty (transparent) locale
 
 private:
-    locale(_Locimp* _Ptrimp) : _Ptr(_Ptrimp) {}
+    struct _Secret_locale_construct_tag {
+        explicit _Secret_locale_construct_tag() = default;
+    };
+
+    explicit locale(_Secret_locale_construct_tag, _Locimp* _Ptrimp) : _Ptr(_Ptrimp) {}
 
     static _MRTIMP2_PURE _Locimp* __CLRCALL_PURE_OR_CDECL _Init(bool _Do_incref = false); // initialize locale
     static _MRTIMP2_PURE _Locimp* __CLRCALL_PURE_OR_CDECL _Getgloballocale();
