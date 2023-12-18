@@ -386,6 +386,19 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <!-- VS 2022 17.10: _Ref_count_obj_alloc_for_overwrite -->
+  <Type Name="std::_Ref_count_obj_alloc_for_overwrite&lt;*&gt;">
+      <!-- stateless allocator -->
+      <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+      <!-- stateful allocator -->
+      <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+      <DisplayString>allocate_shared_for_overwrite</DisplayString>
+      <Expand>
+          <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
+          <Item Name="[allocator]">allocator()</Item>
+      </Expand>
+  </Type>
+
   <!-- VC 2017, second toolset update -->
   <Type Name="std::_Ref_count_resource&lt;*&gt;">
       <DisplayString>custom deleter</DisplayString>
