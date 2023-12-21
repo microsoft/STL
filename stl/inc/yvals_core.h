@@ -2041,7 +2041,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #else
 #define _STL_INTRIN_HEADER <intrin.h>
 #endif
-#define _STL_UNREACHABLE   __builtin_unreachable()
+#define _STL_UNREACHABLE __builtin_unreachable()
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_INTRIN_HEADER <intrin0.h>
 #define _STL_UNREACHABLE   __assume(false)
