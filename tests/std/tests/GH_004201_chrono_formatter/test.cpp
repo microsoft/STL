@@ -1,9 +1,9 @@
+#include <cassert>
 #include <chrono>
 #include <format>
 #include <iostream>
 #include <string>
 #include <thread>
-#include <cassert>
 
 using namespace std::literals::chrono_literals;
 
