@@ -1188,7 +1188,7 @@ namespace test_expected {
         test_assignment<NCC::Yes, NMC::Yes, NCA::Yes, NMA::Yes>();
     }
 
-    // per unnumbered LWG issue submitted on 2023-12-16, see also LLVM-74768
+    // per LWG-4026, see also LLVM-74768
     template <class PODType, IsTriviallyCopyConstructible CopyCtorTriviality,
         IsTriviallyMoveConstructible MoveCtorTriviality, IsTriviallyCopyAssignable CopyAssignTriviality,
         IsTriviallyMoveAssignable MoveAssignTriviality, IsTriviallyDestructible DtorTriviality>
@@ -2193,7 +2193,7 @@ namespace test_expected {
         test_special_members();
         test_constructors();
         test_assignment();
-        test_triviality_of_assignment_all(); // per unnumbered LWG issue submitted on 2023-12-16, see also LLVM-74768
+        test_triviality_of_assignment_all(); // per LWG-4026, see also LLVM-74768
         test_emplace();
         test_swap();
         test_access();
