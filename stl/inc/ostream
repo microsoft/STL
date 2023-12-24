@@ -136,6 +136,10 @@ public:
         bool _Ok; // true if stream state okay at construction
     };
 
+#pragma push_macro("opfx")
+#pragma push_macro("osfx")
+#undef opfx
+#undef osfx
     // TRANSITION, ABI: non-Standard opfx() is preserved for binary compatibility
     _DEPRECATE_IO_PFX_SFX bool __CLR_OR_THIS_CALL opfx() { // test stream state and flush tie stream as needed
         if (!this->good()) {
@@ -155,6 +159,8 @@ public:
     _DEPRECATE_IO_PFX_SFX void __CLR_OR_THIS_CALL osfx() noexcept { // perform any wrapup
         _Osfx();
     }
+#pragma pop_macro("osfx")
+#pragma pop_macro("opfx")
 
     void __CLR_OR_THIS_CALL _Osfx() noexcept { // perform any wrapup
         _TRY_BEGIN

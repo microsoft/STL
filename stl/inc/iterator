@@ -1467,6 +1467,16 @@ struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
 
 _STD_END
 
+// TRANSITION, vNext
+#pragma push_macro("checked_array_iterator")
+#pragma push_macro("make_checked_array_iterator")
+#pragma push_macro("make_unchecked_array_iterator")
+#pragma push_macro("unchecked_array_iterator")
+#undef checked_array_iterator
+#undef make_checked_array_iterator
+#undef make_unchecked_array_iterator
+#undef unchecked_array_iterator
+
 _STDEXT_BEGIN
 template <class _Ptr>
 class _DEPRECATE_STDEXT_ARR_ITERS checked_array_iterator { // wrap a pointer with checking
@@ -1856,6 +1866,12 @@ struct pointer_traits<_STDEXT checked_array_iterator<_Ty*>> {
 _STL_RESTORE_DEPRECATED_WARNING
 _STD_END
 #endif // _HAS_CXX20
+
+// TRANSITION, vNext
+#pragma pop_macro("unchecked_array_iterator")
+#pragma pop_macro("make_unchecked_array_iterator")
+#pragma pop_macro("make_checked_array_iterator")
+#pragma pop_macro("checked_array_iterator")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
