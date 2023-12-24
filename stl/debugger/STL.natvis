@@ -362,6 +362,35 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_bounded_array&lt;*&gt;">
+    <DisplayString>make_shared&lt;T[N]&gt;</DisplayString>
+    <Expand>
+      <Item Condition="_Uses != 0" Name="[allocated array]">_Storage._Value</Item>
+    </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_unbounded_array&lt;*,0&gt;">
+    <Intrinsic Name="data" Expression="&amp;(_Storage._Value)" />
+    <Intrinsic Name="size" Expression="_Size" />
+    <DisplayString>make_shared&lt;T[]&gt;</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>data()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_unbounded_array&lt;*,1&gt;">
+    <DisplayString>make_shared&lt;T[]&gt;</DisplayString>
+    <Expand>
+      <Item Condition="_Uses != 0" Name="[original ptr]">_Storage._Value</Item>
+    </Expand>
+  </Type>
+
   <!-- VC 2015 -->
   <Type Name="std::_Ref_count_obj_alloc&lt;*&gt;">
       <DisplayString>allocate_shared</DisplayString>
@@ -386,7 +415,38 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VS 2022 17.10: _Ref_count_obj_alloc_for_overwrite -->
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_bounded_array_alloc&lt;*&gt;">
+    <!-- stateless allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+    <!-- stateful allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+    <DisplayString>allocate_shared&lt;T[N]&gt;</DisplayString>
+    <Expand>
+      <Item Condition="_Uses != 0" Name="[allocated array]">_Storage._Value</Item>
+      <Item Name="[allocator]">allocator()</Item>
+    </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_unbounded_array_alloc&lt;*&gt;">
+    <!-- stateless allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+    <!-- stateful allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+    <Intrinsic Name="data" Expression="&amp;(_Storage._Value)" />
+    <Intrinsic Name="size" Expression="_Size" />
+    <DisplayString>allocate_shared&lt;T[]&gt;</DisplayString>
+    <Expand>
+      <Item Name="[allocator]">allocator()</Item>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>data()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
   <Type Name="std::_Ref_count_obj_alloc_for_overwrite&lt;*&gt;">
       <!-- stateless allocator -->
       <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
@@ -397,6 +457,37 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
           <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
           <Item Name="[allocator]">allocator()</Item>
       </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_bounded_array_alloc_for_overwrite&lt;*&gt;">
+    <!-- stateless allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+    <!-- stateful allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+    <DisplayString>allocate_shared_for_overwrite&lt;T[N]&gt;</DisplayString>
+    <Expand>
+      <Item Condition="_Uses != 0" Name="[allocated array]">_Storage._Value</Item>
+      <Item Name="[allocator]">allocator()</Item>
+    </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_unbounded_array_alloc_for_overwrite&lt;*&gt;">
+    <!-- stateless allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+    <!-- stateful allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+    <Intrinsic Name="data" Expression="&amp;(_Storage._Value)" />
+    <Intrinsic Name="size" Expression="_Size" />
+    <DisplayString>allocate_shared_for_overwrite&lt;T[]&gt;</DisplayString>
+    <Expand>
+      <Item Name="[allocator]">allocator()</Item>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>data()</ValuePointer>
+      </ArrayItems>
+    </Expand>
   </Type>
 
   <!-- VC 2017, second toolset update -->
