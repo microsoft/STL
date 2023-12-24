@@ -1980,6 +1980,8 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _RANGES ::std::ranges::
 
 // We use the stdext (standard extension) namespace to contain extensions that are not part of the current standard
+#pragma push_macro("stdext") // Conforming C++ code may `#define stdext`, so we should push & pop it.
+#undef stdext
 #define _STDEXT_BEGIN      \
     _EXTERN_CXX_WORKAROUND \
     namespace stdext {
@@ -1988,6 +1990,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
     _END_EXTERN_CXX_WORKAROUND
 
 #define _STDEXT ::stdext::
+#pragma pop_macro("stdext")
 
 #define _CSTD ::
 

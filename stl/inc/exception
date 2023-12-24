@@ -76,6 +76,9 @@ _STD_END
 
 #else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
 
+#pragma push_macro("stdext") // TRANSITION, vNext
+#undef stdext
+
 _STDEXT_BEGIN
 class exception;
 _STDEXT_END
@@ -210,6 +213,8 @@ _EXPORT_STD using _STDEXT bad_array_new_length;
 _EXPORT_STD using _STDEXT bad_exception;
 
 _STD_END
+
+#pragma pop_macro("stdext") // TRANSITION, vNext
 
 #endif // ^^^ !_HAS_EXCEPTIONS ^^^
 
