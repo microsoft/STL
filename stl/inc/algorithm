@@ -71,10 +71,10 @@ _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
     _Min_max_element_t _Res;
 
     if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
-        _Res = __std_minmax_element_f(_First, _Last, false);
+        _Res = ::__std_minmax_element_f(_First, _Last, false);
     } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, double>
                          || _STD is_same_v<_STD remove_const_t<_Ty>, long double>) {
-        _Res = __std_minmax_element_d(_First, _Last, false);
+        _Res = ::__std_minmax_element_d(_First, _Last, false);
     } else if constexpr (sizeof(_Ty) == 1) {
         _Res = ::__std_minmax_element_1(_First, _Last, _Signed);
     } else if constexpr (sizeof(_Ty) == 2) {
