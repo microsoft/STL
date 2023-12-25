@@ -36,8 +36,8 @@ namespace test_array {
     static_assert(CanRangeConstIterator<Arr>);
     static_assert(CanRangeConstSentinel<Arr>);
     static_assert(CanRangeConstReference<Arr>);
-    static_assert(same_as<ranges::const_iterator_t<Arr>, const_iterator<int*>>);
-    static_assert(same_as<ranges::const_sentinel_t<Arr>, const_iterator<int*>>);
+    static_assert(same_as<ranges::const_iterator_t<Arr>, const int*>);
+    static_assert(same_as<ranges::const_sentinel_t<Arr>, const int*>);
     static_assert(same_as<ranges::range_const_reference_t<Arr>, const int&>);
     static_assert(!ranges::constant_range<Arr>);
 
@@ -56,8 +56,8 @@ namespace test_random_access_range {
     static_assert(CanRangeConstIterator<Rng>);
     static_assert(CanRangeConstSentinel<Rng>);
     static_assert(CanRangeConstReference<Rng>);
-    static_assert(same_as<ranges::const_iterator_t<Rng>, const_iterator<Rng::iterator>>);
-    static_assert(same_as<ranges::const_sentinel_t<Rng>, const_iterator<Rng::iterator>>);
+    static_assert(same_as<ranges::const_iterator_t<Rng>, Rng::const_iterator>);
+    static_assert(same_as<ranges::const_sentinel_t<Rng>, Rng::const_iterator>);
     static_assert(same_as<ranges::range_const_reference_t<Rng>, const int&>);
     static_assert(!ranges::constant_range<Rng>);
 
@@ -76,8 +76,8 @@ namespace test_bidirectional_range {
     static_assert(CanRangeConstIterator<Rng>);
     static_assert(CanRangeConstSentinel<Rng>);
     static_assert(CanRangeConstReference<Rng>);
-    static_assert(same_as<ranges::const_iterator_t<Rng>, const_iterator<Rng::iterator>>);
-    static_assert(same_as<ranges::const_sentinel_t<Rng>, const_iterator<Rng::iterator>>);
+    static_assert(same_as<ranges::const_iterator_t<Rng>, Rng::const_iterator>);
+    static_assert(same_as<ranges::const_sentinel_t<Rng>, Rng::const_iterator>);
     static_assert(same_as<ranges::range_const_reference_t<Rng>, const int&>);
     static_assert(!ranges::constant_range<Rng>);
 
@@ -96,8 +96,8 @@ namespace test_forward_range {
     static_assert(CanRangeConstIterator<Rng>);
     static_assert(CanRangeConstSentinel<Rng>);
     static_assert(CanRangeConstReference<Rng>);
-    static_assert(same_as<ranges::const_iterator_t<Rng>, const_iterator<Rng::iterator>>);
-    static_assert(same_as<ranges::const_sentinel_t<Rng>, const_iterator<Rng::iterator>>);
+    static_assert(same_as<ranges::const_iterator_t<Rng>, Rng::const_iterator>);
+    static_assert(same_as<ranges::const_sentinel_t<Rng>, Rng::const_iterator>);
     static_assert(same_as<ranges::range_const_reference_t<Rng>, const int&>);
     static_assert(!ranges::constant_range<Rng>);
 
@@ -147,8 +147,8 @@ namespace test_vector_bool {
     static_assert(CanRangeConstIterator<Vb>);
     static_assert(CanRangeConstSentinel<Vb>);
     static_assert(CanRangeConstReference<Vb>);
-    static_assert(same_as<ranges::const_iterator_t<Vb>, const_iterator<Vb::iterator>>);
-    static_assert(same_as<ranges::const_sentinel_t<Vb>, const_iterator<Vb::iterator>>);
+    static_assert(same_as<ranges::const_iterator_t<Vb>, Vb::const_iterator>);
+    static_assert(same_as<ranges::const_sentinel_t<Vb>, Vb::const_iterator>);
     static_assert(same_as<ranges::range_const_reference_t<Vb>, bool>);
     static_assert(!ranges::constant_range<Vb>);
 

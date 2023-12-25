@@ -399,8 +399,8 @@ constexpr void test_difference_on_const_functor(Rng&& rng) {
     if constexpr (forward_range<V>) {
         using It      = iterator_t<V>;
         using TVIt    = iterator_t<TV>;
-        using VItCat  = typename iterator_traits<It>::iterator_category;
-        using TVItCat = typename iterator_traits<TVIt>::iterator_category;
+        using VItCat  = iterator_traits<It>::iterator_category;
+        using TVItCat = iterator_traits<TVIt>::iterator_category;
         STATIC_ASSERT(
             is_same_v<TVItCat, VItCat>
             || (is_same_v<TVItCat, random_access_iterator_tag> && is_same_v<VItCat, contiguous_iterator_tag>) );
@@ -433,8 +433,8 @@ constexpr void test_xvalue_ranges(Rng&& rng) {
     if constexpr (forward_range<V>) {
         using It      = iterator_t<V>;
         using TVIt    = iterator_t<TV>;
-        using VItCat  = typename iterator_traits<It>::iterator_category;
-        using TVItCat = typename iterator_traits<TVIt>::iterator_category;
+        using VItCat  = iterator_traits<It>::iterator_category;
+        using TVItCat = iterator_traits<TVIt>::iterator_category;
         STATIC_ASSERT(
             is_same_v<TVItCat, VItCat>
             || (is_same_v<TVItCat, random_access_iterator_tag> && is_same_v<VItCat, contiguous_iterator_tag>) );

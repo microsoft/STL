@@ -181,7 +181,11 @@ constexpr void lambda_test() {
     assert(x1.column() == 53);
     assert(x2.column() == 58);
 #else // ^^^ EDG / C1XX vvv
+#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, VS 2022 17.10 Preview 1
+    assert(x1.column() == 45);
+#else // ^^^ no workaround / workaround vvv
     assert(x1.column() == 52);
+#endif // ^^^ workaround ^^^
     assert(x2.column() == 50);
 #endif // ^^^ C1XX ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
@@ -266,13 +270,11 @@ constexpr bool test() {
     return true;
 }
 
-#ifndef __EDG__ // TRANSITION, VSO-1849463
 // Also test GH-2822 Failed to specialize std::invoke on operator() with default argument
 // std::source_location::current()
 void test_gh_2822() { // COMPILE-ONLY
     invoke([](source_location = source_location::current()) {});
 }
-#endif // ^^^ no workaround ^^^
 
 int main() {
     test();

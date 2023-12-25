@@ -242,7 +242,8 @@ public:
     priority_queue() = default;
 
     explicit priority_queue(const _Pr& _Pred) noexcept(
-        is_nothrow_default_constructible_v<_Container>&& is_nothrow_copy_constructible_v<value_compare>) // strengthened
+        is_nothrow_default_constructible_v<_Container>
+        && is_nothrow_copy_constructible_v<value_compare>) // strengthened
         : c(), comp(_Pred) {}
 
     priority_queue(const _Pr& _Pred, const _Container& _Cont) : c(_Cont), comp(_Pred) {
@@ -284,13 +285,15 @@ public:
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    explicit priority_queue(const _Alloc& _Al) noexcept(is_nothrow_constructible_v<_Container, const _Alloc&>&&
-            is_nothrow_default_constructible_v<value_compare>) // strengthened
+    explicit priority_queue(const _Alloc& _Al) noexcept(
+        is_nothrow_constructible_v<_Container, const _Alloc&>
+        && is_nothrow_default_constructible_v<value_compare>) // strengthened
         : c(_Al), comp() {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    priority_queue(const _Pr& _Pred, const _Alloc& _Al) noexcept(is_nothrow_constructible_v<_Container, const _Alloc&>&&
-            is_nothrow_copy_constructible_v<value_compare>) // strengthened
+    priority_queue(const _Pr& _Pred, const _Alloc& _Al) noexcept(
+        is_nothrow_constructible_v<_Container, const _Alloc&>
+        && is_nothrow_copy_constructible_v<value_compare>) // strengthened
         : c(_Al), comp(_Pred) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
@@ -308,8 +311,8 @@ public:
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
     priority_queue(priority_queue&& _Right, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _Container, const _Alloc&>&&
-            is_nothrow_move_constructible_v<value_compare>) // strengthened
+        is_nothrow_constructible_v<_Container, _Container, const _Alloc&>
+        && is_nothrow_move_constructible_v<value_compare>) // strengthened
         : c(_STD move(_Right.c), _Al), comp(_STD move(_Right.comp)) {}
 
     template <class _InIt, class _Alloc,
@@ -416,7 +419,7 @@ public:
     }
 
     void swap(priority_queue& _Right) noexcept(
-        _Is_nothrow_swappable<_Container>::value&& _Is_nothrow_swappable<_Pr>::value) {
+        _Is_nothrow_swappable<_Container>::value && _Is_nothrow_swappable<_Pr>::value) {
         using _STD swap;
         swap(c, _Right.c); // intentional ADL
         swap(comp, _Right.comp); // intentional ADL

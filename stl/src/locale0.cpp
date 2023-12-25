@@ -78,7 +78,7 @@ _STD_END
 #include <cstdlib>
 #include <locale>
 
-_EXTERN_C
+extern "C" {
 
 void __CLRCALL_OR_CDECL _Deletegloballocale(void* ptr) noexcept { // delete a global locale reference
     std::locale::_Locimp* locptr = *static_cast<std::locale::_Locimp**>(ptr);
@@ -96,7 +96,7 @@ static void __CLRCALL_PURE_OR_CDECL tidy_global() noexcept { // delete static gl
     _END_LOCK()
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 _MRTIMP2 void __cdecl _Atexit(void(__cdecl*)());
 
@@ -159,7 +159,7 @@ _MRTIMP2_PURE const locale& __CLRCALL_PURE_OR_CDECL locale::classic() { // get r
 
 _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::empty() { // make empty transparent locale
     _Init();
-    return locale{_Locimp::_New_Locimp(true)};
+    return locale{_Secret_locale_construct_tag{}, _Locimp::_New_Locimp(true)};
 }
 
 _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_incref) { // setup global and "C" locales
@@ -176,7 +176,7 @@ _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_in
 
         // set classic to match
         ptr->_Incref();
-        ::new (&classic_locale) locale{ptr};
+        ::new (&classic_locale) locale{_Secret_locale_construct_tag{}, ptr};
 #if defined(_M_CEE_PURE)
         locale::_Locimp::_Clocptr = ptr;
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv

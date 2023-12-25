@@ -1049,10 +1049,9 @@ void test_reference_wrapper_invocation() {
 }
 
 
-// Test C++17 invoke().
-#if _HAS_CXX17
+// Test invoke().
 constexpr bool test_invoke_constexpr() {
-    // MSVC implements LWG-2894 in C++17 and later
+    // MSVC implements LWG-2894 unconditionally
     Thing thing;
     auto p = &thing;
 
@@ -1076,13 +1075,10 @@ constexpr bool test_invoke_constexpr() {
     assert(invoke(&cube_constexpr, 7) == 343);
     return true;
 }
-#endif // _HAS_CXX17
 
 void test_invoke() {
-#if _HAS_CXX17
     assert(test_invoke_constexpr());
     STATIC_ASSERT(test_invoke_constexpr());
-#endif // _HAS_CXX17
 
     auto sp = make_shared<Thing>();
 
@@ -1914,90 +1910,91 @@ void test_bind() {
     {
 #ifndef _M_CEE_PURE
 
-        {auto lambda = [](int x, int y, int&& z) { return x * 100 + y * 10 + z; };
+        {
+            auto lambda = [](int x, int y, int&& z) { return x * 100 + y * 10 + z; };
 
-    auto b = bind(lambda, 7, _1, _2);
+            auto b = bind(lambda, 7, _1, _2);
 
-    function<int(int, int&&)> f(b);
+            function<int(int, int&&)> f(b);
 
-    assert(f(8, 9) == 789);
-}
-
-{
-    struct Thingy {
-        int mf(int&& n) {
-            return n * 5;
+            assert(f(8, 9) == 789);
         }
-    };
 
-    Thingy t;
+        {
+            struct Thingy {
+                int mf(int&& n) {
+                    return n * 5;
+                }
+            };
 
-    auto b = bind(&Thingy::mf, t, _1);
+            Thingy t;
 
-    assert(b(7) == 35);
-}
+            auto b = bind(&Thingy::mf, t, _1);
 
-{
-    auto consume_up = [](unique_ptr<int>&& up, int n) { return *up / n; };
+            assert(b(7) == 35);
+        }
 
-    auto b = bind(consume_up, _1, 3);
+        {
+            auto consume_up = [](unique_ptr<int>&& up, int n) { return *up / n; };
 
-    assert(b(make_unique<int>(1000)) == 333);
-}
+            auto b = bind(consume_up, _1, 3);
+
+            assert(b(make_unique<int>(1000)) == 333);
+        }
 
 #endif // _M_CEE_PURE
-}
+    }
 
 
-// Test DevDiv-487679 "<functional> bind: MSVS 2012 C++ std::bind illegal indirection compiler error".
-// Test DevDiv-617421 "<functional> bind: Bind failing to compile with a vector of functions".
-{
-    struct BaseFunctor {
-        int operator()(int n) const {
-            return n + 5;
-        }
-    };
+    // Test DevDiv-487679 "<functional> bind: MSVS 2012 C++ std::bind illegal indirection compiler error".
+    // Test DevDiv-617421 "<functional> bind: Bind failing to compile with a vector of functions".
+    {
+        struct BaseFunctor {
+            int operator()(int n) const {
+                return n + 5;
+            }
+        };
 
-    struct DerivedFunctor : BaseFunctor {};
+        struct DerivedFunctor : BaseFunctor {};
 
-    auto b = bind(&DerivedFunctor::operator(), _1, 200);
+        auto b = bind(&DerivedFunctor::operator(), _1, 200);
 
-    DerivedFunctor df;
+        DerivedFunctor df;
 
-    assert(b(df) == 205);
-}
-
-
-// Test DevDiv-505570 "<functional> bind: Can't bind a pointer to a data member using a pointer, smart pointer or
-// iterator to the object".
-{
-    struct Object {
-        int member = 1000;
-    };
-
-    auto pmd = &Object::member;
-    auto sp  = make_shared<Object>();
-
-    auto b1 = bind(pmd, ref(*sp));
-    auto b2 = bind(pmd, sp.get());
-    auto b3 = bind(pmd, sp);
-
-    assert(sp->member == 1000);
-    ++b1();
-    assert(sp->member == 1001);
-    ++b2();
-    assert(sp->member == 1002);
-    ++b3();
-    assert(sp->member == 1003);
-}
+        assert(b(df) == 205);
+    }
 
 
-// Test DevDiv-535246 "<functional> bind: Cannot call const forwarding call wrapper result of std::bind".
-{
-    const auto cb = bind(&quadruple, 11);
+    // Test DevDiv-505570 "<functional> bind: Can't bind a pointer to a data member using a pointer, smart pointer or
+    // iterator to the object".
+    {
+        struct Object {
+            int member = 1000;
+        };
 
-    assert(cb() == 44);
-}
+        auto pmd = &Object::member;
+        auto sp  = make_shared<Object>();
+
+        auto b1 = bind(pmd, ref(*sp));
+        auto b2 = bind(pmd, sp.get());
+        auto b3 = bind(pmd, sp);
+
+        assert(sp->member == 1000);
+        ++b1();
+        assert(sp->member == 1001);
+        ++b2();
+        assert(sp->member == 1002);
+        ++b3();
+        assert(sp->member == 1003);
+    }
+
+
+    // Test DevDiv-535246 "<functional> bind: Cannot call const forwarding call wrapper result of std::bind".
+    {
+        const auto cb = bind(&quadruple, 11);
+
+        assert(cb() == 44);
+    }
 }
 
 

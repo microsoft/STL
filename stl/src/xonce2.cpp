@@ -10,7 +10,7 @@
 // environments that can't use /ALTERNATENAME.
 // They were originally specific to /clr but are now used in other scenarios.
 
-_EXTERN_C
+extern "C" {
 
 int __stdcall __std_init_once_begin_initialize_clr(
     void** _LpInitOnce, unsigned long _DwFlags, int* _FPending, void** _LpContext) noexcept {
@@ -38,4 +38,4 @@ int __stdcall __std_init_once_complete_clr(void** _LpInitOnce, unsigned long _Dw
 #error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
 
-_END_EXTERN_C
+} // extern "C"

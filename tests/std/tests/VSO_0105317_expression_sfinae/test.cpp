@@ -625,9 +625,7 @@ NonMovable getNonMovable() noexcept(Nothrow);
 STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getNonMovable<false>)>);
 STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<false>)>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1899423
-STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)>);
-#endif // ^^^ no workaround ^^^
+STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)> == noexcept_in_the_type_system);
 
 template <bool Nothrow>
 struct ConvertsToNonMovable {
@@ -637,18 +635,15 @@ struct ConvertsToNonMovable {
 template <bool Nothrow, bool NothrowReturn>
 ConvertsToNonMovable<NothrowReturn> getConvertsToNonMovable() noexcept(Nothrow);
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1899423
 STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, false>)>);
 STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, true>)>);
 STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, false>)>);
 STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, true>)>);
-#endif // ^^^ no workaround ^^^
 STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, false>)>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, true>)>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, false>)>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1899423
-STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, true>)>);
-#endif // ^^^ no workaround ^^^
+STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, true>)>
+              == noexcept_in_the_type_system);
 #endif // _HAS_CXX17
 
 

@@ -31,60 +31,60 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 #ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
-namespace stdext {
-    template <class _Kty>
-    _NODISCARD size_t hash_value(const _Kty& _Keyval) noexcept {
-        if constexpr (_STD is_pointer_v<_Kty> || _STD is_null_pointer_v<_Kty>) {
-            return reinterpret_cast<size_t>(_Keyval) ^ 0xdeadbeefu;
-        } else {
-            return static_cast<size_t>(_Keyval) ^ 0xdeadbeefu;
-        }
+_STDEXT_BEGIN
+template <class _Kty>
+_NODISCARD size_t hash_value(const _Kty& _Keyval) noexcept {
+    if constexpr (_STD is_pointer_v<_Kty> || _STD is_null_pointer_v<_Kty>) {
+        return reinterpret_cast<size_t>(_Keyval) ^ 0xdeadbeefu;
+    } else {
+        return static_cast<size_t>(_Keyval) ^ 0xdeadbeefu;
     }
+}
 
-    template <class _Elem, class _Traits, class _Alloc>
-    _NODISCARD size_t hash_value(const _STD basic_string<_Elem, _Traits, _Alloc>& _Str) noexcept {
-        return _STD _Hash_array_representation(_Str.c_str(), _Str.size());
-    }
+template <class _Elem, class _Traits, class _Alloc>
+_NODISCARD size_t hash_value(const _STD basic_string<_Elem, _Traits, _Alloc>& _Str) noexcept {
+    return _STD _Hash_array_representation(_Str.c_str(), _Str.size());
+}
 
-    _NODISCARD inline size_t hash_value(_In_z_ const char* _Str) noexcept {
-        return _STD _Hash_array_representation(_Str, _CSTD strlen(_Str));
-    }
+_NODISCARD inline size_t hash_value(_In_z_ const char* _Str) noexcept {
+    return _STD _Hash_array_representation(_Str, _CSTD strlen(_Str));
+}
 
-    _NODISCARD inline size_t hash_value(_In_z_ const wchar_t* _Str) noexcept {
-        return _STD _Hash_array_representation(_Str, _CSTD wcslen(_Str));
-    }
+_NODISCARD inline size_t hash_value(_In_z_ const wchar_t* _Str) noexcept {
+    return _STD _Hash_array_representation(_Str, _CSTD wcslen(_Str));
+}
 
-    template <class _Kty, class _Pr = _STD less<_Kty>>
-    class hash_compare { // traits class for hash containers
-    public:
-        enum { // parameters for hash table
-            bucket_size = 1 // 0 < bucket_size
-        };
-
-        hash_compare() = default;
-        hash_compare(const _Pr& _Pred) noexcept(_STD is_nothrow_copy_constructible_v<_Pr>) : comp(_Pred) {}
-
-        _NODISCARD size_t operator()(const _Kty& _Keyval) const noexcept(noexcept(hash_value(_Keyval))) {
-            long _Quot   = static_cast<long>(hash_value(_Keyval) & LONG_MAX); // TRANSITION, ADL?
-            ldiv_t _Qrem = _CSTD ldiv(_Quot, 127773);
-
-            _Qrem.rem = 16807 * _Qrem.rem - 2836 * _Qrem.quot;
-            if (_Qrem.rem < 0) {
-                _Qrem.rem += LONG_MAX;
-            }
-
-            return static_cast<size_t>(_Qrem.rem);
-        }
-
-        _NODISCARD bool operator()(const _Kty& _Keyval1, const _Kty& _Keyval2) const
-            noexcept(noexcept(comp(_Keyval1, _Keyval2))) {
-            // test if _Keyval1 ordered before _Keyval2
-            return comp(_Keyval1, _Keyval2);
-        }
-
-        _Pr comp{}; // the comparator object
+template <class _Kty, class _Pr = _STD less<_Kty>>
+class hash_compare { // traits class for hash containers
+public:
+    enum { // parameters for hash table
+        bucket_size = 1 // 0 < bucket_size
     };
-} // namespace stdext
+
+    hash_compare() = default;
+    hash_compare(const _Pr& _Pred) noexcept(_STD is_nothrow_copy_constructible_v<_Pr>) : comp(_Pred) {}
+
+    _NODISCARD size_t operator()(const _Kty& _Keyval) const noexcept(noexcept(hash_value(_Keyval))) {
+        long _Quot   = static_cast<long>(hash_value(_Keyval) & LONG_MAX); // TRANSITION, ADL?
+        ldiv_t _Qrem = _CSTD ldiv(_Quot, 127773);
+
+        _Qrem.rem = 16807 * _Qrem.rem - 2836 * _Qrem.quot;
+        if (_Qrem.rem < 0) {
+            _Qrem.rem += LONG_MAX;
+        }
+
+        return static_cast<size_t>(_Qrem.rem);
+    }
+
+    _NODISCARD bool operator()(const _Kty& _Keyval1, const _Kty& _Keyval2) const
+        noexcept(noexcept(comp(_Keyval1, _Keyval2))) {
+        // test if _Keyval1 ordered before _Keyval2
+        return comp(_Keyval1, _Keyval2);
+    }
+
+    _Pr comp{}; // the comparator object
+};
+_STDEXT_END
 
 _STD_BEGIN
 using stdext::hash_compare; // Non-Standard, for legacy source compatibility
@@ -1286,7 +1286,7 @@ private:
 
     template <class _Keyty>
     _NODISCARD _Equal_range_result _Equal_range(const _Keyty& _Keyval, const size_t _Hashval) const
-        noexcept(_Nothrow_compare<_Traits, key_type, _Keyty>&& _Nothrow_compare<_Traits, _Keyty, key_type>) {
+        noexcept(_Nothrow_compare<_Traits, key_type, _Keyty> && _Nothrow_compare<_Traits, _Keyty, key_type>) {
         const size_type _Bucket              = _Hashval & _Mask;
         _Unchecked_const_iterator _Where     = _Vec._Mypair._Myval2._Myfirst[_Bucket << 1];
         const _Unchecked_const_iterator _End = _Unchecked_end();

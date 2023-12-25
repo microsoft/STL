@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// thread exit notification functions
-
 #include <cstdlib>
 #include <xthreads.h>
 
@@ -27,7 +25,7 @@ namespace {
     _At_thread_exit_block _Thread_exit_data;
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 
 void _Lock_at_thread_exit_mutex() noexcept;
 void _Unlock_at_thread_exit_mutex() noexcept;
@@ -109,7 +107,7 @@ _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() noexcept {
     _Unlock_at_thread_exit_mutex();
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 /*
  * This file is derived from software bearing the following

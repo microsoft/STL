@@ -31,7 +31,7 @@ struct CpoResultImpl<CPO, E, F> {
 };
 
 template <const auto& CPO, typename E, typename F = E>
-using CpoResult = typename CpoResultImpl<CPO, E, F>::type;
+using CpoResult = CpoResultImpl<CPO, E, F>::type;
 
 template <const auto& CPO, typename E, typename F = E>
 inline constexpr bool NoexceptCpo = noexcept(CPO(declval<E>(), declval<F>()));

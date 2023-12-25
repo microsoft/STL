@@ -40,7 +40,7 @@ constexpr bool is_range_adaptor_closure() {
 
 struct IdentityRangeAdaptorClosure : ranges::range_adaptor_closure<IdentityRangeAdaptorClosure> {
     template <class T>
-    constexpr decltype(auto) operator()(T&& range) const {
+    constexpr decltype(auto) operator()(T && range) const {
         return forward<T>(range);
     }
 };
@@ -221,6 +221,80 @@ constexpr bool test_mixing_of_range_adaptors() {
     assert(ranges::equal(factory_pipeline, array{2, 4, 6}));
 
     return true;
+}
+
+struct Pinned {
+    Pinned()                         = default;
+    Pinned(const Pinned&)            = delete;
+    Pinned& operator=(const Pinned&) = delete;
+};
+
+constexpr Pinned pinned_object{};
+
+struct PinnedReturningRaco : ranges::range_adaptor_closure<PinnedReturningRaco> {
+    constexpr const Pinned& operator()(ranges::range auto&&) const noexcept {
+        return pinned_object;
+    }
+};
+
+struct RangeIdentity : ranges::range_adaptor_closure<RangeIdentity> {
+    constexpr auto&& operator()(ranges::range auto&& t) const noexcept {
+        return forward<decltype(t)>(t);
+    }
+};
+
+struct ConstOnlyRangeIdentity : ranges::range_adaptor_closure<ConstOnlyRangeIdentity> {
+    constexpr auto&& operator()(ranges::range auto&& t) const noexcept {
+        return forward<decltype(t)>(t);
+    }
+    void operator()(ranges::range auto&&) = delete;
+};
+
+void test_perfect_forwarding_properties() { // COMPILE-ONLY
+    // GH-4153: <ranges>: operator|(_Left&& __l, _Right&& __r) should return decltype(auto)
+    // Intentionally avoid using some traits/concepts to test correctness in non-immediate contexts.
+    {
+        PinnedReturningRaco raco{};
+
+        static_assert(same_as<decltype(TestRange{} | raco), const Pinned&>);
+        static_assert(same_as<decltype(TestRange{} | as_const(raco)), const Pinned&>);
+        static_assert(same_as<decltype(TestRange{} | move(raco)), const Pinned&>);
+        static_assert(same_as<decltype(TestRange{} | move(as_const(raco))), const Pinned&>);
+
+        static_assert(same_as<decltype(raco(TestRange{})), const Pinned&>);
+        static_assert(same_as<decltype(as_const(raco)(TestRange{})), const Pinned&>);
+        static_assert(same_as<decltype(move(raco)(TestRange{})), const Pinned&>);
+        static_assert(same_as<decltype(move(as_const(raco))(TestRange{})), const Pinned&>);
+    }
+    {
+        auto combined_pipeline = RangeIdentity{} | PinnedReturningRaco{};
+
+        static_assert(same_as<decltype(TestRange{} | combined_pipeline), const Pinned&>);
+        static_assert(same_as<decltype(TestRange{} | as_const(combined_pipeline)), const Pinned&>);
+        static_assert(same_as<decltype(TestRange{} | move(combined_pipeline)), const Pinned&>);
+        static_assert(same_as<decltype(TestRange{} | move(as_const(combined_pipeline))), const Pinned&>);
+
+        static_assert(same_as<decltype(combined_pipeline(TestRange{})), const Pinned&>);
+        static_assert(same_as<decltype(as_const(combined_pipeline)(TestRange{})), const Pinned&>);
+        static_assert(same_as<decltype(move(combined_pipeline)(TestRange{})), const Pinned&>);
+        static_assert(same_as<decltype(move(as_const(combined_pipeline))(TestRange{})), const Pinned&>);
+    }
+    {
+        auto weird_pipeline     = ConstOnlyRangeIdentity{} | PinnedReturningRaco{};
+        using WeirdPipelineType = decltype(weird_pipeline);
+
+        static_assert(same_as<decltype(TestRange{} | as_const(weird_pipeline)), const Pinned&>);
+        static_assert(same_as<decltype(TestRange{} | move(as_const(weird_pipeline))), const Pinned&>);
+
+        static_assert(!CanPipe<WeirdPipelineType, TestRange>);
+        static_assert(!CanPipe<WeirdPipelineType&, TestRange>);
+
+        static_assert(same_as<decltype(as_const(weird_pipeline)(TestRange{})), const Pinned&>);
+        static_assert(same_as<decltype(move(as_const(weird_pipeline))(TestRange{})), const Pinned&>);
+
+        static_assert(!invocable<WeirdPipelineType, TestRange>);
+        static_assert(!invocable<WeirdPipelineType&, TestRange>);
+    }
 }
 
 int main() {

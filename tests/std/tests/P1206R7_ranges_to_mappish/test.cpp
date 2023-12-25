@@ -73,7 +73,7 @@ struct mappish_instantiator {
     };
 
     template <template <class...> class C, class Key, class Val, class... Args>
-    using deduce_container = typename deduce_container_impl<C>::template apply<Key, Val, Args...>;
+    using deduce_container = deduce_container_impl<C>::template apply<Key, Val, Args...>;
 
     template <template <class...> class C>
     static void test_copy_move() {

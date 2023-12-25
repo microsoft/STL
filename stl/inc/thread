@@ -7,10 +7,14 @@
 #define _THREAD_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+
+#ifdef _M_CEE_PURE
+#error <thread> is not supported when compiling with /clr:pure.
+#endif // defined(_M_CEE_PURE)
+
 #include <__msvc_chrono.hpp>
 #include <memory>
 #include <process.h>
-#include <string>
 #include <tuple>
 #include <xthreads.h>
 
@@ -19,13 +23,9 @@
 #include <stop_token>
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #include <format>
-#endif // _HAS_CXX23
-
-#ifdef _M_CEE_PURE
-#error <thread> is not supported when compiling with /clr:pure.
-#endif // defined(_M_CEE_PURE)
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -297,7 +297,8 @@ basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _I
 }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
-// Per LWG-3997, the _CharT template parameter is constrained to supported character types.
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
 template <_Format_supported_charT _CharT>
 struct formatter<thread::id, _CharT> {
 private:
@@ -305,7 +306,7 @@ private:
 
 public:
     constexpr _Pc::iterator parse(_Pc& _Parse_ctx) {
-        return _Impl.parse(_Parse_ctx);
+        return _Impl._Parse(_Parse_ctx);
     }
 
     template <class _FormatContext>

@@ -22,7 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_EXTERN_C
+extern "C" {
 
 enum class __std_unicode_console_handle : intptr_t { _Invalid = -1 };
 
@@ -55,7 +55,7 @@ _NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_print_to_unicode_console(_In_ __std_unicode_console_handle _Console_handle,
         _In_reads_(_Str_size) const char* _Str, _In_ size_t _Str_size) noexcept;
 
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 

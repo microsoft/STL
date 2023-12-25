@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// condition variable functions
-
 #include <cstdlib>
 #include <internal_shared.h>
 #include <type_traits>
@@ -11,9 +9,9 @@
 
 #include "primitives.hpp"
 
-_EXTERN_C
+extern "C" {
 
-struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
+struct _Cnd_internal_imp_t {
     typename std::_Aligned_storage<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment>::type cv;
 
     [[nodiscard]] Concurrency::details::stl_condition_variable_win7* _get_cv() noexcept {
@@ -102,7 +100,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(const _Cnd_t cond) noexcept { 
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 /*
  * This file is derived from software bearing the following
