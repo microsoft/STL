@@ -1469,15 +1469,26 @@ struct _SP_convertible : is_convertible<_Yty*, _Ty*>::type {};
 
 template <class _Yty, class _Uty, class _Void>
 struct _SP_convertible<_Yty, _Uty[], _Void> : false_type {};
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10548086
+template <class _Yty, class _Uty>
+struct _SP_convertible<_Yty, _Uty[], void_t<_Yty (*)[]>> : is_convertible<_Yty (*)[], _Uty (*)[]>::type {};
+#else // ^^^ no workaround / workaround vvv
 template <class _Yty, class _Uty>
 struct _SP_convertible<_Yty, _Uty[], void_t<decltype(static_cast<_Yty (*)[]>(nullptr))>>
     : is_convertible<_Yty (*)[], _Uty (*)[]>::type {};
+#endif // ^^^ workaround ^^^
 
 template <class _Yty, class _Uty, size_t _Ext, class _Void>
 struct _SP_convertible<_Yty, _Uty[_Ext], _Void> : false_type {};
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10548086
+template <class _Yty, class _Uty, size_t _Ext>
+struct _SP_convertible<_Yty, _Uty[_Ext], void_t<_Yty (*)[_Ext]>>
+    : is_convertible<_Yty (*)[_Ext], _Uty (*)[_Ext]>::type {};
+#else // ^^^ no workaround / workaround vvv
 template <class _Yty, class _Uty, size_t _Ext>
 struct _SP_convertible<_Yty, _Uty[_Ext], void_t<decltype(static_cast<_Yty (*)[_Ext]>(nullptr))>>
     : is_convertible<_Yty (*)[_Ext], _Uty (*)[_Ext]>::type {};
+#endif // ^^^ workaround ^^^
 
 template <class _Yty, class _Ty>
 struct _SP_pointer_compatible : is_convertible<_Yty*, _Ty*>::type {
