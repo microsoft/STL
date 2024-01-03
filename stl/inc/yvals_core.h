@@ -1704,62 +1704,43 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // defined(__cpp_impl_coroutine)
 
 #if _HAS_CXX20
-#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
-#if _HAS_CXX23 // TRANSITION, GH-395 - move down to "macros with language mode sensitivity" section
-#define __cpp_lib_concepts 202207L // P2404R3 Move-Only Types For Comparison Concepts
-#else // ^^^ C++23 / C++20 vvv
-#define __cpp_lib_concepts 202002L // P1964R2 Replacing boolean With boolean-testable
-#endif // C++20
-#endif // !defined(__EDG__) || defined(__INTELLISENSE__)
-
-#ifdef __cpp_lib_concepts
 #define __cpp_lib_algorithm_iterator_requirements 202207L
-#endif // defined(__cpp_lib_concepts)
-
-#define __cpp_lib_assume_aligned                201811L
-#define __cpp_lib_atomic_flag_test              201907L
-#define __cpp_lib_atomic_float                  201711L
-#define __cpp_lib_atomic_lock_free_type_aliases 201907L
-#define __cpp_lib_atomic_ref                    201806L
-#define __cpp_lib_atomic_shared_ptr             201711L
-#define __cpp_lib_atomic_wait                   201907L
-#define __cpp_lib_barrier                       202302L
-#define __cpp_lib_bind_front                    201907L
-#define __cpp_lib_bit_cast                      201806L
-#define __cpp_lib_bitops                        201907L
-#define __cpp_lib_bounded_array_traits          201902L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_common_reference         202302L
-#define __cpp_lib_common_reference_wrapper 202302L
-#endif // defined(__cpp_lib_concepts)
-
-#define __cpp_lib_constexpr_algorithms    201806L
-#define __cpp_lib_constexpr_complex       201711L
-#define __cpp_lib_constexpr_dynamic_alloc 201907L
-#define __cpp_lib_constexpr_functional    201907L
-#define __cpp_lib_constexpr_iterator      201811L
-#define __cpp_lib_constexpr_numeric       201911L
-#define __cpp_lib_constexpr_string        201907L
-#define __cpp_lib_constexpr_string_view   201811L
-#define __cpp_lib_constexpr_tuple         201811L
-#define __cpp_lib_constexpr_utility       201811L
-#define __cpp_lib_constexpr_vector        201907L
-#define __cpp_lib_destroying_delete       201806L
-#define __cpp_lib_endian                  201907L
-#define __cpp_lib_erase_if                202002L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_format              202207L
-#define __cpp_lib_format_uchar        202311L
-#define __cpp_lib_freestanding_ranges 202306L
-#endif // defined(__cpp_lib_concepts)
-
-#define __cpp_lib_generic_unordered_lookup     201811L
-#define __cpp_lib_int_pow2                     202002L
-#define __cpp_lib_integer_comparison_functions 202002L
-#define __cpp_lib_interpolate                  201902L
-#define __cpp_lib_is_constant_evaluated        201811L
+#define __cpp_lib_assume_aligned                  201811L
+#define __cpp_lib_atomic_flag_test                201907L
+#define __cpp_lib_atomic_float                    201711L
+#define __cpp_lib_atomic_lock_free_type_aliases   201907L
+#define __cpp_lib_atomic_ref                      201806L
+#define __cpp_lib_atomic_shared_ptr               201711L
+#define __cpp_lib_atomic_wait                     201907L
+#define __cpp_lib_barrier                         202302L
+#define __cpp_lib_bind_front                      201907L
+#define __cpp_lib_bit_cast                        201806L
+#define __cpp_lib_bitops                          201907L
+#define __cpp_lib_bounded_array_traits            201902L
+#define __cpp_lib_common_reference                202302L
+#define __cpp_lib_common_reference_wrapper        202302L
+#define __cpp_lib_constexpr_algorithms            201806L
+#define __cpp_lib_constexpr_complex               201711L
+#define __cpp_lib_constexpr_dynamic_alloc         201907L
+#define __cpp_lib_constexpr_functional            201907L
+#define __cpp_lib_constexpr_iterator              201811L
+#define __cpp_lib_constexpr_numeric               201911L
+#define __cpp_lib_constexpr_string                201907L
+#define __cpp_lib_constexpr_string_view           201811L
+#define __cpp_lib_constexpr_tuple                 201811L
+#define __cpp_lib_constexpr_utility               201811L
+#define __cpp_lib_constexpr_vector                201907L
+#define __cpp_lib_destroying_delete               201806L
+#define __cpp_lib_endian                          201907L
+#define __cpp_lib_erase_if                        202002L
+#define __cpp_lib_format                          202207L
+#define __cpp_lib_format_uchar                    202311L
+#define __cpp_lib_freestanding_ranges             202306L
+#define __cpp_lib_generic_unordered_lookup        201811L
+#define __cpp_lib_int_pow2                        202002L
+#define __cpp_lib_integer_comparison_functions    202002L
+#define __cpp_lib_interpolate                     201902L
+#define __cpp_lib_is_constant_evaluated           201811L
 
 #ifndef __clang__ // TRANSITION, LLVM-48860
 #define __cpp_lib_is_layout_compatible 201907L
@@ -1780,10 +1761,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_modules 202207L
 #endif // !defined(__clang__) && !defined(__EDG__)
 
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_move_iterator_concept 202207L
-#endif // defined(__cpp_lib_concepts)
-
+#define __cpp_lib_move_iterator_concept   202207L
 #define __cpp_lib_polymorphic_allocator   201902L
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
@@ -1793,15 +1771,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ssize                   201902L
 #define __cpp_lib_starts_ends_with        201711L
 #define __cpp_lib_syncbuf                 201803L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_three_way_comparison 201907L
-#endif // defined(__cpp_lib_concepts)
-
-#define __cpp_lib_to_address    201711L
-#define __cpp_lib_to_array      201907L
-#define __cpp_lib_type_identity 201806L
-#define __cpp_lib_unwrap_ref    201811L
+#define __cpp_lib_three_way_comparison    201907L
+#define __cpp_lib_to_address              201711L
+#define __cpp_lib_to_array                201907L
+#define __cpp_lib_type_identity           201806L
+#define __cpp_lib_unwrap_ref              201811L
 #endif // _HAS_CXX20
 
 // C++23
@@ -1814,58 +1788,42 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_constexpr_bitset                  202207L
 #define __cpp_lib_constexpr_charconv                202207L
 #define __cpp_lib_constexpr_typeinfo                202106L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_containers_ranges 202202L
-#define __cpp_lib_expected          202211L
-#define __cpp_lib_formatters        202302L
-#endif // defined(__cpp_lib_concepts)
-
-#define __cpp_lib_forward_like   202207L
-#define __cpp_lib_invoke_r       202106L
-#define __cpp_lib_ios_noreplace  202207L
-#define __cpp_lib_is_scoped_enum 202011L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_mdspan 202207L
-#endif // defined(__cpp_lib_concepts)
-
-#define __cpp_lib_move_only_function 202110L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_out_ptr                  202106L
-#define __cpp_lib_print                    202207L
-#define __cpp_lib_ranges_as_const          202311L
-#define __cpp_lib_ranges_as_rvalue         202207L
-#define __cpp_lib_ranges_cartesian_product 202207L
-#define __cpp_lib_ranges_chunk             202202L
-#define __cpp_lib_ranges_chunk_by          202202L
-#define __cpp_lib_ranges_contains          202207L
-#define __cpp_lib_ranges_enumerate         202302L
-#define __cpp_lib_ranges_find_last         202207L
-#define __cpp_lib_ranges_fold              202207L
-#define __cpp_lib_ranges_iota              202202L
-#define __cpp_lib_ranges_join_with         202202L
-#define __cpp_lib_ranges_repeat            202207L
-#define __cpp_lib_ranges_slide             202202L
-#define __cpp_lib_ranges_starts_ends_with  202106L
-#define __cpp_lib_ranges_stride            202207L
-#define __cpp_lib_ranges_to_container      202202L
-#define __cpp_lib_ranges_zip               202110L
-#endif // defined(__cpp_lib_concepts)
-
-#define __cpp_lib_spanstream                  202106L
-#define __cpp_lib_stacktrace                  202011L
-#define __cpp_lib_stdatomic_h                 202011L
-#define __cpp_lib_string_contains             202011L
-#define __cpp_lib_string_resize_and_overwrite 202110L
-#define __cpp_lib_to_underlying               202102L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_tuple_like 202207L
-#endif // defined(__cpp_lib_concepts)
-
-#define __cpp_lib_unreachable 202202L
+#define __cpp_lib_containers_ranges                 202202L
+#define __cpp_lib_expected                          202211L
+#define __cpp_lib_formatters                        202302L
+#define __cpp_lib_forward_like                      202207L
+#define __cpp_lib_invoke_r                          202106L
+#define __cpp_lib_ios_noreplace                     202207L
+#define __cpp_lib_is_scoped_enum                    202011L
+#define __cpp_lib_mdspan                            202207L
+#define __cpp_lib_move_only_function                202110L
+#define __cpp_lib_out_ptr                           202106L
+#define __cpp_lib_print                             202207L
+#define __cpp_lib_ranges_as_const                   202311L
+#define __cpp_lib_ranges_as_rvalue                  202207L
+#define __cpp_lib_ranges_cartesian_product          202207L
+#define __cpp_lib_ranges_chunk                      202202L
+#define __cpp_lib_ranges_chunk_by                   202202L
+#define __cpp_lib_ranges_contains                   202207L
+#define __cpp_lib_ranges_enumerate                  202302L
+#define __cpp_lib_ranges_find_last                  202207L
+#define __cpp_lib_ranges_fold                       202207L
+#define __cpp_lib_ranges_iota                       202202L
+#define __cpp_lib_ranges_join_with                  202202L
+#define __cpp_lib_ranges_repeat                     202207L
+#define __cpp_lib_ranges_slide                      202202L
+#define __cpp_lib_ranges_starts_ends_with           202106L
+#define __cpp_lib_ranges_stride                     202207L
+#define __cpp_lib_ranges_to_container               202202L
+#define __cpp_lib_ranges_zip                        202110L
+#define __cpp_lib_spanstream                        202106L
+#define __cpp_lib_stacktrace                        202011L
+#define __cpp_lib_stdatomic_h                       202011L
+#define __cpp_lib_string_contains                   202011L
+#define __cpp_lib_string_resize_and_overwrite       202110L
+#define __cpp_lib_to_underlying                     202102L
+#define __cpp_lib_tuple_like                        202207L
+#define __cpp_lib_unreachable                       202202L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
@@ -1875,13 +1833,19 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
 #elif _HAS_CXX17
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
 #endif // ^^^ !_HAS_CXX17 ^^^
+
+#if _HAS_CXX23
+#define __cpp_lib_concepts 202207L // P2404R3 Move-Only Types For Comparison Concepts
+#elif _HAS_CXX20 // ^^^ C++23 / C++20 vvv
+#define __cpp_lib_concepts 202002L // P1964R2 Replacing boolean With boolean-testable
+#endif // C++20
 
 #if _HAS_CXX23
 #define __cpp_lib_constexpr_memory 202202L // P2273R3 constexpr unique_ptr
@@ -1897,7 +1861,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // language mode
 #endif // !defined(_M_CEE_PURE)
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
@@ -1905,13 +1869,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
 #endif // _HAS_CXX17
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #if _HAS_CXX23
 #define __cpp_lib_ranges 202302L // P2609R3 Relaxing Ranges Just A Smidge
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
 #endif // _HAS_CXX20
-#endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
@@ -1919,7 +1881,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 #define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_shift 201806L // P0769R2 shift_left(), shift_right()
