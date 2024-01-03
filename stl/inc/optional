@@ -586,7 +586,6 @@ public:
         }
     }
 
-#if _HAS_CXX20
     template <invocable<> _Fn>
         requires copy_constructible<_Ty>
     constexpr optional or_else(_Fn&& _Func) const& {
@@ -612,7 +611,6 @@ public:
             return _STD forward<_Fn>(_Func)();
         }
     }
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     using _Mybase::reset;

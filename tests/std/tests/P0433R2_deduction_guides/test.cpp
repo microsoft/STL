@@ -863,13 +863,11 @@ void test_queue_and_stack() {
     static_assert(is_same_v<decltype(q4), queue<long>>);
     static_assert(is_same_v<decltype(q5), queue<long, deque<long, MyAlloc<long>>>>);
 
-#if _HAS_CXX20
     queue q6(from_range, first);
     queue q7(from_range, first, myal);
 
     static_assert(is_same_v<decltype(q6), queue<long>>);
     static_assert(is_same_v<decltype(q7), queue<long, deque<long, MyAlloc<long>>>>);
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     stack s1(lst);
@@ -887,13 +885,11 @@ void test_queue_and_stack() {
     static_assert(is_same_v<decltype(s4), stack<long>>);
     static_assert(is_same_v<decltype(s5), stack<long, deque<long, MyAlloc<long>>>>);
 
-#if _HAS_CXX20
     stack s6(from_range, first);
     stack s7(from_range, first, myal);
 
     static_assert(is_same_v<decltype(s6), stack<long>>);
     static_assert(is_same_v<decltype(s7), stack<long, deque<long, MyAlloc<long>>>>);
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 }
 

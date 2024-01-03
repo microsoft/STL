@@ -255,7 +255,6 @@ public:
         return *this;
     }
 
-#if _HAS_CXX20
     template <_Different_from<tuple> _Other>
         requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple& operator=(_Other&&) noexcept /* strengthened */ {
@@ -267,7 +266,6 @@ public:
     constexpr const tuple& operator=(_Other&&) const noexcept /* strengthened */ {
         return *this;
     }
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(tuple&) noexcept {}
@@ -423,7 +421,6 @@ public:
             _Tuple_nothrow_constructible_v<tuple, const _First, const _Second>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
 
-#if _HAS_CXX20
     template <class _Other, class _Indices = index_sequence_for<_Rest...>>
     static constexpr bool _Is_tuple_like_constructor_explicit_v = false;
 
@@ -444,7 +441,6 @@ public:
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(_Other&& _Right)
         : tuple(_Unpack_tuple_t{}, _STD forward<_Other>(_Right)) {
     }
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     template <class _Alloc, class _This2 = _This,
@@ -539,7 +535,6 @@ public:
         tuple(allocator_arg_t, const _Alloc& _Al, const pair<_First, _Second>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
 
-#if _HAS_CXX20
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 (Clang), VSO-1900279 (EDG)
     template <class _Alloc, class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
@@ -553,7 +548,6 @@ public:
         tuple(allocator_arg_t, const _Alloc& _Al, _Other&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Other>(_Right)) {
     }
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     tuple& operator=(const volatile tuple&) = delete;
@@ -689,7 +683,6 @@ public:
         return *this;
     }
 
-#if _HAS_CXX20
     template <bool _Const_assignment, class _Other, class _Indices = index_sequence_for<_Rest...>>
     static constexpr bool _Can_assign_values_from_tuple_like_v = false;
 
@@ -730,7 +723,6 @@ public:
         _Assign_tuple_like(_STD forward<_Other>(_Right), make_index_sequence<1 + sizeof...(_Rest)>{});
         return *this;
     }
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(tuple& _Right) noexcept(

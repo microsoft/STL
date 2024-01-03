@@ -288,7 +288,6 @@ struct pair { // store a pair of values
             && is_nothrow_constructible_v<_Ty2, const _Other2>) // strengthened
         : first(_STD forward<const _Other1>(_Right.first)), second(_STD forward<const _Other2>(_Right.second)) {}
 
-#if _HAS_CXX20
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 (Clang), VSO-1900279 (EDG)
     template <class _Other, enable_if_t<_Can_construct_from_pair_like<_Other, _Ty1, _Ty2>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
@@ -304,7 +303,6 @@ struct pair { // store a pair of values
             && is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
         : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {
     }
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     template <class _Tuple1, class _Tuple2, size_t... _Indices1, size_t... _Indices2>
@@ -417,7 +415,6 @@ struct pair { // store a pair of values
         return *this;
     }
 
-#if _HAS_CXX20
     template <_Pair_like _Other>
         requires _Different_from<_Other, pair> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
               && is_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
@@ -441,7 +438,6 @@ struct pair { // store a pair of values
         second = _STD get<1>(_STD forward<_Other>(_Right));
         return *this;
     }
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(pair& _Right) noexcept(

@@ -48,10 +48,8 @@ public:
     queue(_InIt _First, _InIt _Last) noexcept(is_nothrow_constructible_v<_Container, _InIt, _InIt>) // strengthened
         : c(_STD move(_First), _STD move(_Last)) {}
 
-#if _HAS_CXX20
     template <_Container_compatible_range<_Ty> _Rng>
     queue(from_range_t, _Rng&& _Range) : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range))) {}
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
@@ -81,11 +79,9 @@ public:
         is_nothrow_constructible_v<_Container, _InIt, _InIt, const _Alloc&>) // strengthened
         : c(_STD move(_First), _STD move(_Last), _Al) {}
 
-#if _HAS_CXX20
     template <_Container_compatible_range<_Ty> _Rng, class _Alloc>
     queue(from_range_t, _Rng&& _Range, const _Alloc& _Al)
         : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range), _Al)) {}
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     _NODISCARD_EMPTY_ADAPTOR_MEMBER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
@@ -171,12 +167,10 @@ template <class _InIt, class _Alloc = allocator<_Iter_value_t<_InIt>>,
     enable_if_t<conjunction_v<_Is_iterator<_InIt>, _Is_allocator<_Alloc>>, int> = 0>
 queue(_InIt, _InIt, _Alloc = _Alloc()) -> queue<_Iter_value_t<_InIt>, deque<_Iter_value_t<_InIt>, _Alloc>>;
 
-#if _HAS_CXX20
 template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 queue(from_range_t, _Rng&&, _Alloc = _Alloc())
     -> queue<_RANGES range_value_t<_Rng>, deque<_RANGES range_value_t<_Rng>, _Alloc>>;
-#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty, class _Container>
