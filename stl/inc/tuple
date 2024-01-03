@@ -7,9 +7,9 @@
 #define _TUPLE_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #include <compare>
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #include <__msvc_iter_core.hpp>
 #include <type_traits>
 
@@ -178,7 +178,7 @@ struct _Alloc_unpack_tuple_t {
     explicit _Alloc_unpack_tuple_t() = default;
 }; // tag type to disambiguate construction (from an allocator and unpacking a tuple/pair)
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
 template <class _Tuple, class _Other, class _Indices = make_index_sequence<tuple_size_v<_Tuple>>>
 inline constexpr bool _Can_construct_values_from_tuple_like_v = false;
 
@@ -216,7 +216,7 @@ using _Three_way_comparison_result_with_tuple_like_t =
 
 template <class _Ty>
 concept _Tuple_like_non_tuple = !_Is_specialization_v<_Ty, tuple> && _Tuple_like<_Ty>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 template <>
 class tuple<> { // empty tuple
@@ -225,11 +225,11 @@ public:
 
     constexpr tuple(const tuple&) noexcept /* strengthened */ {} // TRANSITION, ABI: should be defaulted
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
     template <_Different_from<tuple> _Other>
         requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple(_Other&&) noexcept /* strengthened */ {}
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     template <class _Alloc>
     _CONSTEXPR20 tuple(allocator_arg_t, const _Alloc&) noexcept /* strengthened */ {}
@@ -237,11 +237,11 @@ public:
     template <class _Alloc>
     _CONSTEXPR20 tuple(allocator_arg_t, const _Alloc&, const tuple&) noexcept /* strengthened */ {}
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
     template <class _Alloc, _Different_from<tuple> _Other>
         requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple(allocator_arg_t, const _Alloc&, _Other&&) noexcept /* strengthened */ {}
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     template <class _Tag, enable_if_t<is_same_v<_Tag, _STD _Exact_args_t>, int> = 0>
     constexpr tuple(_Tag) noexcept /* strengthened */ {}
@@ -255,7 +255,7 @@ public:
         return *this;
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     template <_Different_from<tuple> _Other>
         requires _Tuple_like<_Other> && (tuple_size_v<remove_cvref_t<_Other>> == 0)
     constexpr tuple& operator=(_Other&&) noexcept /* strengthened */ {
@@ -267,7 +267,7 @@ public:
     constexpr const tuple& operator=(_Other&&) const noexcept /* strengthened */ {
         return *this;
     }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(tuple&) noexcept {}
@@ -279,17 +279,17 @@ public:
         return true;
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     _NODISCARD constexpr strong_ordering _Three_way_compare(const tuple&) const noexcept {
         return strong_ordering::equal;
     }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD constexpr bool _Less(const tuple&) const noexcept {
         return false;
     }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
     template <_Tuple_like_non_tuple _Other>
     _NODISCARD_FRIEND constexpr bool operator==(const tuple&, const _Other&) noexcept /* strengthened */ {
         static_assert(tuple_size_v<_Other> == 0, "Cannot compare tuples of different sizes (N4950 [tuple.rel]/2).");
@@ -301,7 +301,7 @@ public:
     _NODISCARD_FRIEND constexpr strong_ordering operator<=>(const tuple&, const _Other&) noexcept /* strengthened */ {
         return strong_ordering::equal;
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 };
 
 template <class _This, class... _Rest>
@@ -423,7 +423,7 @@ public:
             _Tuple_nothrow_constructible_v<tuple, const _First, const _Second>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     template <class _Other, class _Indices = index_sequence_for<_Rest...>>
     static constexpr bool _Is_tuple_like_constructor_explicit_v = false;
 
@@ -444,7 +444,7 @@ public:
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(_Other&& _Right)
         : tuple(_Unpack_tuple_t{}, _STD forward<_Other>(_Right)) {
     }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     template <class _Alloc, class _This2 = _This,
@@ -539,8 +539,8 @@ public:
         tuple(allocator_arg_t, const _Alloc& _Al, const pair<_First, _Second>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
 
-#ifdef __cpp_lib_concepts
-#ifdef __clang__ // TRANSITION, LLVM-59827
+#if _HAS_CXX20
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 (Clang), VSO-1900279 (EDG)
     template <class _Alloc, class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
     template <class _Alloc, _Different_from<tuple> _Other>
@@ -553,7 +553,7 @@ public:
         tuple(allocator_arg_t, const _Alloc& _Al, _Other&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Other>(_Right)) {
     }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     tuple& operator=(const volatile tuple&) = delete;
@@ -689,7 +689,7 @@ public:
         return *this;
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     template <bool _Const_assignment, class _Other, class _Indices = index_sequence_for<_Rest...>>
     static constexpr bool _Can_assign_values_from_tuple_like_v = false;
 
@@ -730,7 +730,7 @@ public:
         _Assign_tuple_like(_STD forward<_Other>(_Right), make_index_sequence<1 + sizeof...(_Rest)>{});
         return *this;
     }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(tuple& _Right) noexcept(
@@ -763,7 +763,7 @@ public:
         return _Myfirst._Val == _Right._Myfirst._Val && _Mybase::_Equals(_Right._Get_rest());
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     template <class _First, class... _Other>
     _NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_This, _First>,
         _Synth_three_way_result<_Rest, _Other>...>
@@ -813,13 +813,13 @@ public:
         return _Left._Three_way_compare_with_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
     }
 #endif // _HAS_CXX23
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class... _Other>
     _NODISCARD constexpr bool _Less(const tuple<_Other...>& _Right) const {
         return _Myfirst._Val < _Right._Myfirst._Val
             || (!(_Right._Myfirst._Val < _Myfirst._Val) && _Mybase::_Less(_Right._Get_rest()));
     }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     template <size_t _Index, class... _Types>
     friend constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
@@ -875,13 +875,13 @@ _NODISCARD constexpr bool operator==(const tuple<_Types1...>& _Left, const tuple
     return _Left._Equals(_Right);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class... _Types1, class... _Types2>
 _NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Types1, _Types2>...> operator<=>(
     const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     return _Left._Three_way_compare(_Right);
 }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 #if !_HAS_CXX20
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator!=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
@@ -909,7 +909,7 @@ template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator<=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     return !(_Right < _Left);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class... _Types, enable_if_t<conjunction_v<_Is_swappable<_Types>...>, int> = 0>
 _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
@@ -1040,7 +1040,7 @@ struct _Tuple_cat2<_Ty, index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next
           index_sequence<_Ix..., (_Ix_next + 0 * _Kx_next)...>, // repeat _Ix_next, ignoring the elements of _Kx_next
           _Ix_next + 1, _Rest...> {};
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
 template <_Tuple_like... _Tuples>
 #else // ^^^ C++23 / C++20 vvv
 template <class... _Tuples>
@@ -1053,7 +1053,7 @@ constexpr _Ret _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty _A
     return _Ret{_STD get<_Kx>(_STD get<_Ix>(_STD move(_Arg)))...};
 }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
 _EXPORT_STD template <_Tuple_like... _Tuples>
 #else // ^^^ C++23 / C++20 vvv
 _EXPORT_STD template <class... _Tuples>
@@ -1067,7 +1067,7 @@ _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::_Ret tuple_cat(_Tuples&&.
 }
 
 #if _HAS_CXX17
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
 template <class _Callable, _Tuple_like _Tuple, size_t... _Indices>
 #else // ^^^ C++23 / C++20 vvv
 template <class _Callable, class _Tuple, size_t... _Indices>
@@ -1077,7 +1077,7 @@ constexpr decltype(auto) _Apply_impl(_Callable&& _Obj, _Tuple&& _Tpl, index_sequ
     return _STD invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
 _EXPORT_STD template <class _Callable, _Tuple_like _Tuple>
 #else // ^^^ C++23 / C++20 vvv
 _EXPORT_STD template <class _Callable, class _Tuple>
@@ -1089,7 +1089,7 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) noexcept(
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
 }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
 template <class _Ty, _Tuple_like _Tuple, size_t... _Indices>
 #else // ^^^ C++23 / C++20 vvv
 template <class _Ty, class _Tuple, size_t... _Indices>
@@ -1102,7 +1102,7 @@ constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) 
     return _Ty(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
 _EXPORT_STD template <class _Ty, _Tuple_like _Tuple>
 #else // ^^^ C++23 / C++20 vvv
 _EXPORT_STD template <class _Ty, class _Tuple>
@@ -1118,7 +1118,7 @@ _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) noexcept(noexcept(_Make_
 template <class... _Types, class _Alloc>
 struct uses_allocator<tuple<_Types...>, _Alloc> : true_type {}; // true_type if container allocator enabled
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
 template <_Tuple_like _TTuple, _Tuple_like _UTuple, template <class> class _TQual, template <class> class _UQual,
     class _Indices = make_index_sequence<tuple_size_v<_TTuple>>>
 struct _Tuple_like_common_reference;
@@ -1164,7 +1164,7 @@ template <_Tuple_like _TTuple, _Tuple_like _UTuple>
 struct common_type<_TTuple, _UTuple> {
     using type = _Tuple_like_common_type<_TTuple, _UTuple>::type;
 };
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {

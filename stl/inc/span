@@ -29,9 +29,9 @@ _EXPORT_STD inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 
 template <class _Ty>
 struct _Span_iterator {
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
     using difference_type   = ptrdiff_t;
@@ -224,7 +224,7 @@ struct _Span_extent_type<_Ty, dynamic_extent> {
 _EXPORT_STD template <class _Ty, size_t _Extent>
 class span;
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <class _Ty, size_t _Extent>
     inline constexpr bool enable_view<span<_Ty, _Extent>> = true;
@@ -257,7 +257,7 @@ concept _Span_compatible_range =
  && (_RANGES borrowed_range<_Rng> || is_const_v<_Ty>)
  && is_convertible_v<remove_reference_t<_RANGES range_reference_t<_Rng>>(*)[], _Ty(*)[]>;
 // clang-format on
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 
 template <class>
 struct _Is_span : false_type {};
@@ -290,7 +290,7 @@ inline constexpr bool _Is_span_compatible_range = conjunction_v< //
     _Has_container_interface<_Rng>, //
     _Is_span_convertible_range<_Rng, _Ty>>;
 
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 // [views.span]
 _EXPORT_STD template <class _Ty, size_t _Extent = dynamic_extent>
@@ -311,15 +311,15 @@ public:
     using const_reference  = const _Ty&;
     using iterator         = _Span_iterator<_Ty>;
     using reverse_iterator = _STD reverse_iterator<iterator>;
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
     using const_iterator         = _STD const_iterator<iterator>;
     using const_reverse_iterator = _STD const_iterator<reverse_iterator>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     static constexpr size_type extent = _Extent;
 
     // [span.cons] Constructors, copy, and assignment
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 
     // clang-format off
     constexpr span() noexcept requires (_Extent == 0 || _Extent == dynamic_extent) = default;
@@ -387,7 +387,7 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 
     template <size_t _Ext = _Extent, enable_if_t<_Ext == 0 || _Ext == dynamic_extent, int> = 0>
     constexpr span() noexcept {}
@@ -466,7 +466,7 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     // [span.sub] Subviews
     template <size_t _Count>
@@ -609,7 +609,7 @@ public:
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
     _NODISCARD constexpr const_iterator cbegin() const noexcept {
         return begin();
     }
@@ -617,7 +617,7 @@ public:
     _NODISCARD constexpr const_iterator cend() const noexcept {
         return end();
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _NODISCARD constexpr reverse_iterator rbegin() const noexcept {
         return reverse_iterator{end()};
@@ -627,7 +627,7 @@ public:
         return reverse_iterator{begin()};
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
     _NODISCARD constexpr const_reverse_iterator crbegin() const noexcept {
         return rbegin();
     }
@@ -635,7 +635,7 @@ public:
     _NODISCARD constexpr const_reverse_iterator crend() const noexcept {
         return rend();
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _NODISCARD constexpr pointer _Unchecked_begin() const noexcept {
         return _Mydata;
@@ -655,7 +655,7 @@ span(array<_Ty, _Size>&) -> span<_Ty, _Size>;
 template <class _Ty, size_t _Size>
 span(const array<_Ty, _Size>&) -> span<const _Ty, _Size>;
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 
 template <contiguous_iterator _It, class _End>
 span(_It, _End) -> span<remove_reference_t<iter_reference_t<_It>>>;
@@ -663,7 +663,7 @@ span(_It, _End) -> span<remove_reference_t<iter_reference_t<_It>>>;
 template <_RANGES contiguous_range _Rng>
 span(_Rng&&) -> span<remove_reference_t<_RANGES range_reference_t<_Rng>>>;
 
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 
 template <class _Rng>
 span(_Rng&) -> span<typename _Rng::value_type>;
@@ -671,7 +671,7 @@ span(_Rng&) -> span<typename _Rng::value_type>;
 template <class _Rng>
 span(const _Rng&) -> span<const typename _Rng::value_type>;
 
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #ifdef __cpp_lib_byte
 // [span.objectrep] Views of object representation

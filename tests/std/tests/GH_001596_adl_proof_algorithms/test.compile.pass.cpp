@@ -49,7 +49,7 @@ struct holder {
     T t;
 };
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <class Tag>
 struct tagged_left_selector {
     template <class T>
@@ -57,7 +57,7 @@ struct tagged_left_selector {
         return lhs;
     }
 };
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 struct incomplete;
 
@@ -72,11 +72,11 @@ using validating_less  = tagged_less<holder<incomplete>>;
 using validating_compare_three_way = tagged_compare_three_way<holder<incomplete>>;
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 using simple_left_selector = tagged_left_selector<void>;
 
 using validating_left_selector = tagged_left_selector<holder<incomplete>>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 void test_algorithms() {
     int iarr[1]{};
@@ -182,10 +182,10 @@ void test_algorithms() {
     (void) std::lexicographical_compare(varr, varr, varr, varr);
     (void) std::lexicographical_compare(iarr, iarr, iarr, iarr, validating_less{});
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
     (void) std::lexicographical_compare_three_way(varr, varr, varr, varr);
     (void) std::lexicographical_compare_three_way(iarr, iarr, iarr, iarr, validating_compare_three_way{});
-#endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 }
 
 #if _HAS_CXX17
@@ -274,7 +274,7 @@ void test_parallel_algorithms() {
 }
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 void test_ranges_non_projected_algorithms() {
     using namespace std::ranges;
 
@@ -311,5 +311,5 @@ void test_ranges_non_projected_algorithms() {
     (void) fold_left_first_with_iter(iarr, iarr, validating_left_selector{});
     (void) fold_left_first_with_iter(iarr, validating_left_selector{});
 }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 #endif // _M_CEE

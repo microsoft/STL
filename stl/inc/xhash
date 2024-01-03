@@ -958,12 +958,12 @@ public:
         _Insert_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<value_type> _Rng>
     void insert_range(_Rng&& _Range) {
         _Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     void insert(initializer_list<value_type> _Ilist) {
         _Insert_range_unchecked(_Ilist.begin(), _Ilist.end());

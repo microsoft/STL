@@ -11,9 +11,9 @@
 #include <iterator>
 #include <type_traits>
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #include <compare>
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 #pragma warning(disable : 4018) // '<': signed/unsigned mismatch
 #pragma warning(disable : 4365) // conversion from 'X' to 'Y', signed/unsigned mismatch
@@ -375,7 +375,7 @@ void test_algorithms(LexCompareFn lex_compare_fn) {
     }
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 template <class Int1, class Int2, class LexCompareThreeWayFn, class Comp = compare_three_way>
 void test_three_way_algorithms_for_integrals(
     LexCompareThreeWayFn lex_compare_three_way_fn, Comp comp = compare_three_way{}) {
@@ -532,14 +532,14 @@ void test_three_way_algorithms(LexCompareThreeWayFn lex_compare_three_way_fn) {
         test_three_way_algorithms_for_bools(lex_compare_three_way_fn);
     }
 }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 int main() {
     test_algorithms([](auto begin1, auto end1, auto begin2, auto end2, auto pred) {
         return lexicographical_compare(begin1, end1, begin2, end2, pred);
     });
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     test_algorithms([](auto begin1, auto end1, auto begin2, auto end2, auto pred) {
         return ranges::lexicographical_compare(begin1, end1, begin2, end2, pred);
     });
@@ -555,5 +555,5 @@ int main() {
     test_three_way_algorithms([](auto begin1, auto end1, auto begin2, auto end2, auto comp) {
         return lexicographical_compare_three_way(begin1, end1, begin2, end2, comp);
     });
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }

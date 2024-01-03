@@ -31,9 +31,9 @@ class _Array_const_iterator
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 {
 public:
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = _Ty;
     using difference_type   = ptrdiff_t;
@@ -304,9 +304,9 @@ class _Array_iterator : public _Array_const_iterator<_Ty, _Size> {
 public:
     using _Mybase = _Array_const_iterator<_Ty, _Size>;
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = _Ty;
     using difference_type   = ptrdiff_t;
@@ -785,14 +785,14 @@ _NODISCARD bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Siz
 }
 #endif // !_HAS_CXX20
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _STD lexicographical_compare_three_way(
         _Left.data(), _Left.data() + _Size, _Right.data(), _Right.data() + _Size, _Synth_three_way{});
 }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _STD lexicographical_compare(_Left.data(), _Left.data() + _Size, _Right.data(), _Right.data() + _Size);
@@ -812,7 +812,7 @@ template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left < _Right);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #if _HAS_CXX20
 template <class _Ty, size_t _Size, size_t... _Idx>

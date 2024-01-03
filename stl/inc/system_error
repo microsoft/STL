@@ -110,11 +110,11 @@ public:
     }
 #endif // !_HAS_CXX20
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     _NODISCARD strong_ordering operator<=>(const error_category& _Right) const noexcept {
         return _Bit_cast<uintptr_t>(_Addr) <=> _Bit_cast<uintptr_t>(_Right._Addr);
     }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator<(const error_category& _Right) const noexcept {
 #ifdef _M_CEE_PURE
         return _Addr < _Right._Addr;
@@ -122,7 +122,7 @@ public:
         return _Bit_cast<uintptr_t>(_Addr) < _Bit_cast<uintptr_t>(_Right._Addr);
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
     }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     error_category(const error_category&)            = delete;
     error_category& operator=(const error_category&) = delete;
@@ -222,19 +222,19 @@ public:
         return _System_error_equal(_Left, _Right);
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     _NODISCARD_FRIEND strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
         if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
             return _Result;
         }
         return _Left.value() <=> _Right.value();
     }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD_FRIEND bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
         return _Left.category() < _Right.category()
             || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
     }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 #if !_HAS_CXX20
     _NODISCARD_FRIEND bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
         return _System_error_equal(_Right, _Left);
@@ -309,7 +309,7 @@ public:
         return _Left.category() == _Right.category() && _Left.value() == _Right.value();
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     _NODISCARD_FRIEND strong_ordering operator<=>(
         const error_condition& _Left, const error_condition& _Right) noexcept {
         if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
@@ -317,12 +317,12 @@ public:
         }
         return _Left.value() <=> _Right.value();
     }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD_FRIEND bool operator<(const error_condition& _Left, const error_condition& _Right) noexcept {
         return _Left.category() < _Right.category()
             || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
     }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 #if !_HAS_CXX20
     _NODISCARD_FRIEND bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
         return !(_Left == _Right);
@@ -362,7 +362,7 @@ _EXPORT_STD _NODISCARD inline bool operator==(const error_condition& _Left, cons
     return _Left.category() == _Right.category() && _Left.value() == _Right.value();
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD _NODISCARD inline strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
     if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
         return _Result;
@@ -377,7 +377,7 @@ _EXPORT_STD _NODISCARD inline strong_ordering operator<=>(
     }
     return _Left.value() <=> _Right.value();
 }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 _NODISCARD inline bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
     return _Left.category() < _Right.category()
         || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
@@ -387,7 +387,7 @@ _NODISCARD inline bool operator<(const error_condition& _Left, const error_condi
     return _Left.category() < _Right.category()
         || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #if !_HAS_CXX20
 _NODISCARD inline bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {

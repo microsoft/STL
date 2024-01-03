@@ -2696,11 +2696,11 @@ namespace filesystem {
         }
 #endif // !_HAS_CXX20
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         _NODISCARD bool operator==(default_sentinel_t) const noexcept {
             return !_Impl;
         }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -2952,11 +2952,11 @@ namespace filesystem {
         }
 #endif // !_HAS_CXX20
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         _NODISCARD bool operator==(default_sentinel_t) const noexcept {
             return !_Impl;
         }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -4411,7 +4411,7 @@ struct hash<filesystem::path> {
     }
 };
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <>
     inline constexpr bool enable_borrowed_range<filesystem::directory_iterator> = true;
@@ -4422,7 +4422,7 @@ namespace ranges {
     template <>
     inline constexpr bool enable_view<filesystem::recursive_directory_iterator> = true;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _STD_END
 

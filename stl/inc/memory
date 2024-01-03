@@ -47,7 +47,7 @@ _NoThrowFwdIt uninitialized_copy(_ExPo&&, const _FwdIt _First, const _FwdIt _Las
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_copy_result = in_out_result<_In, _Out>;
@@ -120,7 +120,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_copy_fn uninitialized_copy;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
@@ -163,7 +163,7 @@ _NoThrowFwdIt uninitialized_copy_n(_ExPo&&, const _FwdIt _First, const _Diff _Co
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_copy_n_result = in_out_result<_In, _Out>;
@@ -212,7 +212,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_copy_n_fn uninitialized_copy_n;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _InIt, class _NoThrowFwdIt>
@@ -237,7 +237,7 @@ _NoThrowFwdIt uninitialized_move(_ExPo&&, const _FwdIt _First, const _FwdIt _Las
     return _STD uninitialized_move(_First, _Last, _Dest);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_move_fn {
     public:
@@ -271,7 +271,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_move_fn uninitialized_move;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _Diff, class _NoThrowFwdIt>
 pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
@@ -325,7 +325,7 @@ void uninitialized_fill(_ExPo&&, const _NoThrowFwdIt _First, const _NoThrowFwdIt
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_move_n_result = in_out_result<_In, _Out>;
@@ -426,7 +426,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_fill_fn uninitialized_fill;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) {
@@ -477,7 +477,7 @@ _NoThrowFwdIt uninitialized_fill_n(
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_fill_n_fn {
     public:
@@ -550,7 +550,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Destroy_at_fn destroy_at;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _NoThrowFwdIt>
@@ -563,7 +563,7 @@ _CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last)
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void destroy(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
@@ -602,7 +602,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Destroy_fn destroy;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
@@ -628,7 +628,7 @@ _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_ra
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Destroy_n_fn {
     public:
@@ -658,7 +658,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Destroy_n_fn destroy_n;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
@@ -679,7 +679,7 @@ void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowF
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void uninitialized_default_construct(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_default_construct_fn {
     public:
@@ -727,7 +727,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_default_construct_fn uninitialized_default_construct;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
@@ -756,7 +756,7 @@ _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_
 _NoThrowFwdIt uninitialized_default_construct_n(
     _ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_default_construct_n_fn {
     public:
@@ -785,7 +785,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_default_construct_n_fn uninitialized_default_construct_n;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt>
 void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
@@ -809,7 +809,7 @@ void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwd
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void uninitialized_value_construct(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_value_construct_fn {
     public:
@@ -855,7 +855,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_value_construct_fn uninitialized_value_construct;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
@@ -873,7 +873,7 @@ _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_
 _NoThrowFwdIt uninitialized_value_construct_n(
     _ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_value_construct_n_fn {
     public:
@@ -902,7 +902,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_value_construct_n_fn uninitialized_value_construct_n;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
@@ -922,11 +922,11 @@ class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap store
 public:
     using iterator_category = output_iterator_tag;
     using value_type        = void;
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using difference_type = ptrdiff_t;
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     using difference_type = void;
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
     using pointer   = void;
     using reference = void;
 
@@ -3503,7 +3503,7 @@ _NODISCARD bool operator<=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr
     return !(_Right < _Left);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 // clang-format off
 _EXPORT_STD template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
     requires three_way_comparable_with<typename unique_ptr<_Ty1, _Dx1>::pointer,
@@ -3514,7 +3514,7 @@ _NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer,
     // clang-format on
     return _Left.get() <=> _Right.get();
 }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Ty, class _Dx>
 _NODISCARD _CONSTEXPR23 bool operator==(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
@@ -3580,14 +3580,14 @@ _NODISCARD _CONSTEXPR23 bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _
     return !(_Right < _Left);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Dx>
     requires three_way_comparable<typename unique_ptr<_Ty, _Dx>::pointer>
 _NODISCARD _CONSTEXPR23 compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>::pointer> operator<=>(
     const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
     return _Left.get() <=> static_cast<typename unique_ptr<_Ty, _Dx>::pointer>(nullptr);
 }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _OutTy, class _PxTy, class = void>
 struct _Can_stream_unique_ptr : false_type {};
@@ -4098,7 +4098,7 @@ public:
 };
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <class _Ty>
 struct _Pointer_of_helper {};
 
@@ -4300,7 +4300,7 @@ _NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
         return inout_ptr_t<_SmartPtr, _Pointer, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
     }
 }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {

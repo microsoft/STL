@@ -3,9 +3,9 @@
 
 #include <algorithm>
 #include <cassert>
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
 #include <concepts>
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 #include <cstdint>
 #include <memory>
 #include <numeric>
@@ -78,12 +78,12 @@ constexpr bool test() {
     {
         allocator<int> al;
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
         same_as<allocation_result<int*>> auto result = al.allocate_at_least(5);
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         auto result = al.allocate_at_least(5);
         static_assert(is_same_v<decltype(result), allocation_result<int*>>);
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
         assert(result.ptr);
         assert(result.count >= 5);
         al.deallocate(result.ptr, 5);
@@ -102,12 +102,12 @@ constexpr bool test() {
     {
         generous_allocator al;
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
         same_as<allocation_result<int*>> auto result = allocator_traits<generous_allocator>::allocate_at_least(al, 4);
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         auto result = allocator_traits<generous_allocator>::allocate_at_least(al, 4);
         static_assert(is_same_v<decltype(result), allocation_result<int*>>);
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
         assert(result.ptr);
         assert(result.count == 16);
         al.deallocate(result.ptr, result.count);
@@ -116,12 +116,12 @@ constexpr bool test() {
     {
         strict_allocator al;
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
         same_as<allocation_result<int*>> auto result = allocator_traits<strict_allocator>::allocate_at_least(al, 4);
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         auto result = allocator_traits<strict_allocator>::allocate_at_least(al, 4);
         static_assert(is_same_v<decltype(result), allocation_result<int*>>);
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
         assert(result.ptr);
         assert(result.count == 4);
         al.deallocate(result.ptr, result.count);
@@ -130,13 +130,13 @@ constexpr bool test() {
     {
         small_allocator al;
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
         same_as<allocation_result<int*, uint32_t>> auto result =
             allocator_traits<small_allocator>::allocate_at_least(al, 4);
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         auto result = allocator_traits<small_allocator>::allocate_at_least(al, 4);
         static_assert(is_same_v<decltype(result), allocation_result<int*, uint32_t>>);
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
         assert(result.ptr);
         assert(result.count == 4);
         al.deallocate(result.ptr, result.count);
@@ -145,13 +145,13 @@ constexpr bool test() {
     {
         huge_allocator al;
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
         same_as<allocation_result<int*, uint64_t>> auto result =
             allocator_traits<huge_allocator>::allocate_at_least(al, 4);
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         auto result = allocator_traits<huge_allocator>::allocate_at_least(al, 4);
         static_assert(is_same_v<decltype(result), allocation_result<int*, uint64_t>>);
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
         assert(result.ptr);
         assert(result.count == 4);
         al.deallocate(result.ptr, result.count);

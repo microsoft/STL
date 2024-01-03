@@ -154,7 +154,7 @@ constexpr bool test_leap_second() {
     static_assert(noexcept(equal >= leap));
     static_assert(noexcept(leap >= equal));
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     static_assert(is_eq(leap <=> equal));
     static_assert(is_lt(leap <=> larger));
     static_assert(is_gt(leap <=> smaller));
@@ -172,7 +172,7 @@ constexpr bool test_leap_second() {
     static_assert(is_lteq(leap <=> leap_second{equal, true, 0s}));
     static_assert(is_gteq(leap <=> leap_second{equal, true, 0s}));
     static_assert(noexcept(leap <=> leap_second{equal, true, 0s}));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     static_assert(noexcept(leap.date()));
     static_assert(noexcept(leap.value()));

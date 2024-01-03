@@ -1487,10 +1487,10 @@ struct bad_reference_wrapper {
 STATIC_ASSERT(is_same_v<common_type_t<int, bad_reference_wrapper<int>>, int>);
 STATIC_ASSERT(is_same_v<common_type_t<bad_reference_wrapper<double>, double>, double>);
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
 // P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
 STATIC_ASSERT(is_same_v<common_reference_t<int&, reference_wrapper<int>>, int&>);
 STATIC_ASSERT(is_same_v<common_reference_t<int&, reference_wrapper<int>&>, int&>);
 STATIC_ASSERT(is_same_v<common_reference_t<int&, const reference_wrapper<int>&>, int&>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 #endif // _HAS_CXX20

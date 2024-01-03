@@ -615,7 +615,7 @@ void test_ispanstream() {
         assert(static_cast<test_buf*>(span_mode_constructed.rdbuf())->pptr() == buffer);
         assert(static_cast<test_buf*>(span_mode_constructed.rdbuf())->epptr() == end(buffer));
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         auto input_range = input_view<CharT>;
         basic_ispanstream<CharT> range_constructed{input_view<CharT>};
         assert(range_constructed.span().data() == input_range.data());
@@ -625,7 +625,7 @@ void test_ispanstream() {
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->pbase() == nullptr);
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->pptr() == nullptr);
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->epptr() == nullptr);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     }
 
     { // span
@@ -643,7 +643,7 @@ void test_ispanstream() {
         assert(is.span().data() == other_buffer);
         assert(is.span().size() == size(other_buffer));
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         auto input_range = input_view<CharT>;
         is.span(input_view<CharT>);
         assert(is.span().data() == input_range.data());
@@ -659,7 +659,7 @@ void test_ispanstream() {
                 assert(read == expected);
             }
         }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     }
 
     { // swap

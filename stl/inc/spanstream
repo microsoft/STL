@@ -10,9 +10,9 @@
 #if !_HAS_CXX23
 _EMIT_STL_WARNING(STL4038, "The contents of <spanstream> are available only with C++23 or later.");
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #include <concepts>
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #include <istream>
 #include <ostream>
 #include <span>
@@ -215,14 +215,14 @@ public:
         _Mybase::set_rdbuf(_STD addressof(_Buf));
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     template <_RANGES borrowed_range _ReadOnlyRange>
         requires (
             !convertible_to<_ReadOnlyRange, _STD span<_Elem>> && convertible_to<_ReadOnlyRange, _STD span<const _Elem>>)
     explicit basic_ispanstream(_ReadOnlyRange&& _Range)
         : basic_ispanstream(
             _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(_Range)), static_cast<size_t>(_RANGES size(_Range))}) {}
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
     basic_ispanstream& operator=(const basic_ispanstream&) = delete;
 
@@ -251,7 +251,7 @@ public:
         rdbuf()->span(_Span);
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     template <_RANGES borrowed_range _ReadOnlyRange>
         requires (
             !convertible_to<_ReadOnlyRange, _STD span<_Elem>> && convertible_to<_ReadOnlyRange, _STD span<const _Elem>>)
@@ -259,7 +259,7 @@ public:
         this->span(
             _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(_Range)), static_cast<size_t>(_RANGES size(_Range))});
     }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 private:
     _Mysb _Buf;

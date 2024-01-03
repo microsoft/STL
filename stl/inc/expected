@@ -7,7 +7,7 @@
 #define _EXPECTED_
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
-#if !_HAS_CXX23 || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if !_HAS_CXX23
 _EMIT_STL_WARNING(STL4038, "The contents of <expected> are available only with C++23 or later.");
 #else // ^^^ not supported / supported language mode vvv
 #include <exception>

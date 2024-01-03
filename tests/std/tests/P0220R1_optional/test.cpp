@@ -136,7 +136,7 @@ int run_test() {
 #include <optional>
 
 #include <iterator>
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
 static_assert(!std::indirectly_readable<std::optional<int> >);
 static_assert(!std::indirectly_writable<std::optional<int>, int>);
 static_assert(!std::weakly_incrementable<std::optional<int> >);
@@ -1064,7 +1064,7 @@ int run_test() {
 #include <optional>
 
 namespace or_else {
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 struct NonMovable {
   NonMovable() = default;
   NonMovable(NonMovable&&) = delete;
@@ -1123,7 +1123,7 @@ int run_test() {
 int run_test() {
     return 0;
 }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#endif // _HAS_CXX23
 } // namespace or_else
 // -- END: test/std/utilities/optional/optional.monadic/or_else.pass.cpp
 // -- BEGIN: test/std/utilities/optional/optional.monadic/transform.pass.cpp

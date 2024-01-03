@@ -15,9 +15,9 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 #include <__msvc_formatter.hpp>
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -30,9 +30,9 @@ _STD_BEGIN
 template <class _Myvec>
 class _Vector_const_iterator : public _Iterator_base {
 public:
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Myvec::value_type;
     using difference_type   = typename _Myvec::difference_type;
@@ -256,9 +256,9 @@ class _Vector_iterator : public _Vector_const_iterator<_Myvec> {
 public:
     using _Mybase = _Vector_const_iterator<_Myvec>;
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Myvec::value_type;
     using difference_type   = typename _Myvec::difference_type;
@@ -640,12 +640,12 @@ public:
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         } else if constexpr (forward_iterator<_Iter>) {
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
         } else {
             auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
             _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
@@ -663,7 +663,7 @@ public:
         _Construct_n(_Convert_size<size_type>(_Ilist.size()), _Ilist.begin(), _Ilist.end());
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr vector(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
@@ -682,7 +682,7 @@ public:
             _Proxy._Release();
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 vector(const vector& _Right)
         : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
@@ -897,7 +897,7 @@ private:
         }
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <class _Iter>
     _CONSTEXPR20 void _Append_counted_range(_Iter _First, const size_type _Count) {
         // insert counted range _First + [0, _Count) at end
@@ -954,10 +954,10 @@ private:
             _Orphan_range(_Oldlast, _Oldlast);
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 public:
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr void append_range(_Rng&& _Range) {
         if constexpr (_RANGES forward_range<_Rng> || _RANGES sized_range<_Rng>) {
@@ -968,7 +968,7 @@ public:
             _Append_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     template <class... _Valty>
     _CONSTEXPR20 iterator emplace(const_iterator _Where, _Valty&&... _Val) {
@@ -1246,19 +1246,19 @@ public:
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Insert_counted_range(_Where, _UFirst, _Count);
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         } else if constexpr (forward_iterator<_Iter>) {
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Insert_counted_range(_Where, _UFirst, _Count);
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
         } else {
             _Insert_uncounted_range(_Where, _UFirst, _ULast);
         }
         return _Make_iterator_offset(_Whereoff);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr iterator insert_range(const_iterator _Where, _Rng&& _Range) {
         const pointer _Whereptr = _Where._Ptr;
@@ -1280,7 +1280,7 @@ public:
         }
         return _Make_iterator_offset(_Whereoff);
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
         const pointer _Whereptr = _Where._Ptr;
@@ -1455,18 +1455,18 @@ public:
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Assign_counted_range(_UFirst, _Count);
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         } else if constexpr (forward_iterator<_Iter>) {
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Assign_counted_range(_UFirst, _Count);
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
         } else {
             _Assign_uncounted_range(_UFirst, _ULast);
         }
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr void assign_range(_Rng&& _Range) {
         if constexpr (_RANGES sized_range<_Rng> || _RANGES forward_range<_Rng>) {
@@ -1477,7 +1477,7 @@ public:
             _Assign_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 void assign(const initializer_list<_Ty> _Ilist) {
         const auto _Count = _Convert_size<size_type>(_Ilist.size());
@@ -2219,11 +2219,11 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 vector(_Iter, _Iter, _Alloc = _Alloc()) -> vector<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 vector(from_range_t, _Rng&&, _Alloc = _Alloc()) -> vector<_RANGES range_value_t<_Rng>, _Alloc>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 template <class _Alloc>
 class vector<bool, _Alloc>;
@@ -2274,11 +2274,11 @@ struct _Vbase_compare_three_way {
         const _Vbase _Differing_bits = _Left ^ _Right;
 
         if (_Differing_bits == 0) { // improves _Countr_zero codegen below
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
             return strong_ordering::equal;
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
             return 0;
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
         }
 
         const int _Bit_index = _Countr_zero(_Differing_bits); // number of least significant bits that match
@@ -2287,15 +2287,15 @@ struct _Vbase_compare_three_way {
         const _Vbase _Mask = _Vbase{1} << _Bit_index; // selects the least significant bit that differs
 
         // Instead of comparing (_Left & _Mask) to (_Right & _Mask), we know that exactly one side will be zero.
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         return (_Left & _Mask) == 0 ? strong_ordering::less : strong_ordering::greater;
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         return (_Left & _Mask) == 0 ? -1 : 1;
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
     }
 };
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
@@ -2320,7 +2320,7 @@ _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
             _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
     }
 }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty, class _Alloc>
 _NODISCARD _CONSTEXPR20 bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if constexpr (is_same_v<_Ty, bool>) {
@@ -2362,7 +2362,7 @@ template <class _Ty, class _Alloc>
 _NODISCARD _CONSTEXPR20 bool operator>=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Ty, class _Alloc>
 _CONSTEXPR20 void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
@@ -2916,7 +2916,7 @@ public:
         insert(begin(), _First, _Last);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<bool> _Rng>
     constexpr vector(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc()) : _Mybase(_Al) {
         if constexpr (_RANGES forward_range<_Rng> || _RANGES sized_range<_Rng>) {
@@ -2927,7 +2927,7 @@ public:
             _Assign_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 vector(vector&& _Right) noexcept : _Mybase(_STD move(_Right)) {
         this->_Swap_proxy_and_iterators(_Right);
@@ -3253,12 +3253,12 @@ public:
         insert(end(), _Val);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<bool> _Rng>
     constexpr void append_range(_Rng&& _Range) {
         insert_range(end(), _STD forward<_Rng>(_Range));
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 void pop_back() noexcept /* strengthened */ {
         erase(end() - 1);
@@ -3270,7 +3270,7 @@ public:
         insert(begin(), _First, _Last);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <class _Iter>
     constexpr void _Assign_counted_range(_Iter _First, const size_type _Count) {
         _STL_INTERNAL_CHECK(this->_Myvec.empty());
@@ -3328,7 +3328,7 @@ public:
             _Assign_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 void assign(_CRT_GUARDOVERFLOW size_type _Count, const bool& _Val) {
         clear();
@@ -3355,13 +3355,13 @@ public:
             const auto _Count  = _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _STD _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         } else if constexpr (forward_iterator<_Iter>) {
             const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _STD _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
         } else {
             const auto _Old_size = this->_Mysize;
             for (; _UFirst != _ULast; ++_UFirst) {
@@ -3376,7 +3376,7 @@ public:
         return begin() + _Saved_offset;
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<bool> _Rng>
     constexpr iterator insert_range(const_iterator _Where, _Rng&& _Range) {
         const difference_type _Old_off = _Where - begin();
@@ -3401,7 +3401,7 @@ public:
 
         return begin() + _Old_off;
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 iterator erase(const_iterator _Where_arg) noexcept /* strengthened */ {
         iterator _Where      = _Make_iter(_Where_arg);
@@ -3590,7 +3590,7 @@ namespace pmr {
 } // namespace pmr
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <class _Ty, class _CharT>
     requires _Is_specialization_v<_Ty, _Vb_reference>
 struct formatter<_Ty, _CharT> {
@@ -3608,7 +3608,7 @@ public:
         return _Underlying.format(_Ref, _Ctx);
     }
 };
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 template <class _Alloc, bool _RequiresMutable>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutable> = true;

@@ -657,7 +657,7 @@ int main() {
     test_algorithms([](auto begin, auto end, auto out) { uninitialized_move_n(begin, distance(begin, end), out); });
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     test_algorithms([](auto begin, auto end, auto out) { ranges::copy(begin, end, out); });
     test_algorithms([](auto begin, auto end, auto out) { ranges::copy_n(begin, distance(begin, end), out); });
     test_algorithms([](auto begin, auto end, auto out) {
@@ -710,5 +710,5 @@ int main() {
     test_algorithms([](auto begin, auto end, auto out) {
         ranges::uninitialized_move_n(begin, distance(begin, end), out, unreachable_sentinel);
     });
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }

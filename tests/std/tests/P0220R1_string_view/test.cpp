@@ -295,7 +295,7 @@ constexpr bool test_case_buffer_constructor() {
 }
 
 constexpr bool test_case_contiguous_constructor() {
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
     // Also tests the corresponding deduction guide:
     same_as<string_view> auto sv = basic_string_view(expectedData.begin(), expectedData.end());
@@ -307,13 +307,13 @@ constexpr bool test_case_contiguous_constructor() {
     assert(sv.at(1) == 'o');
     assert(sv.front() == 'n');
     assert(sv.back() == 'l');
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     return true;
 }
 
 constexpr bool test_case_range_constructor() {
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
     // Also tests the corresponding deduction guide:
     same_as<string_view> auto sv = basic_string_view(expectedData);
@@ -343,7 +343,7 @@ constexpr bool test_case_range_constructor() {
 
     static_assert(is_constructible_v<string_view, basic_string_view<char, constexpr_char_traits>>);
     static_assert(is_constructible_v<basic_string_view<char, constexpr_char_traits>, string>);
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     return true;
 }

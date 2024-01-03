@@ -19,9 +19,9 @@
 #include <xfilesystem_abi.h>
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #include <__msvc_print.hpp>
-#endif // ^^^ defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ _HAS_CXX20 ^^^
 
 // <__msvc_bit_utils.hpp> is included by <bit> and <limits>
 // <__msvc_iter_core.hpp> is included by <tuple>

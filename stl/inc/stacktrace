@@ -17,9 +17,9 @@ _EMIT_STL_WARNING(STL4038, "The contents of <stacktrace> are available only with
 #include <type_traits>
 #include <vector>
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #include <format>
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -268,9 +268,9 @@ public:
             return _Result;
         }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         return _STD lexicographical_compare_three_way(_Lhs.begin(), _Lhs.end(), _Rhs.begin(), _Rhs.end());
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         for (size_t _Ix = 0, _Mx = _Lhs._Frames.size(); _Ix != _Mx; ++_Ix) {
             if (_Lhs._Frames[_Ix] != _Rhs._Frames[_Ix]) {
                 return _Lhs._Frames[_Ix] <=> _Rhs._Frames[_Ix];
@@ -278,7 +278,7 @@ public:
         }
 
         return strong_ordering::equal;
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
     }
 
     void swap(basic_stacktrace& _Other) noexcept(allocator_traits<_Alloc>::propagate_on_container_swap::value
@@ -352,7 +352,7 @@ ostream& operator<<(ostream& _Os, const basic_stacktrace<_Alloc>& _St) {
     return _Os << _STD to_string(_St);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 template <>
 struct formatter<stacktrace_entry> {
     constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
@@ -386,7 +386,7 @@ struct formatter<basic_stacktrace<_Alloc>> {
         return _RANGES copy(_STD to_string(_Val), _Format_ctx.out()).out;
     }
 };
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 namespace pmr {
     _EXPORT_STD using stacktrace = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;

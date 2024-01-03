@@ -10,9 +10,9 @@
 #include <type_traits>
 #include <utility>
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #include <ranges>
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 using namespace std;
 
@@ -74,10 +74,10 @@ static_assert(is_same_v<span<const int>::reverse_iterator, reverse_iterator<span
 static_assert(is_same_v<iterator_traits<span<const int, 3>::iterator>::pointer, const int*>);
 static_assert(is_same_v<span<const int, 3>::reverse_iterator, reverse_iterator<span<const int, 3>::iterator>>);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 static_assert(ranges::enable_borrowed_range<span<int>>);
 static_assert(ranges::enable_borrowed_range<span<int, 3>>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 // N4901 [span.overview]/3
 static_assert(is_trivially_copyable_v<span<int>>);
@@ -145,12 +145,12 @@ struct BasicRange {
     }
 };
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace std::ranges {
     template <typename T, bool Borrowed>
     inline constexpr bool enable_borrowed_range<BasicRange<T, Borrowed>> = Borrowed;
 }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 using ContiguousSizedRange = BasicRange<int>;
 
@@ -247,7 +247,7 @@ constexpr bool test() {
         static_assert(is_same_v<decltype(span{as_const(arr), 3}), span<const int>>);
         static_assert(is_same_v<decltype(span{cbegin(arr), 3}), span<const int>>);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         static_assert(is_nothrow_constructible_v<span<int>, array<int, 3>::iterator, size_t>); // strengthened
         static_assert(!is_constructible_v<span<int>, array<int, 3>::const_iterator, size_t>);
         static_assert(!is_constructible_v<span<int>, array<double, 3>::iterator, size_t>);
@@ -292,7 +292,7 @@ constexpr bool test() {
 
         static_assert(is_same_v<decltype(span{stl.begin(), 3}), span<int>>);
         static_assert(is_same_v<decltype(span{stl.cbegin(), 3}), span<const int>>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     }
 
     {
@@ -351,7 +351,7 @@ constexpr bool test() {
         static_assert(is_same_v<decltype(span{begin(arr), end(arr)}), span<int>>);
         static_assert(is_same_v<decltype(span{cbegin(arr), cend(arr)}), span<const int>>);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         static_assert(is_nothrow_constructible_v<span<int>, int*, const int*>); // strengthened
 
         static_assert(is_nothrow_constructible_v<span<int, 3>, int*, const int*>); // strengthened
@@ -456,7 +456,7 @@ constexpr bool test() {
         static_assert(is_same_v<decltype(span{stl.begin(), stl.cend()}), span<int>>);
         static_assert(is_same_v<decltype(span{stl.cbegin(), stl.end()}), span<const int>>);
         static_assert(is_same_v<decltype(span{stl.cbegin(), stl.cend()}), span<const int>>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     }
 
     {
@@ -619,7 +619,7 @@ constexpr bool test() {
         FunctionTakingSpan<const int>(user_range);
         FunctionTakingSpan<const int>(as_const(user_range));
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         static_assert(!is_constructible_v<span<int>, ContiguousSizedRange>);
         static_assert(!is_constructible_v<span<int, 3>, ContiguousSizedRange>);
         static_assert(is_constructible_v<span<int>, BorrowedContiguousSizedRange>);
@@ -654,7 +654,7 @@ constexpr bool test() {
 
         static_assert(is_same_v<decltype(span{user_range}), span<int>>);
         static_assert(is_same_v<decltype(span{as_const(user_range)}), span<const int>>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     }
 
     {

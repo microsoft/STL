@@ -23,7 +23,7 @@
 
 using namespace std;
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
 template <class Ostream, class Alloc = allocator<stacktrace_entry>>
 concept CanPrintStacktrace = requires(Ostream& os, const stacktrace_entry& f, const basic_stacktrace<Alloc>& st) {
     { os << f } -> same_as<basic_ostream<typename Ostream::char_type, typename Ostream::traits_type>&>;
@@ -48,7 +48,7 @@ static_assert(!CanPrintStacktrace<FancyCharStream, pmr::polymorphic_allocator<st
 using FancyWcharStream = basic_ostream<wchar_t, FancyCharTraits<wchar_t>>;
 static_assert(!CanPrintStacktrace<FancyWcharStream>);
 static_assert(!CanPrintStacktrace<FancyWcharStream, pmr::polymorphic_allocator<stacktrace_entry>>);
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 [[maybe_unused]] const int base_line = __LINE__;
 

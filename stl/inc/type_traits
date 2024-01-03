@@ -2231,7 +2231,7 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
     // true_type if and only if it is valid to swap two _Ty lvalues by exchanging object representations.
 };
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
 _EXPORT_STD template <class _From, class _To>
 concept convertible_to =
 #if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
@@ -2259,7 +2259,7 @@ template <class _Ty, class _RefWrap, template <class> class _TyQual, template <c
 struct basic_common_reference<_Ty, _RefWrap, _TyQual, _RefWrapQual> {
     using type = common_reference_t<typename _RefWrap::type&, _TyQual<_Ty>>;
 };
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 #define _BITMASK_OPS(_MAYBE_EXPORT, _BITMASK)                                                         \
     _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept { \

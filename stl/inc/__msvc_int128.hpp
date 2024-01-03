@@ -23,12 +23,12 @@
     {} // Trivial default initialization is not allowed in constexpr functions before C++20.
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #include <concepts>
 #define _TEMPLATE_CLASS_INTEGRAL(type) template <integral type>
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 #define _TEMPLATE_CLASS_INTEGRAL(type) template <class type, enable_if_t<is_integral_v<type>, int> = 0>
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -308,7 +308,7 @@ struct
 
     _TEMPLATE_CLASS_INTEGRAL(_Ty)
     constexpr _Base128(const _Ty _Val) noexcept : _Word{static_cast<uint64_t>(_Val)} {
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         if constexpr (signed_integral<_Ty>)
 #else
         if constexpr (is_signed_v<_Ty>)

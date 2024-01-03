@@ -286,9 +286,9 @@ CONSTEXPR20 bool test_array_comparison() {
     assert(!(A0{} > A0{}));
     assert(A0{} <= A0{});
     assert(A0{} >= A0{});
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
     assert(A0{} <=> A0{} == strong_ordering::equal);
-#endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
     using A1 = array<Meow, 1>;
     assert(A1{} == A1{});
@@ -297,9 +297,9 @@ CONSTEXPR20 bool test_array_comparison() {
     assert(!(A1{} > A1{}));
     assert(A1{} <= A1{});
     assert(A1{} >= A1{});
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
     assert(A1{} <=> A1{} == strong_ordering::equal);
-#endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
     return true;
 }

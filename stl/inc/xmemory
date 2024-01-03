@@ -474,7 +474,7 @@ struct _Is_default_allocator<allocator<_Ty>, void_t<typename allocator<_Ty>::_Fr
     : is_same<typename allocator<_Ty>::_From_primary, allocator<_Ty>>::type {};
 
 #if _HAS_CXX23
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
 template <class _Alloc, class _SizeTy>
 concept _Has_member_allocate_at_least = requires(_Alloc& _Al, const _SizeTy& _Count) { _Al.allocate_at_least(_Count); };
 #else // ^^^ no workaround / workaround vvv
@@ -1650,7 +1650,7 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _In
     return _Backout._Release();
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <class _It>
     concept _No_throw_input_iterator =
@@ -1782,7 +1782,7 @@ namespace ranges {
         }
     }
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _Alloc>
 class _NODISCARD _Uninitialized_backout_al {
@@ -1824,15 +1824,15 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     // note: only called internally from elsewhere in the STL
     using _Ptrval = typename _Alloc::value_type*;
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
     auto _ULast  = _RANGES _Unwrap_sent<_InIt>(_STD move(_Last));
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     // In pre-concepts world, _Uninitialized_copy should only ever be called with an iterator
     // and sentinel of the same type, so `_Get_unwrapped` is fine to call.
     auto _UFirst = _Get_unwrapped(_STD move(_First));
     auto _ULast  = _Get_unwrapped(_STD move(_Last));
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
                                && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
@@ -2362,7 +2362,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>&& _Pair) noexcept;
 #endif // _HAS_CXX23
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
     requires _Is_cv_pair<_Ty> && (_Pair_like<_Uty> || !_Is_deducible_as_pair<_Uty&>)
 #else // ^^^ C++23 with concepts / C++20 or no concepts vvv
@@ -2453,7 +2453,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
 }
 #endif // _HAS_CXX23
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
     requires _Is_cv_pair<_Ty> && (_Pair_like<_Uty> || !_Is_deducible_as_pair<_Uty&>)
 #else // ^^^ C++23 with concepts / C++20 or no concepts vvv
@@ -2461,7 +2461,7 @@ _EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_cv_pair<_Ty> && !_Is_deducible_as_pair<_Uty&>, int> /* = 0 */>
 #endif // ^^^ C++20 or no concepts ^^^
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
     if constexpr (_Pair_like<_Uty> && !_Is_subrange_v<remove_cvref_t<_Uty>>) {
         // equivalent to
         // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2472,7 +2472,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
             _STD uses_allocator_construction_args<typename _Ty::second_type>(
                 _Al, _STD get<1>(_STD forward<_Uty>(_Ux))));
     } else
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
     {
         struct _Pair_remaker {
             const _Alloc& _Al;
@@ -2524,7 +2524,7 @@ constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& 
 }
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 _EXPORT_STD struct from_range_t {
     explicit from_range_t() = default;
 };
@@ -2543,7 +2543,7 @@ using _Range_mapped_type = typename _RANGES range_value_t<_Rng>::second_type; //
 template <_RANGES input_range _Rng>
 using _Range_to_alloc_type =
     pair<const typename _RANGES range_value_t<_Rng>::first_type, typename _RANGES range_value_t<_Rng>::second_type>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 template <class _Ty,
     bool = is_empty_v<_Ty> && !is_final_v<_Ty>>
@@ -2610,10 +2610,10 @@ _INLINE_VAR constexpr bool _Is_transparent_v<_Ty, void_t<typename _Ty::is_transp
 template <class _Ty>
 struct _Is_transparent : bool_constant<_Is_transparent_v<_Ty>> {};
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
 template <class _Ty>
 concept _Transparent = _Is_transparent_v<_Ty>;
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _Elem, class _UTy>
 _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by both to_string and thread::id output

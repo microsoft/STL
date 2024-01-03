@@ -34,7 +34,7 @@ void test_istream_iterator() {
     STATIC_ASSERT(noexcept(i == i));
     STATIC_ASSERT(noexcept(i != i));
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     STATIC_ASSERT(input_iterator<I>);
 
     if constexpr (is_scalar_v<T>) {
@@ -52,7 +52,7 @@ void test_istream_iterator() {
     STATIC_ASSERT(noexcept(!(i != default_sentinel)));
     assert(!(default_sentinel != i));
     STATIC_ASSERT(noexcept(!(default_sentinel != i)));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 template <class T, class CharT = char, class Traits = char_traits<CharT>>
@@ -67,15 +67,15 @@ void test_ostream_iterator(basic_ostream<CharT, Traits>& os) {
     STATIC_ASSERT(noexcept(++i));
     STATIC_ASSERT(noexcept(i++));
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     STATIC_ASSERT(output_iterator<I, const T&>);
     STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 template <class CharT = char, class Traits = char_traits<CharT>>
 void test_istreambuf_iterator() {
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using I = istreambuf_iterator<CharT, Traits>;
     STATIC_ASSERT(input_iterator<I>);
 
@@ -88,7 +88,7 @@ void test_istreambuf_iterator() {
     assert(default_sentinel == i);
     assert(!(i != default_sentinel));
     assert(!(default_sentinel != i));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 template <class CharT = char, class Traits = char_traits<CharT>>
@@ -101,10 +101,10 @@ void test_ostreambuf_iterator(basic_ostream<CharT, Traits>& os) {
     STATIC_ASSERT(noexcept(++i));
     STATIC_ASSERT(noexcept(i++));
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     STATIC_ASSERT(output_iterator<I, const CharT&>);
     STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 template <class C, enable_if_t<is_same_v<C, char>, int> = 0>
@@ -122,7 +122,7 @@ constexpr auto statically_widen_impl(const char*, const wchar_t* wide_str) noexc
 template <class Sequence>
 void test_regex_iterator(const Sequence& seq) {
     (void) seq;
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using SequenceIter = decltype(cbegin(seq));
     using CharT        = remove_cv_t<iter_value_t<SequenceIter>>;
     using I            = regex_iterator<SequenceIter>;
@@ -145,13 +145,13 @@ void test_regex_iterator(const Sequence& seq) {
     assert(default_sentinel == begin_it);
     assert(!(begin_it != default_sentinel));
     assert(!(default_sentinel != begin_it));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 template <class Sequence>
 void test_regex_token_iterator(const Sequence& seq) {
     (void) seq;
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using SequenceIter = decltype(cbegin(seq));
     using CharT        = remove_cv_t<iter_value_t<SequenceIter>>;
     using I            = regex_token_iterator<SequenceIter>;
@@ -174,12 +174,12 @@ void test_regex_token_iterator(const Sequence& seq) {
     assert(default_sentinel == begin_it);
     assert(!(begin_it != default_sentinel));
     assert(!(default_sentinel != begin_it));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 #if _HAS_CXX17
 void test_directory_iterator() {
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using I = filesystem::directory_iterator;
 
     const I end_it{};
@@ -204,11 +204,11 @@ void test_directory_iterator() {
     assert(default_sentinel == begin_it);
     assert(!(begin_it != default_sentinel));
     assert(!(default_sentinel != begin_it));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 void test_recursive_directory_iterator() {
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using I = filesystem::recursive_directory_iterator;
 
     const I end_it{};
@@ -233,7 +233,7 @@ void test_recursive_directory_iterator() {
     assert(default_sentinel == begin_it);
     assert(!(begin_it != default_sentinel));
     assert(!(default_sentinel != begin_it));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 #endif // _HAS_CXX17
 

@@ -899,9 +899,9 @@ class basic_string_view;
 template <class _Traits>
 class _String_view_iterator {
 public:
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Traits::char_type;
     using difference_type   = ptrdiff_t;
@@ -1210,7 +1210,7 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     template <contiguous_iterator _Iter, sized_sentinel_for<_Iter> _Sent>
         requires (is_same_v<iter_value_t<_Iter>, _Elem> && !is_convertible_v<_Sent, size_type>)
     constexpr basic_string_view(_Iter _First, _Sent _Last) noexcept(noexcept(_Last - _First)) // strengthened
@@ -1232,7 +1232,7 @@ public:
         : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<size_t>(_RANGES size(_Rng))) {}
     // clang-format on
 #endif // _HAS_CXX23
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
     _NODISCARD constexpr const_iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
@@ -1626,7 +1626,7 @@ private:
 
 #pragma warning(pop)
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 template <contiguous_iterator _Iter, sized_sentinel_for<_Iter> _Sent>
 basic_string_view(_Iter, _Sent) -> basic_string_view<iter_value_t<_Iter>>;
 
@@ -1641,7 +1641,7 @@ namespace ranges {
     template <class _Elem, class _Traits>
     inline constexpr bool enable_borrowed_range<basic_string_view<_Elem, _Traits>> = true;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator==(
@@ -1837,9 +1837,9 @@ inline namespace literals {
 template <class _Mystr>
 class _String_const_iterator : public _Iterator_base {
 public:
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Mystr::value_type;
     using difference_type   = typename _Mystr::difference_type;
@@ -2076,9 +2076,9 @@ class _String_iterator : public _String_const_iterator<_Mystr> {
 public:
     using _Mybase = _String_const_iterator<_Mystr>;
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Mystr::value_type;
     using difference_type   = typename _Mystr::difference_type;
@@ -2327,11 +2327,11 @@ struct _String_constructor_rvalue_allocator_tag {
     _Xlength_error("string too long");
 }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <class _Rng, class _Ty>
 concept _Contiguous_range_of =
     (_RANGES contiguous_range<_Rng>) &&same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
@@ -2797,7 +2797,7 @@ private:
     }
 
 public:
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
@@ -2813,7 +2813,7 @@ public:
             _Construct_from_iter(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 basic_string(basic_string&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
@@ -3368,7 +3368,7 @@ public:
         }
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string& append_range(_Rng&& _Range) {
         if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
@@ -3379,7 +3379,7 @@ public:
             return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 basic_string& assign(const basic_string& _Right) {
         *this = _Right;
@@ -3474,7 +3474,7 @@ public:
         }
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string& assign_range(_Rng&& _Range) {
         if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
@@ -3491,7 +3491,7 @@ public:
             }
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 basic_string& insert(const size_type _Off, const basic_string& _Right) {
         // insert _Right at _Off
@@ -3643,7 +3643,7 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr iterator insert_range(const const_iterator _Where, _Rng&& _Range) {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -3661,7 +3661,7 @@ public:
 
         return begin() + static_cast<difference_type>(_Off);
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 basic_string& erase(const size_type _Off = 0) { // erase elements [_Off, ...)
         _Mypair._Myval2._Check_offset(_Off);
@@ -3934,7 +3934,7 @@ public:
         }
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string& replace_with_range(const const_iterator _First, const const_iterator _Last, _Rng&& _Range) {
         _Adl_verify_range(_First, _Last);
@@ -3952,7 +3952,7 @@ public:
             return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _NODISCARD _CONSTEXPR20 iterator begin() noexcept {
         return iterator(_Refancy<pointer>(_Mypair._Myval2._Myptr()), _STD addressof(_Mypair._Myval2));
@@ -4916,12 +4916,12 @@ template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
 basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Guide_size_type_t<_Alloc>,
     const _Alloc& = _Alloc()) -> basic_string<_Elem, _Traits, _Alloc>;
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 basic_string(from_range_t, _Rng&&, _Alloc = _Alloc())
     -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc>

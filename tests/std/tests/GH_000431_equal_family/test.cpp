@@ -720,14 +720,14 @@ int main() {
         return equal(begin1, end1, begin2, end2, pred);
     });
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     test_algorithms([](auto begin1, auto end1, auto begin2, auto end2, auto pred) {
         return ranges::equal(begin1, end1, begin2, end2, pred);
     });
 #endif // test_algorithms
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 // Also test GH-1523, in which std::equal didn't properly convert non-pointer contiguous iterators to pointers.
 struct gh1523_iter {
     // a contiguous_iterator that doesn't unwrap into a pointer
@@ -792,4 +792,4 @@ void test_gh_1523() { // COMPILE-ONLY
     // GH-1523 Some StdLib algorithms fail /std:c++latest compilation with custom contiguous iterators
     (void) equal(gh1523_iter{}, gh1523_iter{}, gh1523_iter{}, gh1523_iter{});
 }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20

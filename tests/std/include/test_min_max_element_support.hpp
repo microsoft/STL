@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #include <ranges>
 #endif
 
@@ -90,7 +90,7 @@ void test_case_min_max_element(const std::vector<T>& input) {
     assert(expected_min == actual_min);
     assert(expected_max == actual_max);
     assert(expected_minmax == actual_minmax);
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using std::ranges::views::take, std::ptrdiff_t;
 
     auto actual_min_range          = std::ranges::min_element(input);
@@ -107,5 +107,5 @@ void test_case_min_max_element(const std::vector<T>& input) {
     assert(expected_max == actual_max_sized_range);
     assert(expected_minmax.first == actual_minmax_sized_range.min);
     assert(expected_minmax.second == actual_minmax_sized_range.max);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }

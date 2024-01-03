@@ -39,9 +39,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#if !_HAS_CXX20 || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if !_HAS_CXX20
 #error The contents of <format> are only available with C++20. (Also, you should not include this internal header.)
-#endif // !_HAS_CXX20 || !defined(__cpp_lib_concepts)
+#endif // !_HAS_CXX20
 
 #include <concepts>
 #include <cstddef>

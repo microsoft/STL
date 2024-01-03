@@ -168,11 +168,11 @@ struct string_view_convertible {
 // TRANSITION, GH-395 (equalRanges should be replaced by direct calls to ranges::equal)
 template <class Range1, class Range2>
 constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept {
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     return ranges::equal(range1, range2);
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     return equal(begin(range1), end(range1), begin(range2), end(range2));
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 }
 
 template <class CharType, class POCCA, class POCMA, class POCS, class EQUAL>

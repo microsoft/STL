@@ -668,7 +668,7 @@ public:
         _Construct(_First, _Last);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     deque(from_range_t, _Rng&& _Range) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Construct(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
@@ -678,7 +678,7 @@ public:
     deque(from_range_t, _Rng&& _Range, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     deque(const deque& _Right)
         : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
@@ -829,12 +829,12 @@ public:
         _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     void assign_range(_Rng&& _Range) {
         _Assign_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) { // assign _Count * _Val
         _Orphan_all();
@@ -1184,7 +1184,7 @@ public:
         _Emplace_back_internal(_STD move(_Val));
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     void prepend_range(_Rng&& _Range) {
         _Orphan_all();
@@ -1224,7 +1224,7 @@ public:
         }
         _Guard._Container = nullptr;
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     iterator insert(const_iterator _Where, const _Ty& _Val) {
         return emplace(_Where, _Val);
@@ -1250,7 +1250,7 @@ public:
             _Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     iterator insert_range(const_iterator _Where, _Rng&& _Range) {
         const size_type _Off = static_cast<size_type>(_Where - begin());
@@ -1262,7 +1262,7 @@ public:
             return _Insert_range<_Is_bidi::_Nope>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
         return insert(_Where, _Ilist.begin(), _Ilist.end());
@@ -1712,11 +1712,11 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 deque(_Iter, _Iter, _Alloc = _Alloc()) -> deque<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 deque(from_range_t, _Rng&&, _Alloc = _Alloc()) -> deque<_RANGES range_value_t<_Rng>, _Alloc>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty, class _Alloc>
 void swap(deque<_Ty, _Alloc>& _Left, deque<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
@@ -1736,13 +1736,13 @@ _NODISCARD bool operator!=(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Al
 }
 #endif // !_HAS_CXX20
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Ty> operator<=>(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
         _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
 }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare(
@@ -1763,7 +1763,7 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>

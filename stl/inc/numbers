@@ -10,11 +10,11 @@
 #if !_HAS_CXX20
 _EMIT_STL_WARNING(STL4038, "The contents of <numbers> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #include <concepts>
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 #include <xtr1common>
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 namespace numbers {
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     template <class _Ty>
     struct _Invalid {
         static_assert(_Always_false<_Ty>, "A program that instantiates a primary template of a mathematical constant "
@@ -85,7 +85,7 @@ namespace numbers {
     inline constexpr _Floating egamma_v<_Floating> = static_cast<_Floating>(0.5772156649015329);
     template <floating_point _Floating>
     inline constexpr _Floating phi_v<_Floating> = static_cast<_Floating>(1.618033988749895);
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class _Ty>
     struct _Reject_invalid {
         static_assert(is_floating_point_v<_Ty>, "A program that instantiates a primary template of a mathematical "
@@ -122,7 +122,7 @@ namespace numbers {
     inline constexpr _Ty egamma_v = static_cast<_Reject_invalid_t<_Ty>>(0.5772156649015329);
     _EXPORT_STD template <class _Ty>
     inline constexpr _Ty phi_v = static_cast<_Reject_invalid_t<_Ty>>(1.618033988749895);
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _EXPORT_STD inline constexpr double e          = e_v<double>;
     _EXPORT_STD inline constexpr double log2e      = log2e_v<double>;

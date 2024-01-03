@@ -169,7 +169,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
     _Aligned_storage_t<sizeof(_Ty), alignof(_Ty)> _Stack_space[_Optimistic_count];
 };
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Fun>
     struct in_fun_result {
@@ -275,7 +275,7 @@ namespace ranges {
     };
 #endif // _HAS_CXX23
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _Fn>
 _CONSTEXPR20 _Fn for_each(_InIt _First, _InIt _Last, _Fn _Func) { // perform function for each element [_First, _Last)
@@ -315,7 +315,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable
 _FwdIt for_each_n(_ExPo&& _Exec, _FwdIt _First, _Diff _Count_raw, _Fn _Func) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Fun>
     using for_each_result = in_fun_result<_In, _Fun>;
@@ -390,7 +390,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _For_each_n_fn for_each_n;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -453,7 +453,7 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Count_fn {
     public:
@@ -509,7 +509,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Count_fn count;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count_if(_InIt _First, _InIt _Last, _Pr _Pred) {
@@ -532,7 +532,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD _Iter_diff_t<_FwdIt> count_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Count_if_fn {
     public:
@@ -571,7 +571,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Count_if_fn count_if;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred) {
@@ -664,7 +664,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <input_iterator _It1, input_iterator _It2, _Integer_like _Size, class _Pr, class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
@@ -761,7 +761,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Equal_fn equal;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
@@ -857,7 +857,7 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _Fw
     return _STD is_permutation(_First1, _Last1, _First2, _Last2, equal_to<>{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Is_permutation_fn {
     public:
@@ -1128,7 +1128,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Is_permutation_fn is_permutation;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // test if all elements satisfy _Pred
@@ -1149,7 +1149,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD bool all_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _All_of_fn {
     public:
@@ -1187,7 +1187,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _All_of_fn all_of;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool any_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
@@ -1209,7 +1209,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD bool any_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Any_of_fn {
     public:
@@ -1247,7 +1247,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Any_of_fn any_of;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
@@ -1269,7 +1269,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD bool none_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _None_of_fn {
     public:
@@ -1424,7 +1424,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Copy_backward_fn copy_backward;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy each satisfying _Pred
@@ -1454,7 +1454,7 @@ _FwdIt2 copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using copy_if_result = in_out_result<_In, _Out>;
@@ -1599,7 +1599,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Move_backward_fn move_backward;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
 _CONSTEXPR20 pair<_OutIt1, _OutIt2> partition_copy(
@@ -1638,7 +1638,7 @@ pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _F
     return _STD partition_copy(_First, _Last, _Dest_true, _Dest_false, _Pass_fn(_Pred));
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out1, class _Out2>
     using partition_copy_result = in_out_out_result<_In, _Out1, _Out2>;
@@ -1702,7 +1702,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Partition_copy_fn partition_copy;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt, class _Pr>
@@ -1736,7 +1736,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD bool is_partitioned(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Is_partitioned_fn {
     public:
@@ -1784,7 +1784,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Is_partitioned_fn is_partitioned;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
@@ -1810,7 +1810,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr 
     return _First;
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Partition_point_fn {
     public:
@@ -1904,7 +1904,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Partition_point_fn partition_point;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
@@ -2094,7 +2094,7 @@ _NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Las
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Search_n_fn {
     public:
@@ -2950,7 +2950,7 @@ namespace ranges {
     _EXPORT_STD inline constexpr _Find_last_if_fn<false> find_last_if_not;
 #endif // _HAS_CXX23
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
@@ -3052,7 +3052,7 @@ _NODISCARD _FwdIt1 find_end(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _Fwd
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Find_end_fn {
     private:
@@ -3212,7 +3212,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Find_end_fn find_end;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
@@ -3255,7 +3255,7 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _Fw
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Find_first_of_fn {
     public:
@@ -3405,7 +3405,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Swap_ranges_fn swap_ranges;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
@@ -3480,7 +3480,7 @@ _FwdIt3 transform(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First
     _Fn _Func) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using unary_transform_result = in_out_result<_In, _Out>;
@@ -3585,7 +3585,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Transform_fn transform;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval, const _Ty& _Newval) {
@@ -3606,7 +3606,7 @@ void replace(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, const _Ty& _Oldval,
     const _Ty& _Newval) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Replace_fn {
     public:
@@ -3658,7 +3658,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Replace_fn replace;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt, class _Pr, class _Ty>
 _CONSTEXPR20 void replace_if(const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) {
@@ -3678,7 +3678,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, class _Ty, _Enable_i
 void replace_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred, const _Ty& _Val) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Replace_if_fn {
     public:
@@ -3729,7 +3729,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Replace_if_fn replace_if;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval, const _Ty& _Newval) {
@@ -3762,7 +3762,7 @@ _FwdIt2 replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, cons
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using replace_copy_result = in_out_result<_In, _Out>;
@@ -3821,7 +3821,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Replace_copy_fn replace_copy;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _OutIt, class _Pr, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred, const _Ty& _Val) {
@@ -3855,7 +3855,7 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using replace_copy_if_result = in_out_result<_In, _Out>;
@@ -4016,7 +4016,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Generate_n_fn generate_n;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt, class _Fn>
 _CONSTEXPR20 void generate(_FwdIt _First, _FwdIt _Last, _Fn _Func) { // replace [_First, _Last) with _Func()
@@ -4130,7 +4130,7 @@ _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution
 _NODISCARD_REMOVE_ALG _FwdIt remove_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Remove_fn {
     public:
@@ -4350,7 +4350,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Remove_copy_if_fn remove_copy_if;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
@@ -4400,7 +4400,7 @@ _NODISCARD_UNIQUE_ALG _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexce
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Unique_fn {
     public:
@@ -4463,10 +4463,10 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Unique_fn unique;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _InIt, class _OutIt>
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 concept
 #else
 _INLINE_VAR constexpr bool
@@ -4554,7 +4554,7 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using unique_copy_result = in_out_result<_In, _Out>;
@@ -4717,7 +4717,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Reverse_fn reverse;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _BidIt, class _OutIt>
 _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
@@ -4775,7 +4775,7 @@ _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept
     return _STD reverse_copy(_First, _Last, _Dest);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using reverse_copy_result = in_out_result<_In, _Out>;
@@ -4853,10 +4853,10 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Reverse_copy_fn reverse_copy;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <permutable _It>
     _NODISCARD constexpr subrange<_It> _Reverse_until_mid_unchecked(_It _First, const _It _Mid, _It _Last) {
@@ -4961,7 +4961,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Rotate_fn rotate;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt, class _OutIt>
 _CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) {
@@ -4987,7 +4987,7 @@ _FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt
     return _STD rotate_copy(_First, _Mid, _Last, _Dest);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using rotate_copy_result = in_out_result<_In, _Out>;
@@ -5036,7 +5036,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Rotate_copy_fn rotate_copy;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 template <class _Diff, class _Urng>
@@ -5185,7 +5185,7 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Ur
     return _Dest;
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Ty>
 concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
     { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
@@ -5292,7 +5292,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Sample_fn sample;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 template <class _RanIt, class _RngFn>
@@ -5324,7 +5324,7 @@ void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _
     _Random_shuffle1(_First, _Last, _RngFunc);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Shuffle_fn {
     public:
@@ -5378,7 +5378,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Shuffle_fn shuffle;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 #if _HAS_AUTO_PTR_ETC
 _EXPORT_STD template <class _RanIt, class _RngFn>
@@ -5540,7 +5540,7 @@ _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last,
 }
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 namespace ranges {
     class _Shift_left_fn {
     public:
@@ -5762,7 +5762,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Shift_right_fn shift_right;
 } // namespace ranges
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
@@ -5826,7 +5826,7 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt partition(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Partition_fn {
     public:
@@ -5904,7 +5904,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Partition_fn partition;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 template <class _BidIt>
@@ -6077,7 +6077,7 @@ _BidIt stable_partition(_ExPo&&, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcep
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <bidirectional_iterator _It>
     _It _Buffered_rotate_common(const _It _First, const _It _Mid, const _It _Last, const iter_difference_t<_It> _Count1,
@@ -6272,7 +6272,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Stable_partition_fn stable_partition;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _RanIt, class _Ty, class _Pr>
 _CONSTEXPR20 void _Push_heap_by_index(
@@ -6309,7 +6309,7 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
     _STD push_heap(_First, _Last, less<>{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
@@ -6377,7 +6377,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Push_heap_fn push_heap;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _RanIt, class _Ty, class _Pr>
 _CONSTEXPR20 void _Pop_heap_hole_by_index(
@@ -6443,7 +6443,7 @@ _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
     _STD pop_heap(_First, _Last, less<>{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
@@ -6537,7 +6537,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Pop_heap_fn pop_heap;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
@@ -6563,7 +6563,7 @@ _CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Las
     _STD make_heap(_First, _Last, less<>{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
@@ -6609,7 +6609,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Make_heap_fn make_heap;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 _RanIt _Is_heap_until_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
@@ -6676,7 +6676,7 @@ _NODISCARD bool is_heap(_ExPo&& _Exec, _RanIt _First, _RanIt _Last) noexcept /* 
     return _STD is_heap(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <class _It, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Is_heap_until_unchecked(
@@ -6753,7 +6753,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Is_heap_until_fn is_heap_until;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 template <class _RanIt, class _Pr>
@@ -6783,7 +6783,7 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repe
     _STD sort_heap(_First, _Last, less<>{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
@@ -6925,7 +6925,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Upper_bound_fn upper_bound;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
@@ -6970,7 +6970,7 @@ _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _
     return _STD equal_range(_First, _Last, _Val, less<>{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Equal_range_fn {
     public:
@@ -7029,7 +7029,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Equal_range_fn equal_range;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
@@ -7047,7 +7047,7 @@ _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _T
     return _STD binary_search(_First, _Last, _Val, less<>{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Binary_search_fn {
     public:
@@ -7076,7 +7076,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Binary_search_fn binary_search;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Distance_unknown) {
     return {};
@@ -7169,7 +7169,7 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In1, class _In2, class _Out>
     using merge_result = in_in_out_result<_In1, _In2, _Out>;
@@ -7244,7 +7244,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Merge_fn merge;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 // The "usual invariants" for the inplace_merge helpers below are:
@@ -7513,7 +7513,7 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <forward_iterator _It, sentinel_for<_It> _Se, class _Pr, class _Pj>
         requires indirect_strict_weak_order<_Pr, projected<_It, _Pj>>
@@ -7831,7 +7831,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Inplace_merge_fn inplace_merge;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _BidIt, class _Pr>
 _CONSTEXPR20 _BidIt _Insertion_sort_unchecked(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
@@ -8015,7 +8015,7 @@ void sort(_ExPo&& _Exec, const _RanIt _First, const _RanIt _Last) noexcept /* te
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <bidirectional_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
@@ -8227,7 +8227,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Sort_fn sort;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _FwdIt, class _Ty, class _Pr>
 _Ty* _Uninitialized_merge_move(_FwdIt _First, const _FwdIt _Mid, const _FwdIt _Last, _Ty* const _Dest, _Pr _Pred) {
@@ -8422,7 +8422,7 @@ void stable_sort(_ExPo&& _Exec, _BidIt _First, _BidIt _Last) noexcept /* termina
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Stable_sort_fn {
     public:
@@ -8671,7 +8671,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Stable_sort_fn stable_sort;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
@@ -8720,7 +8720,7 @@ void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last) noexcept /*
     return _STD partial_sort(_First, _Mid, _Last);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Partial_sort_fn {
     public:
@@ -8790,7 +8790,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Partial_sort_fn partial_sort;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt, class _RanIt, class _Pr>
@@ -8852,7 +8852,7 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
     return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using partial_sort_copy_result = in_out_result<_In, _Out>;
@@ -8936,7 +8936,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Partial_sort_copy_fn partial_sort_copy;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _RanIt, class _Pr>
@@ -8988,7 +8988,7 @@ void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last) noexcept /* 
     _STD nth_element(_First, _Nth, _Last);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Nth_element_fn {
     public:
@@ -9058,7 +9058,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Nth_element_fn nth_element;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _Pr>
@@ -9112,7 +9112,7 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
     return _STD includes(_First1, _Last1, _First2, _Last2);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Includes_fn {
     public:
@@ -9180,7 +9180,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Includes_fn includes;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
@@ -9245,7 +9245,7 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In1, class _In2, class _Out>
     using set_union_result = in_in_out_result<_In1, _In2, _Out>;
@@ -9317,7 +9317,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Set_union_fn set_union;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
@@ -9370,7 +9370,7 @@ _FwdIt3 set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2
     return _STD set_intersection(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In1, class _In2, class _Out>
     using set_intersection_result = in_in_out_result<_In1, _In2, _Out>;
@@ -9448,7 +9448,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Set_intersection_fn set_intersection;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
@@ -9502,7 +9502,7 @@ _FwdIt3 set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _
     return _STD set_difference(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using set_difference_result = in_out_result<_In, _Out>;
@@ -9576,7 +9576,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Set_difference_fn set_difference;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
@@ -9644,7 +9644,7 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In1, class _In2, class _Out>
     using set_symmetric_difference_result = in_in_out_result<_In1, _In2, _Out>;
@@ -9726,7 +9726,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Set_symmetric_difference_fn set_symmetric_difference;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 template <class _FwdIt, class _Pr>
@@ -9818,7 +9818,7 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
     return _STD minmax_element(_First, _Last);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _Ty>
     using minmax_element_result = min_max_result<_Ty>;
@@ -9917,7 +9917,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Minmax_element_fn minmax_element;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Ty, class _Pr>
@@ -9958,7 +9958,7 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist) {
     return _STD minmax(_Ilist, less<>{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _Ty>
     using minmax_result = min_max_result<_Ty>;
@@ -10118,7 +10118,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Minmax_fn minmax;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _BidIt, class _Pr>
 _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
@@ -10157,7 +10157,7 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last) {
     return _STD next_permutation(_First, _Last, less<>{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In>
     using next_permutation_result = in_found_result<_In>;
@@ -10220,7 +10220,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Next_permutation_fn next_permutation;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _BidIt, class _Pr>
 _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
@@ -10259,7 +10259,7 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last) {
     return _STD prev_permutation(_First, _Last, less<>{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In>
     using prev_permutation_result = in_found_result<_In>;
@@ -10322,7 +10322,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Prev_permutation_fn prev_permutation;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
@@ -10385,7 +10385,7 @@ _NODISCARD bool is_sorted(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last) noexcept /
     return _STD is_sorted(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Is_sorted_fn {
     public:
@@ -10434,7 +10434,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Is_sorted_until_fn is_sorted_until;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val, _Pr _Pred) {
@@ -10469,7 +10469,7 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
     return _STD clamp(_Val, _Min_val, _Max_val, less{});
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Clamp_fn {
     public:
@@ -10574,7 +10574,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Lexicographical_compare_fn lexicographical_compare;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 #undef _REQUIRE_BIDIRECTIONAL_ITERATOR

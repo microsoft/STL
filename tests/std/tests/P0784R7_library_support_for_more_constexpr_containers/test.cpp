@@ -16,7 +16,7 @@
 
 using namespace std;
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 template <class Ty, class... Types>
 concept can_std_construct_at = requires(Ty* ptr, Types&&... args) { construct_at(ptr, forward<Types>(args)...); };
 
@@ -77,7 +77,7 @@ template <class T>
 constexpr bool destroy_at_noexcept() {
     return noexcept(destroy_at(declval<T*>()));
 }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 static_assert(can_construct_at<int>);
 static_assert(can_construct_at<int, int>);
@@ -164,10 +164,10 @@ struct throwing_dtor {
 static_assert(destroy_at_noexcept<throwing_dtor>());
 static_assert(destroy_at_noexcept<throwing_dtor[42]>());
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 static_assert(!can_ranges_destroy_at<throwing_dtor>);
 static_assert(!can_ranges_destroy_at<throwing_dtor[42]>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 template <class Ty>
 void test_runtime(const Ty& val) {
@@ -178,13 +178,13 @@ void test_runtime(const Ty& val) {
     assert(*asPtrTy == val);
     destroy_at(asPtrTy);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     // test ranges:
     memset(storage, 42, sizeof(Ty));
     assert(asPtrTy == ranges::construct_at(asPtrTy, val));
     assert(*asPtrTy == val);
     ranges::destroy_at(asPtrTy);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 template <class T>
@@ -201,13 +201,13 @@ void test_array(const T& val) {
 
     destroy_at(reinterpret_cast<T(*)[N]>(ptr));
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     for (auto i = 0; i < N; ++i) {
         ranges::construct_at(ptr + i, val);
     }
 
     ranges::destroy_at(reinterpret_cast<T(*)[N]>(ptr));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 template <class T>
@@ -227,11 +227,11 @@ constexpr void test_compiletime() {
         assert(s.object == 42);
         destroy_at(&s.object);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         ranges::construct_at(&s.object, 1729);
         assert(s.object == 1729);
         ranges::destroy_at(&s.object);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     }
 
     struct nontrivial {
@@ -247,11 +247,11 @@ constexpr void test_compiletime() {
         assert(s.object.x == 42);
         destroy_at(&s.object);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         ranges::construct_at(&s.object, 1729);
         assert(s.object.x == 1729);
         ranges::destroy_at(&s.object);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     }
 }
 static_assert((test_compiletime(), true));
@@ -295,7 +295,7 @@ constexpr void test_compiletime_destroy_variants() {
         destroy(a, a + 10);
         alloc.deallocate(a, 10);
     }
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     {
         allocator<A<int>> alloc{};
         A<int>* a = alloc.allocate(10);
@@ -334,7 +334,7 @@ constexpr void test_compiletime_destroy_variants() {
         ranges::destroy(s);
         alloc.deallocate(a, 10);
     }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     {
         allocator<A<int>> alloc{};
         A<int>* a = alloc.allocate(10);
@@ -353,7 +353,7 @@ constexpr void test_compiletime_destroy_variants() {
         destroy_n(a, 10);
         alloc.deallocate(a, 10);
     }
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     {
         allocator<A<int>> alloc{};
         A<int>* a = alloc.allocate(10);
@@ -372,7 +372,7 @@ constexpr void test_compiletime_destroy_variants() {
         ranges::destroy_n(a, 10);
         alloc.deallocate(a, 10);
     }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 static_assert((test_compiletime_destroy_variants(), true));
 
@@ -519,7 +519,7 @@ constexpr void test_compiletime_operators() {
 }
 static_assert((test_compiletime_operators(), true));
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 // Also test LWG-3888 Most ranges uninitialized memory algorithms are underconstrained
 template <class Rng>
 concept CanUninitializedDefaultConstruct = requires(Rng& r) { ranges::uninitialized_default_construct(r); };
@@ -623,7 +623,7 @@ static_assert(CanDestroyN<char*>);
 static_assert(!CanDestroyN<const char*>);
 static_assert(!CanDestroyN<volatile char*>);
 static_assert(!CanDestroyN<const volatile char*>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 int main() {
     test_runtime(1234);
@@ -636,10 +636,10 @@ int main() {
         construct_at(ptr);
         ptr->destroy();
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         ranges::construct_at(ptr);
         ptr->destroy();
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     }
 
     test_array(1234);

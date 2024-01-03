@@ -13,7 +13,7 @@ STATIC_ASSERT(__cpp_lib_adaptor_iterator_pair_constructor == 202106L);
 
 STATIC_ASSERT(__cpp_lib_addressof_constexpr == 201603L);
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_algorithm_iterator_requirements == 202207L);
 #elif defined(__cpp_lib_algorithm_iterator_requirements)
 #error __cpp_lib_algorithm_iterator_requirements is defined
@@ -167,7 +167,7 @@ STATIC_ASSERT(__cpp_lib_char8_t == 201907L);
 #error __cpp_lib_char8_t is defined
 #endif
 
-#if defined(__cpp_lib_concepts)
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_chrono == 201907L);
 #elif _HAS_CXX17
 STATIC_ASSERT(__cpp_lib_chrono == 201611L);
@@ -183,13 +183,13 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 #error __cpp_lib_clamp is defined
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_common_reference == 202302L);
 #elif defined(__cpp_lib_common_reference)
 #error __cpp_lib_common_reference is defined
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_common_reference_wrapper == 202302L);
 #elif defined(__cpp_lib_common_reference_wrapper)
 #error __cpp_lib_common_reference_wrapper is defined
@@ -201,7 +201,7 @@ STATIC_ASSERT(__cpp_lib_complex_udls == 201309L);
 STATIC_ASSERT(__cpp_lib_concepts == 202207L);
 #elif _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
 STATIC_ASSERT(__cpp_lib_concepts == 202002L);
-#elif defined(__cpp_lib_concepts)
+#elif _HAS_CXX20
 #error __cpp_lib_concepts is defined
 #endif
 
@@ -297,7 +297,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_vector == 201907L);
 #error __cpp_lib_constexpr_vector is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_containers_ranges == 202202L);
 #elif defined(__cpp_lib_containers_ranges)
 #error __cpp_lib_containers_ranges is defined
@@ -339,7 +339,7 @@ STATIC_ASSERT(__cpp_lib_execution == 201603L);
 #error __cpp_lib_execution is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_expected == 202211L);
 #elif defined(__cpp_lib_expected)
 #error __cpp_lib_expected is defined
@@ -355,19 +355,19 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #error __cpp_lib_filesystem is defined
 #endif
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_format == 202207L);
 #elif defined(__cpp_lib_format)
 #error __cpp_lib_format is defined
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_format_uchar == 202311L);
 #elif defined(__cpp_lib_format_uchar)
 #error __cpp_lib_format_uchar is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_formatters == 202302L);
 #elif defined(__cpp_lib_formatters)
 #error __cpp_lib_formatters is defined
@@ -405,7 +405,7 @@ STATIC_ASSERT(__cpp_lib_freestanding_memory == 202306L);
 
 STATIC_ASSERT(__cpp_lib_freestanding_operator_new == 202306L);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_freestanding_ranges == 202306L);
 #elif defined(__cpp_lib_freestanding_ranges)
 #error __cpp_lib_freestanding_ranges is defined
@@ -589,7 +589,7 @@ STATIC_ASSERT(__cpp_lib_math_special_functions == 201603L);
 #error __cpp_lib_math_special_functions is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_mdspan == 202207L);
 #elif defined(__cpp_lib_mdspan)
 #error __cpp_lib_mdspan is defined
@@ -607,7 +607,7 @@ STATIC_ASSERT(__cpp_lib_modules == 202207L);
 #error __cpp_lib_modules is defined
 #endif
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_move_iterator_concept == 202207L);
 #elif defined(__cpp_lib_move_iterator_concept)
 #error __cpp_lib_move_iterator_concept is defined
@@ -635,7 +635,7 @@ STATIC_ASSERT(__cpp_lib_not_fn == 201603L);
 
 STATIC_ASSERT(__cpp_lib_null_iterators == 201304L);
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_optional == 202110L);
 #elif _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_optional == 202106L);
@@ -645,7 +645,7 @@ STATIC_ASSERT(__cpp_lib_optional == 201606L);
 #error __cpp_lib_optional is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_out_ptr == 202106L);
 #elif defined(__cpp_lib_out_ptr)
 #error __cpp_lib_out_ptr is defined
@@ -663,7 +663,7 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 #error __cpp_lib_polymorphic_allocator is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_print == 202207L);
 #elif defined(__cpp_lib_print)
 #error __cpp_lib_print is defined
@@ -671,111 +671,111 @@ STATIC_ASSERT(__cpp_lib_print == 202207L);
 
 STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges == 202302L);
-#elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#elif _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #elif defined(__cpp_lib_ranges)
 #error __cpp_lib_ranges is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_as_const == 202311L);
 #elif defined(__cpp_lib_ranges_as_const)
 #error __cpp_lib_ranges_as_const is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_as_rvalue == 202207L);
 #elif defined(__cpp_lib_ranges_as_rvalue)
 #error __cpp_lib_ranges_as_rvalue is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_cartesian_product == 202207L);
 #elif defined(__cpp_lib_ranges_cartesian_product)
 #error __cpp_lib_ranges_cartesian_product is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_chunk == 202202L);
 #elif defined(__cpp_lib_ranges_chunk)
 #error __cpp_lib_ranges_chunk is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_chunk_by == 202202L);
 #elif defined(__cpp_lib_ranges_chunk_by)
 #error __cpp_lib_ranges_chunk_by is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #elif defined(__cpp_lib_ranges_contains)
 #error __cpp_lib_ranges_contains is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_enumerate == 202302L);
 #elif defined(__cpp_lib_ranges_enumerate)
 #error __cpp_lib_ranges_enumerate is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_find_last == 202207L);
 #elif defined(__cpp_lib_ranges_find_last)
 #error __cpp_lib_ranges_find_last is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_fold == 202207L);
 #elif defined(__cpp_lib_ranges_fold)
 #error __cpp_lib_ranges_fold is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_iota == 202202L);
 #elif defined(__cpp_lib_ranges_iota)
 #error __cpp_lib_ranges_iota is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_join_with == 202202L);
 #elif defined(__cpp_lib_ranges_join_with)
 #error __cpp_lib_ranges_join_with is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_repeat == 202207L);
 #elif defined(__cpp_lib_ranges_repeat)
 #error __cpp_lib_ranges_repeat is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_slide == 202202L);
 #elif defined(__cpp_lib_ranges_slide)
 #error __cpp_lib_ranges_slide is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_starts_ends_with == 202106L);
 #elif defined(__cpp_lib_ranges_starts_ends_with)
 #error __cpp_lib_ranges_starts_ends_with is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_stride == 202207L);
 #elif defined(__cpp_lib_ranges_stride)
 #error __cpp_lib_ranges_stride is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_to_container == 202202L);
 #elif defined(__cpp_lib_ranges_to_container)
 #error __cpp_lib_ranges_to_container is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_ranges_zip == 202110L);
 #elif defined(__cpp_lib_ranges_zip)
 #error __cpp_lib_ranges_zip is defined
@@ -835,7 +835,7 @@ STATIC_ASSERT(__cpp_lib_shared_timed_mutex == 201402L);
 #error __cpp_lib_shared_timed_mutex is defined
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_shift == 202202L);
 #elif _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_shift == 201806L);
@@ -917,7 +917,7 @@ STATIC_ASSERT(__cpp_lib_syncbuf == 201803L);
 #error __cpp_lib_syncbuf is defined
 #endif
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_three_way_comparison == 201907L);
 #elif defined(__cpp_lib_three_way_comparison)
 #error __cpp_lib_three_way_comparison is defined
@@ -953,7 +953,7 @@ STATIC_ASSERT(__cpp_lib_transparent_operators == 201510L);
 
 STATIC_ASSERT(__cpp_lib_tuple_element_t == 201402L);
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_tuple_like == 202207L);
 #elif defined(__cpp_lib_tuple_like)
 #error __cpp_lib_tuple_like is defined
