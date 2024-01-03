@@ -380,8 +380,13 @@ namespace test_derived_from {
 
     void PrivateDerived::f() {
         // Check these in a member to verify that access doesn't depend on context
+#ifdef __EDG__ // TRANSITION, VSO-1898937
+        STATIC_ASSERT(derived_from<PrivateDerived, Middle<0>>);
+        STATIC_ASSERT(derived_from<PrivateDerived, Middle<1>>);
+#else // ^^^ assert bug so we'll notice when it's fixed / no workaround vvv
         STATIC_ASSERT(!derived_from<PrivateDerived, Middle<0>>);
         STATIC_ASSERT(!derived_from<PrivateDerived, Middle<1>>);
+#endif // ^^^ no workaround ^^^
     }
 
     STATIC_ASSERT(!derived_from<PrivateDerived, SimpleBase>);
