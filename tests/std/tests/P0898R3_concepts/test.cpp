@@ -1454,7 +1454,11 @@ namespace test_constructible_from {
     };
     STATIC_ASSERT(!test<Multiparameter>());
     STATIC_ASSERT(test<Multiparameter, int>());
-    STATIC_ASSERT(!test<Multiparameter, long>() || is_permissive);
+#ifdef __EDG__ // TRANSITION, VSO-1898939
+    STATIC_ASSERT(test<Multiparameter, long>());
+#else // ^^^ assert bug so we'll notice when it's fixed / no workaround vvv
+    STATIC_ASSERT(!test<Multiparameter, long>());
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(!test<Multiparameter, double>());
     STATIC_ASSERT(!test<Multiparameter, char>());
     STATIC_ASSERT(!test<Multiparameter, void>());
