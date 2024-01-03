@@ -254,7 +254,9 @@ STATIC_ASSERT(test_compare_three_way<int, long, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, float, partial_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, double, partial_ordering>());
 STATIC_ASSERT(test_compare_three_way<long, double, partial_ordering>());
+#ifndef __EDG__ // TRANSITION, VSO-1898915
 STATIC_ASSERT(test_compare_three_way<bool, int, void>());
+#endif // !defined(__EDG__)
 
 STATIC_ASSERT(test_compare_three_way<some_enum, some_enum, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<some_enum, int, void>());
