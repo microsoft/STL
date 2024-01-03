@@ -8,7 +8,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#ifndef __cpp_lib_concepts // note: <format> includes this header in C++20 mode
+#if !_HAS_CXX20 // note: <format> includes this header in C++20 mode
 #error The contents of <print> are available only with C++23. (Also, you should not include this internal header.)
 #endif // ^^^ !_HAS_CXX20 ^^^
 
