@@ -1508,9 +1508,17 @@ namespace test_default_initializable {
     using std::default_initializable, std::initializer_list;
 
     STATIC_ASSERT(default_initializable<int>);
+#ifdef __EDG__ // TRANSITION, VSO-1898941
+    STATIC_ASSERT(default_initializable<int const>);
+#else // ^^^ assert bug so we'll notice when it's fixed / no workaround vvv
     STATIC_ASSERT(!default_initializable<int const>);
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(default_initializable<int volatile>);
+#ifdef __EDG__ // TRANSITION, VSO-1898941
+    STATIC_ASSERT(default_initializable<int const volatile>);
+#else // ^^^ assert bug so we'll notice when it's fixed / no workaround vvv
     STATIC_ASSERT(!default_initializable<int const volatile>);
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(default_initializable<double>);
     STATIC_ASSERT(!default_initializable<void>);
 
@@ -1523,7 +1531,11 @@ namespace test_default_initializable {
     STATIC_ASSERT(!default_initializable<int[]>);
     STATIC_ASSERT(!default_initializable<char[]>);
     STATIC_ASSERT(!default_initializable<char[][3]>);
+#ifdef __EDG__ // TRANSITION, VSO-1898941
+    STATIC_ASSERT(default_initializable<int const[2]>);
+#else // ^^^ assert bug so we'll notice when it's fixed / no workaround vvv
     STATIC_ASSERT(!default_initializable<int const[2]>);
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(!default_initializable<int&>);
     STATIC_ASSERT(!default_initializable<int const&>);
@@ -1567,7 +1579,11 @@ namespace test_default_initializable {
         int x;
     };
     STATIC_ASSERT(default_initializable<S>);
+#ifdef __EDG__ // TRANSITION, VSO-1898941
+    STATIC_ASSERT(default_initializable<S const>);
+#else // ^^^ assert bug so we'll notice when it's fixed / no workaround vvv
     STATIC_ASSERT(!default_initializable<S const>);
+#endif // ^^^ no workaround ^^^
 
     // Also test GH-1603 "default_initializable accepts types that are not default-initializable"
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1326684
