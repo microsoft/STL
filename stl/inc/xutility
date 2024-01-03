@@ -3968,6 +3968,9 @@ struct _Move_iterator_category {
 
 _EXPORT_STD template <class _Iter>
 class move_iterator : public _Move_iterator_category<_Iter> {
+private:
+    _Iter _Current{};
+
 public:
     using iterator_type   = _Iter;
     using value_type      = _Iter_value_t<_Iter>;
@@ -4207,9 +4210,6 @@ public:
     _NODISCARD constexpr iterator_type&& _Get_current() && noexcept {
         return _STD move(_Current);
     }
-
-private:
-    iterator_type _Current{};
 };
 
 _EXPORT_STD template <class _Iter1, class _Iter2>
