@@ -477,20 +477,20 @@ struct difference_type_only_iterator {
         return *this;
     }
 
-    friend constexpr difference_type_only_iterator operator+(
-        difference_type_only_iterator i, same_as<ptrdiff_t> auto n) noexcept {
+    template <same_as<ptrdiff_t> U>
+    friend constexpr difference_type_only_iterator operator+(difference_type_only_iterator i, U n) noexcept {
         i += n;
         return i;
     }
 
-    friend constexpr difference_type_only_iterator operator+(
-        same_as<ptrdiff_t> auto n, difference_type_only_iterator i) noexcept {
+    template <same_as<ptrdiff_t> U>
+    friend constexpr difference_type_only_iterator operator+(U n, difference_type_only_iterator i) noexcept {
         i += n;
         return i;
     }
 
-    friend constexpr difference_type_only_iterator operator-(
-        difference_type_only_iterator i, same_as<ptrdiff_t> auto n) noexcept {
+    template <same_as<ptrdiff_t> U>
+    friend constexpr difference_type_only_iterator operator-(difference_type_only_iterator i, U n) noexcept {
         i -= n;
         return i;
     }
