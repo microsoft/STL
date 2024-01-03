@@ -191,8 +191,8 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
     assert(second >= first);
     static_assert(noexcept(first >= second)); // strengthened
 
-    assert(first <=> second < 0);
-    assert(second <=> first > 0);
+    assert((first <=> second) < 0);
+    assert((second <=> first) > 0);
     static_assert(noexcept(first <=> second)); // strengthened
 
     {

@@ -149,8 +149,8 @@ constexpr void test_integral() {
         assert(second >= first);
         static_assert(noexcept(first >= second)); // strengthened
 
-        assert(first <=> second < 0);
-        assert(second <=> first > 0);
+        assert((first <=> second) < 0);
+        assert((second <=> first) > 0);
         static_assert(noexcept(first <=> second)); // strengthened
 
         {
