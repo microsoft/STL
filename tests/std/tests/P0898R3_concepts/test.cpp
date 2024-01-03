@@ -1586,11 +1586,11 @@ namespace test_default_initializable {
 #endif // ^^^ no workaround ^^^
 
     // Also test GH-1603 "default_initializable accepts types that are not default-initializable"
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1326684
+#if defined(__clang__) // TRANSITION, DevCom-1326684 (MSVC) and VSO-1898945 (EDG)
     STATIC_ASSERT(!default_initializable<AggregatesExplicitDefault>);
 #else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
     STATIC_ASSERT(default_initializable<AggregatesExplicitDefault>);
-#endif // TRANSITION, DevCom-1326684
+#endif // TRANSITION, DevCom-1326684 and VSO-1898945
 } // namespace test_default_initializable
 
 namespace test_move_constructible {
