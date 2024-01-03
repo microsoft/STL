@@ -30,12 +30,9 @@
 #include <vector>
 #include <xloctime>
 #include <xthreads.h>
-
-#if _HAS_CXX20
 #include <concepts>
 #include <format>
 #include <iomanip>
-#endif // _HAS_CXX20
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -1699,15 +1696,8 @@ namespace chrono {
             : runtime_error(_Make_string(_Tp, _Info)) {}
 
     private:
-#if _HAS_CXX20
         template <class _Duration>
         _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
-#else // ^^^ no workaround / workaround vvv
-        template <class _Duration>
-        _NODISCARD static string _Make_string(const local_time<_Duration>&, const local_info&) {
-            return "nonexistent_local_time";
-        }
-#endif // ^^^ workaround ^^^
     };
 
     template <class _Duration>
@@ -1722,15 +1712,8 @@ namespace chrono {
             : runtime_error(_Make_string(_Tp, _Info)) {}
 
     private:
-#if _HAS_CXX20
         template <class _Duration>
         _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
-#else // ^^^ no workaround / workaround vvv
-        template <class _Duration>
-        _NODISCARD static string _Make_string(const local_time<_Duration>&, const local_info&) {
-            return "ambiguous_local_time";
-        }
-#endif // ^^^ workaround ^^^
     };
 
     template <class _Duration>
@@ -1927,12 +1910,10 @@ namespace chrono {
         return _Left.name() == _Right.name();
     }
 
-#if _HAS_CXX20
     _EXPORT_STD _NODISCARD inline strong_ordering operator<=>(
         const time_zone& _Left, const time_zone& _Right) noexcept {
         return _Left.name() <=> _Right.name();
     }
-#endif // _HAS_CXX20
 
     // [time.zone.leap]
 
@@ -2013,7 +1994,6 @@ namespace chrono {
         return !(_Left < _Right.date());
     }
 
-#if _HAS_CXX20
     _EXPORT_STD template <class _Duration>
         requires three_way_comparable_with<sys_seconds, sys_time<_Duration>>
     _NODISCARD constexpr auto operator<=>(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
@@ -2023,7 +2003,6 @@ namespace chrono {
         const leap_second& _Left, const leap_second& _Right) noexcept {
         return _Left.date() <=> _Right.date();
     }
-#endif // _HAS_CXX20
 
     // [time.zone.link]
 
@@ -2056,12 +2035,10 @@ namespace chrono {
         return _Left.name() == _Right.name();
     }
 
-#if _HAS_CXX20
     _EXPORT_STD _NODISCARD inline strong_ordering operator<=>(
         const time_zone_link& _Left, const time_zone_link& _Right) noexcept {
         return _Left.name() <=> _Right.name();
     }
-#endif // _HAS_CXX20
 
     // [time.zone.db]
 
@@ -2648,13 +2625,7 @@ namespace chrono {
             // Convert to the last leap second before or equal to _Time.
             const auto& _Last_leap = *--_It;
             const utc_seconds _Utc_leap_second{_Last_leap.date().time_since_epoch() + _It->_Elapsed() - seconds{1}};
-#if _HAS_CXX20
             const auto _Leap_cmp = _Utc_leap_second <=> _Time_floor;
-#else // ^^^ __cpp_lib_concepts / TRANSITION, GH-395 workaround vvv
-            const auto _Leap_cmp = _Utc_leap_second > _Time_floor  ? strong_ordering::greater
-                                 : _Utc_leap_second == _Time_floor ? strong_ordering::equal
-                                                                   : strong_ordering::less;
-#endif // ^^^ workaround
             if (_Tzdb._All_ls_positive && _STD is_gt(_Leap_cmp)) { // Case (1)
                 --_It;
             }
@@ -4693,7 +4664,6 @@ namespace chrono {
     }
 } // namespace chrono
 
-#if _HAS_CXX20
   // [time.format]
 
 // clang-format off
@@ -6006,7 +5976,6 @@ namespace chrono {
         return _STD move(_Os).str();
     }
 } // namespace chrono
-#endif // _HAS_CXX20
 
 inline namespace literals {
     inline namespace chrono_literals {

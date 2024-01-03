@@ -505,12 +505,10 @@ _NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Ty1, 
     return _Synth_three_way{}(_Left.second, _Right.second);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-#if !_HAS_CXX20
 template <class _Ty1, class _Ty2, class _Uty1, class _Uty2>
 _NODISCARD constexpr bool operator!=(const pair<_Ty1, _Ty2>& _Left, const pair<_Uty1, _Uty2>& _Right) {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20
 
 template <class _Ty1, class _Ty2, class _Uty1, class _Uty2>
 _NODISCARD constexpr bool operator<(const pair<_Ty1, _Ty2>& _Left, const pair<_Uty1, _Uty2>& _Right) {

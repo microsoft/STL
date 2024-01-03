@@ -160,11 +160,7 @@ _EXPORT_STD _NODISCARD constexpr bool operator==(
 #if _HAS_CXX20
 _EXPORT_STD _NODISCARD constexpr strong_ordering operator<=>(
     const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
-#if _HAS_CXX20
     return compare_three_way{}(_Left.address(), _Right.address());
-#else // ^^^ no workaround / workaround vvv
-    return _Left.address() <=> _Right.address();
-#endif // ^^^ workaround ^^^
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 _NODISCARD constexpr bool operator!=(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {

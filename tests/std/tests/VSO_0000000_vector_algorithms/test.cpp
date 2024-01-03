@@ -454,14 +454,10 @@ constexpr bool test_constexpr() {
     const int a[] = {20, 10, 30, 30, 30, 30, 40, 60, 50};
 
     assert(count(begin(a), end(a), 30) == 4);
-#if _HAS_CXX20
     assert(ranges::count(a, 30) == 4);
-#endif // _HAS_CXX20
 
     assert(find(begin(a), end(a), 30) == begin(a) + 2);
-#if _HAS_CXX20
     assert(ranges::find(a, 30) == begin(a) + 2);
-#endif // _HAS_CXX20
 
 #if _HAS_CXX23
     assert(begin(ranges::find_last(a, 30)) == begin(a) + 5);
@@ -473,24 +469,18 @@ constexpr bool test_constexpr() {
     assert(get<0>(minmax_element(begin(a), end(a))) == begin(a) + 1);
     assert(get<1>(minmax_element(begin(a), end(a))) == end(a) - 2);
 
-#if _HAS_CXX20
     assert(ranges::min_element(a) == begin(a) + 1);
     assert(ranges::max_element(a) == end(a) - 2);
     assert(ranges::minmax_element(a).min == begin(a) + 1);
     assert(ranges::minmax_element(a).max == end(a) - 2);
-#endif // _HAS_CXX20
 
     int b[size(a)];
     reverse_copy(begin(a), end(a), begin(b));
     assert(equal(rbegin(a), rend(a), begin(b), end(b)));
 
     int c[size(a)];
-#if _HAS_CXX20
     ranges::reverse_copy(a, c);
     assert(equal(rbegin(a), rend(a), begin(c), end(c)));
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-    reverse_copy(begin(a), end(a), begin(c)); // for swap_ranges test below
-#endif // ^^^ !_HAS_CXX20 ^^^
 
     reverse(begin(b), end(b));
     assert(equal(begin(a), end(a), begin(b), end(b)));
@@ -499,14 +489,12 @@ constexpr bool test_constexpr() {
     assert(equal(rbegin(a), rend(a), begin(b), end(b)));
     assert(equal(begin(a), end(a), begin(c), end(c)));
 
-#if _HAS_CXX20
     ranges::swap_ranges(b, c);
     assert(equal(begin(a), end(a), begin(b), end(b)));
     assert(equal(rbegin(a), rend(a), begin(c), end(c)));
 
     ranges::reverse(c);
     assert(equal(begin(a), end(a), begin(c), end(c)));
-#endif // _HAS_CXX20
 
     return true;
 }

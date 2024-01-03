@@ -11,11 +11,7 @@
 #if !_HAS_CXX20
 _EMIT_STL_WARNING(STL4038, "The contents of <compare> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
-#if _HAS_CXX20
 #include <concepts>
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-#include <xtr1common>
-#endif // ^^^ !_HAS_CXX20 ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -295,7 +291,6 @@ struct common_comparison_category {
     using type = common_comparison_category_t<_Types...>;
 };
 
-#if _HAS_CXX20
 template <class _Ty, class _Cat>
 concept _Compares_as = same_as<common_comparison_category_t<_Ty, _Cat>, _Cat>;
 
@@ -842,8 +837,6 @@ namespace _Compare_partial_order_fallback {
 inline namespace _Cpos {
     _EXPORT_STD inline constexpr _Compare_partial_order_fallback::_Cpo compare_partial_order_fallback;
 }
-
-#endif // _HAS_CXX20
 _STD_END
 
 #pragma pop_macro("new")
