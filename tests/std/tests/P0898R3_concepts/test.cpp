@@ -2634,7 +2634,11 @@ namespace test_totally_ordered {
     STATIC_ASSERT(test<int[42]>());
     STATIC_ASSERT(test<int(int)>());
 
+#ifdef __EDG__ // TRANSITION, VSO-1898947
+    STATIC_ASSERT(test<std::nullptr_t>());
+#else // ^^^ assert bug so we'll notice when it's fixed / no workaround vvv
     STATIC_ASSERT(!test<std::nullptr_t>());
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(!test<EmptyClass>());
 
     constexpr unsigned int Archetype_max = 6;
@@ -2736,7 +2740,11 @@ namespace test_totally_ordered_with {
     STATIC_ASSERT(test<int>());
     STATIC_ASSERT(test<double>());
     STATIC_ASSERT(test<int, double>());
+#ifdef __EDG__ // TRANSITION, VSO-1898947
+    STATIC_ASSERT(test<std::nullptr_t>());
+#else // ^^^ assert bug so we'll notice when it's fixed / no workaround vvv
     STATIC_ASSERT(!test<std::nullptr_t>());
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(test<void*>());
     STATIC_ASSERT(test<int*>());
