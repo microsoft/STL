@@ -144,7 +144,7 @@ static_assert(!std::indirectly_movable<std::optional<int>, std::optional<int>>);
 static_assert(!std::indirectly_movable_storable<std::optional<int>, std::optional<int>>);
 static_assert(!std::indirectly_copyable<std::optional<int>, std::optional<int>>);
 static_assert(!std::indirectly_copyable_storable<std::optional<int>, std::optional<int>>);
-#endif // TRANSITION, GH-395
+#endif // _HAS_CXX20
 // -- END: test/std/utilities/optional/iterator_concept_conformance.compile.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.bad_optional_access/default.pass.cpp
