@@ -2034,7 +2034,7 @@ public:
     }
 
     _CONSTEXPR20 void _Seek_to(const value_type* _It) noexcept {
-        _Ptr = _Refancy<pointer>(const_cast<value_type*>(_It));
+        _Ptr = _STD _Refancy_maybe_null<pointer>(const_cast<value_type*>(_It));
     }
 
     pointer _Ptr; // pointer to element in string

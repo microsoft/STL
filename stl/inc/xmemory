@@ -300,6 +300,16 @@ _CONSTEXPR20 _Pointer _Refancy(_Pointer _Ptr) noexcept {
     return _Ptr;
 }
 
+template <class _Pointer, enable_if_t<!is_pointer_v<_Pointer>, int> = 0>
+_CONSTEXPR20 _Pointer _Refancy_maybe_null(typename pointer_traits<_Pointer>::element_type* _Ptr) noexcept {
+    return _Ptr == nullptr ? _Pointer() : pointer_traits<_Pointer>::pointer_to(*_Ptr);
+}
+
+template <class _Pointer, enable_if_t<is_pointer_v<_Pointer>, int> = 0>
+_CONSTEXPR20 _Pointer _Refancy_maybe_null(_Pointer _Ptr) noexcept {
+    return _Ptr;
+}
+
 template <class _NoThrowFwdIt, class _NoThrowSentinel>
 _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, _NoThrowSentinel _Last) noexcept;
 
