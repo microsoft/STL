@@ -151,7 +151,6 @@ static_assert(test_common_type<std::strong_ordering, std::partial_ordering>());
 static_assert(test_common_type<std::strong_ordering, std::weak_ordering>());
 static_assert(test_common_type<std::strong_ordering, std::strong_ordering>());
 
-#if _HAS_CXX20
 constexpr auto my_cmp_three_way = [](const auto& left, const auto& right) { return left <=> right; };
 
 template <class Left, class Right>
@@ -217,7 +216,6 @@ void test_algorithm() {
     assert((test_algorithm2<Ty1, Ty2>()));
     assert((test_algorithm2<Ty2, Ty1>()));
 }
-#endif // _HAS_CXX20
 
 int main() {
     static_assert(test_orderings());
@@ -226,12 +224,10 @@ int main() {
     static_assert(test_spaceships());
     test_spaceships();
 
-#if _HAS_CXX20
     test_algorithm<int>();
     test_algorithm<char>();
     test_algorithm<unsigned char>();
     test_algorithm<int, char>();
     test_algorithm<int, unsigned char>();
     test_algorithm<char, unsigned char>();
-#endif // _HAS_CXX20
 }
