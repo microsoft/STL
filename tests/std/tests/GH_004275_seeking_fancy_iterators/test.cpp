@@ -365,10 +365,10 @@ CONSTEXPR20 bool test_seeking_string_iterators() {
     return true;
 }
 
-#if _HAS_CXX20
+#if _HAS_CXX20 && (!defined(__EDG__) || _ITERATOR_DEBUG_LEVEL == 0)
 static_assert(test_seeking_vector_iterators());
 static_assert(test_seeking_string_iterators());
-#endif // _HAS_CXX20
+#endif // _HAS_CXX20 && (!defined(__EDG__) || _ITERATOR_DEBUG_LEVEL == 0)
 
 int main() {
     test_seeking_vector_iterators();
