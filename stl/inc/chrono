@@ -20,8 +20,11 @@
 #include <atomic>
 #include <cmath>
 #include <compare>
+#include <concepts>
 #include <cstdint>
+#include <format>
 #include <forward_list>
+#include <iomanip>
 #include <istream>
 #include <memory>
 #include <optional>
@@ -30,9 +33,6 @@
 #include <vector>
 #include <xloctime>
 #include <xthreads.h>
-#include <concepts>
-#include <format>
-#include <iomanip>
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -4664,7 +4664,7 @@ namespace chrono {
     }
 } // namespace chrono
 
-  // [time.format]
+// [time.format]
 
 // clang-format off
 template <class _Ty, class _CharT>

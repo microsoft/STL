@@ -6,10 +6,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <ranges>
 #include <span>
 #include <type_traits>
 #include <utility>
-#include <ranges>
 
 using namespace std;
 

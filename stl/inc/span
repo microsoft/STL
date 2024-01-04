@@ -29,7 +29,7 @@ _EXPORT_STD inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 
 template <class _Ty>
 struct _Span_iterator {
-    using iterator_concept = contiguous_iterator_tag;
+    using iterator_concept  = contiguous_iterator_tag;
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
     using difference_type   = ptrdiff_t;
