@@ -34,6 +34,7 @@ struct _Stl_critical_section {
 
 struct _Mtx_internal_imp_t {
 #if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
+#pragma detect_mismatch("_CRT_WINDOWS_mutex_size", "1")
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 16;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
@@ -41,12 +42,14 @@ struct _Mtx_internal_imp_t {
 #endif // ^^^ !defined(_WIN64) ^^^
 #else // ^^^ defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT) / !defined(_CRT_WINDOWS) ||
       // defined(UNDOCKED_WINDOWS_UCRT) vvv
+#pragma detect_mismatch("_CRT_WINDOWS_mutex_size", "0")
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 64;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 36;
 #endif // ^^^ !defined(_WIN64) ^^^
 #endif // ^^^ !defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT) ^^^
+
 
     static constexpr size_t _Critical_section_align = alignof(void*);
 
