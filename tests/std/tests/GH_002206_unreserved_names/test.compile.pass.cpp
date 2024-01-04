@@ -8,28 +8,25 @@
 #define xtime_get        delete
 
 // Test workaround for extensions of non-reserved names that can't be removed at this moment.
-#define terminate_function  1001
-#define unexpected_function 1002
+#define raw_name 1001
 
-#define raw_name 1003
+#define ipfx 1002
+#define isfx 1003
 
-#define ipfx 1004
-#define isfx 1005
+#define opfx 1004
+#define osfx 1005
 
-#define opfx 1006
-#define osfx 1007
+#define checked_array_iterator        1006
+#define make_checked_array_iterator   1007
+#define make_unchecked_array_iterator 1008
+#define unchecked_array_iterator      1009
 
-#define checked_array_iterator        1008
-#define make_checked_array_iterator   1009
-#define make_unchecked_array_iterator 1010
-#define unchecked_array_iterator      1011
-
-#define discard_block       1012
-#define linear_congruential 1013
-#define mersenne_twister    1014
-#define subtract_with_carry 1015
-#define uniform_int         1016
-#define uniform_real        1017
+#define discard_block       1010
+#define linear_congruential 1011
+#define mersenne_twister    1012
+#define subtract_with_carry 1013
+#define uniform_int         1014
+#define uniform_real        1015
 
 // Also test GH-2645: <yvals_core.h>: Conformance issue on [[msvc::known_semantics]]
 #define msvc            1
@@ -65,70 +62,62 @@
 #error bad macro expansion
 #endif // empty_bases != 6
 
-#if terminate_function != 1001
+#if raw_name != 1001
 #error bad macro expansion
-#endif // terminate_function != 1001
+#endif // raw_name != 1001
 
-#if unexpected_function != 1002
+#if ipfx != 1002
 #error bad macro expansion
-#endif // unexpected_function != 1002
+#endif // ipfx != 1002
 
-#if raw_name != 1003
+#if isfx != 1003
 #error bad macro expansion
 #endif // raw_name != 1003
 
-#if ipfx != 1004
+#if opfx != 1004
 #error bad macro expansion
-#endif // ipfx != 1004
+#endif // raw_name != 1004
 
-#if isfx != 1005
+#if osfx != 1005
 #error bad macro expansion
 #endif // raw_name != 1005
 
-#if opfx != 1006
+#if checked_array_iterator != 1006
 #error bad macro expansion
-#endif // raw_name != 1006
+#endif // checked_array_iterator != 1006
 
-#if osfx != 1007
+#if make_checked_array_iterator != 1007
 #error bad macro expansion
-#endif // raw_name != 1007
+#endif // make_checked_array_iterator != 1007
 
-#if checked_array_iterator != 1008
+#if make_unchecked_array_iterator != 1008
 #error bad macro expansion
-#endif // checked_array_iterator != 1008
+#endif // make_unchecked_array_iterator != 1008
 
-#if make_checked_array_iterator != 1009
+#if unchecked_array_iterator != 1009
 #error bad macro expansion
-#endif // make_checked_array_iterator != 1009
+#endif // unchecked_array_iterator != 1009
 
-#if make_unchecked_array_iterator != 1010
+#if discard_block != 1010
 #error bad macro expansion
-#endif // make_unchecked_array_iterator != 1010
+#endif // discard_block != 1010
 
-#if unchecked_array_iterator != 1011
+#if linear_congruential != 1011
 #error bad macro expansion
-#endif // unchecked_array_iterator != 1011
+#endif // linear_congruential != 1011
 
-#if discard_block != 1012
+#if mersenne_twister != 1012
 #error bad macro expansion
-#endif // discard_block != 1012
+#endif // mersenne_twister != 1012
 
-#if linear_congruential != 1013
+#if subtract_with_carry != 1013
 #error bad macro expansion
-#endif // linear_congruential != 1013
+#endif // subtract_with_carry != 1013
 
-#if mersenne_twister != 1014
+#if uniform_int != 1014
 #error bad macro expansion
-#endif // mersenne_twister != 1014
+#endif // uniform_int != 1014
 
-#if subtract_with_carry != 1015
+#if uniform_real != 1015
 #error bad macro expansion
-#endif // subtract_with_carry != 1015
-
-#if uniform_int != 1016
-#error bad macro expansion
-#endif // uniform_int != 1016
-
-#if uniform_real != 1017
-#error bad macro expansion
-#endif // uniform_real != 1017
+#endif // uniform_real != 1015

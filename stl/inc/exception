@@ -31,15 +31,7 @@ _STD_END
 #if _HAS_EXCEPTIONS
 
 #include <malloc.h>
-
-// TRANSITION, terminate_function and unexpected_function are defined for source compatibility.
-#pragma push_macro("terminate_function")
-#pragma push_macro("unexpected_function")
-#undef terminate_function
-#undef unexpected_function
 #include <vcruntime_exception.h>
-#pragma pop_macro("unexpected_function")
-#pragma pop_macro("terminate_function")
 
 _STD_BEGIN
 
@@ -76,7 +68,7 @@ _STD_END
 
 #else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
 
-#pragma push_macro("stdext") // TRANSITION, vNext
+#pragma push_macro("stdext")
 #undef stdext
 
 _STDEXT_BEGIN
@@ -214,7 +206,7 @@ _EXPORT_STD using _STDEXT bad_exception;
 
 _STD_END
 
-#pragma pop_macro("stdext") // TRANSITION, vNext
+#pragma pop_macro("stdext")
 
 #endif // ^^^ !_HAS_EXCEPTIONS ^^^
 

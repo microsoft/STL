@@ -1467,7 +1467,6 @@ struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
 
 _STD_END
 
-// TRANSITION, vNext
 #pragma push_macro("stdext")
 #pragma push_macro("checked_array_iterator")
 #pragma push_macro("make_checked_array_iterator")
@@ -1869,7 +1868,6 @@ _STL_RESTORE_DEPRECATED_WARNING
 _STD_END
 #endif // _HAS_CXX20
 
-// TRANSITION, vNext
 #pragma pop_macro("unchecked_array_iterator")
 #pragma pop_macro("make_unchecked_array_iterator")
 #pragma pop_macro("make_checked_array_iterator")

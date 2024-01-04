@@ -1979,8 +1979,8 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _CHRONO ::std::chrono::
 #define _RANGES ::std::ranges::
 
-// We use the stdext (standard extension) namespace to contain extensions that are not part of the current standard
-#pragma push_macro("stdext") // Conforming C++ code may `#define stdext`, so we should push & pop it.
+// We use the stdext (standard extension) namespace to contain non-standard extensions
+#pragma push_macro("stdext")
 #undef stdext
 #define _STDEXT_BEGIN      \
     _EXTERN_CXX_WORKAROUND \
