@@ -32,23 +32,26 @@ struct _Stl_critical_section {
     _Smtx_t _M_srw_lock = nullptr;
 };
 
+#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
+#pragma detect_mismatch("windows_mutex", "1")
+#else // ^^^ Windows private STL / public STL vvv
+#pragma detect_mismatch("windows_mutex", "0")
+#endif // ^^^ public STL ^^^
+
 struct _Mtx_internal_imp_t {
 #if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-#pragma detect_mismatch("_CRT_WINDOWS_mutex_size", "1")
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 16;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 8;
 #endif // ^^^ !defined(_WIN64) ^^^
-#else // ^^^ defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT) / !defined(_CRT_WINDOWS) ||
-      // defined(UNDOCKED_WINDOWS_UCRT) vvv
-#pragma detect_mismatch("_CRT_WINDOWS_mutex_size", "0")
+#else // ^^^ Windows private STL / public STL vvv
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 64;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 36;
 #endif // ^^^ !defined(_WIN64) ^^^
-#endif // ^^^ !defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT) ^^^
+#endif // ^^^ public STL ^^^
 
 
     static constexpr size_t _Critical_section_align = alignof(void*);
