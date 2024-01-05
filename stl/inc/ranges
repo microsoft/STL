@@ -9768,7 +9768,7 @@ namespace ranges {
     template <class _Rng>
     _NODISCARD consteval int _Cartesian_product_max_size_bit_width() {
         using _Size_type = decltype(_Compile_time_max_size<_Rng>);
-        if constexpr (requires(_Size_type _Val) { _STD bit_width(_Val); }) {
+        if constexpr (requires { _STD bit_width(_Compile_time_max_size<_Rng>); }) {
             return _STD bit_width(_Compile_time_max_size<_Rng>);
         } else {
             return numeric_limits<_Size_type>::digits;
