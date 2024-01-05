@@ -2036,7 +2036,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #ifdef __clang__
 #if __clang_major__ >= 18
 #define _STL_INTRIN_HEADER <intrin0.h>
-#elif __has_include(<intrin_msvcstl.h>)
+#elif __has_include(<intrin_msvc_stl.h>)
 #define _STL_INTRIN_HEADER <intrin_msvc_stl.h>
 #else
 #define _STL_INTRIN_HEADER <intrin.h>
