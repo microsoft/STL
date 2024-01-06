@@ -2030,7 +2030,7 @@ public:
     using _Prevent_inheriting_unwrap = _String_const_iterator;
 
     _NODISCARD _CONSTEXPR20 const value_type* _Unwrapped() const noexcept {
-        return _Unfancy(_Ptr);
+        return _STD _Unfancy_maybe_null(_Ptr);
     }
 
     _CONSTEXPR20 void _Seek_to(const value_type* _It) noexcept {
@@ -2154,7 +2154,7 @@ public:
     using _Prevent_inheriting_unwrap = _String_iterator;
 
     _NODISCARD _CONSTEXPR20 value_type* _Unwrapped() const noexcept {
-        return const_cast<value_type*>(_Unfancy(this->_Ptr));
+        return const_cast<value_type*>(_STD _Unfancy_maybe_null(this->_Ptr));
     }
 };
 
