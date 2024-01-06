@@ -104,6 +104,9 @@ public:
     using iterator_category = random_access_iterator_tag;
 
     constexpr reference operator*() const {
+        if (ptr_ == nullptr) {
+            abort();
+        }
         return *ptr_;
     }
     constexpr pointer operator->() const {
@@ -215,6 +218,9 @@ public:
     using iterator_category = random_access_iterator_tag;
 
     constexpr reference operator*() const {
+        if (ptr_ == nullptr) {
+            abort();
+        }
         return *ptr_;
     }
     constexpr pointer operator->() const {
@@ -365,12 +371,84 @@ CONSTEXPR20 bool test_seeking_string_iterators() {
     return true;
 }
 
+CONSTEXPR20 bool test_vector_iterators_ordering() {
+    using VIt  = vector<int, min_allocator<int>>::iterator;
+    using VCIt = vector<int, min_allocator<int>>::const_iterator;
+
+    assert(!(VIt{} < VIt{}));
+    assert(!(VIt{} > VIt{}));
+    assert(VIt{} <= VIt{});
+    assert(VIt{} >= VIt{});
+
+    assert(!(VCIt{} < VCIt{}));
+    assert(!(VCIt{} > VCIt{}));
+    assert(VCIt{} <= VCIt{});
+    assert(VCIt{} >= VCIt{});
+
+    assert(!(VIt{} < VCIt{}));
+    assert(!(VIt{} > VCIt{}));
+    assert(VIt{} <= VCIt{});
+    assert(VIt{} >= VCIt{});
+
+    assert(!(VCIt{} < VIt{}));
+    assert(!(VCIt{} > VIt{}));
+    assert(VCIt{} <= VIt{});
+    assert(VCIt{} >= VIt{});
+
+#if _HAS_CXX20
+    assert(VIt{} <=> VIt{} == strong_ordering::equal);
+    assert(VCIt{} <=> VCIt{} == strong_ordering::equal);
+    assert(VIt{} <=> VCIt{} == strong_ordering::equal);
+    assert(VCIt{} <=> VIt{} == strong_ordering::equal);
+#endif // _HAS_CXX20
+
+    return true;
+}
+
+CONSTEXPR20 bool test_string_iterators_ordering() {
+    using SIt  = basic_string<char, char_traits<char>, min_allocator<char>>::iterator;
+    using SCIt = basic_string<char, char_traits<char>, min_allocator<char>>::const_iterator;
+
+    assert(!(SIt{} < SIt{}));
+    assert(!(SIt{} > SIt{}));
+    assert(SIt{} <= SIt{});
+    assert(SIt{} >= SIt{});
+
+    assert(!(SCIt{} < SCIt{}));
+    assert(!(SCIt{} > SCIt{}));
+    assert(SCIt{} <= SCIt{});
+    assert(SCIt{} >= SCIt{});
+
+    assert(!(SIt{} < SCIt{}));
+    assert(!(SIt{} > SCIt{}));
+    assert(SIt{} <= SCIt{});
+    assert(SIt{} >= SCIt{});
+
+    assert(!(SCIt{} < SIt{}));
+    assert(!(SCIt{} > SIt{}));
+    assert(SCIt{} <= SIt{});
+    assert(SCIt{} >= SIt{});
+
+#if _HAS_CXX20
+    assert(SIt{} <=> SIt{} == strong_ordering::equal);
+    assert(SCIt{} <=> SCIt{} == strong_ordering::equal);
+    assert(SIt{} <=> SCIt{} == strong_ordering::equal);
+    assert(SCIt{} <=> SIt{} == strong_ordering::equal);
+#endif // _HAS_CXX20
+
+    return true;
+}
+
 #if _HAS_CXX20
 static_assert(test_seeking_vector_iterators());
 static_assert(test_seeking_string_iterators());
+static_assert(test_vector_iterators_ordering());
+static_assert(test_string_iterators_ordering());
 #endif // _HAS_CXX20
 
 int main() {
     test_seeking_vector_iterators();
     test_seeking_string_iterators();
+    test_vector_iterators_ordering();
+    test_string_iterators_ordering();
 }
