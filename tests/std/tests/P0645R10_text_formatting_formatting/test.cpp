@@ -63,11 +63,11 @@ template <class CharT, class Alloc = allocator<CharT>>
 using alternative_basic_string = basic_string<CharT, alternative_char_traits<CharT>, Alloc>;
 
 template <class charT, class... Args>
-auto make_testing_format_args(Args&&... vals) {
+auto make_testing_format_args(Args&&... vals) { // references to temporaries are risky, see P2905R2; we'll be careful
     if constexpr (is_same_v<charT, wchar_t>) {
-        return make_wformat_args(forward<Args>(vals)...);
+        return make_wformat_args(vals...);
     } else {
-        return make_format_args(forward<Args>(vals)...);
+        return make_format_args(vals...);
     }
 }
 

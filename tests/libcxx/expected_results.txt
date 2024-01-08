@@ -308,10 +308,6 @@ std/language.support/support.limits/support.limits.general/utility.version.compi
 std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/mdspan.version.compile.pass.cpp FAIL
 
-# P2905R2 Runtime Format Strings
-std/utilities/format/format.arguments/format.arg.store/make_format_args.pass.cpp FAIL
-std/utilities/format/format.arguments/format.arg.store/make_wformat_args.pass.cpp FAIL
-
 # P2918R2 Runtime Format Strings II
 std/utilities/format/format.fmt.string/ctor.runtime-format-string.pass.cpp FAIL
 std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp FAIL
