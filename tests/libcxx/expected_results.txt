@@ -353,9 +353,6 @@ std/thread/futures/futures.promise/set_value_at_thread_exit_const.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_void.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.pass.cpp FAIL
 
-# libc++ speculatively implements LWG-3633 "Atomics are copy constructible and copy assignable from volatile atomics"
-std/atomics/atomics.types.generic/copy_semantics_traits.pass.cpp FAIL
-
 
 # *** C1XX COMPILER BUGS ***
 # DevCom-409222 VSO-752709 "Constructing rvalue reference from non-reference-related lvalue reference"
@@ -1252,10 +1249,6 @@ std/ranges/range.adaptors/range.split/general.pass.cpp:1 FAIL
 # Not analyzed. Likely MSVC constexpr bug with negative chars passed to __builtin_memcmp.
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:0 FAIL
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:1 FAIL
-
-# Not analyzed. static_assert failed: '!std::is_assignable_v<volatile std::atomic<T>&, const std::atomic<T>&>'
-# The Standard depicts `atomic& operator=(const atomic&) volatile = delete;` which we seem to be missing.
-std/atomics/atomics.types.generic/atomics.types.float/copy.compile.pass.cpp FAIL
 
 # Not analyzed.
 # MSVC error C2087: 'abstract declarator': missing subscript
