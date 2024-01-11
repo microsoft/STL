@@ -294,12 +294,6 @@ std/language.support/support.limits/support.limits.general/charconv.version.comp
 std/utilities/charconv/charconv.syn/from_chars_result.operator_bool.pass.cpp FAIL
 std/utilities/charconv/charconv.syn/to_chars_result.operator_bool.pass.cpp FAIL
 
-# P2510R3 Formatting Pointers
-std/utilities/format/format.functions/format.locale.pass.cpp FAIL
-std/utilities/format/format.functions/format.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.pass.cpp FAIL
-
 # P2587R3 Redefining to_string To Use to_chars
 std/language.support/support.limits/support.limits.general/string.version.compile.pass.cpp FAIL
 
