@@ -2485,15 +2485,12 @@ protected:
 
 template <class _Alvbase_wrapped>
 class _Vb_const_iterator : public _Vb_iter_base<_Alvbase_wrapped> {
-private:
-    using _Mybase = _Vb_iter_base<_Alvbase_wrapped>;
-
 public:
-    using _Mycont          = typename _Mybase::_Mycont;
-    using _Difference_type = typename _Mybase::_Difference_type;
-    using _Size_type       = typename _Mybase::_Size_type;
-    using _Reft            = _Vb_reference<_Alvbase_wrapped>;
-    using const_reference  = bool;
+    using _Mybase         = _Vb_iter_base<_Alvbase_wrapped>;
+    using _Mycont         = typename _Mybase::_Mycont;
+    using _Size_type      = typename _Mybase::_Size_type;
+    using _Reft           = _Vb_reference<_Alvbase_wrapped>;
+    using const_reference = bool;
 
     using iterator_category = random_access_iterator_tag;
     using value_type        = bool;
@@ -2510,7 +2507,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
-        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
+        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<difference_type>(_Cont->_Mysize),
             "vector<bool> iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -2548,7 +2545,7 @@ public:
             if (_Off < 0) {
                 _STL_VERIFY(-_Start_offset <= _Off, "cannot seek vector<bool> iterator before begin");
             } else if (0 < _Off) {
-                _STL_VERIFY(_Off <= static_cast<_Difference_type>(_Cont->_Mysize - _Start_offset),
+                _STL_VERIFY(_Off <= static_cast<difference_type>(_Cont->_Mysize - _Start_offset),
                     "cannot seek vector<bool> iterator after end");
             }
         }
@@ -2671,7 +2668,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot increment value-initialized vector<bool> iterator");
-        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
+        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<difference_type>(_Cont->_Mysize),
             "cannot increment vector<bool> end iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -2687,9 +2684,8 @@ public:
 template <class _Alvbase_wrapped>
 class _Vb_iterator : public _Vb_const_iterator<_Alvbase_wrapped> {
 public:
-    using _Mybase          = _Vb_const_iterator<_Alvbase_wrapped>;
-    using _Mycont          = typename _Mybase::_Mycont;
-    using _Difference_type = typename _Mybase::_Difference_type;
+    using _Mybase = _Vb_const_iterator<_Alvbase_wrapped>;
+    using _Mycont = typename _Mybase::_Mycont;
 
     using _Reft           = _Vb_reference<_Alvbase_wrapped>;
     using const_reference = bool;
@@ -2706,7 +2702,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
-        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
+        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<difference_type>(_Cont->_Mysize),
             "vector<bool> iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -3501,7 +3497,7 @@ public:
 
         _Iterator_base12** _Pnext = &this->_Myproxy->_Myfirstiter;
         while (*_Pnext) { // test offset from beginning of vector
-            const auto& _Pnextiter = static_cast<const_iterator&>(**_Pnext);
+            const auto& _Pnextiter = static_cast<typename const_iterator::_Mybase&>(**_Pnext);
             const auto _Temp       = *_Pnext;
             if (!_Pnextiter._Myptr) { // orphan the iterator
                 _Temp->_Myproxy = nullptr;
