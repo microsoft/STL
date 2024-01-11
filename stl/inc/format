@@ -1762,9 +1762,11 @@ template <class _Handler>
 class _Specs_checker : public _Handler {
 private:
     _Basic_format_arg_type _Arg_type;
-    // We'll see this if we get a modifier that requires an integer presentation type
-    // for types that can have either integer or non-integer presentation types (charT or bool).
-    bool _Need_arithmetic_presentation_type            = false;
+
+    // Set for the hash and sign modifiers.
+    bool _Need_arithmetic_presentation_type = false;
+
+    // Set for the zero modifier.
     bool _Need_arithmetic_or_pointer_presentation_type = false;
 
 public:
@@ -1968,11 +1970,17 @@ public:
 
         if (_Need_arithmetic_presentation_type && _Cat != _Presentation_type_category::_Integer
             && _Cat != _Presentation_type_category::_Floating) {
-            _Throw_format_error("Modifier requires an integer presentation type for bool");
+            // N4971 [format.string.std]/5: "The sign option is only valid for arithmetic types
+            // other than charT and bool or when an integer presentation type is specified."
+            // N4971 [format.string.std]/7: "The # option [...] is valid for arithmetic types
+            // other than charT and bool or when an integer presentation type is specified, and not otherwise."
+            _Throw_format_error("Hash/sign modifier requires an arithmetic presentation type");
         }
 
         if (_Need_arithmetic_or_pointer_presentation_type && _Cat != _Presentation_type_category::_Integer
             && _Cat != _Presentation_type_category::_Floating && _Cat != _Presentation_type_category::_Pointer) {
+            // N4971 [format.string.std]/8: "The 0 option is valid for arithmetic types
+            // other than charT and bool, pointer types, or when an integer presentation type is specified."
             _Throw_format_error("Zero modifier requires an arithmetic or pointer presentation type");
         }
         _Handler::_On_type(_Type);
