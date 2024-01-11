@@ -72,15 +72,15 @@
 
 #if isfx != 1003
 #error bad macro expansion
-#endif // raw_name != 1003
+#endif // isfx != 1003
 
 #if opfx != 1004
 #error bad macro expansion
-#endif // raw_name != 1004
+#endif // opfx != 1004
 
 #if osfx != 1005
 #error bad macro expansion
-#endif // raw_name != 1005
+#endif // osfx != 1005
 
 #if checked_array_iterator != 1006
 #error bad macro expansion
