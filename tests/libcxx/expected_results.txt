@@ -992,10 +992,6 @@ std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:1 FAIL
 std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:0 FAIL
 std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:1 FAIL
 
-# Not analyzed. Possible STL bug, _Vb_reference derives from _Vb_iter_base and is adopted by the container, but _Orphan_range_unlocked assumes every child is a const_iterator.
-# note: failure was caused by cast of object of dynamic type 'Ref' to type 'const std::_Vb_const_iterator<std::_Wrap_alloc<std::allocator<std::_Vbase>>>'
-std/containers/sequences/vector.bool/emplace_back.pass.cpp FAIL
-
 # Not analyzed. Looks like a test bug, assuming that hash<vector<bool>> is constexpr.
 std/containers/sequences/vector.bool/enabled_hash.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
