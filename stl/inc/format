@@ -3688,18 +3688,20 @@ _EXPORT_STD using format_args  = basic_format_args<format_context>;
 _EXPORT_STD using wformat_args = basic_format_args<wformat_context>;
 
 _EXPORT_STD template <class _Context = format_context, class... _Args>
-_NODISCARD auto make_format_args(_Args&&... _Vals) {
-    static_assert((_Formattable_with<remove_cvref_t<_Args>, _Context> && ...),
+_NODISCARD auto make_format_args(_Args&... _Vals) {
+    // TRANSITION, should cite the new working draft
+    static_assert((_Formattable_with<remove_const_t<_Args>, _Context> && ...),
         "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4950 [format.arg.store]/2 and [formatter.requirements].");
+        "See N4964 [format.arg.store]/2 (along with modification in P2905R2) and [formatter.requirements].");
     return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
 _EXPORT_STD template <class... _Args>
-_NODISCARD auto make_wformat_args(_Args&&... _Vals) {
-    static_assert((_Formattable_with<remove_cvref_t<_Args>, wformat_context> && ...),
+_NODISCARD auto make_wformat_args(_Args&... _Vals) {
+    // TRANSITION, should cite the new working draft
+    static_assert((_Formattable_with<remove_const_t<_Args>, wformat_context> && ...),
         "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4950 [format.arg.store]/2 and [formatter.requirements].");
+        "See N4964 [format.arg.store]/2 (along with modification in P2905R2) and [formatter.requirements].");
     return _Format_arg_store<wformat_context, _Args...>{_Vals...};
 }
 
