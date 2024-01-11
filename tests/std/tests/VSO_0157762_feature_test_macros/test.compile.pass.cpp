@@ -356,7 +356,7 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #endif
 
 #ifdef __cpp_lib_concepts
-STATIC_ASSERT(__cpp_lib_format == 202207L);
+STATIC_ASSERT(__cpp_lib_format == 202304L);
 #elif defined(__cpp_lib_format)
 #error __cpp_lib_format is defined
 #endif
