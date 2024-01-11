@@ -63,11 +63,11 @@ template <class CharT, class Alloc = allocator<CharT>>
 using alternative_basic_string = basic_string<CharT, alternative_char_traits<CharT>, Alloc>;
 
 template <class charT, class... Args>
-auto make_testing_format_args(Args&&... vals) {
+auto make_testing_format_args(Args&&... vals) { // references to temporaries are risky, see P2905R2; we'll be careful
     if constexpr (is_same_v<charT, wchar_t>) {
-        return make_wformat_args(forward<Args>(vals)...);
+        return make_wformat_args(vals...);
     } else {
-        return make_format_args(forward<Args>(vals)...);
+        return make_format_args(vals...);
     }
 }
 
@@ -991,7 +991,7 @@ void test_pointer_specs() {
     throw_helper(STR("{:#}"), nullptr);
 
     // Leading zero
-    throw_helper(STR("{:0}"), nullptr);
+    assert(format(STR("{:05}"), nullptr) == STR("0x000"));
 
     // Width
     assert(format(STR("{:5}"), nullptr) == STR("  0x0"));
@@ -1350,10 +1350,10 @@ void libfmt_formatter_test_zero_flag() {
     assert(format(STR("{0:05}"), 42ull) == STR("00042"));
     assert(format(STR("{0:07}"), -42.0) == STR("-000042"));
     assert(format(STR("{0:07}"), -42.0l) == STR("-000042"));
+    assert(format(STR("{0:05}"), reinterpret_cast<void*>(0x42)) == STR("0x042"));
     throw_helper(STR("{0:0"), 'c');
     throw_helper(STR("{0:05}"), 'c');
     throw_helper(STR("{0:05}"), STR("abc"));
-    throw_helper(STR("{0:05}"), reinterpret_cast<void*>(0x42));
 }
 
 template <class charT>
