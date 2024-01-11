@@ -29,6 +29,7 @@ stages:
           targetPlatform: x64
           vsDevCmdArch: amd64
           buildBenchmarks: false
+          asanBuild: true
           testSelection: ${{ variables.testSelection }}
 
   - stage: Build_And_Test_x86
@@ -43,6 +44,7 @@ stages:
           targetPlatform: x86
           vsDevCmdArch: x86
           buildBenchmarks: false
+          asanBuild: true
           testSelection: ${{ variables.testSelection }}
 
   # no coverage for ARM and ARM64
