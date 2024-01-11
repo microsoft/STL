@@ -177,6 +177,16 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
             }
         }
 
+        // Also validate that join_view iterators are default-constructible
+        {
+            STATIC_ASSERT(is_default_constructible_v<iterator_t<R>>);
+            [[maybe_unused]] iterator_t<R> i;
+            if constexpr (CanMemberBegin<const R>) {
+                STATIC_ASSERT(is_default_constructible_v<iterator_t<const R>>);
+                [[maybe_unused]] iterator_t<const R> ci;
+            }
+        }
+
         // Validate join_view::end
         static_assert(CanMemberEnd<R>);
         static_assert(CanMemberEnd<const R>
