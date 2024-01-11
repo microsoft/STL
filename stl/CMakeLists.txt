@@ -525,6 +525,12 @@ else()
     string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " Synchronization.lib")
 endif()
 
+if(STL_ASAN_BUILD)
+    set(DLL_ASAN_SOURCES ${ASAN_SOURCES})
+else()
+    set(DLL_ASAN_SOURCES "")
+endif()
+
 function(target_stl_compile_options tgt rel_or_dbg)
     if(rel_or_dbg STREQUAL "Release")
         target_compile_options(${tgt} PRIVATE ${VCLIBS_RELEASE_OPTIONS})
@@ -562,7 +568,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
     set(gl_flag_Debug "")
 
     # msvcp140.dll
-    add_library(msvcp${D_SUFFIX}_objects OBJECT ${DLL_SOURCES} ${SOURCES})
+    add_library(msvcp${D_SUFFIX}_objects OBJECT ${DLL_SOURCES} ${SOURCES} ${DLL_ASAN_SOURCES})
     target_compile_definitions(msvcp${D_SUFFIX}_objects PRIVATE CRTDLL2 _DLL)
     target_compile_options(msvcp${D_SUFFIX}_objects PRIVATE ${gl_flag_${REL_OR_DBG}} /EHsc)
     target_stl_compile_options(msvcp${D_SUFFIX}_objects ${REL_OR_DBG})
