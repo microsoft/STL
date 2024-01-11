@@ -1228,12 +1228,6 @@ std/ranges/range.adaptors/range.split/general.pass.cpp:1 FAIL
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:0 FAIL
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:1 FAIL
 
-# Not analyzed.
-# MSVC error C2087: 'abstract declarator': missing subscript
-# Clang error: array has incomplete element type 'int[]'
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer.pass.cpp FAIL
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.mod/reset_pointer.pass.cpp FAIL
-
 # Not analyzed. SKIPPED because this is x86-specific, fatal error C1060: compiler is out of heap space
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.iterator.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.iterator.pass.cpp:1 SKIPPED
