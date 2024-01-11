@@ -7,10 +7,14 @@
 #include <cctype>
 #include <charconv>
 #include <cstddef>
+#include <cstdint>
 #include <cwctype>
 #include <format>
 #include <functional>
 #include <ranges>
+#include <string>
+#include <string_view>
+#include <system_error>
 
 #include <test_format_support.hpp>
 
@@ -20,8 +24,9 @@ using namespace std;
 
 template <class CharT>
 basic_string<CharT> pointer_to_string(const void* ptr) {
-    char buffer[16];
-    auto [end, ec] = to_chars(buffer, buffer + 16, reinterpret_cast<uintptr_t>(ptr), 16);
+    constexpr size_t hexits = 2 * sizeof(void*);
+    char buffer[hexits];
+    auto [end, ec] = to_chars(buffer, buffer + hexits, reinterpret_cast<uintptr_t>(ptr), 16);
     assert(ec == errc{});
     basic_string<CharT> out;
     ranges::transform(buffer, end, back_inserter(out), [](char c) { return static_cast<CharT>(c); });
@@ -55,7 +60,7 @@ template <class CharT, template <class> class Fmt>
 void check_pointer_formatter() {
     Fmt<CharT> fmt;
     const int variable       = 0;
-    const void* ptr          = &variable;
+    const void* const ptr    = &variable;
     const auto rep           = pointer_to_string<CharT>(ptr);
     const auto lowercase_rep = STR("0x") + rep;
     const auto uppercase_rep = STR("0X") + string_to_uppercase(rep);

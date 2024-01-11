@@ -1779,7 +1779,7 @@ public:
         }
     }
 
-    constexpr void _Require_numeric_or_pointer_argument() {
+    constexpr void _Require_numeric_or_pointer_argument() const {
         if (!_Is_arithmetic_fmt_type(_Arg_type) && _Arg_type != _Basic_format_arg_type::_Pointer_type) {
             _Throw_format_error("Format specifier requires numeric or pointer argument.");
         }
@@ -3195,7 +3195,7 @@ _NODISCARD _OutputIt _Fmt_write(
     _STL_INTERNAL_CHECK(_Specs._Precision == -1);
     _STL_INTERNAL_CHECK(!_Specs._Localized);
 
-    char _Buffer[16]; // 16 hexits
+    char _Buffer[2 * sizeof(void*)]; // 2 hexits per byte: 8 hexits for 32-bit, 16 hexits for 64-bit
     const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), reinterpret_cast<uintptr_t>(_Value), 16);
     _STL_INTERNAL_CHECK(_Ec == errc{});
     const int _Width = 2 + static_cast<int>(_End - _Buffer);
