@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// _Stod function
-
 #include <yvals.h> // include first, for native shared
 
 #include <cstdlib>

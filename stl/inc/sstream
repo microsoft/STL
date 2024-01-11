@@ -54,7 +54,7 @@ public:
     template <class _Alloc2>
     basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al_)
         : _Al(_Al_) {
-        _Init(_Str.c_str(), _Str.size(), _Getstate(_Mode));
+        _Init(_Str.c_str(), _Convert_size<_Mysize_type>(_Str.size()), _Getstate(_Mode));
     }
 
     template <class _Alloc2>
@@ -243,13 +243,13 @@ protected:
         }
 
         // grow buffer and store element
-        size_t _Oldsize    = 0;
-        const auto _Oldptr = _Mysb::eback();
+        _Mysize_type _Oldsize = 0;
+        const auto _Oldptr    = _Mysb::eback();
         if (_Pptr) {
-            _Oldsize = static_cast<size_t>(_Epptr - _Oldptr);
+            _Oldsize = static_cast<_Mysize_type>(_Epptr - _Oldptr);
         }
 
-        size_t _Newsize;
+        _Mysize_type _Newsize;
         if (_Oldsize < _MINSIZE) {
             _Newsize = _MINSIZE;
         } else if (_Oldsize < INT_MAX / 2) { // grow by 50 percent

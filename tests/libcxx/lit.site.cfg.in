@@ -17,6 +17,7 @@ config.suffixes         = ['[.]pass[.]cpp$', '[.]fail[.]cpp$']
 config.test_exec_root   = '@LIBCXX_TEST_OUTPUT_DIR@'
 config.test_format      = stl.test.format.LibcxxTestFormat()
 config.test_source_root = '@LIBCXX_SOURCE_DIR@/test'
+config.substitutions.append(('%{cxx_std}', ''))
 
 lit_config.expected_results = getattr(lit_config, 'expected_results', dict())
 lit_config.include_dirs     = getattr(lit_config, 'include_dirs', dict())

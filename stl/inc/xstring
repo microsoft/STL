@@ -1969,7 +1969,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 difference_type operator-(const _String_const_iterator& _Right) const noexcept {
         _Compat(_Right);
-        return _Ptr - _Right._Ptr;
+        return static_cast<difference_type>(_Ptr - _Right._Ptr);
     }
 
     _NODISCARD _CONSTEXPR20 reference operator[](const difference_type _Off) const noexcept {
@@ -2547,6 +2547,9 @@ public:
         _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Count);
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     _CONSTEXPR20 basic_string(
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
@@ -5260,13 +5263,13 @@ inline namespace literals {
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc, class _Uty>
 constexpr basic_string<_Elem, _Traits, _Alloc>::size_type erase(
     basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
-    return _Erase_remove(_Cont, _Val);
+    return _STD _Erase_remove(_Cont, _Val);
 }
 
 _EXPORT_STD template <class _Elem, class _Traits, class _Alloc, class _Pr>
 constexpr basic_string<_Elem, _Traits, _Alloc>::size_type erase_if(
     basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+    return _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

@@ -67,13 +67,17 @@ constexpr bool test_common_constructible() {
         using value_type = int;
 
         constexpr common_constructible(const int* const first, const int* const last, secret_key_t)
-            : first_{first}, last_{last} {}
+            : first_{first}, last_{last}, args_{3} {}
+
+        constexpr common_constructible(const int* const first, const int* const last, secret_key_t, double)
+            : first_{first}, last_{last}, args_{4} {}
 
         const int* begin() const; // not defined
         const int* end() const; // not defined
 
         const int* first_;
         const int* last_;
+        int args_;
     };
 
     int some_ints[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -82,11 +86,27 @@ constexpr bool test_common_constructible() {
         std::same_as<common_constructible> auto c0 = ranges::to<common_constructible>(some_ints, secret_key);
         assert(c0.first_ == ranges::begin(some_ints));
         assert(c0.last_ == ranges::end(some_ints));
+        assert(c0.args_ == 3);
     }
     {
         std::same_as<common_constructible> auto c1 = some_ints | ranges::to<common_constructible>(secret_key);
         assert(c1.first_ == ranges::begin(some_ints));
         assert(c1.last_ == ranges::end(some_ints));
+        assert(c1.args_ == 3);
+    }
+
+    // Verify that more than one argument can be passed after the range:
+    {
+        std::same_as<common_constructible> auto c2 = ranges::to<common_constructible>(some_ints, secret_key, 3.14);
+        assert(c2.first_ == ranges::begin(some_ints));
+        assert(c2.last_ == ranges::end(some_ints));
+        assert(c2.args_ == 4);
+    }
+    {
+        std::same_as<common_constructible> auto c3 = some_ints | ranges::to<common_constructible>(secret_key, 3.14);
+        assert(c3.first_ == ranges::begin(some_ints));
+        assert(c3.last_ == ranges::end(some_ints));
+        assert(c3.args_ == 4);
     }
 
     return true;
