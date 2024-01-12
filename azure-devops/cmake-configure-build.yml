@@ -41,6 +41,7 @@ steps:
     )
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    echo "##[debug]cmake ${{ parameters.cmakeAdditionalFlags }} -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=${{ join(';', parameters.litFlags) }} -DSTL_USE_ANALYZE=ON -DSTL_ASAN_BUILD=${{ parameters.asanBuild }} -S $(Build.SourcesDirectory) -B $(buildOutputLocation)"
     cmake ${{ parameters.cmakeAdditionalFlags }} -G Ninja ^
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
