@@ -524,6 +524,12 @@ std/time/time.syn/formatter.year.pass.cpp:2 FAIL
 std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:0 FAIL
 std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:1 FAIL
 
+# GH-4268: <sstream>, <syncstream>: Buffer types assume that allocated pointers are not modified by users
+std/input.output/string.streams/stringbuf/stringbuf.members/str.pass.cpp FAIL
+std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
+std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
+std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
+
 
 # *** VCRUNTIME BUGS ***
 # DevCom-10373274 VSO-1824997 "vcruntime nothrow array operator new falls back on the wrong function"
@@ -1086,12 +1092,6 @@ std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
-
-# Not analyzed. Assertion failed: _CrtIsValidHeapPointer(block)
-std/input.output/string.streams/stringbuf/stringbuf.members/str.pass.cpp FAIL
-std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
-std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
-std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
 # Not analyzed. In debug mode, looks like a proxy object unexpectedly exhausts an 80-byte buffer.
 # In release mode, fails in a later assertion that appears to be testing libc++-specific behavior.
