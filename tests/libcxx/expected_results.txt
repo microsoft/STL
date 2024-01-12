@@ -347,6 +347,11 @@ std/thread/futures/futures.promise/set_value_at_thread_exit_const.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_void.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.pass.cpp FAIL
 
+# LWG-3343 "Ordering of calls to unlock() and notify_all() in Effects element of notify_all_at_thread_exit() should be reversed" (Open)
+# libc++ speculatively implements LWG-3343. If we wanted to do the same thing,
+# we'd need to reverse the order of the _Mtx_unlock() and _Cnd_broadcast() calls in xnotify.cpp.
+std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
+
 
 # *** C1XX COMPILER BUGS ***
 # DevCom-409222 VSO-752709 "Constructing rvalue reference from non-reference-related lvalue reference"
@@ -576,7 +581,6 @@ std/thread/futures/futures.shared_future/wait_until.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/get.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_for.pass.cpp SKIPPED
-std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvar/notify_one.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvar/wait_for_pred.pass.cpp SKIPPED
