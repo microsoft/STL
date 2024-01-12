@@ -1746,7 +1746,12 @@ constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexc
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_object) {
         return static_cast<_Ty1&&>(_Arg1).*_Obj;
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10543093
         return _Arg1.get().*_Obj;
+#else // ^^^ no workaround / workaround vvv
+        auto& _Ref = _Arg1.get();
+        return _Ref.*_Obj;
+#endif // ^^^ workaround ^^^
     } else {
         _STL_INTERNAL_STATIC_ASSERT(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer);
         return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
