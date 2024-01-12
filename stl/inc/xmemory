@@ -36,6 +36,17 @@ _NODISCARD constexpr _Ty* _Unfancy(_Ty* _Ptr) noexcept { // do nothing for plain
     return _Ptr;
 }
 
+template <class _Ptrty>
+constexpr auto _Unfancy_maybe_null(_Ptrty _Ptr) noexcept {
+    // converts from a (potentially null) fancy pointer to a plain pointer
+    return _Ptr ? _STD addressof(*_Ptr) : nullptr;
+}
+
+template <class _Ty>
+constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain pointers
+    return _Ptr;
+}
+
 template <class _Ty>
 struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
     _Ty* _Target;
@@ -297,6 +308,16 @@ _CONSTEXPR20 _Pointer _Refancy(typename pointer_traits<_Pointer>::element_type* 
 
 template <class _Pointer, enable_if_t<is_pointer_v<_Pointer>, int> = 0>
 _CONSTEXPR20 _Pointer _Refancy(_Pointer _Ptr) noexcept {
+    return _Ptr;
+}
+
+template <class _Pointer, enable_if_t<!is_pointer_v<_Pointer>, int> = 0>
+_CONSTEXPR20 _Pointer _Refancy_maybe_null(typename pointer_traits<_Pointer>::element_type* _Ptr) noexcept {
+    return _Ptr == nullptr ? _Pointer() : pointer_traits<_Pointer>::pointer_to(*_Ptr);
+}
+
+template <class _Pointer, enable_if_t<is_pointer_v<_Pointer>, int> = 0>
+_CONSTEXPR20 _Pointer _Refancy_maybe_null(_Pointer _Ptr) noexcept {
     return _Ptr;
 }
 

@@ -1984,7 +1984,7 @@ public:
 #if _HAS_CXX20
     _NODISCARD constexpr strong_ordering operator<=>(const _String_const_iterator& _Right) const noexcept {
         _Compat(_Right);
-        return _Unfancy(_Ptr) <=> _Unfancy(_Right._Ptr);
+        return _STD _Unfancy_maybe_null(_Ptr) <=> _STD _Unfancy_maybe_null(_Right._Ptr);
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _String_const_iterator& _Right) const noexcept {
@@ -2030,11 +2030,11 @@ public:
     using _Prevent_inheriting_unwrap = _String_const_iterator;
 
     _NODISCARD _CONSTEXPR20 const value_type* _Unwrapped() const noexcept {
-        return _Unfancy(_Ptr);
+        return _STD _Unfancy_maybe_null(_Ptr);
     }
 
     _CONSTEXPR20 void _Seek_to(const value_type* _It) noexcept {
-        _Ptr = _Refancy<pointer>(const_cast<value_type*>(_It));
+        _Ptr = _STD _Refancy_maybe_null<pointer>(const_cast<value_type*>(_It));
     }
 
     pointer _Ptr; // pointer to element in string
@@ -2154,7 +2154,7 @@ public:
     using _Prevent_inheriting_unwrap = _String_iterator;
 
     _NODISCARD _CONSTEXPR20 value_type* _Unwrapped() const noexcept {
-        return const_cast<value_type*>(_Unfancy(this->_Ptr));
+        return const_cast<value_type*>(_STD _Unfancy_maybe_null(this->_Ptr));
     }
 };
 
