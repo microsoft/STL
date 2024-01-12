@@ -7,7 +7,9 @@
 #include <cstdint>
 #include <execution>
 #include <functional>
+#include <memory>
 #include <numeric>
+#include <type_traits>
 #include <vector>
 
 struct bigint {
