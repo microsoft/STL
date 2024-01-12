@@ -689,7 +689,7 @@ void string_test_impl(const CharType* data) {
 #ifndef _M_CEE // TRANSITION, VSO-1659496
     validating_converter arr[1]{};
     another.append(+arr, +arr);
-    another.replace(cbegin(value), cbegin(value), +arr, +arr);
+    another.replace(cbegin(another), cend(another), +arr, +arr);
 #endif // _M_CEE
 }
 
