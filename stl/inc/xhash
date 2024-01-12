@@ -30,6 +30,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// Default to using floating point in xhash, defining a non-zero value will
+// avoid floating point arithmetic.
+#ifndef _XHASH_NO_FLOATING_POINT
+#define _XHASH_NO_FLOATING_POINT 0
+#endif // _XHASH_NO_FLOATING_POINT
+#pragma detect_mismatch("_XHASH_NO_FLOATING_POINT", _CRT_STRINGIZE(_XHASH_NO_FLOATING_POINT))
+
 #ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 _STDEXT_BEGIN
 template <class _Kty>
@@ -123,21 +130,30 @@ template <class _Kty, class _Hasher, class _Keyeq>
 class _Uhash_compare
     : public _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq> { // traits class for unordered containers
 public:
+#if _XHASH_NO_FLOATING_POINT
+    using _Bucket_size_type                                 = uint64_t;
+    static constexpr _Bucket_size_type _Bucket_size_default = 0;
+#else
+    using _Bucket_size_type                                 = float;
+    static constexpr _Bucket_size_type _Bucket_size_default = 0.0f;
+#endif // _XHASH_NO_FLOATING_POINT
+
     enum { // parameters for hash table
         bucket_size = 1 // 0 < bucket_size
     };
 
     _Uhash_compare() noexcept(
         conjunction_v<is_nothrow_default_constructible<_Hasher>, is_nothrow_default_constructible<_Keyeq>>)
-        : _Mypair(_Zero_then_variadic_args_t{}, _Zero_then_variadic_args_t{}, 0.0f) {}
+        : _Mypair(_Zero_then_variadic_args_t{}, _Zero_then_variadic_args_t{}, _Bucket_size_default) {}
 
     explicit _Uhash_compare(const _Hasher& _Hasharg) noexcept(
         conjunction_v<is_nothrow_copy_constructible<_Hasher>, is_nothrow_default_constructible<_Keyeq>>)
-        : _Mypair(_One_then_variadic_args_t{}, _Hasharg, _Zero_then_variadic_args_t{}, 0.0f) {}
+        : _Mypair(_One_then_variadic_args_t{}, _Hasharg, _Zero_then_variadic_args_t{}, _Bucket_size_default) {}
 
     explicit _Uhash_compare(const _Hasher& _Hasharg, const _Keyeq& _Keyeqarg) noexcept(
         conjunction_v<is_nothrow_copy_constructible<_Hasher>, is_nothrow_copy_constructible<_Keyeq>>)
-        : _Mypair(_One_then_variadic_args_t{}, _Hasharg, _One_then_variadic_args_t{}, _Keyeqarg, 0.0f) {}
+        : _Mypair(_One_then_variadic_args_t{}, _Hasharg, _One_then_variadic_args_t{}, _Keyeqarg, _Bucket_size_default) {
+    }
 
     template <class _Keyty>
     _NODISCARD size_t operator()(const _Keyty& _Keyval) const noexcept(_Nothrow_hash<_Hasher, _Keyty>) {
@@ -152,11 +168,11 @@ public:
         return !static_cast<bool>(_Mypair._Myval2._Get_first()(_Keyval1, _Keyval2));
     }
 
-    _NODISCARD float& _Get_max_bucket_size() noexcept {
+    _NODISCARD _Bucket_size_type& _Get_max_bucket_size() noexcept {
         return _Mypair._Myval2._Myval2;
     }
 
-    _NODISCARD const float& _Get_max_bucket_size() const noexcept {
+    _NODISCARD const _Bucket_size_type& _Get_max_bucket_size() const noexcept {
         return _Mypair._Myval2._Myval2;
     }
 
@@ -170,7 +186,7 @@ public:
         _STD swap(_Lsecond._Myval2, _Rsecond._Myval2);
     }
 
-    _Compressed_pair<_Hasher, _Compressed_pair<_Keyeq, float>> _Mypair;
+    _Compressed_pair<_Hasher, _Compressed_pair<_Keyeq, _Bucket_size_type>> _Mypair;
 };
 
 template <class _Iter, class _Val>
@@ -338,6 +354,13 @@ protected:
 
     using _Key_compare   = typename _Traits::key_compare;
     using _Value_compare = typename _Traits::value_compare;
+
+#if _XHASH_NO_FLOATING_POINT
+    using _Factor_type                             = uint64_t;
+    static constexpr _Factor_type _Factor_accuracy = 1000000000;
+#else
+    using _Factor_type = float;
+#endif // _XHASH_NO_FLOATING_POINT
 
 public:
     using key_type = typename _Traits::key_type;
@@ -900,16 +923,25 @@ public:
         return _List._Make_const_iter(_Bucket_hi);
     }
 
-    _NODISCARD float load_factor() const noexcept {
-        return static_cast<float>(size()) / static_cast<float>(bucket_count());
+    _NODISCARD _Factor_type load_factor() const noexcept {
+#if _XHASH_NO_FLOATING_POINT
+        return (static_cast<_Factor_type>(size()) * _Factor_accuracy) / static_cast<_Factor_type>(bucket_count())
+             / _Factor_accuracy;
+#else
+        return static_cast<_Factor_type>(size()) / static_cast<_Factor_type>(bucket_count());
+#endif // _XHASH_NO_FLOATING_POINT
     }
 
-    _NODISCARD float max_load_factor() const noexcept {
+    _NODISCARD _Factor_type max_load_factor() const noexcept {
         return _Max_bucket_size();
     }
 
-    void max_load_factor(float _Newmax) noexcept /* strengthened */ {
+    void max_load_factor(_Factor_type _Newmax) noexcept /* strengthened */ {
+#if _XHASH_NO_FLOATING_POINT
+        _STL_ASSERT(_Newmax > 0, "invalid hash load factor");
+#else
         _STL_ASSERT(!(_CSTD isnan)(_Newmax) && _Newmax > 0, "invalid hash load factor");
+#endif // _XHASH_NO_FLOATING_POINT
         _Max_bucket_size() = _Newmax;
     }
 
@@ -1649,7 +1681,7 @@ protected:
     bool _Check_rehash_required_1() const noexcept {
         const size_type _Oldsize = _List._Mypair._Myval2._Mysize;
         const auto _Newsize      = _Oldsize + 1;
-        return max_load_factor() < static_cast<float>(_Newsize) / static_cast<float>(bucket_count());
+        return max_load_factor() < static_cast<_Factor_type>(_Newsize) / static_cast<_Factor_type>(bucket_count());
     }
 
     void _Rehash_for_1() {
@@ -1678,7 +1710,16 @@ protected:
 
     _NODISCARD size_type _Min_load_factor_buckets(const size_type _For_size) const noexcept {
         // returns the minimum number of buckets necessary for the elements in _List
-        return static_cast<size_type>(_CSTD ceilf(static_cast<float>(_For_size) / max_load_factor()));
+#if _XHASH_NO_FLOATING_POINT
+        auto _X =
+            (static_cast<_Factor_type>((static_cast<_Factor_type>(_For_size) * _Factor_accuracy) / max_load_factor()));
+        if ((_X % _Factor_accuracy) > 0) {
+            return static_cast<size_t>((_X / _Factor_accuracy) + 1);
+        }
+        return static_cast<size_t>(_X / _Factor_accuracy);
+#else
+        return static_cast<size_type>(_CSTD ceilf(static_cast<_Factor_type>(_For_size) / max_load_factor()));
+#endif // _XHASH_NO_FLOATING_POINT
     }
 
     _NODISCARD size_type _Desired_grow_bucket_count(const size_type _For_size) const noexcept {
@@ -1794,11 +1835,11 @@ protected:
 #endif // _ENABLE_STL_INTERNAL_CHECK
     }
 
-    float& _Max_bucket_size() noexcept {
+    _Factor_type& _Max_bucket_size() noexcept {
         return _Traitsobj._Get_max_bucket_size();
     }
 
-    const float& _Max_bucket_size() const noexcept {
+    const _Factor_type& _Max_bucket_size() const noexcept {
         return _Traitsobj._Get_max_bucket_size();
     }
 
