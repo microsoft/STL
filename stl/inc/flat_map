@@ -406,15 +406,15 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Other._Data.values)} {}
 
     // Move constructors
-    _Flat_Map_Base(_Derived&& _Other) noexcept(
-        _STD is_nothrow_move_constructible_v<key_compare>&& _STD is_nothrow_move_constructible_v<key_container_type>&&
-            _STD is_nothrow_move_constructible_v<mapped_container_type>)
+    _Flat_Map_Base(_Derived&& _Other) noexcept(_STD is_nothrow_move_constructible_v<key_compare>
+                                               && _STD is_nothrow_move_constructible_v<key_container_type>
+                                               && _STD is_nothrow_move_constructible_v<mapped_container_type>)
         : _Key_compare(move(_Other._Key_compare)), _Data(move(_Other).extract()) {}
 
     template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> _Allocator>
     _Flat_Map_Base(_Derived&& _Other, const _Allocator& _Alloc) noexcept(
-        _STD is_nothrow_move_constructible_v<key_compare>&& _STD is_nothrow_move_constructible_v<key_container_type>&&
-            _STD is_nothrow_move_constructible_v<mapped_container_type>)
+        _STD is_nothrow_move_constructible_v<key_compare> && _STD is_nothrow_move_constructible_v<key_container_type>
+        && _STD is_nothrow_move_constructible_v<mapped_container_type>)
         : _Key_compare(move(_Other._Key_compare)),
           _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, move(_Other._Data.keys)),
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, move(_Other._Data.values))} {}
@@ -508,8 +508,7 @@ public:
         return try_emplace(_STD forward<_K>(_Key_val)).first->second;
     }
 
-    _NODISCARD mapped_type& at(const key_type& _Key_val)
-    {
+    _NODISCARD mapped_type& at(const key_type& _Key_val) {
         return _At(_Key_val);
     }
 
@@ -581,9 +580,9 @@ public:
     pair<iterator, bool> try_emplace(_Key_constructible_t&& _Key_constructible, _Args_t&&... _Args)
         requires constructible_from<mapped_type, _Args_t&&...>
               && (same_as<remove_cvref_t<_Key_constructible_t &&>, key_type>
-                  || (constructible_from<key_type, _Key_constructible_t&&> && _Is_transparent_v<key_compare>
-                      && !convertible_to<_Key_constructible_t&&, const_iterator>
-                      && !convertible_to<_Key_constructible_t&&, iterator>) )
+                  || (constructible_from<key_type, _Key_constructible_t &&> && _Is_transparent_v<key_compare>
+                      && !convertible_to<_Key_constructible_t &&, const_iterator>
+                      && !convertible_to<_Key_constructible_t &&, iterator>) )
     {
         auto _Key_It = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_constructible, _Key_compare);
         if (_Key_It != _Data.keys.end()
@@ -603,7 +602,7 @@ public:
     iterator try_emplace(const_iterator _Position, _K&& _Key_val, _Args_t&&... _Args)
         requires constructible_from<mapped_type, _Args_t&&...>
               && (same_as<remove_cvref_t<_K &&>, key_type>
-                  || (constructible_from<key_type, _K&&> && _Is_transparent_v<key_compare>) )
+                  || (constructible_from<key_type, _K &&> && _Is_transparent_v<key_compare>) )
     {
         return _Emplace_hint<false, false>(_Position, _STD forward<_K>(_Key_val), _STD forward<_Args_t>(_Args)...);
     }
@@ -612,7 +611,7 @@ public:
     pair<iterator, bool> insert_or_assign(_K&& _Key_val, _M&& _Obj)
         requires assignable_from<mapped_type&, _M&&> && constructible_from<mapped_type, _M&&>
               && (same_as<remove_cvref_t<_K &&>, key_type>
-                  || (constructible_from<key_type, _K&&> && _Is_transparent_v<key_compare>) )
+                  || (constructible_from<key_type, _K &&> && _Is_transparent_v<key_compare>) )
     {
         auto _Res = try_emplace(_STD forward<_K>(_Key_val), _STD forward<_M>(_Obj));
         if (_Res.second) {
@@ -629,7 +628,7 @@ public:
     iterator insert_or_assign(const_iterator _Position, _K&& _Key_val, _M&& _Obj)
         requires assignable_from<mapped_type&, _M&&> && constructible_from<mapped_type, _M&&>
               && (same_as<remove_cvref_t<_K &&>, key_type>
-                  || (constructible_from<key_type, _K&&> && _Is_transparent_v<key_compare>) )
+                  || (constructible_from<key_type, _K &&> && _Is_transparent_v<key_compare>) )
     {
         return _Emplace_hint<false, true>(_Position, _STD forward<_K>(_Key_val), _STD forward<_M>(_Obj));
     }
@@ -697,8 +696,7 @@ public:
     }
 
     // map operations
-    iterator find(const key_type& _X)
-    {
+    iterator find(const key_type& _X) {
         return _Find(_X);
     }
 
@@ -709,8 +707,7 @@ public:
         return _Find(_X);
     }
 
-    const_iterator find(const key_type& _X) const
-    {
+    const_iterator find(const key_type& _X) const {
         return _Find(_X);
     }
 
@@ -721,8 +718,7 @@ public:
         return _Find(_X);
     }
 
-    size_type count(const key_type& _X) const
-    {
+    size_type count(const key_type& _X) const {
         return _Count(_X);
     }
 
@@ -733,8 +729,7 @@ public:
         return _Count(_X);
     }
 
-    bool contains(const key_type& _X) const
-    {
+    bool contains(const key_type& _X) const {
         return _Contains(_X);
     }
 
@@ -745,8 +740,7 @@ public:
         return _Contains(_X);
     }
 
-    iterator lower_bound(const key_type& _X)
-    {
+    iterator lower_bound(const key_type& _X) {
         return _Lower_bound(_X);
     }
 
@@ -757,8 +751,7 @@ public:
         return _Lower_bound(_X);
     }
 
-    const_iterator lower_bound(const key_type& _X) const
-    {
+    const_iterator lower_bound(const key_type& _X) const {
         return _Lower_bound(_X);
     }
 
@@ -769,8 +762,7 @@ public:
         return _Lower_bound(_X);
     }
 
-    iterator upper_bound(const key_type& _X)
-    {
+    iterator upper_bound(const key_type& _X) {
         return _Upper_bound(_X);
     }
 
@@ -781,8 +773,7 @@ public:
         return _Upper_bound(_X);
     }
 
-    const_iterator upper_bound(const key_type& _X) const
-    {
+    const_iterator upper_bound(const key_type& _X) const {
         return _Upper_bound(_X);
     }
 
@@ -793,8 +784,7 @@ public:
         return _Upper_bound(_X);
     }
 
-    pair<iterator, iterator> equal_range(const key_type& _X)
-    {
+    pair<iterator, iterator> equal_range(const key_type& _X) {
         return _Equal_range(_X);
     }
 
@@ -805,8 +795,7 @@ public:
         return _Equal_range(_X);
     }
 
-    pair<const_iterator, const_iterator> equal_range(const key_type& _X) const
-    {
+    pair<const_iterator, const_iterator> equal_range(const key_type& _X) const {
         return _Equal_range(_X);
     }
 
@@ -873,7 +862,7 @@ private:
     iterator _Emplace_hint(const_iterator _Position, _K&& _Key_val, _Mapped_args_t&&... _Args)
         requires is_constructible_v<mapped_type, _Mapped_args_t...>
               && (same_as<remove_cvref_t<_K &&>, key_type>
-                  || (constructible_from<key_type, _K&&> && _Is_transparent_v<key_compare>) )
+                  || (constructible_from<key_type, _K &&> && _Is_transparent_v<key_compare>) )
     {
         static_assert(!(_Multi && _Overwrite_if_exists),
             "Overwriting is not supported when the container allows multiple copies of a key.");
@@ -1062,7 +1051,6 @@ private:
     {
         return {lower_bound(_X), upper_bound(_X)};
     }
-
 };
 
 template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
