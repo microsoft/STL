@@ -704,7 +704,8 @@ std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.c
 # libc++ assumes long double is at least 80-bit; also affected by LWG-2381
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
 
-# libc++ speculatively implements LWG-3645
+# libc++ speculatively implemented an old proposed resolution for LWG-3645.
+# This test is bogus according to the wording that was ultimately accepted for C++23.
 std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
 
 # This test assumes that array<int, 0> is not const-default-constructible.
