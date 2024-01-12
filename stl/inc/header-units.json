@@ -64,6 +64,7 @@
         "execution",
         "expected",
         "filesystem",
+        "flat_map",
         "format",
         "forward_list",
         "fstream",
