@@ -33,19 +33,19 @@ struct _Stl_critical_section {
 };
 
 struct _Mtx_internal_imp_t {
-#ifdef _CRT_WINDOWS
+#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 16;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 8;
 #endif // ^^^ !defined(_WIN64) ^^^
-#else // ^^^ defined(_CRT_WINDOWS) / !defined(_CRT_WINDOWS) vvv
+#else // ^^^ Windows private STL / public STL vvv
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 64;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 36;
 #endif // ^^^ !defined(_WIN64) ^^^
-#endif // ^^^ !defined(_CRT_WINDOWS) ^^^
+#endif // ^^^ public STL ^^^
 
     static constexpr size_t _Critical_section_align = alignof(void*);
 
