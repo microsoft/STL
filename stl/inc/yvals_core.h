@@ -296,6 +296,7 @@
 // P2432R1 Fix istream_view
 // P2465R3 Standard Library Modules std And std.compat
 // P2508R1 basic_format_string, format_string, wformat_string
+// P2510R3 Formatting Pointers
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 // P2538R1 ADL-Proof projected
 // P2572R1 std::format Fill Character Allowances
@@ -307,6 +308,7 @@
 // P2711R1 Making Multi-Param Constructors Of Views explicit
 // P2736R2 Referencing The Unicode Standard
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
+// P2905R2 Runtime Format Strings
 // P2909R4 Fix Formatting Of Code Units As Integers
 
 // _HAS_CXX20 indirectly controls:
@@ -882,7 +884,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202312L
+#define _MSVC_STL_UPDATE  202401L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1751,7 +1753,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_erase_if                202002L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_format              202207L
+#define __cpp_lib_format              202304L
 #define __cpp_lib_format_uchar        202311L
 #define __cpp_lib_freestanding_ranges 202306L
 #endif // defined(__cpp_lib_concepts)
@@ -1981,7 +1983,9 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _CHRONO ::std::chrono::
 #define _RANGES ::std::ranges::
 
-// We use the stdext (standard extension) namespace to contain extensions that are not part of the current standard
+// We use the stdext (standard extension) namespace to contain non-standard extensions
+#pragma push_macro("stdext")
+#undef stdext
 #define _STDEXT_BEGIN      \
     _EXTERN_CXX_WORKAROUND \
     namespace stdext {
@@ -1990,6 +1994,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
     _END_EXTERN_CXX_WORKAROUND
 
 #define _STDEXT ::stdext::
+#pragma pop_macro("stdext")
 
 #define _CSTD ::
 

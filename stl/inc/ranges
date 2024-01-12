@@ -3809,9 +3809,7 @@ namespace ranges {
             using value_type      = range_value_t<_InnerRng<_Const>>;
             using difference_type = common_type_t<range_difference_t<_Base>, range_difference_t<_InnerRng<_Const>>>;
 
-            // clang-format off
-            _Iterator() requires default_initializable<_OuterIter> = default;
-            // clang-format on
+            _Iterator() = default;
 
             constexpr _Iterator(_Iterator<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, _OuterIter>
@@ -4265,9 +4263,7 @@ namespace ranges {
             using value_type      = common_type_t<iter_value_t<_InnerIter>, iter_value_t<_PatternIter>>;
             using difference_type = _Common_diff_t<_OuterIter, _InnerIter, _PatternIter>;
 
-            // clang-format off
-            _Iterator() requires default_initializable<_OuterIter> = default;
-            // clang-format on
+            _Iterator() = default;
 
             constexpr _Iterator(_Iterator<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, _OuterIter>
