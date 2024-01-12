@@ -8,7 +8,6 @@ variables:
   - name: testSelection
     value: '-R stlasan' # Restrict to "stlasan" test
 
-pr: none
 trigger: none
 
 schedules:
