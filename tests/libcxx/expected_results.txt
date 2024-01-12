@@ -570,6 +570,7 @@ std/thread/futures/futures.shared_future/wait_until.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/get.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_for.pass.cpp SKIPPED
+std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvar/notify_one.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvar/wait_for_pred.pass.cpp SKIPPED
