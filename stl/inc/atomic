@@ -2158,8 +2158,9 @@ public:
 
     constexpr atomic() noexcept(is_nothrow_default_constructible_v<_Ty>) : _Base() {}
 
-    atomic(const atomic&)            = delete;
-    atomic& operator=(const atomic&) = delete;
+    atomic(const atomic&)                     = delete;
+    atomic& operator=(const atomic&)          = delete;
+    atomic& operator=(const atomic&) volatile = delete;
 
 #if _HAS_CXX17
     static constexpr bool is_always_lock_free = _Is_always_lock_free<sizeof(_Ty)>;
