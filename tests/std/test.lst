@@ -234,6 +234,8 @@ tests\GH_003840_tellg_when_reading_lf_file_in_text_mode
 tests\GH_003867_output_nan
 tests\GH_004023_mdspan_fwd_prod_overflow
 tests\GH_004040_container_nonmember_functions
+tests\GH_004201_chrono_formatter
+tests\GH_004275_seeking_fancy_iterators
 tests\LWG2381_num_get_floating_point
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
@@ -641,6 +643,7 @@ tests\P2474R2_views_repeat
 tests\P2474R2_views_repeat_death
 tests\P2494R2_move_only_range_adaptors
 tests\P2505R5_monadic_functions_for_std_expected
+tests\P2510R3_text_formatting_pointers
 tests\P2517R1_apply_conditional_noexcept
 tests\P2538R1_adl_proof_std_projected
 tests\P2609R3_relaxing_ranges_just_a_smidge
