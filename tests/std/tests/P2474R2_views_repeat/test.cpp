@@ -342,7 +342,7 @@ constexpr bool test() {
     test_iterator_arithmetic<unsigned int>();
     test_iterator_arithmetic<unsigned long>();
     test_iterator_arithmetic<unsigned long long>();
-    test_iterator_arithmetic<char>();
+    test_iterator_arithmetic<signed char>();
     test_iterator_arithmetic<short>();
     test_iterator_arithmetic<int>();
     test_iterator_arithmetic<long>();

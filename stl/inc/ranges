@@ -1550,6 +1550,7 @@ namespace ranges {
                         _Off > 0 ? "cannot advance repeat_view iterator past end (integer overflow)"
                                  : "cannot advance repeat_view iterator before begin (integer overflow)");
                 }
+
                 if (_Off > 0) {
                     _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() - static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
@@ -1572,6 +1573,7 @@ namespace ranges {
                         _Off < 0 ? "cannot advance repeat_view iterator past end (integer overflow)"
                                  : "cannot advance repeat_view iterator before begin (integer overflow)");
                 }
+
                 if (_Off < 0) {
                     _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() + static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");

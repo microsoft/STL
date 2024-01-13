@@ -85,10 +85,10 @@ template <class I>
 using iota_diff_t = ranges::range_difference_t<ranges::iota_view<I>>;
 
 template <class U>
-constexpr auto positive_huge_diff = iota_diff_t<U>{iota_diff_t<U>{static_cast<U>(-1)} + 1};
+constexpr iota_diff_t<U> positive_huge_diff{iota_diff_t<U>{static_cast<U>(-1)} + 1};
 
 template <class U>
-constexpr auto negative_huge_diff = iota_diff_t<U>{-iota_diff_t<U>{static_cast<U>(-1)} - 1};
+constexpr iota_diff_t<U> negative_huge_diff{-iota_diff_t<U>{static_cast<U>(-1)} - 1};
 
 template <class U>
 void test_iter_add_pos_huge() {
