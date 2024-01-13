@@ -222,11 +222,11 @@ void test_ranges_algorithms() {
 
     (void) transform(varr, varr, varr2, std::identity{});
     (void) transform(varr, varr2, std::identity{});
-    (void) transform(varr, varr, varr, varr2, varr2, simple_left_selector{});
+    (void) transform(varr, varr, varr, varr, varr2, simple_left_selector{});
     (void) transform(varr, varr, varr2, simple_left_selector{});
     (void) transform(iarr, iarr, iarr2, validating_identity{});
-    (void) transform(iarr, iarr, iarr2, iarr2, iarr2, validating_left_selector{});
-    (void) transform(iarr, iarr2, iarr2, validating_left_selector{});
+    (void) transform(iarr, iarr, iarr, iarr, iarr2, validating_left_selector{});
+    (void) transform(iarr, iarr, iarr2, validating_left_selector{});
 
     (void) replace(varr, varr, validator{}, validator{});
     (void) replace(varr, validator{}, validator{});
