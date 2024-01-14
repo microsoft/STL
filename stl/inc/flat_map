@@ -14,15 +14,11 @@ _EMIT_STL_WARNING(STL4038, "The contents of <flat_map> are available only with C
 #include <algorithm>
 #include <compare>
 #include <concepts>
-#include <cstdint>
 #include <initializer_list>
-#include <memory>
-#include <ranges>
 #include <type_traits>
 #include <utility>
 #include <vector>
 #include <xmemory>
-#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -102,27 +98,34 @@ struct _NODISCARD _Clear_flat_map_scope_guard {
 
 // Implementation
 
-template <class _KeyContainer, class _MappedContainer, bool _IsConst>
-class _Flat_map_iterator_Impl {
-public:
-    using _Key_iterator_t = typename _KeyContainer::const_iterator;
-    using _Mapped_iterator_t =
-        conditional_t<_IsConst, typename _MappedContainer::const_iterator, typename _MappedContainer::iterator>;
-    class type {
+enum class _Paring_iterator_kind : unsigned char {
+    _Sort,
+    _Mutable,
+    _Const,
+};
+
+template <class _KeyContainer, class _MappedContainer, _Paring_iterator_kind _Kind>
+struct _Paring_iterator_provider {
+    using _Key_iterator_t    = conditional_t<_Kind == _Paring_iterator_kind::_Sort, typename _KeyContainer::iterator,
+        typename _KeyContainer::const_iterator>;
+    using _Mapped_iterator_t = conditional_t<_Kind == _Paring_iterator_kind::_Const,
+        typename _MappedContainer::const_iterator, typename _MappedContainer::iterator>;
+
+    class _Iterator {
     public:
         template <class _FlatMap_Key, class _FlatMap_T, class _FlatMap_Compare, class _FlatMap_KeyContainer,
             class _FlatMap_MappedContainer, bool _Is_Multi, class _Derived>
             requires same_as<_FlatMap_Key, typename _FlatMap_KeyContainer::value_type>
                   && same_as<_FlatMap_T, typename _FlatMap_MappedContainer::value_type>
         friend class _Flat_Map_Base;
-        type() = default;
-        type(_Key_iterator_t _Key_it, _Mapped_iterator_t _Mapped_it) : _Key_it(_Key_it), _Mapped_it(_Mapped_it) {}
+        _Iterator() = default;
+        _Iterator(_Key_iterator_t _Key_it, _Mapped_iterator_t _Mapped_it) : _Key_it(_Key_it), _Mapped_it(_Mapped_it) {}
 
         using iterator_category = input_iterator_tag;
         using iterator_concept  = random_access_iterator_tag;
         using difference_type   = ptrdiff_t;
         using value_type        = pair<iter_value_t<_Key_iterator_t>, iter_value_t<_Mapped_iterator_t>>;
-        using reference         = pair<iter_const_reference_t<_Key_iterator_t>, iter_reference_t<_Mapped_iterator_t>>;
+        using reference         = pair<iter_reference_t<_Key_iterator_t>, iter_reference_t<_Mapped_iterator_t>>;
 
     private:
         class _Arrow_proxy {
@@ -148,76 +151,80 @@ public:
             return pointer{*(*this)};
         }
 
-        type& operator++() {
+        _Iterator& operator++() {
             ++_Key_it;
             ++_Mapped_it;
             return *this;
         }
 
-        type operator++(int) {
-            type _Tmp = *this;
+        _Iterator operator++(int) {
+            auto _Old = *this;
             ++*this;
-            return _Tmp;
+            return _Old;
         }
 
-        bool operator==(const type& _Right) const {
+        bool operator==(const _Iterator& _Right) const {
             return _Key_it == _Right._Key_it;
         }
 
-        auto operator<=>(const type& _Right) const {
+        auto operator<=>(const _Iterator& _Right) const {
             return _Key_it <=> _Right._Key_it;
         }
 
-        type& operator--() {
+        _Iterator& operator--() {
             --_Key_it;
             --_Mapped_it;
             return *this;
         }
 
-        type operator--(int) {
-            type _Tmp = *this;
+        _Iterator operator--(int) {
+            auto _Old = *this;
             --*this;
-            return _Tmp;
+            return _Old;
         }
 
-        type& operator+=(difference_type _Off) {
+        _Iterator& operator+=(const difference_type _Off) {
             _Key_it += _Off;
             _Mapped_it += _Off;
             return *this;
         }
 
-        type& operator-=(difference_type _Off) {
+        _Iterator& operator-=(const difference_type _Off) {
             _Key_it -= _Off;
             _Mapped_it -= _Off;
             return *this;
         }
 
-        type operator+(difference_type _Off) const {
-            type _Tmp = *this;
-            return _Tmp += _Off;
+        _Iterator operator+(const difference_type _Off) const {
+            auto _Old = *this;
+            _Old += _Off;
+            return _Old;
         }
 
-        type operator-(difference_type _Off) const {
-            type _Tmp = *this;
-            return _Tmp -= _Off;
+        _Iterator operator-(const difference_type _Off) const {
+            auto _Old = *this;
+            _Old -= _Off;
+            return _Old;
         }
 
-        reference operator[](difference_type _Off) const {
+        reference operator[](const difference_type _Off) const {
             return *(*this + _Off);
         }
 
-        difference_type operator-(const type& _Right) const {
+        difference_type operator-(const _Iterator& _Right) const {
             return _Key_it - _Right._Key_it;
         }
 
-        friend type operator+(difference_type _Off, const type& _Right) {
+        friend _Iterator operator+(const difference_type _Off, const _Iterator& _Right) {
             return _Right + _Off;
         }
 
-        operator typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, true>::type() const
-            requires (!_IsConst)
+        operator typename _Paring_iterator_provider<_KeyContainer, _MappedContainer,
+            _Paring_iterator_kind::_Const>::_Iterator() const
+            requires (_Kind == _Paring_iterator_kind::_Mutable)
         {
-            return typename _Flat_map_iterator_Impl<_KeyContainer, _MappedContainer, true>::type{_Key_it, _Mapped_it};
+            return typename _Paring_iterator_provider<_KeyContainer, _MappedContainer,
+                _Paring_iterator_kind::_Const>::_Iterator{_Key_it, _Mapped_it};
         }
 
     private:
@@ -225,7 +232,7 @@ public:
         _Mapped_iterator_t _Mapped_it;
     };
 
-    static_assert(swappable<type>);
+    _STL_INTERNAL_STATIC_ASSERT(swappable<_Iterator>);
 };
 
 _EXPORT_STD
@@ -238,23 +245,25 @@ private:
     using _Sorted_t = conditional_t<_Is_Multi, sorted_equivalent_t, sorted_unique_t>;
 
 public:
-    using key_type               = _FlatMap_Key;
-    using mapped_type            = _FlatMap_T;
-    using value_type             = pair<key_type, mapped_type>;
-    using key_compare            = _FlatMap_Compare;
-    using reference              = pair<const key_type&, mapped_type&>;
-    using const_reference        = pair<const key_type&, const mapped_type&>;
-    using size_type              = size_t;
-    using difference_type        = ptrdiff_t;
-    using key_container_type     = _FlatMap_KeyContainer;
-    using mapped_container_type  = _FlatMap_MappedContainer;
-    using iterator               = _Flat_map_iterator_Impl<key_container_type, mapped_container_type, false>::type;
-    using const_iterator         = _Flat_map_iterator_Impl<key_container_type, mapped_container_type, true>::type;
+    using key_type              = _FlatMap_Key;
+    using mapped_type           = _FlatMap_T;
+    using value_type            = pair<key_type, mapped_type>;
+    using key_compare           = _FlatMap_Compare;
+    using reference             = pair<const key_type&, mapped_type&>;
+    using const_reference       = pair<const key_type&, const mapped_type&>;
+    using size_type             = size_t;
+    using difference_type       = ptrdiff_t;
+    using key_container_type    = _FlatMap_KeyContainer;
+    using mapped_container_type = _FlatMap_MappedContainer;
+    using iterator              = _Paring_iterator_provider<key_container_type, mapped_container_type,
+        _Paring_iterator_kind::_Mutable>::_Iterator;
+    using const_iterator =
+        _Paring_iterator_provider<key_container_type, mapped_container_type, _Paring_iterator_kind::_Const>::_Iterator;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    static_assert(random_access_iterator<iterator>);
-    static_assert(convertible_to<iterator, const_iterator>);
+    _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<iterator>);
+    _STL_INTERNAL_STATIC_ASSERT(convertible_to<iterator, const_iterator>);
 
     using value_compare = _Flat_value_compare<key_type, mapped_type, key_compare>::value_compare;
     using containers    = _Flat_Container<key_container_type, mapped_container_type>::container;
@@ -833,19 +842,25 @@ private:
             && !_Key_compare(_STD forward<_K2>(_Y), _STD forward<_K1>(_X));
     }
 
+    auto _View_to_sort() {
+        using _Sorting_iterator = _Paring_iterator_provider<key_container_type, mapped_container_type,
+            _Paring_iterator_kind::_Sort>::_Iterator;
+        return _RANGES subrange<_Sorting_iterator>{_Sorting_iterator{_Data.keys.begin(), _Data.values.begin()},
+            _Sorting_iterator{_Data.keys.end(), _Data.values.end()}};
+    }
+
     void _Sort() {
         _Clear_flat_map_scope_guard _Guard{this};
-        auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
-        _RANGES sort(_Zip_view, value_compare(_Key_compare));
+        _RANGES sort(_View_to_sort(), value_compare(_Key_compare));
         _Guard._Clearable = nullptr;
     }
 
     void _Dedup() {
         _Clear_flat_map_scope_guard _Guard{this};
-        auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
-        auto _Subrange = _RANGES unique(
-            _Zip_view, [this](const_reference _X, const_reference _Y) { return this->_Key_equal(_X.first, _Y.first); });
-        auto _Remaining_count = _STD distance(_Zip_view.begin(), _Subrange.begin());
+        auto _Sorted_view     = _View_to_sort();
+        auto _Subrange        = _RANGES unique(_Sorted_view,
+                   [this](const_reference _X, const_reference _Y) { return this->_Key_equal(_X.first, _Y.first); });
+        auto _Remaining_count = _STD distance(_Sorted_view.begin(), _Subrange.begin());
         _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
         _Data.values.erase(_Data.values.begin() + _Remaining_count, _Data.values.end());
         _Guard._Clearable = nullptr;
@@ -928,14 +943,15 @@ private:
         }
 
         // Sort the newly inserted elements
-        auto _Zip_view = _RANGES views::zip(_Data.keys, _Data.values);
+        auto _Sorted_view = _View_to_sort();
         if constexpr (_NeedSorting) {
-            auto _Zip_view_new_elements = _Zip_view | _RANGES views::drop(_OldSize);
-            _RANGES sort(_Zip_view_new_elements, value_compare(_Key_compare));
+            auto _Sorted_new_elements = _Sorted_view;
+            _Sorted_new_elements.advance(_OldSize);
+            _RANGES sort(_Sorted_new_elements, value_compare(_Key_compare));
         }
 
         // Merge the newly inserted elements with the existing elements
-        _RANGES inplace_merge(_Zip_view, _Zip_view.begin() + _OldSize, value_compare(_Key_compare));
+        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _OldSize, value_compare(_Key_compare));
 
         if constexpr (_NeedDeduping) {
             _Dedup();
