@@ -1014,10 +1014,9 @@ private:
     iterator _Lower_bound(const _K& _X)
         requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
     {
-        typename key_container_type::const_iterator _Key_it =
-            _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
-        auto _Dist                                       = _STD distance(_Data.keys.cbegin(), _Key_it);
-        typename mapped_container_type::iterator _Val_it = _Data.values.begin() + _Dist;
+        auto _Key_it = _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist   = _STD distance(_Data.keys.cbegin(), _Key_it);
+        auto _Val_it = _Data.values.begin() + _Dist;
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
@@ -1025,10 +1024,9 @@ private:
     const_iterator _Lower_bound(const _K& _X) const
         requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
     {
-        typename key_container_type::const_iterator _Key_it =
-            _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
-        auto _Dist                                             = _STD distance(_Data.keys.cbegin(), _Key_it);
-        typename mapped_container_type::const_iterator _Val_it = _Data.values.cbegin() + _Dist;
+        auto _Key_it = _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist   = _STD distance(_Data.keys.cbegin(), _Key_it);
+        auto _Val_it = _Data.values.cbegin() + _Dist;
         return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
@@ -1036,10 +1034,9 @@ private:
     iterator _Upper_bound(const _K& _X)
         requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
     {
-        typename key_container_type::const_iterator _Key_it =
-            _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
-        auto _Dist                                       = _STD distance(_Data.keys.cbegin(), _Key_it);
-        typename mapped_container_type::iterator _Val_it = _Data.values.begin() + _Dist;
+        auto _Key_it = _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist   = _STD distance(_Data.keys.cbegin(), _Key_it);
+        auto _Val_it = _Data.values.begin() + _Dist;
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
@@ -1047,10 +1044,9 @@ private:
     const_iterator _Upper_bound(const _K& _X) const
         requires same_as<_K, key_type> || _Is_transparent_v<key_compare>
     {
-        typename key_container_type::const_iterator _Key_it =
-            _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
-        auto _Dist                                             = _STD distance(_Data.keys.cbegin(), _Key_it);
-        typename mapped_container_type::const_iterator _Val_it = _Data.values.cbegin() + _Dist;
+        auto _Key_it = _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _X, _Key_compare);
+        auto _Dist   = _STD distance(_Data.keys.cbegin(), _Key_it);
+        auto _Val_it = _Data.values.cbegin() + _Dist;
         return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
