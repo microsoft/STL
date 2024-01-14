@@ -415,15 +415,15 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Other._Data.values)} {}
 
     // Move constructors
-    _Flat_Map_Base(_Derived&& _Other) noexcept(_STD is_nothrow_move_constructible_v<key_compare>
-                                               && _STD is_nothrow_move_constructible_v<key_container_type>
-                                               && _STD is_nothrow_move_constructible_v<mapped_container_type>)
+    _Flat_Map_Base(_Derived&& _Other) noexcept(is_nothrow_move_constructible_v<key_compare>
+                                               && is_nothrow_move_constructible_v<key_container_type>
+                                               && is_nothrow_move_constructible_v<mapped_container_type>)
         : _Key_compare(move(_Other._Key_compare)), _Data(move(_Other).extract()) {}
 
     template <_Valid_Allocator_for_flat_map<key_container_type, mapped_container_type> _Allocator>
     _Flat_Map_Base(_Derived&& _Other, const _Allocator& _Alloc) noexcept(
-        _STD is_nothrow_move_constructible_v<key_compare> && _STD is_nothrow_move_constructible_v<key_container_type>
-        && _STD is_nothrow_move_constructible_v<mapped_container_type>)
+        is_nothrow_move_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_container_type>
+        && is_nothrow_move_constructible_v<mapped_container_type>)
         : _Key_compare(move(_Other._Key_compare)),
           _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, move(_Other._Data.keys)),
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, move(_Other._Data.values))} {}
