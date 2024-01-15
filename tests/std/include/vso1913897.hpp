@@ -3,7 +3,9 @@
 
 #pragma once
 
-#include <stdlib.h>
-
 // TRANSITION, dynamically initialize a thread_local to workaround VSO-1913897
-static thread_local int stl_asan_init_hack = ::rand();
+inline int __stl_asan_init_function() {
+    static volatile int __stl_asan_init_volatile = 42;
+    return __stl_asan_init_volatile;
+}
+static thread_local int __stl_asan_init_variable = __stl_asan_init_function();
