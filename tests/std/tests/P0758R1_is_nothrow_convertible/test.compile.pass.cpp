@@ -105,5 +105,30 @@ STATIC_ASSERT(is_nothrow_convertible_v<int[1], int*>);
 STATIC_ASSERT(!is_nothrow_convertible_v<int[], int[]>);
 STATIC_ASSERT(!is_nothrow_convertible_v<int[], int[1]>);
 
+// Also test GH-4317 <type_traits>: some traits are an aliases and fail when used with parameter pack
+
+template <class... Ts>
+using aliased_is_nothrow_convertible = is_nothrow_convertible<Ts...>;
+
+template <class T, template <class...> class Tmpl>
+constexpr bool is_specialization_of_v = false;
+template <class... Ts, template <class...> class Tmpl>
+constexpr bool is_specialization_of_v<Tmpl<Ts...>, Tmpl> = true;
+
+STATIC_ASSERT(is_specialization_of_v<is_nothrow_convertible<void, void>, is_nothrow_convertible>);
+STATIC_ASSERT(!is_specialization_of_v<aliased_is_nothrow_convertible<void, void>, aliased_is_nothrow_convertible>);
+
+// Also test that is_nothrow_convertible/is_nothrow_convertible_v are ADL-proof
+
+template <class T>
+struct holder {
+    T t;
+};
+
+struct incomplete;
+
+STATIC_ASSERT(is_nothrow_convertible<holder<incomplete>*, holder<incomplete>*>::value);
+STATIC_ASSERT(is_nothrow_convertible_v<holder<incomplete>*, holder<incomplete>*>);
+
 // VSO_0105317_expression_sfinae and VSO_0000000_type_traits provide
 // additional coverage of this machinery
