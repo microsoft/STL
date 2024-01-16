@@ -105,7 +105,7 @@ STATIC_ASSERT(is_nothrow_convertible_v<int[1], int*>);
 STATIC_ASSERT(!is_nothrow_convertible_v<int[], int[]>);
 STATIC_ASSERT(!is_nothrow_convertible_v<int[], int[1]>);
 
-// Also test GH-4317 <type_traits>: some traits are an aliases and fail when used with parameter pack
+// Also test GH-4317 <type_traits>: some traits are aliases and fail when used with parameter packs
 
 template <class... Ts>
 using aliased_is_nothrow_convertible = is_nothrow_convertible<Ts...>;
