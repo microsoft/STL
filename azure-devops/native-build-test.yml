@@ -9,6 +9,9 @@ parameters:
 - name: buildBenchmarks
   type: boolean
   default: true
+- name: asanBuild
+  type: boolean
+  default: false
 - name: numShards
   type: number
   default: 8
@@ -35,6 +38,7 @@ jobs:
       targetArch: ${{ parameters.vsDevCmdArch }}
       hostArch: ${{ parameters.vsDevCmdArch }}
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
+      asanBuild: ${{ parameters.asanBuild }}
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.vsDevCmdArch }}
