@@ -2505,7 +2505,7 @@ namespace filesystem {
     _EXPORT_STD enum class directory_options { none = 0, follow_directory_symlink = 1, skip_permission_denied = 2 };
     _BITMASK_OPS(_EXPORT_STD, directory_options)
 
-    _EXPORT_STD _NODISCARD inline bool exists(const path& _Target);
+    _EXPORT_STD _NODISCARD inline bool exists(const path& _Target, error_code& _Ec) noexcept;
 
     struct _Dir_enum_impl {
         _NODISCARD static __std_win_error _Advance_and_reset_if_no_more_files(shared_ptr<_Dir_enum_impl>& _Ptr) {
@@ -2545,6 +2545,7 @@ namespace filesystem {
                 return __std_win_error::_File_not_found;
             }
 
+            const path _Original_path = _Path;
             _Path /= L"*"sv;
             auto _Error = _Dir._Open(_Path.c_str(), &_Data);
             if (_Error == __std_win_error::_Success) {
@@ -2554,9 +2555,13 @@ namespace filesystem {
             if (_Error == __std_win_error::_Access_denied
                 && _Bitmask_includes_any(_Options_arg, directory_options::skip_permission_denied)) {
                 _Error = __std_win_error::_No_more_files;
-            } else if (_Error == __std_win_error::_File_not_found
-                       && exists(std::wstring_view(_Path.c_str(), _Path.native().length() - 1))) {
-                _Error = __std_win_error::_No_more_files;
+            } else if (_Error == __std_win_error::_File_not_found) {
+                error_code _Ignored; // When exists() returns true, that implies that the error_code is successful.
+                // When exists() returns false, we don't want to interfere with _Open_dir()'s behavior,
+                // as it's going to return __std_win_error::_File_not_found.
+                if (_STD filesystem::exists(_Original_path, _Ignored)) {
+                    _Error = __std_win_error::_No_more_files; // Handle empty volumes, see GH-4291
+                }
             }
 
             return _Error;
