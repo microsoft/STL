@@ -347,6 +347,11 @@ std/thread/futures/futures.promise/set_value_at_thread_exit_const.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_void.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.pass.cpp FAIL
 
+# LWG-3343 "Ordering of calls to unlock() and notify_all() in Effects element of notify_all_at_thread_exit() should be reversed" (Open)
+# libc++ speculatively implements LWG-3343. If we wanted to do the same thing,
+# we'd need to reverse the order of the _Mtx_unlock() and _Cnd_broadcast() calls in xnotify.cpp.
+std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
+
 
 # *** C1XX COMPILER BUGS ***
 # DevCom-409222 VSO-752709 "Constructing rvalue reference from non-reference-related lvalue reference"
@@ -524,6 +529,12 @@ std/time/time.syn/formatter.year.pass.cpp:2 FAIL
 std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:0 FAIL
 std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:1 FAIL
 
+# GH-4268: <sstream>, <syncstream>: Buffer types assume that allocated pointers are not modified by users
+std/input.output/string.streams/stringbuf/stringbuf.members/str.pass.cpp FAIL
+std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
+std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
+std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
+
 
 # *** VCRUNTIME BUGS ***
 # DevCom-10373274 VSO-1824997 "vcruntime nothrow array operator new falls back on the wrong function"
@@ -693,7 +704,8 @@ std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.c
 # libc++ assumes long double is at least 80-bit; also affected by LWG-2381
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
 
-# libc++ speculatively implements LWG-3645
+# libc++ speculatively implemented an old proposed resolution for LWG-3645.
+# This test is bogus according to the wording that was ultimately accepted for C++23.
 std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
 
 # This test assumes that array<int, 0> is not const-default-constructible.
@@ -1085,12 +1097,6 @@ std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
-
-# Not analyzed. Assertion failed: _CrtIsValidHeapPointer(block)
-std/input.output/string.streams/stringbuf/stringbuf.members/str.pass.cpp FAIL
-std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
-std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
-std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
 # Not analyzed. In debug mode, looks like a proxy object unexpectedly exhausts an 80-byte buffer.
 # In release mode, fails in a later assertion that appears to be testing libc++-specific behavior.
