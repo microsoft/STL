@@ -288,6 +288,18 @@ struct tuple_tester {
     forward_tester z;
 };
 
+
+template <class IntLike>
+constexpr void test_iterator_arithmetic() {
+    auto rv    = views::repeat(0, IntLike{20u});
+    auto first = rv.begin();
+    auto last  = rv.end();
+    assert(last - first == 20);
+    first += 2;
+    last -= 3;
+    assert(last - first == 15);
+}
+
 constexpr bool test() {
     using namespace string_literals;
 
@@ -323,6 +335,27 @@ constexpr bool test() {
         assert(to_copy.x == 1);
         assert(to_move.x == 2);
     }
+
+    // GH-4251: <ranges>: repeat_view<T, unsigned int> emits truncation warnings
+    test_iterator_arithmetic<unsigned char>();
+    test_iterator_arithmetic<unsigned short>();
+    test_iterator_arithmetic<unsigned int>();
+    test_iterator_arithmetic<unsigned long>();
+    test_iterator_arithmetic<unsigned long long>();
+    test_iterator_arithmetic<signed char>();
+    test_iterator_arithmetic<short>();
+    test_iterator_arithmetic<int>();
+    test_iterator_arithmetic<long>();
+    test_iterator_arithmetic<long long>();
+    test_iterator_arithmetic<char>();
+#ifdef __cpp_char8_t
+    test_iterator_arithmetic<char8_t>();
+#endif // defined(__cpp_char8_t)
+    test_iterator_arithmetic<char16_t>();
+    test_iterator_arithmetic<char32_t>();
+    test_iterator_arithmetic<wchar_t>();
+    test_iterator_arithmetic<_Signed128>();
+
     return true;
 }
 
