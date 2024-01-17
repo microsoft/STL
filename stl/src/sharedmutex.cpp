@@ -6,7 +6,6 @@
 // these declarations must be in sync with those in xthreads.h
 
 extern "C" {
-
 using _Smtx_t = void*;
 
 static_assert(sizeof(_Smtx_t) == sizeof(SRWLOCK), "_Smtx_t must be the same size as SRWLOCK.");

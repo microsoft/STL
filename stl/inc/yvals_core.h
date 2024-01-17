@@ -296,6 +296,7 @@
 // P2432R1 Fix istream_view
 // P2465R3 Standard Library Modules std And std.compat
 // P2508R1 basic_format_string, format_string, wformat_string
+// P2510R3 Formatting Pointers
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 // P2538R1 ADL-Proof projected
 // P2572R1 std::format Fill Character Allowances
@@ -307,6 +308,7 @@
 // P2711R1 Making Multi-Param Constructors Of Views explicit
 // P2736R2 Referencing The Unicode Standard
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
+// P2905R2 Runtime Format Strings
 // P2909R4 Fix Formatting Of Code Units As Integers
 
 // _HAS_CXX20 indirectly controls:
@@ -881,7 +883,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202311L
+#define _MSVC_STL_UPDATE  202401L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -891,8 +893,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 16
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 16.0.0 or newer.");
+#if __clang_major__ < 17
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 17.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1939 // Coarse-grained, not inspecting _MSC_FULL_VER
@@ -1750,7 +1752,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_erase_if                202002L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_format              202207L
+#define __cpp_lib_format              202304L
 #define __cpp_lib_format_uchar        202311L
 #define __cpp_lib_freestanding_ranges 202306L
 #endif // defined(__cpp_lib_concepts)
@@ -1954,7 +1956,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 
 // TRANSITION: _USE_EXTERN_CXX_EVERYWHERE_FOR_STL controls whether we also wrap the STL's
 // header-only code in this linkage-specification, as a temporary workaround to allow
-// the named module to coexist with classic includes in the same translation unit.
+// importing the named module in a translation unit with classic includes.
 
 #ifndef _USE_EXTERN_CXX_EVERYWHERE_FOR_STL
 #define _USE_EXTERN_CXX_EVERYWHERE_FOR_STL _HAS_CXX20
@@ -1979,7 +1981,9 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _CHRONO ::std::chrono::
 #define _RANGES ::std::ranges::
 
-// We use the stdext (standard extension) namespace to contain extensions that are not part of the current standard
+// We use the stdext (standard extension) namespace to contain non-standard extensions
+#pragma push_macro("stdext")
+#undef stdext
 #define _STDEXT_BEGIN      \
     _EXTERN_CXX_WORKAROUND \
     namespace stdext {
@@ -1988,6 +1992,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
     _END_EXTERN_CXX_WORKAROUND
 
 #define _STDEXT ::stdext::
+#pragma pop_macro("stdext")
 
 #define _CSTD ::
 

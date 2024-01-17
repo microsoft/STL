@@ -575,13 +575,11 @@ public:
         is_nothrow_constructible_v<_Ty2, _Types...>)
         : _Second(_STD forward<_Types>(_Args)...), _Contains{_Variantish_state::_Holds_second} {}
 
-    // clang-format off
     template <class _Uty1, class _Uty2>
         requires _Different_from<_Variantish<_Uty1, _Uty2>, _Variantish>
     constexpr _Variantish(const _Variantish<_Uty1, _Uty2>& _That) noexcept(
         is_nothrow_constructible_v<_Ty1, const _Uty1&> && is_nothrow_constructible_v<_Ty2, const _Uty2&>)
         : _Contains{_That._Contains} {
-        // clang-format on
         switch (_That._Contains) {
         case _Variantish_state::_Holds_first:
             _STD _Construct_in_place(_First, _That._Get_first());
@@ -600,7 +598,7 @@ public:
     // clang-format on
 
     constexpr _Variantish(const _Variantish& _That) noexcept(
-        is_nothrow_copy_constructible_v<_Ty1>&& is_nothrow_copy_constructible_v<_Ty2>)
+        is_nothrow_copy_constructible_v<_Ty1> && is_nothrow_copy_constructible_v<_Ty2>)
         : _Contains{_That._Contains} {
         switch (_Contains) {
         case _Variantish_state::_Holds_first:
@@ -620,7 +618,7 @@ public:
     // clang-format on
 
     constexpr _Variantish(_Variantish&& _That) noexcept(
-        is_nothrow_move_constructible_v<_Ty1>&& is_nothrow_move_constructible_v<_Ty2>)
+        is_nothrow_move_constructible_v<_Ty1> && is_nothrow_move_constructible_v<_Ty2>)
         : _Contains{_That._Contains} {
         switch (_Contains) {
         case _Variantish_state::_Holds_first:
@@ -650,8 +648,8 @@ public:
     // clang-format on
 
     constexpr _Variantish& operator=(const _Variantish& _That) noexcept(
-        is_nothrow_copy_constructible_v<_Ty1>&& is_nothrow_copy_constructible_v<_Ty2>&&
-            is_nothrow_copy_assignable_v<_Ty1>&& is_nothrow_copy_assignable_v<_Ty2>) {
+        is_nothrow_copy_constructible_v<_Ty1> && is_nothrow_copy_constructible_v<_Ty2>
+        && is_nothrow_copy_assignable_v<_Ty1> && is_nothrow_copy_assignable_v<_Ty2>) {
         if (_Contains == _That._Contains) {
             switch (_Contains) {
             case _Variantish_state::_Holds_first:
@@ -695,8 +693,8 @@ public:
     // clang-format on
 
     constexpr _Variantish& operator=(_Variantish&& _That) noexcept(
-        is_nothrow_move_constructible_v<_Ty1>&& is_nothrow_move_constructible_v<_Ty2>&&
-            is_nothrow_move_assignable_v<_Ty1>&& is_nothrow_move_assignable_v<_Ty2>) {
+        is_nothrow_move_constructible_v<_Ty1> && is_nothrow_move_constructible_v<_Ty2>
+        && is_nothrow_move_assignable_v<_Ty1> && is_nothrow_move_assignable_v<_Ty2>) {
         if (_Contains == _That._Contains) {
             switch (_Contains) {
             case _Variantish_state::_Holds_first:
@@ -730,13 +728,11 @@ public:
         return *this;
     }
 
-    // clang-format off
     template <class _Uty1, class _Uty2>
         requires _Different_from<_Variantish<_Uty1, _Uty2>, _Variantish>
     constexpr _Variantish& operator=(const _Variantish<_Uty1, _Uty2>& _That) noexcept(
         is_nothrow_constructible_v<_Ty1, const _Uty1&> && is_nothrow_constructible_v<_Ty2, const _Uty2&>
-            && is_nothrow_assignable_v<_Ty1&, const _Uty1&> && is_nothrow_assignable_v<_Ty2&, const _Uty2&>) {
-        // clang-format on
+        && is_nothrow_assignable_v<_Ty1&, const _Uty1&> && is_nothrow_assignable_v<_Ty2&, const _Uty2&>) {
         if (_Contains == _That._Contains) {
             switch (_Contains) {
             case _Variantish_state::_Holds_first:
@@ -888,18 +884,17 @@ public:
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
     constexpr common_iterator(const common_iterator<_OIter, _OSe>& _Right) noexcept(
-        is_nothrow_constructible_v<_Iter, const _OIter&>&& is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
+        is_nothrow_constructible_v<_Iter, const _OIter&>
+        && is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
         : _Val{_Right._Get_val()} {}
 
-    // clang-format off
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
-            && assignable_from<_Iter&, const _OIter&> && assignable_from<_Se&, const _OSe&>
+              && assignable_from<_Iter&, const _OIter&> && assignable_from<_Se&, const _OSe&>
     constexpr common_iterator& operator=(const common_iterator<_OIter, _OSe>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>
-            && is_nothrow_assignable_v<_Iter&, const _OIter&>
-            && is_nothrow_assignable_v<_Se&, const _OSe&>) /* strengthened */ {
-        // clang-format on
+        && is_nothrow_assignable_v<_Iter&, const _OIter&>
+        && is_nothrow_assignable_v<_Se&, const _OSe&>) /* strengthened */ {
         _Val = _Right._Get_val();
         return *this;
     }
@@ -1472,6 +1467,17 @@ struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
 
 _STD_END
 
+#pragma push_macro("stdext")
+#pragma push_macro("checked_array_iterator")
+#pragma push_macro("make_checked_array_iterator")
+#pragma push_macro("make_unchecked_array_iterator")
+#pragma push_macro("unchecked_array_iterator")
+#undef stdext
+#undef checked_array_iterator
+#undef make_checked_array_iterator
+#undef make_unchecked_array_iterator
+#undef unchecked_array_iterator
+
 _STDEXT_BEGIN
 template <class _Ptr>
 class _DEPRECATE_STDEXT_ARR_ITERS checked_array_iterator { // wrap a pointer with checking
@@ -1861,6 +1867,12 @@ struct pointer_traits<_STDEXT checked_array_iterator<_Ty*>> {
 _STL_RESTORE_DEPRECATED_WARNING
 _STD_END
 #endif // _HAS_CXX20
+
+#pragma pop_macro("unchecked_array_iterator")
+#pragma pop_macro("make_unchecked_array_iterator")
+#pragma pop_macro("make_checked_array_iterator")
+#pragma pop_macro("checked_array_iterator")
+#pragma pop_macro("stdext")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

@@ -599,7 +599,6 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     }
 
     if (_Last_error == __std_win_error::_Access_denied && _Able_to_change_attributes) {
-
         FILE_BASIC_INFO _Basic_info;
         if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
             return {false, __std_win_error{GetLastError()}};

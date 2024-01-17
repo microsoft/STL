@@ -26,6 +26,14 @@ struct tagged_equal {
 };
 
 template <class Tag>
+struct tagged_less {
+    template <class T, class U>
+    constexpr auto operator()(T&& t, U&& u) const -> decltype(std::forward<T>(t) < std::forward<U>(u)) {
+        return std::forward<T>(t) < std::forward<U>(u);
+    }
+};
+
+template <class Tag>
 struct tagged_identity {
     template <class T>
     constexpr T&& operator()(T&& t) const noexcept {
@@ -48,13 +56,16 @@ struct holder {
 
 struct incomplete;
 
-using simple_truth    = tagged_truth<void>;
-using simple_identity = tagged_identity<void>;
+using simple_truth         = tagged_truth<void>;
+using simple_identity      = tagged_identity<void>;
+using simple_left_selector = tagged_left_selector<void>;
 
-using validator           = holder<incomplete>*;
-using validating_truth    = tagged_truth<holder<incomplete>>;
-using validating_equal    = tagged_equal<holder<incomplete>>;
-using validating_identity = tagged_identity<holder<incomplete>>;
+using validator                = holder<incomplete>*;
+using validating_truth         = tagged_truth<holder<incomplete>>;
+using validating_equal         = tagged_equal<holder<incomplete>>;
+using validating_less          = tagged_less<holder<incomplete>>;
+using validating_identity      = tagged_identity<holder<incomplete>>;
+using validating_left_selector = tagged_left_selector<holder<incomplete>>;
 
 void test_ranges_algorithms() {
     using namespace std::ranges;
@@ -200,6 +211,117 @@ void test_ranges_algorithms() {
     (void) ends_with(iarr, iarr, iarr, iarr, validating_equal{});
     (void) ends_with(iarr, iarr, validating_equal{});
 #endif // _HAS_CXX23
+
+    int iarr2[1]{};
+    validator varr2[1]{};
+
+    (void) copy_if(varr, varr + 1, varr2, simple_truth{});
+    (void) copy_if(varr, varr2, simple_truth{});
+    (void) copy_if(iarr, iarr + 1, iarr2, validating_truth{});
+    (void) copy_if(iarr, iarr2, validating_truth{});
+
+    (void) transform(varr, varr, varr2, std::identity{});
+    (void) transform(varr, varr2, std::identity{});
+    (void) transform(varr, varr, varr, varr, varr2, simple_left_selector{});
+    (void) transform(varr, varr, varr2, simple_left_selector{});
+    (void) transform(iarr, iarr, iarr2, validating_identity{});
+    (void) transform(iarr, iarr, iarr, iarr, iarr2, validating_left_selector{});
+    (void) transform(iarr, iarr, iarr2, validating_left_selector{});
+
+    (void) replace(varr, varr, validator{}, validator{});
+    (void) replace(varr, validator{}, validator{});
+    (void) replace(iarr, iarr, 0, 0, validating_identity{});
+    (void) replace(iarr, 0, 0, validating_identity{});
+
+    (void) replace_if(varr, varr, simple_truth{}, validator{});
+    (void) replace_if(varr, simple_truth{}, validator{});
+    (void) replace_if(iarr, iarr, validating_truth{}, 0);
+    (void) replace_if(iarr, validating_truth{}, 0);
+
+    (void) replace_copy(varr, varr, varr2, validator{}, validator{});
+    (void) replace_copy(varr, varr2, validator{}, validator{});
+    (void) replace_copy(iarr, iarr, iarr2, 0, 0, validating_identity{});
+    (void) replace_copy(iarr, iarr2, 0, 0, validating_identity{});
+
+    (void) replace_copy_if(varr, varr, varr2, simple_truth{}, validator{});
+    (void) replace_copy_if(varr, varr2, simple_truth{}, validator{});
+    (void) replace_copy_if(iarr, iarr, iarr2, validating_truth{}, 0);
+    (void) replace_copy_if(iarr, iarr2, validating_truth{}, 0);
+
+    using std::ranges::remove; // avoid ambiguity
+    (void) remove(varr, varr, validator{});
+    (void) remove(varr, validator{});
+
+    (void) remove_if(varr, varr, simple_truth{});
+    (void) remove_if(varr, simple_truth{});
+    (void) remove_if(iarr, iarr, validating_truth{});
+    (void) remove_if(iarr, validating_truth{});
+
+    (void) remove_copy(varr, varr, varr2, validator{});
+    (void) remove_copy(varr, varr2, validator{});
+
+    (void) remove_copy_if(varr, varr, varr2, simple_truth{});
+    (void) remove_copy_if(varr, varr2, simple_truth{});
+    (void) remove_copy_if(iarr, iarr, iarr2, validating_truth{});
+    (void) remove_copy_if(iarr, iarr2, validating_truth{});
+
+    (void) unique(varr, varr);
+    (void) unique(varr);
+    // (void) unique(iarr, iarr, validating_equal{}); // needs to check ADL-found swap
+    // (void) unique(iarr, validating_equal{}); // needs to check ADL-found swap
+    (void) unique(iarr, iarr, {}, validating_identity{});
+    (void) unique(iarr, {}, validating_identity{});
+
+    (void) unique_copy(varr, varr, varr2);
+    (void) unique_copy(varr, varr2);
+    // (void) unique_copy(iarr, iarr, iarr2, validating_equal{}); // needs to check ADL-found swap
+    // (void) unique_copy(iarr, iarr2, validating_equal{}); // needs to check ADL-found swap
+    (void) unique_copy(iarr, iarr, iarr2, {}, validating_identity{});
+    (void) unique_copy(iarr, iarr2, {}, validating_identity{});
+
+    (void) min(+varr, +varr);
+    (void) min({+varr, +varr});
+    (void) min(varr);
+    (void) min(+iarr, +iarr, validating_less{});
+    (void) min({+iarr, +iarr}, {}, validating_identity{});
+    (void) min(iarr, validating_less{});
+
+    (void) max(+varr, +varr);
+    (void) max({+varr, +varr});
+    (void) max(varr);
+    (void) max(+iarr, +iarr, validating_less{});
+    (void) max({+iarr, +iarr}, {}, validating_identity{});
+    (void) max(iarr, validating_less{});
+
+    (void) minmax(+varr, +varr);
+    (void) minmax({+varr, +varr});
+    (void) minmax(varr);
+    (void) minmax(+iarr, +iarr, validating_less{});
+    (void) minmax({+iarr, +iarr}, {}, validating_identity{});
+    (void) minmax(iarr, validating_less{});
+
+    (void) min_element(varr, varr + 1);
+    (void) min_element(varr);
+    (void) min_element(iarr, iarr + 1, validating_less{});
+    (void) min_element(iarr, {}, validating_identity{});
+
+    (void) max_element(varr, varr + 1);
+    (void) max_element(varr);
+    (void) max_element(iarr, iarr + 1, validating_less{});
+    (void) max_element(iarr, {}, validating_identity{});
+
+    (void) minmax_element(varr, varr + 1);
+    (void) minmax_element(varr);
+    (void) minmax_element(iarr, iarr + 1, validating_less{});
+    (void) minmax_element(iarr, {}, validating_identity{});
+
+    (void) clamp(+varr, +varr, +varr);
+    (void) clamp(+iarr, +iarr, +iarr, validating_less{});
+
+    (void) lexicographical_compare(varr, varr, varr, varr);
+    (void) lexicographical_compare(varr, varr);
+    (void) lexicographical_compare(iarr, iarr, iarr, iarr, validating_less{});
+    (void) lexicographical_compare(iarr, iarr, validating_less{});
 }
 
 // Separated test for ranges::count and equality

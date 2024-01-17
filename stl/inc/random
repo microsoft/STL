@@ -24,6 +24,20 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, GH-183
+#pragma push_macro("discard_block")
+#pragma push_macro("linear_congruential")
+#pragma push_macro("mersenne_twister")
+#pragma push_macro("subtract_with_carry")
+#pragma push_macro("uniform_int")
+#pragma push_macro("uniform_real")
+#undef discard_block
+#undef linear_congruential
+#undef mersenne_twister
+#undef subtract_with_carry
+#undef uniform_int
+#undef uniform_real
+
 #ifdef _ALLOW_RANDOM_DISTRIBUTION_CONST_OPERATOR
 #define _DISTRIBUTION_CONST const
 #else
@@ -2089,12 +2103,7 @@ private:
     static _Uty _Adjust(_Uty _Uval) noexcept { // convert signed ranges to unsigned ranges and vice versa
         if constexpr (is_signed_v<_Ty>) {
             constexpr _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
-
-            if (_Uval < _Adjuster) {
-                return static_cast<_Uty>(_Uval + _Adjuster);
-            } else {
-                return static_cast<_Uty>(_Uval - _Adjuster);
-            }
+            return static_cast<_Uty>(_Uval ^ _Adjuster);
         } else { // _Ty is already unsigned, do nothing
             return _Uval;
         }
@@ -5374,6 +5383,14 @@ _STD_END
 
 #undef _NRAND
 #undef _DISTRIBUTION_CONST
+
+// TRANSITION, GH-183
+#pragma pop_macro("uniform_real")
+#pragma pop_macro("uniform_int")
+#pragma pop_macro("subtract_with_carry")
+#pragma pop_macro("mersenne_twister")
+#pragma pop_macro("linear_congruential")
+#pragma pop_macro("discard_block")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

@@ -36,6 +36,17 @@ _NODISCARD constexpr _Ty* _Unfancy(_Ty* _Ptr) noexcept { // do nothing for plain
     return _Ptr;
 }
 
+template <class _Ptrty>
+constexpr auto _Unfancy_maybe_null(_Ptrty _Ptr) noexcept {
+    // converts from a (potentially null) fancy pointer to a plain pointer
+    return _Ptr ? _STD addressof(*_Ptr) : nullptr;
+}
+
+template <class _Ty>
+constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain pointers
+    return _Ptr;
+}
+
 template <class _Ty>
 struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
     _Ty* _Target;
@@ -127,7 +138,7 @@ _STL_INTERNAL_STATIC_ASSERT(_Is_pow_2(_Big_allocation_alignment));
 #ifdef _DEBUG
 _INLINE_VAR constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
 #else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
-_INLINE_VAR constexpr size_t _Non_user_size           = sizeof(void*) + _Big_allocation_alignment - 1;
+_INLINE_VAR constexpr size_t _Non_user_size = sizeof(void*) + _Big_allocation_alignment - 1;
 #endif // ^^^ !defined(_DEBUG) ^^^
 
 #ifdef _WIN64
@@ -297,6 +308,16 @@ _CONSTEXPR20 _Pointer _Refancy(typename pointer_traits<_Pointer>::element_type* 
 
 template <class _Pointer, enable_if_t<is_pointer_v<_Pointer>, int> = 0>
 _CONSTEXPR20 _Pointer _Refancy(_Pointer _Ptr) noexcept {
+    return _Ptr;
+}
+
+template <class _Pointer, enable_if_t<!is_pointer_v<_Pointer>, int> = 0>
+_CONSTEXPR20 _Pointer _Refancy_maybe_null(typename pointer_traits<_Pointer>::element_type* _Ptr) noexcept {
+    return _Ptr == nullptr ? _Pointer() : pointer_traits<_Pointer>::pointer_to(*_Ptr);
+}
+
+template <class _Pointer, enable_if_t<is_pointer_v<_Pointer>, int> = 0>
+_CONSTEXPR20 _Pointer _Refancy_maybe_null(_Pointer _Ptr) noexcept {
     return _Ptr;
 }
 
@@ -1830,8 +1851,8 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     // In pre-concepts world, _Uninitialized_copy should only ever be called with an iterator
     // and sentinel of the same type, so `_Get_unwrapped` is fine to call.
-    auto _UFirst = _Get_unwrapped(_STD move(_First));
-    auto _ULast  = _Get_unwrapped(_STD move(_Last));
+    auto _UFirst = _STD _Get_unwrapped(_STD move(_First));
+    auto _ULast  = _STD _Get_unwrapped(_STD move(_Last));
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
@@ -1843,11 +1864,11 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 #endif // _HAS_CXX20
         {
             if constexpr (is_same_v<decltype(_UFirst), decltype(_ULast)>) {
-                _Copy_memmove(_To_address(_UFirst), _To_address(_ULast), _Unfancy(_Dest));
+                _STD _Copy_memmove(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
                 _Dest += _ULast - _UFirst;
             } else {
                 const auto _Count = static_cast<size_t>(_ULast - _UFirst);
-                _Copy_memmove_n(_To_address(_UFirst), _Count, _Unfancy(_Dest));
+                _STD _Copy_memmove_n(_STD _To_address(_UFirst), _Count, _STD _Unfancy(_Dest));
                 _Dest += _Count;
             }
             return _Dest;
@@ -1869,7 +1890,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
     // note: only called internally from elsewhere in the STL
     using _Ptrval = typename _Alloc::value_type*;
 
-    auto _UFirst = _Get_unwrapped(_STD move(_First));
+    auto _UFirst = _STD _Get_unwrapped(_STD move(_First));
 
     constexpr bool _Can_memmove =
         conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
@@ -1880,7 +1901,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _Copy_memmove_n(_UFirst, _Count, _Unfancy(_Dest));
+            _STD _Copy_memmove_n(_UFirst, _Count, _STD _Unfancy(_Dest));
             _Dest += _Count;
             return _Dest;
         }

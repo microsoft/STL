@@ -161,9 +161,9 @@ struct VFormatFn {
     template <class... Args>
     [[nodiscard]] auto operator()(const std::basic_string_view<CharT> str, Args&&... args) const {
         if constexpr (std::same_as<CharT, char>) {
-            return std::vformat(str, std::make_format_args(std::forward<Args>(args)...));
+            return std::vformat(str, std::make_format_args(args...));
         } else {
-            return std::vformat(str, std::make_wformat_args(std::forward<Args>(args)...));
+            return std::vformat(str, std::make_wformat_args(args...));
         }
     }
 };

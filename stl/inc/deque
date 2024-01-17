@@ -650,6 +650,9 @@ public:
         _Construct_n(_Count, _Val);
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     deque(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_n(_Count, _Val);
@@ -822,8 +825,8 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        _Assign_range(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -1241,10 +1244,10 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert [_First, _Last) at _Where
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
         const size_type _Off = static_cast<size_type>(_Where - begin());
         return _Insert_range<static_cast<_Is_bidi>(_Is_cpp17_bidi_iter_v<_Iter>)>(
-            _Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+            _Off, _STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -1424,7 +1427,6 @@ public:
                 ++_Myoff();
             }
         }
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Myoff()));
         if (--_Mysize() == 0) {
@@ -1447,7 +1449,6 @@ public:
                 _Myoff() = 0;
             }
         }
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         size_type _Newoff = _Myoff() + _Mysize() - 1;
         _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Newoff));
@@ -1468,12 +1469,11 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_First <= _Last && begin() <= _First && _Last <= end(), "deque erase iterator outside range");
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
         bool _Moved = _Off > 0 && _Off + _Count < _Mysize();
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, VS 2022 17.9 Preview 3
+#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, VS 2022 17.10 Preview 1
 #include <__msvc_all_public_headers.hpp>
 #else // ^^^ no workaround / workaround vvv
 #include <assert.h> // intentionally not <cassert>

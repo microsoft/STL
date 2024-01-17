@@ -125,7 +125,7 @@ _EXPORT_STD template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_
 template <class _Ty, int _Enabled /* = 0 */>
 #endif // ^^^ !_HAS_CXX17 ^^^
 _CONSTEXPR20 void swap(_Ty& _Left, _Ty& _Right) noexcept(
-    is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) {
+    is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_assignable_v<_Ty>) {
     _Ty _Tmp = _STD move(_Left);
     _Left    = _STD move(_Right);
     _Right   = _STD move(_Tmp);
@@ -228,14 +228,14 @@ struct pair { // store a pair of values
     constexpr explicit(
         !conjunction_v<_Is_implicitly_default_constructible<_Uty1>, _Is_implicitly_default_constructible<_Uty2>>)
         pair() noexcept(
-            is_nothrow_default_constructible_v<_Uty1>&& is_nothrow_default_constructible_v<_Uty2>) // strengthened
+            is_nothrow_default_constructible_v<_Uty1> && is_nothrow_default_constructible_v<_Uty2>) // strengthened
         : first(), second() {}
 
     template <class _Uty1 = _Ty1, class _Uty2 = _Ty2,
         enable_if_t<conjunction_v<is_copy_constructible<_Uty1>, is_copy_constructible<_Uty2>>, int> = 0>
     constexpr explicit(!conjunction_v<is_convertible<const _Uty1&, _Uty1>, is_convertible<const _Uty2&, _Uty2>>)
         pair(const _Ty1& _Val1, const _Ty2& _Val2) noexcept(
-            is_nothrow_copy_constructible_v<_Uty1>&& is_nothrow_copy_constructible_v<_Uty2>) // strengthened
+            is_nothrow_copy_constructible_v<_Uty1> && is_nothrow_copy_constructible_v<_Uty2>) // strengthened
         : first(_Val1), second(_Val2) {}
 
 #if _HAS_CXX23
@@ -246,7 +246,7 @@ struct pair { // store a pair of values
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
     constexpr explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(_Other1&& _Val1, _Other2&& _Val2) noexcept(
-            is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
+            is_nothrow_constructible_v<_Ty1, _Other1> && is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {
     }
 
@@ -258,7 +258,7 @@ struct pair { // store a pair of values
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1&>, is_constructible<_Ty2, _Other2&>>, int> = 0>
     constexpr explicit(!conjunction_v<is_convertible<_Other1&, _Ty1>, is_convertible<_Other2&, _Ty2>>)
         pair(pair<_Other1, _Other2>& _Right) noexcept(
-            is_nothrow_constructible_v<_Ty1, _Other1&>&& is_nothrow_constructible_v<_Ty2, _Other2&>) // strengthened
+            is_nothrow_constructible_v<_Ty1, _Other1&> && is_nothrow_constructible_v<_Ty2, _Other2&>) // strengthened
         : first(_Right.first), second(_Right.second) {}
 #endif // _HAS_CXX23
 
@@ -266,15 +266,16 @@ struct pair { // store a pair of values
         enable_if_t<conjunction_v<is_constructible<_Ty1, const _Other1&>, is_constructible<_Ty2, const _Other2&>>,
             int> = 0>
     constexpr explicit(!conjunction_v<is_convertible<const _Other1&, _Ty1>, is_convertible<const _Other2&, _Ty2>>)
-        pair(const pair<_Other1, _Other2>& _Right) noexcept(is_nothrow_constructible_v<_Ty1, const _Other1&>&&
-                is_nothrow_constructible_v<_Ty2, const _Other2&>) // strengthened
+        pair(const pair<_Other1, _Other2>& _Right) noexcept(
+            is_nothrow_constructible_v<_Ty1, const _Other1&>
+            && is_nothrow_constructible_v<_Ty2, const _Other2&>) // strengthened
         : first(_Right.first), second(_Right.second) {}
 
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
     constexpr explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(pair<_Other1, _Other2>&& _Right) noexcept(
-            is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
+            is_nothrow_constructible_v<_Ty1, _Other1> && is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Right.first)), second(_STD forward<_Other2>(_Right.second)) {}
 
 #if _HAS_CXX23
@@ -282,8 +283,9 @@ struct pair { // store a pair of values
         enable_if_t<conjunction_v<is_constructible<_Ty1, const _Other1>, is_constructible<_Ty2, const _Other2>>, int> =
             0>
     constexpr explicit(!conjunction_v<is_convertible<const _Other1, _Ty1>, is_convertible<const _Other2, _Ty2>>)
-        pair(const pair<_Other1, _Other2>&& _Right) noexcept(is_nothrow_constructible_v<_Ty1, const _Other1>&&
-                is_nothrow_constructible_v<_Ty2, const _Other2>) // strengthened
+        pair(const pair<_Other1, _Other2>&& _Right) noexcept(
+            is_nothrow_constructible_v<_Ty1, const _Other1>
+            && is_nothrow_constructible_v<_Ty2, const _Other2>) // strengthened
         : first(_STD forward<const _Other1>(_Right.first)), second(_STD forward<const _Other2>(_Right.second)) {}
 
 #ifdef __cpp_lib_concepts
@@ -297,8 +299,9 @@ struct pair { // store a pair of values
 #endif // ^^^ no workaround ^^^
     constexpr explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
                        is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>)
-        pair(_Other&& _Right) noexcept(is_nothrow_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>&&
-                is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
+        pair(_Other&& _Right) noexcept(
+            is_nothrow_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>
+            && is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
         : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {
     }
 #endif // defined(__cpp_lib_concepts)
@@ -369,8 +372,8 @@ struct pair { // store a pair of values
                         is_assignable<_Ty2&, const _Other2&>>,
             int> = 0>
     _CONSTEXPR20 pair& operator=(const pair<_Other1, _Other2>& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty1&, const _Other1&>&&
-            is_nothrow_assignable_v<_Ty2&, const _Other2&>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty1&, const _Other1&>
+        && is_nothrow_assignable_v<_Ty2&, const _Other2&>) /* strengthened */ {
         first  = _Right.first;
         second = _Right.second;
         return *this;
@@ -382,8 +385,8 @@ struct pair { // store a pair of values
                         is_assignable<const _Ty1&, const _Other1&>, is_assignable<const _Ty2&, const _Other2&>>,
             int> = 0>
     constexpr const pair& operator=(const pair<_Other1, _Other2>& _Right) const
-        noexcept(is_nothrow_assignable_v<const _Ty1&, const _Other1&>&&
-                is_nothrow_assignable_v<const _Ty2&, const _Other2&>) /* strengthened */ {
+        noexcept(is_nothrow_assignable_v<const _Ty1&, const _Other1&>
+                 && is_nothrow_assignable_v<const _Ty2&, const _Other2&>) /* strengthened */ {
         first  = _Right.first;
         second = _Right.second;
         return *this;
@@ -395,7 +398,7 @@ struct pair { // store a pair of values
                         is_assignable<_Ty2&, _Other2>>,
             int> = 0>
     _CONSTEXPR20 pair& operator=(pair<_Other1, _Other2>&& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty1&, _Other1>&& is_nothrow_assignable_v<_Ty2&, _Other2>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty1&, _Other1> && is_nothrow_assignable_v<_Ty2&, _Other2>) /* strengthened */ {
         first  = _STD forward<_Other1>(_Right.first);
         second = _STD forward<_Other2>(_Right.second);
         return *this;
@@ -407,8 +410,8 @@ struct pair { // store a pair of values
                         is_assignable<const _Ty2&, _Other2>>,
             int> = 0>
     constexpr const pair& operator=(pair<_Other1, _Other2>&& _Right) const
-        noexcept(is_nothrow_assignable_v<const _Ty1&, _Other1>&&
-                is_nothrow_assignable_v<const _Ty2&, _Other2>) /* strengthened */ {
+        noexcept(is_nothrow_assignable_v<const _Ty1&, _Other1>
+                 && is_nothrow_assignable_v<const _Ty2&, _Other2>) /* strengthened */ {
         first  = _STD forward<_Other1>(_Right.first);
         second = _STD forward<_Other2>(_Right.second);
         return *this;
@@ -420,8 +423,8 @@ struct pair { // store a pair of values
               && is_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
               && is_assignable_v<_Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>
     constexpr pair& operator=(_Other&& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>&&
-            is_nothrow_assignable_v<_Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
+        && is_nothrow_assignable_v<_Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>) /* strengthened */ {
         first  = _STD get<0>(_STD forward<_Other>(_Right));
         second = _STD get<1>(_STD forward<_Other>(_Right));
         return *this;
@@ -432,8 +435,8 @@ struct pair { // store a pair of values
               && is_assignable_v<const _Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
               && is_assignable_v<const _Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>
     constexpr const pair& operator=(_Other&& _Right) const noexcept(
-        is_nothrow_assignable_v<const _Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>&&
-            is_nothrow_assignable_v<const _Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>) /* strengthened */ {
+        is_nothrow_assignable_v<const _Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
+        && is_nothrow_assignable_v<const _Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>) /* strengthened */ {
         first  = _STD get<0>(_STD forward<_Other>(_Right));
         second = _STD get<1>(_STD forward<_Other>(_Right));
         return *this;
@@ -442,7 +445,7 @@ struct pair { // store a pair of values
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void swap(pair& _Right) noexcept(
-        _Is_nothrow_swappable<_Ty1>::value&& _Is_nothrow_swappable<_Ty2>::value) {
+        _Is_nothrow_swappable<_Ty1>::value && _Is_nothrow_swappable<_Ty2>::value) {
         using _STD swap;
         if (this != _STD addressof(_Right)) {
             swap(first, _Right.first); // intentional ADL
@@ -453,7 +456,7 @@ struct pair { // store a pair of values
 #if _HAS_CXX23
     template <int = 0> // see GH-3013
     constexpr void swap(const pair& _Right) const
-        noexcept(is_nothrow_swappable_v<const _Ty1>&& is_nothrow_swappable_v<const _Ty2>) {
+        noexcept(is_nothrow_swappable_v<const _Ty1> && is_nothrow_swappable_v<const _Ty2>) {
         using _STD swap;
         if (this != _STD addressof(_Right)) {
             swap(first, _Right.first); // intentional ADL
@@ -563,8 +566,8 @@ using _Unrefwrap_t = typename _Unrefwrap_helper<decay_t<_Ty>>::type;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr pair<_Unrefwrap_t<_Ty1>, _Unrefwrap_t<_Ty2>> make_pair(_Ty1&& _Val1, _Ty2&& _Val2) noexcept(
-    is_nothrow_constructible_v<_Unrefwrap_t<_Ty1>, _Ty1>&&
-        is_nothrow_constructible_v<_Unrefwrap_t<_Ty2>, _Ty2>) /* strengthened */ {
+    is_nothrow_constructible_v<_Unrefwrap_t<_Ty1>, _Ty1>
+    && is_nothrow_constructible_v<_Unrefwrap_t<_Ty2>, _Ty2>) /* strengthened */ {
     // return pair composed from arguments
     using _Mypair = pair<_Unrefwrap_t<_Ty1>, _Unrefwrap_t<_Ty2>>;
     return _Mypair(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2));

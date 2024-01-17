@@ -1457,19 +1457,38 @@ struct _Can_scalar_delete<_Yty, void_t<decltype(delete _STD declval<_Yty*>())>> 
 template <class _Yty, class = void>
 struct _Can_array_delete : false_type {};
 template <class _Yty>
-struct _Can_array_delete<_Yty, void_t<decltype(delete[] _STD declval<_Yty*>())>> : true_type{};
+struct _Can_array_delete<_Yty, void_t<decltype(delete[] _STD declval<_Yty*>())>> : true_type {};
 
 template <class _Fx, class _Arg, class = void>
 struct _Can_call_function_object : false_type {};
 template <class _Fx, class _Arg>
 struct _Can_call_function_object<_Fx, _Arg, void_t<decltype(_STD declval<_Fx>()(_STD declval<_Arg>()))>> : true_type {};
 
-template <class _Yty, class _Ty>
+template <class _Yty, class _Ty, class = void>
 struct _SP_convertible : is_convertible<_Yty*, _Ty*>::type {};
+
+template <class _Yty, class _Uty, class _Void>
+struct _SP_convertible<_Yty, _Uty[], _Void> : false_type {};
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10548086
 template <class _Yty, class _Uty>
-struct _SP_convertible<_Yty, _Uty[]> : is_convertible<_Yty (*)[], _Uty (*)[]>::type {};
+struct _SP_convertible<_Yty, _Uty[], void_t<_Yty (*)[]>> : is_convertible<_Yty (*)[], _Uty (*)[]>::type {};
+#else // ^^^ no workaround / workaround vvv
+template <class _Yty, class _Uty>
+struct _SP_convertible<_Yty, _Uty[], void_t<decltype(static_cast<_Yty (*)[]>(nullptr))>>
+    : is_convertible<_Yty (*)[], _Uty (*)[]>::type {};
+#endif // ^^^ workaround ^^^
+
+template <class _Yty, class _Uty, size_t _Ext, class _Void>
+struct _SP_convertible<_Yty, _Uty[_Ext], _Void> : false_type {};
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10548086
 template <class _Yty, class _Uty, size_t _Ext>
-struct _SP_convertible<_Yty, _Uty[_Ext]> : is_convertible<_Yty (*)[_Ext], _Uty (*)[_Ext]>::type {};
+struct _SP_convertible<_Yty, _Uty[_Ext], void_t<_Yty (*)[_Ext]>>
+    : is_convertible<_Yty (*)[_Ext], _Uty (*)[_Ext]>::type {};
+#else // ^^^ no workaround / workaround vvv
+template <class _Yty, class _Uty, size_t _Ext>
+struct _SP_convertible<_Yty, _Uty[_Ext], void_t<decltype(static_cast<_Yty (*)[_Ext]>(nullptr))>>
+    : is_convertible<_Yty (*)[_Ext], _Uty (*)[_Ext]>::type {};
+#endif // ^^^ workaround ^^^
 
 template <class _Yty, class _Ty>
 struct _SP_pointer_compatible : is_convertible<_Yty*, _Ty*>::type {
@@ -2670,7 +2689,8 @@ private:
 
         this->~_Ref_count_unbounded_array_alloc();
 
-        _Al.deallocate(_STD _Refancy<_Alloc_ptr_t<_Rebound_alloc>>(reinterpret_cast<_Storage*>(this)), _Storage_units);
+        _Al.deallocate(_STD _Refancy<_Alloc_ptr_t<_Rebound_alloc>>(reinterpret_cast<_Storage*>(this)),
+            static_cast<_Alloc_size_t<_Rebound_alloc>>(_Storage_units));
     }
 };
 
@@ -2851,11 +2871,12 @@ struct _Allocate_n_ptr {
     _Alloc_ptr_t<_Alloc> _Ptr;
     size_t _Nx;
 
-    _Allocate_n_ptr(_Alloc& _Al_, const size_t _Nx_) : _Al(_Al_), _Ptr(_Al_.allocate(_Nx_)), _Nx(_Nx_) {}
+    _Allocate_n_ptr(_Alloc& _Al_, const size_t _Nx_)
+        : _Al(_Al_), _Ptr(_Al_.allocate(_Convert_size<_Alloc_size_t<_Alloc>>(_Nx_))), _Nx(_Nx_) {}
 
     ~_Allocate_n_ptr() {
         if (_Ptr) {
-            _Al.deallocate(_Ptr, _Nx);
+            _Al.deallocate(_Ptr, static_cast<_Alloc_size_t<_Alloc>>(_Nx));
         }
     }
 
@@ -4233,8 +4254,8 @@ private:
 
 public:
     explicit inout_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
-        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>&& noexcept(
-            _Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
+        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...> //
+            && noexcept(_Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
         : _Smart_ptr(_Smart_ptr_),
           _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...},
               _Get_ptr_from_smart(_Smart_ptr_)) {}
