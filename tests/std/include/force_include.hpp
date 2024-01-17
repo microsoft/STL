@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "vso1913897.hpp"
+
 struct TestEnvironmentPreparer {
     TestEnvironmentPreparer() noexcept {
         // avoid assertion dialog boxes; see GH-781

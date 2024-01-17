@@ -10,6 +10,9 @@ parameters:
   type: string
 - name: buildBenchmarks
   type: boolean
+- name: asanBuild
+  type: boolean
+  default: false
 - name: cmakeAdditionalFlags
   type: string
   default: ''
@@ -43,6 +46,7 @@ steps:
     -DCMAKE_BUILD_TYPE=Release ^
     -DLIT_FLAGS=${{ join(';', parameters.litFlags) }} ^
     -DSTL_USE_ANALYZE=ON ^
+    -DSTL_ASAN_BUILD=${{ parameters.asanBuild }} ^
     -S $(Build.SourcesDirectory) -B "$(buildOutputLocation)"
   displayName: 'Configure the STL'
   timeoutInMinutes: 2
