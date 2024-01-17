@@ -525,10 +525,6 @@ std/time/time.clock/time.clock.file/ostream.pass.cpp FAIL
 # LLVM-74727: [libc++] Should formatting year{-99} with %C produce "-1" or "-01"?
 std/time/time.syn/formatter.year.pass.cpp:2 FAIL
 
-# GH-4251: <ranges>: repeat_view<T, unsigned int> emits truncation warnings
-std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:0 FAIL
-std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:1 FAIL
-
 # GH-4268: <sstream>, <syncstream>: Buffer types assume that allocated pointers are not modified by users
 std/input.output/string.streams/stringbuf/stringbuf.members/str.pass.cpp FAIL
 std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
