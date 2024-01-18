@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <cassert>
-#include <initializer_list>
 #include <iterator>
 #include <memory>
 #include <numeric>
