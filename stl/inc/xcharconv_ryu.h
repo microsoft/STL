@@ -211,6 +211,7 @@ _NODISCARD inline uint64_t __ryu_shiftright128(const uint64_t __lo, const uint64
 
 #ifndef _WIN64
 
+#if !defined(_M_HYBRID_X86_ARM64)
 // Returns the high 64 bits of the 128-bit product of __a and __b.
 _NODISCARD inline uint64_t __umulh(const uint64_t __a, const uint64_t __b) {
   // Reuse the __ryu_umul128 implementation.
@@ -220,6 +221,7 @@ _NODISCARD inline uint64_t __umulh(const uint64_t __a, const uint64_t __b) {
   (void) __ryu_umul128(__a, __b, &__hi);
   return __hi;
 }
+#endif // ^^^ !defined(_M_HYBRID_X86_ARM64) ^^^
 
 // On 32-bit platforms, compilers typically generate calls to library
 // functions for 64-bit divisions, even if the divisor is a constant.
