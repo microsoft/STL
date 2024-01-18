@@ -61,6 +61,10 @@ struct I {
     friend I operator-(I, int);
     friend I operator+(int, I);
     friend RRef iter_move(const I&);
+
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1941943
+    int dummy{0};
+#endif // ^^^ workaround ^^^
 };
 
 #ifdef __cpp_lib_concepts
@@ -656,8 +660,8 @@ void test_gh_4109() {
     (void) ranges::min_element(nil, nil);
     (void) ranges::min_element(nil, nil, comp);
 
-    //(void) ranges::minmax_element(nil, nil);
-    //(void) ranges::minmax_element(nil, nil, comp);
+    (void) ranges::minmax_element(nil, nil);
+    (void) ranges::minmax_element(nil, nil, comp);
 
     // Permutation operations
     (void) ranges::is_permutation(nil, nil, nil, nil);
