@@ -313,6 +313,10 @@ void test_gh_4109() {
     iota(nil, nil, val);
     uninitialized_copy(nil, nil, nil);
     uninitialized_copy_n(nil, zero, nil);
+#if _HAS_CXX17
+    uninitialized_move(nil, nil, nil);
+    uninitialized_move_n(nil, zero, nil);
+#endif // _HAS_CXX17
     uninitialized_fill(nil, nil, val);
     uninitialized_fill_n(nil, zero, val);
 
