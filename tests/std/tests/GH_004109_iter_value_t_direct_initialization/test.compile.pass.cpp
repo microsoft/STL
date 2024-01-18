@@ -25,11 +25,15 @@ struct Val {
     explicit Val(const RRef&);
     Val& operator=(const RRef&);
     bool operator==(const Val&) const;
+#if _HAS_CXX20
+    strong_ordering operator<=>(const Val&) const;
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     bool operator!=(const Val&) const;
     bool operator<(const Val&) const;
     bool operator<=(const Val&) const;
     bool operator>(const Val&) const;
     bool operator>=(const Val&) const;
+#endif // ^^^ !_HAS_CXX20 ^^^
     Val& operator++();
     Val operator++(int);
 };
@@ -96,6 +100,9 @@ void test_gh_4109() {
 #endif // _HAS_AUTO_PTR_ETC
     Val (*unop)(Val)       = nullptr;
     Val (*binop)(Val, Val) = nullptr;
+#ifdef __cpp_lib_concepts
+    strong_ordering (*comp_three_way)(Val, Val) = nullptr;
+#endif // __cpp_lib_concepts
 
     (void) all_of(nil, nil, pred);
     (void) any_of(nil, nil, pred);
@@ -287,6 +294,10 @@ void test_gh_4109() {
     (void) lexicographical_compare(nil, nil, nil, nil, comp);
     (void) lexicographical_compare(begin(arr), end(arr), nil, nil, comp);
     (void) lexicographical_compare(nil, nil, begin(arr), end(arr), comp);
+#ifdef __cpp_lib_concepts
+    (void) lexicographical_compare_three_way(nil, nil, nil, nil);
+    (void) lexicographical_compare_three_way(nil, nil, nil, nil, comp_three_way);
+#endif // __cpp_lib_concepts
     next_permutation(nil, nil);
     next_permutation(nil, nil, comp);
     prev_permutation(nil, nil);
