@@ -622,6 +622,7 @@ void test_gh_4109() {
     ranges::stable_sort(nil, nil, comp);
 
     ranges::nth_element(nil, nil, nil);
+    ranges::nth_element(nil, nil, nil, comp);
 
     // Binary search operations (on sorted ranges)
     (void) ranges::lower_bound(nil, nil, val);
