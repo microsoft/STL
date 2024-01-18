@@ -79,6 +79,7 @@ bool always_false(Val) {
 extern Val arr[3];
 extern Val res[3];
 extern Val val;
+extern mt19937 urbg; // UniformRandomBitGenerator
 const int zero = 0;
 // GH-4109: <algorithm>: iter_value_t<I> should always use direct-initialization
 void test_gh_4109() {
@@ -195,9 +196,9 @@ void test_gh_4109() {
     random_shuffle(nil, nil, rng);
 #endif // _HAS_AUTO_PTR_ETC
 #if _HAS_CXX17
-    sample(nil, nil, nil, zero, mt19937(1729));
+    sample(nil, nil, nil, zero, urbg);
 #endif // _HAS_CXX17
-    shuffle(nil, nil, mt19937(1729));
+    shuffle(nil, nil, urbg);
 #if _HAS_CXX20
     shift_left(nil, nil, 1729);
     shift_right(nil, nil, 1729);
@@ -551,14 +552,14 @@ void test_gh_4109() {
     ranges::rotate(nil, nil, nil);
     ranges::rotate_copy(nil, nil, nil, nil);
 
-    ranges::shuffle(nil, nil, mt19937(1729));
+    ranges::shuffle(nil, nil, urbg);
 
 #if _HAS_CXX23
     ranges::shift_left(nil, nil, 1729);
     ranges::shift_right(nil, nil, 1729);
 #endif // _HAS_CXX23
 
-    ranges::sample(nil, nil, nil, zero, mt19937(1729));
+    ranges::sample(nil, nil, nil, zero, urbg);
 
     (void) ranges::unique(nil, nil);
     (void) ranges::unique(nil, nil, pred2);
