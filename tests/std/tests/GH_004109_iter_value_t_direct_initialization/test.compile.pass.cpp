@@ -212,13 +212,6 @@ void test_gh_4109() {
     shift_left(nil, nil, 1729);
     shift_right(nil, nil, 1729);
 #endif // _HAS_CXX20
-    (void) is_partitioned(nil, nil, pred);
-    partition(nil, nil, pred);
-    stable_partition(nil, nil, pred);
-    partition_copy(nil, nil, nil, nil, pred);
-    partition_copy(begin(arr), end(arr), begin(res), nil, &always_true);
-    partition_copy(begin(arr), end(arr), nil, begin(res), &always_false);
-    (void) partition_point(nil, nil, pred);
     sort(nil, nil);
     sort(nil, nil, comp);
     sort(begin(arr), begin(arr) + 1);
@@ -249,6 +242,13 @@ void test_gh_4109() {
     (void) equal_range(nil, nil, val, comp);
     (void) binary_search(nil, nil, val);
     (void) binary_search(nil, nil, val, comp);
+    (void) is_partitioned(nil, nil, pred);
+    partition(nil, nil, pred);
+    stable_partition(nil, nil, pred);
+    partition_copy(nil, nil, nil, nil, pred);
+    partition_copy(begin(arr), end(arr), begin(res), nil, &always_true);
+    partition_copy(begin(arr), end(arr), nil, begin(res), &always_false);
+    (void) partition_point(nil, nil, pred);
     merge(nil, nil, nil, nil, nil);
     merge(nil, nil, nil, nil, nil, comp);
     inplace_merge(nil, nil, nil);
@@ -275,7 +275,6 @@ void test_gh_4109() {
     (void) is_heap(nil, nil, comp);
     (void) is_heap_until(nil, nil);
     (void) is_heap_until(nil, nil, comp);
-
     (void) min_element(nil, nil);
     (void) min_element(nil, nil, comp);
     (void) min_element(begin(arr), begin(arr) + 1);
@@ -302,6 +301,7 @@ void test_gh_4109() {
     next_permutation(nil, nil, comp);
     prev_permutation(nil, nil);
     prev_permutation(nil, nil, comp);
+
     (void) accumulate(nil, nil, val, binop);
 #if _HAS_CXX17
     (void) reduce(nil, nil, val, binop);
@@ -322,6 +322,7 @@ void test_gh_4109() {
 #endif // _HAS_CXX17
     adjacent_difference(nil, nil, nil, binop);
     iota(nil, nil, val);
+
     uninitialized_copy(nil, nil, nil);
     uninitialized_copy_n(nil, zero, nil);
 #if _HAS_CXX17
@@ -370,10 +371,9 @@ void test_gh_4109() {
     (void) search_n(par, nil, nil, 5, val);
     (void) search_n(par, nil, nil, zero, val, pred2);
     (void) search_n(par, nil, nil, 5, val, pred2);
-
     copy(par, nil, nil, nil);
-    copy_if(par, nil, nil, nil, pred);
     copy_n(par, nil, zero, nil);
+    copy_if(par, nil, nil, nil, pred);
     move(par, nil, nil, nil);
     swap_ranges(par, nil, nil, nil);
     transform(par, nil, nil, nil, unop);
@@ -398,7 +398,10 @@ void test_gh_4109() {
     reverse_copy(par, nil, nil, nil);
     rotate(par, nil, nil, nil);
     rotate_copy(par, nil, nil, nil, nil);
-
+#if _HAS_CXX20
+    shift_left(par, nil, nil, 1729);
+    shift_right(par, nil, nil, 1729);
+#endif // _HAS_CXX20
     sort(par, begin(arr), begin(arr) + 1);
     sort(par, begin(arr), begin(arr) + 1, comp);
     sort(par, nil, nil);
@@ -415,25 +418,16 @@ void test_gh_4109() {
     (void) is_sorted(par, nil, nil, comp);
     (void) is_sorted_until(par, nil, nil);
     (void) is_sorted_until(par, nil, nil, comp);
-
     nth_element(par, nil, nil, nil);
     nth_element(par, nil, nil, nil, comp);
-
-#if _HAS_CXX20
-    shift_left(par, nil, nil, 1729);
-    shift_right(par, nil, nil, 1729);
-#endif // _HAS_CXX20
-
-    partition(par, nil, nil, pred);
-    partition_copy(par, nil, nil, nil, nil, pred);
-    stable_partition(par, nil, nil, pred);
     (void) is_partitioned(par, nil, nil, pred);
-
+    partition(par, nil, nil, pred);
+    stable_partition(par, nil, nil, pred);
+    partition_copy(par, nil, nil, nil, nil, pred);
     merge(par, nil, nil, nil, nil, nil);
     merge(par, nil, nil, nil, nil, nil, comp);
     inplace_merge(par, nil, nil, nil);
     inplace_merge(par, nil, nil, nil, comp);
-
     (void) includes(par, nil, nil, nil, nil);
     (void) includes(par, nil, nil, nil, nil, comp);
     set_union(par, nil, nil, nil, nil, nil);
@@ -444,32 +438,26 @@ void test_gh_4109() {
     set_difference(par, nil, nil, nil, nil, nil, comp);
     set_symmetric_difference(par, nil, nil, nil, nil, nil);
     set_symmetric_difference(par, nil, nil, nil, nil, nil, comp);
-
     (void) is_heap(par, nil, nil);
     (void) is_heap(par, nil, nil, comp);
     (void) is_heap_until(par, nil, nil);
     (void) is_heap_until(par, nil, nil, comp);
-
     (void) min_element(par, nil, nil);
     (void) min_element(par, nil, nil, comp);
     (void) max_element(par, nil, nil);
     (void) max_element(par, nil, nil, comp);
     (void) minmax_element(par, nil, nil);
     (void) minmax_element(par, nil, nil, comp);
-
     (void) lexicographical_compare(par, nil, nil, nil, nil);
     (void) lexicographical_compare(par, nil, nil, nil, nil, comp);
 
     (void) reduce(par, nil, nil, val, binop);
-
     (void) transform_reduce(par, nil, nil, nil, val, binop, binop);
     (void) transform_reduce(par, nil, nil, val, binop, unop);
-
     exclusive_scan(par, nil, nil, nil, val, binop);
     inclusive_scan(par, nil, nil, nil, binop, val);
     transform_exclusive_scan(par, nil, nil, nil, val, binop, unop);
     transform_inclusive_scan(par, nil, nil, nil, binop, unop, val);
-
     adjacent_difference(par, nil, nil, nil, binop);
 
     uninitialized_copy(par, nil, nil, nil);
@@ -485,216 +473,148 @@ void test_gh_4109() {
     (void) ranges::all_of(nil, nil, pred);
     (void) ranges::any_of(nil, nil, pred);
     (void) ranges::none_of(nil, nil, pred);
-
+#if _HAS_CXX23
+    (void) ranges::contains(nil, nil, val);
+    (void) ranges::contains_subrange(nil, nil, nil, nil);
+#endif // _HAS_CXX23
     ranges::for_each(nil, nil, pred);
     ranges::for_each_n(nil, zero, pred);
-
-    (void) ranges::count(nil, nil, val);
-    (void) ranges::count_if(nil, nil, pred);
-
-    (void) ranges::mismatch(nil, nil, nil, nil);
-    (void) ranges::mismatch(nil, nil, nil, nil, pred2);
-
-    (void) ranges::equal(nil, nil, nil, nil);
-    (void) ranges::equal(nil, nil, nil, nil, pred2);
-
-    (void) ranges::lexicographical_compare(nil, nil, nil, nil);
-    (void) ranges::lexicographical_compare(nil, nil, nil, nil, comp);
-
     (void) ranges::find(nil, nil, val);
     (void) ranges::find_if(nil, nil, pred);
     (void) ranges::find_if_not(nil, nil, pred);
-
 #if _HAS_CXX23
     (void) ranges::find_last(nil, nil, val);
     (void) ranges::find_last_if(nil, nil, pred);
     (void) ranges::find_last_if_not(nil, nil, pred);
 #endif // _HAS_CXX23
-
     (void) ranges::find_end(nil, nil, nil, nil);
     (void) ranges::find_end(nil, nil, nil, nil, pred2);
-
     (void) ranges::find_first_of(nil, nil, nil, nil);
     (void) ranges::find_first_of(nil, nil, nil, nil, pred2);
-
     (void) ranges::adjacent_find(nil, nil);
     (void) ranges::adjacent_find(nil, nil, pred2);
-
+    (void) ranges::count(nil, nil, val);
+    (void) ranges::count_if(nil, nil, pred);
+    (void) ranges::mismatch(nil, nil, nil, nil);
+    (void) ranges::mismatch(nil, nil, nil, nil, pred2);
+    (void) ranges::equal(nil, nil, nil, nil);
+    (void) ranges::equal(nil, nil, nil, nil, pred2);
+    (void) ranges::is_permutation(nil, nil, nil, nil);
+    (void) ranges::is_permutation(nil, nil, nil, nil, pred2);
     (void) ranges::search(nil, nil, nil, nil);
     (void) ranges::search(nil, nil, nil, nil, pred2);
-
     (void) ranges::search_n(nil, nil, zero, val);
     (void) ranges::search_n(nil, nil, zero, val, pred2);
-
 #if _HAS_CXX23
-    (void) ranges::contains(nil, nil, val);
-    (void) ranges::contains_subrange(nil, nil, nil, nil);
-
     (void) ranges::starts_with(nil, nil, nil, nil);
     (void) ranges::starts_with(nil, nil, nil, nil, pred2);
-
     (void) ranges::ends_with(nil, nil, nil, nil);
     (void) ranges::ends_with(nil, nil, nil, nil, pred2);
+    (void) ranges::fold_left(nil, nil, val, binop);
+    (void) ranges::fold_left_first(nil, nil, binop);
+    (void) ranges::fold_right(nil, nil, val, binop);
+    (void) ranges::fold_right_last(nil, nil, binop);
+    (void) ranges::fold_left_with_iter(nil, nil, val, binop);
+    (void) ranges::fold_left_first_with_iter(nil, nil, binop);
 #endif // _HAS_CXX23
-
-    // Modifying sequence operations
     ranges::copy(nil, nil, nil);
-    ranges::copy_if(nil, nil, nil, pred);
-
     ranges::copy_n(nil, zero, nil);
-
+    ranges::copy_if(nil, nil, nil, pred);
     ranges::copy_backward(nil, nil, nil);
-
     ranges::move(nil, nil, nil);
-
     ranges::move_backward(nil, nil, nil);
-
-    ranges::fill(nil, nil, val);
-
-    ranges::fill_n(nil, zero, val);
-
+    ranges::swap_ranges(nil, nil, nil, nil);
     ranges::transform(nil, nil, nil, unop);
     ranges::transform(nil, nil, nil, nil, nil, binop);
-
-    ranges::generate(nil, nil, gen);
-
-    ranges::generate_n(nil, zero, gen);
-
-    (void) ranges::remove(nil, nil, val);
-    (void) ranges::remove_if(nil, nil, pred);
-
-    ranges::remove_copy(nil, nil, nil, val);
-    ranges::remove_copy_if(nil, nil, nil, pred);
-
     ranges::replace(nil, nil, val, val);
     ranges::replace_if(nil, nil, pred, val);
-
     ranges::replace_copy(nil, nil, nil, val, val);
     ranges::replace_copy_if(nil, nil, nil, pred, val);
-
-    ranges::swap_ranges(nil, nil, nil, nil);
-
+    ranges::fill(nil, nil, val);
+    ranges::fill_n(nil, zero, val);
+    ranges::generate(nil, nil, gen);
+    ranges::generate_n(nil, zero, gen);
+    (void) ranges::remove(nil, nil, val);
+    (void) ranges::remove_if(nil, nil, pred);
+    ranges::remove_copy(nil, nil, nil, val);
+    ranges::remove_copy_if(nil, nil, nil, pred);
+    (void) ranges::unique(nil, nil);
+    (void) ranges::unique(nil, nil, pred2);
+    ranges::unique_copy(nil, nil, nil);
+    ranges::unique_copy(nil, nil, nil, pred2);
     ranges::reverse(nil, nil);
     ranges::reverse_copy(nil, nil, nil);
-
     ranges::rotate(nil, nil, nil);
     ranges::rotate_copy(nil, nil, nil, nil);
-
+    ranges::sample(nil, nil, nil, zero, urbg);
     ranges::shuffle(nil, nil, urbg);
-
 #if _HAS_CXX23
     ranges::shift_left(nil, nil, 1729);
     ranges::shift_right(nil, nil, 1729);
 #endif // _HAS_CXX23
-
-    ranges::sample(nil, nil, nil, zero, urbg);
-
-    (void) ranges::unique(nil, nil);
-    (void) ranges::unique(nil, nil, pred2);
-
-    ranges::unique_copy(nil, nil, nil);
-    ranges::unique_copy(nil, nil, nil, pred2);
-
-    // Partitioning operations
-    (void) ranges::is_partitioned(nil, nil, pred);
-    ranges::partition(nil, nil, pred);
-    ranges::partition_copy(nil, nil, nil, nil, pred);
-    ranges::stable_partition(nil, nil, pred);
-    (void) ranges::partition_point(nil, nil, pred);
-
-    // Sorting operations
-    (void) ranges::is_sorted(nil, nil);
-    (void) ranges::is_sorted(nil, nil, comp);
-
-    (void) ranges::is_sorted_until(nil, nil);
-    (void) ranges::is_sorted_until(nil, nil, comp);
-
     ranges::sort(nil, nil);
     ranges::sort(nil, nil, comp);
-
-    ranges::partial_sort(nil, nil, nil);
-    ranges::partial_sort(nil, nil, nil, comp);
-
-    ranges::partial_sort_copy(nil, nil, nil, nil);
-    ranges::partial_sort_copy(nil, nil, nil, nil, comp);
-
     ranges::stable_sort(nil, nil);
     ranges::stable_sort(nil, nil, comp);
-
+    ranges::partial_sort(nil, nil, nil);
+    ranges::partial_sort(nil, nil, nil, comp);
+    ranges::partial_sort_copy(nil, nil, nil, nil);
+    ranges::partial_sort_copy(nil, nil, nil, nil, comp);
+    (void) ranges::is_sorted(nil, nil);
+    (void) ranges::is_sorted(nil, nil, comp);
+    (void) ranges::is_sorted_until(nil, nil);
+    (void) ranges::is_sorted_until(nil, nil, comp);
     ranges::nth_element(nil, nil, nil);
     ranges::nth_element(nil, nil, nil, comp);
-
-    // Binary search operations (on sorted ranges)
     (void) ranges::lower_bound(nil, nil, val);
     (void) ranges::lower_bound(nil, nil, val, comp);
-
     (void) ranges::upper_bound(nil, nil, val);
     (void) ranges::upper_bound(nil, nil, val, comp);
-
-    (void) ranges::binary_search(nil, nil, val);
-    (void) ranges::binary_search(nil, nil, val, comp);
-
     (void) ranges::equal_range(nil, nil, val);
     (void) ranges::equal_range(nil, nil, val, comp);
-
-    // Set operations (on sorted ranges)
+    (void) ranges::binary_search(nil, nil, val);
+    (void) ranges::binary_search(nil, nil, val, comp);
+    (void) ranges::is_partitioned(nil, nil, pred);
+    ranges::partition(nil, nil, pred);
+    ranges::stable_partition(nil, nil, pred);
+    ranges::partition_copy(nil, nil, nil, nil, pred);
+    (void) ranges::partition_point(nil, nil, pred);
     ranges::merge(nil, nil, nil, nil, nil);
     ranges::merge(nil, nil, nil, nil, nil, comp);
-
     ranges::inplace_merge(nil, nil, nil);
     ranges::inplace_merge(nil, nil, nil, comp);
-
     (void) ranges::includes(nil, nil, nil, nil);
     (void) ranges::includes(nil, nil, nil, nil, comp);
-
-    ranges::set_difference(nil, nil, nil, nil, nil);
-    ranges::set_difference(nil, nil, nil, nil, nil, comp);
-
-    ranges::set_intersection(nil, nil, nil, nil, nil);
-    ranges::set_intersection(nil, nil, nil, nil, nil, comp);
-
-    ranges::set_symmetric_difference(nil, nil, nil, nil, nil);
-    ranges::set_symmetric_difference(nil, nil, nil, nil, nil, comp);
-
     ranges::set_union(nil, nil, nil, nil, nil);
     ranges::set_union(nil, nil, nil, nil, nil, comp);
-
-    // Heap operations
-    (void) ranges::is_heap(nil, nil);
-    (void) ranges::is_heap(nil, nil, comp);
-
-    (void) ranges::is_heap_until(nil, nil);
-    (void) ranges::is_heap_until(nil, nil, comp);
-
-    ranges::make_heap(nil, nil);
-    ranges::make_heap(nil, nil, comp);
-
+    ranges::set_intersection(nil, nil, nil, nil, nil);
+    ranges::set_intersection(nil, nil, nil, nil, nil, comp);
+    ranges::set_difference(nil, nil, nil, nil, nil);
+    ranges::set_difference(nil, nil, nil, nil, nil, comp);
+    ranges::set_symmetric_difference(nil, nil, nil, nil, nil);
+    ranges::set_symmetric_difference(nil, nil, nil, nil, nil, comp);
     ranges::push_heap(nil, nil);
     ranges::push_heap(nil, nil, comp);
-
     ranges::pop_heap(nil, nil);
     ranges::pop_heap(nil, nil, comp);
-
+    ranges::make_heap(nil, nil);
+    ranges::make_heap(nil, nil, comp);
     ranges::sort_heap(nil, nil);
     ranges::sort_heap(nil, nil, comp);
-
-    // Minimum/maximum operations
-    (void) ranges::max_element(nil, nil);
-    (void) ranges::max_element(nil, nil, comp);
-
+    (void) ranges::is_heap(nil, nil);
+    (void) ranges::is_heap(nil, nil, comp);
+    (void) ranges::is_heap_until(nil, nil);
+    (void) ranges::is_heap_until(nil, nil, comp);
     (void) ranges::min_element(nil, nil);
     (void) ranges::min_element(nil, nil, comp);
-
+    (void) ranges::max_element(nil, nil);
+    (void) ranges::max_element(nil, nil, comp);
     (void) ranges::minmax_element(nil, nil);
     (void) ranges::minmax_element(nil, nil, comp);
-
-    // Permutation operations
-    (void) ranges::is_permutation(nil, nil, nil, nil);
-    (void) ranges::is_permutation(nil, nil, nil, nil, pred2);
-
+    (void) ranges::lexicographical_compare(nil, nil, nil, nil);
+    (void) ranges::lexicographical_compare(nil, nil, nil, nil, comp);
     ranges::next_permutation(nil, nil);
     ranges::next_permutation(nil, nil, comp);
-
     ranges::prev_permutation(nil, nil);
     ranges::prev_permutation(nil, nil, comp);
 
@@ -703,28 +623,14 @@ void test_gh_4109() {
     ranges::iota(nil, nil, val);
 #endif // _HAS_CXX23
 
-    // Constrained fold operations
-#if _HAS_CXX23
-    (void) ranges::fold_left(nil, nil, val, binop);
-    (void) ranges::fold_left_first(nil, nil, binop);
-    (void) ranges::fold_right(nil, nil, val, binop);
-    (void) ranges::fold_right_last(nil, nil, binop);
-    (void) ranges::fold_left_with_iter(nil, nil, val, binop);
-    (void) ranges::fold_left_first_with_iter(nil, nil, binop);
-#endif // _HAS_CXX23
-
     // Constrained uninitialized memory algorithms
     ranges::uninitialized_copy(nil, nil, nil, nil);
     ranges::uninitialized_copy_n(nil, zero, nil, nil);
-
-    ranges::uninitialized_fill(nil, nil, val);
-    ranges::uninitialized_fill_n(nil, zero, val);
-
     ranges::uninitialized_move(nil, nil, nil, nil);
     ranges::uninitialized_move_n(nil, zero, nil, nil);
-
+    ranges::uninitialized_fill(nil, nil, val);
+    ranges::uninitialized_fill_n(nil, zero, val);
     ranges::destroy(nil, nil);
-
     ranges::destroy_n(nil, zero);
 #endif // __cpp_lib_concepts
 }
