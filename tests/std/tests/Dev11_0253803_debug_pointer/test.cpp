@@ -13,6 +13,7 @@
 
 #ifdef __cpp_lib_execution
 #include <execution>
+using std::execution::par;
 #endif // __cpp_lib_execution
 
 using namespace std;
@@ -272,7 +273,6 @@ int main() {
     uninitialized_fill_n(nil, zero, 1729);
 
 #ifdef __cpp_lib_execution
-    using namespace std::execution;
     (void) all_of(par, nil, nil, pred);
     (void) any_of(par, nil, nil, pred);
     (void) none_of(par, nil, nil, pred);
