@@ -460,6 +460,13 @@ void test_gh_4109() {
     transform_inclusive_scan(par, nil, nil, nil, binop, unop, val);
 
     adjacent_difference(par, nil, nil, nil, binop);
+
+    uninitialized_copy(par, nil, nil, nil);
+    uninitialized_copy_n(par, nil, zero, nil);
+    uninitialized_move(par, nil, nil, nil);
+    uninitialized_move_n(par, nil, zero, nil);
+    uninitialized_fill(par, nil, nil, val);
+    uninitialized_fill_n(par, nil, zero, val);
 #endif // __cpp_lib_execution
 
 #ifdef __cpp_lib_concepts
