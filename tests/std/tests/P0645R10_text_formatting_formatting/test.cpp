@@ -1506,6 +1506,12 @@ constexpr bool test_format_string() {
     return true;
 }
 
+// Also test GH-4319: incorrect output for some floating-point values
+template <class charT>
+void test_gh_4319() {
+    assert(format(STR("{:}"), 12345678.0) == STR("12345678"));
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1582,6 +1588,9 @@ void test() {
     test_localized_char<char, char>();
     test_localized_char<wchar_t, char>();
     test_localized_char<wchar_t, wchar_t>();
+
+    test_gh_4319<char>();
+    test_gh_4319<wchar_t>();
 }
 
 int main() {

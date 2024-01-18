@@ -2967,6 +2967,7 @@ _NODISCARD _OutputIt _Fmt_write(
     auto _Format    = chars_format::general;
     auto _Exponent  = 'e';
     auto _Precision = _Specs._Precision;
+    auto _None_Type = false;
 
     switch (_Specs._Type) {
     case 'A':
@@ -3002,6 +3003,9 @@ _NODISCARD _OutputIt _Fmt_write(
             _Precision = 6;
         }
         _Format = chars_format::general;
+        break;
+    default:
+        _None_Type = true;
         break;
     }
 
@@ -3043,7 +3047,11 @@ _NODISCARD _OutputIt _Fmt_write(
         _Result.ptr += 3;
     } else {
         if (_Precision == -1) {
-            _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format);
+            if (_None_Type) {
+                _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value);
+            } else {
+                _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format);
+            }
         } else {
             _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format, _Precision);
         }
