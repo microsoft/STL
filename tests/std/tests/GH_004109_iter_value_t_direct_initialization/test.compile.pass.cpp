@@ -341,9 +341,9 @@ void test_gh_4109() {
     (void) find_if(par, nil, nil, pred);
     (void) find_if_not(par, nil, nil, pred);
     (void) find_end(par, nil, nil, nil, nil);
-    (void) find_end(par, nil, nil, nil, nil, comp);
+    (void) find_end(par, nil, nil, nil, nil, pred2);
     (void) find_first_of(par, nil, nil, nil, nil);
-    (void) find_first_of(par, nil, nil, nil, nil, comp);
+    (void) find_first_of(par, nil, nil, nil, nil, pred2);
     (void) adjacent_find(par, nil, nil);
     (void) adjacent_find(par, nil, nil, pred2);
     (void) count(par, nil, nil, val);
@@ -391,9 +391,9 @@ void test_gh_4109() {
     remove_copy(par, nil, nil, nil, val);
     remove_copy_if(par, nil, nil, nil, pred);
     (void) unique(par, nil, nil);
-    (void) unique(par, nil, nil, comp);
+    (void) unique(par, nil, nil, pred2);
     unique_copy(par, nil, nil, nil);
-    unique_copy(par, nil, nil, nil, comp);
+    unique_copy(par, nil, nil, nil, pred2);
     reverse(par, nil, nil);
     reverse_copy(par, nil, nil, nil);
     rotate(par, nil, nil, nil);
