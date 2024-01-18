@@ -74,14 +74,6 @@ static_assert(random_access_iterator<I>);
 static_assert(sortable<I>);
 #endif // __cpp_lib_concepts
 
-bool always_true(Val) {
-    return true;
-}
-
-bool always_false(Val) {
-    return false;
-}
-
 extern Val arr[3];
 extern Val res[3];
 extern Val val;
@@ -169,7 +161,7 @@ void test_gh_4109() {
     copy(nil, nil, nil);
     copy_n(nil, zero, nil);
     copy_if(nil, nil, nil, pred);
-    copy_if(begin(arr), end(arr), nil, &always_false);
+    copy_if(begin(arr), end(arr), nil, pred);
     copy_backward(nil, nil, nil);
     move(nil, nil, nil);
     move_backward(nil, nil, nil);
@@ -189,7 +181,7 @@ void test_gh_4109() {
     remove_copy(nil, nil, nil, val);
     remove_copy(begin(arr), end(arr), nil, val);
     remove_copy_if(nil, nil, nil, pred);
-    remove_copy_if(begin(arr), end(arr), nil, &always_true);
+    remove_copy_if(begin(arr), end(arr), nil, pred);
     (void) unique(nil, nil);
     (void) unique(nil, nil, pred2);
     (void) unique(begin(arr), begin(arr) + 1);
@@ -246,8 +238,8 @@ void test_gh_4109() {
     partition(nil, nil, pred);
     stable_partition(nil, nil, pred);
     partition_copy(nil, nil, nil, nil, pred);
-    partition_copy(begin(arr), end(arr), begin(res), nil, &always_true);
-    partition_copy(begin(arr), end(arr), nil, begin(res), &always_false);
+    partition_copy(begin(arr), end(arr), begin(res), nil, pred);
+    partition_copy(begin(arr), end(arr), nil, begin(res), pred);
     (void) partition_point(nil, nil, pred);
     merge(nil, nil, nil, nil, nil);
     merge(nil, nil, nil, nil, nil, comp);
