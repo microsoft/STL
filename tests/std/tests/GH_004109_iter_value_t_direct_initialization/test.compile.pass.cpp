@@ -11,6 +11,7 @@
 
 #ifdef __cpp_lib_execution
 #include <execution>
+using std::execution::par;
 #endif // __cpp_lib_execution
 
 using namespace std;
@@ -309,7 +310,6 @@ void test_gh_4109() {
     uninitialized_fill_n(nil, zero, val);
 
 #ifdef __cpp_lib_execution
-    using namespace std::execution;
     (void) all_of(par, nil, nil, pred);
     (void) any_of(par, nil, nil, pred);
     (void) none_of(par, nil, nil, pred);
