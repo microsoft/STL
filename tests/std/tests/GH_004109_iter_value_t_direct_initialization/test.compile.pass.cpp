@@ -256,6 +256,10 @@ void test_gh_4109() {
     set_difference(nil, nil, nil, nil, nil, comp);
     set_symmetric_difference(nil, nil, nil, nil, nil);
     set_symmetric_difference(nil, nil, nil, nil, nil, comp);
+    push_heap(nil, nil);
+    push_heap(nil, nil, comp);
+    pop_heap(nil, nil);
+    pop_heap(nil, nil, comp);
     make_heap(nil, nil);
     make_heap(nil, nil, comp);
     sort_heap(nil, nil);
