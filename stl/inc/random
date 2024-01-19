@@ -2231,11 +2231,6 @@ public:
         return _Mybase::operator()(_Eng, _Par0);
     }
 
-    template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, result_type _Nx) _DISTRIBUTION_CONST {
-        return _Mybase::operator()(_Eng, _Nx);
-    }
-
     template <class _Elem, class _Traits>
     friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
         uniform_int_distribution& _Dist) { // read state from _Istr
