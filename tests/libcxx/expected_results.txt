@@ -712,10 +712,9 @@ std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.ac
 # Bogus test expects to_address() to SFINAE away for int.
 std/utilities/memory/pointer.conversion/to_address_without_pointer_traits.pass.cpp FAIL
 
-# libc++'s "ascii" mode considers every code unit to represent a valid printable narrow character.
-# We don't support such a mode.
-std/utilities/format/format.functions/ascii.pass.cpp FAIL
-std/utilities/format/format.functions/escaped_output.ascii.pass.cpp FAIL
+# These test libc++'s non-standard "ascii" mode. We should submit a PR to relocate them from tests/std to tests/libcxx.
+std/utilities/format/format.functions/ascii.pass.cpp SKIPPED
+std/utilities/format/format.functions/escaped_output.ascii.pass.cpp SKIPPED
 
 
 # *** LIKELY STL BUGS ***
