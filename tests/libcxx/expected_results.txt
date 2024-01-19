@@ -37,6 +37,11 @@ std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_mov
 # LLVM-75611: [libc++] views::take behaves incorrectly for iota_view
 std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
 
+# LLVM-78661: [libc++][test] Move format.functions ASCII tests to libcxx/test/libcxx
+# These test libc++'s non-standard "ascii" mode.
+std/utilities/format/format.functions/ascii.pass.cpp SKIPPED
+std/utilities/format/format.functions/escaped_output.ascii.pass.cpp SKIPPED
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -711,10 +716,6 @@ std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.ac
 
 # Bogus test expects to_address() to SFINAE away for int.
 std/utilities/memory/pointer.conversion/to_address_without_pointer_traits.pass.cpp FAIL
-
-# These test libc++'s non-standard "ascii" mode. We should submit a PR to relocate them from tests/std to tests/libcxx.
-std/utilities/format/format.functions/ascii.pass.cpp SKIPPED
-std/utilities/format/format.functions/escaped_output.ascii.pass.cpp SKIPPED
 
 
 # *** LIKELY STL BUGS ***
