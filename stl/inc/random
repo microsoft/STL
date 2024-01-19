@@ -918,7 +918,7 @@ public:
 _STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class subtract_with_carry_engine
-    : public subtract_with_carry<_Ty, static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1), _Sx, _Rx> {
+    : private subtract_with_carry<_Ty, static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1), _Sx, _Rx> {
     // subtract_with_carry generator
 public:
     _RNG_REQUIRE_UINTTYPE(subtract_with_carry_engine, _Ty);
@@ -980,6 +980,26 @@ public:
 
     _NODISCARD static constexpr _Ty(max)() noexcept /* strengthened */ {
         return _Mx - 1;
+    }
+
+    _NODISCARD_FRIEND bool operator==(
+        const subtract_with_carry_engine& _Left, const subtract_with_carry_engine& _Right) noexcept /* strengthened */ {
+        return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(
+        const subtract_with_carry_engine& _Left, const subtract_with_carry_engine& _Right) noexcept /* strengthened */ {
+        return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
+    }
+#endif // !_HAS_CXX20
+
+    _NODISCARD result_type operator()() {
+        return _Mybase::operator()();
+    }
+
+    void discard(unsigned long long _Nskip) {
+        _Mybase::discard(_Nskip);
     }
 
     template <class _Elem, class _Traits>
