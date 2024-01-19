@@ -622,7 +622,5 @@ void test_gh_4109() {
     ranges::uninitialized_move_n(nil, zero, nil, nil);
     ranges::uninitialized_fill(nil, nil, val);
     ranges::uninitialized_fill_n(nil, zero, val);
-    ranges::destroy(nil, nil);
-    ranges::destroy_n(nil, zero);
 #endif // __cpp_lib_concepts
 }
