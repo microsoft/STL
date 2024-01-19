@@ -1303,7 +1303,7 @@ protected:
 _STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx,
     size_t _Sx, _Ty _Bx, size_t _Tx, _Ty _Cx, size_t _Lx, _Ty _Fx>
-class mersenne_twister_engine : public mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx> {
+class mersenne_twister_engine : private mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx> {
 public:
     static constexpr unsigned long long _Max = (((1ULL << (_Wx - 1)) - 1) << 1) + 1;
 
@@ -1383,6 +1383,18 @@ public:
     _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
         return _Mybase::_WMSK;
     }
+
+    _NODISCARD_FRIEND bool operator==(
+        const mersenne_twister_engine& _Left, const mersenne_twister_engine& _Right) noexcept /* strengthened */ {
+        return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(
+        const mersenne_twister_engine& _Left, const mersenne_twister_engine& _Right) noexcept /* strengthened */ {
+        return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
+    }
+#endif // !_HAS_CXX20
 
     template <class _Elem, class _S_Traits>
     friend basic_istream<_Elem, _S_Traits>& operator>>(basic_istream<_Elem, _S_Traits>& _Istr,
