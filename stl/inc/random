@@ -1598,7 +1598,7 @@ private:
 _STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Engine, size_t _Px, size_t _Rx>
 class discard_block_engine // discard_block_engine compound engine
-    : public conditional_t<_Px <= INT_MAX, discard_block<_Engine, static_cast<int>(_Px), static_cast<int>(_Rx)>,
+    : private conditional_t<_Px <= INT_MAX, discard_block<_Engine, static_cast<int>(_Px), static_cast<int>(_Rx)>,
           _Discard_block_base<_Engine, _Px, _Rx>> {
 public:
     static_assert(0 < _Rx && _Rx <= _Px, "invalid template argument for discard_block_engine");
@@ -1652,6 +1652,27 @@ public:
 
     _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
         return (_Engine::max)();
+    }
+
+    _NODISCARD_FRIEND bool operator==(const discard_block_engine& _Left, const discard_block_engine& _Right) {
+        return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const discard_block_engine& _Left, const discard_block_engine& _Right) {
+        return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, discard_block_engine& _Eng) {
+        return _Istr >> static_cast<_Mybase&>(_Eng);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(
+        basic_ostream<_Elem, _Traits>& _Ostr, const discard_block_engine& _Eng) {
+        return _Ostr << static_cast<const _Mybase&>(_Eng);
     }
 };
 _STL_RESTORE_DEPRECATED_WARNING
