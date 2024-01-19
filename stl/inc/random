@@ -2218,7 +2218,7 @@ private:
 
 _STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Ty = int>
-class uniform_int_distribution : public uniform_int<_Ty> { // uniform integer distribution
+class uniform_int_distribution : private uniform_int<_Ty> { // uniform integer distribution
 public:
     _RNG_REQUIRE_INTTYPE(uniform_int_distribution, _Ty);
 
