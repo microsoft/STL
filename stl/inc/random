@@ -1381,7 +1381,7 @@ public:
     }
 
     void discard(unsigned long long _Nskip) { // discard _Nskip elements
-        return _Mybase::discard(_Nskip);
+        _Mybase::discard(_Nskip);
     }
 };
 _STL_RESTORE_DEPRECATED_WARNING
