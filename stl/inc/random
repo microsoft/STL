@@ -24,6 +24,20 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, GH-183
+#pragma push_macro("discard_block")
+#pragma push_macro("linear_congruential")
+#pragma push_macro("mersenne_twister")
+#pragma push_macro("subtract_with_carry")
+#pragma push_macro("uniform_int")
+#pragma push_macro("uniform_real")
+#undef discard_block
+#undef linear_congruential
+#undef mersenne_twister
+#undef subtract_with_carry
+#undef uniform_int
+#undef uniform_real
+
 #ifdef _ALLOW_RANDOM_DISTRIBUTION_CONST_OPERATOR
 #define _DISTRIBUTION_CONST const
 #else
@@ -5513,6 +5527,14 @@ _STD_END
 
 #undef _NRAND
 #undef _DISTRIBUTION_CONST
+
+// TRANSITION, GH-183
+#pragma pop_macro("uniform_real")
+#pragma pop_macro("uniform_int")
+#pragma pop_macro("subtract_with_carry")
+#pragma pop_macro("mersenne_twister")
+#pragma pop_macro("linear_congruential")
+#pragma pop_macro("discard_block")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
