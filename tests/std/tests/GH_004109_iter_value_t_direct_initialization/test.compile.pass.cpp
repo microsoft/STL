@@ -447,8 +447,10 @@ void test_gh_4109() {
     (void) transform_reduce(par, nil, nil, nil, val, binop, binop);
     (void) transform_reduce(par, nil, nil, val, binop, unop);
     exclusive_scan(par, nil, nil, nil, val, binop);
+    inclusive_scan(par, nil, nil, nil, binop);
     inclusive_scan(par, nil, nil, nil, binop, val);
     transform_exclusive_scan(par, nil, nil, nil, val, binop, unop);
+    transform_inclusive_scan(par, nil, nil, nil, binop, unop);
     transform_inclusive_scan(par, nil, nil, nil, binop, unop, val);
     adjacent_difference(par, nil, nil, nil, binop);
 
