@@ -145,6 +145,10 @@ public:
         return this->good();
     }
 
+#pragma push_macro("ipfx")
+#pragma push_macro("isfx")
+#undef ipfx
+#undef isfx
     // TRANSITION, ABI: non-Standard ipfx() is preserved for binary compatibility
     _DEPRECATE_IO_PFX_SFX bool __CLR_OR_THIS_CALL ipfx(bool _Noskip = false) {
         // test stream state and skip whitespace as needed
@@ -153,6 +157,8 @@ public:
 
     // TRANSITION, ABI: non-Standard isfx() is preserved for binary compatibility
     _DEPRECATE_IO_PFX_SFX void __CLR_OR_THIS_CALL isfx() {} // perform any wrapup
+#pragma pop_macro("isfx")
+#pragma pop_macro("ipfx")
 
 #ifdef _M_CEE_PURE
     basic_istream& __CLR_OR_THIS_CALL operator>>(basic_istream&(__clrcall* _Pfn)(basic_istream&) ) {
