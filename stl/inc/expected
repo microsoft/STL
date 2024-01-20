@@ -194,6 +194,16 @@ concept _Expected_binary_move_assignable =
     && is_move_assignable_v<_Err> && is_move_constructible_v<_Err>
     && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>);
 
+template <class _Type> // used with both _Ty and _Err
+concept _Trivially_copy_constructible_assignable_destructible =
+    is_trivially_copy_constructible_v<_Type> && is_trivially_copy_assignable_v<_Type>
+    && is_trivially_destructible_v<_Type>;
+
+template <class _Type> // used with both _Ty and _Err
+concept _Trivially_move_constructible_assignable_destructible =
+    is_trivially_move_constructible_v<_Type> && is_trivially_move_assignable_v<_Type>
+    && is_trivially_destructible_v<_Type>;
+
 _EXPORT_STD template <class _Ty, class _Err>
 class expected {
 private:
@@ -419,10 +429,9 @@ public:
     }
 
     expected& operator=(const expected&)
-        requires _Expected_binary_copy_assignable<_Ty, _Err> && is_trivially_copy_constructible_v<_Ty>
-                  && is_trivially_copy_assignable_v<_Ty> && is_trivially_destructible_v<_Ty>
-                  && is_trivially_copy_constructible_v<_Err> && is_trivially_copy_assignable_v<_Err>
-                  && is_trivially_destructible_v<_Err>
+        requires _Expected_binary_copy_assignable<_Ty, _Err>
+                  && _Trivially_copy_constructible_assignable_destructible<_Ty>
+                  && _Trivially_copy_constructible_assignable_destructible<_Err>
     = default;
 
     constexpr expected& operator=(expected&& _Other) noexcept(
@@ -445,10 +454,9 @@ public:
     }
 
     expected& operator=(expected&&)
-        requires _Expected_binary_move_assignable<_Ty, _Err> && is_trivially_move_constructible_v<_Ty>
-                  && is_trivially_move_assignable_v<_Ty> && is_trivially_destructible_v<_Ty>
-                  && is_trivially_move_constructible_v<_Err> && is_trivially_move_assignable_v<_Err>
-                  && is_trivially_destructible_v<_Err>
+        requires _Expected_binary_move_assignable<_Ty, _Err>
+                  && _Trivially_move_constructible_assignable_destructible<_Ty>
+                  && _Trivially_move_constructible_assignable_destructible<_Err>
     = default;
 
     template <class _Uty = _Ty>
@@ -1326,8 +1334,7 @@ public:
     }
 
     expected& operator=(const expected&)
-        requires _Expected_unary_copy_assignable<_Err> && is_trivially_copy_constructible_v<_Err>
-                  && is_trivially_copy_assignable_v<_Err> && is_trivially_destructible_v<_Err>
+        requires _Expected_unary_copy_assignable<_Err> && _Trivially_copy_constructible_assignable_destructible<_Err>
     = default;
 
     constexpr expected& operator=(expected&& _Other) noexcept(
@@ -1352,8 +1359,7 @@ public:
     }
 
     expected& operator=(expected&&)
-        requires _Expected_unary_move_assignable<_Err> && is_trivially_move_constructible_v<_Err>
-                  && is_trivially_move_assignable_v<_Err> && is_trivially_destructible_v<_Err>
+        requires _Expected_unary_move_assignable<_Err> && _Trivially_move_constructible_assignable_destructible<_Err>
     = default;
 
     template <class _UErr>
