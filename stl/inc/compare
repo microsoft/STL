@@ -35,7 +35,7 @@ struct _Literal_zero {
         }
     }
     template <class _Ty, enable_if_t<!is_same_v<_Ty, int>, int> = 0>
-    _Literal_zero( _Ty ) = delete;
+    _Literal_zero(_Ty) = delete;
 };
 
 using _Compare_t = signed char;
