@@ -419,13 +419,11 @@ public:
     }
 
     expected& operator=(const expected&)
-        requires _Expected_binary_copy_assignable<_Ty, _Err> //
-                  && is_trivially_copy_constructible_v<_Ty> && is_trivially_copy_assignable_v<_Ty>
-                  && is_trivially_destructible_v<_Ty>
-                  // clang-format off
+        requires _Expected_binary_copy_assignable<_Ty, _Err> && is_trivially_copy_constructible_v<_Ty>
+                  && is_trivially_copy_assignable_v<_Ty> && is_trivially_destructible_v<_Ty>
                   && is_trivially_copy_constructible_v<_Err> && is_trivially_copy_assignable_v<_Err>
-                  && is_trivially_destructible_v<_Err> = default;
-    // clang-format on
+                  && is_trivially_destructible_v<_Err>
+    = default;
 
     constexpr expected& operator=(expected&& _Other) noexcept(
         is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_constructible_v<_Err>
@@ -447,13 +445,11 @@ public:
     }
 
     expected& operator=(expected&&)
-        requires _Expected_binary_move_assignable<_Ty, _Err> //
-                  && is_trivially_move_constructible_v<_Ty> && is_trivially_move_assignable_v<_Ty>
-                  && is_trivially_destructible_v<_Ty>
-                  // clang-format off
+        requires _Expected_binary_move_assignable<_Ty, _Err> && is_trivially_move_constructible_v<_Ty>
+                  && is_trivially_move_assignable_v<_Ty> && is_trivially_destructible_v<_Ty>
                   && is_trivially_move_constructible_v<_Err> && is_trivially_move_assignable_v<_Err>
-                  && is_trivially_destructible_v<_Err> = default;
-    // clang-format on
+                  && is_trivially_destructible_v<_Err>
+    = default;
 
     template <class _Uty = _Ty>
         requires (!is_same_v<remove_cvref_t<_Uty>, expected> && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
@@ -1330,11 +1326,9 @@ public:
     }
 
     expected& operator=(const expected&)
-        requires _Expected_unary_copy_assignable<_Err>
-                  // clang-format off
-                  && is_trivially_copy_constructible_v<_Err> && is_trivially_copy_assignable_v<_Err>
-                  && is_trivially_destructible_v<_Err> = default;
-    // clang-format on
+        requires _Expected_unary_copy_assignable<_Err> && is_trivially_copy_constructible_v<_Err>
+                  && is_trivially_copy_assignable_v<_Err> && is_trivially_destructible_v<_Err>
+    = default;
 
     constexpr expected& operator=(expected&& _Other) noexcept(
         is_nothrow_move_constructible_v<_Err> && is_nothrow_move_assignable_v<_Err>)
@@ -1358,11 +1352,9 @@ public:
     }
 
     expected& operator=(expected&&)
-        requires _Expected_unary_move_assignable<_Err>
-                  // clang-format off
-                  && is_trivially_move_constructible_v<_Err> && is_trivially_move_assignable_v<_Err>
-                  && is_trivially_destructible_v<_Err> = default;
-    // clang-format on
+        requires _Expected_unary_move_assignable<_Err> && is_trivially_move_constructible_v<_Err>
+                  && is_trivially_move_assignable_v<_Err> && is_trivially_destructible_v<_Err>
+    = default;
 
     template <class _UErr>
         requires is_constructible_v<_Err, const _UErr&> && is_assignable_v<_Err&, const _UErr&>
