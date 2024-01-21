@@ -28,20 +28,18 @@ bool check_container_requirements(T&&) {
 template <IsFlatMap T>
 consteval bool check_reversible_container_requirements() {
     using map_t = remove_cvref_t<T>;
-    bool result = true;
-    result &= is_same_v<reverse_iterator<typename map_t::iterator>, typename map_t::reverse_iterator>;
-    result &= is_same_v<reverse_iterator<typename map_t::const_iterator>, typename map_t::const_reverse_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().begin()), typename map_t::iterator>;
-    result &= is_same_v<decltype(declval<map_t>().end()), typename map_t::iterator>;
-    result &= is_same_v<decltype(declval<map_t>().cbegin()), typename map_t::const_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().cend()), typename map_t::const_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().rbegin()), typename map_t::reverse_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().rend()), typename map_t::reverse_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().crbegin()), typename map_t::const_reverse_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().crend()), typename map_t::const_reverse_iterator>;
-    result &= is_convertible_v<typename map_t::iterator, typename map_t::const_iterator>;
-    result &= is_convertible_v<typename map_t::reverse_iterator, typename map_t::const_reverse_iterator>;
-    return result;
+    return is_same_v<reverse_iterator<typename map_t::iterator>, typename map_t::reverse_iterator>
+        && is_same_v<reverse_iterator<typename map_t::const_iterator>, typename map_t::const_reverse_iterator>
+        && is_same_v<decltype(declval<map_t>().begin()), typename map_t::iterator>
+        && is_same_v<decltype(declval<map_t>().end()), typename map_t::iterator>
+        && is_same_v<decltype(declval<map_t>().cbegin()), typename map_t::const_iterator>
+        && is_same_v<decltype(declval<map_t>().cend()), typename map_t::const_iterator>
+        && is_same_v<decltype(declval<map_t>().rbegin()), typename map_t::reverse_iterator>
+        && is_same_v<decltype(declval<map_t>().rend()), typename map_t::reverse_iterator>
+        && is_same_v<decltype(declval<map_t>().crbegin()), typename map_t::const_reverse_iterator>
+        && is_same_v<decltype(declval<map_t>().crend()), typename map_t::const_reverse_iterator>
+        && is_convertible_v<typename map_t::iterator, typename map_t::const_iterator>
+        && is_convertible_v<typename map_t::reverse_iterator, typename map_t::const_reverse_iterator>;
 }
 
 template <IsFlatMap T>
@@ -120,21 +118,13 @@ public:
         value = t;
     }
 
-    friend bool operator==(const Packaged& lhs, const Packaged& rhs) {
-        return lhs.value == rhs.value;
-    }
+    friend bool operator==(const Packaged&, const Packaged&) = default;
 
     friend bool operator==(const Packaged& lhs, const T& rhs) {
         return lhs.value == rhs;
     }
 
-    friend bool operator==(const T& lhs, const Packaged& rhs) {
-        return lhs == rhs.value;
-    }
-
-    friend auto operator<=>(const Packaged& lhs, const Packaged& rhs) {
-        return lhs.value <=> rhs.value;
-    }
+    friend auto operator<=>(const Packaged&, const Packaged&) = default;
 };
 
 template <typename T>
