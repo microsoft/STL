@@ -257,7 +257,6 @@ void test_adl_proof_optional_comparison() {
     (void) (op > op);
     (void) (op <= op);
     (void) (op >= op);
-    (void) (op == op);
 
     (void) (op == v);
     (void) (op != v);
@@ -290,7 +289,7 @@ void test_adl_proof_expected_comparison() {
     (void) (unex != unex);
 }
 
-void test_adl_proof_basic_constant_iterator_comparison() {
+void test_adl_proof_basic_const_iterator_comparison() {
     validating_iterator_provider<int>::iterator i{};
     validating_iterator_provider<const int>::iterator j{};
 
