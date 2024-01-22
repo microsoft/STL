@@ -581,17 +581,15 @@ public:
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
+    size_type erase(const key_type& _Key_val) {
+        return _Erase_key(_Key_val);
+    }
+
     template <class _OtherKey>
-    size_type erase(_OtherKey&& _Key_val)
-        requires convertible_to<_OtherKey&&, const key_type&>
-              || (_Is_transparent_v<key_compare> && !convertible_to<_OtherKey &&, iterator>
-                  && !convertible_to<_OtherKey &&, const_iterator>)
-    {
-        const_iterator _Pos_begin = lower_bound(_STD forward<_OtherKey>(_Key_val));
-        const_iterator _Pos_end   = upper_bound(_STD forward<_OtherKey>(_Key_val));
-        size_type _Count          = _Pos_end - _Pos_begin;
-        erase(_Pos_begin, _Pos_end);
-        return _Count;
+        requires _Is_transparent_v<key_compare>
+              && (!is_convertible_v<_OtherKey, iterator>) && (!is_convertible_v<_OtherKey, const_iterator>)
+    size_type erase(_OtherKey&& _Key_val) {
+        return _Erase_key(_STD forward<_OtherKey>(_Key_val));
     }
 
     containers extract() && {
@@ -880,6 +878,15 @@ private:
         }
 
         _Guard._Clearable = nullptr;
+    }
+
+    template <class _KeyTy>
+    size_type _Erase_key(_KeyTy&& _Key_val) {
+        const_iterator _Pos_begin = lower_bound(_STD forward<_KeyTy>(_Key_val));
+        const_iterator _Pos_end   = upper_bound(_STD forward<_KeyTy>(_Key_val));
+        size_type _Count          = _Pos_end - _Pos_begin;
+        erase(_Pos_begin, _Pos_end);
+        return _Count;
     }
 
     template <class _KeyTy>
@@ -1311,7 +1318,7 @@ private:
 };
 
 template <class _KeyContainer, class _MappedContainer, class _Compare = less<typename _KeyContainer::value_type>>
-flat_multimap(_KeyContainer, _KeyContainer, _Compare = _Compare()) -> flat_multimap<typename _KeyContainer::value_type,
+flat_multimap(_KeyContainer, _MappedContainer, _Compare = _Compare()) -> flat_multimap<typename _KeyContainer::value_type,
     typename _MappedContainer::value_type, _Compare, _KeyContainer, _MappedContainer>;
 
 template <class _KeyContainer, class _MappedContainer, class _Allocator>
