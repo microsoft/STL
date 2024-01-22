@@ -1325,6 +1325,8 @@ public:
     }
 
 private:
+    using _MyBase::_Erase_if;
+
     template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Predicate>
     friend typename flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type erase_if(
         flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>&, _Predicate);
