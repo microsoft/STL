@@ -194,6 +194,19 @@ void test_adl_proof_legacy_comparison_functors() {
     (void) greater_equal<test_comparable>{}(test_comparable{}, test_comparable{});
 }
 
+template <class L, class R>
+void test_adl_proof_comparison() {
+    L l{};
+    R r{};
+
+    (void) (l == r);
+    (void) (l != r);
+    (void) (l < r);
+    (void) (l > r);
+    (void) (l <= r);
+    (void) (l >= r);
+}
+
 void test_adl_proof_reverse_iterator_comparison() {
     using validating_iter = validating_iterator_provider<holder<incomplete>*>::iterator;
     holder<incomplete>* p{};
@@ -202,43 +215,22 @@ void test_adl_proof_reverse_iterator_comparison() {
     (void) rit.operator->();
     (void) rit[0];
 
-    reverse_iterator<validating_iterator_provider<int>::iterator> i{};
-    reverse_iterator<validating_iterator_provider<const int>::iterator> j{};
+    using I = reverse_iterator<validating_iterator_provider<int>::iterator>;
+    using J = reverse_iterator<validating_iterator_provider<const int>::iterator>;
 
-    (void) (i == j);
-    (void) (i != j);
-    (void) (i < j);
-    (void) (i > j);
-    (void) (i <= j);
-    (void) (i >= j);
-
-    (void) (j == i);
-    (void) (j != i);
-    (void) (j < i);
-    (void) (j > i);
-    (void) (j <= i);
-    (void) (j >= i);
+    test_adl_proof_comparison<I, J>();
+    test_adl_proof_comparison<J, I>();
 }
 
 void test_adl_proof_move_iterator_comparison() {
-    move_iterator<validating_iterator_provider<int>::iterator> i{};
-    move_iterator<validating_iterator_provider<const int>::iterator> j{};
+    using I = move_iterator<validating_iterator_provider<int>::iterator>;
+    using J = move_iterator<validating_iterator_provider<const int>::iterator>;
 
-    (void) (i == j);
-    (void) (i != j);
-    (void) (i < j);
-    (void) (i > j);
-    (void) (i <= j);
-    (void) (i >= j);
-
-    (void) (j == i);
-    (void) (j != i);
-    (void) (j < i);
-    (void) (j > i);
-    (void) (j <= i);
-    (void) (j >= i);
+    test_adl_proof_comparison<I, J>();
+    test_adl_proof_comparison<J, I>();
 
 #if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    I i{};
     move_sentinel<validating_iterator_provider<int>::iterator> s{};
 
     (void) (i == s);
@@ -248,29 +240,12 @@ void test_adl_proof_move_iterator_comparison() {
 
 #if _HAS_CXX17
 void test_adl_proof_optional_comparison() {
-    test_comparable v{};
-    optional<test_comparable> op{v};
+    using V = test_comparable;
+    using O = optional<test_comparable>;
 
-    (void) (op == op);
-    (void) (op != op);
-    (void) (op < op);
-    (void) (op > op);
-    (void) (op <= op);
-    (void) (op >= op);
-
-    (void) (op == v);
-    (void) (op != v);
-    (void) (op < v);
-    (void) (op > v);
-    (void) (op <= v);
-    (void) (op >= v);
-
-    (void) (v == op);
-    (void) (v != op);
-    (void) (v < op);
-    (void) (v > op);
-    (void) (v <= op);
-    (void) (v >= op);
+    test_adl_proof_comparison<O, O>();
+    test_adl_proof_comparison<O, V>();
+    test_adl_proof_comparison<V, O>();
 }
 #endif // _HAS_CXX17
 
@@ -290,62 +265,27 @@ void test_adl_proof_expected_comparison() {
 }
 
 void test_adl_proof_basic_const_iterator_comparison() {
-    validating_iterator_provider<int>::iterator i{};
-    validating_iterator_provider<const int>::iterator j{};
+    using I = validating_iterator_provider<int>::iterator;
+    using J = validating_iterator_provider<const int>::iterator;
 
-    basic_const_iterator<validating_iterator_provider<int>::iterator> ci{};
-    basic_const_iterator<validating_iterator_provider<const int>::iterator> cj{};
+    using CI = basic_const_iterator<validating_iterator_provider<int>::iterator>;
+    using CJ = basic_const_iterator<validating_iterator_provider<const int>::iterator>;
 
-    (void) (ci == ci);
-    (void) (ci != ci);
-    (void) (ci < ci);
-    (void) (ci > ci);
-    (void) (ci <= ci);
-    (void) (ci >= ci);
+    test_adl_proof_comparison<CI, I>();
+    test_adl_proof_comparison<CI, J>();
+    test_adl_proof_comparison<CI, CI>();
+    test_adl_proof_comparison<CI, CJ>();
 
-    (void) (ci == cj);
-    (void) (ci != cj);
+    test_adl_proof_comparison<CJ, I>();
+    test_adl_proof_comparison<CJ, J>();
+    test_adl_proof_comparison<CJ, CI>();
+    test_adl_proof_comparison<CJ, CJ>();
 
-    (void) (cj == ci);
-    (void) (cj != ci);
-    (void) (cj < ci);
-    (void) (cj > ci);
-    (void) (cj <= ci);
-    (void) (cj >= ci);
+    test_adl_proof_comparison<I, CI>();
+    test_adl_proof_comparison<J, CI>();
 
-    (void) (ci == i);
-    (void) (ci != i);
-    (void) (ci < i);
-    (void) (ci > i);
-    (void) (ci <= i);
-    (void) (ci >= i);
-
-    (void) (ci == j);
-    (void) (ci != j);
-
-    (void) (cj == i);
-    (void) (cj != i);
-    (void) (cj < i);
-    (void) (cj > i);
-    (void) (cj <= i);
-    (void) (cj >= i);
-
-    (void) (i == ci);
-    (void) (i != ci);
-    (void) (i < ci);
-    (void) (i > ci);
-    (void) (i <= ci);
-    (void) (i >= ci);
-
-    (void) (i == cj);
-    (void) (i != cj);
-
-    (void) (j == ci);
-    (void) (j != ci);
-    (void) (j < ci);
-    (void) (j > ci);
-    (void) (j <= ci);
-    (void) (j >= ci);
+    test_adl_proof_comparison<I, CJ>();
+    test_adl_proof_comparison<J, CJ>();
 }
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
