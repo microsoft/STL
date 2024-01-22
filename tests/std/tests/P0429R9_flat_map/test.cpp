@@ -236,6 +236,19 @@ void test_construction() {
     }
 }
 
+void test_erase_if() {
+    {
+        vector<int> keys = {0, 1, 2, 3, 4, 2};
+        vector<int> vals = {44, 2324, 635462, 433, 5, 7};
+        flat_map fmap(keys, vals);
+        const auto erased_num = erase_if(
+            fmap, [](pair<const int&, const int&> refpr) { return refpr.first % 2 == 0 && refpr.second % 2 != 0; });
+        assert(erased_num == 1);
+        assert(fmap.size() == 4);
+        assert(check_key_content(fmap, {0, 1, 2, 3}));
+        assert(check_value_content(fmap, {44, 2324, 635462, 433}));
+    }
+}
 
 struct Incomplete;
 template <class T>
@@ -258,4 +271,5 @@ void test_pointer_to_incomplete_type() {
 int main() {
     test_construction();
     test_pointer_to_incomplete_type();
+    test_erase_if();
 }

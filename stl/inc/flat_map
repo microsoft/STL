@@ -751,6 +751,24 @@ protected:
     key_compare _Key_compare;
     containers _Data;
 
+    template <class _Predicate>
+    size_type _Erase_if(_Predicate _Pred) {
+        _Clear_flat_map_scope_guard<_Flat_map_base> _Guard{this};
+
+        auto _View           = _View_to_mutate();
+        auto _Mut_first      = _View.begin();
+        auto _Mut_last       = _View.end();
+        const auto _Old_size = size();
+
+        _STD _Seek_wrapped(_Mut_first, _RANGES remove_if(_View, _Pred).begin());
+
+        erase(const_iterator{_Mut_first._Key_it, _Mut_first._Mapped_it},
+            const_iterator{_Mut_last._Key_it, _Mut_last._Mapped_it});
+
+        _Guard._Clearable = nullptr;
+        return _Old_size - size();
+    }
+
 private:
     template <class _KeyTy1, class _KeyTy2>
         requires (same_as<remove_cvref_t<_KeyTy1 &&>, key_type> && same_as<remove_cvref_t<_KeyTy2 &&>, key_type>)
@@ -761,7 +779,7 @@ private:
             && !_Key_compare(_STD forward<_KeyTy2>(_Right), _STD forward<_KeyTy1>(_Left));
     }
 
-    auto _View_to_sort() {
+    auto _View_to_mutate() {
         using _Sorting_iterator = _Pairing_iterator_provider<key_container_type, mapped_container_type,
             _Pairing_iterator_kind::_Sort>::_Iterator;
         return _RANGES subrange<_Sorting_iterator>{_Sorting_iterator{_Data.keys.begin(), _Data.values.begin()},
@@ -770,13 +788,13 @@ private:
 
     void _Sort() {
         _Clear_flat_map_scope_guard _Guard{this};
-        _RANGES sort(_View_to_sort(), value_compare(_Key_compare));
+        _RANGES sort(_View_to_mutate(), value_compare(_Key_compare));
         _Guard._Clearable = nullptr;
     }
 
     void _Dedup() {
         _Clear_flat_map_scope_guard _Guard{this};
-        auto _Sorted_view     = _View_to_sort();
+        auto _Sorted_view     = _View_to_mutate();
         auto _Subrange        = _RANGES unique(_Sorted_view, [this](const_reference _Left, const_reference _Right) {
             return this->_Key_equal(_Left.first, _Right.first);
         });
@@ -863,7 +881,7 @@ private:
         }
 
         // Sort the newly inserted elements
-        auto _Sorted_view = _View_to_sort();
+        auto _Sorted_view = _View_to_mutate();
         if constexpr (_NeedSorting) {
             auto _Sorted_new_elements = _Sorted_view;
             _Sorted_new_elements.advance(_OldSize);
@@ -1154,6 +1172,12 @@ public:
     }
 
 private:
+    using _MyBase::_Erase_if;
+
+    template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Predicate>
+    friend typename flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type erase_if(
+        flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>&, _Predicate);
+
     template <class _KeyTy>
     _NODISCARD mapped_type& _At(const _KeyTy& _Key_val)
         requires same_as<_KeyTy, key_type> || _Is_transparent_v<key_compare>
@@ -1266,6 +1290,13 @@ template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class 
 struct uses_allocator<flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Allocator>
     : bool_constant<uses_allocator_v<_KeyContainer, _Allocator> && uses_allocator_v<_MappedContainer, _Allocator>> {};
 
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
+    class _Predicate>
+typename flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type erase_if(
+    flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
+    return _Cont._Erase_if(_STD _Pass_fn(_Pred));
+}
+
 template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
 class flat_multimap : public _Flat_map_base<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer, true,
                           flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>> {
@@ -1306,6 +1337,10 @@ public:
     }
 
 private:
+    template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Predicate>
+    friend typename flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type erase_if(
+        flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>&, _Predicate);
+
     template <class _KeyTy, class _MappedTy>
     iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
         auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
@@ -1374,6 +1409,12 @@ template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class 
 struct uses_allocator<flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Allocator>
     : bool_constant<uses_allocator_v<_KeyContainer, _Allocator> && uses_allocator_v<_MappedContainer, _Allocator>> {};
 
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
+    class _Predicate>
+typename flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type erase_if(
+    flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
+    return _Cont._Erase_if(_STD _Pass_fn(_Pred));
+}
 _STD_END
 
 #pragma pop_macro("new")
