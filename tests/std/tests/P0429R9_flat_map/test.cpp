@@ -268,6 +268,38 @@ void test_pointer_to_incomplete_type() {
     flat_map<MyType<Incomplete>, shared_ptr<MyType<Incomplete>>> fmap;
 }
 
+// Test MSVC STL-specific SCARY-ness
+namespace scary_test {
+    static_assert(is_same_v<flat_map<int, int>::iterator, flat_map<int, int, greater<int>>::iterator>);
+    static_assert(is_same_v<flat_map<int, int>::iterator,
+        flat_map<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::iterator>);
+    static_assert(is_same_v<flat_map<int, int>::const_iterator, flat_map<int, int, greater<int>>::const_iterator>);
+    static_assert(is_same_v<flat_map<int, int>::const_iterator,
+        flat_map<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::const_iterator>);
+
+    static_assert(is_same_v<flat_multimap<int, int>::iterator, flat_multimap<int, int, greater<int>>::iterator>);
+    static_assert(is_same_v<flat_multimap<int, int>::iterator,
+        flat_multimap<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::iterator>);
+    static_assert(
+        is_same_v<flat_multimap<int, int>::const_iterator, flat_multimap<int, int, greater<int>>::const_iterator>);
+    static_assert(is_same_v<flat_multimap<int, int>::const_iterator,
+        flat_multimap<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::const_iterator>);
+
+    static_assert(is_same_v<flat_map<int, int>::iterator, flat_multimap<int, int>::iterator>);
+    static_assert(is_same_v<flat_map<int, int>::const_iterator, flat_multimap<int, int>::const_iterator>);
+
+    static_assert(is_same_v<flat_map<int, int>::containers, flat_map<int, int, greater<int>>::containers>);
+    static_assert(is_same_v<flat_multimap<int, int>::containers, flat_multimap<int, int, greater<int>>::containers>);
+    static_assert(is_same_v<flat_map<int, int>::containers, flat_multimap<int, int>::containers>);
+
+    static_assert(is_same_v<flat_map<int, int>::value_compare,
+        flat_map<int, int, less<int>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::value_compare>);
+    static_assert(is_same_v<flat_multimap<int, int>::value_compare,
+        flat_multimap<int, int, less<int>, vector<int, MyAllocator<int>>,
+            vector<int, MyAllocator<int>>>::value_compare>);
+    static_assert(is_same_v<flat_map<int, int>::value_compare, flat_multimap<int, int>::value_compare>);
+} // namespace scary_test
+
 int main() {
     test_construction();
     test_pointer_to_incomplete_type();

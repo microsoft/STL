@@ -98,19 +98,8 @@ struct _NODISCARD _Clear_flat_map_scope_guard {
 
 // Implementation
 
-enum class _Pairing_iterator_kind : unsigned char {
-    _Sort,
-    _Mutable,
-    _Const,
-};
-
-template <class _KeyContainer, class _MappedContainer, _Pairing_iterator_kind _Kind>
+template <class _KeyIter, class _MappedIter, class _MappedConvIter>
 struct _Pairing_iterator_provider {
-    using _Key_iterator_t    = conditional_t<_Kind == _Pairing_iterator_kind::_Sort, typename _KeyContainer::iterator,
-        typename _KeyContainer::const_iterator>;
-    using _Mapped_iterator_t = conditional_t<_Kind == _Pairing_iterator_kind::_Const,
-        typename _MappedContainer::const_iterator, typename _MappedContainer::iterator>;
-
     class _Iterator {
     public:
         template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, bool _IsMulti,
@@ -118,16 +107,20 @@ struct _Pairing_iterator_provider {
             requires same_as<_Key, typename _KeyContainer::value_type>
                   && same_as<_Mapped, typename _MappedContainer::value_type>
         friend class _Flat_map_base;
+
         _Iterator() = default;
-        _Iterator(_Key_iterator_t _Key_it, _Mapped_iterator_t _Mapped_it) : _Key_it(_Key_it), _Mapped_it(_Mapped_it) {}
+        _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter) : _Key_it(_Key_iter), _Mapped_it(_Mapped_iter) {}
 
         using iterator_category = input_iterator_tag;
         using iterator_concept  = random_access_iterator_tag;
         using difference_type   = ptrdiff_t;
-        using value_type        = pair<iter_value_t<_Key_iterator_t>, iter_value_t<_Mapped_iterator_t>>;
-        using reference         = pair<iter_reference_t<_Key_iterator_t>, iter_reference_t<_Mapped_iterator_t>>;
+        using value_type        = pair<iter_value_t<_KeyIter>, iter_value_t<_MappedIter>>;
+        using reference         = pair<iter_reference_t<_KeyIter>, iter_reference_t<_MappedIter>>;
 
     private:
+        using _Const_iterator =
+            typename _Pairing_iterator_provider<_KeyIter, _MappedConvIter, _MappedConvIter>::_Iterator;
+
         class _Arrow_proxy {
         public:
             explicit _Arrow_proxy(const reference& _Rx) noexcept : _Ref{_Rx} {}
@@ -219,20 +212,15 @@ struct _Pairing_iterator_provider {
             return _Right + _Off;
         }
 
-    private:
-        using _Const_iterator =
-            _Pairing_iterator_provider<_KeyContainer, _MappedContainer, _Pairing_iterator_kind::_Const>::_Iterator;
-
-    public:
         operator _Const_iterator() const
-            requires (_Kind == _Pairing_iterator_kind::_Mutable)
+            requires (!is_same_v<_MappedIter, _MappedConvIter>)
         {
             return _Const_iterator{_Key_it, _Mapped_it};
         }
 
     private:
-        _Key_iterator_t _Key_it;
-        _Mapped_iterator_t _Mapped_it;
+        _KeyIter _Key_it;
+        _MappedIter _Mapped_it;
     };
 
     _STL_INTERNAL_STATIC_ASSERT(swappable<_Iterator>);
@@ -258,10 +246,10 @@ public:
     using difference_type        = ptrdiff_t;
     using key_container_type     = _KeyContainer;
     using mapped_container_type  = _MappedContainer;
-    using iterator               = _Pairing_iterator_provider<key_container_type, mapped_container_type,
-        _Pairing_iterator_kind::_Mutable>::_Iterator;
-    using const_iterator         = _Pairing_iterator_provider<key_container_type, mapped_container_type,
-        _Pairing_iterator_kind::_Const>::_Iterator;
+    using iterator               = _Pairing_iterator_provider<typename key_container_type::const_iterator,
+        typename mapped_container_type::iterator, typename mapped_container_type::const_iterator>::_Iterator;
+    using const_iterator         = _Pairing_iterator_provider<typename key_container_type::const_iterator,
+        typename mapped_container_type::const_iterator, typename mapped_container_type::const_iterator>::_Iterator;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
@@ -780,10 +768,10 @@ private:
     }
 
     auto _View_to_mutate() {
-        using _Sorting_iterator = _Pairing_iterator_provider<key_container_type, mapped_container_type,
-            _Pairing_iterator_kind::_Sort>::_Iterator;
-        return _RANGES subrange<_Sorting_iterator>{_Sorting_iterator{_Data.keys.begin(), _Data.values.begin()},
-            _Sorting_iterator{_Data.keys.end(), _Data.values.end()}};
+        using _Mutating_iterator = _Pairing_iterator_provider<typename key_container_type::iterator,
+            typename mapped_container_type::iterator, typename mapped_container_type::iterator>::_Iterator;
+        return _RANGES subrange<_Mutating_iterator>{_Mutating_iterator{_Data.keys.begin(), _Data.values.begin()},
+            _Mutating_iterator{_Data.keys.end(), _Data.values.end()}};
     }
 
     void _Sort() {
@@ -1353,8 +1341,9 @@ private:
 };
 
 template <class _KeyContainer, class _MappedContainer, class _Compare = less<typename _KeyContainer::value_type>>
-flat_multimap(_KeyContainer, _MappedContainer, _Compare = _Compare()) -> flat_multimap<typename _KeyContainer::value_type,
-    typename _MappedContainer::value_type, _Compare, _KeyContainer, _MappedContainer>;
+flat_multimap(_KeyContainer, _MappedContainer, _Compare = _Compare())
+    -> flat_multimap<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
+        _MappedContainer>;
 
 template <class _KeyContainer, class _MappedContainer, class _Allocator>
 flat_multimap(_KeyContainer, _MappedContainer, _Allocator) -> flat_multimap<typename _KeyContainer::value_type,
