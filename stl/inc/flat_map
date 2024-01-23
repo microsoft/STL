@@ -1255,11 +1255,13 @@ template <class _InputIterator, class _Compare = less<_Guide_key_t<_InputIterato
 flat_map(sorted_unique_t, _InputIterator, _InputIterator, _Compare = _Compare())
     -> flat_map<_Guide_key_t<_InputIterator>, _Guide_val_t<_InputIterator>, _Compare>;
 
+#ifdef __cpp_lib_byte
 template <_RANGES input_range _Rng, class _Compare = less<_Range_key_type<_Rng>>, class _Allocator = allocator<byte>>
 flat_map(from_range_t, _Rng&&, _Compare = _Compare(), _Allocator = _Allocator())
     -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Compare,
         vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
         vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_mapped_type<_Rng>>>>;
+#endif // defined(__cpp_lib_byte)
 
 template <_RANGES input_range _Rng, class _Allocator>
 flat_map(from_range_t, _Rng&&, _Allocator) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
@@ -1377,11 +1379,13 @@ template <class _InputIterator, class _Compare = less<_Guide_key_t<_InputIterato
 flat_multimap(sorted_equivalent_t, _InputIterator, _InputIterator, _Compare = _Compare())
     -> flat_multimap<_Guide_key_t<_InputIterator>, _Guide_val_t<_InputIterator>, _Compare>;
 
+#ifdef __cpp_lib_byte
 template <_RANGES input_range _Rng, class _Compare = less<_Range_key_type<_Rng>>, class _Allocator = allocator<byte>>
 flat_multimap(from_range_t, _Rng&&, _Compare = _Compare(), _Allocator = _Allocator())
     -> flat_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Compare,
         vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
         vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_mapped_type<_Rng>>>>;
+#endif // defined(__cpp_lib_byte)
 
 template <_RANGES input_range _Rng, class _Allocator>
 flat_multimap(from_range_t, _Rng&&, _Allocator) -> flat_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
