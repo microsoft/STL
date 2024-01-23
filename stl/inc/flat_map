@@ -1073,13 +1073,13 @@ public:
     template <class... _MappedArgTypes>
         requires is_constructible_v<mapped_type, _MappedArgTypes&&...>
     pair<iterator, bool> try_emplace(const key_type& _Key_val, _MappedArgTypes&&... _Mapped_args) {
-        return _Try_emplace(_Key_val, _STD forward<_MappedArgTypes>(_Mapped_args));
+        return _Try_emplace(_Key_val, _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
     template <class... _MappedArgTypes>
         requires is_constructible_v<mapped_type, _MappedArgTypes&&...>
     pair<iterator, bool> try_emplace(key_type&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
-        return _Try_emplace(_STD move(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args));
+        return _Try_emplace(_STD move(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
     template <class _OtherKey, class... _MappedArgTypes>
@@ -1087,7 +1087,7 @@ public:
               && is_constructible_v<mapped_type, _MappedArgTypes&&...>
               && (!is_convertible_v<_OtherKey, const_iterator>) && (!is_convertible_v<_OtherKey, iterator>)
     pair<iterator, bool> try_emplace(_OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
-        return _Try_emplace(_STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args));
+        return _Try_emplace(_STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
     template <class... _MappedArgTypes>
@@ -1162,9 +1162,9 @@ public:
 private:
     using _MyBase::_Erase_if;
 
-    template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Predicate>
-    friend typename flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type erase_if(
-        flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>&, _Predicate);
+    template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
+    friend typename flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
+        flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
 
     template <class _KeyTy>
     _NODISCARD mapped_type& _At(const _KeyTy& _Key_val)
@@ -1327,9 +1327,9 @@ public:
 private:
     using _MyBase::_Erase_if;
 
-    template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Predicate>
-    friend typename flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type erase_if(
-        flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>&, _Predicate);
+    template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
+    friend typename flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
+        flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
 
     template <class _KeyTy, class _MappedTy>
     iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
