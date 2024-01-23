@@ -1091,17 +1091,17 @@ public:
     }
 
     template <class... _MappedArgTypes>
-    iterator try_emplace(const_iterator _Position, const key_type&& _Key_val, _MappedArgTypes&&... _Mapped_args)
+    iterator try_emplace(const_iterator _Position, const key_type& _Key_val, _MappedArgTypes&&... _Mapped_args)
         requires is_constructible_v<mapped_type, _MappedArgTypes&&...>
     {
-        return this->_Emplace_hint<false>(_Position, _Key_val, _STD forward<_MappedArgTypes>(_Mapped_args)...);
+        return this->template _Emplace_hint<false>(_Position, _Key_val, _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
     template <class... _MappedArgTypes>
     iterator try_emplace(const_iterator _Position, key_type&& _Key_val, _MappedArgTypes&&... _Mapped_args)
         requires is_constructible_v<mapped_type, _MappedArgTypes&&...>
     {
-        return this->_Emplace_hint<false>(
+        return this->template _Emplace_hint<false>(
             _Position, _STD move(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
@@ -1110,7 +1110,7 @@ public:
         requires _Is_transparent_v<key_compare> && is_constructible_v<key_type, _OtherKey>
               && is_constructible_v<mapped_type, _MappedArgTypes&&...>
     {
-        return this->_Emplace_hint<false>(
+        return this->template _Emplace_hint<false>(
             _Position, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
