@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <functional>
 #include <iterator>
-#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -41,7 +40,7 @@ struct incomplete;
 using validating_bool_like = tagged_bool_like<holder<incomplete>>;
 
 constexpr holder<incomplete>* placeholder             = nullptr;
-constexpr holder<incomplete>* const* placeholder_addr = std::addressof(placeholder);
+constexpr holder<incomplete>* const* placeholder_addr = &placeholder;
 
 struct test_comparable {
     friend constexpr validating_bool_like operator==(const test_comparable&, const test_comparable&) noexcept {
