@@ -278,8 +278,10 @@ void test_gh_4109() {
     (void) find(par, nil, nil, val);
     (void) find_if(par, nil, nil, pred);
     (void) find_if_not(par, nil, nil, pred);
+#ifndef _M_CEE // TRANSITION, VSO-1946395
     (void) find_end(par, nil, nil, nil, nil);
     (void) find_end(par, nil, nil, nil, nil, pred2);
+#endif // ^^^ no workaround ^^^
     (void) find_first_of(par, nil, nil, nil, nil);
     (void) find_first_of(par, nil, nil, nil, nil, pred2);
     (void) adjacent_find(par, nil, nil);
