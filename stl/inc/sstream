@@ -94,8 +94,8 @@ public:
 
     void _Take_contents(basic_stringbuf&& _Right) noexcept {
         // pre: *this holds no dynamic buffer and _Al == _Right._Al
-        _Mystate  = _STD exchange(_Right._Mystate, 0);
         _Seekhigh = _STD exchange(_Right._Seekhigh, nullptr);
+        _Mystate  = _STD exchange(_Right._Mystate, 0);
         _Mysb::swap(_Right);
     }
 
