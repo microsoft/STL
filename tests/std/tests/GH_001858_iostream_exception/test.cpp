@@ -8,13 +8,16 @@
 #include <ios>
 #include <iostream>
 #include <istream>
-#include <memory_resource>
 #include <ostream>
 #include <sstream>
 #include <streambuf>
 #include <strstream>
 #include <type_traits>
 #include <utility>
+
+#if _HAS_CXX17
+#include <memory_resource>
+#endif // _HAS_CXX17
 
 #if _HAS_CXX20
 #include <syncstream>
