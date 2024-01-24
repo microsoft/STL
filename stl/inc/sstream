@@ -66,7 +66,7 @@ public:
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : basic_stringbuf(_Str, _Mode, _Alloc{}) {}
 
-    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al_) : _Mystate(0), _Al(_Al_) {
+    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al_) : _Seekhigh(nullptr), _Mystate(0), _Al(_Al_) {
         if constexpr (!allocator_traits<_Alloc>::is_always_equal::value) {
             if (_Al != _Right._Al) {
                 _Copy_into_self_and_tidy(_STD move(_Right));
