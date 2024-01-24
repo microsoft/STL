@@ -1545,6 +1545,12 @@ namespace ranges {
 
             constexpr _Iterator& operator+=(difference_type _Off) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
+                if constexpr (sizeof(difference_type) > sizeof(_Index_type)) {
+                    _STL_VERIFY(static_cast<_Index_type>(_Off) == _Off,
+                        _Off > 0 ? "cannot advance repeat_view iterator past end (integer overflow)"
+                                 : "cannot advance repeat_view iterator before begin (integer overflow)");
+                }
+
                 if (_Off > 0) {
                     _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() - static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
@@ -1557,11 +1563,17 @@ namespace ranges {
                     _STL_VERIFY(_Current + _Off >= 0, "cannot subtract below 0");
                 }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-                _Current += _Off;
+                _Current += static_cast<_Index_type>(_Off);
                 return *this;
             }
             constexpr _Iterator& operator-=(difference_type _Off) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
+                if constexpr (sizeof(difference_type) > sizeof(_Index_type)) {
+                    _STL_VERIFY(static_cast<_Index_type>(_Off) == _Off,
+                        _Off < 0 ? "cannot advance repeat_view iterator past end (integer overflow)"
+                                 : "cannot advance repeat_view iterator before begin (integer overflow)");
+                }
+
                 if (_Off < 0) {
                     _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() + static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
@@ -1574,7 +1586,7 @@ namespace ranges {
                     _STL_VERIFY(_Current - _Off >= 0, "cannot subtract below 0");
                 }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-                _Current -= _Off;
+                _Current -= static_cast<_Index_type>(_Off);
                 return *this;
             }
             _NODISCARD constexpr const _Ty& operator[](difference_type _Idx) const noexcept {
@@ -3809,9 +3821,7 @@ namespace ranges {
             using value_type      = range_value_t<_InnerRng<_Const>>;
             using difference_type = common_type_t<range_difference_t<_Base>, range_difference_t<_InnerRng<_Const>>>;
 
-            // clang-format off
-            _Iterator() requires default_initializable<_OuterIter> = default;
-            // clang-format on
+            _Iterator() = default;
 
             constexpr _Iterator(_Iterator<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, _OuterIter>
@@ -4265,9 +4275,7 @@ namespace ranges {
             using value_type      = common_type_t<iter_value_t<_InnerIter>, iter_value_t<_PatternIter>>;
             using difference_type = _Common_diff_t<_OuterIter, _InnerIter, _PatternIter>;
 
-            // clang-format off
-            _Iterator() requires default_initializable<_OuterIter> = default;
-            // clang-format on
+            _Iterator() = default;
 
             constexpr _Iterator(_Iterator<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, _OuterIter>

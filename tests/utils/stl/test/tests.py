@@ -79,6 +79,11 @@ class STLTest(Test):
             self.isenseRspPath = tmpBase + '.isense.rsp'
             self.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + self.isenseRspPath])
 
+        # TRANSITION, google/sanitizers#328: clang-cl does not support /MDd or /MTd with ASan
+        if ('clang' in self.config.available_features and 'asan' in self.config.available_features and
+            ('MTd' in self.config.available_features or 'MDd' in self.config.available_features)):
+            return Result(UNSUPPORTED, 'clang does not support debug variants of the STL with ASan')
+
         self._configureTestType()
 
         forceFail = self.expectedResult and self.expectedResult.isFailure
