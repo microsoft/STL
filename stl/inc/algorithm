@@ -4529,7 +4529,7 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
 
         ++_UDest;
     } else { // can't reread source or dest, construct a temporary
-        _Iter_value_t<_InIt> _Val = *_UFirst;
+        _Iter_value_t<_InIt> _Val(*_UFirst);
 
         *_UDest = _Val;
         ++_UDest;
@@ -4656,7 +4656,7 @@ namespace ranges {
                 }
             } else {
                 // Neither _First nor _Result can be reread, construct temporary
-                iter_value_t<_It> _Val = *_First;
+                iter_value_t<_It> _Val(*_First);
 
                 while (++_First != _Last) {
                     if (!_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, *_First))) {
@@ -6322,7 +6322,7 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     using _Diff        = _Iter_diff_t<_RanIt>;
     _Diff _Count       = _ULast - _UFirst;
     if (2 <= _Count) {
-        _Iter_value_t<_RanIt> _Val = _STD move(*--_ULast);
+        _Iter_value_t<_RanIt> _Val(_STD move(*--_ULast));
         _STD _Push_heap_by_index(_UFirst, --_Count, _Diff(0), _STD move(_Val), _Pass_fn(_Pred));
     }
 }
@@ -6393,7 +6393,7 @@ namespace ranges {
             }
 
             --_Last;
-            iter_value_t<_It> _Val = _RANGES iter_move(_Last);
+            iter_value_t<_It> _Val(_RANGES iter_move(_Last));
             // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Push_heap_by_index
             _RANGES _Push_heap_by_index(_STD move(_First), _Count - 1, 0, _STD move(_Val), _Pred, _Proj, _Proj);
         }
@@ -6449,7 +6449,7 @@ _CONSTEXPR20 void _Pop_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // pop *_First to *(_Last - 1) and reheap
     if (2 <= _Last - _First) {
         --_Last;
-        _Iter_value_t<_RanIt> _Val = _STD move(*_Last);
+        _Iter_value_t<_RanIt> _Val(_STD move(*_Last));
         _STD _Pop_heap_hole_unchecked(_First, _Last, _Last, _STD move(_Val), _Pred);
     }
 }
@@ -6527,7 +6527,7 @@ namespace ranges {
         }
 
         --_Last;
-        iter_value_t<_It> _Val = _RANGES iter_move(_Last);
+        iter_value_t<_It> _Val(_RANGES iter_move(_Last));
         // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Pop_heap_hole_unchecked
         _RANGES _Pop_heap_hole_unchecked(_STD move(_First), _Last, _Last, _STD move(_Val), _Pred, _Proj, _Proj);
     }
@@ -6571,7 +6571,7 @@ _CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     for (_Diff _Hole = _Bottom >> 1; _Hole > 0;) { // shift for codegen
         // reheap top half, bottom to top
         --_Hole;
-        _Iter_value_t<_RanIt> _Val = _STD move(*(_First + _Hole));
+        _Iter_value_t<_RanIt> _Val(_STD move(*(_First + _Hole)));
         _STD _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred);
     }
 }
@@ -6598,7 +6598,7 @@ namespace ranges {
         for (_Diff _Hole = _Bottom >> 1; _Hole > 0;) { // shift for codegen
             // reheap top half, bottom to top
             --_Hole;
-            iter_value_t<_It> _Val = _RANGES iter_move(_First + _Hole);
+            iter_value_t<_It> _Val(_RANGES iter_move(_First + _Hole));
             // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Pop_heap_hole_by_index
             _RANGES _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred, _Proj, _Proj);
         }
@@ -7862,8 +7862,8 @@ _CONSTEXPR20 _BidIt _Insertion_sort_unchecked(const _BidIt _First, const _BidIt 
     // insertion sort [_First, _Last)
     if (_First != _Last) {
         for (_BidIt _Mid = _First; ++_Mid != _Last;) { // order next element
-            _BidIt _Hole               = _Mid;
-            _Iter_value_t<_BidIt> _Val = _STD move(*_Mid);
+            _BidIt _Hole = _Mid;
+            _Iter_value_t<_BidIt> _Val(_STD move(*_Mid));
 
             if (_DEBUG_LT_PRED(_Pred, _Val, *_First)) { // found new earliest element, move to front
                 _Move_backward_unchecked(_First, _Mid, ++_Hole);
@@ -8051,8 +8051,8 @@ namespace ranges {
         }
 
         for (auto _Mid = _First; ++_Mid != _Last;) { // order next element
-            iter_value_t<_It> _Val = _RANGES iter_move(_Mid);
-            auto _Hole             = _Mid;
+            iter_value_t<_It> _Val(_RANGES iter_move(_Mid));
+            auto _Hole = _Mid;
 
             for (auto _Prev = _Hole;;) {
                 --_Prev;
@@ -8713,7 +8713,7 @@ _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pr
     _Make_heap_unchecked(_UFirst, _UMid, _Pass_fn(_Pred));
     for (auto _UNext = _UMid; _UNext < _ULast; ++_UNext) {
         if (_DEBUG_LT_PRED(_Pred, *_UNext, *_UFirst)) { // replace top with new largest
-            _Iter_value_t<_RanIt> _Val = _STD move(*_UNext);
+            _Iter_value_t<_RanIt> _Val(_STD move(*_UNext));
             _STD _Pop_heap_hole_unchecked(_UFirst, _UMid, _UNext, _STD move(_Val), _Pass_fn(_Pred));
         }
     }
@@ -8803,7 +8803,7 @@ namespace ranges {
             for (auto _Next = _Mid; _Next != _Last; ++_Next) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_First))) {
                     // replace top with new largest
-                    iter_value_t<_It> _Val = _RANGES iter_move(_Next);
+                    iter_value_t<_It> _Val(_RANGES iter_move(_Next));
                     _RANGES _Pop_heap_hole_unchecked(_First, _Mid, _Next, _STD move(_Val), _Pred, _Proj, _Proj);
                 }
             }

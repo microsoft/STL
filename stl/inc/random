@@ -191,7 +191,7 @@ public:
             const size_t _Mx = _Nx <= _Sx ? _Sx + 1 : _Nx;
             size_t _Kx;
 
-            _Iter_value_t<_RanIt> _Mask = _Iter_value_t<_RanIt>(1) << 31;
+            _Iter_value_t<_RanIt> _Mask(_Iter_value_t<_RanIt>(1) << 31);
             _Mask <<= 1; // build 32-bit mask safely
             _Mask -= 1;
 
