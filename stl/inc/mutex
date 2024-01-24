@@ -36,14 +36,14 @@ public:
     _Mutex_base(int _Flags = 0) noexcept {
         _Mtx_init_in_situ(_Mymtx(), _Flags | _Mtx_try);
     }
-#else // ^^^ _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR / !_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR vvv
+#else // ^^^ defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) / !defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) vvv
     constexpr _Mutex_base(int _Flags = 0) noexcept {
         _Mtx_storage._Critical_section = {};
         _Mtx_storage._Thread_id        = -1;
         _Mtx_storage._Type             = _Flags | _Mtx_try;
         _Mtx_storage._Count            = 0;
     }
-#endif // ^^^ !_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR ^^^
+#endif // ^^^ !defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) ^^^
 
     ~_Mutex_base() noexcept {
         _Mtx_destroy_in_situ(_Mymtx());

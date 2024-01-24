@@ -478,7 +478,7 @@ test_constexpr_ctor obj;
 #if _HAS_CXX20 && !defined(_M_CEE)
 constinit test_constexpr_ctor obj2;
 #endif // _HAS_CXX20 && !defined(_M_CEE)
-#endif // !_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
+#endif // !defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 
 int main() {
     {
