@@ -649,7 +649,7 @@ public:
 
     basic_istringstream(basic_istringstream&& _Right)
         : _Mybase(_STD addressof(_Stringbuffer)),
-          _Stringbuffer(((void) _Mybase::swap(_Right), _STD move(_Right._Stringbuffer))) {}
+          _Stringbuffer((_Mybase::swap(_Right), _STD move(_Right._Stringbuffer))) {}
 
     basic_istringstream& operator=(basic_istringstream&& _Right) noexcept(
         _Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
@@ -766,7 +766,7 @@ public:
 
     basic_ostringstream(basic_ostringstream&& _Right)
         : _Mybase(_STD addressof(_Stringbuffer)),
-          _Stringbuffer(((void) _Mybase::swap(_Right), _STD move(_Right._Stringbuffer))) {}
+          _Stringbuffer((_Mybase::swap(_Right), _STD move(_Right._Stringbuffer))) {}
 
     basic_ostringstream& operator=(basic_ostringstream&& _Right) noexcept(
         _Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
@@ -889,7 +889,7 @@ public:
 
     basic_stringstream(basic_stringstream&& _Right)
         : _Mybase(_STD addressof(_Stringbuffer)),
-          _Stringbuffer(((void) _Mybase::swap(_Right), _STD move(_Right._Stringbuffer))) {}
+          _Stringbuffer((_Mybase::swap(_Right), _STD move(_Right._Stringbuffer))) {}
 
     basic_stringstream& operator=(basic_stringstream&& _Right) noexcept(
         _Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
