@@ -145,9 +145,7 @@ public:
                 _Copy_into_self_and_tidy(_STD move(_Right));
             }
         } else {
-            if constexpr (_Choose_pocma_v<_Alloc> == _Pocma_values::_Propagate_allocators) {
-                _Al = _STD move(_Right._Al);
-            }
+            _Pocma(_Al, _Right._Al);
             _Take_contents(_STD move(_Right));
         }
     }
