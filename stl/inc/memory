@@ -2846,7 +2846,7 @@ class _Ref_count_bounded_array_alloc_for_overwrite
     // initialize and destroy objects by the default mechanism
 private:
     static_assert(is_bounded_array_v<_Ty>);
-    static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared_overwrite should remove_cv_t");
+    static_assert(is_same_v<_Ty, remove_cv_t<_Ty>>, "allocate_shared_for_overwrite should remove_cv_t");
 
     using _Item    = remove_all_extents_t<_Ty>;
     using _Rebound = _Rebind_alloc_t<_Alloc, _Item>;
