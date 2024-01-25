@@ -556,6 +556,7 @@ constexpr slash_test_case slashTestCases[] = {
     {L""sv, L"cat"sv, L"cat"sv},
     {L"./"sv, L"cat"sv, L"./cat"sv}, // original test case catching a bug in the above
     {L"c:"sv, L""sv, L"c:"sv},
+    {L"c:"sv, L"dog"sv, L"c:dog"sv},
     {L"c:cat"sv, L"/dog"sv, L"c:/dog"sv},
     {L"c:/cat"sv, L"/dog"sv, L"c:/dog"sv},
     {L"c:cat"sv, L"c:dog"sv, LR"(c:cat\dog)"sv},
