@@ -2001,6 +2001,142 @@ namespace poison_pill_test {
     STATIC_ASSERT(CanSize<some_type const&>);
 } // namespace poison_pill_test
 
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+// N.B. reverse_iterator<value_holder<incomplet>*> can't be made ADL-proof and doesn't model bidirectional_iterator,
+// so the rbegin()/rend() member functions return the same iterators as begin()/end().
+namespace adl_proof_test {
+    struct validating_member_range {
+        value_holder<incomplet>* elems_[1];
+
+        constexpr value_holder<incomplet>** begin() noexcept {
+            return elems_;
+        }
+        constexpr value_holder<incomplet>* const* begin() const noexcept {
+            return elems_;
+        }
+
+        constexpr value_holder<incomplet>** end() noexcept {
+            return elems_ + 1;
+        }
+        constexpr value_holder<incomplet>* const* end() const noexcept {
+            return elems_ + 1;
+        }
+
+        constexpr value_holder<incomplet>** rbegin() noexcept {
+            return elems_;
+        }
+        constexpr value_holder<incomplet>* const* rbegin() const noexcept {
+            return elems_;
+        }
+
+        constexpr value_holder<incomplet>** rend() noexcept {
+            return elems_ + 1;
+        }
+        constexpr value_holder<incomplet>* const* rend() const noexcept {
+            return elems_ + 1;
+        }
+
+        constexpr value_holder<incomplet>** data() noexcept {
+            return elems_;
+        }
+        constexpr value_holder<incomplet>* const* data() const noexcept {
+            return elems_;
+        }
+    };
+
+    STATIC_ASSERT(CanBegin<validating_member_range&>);
+    STATIC_ASSERT(CanBegin<const validating_member_range&>);
+    STATIC_ASSERT(CanCBegin<validating_member_range&>);
+    STATIC_ASSERT(CanCBegin<const validating_member_range&>);
+
+    STATIC_ASSERT(CanEnd<validating_member_range&>);
+    STATIC_ASSERT(CanEnd<const validating_member_range&>);
+    STATIC_ASSERT(CanCEnd<validating_member_range&>);
+    STATIC_ASSERT(CanCEnd<const validating_member_range&>);
+
+    STATIC_ASSERT(CanRBegin<validating_member_range&>);
+    STATIC_ASSERT(CanRBegin<const validating_member_range&>);
+    STATIC_ASSERT(CanCRBegin<validating_member_range&>);
+    STATIC_ASSERT(CanCRBegin<const validating_member_range&>);
+
+    STATIC_ASSERT(CanREnd<validating_member_range&>);
+    STATIC_ASSERT(CanREnd<const validating_member_range&>);
+    STATIC_ASSERT(CanCREnd<validating_member_range&>);
+    STATIC_ASSERT(CanCREnd<const validating_member_range&>);
+
+    STATIC_ASSERT(CanData<validating_member_range&>);
+    STATIC_ASSERT(CanData<const validating_member_range&>);
+    STATIC_ASSERT(CanCData<validating_member_range&>);
+    STATIC_ASSERT(CanCData<const validating_member_range&>);
+
+    struct validating_nonmember_range {
+        value_holder<incomplet>* elems_[1];
+
+        friend constexpr value_holder<incomplet>** begin(validating_nonmember_range& r) noexcept {
+            return r.elems_;
+        }
+        friend constexpr value_holder<incomplet>* const* begin(const validating_nonmember_range& r) noexcept {
+            return r.elems_;
+        }
+
+        friend constexpr value_holder<incomplet>** end(validating_nonmember_range& r) noexcept {
+            return r.elems_ + 1;
+        }
+        friend constexpr value_holder<incomplet>* const* end(const validating_nonmember_range& r) noexcept {
+            return r.elems_ + 1;
+        }
+
+        friend constexpr value_holder<incomplet>** rbegin(validating_nonmember_range& r) noexcept {
+            return r.elems_;
+        }
+        friend constexpr value_holder<incomplet>* const* rbegin(const validating_nonmember_range& r) noexcept {
+            return r.elems_;
+        }
+
+        friend constexpr value_holder<incomplet>** rend(validating_nonmember_range& r) noexcept {
+            return r.elems_ + 1;
+        }
+        friend constexpr value_holder<incomplet>* const* rend(const validating_nonmember_range& r) noexcept {
+            return r.elems_ + 1;
+        }
+    };
+
+    STATIC_ASSERT(CanBegin<validating_nonmember_range&>);
+    STATIC_ASSERT(CanBegin<const validating_nonmember_range&>);
+    STATIC_ASSERT(CanCBegin<validating_nonmember_range&>);
+    STATIC_ASSERT(CanCBegin<const validating_nonmember_range&>);
+
+    STATIC_ASSERT(CanEnd<validating_nonmember_range&>);
+    STATIC_ASSERT(CanEnd<const validating_nonmember_range&>);
+    STATIC_ASSERT(CanCEnd<validating_nonmember_range&>);
+    STATIC_ASSERT(CanCEnd<const validating_nonmember_range&>);
+
+    STATIC_ASSERT(CanRBegin<validating_nonmember_range&>);
+    STATIC_ASSERT(CanRBegin<const validating_nonmember_range&>);
+    STATIC_ASSERT(CanCRBegin<validating_nonmember_range&>);
+    STATIC_ASSERT(CanCRBegin<const validating_nonmember_range&>);
+
+    STATIC_ASSERT(CanREnd<validating_nonmember_range&>);
+    STATIC_ASSERT(CanREnd<const validating_nonmember_range&>);
+    STATIC_ASSERT(CanCREnd<validating_nonmember_range&>);
+    STATIC_ASSERT(CanCREnd<const validating_nonmember_range&>);
+
+    struct nonsizable_type {
+        constexpr value_holder<incomplet>* size() const noexcept {
+            return nullptr;
+        }
+
+        friend constexpr value_holder<incomplet>* size(nonsizable_type) noexcept {
+            return nullptr;
+        }
+    };
+
+    STATIC_ASSERT(CanSize<validating_member_range>);
+    STATIC_ASSERT(CanSize<validating_nonmember_range>);
+    STATIC_ASSERT(!CanSize<nonsizable_type>);
+} // namespace adl_proof_test
+#endif // _M_CEE
+
 namespace unwrapped_begin_end {
     // Validate the iterator-unwrapping range access CPOs ranges::_Ubegin and ranges::_Uend
     using test::CanCompare, test::CanDifference, test::Common, test::ProxyRef, test::Sized, test::WrappedState;

@@ -247,7 +247,9 @@ class STLTestFormat:
             _, _, exception_traceback = sys.exc_info()
             filename = exception_traceback.tb_frame.f_code.co_filename
             line_number = exception_traceback.tb_lineno
-            litConfig.error(repr(e) + ' at ' + filename + ':' + str(line_number))
+            message = repr(e) + ' at ' + filename + ':' + str(line_number)
+            litConfig.error(message)
+            return (lit.Test.UNRESOLVED, message)
 
 
 class LibcxxTestFormat(STLTestFormat):

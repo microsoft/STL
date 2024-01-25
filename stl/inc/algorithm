@@ -1376,12 +1376,12 @@ namespace ranges {
         template <input_iterator _It, weakly_incrementable _Out>
             requires indirectly_copyable<_It, _Out>
         constexpr copy_n_result<_It, _Out> operator()(_It _First, iter_difference_t<_It> _Count, _Out _Result) const {
-            auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Iter_copy_cat<decltype(_UFirst), _Out>::_Bitcopy_assignable) {
                 if (!_STD is_constant_evaluated()) {
-                    _Result = _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _STD move(_Result));
+                    _Result = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _STD move(_Result));
                     _UFirst += _Count;
-                    _Seek_wrapped(_First, _STD move(_UFirst));
+                    _STD _Seek_wrapped(_First, _STD move(_UFirst));
                     return {_STD move(_First), _STD move(_Result)};
                 }
             }
@@ -1390,7 +1390,7 @@ namespace ranges {
                 *_Result = *_UFirst;
             }
 
-            _Seek_wrapped(_First, _STD move(_UFirst));
+            _STD _Seek_wrapped(_First, _STD move(_UFirst));
             return {_STD move(_First), _STD move(_Result)};
         }
     };
@@ -1405,20 +1405,20 @@ namespace ranges {
         template <bidirectional_iterator _It1, sentinel_for<_It1> _Se1, bidirectional_iterator _It2>
             requires indirectly_copyable<_It1, _It2>
         constexpr copy_backward_result<_It1, _It2> operator()(_It1 _First, _Se1 _Last, _It2 _Result) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Unwrap_iter<_Se1>(_STD move(_First));
-            auto _ULast  = _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
-            _Seek_wrapped(_First, _ULast);
-            _Result = _Copy_backward_unchecked(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst = _RANGES _Unwrap_iter<_Se1>(_STD move(_First));
+            auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
+            _STD _Seek_wrapped(_First, _ULast);
+            _Result = _STD _Copy_backward_unchecked(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
             return {_STD move(_First), _STD move(_Result)};
         }
 
         template <bidirectional_range _Rng, bidirectional_iterator _It>
             requires indirectly_copyable<iterator_t<_Rng>, _It>
         constexpr copy_backward_result<borrowed_iterator_t<_Rng>, _It> operator()(_Rng&& _Range, _It _Result) const {
-            auto _ULast = _Get_final_iterator_unwrapped(_Range);
-            _Result     = _Copy_backward_unchecked(_Ubegin(_Range), _ULast, _STD move(_Result));
-            return {_Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
+            auto _ULast = _RANGES _Get_final_iterator_unwrapped(_Range);
+            _Result     = _STD _Copy_backward_unchecked(_Ubegin(_Range), _ULast, _STD move(_Result));
+            return {_RANGES _Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
         }
     };
 
@@ -1428,10 +1428,10 @@ namespace ranges {
 
 _EXPORT_STD template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy each satisfying _Pred
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    auto _UDest       = _Get_unwrapped_unverified(_Dest);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    auto _UDest       = _STD _Get_unwrapped_unverified(_Dest);
     for (; _UFirst != _ULast; ++_UFirst) {
         if (_Pred(*_UFirst)) {
             *_UDest = *_UFirst;
@@ -1439,7 +1439,7 @@ _CONSTEXPR20 _OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) 
         }
     }
 
-    _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -1450,7 +1450,7 @@ _FwdIt2 copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    return _STD copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
+    return _STD copy_if(_First, _Last, _Dest, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX17
 
@@ -1466,10 +1466,11 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         constexpr copy_if_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, _Pr _Pred, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Copy_if_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Copy_if_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _STD _Pass_fn(_Pred),
+                _STD _Pass_fn(_Proj));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
@@ -1479,9 +1480,9 @@ namespace ranges {
         constexpr copy_if_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, _Pr _Pred, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Copy_if_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _STD move(_Result), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            auto _UResult = _Copy_if_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                _STD move(_Result), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
@@ -1516,7 +1517,7 @@ namespace ranges {
         if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
                 auto _Final = _RANGES next(_First, _STD move(_Last));
-                _Result     = _Copy_memmove(_STD move(_First), _Final, _STD move(_Result));
+                _Result     = _STD _Copy_memmove(_STD move(_First), _Final, _STD move(_Result));
                 return {_STD move(_Final), _STD move(_Result)};
             }
         }
@@ -1533,22 +1534,22 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_movable<_It, _Out>
         constexpr move_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _RANGES _Move_unchecked(
-                _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _RANGES _Move_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
         template <input_range _Rng, weakly_incrementable _Out>
             requires indirectly_movable<iterator_t<_Rng>, _Out>
         constexpr move_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
-            auto _First = _RANGES begin(_Range);
-            auto _UResult =
-                _RANGES _Move_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _STD move(_Result));
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _RANGES _Move_unchecked(
+                _RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _STD move(_Result));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
     };
@@ -1564,7 +1565,7 @@ namespace ranges {
     constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
         if constexpr (_Iter_move_cat<_It1, _It2>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
-                return _Copy_backward_memmove(_First, _Last, _Result);
+                return _STD _Copy_backward_memmove(_First, _Last, _Result);
             }
         }
 
@@ -1580,10 +1581,10 @@ namespace ranges {
         template <bidirectional_iterator _It1, sentinel_for<_It1> _Se1, bidirectional_iterator _It2>
             requires indirectly_movable<_It1, _It2>
         constexpr move_backward_result<_It1, _It2> operator()(_It1 _First, _Se1 _Last, _It2 _Result) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Unwrap_iter<_Se1>(_STD move(_First));
-            auto _ULast  = _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
-            _Seek_wrapped(_First, _ULast);
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst = _RANGES _Unwrap_iter<_Se1>(_STD move(_First));
+            auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
+            _STD _Seek_wrapped(_First, _ULast);
             _Result = _RANGES _Move_backward_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
             return {_STD move(_First), _STD move(_Result)};
         }
@@ -1591,9 +1592,9 @@ namespace ranges {
         template <bidirectional_range _Rng, bidirectional_iterator _It>
             requires indirectly_movable<iterator_t<_Rng>, _It>
         constexpr move_backward_result<borrowed_iterator_t<_Rng>, _It> operator()(_Rng&& _Range, _It _Result) const {
-            auto _ULast = _Get_final_iterator_unwrapped(_Range);
+            auto _ULast = _RANGES _Get_final_iterator_unwrapped(_Range);
             _Result     = _RANGES _Move_backward_common(_Ubegin(_Range), _ULast, _STD move(_Result));
-            return {_Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
+            return {_RANGES _Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
         }
     };
 
@@ -3315,6 +3316,16 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Find_first_of_fn find_first_of;
 
+    template <class _Ty>
+    inline constexpr bool _Is_trivially_ranges_swappable_v =
+        disjunction_v<conjunction<is_scalar<_Ty>, negation<is_enum<_Ty>>>, _Is_trivially_swappable<_Ty>>;
+
+    template <class _Ty, size_t _Len>
+    inline constexpr bool _Is_trivially_ranges_swappable_v<_Ty[_Len]> = _Is_trivially_ranges_swappable_v<_Ty>;
+
+    template <class _Ty>
+    struct _Is_trivially_ranges_swappable : bool_constant<_Is_trivially_ranges_swappable_v<_Ty>> {};
+
     _EXPORT_STD template <class _In1, class _In2>
     using swap_ranges_result = in_in_result<_In1, _In2>;
 
@@ -3324,15 +3335,15 @@ namespace ranges {
             requires indirectly_swappable<_It1, _It2>
         constexpr swap_ranges_result<_It1, _It2> operator()(
             _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2) const {
-            _Adl_verify_range(_First1, _Last1);
-            _Adl_verify_range(_First2, _Last2);
+            _STD _Adl_verify_range(_First1, _Last1);
+            _STD _Adl_verify_range(_First2, _Last2);
 
-            auto _UResult =
-                _Swap_ranges_unchecked(_Unwrap_iter<_Se1>(_STD move(_First1)), _Unwrap_sent<_It1>(_STD move(_Last1)),
-                    _Unwrap_iter<_Se2>(_STD move(_First2)), _Unwrap_sent<_It2>(_STD move(_Last2)));
+            auto _UResult = _Swap_ranges_unchecked(_RANGES _Unwrap_iter<_Se1>(_STD move(_First1)),
+                _RANGES _Unwrap_sent<_It1>(_STD move(_Last1)), _RANGES _Unwrap_iter<_Se2>(_STD move(_First2)),
+                _RANGES _Unwrap_sent<_It2>(_STD move(_Last2)));
 
-            _Seek_wrapped(_First1, _STD move(_UResult.in1));
-            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
             return {_STD move(_First1), _STD move(_First2)};
         }
 
@@ -3343,11 +3354,11 @@ namespace ranges {
             auto _First1 = _RANGES begin(_Range1);
             auto _First2 = _RANGES begin(_Range2);
 
-            auto _UResult = _Swap_ranges_unchecked(_Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1),
-                _Unwrap_range_iter<_Rng2>(_STD move(_First2)), _Uend(_Range2));
+            auto _UResult = _Swap_ranges_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
+                _Uend(_Range1), _RANGES _Unwrap_range_iter<_Rng2>(_STD move(_First2)), _Uend(_Range2));
 
-            _Seek_wrapped(_First1, _STD move(_UResult.in1));
-            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
             return {_STD move(_First1), _STD move(_First2)};
         }
 
@@ -3364,7 +3375,7 @@ namespace ranges {
 #if _USE_STD_VECTOR_ALGORITHMS
             using _Elem1 = remove_reference_t<iter_reference_t<_It1>>;
             using _Elem2 = remove_reference_t<iter_reference_t<_It2>>;
-            if constexpr (same_as<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1> //
+            if constexpr (same_as<_Elem1, _Elem2> && _Is_trivially_ranges_swappable_v<_Elem1> //
                           && contiguous_iterator<_It1> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> //
                           && contiguous_iterator<_It2> && _Sized_or_unreachable_sentinel_for<_Se2, _It2>) {
                 if (!_STD is_constant_evaluated()) {
@@ -3376,17 +3387,17 @@ namespace ranges {
                         const size_t _Count =
                             (_STD min)(static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
                         const auto _Last1_addr = _First1_addr + _Count;
-                        __std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
+                        ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
                         return {_First1 + _Count, _First2 + _Count};
                     } else if constexpr (_Is_sized1) {
                         const auto _Final1     = _RANGES next(_First1, _Last1);
                         const auto _Last1_addr = _STD to_address(_Final1);
-                        __std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
+                        ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
                         return {_Final1, _First2 + (_Last1 - _First1)};
                     } else if constexpr (_Is_sized2) {
                         const auto _Final2     = _RANGES next(_First2, _Last2);
                         const auto _Last2_addr = _STD to_address(_Final2);
-                        __std_swap_ranges_trivially_swappable_noalias(_First2_addr, _Last2_addr, _First1_addr);
+                        ::__std_swap_ranges_trivially_swappable_noalias(_First2_addr, _Last2_addr, _First1_addr);
                         return {_First1 + (_Last2 - _First2), _Final2};
                     } else {
                         _STL_ASSERT(false, "Tried to swap_ranges with two unreachable sentinels");
@@ -3410,12 +3421,12 @@ namespace ranges {
 _EXPORT_STD template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
-    _Adl_verify_range(_First1, _Last1);
-    const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
-    const auto _UFirst2 = _Get_unwrapped_n(_First2, _Idl_distance<_FwdIt1>(_UFirst1, _ULast1));
-    _Verify_ranges_do_not_overlap(_UFirst1, _ULast1, _UFirst2);
-    _Seek_wrapped(_First2, _Swap_ranges_unchecked(_UFirst1, _ULast1, _UFirst2));
+    _STD _Adl_verify_range(_First1, _Last1);
+    const auto _UFirst1 = _STD _Get_unwrapped(_First1);
+    const auto _ULast1  = _STD _Get_unwrapped(_Last1);
+    const auto _UFirst2 = _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_FwdIt1>(_UFirst1, _ULast1));
+    _STD _Verify_ranges_do_not_overlap(_UFirst1, _ULast1, _UFirst2);
+    _STD _Seek_wrapped(_First2, _STD _Swap_ranges_unchecked(_UFirst1, _ULast1, _UFirst2));
     return _First2;
 }
 
@@ -3438,15 +3449,15 @@ _CONSTEXPR20 void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and 
 _EXPORT_STD template <class _InIt, class _OutIt, class _Fn>
 _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func) {
     // transform [_First, _Last) with _Func
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
         *_UDest = _Func(*_UFirst);
     }
 
-    _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -3459,17 +3470,17 @@ _EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Fn>
 _CONSTEXPR20 _OutIt transform(
     const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _OutIt _Dest, _Fn _Func) {
     // transform [_First1, _Last1) and [_First2, ...) with _Func
-    _Adl_verify_range(_First1, _Last1);
-    auto _UFirst1      = _Get_unwrapped(_First1);
-    const auto _ULast1 = _Get_unwrapped(_Last1);
-    const auto _Count  = _Idl_distance<_InIt1>(_UFirst1, _ULast1);
-    auto _UFirst2      = _Get_unwrapped_n(_First2, _Count);
-    auto _UDest        = _Get_unwrapped_n(_Dest, _Count);
+    _STD _Adl_verify_range(_First1, _Last1);
+    auto _UFirst1      = _STD _Get_unwrapped(_First1);
+    const auto _ULast1 = _STD _Get_unwrapped(_Last1);
+    const auto _Count  = _STD _Idl_distance<_InIt1>(_UFirst1, _ULast1);
+    auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _Count);
+    auto _UDest        = _STD _Get_unwrapped_n(_Dest, _Count);
     for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2, ++_UDest) {
         *_UDest = _Func(*_UFirst1, *_UFirst2);
     }
 
-    _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -3495,11 +3506,12 @@ namespace ranges {
             requires indirectly_writable<_Out, indirect_result_t<_Fn&, projected<_It, _Pj>>>
         constexpr unary_transform_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, _Fn _Func, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Transform_unary_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _Pass_fn(_Func), _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Transform_unary_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _STD _Pass_fn(_Func),
+                _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
@@ -3508,10 +3520,10 @@ namespace ranges {
         constexpr unary_transform_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, _Fn _Func, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Transform_unary_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _STD move(_Result), _Pass_fn(_Func), _Pass_fn(_Proj));
+            auto _UResult = _Transform_unary_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
+                _Uend(_Range), _STD move(_Result), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
@@ -3520,15 +3532,15 @@ namespace ranges {
             requires indirectly_writable<_Out, indirect_result_t<_Fn&, projected<_It1, _Pj1>, projected<_It2, _Pj2>>>
         constexpr binary_transform_result<_It1, _It2, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
             _Se2 _Last2, _Out _Result, _Fn _Func, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            _Adl_verify_range(_First1, _Last1);
-            _Adl_verify_range(_First2, _Last2);
-            auto _UResult = _Transform_binary_unchecked(_Unwrap_iter<_Se1>(_STD move(_First1)),
-                _Unwrap_sent<_It1>(_STD move(_Last1)), _Unwrap_iter<_Se2>(_STD move(_First2)),
-                _Unwrap_sent<_It2>(_STD move(_Last2)), _STD move(_Result), _Pass_fn(_Func), _Pass_fn(_Proj1),
-                _Pass_fn(_Proj2));
+            _STD _Adl_verify_range(_First1, _Last1);
+            _STD _Adl_verify_range(_First2, _Last2);
+            auto _UResult = _Transform_binary_unchecked(_RANGES _Unwrap_iter<_Se1>(_STD move(_First1)),
+                _RANGES _Unwrap_sent<_It1>(_STD move(_Last1)), _RANGES _Unwrap_iter<_Se2>(_STD move(_First2)),
+                _RANGES _Unwrap_sent<_It2>(_STD move(_Last2)), _STD move(_Result), _STD _Pass_fn(_Func),
+                _STD _Pass_fn(_Proj1), _STD _Pass_fn(_Proj2));
 
-            _Seek_wrapped(_First1, _STD move(_UResult.in1));
-            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
             return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
         }
 
@@ -3540,12 +3552,12 @@ namespace ranges {
             _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Fn _Func, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             auto _First1  = _RANGES begin(_Range1);
             auto _First2  = _RANGES begin(_Range2);
-            auto _UResult = _Transform_binary_unchecked(_Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1),
-                _Unwrap_range_iter<_Rng2>(_STD move(_First2)), _Uend(_Range2), _STD move(_Result), _Pass_fn(_Func),
-                _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            auto _UResult = _Transform_binary_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
+                _Uend(_Range1), _RANGES _Unwrap_range_iter<_Rng2>(_STD move(_First2)), _Uend(_Range2),
+                _STD move(_Result), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj1), _STD _Pass_fn(_Proj2));
 
-            _Seek_wrapped(_First1, _STD move(_UResult.in1));
-            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
             return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
         }
 
@@ -3590,9 +3602,9 @@ namespace ranges {
 _EXPORT_STD template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval, const _Ty& _Newval) {
     // replace each matching _Oldval with _Newval
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     for (; _UFirst != _ULast; ++_UFirst) {
         if (*_UFirst == _Oldval) {
             *_UFirst = _Newval;
@@ -3615,11 +3627,11 @@ namespace ranges {
                   && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>
         constexpr _It operator()(
             _It _First, _Se _Last, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Replace_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _Oldval, _Newval, _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Replace_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Oldval, _Newval, _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult));
+            _STD _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
@@ -3629,10 +3641,10 @@ namespace ranges {
         constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Replace_unchecked(
-                _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Oldval, _Newval, _Pass_fn(_Proj));
+            auto _UResult = _Replace_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                _Oldval, _Newval, _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult));
+            _STD _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
@@ -3663,9 +3675,9 @@ namespace ranges {
 _EXPORT_STD template <class _FwdIt, class _Pr, class _Ty>
 _CONSTEXPR20 void replace_if(const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) {
     // replace each satisfying _Pred with _Val
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     for (; _UFirst != _ULast; ++_UFirst) {
         if (_Pred(*_UFirst)) {
             *_UFirst = _Val;
@@ -3686,11 +3698,11 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
             requires indirectly_writable<_It, const _Ty&>
         constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Replace_if_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Replace_if_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _Newval, _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult));
+            _STD _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
@@ -3700,10 +3712,10 @@ namespace ranges {
         constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Replace_if_unchecked(
-                _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
+            auto _UResult = _Replace_if_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                _STD _Pass_fn(_Pred), _Newval, _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult));
+            _STD _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
@@ -3734,10 +3746,10 @@ namespace ranges {
 _EXPORT_STD template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval, const _Ty& _Newval) {
     // copy replacing each matching _Oldval with _Newval
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
         if (*_UFirst == _Oldval) {
             *_UDest = _Newval;
@@ -3746,7 +3758,7 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
         }
     }
 
-    _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -3775,11 +3787,12 @@ namespace ranges {
                   && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>
         constexpr replace_copy_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Replace_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _Oldval, _Newval, _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Replace_copy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _Oldval, _Newval,
+                _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
@@ -3789,10 +3802,10 @@ namespace ranges {
         constexpr replace_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Replace_copy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _STD move(_Result), _Oldval, _Newval, _Pass_fn(_Proj));
+            auto _UResult = _Replace_copy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                _STD move(_Result), _Oldval, _Newval, _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
@@ -3826,10 +3839,10 @@ namespace ranges {
 _EXPORT_STD template <class _InIt, class _OutIt, class _Pr, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred, const _Ty& _Val) {
     // copy replacing each satisfying _Pred with _Val
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
         if (_Pred(*_UFirst)) {
             *_UDest = _Val;
@@ -3838,7 +3851,7 @@ _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr
         }
     }
 
-    _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -3851,7 +3864,7 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    return _STD replace_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred), _Val);
+    return _STD replace_copy_if(_First, _Last, _Dest, _STD _Pass_fn(_Pred), _Val);
 }
 #endif // _HAS_CXX17
 
@@ -3867,11 +3880,12 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         constexpr replace_copy_if_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Replace_copy_if_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Replace_copy_if_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _STD _Pass_fn(_Pred), _Newval,
+                _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
@@ -3881,10 +3895,10 @@ namespace ranges {
         constexpr replace_copy_if_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Replace_copy_if_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _STD move(_Result), _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
+            auto _UResult = _Replace_copy_if_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
+                _Uend(_Range), _STD move(_Result), _STD _Pass_fn(_Pred), _Newval, _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
@@ -3917,21 +3931,21 @@ namespace ranges {
     public:
         template <class _Ty, output_iterator<const _Ty&> _It, sentinel_for<_It> _Se>
         constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Value) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Unwrap_iter<_Se>(_STD move(_First));
-            const auto _ULast = _Unwrap_sent<_It>(_STD move(_Last));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            const auto _ULast = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
             if (!_STD is_constant_evaluated()) {
                 if constexpr (sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                     if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                         const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
-                        _Fill_memset(_UFirst, _Value, _Distance);
-                        _Seek_wrapped(_First, _UFirst + _Distance);
+                        _STD _Fill_memset(_UFirst, _Value, _Distance);
+                        _STD _Seek_wrapped(_First, _UFirst + _Distance);
                         return _First;
                     } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
-                        if (_Is_all_bits_zero(_Value)) {
+                        if (_STD _Is_all_bits_zero(_Value)) {
                             const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
-                            _Fill_zero_memset(_UFirst, _Distance);
-                            _Seek_wrapped(_First, _UFirst + _Distance);
+                            _STD _Fill_zero_memset(_UFirst, _Distance);
+                            _STD _Seek_wrapped(_First, _UFirst + _Distance);
                             return _First;
                         }
                     }
@@ -3942,14 +3956,15 @@ namespace ranges {
                 *_UFirst = _Value;
             }
 
-            _Seek_wrapped(_First, _STD move(_UFirst));
+            _STD _Seek_wrapped(_First, _STD move(_UFirst));
             return _First;
         }
 
         template <class _Ty, output_range<const _Ty&> _Rng>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Value) const {
             auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(_First, (*this)(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Value));
+            _STD _Seek_wrapped(
+                _First, (*this)(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Value));
             return _First;
         }
     };
@@ -3961,9 +3976,9 @@ namespace ranges {
         template <input_or_output_iterator _Out, sentinel_for<_Out> _Se, copy_constructible _Fn>
             requires invocable<_Fn&> && indirectly_writable<_Out, invoke_result_t<_Fn&>>
         constexpr _Out operator()(_Out _First, _Se _Last, _Fn _Gen) const {
-            _Adl_verify_range(_First, _Last);
-            _Seek_wrapped(_First, _Generate_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                                      _Unwrap_sent<_Out>(_STD move(_Last)), _Pass_fn(_Gen)));
+            _STD _Adl_verify_range(_First, _Last);
+            _STD _Seek_wrapped(_First, _Generate_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                                           _RANGES _Unwrap_sent<_Out>(_STD move(_Last)), _STD _Pass_fn(_Gen)));
             return _First;
         }
 
@@ -3971,8 +3986,8 @@ namespace ranges {
             requires invocable<_Fn&> && output_range<_Rng, invoke_result_t<_Fn&>>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Fn _Gen) const {
             auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(_First,
-                _Generate_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Pass_fn(_Gen)));
+            _STD _Seek_wrapped(_First, _Generate_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
+                                           _Uend(_Range), _STD _Pass_fn(_Gen)));
             return _First;
         }
 
@@ -4001,13 +4016,13 @@ namespace ranges {
             requires invocable<_Fn&> && indirectly_writable<_Out, invoke_result_t<_Fn&>>
         constexpr _Out operator()(_Out _First, iter_difference_t<_Out> _Count, _Fn _Gen) const {
             if (_Count > 0) {
-                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+                auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
                 do {
                     *_UFirst = _Gen();
                     ++_UFirst;
                 } while (--_Count > 0);
 
-                _Seek_wrapped(_First, _STD move(_UFirst));
+                _STD _Seek_wrapped(_First, _STD move(_UFirst));
             }
 
             return _First;
@@ -4020,9 +4035,9 @@ namespace ranges {
 
 _EXPORT_STD template <class _FwdIt, class _Fn>
 _CONSTEXPR20 void generate(_FwdIt _First, _FwdIt _Last, _Fn _Func) { // replace [_First, _Last) with _Func()
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     for (; _UFirst != _ULast; ++_UFirst) {
         *_UFirst = _Func();
     }
@@ -4034,7 +4049,7 @@ void generate(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* termi
     // replace [_First, _Last) with _Func()
     // not parallelized at present due to unclear parallelism requirements on _Func
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
-    return _STD generate(_First, _Last, _Pass_fn(_Func));
+    return _STD generate(_First, _Last, _STD _Pass_fn(_Func));
 }
 #endif // _HAS_CXX17
 
@@ -4043,14 +4058,14 @@ _CONSTEXPR20 _OutIt generate_n(_OutIt _Dest, const _Diff _Count_raw, _Fn _Func) 
     // replace [_Dest, _Dest + _Count) with _Func()
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
-        auto _UDest = _Get_unwrapped_n(_Dest, _Count);
+        auto _UDest = _STD _Get_unwrapped_n(_Dest, _Count);
         do {
             *_UDest = _Func();
             --_Count;
             ++_UDest;
         } while (0 < _Count);
 
-        _Seek_wrapped(_Dest, _UDest);
+        _STD _Seek_wrapped(_Dest, _UDest);
     }
 
     return _Dest;
@@ -4062,17 +4077,17 @@ _FwdIt generate_n(_ExPo&&, const _FwdIt _Dest, const _Diff _Count_raw, _Fn _Func
     // replace [_Dest, _Dest + _Count) with _Func()
     // not parallelized at present due to unclear parallelism requirements on _Func
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
-    return _STD generate_n(_Dest, _Count_raw, _Pass_fn(_Func));
+    return _STD generate_n(_Dest, _Count_raw, _STD _Pass_fn(_Func));
 }
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Val) {
     // copy omitting each matching _Val
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    auto _UDest       = _Get_unwrapped_unverified(_Dest);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    auto _UDest       = _STD _Get_unwrapped_unverified(_Dest);
     for (; _UFirst != _ULast; ++_UFirst) {
         if (!(*_UFirst == _Val)) {
             *_UDest = *_UFirst;
@@ -4080,7 +4095,7 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
         }
     }
 
-    _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -4098,10 +4113,10 @@ _FwdIt2 remove_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const
 _EXPORT_STD template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt remove_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
     // copy omitting each element satisfying _Pred
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    auto _UDest       = _Get_unwrapped_unverified(_Dest);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    auto _UDest       = _STD _Get_unwrapped_unverified(_Dest);
     for (; _UFirst != _ULast; ++_UFirst) {
         if (!_Pred(*_UFirst)) {
             *_UDest = *_UFirst;
@@ -4109,7 +4124,7 @@ _CONSTEXPR20 _OutIt remove_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr 
         }
     }
 
-    _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -4120,7 +4135,7 @@ _FwdIt2 remove_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _P
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    return _STD remove_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
+    return _STD remove_copy_if(_First, _Last, _Dest, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -4138,11 +4153,11 @@ namespace ranges {
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD_REMOVE_ALG constexpr subrange<_It> operator()(
             _It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Remove_unchecked(
-                _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Val, _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Remove_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Val, _STD _Pass_fn(_Proj));
 
-            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+            return _RANGES _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
         template <forward_range _Rng, class _Ty, class _Pj = identity>
@@ -4150,9 +4165,9 @@ namespace ranges {
                   && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
         _NODISCARD_REMOVE_ALG constexpr borrowed_subrange_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
-            auto _UResult = _Remove_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _Pass_fn(_Proj));
+            auto _UResult = _Remove_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _STD _Pass_fn(_Proj));
 
-            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+            return _RANGES _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
 
     private:
@@ -4189,11 +4204,11 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD_REMOVE_ALG constexpr subrange<_It> operator()(
             _It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Remove_if_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Remove_if_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
 
-            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+            return _RANGES _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
         template <forward_range _Rng, class _Pj = identity,
@@ -4201,9 +4216,10 @@ namespace ranges {
             requires permutable<iterator_t<_Rng>>
         _NODISCARD_REMOVE_ALG constexpr borrowed_subrange_t<_Rng> operator()(
             _Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            auto _UResult = _Remove_if_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _UResult =
+                _Remove_if_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
 
-            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+            return _RANGES _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
 
     private:
@@ -4244,13 +4260,13 @@ namespace ranges {
                   && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         constexpr remove_copy_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, const _Ty& _Val, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult =
-                _Remove_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
-                    _Get_unwrapped_unverified(_STD move(_Result)), _Val, _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Remove_copy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Get_unwrapped_unverified(_STD move(_Result)), _Val,
+                _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_Result, _STD move(_UResult.out));
             return {_STD move(_First), _STD move(_Result)};
         }
 
@@ -4260,11 +4276,11 @@ namespace ranges {
         constexpr remove_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, const _Ty& _Val, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Remove_copy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _Get_unwrapped_unverified(_STD move(_Result)), _Val, _Pass_fn(_Proj));
+            auto _UResult = _Remove_copy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                _STD _Get_unwrapped_unverified(_STD move(_Result)), _Val, _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_Result, _STD move(_UResult.out));
             return {_STD move(_First), _STD move(_Result)};
         }
 
@@ -4302,13 +4318,13 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         constexpr remove_copy_if_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, _Pr _Pred, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult =
-                _Remove_copy_if_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
-                    _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Remove_copy_if_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Get_unwrapped_unverified(_STD move(_Result)),
+                _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_Result, _STD move(_UResult.out));
             return {_STD move(_First), _STD move(_Result)};
         }
 
@@ -4317,12 +4333,13 @@ namespace ranges {
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
         constexpr remove_copy_if_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, _Pr _Pred, _Pj _Proj = {}) const {
-            auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Remove_copy_if_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _First = _RANGES begin(_Range);
+            auto _UResult =
+                _Remove_copy_if_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                    _STD _Get_unwrapped_unverified(_STD move(_Result)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_Result, _STD move(_UResult.out));
             return {_STD move(_First), _STD move(_Result)};
         }
 
@@ -4355,9 +4372,9 @@ namespace ranges {
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred with previous
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if (_UFirst != _ULast) {
         for (auto _UFirstb = _UFirst; ++_UFirst != _ULast; _UFirstb = _UFirst) {
             if (_Pred(*_UFirstb, *_UFirst)) { // copy down
@@ -4367,13 +4384,13 @@ _NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _P
                     }
                 }
 
-                _Seek_wrapped(_Last, ++_UFirstb);
+                _STD _Seek_wrapped(_Last, ++_UFirstb);
                 return _Last;
             }
         }
     }
 
-    _Seek_wrapped(_Last, _ULast);
+    _STD _Seek_wrapped(_Last, _ULast);
     return _Last;
 }
 
@@ -4388,7 +4405,7 @@ _NODISCARD_UNIQUE_ALG _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _P
     // remove each satisfying _Pred with previous
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
-    return _STD unique(_First, _Last, _Pass_fn(_Pred));
+    return _STD unique(_First, _Last, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -4408,11 +4425,11 @@ namespace ranges {
             indirect_equivalence_relation<projected<_It, _Pj>> _Pr = ranges::equal_to>
         _NODISCARD_UNIQUE_ALG constexpr subrange<_It> operator()(
             _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Unique_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
-                _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Unique_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
 
-            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+            return _RANGES _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
         template <forward_range _Rng, class _Pj = identity,
@@ -4420,9 +4437,10 @@ namespace ranges {
             requires permutable<iterator_t<_Rng>>
         _NODISCARD_UNIQUE_ALG constexpr borrowed_subrange_t<_Rng> operator()(
             _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            auto _UResult = _Unique_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _UResult =
+                _Unique_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
 
-            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+            return _RANGES _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
 
     private:
@@ -4476,16 +4494,16 @@ _INLINE_VAR constexpr bool
 _EXPORT_STD template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
     // copy compressing pairs that match
-    _Adl_verify_range(_First, _Last);
+    _STD _Adl_verify_range(_First, _Last);
 
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
 
     if (_UFirst == _ULast) {
         return _Dest;
     }
 
-    auto _UDest = _Get_unwrapped_unverified(_Dest);
+    auto _UDest = _STD _Get_unwrapped_unverified(_Dest);
 
     if constexpr (_Is_ranges_fwd_iter_v<_InIt>) { // can reread the source for comparison
         auto _Firstb = _UFirst;
@@ -4511,7 +4529,7 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
 
         ++_UDest;
     } else { // can't reread source or dest, construct a temporary
-        _Iter_value_t<_InIt> _Val = *_UFirst;
+        _Iter_value_t<_InIt> _Val(*_UFirst);
 
         *_UDest = _Val;
         ++_UDest;
@@ -4525,7 +4543,7 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
         }
     }
 
-    _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -4541,7 +4559,7 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    return _STD unique_copy(_First, _Last, _Dest, _Pass_fn(_Pred));
+    return _STD unique_copy(_First, _Last, _Dest, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -4573,13 +4591,13 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out> && _Can_reread_or_store<_It, _Out>
         constexpr unique_copy_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult =
-                _Unique_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
-                    _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Unique_copy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Get_unwrapped_unverified(_STD move(_Result)),
+                _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_Result, _STD move(_UResult.out));
             return {_STD move(_First), _STD move(_Result)};
         }
 
@@ -4589,11 +4607,11 @@ namespace ranges {
         constexpr unique_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Unique_copy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _UResult = _Unique_copy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                _STD _Get_unwrapped_unverified(_STD move(_Result)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_Result, _STD move(_UResult.out));
             return {_STD move(_First), _STD move(_Result)};
         }
 
@@ -4638,7 +4656,7 @@ namespace ranges {
                 }
             } else {
                 // Neither _First nor _Result can be reread, construct temporary
-                iter_value_t<_It> _Val = *_First;
+                iter_value_t<_It> _Val(*_First);
 
                 while (++_First != _Last) {
                     if (!_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, *_First))) {
@@ -4666,20 +4684,20 @@ namespace ranges {
             using _Elem          = remove_reference_t<iter_reference_t<_It>>;
             constexpr size_t _Nx = sizeof(_Elem);
             constexpr bool _Allow_vectorization =
-                conjunction_v<_Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
+                conjunction_v<_Is_trivially_ranges_swappable<_Elem>, negation<is_volatile<_Elem>>>;
 
             if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                 if (!_STD is_constant_evaluated()) {
                     _Elem* const _First_addr = _STD to_address(_First);
                     _Elem* const _Last_addr  = _STD to_address(_Last);
                     if constexpr (_Nx == 1) {
-                        __std_reverse_trivially_swappable_1(_First_addr, _Last_addr);
+                        ::__std_reverse_trivially_swappable_1(_First_addr, _Last_addr);
                     } else if constexpr (_Nx == 2) {
-                        __std_reverse_trivially_swappable_2(_First_addr, _Last_addr);
+                        ::__std_reverse_trivially_swappable_2(_First_addr, _Last_addr);
                     } else if constexpr (_Nx == 4) {
-                        __std_reverse_trivially_swappable_4(_First_addr, _Last_addr);
+                        ::__std_reverse_trivially_swappable_4(_First_addr, _Last_addr);
                     } else {
-                        __std_reverse_trivially_swappable_8(_First_addr, _Last_addr);
+                        ::__std_reverse_trivially_swappable_8(_First_addr, _Last_addr);
                     }
 
                     return;
@@ -4698,20 +4716,20 @@ namespace ranges {
         template <bidirectional_iterator _It, sentinel_for<_It> _Se>
             requires permutable<_It>
         constexpr _It operator()(_It _First, _Se _Last) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
-            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
-            _Seek_wrapped(_First, _ULast);
-            _Reverse_common(_STD move(_UFirst), _STD move(_ULast));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _STD _Seek_wrapped(_First, _ULast);
+            _RANGES _Reverse_common(_STD move(_UFirst), _STD move(_ULast));
             return _First;
         }
 
         template <bidirectional_range _Rng>
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
-            auto _ULast = _Get_final_iterator_unwrapped(_Range);
-            _Reverse_common(_Ubegin(_Range), _ULast);
-            return _Rewrap_iterator(_Range, _STD move(_ULast));
+            auto _ULast = _RANGES _Get_final_iterator_unwrapped(_Range);
+            _RANGES _Reverse_common(_Ubegin(_Range), _ULast);
+            return _RANGES _Rewrap_iterator(_Range, _STD move(_ULast));
         }
     };
 
@@ -4722,10 +4740,10 @@ namespace ranges {
 _EXPORT_STD template <class _BidIt, class _OutIt>
 _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     // copy reversing elements in [_First, _Last)
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    auto _ULast        = _Get_unwrapped(_Last);
-    auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    auto _ULast        = _STD _Get_unwrapped(_Last);
+    auto _UDest        = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_BidIt>(_UFirst, _ULast));
 
 #if _USE_STD_VECTOR_ALGORITHMS
     using _Elem                         = remove_reference_t<_Iter_ref_t<remove_const_t<decltype(_UFirst)>>>;
@@ -4741,17 +4759,21 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 #endif // _HAS_CXX20
         {
             if constexpr (_Nx == 1) {
-                __std_reverse_copy_trivially_copyable_1(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
+                ::__std_reverse_copy_trivially_copyable_1(
+                    _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
             } else if constexpr (_Nx == 2) {
-                __std_reverse_copy_trivially_copyable_2(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
+                ::__std_reverse_copy_trivially_copyable_2(
+                    _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
             } else if constexpr (_Nx == 4) {
-                __std_reverse_copy_trivially_copyable_4(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
+                ::__std_reverse_copy_trivially_copyable_4(
+                    _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
             } else {
-                __std_reverse_copy_trivially_copyable_8(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
+                ::__std_reverse_copy_trivially_copyable_8(
+                    _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
             }
 
             _UDest += _ULast - _UFirst;
-            _Seek_wrapped(_Dest, _UDest);
+            _STD _Seek_wrapped(_Dest, _UDest);
             return _Dest;
         }
     }
@@ -4761,7 +4783,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         *_UDest = *--_ULast;
     }
 
-    _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -4785,10 +4807,10 @@ namespace ranges {
         template <bidirectional_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_copyable<_It, _Out>
         constexpr reverse_copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
-            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
-            _Seek_wrapped(_First, _ULast);
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _STD _Seek_wrapped(_First, _ULast);
             _Result = _Reverse_copy_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
             return {_STD move(_First), _STD move(_Result)};
         }
@@ -4800,9 +4822,9 @@ namespace ranges {
                 _Result = _Reverse_copy_common(_Ubegin(_Range), _Uend(_Range), _STD move(_Result));
                 return {_RANGES end(_Range), _STD move(_Result)};
             } else {
-                auto _ULast = _Get_final_iterator_unwrapped(_Range);
+                auto _ULast = _RANGES _Get_final_iterator_unwrapped(_Range);
                 _Result     = _Reverse_copy_common(_Ubegin(_Range), _ULast, _STD move(_Result));
-                return {_Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
+                return {_RANGES _Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
             }
         }
 
@@ -4827,13 +4849,13 @@ namespace ranges {
                         _Elem* const _Last_addr       = _STD to_address(_Last);
                         _DestElem* const _Result_addr = _STD to_address(_Result);
                         if constexpr (_Nx == 1) {
-                            __std_reverse_copy_trivially_copyable_1(_First_addr, _Last_addr, _Result_addr);
+                            ::__std_reverse_copy_trivially_copyable_1(_First_addr, _Last_addr, _Result_addr);
                         } else if constexpr (_Nx == 2) {
-                            __std_reverse_copy_trivially_copyable_2(_First_addr, _Last_addr, _Result_addr);
+                            ::__std_reverse_copy_trivially_copyable_2(_First_addr, _Last_addr, _Result_addr);
                         } else if constexpr (_Nx == 4) {
-                            __std_reverse_copy_trivially_copyable_4(_First_addr, _Last_addr, _Result_addr);
+                            ::__std_reverse_copy_trivially_copyable_4(_First_addr, _Last_addr, _Result_addr);
                         } else {
-                            __std_reverse_copy_trivially_copyable_8(_First_addr, _Last_addr, _Result_addr);
+                            ::__std_reverse_copy_trivially_copyable_8(_First_addr, _Last_addr, _Result_addr);
                         }
 
                         _Result += _Last - _First;
@@ -4877,7 +4899,7 @@ namespace ranges {
         // that is, rotates [_First, _Last) left by distance(_First, _Mid) positions
 
         if (_First == _Mid) {
-            auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
+            auto _Final = _RANGES _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
             return {_Final, _Final};
         }
 
@@ -4886,12 +4908,12 @@ namespace ranges {
         }
 
         if constexpr (bidirectional_iterator<_It>) {
-            _Reverse_common(_First, _Mid);
-            auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
-            _Reverse_common(_Mid, _Final);
+            _RANGES _Reverse_common(_First, _Mid);
+            auto _Final = _RANGES _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
+            _RANGES _Reverse_common(_Mid, _Final);
 
             if constexpr (random_access_iterator<_It>) {
-                _Reverse_common(_First, _Final);
+                _RANGES _Reverse_common(_First, _Final);
                 _First += _Final - _Mid;
 
                 return {_STD move(_First), _STD move(_Final)};
@@ -4899,7 +4921,7 @@ namespace ranges {
                 const auto _Result = _RANGES _Reverse_until_mid_unchecked(_STD move(_First), _Mid, _Final);
                 auto _Mid_first    = _Result.begin();
                 auto _Mid_last     = _Result.end();
-                _Reverse_common(_Mid_first, _Mid_last);
+                _RANGES _Reverse_common(_Mid_first, _Mid_last);
 
                 if (_Mid_first == _Mid) {
                     return {_STD move(_Mid_last), _STD move(_Final)};
@@ -4939,23 +4961,23 @@ namespace ranges {
     public:
         template <permutable _It, sentinel_for<_It> _Se>
         constexpr subrange<_It> operator()(_It _First, _It _Mid, _Se _Last) const {
-            _Adl_verify_range(_First, _Mid);
-            _Adl_verify_range(_Mid, _Last);
-            auto _UResult = _RANGES _Rotate_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_iter<_Se>(_STD move(_Mid)), _Unwrap_sent<_It>(_STD move(_Last)));
+            _STD _Adl_verify_range(_First, _Mid);
+            _STD _Adl_verify_range(_Mid, _Last);
+            auto _UResult = _RANGES _Rotate_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_iter<_Se>(_STD move(_Mid)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
 
-            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+            return _RANGES _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
         template <forward_range _Rng>
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, iterator_t<_Rng> _Mid) const {
-            _Adl_verify_range(_RANGES begin(_Range), _Mid);
-            _Adl_verify_range(_Mid, _RANGES end(_Range));
-            auto _UResult =
-                _RANGES _Rotate_unchecked(_Ubegin(_Range), _Unwrap_range_iter<_Rng>(_STD move(_Mid)), _Uend(_Range));
+            _STD _Adl_verify_range(_RANGES begin(_Range), _Mid);
+            _STD _Adl_verify_range(_Mid, _RANGES end(_Range));
+            auto _UResult = _RANGES _Rotate_unchecked(
+                _Ubegin(_Range), _RANGES _Unwrap_range_iter<_Rng>(_STD move(_Mid)), _Uend(_Range));
 
-            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Mid, _STD move(_UResult));
+            return _RANGES _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Mid, _STD move(_UResult));
         }
     };
 
@@ -4966,14 +4988,14 @@ namespace ranges {
 _EXPORT_STD template <class _FwdIt, class _OutIt>
 _CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) {
     // copy rotating [_First, _Last)
-    _Adl_verify_range(_First, _Mid);
-    _Adl_verify_range(_Mid, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _UMid   = _Get_unwrapped(_Mid);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt>(_UFirst, _ULast));
+    _STD _Adl_verify_range(_First, _Mid);
+    _STD _Adl_verify_range(_Mid, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _UMid   = _STD _Get_unwrapped(_Mid);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
+    auto _UDest        = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt>(_UFirst, _ULast));
     _UDest             = _STD _Copy_unchecked(_UMid, _ULast, _UDest);
-    _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst, _UMid, _UDest));
+    _STD _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst, _UMid, _UDest));
     return _Dest;
 }
 
@@ -4997,12 +5019,13 @@ namespace ranges {
         template <forward_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_copyable<_It, _Out>
         constexpr rotate_copy_result<_It, _Out> operator()(_It _First, _It _Mid, _Se _Last, _Out _Result) const {
-            _Adl_verify_range(_First, _Mid);
-            _Adl_verify_range(_Mid, _Last);
-            auto _UResult = _Rotate_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_iter<_Se>(_STD move(_Mid)), _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result));
+            _STD _Adl_verify_range(_First, _Mid);
+            _STD _Adl_verify_range(_Mid, _Last);
+            auto _UResult = _Rotate_copy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_iter<_Se>(_STD move(_Mid)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)),
+                _STD move(_Result));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
@@ -5010,12 +5033,12 @@ namespace ranges {
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
         constexpr rotate_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, iterator_t<_Rng> _Mid, _Out _Result) const {
-            _Adl_verify_range(_RANGES begin(_Range), _Mid);
-            _Adl_verify_range(_Mid, _RANGES end(_Range));
+            _STD _Adl_verify_range(_RANGES begin(_Range), _Mid);
+            _STD _Adl_verify_range(_Mid, _RANGES end(_Range));
             auto _UResult = _Rotate_copy_unchecked(
-                _Ubegin(_Range), _Unwrap_range_iter<_Rng>(_STD move(_Mid)), _Uend(_Range), _STD move(_Result));
+                _Ubegin(_Range), _RANGES _Unwrap_range_iter<_Rng>(_STD move(_Mid)), _Uend(_Range), _STD move(_Result));
 
-            return {_Rewrap_iterator(_Range, _STD move(_UResult.in)), _STD move(_UResult.out)};
+            return {_RANGES _Rewrap_iterator(_Range, _STD move(_UResult.in)), _STD move(_UResult.out)};
         }
 
     private:
@@ -5158,10 +5181,10 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Ur
         "If the source range is not forward, the destination range must be a Cpp17RandomAccessIterator.");
 
     static_assert(is_integral_v<_Diff>, "The sample size must have an integer type.");
-    _Adl_verify_range(_First, _Last);
+    _STD _Adl_verify_range(_First, _Last);
     if (0 < _Count) {
-        auto _UFirst   = _Get_unwrapped(_First);
-        auto _ULast    = _Get_unwrapped(_Last);
+        auto _UFirst   = _STD _Get_unwrapped(_First);
+        auto _ULast    = _STD _Get_unwrapped(_Last);
         using _PopDiff = _Iter_diff_t<_PopIt>;
         _Rng_from_urng<_PopDiff, remove_reference_t<_Urng>> _RngFunc(_Func);
         if constexpr (_Is_ranges_fwd_iter_v<_PopIt>) {
@@ -5172,13 +5195,13 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Ur
                 _Count = static_cast<_Diff>(_Pop_size); // narrowing OK because _Count is getting smaller
             }
 
-            _Seek_wrapped(_Dest,
-                _Sample_selection_unchecked(_UFirst, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
+            _STD _Seek_wrapped(_Dest, _STD _Sample_selection_unchecked(
+                                          _UFirst, _Pop_size, _STD _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
         } else {
             static_assert(_Is_ranges_input_iter_v<_PopIt>, "Source iterators must be at least input iterators");
             // source is input: use reservoir sampling (unstable)
-            _Seek_wrapped(_Dest,
-                _Sample_reservoir_unchecked(_UFirst, _ULast, _Get_unwrapped_unverified(_Dest), _Count, _RngFunc));
+            _STD _Seek_wrapped(_Dest, _STD _Sample_reservoir_unchecked(
+                                          _UFirst, _ULast, _STD _Get_unwrapped_unverified(_Dest), _Count, _RngFunc));
         }
     }
 
@@ -5200,19 +5223,19 @@ namespace ranges {
             requires (forward_iterator<_It> || random_access_iterator<_Out>)
                   && indirectly_copyable<_It, _Out> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _Out operator()(_It _First, _Se _Last, _Out _Result, iter_difference_t<_It> _Count, _Urng&& _Func) const {
-            _Adl_verify_range(_First, _Last);
+            _STD _Adl_verify_range(_First, _Last);
             if (_Count <= 0) {
                 return _Result;
             }
 
             _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
             if constexpr (forward_iterator<_It>) {
-                auto _UFirst   = _Unwrap_iter<_Se>(_STD move(_First));
-                auto _Pop_size = _RANGES distance(_UFirst, _Unwrap_sent<_It>(_STD move(_Last)));
+                auto _UFirst   = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+                auto _Pop_size = _RANGES distance(_UFirst, _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
                 return _Sample_selection_unchecked(_STD move(_UFirst), _Pop_size, _STD move(_Result), _Count, _RngFunc);
             } else {
-                return _Sample_reservoir_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                    _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _Count, _RngFunc);
+                return _Sample_reservoir_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                    _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _Count, _RngFunc);
             }
         }
 
@@ -5298,9 +5321,9 @@ namespace ranges {
 template <class _RanIt, class _RngFn>
 void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
     // shuffle [_First, _Last) using random function _RngFunc
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if (_UFirst == _ULast) {
         return;
     }
@@ -5321,7 +5344,7 @@ _EXPORT_STD template <class _RanIt, class _Urng>
 void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _Last) using URNG _Func
     using _Urng0 = remove_reference_t<_Urng>;
     _Rng_from_urng<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
-    _Random_shuffle1(_First, _Last, _RngFunc);
+    _STD _Random_shuffle1(_First, _Last, _RngFunc);
 }
 
 #ifdef __cpp_lib_concepts
@@ -5331,13 +5354,13 @@ namespace ranges {
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Urng>
             requires permutable<_It> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _It operator()(_It _First, _Se _Last, _Urng&& _Func) const {
-            _Adl_verify_range(_First, _Last);
+            _STD _Adl_verify_range(_First, _Last);
 
             _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
-            auto _UResult =
-                _Shuffle_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _RngFunc);
+            auto _UResult = _Shuffle_unchecked(
+                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _RngFunc);
 
-            _Seek_wrapped(_First, _STD move(_UResult));
+            _STD _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
@@ -5346,7 +5369,7 @@ namespace ranges {
         borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Urng&& _Func) const {
             _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
 
-            return _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
+            return _RANGES _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
         }
 
     private:
@@ -5384,7 +5407,7 @@ namespace ranges {
 _EXPORT_STD template <class _RanIt, class _RngFn>
 void random_shuffle(_RanIt _First, _RanIt _Last, _RngFn&& _RngFunc) {
     // shuffle [_First, _Last) using random function _RngFunc
-    _Random_shuffle1(_First, _Last, _RngFunc);
+    _STD _Random_shuffle1(_First, _Last, _RngFunc);
 }
 
 struct _Rand_urng_from_func { // wrap rand() as a URNG
@@ -5418,14 +5441,14 @@ constexpr _FwdIt shift_left(
     // positions; returns the end of the resulting range
     _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
 
-    _Adl_verify_range(_First, _Last);
+    _STD _Adl_verify_range(_First, _Last);
 
     if (_Pos_to_shift == 0) {
         return _Last;
     }
 
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
     auto _Start_at     = _UFirst;
 
     if constexpr (_Is_cpp17_random_iter_v<_FwdIt>) {
@@ -5442,7 +5465,7 @@ constexpr _FwdIt shift_left(
         }
     }
 
-    _Seek_wrapped(_First, _STD _Move_unchecked(_Start_at, _ULast, _UFirst));
+    _STD _Seek_wrapped(_First, _STD _Move_unchecked(_Start_at, _ULast, _UFirst));
     return _First;
 }
 
@@ -5462,14 +5485,14 @@ constexpr _FwdIt shift_right(
     // positions; returns the beginning of the resulting range
     _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/5)");
 
-    _Adl_verify_range(_First, _Last);
+    _STD _Adl_verify_range(_First, _Last);
 
     if (_Pos_to_shift == 0) {
         return _First;
     }
 
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
 
     if constexpr (_Is_cpp17_bidi_iter_v<_FwdIt>) {
         auto _UEnd_at = _ULast;
@@ -5487,7 +5510,7 @@ constexpr _FwdIt shift_right(
             }
         }
 
-        _Seek_wrapped(_First, _Move_backward_unchecked(_UFirst, _UEnd_at, _ULast));
+        _STD _Seek_wrapped(_First, _STD _Move_backward_unchecked(_UFirst, _UEnd_at, _ULast));
         return _First;
     } else {
         auto _UResult = _UFirst;
@@ -5498,7 +5521,7 @@ constexpr _FwdIt shift_right(
             }
             ++_UResult;
         }
-        _Seek_wrapped(_First, _UResult);
+        _STD _Seek_wrapped(_First, _UResult);
 
         auto _Trail = _UFirst;
         auto _Lead  = _UResult;
@@ -5548,16 +5571,17 @@ namespace ranges {
         constexpr subrange<_It> operator()(_It _First, const _Se _Last, iter_difference_t<_It> _Pos_to_shift) const {
             _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
 
-            _Adl_verify_range(_First, _Last);
+            _STD _Adl_verify_range(_First, _Last);
             auto _Result = _First;
             _Unwrap_iter_t<_It, _Se> _UResult;
 
             if (_Pos_to_shift == 0) {
-                _UResult = _Get_final_iterator_unwrapped<_It>(_Unwrap_iter<_Se>(_Result), _Last);
+                _UResult = _RANGES _Get_final_iterator_unwrapped<_It>(_RANGES _Unwrap_iter<_Se>(_Result), _Last);
             } else {
-                _UResult = _Shift_left_impl(_Unwrap_iter<_Se>(_First), _Unwrap_sent<_It>(_Last), _Pos_to_shift);
+                _UResult = _Shift_left_impl(
+                    _RANGES _Unwrap_iter<_Se>(_First), _RANGES _Unwrap_sent<_It>(_Last), _Pos_to_shift);
             }
-            _Seek_wrapped(_Result, _UResult);
+            _STD _Seek_wrapped(_Result, _UResult);
             return {_STD move(_First), _STD move(_Result)};
         }
 
@@ -5567,7 +5591,7 @@ namespace ranges {
             _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4950 [alg.shift]/1)");
 
             if (_Pos_to_shift == 0) {
-                auto _Last = _Rewrap_iterator(_Range, _Get_final_iterator_unwrapped(_Range));
+                auto _Last = _RANGES _Rewrap_iterator(_Range, _RANGES _Get_final_iterator_unwrapped(_Range));
                 return {_RANGES begin(_Range), _STD move(_Last)};
             }
 
@@ -5577,13 +5601,13 @@ namespace ranges {
                     return {_First, _First};
                 }
 
-                auto _UFirst   = _Unwrap_range_iter<_Rng>(_First);
+                auto _UFirst   = _RANGES _Unwrap_range_iter<_Rng>(_First);
                 auto _Start_at = _RANGES next(_UFirst, _Pos_to_shift);
                 auto _Result   = _RANGES _Move_unchecked(_STD move(_Start_at), _Uend(_Range), _UFirst).out;
-                return {_STD move(_First), _Rewrap_iterator(_Range, _STD move(_Result))};
+                return {_STD move(_First), _RANGES _Rewrap_iterator(_Range, _STD move(_Result))};
             } else {
                 auto _Result = _Shift_left_impl(_Ubegin(_Range), _Uend(_Range), _Pos_to_shift);
-                return {_RANGES begin(_Range), _Rewrap_iterator(_Range, _STD move(_Result))};
+                return {_RANGES begin(_Range), _RANGES _Rewrap_iterator(_Range, _STD move(_Result))};
             }
         }
 
@@ -5609,14 +5633,14 @@ namespace ranges {
     public:
         template <permutable _It, sentinel_for<_It> _Se>
         constexpr subrange<_It> operator()(_It _First, const _Se _Last, iter_difference_t<_It> _Pos_to_shift) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst     = _Unwrap_iter<_Se>(_First);
-            auto _ULast      = _Unwrap_sent<_It>(_Last);
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst     = _RANGES _Unwrap_iter<_Se>(_First);
+            auto _ULast      = _RANGES _Unwrap_sent<_It>(_Last);
             const auto _Size = _Size_helper(_UFirst, _ULast);
             auto _Result     = _Shift_right_impl(_STD move(_UFirst), _STD move(_ULast), _Pos_to_shift, _Size);
-            _Seek_wrapped(_First, _Result.begin());
+            _STD _Seek_wrapped(_First, _Result.begin());
             auto _Final = _First;
-            _Seek_wrapped(_Final, _Result.end());
+            _STD _Seek_wrapped(_Final, _Result.end());
             return {_STD move(_First), _STD move(_Final)};
         }
 
@@ -5625,8 +5649,8 @@ namespace ranges {
         constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, range_difference_t<_Rng> _Pos_to_shift) const {
             const auto _Size = _Size_helper(_Range);
             auto _Result     = _Shift_right_impl(_Ubegin(_Range), _Uend(_Range), _Pos_to_shift, _Size);
-            auto _First      = _Rewrap_iterator(_Range, _Result.begin());
-            auto _Final      = _Rewrap_iterator(_Range, _Result.end());
+            auto _First      = _RANGES _Rewrap_iterator(_Range, _Result.begin());
+            auto _Final      = _RANGES _Rewrap_iterator(_Range, _Result.end());
             return {_STD move(_First), _STD move(_Final)};
         }
 
@@ -6298,7 +6322,7 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     using _Diff        = _Iter_diff_t<_RanIt>;
     _Diff _Count       = _ULast - _UFirst;
     if (2 <= _Count) {
-        _Iter_value_t<_RanIt> _Val = _STD move(*--_ULast);
+        _Iter_value_t<_RanIt> _Val(_STD move(*--_ULast));
         _STD _Push_heap_by_index(_UFirst, --_Count, _Diff(0), _STD move(_Val), _Pass_fn(_Pred));
     }
 }
@@ -6369,7 +6393,7 @@ namespace ranges {
             }
 
             --_Last;
-            iter_value_t<_It> _Val = _RANGES iter_move(_Last);
+            iter_value_t<_It> _Val(_RANGES iter_move(_Last));
             // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Push_heap_by_index
             _RANGES _Push_heap_by_index(_STD move(_First), _Count - 1, 0, _STD move(_Val), _Pred, _Proj, _Proj);
         }
@@ -6425,7 +6449,7 @@ _CONSTEXPR20 void _Pop_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // pop *_First to *(_Last - 1) and reheap
     if (2 <= _Last - _First) {
         --_Last;
-        _Iter_value_t<_RanIt> _Val = _STD move(*_Last);
+        _Iter_value_t<_RanIt> _Val(_STD move(*_Last));
         _STD _Pop_heap_hole_unchecked(_First, _Last, _Last, _STD move(_Val), _Pred);
     }
 }
@@ -6503,7 +6527,7 @@ namespace ranges {
         }
 
         --_Last;
-        iter_value_t<_It> _Val = _RANGES iter_move(_Last);
+        iter_value_t<_It> _Val(_RANGES iter_move(_Last));
         // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Pop_heap_hole_unchecked
         _RANGES _Pop_heap_hole_unchecked(_STD move(_First), _Last, _Last, _STD move(_Val), _Pred, _Proj, _Proj);
     }
@@ -6547,7 +6571,7 @@ _CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     for (_Diff _Hole = _Bottom >> 1; _Hole > 0;) { // shift for codegen
         // reheap top half, bottom to top
         --_Hole;
-        _Iter_value_t<_RanIt> _Val = _STD move(*(_First + _Hole));
+        _Iter_value_t<_RanIt> _Val(_STD move(*(_First + _Hole)));
         _STD _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred);
     }
 }
@@ -6574,7 +6598,7 @@ namespace ranges {
         for (_Diff _Hole = _Bottom >> 1; _Hole > 0;) { // shift for codegen
             // reheap top half, bottom to top
             --_Hole;
-            iter_value_t<_It> _Val = _RANGES iter_move(_First + _Hole);
+            iter_value_t<_It> _Val(_RANGES iter_move(_First + _Hole));
             // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Pop_heap_hole_by_index
             _RANGES _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred, _Proj, _Proj);
         }
@@ -7838,8 +7862,8 @@ _CONSTEXPR20 _BidIt _Insertion_sort_unchecked(const _BidIt _First, const _BidIt 
     // insertion sort [_First, _Last)
     if (_First != _Last) {
         for (_BidIt _Mid = _First; ++_Mid != _Last;) { // order next element
-            _BidIt _Hole               = _Mid;
-            _Iter_value_t<_BidIt> _Val = _STD move(*_Mid);
+            _BidIt _Hole = _Mid;
+            _Iter_value_t<_BidIt> _Val(_STD move(*_Mid));
 
             if (_DEBUG_LT_PRED(_Pred, _Val, *_First)) { // found new earliest element, move to front
                 _Move_backward_unchecked(_First, _Mid, ++_Hole);
@@ -8027,8 +8051,8 @@ namespace ranges {
         }
 
         for (auto _Mid = _First; ++_Mid != _Last;) { // order next element
-            iter_value_t<_It> _Val = _RANGES iter_move(_Mid);
-            auto _Hole             = _Mid;
+            iter_value_t<_It> _Val(_RANGES iter_move(_Mid));
+            auto _Hole = _Mid;
 
             for (auto _Prev = _Hole;;) {
                 --_Prev;
@@ -8689,7 +8713,7 @@ _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pr
     _Make_heap_unchecked(_UFirst, _UMid, _Pass_fn(_Pred));
     for (auto _UNext = _UMid; _UNext < _ULast; ++_UNext) {
         if (_DEBUG_LT_PRED(_Pred, *_UNext, *_UFirst)) { // replace top with new largest
-            _Iter_value_t<_RanIt> _Val = _STD move(*_UNext);
+            _Iter_value_t<_RanIt> _Val(_STD move(*_UNext));
             _STD _Pop_heap_hole_unchecked(_UFirst, _UMid, _UNext, _STD move(_Val), _Pass_fn(_Pred));
         }
     }
@@ -8779,7 +8803,7 @@ namespace ranges {
             for (auto _Next = _Mid; _Next != _Last; ++_Next) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_First))) {
                     // replace top with new largest
-                    iter_value_t<_It> _Val = _RANGES iter_move(_Next);
+                    iter_value_t<_It> _Val(_RANGES iter_move(_Next));
                     _RANGES _Pop_heap_hole_unchecked(_First, _Mid, _Next, _STD move(_Val), _Pred, _Proj, _Proj);
                 }
             }
