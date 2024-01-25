@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#if !_HAS_CXX23 || !defined(__cpp_impl_coroutine)
+#if !_HAS_CXX23 || !defined(__cpp_impl_coroutine) || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #pragma message("The contents of <generator> are available only in c++latest mode with coroutine support")
 #else // ^^^ no coroutine support / coroutines vvv
 
@@ -25,6 +25,154 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+
+struct alignas(__STDCPP_DEFAULT_NEW_ALIGNMENT__) _Aligned_block {
+    unsigned char _Pad[__STDCPP_DEFAULT_NEW_ALIGNMENT__];
+};
+
+template <class _Alloc>
+concept _Has_real_pointers = same_as<_Alloc, void> || is_pointer_v<typename allocator_traits<_Alloc>::pointer>;
+
+template <class _Allocator = void>
+class _Promise_allocator { // statically specified allocator type
+private:
+    using _Alloc = _Rebind_alloc_t<_Allocator, _Aligned_block>;
+
+    static void* _Allocate(_Alloc _Al, const size_t _Size) {
+        if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
+            // do not store stateless allocator
+            const size_t _Count = (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
+            return _Al.allocate(_Count);
+        } else {
+            // store stateful allocator
+            static constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+            const size_t _Count            = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
+            void* const _Ptr               = _Al.allocate(_Count);
+            const auto _Al_address =
+                (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
+            ::new (reinterpret_cast<void*>(_Al_address)) _Alloc(_STD move(_Al));
+            return _Ptr;
+        }
+    }
+
+public:
+    static void* operator new(const size_t _Size)
+        requires default_initializable<_Alloc>
+    {
+        return _Allocate(_Alloc{}, _Size);
+    }
+
+    template <class _Alloc2, class... _Args>
+        requires convertible_to<const _Alloc2&, _Allocator>
+    static void* operator new(const size_t _Size, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
+        return _Allocate(static_cast<_Alloc>(static_cast<_Allocator>(_Al)), _Size);
+    }
+
+    template <class _This, class _Alloc2, class... _Args>
+        requires convertible_to<const _Alloc2&, _Allocator>
+    static void* operator new(const size_t _Size, const _This&, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
+        return _Allocate(static_cast<_Alloc>(static_cast<_Allocator>(_Al)), _Size);
+    }
+
+    static void operator delete(void* const _Ptr, const size_t _Size) noexcept {
+        if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
+            // make stateless allocator
+            _Alloc _Al{};
+            const size_t _Count = (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
+            _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Count);
+        } else {
+            // retrieve stateful allocator
+            const auto _Al_address =
+                (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
+            auto& _Stored_al = *reinterpret_cast<_Alloc*>(_Al_address);
+            _Alloc _Al{_STD move(_Stored_al)};
+            _Stored_al.~_Alloc();
+
+            static constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+            const size_t _Count            = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
+            _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Count);
+        }
+    }
+};
+
+template <>
+class _Promise_allocator<void> { // type-erased allocator
+private:
+    using _Dealloc_fn = void (*)(void*, size_t);
+
+    template <class _ProtoAlloc>
+    static void* _Allocate(const _ProtoAlloc& _Proto, size_t _Size) {
+        using _Alloc = _Rebind_alloc_t<_ProtoAlloc, _Aligned_block>;
+        auto _Al     = static_cast<_Alloc>(_Proto);
+
+        if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
+            // don't store stateless allocator
+            const _Dealloc_fn _Dealloc = [](void* const _Ptr, const size_t _Size) {
+                _Alloc _Al{};
+                const size_t _Count =
+                    (_Size + sizeof(_Dealloc_fn) + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
+                _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Count);
+            };
+
+            const size_t _Count = (_Size + sizeof(_Dealloc_fn) + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
+            void* const _Ptr    = _Al.allocate(_Count);
+            _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
+            return _Ptr;
+        } else {
+            // store stateful allocator
+            static constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+
+            const _Dealloc_fn _Dealloc = [](void* const _Ptr, size_t _Size) {
+                _Size += sizeof(_Dealloc_fn);
+                const auto _Al_address =
+                    (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
+                auto& _Stored_al = *reinterpret_cast<const _Alloc*>(_Al_address);
+                _Alloc _Al{_STD move(_Stored_al)};
+                _Stored_al.~_Alloc();
+
+                const size_t _Count = (_Size + sizeof(_Al) + _Align - 1) / sizeof(_Aligned_block);
+                _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Count);
+            };
+
+            const size_t _Count = (_Size + sizeof(_Dealloc_fn) + sizeof(_Al) + _Align - 1) / sizeof(_Aligned_block);
+            void* const _Ptr    = _Al.allocate(_Count);
+            _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
+            _Size += sizeof(_Dealloc_fn);
+            const auto _Al_address =
+                (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
+            ::new (reinterpret_cast<void*>(_Al_address)) _Alloc{_STD move(_Al)};
+            return _Ptr;
+        }
+    }
+
+public:
+    static void* operator new(const size_t _Size) { // default: new/delete
+        void* const _Ptr           = ::operator new[](_Size + sizeof(_Dealloc_fn));
+        const _Dealloc_fn _Dealloc = [](void* const _Ptr, const size_t _Size) {
+            ::operator delete[](_Ptr, _Size + sizeof(_Dealloc_fn));
+        };
+        _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc_fn));
+        return _Ptr;
+    }
+
+    template <class _Alloc, class... _Args>
+    static void* operator new(const size_t _Size, allocator_arg_t, const _Alloc& _Al, const _Args&...) {
+        static_assert(_Has_real_pointers<_Alloc>, "coroutine allocators must use raw pointers");
+        return _Allocate(_Al, _Size);
+    }
+
+    template <class _This, class _Alloc, class... _Args>
+    static void* operator new(const size_t _Size, const _This&, allocator_arg_t, const _Alloc& _Al, const _Args&...) {
+        static_assert(_Has_real_pointers<_Alloc>, "coroutine allocators must use raw pointers");
+        return _Allocate(_Al, _Size);
+    }
+
+    static void operator delete(void* const _Ptr, const size_t _Size) noexcept {
+        _Dealloc_fn _Dealloc;
+        _CSTD memcpy(&_Dealloc, static_cast<const char*>(_Ptr) + _Size, sizeof(_Dealloc_fn));
+        _Dealloc(_Ptr, _Size);
+    }
+};
 
 _EXPORT_STD template <class _Rty, class _Vty = void, class _Alloc = void>
 class generator;
@@ -57,28 +205,23 @@ public:
         return {};
     }
 
-    // clang-format off
-    _NODISCARD auto yield_value(const remove_reference_t<_Yielded>& _Val)
-        noexcept(is_nothrow_constructible_v<remove_cvref_t<_Yielded>, const remove_reference_t<_Yielded>&>)
-        requires (is_rvalue_reference_v<_Yielded> && constructible_from<remove_cvref_t<_Yielded>, const remove_reference_t<_Yielded>&>) {
-        // clang-format on
+    _NODISCARD auto yield_value(const remove_reference_t<_Yielded>& _Val) noexcept(
+        is_nothrow_constructible_v<remove_cvref_t<_Yielded>, const remove_reference_t<_Yielded>&>)
+        requires (is_rvalue_reference_v<_Yielded>
+                  && constructible_from<remove_cvref_t<_Yielded>, const remove_reference_t<_Yielded>&>)
+    {
         return _Element_awaiter{_Val};
     }
 
-    // clang-format off
     template <class _Rty, class _Vty, class _Alloc, class _Unused>
         requires same_as<_Gen_yield_t<_Gen_reference_t<_Rty, _Vty>>, _Yielded>
-    _NODISCARD auto yield_value(
-        _RANGES elements_of<generator<_Rty, _Vty, _Alloc>&&, _Unused> _Elem) noexcept {
-        // clang-format on
+    _NODISCARD auto yield_value(_RANGES elements_of<generator<_Rty, _Vty, _Alloc>&&, _Unused> _Elem) noexcept {
         return _Nested_awaitable<_Rty, _Vty, _Alloc>{std::move(_Elem.range)};
     }
 
-    // clang-format off
     template <_RANGES input_range _Rng, class _Alloc>
         requires convertible_to<_RANGES range_reference_t<_Rng>, _Yielded>
     _NODISCARD auto yield_value(_RANGES elements_of<_Rng, _Alloc> _Elem) noexcept {
-        // clang-format on
         using _Vty = _RANGES range_value_t<_Rng>;
         return _Nested_awaitable<_Yielded, _Vty, _Alloc>{
             [](allocator_arg_t, _Alloc, _RANGES iterator_t<_Rng> _It,
@@ -251,21 +394,19 @@ private:
     static_assert(same_as<remove_cvref_t<_Value>, _Value> && is_object_v<_Value>,
         "generator's value type must be a cv-unqualified object type");
 
-    // clang-format off
     using _Ref = _Gen_reference_t<_Rty, _Vty>;
-    static_assert(is_reference_v<_Ref>
-        || (is_object_v<_Ref> && same_as<remove_cv_t<_Ref>, _Ref> && copy_constructible<_Ref>),
+    static_assert(
+        is_reference_v<_Ref> || (is_object_v<_Ref> && same_as<remove_cv_t<_Ref>, _Ref> && copy_constructible<_Ref>),
         "generator's second argument must be a reference type or a cv-unqualified "
         "copy-constructible object type");
 
     using _RRef = conditional_t<is_lvalue_reference_v<_Ref>, remove_reference_t<_Ref>&&, _Ref>;
 
     static_assert(common_reference_with<_Ref&&, _Value&> && common_reference_with<_Ref&&, _RRef&&>
-        && common_reference_with<_RRef&&, const _Value&>,
+                      && common_reference_with<_RRef&&, const _Value&>,
         "an iterator with the selected value and reference types cannot model indirectly_readable");
-    // clang-format on
 
-    static_assert(_Has_real_pointers<_Alloc>, "generator allocators must use true pointers");
+    static_assert(_Has_real_pointers<_Alloc>, "generator allocators must use raw pointers");
 
     friend _Gen_promise_base<_Gen_yield_t<_Ref>>;
 
