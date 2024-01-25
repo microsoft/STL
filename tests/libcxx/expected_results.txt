@@ -37,6 +37,11 @@ std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_mov
 # LLVM-75611: [libc++] views::take behaves incorrectly for iota_view
 std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
 
+# LLVM-78661: [libc++][test] Move format.functions ASCII tests to libcxx/test/libcxx
+# These test libc++'s non-standard "ascii" mode.
+std/utilities/format/format.functions/ascii.pass.cpp SKIPPED
+std/utilities/format/format.functions/escaped_output.ascii.pass.cpp SKIPPED
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -944,9 +949,6 @@ std/algorithms/alg.modifying.operations/alg.unique/ranges_unique.pass.cpp:1 SKIP
 std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp SKIPPED
 std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.hex.pass.cpp SKIPPED
 
-# Not analyzed. These tests use characters that cannot be represented in legacy character encodings
-std/utilities/format/format.functions/ascii.pass.cpp FAIL
-
 # Not analyzed. Failing assert(swaps <= expected).
 std/algorithms/alg.modifying.operations/alg.rotate/ranges_rotate.pass.cpp FAIL
 
@@ -1026,7 +1028,6 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 
 # Not analyzed. MSVC emits truncation warnings, Clang fails a runtime assertion.
-std/utilities/format/format.functions/escaped_output.ascii.pass.cpp FAIL
 std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
 
 # Not analyzed.
