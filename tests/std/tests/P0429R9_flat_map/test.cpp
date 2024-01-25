@@ -28,20 +28,18 @@ bool check_container_requirements(T&&) {
 template <IsFlatMap T>
 consteval bool check_reversible_container_requirements() {
     using map_t = remove_cvref_t<T>;
-    bool result = true;
-    result &= is_same_v<reverse_iterator<typename map_t::iterator>, typename map_t::reverse_iterator>;
-    result &= is_same_v<reverse_iterator<typename map_t::const_iterator>, typename map_t::const_reverse_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().begin()), typename map_t::iterator>;
-    result &= is_same_v<decltype(declval<map_t>().end()), typename map_t::iterator>;
-    result &= is_same_v<decltype(declval<map_t>().cbegin()), typename map_t::const_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().cend()), typename map_t::const_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().rbegin()), typename map_t::reverse_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().rend()), typename map_t::reverse_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().crbegin()), typename map_t::const_reverse_iterator>;
-    result &= is_same_v<decltype(declval<map_t>().crend()), typename map_t::const_reverse_iterator>;
-    result &= is_convertible_v<typename map_t::iterator, typename map_t::const_iterator>;
-    result &= is_convertible_v<typename map_t::reverse_iterator, typename map_t::const_reverse_iterator>;
-    return result;
+    return is_same_v<reverse_iterator<typename map_t::iterator>, typename map_t::reverse_iterator>
+        && is_same_v<reverse_iterator<typename map_t::const_iterator>, typename map_t::const_reverse_iterator>
+        && is_same_v<decltype(declval<map_t>().begin()), typename map_t::iterator>
+        && is_same_v<decltype(declval<map_t>().end()), typename map_t::iterator>
+        && is_same_v<decltype(declval<map_t>().cbegin()), typename map_t::const_iterator>
+        && is_same_v<decltype(declval<map_t>().cend()), typename map_t::const_iterator>
+        && is_same_v<decltype(declval<map_t>().rbegin()), typename map_t::reverse_iterator>
+        && is_same_v<decltype(declval<map_t>().rend()), typename map_t::reverse_iterator>
+        && is_same_v<decltype(declval<map_t>().crbegin()), typename map_t::const_reverse_iterator>
+        && is_same_v<decltype(declval<map_t>().crend()), typename map_t::const_reverse_iterator>
+        && is_convertible_v<typename map_t::iterator, typename map_t::const_iterator>
+        && is_convertible_v<typename map_t::reverse_iterator, typename map_t::const_reverse_iterator>;
 }
 
 template <IsFlatMap T>
@@ -120,21 +118,13 @@ public:
         value = t;
     }
 
-    friend bool operator==(const Packaged& lhs, const Packaged& rhs) {
-        return lhs.value == rhs.value;
-    }
+    friend bool operator==(const Packaged&, const Packaged&) = default;
 
     friend bool operator==(const Packaged& lhs, const T& rhs) {
         return lhs.value == rhs;
     }
 
-    friend bool operator==(const T& lhs, const Packaged& rhs) {
-        return lhs == rhs.value;
-    }
-
-    friend auto operator<=>(const Packaged& lhs, const Packaged& rhs) {
-        return lhs.value <=> rhs.value;
-    }
+    friend auto operator<=>(const Packaged&, const Packaged&) = default;
 };
 
 template <typename T>
@@ -246,6 +236,19 @@ void test_construction() {
     }
 }
 
+void test_erase_if() {
+    {
+        vector<int> keys = {0, 1, 2, 3, 4, 2};
+        vector<int> vals = {44, 2324, 635462, 433, 5, 7};
+        flat_map fmap(keys, vals);
+        const auto erased_num = erase_if(
+            fmap, [](pair<const int&, const int&> refpr) { return refpr.first % 2 == 0 && refpr.second % 2 != 0; });
+        assert(erased_num == 1);
+        assert(fmap.size() == 4);
+        assert(check_key_content(fmap, {0, 1, 2, 3}));
+        assert(check_value_content(fmap, {44, 2324, 635462, 433}));
+    }
+}
 
 struct Incomplete;
 template <class T>
@@ -265,7 +268,40 @@ void test_pointer_to_incomplete_type() {
     flat_map<MyType<Incomplete>, shared_ptr<MyType<Incomplete>>> fmap;
 }
 
+// Test MSVC STL-specific SCARY-ness
+namespace scary_test {
+    static_assert(is_same_v<flat_map<int, int>::iterator, flat_map<int, int, greater<int>>::iterator>);
+    static_assert(is_same_v<flat_map<int, int>::iterator,
+        flat_map<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::iterator>);
+    static_assert(is_same_v<flat_map<int, int>::const_iterator, flat_map<int, int, greater<int>>::const_iterator>);
+    static_assert(is_same_v<flat_map<int, int>::const_iterator,
+        flat_map<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::const_iterator>);
+
+    static_assert(is_same_v<flat_multimap<int, int>::iterator, flat_multimap<int, int, greater<int>>::iterator>);
+    static_assert(is_same_v<flat_multimap<int, int>::iterator,
+        flat_multimap<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::iterator>);
+    static_assert(
+        is_same_v<flat_multimap<int, int>::const_iterator, flat_multimap<int, int, greater<int>>::const_iterator>);
+    static_assert(is_same_v<flat_multimap<int, int>::const_iterator,
+        flat_multimap<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::const_iterator>);
+
+    static_assert(is_same_v<flat_map<int, int>::iterator, flat_multimap<int, int>::iterator>);
+    static_assert(is_same_v<flat_map<int, int>::const_iterator, flat_multimap<int, int>::const_iterator>);
+
+    static_assert(is_same_v<flat_map<int, int>::containers, flat_map<int, int, greater<int>>::containers>);
+    static_assert(is_same_v<flat_multimap<int, int>::containers, flat_multimap<int, int, greater<int>>::containers>);
+    static_assert(is_same_v<flat_map<int, int>::containers, flat_multimap<int, int>::containers>);
+
+    static_assert(is_same_v<flat_map<int, int>::value_compare,
+        flat_map<int, int, less<int>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::value_compare>);
+    static_assert(is_same_v<flat_multimap<int, int>::value_compare,
+        flat_multimap<int, int, less<int>, vector<int, MyAllocator<int>>,
+            vector<int, MyAllocator<int>>>::value_compare>);
+    static_assert(is_same_v<flat_map<int, int>::value_compare, flat_multimap<int, int>::value_compare>);
+} // namespace scary_test
+
 int main() {
     test_construction();
     test_pointer_to_incomplete_type();
+    test_erase_if();
 }
