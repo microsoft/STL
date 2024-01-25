@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX23 || !defined(__cpp_impl_coroutine) || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#pragma message("The contents of <generator> are available only in c++latest mode with coroutine support")
+_EMIT_STL_WARNING(STL4038, "The contents of <generator> are available only with C++23 or later coroutine support.")
 #else // ^^^ no coroutine support / coroutines vvv
 
 #include <coroutine>
@@ -23,6 +23,10 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("empty_bases")
+#undef empty_bases
 
 _STD_BEGIN
 
@@ -454,6 +458,9 @@ private:
 };
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("empty_bases")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
