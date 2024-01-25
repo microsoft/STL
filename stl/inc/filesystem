@@ -1387,7 +1387,7 @@ namespace filesystem {
                 const auto _Left_first = _Left._Text.data();
                 const auto _Left_last  = _Left_first + _Left_size;
 
-                // Appending a slash to "X:" would've made it an absolute path
+                // Appending a slash to "X:" would make it an absolute path
                 const bool _Left_is_just_drive = _Left_size == 2 && _Is_drive_prefix(_Left_first);
                 const bool _Is_slash_needed    = _Left_size != 0 && !_Left_is_just_drive && !_Is_slash(_Left_last[-1]);
 
