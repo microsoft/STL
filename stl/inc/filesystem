@@ -1391,7 +1391,7 @@ namespace filesystem {
                 const bool _Left_is_just_drive = _Left_size == 2 && _Is_drive_prefix(_Left_first);
                 const bool _Is_slash_needed    = _Left_size != 0 && !_Left_is_just_drive && !_Is_slash(_Left_last[-1]);
 
-                const auto _Total_size = _Left_size + _Is_slash_needed + _Right_size;
+                const auto _Total_size = _Left_size + static_cast<size_t>(_Is_slash_needed) + _Right_size;
 
                 path _Tmp;
                 _Tmp._Text._Resize_and_overwrite(_Total_size, [=](wchar_t* _Ptr, const size_t _Size) {
