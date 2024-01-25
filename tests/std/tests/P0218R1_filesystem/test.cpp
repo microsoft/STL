@@ -544,6 +544,7 @@ struct slash_test_case {
 };
 
 constexpr slash_test_case slashTestCases[] = {
+    {L""sv, L""sv, L""sv},
     {L"relative"sv, L"other"sv, LR"(relative\other)"sv},
     {L"//server"sv, L"share"sv, LR"(//server\share)"sv},
     {L"//server/"sv, L"share"sv, LR"(//server/share)"sv},
