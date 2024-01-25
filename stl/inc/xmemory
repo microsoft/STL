@@ -2667,7 +2667,6 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
     } while (_UVal_trunc != 0);
     return _RNext;
 }
-
 _STD_END
 
 #pragma pop_macro("new")
