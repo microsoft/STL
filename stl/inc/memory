@@ -2461,12 +2461,12 @@ public:
     template <class... _Types>
     explicit _Ref_count_obj_alloc3(const _Alloc& _Al_arg, _Types&&... _Args)
         : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() {
-#if _HAS_CXX20
+#if _HAS_CXX20 && defined(_ENABLE_STL_INTERNAL_CHECK)
         if constexpr (sizeof...(_Types) == 1) {
             // allocate_shared_for_overwrite should use another type for the control block
             _STL_INTERNAL_STATIC_ASSERT(!(is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...));
         }
-#endif // _HAS_CXX20
+#endif // _HAS_CXX20 && defined(_ENABLE_STL_INTERNAL_CHECK)
         allocator_traits<_Rebound>::construct(
             this->_Get_val(), _STD addressof(_Storage._Value), _STD forward<_Types>(_Args)...);
     }
