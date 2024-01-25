@@ -30,8 +30,7 @@ struct delimiter_view_impl<false> {
 };
 template <class Base, class Delimiter>
 using delimiter_view_t =
-    typename delimiter_view_impl<is_convertible_v<Delimiter, ranges::range_value_t<Base>>>::template apply<Base,
-        Delimiter>;
+    delimiter_view_impl<is_convertible_v<Delimiter, ranges::range_value_t<Base>>>::template apply<Base, Delimiter>;
 
 template <ranges::input_range Outer, class Delimiter, ranges::forward_range Expected>
 constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected) {
@@ -60,9 +59,9 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
         using OuterIter   = iterator_t<Outer>;
         using InnerIter   = iterator_t<range_reference_t<Outer>>;
         using PatternIter = iterator_t<DV>;
-        using OuterCat    = typename iterator_traits<OuterIter>::iterator_category;
-        using InnerCat    = typename iterator_traits<InnerIter>::iterator_category;
-        using PatternCat  = typename iterator_traits<PatternIter>::iterator_category;
+        using OuterCat    = iterator_traits<OuterIter>::iterator_category;
+        using InnerCat    = iterator_traits<InnerIter>::iterator_category;
+        using PatternCat  = iterator_traits<PatternIter>::iterator_category;
 
         if constexpr (!is_reference_v<common_reference_t<iter_reference_t<InnerIter>, iter_reference_t<PatternIter>>>) {
             STATIC_ASSERT(same_as<typename iterator_t<R>::iterator_category, input_iterator_tag>);
@@ -84,9 +83,9 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
         using OuterIter   = iterator_t<const Outer>;
         using InnerIter   = iterator_t<range_reference_t<const Outer>>;
         using PatternIter = iterator_t<const DV>;
-        using OuterCat    = typename iterator_traits<OuterIter>::iterator_category;
-        using InnerCat    = typename iterator_traits<InnerIter>::iterator_category;
-        using PatternCat  = typename iterator_traits<PatternIter>::iterator_category;
+        using OuterCat    = iterator_traits<OuterIter>::iterator_category;
+        using InnerCat    = iterator_traits<InnerIter>::iterator_category;
+        using PatternCat  = iterator_traits<PatternIter>::iterator_category;
 
         if constexpr (!is_reference_v<common_reference_t<iter_reference_t<InnerIter>, iter_reference_t<PatternIter>>>) {
             STATIC_ASSERT(same_as<typename iterator_t<const R>::iterator_category, input_iterator_tag>);
@@ -217,6 +216,16 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
                     assert(*ci2 == *i);
                 }
             }
+        }
+    }
+
+    // Also validate that join_with_view iterators are default-constructible
+    {
+        STATIC_ASSERT(is_default_constructible_v<iterator_t<R>>);
+        [[maybe_unused]] iterator_t<R> i;
+        if constexpr (CanMemberBegin<const R>) {
+            STATIC_ASSERT(is_default_constructible_v<iterator_t<const R>>);
+            [[maybe_unused]] iterator_t<const R> ci;
         }
     }
 

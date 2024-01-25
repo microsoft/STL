@@ -18,7 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_EXTERN_C
+extern "C" {
 using _Thrd_id_t = unsigned int;
 struct _Thrd_t { // thread identifier for Win32
     void* _Hnd; // Win32 HANDLE
@@ -33,19 +33,19 @@ struct _Stl_critical_section {
 };
 
 struct _Mtx_internal_imp_t {
-#ifdef _CRT_WINDOWS
+#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 16;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 8;
 #endif // ^^^ !defined(_WIN64) ^^^
-#else // ^^^ defined(_CRT_WINDOWS) / !defined(_CRT_WINDOWS) vvv
+#else // ^^^ Windows private STL / public STL vvv
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 64;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 36;
 #endif // ^^^ !defined(_WIN64) ^^^
-#endif // ^^^ !defined(_CRT_WINDOWS) ^^^
+#endif // ^^^ public STL ^^^
 
     static constexpr size_t _Critical_section_align = alignof(void*);
 
@@ -130,7 +130,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(_Cnd_t) noexcept; // TRANSITION, 
 _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t, _Mtx_t, int*) noexcept;
 _CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t) noexcept;
 _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() noexcept;
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 enum { // constants for error codes

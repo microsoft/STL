@@ -17,10 +17,12 @@ class CustomTestFormat(STLTestFormat):
         testCpp = test.getSourcePath()
         sourceDir = os.path.dirname(testCpp)
         test2Cpp = os.path.join(sourceDir, 'test2.cpp')
+        test3Cpp = os.path.join(sourceDir, 'test3.cpp')
+        test4Cpp = os.path.join(sourceDir, 'test4.cpp')
         classicCpp = os.path.join(sourceDir, 'classic.cpp')
 
         # Dependency order is important here:
-        inputPaths = [stdIxx, stdCompatIxx, testCpp, test2Cpp, classicCpp]
+        inputPaths = [stdIxx, stdCompatIxx, testCpp, test2Cpp, test3Cpp, test4Cpp, classicCpp]
 
         cmd = [test.cxx, *inputPaths, *test.flags, *test.compileFlags]
 

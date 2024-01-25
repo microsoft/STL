@@ -8,6 +8,8 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
+#pragma warning(disable : 6397) // The address-of operator cannot return null pointer in well-defined code.
+
 int g_tasks_destroyed{0};
 
 struct Task {

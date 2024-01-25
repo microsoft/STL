@@ -20,8 +20,8 @@ template <Const IsConst, Dynamic IsDynamic>
 constexpr bool test() {
     using T      = conditional_t<to_underlying(IsConst), const int, int>;
     using Span   = span<T, to_underlying(IsDynamic) ? dynamic_extent : 3>;
-    using CIt    = typename Span::const_iterator;
-    using CRevIt = typename Span::const_reverse_iterator;
+    using CIt    = Span::const_iterator;
+    using CRevIt = Span::const_reverse_iterator;
 
     // Validate iterator properties
     static_assert(contiguous_iterator<CIt>);

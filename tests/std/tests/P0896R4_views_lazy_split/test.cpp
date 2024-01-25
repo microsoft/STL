@@ -33,8 +33,7 @@ struct delimiter_view_impl<false> {
 };
 template <class Base, class Delimiter>
 using delimiter_view_t =
-    typename delimiter_view_impl<is_convertible_v<Delimiter, ranges::range_value_t<Base>>>::template apply<Base,
-        Delimiter>;
+    delimiter_view_impl<is_convertible_v<Delimiter, ranges::range_value_t<Base>>>::template apply<Base, Delimiter>;
 
 template <ranges::input_range Base, class Delimiter, ranges::input_range Expected>
 constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected) {
@@ -185,10 +184,9 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
     }
 
     STATIC_ASSERT(CanMemberEnd<const R>);
-    // clang-format off
     constexpr bool should_be_const_common = ranges::forward_range<Base>
-        && ranges::forward_range<const remove_cvref_t<Base>> && ranges::common_range<const remove_cvref_t<Base>>;
-    // clang-format on
+                                         && ranges::forward_range<const remove_cvref_t<Base>>
+                                         && ranges::common_range<const remove_cvref_t<Base>>;
     STATIC_ASSERT(ranges::common_range<const R> == should_be_const_common);
     const auto sc = as_const(r).end();
     if constexpr (ranges::forward_range<Base> && ranges::forward_range<const remove_cvref_t<Base>>) {

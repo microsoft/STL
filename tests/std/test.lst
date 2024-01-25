@@ -155,6 +155,7 @@ tests\Dev11_1140665_unique_ptr_array_conversions
 tests\Dev11_1150223_shared_mutex
 tests\Dev11_1158803_regex_thread_safety
 tests\Dev11_1180290_filesystem_error_code
+tests\GH_000140_adl_proof_comparison
 tests\GH_000177_forbidden_aliasing
 tests\GH_000178_uniform_int
 tests\GH_000342_filebuf_close
@@ -189,6 +190,7 @@ tests\GH_001277_num_get_bad_grouping
 tests\GH_001411_core_headers
 tests\GH_001530_binomial_accuracy
 tests\GH_001541_case_sensitive_boolalpha
+tests\GH_001596_adl_proof_algorithms
 tests\GH_001638_dllexport_derived_classes
 tests\GH_001850_clog_tied_to_cout
 tests\GH_001858_iostream_exception
@@ -233,6 +235,9 @@ tests\GH_003840_tellg_when_reading_lf_file_in_text_mode
 tests\GH_003867_output_nan
 tests\GH_004023_mdspan_fwd_prod_overflow
 tests\GH_004040_container_nonmember_functions
+tests\GH_004109_iter_value_t_direct_initialization
+tests\GH_004201_chrono_formatter
+tests\GH_004275_seeking_fancy_iterators
 tests\LWG2381_num_get_floating_point
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
@@ -601,6 +606,7 @@ tests\P2286R8_text_formatting_escaping
 tests\P2286R8_text_formatting_escaping_legacy_text_encoding
 tests\P2286R8_text_formatting_escaping_utf8
 tests\P2286R8_text_formatting_formattable
+tests\P2286R8_text_formatting_vector_bool_reference
 tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
@@ -639,6 +645,7 @@ tests\P2474R2_views_repeat
 tests\P2474R2_views_repeat_death
 tests\P2494R2_move_only_range_adaptors
 tests\P2505R5_monadic_functions_for_std_expected
+tests\P2510R3_text_formatting_pointers
 tests\P2517R1_apply_conditional_noexcept
 tests\P2538R1_adl_proof_std_projected
 tests\P2609R3_relaxing_ranges_just_a_smidge
@@ -730,3 +737,4 @@ tests\VSO_0849827_multicontainer_emplace_hint_position
 tests\VSO_0938757_attribute_order
 tests\VSO_0961751_hash_range_erase
 tests\VSO_0971246_legacy_await_headers
+tests\VSO_1925201_iter_traits

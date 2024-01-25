@@ -1724,13 +1724,13 @@ template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
 
 _EXPORT_STD template <class _Callable>
-_CONSTEXPR17 auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
+constexpr auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
     -> decltype(static_cast<_Callable&&>(_Obj)()) {
     return static_cast<_Callable&&>(_Obj)();
 }
 
 _EXPORT_STD template <class _Callable, class _Ty1, class... _Types2>
-_CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
+constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
     noexcept(_Invoker1<_Callable, _Ty1>::_Call(
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
     -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
@@ -1746,7 +1746,12 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_object) {
         return static_cast<_Ty1&&>(_Arg1).*_Obj;
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10543093
         return _Arg1.get().*_Obj;
+#else // ^^^ no workaround / workaround vvv
+        auto& _Ref = _Arg1.get();
+        return _Ref.*_Obj;
+#endif // ^^^ workaround ^^^
     } else {
         _STL_INTERNAL_STATIC_ASSERT(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer);
         return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
@@ -1759,7 +1764,7 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
 #pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch (/Wall)
 
 template <class _From, class _To, bool = is_convertible_v<_From, _To>, bool = is_void_v<_To>>
-_INLINE_VAR constexpr bool _Is_nothrow_convertible_v = noexcept(_Fake_copy_init<_To>(_STD declval<_From>()));
+_INLINE_VAR constexpr bool _Is_nothrow_convertible_v = noexcept(_STD _Fake_copy_init<_To>(_STD declval<_From>()));
 
 #pragma warning(pop)
 
@@ -1779,7 +1784,7 @@ _EXPORT_STD template <class _From, class _To>
 inline constexpr bool is_nothrow_convertible_v = _Is_nothrow_convertible_v<_From, _To>;
 
 _EXPORT_STD template <class _From, class _To>
-using is_nothrow_convertible = _Is_nothrow_convertible<_From, _To>;
+struct is_nothrow_convertible : bool_constant<_Is_nothrow_convertible_v<_From, _To>> {};
 #endif // _HAS_CXX20
 
 template <class _From, class _To, class = void>
@@ -2125,7 +2130,7 @@ _EXPORT_STD template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 template <class _Ty, int _Enabled = 0>
 #endif // ^^^ !_HAS_CXX17 ^^^
-_CONSTEXPR20 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
+_CONSTEXPR20 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_assignable_v<_Ty>);
 
 _EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> = 0>
 _CONSTEXPR20 void swap(_Ty (&)[_Size], _Ty (&)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value);
@@ -2436,7 +2441,7 @@ struct less {
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
     _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
-        noexcept(noexcept(_Fake_copy_init<bool>(_Left < _Right))) /* strengthened */ {
+        noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left < _Right))) /* strengthened */ {
         return _Left < _Right;
     }
 };

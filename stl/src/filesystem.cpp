@@ -187,7 +187,7 @@ namespace {
     }
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 
 [[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_full_path_name(_In_z_ const wchar_t* _Source,
     _In_ unsigned long _Target_size, _Out_writes_z_(_Target_size) wchar_t* _Target) noexcept { // calls GetFullPathNameW
@@ -599,7 +599,6 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     }
 
     if (_Last_error == __std_win_error::_Access_denied && _Able_to_change_attributes) {
-
         FILE_BASIC_INFO _Basic_info;
         if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
             return {false, __std_win_error{GetLastError()}};
@@ -1028,4 +1027,4 @@ namespace {
     return __std_win_error{GetLastError()};
 }
 
-_END_EXTERN_C
+} // extern "C"

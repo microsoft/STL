@@ -81,6 +81,51 @@ void test_iter_add_neg_overflow() {
     it += -1; // integer overflow
 }
 
+template <class I>
+using iota_diff_t = ranges::range_difference_t<ranges::iota_view<I>>;
+
+template <class U>
+constexpr iota_diff_t<U> positive_huge_diff{iota_diff_t<U>{static_cast<U>(-1)} + 1};
+
+template <class U>
+constexpr iota_diff_t<U> negative_huge_diff{-iota_diff_t<U>{static_cast<U>(-1)} - 1};
+
+template <class U>
+void test_iter_add_pos_huge() {
+    auto rv    = views::repeat(0, U{20u});
+    auto first = rv.begin();
+
+    using difference_type = ranges::range_difference_t<decltype(rv)>;
+    first += static_cast<difference_type>(positive_huge_diff<U>);
+}
+
+template <class U>
+void test_iter_add_neg_huge() {
+    auto rv    = views::repeat(0, U{20u});
+    auto first = rv.begin();
+
+    using difference_type = ranges::range_difference_t<decltype(rv)>;
+    first += static_cast<difference_type>(negative_huge_diff<U>);
+}
+
+template <class U>
+void test_iter_sub_pos_huge() {
+    auto rv    = views::repeat(0, U{20u});
+    auto first = rv.begin();
+
+    using difference_type = ranges::range_difference_t<decltype(rv)>;
+    first -= static_cast<difference_type>(positive_huge_diff<U>);
+}
+
+template <class U>
+void test_iter_sub_neg_huge() {
+    auto rv    = views::repeat(0, U{20u});
+    auto first = rv.begin();
+
+    using difference_type = ranges::range_difference_t<decltype(rv)>;
+    first -= static_cast<difference_type>(negative_huge_diff<U>);
+}
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
 
@@ -96,6 +141,19 @@ int main(int argc, char* argv[]) {
         test_iter_add_zero,
         test_iter_add_pos_overflow,
         test_iter_add_neg_overflow,
+        // GH-4251: <ranges>: repeat_view<T, unsigned int> emits truncation warnings
+        test_iter_add_pos_huge<unsigned short>,
+        test_iter_add_pos_huge<unsigned int>,
+        test_iter_add_pos_huge<unsigned long long>,
+        test_iter_add_neg_huge<unsigned short>,
+        test_iter_add_neg_huge<unsigned int>,
+        test_iter_add_neg_huge<unsigned long long>,
+        test_iter_sub_pos_huge<unsigned short>,
+        test_iter_sub_pos_huge<unsigned int>,
+        test_iter_sub_pos_huge<unsigned long long>,
+        test_iter_sub_neg_huge<unsigned short>,
+        test_iter_sub_neg_huge<unsigned int>,
+        test_iter_sub_neg_huge<unsigned long long>,
     });
     return exec.run(argc, argv);
 }

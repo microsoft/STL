@@ -561,6 +561,9 @@ public:
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     forward_list(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct list from _Count * _Val, allocator
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
@@ -592,18 +595,18 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     forward_list(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
-        _Insert_op._Append_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _Insert_op._Append_range_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     forward_list(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
-        _Insert_op._Append_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _Insert_op._Append_range_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
@@ -957,8 +960,8 @@ private:
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        _Assign_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        _Assign_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -1019,8 +1022,8 @@ public:
         _STL_VERIFY(
             _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list insert_after location incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
-        _Adl_verify_range(_First, _Last);
-        return _Insert_range_after(_Where._Ptr, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        return _Insert_range_after(_Where._Ptr, _STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -1272,12 +1275,12 @@ public:
 
     template <class _Pr2>
     void merge(forward_list& _Right, _Pr2 _Pred) { // merge in elements from _Right, both ordered by _Pred
-        _Merge1(_Right, _Pass_fn(_Pred));
+        _Merge1(_Right, _STD _Pass_fn(_Pred));
     }
 
     template <class _Pr2>
     void merge(forward_list&& _Right, _Pr2 _Pred) { // merge in elements from _Right, both ordered by _Pred
-        _Merge1(_Right, _Pass_fn(_Pred));
+        _Merge1(_Right, _STD _Pass_fn(_Pred));
     }
 
 private:
@@ -1394,7 +1397,7 @@ public:
 
     template <class _Pr2>
     void sort(_Pr2 _Pred) { // order sequence
-        _Scary_val::_Sort(_Mypair._Myval2._Before_head(), _Pass_fn(_Pred));
+        _Scary_val::_Sort(_Mypair._Myval2._Before_head(), _STD _Pass_fn(_Pred));
     }
 
     void reverse() noexcept { // reverse sequence
@@ -1619,7 +1622,7 @@ forward_list<_Ty, _Alloc>::size_type erase(forward_list<_Ty, _Alloc>& _Cont, con
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
 forward_list<_Ty, _Alloc>::size_type erase_if(forward_list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    return _Cont.remove_if(_Pass_fn(_Pred));
+    return _Cont.remove_if(_STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

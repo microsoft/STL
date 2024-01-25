@@ -11,7 +11,7 @@
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
 
 #if !defined(MRTDLL)
-_EXTERN_C
+extern "C" {
 #endif // defined(MRTDLL)
 
 #define BIG_EXP   (2 * FMAXEXP) // very large, as exponents go
@@ -345,7 +345,7 @@ FTYPE* FNAME(Xp_mulx)(FTYPE* p, int n, const FTYPE* q, int m, FTYPE* ptemp2) noe
 }
 
 #if !defined(MRTDLL)
-_END_EXTERN_C
+} // extern "C"
 #endif // !defined(MRTDLL)
 
 #pragma warning(pop)

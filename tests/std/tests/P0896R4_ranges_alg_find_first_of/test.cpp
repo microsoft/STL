@@ -73,7 +73,7 @@ int main() {
 #else // ^^^ test all range combinations / test only interesting range combos vvv
 constexpr bool run_tests() {
     // The algorithm is oblivious to anything except maybe proxies so take the bare minimum input/forward range
-    using in_test_range  = test::range<input_iterator_tag, const P, test::Sized::no, test::CanDifference::no,
+    using in_test_range = test::range<input_iterator_tag, const P, test::Sized::no, test::CanDifference::no,
         test::Common::no, test::CanCompare::no, test::ProxyRef::yes>;
     using fwd_test_range = test::range<forward_iterator_tag, const int, test::Sized::no, test::CanDifference::no,
         test::Common::no, test::CanCompare::yes, test::ProxyRef::yes>;

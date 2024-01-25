@@ -56,7 +56,7 @@ void test_positive_cases() {
 // Negative tests:
 template <class C, bool IsConst>
 void test_invalidated_by_pop_back() {
-    using T = typename C::value_type;
+    using T = C::value_type;
     C c     = {T{}, {}, {}};
 
     maybe_const_iter<IsConst, C> const pos = c.end() - 1;
@@ -68,7 +68,7 @@ void test_invalidated_by_pop_back() {
 
 template <class C, bool IsConst>
 void test_invalidated_by_push_back() {
-    using T = typename C::value_type;
+    using T = C::value_type;
     C c;
     c.resize(1024, T{});
     c.resize(512);
@@ -82,7 +82,7 @@ void test_invalidated_by_push_back() {
 
 template <class C, bool IsConst>
 void test_invalidated_by_reallocation() {
-    using T = typename C::value_type;
+    using T = C::value_type;
     C c     = {T{}, {}, {}};
 
     maybe_const_iter<IsConst, C> const pos = c.begin();
@@ -94,7 +94,7 @@ void test_invalidated_by_reallocation() {
 
 template <class C, bool IsConst>
 void test_out_of_range() {
-    using T = typename C::value_type;
+    using T = C::value_type;
     C c     = {T{}, {}, {}};
 
     maybe_const_iter<IsConst, C> const last = c.end();

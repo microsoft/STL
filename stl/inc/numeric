@@ -259,7 +259,7 @@ _CONSTEXPR20 _OutIt partial_sum(const _InIt _First, const _InIt _Last, _OutIt _D
 #if _HAS_CXX20
             _Val = _Reduce_op(_STD move(_Val), *_UFirst);
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-            _Val      = _Reduce_op(_Val, *_UFirst);
+            _Val = _Reduce_op(_Val, *_UFirst);
 #endif // ^^^ !_HAS_CXX20 ^^^
         }
     }
@@ -343,7 +343,7 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     if (_UFirst != _ULast) {
-        _Iter_value_t<_InIt> _Val = *_UFirst; // Requirement missing from N4950
+        _Iter_value_t<_InIt> _Val(*_UFirst); // Requirement missing from N4950
         for (;;) {
             *_UDest = _Val;
             ++_UDest;
@@ -476,10 +476,10 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     if (_UFirst != _ULast) {
-        _Iter_value_t<_InIt> _Val = *_UFirst;
-        *_UDest                   = _Val;
+        _Iter_value_t<_InIt> _Val(*_UFirst);
+        *_UDest = _Val;
         while (++_UFirst != _ULast) { // compute another difference
-            _Iter_value_t<_InIt> _Tmp = *_UFirst;
+            _Iter_value_t<_InIt> _Tmp(*_UFirst);
 #if _HAS_CXX20
             *++_UDest = _Func(_Tmp, _STD move(_Val));
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv

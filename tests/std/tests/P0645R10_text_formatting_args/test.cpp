@@ -52,7 +52,7 @@ enum class Arg_type : uint8_t {
 template <class Context>
 constexpr auto visitor = [](auto&& arg) {
     using T         = decay_t<decltype(arg)>;
-    using char_type = typename Context::char_type;
+    using char_type = Context::char_type;
     if constexpr (is_same_v<T, monostate>) {
         return Arg_type::none;
     } else if constexpr (is_same_v<T, int>) {
@@ -84,7 +84,7 @@ constexpr auto visitor = [](auto&& arg) {
 
 template <class Context>
 void test_basic_format_arg() {
-    using char_type = typename Context::char_type;
+    using char_type = Context::char_type;
 
     { // construction
         basic_format_arg<Context> default_constructed;
@@ -161,7 +161,7 @@ void test_single_format_arg(Type value) {
 
 template <class Context>
 void test_format_arg_store() {
-    using char_type = typename Context::char_type;
+    using char_type = Context::char_type;
 
     test_empty_format_arg<Context>();
 
@@ -248,7 +248,8 @@ void test_visit_monostate() {
 
 template <class Context>
 void test_lwg3810() {
-    [[maybe_unused]] auto args_store = make_format_args<Context>(1, 2, 3);
+    int args[]{1, 2, 3};
+    [[maybe_unused]] auto args_store = make_format_args<Context>(args[0], args[1], args[2]);
     static_assert(same_as<decltype(basic_format_args{args_store}), basic_format_args<Context>>);
 }
 
@@ -264,6 +265,54 @@ void test_lvalue_only_visitation() {
     visit_format_arg(lvalue_only_visitor{}, basic_format_arg<Context>{});
 }
 
+namespace detail {
+    constexpr bool permissive() {
+        return false;
+    }
+
+    template <class>
+    struct DependentBase {
+        static constexpr bool permissive() {
+            return true;
+        }
+    };
+
+    template <class T>
+    struct Derived : DependentBase<T> {
+        static constexpr bool test() {
+            return permissive();
+        }
+    };
+} // namespace detail
+constexpr bool is_permissive = detail::Derived<int>::test();
+
+template <class Context, class... Args>
+concept CanMakeFormatArgs = requires(Args&&... args) { make_format_args<Context>(static_cast<Args&&>(args)...); };
+
+// P2905R2 Runtime format strings (make make_(w)format_args only take lvalue references)
+template <class Context>
+void test_lvalue_reference_parameters() {
+    using char_type = Context::char_type;
+
+    static_assert(CanMakeFormatArgs<Context, int&, long long&, double&, char_type&, char_type*&, const char_type*&,
+        basic_string<char_type>&, basic_string_view<char_type>&>);
+    static_assert(
+        CanMakeFormatArgs<Context, const int&, const long long&, const double&, const char_type&, char_type* const&,
+            const char_type* const&, const basic_string<char_type>&, const basic_string_view<char_type>&>);
+
+    static_assert(CanMakeFormatArgs<Context, const int, const long long, const double, const char_type,
+        char_type* const, const char_type* const, const basic_string<char_type>, const basic_string_view<char_type>>);
+
+    static_assert(!CanMakeFormatArgs<Context, int>);
+    static_assert(!CanMakeFormatArgs<Context, long long>);
+    static_assert(!CanMakeFormatArgs<Context, double>);
+    static_assert(!CanMakeFormatArgs<Context, char_type>);
+    static_assert(!CanMakeFormatArgs<Context, char_type*>);
+    static_assert(!CanMakeFormatArgs<Context, const char_type*>);
+    static_assert(CanMakeFormatArgs<Context, basic_string<char_type>> == is_permissive);
+    static_assert(CanMakeFormatArgs<Context, basic_string_view<char_type>> == is_permissive);
+}
+
 int main() {
     test_basic_format_arg<format_context>();
     test_basic_format_arg<wformat_context>();
@@ -277,4 +326,7 @@ int main() {
 
     test_lvalue_only_visitation<format_context>();
     test_lvalue_only_visitation<wformat_context>();
+
+    test_lvalue_reference_parameters<format_context>();
+    test_lvalue_reference_parameters<wformat_context>();
 }

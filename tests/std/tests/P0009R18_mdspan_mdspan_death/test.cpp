@@ -25,12 +25,22 @@ void test_access_with_invalid_multidimensional_index_1() {
     // I must be a multidimensional index in extents()
     (void) mds[3, 4];
 }
+
+void test_access_with_nonrepresentable_index_1() {
+    mdspan mds{some_ints.data(), dextents<unsigned char, 2>{2, 3}};
+    (void) mds[256u, -255];
+}
 #endif // __cpp_multidimensional_subscript
 
 void test_access_with_invalid_multidimensional_index_2() {
     mdspan mds{some_ints.data(), 5, 5};
     // I must be a multidimensional index in extents()
     (void) mds[array{4, 5}];
+}
+
+void test_access_with_nonrepresentable_index_2() {
+    mdspan mds{some_ints.data(), dextents<unsigned char, 2>{2, 3}};
+    (void) mds[array{256, -255}];
 }
 
 void test_size_when_index_type_is_signed() {
@@ -51,8 +61,10 @@ int main(int argc, char* argv[]) {
         test_construction_from_other_mdspan,
 #ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         test_access_with_invalid_multidimensional_index_1,
+        test_access_with_nonrepresentable_index_1,
 #endif // __cpp_multidimensional_subscript
         test_access_with_invalid_multidimensional_index_2,
+        test_access_with_nonrepresentable_index_2,
         test_size_when_index_type_is_signed,
         test_size_when_index_type_is_unsigned,
     });

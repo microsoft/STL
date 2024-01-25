@@ -17,6 +17,7 @@ config.suffixes         = ['[.]pass[.]cpp$', '[.]fail[.]cpp$']
 config.test_exec_root   = '@LIBCXX_TEST_OUTPUT_DIR@'
 config.test_format      = stl.test.format.LibcxxTestFormat()
 config.test_source_root = '@LIBCXX_SOURCE_DIR@/test'
+config.substitutions.append(('%{cxx_std}', ''))
 
 lit_config.expected_results = getattr(lit_config, 'expected_results', dict())
 lit_config.include_dirs     = getattr(lit_config, 'include_dirs', dict())
@@ -24,7 +25,8 @@ lit_config.library_dirs     = getattr(lit_config, 'library_dirs', dict())
 lit_config.test_subdirs     = getattr(lit_config, 'test_subdirs', dict())
 
 lit_config.expected_results[config.name] = stl.test.file_parsing.parse_result_file('@LIBCXX_EXPECTED_RESULTS@')
-lit_config.include_dirs[config.name]     = ['@STL_TESTED_HEADERS_DIR@', '@LIBCXX_SOURCE_DIR@/test/support']
+# TRANSITION, VSO-1913897: '@STL_SOURCE_DIR@/tests/std/include' is a workaround
+lit_config.include_dirs[config.name]     = ['@STL_TESTED_HEADERS_DIR@', '@LIBCXX_SOURCE_DIR@/test/support', '@STL_SOURCE_DIR@/tests/std/include']
 lit_config.library_dirs[config.name]     = ['@STL_LIBRARY_OUTPUT_DIRECTORY@', '@TOOLSET_LIB@']
 lit_config.test_subdirs[config.name]     = ['@LIBCXX_SOURCE_DIR@/test/std']
 
