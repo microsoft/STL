@@ -1394,7 +1394,7 @@ namespace filesystem {
                 const auto _Total_size = _Left_size + _Is_slash_needed + _Right_size;
 
                 path _Tmp;
-                _Tmp._Text._Resize_and_overwrite(_Total_size, [&](wchar_t* _Ptr, size_t _Size) {
+                _Tmp._Text._Resize_and_overwrite(_Total_size, [=](wchar_t* _Ptr, size_t _Size) {
                     _CSTD memcpy(_Ptr, _Left_first, _Left_size * sizeof(wchar_t));
                     _Ptr += _Left_size;
                     if (_Is_slash_needed) {
