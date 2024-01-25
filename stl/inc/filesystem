@@ -1381,9 +1381,8 @@ namespace filesystem {
             const auto _Right_first = _Right._Text.data();
             const auto _Right_last  = _Right_first + _Right_size;
 
-            // Handle the most common case
+            // Handle the most common case: !has_root_name(_Right) && !has_root_directory(_Right)
             if (!_Has_drive_letter_prefix(_Right_first, _Right_last) && !_Is_slash(*_Right_first)) {
-                // !has_root_name(_Right) && !has_root_directory(_Right)
                 const auto _Left_size  = _Left._Text.size();
                 const auto _Left_first = _Left._Text.data();
                 const auto _Left_last  = _Left._Text.data() + _Left_size;
