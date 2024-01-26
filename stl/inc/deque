@@ -1014,8 +1014,11 @@ public:
             static_cast<size_type>((_Myoff() + _Mysize() - 1) / _Block_size + 1 - _Myoff() / _Block_size);
 
         size_type _New_block_count = _Minimum_map_size; // should be power of 2
-        for (; _New_block_count < _Used_block_count; _New_block_count *= 2)
-            ;
+
+        while (_New_block_count < _Used_block_count) {
+            _New_block_count *= 2;
+        }
+
         if (_New_block_count >= _Mapsize()) {
             return;
         }
