@@ -1671,8 +1671,7 @@ private:
             _Reset_map();
         }
 
-        _Mapsize() = 0;
-        _Map()     = nullptr;
+        _STL_INTERNAL_CHECK(_Mapsize() == 0); // null map should always be paired with zero mapsize
     }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
