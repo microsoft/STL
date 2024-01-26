@@ -1039,7 +1039,7 @@ public:
             _STD _Construct_in_place(_New_map[_New_block_idx], _Map()[_Old_block_idx]);
         }
 
-        // zero out the rest of the new map
+        // null out the rest of the new map
         _STD _Uninitialized_value_construct_n_unchecked1(
             _New_map + static_cast<_Map_difference_type>(_Used_block_count), _New_block_count - _Used_block_count);
 
