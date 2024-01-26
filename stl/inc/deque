@@ -1038,9 +1038,10 @@ public:
             // transfer the ownership of blocks to pointers in the new map
             _STD _Construct_in_place(_New_map[_New_block_idx], _Map()[static_cast<_Map_difference_type>(_Block_idx)]);
         }
+
         // zero out the rest of the new map
         _STD _Uninitialized_value_construct_n_unchecked1(
-            _New_map + _New_block_idx, _New_block_count - static_cast<size_type>(_New_block_idx));
+            _New_map + static_cast<_Map_difference_type>(_Used_block_count), _New_block_count - _Used_block_count);
 
         for (auto _Block = _Map_distance(); _Block > 0;) {
             --_Block;
