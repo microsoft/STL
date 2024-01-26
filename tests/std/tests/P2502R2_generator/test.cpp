@@ -255,6 +255,7 @@ void zip_example() {
     assert(length == 3);
 }
 
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, unreported clang bug
 std::generator<int> iota_repeater(const int hi, const int depth) {
     if (depth > 0) {
         co_yield ranges::elements_of(iota_repeater(hi, depth - 1));
@@ -294,6 +295,7 @@ void arbitrary_range_test() {
 
     assert(ranges::equal(yield_arbitrary_ranges(), std::array{40, 30, 20, 10, 0, 1, 2, 3, 500, 400, 300}));
 }
+#endif // !(defined(__clang__) && defined(_M_IX86))
 
 int main() {
     {
@@ -314,6 +316,7 @@ int main() {
         assert(pos == r.end());
     }
 
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, unreported clang bug
     {
         // test with mutable xvalue reference type
         auto woof = [](std::size_t size, std::size_t count) -> std::generator<std::vector<int>&&> {
@@ -341,11 +344,14 @@ int main() {
             assert((*i).empty());
         }
     }
+#endif // !(defined(__clang__) && defined(_M_IX86))
 
     static_allocator_test();
     dynamic_allocator_test();
 
     zip_example();
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, unreported clang bug
     recursive_test();
     arbitrary_range_test();
+#endif // !(defined(__clang__) && defined(_M_IX86))
 }
