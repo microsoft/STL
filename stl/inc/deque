@@ -999,8 +999,13 @@ public:
         const auto _Mask = static_cast<size_type>(_Mapsize() - 1);
 
         const auto _First_used_block_idx = static_cast<size_type>(_Myoff() / _Block_size);
+
+        // (_Myoff() + _Mysize() - 1) is for the last element, i.e. the back() of the deque.
+        // Divide by _Block_size to get the unmasked index of the last used block.
+        // Add 1 to get the unmasked index of the first unused block.
         const auto _Unmasked_first_unused_block_idx =
             static_cast<size_type>(((_Myoff() + _Mysize() - 1) / _Block_size) + 1);
+
         const auto _First_unused_block_idx = static_cast<size_type>(_Unmasked_first_unused_block_idx & _Mask);
 
         // deallocate unused blocks, traversing over the circular buffer until the first used block index
@@ -1051,7 +1056,7 @@ public:
 
         _Map()     = _New_map;
         _Mapsize() = _New_block_count;
-        _Myoff() %= _Block_size;
+        _Myoff() %= _Block_size; // the first element is within block index 0 of the new map
     }
 
     _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
