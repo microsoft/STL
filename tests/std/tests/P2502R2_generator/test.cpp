@@ -103,8 +103,6 @@ struct stateless_alloc {
     constexpr stateless_alloc(const stateless_alloc<U>&) noexcept {}
 
     T* allocate(const std::size_t n) {
-        // std::cerr << "stateless_alloc::allocate(" << n << " * " << sizeof(T) << " == " << n * sizeof(T) << ") = ";
-
         void* vp;
         if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
             vp = ::_aligned_malloc(n * sizeof(T), alignof(T));
@@ -113,17 +111,13 @@ struct stateless_alloc {
         }
 
         if (vp) {
-            // std::cerr << vp << '\n';
             return static_cast<T*>(vp);
         }
 
-        // std::cerr << "bad_alloc\n";
         throw std::bad_alloc{};
     }
 
     void deallocate(void* const vp, [[maybe_unused]] const std::size_t n) noexcept {
-        // std::cerr << "stateless_alloc::deallocate(" << n << " * " << sizeof(T) << " == " << n * sizeof(T) << ")\n";
-
         if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
             ::_aligned_free(vp);
         } else {
@@ -150,9 +144,6 @@ struct stateful_alloc {
     constexpr stateful_alloc(const stateful_alloc<U>& that) noexcept : domain{that.domain} {}
 
     T* allocate(const std::size_t n) {
-        // std::cerr << "stateful_alloc{" << domain << "}::allocate(" << n << " * " << sizeof(T) << " == "
-        //           << n * sizeof(T) << ") = ";
-
         void* vp;
         if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
             vp = ::_aligned_malloc(n * sizeof(T), alignof(T));
@@ -161,18 +152,13 @@ struct stateful_alloc {
         }
 
         if (vp) {
-            // std::cerr << vp << '\n';
             return static_cast<T*>(vp);
         }
 
-        // std::cerr << "bad_alloc\n";
         throw std::bad_alloc{};
     }
 
     void deallocate(void* const vp, [[maybe_unused]] const std::size_t n) noexcept {
-        // std::cerr << "stateful_alloc{" << domain << "}::deallocate(" << n << " * " << sizeof(T)
-        //           << " == " << n * sizeof(T) << ")\n";
-
         if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
             ::_aligned_free(vp);
         } else {
@@ -188,8 +174,6 @@ struct stateful_alloc {
 static_assert(!std::default_initializable<stateful_alloc<int>>);
 
 void static_allocator_test() {
-    // std::cerr << "static_allocator_test:\n";
-
     {
         auto g = [](const int hi) -> std::generator<int, int, stateless_alloc<char>> {
             constexpr std::size_t n = 64;
@@ -230,8 +214,6 @@ void static_allocator_test() {
 }
 
 void dynamic_allocator_test() {
-    // std::cerr << "dynamic_allocator_test:\n";
-
     auto g = [](std::allocator_arg_t, const auto&, const int hi) -> std::generator<int> {
         constexpr std::size_t n = 64;
         int some_ints[n];
@@ -255,7 +237,7 @@ void zip_example() {
     assert(length == 3);
 }
 
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, unreported clang bug
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
 std::generator<int> iota_repeater(const int hi, const int depth) {
     if (depth > 0) {
         co_yield ranges::elements_of(iota_repeater(hi, depth - 1));
@@ -316,7 +298,7 @@ int main() {
         assert(pos == r.end());
     }
 
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, unreported clang bug
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     {
         // test with mutable xvalue reference type
         auto woof = [](std::size_t size, std::size_t count) -> std::generator<std::vector<int>&&> {
@@ -350,7 +332,7 @@ int main() {
     dynamic_allocator_test();
 
     zip_example();
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, unreported clang bug
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     recursive_test();
     arbitrary_range_test();
 #endif // !(defined(__clang__) && defined(_M_IX86))
