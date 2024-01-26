@@ -1645,10 +1645,12 @@ private:
         // pre: each block pointer is either null or pointing to a block without constructed elements
 
         for (auto _Block = _Map_distance(); _Block > 0;) { // free storage for a block and destroy pointer
-            if (_Map()[--_Block]) { // free block
-                _Getal().deallocate(_Map()[_Block], _Block_size);
+            --_Block;
+            auto& _Block_ptr = _Map()[_Block];
+            if (_Block_ptr) { // free block
+                _Getal().deallocate(_Block_ptr, _Block_size);
             }
-            _STD _Destroy_in_place(_Map()[_Block]); // destroy pointer to block
+            _STD _Destroy_in_place(_Block_ptr); // destroy pointer to block
         }
 
         _Alpty _Almap(_Getal());
