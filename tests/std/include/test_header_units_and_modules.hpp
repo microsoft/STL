@@ -280,6 +280,20 @@ void test_future() {
     assert(f.get() == 1729);
 }
 
+#if TEST_STANDARD >= 23
+void test_generator() {
+    using namespace std;
+    puts("Testing <generator>.");
+    auto some_ints = [](int hi) -> generator<int> {
+        for (int i = 0; i < hi; ++i) {
+            co_yield i;
+        }
+    };
+    constexpr int bound = 42;
+    assert(ranges::equal(some_ints(bound), views::iota(0, bound)));
+}
+#endif // TEST_STANDARD >= 23
+
 void test_initializer_list() {
     using namespace std;
     puts("Testing <initializer_list>.");
@@ -1145,6 +1159,9 @@ void all_cpp_header_tests() {
     test_fstream();
     test_functional();
     test_future();
+#if TEST_STANDARD >= 23
+    test_generator();
+#endif // TEST_STANDARD >= 23
     test_initializer_list();
     test_iomanip();
     test_ios();

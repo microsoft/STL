@@ -644,6 +644,7 @@ tests\P2467R1_exclusive_mode_fstreams
 tests\P2474R2_views_repeat
 tests\P2474R2_views_repeat_death
 tests\P2494R2_move_only_range_adaptors
+tests\P2502R2_generator
 tests\P2505R5_monadic_functions_for_std_expected
 tests\P2510R3_text_formatting_pointers
 tests\P2517R1_apply_conditional_noexcept

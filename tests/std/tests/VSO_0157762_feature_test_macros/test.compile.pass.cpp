@@ -423,6 +423,12 @@ STATIC_ASSERT(__cpp_lib_gcd_lcm == 201606L);
 #error __cpp_lib_gcd_lcm is defined
 #endif
 
+#if _HAS_CXX23 && defined(__cpp_lib_byte) && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+STATIC_ASSERT(__cpp_lib_generator == 202207L);
+#elif defined(__cpp_lib_generator)
+#error __cpp_lib_generator is defined
+#endif
+
 STATIC_ASSERT(__cpp_lib_generic_associative_lookup == 201304L);
 
 #if _HAS_CXX20
