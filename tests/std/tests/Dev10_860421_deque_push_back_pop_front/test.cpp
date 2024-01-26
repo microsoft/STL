@@ -292,10 +292,10 @@ void test_gh_4072() {
     }
     {
         deque<ThrowingMovable> deq(128);
-        for (int i = 0; i < 120; i++) {
+        for (int i = 0; i < 120; ++i) {
             deq.pop_back();
         }
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; ++i) {
             deq.emplace_front(0);
         }
         deq.shrink_to_fit();
