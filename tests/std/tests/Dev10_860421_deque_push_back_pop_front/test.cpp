@@ -261,25 +261,27 @@ void test_exception_safety_for_throwing_movable() {
 
 // Also test GH-4072: <deque>: shrink_to_fit() should follow the Standard
 void test_gh_4072() {
-    constexpr int removed_count = 768;
+    {
+        constexpr int removed_count = 768;
 
-    deque<ThrowingMovable> d;
-    for (int i = 0; i < 1729; ++i) {
-        d.emplace_back(i);
+        deque<ThrowingMovable> d;
+        for (int i = 0; i < 1729; ++i) {
+            d.emplace_back(i);
+        }
+
+        for (int i = 0; i < removed_count; ++i) {
+            d.pop_front();
+            d.pop_back();
+        }
+
+        deque<ThrowingMovable> d2;
+        for (int i = removed_count; i < 1729 - removed_count; ++i) {
+            d2.emplace_back(i);
+        }
+
+        d.shrink_to_fit(); // ensures that no constructor or assignment operator of the element type is called
+        assert(d == d2);
     }
-
-    for (int i = 0; i < removed_count; ++i) {
-        d.pop_front();
-        d.pop_back();
-    }
-
-    deque<ThrowingMovable> d2;
-    for (int i = removed_count; i < 1729 - removed_count; ++i) {
-        d2.emplace_back(i);
-    }
-
-    d.shrink_to_fit(); // additionally ensures that no constructor or assignment operator of the element type is called
-    assert(d == d2);
 
     // ensure that the circular buffer is correctly handled
     {
