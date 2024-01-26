@@ -999,8 +999,9 @@ public:
         const auto _Mask = static_cast<size_type>(_Mapsize() - 1);
 
         const auto _First_used_block_idx = static_cast<size_type>(_Myoff() / _Block_size);
-        const auto _First_unused_block_idx =
-            static_cast<size_type>((((_Myoff() + _Mysize() - 1) / _Block_size) + 1) & _Mask);
+        const auto _Unmasked_first_unused_block_idx =
+            static_cast<size_type>(((_Myoff() + _Mysize() - 1) / _Block_size) + 1);
+        const auto _First_unused_block_idx = static_cast<size_type>(_Unmasked_first_unused_block_idx & _Mask);
 
         // deallocate unused blocks, traversing over the circular buffer until the first used block index
         for (auto _Block_idx = _First_unused_block_idx; _Block_idx != _First_used_block_idx;
@@ -1012,8 +1013,7 @@ public:
             }
         }
 
-        const auto _Used_block_count =
-            static_cast<size_type>(((_Myoff() + _Mysize() - 1) / _Block_size) + 1 - _First_used_block_idx);
+        const auto _Used_block_count = static_cast<size_type>(_Unmasked_first_unused_block_idx - _First_used_block_idx);
 
         size_type _New_block_count = _Minimum_map_size; // should be power of 2
 
