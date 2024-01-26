@@ -259,7 +259,7 @@ void test_exception_safety_for_throwing_movable() {
     assert(d == d_orig);
 }
 
-// Also test GH-4072: shrink_to_fit() should have move_if_noexcept() logic bug
+// Also test GH-4072: <deque>: shrink_to_fit() should follow the Standard
 void test_gh_4072() {
     constexpr int removed_count = 768;
 
