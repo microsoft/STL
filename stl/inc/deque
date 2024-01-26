@@ -1011,7 +1011,7 @@ public:
         }
 
         const auto _Used_block_count =
-            static_cast<size_type>(((_Myoff() + _Mysize() - 1) / _Block_size) + 1 - (_Myoff() / _Block_size));
+            static_cast<size_type>(((_Myoff() + _Mysize() - 1) / _Block_size) + 1 - _First_used_block_idx);
 
         size_type _New_block_count = _Minimum_map_size; // should be power of 2
 
