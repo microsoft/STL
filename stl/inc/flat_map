@@ -757,6 +757,28 @@ protected:
         return _Old_size - size();
     }
 
+    template <class _KeyTy, class... _MappedArgTypes>
+    pair<iterator, bool> _Try_emplace(_KeyTy&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
+        auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
+        if (_Key_it != _Data.keys.end() && _Key_equal(*_Key_it, _STD forward<_KeyTy>(_Key_val))) {
+            // Already exists
+            return {this->begin() + _STD distance(_Data.keys.begin(), _Key_it), false};
+        } else {
+            // Need to insert
+            auto _Index = _STD distance(_Data.keys.begin(), _Key_it);
+            this->_Insert_exact(this->cbegin() + _Index, key_type{_STD forward<_KeyTy>(_Key_val)},
+                mapped_type{_STD forward<_MappedArgTypes>(_Mapped_args)...});
+            return {this->begin() + _Index, true};
+        }
+    }
+
+    void _Insert_exact(const_iterator _Position, key_type&& _Key_val, mapped_type&& _Mapped_val) {
+        _Clear_flat_map_scope_guard _Guard{this};
+        _Data.keys.insert(_Position._Key_it, _STD move(_Key_val));
+        _Data.values.insert(_Position._Mapped_it, _STD move(_Mapped_val));
+        _Guard._Clearable = nullptr;
+    }
+
 private:
     template <class _KeyTy1, class _KeyTy2>
         requires (same_as<remove_cvref_t<_KeyTy1 &&>, key_type> && same_as<remove_cvref_t<_KeyTy2 &&>, key_type>)
@@ -789,13 +811,6 @@ private:
         auto _Remaining_count = _STD distance(_Sorted_view.begin(), _Subrange.begin());
         _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
         _Data.values.erase(_Data.values.begin() + _Remaining_count, _Data.values.end());
-        _Guard._Clearable = nullptr;
-    }
-
-    void _Insert_exact(const_iterator _Position, key_type&& _Key_val, mapped_type&& _Mapped_val) {
-        _Clear_flat_map_scope_guard _Guard{this};
-        _Data.keys.insert(_Position._Key_it, _STD move(_Key_val));
-        _Data.values.insert(_Position._Mapped_it, _STD move(_Mapped_val));
         _Guard._Clearable = nullptr;
     }
 
@@ -1161,6 +1176,7 @@ public:
 
 private:
     using _MyBase::_Erase_if;
+    using _MyBase::_Try_emplace;
 
     template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
     friend typename flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
@@ -1187,21 +1203,6 @@ private:
             _Xout_of_range("std::flat_map::at: the specified key does not exist.");
         } else {
             return _Position->second;
-        }
-    }
-
-    template <class _KeyTy, class... _MappedArgTypes>
-    pair<iterator, bool> _Try_emplace(_KeyTy&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
-        auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
-        if (_Key_it != _Data.keys.end() && _Key_equal(*_Key_it, _STD forward<_KeyTy>(_Key_val))) {
-            // Already exists
-            return {this->begin() + _STD distance(_Data.keys.begin(), _Key_it), false};
-        } else {
-            // Need to insert
-            auto _Index = _STD distance(_Data.keys.begin(), _Key_it);
-            this->_Insert_exact(this->cbegin() + _Index, key_type{_STD forward<_KeyTy>(_Key_val)},
-                mapped_type{_STD forward<_MappedArgTypes>(_Mapped_args)...});
-            return {this->begin() + _Index, true};
         }
     }
 
@@ -1328,6 +1329,7 @@ public:
 
 private:
     using _MyBase::_Erase_if;
+    using _MyBase::_Insert_exact
 
     template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
     friend typename flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
