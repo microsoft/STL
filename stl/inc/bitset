@@ -360,17 +360,17 @@ public:
         basic_string<_Elem, _Tr, _Alloc> _Str;
         _Str._Resize_and_overwrite(_Bits, [this, _Elem0, _Elem1](_Elem* _Buf, size_t _Len) {
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (_Bits >= _Bitset_vector_threshold && is_integral_v<_Elem>) {
+            if constexpr (_Bits >= _Bitset_vector_threshold && is_integral_v<_Elem> && sizeof(_Elem) <= 2) {
                 if (!_Is_constant_evaluated()) {
                     if constexpr (sizeof(_Elem) == 1) {
                         __std_bitset_to_string_1(reinterpret_cast<char*>(_Buf), _Array, _Len, static_cast<char>(_Elem0),
                             static_cast<char>(_Elem1));
-                        return _Len;
-                    } else if constexpr (sizeof(_Elem) == 2) {
+                    } else {
+                        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Elem) == 2);
                         __std_bitset_to_string_2(reinterpret_cast<wchar_t*>(_Buf), _Array, _Len,
                             static_cast<wchar_t>(_Elem0), static_cast<wchar_t>(_Elem1));
-                        return _Len;
                     }
+                    return _Len;
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS
