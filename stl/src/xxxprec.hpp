@@ -11,7 +11,7 @@
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
 
 #if !defined(MRTDLL)
-_EXTERN_C
+extern "C" {
 #endif // defined(MRTDLL)
 
 #define BIG_EXP   (2 * FMAXEXP) // very large, as exponents go
@@ -29,7 +29,7 @@ _EXTERN_C
 #if 0
 #include <cstdio>
 
-static void printit(const char* s, FTYPE* p, int n) { // print xp array
+static void printit(const char* s, FTYPE* p, int n) noexcept { // print xp array
     int i;
     printf(s);
     for (i = 0; i < n && (p[i] != FLIT(0.0) || i == 0); ++i) {
@@ -288,9 +288,9 @@ FTYPE* FNAME(Xp_setn)(FTYPE* p, int n, long x) noexcept { // load a long integer
     FNAME(Xp_setw)(p, n, static_cast<FTYPE>(x / 10000));
     FNAME(Xp_mulh)(p, n, static_cast<FTYPE>(10000));
     FNAME(Xp_addh)(p, n, static_cast<FTYPE>(x % 10000));
-#else // FBITS
+#else // ^^^ FBITS == 24 / FBITS != 24 && FBITS != 53 vvv
 #error Unexpected value for FBITS
-#endif // FBITS
+#endif // ^^^ FBITS != 24 && FBITS != 53 ^^^
 
     return p;
 }
@@ -345,7 +345,7 @@ FTYPE* FNAME(Xp_mulx)(FTYPE* p, int n, const FTYPE* q, int m, FTYPE* ptemp2) noe
 }
 
 #if !defined(MRTDLL)
-_END_EXTERN_C
+} // extern "C"
 #endif // !defined(MRTDLL)
 
 #pragma warning(pop)

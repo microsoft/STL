@@ -1271,7 +1271,7 @@ namespace {
     constexpr bool is_trait<T, void_t<typename T::type>> = true;
 
     namespace detail {
-        static constexpr bool permissive() {
+        constexpr bool permissive() {
             return false;
         }
 
@@ -1387,27 +1387,10 @@ STATIC_ASSERT(is_same_v<common_reference_t<simple_base const&&, simple_derived c
 STATIC_ASSERT(is_same_v<common_reference_t<simple_base const&&, simple_derived&&>, simple_base const&&>);
 STATIC_ASSERT(is_same_v<common_reference_t<simple_base const&&, simple_derived const&&>, simple_base const&&>);
 
-#ifdef __EDG__
-// When f is the name of a function of type int(), C1XX incorrectly believes that
-//   decltype(false ? f : f)
-// is int() in permissive mode and int(*)() in strict mode (Yes, two different incorrect results). It also
-// correctly believes that
-//   decltype(false ? declval<decltype((f))>() : declval<decltype((f))>())
-// is int(&)(), which is nice because it allows this test case to pass. EDG believes the type of both the above
-// is int() in all modes. I suspect this is intentional bug compatibility with C1XX, so I'm not filing a bug. I
-// _do_ assert here that EDG produces the _wrong_ type from common_reference_t, however, so that THIS TEST WILL
-// FAIL IF AND WHEN EDG STARTS BEHAVING CORRECTLY. We can then remove the non-workaround to defend against
-// regression.
-STATIC_ASSERT(!is_same_v<common_reference_t<int (&)(), int (&)()>, int (&)()>);
-STATIC_ASSERT(!is_same_v<common_reference_t<int (&&)(), int (&)()>, int (&)()>);
-STATIC_ASSERT(!is_same_v<common_reference_t<int (&)(), int (&&)()>, int (&)()>);
-STATIC_ASSERT(!is_same_v<common_reference_t<int (&&)(), int (&&)()>, int (&&)()>);
-#else // ^^^ EDG / not EDG vvv
 STATIC_ASSERT(is_same_v<common_reference_t<int (&)(), int (&)()>, int (&)()>);
 STATIC_ASSERT(is_same_v<common_reference_t<int (&&)(), int (&)()>, int (&)()>);
 STATIC_ASSERT(is_same_v<common_reference_t<int (&)(), int (&&)()>, int (&)()>);
 STATIC_ASSERT(is_same_v<common_reference_t<int (&&)(), int (&&)()>, int (&&)()>);
-#endif // __EDG__
 
 STATIC_ASSERT(is_same_v<common_reference_t<int const volatile&&, int volatile&&>, int const volatile&&>);
 STATIC_ASSERT(is_same_v<common_reference_t<int&&, int const&, int volatile&>, int const volatile&>);

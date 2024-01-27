@@ -9,11 +9,11 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <ios>
 
-#if _HAS_CXX23
+#ifdef __cpp_lib_print
 #include <__msvc_filebuf.hpp>
 #include <__msvc_print.hpp>
 #include <format>
-#endif // _HAS_CXX23
+#endif // ^^^ defined(__cpp_lib_print) ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -117,7 +117,7 @@ public:
             const bool _Zero_uncaught_exceptions = !_STD uncaught_exception(); // TRANSITION, ArchivedOS-12000909
 #else // ^^^ _HAS_DEPRECATED_UNCAUGHT_EXCEPTION / !_HAS_DEPRECATED_UNCAUGHT_EXCEPTION vvv
             const bool _Zero_uncaught_exceptions = _STD uncaught_exceptions() == 0;
-#endif // !_HAS_DEPRECATED_UNCAUGHT_EXCEPTION
+#endif // ^^^ !_HAS_DEPRECATED_UNCAUGHT_EXCEPTION ^^^
 
             if (_Zero_uncaught_exceptions) {
                 this->_Myostr._Osfx();
@@ -136,8 +136,12 @@ public:
         bool _Ok; // true if stream state okay at construction
     };
 
+#pragma push_macro("opfx")
+#pragma push_macro("osfx")
+#undef opfx
+#undef osfx
     // TRANSITION, ABI: non-Standard opfx() is preserved for binary compatibility
-    bool __CLR_OR_THIS_CALL opfx() { // test stream state and flush tie stream as needed
+    _DEPRECATE_IO_PFX_SFX bool __CLR_OR_THIS_CALL opfx() { // test stream state and flush tie stream as needed
         if (!this->good()) {
             return false;
         }
@@ -152,9 +156,11 @@ public:
     }
 
     // TRANSITION, ABI: non-Standard osfx() is preserved for binary compatibility
-    void __CLR_OR_THIS_CALL osfx() noexcept { // perform any wrapup
+    _DEPRECATE_IO_PFX_SFX void __CLR_OR_THIS_CALL osfx() noexcept { // perform any wrapup
         _Osfx();
     }
+#pragma pop_macro("osfx")
+#pragma pop_macro("opfx")
 
     void __CLR_OR_THIS_CALL _Osfx() noexcept { // perform any wrapup
         _TRY_BEGIN
@@ -184,7 +190,7 @@ public:
         _Pfn(*this);
         return *this;
     }
-#endif // _M_CEE_PURE
+#endif // defined(_M_CEE_PURE)
 
     basic_ostream& __CLR_OR_THIS_CALL operator<<(basic_ostream&(__cdecl* _Pfn)(basic_ostream&) ) {
         // call basic_ostream manipulator
@@ -1244,11 +1250,9 @@ void _Print_impl(const _Add_newline _Add_nl, ostream& _Ostr, const format_string
 
     if constexpr (_Has_format_args) {
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
-            _STD _Vprint_unicode_impl(
-                _Add_nl, _Ostr, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+            _STD _Vprint_unicode_impl(_Add_nl, _Ostr, _Fmt.get(), _STD make_format_args(_Args...));
         } else {
-            _STD _Vprint_nonunicode_impl(
-                _Add_nl, _Ostr, _Fmt.get(), _STD make_format_args(_STD forward<_Types>(_Args)...));
+            _STD _Vprint_nonunicode_impl(_Add_nl, _Ostr, _Fmt.get(), _STD make_format_args(_Args...));
         }
     } else {
         const string _Unescaped_str{_Unescape_braces(_Add_nl, _Fmt.get())};

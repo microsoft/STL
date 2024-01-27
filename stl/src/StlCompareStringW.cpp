@@ -26,7 +26,7 @@
 //   Failure: 0
 extern "C" _CRTIMP2 int __cdecl __crtCompareStringW(_In_z_ LPCWSTR LocaleName, _In_ DWORD dwCmpFlags,
     _In_reads_(cchCount1) LPCWSTR lpString1, _In_ int cchCount1, _In_reads_(cchCount2) LPCWSTR lpString2,
-    _In_ int cchCount2) {
+    _In_ int cchCount2) noexcept {
     // CompareString will compare past null terminator. Must find null terminator if in string before cchCountn wide
     // characters.
     if (cchCount1 > 0) {

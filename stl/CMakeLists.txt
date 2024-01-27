@@ -12,6 +12,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_cxx_stdatomic.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_filebuf.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_format_ucd_tables.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_formatter.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_int128.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_iter_core.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_print.hpp
@@ -177,6 +178,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/list
     ${CMAKE_CURRENT_LIST_DIR}/inc/locale
     ${CMAKE_CURRENT_LIST_DIR}/inc/map
+    ${CMAKE_CURRENT_LIST_DIR}/inc/mdspan
     ${CMAKE_CURRENT_LIST_DIR}/inc/memory
     ${CMAKE_CURRENT_LIST_DIR}/inc/memory_resource
     ${CMAKE_CURRENT_LIST_DIR}/inc/mutex
@@ -523,6 +525,12 @@ else()
     string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " Synchronization.lib")
 endif()
 
+if(STL_ASAN_BUILD)
+    set(DLL_ASAN_SOURCES ${ASAN_SOURCES})
+else()
+    set(DLL_ASAN_SOURCES "")
+endif()
+
 function(target_stl_compile_options tgt rel_or_dbg)
     if(rel_or_dbg STREQUAL "Release")
         target_compile_options(${tgt} PRIVATE ${VCLIBS_RELEASE_OPTIONS})
@@ -560,7 +568,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
     set(gl_flag_Debug "")
 
     # msvcp140.dll
-    add_library(msvcp${D_SUFFIX}_objects OBJECT ${DLL_SOURCES} ${SOURCES})
+    add_library(msvcp${D_SUFFIX}_objects OBJECT ${DLL_SOURCES} ${SOURCES} ${DLL_ASAN_SOURCES})
     target_compile_definitions(msvcp${D_SUFFIX}_objects PRIVATE CRTDLL2 _DLL)
     target_compile_options(msvcp${D_SUFFIX}_objects PRIVATE ${gl_flag_${REL_OR_DBG}} /EHsc)
     target_stl_compile_options(msvcp${D_SUFFIX}_objects ${REL_OR_DBG})
@@ -662,12 +670,12 @@ add_stl_dlls("d" Debug)
 
 function(add_stl_statics FLAVOR_SUFFIX REL_OR_DBG IDL_VALUE)
     add_library(libcpmt${FLAVOR_SUFFIX}_eha OBJECT ${EHA_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING "_ITERATOR_DEBUG_LEVEL=${IDL_VALUE}")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE _ANNOTATE_STL "_ITERATOR_DEBUG_LEVEL=${IDL_VALUE}")
     target_compile_options(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE /EHa)
     target_stl_compile_options(libcpmt${FLAVOR_SUFFIX}_eha ${REL_OR_DBG})
 
     add_library(libcpmt${FLAVOR_SUFFIX} STATIC ${HEADERS} ${IMPLIB_SOURCES} ${SOURCES} ${INITIALIZER_SOURCES} ${STATIC_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING "_ITERATOR_DEBUG_LEVEL=${IDL_VALUE}")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE _ANNOTATE_STL "_ITERATOR_DEBUG_LEVEL=${IDL_VALUE}")
     target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/EHsc>")
     target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math stl_alias_objects libcpmt${FLAVOR_SUFFIX}_eha)
     target_stl_compile_options(libcpmt${FLAVOR_SUFFIX} ${REL_OR_DBG})

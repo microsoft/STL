@@ -21,7 +21,7 @@
 #include <windows.foundation.diagnostics.h>
 #endif
 
-// This IID is exported by ole32.dll; we cannot depend on ole32.dll on OneCore.
+// This IID is exported by ole32.dll; we cannot depend on ole32.dll.
 static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
     0x0A299774, 0x3E4E, 0xFC42, {0x1D, 0x9D, 0x72, 0xCE, 0xE1, 0x05, 0xCA, 0x57}};
 
@@ -56,7 +56,7 @@ namespace Concurrency {
             /// </summary>
             _CRTIMP2 size_t __cdecl CaptureCallstack(void** stackData, size_t skipFrames, size_t captureFrames) {
                 size_t capturedFrames = 0;
-                // RtlCaptureSTackBackTrace is not available in MSDK, so we only call it under Desktop or _DEBUG MSDK.
+                // RtlCaptureStackBackTrace is not available in MSDK, so we only call it under Desktop or _DEBUG MSDK.
                 //  For MSDK unsupported version, we will return zero frame number.
 #if !defined(_CRT_APP) || defined(_DEBUG)
                 capturedFrames = RtlCaptureStackBackTrace(
@@ -81,130 +81,6 @@ namespace Concurrency {
 
         } // namespace platform
 
-#if defined(_CRT_APP)
-        using namespace ABI::Windows::Foundation;
-        using namespace ABI::Windows::Foundation::Diagnostics;
-        using namespace Microsoft::WRL;
-        using namespace Microsoft::WRL::Wrappers;
-
-        class AsyncCausalityTracer {
-            IAsyncCausalityTracerStatics* m_causalityAPIs;
-            std::once_flag m_stateFlag;
-            bool m_isSupported;
-
-        public:
-            IAsyncCausalityTracerStatics* get() const {
-                return m_causalityAPIs;
-            }
-
-            AsyncCausalityTracer() : m_causalityAPIs(nullptr), m_isSupported(false) {}
-
-            void release() {
-                if (m_causalityAPIs) {
-                    APTTYPE aptType;
-                    APTTYPEQUALIFIER aptTypeQualifier;
-                    if (CoGetApartmentType(&aptType, &aptTypeQualifier) == S_OK) {
-                        // Release causality APIs only if current apartment is still RoInitialized
-                        m_causalityAPIs->Release();
-                        m_causalityAPIs = nullptr;
-                        m_isSupported   = false;
-                    }
-                }
-            }
-
-            bool isCausalitySupported() {
-                // TRANSITION, ABI
-                _Execute_once(
-                    m_stateFlag,
-                    [](void*, void* _This_raw, void**) -> int {
-                        const auto _This = static_cast<AsyncCausalityTracer*>(_This_raw);
-                        ComPtr<IAsyncCausalityTracerStatics> causalityAPIs;
-                        if (SUCCEEDED(GetActivationFactory(
-                                HStringReference(RuntimeClass_Windows_Foundation_Diagnostics_AsyncCausalityTracer)
-                                    .Get(),
-                                &causalityAPIs))) {
-                            _This->m_causalityAPIs = causalityAPIs.Detach();
-                            _This->m_isSupported   = true;
-                        }
-
-                        return 1;
-                    },
-                    this);
-                return m_isSupported;
-            }
-        };
-        AsyncCausalityTracer asyncCausalityTracer;
-
-        // GUID used for identifying causality logs from PPLTask
-        const GUID PPLTaskCausalityPlatformID = {
-            0x7A76B220, 0xA758, 0x4E6E, 0xB0, 0xE0, 0xD7, 0xC6, 0xD7, 0x4A, 0x88, 0xFE};
-
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool _IsContinuation) {
-            if (asyncCausalityTracer.isCausalitySupported()) {
-                asyncCausalityTracer.get()->TraceOperationCreation(CausalityTraceLevel_Required,
-                    CausalitySource_Library, PPLTaskCausalityPlatformID, reinterpret_cast<unsigned long long>(_M_task),
-                    HStringReference(_IsContinuation ? L"Concurrency::PPLTask::ScheduleContinuationTask"
-                                                     : L"Concurrency::PPLTask::ScheduleTask")
-                        .Get(),
-                    0);
-                _M_scheduled = true;
-            }
-        }
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskCompleted() {
-            if (_M_scheduled) {
-                AsyncStatus status;
-                if (_M_task->_IsCompleted()) {
-                    status = AsyncStatus::Completed;
-                } else if (_M_task->_HasUserException()) {
-                    status = AsyncStatus::Error;
-                } else {
-                    status = AsyncStatus::Canceled;
-                }
-
-                if (asyncCausalityTracer.isCausalitySupported()) {
-                    asyncCausalityTracer.get()->TraceOperationCompletion(CausalityTraceLevel_Required,
-                        CausalitySource_Library, PPLTaskCausalityPlatformID,
-                        reinterpret_cast<unsigned long long>(_M_task), status);
-                }
-            }
-        }
-
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogCancelTask() {
-            if (asyncCausalityTracer.isCausalitySupported()) {
-                asyncCausalityTracer.get()->TraceOperationRelation(CausalityTraceLevel_Important,
-                    CausalitySource_Library, PPLTaskCausalityPlatformID, reinterpret_cast<unsigned long long>(_M_task),
-                    CausalityRelation_Cancel);
-            }
-        }
-
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskExecutionCompleted() {
-            if (asyncCausalityTracer.isCausalitySupported()) {
-                asyncCausalityTracer.get()->TraceSynchronousWorkCompletion(CausalityTraceLevel_Required,
-                    CausalitySource_Library, CausalitySynchronousWork_CompletionNotification);
-            }
-        }
-
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemStarted() {
-            if (asyncCausalityTracer.isCausalitySupported()) {
-                asyncCausalityTracer.get()->TraceSynchronousWorkStart(CausalityTraceLevel_Required,
-                    CausalitySource_Library, PPLTaskCausalityPlatformID, reinterpret_cast<unsigned long long>(_M_task),
-                    CausalitySynchronousWork_Execution);
-            }
-        }
-
-        _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemCompleted() {
-            if (asyncCausalityTracer.isCausalitySupported()) {
-                asyncCausalityTracer.get()->TraceSynchronousWorkCompletion(
-                    CausalityTraceLevel_Required, CausalitySource_Library, CausalitySynchronousWork_Execution);
-
-                asyncCausalityTracer.get()->TraceSynchronousWorkStart(CausalityTraceLevel_Required,
-                    CausalitySource_Library, PPLTaskCausalityPlatformID, reinterpret_cast<unsigned long long>(_M_task),
-                    CausalitySynchronousWork_CompletionNotification);
-                _M_taskPostEventStarted = true;
-            }
-        }
-
-#else
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogScheduleTask(bool) {}
 
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogTaskCompleted() {}
@@ -216,7 +92,6 @@ namespace Concurrency {
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemStarted() {}
 
         _CRTIMP2 void __thiscall _TaskEventLogger::_LogWorkItemCompleted() {}
-#endif
 
 #if defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
         using namespace ABI::Windows::Foundation;
@@ -317,7 +192,8 @@ namespace Concurrency {
             return false;
         }
 
-#else
+#else // ^^^ defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
+      //                                         / !defined(_CRT_APP) && !defined(UNDOCKED_WINDOWS_UCRT) vvv
         _CRTIMP2 void __thiscall _ContextCallback::_CallInContext(_CallbackFunction _Func, bool) const {
             _Func();
         }
@@ -335,21 +211,15 @@ namespace Concurrency {
         _CRTIMP2 bool __cdecl _Task_impl_base::_IsNonBlockingThread() {
             return false;
         }
-#endif
+#endif // ^^^ !defined(_CRT_APP) && !defined(UNDOCKED_WINDOWS_UCRT) ^^^
     } // namespace details
 
 #ifdef _CRT_APP
     _CRTIMP2 __thiscall task_continuation_context::task_continuation_context()
         : _ContextCallback(true), _M_RunInline(false) {}
-#else
+#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     _CRTIMP2 __thiscall task_continuation_context::task_continuation_context()
         : _ContextCallback(false), _M_RunInline(false) {}
-#endif
+#endif // ^^^ !defined(_CRT_APP) ^^^
 
 } // namespace Concurrency
-
-#ifdef _CRT_APP
-extern "C" void __cdecl __crtCleanupCausalityStaticFactories() {
-    Concurrency::details::asyncCausalityTracer.release();
-}
-#endif

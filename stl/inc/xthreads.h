@@ -18,7 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_EXTERN_C
+extern "C" {
 using _Thrd_id_t = unsigned int;
 struct _Thrd_t { // thread identifier for Win32
     void* _Hnd; // Win32 HANDLE
@@ -33,19 +33,19 @@ struct _Stl_critical_section {
 };
 
 struct _Mtx_internal_imp_t {
-#ifdef _CRT_WINDOWS
+#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 16;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 8;
 #endif // ^^^ !defined(_WIN64) ^^^
-#else // ^^^ defined(_CRT_WINDOWS) / !defined(_CRT_WINDOWS) vvv
+#else // ^^^ Windows private STL / public STL vvv
 #ifdef _WIN64
     static constexpr size_t _Critical_section_size = 64;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
     static constexpr size_t _Critical_section_size = 36;
 #endif // ^^^ !defined(_WIN64) ^^^
-#endif // ^^^ !defined(_CRT_WINDOWS) ^^^
+#endif // ^^^ public STL ^^^
 
     static constexpr size_t _Critical_section_align = alignof(void*);
 
@@ -81,12 +81,12 @@ using _Cnd_t = _Cnd_internal_imp_t*;
 enum class _Thrd_result : int { _Success, _Nomem, _Timedout, _Busy, _Error };
 
 // threads
-_CRTIMP2_PURE _Thrd_result __cdecl _Thrd_detach(_Thrd_t);
-_CRTIMP2_PURE _Thrd_result __cdecl _Thrd_join(_Thrd_t, int*);
-_CRTIMP2_PURE void __cdecl _Thrd_sleep(const _timespec64*);
-_CRTIMP2_PURE void __cdecl _Thrd_yield();
-_CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency();
-_CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id();
+_CRTIMP2_PURE _Thrd_result __cdecl _Thrd_detach(_Thrd_t) noexcept;
+_CRTIMP2_PURE _Thrd_result __cdecl _Thrd_join(_Thrd_t, int*) noexcept;
+_CRTIMP2_PURE void __cdecl _Thrd_yield() noexcept;
+_CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept;
+_CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id() noexcept;
+void __stdcall _Thrd_sleep_for(unsigned long /*ms*/) noexcept;
 
 // mutexes
 enum { // mutex types
@@ -97,45 +97,40 @@ enum { // mutex types
 };
 
 #ifdef _CRTBLD
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t*, int);
-_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t);
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t*, int) noexcept;
+_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t) noexcept;
 #endif // _CRTBLD
-_CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t, int);
-_CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t);
-_CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t);
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t);
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t);
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t); // TRANSITION, ABI: Always succeeds
-
-#ifdef _CRTBLD
-_CRTIMP2_PURE void __cdecl _Mtx_clear_owner(_Mtx_t);
-_CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t);
-#endif // _CRTBLD
+_CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t, int) noexcept;
+_CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t) noexcept;
+_CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t) noexcept;
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t) noexcept;
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t) noexcept;
+_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t) noexcept; // TRANSITION, ABI: Always succeeds
 
 // shared mutex
 // these declarations must be in sync with those in sharedmutex.cpp
-void __cdecl _Smtx_lock_exclusive(_Smtx_t*);
-void __cdecl _Smtx_lock_shared(_Smtx_t*);
-int __cdecl _Smtx_try_lock_exclusive(_Smtx_t*);
-int __cdecl _Smtx_try_lock_shared(_Smtx_t*);
-void __cdecl _Smtx_unlock_exclusive(_Smtx_t*);
-void __cdecl _Smtx_unlock_shared(_Smtx_t*);
+void __cdecl _Smtx_lock_exclusive(_Smtx_t*) noexcept;
+void __cdecl _Smtx_lock_shared(_Smtx_t*) noexcept;
+int __cdecl _Smtx_try_lock_exclusive(_Smtx_t*) noexcept;
+int __cdecl _Smtx_try_lock_shared(_Smtx_t*) noexcept;
+void __cdecl _Smtx_unlock_exclusive(_Smtx_t*) noexcept;
+void __cdecl _Smtx_unlock_shared(_Smtx_t*) noexcept;
 
 // condition variables
 #ifdef _CRTBLD
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*);
-_CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t);
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*) noexcept;
+_CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t) noexcept;
 #endif // _CRTBLD
-_CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t);
-_CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t);
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(_Cnd_t, _Mtx_t); // TRANSITION, ABI: Always succeeds
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(_Cnd_t, _Mtx_t, const _timespec64*);
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(_Cnd_t); // TRANSITION, ABI: Always succeeds
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(_Cnd_t); // TRANSITION, ABI: Always succeeds
-_CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t, _Mtx_t, int*);
-_CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t);
-_CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit();
-_END_EXTERN_C
+_CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t) noexcept;
+_CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) noexcept;
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(_Cnd_t, _Mtx_t) noexcept; // TRANSITION, ABI: Always succeeds
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(_Cnd_t, _Mtx_t, const _timespec64*) noexcept;
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(_Cnd_t) noexcept; // TRANSITION, ABI: Always succeeds
+_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(_Cnd_t) noexcept; // TRANSITION, ABI: Always succeeds
+_CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t, _Mtx_t, int*) noexcept;
+_CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t) noexcept;
+_CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() noexcept;
+} // extern "C"
 
 _STD_BEGIN
 enum { // constants for error codes

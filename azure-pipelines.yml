@@ -4,13 +4,7 @@
 # Build STL targeting x86, x64, arm, arm64
 
 variables:
-  tmpDir: 'D:\Temp'
-  buildOutputLocation: 'D:\build'
-  benchmarkBuildOutputLocation: 'D:\benchmark'
-
-pool:
-  name: 'StlBuild-2023-08-08T1145-Pool'
-  demands: EnableSpotVM -equals true
+  - template: azure-devops/config.yml
 
 pr:
   drafts: false
@@ -18,57 +12,18 @@ pr:
 stages:
   - stage: Code_Format
     displayName: 'Code Format'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
     jobs:
-      - job: Code_Format_Validation
-        timeoutInMinutes: 5
-        displayName: 'Validation'
-        steps:
-          - script: |
-              if exist "$(tmpDir)" (
-                rmdir /S /Q $(tmpDir)
-              )
-              mkdir $(tmpDir)
-            displayName: 'Setup TMP Directory'
-          - checkout: self
-            clean: true
-            submodules: false
-          - script: |
-              cd $(Build.SourcesDirectory)
-              git clean --quiet -x -d -f -f
-            displayName: 'Clean after checkout'
-          - script: |
-              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
-                -host_arch=amd64 -arch=amd64 -no_logo
-              cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B $(tmpDir)/format-validate-build
-              cmake --build $(tmpDir)/format-validate-build
-            displayName: 'Build format and validation'
-            timeoutInMinutes: 5
-            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-          - script: |
-              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
-                -host_arch=amd64 -arch=amd64 -no_logo
-              cmake --build $(tmpDir)/format-validate-build --target run-format
-            displayName: 'clang-format Files'
-            timeoutInMinutes: 5
-            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-          - script: |
-              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
-                -host_arch=amd64 -arch=amd64 -no_logo
-              cmake --build $(tmpDir)/format-validate-build --target run-validate
-            displayName: 'Validate Files'
-            timeoutInMinutes: 2
-            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-          - task: Powershell@2
-            displayName: 'Create Diff'
-            inputs:
-              filePath: azure-devops/create-prdiff.ps1
-              pwsh: false
-            condition: succeededOrFailed()
-            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+      - template: azure-devops/format-validation.yml
 
   - stage: Build_And_Test_x64
     dependsOn: Code_Format
-    displayName: 'Build and Test'
+    displayName: 'Build and Test x64'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/native-build-test.yml
         parameters:
@@ -77,7 +32,10 @@ stages:
 
   - stage: Build_And_Test_x86
     dependsOn: Build_And_Test_x64
-    displayName: 'Build and Test'
+    displayName: 'Build and Test x86'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/native-build-test.yml
         parameters:
@@ -86,17 +44,23 @@ stages:
 
   - stage: Build_ARM
     dependsOn: Build_And_Test_x64
-    displayName: 'Build'
+    displayName: 'Build ARM'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/cross-build.yml
         parameters:
           targetPlatform: arm
           vsDevCmdArch: arm
-          benchmarkBuildOutputLocationVar: ''
+          buildBenchmarks: false
 
   - stage: Build_ARM64
     dependsOn: Build_And_Test_x64
-    displayName: 'Build'
+    displayName: 'Build ARM64'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/cross-build.yml
         parameters:

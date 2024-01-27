@@ -208,7 +208,7 @@ constexpr bool do_tuples_reference_same_objects(const LHSTupleType& lhs_tuple, c
     STATIC_ASSERT(tuple_size_v<LHSTupleType> == tuple_size_v<RHSTupleType>);
 
     const auto evaluate_single_element_lambda = [&lhs_tuple, &rhs_tuple]<size_t CurrIndex>() {
-        using reference_type = typename reference_type_solver<tuple_element_t<CurrIndex, LHSTupleType>>::reference_type;
+        using reference_type = reference_type_solver<tuple_element_t<CurrIndex, LHSTupleType>>::reference_type;
         return addressof(static_cast<reference_type>(get<CurrIndex>(lhs_tuple)))
             == addressof(static_cast<reference_type>(get<CurrIndex>(rhs_tuple)));
     };
@@ -674,7 +674,7 @@ class instantiator_impl : private range_type_solver<IsMoveOnly> {
 private:
     template <class OtherCategory, class Element, test::Sized OtherIsSized, test::Common OtherIsCommon,
         test::CanDifference OtherDiff>
-    using range_type = typename range_type_solver<IsMoveOnly>::template range_type<OtherCategory, Element, OtherIsSized,
+    using range_type = range_type_solver<IsMoveOnly>::template range_type<OtherCategory, Element, OtherIsSized,
         OtherIsCommon, OtherDiff>;
 
     template <class... Types>

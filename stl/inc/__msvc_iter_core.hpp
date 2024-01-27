@@ -51,6 +51,12 @@ _EXPORT_STD struct random_access_iterator_tag : bidirectional_iterator_tag {};
 _EXPORT_STD struct contiguous_iterator_tag : random_access_iterator_tag {};
 
 template <class _Ty>
+using _With_reference = _Ty&;
+
+template <class _Ty>
+concept _Can_reference = requires { typename _With_reference<_Ty>; };
+
+template <class _Ty>
 concept _Dereferenceable = requires(_Ty& __t) {
     { *__t } -> _Can_reference;
 };
@@ -90,7 +96,7 @@ struct incrementable_traits<const _Ty> : incrementable_traits<_Ty> {};
 
 template <_Has_member_difference_type _Ty>
 struct incrementable_traits<_Ty> {
-    using difference_type = typename _Ty::difference_type;
+    using difference_type = _Ty::difference_type;
 };
 
 template <class _Ty>
@@ -111,7 +117,7 @@ _EXPORT_STD template <class>
 struct iterator_traits;
 
 _EXPORT_STD template <class _Ty>
-using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
+using iter_difference_t = conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
     incrementable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::difference_type;
 
 template <class>
@@ -154,7 +160,7 @@ template <_Has_member_value_type _Ty>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
 
 _EXPORT_STD template <class _Ty>
-using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
+using iter_value_t = conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
     indirectly_readable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::value_type;
 
 _EXPORT_STD template <_Dereferenceable _Ty>
@@ -170,7 +176,7 @@ concept _Has_iter_types = _Has_member_difference_type<_It> && _Has_member_value_
 template <bool _Has_member_typedef>
 struct _Old_iter_traits_pointer {
     template <class _It>
-    using _Apply = typename _It::pointer;
+    using _Apply = _It::pointer;
 };
 
 template <>
@@ -181,17 +187,17 @@ struct _Old_iter_traits_pointer<false> {
 
 template <_Has_iter_types _It>
 struct _Iterator_traits_base<_It> {
-    using iterator_category = typename _It::iterator_category;
-    using value_type        = typename _It::value_type;
-    using difference_type   = typename _It::difference_type;
-    using pointer           = typename _Old_iter_traits_pointer<_Has_member_pointer<_It>>::template _Apply<_It>;
-    using reference         = typename _It::reference;
+    using iterator_category = _It::iterator_category;
+    using value_type        = _It::value_type;
+    using difference_type   = _It::difference_type;
+    using pointer           = _Old_iter_traits_pointer<_Has_member_pointer<_It>>::template _Apply<_It>;
+    using reference         = _It::reference;
 };
 
 template <bool _Has_member_typedef>
 struct _Iter_traits_difference {
     template <class _It>
-    using _Apply = typename incrementable_traits<_It>::difference_type;
+    using _Apply = incrementable_traits<_It>::difference_type;
 };
 
 template <>
@@ -227,7 +233,7 @@ struct _Iterator_traits_base<_It> {
     using iterator_category = output_iterator_tag;
     using value_type = void;
     using difference_type =
-        typename _Iter_traits_difference<_Has_member_difference_type<incrementable_traits<_It>>>::template _Apply<_It>;
+        _Iter_traits_difference<_Has_member_difference_type<incrementable_traits<_It>>>::template _Apply<_It>;
     using pointer    = void;
     using reference  = void;
 };
@@ -247,7 +253,7 @@ struct _Iter_traits_pointer<_Itraits_pointer_strategy::_Use_void> {
 template <>
 struct _Iter_traits_pointer<_Itraits_pointer_strategy::_Use_member> {
     template <class _It>
-    using _Apply = typename _It::pointer;
+    using _Apply = _It::pointer;
 };
 
 template <>
@@ -262,7 +268,7 @@ concept _Has_member_arrow = requires(_Ty&& __t) { static_cast<_Ty&&>(__t).operat
 template <bool _Has_member_typedef>
 struct _Iter_traits_reference {
     template <class _It>
-    using _Apply = typename _It::reference;
+    using _Apply = _It::reference;
 };
 
 template <>
@@ -284,7 +290,7 @@ struct _Iter_traits_category4<false> {
 // clang-format off
 template <class _It>
 concept _Cpp17_random_delta = totally_ordered<_It>
-    && requires(_It __i, typename incrementable_traits<_It>::difference_type __n) {
+    && requires(_It __i, incrementable_traits<_It>::difference_type __n) {
         { __i += __n } -> same_as<_It&>;
         { __i -= __n } -> same_as<_It&>;
         { __i +  __n } -> same_as<_It>;
@@ -298,7 +304,7 @@ concept _Cpp17_random_delta = totally_ordered<_It>
 template <bool _Is_bidi>
 struct _Iter_traits_category3 {
     template <class _It>
-    using _Apply = typename _Iter_traits_category4<_Cpp17_random_delta<_It>>::type;
+    using _Apply = _Iter_traits_category4<_Cpp17_random_delta<_It>>::type;
 };
 
 template <>
@@ -317,7 +323,7 @@ concept _Cpp17_bidi_delta = requires(_It __i) {
 template <bool _Is_forward>
 struct _Iter_traits_category2 {
     template <class _It>
-    using _Apply = typename _Iter_traits_category3<_Cpp17_bidi_delta<_It>>::template _Apply<_It>;
+    using _Apply = _Iter_traits_category3<_Cpp17_bidi_delta<_It>>::template _Apply<_It>;
 };
 
 template <>
@@ -339,27 +345,27 @@ concept _Cpp17_forward_delta = constructible_from<_It> && is_reference_v<iter_re
 template <bool _Has_member_typedef>
 struct _Iter_traits_category {
     template <class _It>
-    using _Apply = typename _It::iterator_category;
+    using _Apply = _It::iterator_category;
 };
 
 template <>
 struct _Iter_traits_category<false> {
     template <class _It>
-    using _Apply = typename _Iter_traits_category2<_Cpp17_forward_delta<_It>>::template _Apply<_It>;
+    using _Apply = _Iter_traits_category2<_Cpp17_forward_delta<_It>>::template _Apply<_It>;
 };
 
 // clang-format off
 template <class _It>
     requires (!_Has_iter_types<_It> && _Cpp17_input_iterator<_It>)
 struct _Iterator_traits_base<_It> {
-    using iterator_category = typename _Iter_traits_category<_Has_member_iterator_category<_It>>::template _Apply<_It>;
-    using value_type        = typename indirectly_readable_traits<_It>::value_type;
-    using difference_type   = typename incrementable_traits<_It>::difference_type;
-    using pointer           = typename _Iter_traits_pointer<(
+    using iterator_category = _Iter_traits_category<_Has_member_iterator_category<_It>>::template _Apply<_It>;
+    using value_type        = indirectly_readable_traits<_It>::value_type;
+    using difference_type   = incrementable_traits<_It>::difference_type;
+    using pointer           = _Iter_traits_pointer<(
         _Has_member_pointer<_It> ? _Itraits_pointer_strategy::_Use_member
                                  : _Has_member_arrow<_It&> ? _Itraits_pointer_strategy::_Use_decltype
                                                        : _Itraits_pointer_strategy::_Use_void)>::template _Apply<_It>;
-    using reference         = typename _Iter_traits_reference<_Has_member_reference<_It>>::template _Apply<_It>;
+    using reference         = _Iter_traits_reference<_Has_member_reference<_It>>::template _Apply<_It>;
 };
 // clang-format on
 

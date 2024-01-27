@@ -171,24 +171,24 @@ void zonedtime_exception_tests() {
     try {
         (void) zoned_time<seconds>{ZT::locate_zone(Sydney::Tz_name), ambiguous_local};
         assert(false);
-    } catch (nonexistent_local_time&) {
-    } catch (ambiguous_local_time&) {
+    } catch (const nonexistent_local_time&) {
+    } catch (const ambiguous_local_time&) {
     }
 
     try {
         (void) zoned_time<seconds>{Sydney::Tz_name, ambiguous_local};
         assert(false);
-    } catch (nonexistent_local_time&) {
-    } catch (ambiguous_local_time&) {
+    } catch (const nonexistent_local_time&) {
+    } catch (const ambiguous_local_time&) {
     }
 
     // safe constructors
     try {
         (void) zoned_time<seconds>{ZT::locate_zone(Sydney::Tz_name), ambiguous_local, choose::earliest};
         (void) zoned_time<seconds>{Sydney::Tz_name, ambiguous_local, choose::earliest};
-    } catch (nonexistent_local_time&) {
+    } catch (const nonexistent_local_time&) {
         assert(false);
-    } catch (ambiguous_local_time&) {
+    } catch (const ambiguous_local_time&) {
         assert(false);
     }
 
@@ -198,8 +198,8 @@ void zonedtime_exception_tests() {
         zone = ambiguous_local;
         (void) zone;
         assert(false);
-    } catch (nonexistent_local_time&) {
-    } catch (ambiguous_local_time&) {
+    } catch (const nonexistent_local_time&) {
+    } catch (const ambiguous_local_time&) {
     }
 }
 
@@ -224,7 +224,7 @@ struct Always_zero {
     }
 
     template <class Duration>
-    [[nodiscard]] sys_time<common_type_t<Duration, seconds>> to_sys(const local_time<Duration>&, const choose) const {
+    [[nodiscard]] sys_time<common_type_t<Duration, seconds>> to_sys(const local_time<Duration>&, choose) const {
         return sys_time<common_type_t<Duration, seconds>>{};
     }
 

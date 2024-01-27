@@ -213,7 +213,7 @@ public:
         _STL_VERIFY(_Ptrsav != this->_Ptr, "cannot decrement begin map/set iterator");
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
         _Mybase::operator--();
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 2 ^^^
 
         return *this;
     }
@@ -726,7 +726,7 @@ public:
         }
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
         (void) _Ptr;
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 2 ^^^
     }
 
     template <class _Alnode>
@@ -1256,8 +1256,8 @@ protected:
 public:
     template <class _Iter>
     void insert(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        _Insert_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        _Insert_range_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -1682,7 +1682,7 @@ protected:
 
     template <class _Other>
     pair<_Nodeptr, _Nodeptr> _Eqrange(const _Other& _Keyval) const
-        noexcept(_Nothrow_compare<key_compare, key_type, _Other>&& _Nothrow_compare<key_compare, _Other, key_type>) {
+        noexcept(_Nothrow_compare<key_compare, key_type, _Other> && _Nothrow_compare<key_compare, _Other, key_type>) {
         // find range of nodes equivalent to _Keyval
         const auto _Scary = _Get_scary();
         const auto& _Comp = _Getcomp();

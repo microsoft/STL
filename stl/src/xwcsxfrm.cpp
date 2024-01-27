@@ -46,7 +46,7 @@ _EXTERN_C_UNLESS_PURE
 //     Non-standard: if OM/API error, return INT_MAX.
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string1) _Post_readable_size_(return)
                                                           wchar_t* string1,
-    _In_z_ wchar_t* end1, const wchar_t* string2, const wchar_t* end2, const _Collvec* ploc) {
+    _In_z_ wchar_t* end1, const wchar_t* string2, const wchar_t* end2, const _Collvec* ploc) noexcept {
     size_t n1   = end1 - string1;
     size_t n2   = end2 - string2;
     size_t size = static_cast<size_t>(-1);
@@ -64,7 +64,6 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string
         }
         size = n2;
     } else {
-
         // When using LCMAP_SORTKEY, LCMapStringW handles BYTES not wide
         // chars. We use a byte buffer to hold bytes and then convert the
         // byte string to a wide char string and return this so it can be
@@ -100,10 +99,10 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string
 
 #ifdef MRTDLL
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(unsigned short* string1, unsigned short* end1,
-    const unsigned short* string2, const unsigned short* end2, const _Collvec* ploc) {
+    const unsigned short* string2, const unsigned short* end2, const _Collvec* ploc) noexcept {
     return _Wcsxfrm(reinterpret_cast<wchar_t*>(string1), reinterpret_cast<wchar_t*>(end1),
         reinterpret_cast<const wchar_t*>(string2), reinterpret_cast<const wchar_t*>(end2), ploc);
 }
-#endif // MRTDLL
+#endif // defined(MRTDLL)
 
 _END_EXTERN_C_UNLESS_PURE

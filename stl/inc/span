@@ -30,7 +30,7 @@ _EXPORT_STD inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 template <class _Ty>
 struct _Span_iterator {
 #ifdef __cpp_lib_concepts
-    using iterator_concept  = contiguous_iterator_tag;
+    using iterator_concept = contiguous_iterator_tag;
 #endif // defined(__cpp_lib_concepts)
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
@@ -178,7 +178,7 @@ struct _Span_iterator {
         _Myptr = _It;
     }
 
-    pointer _Myptr   = nullptr;
+    pointer _Myptr = nullptr;
 #if _ITERATOR_DEBUG_LEVEL >= 1
     pointer _Mybegin = nullptr;
     pointer _Myend   = nullptr;
@@ -301,16 +301,16 @@ private:
     using _Mybase::_Mysize;
 
 public:
-    using element_type           = _Ty;
-    using value_type             = remove_cv_t<_Ty>;
-    using size_type              = size_t;
-    using difference_type        = ptrdiff_t;
-    using pointer                = _Ty*;
-    using const_pointer          = const _Ty*;
-    using reference              = _Ty&;
-    using const_reference        = const _Ty&;
-    using iterator               = _Span_iterator<_Ty>;
-    using reverse_iterator       = _STD reverse_iterator<iterator>;
+    using element_type     = _Ty;
+    using value_type       = remove_cv_t<_Ty>;
+    using size_type        = size_t;
+    using difference_type  = ptrdiff_t;
+    using pointer          = _Ty*;
+    using const_pointer    = const _Ty*;
+    using reference        = _Ty&;
+    using const_reference  = const _Ty&;
+    using iterator         = _Span_iterator<_Ty>;
+    using reverse_iterator = _STD reverse_iterator<iterator>;
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
     using const_iterator         = _STD const_iterator<iterator>;
     using const_reverse_iterator = _STD const_iterator<reverse_iterator>;
@@ -323,6 +323,7 @@ public:
 
     // clang-format off
     constexpr span() noexcept requires (_Extent == 0 || _Extent == dynamic_extent) = default;
+    // clang-format on
 
     template <_Span_compatible_iterator<element_type> _It>
     constexpr explicit(_Extent != dynamic_extent) span(_It _First, size_type _Count) noexcept // strengthened
@@ -336,8 +337,8 @@ public:
     }
 
     template <_Span_compatible_iterator<element_type> _It, _Span_compatible_sentinel<_It> _Sentinel>
-    constexpr explicit(_Extent != dynamic_extent) span(_It _First, _Sentinel _Last)
-        noexcept(noexcept(_Last - _First)) // strengthened
+    constexpr explicit(_Extent != dynamic_extent)
+        span(_It _First, _Sentinel _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mybase(_STD to_address(_First), static_cast<size_type>(_Last - _First)) {
         _Adl_verify_range(_First, _Last);
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -353,8 +354,7 @@ public:
     constexpr span(type_identity_t<element_type> (&_Arr)[_Size]) noexcept : _Mybase(_Arr, _Size) {}
 
     template <class _OtherTy, size_t _Size>
-        requires (_Extent == dynamic_extent || _Extent == _Size)
-              && is_convertible_v<_OtherTy (*)[], element_type (*)[]>
+        requires (_Extent == dynamic_extent || _Extent == _Size) && is_convertible_v<_OtherTy (*)[], element_type (*)[]>
     constexpr span(array<_OtherTy, _Size>& _Arr) noexcept : _Mybase(_Arr.data(), _Size) {}
 
     template <class _OtherTy, size_t _Size>
@@ -371,13 +371,13 @@ public:
                 "Cannot construct span with static extent from range r as std::ranges::size(r) != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        }
+    }
 
     template <class _OtherTy, size_t _OtherExtent>
         requires (_Extent == dynamic_extent || _OtherExtent == dynamic_extent || _Extent == _OtherExtent)
               && is_convertible_v<_OtherTy (*)[], element_type (*)[]>
     constexpr explicit(_Extent != dynamic_extent && _OtherExtent == dynamic_extent)
-    span(const span<_OtherTy, _OtherExtent>& _Other) noexcept
+        span(const span<_OtherTy, _OtherExtent>& _Other) noexcept
         : _Mybase(_Other.data(), _Other.size()) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
@@ -385,8 +385,7 @@ public:
                 "Cannot construct span with static extent from other span as other.size() != extent");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        }
-    // clang-format on
+    }
 
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 
@@ -598,7 +597,7 @@ public:
         return {_Mydata, _Mydata, _Mydata + _Mysize};
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_Mydata};
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
     _NODISCARD constexpr iterator end() const noexcept {
@@ -607,7 +606,7 @@ public:
         return {_End, _Mydata, _End};
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 / _ITERATOR_DEBUG_LEVEL == 0 vvv
         return {_End};
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
@@ -695,6 +694,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX20
+#endif // ^^^ _HAS_CXX20 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _SPAN_

@@ -195,9 +195,9 @@ namespace pmr {
 
 #if _HAS_CXX20 && defined(__cpp_lib_byte)
     _EXPORT_STD template <class _Ty = byte>
-#else
+#else // ^^^ _HAS_CXX20 && defined(__cpp_lib_byte) / !_HAS_CXX20 || !defined(__cpp_lib_byte) vvv
     _EXPORT_STD template <class _Ty>
-#endif // _HAS_CXX20 && defined(__cpp_lib_byte)
+#endif // ^^^ !_HAS_CXX20 || !defined(__cpp_lib_byte) ^^^
     class polymorphic_allocator {
     public:
         template <class>

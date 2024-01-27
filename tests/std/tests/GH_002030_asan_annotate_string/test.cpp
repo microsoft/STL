@@ -1738,7 +1738,6 @@ void test_exceptions() {
             assert(verify_string(append_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str append_iterator_sso{input_sso};
         try {
             assert(verify_string(append_iterator_sso));
@@ -1747,7 +1746,6 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(append_iterator_sso));
         }
-#endif
 
         str append_input_iterator{input};
         try {
@@ -1758,14 +1756,12 @@ void test_exceptions() {
             assert(verify_string(append_input_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str append_input_iterator_sso{input_sso};
         try {
             append_input_iterator_sso.append(input_iter_data.begin(), input_iter_data.end());
         } catch (...) {
             assert(verify_string(append_input_iterator_sso));
         }
-#endif
     }
 
     { // assign
@@ -1778,7 +1774,6 @@ void test_exceptions() {
             assert(verify_string(assign_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str assign_iterator_sso{input_sso};
         try {
             assert(verify_string(assign_iterator_sso));
@@ -1786,7 +1781,6 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(assign_iterator_sso));
         }
-#endif
 
         str assign_input_iterator{input};
         try {
@@ -1797,7 +1791,6 @@ void test_exceptions() {
             assert(verify_string(assign_input_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str assign_input_iterator_sso{input_sso};
         try {
             assert(verify_string(assign_input_iterator_sso));
@@ -1806,7 +1799,6 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(assign_input_iterator_sso));
         }
-#endif
     }
 
     { // insert
@@ -1819,7 +1811,6 @@ void test_exceptions() {
             assert(verify_string(insert_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str insert_iterator_sso{input_sso};
         try {
             assert(verify_string(insert_iterator_sso));
@@ -1828,7 +1819,6 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(insert_iterator_sso));
         }
-#endif
 
         str insert_input_iterator{input};
         try {
@@ -1839,7 +1829,6 @@ void test_exceptions() {
             assert(verify_string(insert_input_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str insert_input_iterator_sso{input_sso};
         try {
             assert(verify_string(insert_input_iterator_sso));
@@ -1849,7 +1838,6 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(insert_input_iterator_sso));
         }
-#endif
     }
 }
 
@@ -1920,6 +1908,17 @@ void test_gh_3883() {
     assert(t == "AAAAAAA");
 }
 
+void test_gh_3955() {
+    // GH-3955 <xstring>: ASAN report container-overflow in a legal case
+    string s(19, '0');
+    s = &s[3];
+    assert(s == string(16, '0'));
+
+    string t(19, '0');
+    s = &t[0];
+    assert(s == t);
+}
+
 int main() {
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
@@ -1932,4 +1931,5 @@ int main() {
     test_DevCom_10116361();
     test_DevCom_10109507();
     test_gh_3883();
+    test_gh_3955();
 }

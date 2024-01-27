@@ -11,6 +11,7 @@
 #include <Windows.h>
 
 namespace {
+    constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 
     constexpr size_t _Wait_table_size_power = 8;
     constexpr size_t _Wait_table_size       = 1 << _Wait_table_size_power;
@@ -94,7 +95,7 @@ namespace {
 #else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _STL_WIN32_WINNT_WIN8 vvv
 #define _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE 0
 #endif // ^^^ _STL_WIN32_WINNT < _STL_WIN32_WINNT_WIN8 ^^^
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+#endif // !defined(_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE)
 
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 
@@ -118,7 +119,8 @@ namespace {
     void _Force_wait_functions_srwlock_only() noexcept {
         auto _Local = _Wait_functions._Api_level.load(_STD memory_order_acquire);
         if (_Local <= __std_atomic_api_level::__detecting) {
-            while (!_Wait_functions._Api_level.compare_exchange_weak(_Local, __std_atomic_api_level::__has_srwlock)) {
+            while (!_Wait_functions._Api_level.compare_exchange_weak(
+                _Local, __std_atomic_api_level::__has_srwlock, _STD memory_order_acq_rel)) {
                 if (_Local > __std_atomic_api_level::__detecting) {
                     return;
                 }
@@ -127,7 +129,8 @@ namespace {
     }
 
     [[nodiscard]] __std_atomic_api_level _Init_wait_functions(__std_atomic_api_level _Level) {
-        while (!_Wait_functions._Api_level.compare_exchange_weak(_Level, __std_atomic_api_level::__detecting)) {
+        while (!_Wait_functions._Api_level.compare_exchange_weak(
+            _Level, __std_atomic_api_level::__detecting, _STD memory_order_acq_rel)) {
             if (_Level > __std_atomic_api_level::__detecting) {
                 return _Level;
             }
@@ -219,7 +222,7 @@ namespace {
     }
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 int __stdcall __std_atomic_wait_direct(const void* const _Storage, void* const _Comparand, const size_t _Size,
     const unsigned long _Remaining_timeout) noexcept {
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
@@ -317,7 +320,7 @@ int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand,
             return FALSE;
         }
 
-        if (_Remaining_timeout != _Atomic_wait_no_timeout) {
+        if (_Remaining_timeout != __std_atomic_wait_no_timeout) {
             // spurious wake to recheck the clock
             return TRUE;
         }
@@ -333,8 +336,8 @@ unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long 
 }
 
 unsigned long __stdcall __std_atomic_wait_get_remaining_timeout(unsigned long long _Deadline) noexcept {
-    static_assert(_Atomic_wait_no_timeout == INFINITE,
-        "_Atomic_wait_no_timeout is passed directly to underlying API, so should match it");
+    static_assert(__std_atomic_wait_no_timeout == INFINITE,
+        "__std_atomic_wait_no_timeout is passed directly to underlying API, so should match it");
 
     if (_Deadline == _Atomic_wait_no_deadline) {
         return INFINITE;
@@ -431,4 +434,4 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     return _Value;
 #endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
 }
-_END_EXTERN_C
+} // extern "C"

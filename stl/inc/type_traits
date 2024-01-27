@@ -377,31 +377,29 @@ _INLINE_VAR constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
-#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
+#else // ^^^ __clrcall supported / __clrcall not supported vvv
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // ^^^ !defined(_M_CEE) ^^^
+#endif // ^^^ __clrcall not supported ^^^
 
 #if defined(_M_IX86) && !defined(_M_CEE)
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__fastcall, OPT1, OPT2, OPT3)
-
-#else // defined(_M_IX86) && !defined(_M_CEE)
+#else // ^^^ __fastcall supported / __fastcall not supported vvv
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // defined(_M_IX86) && !defined(_M_CEE)
+#endif // ^^^ __fastcall not supported ^^^
 
 #ifdef _M_IX86
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
-#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
+#else // ^^^ __stdcall and __thiscall supported / __stdcall and __thiscall not supported vvv
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // ^^^ !defined(_M_IX86) ^^^
+#endif // ^^^ __stdcall and __thiscall not supported ^^^
 
 #if ((defined(_M_IX86) && _M_IX86_FP >= 2) || defined(_M_X64)) && !defined(_M_CEE)
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__vectorcall, OPT1, OPT2, OPT3)
-
-#else // defined(_M_IX86) && _M_IX86_FP >= 2 etc.
+#else // ^^^ __vectorcall supported / __vectorcall not supported vvv
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3)
-#endif // defined(_M_IX86) && _M_IX86_FP >= 2 etc.
+#endif // ^^^ __vectorcall not supported ^^^
 
 #define _NON_MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)          \
@@ -803,7 +801,7 @@ struct _Is_assignable_no_precondition_check : bool_constant<__is_assignable_no_p
 #else // ^^^ Use intrinsic / intrinsic not supported vvv
 template <class _To, class _From>
 using _Is_assignable_no_precondition_check = is_assignable<_To, _From>;
-#endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+#endif // ^^^ intrinsic not supported ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_copy_assignable
@@ -830,7 +828,7 @@ using _Is_copy_assignable_no_precondition_check = is_copy_assignable<_Ty>;
 
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_copy_assignable_unchecked_v = is_copy_assignable_v<_Ty>;
-#endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+#endif // ^^^ intrinsic not supported ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_move_assignable : bool_constant<__is_assignable(add_lvalue_reference_t<_Ty>, _Ty)> {
@@ -854,7 +852,7 @@ using _Is_move_assignable_no_precondition_check = is_move_assignable<_Ty>;
 
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_move_assignable_unchecked_v = is_move_assignable_v<_Ty>;
-#endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+#endif // ^^^ intrinsic not supported ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_destructible : bool_constant<__is_destructible(_Ty)> {
@@ -1164,7 +1162,7 @@ struct _Aligned<_Len, _Align, double, false> {
     struct type {
         alignas(_Align) char _Space[_Len];
     };
-#else // ^^^ _ENABLE_EXTENDED_ALIGNED_STORAGE / !_ENABLE_EXTENDED_ALIGNED_STORAGE vvv
+#else // ^^^ defined(_ENABLE_EXTENDED_ALIGNED_STORAGE) / !defined(_ENABLE_EXTENDED_ALIGNED_STORAGE) vvv
 #ifndef _DISABLE_EXTENDED_ALIGNED_STORAGE
     static_assert(_Always_false<_Aligned>,
         "You've instantiated std::aligned_storage<Len, Align> with an extended alignment (in other "
@@ -1175,9 +1173,9 @@ struct _Aligned<_Len, _Align, double, false> {
         "To suppress this error, please define either "
         "(1) _ENABLE_EXTENDED_ALIGNED_STORAGE to confirm that you want a type with an extended alignment, or "
         "(2) _DISABLE_EXTENDED_ALIGNED_STORAGE to get the old non-conforming behavior.");
-#endif // !_DISABLE_EXTENDED_ALIGNED_STORAGE
+#endif // ^^^ !defined(_DISABLE_EXTENDED_ALIGNED_STORAGE) ^^^
     using type = _Align_type<max_align_t, _Len>;
-#endif // _ENABLE_EXTENDED_ALIGNED_STORAGE
+#endif // ^^^ !defined(_ENABLE_EXTENDED_ALIGNED_STORAGE) ^^^
 };
 
 template <size_t _Len, size_t _Align>
@@ -1323,10 +1321,10 @@ struct _Const_lvalue_cond_oper<_Ty1, _Ty2, void_t<_Conditional_type<const _Ty1&,
 
 template <class _Ty1, class _Ty2, class = void>
 struct _Decayed_cond_oper : _Const_lvalue_cond_oper<_Ty1, _Ty2> {};
-#else // ^^^ >= C++20 / <= C++17 vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty1, class _Ty2, class = void>
 struct _Decayed_cond_oper {};
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Ty1, class _Ty2>
 struct _Decayed_cond_oper<_Ty1, _Ty2, void_t<_Conditional_type<_Ty1, _Ty2>>> {
@@ -1726,13 +1724,13 @@ template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
 
 _EXPORT_STD template <class _Callable>
-_CONSTEXPR17 auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
+constexpr auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
     -> decltype(static_cast<_Callable&&>(_Obj)()) {
     return static_cast<_Callable&&>(_Obj)();
 }
 
 _EXPORT_STD template <class _Callable, class _Ty1, class... _Types2>
-_CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
+constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
     noexcept(_Invoker1<_Callable, _Ty1>::_Call(
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
     -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
@@ -1748,7 +1746,12 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_object) {
         return static_cast<_Ty1&&>(_Arg1).*_Obj;
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10543093
         return _Arg1.get().*_Obj;
+#else // ^^^ no workaround / workaround vvv
+        auto& _Ref = _Arg1.get();
+        return _Ref.*_Obj;
+#endif // ^^^ workaround ^^^
     } else {
         _STL_INTERNAL_STATIC_ASSERT(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer);
         return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
@@ -1761,7 +1764,7 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
 #pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch (/Wall)
 
 template <class _From, class _To, bool = is_convertible_v<_From, _To>, bool = is_void_v<_To>>
-_INLINE_VAR constexpr bool _Is_nothrow_convertible_v = noexcept(_Fake_copy_init<_To>(_STD declval<_From>()));
+_INLINE_VAR constexpr bool _Is_nothrow_convertible_v = noexcept(_STD _Fake_copy_init<_To>(_STD declval<_From>()));
 
 #pragma warning(pop)
 
@@ -1781,7 +1784,7 @@ _EXPORT_STD template <class _From, class _To>
 inline constexpr bool is_nothrow_convertible_v = _Is_nothrow_convertible_v<_From, _To>;
 
 _EXPORT_STD template <class _From, class _To>
-using is_nothrow_convertible = _Is_nothrow_convertible<_From, _To>;
+struct is_nothrow_convertible : bool_constant<_Is_nothrow_convertible_v<_From, _To>> {};
 #endif // _HAS_CXX20
 
 template <class _From, class _To, class = void>
@@ -2126,8 +2129,8 @@ struct _Is_nothrow_swappable;
 _EXPORT_STD template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assignable_v<_Ty>, int> = 0>
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
 template <class _Ty, int _Enabled = 0>
-#endif // _HAS_CXX17
-_CONSTEXPR20 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>);
+#endif // ^^^ !_HAS_CXX17 ^^^
+_CONSTEXPR20 void swap(_Ty&, _Ty&) noexcept(is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_assignable_v<_Ty>);
 
 _EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> = 0>
 _CONSTEXPR20 void swap(_Ty (&)[_Size], _Ty (&)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value);
@@ -2438,7 +2441,7 @@ struct less {
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
     _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
-        noexcept(noexcept(_Fake_copy_init<bool>(_Left < _Right))) /* strengthened */ {
+        noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left < _Right))) /* strengthened */ {
         return _Left < _Right;
     }
 };
@@ -2512,6 +2515,9 @@ template <class _To, class _From,
 _NODISCARD constexpr _To _Bit_cast(const _From& _Val) noexcept {
     return __builtin_bit_cast(_To, _Val);
 }
+
+template <bool _IsConst, class _Ty>
+using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
 
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING

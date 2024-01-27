@@ -1162,8 +1162,6 @@ void random_test() {
     distribution_test_impl(piece_line_d1);
     distribution_test_impl(piece_line_d2);
     distribution_test_impl(piece_line_d3);
-
-    (void) uni_int_d(gen, uni_int_d(gen));
 }
 
 void ratio_test() {

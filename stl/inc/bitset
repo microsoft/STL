@@ -83,7 +83,7 @@ private:
         (void) _Pos;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         _STL_VERIFY(_Pos < _Bits, "bitset index outside range");
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
     }
 
     constexpr bool _Subscript(size_t _Pos) const noexcept {

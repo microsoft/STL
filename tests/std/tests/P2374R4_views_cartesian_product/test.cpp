@@ -379,7 +379,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         STATIC_ASSERT(same_as<typename I::iterator_category, input_iterator_tag>);
 
         // Check iterator_concept
-        using IterConcept = typename I::iterator_concept;
+        using IterConcept = I::iterator_concept;
         STATIC_ASSERT(is_random_access == same_as<IterConcept, random_access_iterator_tag>);
         STATIC_ASSERT((is_bidirectional && !is_random_access) == same_as<IterConcept, bidirectional_iterator_tag>);
         STATIC_ASSERT((forward_range<VFirst> && !is_bidirectional) == same_as<IterConcept, forward_iterator_tag>);
@@ -551,7 +551,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         STATIC_ASSERT(same_as<typename CI::iterator_category, input_iterator_tag>);
 
         // Check iterator_concept
-        using IterConcept = typename CI::iterator_concept;
+        using IterConcept = CI::iterator_concept;
         STATIC_ASSERT(is_const_random_access == same_as<IterConcept, random_access_iterator_tag>);
         STATIC_ASSERT(
             (is_const_bidirectional && !is_const_random_access) == same_as<IterConcept, bidirectional_iterator_tag>);

@@ -6,8 +6,8 @@ which ships as part of the MSVC toolset and the Visual Studio IDE.
 * Our [Changelog][] tracks which updates to this repository appear in each VS release.
 * Our [Status Chart][] displays our overall progress over time.
 * Join our [Discord server][].
-
-[![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=main)][Pipelines]
+* [![CI Status Badge][STL-CI-badge]][STL-CI-link] (STL-CI build status)
+* [![ASan CI Status Badge][STL-ASan-CI-badge]][STL-ASan-CI-link] (STL-ASan-CI build status)
 
 # What This Repo Is Useful For
 
@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4950][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4971][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -141,13 +141,12 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.8 Preview 1 or later.
+1. Install Visual Studio 2022 17.9 Preview 2 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.26.0 or later, and [Ninja][] 1.11.0 or later.
-    * We recommend selecting "Python 3 64-bit" in the VS Installer.
-    * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
+    * Otherwise, install [CMake][] 3.27.0 or later, and [Ninja][] 1.11.0 or later.
+    * Make sure [Python][] 3.12 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
@@ -157,16 +156,15 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.8 Preview 1 or later.
+1. Install Visual Studio 2022 17.9 Preview 2 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.26.0 or later, and [Ninja][] 1.11.0 or later.
-    * We recommend selecting "Python 3 64-bit" in the VS Installer.
-    * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
+    * Otherwise, install [CMake][] 3.27.0 or later, and [Ninja][] 1.11.0 or later.
+    * Make sure [Python][] 3.12 or later is available to CMake.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
-4. `git clone https://github.com/microsoft/STL --recurse-submodules`
+4. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
 
 To build the x86 target:
 
@@ -232,7 +230,7 @@ C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
 # How To Run The Tests With A Native Tools Command Prompt
 
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
-2. Acquire [Python][] 3.9 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
+2. Acquire [Python][] 3.12 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
 3. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
     * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
     `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.
@@ -532,10 +530,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4950]: https://wg21.link/n4950
+[N4971]: https://wg21.link/n4971
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
-[Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
+[STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"
+[STL-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
+[STL-ASan-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-ASan-CI?branchName=main "STL-ASan-CI"
+[STL-ASan-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=5&branchName=main
 [Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Status Chart]: https://microsoft.github.io/STL/

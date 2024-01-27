@@ -68,23 +68,24 @@ namespace test_view_interface {
     using test::CanCompare, test::CanDifference, test::Common, test::ProxyRef, test::to_bool;
     enum class ConstRange : bool { no, yes };
 
-    // clang-format off
     template <class Cat, Common IsCommon, CanDifference Diff, ConstRange HasConstRange>
     struct fake_view : ranges::view_interface<fake_view<Cat, IsCommon, Diff, HasConstRange>> {
         using I = test::iterator<Cat, int, Diff, CanCompare::yes, ProxyRef::no>;
         using S = std::conditional_t<to_bool(IsCommon), I, test::sentinel<int>>;
 
         I begin();
-        I begin() const requires (to_bool(HasConstRange));
+        I begin() const
+            requires (to_bool(HasConstRange));
 
         S end();
-        S end() const requires (to_bool(HasConstRange));
+        S end() const
+            requires (to_bool(HasConstRange));
 
-        unsigned int size() requires (to_bool(Diff) && !std::derived_from<Cat, forward_iterator_tag>);
-        unsigned int size() const requires (to_bool(HasConstRange) && to_bool(Diff)
-            && !std::derived_from<Cat, forward_iterator_tag>);
+        unsigned int size()
+            requires (to_bool(Diff) && !std::derived_from<Cat, forward_iterator_tag>);
+        unsigned int size() const
+            requires (to_bool(HasConstRange) && to_bool(Diff) && !std::derived_from<Cat, forward_iterator_tag>);
     };
-    // clang-format on
 
     namespace output_unsized_onlymutable {
         using V = fake_view<output_iterator_tag, Common::no, CanDifference::no, ConstRange::no>;

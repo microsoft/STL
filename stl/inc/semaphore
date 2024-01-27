@@ -52,7 +52,7 @@ _NODISCARD unsigned long _Semaphore_remaining_timeout(const chrono::time_point<_
     return static_cast<unsigned long>(_Rel_time.count());
 }
 
-inline constexpr ptrdiff_t _Semaphore_max = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
+inline constexpr ptrdiff_t _Semaphore_max = PTRDIFF_MAX;
 
 _EXPORT_STD template <ptrdiff_t _Least_max_value = _Semaphore_max>
 class counting_semaphore {
@@ -117,7 +117,7 @@ public:
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
-                _Wait(_Atomic_wait_no_timeout);
+                _Wait(__std_atomic_wait_no_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
             _STL_VERIFY(_Current > 0 && _Current <= _Least_max_value,

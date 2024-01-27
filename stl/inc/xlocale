@@ -23,34 +23,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 template <class _Dummy>
-class _Locbase { // define templatized category constants, instantiate on demand
-public:
-    _PGLOBAL static const int collate  = _M_COLLATE;
-    _PGLOBAL static const int ctype    = _M_CTYPE;
-    _PGLOBAL static const int monetary = _M_MONETARY;
-    _PGLOBAL static const int numeric  = _M_NUMERIC;
-    _PGLOBAL static const int time     = _M_TIME;
-    _PGLOBAL static const int messages = _M_MESSAGES;
-    _PGLOBAL static const int all      = _M_ALL;
-    _PGLOBAL static const int none     = 0;
-};
-
-template <class _Dummy>
-const int _Locbase<_Dummy>::collate;
-template <class _Dummy>
-const int _Locbase<_Dummy>::ctype;
-template <class _Dummy>
-const int _Locbase<_Dummy>::monetary;
-template <class _Dummy>
-const int _Locbase<_Dummy>::numeric;
-template <class _Dummy>
-const int _Locbase<_Dummy>::time;
-template <class _Dummy>
-const int _Locbase<_Dummy>::messages;
-template <class _Dummy>
-const int _Locbase<_Dummy>::all;
-template <class _Dummy>
-const int _Locbase<_Dummy>::none;
+class _Locbase {}; // TRANSITION, ABI, affects sizeof(locale)
 
 _EXPORT_STD template <class _Elem>
 class collate;
@@ -89,6 +62,15 @@ extern "C++" struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for mar
 _EXPORT_STD extern "C++" class locale : public _Locbase<int>, public _Crt_new_delete {
 public:
     using category = int;
+
+    static constexpr category collate  = _M_COLLATE;
+    static constexpr category ctype    = _M_CTYPE;
+    static constexpr category monetary = _M_MONETARY;
+    static constexpr category numeric  = _M_NUMERIC;
+    static constexpr category time     = _M_TIME;
+    static constexpr category messages = _M_MESSAGES;
+    static constexpr category all      = _M_ALL;
+    static constexpr category none     = 0;
 
     class _CRTIMP2_PURE_IMPORT id { // identifier stamp, unique for each distinct kind of facet
     public:
@@ -244,7 +226,7 @@ public:
         _Newimp->_Addfac(_Facptr, _Facet::id);
         _Newimp->_Catmask = none;
         _Newimp->_Name    = "*";
-        return locale{_Newimp};
+        return locale{_Secret_locale_construct_tag{}, _Newimp};
     }
 
     template <class _Facet>
@@ -409,7 +391,11 @@ public:
     static _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL empty(); // empty (transparent) locale
 
 private:
-    locale(_Locimp* _Ptrimp) : _Ptr(_Ptrimp) {}
+    struct _Secret_locale_construct_tag {
+        explicit _Secret_locale_construct_tag() = default;
+    };
+
+    explicit locale(_Secret_locale_construct_tag, _Locimp* _Ptrimp) : _Ptr(_Ptrimp) {}
 
     static _MRTIMP2_PURE _Locimp* __CLRCALL_PURE_OR_CDECL _Init(bool _Do_incref = false); // initialize locale
     static _MRTIMP2_PURE _Locimp* __CLRCALL_PURE_OR_CDECL _Getgloballocale();

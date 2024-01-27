@@ -8,15 +8,24 @@ parameters:
   type: string
 - name: targetPlatform
   type: string
-- name: buildOutputLocationVar
-  type: string
-  default: buildOutputLocation
-- name: benchmarkBuildOutputLocationVar
-  type: string
-  default: benchmarkBuildOutputLocation
+- name: buildBenchmarks
+  type: boolean
+- name: asanBuild
+  type: boolean
+  default: false
 - name: cmakeAdditionalFlags
   type: string
   default: ''
+- name: litFlags
+  type: object
+  default:
+    - '--timeout=240'
+    - '-j$(testParallelism)'
+    - '--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
+    - '--order=lexical'
+    - '--num-shards=$(System.TotalJobsInPhase)'
+    - '--run-shard=$(System.JobPositionInPhase)'
+
 steps:
 - task: PowerShell@2
   displayName: 'Get Test Parallelism'
@@ -27,47 +36,48 @@ steps:
       $testParallelism = $env:NUMBER_OF_PROCESSORS
       Write-Host "##vso[task.setvariable variable=testParallelism;]$testParallelism"
 - script: |
-    if exist "$(${{ parameters.buildOutputLocationVar }})" (
-      rmdir /S /Q "$(${{ parameters.buildOutputLocationVar }})"
+    if exist "$(buildOutputLocation)" (
+      rmdir /S /Q "$(buildOutputLocation)"
     )
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
+    cmake ${{ parameters.cmakeAdditionalFlags }} -G Ninja ^
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
-    -DLIT_FLAGS=$(litFlags) ^
+    -DLIT_FLAGS=${{ join(';', parameters.litFlags) }} ^
     -DSTL_USE_ANALYZE=ON ^
-    -S $(Build.SourcesDirectory) -B $(${{ parameters.buildOutputLocationVar }})
+    -DSTL_ASAN_BUILD=${{ parameters.asanBuild }} ^
+    -S $(Build.SourcesDirectory) -B "$(buildOutputLocation)"
   displayName: 'Configure the STL'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - script: |
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    cmake --build $(${{ parameters.buildOutputLocationVar }})
+    cmake --build "$(buildOutputLocation)"
   displayName: 'Build the STL'
   timeoutInMinutes: 5
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - script: |
-    if exist "$(${{ parameters.benchmarkBuildOutputLocationVar }})" (
-      rmdir /S /Q "$(${{ parameters.benchmarkBuildOutputLocationVar }})"
+    if exist "$(benchmarkBuildOutputLocation)" (
+      rmdir /S /Q "$(benchmarkBuildOutputLocation)"
     )
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
+    cmake ${{ parameters.cmakeAdditionalFlags }} -G Ninja ^
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
-    -DSTL_BINARY_DIR=$(${{ parameters.buildOutputLocationVar }}) ^
-    -S $(Build.SourcesDirectory)/benchmarks -B $(${{ parameters.benchmarkBuildOutputLocationVar }})
+    -DSTL_BINARY_DIR="$(buildOutputLocation)" ^
+    -S $(Build.SourcesDirectory)/benchmarks -B "$(benchmarkBuildOutputLocation)"
   displayName: 'Configure the benchmarks'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-  condition: ne('${{ parameters.benchmarkBuildOutputLocationVar }}', '')
+  condition: and(succeeded(), ${{ parameters.buildBenchmarks }})
 - script: |
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    cmake --build $(${{ parameters.benchmarkBuildOutputLocationVar }})
+    cmake --build "$(benchmarkBuildOutputLocation)"
   displayName: 'Build the benchmarks'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-  condition: ne('${{ parameters.benchmarkBuildOutputLocationVar }}', '')
+  condition: and(succeeded(), ${{ parameters.buildBenchmarks }})

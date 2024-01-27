@@ -18,7 +18,10 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #pragma warning(disable : 4275) // non dll-interface class 'X' used as base for dll-interface class 'Y'
 
+#pragma push_macro("raw_name") // TRANSITION, GH-2195
+#undef raw_name
 #include <vcruntime_typeinfo.h>
+#pragma pop_macro("raw_name")
 
 _EXPORT_STD extern "C++" class type_info; // for typeid, MSVC looks for type_info in the global namespace
 
@@ -61,7 +64,7 @@ class __non_rtti_object : public bad_typeid { // report a non-RTTI object
 public:
     __non_rtti_object(const char* _Message) : bad_typeid(_Message) {}
 };
-#endif // !_HAS_EXCEPTIONS
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
 
 [[noreturn]] inline void _Throw_bad_cast() {
     _THROW(bad_cast{});

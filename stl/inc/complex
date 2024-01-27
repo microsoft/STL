@@ -40,6 +40,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _C_COMPLEX_T
 #define _C_COMPLEX_T // Also defined by UCRT <complex.h>
 
+extern "C" {
 struct _C_double_complex {
     double _Val[2];
 };
@@ -51,6 +52,7 @@ struct _C_float_complex {
 struct _C_ldouble_complex {
     long double _Val[2];
 };
+} // extern "C"
 #endif // _C_COMPLEX_T
 
 // complex _Val offsets
@@ -953,19 +955,19 @@ public:
 
 protected:
     template <class _Other>
-    _CONSTEXPR20 void _Add(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex&& _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Add(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
         this->_Val[_RE] = this->_Val[_RE] + static_cast<_Ty>(_Right.real());
         this->_Val[_IM] = this->_Val[_IM] + static_cast<_Ty>(_Right.imag());
     }
 
     template <class _Other>
-    _CONSTEXPR20 void _Sub(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex&& _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Sub(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
         this->_Val[_RE] = this->_Val[_RE] - static_cast<_Ty>(_Right.real());
         this->_Val[_IM] = this->_Val[_IM] - static_cast<_Ty>(_Right.imag());
     }
 
     template <class _Other>
-    _CONSTEXPR20 void _Mul(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex&& _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Mul(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
         _Ty _Rightreal = static_cast<_Ty>(_Right.real());
         _Ty _Rightimag = static_cast<_Ty>(_Right.imag());
 
@@ -975,7 +977,7 @@ protected:
     }
 
     template <class _Other>
-    _CONSTEXPR20 void _Div(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex&& _Is_unqual_fp<_Other>) {
+    _CONSTEXPR20 void _Div(const complex<_Other>& _Right) noexcept(_Is_for_standard_complex && _Is_unqual_fp<_Other>) {
         using _Myctraits = _Ctraits<_Ty>;
 
         _Ty _Rightreal = static_cast<_Ty>(_Right.real());
@@ -2210,7 +2212,7 @@ _NODISCARD complex<_Upgrade_to_double<_Ty>> proj(_Ty _Left) noexcept /* strength
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left,
-    const complex<_Ty2>& _Right) noexcept(_Is_unqual_fp<_Ty1>&& _Is_unqual_fp<_Ty2>) /* strengthened */ {
+    const complex<_Ty2>& _Right) noexcept(_Is_unqual_fp<_Ty1> && _Is_unqual_fp<_Ty2>) /* strengthened */ {
     using _Type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
     return _STD pow(_Type(_Left), _Type(_Right));
 }

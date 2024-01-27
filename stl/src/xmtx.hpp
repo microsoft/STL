@@ -9,6 +9,15 @@
 
 #include <Windows.h>
 
+#ifdef _M_CEE
+#define _RELIABILITY_CONTRACT                                                    \
+    [System::Runtime::ConstrainedExecution::ReliabilityContract(                 \
+        System::Runtime::ConstrainedExecution::Consistency::WillNotCorruptState, \
+        System::Runtime::ConstrainedExecution::Cer::Success)]
+#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
+#define _RELIABILITY_CONTRACT
+#endif // ^^^ !defined(_M_CEE) ^^^
+
 _EXTERN_C_UNLESS_PURE
 
 using _Rmtx = CRITICAL_SECTION;

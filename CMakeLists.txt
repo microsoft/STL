@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.26.0)
+cmake_minimum_required(VERSION 3.27.0)
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
@@ -46,6 +46,7 @@ option(BUILD_TESTING "Enable testing" ON)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
 option(STL_USE_ANALYZE "Pass the /analyze flag to MSVC" OFF)
+option(STL_ASAN_BUILD "Build the STL with ASan enabled" OFF)
 
 set(VCLIBS_EXPLICIT_MACHINE "")
 
@@ -117,10 +118,15 @@ set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
 # See GH-2108 for more info.
 set(VCLIBS_RELEASE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/O2;/Os>")
 
-add_subdirectory(boost-math)
-add_subdirectory(stl)
-
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+if(STL_ASAN_BUILD)
+    message(STATUS "Building with ASan enabled")
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-fsanitize=address;-fno-sanitize-address-vcasan-lib>")
+endif()
+
+add_subdirectory(boost-math)
+add_subdirectory(stl)

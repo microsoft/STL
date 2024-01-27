@@ -63,11 +63,11 @@ template <class CharT, class Alloc = allocator<CharT>>
 using alternative_basic_string = basic_string<CharT, alternative_char_traits<CharT>, Alloc>;
 
 template <class charT, class... Args>
-auto make_testing_format_args(Args&&... vals) {
+auto make_testing_format_args(Args&&... vals) { // references to temporaries are risky, see P2905R2; we'll be careful
     if constexpr (is_same_v<charT, wchar_t>) {
-        return make_wformat_args(forward<Args>(vals)...);
+        return make_wformat_args(vals...);
     } else {
-        return make_format_args(forward<Args>(vals)...);
+        return make_format_args(vals...);
     }
 }
 
@@ -725,6 +725,17 @@ void test_char_specs() {
     test_type(STR("{:X}"), charT{'X'});
 
     test_type(STR("{:+d}"), charT{'X'});
+
+    // P2909R4 Fix formatting of code units as integers
+    constexpr charT irregular_code_unit     = static_cast<charT>(255);
+    constexpr int irregular_code_unit_value = static_cast<make_unsigned_t<charT>>(irregular_code_unit);
+    assert(format(STR("{:b}"), irregular_code_unit) == format(STR("{:b}"), irregular_code_unit_value));
+    assert(format(STR("{:B}"), irregular_code_unit) == format(STR("{:B}"), irregular_code_unit_value));
+    assert(format(STR("{:d}"), irregular_code_unit) == format(STR("{:d}"), irregular_code_unit_value));
+    assert(format(STR("{:o}"), irregular_code_unit) == format(STR("{:o}"), irregular_code_unit_value));
+    assert(format(STR("{:x}"), irregular_code_unit) == format(STR("{:x}"), irregular_code_unit_value));
+    assert(format(STR("{:X}"), irregular_code_unit) == format(STR("{:X}"), irregular_code_unit_value));
+    assert(format(STR("{:+d}"), irregular_code_unit) == format(STR("{:+d}"), irregular_code_unit_value));
 }
 
 template <class charT, class Float>
@@ -980,7 +991,7 @@ void test_pointer_specs() {
     throw_helper(STR("{:#}"), nullptr);
 
     // Leading zero
-    throw_helper(STR("{:0}"), nullptr);
+    assert(format(STR("{:05}"), nullptr) == STR("0x000"));
 
     // Width
     assert(format(STR("{:5}"), nullptr) == STR("  0x0"));
@@ -1339,10 +1350,10 @@ void libfmt_formatter_test_zero_flag() {
     assert(format(STR("{0:05}"), 42ull) == STR("00042"));
     assert(format(STR("{0:07}"), -42.0) == STR("-000042"));
     assert(format(STR("{0:07}"), -42.0l) == STR("-000042"));
+    assert(format(STR("{0:05}"), reinterpret_cast<void*>(0x42)) == STR("0x042"));
     throw_helper(STR("{0:0"), 'c');
     throw_helper(STR("{0:05}"), 'c');
     throw_helper(STR("{0:05}"), STR("abc"));
-    throw_helper(STR("{0:05}"), reinterpret_cast<void*>(0x42));
 }
 
 template <class charT>
@@ -1495,6 +1506,12 @@ constexpr bool test_format_string() {
     return true;
 }
 
+// Also test GH-4319: incorrect output for some floating-point values
+template <class charT>
+void test_gh_4319() {
+    assert(format(STR("{:}"), 12345678.0) == STR("12345678"));
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1571,6 +1588,9 @@ void test() {
     test_localized_char<char, char>();
     test_localized_char<wchar_t, char>();
     test_localized_char<wchar_t, wchar_t>();
+
+    test_gh_4319<char>();
+    test_gh_4319<wchar_t>();
 }
 
 int main() {

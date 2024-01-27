@@ -30,7 +30,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 namespace pmr {
-
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_set_default_resource(memory_resource*) noexcept;
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_set_default_resource(memory_resource*) noexcept;
 
@@ -751,6 +750,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX17
+#endif // ^^^ _HAS_CXX17 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _MEMORY_RESOURCE_

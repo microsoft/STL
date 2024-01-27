@@ -74,12 +74,12 @@ void test_exception() {
     try {
         shared_ptr<int>{nullptr, NullptrDeleter{}};
         abort();
-    } catch (bad_alloc&) {
+    } catch (const bad_alloc&) {
     }
     try {
         shared_ptr<int>{nullptr, NullptrDeleter{}, allocator<int>{}};
         abort();
-    } catch (bad_alloc&) {
+    } catch (const bad_alloc&) {
     }
     g_throw_on_alloc = false;
 }
@@ -286,7 +286,7 @@ namespace unique_ptr_ {
         try {
             shared_ptr<int>{move(up)};
             abort();
-        } catch (bad_alloc&) {
+        } catch (const bad_alloc&) {
         }
         g_throw_on_alloc = false;
         assert(up.get() == rawptr);

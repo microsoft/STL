@@ -1023,8 +1023,8 @@ public:
                                          && is_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>,
                              int> = 0>
     _CONSTEXPR20 variant& operator=(_Ty&& _Obj) noexcept(
-        is_nothrow_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>&&
-            is_nothrow_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>) {
+        is_nothrow_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>
+        && is_nothrow_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>) {
         // assign/emplace the alternative chosen by overload resolution of _Obj with f(_Types)...
         constexpr size_t _TargetIdx = _Variant_init_index<_Ty, _Types...>::value;
         if (index() == _TargetIdx) {
@@ -1679,7 +1679,7 @@ _NODISCARD constexpr bool operator<=(monostate, monostate) noexcept {
 _NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
     return true;
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class... _Types,
     enable_if_t<conjunction_v<is_move_constructible<_Types>..., is_swappable<_Types>...>, int> = 0>
@@ -1732,6 +1732,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX17
+#endif // ^^^ _HAS_CXX17 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _VARIANT_

@@ -22,7 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _CVT_JIS_
 
 namespace stdext {
-    namespace cvt {
+    namespace _DEPRECATE_STDEXT_CVT cvt {
 
         using _Statype = _CSTD mbstate_t;
 
@@ -306,7 +306,7 @@ namespace stdext {
                 return 0; // 0 => varying length
             }
         };
-    } // namespace cvt
+    } // namespace _DEPRECATE_STDEXT_CVT cvt
 } // namespace stdext
 
 #pragma pop_macro("new")
