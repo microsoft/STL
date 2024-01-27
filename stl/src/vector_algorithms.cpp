@@ -1610,6 +1610,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
                 _Advance_bytes(_Src, 2);
             } while (_Pos != _Stop_at);
         }
+
         if (_Size_bits > 0) {
             __assume(_Size_bits < 16);
             uint16_t _Val;
@@ -1626,7 +1627,6 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-        return;
     }
 #endif // !defined(_M_ARM64EC)
     const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
@@ -1653,6 +1653,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
                 _Advance_bytes(_Src, 1);
             } while (_Pos != _Stop_at);
         }
+
         if (_Size_bits > 0) {
             __assume(_Size_bits < 8);
             const uint8_t _Val   = *reinterpret_cast<const uint8_t*>(_Src);
@@ -1664,7 +1665,6 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-        return;
     }
 #endif // !defined(_M_ARM64EC)
     const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
