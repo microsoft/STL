@@ -19,12 +19,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 #if _USE_STD_VECTOR_ALGORITHMS
-_EXTERN_C
+extern "C" {
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* _Dest, const void* _Src, size_t _Size_bits, char _Elem0, char _Elem1) noexcept;
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     wchar_t* _Dest, const void* _Src, size_t _Size_bits, wchar_t _Elem0, wchar_t _Elem1) noexcept;
-_END_EXTERN_C
+} // extern "C"
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
