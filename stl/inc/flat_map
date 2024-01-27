@@ -1329,7 +1329,7 @@ public:
 
 private:
     using _MyBase::_Erase_if;
-    using _MyBase::_Insert_exact
+    using _MyBase::_Insert_exact;
 
     template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
     friend typename flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
