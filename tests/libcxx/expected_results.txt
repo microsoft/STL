@@ -961,9 +961,6 @@ std/algorithms/algorithms.results/min_max_result.pass.cpp:1 FAIL
 # Not analyzed.
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 
-# Not analyzed. MSVC doesn't define __SIZE_WIDTH__. Clang does, but this is inspecting sizeof(deque) which is non-portable.
-std/containers/sequences/deque/abi.compile.pass.cpp FAIL
-
 # Not analyzed. Possible MSVC constexpr bug.
 # note: failure was caused by a read of a variable outside its lifetime
 std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
