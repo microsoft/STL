@@ -1786,9 +1786,11 @@ namespace ranges {
                 return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                     _RANGES next(_OFirst, _STD move(_OLast)));
             } else if constexpr (_Is_sized1) {
-                return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                return _RANGES _Copy_memcpy_distance(
+                    _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
             } else if constexpr (_Is_sized2) {
-                return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                return _RANGES _Copy_memcpy_distance(
+                    _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
                 _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
             }

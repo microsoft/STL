@@ -3303,7 +3303,8 @@ _NODISCARD _RanIt is_heap_until(_ExPo&&, _RanIt _First, _RanIt _Last, _Pr _Pred)
             const auto _Count = _ULast - _UFirst;
             if (_Count >= 3) { // ... with at least 3 elements
                 _TRY_BEGIN
-                _Static_partitioned_is_heap_until2 _Operation{_UFirst, _ULast, _Hw_threads, _Count, _STD _Pass_fn(_Pred)};
+                _Static_partitioned_is_heap_until2 _Operation{
+                    _UFirst, _ULast, _Hw_threads, _Count, _STD _Pass_fn(_Pred)};
                 _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 _STD _Seek_wrapped(_First, _Operation._Results._Get_result());
                 return _First;
@@ -3907,7 +3908,8 @@ _FwdIt3 set_intersection(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
         }
     }
 
-    _STD _Seek_wrapped(_Dest, _STD set_intersection(_UFirst1, _ULast1, _UFirst2, _ULast2, _UDest, _STD _Pass_fn(_Pred)));
+    _STD _Seek_wrapped(
+        _Dest, _STD set_intersection(_UFirst1, _ULast1, _UFirst2, _ULast2, _UDest, _STD _Pass_fn(_Pred)));
     return _Dest;
 }
 
