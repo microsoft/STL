@@ -42,8 +42,6 @@ public:
     static constexpr int scientific = 0x1000;
     static constexpr int fixed      = 0x2000;
 
-    _DEPRECATE_IOS_BASE_HEXFLOAT static constexpr int hexfloat = 0x3000; // TRANSITION, ABI, GH-3296
-
     static constexpr int boolalpha   = 0x4000;
     static constexpr int adjustfield = left | right | internal;
     static constexpr int basefield   = dec | oct | hex;
