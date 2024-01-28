@@ -22,10 +22,6 @@ std/time/time.syn/formatter.year_month_day_last.pass.cpp:1 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
 
-# LLVM-73849: [libc++][test] Streaming out floating-point sys_time and local_time is bogus
-std/time/time.clock/time.clock.local/ostream.pass.cpp FAIL
-std/time/time.clock/time.clock.system/ostream.pass.cpp FAIL
-
 # LLVM-74221: [libc++][test] nasty_char_traits::move is incompatible with constexpr
 std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:2 FAIL
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:2 FAIL
