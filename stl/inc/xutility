@@ -6978,22 +6978,22 @@ namespace ranges {
 _EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element not before _Val
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst                = _Get_unwrapped(_First);
-    _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst                = _STD _Get_unwrapped(_First);
+    _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _STD _Get_unwrapped(_Last));
 
     while (0 < _Count) { // divide and conquer, find half that contains answer
         const _Iter_diff_t<_FwdIt> _Count2 = _Count / 2;
         const auto _UMid                   = _STD next(_UFirst, _Count2);
         if (_Pred(*_UMid, _Val)) { // try top half
-            _UFirst = _Next_iter(_UMid);
+            _UFirst = _STD _Next_iter(_UMid);
             _Count -= _Count2 + 1;
         } else {
             _Count = _Count2;
         }
     }
 
-    _Seek_wrapped(_First, _UFirst);
+    _STD _Seek_wrapped(_First, _UFirst);
     return _First;
 }
 
@@ -7006,9 +7006,9 @@ _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _T
 _EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element that _Val is before
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst                = _Get_unwrapped(_First);
-    _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst                = _STD _Get_unwrapped(_First);
+    _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _STD _Get_unwrapped(_Last));
 
     while (0 < _Count) { // divide and conquer, find half that contains answer
         _Iter_diff_t<_FwdIt> _Count2 = _Count / 2;
@@ -7016,12 +7016,12 @@ _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _T
         if (_Pred(_Val, *_UMid)) {
             _Count = _Count2;
         } else { // try top half
-            _UFirst = _Next_iter(_UMid);
+            _UFirst = _STD _Next_iter(_UMid);
             _Count -= _Count2 + 1;
         }
     }
 
-    _Seek_wrapped(_First, _UFirst);
+    _STD _Seek_wrapped(_First, _UFirst);
     return _First;
 }
 
