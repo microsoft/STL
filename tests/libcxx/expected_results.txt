@@ -515,6 +515,9 @@ std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
+# GH-4316: <format>: The width of output is miscalculated when formatting a floating-point number in the locale-specific form
+std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
+
 
 # *** VCRUNTIME BUGS ***
 # DevCom-10373274 VSO-1824997 "vcruntime nothrow array operator new falls back on the wrong function"
@@ -1000,9 +1003,6 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass
 
 # Not analyzed. Checking whether packaged_task is constructible from an allocator and a packaged_task of a different type.
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
-
-# Not analyzed. MSVC emits truncation warnings, Clang fails a runtime assertion.
-std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
 
 # Not analyzed.
 # MSVC warning C4305: 'specialization': truncation from 'const int' to 'bool'
