@@ -1397,8 +1397,5 @@ std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cp
 # Similarly, this test is marked as `REQUIRES: 32-bit-pointer`.
 std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
 
-# LLVM-75577 [libc++][test] support.limits.general/.version.compile.pass.cpp is malformed
-std/language.support/support.limits/support.limits.general/.version.compile.pass.cpp:9 SKIPPED
-
 # x86chk ICE not yet reported. Assertion failed: isIndirection()
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:9 SKIPPED
