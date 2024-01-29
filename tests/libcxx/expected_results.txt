@@ -1341,6 +1341,25 @@ std/input.output/filesystems/fs.op.funcs/fs.op.symlink_status/symlink_status.pas
 std/input.output/filesystems/fs.op.funcs/fs.op.temp_dir_path/temp_directory_path.pass.cpp SKIPPED
 std/input.output/filesystems/fs.op.funcs/fs.op.weakly_canonical/weakly_canonical.pass.cpp SKIPPED
 
+# Not analyzed.
+# MSVC error C2719: '_Fun_': formal parameter with requested alignment of 128 won't be aligned
+# Clang error: unknown attribute 'no_unique_address' ignored [-Werror,-Wunknown-attributes]
+std/ranges/ranges_robust_against_no_unique_address.pass.cpp FAIL
+
+# Not analyzed. Runtime assertion, we appear to be ignoring stream width.
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/print.pass.cpp FAIL
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_nonunicode.pass.cpp FAIL
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_unicode.pass.cpp FAIL
+
+# Not analyzed, possible MSVC constexpr bug.
+# MSVC error C2131: expression did not evaluate to a constant
+# MSVC note: failure was caused by a read of an uninitialized symbol
+# MSVC note: see usage of 'std::array<char,1>::_Elems'
+# Test comment: "Before C++20, default initialization doesn't work inside constexpr for trivially default constructible types."
+# Also: LLVM-79793 [libc++][test] Fix MSVC warning C4127 in array.cons/initialization.pass.cpp
+std/containers/sequences/array/array.cons/initialization.pass.cpp:0 FAIL
+std/containers/sequences/array/array.cons/initialization.pass.cpp:1 FAIL
+
 
 # *** XFAILs WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
