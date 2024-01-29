@@ -430,6 +430,11 @@ std/containers/views/mdspan/mdspan/ctor.dh_integers.pass.cpp:1 FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:1 FAIL
 
+# DevCom-10439137 VSO-1869865: Discarded id-expression causes unnecessary reading
+# Also: LLVM-79793 [libc++][test] Fix MSVC warning C4127 in array.cons/initialization.pass.cpp
+std/containers/sequences/array/array.cons/initialization.pass.cpp:0 FAIL
+std/containers/sequences/array/array.cons/initialization.pass.cpp:1 FAIL
+
 # VSO-1923988: constexpr evaluation performs an assignment with a derived type when it should use a base type
 std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:1 FAIL
@@ -1353,15 +1358,6 @@ std/ranges/ranges_robust_against_no_unique_address.pass.cpp FAIL
 std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/print.pass.cpp FAIL
 std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_nonunicode.pass.cpp FAIL
 std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_unicode.pass.cpp FAIL
-
-# Not analyzed, possible MSVC constexpr bug.
-# MSVC error C2131: expression did not evaluate to a constant
-# MSVC note: failure was caused by a read of an uninitialized symbol
-# MSVC note: see usage of 'std::array<char,1>::_Elems'
-# Test comment: "Before C++20, default initialization doesn't work inside constexpr for trivially default constructible types."
-# Also: LLVM-79793 [libc++][test] Fix MSVC warning C4127 in array.cons/initialization.pass.cpp
-std/containers/sequences/array/array.cons/initialization.pass.cpp:0 FAIL
-std/containers/sequences/array/array.cons/initialization.pass.cpp:1 FAIL
 
 
 # *** XFAILs WHICH PASS ***
