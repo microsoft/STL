@@ -614,9 +614,6 @@ std/thread/thread.threads/thread.thread.class/thread.thread.member/detach.pass.c
 std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp SKIPPED
 
 # Not analyzed, likely bogus tests. Various assertions, probably POSIX assumptions.
-std/diagnostics/syserr/syserr.compare/eq_error_code_error_code.pass.cpp FAIL
-std/diagnostics/syserr/syserr.errcat/syserr.errcat.derived/message.pass.cpp FAIL
-std/diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp FAIL
 std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_const_char_pointer.pass.cpp FAIL
 std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_string.pass.cpp FAIL
 std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code.pass.cpp FAIL
