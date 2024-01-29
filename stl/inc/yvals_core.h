@@ -823,6 +823,7 @@
 
 // warning: constexpr if is a C++17 extension [-Wc++17-extensions]
 // warning: explicit(bool) is a C++20 extension [-Wc++20-extensions]
+// warning: declaring overloaded 'operator()' as 'static' is a C++23 extension [-Wc++23-extensions]
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
 // warning: '#pragma float_control' is not supported on this target - ignored [-Wignored-pragmas]
@@ -835,6 +836,7 @@
     _Pragma("clang diagnostic push")                                \
     _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
     _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")      \
+    _Pragma("clang diagnostic ignored \"-Wc++23-extensions\"")      \
     _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")    \
     _Pragma("clang diagnostic ignored \"-Wignored-pragmas\"")       \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
@@ -2061,6 +2063,14 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #else // ^^^ defined(_ENABLE_STL_INTERNAL_CHECK) / !defined(_ENABLE_STL_INTERNAL_CHECK) vvv
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
+
+#ifdef __cpp_static_call_operator
+#define _STATIC_CALL_OPERATOR static
+#define _CONST_CALL_OPERATOR
+#else // ^^^ defined(__cpp_static_call_operator) / !defined(__cpp_static_call_operator) vvv
+#define _STATIC_CALL_OPERATOR
+#define _CONST_CALL_OPERATOR const
+#endif // ^^^ !defined(__cpp_static_call_operator) ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
