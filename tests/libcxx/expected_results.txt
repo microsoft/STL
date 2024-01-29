@@ -685,9 +685,6 @@ std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get
 # This test is bogus according to the wording that was ultimately accepted for C++23.
 std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
 
-# This test assumes that array<int, 0> is not const-default-constructible.
-std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp FAIL
-
 # contiguous_iterator requires to_address() which calls operator->(), but this bogus test uses an iterator that lacks operator->().
 std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
 
