@@ -516,6 +516,7 @@ std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
 # GH-4316: <format>: The width of output is miscalculated when formatting a floating-point number in the locale-specific form
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/locale-specific_form.pass.cpp FAIL
 std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
 
 
