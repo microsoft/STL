@@ -300,8 +300,42 @@ namespace scary_test {
     static_assert(is_same_v<flat_map<int, int>::value_compare, flat_multimap<int, int>::value_compare>);
 } // namespace scary_test
 
+// GH-4344 <flat_map> Fix compile errors
+void test_gh_4344() {
+    flat_map<int, char> fm;
+
+    const auto p1 = fm.try_emplace(10, 'm');
+    assert(p1.first->first == 10);
+    assert(p1.first->second == 'm');
+    assert(p1.second);
+
+    const auto p2 = fm.try_emplace(70, 'e');
+    assert(p2.first->first == 70);
+    assert(p2.first->second == 'e');
+    assert(p2.second);
+
+    const auto p3 = fm.try_emplace(20, 'o');
+    assert(p3.first->first == 20);
+    assert(p3.first->second == 'o');
+    assert(p3.second);
+
+    const auto p4 = fm.try_emplace(90, 'w');
+    assert(p4.first->first == 90);
+    assert(p4.first->second == 'w');
+    assert(p4.second);
+
+    const auto p5 = fm.try_emplace(70, 'X');
+    assert(p5.first->first == 70);
+    assert(p5.first->second == 'e');
+    assert(!p5.second);
+
+    assert(check_key_content(fm, {10, 20, 70, 90}));
+    assert(check_value_content(fm, {'m', 'o', 'e', 'w'}));
+}
+
 int main() {
     test_construction();
     test_pointer_to_incomplete_type();
     test_erase_if();
+    test_gh_4344();
 }
