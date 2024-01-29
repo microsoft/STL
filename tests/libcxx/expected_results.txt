@@ -50,8 +50,6 @@ std/iterators/iterator.primitives/iterator.operations/prev.pass.cpp FAIL
 # The SKIPPED tests contain `XFAIL: msvc`, which is not well understood by the test harness.
 std/language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp SKIPPED
 std/language.support/support.exception/propagation/current_exception.pass.cpp SKIPPED
-std/language.support/support.exception/propagation/make_exception_ptr.pass.cpp FAIL
-std/language.support/support.exception/propagation/rethrow_exception.pass.cpp FAIL
 
 # Testing nonstandard behavior
 std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
