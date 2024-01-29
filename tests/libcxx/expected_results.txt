@@ -212,7 +212,28 @@ std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
 
+# P0543R3 Saturation Arithmetic
+std/language.support/support.limits/support.limits.general/numeric.version.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/add_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/add_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/div_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/div_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/mul_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/mul_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
+
 # P1759R6 Native Handles And File Streams
+std/input.output/file.streams/fstreams/filebuf.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/filebuf/types.pass.cpp FAIL
+std/input.output/file.streams/fstreams/fstream.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/fstream/types.pass.cpp FAIL
+std/input.output/file.streams/fstreams/ifstream.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/ifstream/types.pass.cpp FAIL
+std/input.output/file.streams/fstreams/ofstream.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/ofstream/types.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/fstream.version.compile.pass.cpp FAIL
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
@@ -228,6 +249,7 @@ std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.format.pas
 std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.vformat.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector.bool.fmt/format.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
+std/input.output/iostream.format/print.fun/includes.compile.pass.cpp FAIL
 std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtdef/format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtdef/parse.pass.cpp FAIL
@@ -272,6 +294,7 @@ std/language.support/support.limits/support.limits.general/optional.version.comp
 std/language.support/support.limits/support.limits.general/string_view.version.compile.pass.cpp FAIL
 
 # P2447R6 Constructing span<const T> From initializer_list<T>
+std/containers/views/views.span/span.cons/initializer_list.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/span.version.compile.pass.cpp FAIL
 
 # P2495R3 Interfacing stringstreams With string_view
@@ -285,6 +308,11 @@ std/utilities/charconv/charconv.syn/to_chars_result.operator_bool.pass.cpp FAIL
 # P2587R3 Redefining to_string To Use to_chars
 std/language.support/support.limits/support.limits.general/string.version.compile.pass.cpp FAIL
 
+# P2637R3 Member visit
+std/utilities/variant/variant.visit.member/robust_against_adl.pass.cpp FAIL
+std/utilities/variant/variant.visit.member/visit_return_type.pass.cpp FAIL
+std/utilities/variant/variant.visit.member/visit.pass.cpp FAIL
+
 # P2697R1 Interfacing bitset With string_view
 std/language.support/support.limits/support.limits.general/bitset.version.compile.pass.cpp FAIL
 std/utilities/template.bitset/bitset.cons/string_view_ctor.pass.cpp FAIL
@@ -295,6 +323,9 @@ std/language.support/support.limits/support.limits.general/ratio.version.compile
 # P2819R2 Add The Tuple Protocol To complex
 std/language.support/support.limits/support.limits.general/tuple.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/utility.version.compile.pass.cpp FAIL
+
+# P2821R5 span::at()
+std/containers/views/views.span/span.elem/at.pass.cpp FAIL
 
 # P2833R2 Freestanding Library: inout expected span
 std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
@@ -325,6 +356,7 @@ std/depr/depr.c.headers/stdlib_h.pass.cpp FAIL
 
 # LWG-2503 "multiline option should be added to syntax_option_type"
 std/re/re.const/re.matchflag/match_multiline.pass.cpp FAIL
+std/re/re.const/re.matchflag/match_not_eol.pass.cpp FAIL
 
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
 # WCFB02 implements the proposed resolution for this issue
