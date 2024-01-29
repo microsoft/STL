@@ -30,9 +30,6 @@ std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:2 FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.copy/uninitialized_copy.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_move.pass.cpp FAIL
 
-# LLVM-75611: [libc++] views::take behaves incorrectly for iota_view
-std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
-
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
