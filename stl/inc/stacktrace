@@ -396,7 +396,7 @@ template <>
 struct hash<stacktrace_entry> {
     // This is a C++23 feature, so argument_type and result_type are omitted.
 
-    _NODISCARD size_t operator()(const stacktrace_entry& _Val) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const stacktrace_entry& _Val) _CONST_CALL_OPERATOR noexcept {
         return _Hash_representation(_Val.native_handle());
     }
 };
@@ -405,7 +405,8 @@ template <class _Alloc>
 struct hash<basic_stacktrace<_Alloc>> {
     // This is a C++23 feature, so argument_type and result_type are omitted.
 
-    _NODISCARD size_t operator()(const basic_stacktrace<_Alloc>& _Val) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(
+        const basic_stacktrace<_Alloc>& _Val) _CONST_CALL_OPERATOR noexcept {
         return _Val._Get_hash();
     }
 };

@@ -2366,7 +2366,7 @@ struct _Conditionally_enabled_hash { // conditionally enabled hash base
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Kty;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD size_t operator()(const _Kty& _Keyval) const
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const _Kty& _Keyval) _CONST_CALL_OPERATOR
         noexcept(noexcept(hash<_Kty>::_Do_hash(_Keyval))) /* strengthened */ {
         return hash<_Kty>::_Do_hash(_Keyval);
     }
@@ -2394,7 +2394,7 @@ template <>
 struct hash<float> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = float;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD size_t operator()(const float _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const float _Keyval) _CONST_CALL_OPERATOR noexcept {
         return _Hash_representation(_Keyval == 0.0F ? 0.0F : _Keyval); // map -0 to 0
     }
 };
@@ -2403,7 +2403,7 @@ template <>
 struct hash<double> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = double;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD size_t operator()(const double _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const double _Keyval) _CONST_CALL_OPERATOR noexcept {
         return _Hash_representation(_Keyval == 0.0 ? 0.0 : _Keyval); // map -0 to 0
     }
 };
@@ -2412,7 +2412,7 @@ template <>
 struct hash<long double> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = long double;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD size_t operator()(const long double _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const long double _Keyval) _CONST_CALL_OPERATOR noexcept {
         return _Hash_representation(_Keyval == 0.0L ? 0.0L : _Keyval); // map -0 to 0
     }
 };
@@ -2421,7 +2421,7 @@ template <>
 struct hash<nullptr_t> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = nullptr_t;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD size_t operator()(nullptr_t) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(nullptr_t) _CONST_CALL_OPERATOR noexcept {
         void* _Null{};
         return _Hash_representation(_Null);
     }

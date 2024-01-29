@@ -4445,7 +4445,7 @@ template <>
 struct hash<filesystem::path> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = filesystem::path;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD size_t operator()(const filesystem::path& _Path) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const filesystem::path& _Path) _CONST_CALL_OPERATOR noexcept {
         return _STD filesystem::hash_value(_Path);
     }
 };
