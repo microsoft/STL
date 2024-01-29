@@ -1378,6 +1378,8 @@ std/containers/sequences/array/array.cons/initialization.pass.cpp:1 FAIL
 # because we don't run :1 (ASAN) for ARM and ARM64.
 std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:0 SKIPPED
 std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:2 SKIPPED
+std/time/time.clock/time.clock.system/sys_date.ostream.pass.cpp:0 SKIPPED
+std/time/time.clock/time.clock.system/sys_date.ostream.pass.cpp:2 SKIPPED
 std/time/time.syn/formatter.day.pass.cpp:0 SKIPPED
 std/time/time.syn/formatter.day.pass.cpp:2 SKIPPED
 std/time/time.syn/formatter.month_day.pass.cpp:0 SKIPPED
