@@ -51,7 +51,7 @@ export const monthly_table: MonthlyRow[] = [
     { date: '2023-03-16', merge_bar: 63, },
     { date: '2023-04-16', merge_bar: 37, },
     { date: '2023-05-16', merge_bar: 37, },
-    { date: '2023-06-16', merge_bar: 41, },
+    { date: '2023-06-16', merge_bar: 40, },
     { date: '2023-07-16', merge_bar: 48, },
     { date: '2023-08-16', merge_bar: 41, },
     { date: '2023-09-16', merge_bar: 44, },
