@@ -337,11 +337,6 @@ void test_ranges_algorithms() {
     (void) sort_heap(iarr3, iarr3 + 1, validating_less{});
     (void) sort_heap(iarr3, {}, validating_identity{});
 
-    (void) sort_heap(varr3, varr3 + 1);
-    (void) sort_heap(varr3);
-    (void) sort_heap(iarr3, iarr3 + 1, validating_less{});
-    (void) sort_heap(iarr3, {}, validating_identity{});
-
     (void) is_heap(varr3, varr3 + 1);
     (void) is_heap(varr3);
     (void) is_heap(iarr3, iarr3 + 1, validating_less{});
