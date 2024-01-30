@@ -1428,3 +1428,21 @@ std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
 
 # VSO-1948221 x86chk ICE with constexpr type_info: Assertion failed: isIndirection()
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:9 SKIPPED
+
+# These tests are marked as "UNSUPPORTED: !has-unix-headers" with comments saying:
+# "`check_assertion.h` requires Unix headers".
+std/algorithms/alg.modifying.operations/alg.fill/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.modifying.operations/alg.move/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.modifying.operations/alg.replace/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.modifying.operations/alg.rotate/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.modifying.operations/alg.transform/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.all_of/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.any_of/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.equal/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.foreach/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.none_of/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.sorting/alg.merge/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.sorting/alg.sort/stable.sort/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/numeric.ops/reduce/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/numeric.ops/transform.reduce/pstl.exception_handling.pass.cpp:9 SKIPPED
