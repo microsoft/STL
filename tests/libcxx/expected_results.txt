@@ -1155,9 +1155,6 @@ std/localization/locales/locale/locale.cons/name_construction.pass.cpp FAIL
 # Not analyzed. After LLVM-74630 fixes LLVM-74214, will be blocked by our ctype_base deriving from locale::facet.
 std/localization/locale.categories/category.numeric/locale.num.get/user_defined_char_type.pass.cpp FAIL
 
-# Not analyzed. Assertion failed: alloc_stats.destroy_count == 0
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.create/allocate_shared_for_overwrite.pass.cpp FAIL
-
 # Not analyzed. Assertion failed: res == cvt.ok
 std/localization/codecvt_unicode.pass.cpp FAIL
 
