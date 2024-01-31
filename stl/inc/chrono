@@ -5363,7 +5363,8 @@ namespace chrono {
             const _Allowed_bit _Mod = _Modifier == 'E' ? _E_mod : _O_mod;
 
 #ifdef _M_CEE // TRANSITION, VSO-1664341
-            constexpr auto _Get_table_entry_type = [](const _Table_entry& _Entry) { return _Entry._Type; };
+            constexpr auto _Get_table_entry_type = [](const _Table_entry& _Entry)
+                                                       _STATIC_CALL_OPERATOR { return _Entry._Type; };
 #else // ^^^ workaround / no workaround vvv
             constexpr auto _Get_table_entry_type = &_Table_entry::_Type;
 #endif // ^^^ no workaround ^^^

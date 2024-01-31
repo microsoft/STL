@@ -701,8 +701,8 @@ public:
     public:
         template <class _Ty>
         explicit handle(_Ty& _Val) noexcept
-            : _Ptr(_STD addressof(_Val)),
-              _Format([](basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
+            : _Ptr(_STD addressof(_Val)), _Format([](basic_format_parse_context<_CharType>& _Parse_ctx,
+                                                      _Context& _Format_ctx, const void* _Ptr) _STATIC_CALL_OPERATOR {
                   using _Td = remove_const_t<_Ty>;
                   // doesn't drop const-qualifier per an unnumbered LWG issue
                   using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
@@ -2472,7 +2472,7 @@ inline constexpr bool _Is_two_tuple<tuple<_Ty, _Uty>> = true;
 
 template <_RANGES input_range _Rng>
     requires same_as<_Rng, remove_cvref_t<_Rng>>
-inline constexpr range_format format_kind<_Rng> = []() consteval {
+inline constexpr range_format format_kind<_Rng> = []() _STATIC_CALL_OPERATOR consteval {
     using _Ref_value_t = remove_cvref_t<_RANGES range_reference_t<_Rng>>;
     if constexpr (same_as<_Ref_value_t, _Rng>) {
         return range_format::disabled;

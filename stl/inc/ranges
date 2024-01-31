@@ -4298,7 +4298,7 @@ namespace ranges {
 
             _NODISCARD constexpr decltype(auto) operator*() const {
                 using _Ref = common_reference_t<iter_reference_t<_InnerIter>, iter_reference_t<_PatternIter>>;
-                return _Visit_inner_it<_Ref>([](auto&& _It) -> _Ref { return *_It; });
+                return _Visit_inner_it<_Ref>([](auto&& _It) _STATIC_CALL_OPERATOR -> _Ref { return *_It; });
             }
 
             constexpr _Iterator& operator++() {
@@ -8203,12 +8203,14 @@ namespace ranges {
                 noexcept((noexcept(*(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>()))
                           && ...)) /* strengthened */ {
                 return _Tuple_transform(
-                    [](auto& _Itr) noexcept(noexcept(*_Itr)) -> decltype(auto) { return *_Itr; }, _Current);
+                    [](auto& _Itr) _STATIC_CALL_OPERATOR noexcept(noexcept(*_Itr)) -> decltype(auto) { return *_Itr; },
+                    _Current);
             }
 
-            constexpr _Iterator& operator++() noexcept(noexcept(
-                _Tuple_for_each([](auto& _Itr) noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current))) /* strengthened */ {
-                _Tuple_for_each([](auto& _Itr) noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current);
+            constexpr _Iterator& operator++() noexcept(
+                noexcept(_Tuple_for_each([](auto& _Itr) _STATIC_CALL_OPERATOR noexcept(noexcept(++_Itr)) { ++_Itr; },
+                    _Current))) /* strengthened */ {
+                _Tuple_for_each([](auto& _Itr) _STATIC_CALL_OPERATOR noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current);
                 return *this;
             }
 
@@ -8226,11 +8228,11 @@ namespace ranges {
                 return _Temp;
             }
 
-            constexpr _Iterator& operator--() noexcept(noexcept(
-                _Tuple_for_each([](auto& _Itr) noexcept(noexcept(--_Itr)) { --_Itr; }, _Current))) // strengthened
+            constexpr _Iterator& operator--() noexcept(noexcept(_Tuple_for_each(
+                [](auto& _Itr) _STATIC_CALL_OPERATOR noexcept(noexcept(--_Itr)) { --_Itr; }, _Current))) // strengthened
                 requires _All_bidirectional<_IsConst, _ViewTypes...>
             {
-                _Tuple_for_each([](auto& _Itr) noexcept(noexcept(--_Itr)) { --_Itr; }, _Current);
+                _Tuple_for_each([](auto& _Itr) _STATIC_CALL_OPERATOR noexcept(noexcept(--_Itr)) { --_Itr; }, _Current);
                 return *this;
             }
 
@@ -8515,7 +8517,7 @@ namespace ranges {
 
     private:
         _NODISCARD static constexpr auto _Size_closure() noexcept {
-            return [](auto... _Sizes) noexcept {
+            return [](auto... _Sizes) _STATIC_CALL_OPERATOR noexcept {
                 using _Common_unsigned_type = _Make_unsigned_like_t<common_type_t<decltype(_Sizes)...>>;
                 return (_RANGES min)({static_cast<_Common_unsigned_type>(_Sizes)...});
             };
@@ -8894,7 +8896,7 @@ namespace ranges {
         struct _Zip_transform_fn {
         private:
             template <class _Func, class... _Types>
-            static constexpr bool _Is_invocation_noexcept = []() noexcept {
+            static constexpr bool _Is_invocation_noexcept = []() _STATIC_CALL_OPERATOR noexcept {
                 if constexpr (sizeof...(_Types) == 0) {
                     return true;
                 } else {
@@ -8903,7 +8905,7 @@ namespace ranges {
             }();
 
             template <class _Func, class... _Types>
-            static constexpr bool _Enable_cpo = []() noexcept {
+            static constexpr bool _Enable_cpo = []() _STATIC_CALL_OPERATOR noexcept {
                 if constexpr (sizeof...(_Types) == 0) {
                     // This is a more efficient implementation of the CPO requirements listed in
                     // N4950 [range.zip.transform.overview]/2.1.1.
@@ -9053,7 +9055,8 @@ namespace ranges {
                 : _Iterator(_Other, make_index_sequence<_Nx>{}) {}
 
             _NODISCARD constexpr auto operator*() const {
-                return _RANGES _Tuple_transform([](auto& _It) -> decltype(auto) { return *_It; }, _Current);
+                return _RANGES _Tuple_transform(
+                    [](auto& _It) _STATIC_CALL_OPERATOR -> decltype(auto) { return *_It; }, _Current);
             }
 
             constexpr _Iterator& operator++() noexcept(noexcept(++_Current.front())) /* strengthened */ {
@@ -9981,7 +9984,8 @@ namespace ranges {
                 : _Parent(_It._Parent), _Current(_STD move(_It._Current)) {}
 
             _NODISCARD constexpr auto operator*() const {
-                return _RANGES _Tuple_transform([](auto& _It) -> decltype(auto) { return *_It; }, _Current);
+                return _RANGES _Tuple_transform(
+                    [](auto& _It) _STATIC_CALL_OPERATOR -> decltype(auto) { return *_It; }, _Current);
             }
 
             constexpr _Iterator& operator++() {
@@ -10336,7 +10340,7 @@ namespace ranges {
             _RANGES copy(_Range, _Container_inserter<range_reference_t<_Rng>>(_Cont));
             return _Cont;
         } else if constexpr (!_Ref_converts<_Rng, _Container> && input_range<range_reference_t<_Rng>>) {
-            const auto _Xform = [](auto&& _Elem) {
+            const auto _Xform = [](auto&& _Elem) _STATIC_CALL_OPERATOR {
                 return _RANGES to<range_value_t<_Container>>(_STD forward<decltype(_Elem)>(_Elem));
             };
             return _RANGES to<_Container>(views::transform(_Range, _Xform), _STD forward<_Types>(_Args)...);

@@ -376,19 +376,19 @@ constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
 #if _HAS_TZCNT_BSF_INTRINSICS && _HAS_CXX20
     if (!_STD is_constant_evaluated()) {
 #ifdef __AVX2__
-        return _Callback([](_Ty _Val) { return _Countr_zero_tzcnt(_Val); });
+        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_tzcnt(_Val); });
 #else // ^^^ AVX2 / not AVX2 vvv
         const bool _Definitely_have_tzcnt = __isa_available >= _Stl_isa_available_avx2;
         if (_Definitely_have_tzcnt) {
-            return _Callback([](_Ty _Val) { return _Countr_zero_tzcnt(_Val); });
+            return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_tzcnt(_Val); });
         } else {
-            return _Callback([](_Ty _Val) { return _Countr_zero_bsf(_Val); });
+            return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_bsf(_Val); });
         }
 #endif // ^^^ not AVX2 ^^^
     }
 #endif // ^^^ _HAS_TZCNT_BSF_INTRINSICS && _HAS_CXX20 ^^^
     // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
-    return _Callback([](_Ty _Val) { return _Countr_zero_fallback(_Val); });
+    return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_fallback(_Val); });
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
@@ -420,16 +420,16 @@ _CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
 #ifndef __AVX__
         const bool _Definitely_have_popcnt = __isa_available >= _Stl_isa_available_sse42;
         if (!_Definitely_have_popcnt) {
-            return _Callback([](_Ty _Val) { return _Popcount_fallback(_Val); });
+            return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Popcount_fallback(_Val); });
         }
 #endif // !defined(__AVX__)
-        return _Callback([](_Ty _Val) { return _Unchecked_x86_x64_popcount(_Val); });
+        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Unchecked_x86_x64_popcount(_Val); });
 #elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available / ARM64 intrinsics available vvv
-        return _Callback([](_Ty _Val) { return _Arm64_popcount(_Val); });
+        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Arm64_popcount(_Val); });
 #endif // ^^^ ARM64 intrinsics available ^^^
     }
 #endif // ^^^ any intrinsics available ^^^
-    return _Callback([](_Ty _Val) { return _Popcount_fallback(_Val); });
+    return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Popcount_fallback(_Val); });
 }
 
 #undef _HAS_POPCNT_INTRINSICS

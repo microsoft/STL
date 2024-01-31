@@ -3319,7 +3319,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem* const _Ptr,
-                const size_type _Count) {
+                const size_type _Count) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
                 _Traits::copy(_New_ptr + _Old_size, _Ptr, _Count);
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
@@ -3346,7 +3346,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Count,
-                const _Elem _Ch) {
+                const _Elem _Ch) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
                 _Traits::assign(_New_ptr + _Old_size, _Count, _Ch);
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
@@ -3424,7 +3424,7 @@ public:
 
         return _Reallocate_for(
             _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _Elem* const _Ptr) {
+            [](_Elem* const _New_ptr, const size_type _Count, const _Elem* const _Ptr) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Ptr, _Count);
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
@@ -3448,7 +3448,7 @@ public:
 
         return _Reallocate_for(
             _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _Elem _Ch) {
+            [](_Elem* const _New_ptr, const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
                 _Traits::assign(_New_ptr, _Count, _Ch);
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
@@ -3564,7 +3564,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const _Elem* const _Ptr, const size_type _Count) {
+                const _Elem* const _Ptr, const size_type _Count) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::copy(_New_ptr + _Off, _Ptr, _Count);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, _Old_size - _Off + 1);
@@ -3595,7 +3595,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Count, const _Elem _Ch) {
+                const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::assign(_New_ptr + _Off, _Count, _Ch);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, _Old_size - _Off + 1);
@@ -3807,7 +3807,7 @@ public:
         return _Reallocate_grow_by(
             _Growth,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const _Elem* const _Ptr, const size_type _Count) {
+                const size_type _Nx, const _Elem* const _Ptr, const size_type _Count) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::copy(_New_ptr + _Off, _Ptr, _Count);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
@@ -3847,7 +3847,7 @@ public:
         return _Reallocate_grow_by(
             _Count - _Nx,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const size_type _Count, const _Elem _Ch) {
+                const size_type _Nx, const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::assign(_New_ptr + _Off, _Count, _Ch);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
@@ -4096,11 +4096,12 @@ public:
 
         _Reallocate_grow_by(
             1,
-            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem _Ch) {
-                _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
-                _Traits::assign(_New_ptr[_Old_size], _Ch);
-                _Traits::assign(_New_ptr[_Old_size + 1], _Elem());
-            },
+            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem _Ch)
+                _STATIC_CALL_OPERATOR {
+                    _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
+                    _Traits::assign(_New_ptr[_Old_size], _Ch);
+                    _Traits::assign(_New_ptr[_Old_size + 1], _Elem());
+                },
             _Ch);
     }
 
@@ -4195,9 +4196,8 @@ public:
         (_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
         if (_Mypair._Myval2._Myres < _New_size) {
             _Reallocate_grow_by(_New_size - _Mypair._Myval2._Mysize,
-                [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) {
-                    _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1);
-                });
+                [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
+                    _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
         } else {
             _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
             _Mypair._Myval2._Mysize = _New_size;
@@ -4233,10 +4233,9 @@ public:
         }
 
         const size_type _Old_size = _Mypair._Myval2._Mysize;
-        _Reallocate_grow_by(
-            _Newcap - _Old_size, [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) {
-                _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1);
-            });
+        _Reallocate_grow_by(_Newcap - _Old_size,
+            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
+                _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
 
         _Mypair._Myval2._Mysize = _Old_size;
     }
@@ -4258,10 +4257,9 @@ public:
 
         if (_Mypair._Myval2._Myres < _Newcap) { // reallocate to grow
             const size_type _Old_size = _Mypair._Myval2._Mysize;
-            _Reallocate_grow_by(
-                _Newcap - _Old_size, [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) {
-                    _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1);
-                });
+            _Reallocate_grow_by(_Newcap - _Old_size,
+                [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
+                    _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
 
             _Mypair._Myval2._Mysize = _Old_size;
             return;
