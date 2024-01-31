@@ -825,8 +825,8 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        _Assign_range(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -989,19 +989,74 @@ public:
     }
 
     void shrink_to_fit() {
-        size_type _Oldcapacity = _Block_size * _Mapsize();
-        size_type _Newcapacity = _Oldcapacity / 2;
-
-        if (_Newcapacity < _Block_size * _Minimum_map_size) {
-            _Newcapacity = _Block_size * _Minimum_map_size;
+        if (empty()) {
+            if (_Map() != nullptr) {
+                _Reset_map();
+            }
+            return;
         }
 
-        if ((empty() && _Mapsize() > 0)
-            || (!empty() && size() <= _Newcapacity && _Newcapacity < _Oldcapacity)) { // worth shrinking, do it
-            deque _Tmp(
-                _STD make_move_iterator(_Unchecked_begin()), _STD make_move_iterator(_Unchecked_end()), _Getal());
-            swap(_Tmp);
+        const auto _Mask = static_cast<size_type>(_Mapsize() - 1);
+
+        const auto _First_used_block_idx = static_cast<size_type>(_Myoff() / _Block_size);
+
+        // (_Myoff() + _Mysize() - 1) is for the last element, i.e. the back() of the deque.
+        // Divide by _Block_size to get the unmasked index of the last used block.
+        // Add 1 to get the unmasked index of the first unused block.
+        const auto _Unmasked_first_unused_block_idx =
+            static_cast<size_type>(((_Myoff() + _Mysize() - 1) / _Block_size) + 1);
+
+        const auto _First_unused_block_idx = static_cast<size_type>(_Unmasked_first_unused_block_idx & _Mask);
+
+        // deallocate unused blocks, traversing over the circular buffer until the first used block index
+        for (auto _Block_idx = _First_unused_block_idx; _Block_idx != _First_used_block_idx;
+             _Block_idx      = static_cast<size_type>((_Block_idx + 1) & _Mask)) {
+            auto& _Block_ptr = _Map()[static_cast<_Map_difference_type>(_Block_idx)];
+            if (_Block_ptr != nullptr) {
+                _Getal().deallocate(_Block_ptr, _Block_size);
+                _Block_ptr = nullptr;
+            }
         }
+
+        const auto _Used_block_count = static_cast<size_type>(_Unmasked_first_unused_block_idx - _First_used_block_idx);
+
+        size_type _New_block_count = _Minimum_map_size; // should be power of 2
+
+        while (_New_block_count < _Used_block_count) {
+            _New_block_count *= 2;
+        }
+
+        if (_New_block_count >= _Mapsize()) {
+            return;
+        }
+
+        // worth shrinking the internal map, do it
+
+        _Alpty _Almap(_Getal());
+        const auto _New_map = _Almap.allocate(_New_block_count);
+
+        _Orphan_all(); // the map can be shrunk, invalidate all iterators
+
+        // transfer the ownership of blocks to pointers in the new map
+        for (size_type _Block = 0; _Block != _Used_block_count; ++_Block) {
+            const auto _New_block_idx = static_cast<_Map_difference_type>(_Block);
+            const auto _Old_block_idx = static_cast<_Map_difference_type>((_First_used_block_idx + _Block) & _Mask);
+            _STD _Construct_in_place(_New_map[_New_block_idx], _Map()[_Old_block_idx]);
+        }
+
+        // null out the rest of the new map
+        _STD _Uninitialized_value_construct_n_unchecked1(
+            _New_map + static_cast<_Map_difference_type>(_Used_block_count), _New_block_count - _Used_block_count);
+
+        for (auto _Block = _Map_distance(); _Block > 0;) {
+            --_Block;
+            _STD _Destroy_in_place(_Map()[_Block]); // destroy pointer to block
+        }
+        _Almap.deallocate(_Map(), _Mapsize()); // free storage for map
+
+        _Map()     = _New_map;
+        _Mapsize() = _New_block_count;
+        _Myoff() %= _Block_size; // the first element is within block index 0 of the new map
     }
 
     _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
@@ -1244,10 +1299,10 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert [_First, _Last) at _Where
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
         const size_type _Off = static_cast<size_type>(_Where - begin());
         return _Insert_range<static_cast<_Is_bidi>(_Is_cpp17_bidi_iter_v<_Iter>)>(
-            _Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+            _Off, _STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -1469,7 +1524,7 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_First <= _Last && begin() <= _First && _Last <= end(), "deque erase iterator outside range");
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
@@ -1591,27 +1646,37 @@ private:
         _Mapsize() += _Count;
     }
 
+    void _Reset_map() noexcept {
+        // pre: each block pointer is either null or pointing to a block without constructed elements
+
+        for (auto _Block = _Map_distance(); _Block > 0;) { // free storage for a block and destroy pointer
+            --_Block;
+            auto& _Block_ptr = _Map()[_Block];
+            if (_Block_ptr) { // free block
+                _Getal().deallocate(_Block_ptr, _Block_size);
+            }
+            _STD _Destroy_in_place(_Block_ptr); // destroy pointer to block
+        }
+
+        _Alpty _Almap(_Getal());
+        _Almap.deallocate(_Map(), _Mapsize()); // free storage for map
+
+        _Map()     = nullptr;
+        _Mapsize() = 0;
+    }
+
     void _Tidy() noexcept { // free all storage
         _Orphan_all();
 
-        _Alpty _Almap(_Getal());
         while (!empty()) {
             pop_back();
         }
 
         if (_Map() != nullptr) {
-            for (auto _Block = _Map_distance(); _Block > 0;) { // free storage for a block and destroy pointer
-                if (_Map()[--_Block]) { // free block
-                    _Getal().deallocate(_Map()[_Block], _Block_size);
-                }
-                _Destroy_in_place(_Map()[_Block]); // destroy pointer to block
-            }
-
-            _Almap.deallocate(_Map(), _Mapsize()); // free storage for map
+            _Reset_map();
         }
 
-        _Mapsize() = 0;
-        _Map()     = nullptr;
+        _STL_INTERNAL_CHECK(_Mapsize() == 0); // null map should always be paired with zero mapsize
     }
 
 #if _ITERATOR_DEBUG_LEVEL == 2

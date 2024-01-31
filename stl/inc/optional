@@ -623,7 +623,7 @@ optional(_Ty) -> optional<_Ty>;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left == *_Right))) /* strengthened */
+    noexcept(_STD _Fake_copy_init<bool>(*_Left == *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
         { *_Left == *_Right } -> _Implicitly_convertible_to<bool>;
@@ -640,7 +640,7 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left != *_Right))) /* strengthened */
+    noexcept(_STD _Fake_copy_init<bool>(*_Left != *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
         { *_Left != *_Right } -> _Implicitly_convertible_to<bool>;
@@ -657,7 +657,7 @@ _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const optional
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left < *_Right))) /* strengthened */
+    noexcept(_STD _Fake_copy_init<bool>(*_Left < *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
         { *_Left < *_Right } -> _Implicitly_convertible_to<bool>;
@@ -674,7 +674,7 @@ _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const optional<
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left > *_Right))) /* strengthened */
+    noexcept(_STD _Fake_copy_init<bool>(*_Left > *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
         { *_Left > *_Right } -> _Implicitly_convertible_to<bool>;
@@ -691,7 +691,7 @@ _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const optional<
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left <= *_Right))) /* strengthened */
+    noexcept(_STD _Fake_copy_init<bool>(*_Left <= *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
         { *_Left <= *_Right } -> _Implicitly_convertible_to<bool>;
@@ -708,7 +708,7 @@ _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const optional
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left >= *_Right))) /* strengthened */
+    noexcept(_STD _Fake_copy_init<bool>(*_Left >= *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires {
         { *_Left >= *_Right } -> _Implicitly_convertible_to<bool>;
@@ -828,7 +828,7 @@ using _Enable_if_comparable_with_greater_equal =
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left == _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left == _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left == _Right;
     }
@@ -837,7 +837,7 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const _Ty2& _R
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left == *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left == *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left == *_Right;
     }
@@ -846,7 +846,7 @@ _NODISCARD constexpr bool operator==(const _Ty1& _Left, const optional<_Ty2>& _R
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_not_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left != _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left != _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left != _Right;
     }
@@ -854,7 +854,7 @@ _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const _Ty2& _R
 }
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_not_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator!=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left != *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left != *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left != *_Right;
     }
@@ -863,7 +863,7 @@ _NODISCARD constexpr bool operator!=(const _Ty1& _Left, const optional<_Ty2>& _R
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left < _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left < _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left < _Right;
     }
@@ -871,7 +871,7 @@ _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const _Ty2& _Ri
 }
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left < *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left < *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left < *_Right;
     }
@@ -880,7 +880,7 @@ _NODISCARD constexpr bool operator<(const _Ty1& _Left, const optional<_Ty2>& _Ri
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left > _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left > _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left > _Right;
     }
@@ -888,7 +888,7 @@ _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const _Ty2& _Ri
 }
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left > *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left > *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left > *_Right;
     }
@@ -897,7 +897,7 @@ _NODISCARD constexpr bool operator>(const _Ty1& _Left, const optional<_Ty2>& _Ri
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left <= _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left <= _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left <= _Right;
     }
@@ -905,7 +905,7 @@ _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const _Ty2& _R
 }
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left <= *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left <= *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left <= *_Right;
     }
@@ -914,7 +914,7 @@ _NODISCARD constexpr bool operator<=(const _Ty1& _Left, const optional<_Ty2>& _R
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left >= _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left >= _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left >= _Right;
     }
@@ -922,7 +922,7 @@ _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const _Ty2& _R
 }
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left >= *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left >= *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left >= *_Right;
     }

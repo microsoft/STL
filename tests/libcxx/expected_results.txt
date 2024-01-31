@@ -22,10 +22,6 @@ std/time/time.syn/formatter.year_month_day_last.pass.cpp:1 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
 
-# LLVM-73849: [libc++][test] Streaming out floating-point sys_time and local_time is bogus
-std/time/time.clock/time.clock.local/ostream.pass.cpp FAIL
-std/time/time.clock/time.clock.system/ostream.pass.cpp FAIL
-
 # LLVM-74221: [libc++][test] nasty_char_traits::move is incompatible with constexpr
 std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:2 FAIL
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:2 FAIL
@@ -34,8 +30,8 @@ std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:2 FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.copy/uninitialized_copy.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_move.pass.cpp FAIL
 
-# LLVM-75611: [libc++] views::take behaves incorrectly for iota_view
-std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
+# LLVM-79783: [libc++][test] array/size_and_alignment.compile.pass.cpp includes non-Standard <__type_traits/datasizeof.h>
+std/containers/sequences/array/size_and_alignment.compile.pass.cpp FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
@@ -53,11 +49,10 @@ std/utilities/memory/default.allocator/allocator.ctor.pass.cpp FAIL
 # LWG-3197 "std::prev should not require BidirectionalIterator" (New)
 std/iterators/iterator.primitives/iterator.operations/prev.pass.cpp FAIL
 
-# Itanium ABI assumptions that current_exception and rethrow_exception don't copy the exception object
+# Itanium ABI assumptions that current_exception and rethrow_exception don't copy the exception object.
+# The SKIPPED tests contain `XFAIL: msvc`, which is not well understood by the test harness.
 std/language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp SKIPPED
 std/language.support/support.exception/propagation/current_exception.pass.cpp SKIPPED
-std/language.support/support.exception/propagation/make_exception_ptr.pass.cpp FAIL
-std/language.support/support.exception/propagation/rethrow_exception.pass.cpp FAIL
 
 # Testing nonstandard behavior
 std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
@@ -120,9 +115,12 @@ std/utilities/memory/allocator.traits/allocate_at_least.pass.cpp FAIL
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
 
-# Various bogosity (LLVM-D141004)
+# Various bogosity (LLVM-D141004), warning C6011: Dereferencing NULL pointer
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL
+
+# Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/resource.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/select_on_container_copy_construction.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
@@ -162,9 +160,6 @@ std/utilities/memory/specialized.algorithms/uninitialized.fill.n/ranges_uninitia
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp FAIL
 
-# libc++ doesn't implement LWG-3940
-std/utilities/expected/expected.void/observers/value.pass.cpp FAIL
-
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
 
@@ -187,22 +182,28 @@ std/modules/std.pass.cpp FAIL
 
 
 # *** ASAN FAILURES ***
-# ASAN runtime warns about an overlarge allocation and panics when it should throw bad_alloc instead
-# (VSO-1854252, VSO-1854240, VSO-1854255, VSO-1854247, VSO-1854256)
+# Even with `allocator_may_return_null=1`, ASan kills oversized allocations instead of throwing `bad_alloc`.
+# (https://github.com/google/sanitizers/issues/295)
+std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.array/new.size.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/new.size.pass.cpp:1 FAIL
 std/strings/basic.string/string.capacity/max_size.pass.cpp:1 FAIL
 
-# ASAN runtime warns about an overlarge allocation and doesn't call new_handler (VSO-1854235, VSO-1854568, VSO-1854400, VSO-1854248)
-std/language.support/support.dynamic/new.delete/new.delete.array/new.size.pass.cpp:1 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.pass.cpp:1 FAIL
+# Even with `allocator_may_return_null=1`, ASan doesn't call `new_handler` on allocation failure. (LLVM-15544)
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.pass.cpp:1 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.single/new.size.pass.cpp:1 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align_nothrow.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size_nothrow.pass.cpp:1 FAIL
 
 # ASAN runtime intercepts `strtol` and breaks LWG-2009 (VSO-1875597)
 std/strings/string.conversions/stol.pass.cpp:1 FAIL
+
+# Not analyzed. SKIPPED because this is x86-specific.
+# ERROR: AddressSanitizer: allocator is out of memory trying to allocate NNNN bytes
+std/atomics/atomics.types.generic/atomics.types.float/compare_exchange_strong.pass.cpp:1 SKIPPED
+std/atomics/atomics.types.generic/atomics.types.float/compare_exchange_weak.pass.cpp:1 SKIPPED
+std/input.output/syncstream/osyncstream/thread/several_threads.pass.cpp:1 SKIPPED
 
 
 # *** MISSING STL FEATURES ***
@@ -214,7 +215,28 @@ std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
 
+# P0543R3 Saturation Arithmetic
+std/language.support/support.limits/support.limits.general/numeric.version.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/add_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/add_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/div_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/div_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/mul_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/mul_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
+
 # P1759R6 Native Handles And File Streams
+std/input.output/file.streams/fstreams/filebuf.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/filebuf/types.pass.cpp FAIL
+std/input.output/file.streams/fstreams/fstream.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/fstream/types.pass.cpp FAIL
+std/input.output/file.streams/fstreams/ifstream.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/ifstream/types.pass.cpp FAIL
+std/input.output/file.streams/fstreams/ofstream.members/native_handle.pass.cpp FAIL
+std/input.output/file.streams/fstreams/ofstream/types.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/fstream.version.compile.pass.cpp FAIL
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
@@ -230,6 +252,7 @@ std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.format.pas
 std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.vformat.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector.bool.fmt/format.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
+std/input.output/iostream.format/print.fun/includes.compile.pass.cpp FAIL
 std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtdef/format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtdef/parse.pass.cpp FAIL
@@ -274,6 +297,7 @@ std/language.support/support.limits/support.limits.general/optional.version.comp
 std/language.support/support.limits/support.limits.general/string_view.version.compile.pass.cpp FAIL
 
 # P2447R6 Constructing span<const T> From initializer_list<T>
+std/containers/views/views.span/span.cons/initializer_list.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/span.version.compile.pass.cpp FAIL
 
 # P2495R3 Interfacing stringstreams With string_view
@@ -284,14 +308,13 @@ std/language.support/support.limits/support.limits.general/charconv.version.comp
 std/utilities/charconv/charconv.syn/from_chars_result.operator_bool.pass.cpp FAIL
 std/utilities/charconv/charconv.syn/to_chars_result.operator_bool.pass.cpp FAIL
 
-# P2510R3 Formatting Pointers
-std/utilities/format/format.functions/format.locale.pass.cpp FAIL
-std/utilities/format/format.functions/format.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.pass.cpp FAIL
-
 # P2587R3 Redefining to_string To Use to_chars
 std/language.support/support.limits/support.limits.general/string.version.compile.pass.cpp FAIL
+
+# P2637R3 Member visit
+std/utilities/variant/variant.visit.member/robust_against_adl.pass.cpp FAIL
+std/utilities/variant/variant.visit.member/visit_return_type.pass.cpp FAIL
+std/utilities/variant/variant.visit.member/visit.pass.cpp FAIL
 
 # P2697R1 Interfacing bitset With string_view
 std/language.support/support.limits/support.limits.general/bitset.version.compile.pass.cpp FAIL
@@ -304,13 +327,12 @@ std/language.support/support.limits/support.limits.general/ratio.version.compile
 std/language.support/support.limits/support.limits.general/tuple.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/utility.version.compile.pass.cpp FAIL
 
+# P2821R5 span::at()
+std/containers/views/views.span/span.elem/at.pass.cpp FAIL
+
 # P2833R2 Freestanding Library: inout expected span
 std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/mdspan.version.compile.pass.cpp FAIL
-
-# P2905R2 Runtime Format Strings
-std/utilities/format/format.arguments/format.arg.store/make_format_args.pass.cpp FAIL
-std/utilities/format/format.arguments/format.arg.store/make_wformat_args.pass.cpp FAIL
 
 # P2918R2 Runtime Format Strings II
 std/utilities/format/format.fmt.string/ctor.runtime-format-string.pass.cpp FAIL
@@ -320,9 +342,6 @@ std/utilities/format/format.syn/runtime_format_string.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
-# MSVC doesn't properly support [[no_unique_address]]
-std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp SKIPPED
-
 # P1169R4 static operator()
 std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp:0 FAIL
 std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp:1 FAIL
@@ -340,6 +359,7 @@ std/depr/depr.c.headers/stdlib_h.pass.cpp FAIL
 
 # LWG-2503 "multiline option should be added to syntax_option_type"
 std/re/re.const/re.matchflag/match_multiline.pass.cpp FAIL
+std/re/re.const/re.matchflag/match_not_eol.pass.cpp FAIL
 
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
 # WCFB02 implements the proposed resolution for this issue
@@ -350,8 +370,10 @@ std/thread/futures/futures.promise/set_value_at_thread_exit_const.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_void.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.pass.cpp FAIL
 
-# libc++ speculatively implements LWG-3633 "Atomics are copy constructible and copy assignable from volatile atomics"
-std/atomics/atomics.types.generic/copy_semantics_traits.pass.cpp FAIL
+# LWG-3343 "Ordering of calls to unlock() and notify_all() in Effects element of notify_all_at_thread_exit() should be reversed" (Open)
+# libc++ speculatively implements LWG-3343. If we wanted to do the same thing,
+# we'd need to reverse the order of the _Mtx_unlock() and _Cnd_broadcast() calls in xnotify.cpp.
+std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
 
 
 # *** C1XX COMPILER BUGS ***
@@ -361,6 +383,7 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:1 FAIL
 
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
 
@@ -390,6 +413,7 @@ std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
 
 # DevCom-1638563 VSO-1457836: icky static analysis false positive
 # Resolved wontfix, need to report again.
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
 
 # DevCom-1638496 VSO-1462745: C1XX doesn't properly reject int <=> unsigned
@@ -405,6 +429,11 @@ std/containers/views/mdspan/mdspan/ctor.dh_integers.pass.cpp:1 FAIL
 # DevCom-10026599 VSO-1532879: conditional expression has two different types
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:1 FAIL
+
+# DevCom-10439137 VSO-1869865: Discarded id-expression causes unnecessary reading
+# Also: LLVM-79793 [libc++][test] Fix MSVC warning C4127 in array.cons/initialization.pass.cpp
+std/containers/sequences/array/array.cons/initialization.pass.cpp:0 FAIL
+std/containers/sequences/array/array.cons/initialization.pass.cpp:1 FAIL
 
 # VSO-1923988: constexpr evaluation performs an assignment with a derived type when it should use a base type
 std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
@@ -508,13 +537,9 @@ std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
 
 # GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
 std/algorithms/robust_against_adl.compile.pass.cpp FAIL
-std/strings/basic.string/string.modifiers/robust_against_adl.pass.cpp FAIL
 
 # GH-3100: <memory> etc.: ADL should be avoided when calling _Construct_in_place and its friends
 std/utilities/function.objects/func.wrap/func.wrap.func/robust_against_adl.pass.cpp FAIL
-
-# GH-4232: <sstream>: basic_stringbuf shouldn't implement moving with swapping
-std/input.output/string.streams/stringbuf/stringbuf.cons/move.alloc.pass.cpp FAIL
 
 # GH-4238: <chrono>: file_clock::to_utc() overflows for file_time<nanoseconds>
 # This test also has a bogus assumption about the file_time epoch, and file_time<nanoseconds> is doomed on Windows.
@@ -524,14 +549,20 @@ std/time/time.clock/time.clock.file/ostream.pass.cpp FAIL
 # LLVM-74727: [libc++] Should formatting year{-99} with %C produce "-1" or "-01"?
 std/time/time.syn/formatter.year.pass.cpp:2 FAIL
 
-# GH-4251: <ranges>: repeat_view<T, unsigned int> emits truncation warnings
-std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:0 FAIL
-std/ranges/range.factories/range.repeat.view/iterator/minus.pass.cpp:1 FAIL
+# GH-4268: <sstream>, <syncstream>: Buffer types assume that allocated pointers are not modified by users
+std/input.output/string.streams/stringbuf/stringbuf.members/str.pass.cpp FAIL
+std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
+std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
+std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
+
+# GH-4316: <format>: The width of output is miscalculated when formatting a floating-point number in the locale-specific form
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/locale-specific_form.pass.cpp FAIL
+std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
 
 
 # *** VCRUNTIME BUGS ***
 # DevCom-10373274 VSO-1824997 "vcruntime nothrow array operator new falls back on the wrong function"
-# This passes for ASAN, surprisingly.
+# This passes for the :1 (ASAN) configuration, surprisingly.
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:0 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:2 FAIL
 
@@ -627,9 +658,6 @@ std/thread/thread.threads/thread.thread.class/thread.thread.member/detach.pass.c
 std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp SKIPPED
 
 # Not analyzed, likely bogus tests. Various assertions, probably POSIX assumptions.
-std/diagnostics/syserr/syserr.compare/eq_error_code_error_code.pass.cpp FAIL
-std/diagnostics/syserr/syserr.errcat/syserr.errcat.derived/message.pass.cpp FAIL
-std/diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp FAIL
 std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_const_char_pointer.pass.cpp FAIL
 std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_string.pass.cpp FAIL
 std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code.pass.cpp FAIL
@@ -697,11 +725,9 @@ std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.c
 # libc++ assumes long double is at least 80-bit; also affected by LWG-2381
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
 
-# libc++ speculatively implements LWG-3645
+# libc++ speculatively implemented an old proposed resolution for LWG-3645.
+# This test is bogus according to the wording that was ultimately accepted for C++23.
 std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
-
-# This test assumes that array<int, 0> is not const-default-constructible.
-std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp FAIL
 
 # contiguous_iterator requires to_address() which calls operator->(), but this bogus test uses an iterator that lacks operator->().
 std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
@@ -869,10 +895,6 @@ std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
 # Not analyzed. Failing after LLVM-D75622.
 std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
 
-# Not analyzed. Possibly C1XX constexpr bug.
-std/utilities/function.objects/func.invoke/invoke_constexpr.pass.cpp:0 FAIL
-std/utilities/function.objects/func.invoke/invoke_constexpr.pass.cpp:1 FAIL
-
 # Not analyzed. Failing for "[a[.ch.]z]".
 std/re/re.alg/re.alg.match/awk.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.match/basic.locale.pass.cpp FAIL
@@ -924,25 +946,29 @@ std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp 
 std/language.support/support.limits/limits/numeric.limits.members/tinyness_before.pass.cpp SKIPPED
 
 # Not analyzed. the test fails on x64 but passes on x86
+# warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+# warning C4244: 'initializing': conversion from 'unsigned __int64' to 'int', possible loss of data
 std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
 std/containers/associative/map/map.access/iterator.pass.cpp:1 SKIPPED
+
+# Not analyzed. the test fails on x64 but passes on x86
+# warning C4244: 'return': conversion from '__int64' to 'CustomIt::difference_type', possible loss of data
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:1 SKIPPED
+
+# Not analyzed. the test fails on x64 but passes on x86
+# warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:1 SKIPPED
 
 # Not analyzed. the test fails on x86 but passes on x64
-std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:0 SKIPPED
-std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:1 SKIPPED
+# warning C4389: '==': signed/unsigned mismatch
 std/algorithms/alg.modifying.operations/alg.unique/ranges_unique.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.unique/ranges_unique.pass.cpp:1 SKIPPED
 
 # Not analyzed. These tests are marked `XFAIL: msvc`, citing DevCom-1660844.
 std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp SKIPPED
 std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.hex.pass.cpp SKIPPED
-
-# Not analyzed. These tests use characters that cannot be represented in legacy character encodings
-std/utilities/format/format.functions/ascii.pass.cpp FAIL
 
 # Not analyzed. Failing assert(swaps <= expected).
 std/algorithms/alg.modifying.operations/alg.rotate/ranges_rotate.pass.cpp FAIL
@@ -960,9 +986,6 @@ std/algorithms/algorithms.results/min_max_result.pass.cpp:1 FAIL
 
 # Not analyzed.
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
-
-# Not analyzed. MSVC doesn't define __SIZE_WIDTH__. Clang does, but this is inspecting sizeof(deque) which is non-portable.
-std/containers/sequences/deque/abi.compile.pass.cpp FAIL
 
 # Not analyzed. Possible MSVC constexpr bug.
 # note: failure was caused by a read of a variable outside its lifetime
@@ -989,10 +1012,6 @@ std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:1 FAIL
 std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:0 FAIL
 std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:1 FAIL
 
-# Not analyzed. Possible STL bug, _Vb_reference derives from _Vb_iter_base and is adopted by the container, but _Orphan_range_unlocked assumes every child is a const_iterator.
-# note: failure was caused by cast of object of dynamic type 'Ref' to type 'const std::_Vb_const_iterator<std::_Wrap_alloc<std::allocator<std::_Vbase>>>'
-std/containers/sequences/vector.bool/emplace_back.pass.cpp FAIL
-
 # Not analyzed. Looks like a test bug, assuming that hash<vector<bool>> is constexpr.
 std/containers/sequences/vector.bool/enabled_hash.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
@@ -1001,14 +1020,6 @@ std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
 # note: failure was caused by a read of an uninitialized symbol
 std/containers/sequences/vector/iterators.pass.cpp:0 FAIL
 std/containers/sequences/vector/iterators.pass.cpp:1 FAIL
-
-# Not analyzed.
-# error C4854: binding dereferenced null pointer to reference has undefined behavior
-# note: while evaluating constexpr function 'std::_Refancy'
-std/containers/sequences/vector/vector.erasure/erase.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.erasure/erase.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.erasure/erase_if.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.erasure/erase_if.pass.cpp:1 FAIL
 
 # Not analyzed. Inspecting shift operators for quoted().
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
@@ -1033,10 +1044,6 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass
 
 # Not analyzed. Checking whether packaged_task is constructible from an allocator and a packaged_task of a different type.
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
-
-# Not analyzed. MSVC emits truncation warnings, Clang fails a runtime assertion.
-std/utilities/format/format.functions/escaped_output.ascii.pass.cpp FAIL
-std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
 
 # Not analyzed.
 # MSVC warning C4305: 'specialization': truncation from 'const int' to 'bool'
@@ -1099,12 +1106,6 @@ std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
 
-# Not analyzed. Assertion failed: _CrtIsValidHeapPointer(block)
-std/input.output/string.streams/stringbuf/stringbuf.members/str.pass.cpp FAIL
-std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
-std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
-std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
-
 # Not analyzed. In debug mode, looks like a proxy object unexpectedly exhausts an 80-byte buffer.
 # In release mode, fails in a later assertion that appears to be testing libc++-specific behavior.
 std/input.output/string.streams/istringstream/istringstream.members/str.allocator_propagation.pass.cpp FAIL
@@ -1136,6 +1137,7 @@ std/utilities/format/format.formatter/format.formatter.spec/formatter.unsigned_i
 
 # Not analyzed. Apparent false positives from static analysis where it thinks that array indexing is out of bounds.
 # warning C28020: The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call.
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/containers/views/mdspan/extents/ctor_default.pass.cpp:0 FAIL
 std/containers/views/mdspan/extents/ctor_from_array.pass.cpp:0 FAIL
 std/containers/views/mdspan/extents/ctor_from_integral.pass.cpp:0 FAIL
@@ -1155,6 +1157,7 @@ std/containers/views/mdspan/mdspan/ctor.dh_span.pass.cpp:0 FAIL
 
 # Not analyzed. Apparent false positives from static analysis where it thinks `new (std::nothrow)` could return null, despite an assert().
 # warning C28182: Dereferencing NULL pointer.
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.pass.cpp:0 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.pass.cpp:0 FAIL
 
@@ -1166,9 +1169,6 @@ std/localization/locales/locale/locale.cons/name_construction.pass.cpp FAIL
 
 # Not analyzed. After LLVM-74630 fixes LLVM-74214, will be blocked by our ctype_base deriving from locale::facet.
 std/localization/locale.categories/category.numeric/locale.num.get/user_defined_char_type.pass.cpp FAIL
-
-# Not analyzed. Assertion failed: alloc_stats.destroy_count == 0
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.create/allocate_shared_for_overwrite.pass.cpp FAIL
 
 # Not analyzed. Assertion failed: res == cvt.ok
 std/localization/codecvt_unicode.pass.cpp FAIL
@@ -1182,11 +1182,17 @@ std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
 
 # Not analyzed. constexpr evaluation fails with "vector iterators incompatible".
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails with note: subobject '_Val' is not initialized
 std/ranges/range.adaptors/range.join/end.pass.cpp:2 FAIL
@@ -1195,27 +1201,33 @@ std/ranges/range.adaptors/range.join/range.join.sentinel/eq.pass.cpp:2 FAIL
 
 # Not analyzed. constexpr evaluation fails with note: failure was caused by out of range index MEOW; allowed range is 0 <= index < 2
 std/ranges/range.adaptors/range.join/adaptor.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join/adaptor.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join/range.join.iterator/increment.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join/range.join.iterator/increment.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails in assert(*--iter == i).
 std/ranges/range.adaptors/range.join/range.join.iterator/decrement.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join/range.join.iterator/decrement.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails in assert(*iter++ == i).
 std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails in ranges::swap.
 std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:0 FAIL
-
-# Not analyzed. Fails static_assert(std::is_default_constructible_v<JoinIterator>).
-std/ranges/range.adaptors/range.join/range.join.iterator/ctor.default.pass.cpp FAIL
+std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails in assert(element_moved == 1).
 std/ranges/range.adaptors/range.lazy.split/ctor.range.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.lazy.split/ctor.range.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.split/ctor.range.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.split/ctor.range.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails in assert(view_moved == 1).
 std/ranges/range.adaptors/range.lazy.split/ctor.view.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.lazy.split/ctor.view.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.split/ctor.view.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.split/ctor.view.pass.cpp:1 FAIL
 
 # Not analyzed. Testing split_view with an empty pattern, might be an MSVC constexpr bug.
 std/ranges/range.adaptors/range.split/begin.pass.cpp:0 FAIL
@@ -1227,16 +1239,6 @@ std/ranges/range.adaptors/range.split/general.pass.cpp:1 FAIL
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:0 FAIL
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:1 FAIL
 
-# Not analyzed. static_assert failed: '!std::is_assignable_v<volatile std::atomic<T>&, const std::atomic<T>&>'
-# The Standard depicts `atomic& operator=(const atomic&) volatile = delete;` which we seem to be missing.
-std/atomics/atomics.types.generic/atomics.types.float/copy.compile.pass.cpp FAIL
-
-# Not analyzed.
-# MSVC error C2087: 'abstract declarator': missing subscript
-# Clang error: array has incomplete element type 'int[]'
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer.pass.cpp FAIL
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.mod/reset_pointer.pass.cpp FAIL
-
 # Not analyzed. SKIPPED because this is x86-specific, fatal error C1060: compiler is out of heap space
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.iterator.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.iterator.pass.cpp:1 SKIPPED
@@ -1244,6 +1246,8 @@ std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.ra
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.range.pass.cpp:1 SKIPPED
 std/algorithms/alg.sorting/alg.merge/ranges_merge.pass.cpp:0 SKIPPED
 std/algorithms/alg.sorting/alg.merge/ranges_merge.pass.cpp:1 SKIPPED
+std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:0 SKIPPED
+std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:1 SKIPPED
 std/algorithms/alg.sorting/alg.set.operations/set.difference/ranges_set_difference.pass.cpp:0 SKIPPED
 std/algorithms/alg.sorting/alg.set.operations/set.difference/ranges_set_difference.pass.cpp:1 SKIPPED
 std/algorithms/alg.sorting/alg.set.operations/set.intersection/ranges_set_intersection.pass.cpp:0 SKIPPED
@@ -1342,6 +1346,16 @@ std/input.output/filesystems/fs.op.funcs/fs.op.symlink_status/symlink_status.pas
 std/input.output/filesystems/fs.op.funcs/fs.op.temp_dir_path/temp_directory_path.pass.cpp SKIPPED
 std/input.output/filesystems/fs.op.funcs/fs.op.weakly_canonical/weakly_canonical.pass.cpp SKIPPED
 
+# Not analyzed.
+# MSVC error C2719: '_Fun_': formal parameter with requested alignment of 128 won't be aligned
+# Clang error: unknown attribute 'no_unique_address' ignored [-Werror,-Wunknown-attributes]
+std/ranges/ranges_robust_against_no_unique_address.pass.cpp FAIL
+
+# Not analyzed. Runtime assertion, we appear to be ignoring stream width.
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/print.pass.cpp FAIL
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_nonunicode.pass.cpp FAIL
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_unicode.pass.cpp FAIL
+
 
 # *** XFAILs WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
@@ -1357,6 +1371,8 @@ std/input.output/filesystems/fs.op.funcs/fs.op.weakly_canonical/weakly_canonical
 # because we don't run :1 (ASAN) for ARM and ARM64.
 std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:0 SKIPPED
 std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:2 SKIPPED
+std/time/time.clock/time.clock.system/sys_date.ostream.pass.cpp:0 SKIPPED
+std/time/time.clock/time.clock.system/sys_date.ostream.pass.cpp:2 SKIPPED
 std/time/time.syn/formatter.day.pass.cpp:0 SKIPPED
 std/time/time.syn/formatter.day.pass.cpp:2 SKIPPED
 std/time/time.syn/formatter.month_day.pass.cpp:0 SKIPPED
@@ -1378,10 +1394,12 @@ std/algorithms/alg.modifying.operations/alg.replace/ranges.replace.pass.cpp:9 SK
 std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/ranges.find.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.fold/left_folds.pass.cpp:9 SKIPPED
 std/depr/depr.c.headers/setjmp_h.compile.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ifstream.members/buffered_reads.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ofstream.members/buffered_writes.pass.cpp:9 SKIPPED
 std/language.support/support.runtime/csetjmp.pass.cpp:9 SKIPPED
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.pointer.pass.cpp:9 SKIPPED
 std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPED
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
@@ -1389,6 +1407,10 @@ std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
 
 # This test is marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED
+
+# Similarly, this test is marked as `XFAIL: msvc`
+# MSVC doesn't properly support [[no_unique_address]]
+std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp:9 SKIPPED
 
 # Similarly, this test is marked as `XFAIL: msvc, target={{.+}}-windows-gnu`
 # because it calls an `fmemopen` function that doesn't exist on Windows.
@@ -1401,8 +1423,23 @@ std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cp
 # Similarly, this test is marked as `REQUIRES: 32-bit-pointer`.
 std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
 
-# LLVM-75577 [libc++][test] support.limits.general/.version.compile.pass.cpp is malformed
-std/language.support/support.limits/support.limits.general/.version.compile.pass.cpp:9 SKIPPED
-
-# x86chk ICE not yet reported. Assertion failed: isIndirection()
+# VSO-1948221 x86chk ICE with constexpr type_info: Assertion failed: isIndirection()
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:9 SKIPPED
+
+# These tests are marked as "UNSUPPORTED: !has-unix-headers" with comments saying:
+# "`check_assertion.h` requires Unix headers".
+std/algorithms/alg.modifying.operations/alg.fill/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.modifying.operations/alg.move/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.modifying.operations/alg.replace/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.modifying.operations/alg.rotate/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.modifying.operations/alg.transform/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.all_of/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.any_of/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.equal/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.foreach/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.none_of/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.sorting/alg.merge/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/alg.sorting/alg.sort/stable.sort/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/numeric.ops/reduce/pstl.exception_handling.pass.cpp:9 SKIPPED
+std/algorithms/numeric.ops/transform.reduce/pstl.exception_handling.pass.cpp:9 SKIPPED

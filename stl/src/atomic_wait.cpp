@@ -119,7 +119,8 @@ namespace {
     void _Force_wait_functions_srwlock_only() noexcept {
         auto _Local = _Wait_functions._Api_level.load(_STD memory_order_acquire);
         if (_Local <= __std_atomic_api_level::__detecting) {
-            while (!_Wait_functions._Api_level.compare_exchange_weak(_Local, __std_atomic_api_level::__has_srwlock)) {
+            while (!_Wait_functions._Api_level.compare_exchange_weak(
+                _Local, __std_atomic_api_level::__has_srwlock, _STD memory_order_acq_rel)) {
                 if (_Local > __std_atomic_api_level::__detecting) {
                     return;
                 }
@@ -128,7 +129,8 @@ namespace {
     }
 
     [[nodiscard]] __std_atomic_api_level _Init_wait_functions(__std_atomic_api_level _Level) {
-        while (!_Wait_functions._Api_level.compare_exchange_weak(_Level, __std_atomic_api_level::__detecting)) {
+        while (!_Wait_functions._Api_level.compare_exchange_weak(
+            _Level, __std_atomic_api_level::__detecting, _STD memory_order_acq_rel)) {
             if (_Level > __std_atomic_api_level::__detecting) {
                 return _Level;
             }

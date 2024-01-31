@@ -56,14 +56,16 @@ struct holder {
 
 struct incomplete;
 
-using simple_truth    = tagged_truth<void>;
-using simple_identity = tagged_identity<void>;
+using simple_truth         = tagged_truth<void>;
+using simple_identity      = tagged_identity<void>;
+using simple_left_selector = tagged_left_selector<void>;
 
-using validator           = holder<incomplete>*;
-using validating_truth    = tagged_truth<holder<incomplete>>;
-using validating_equal    = tagged_equal<holder<incomplete>>;
-using validating_less     = tagged_less<holder<incomplete>>;
-using validating_identity = tagged_identity<holder<incomplete>>;
+using validator                = holder<incomplete>*;
+using validating_truth         = tagged_truth<holder<incomplete>>;
+using validating_equal         = tagged_equal<holder<incomplete>>;
+using validating_less          = tagged_less<holder<incomplete>>;
+using validating_identity      = tagged_identity<holder<incomplete>>;
+using validating_left_selector = tagged_left_selector<holder<incomplete>>;
 
 void test_ranges_algorithms() {
     using namespace std::ranges;
@@ -210,6 +212,141 @@ void test_ranges_algorithms() {
     (void) ends_with(iarr, iarr, validating_equal{});
 #endif // _HAS_CXX23
 
+    int iarr2[1]{};
+    validator varr2[1]{};
+
+    (void) copy_if(varr, varr + 1, varr2, simple_truth{});
+    (void) copy_if(varr, varr2, simple_truth{});
+    (void) copy_if(iarr, iarr + 1, iarr2, validating_truth{});
+    (void) copy_if(iarr, iarr2, validating_truth{});
+
+    (void) transform(varr, varr, varr2, std::identity{});
+    (void) transform(varr, varr2, std::identity{});
+    (void) transform(varr, varr, varr, varr, varr2, simple_left_selector{});
+    (void) transform(varr, varr, varr2, simple_left_selector{});
+    (void) transform(iarr, iarr, iarr2, validating_identity{});
+    (void) transform(iarr, iarr, iarr, iarr, iarr2, validating_left_selector{});
+    (void) transform(iarr, iarr, iarr2, validating_left_selector{});
+
+    (void) replace(varr, varr, validator{}, validator{});
+    (void) replace(varr, validator{}, validator{});
+    (void) replace(iarr, iarr, 0, 0, validating_identity{});
+    (void) replace(iarr, 0, 0, validating_identity{});
+
+    (void) replace_if(varr, varr, simple_truth{}, validator{});
+    (void) replace_if(varr, simple_truth{}, validator{});
+    (void) replace_if(iarr, iarr, validating_truth{}, 0);
+    (void) replace_if(iarr, validating_truth{}, 0);
+
+    (void) replace_copy(varr, varr, varr2, validator{}, validator{});
+    (void) replace_copy(varr, varr2, validator{}, validator{});
+    (void) replace_copy(iarr, iarr, iarr2, 0, 0, validating_identity{});
+    (void) replace_copy(iarr, iarr2, 0, 0, validating_identity{});
+
+    (void) replace_copy_if(varr, varr, varr2, simple_truth{}, validator{});
+    (void) replace_copy_if(varr, varr2, simple_truth{}, validator{});
+    (void) replace_copy_if(iarr, iarr, iarr2, validating_truth{}, 0);
+    (void) replace_copy_if(iarr, iarr2, validating_truth{}, 0);
+
+    using std::ranges::remove; // avoid ambiguity
+    (void) remove(varr, varr, validator{});
+    (void) remove(varr, validator{});
+
+    (void) remove_if(varr, varr, simple_truth{});
+    (void) remove_if(varr, simple_truth{});
+    (void) remove_if(iarr, iarr, validating_truth{});
+    (void) remove_if(iarr, validating_truth{});
+
+    (void) remove_copy(varr, varr, varr2, validator{});
+    (void) remove_copy(varr, varr2, validator{});
+
+    (void) remove_copy_if(varr, varr, varr2, simple_truth{});
+    (void) remove_copy_if(varr, varr2, simple_truth{});
+    (void) remove_copy_if(iarr, iarr, iarr2, validating_truth{});
+    (void) remove_copy_if(iarr, iarr2, validating_truth{});
+
+    (void) unique(varr, varr);
+    (void) unique(varr);
+    // (void) unique(iarr, iarr, validating_equal{}); // needs to check ADL-found swap
+    // (void) unique(iarr, validating_equal{}); // needs to check ADL-found swap
+    (void) unique(iarr, iarr, {}, validating_identity{});
+    (void) unique(iarr, {}, validating_identity{});
+
+    (void) unique_copy(varr, varr, varr2);
+    (void) unique_copy(varr, varr2);
+    // (void) unique_copy(iarr, iarr, iarr2, validating_equal{}); // needs to check ADL-found swap
+    // (void) unique_copy(iarr, iarr2, validating_equal{}); // needs to check ADL-found swap
+    (void) unique_copy(iarr, iarr, iarr2, {}, validating_identity{});
+    (void) unique_copy(iarr, iarr2, {}, validating_identity{});
+
+    int iarr3[2]{};
+    validator varr3[2]{};
+
+    (void) merge(varr, varr, varr2, varr2, varr3);
+    (void) merge(varr, varr2, varr3);
+    (void) merge(iarr, iarr, iarr2, iarr2, iarr3, validating_less{});
+    (void) merge(iarr, iarr2, iarr3, validating_less{});
+
+    (void) inplace_merge(varr, varr, varr);
+    (void) inplace_merge(varr, varr);
+    (void) inplace_merge(iarr, iarr, iarr, validating_less{});
+    (void) inplace_merge(iarr, iarr, {}, validating_identity{});
+
+    (void) includes(varr, varr, varr, varr);
+    (void) includes(varr, varr);
+    (void) includes(iarr, iarr, iarr, iarr, validating_less{});
+    (void) includes(iarr, iarr, validating_less{});
+
+    (void) set_union(varr, varr, varr, varr, varr3);
+    (void) set_union(varr, varr, varr3);
+    (void) set_union(iarr, iarr, iarr, iarr, iarr3, validating_less{});
+    (void) set_union(iarr, iarr, iarr3, validating_less{});
+
+    (void) set_intersection(varr, varr, varr, varr, varr3);
+    (void) set_intersection(varr, varr, varr3);
+    (void) set_intersection(iarr, iarr, iarr, iarr, iarr3, validating_less{});
+    (void) set_intersection(iarr, iarr, iarr3, validating_less{});
+
+    (void) set_difference(varr, varr, varr, varr, varr3);
+    (void) set_difference(varr, varr, varr3);
+    (void) set_difference(iarr, iarr, iarr, iarr, iarr3, validating_less{});
+    (void) set_difference(iarr, iarr, iarr3, validating_less{});
+
+    (void) set_symmetric_difference(varr, varr, varr, varr, varr3);
+    (void) set_symmetric_difference(varr, varr, varr3);
+    (void) set_symmetric_difference(iarr, iarr, iarr, iarr, iarr3, validating_less{});
+    (void) set_symmetric_difference(iarr, iarr, iarr3, validating_less{});
+
+    (void) push_heap(varr3, varr3 + 1);
+    (void) push_heap(varr3);
+    (void) push_heap(iarr3, iarr3 + 1, validating_less{});
+    (void) push_heap(iarr3, {}, validating_identity{});
+
+    (void) pop_heap(varr3, varr3 + 1);
+    (void) pop_heap(varr3);
+    (void) pop_heap(iarr3, iarr3 + 1, validating_less{});
+    (void) pop_heap(iarr3, {}, validating_identity{});
+
+    (void) make_heap(varr3, varr3 + 1);
+    (void) make_heap(varr3);
+    (void) make_heap(iarr3, iarr3 + 1, validating_less{});
+    (void) make_heap(iarr3, {}, validating_identity{});
+
+    (void) sort_heap(varr3, varr3 + 1);
+    (void) sort_heap(varr3);
+    (void) sort_heap(iarr3, iarr3 + 1, validating_less{});
+    (void) sort_heap(iarr3, {}, validating_identity{});
+
+    (void) is_heap(varr3, varr3 + 1);
+    (void) is_heap(varr3);
+    (void) is_heap(iarr3, iarr3 + 1, validating_less{});
+    (void) is_heap(iarr3, {}, validating_identity{});
+
+    (void) is_heap_until(varr3, varr3 + 1);
+    (void) is_heap_until(varr3);
+    (void) is_heap_until(iarr3, iarr3 + 1, validating_less{});
+    (void) is_heap_until(iarr3, {}, validating_identity{});
+
     (void) min(+varr, +varr);
     (void) min({+varr, +varr});
     (void) min(varr);
@@ -253,6 +390,16 @@ void test_ranges_algorithms() {
     (void) lexicographical_compare(varr, varr);
     (void) lexicographical_compare(iarr, iarr, iarr, iarr, validating_less{});
     (void) lexicographical_compare(iarr, iarr, validating_less{});
+
+    (void) next_permutation(varr, varr);
+    (void) next_permutation(varr);
+    (void) next_permutation(iarr, iarr, validating_less{});
+    (void) next_permutation(iarr, {}, validating_identity{});
+
+    (void) prev_permutation(varr, varr);
+    (void) prev_permutation(varr);
+    (void) prev_permutation(iarr, iarr, validating_less{});
+    (void) prev_permutation(iarr, {}, validating_identity{});
 }
 
 // Separated test for ranges::count and equality

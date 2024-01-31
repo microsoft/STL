@@ -1063,13 +1063,11 @@ constexpr bool test_invoke_constexpr() {
 #endif // _HAS_CXX20
     assert(&invoke(&Thing::m_x, p) == &p->m_x);
 
-#ifndef _M_CEE // TRANSITION, DevCom-939490
     assert(invoke(&Thing::sum, *p, 3) == 1023);
 #if _HAS_CXX20
     assert(invoke(&Thing::sum, ref(*p), 4) == 1024);
 #endif // _HAS_CXX20
     assert(invoke(&Thing::sum, p, 5) == 1025);
-#endif // _M_CEE
 
     assert(invoke(square_constexpr, 6) == 36);
     assert(invoke(&cube_constexpr, 7) == 343);
