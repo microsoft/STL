@@ -176,8 +176,7 @@ _Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
 
     if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_f(_First, _Last, false)));
-    } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, double>
-                         || _STD is_same_v<_STD remove_const_t<_Ty>, long double>) {
+    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_d(_First, _Last, false)));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_1(_First, _Last, _Signed)));
@@ -198,8 +197,7 @@ _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
 
     if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_f(_First, _Last, false)));
-    } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, double>
-                         || _STD is_same_v<_STD remove_const_t<_Ty>, long double>) {
+    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_d(_First, _Last, false)));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_1(_First, _Last, _Signed)));
