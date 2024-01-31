@@ -1441,7 +1441,7 @@ private:
         if (_Flags & ios_base::uppercase) {
             if (_Ffl == ios_base::fixed) {
                 _Ch = 'f';
-            } else if (_Ffl == ios_base::hexfloat) {
+            } else if (_Ffl == (ios_base::scientific | ios_base::fixed)) {
                 _Ch = 'A'; // added with TR1
             } else if (_Ffl == ios_base::scientific) {
                 _Ch = 'E';
@@ -1451,7 +1451,7 @@ private:
         } else {
             if (_Ffl == ios_base::fixed) {
                 _Ch = 'f';
-            } else if (_Ffl == ios_base::hexfloat) {
+            } else if (_Ffl == (ios_base::scientific | ios_base::fixed)) {
                 _Ch = 'a'; // added with TR1
             } else if (_Ffl == ios_base::scientific) {
                 _Ch = 'e';
@@ -1475,7 +1475,7 @@ private:
         bool _Is_finite_val) const { // put formatted floating-point to _Dest
         auto _Prefix = static_cast<size_t>(0 < _Count && (*_Buf == '+' || *_Buf == '-'));
         const char* _Exps;
-        if ((_Iosbase.flags() & ios_base::floatfield) != ios_base::hexfloat) {
+        if ((_Iosbase.flags() & ios_base::floatfield) != (ios_base::scientific | ios_base::fixed)) {
             _Exps = "eE";
         } else { // correct for hexadecimal floating-point
             _Exps = "pP";
