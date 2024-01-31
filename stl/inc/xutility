@@ -3233,7 +3233,7 @@ namespace ranges {
     class _Advance_fn {
     public:
         template <input_or_output_iterator _It>
-        constexpr void operator()(_It& _Where, iter_difference_t<_It> _Off) const {
+        _STATIC_CALL_OPERATOR constexpr void operator()(_It& _Where, iter_difference_t<_It> _Off) _CONST_CALL_OPERATOR {
             if constexpr (random_access_iterator<_It>) {
                 _Where += _Off;
             } else {
@@ -3261,11 +3261,11 @@ namespace ranges {
         }
 
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        constexpr void operator()(_It& _Where, _Se _Last) const {
+        _STATIC_CALL_OPERATOR constexpr void operator()(_It& _Where, _Se _Last) _CONST_CALL_OPERATOR {
             if constexpr (assignable_from<_It&, _Se>) {
                 _Where = static_cast<_Se&&>(_Last);
             } else if constexpr (sized_sentinel_for<_Se, _It>) {
-                (*this)(_Where, _Last - _Where);
+                operator()(_Where, _Last - _Where);
             } else {
                 _Adl_verify_range(_Where, _Last);
 
@@ -3284,19 +3284,20 @@ namespace ranges {
         }
 
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        constexpr iter_difference_t<_It> operator()(_It& _Where, iter_difference_t<_It> _Off, _Se _Last) const {
+        _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(
+            _It& _Where, iter_difference_t<_It> _Off, _Se _Last) _CONST_CALL_OPERATOR {
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 const iter_difference_t<_It> _Delta = _Last - _Where;
                 if ((_Off < 0 && _Off <= _Delta) || (_Off > 0 && _Off >= _Delta)) {
                     if constexpr (assignable_from<_It&, _Se>) {
                         _Where = static_cast<_Se&&>(_Last);
                     } else {
-                        (*this)(_Where, _Delta);
+                        operator()(_Where, _Delta);
                     }
                     return _Off - _Delta;
                 }
 
-                (*this)(_Where, _Off);
+                operator()(_Where, _Off);
                 return 0;
             } else {
                 // performance note: develop unwrapping technology for (i, n, s)?
@@ -3323,22 +3324,23 @@ namespace ranges {
     public:
         template <class _It, sentinel_for<_It> _Se>
             requires (!sized_sentinel_for<_Se, _It>)
-        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const
-            noexcept(noexcept(_Distance_unchecked(
-                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(_It _First,
+            _Se _Last) _CONST_CALL_OPERATOR noexcept(noexcept(_Distance_unchecked(_Get_unwrapped(_STD move(_First)),
+            _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
             _Adl_verify_range(_First, _Last);
             return _Distance_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
         }
 
         template <class _It, sized_sentinel_for<decay_t<_It>> _Se>
-        _NODISCARD constexpr iter_difference_t<decay_t<_It>> operator()(_It&& _First, const _Se _Last) const
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<decay_t<_It>> operator()(
+            _It&& _First, const _Se _Last) _CONST_CALL_OPERATOR
             noexcept(noexcept(_Last - static_cast<const decay_t<_It>&>(_First))) /* strengthened */ {
             return _Last - static_cast<const decay_t<_It>&>(_First);
         }
 
         template <range _Rng>
-        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range) const
-            noexcept(_Nothrow_size<_Rng>) /* strengthened */ {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr range_difference_t<_Rng> operator()(
+            _Rng&& _Range) _CONST_CALL_OPERATOR noexcept(_Nothrow_size<_Rng>) /* strengthened */ {
             if constexpr (sized_range<_Rng>) {
                 return static_cast<range_difference_t<_Rng>>(_RANGES size(_Range));
             } else {
@@ -3390,25 +3392,27 @@ namespace ranges {
     class _Next_fn {
     public:
         template <input_or_output_iterator _It>
-        _NODISCARD constexpr _It operator()(_It _Where) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(_It _Where) _CONST_CALL_OPERATOR {
             ++_Where;
             return _Where;
         }
 
         template <input_or_output_iterator _It>
-        _NODISCARD constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _Where, const iter_difference_t<_It> _Off) _CONST_CALL_OPERATOR {
             _RANGES advance(_Where, _Off);
             return _Where;
         }
 
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        _NODISCARD constexpr _It operator()(_It _Where, _Se _Last) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(_It _Where, _Se _Last) _CONST_CALL_OPERATOR {
             _RANGES advance(_Where, static_cast<_Se&&>(_Last));
             return _Where;
         }
 
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        _NODISCARD constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off, _Se _Last) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _Where, const iter_difference_t<_It> _Off, _Se _Last) _CONST_CALL_OPERATOR {
             _RANGES advance(_Where, _Off, static_cast<_Se&&>(_Last));
             return _Where;
         }
@@ -3419,20 +3423,22 @@ namespace ranges {
     class _Prev_fn {
     public:
         template <bidirectional_iterator _It>
-        _NODISCARD constexpr _It operator()(_It _Where) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(_It _Where) _CONST_CALL_OPERATOR {
             --_Where;
             return _Where;
         }
 
         template <bidirectional_iterator _It>
-        _NODISCARD constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _Where, const iter_difference_t<_It> _Off) _CONST_CALL_OPERATOR {
             _STL_ASSERT(_Off != _Min_possible_v<iter_difference_t<_It>>, "integer overflow");
             _RANGES advance(_Where, -_Off);
             return _Where;
         }
 
         template <bidirectional_iterator _It>
-        _NODISCARD constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off, _It _Last) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _Where, const iter_difference_t<_It> _Off, _It _Last) _CONST_CALL_OPERATOR {
             _STL_ASSERT(_Off != _Min_possible_v<iter_difference_t<_It>>, "integer overflow");
             _RANGES advance(_Where, -_Off, static_cast<_It&&>(_Last));
             return _Where;
@@ -4733,7 +4739,8 @@ namespace ranges {
     public:
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_copyable<_It, _Out>
-        constexpr copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
+        _STATIC_CALL_OPERATOR constexpr copy_result<_It, _Out> operator()(
+            _It _First, _Se _Last, _Out _Result) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _RANGES _Copy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
                 _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result));
@@ -4743,7 +4750,8 @@ namespace ranges {
 
         template <input_range _Rng, weakly_incrementable _Out>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
-        constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
+        _STATIC_CALL_OPERATOR constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
+            _Rng&& _Range, _Out _Result) _CONST_CALL_OPERATOR {
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _RANGES _Copy_unchecked(
                 _RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _STD move(_Result));
@@ -5103,7 +5111,8 @@ namespace ranges {
     class _Fill_n_fn {
     public:
         template <class _Ty, output_iterator<const _Ty&> _It>
-        constexpr _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Value) const {
+        _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _First, iter_difference_t<_It> _Count, const _Ty& _Value) _CONST_CALL_OPERATOR {
             if (_Count > 0) {
                 auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
                 if (!_STD is_constant_evaluated()) {
@@ -5404,8 +5413,8 @@ namespace ranges {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr mismatch_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
-            _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr mismatch_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1,
+            _It2 _First2, _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First1, _Last1);
             _STD _Adl_verify_range(_First2, _Last2);
 
@@ -5436,8 +5445,10 @@ namespace ranges {
         template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
             class _Pj2 = identity>
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr mismatch_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
-            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD
+            _STATIC_CALL_OPERATOR constexpr mismatch_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
+            operator()(_Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {},
+                _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
                 range_difference_t<_Rng1> _Count1       = _RANGES distance(_Range1);
                 const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
@@ -5918,7 +5929,8 @@ namespace ranges {
     public:
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
-        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _RANGES _Find_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
                 _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Val, _STD _Pass_fn(_Proj));
@@ -5929,8 +5941,8 @@ namespace ranges {
 
         template <input_range _Rng, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
-        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
-            _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _RANGES _Find_unchecked(
                 _RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Val, _STD _Pass_fn(_Proj));
@@ -6337,7 +6349,8 @@ namespace ranges {
     public:
         template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
-        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _RANGES _Find_if_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
                 _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
@@ -6348,7 +6361,8 @@ namespace ranges {
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
-        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _RANGES _Find_if_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
                 _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
@@ -6364,7 +6378,8 @@ namespace ranges {
     public:
         template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
-        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
 
             auto _UResult = _Find_if_not_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
@@ -6376,7 +6391,8 @@ namespace ranges {
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
-        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             auto _First = _RANGES begin(_Range);
 
             auto _UResult = _Find_if_not_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
@@ -6409,7 +6425,8 @@ namespace ranges {
     public:
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_binary_predicate<projected<_It, _Pj>, projected<_It, _Pj>> _Pr = ranges::equal_to>
-        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
 
             auto _UResult = _Adjacent_find_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
@@ -6422,7 +6439,8 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>, projected<iterator_t<_Rng>, _Pj>> _Pr =
                 ranges::equal_to>
-        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             auto _UResult =
                 _Adjacent_find_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
 
@@ -6498,8 +6516,8 @@ namespace ranges {
         template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
-            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
+            _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First1, _Last1);
             _STD _Adl_verify_range(_First2, _Last2);
             auto _UFirst1 = _RANGES _Unwrap_iter<_Se1>(_STD move(_First1));
@@ -6523,8 +6541,8 @@ namespace ranges {
         template <forward_range _Rng1, forward_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
             class _Pj2 = identity>
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr borrowed_subrange_t<_Rng1> operator()(
-            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_subrange_t<_Rng1> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
                 const auto _Count1 = _RANGES distance(_Range1);
                 const auto _Count2 = _RANGES distance(_Range2);
@@ -6705,7 +6723,8 @@ namespace ranges {
     public:
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
             _STD _Seek_wrapped(
                 _First, _RANGES _Max_element_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
@@ -6715,7 +6734,8 @@ namespace ranges {
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             auto _UResult = _RANGES _Max_element_unchecked(
                 _Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -6752,8 +6772,8 @@ namespace ranges {
     public:
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr const _Ty& operator()(
-            const _Ty& _Left, const _Ty& _Right, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(
+            const _Ty& _Left, const _Ty& _Right, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             if (_STD invoke(_Pred, _STD invoke(_Proj, _Left), _STD invoke(_Proj, _Right))) {
                 return _Right;
             } else {
@@ -6763,7 +6783,8 @@ namespace ranges {
 
         template <copyable _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr _Ty operator()(initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ty operator()(
+            initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
@@ -6774,7 +6795,8 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-        _NODISCARD constexpr range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr range_value_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
@@ -6899,7 +6921,8 @@ namespace ranges {
     public:
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
             _STD _Seek_wrapped(
                 _First, _RANGES _Min_element_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
@@ -6909,7 +6932,8 @@ namespace ranges {
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             auto _UResult = _RANGES _Min_element_unchecked(
                 _Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -6940,8 +6964,8 @@ namespace ranges {
     public:
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr const _Ty& operator()(
-            const _Ty& _Left, const _Ty& _Right, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(
+            const _Ty& _Left, const _Ty& _Right, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             if (_STD invoke(_Pred, _STD invoke(_Proj, _Right), _STD invoke(_Proj, _Left))) {
                 return _Right;
             } else {
@@ -6951,7 +6975,8 @@ namespace ranges {
 
         template <copyable _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD constexpr _Ty operator()(initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ty operator()(
+            initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
@@ -6962,7 +6987,8 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-        _NODISCARD constexpr range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr range_value_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(

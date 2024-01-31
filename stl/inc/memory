@@ -57,7 +57,8 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
-        uninitialized_copy_result<_It, _Out> operator()(_It _First1, _Se _Last1, _Out _First2, _OSe _Last2) const {
+        _STATIC_CALL_OPERATOR uninitialized_copy_result<_It, _Out> operator()(
+            _It _First1, _Se _Last1, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UResult = _Uninitialized_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First1)),
@@ -71,8 +72,8 @@ namespace ranges {
 
         template <input_range _Rng1, _No_throw_forward_range _Rng2>
             requires constructible_from<range_value_t<_Rng2>, range_reference_t<_Rng1>>
-        uninitialized_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
-            _Rng1&& _Range1, _Rng2&& _Range2) const {
+        _STATIC_CALL_OPERATOR uninitialized_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
+            operator()(_Rng1&& _Range1, _Rng2&& _Range2) _CONST_CALL_OPERATOR {
             auto _First1  = _RANGES begin(_Range1);
             auto _UResult = _Uninitialized_copy_unchecked(
                 _Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
@@ -172,8 +173,8 @@ namespace ranges {
     public:
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
-        uninitialized_copy_n_result<_It, _Out> operator()(
-            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) const {
+        _STATIC_CALL_OPERATOR uninitialized_copy_n_result<_It, _Out> operator()(
+            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
             if (_Count <= 0) {
                 return {_STD move(_First1), _STD move(_First2)};
             }
@@ -244,7 +245,8 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
-        uninitialized_move_result<_It, _Out> operator()(_It _First1, _Se _Last1, _Out _First2, _OSe _Last2) const {
+        _STATIC_CALL_OPERATOR uninitialized_move_result<_It, _Out> operator()(
+            _It _First1, _Se _Last1, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UResult = _RANGES _Uninitialized_move_unchecked(_Unwrap_iter<_Se>(_STD move(_First1)),
@@ -258,8 +260,8 @@ namespace ranges {
 
         template <input_range _Rng1, _No_throw_forward_range _Rng2>
             requires constructible_from<range_value_t<_Rng2>, range_rvalue_reference_t<_Rng1>>
-        uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
-            _Rng1&& _Range1, _Rng2&& _Range2) const {
+        _STATIC_CALL_OPERATOR uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
+            operator()(_Rng1&& _Range1, _Rng2&& _Range2) _CONST_CALL_OPERATOR {
             auto _First1  = _RANGES begin(_Range1);
             auto _UResult = _RANGES _Uninitialized_move_unchecked(
                 _Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
@@ -334,8 +336,8 @@ namespace ranges {
     public:
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
-        uninitialized_move_n_result<_It, _Out> operator()(
-            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) const {
+        _STATIC_CALL_OPERATOR uninitialized_move_n_result<_It, _Out> operator()(
+            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
             if (_Count <= 0) {
                 return {_STD move(_First1), _STD move(_First2)};
             }
@@ -378,7 +380,7 @@ namespace ranges {
     public:
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
-        _It operator()(_It _First, _Se _Last, const _Ty& _Val) const {
+        _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last, const _Ty& _Val) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_fill_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Val);
@@ -389,7 +391,8 @@ namespace ranges {
 
         template <_No_throw_forward_range _Rng, class _Ty>
             requires constructible_from<range_value_t<_Rng>, const _Ty&>
-        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val) const {
+        _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val) _CONST_CALL_OPERATOR {
             return _Rewrap_iterator(_Range, _Uninitialized_fill_unchecked(_Ubegin(_Range), _Uend(_Range), _Val));
         }
 
@@ -483,7 +486,8 @@ namespace ranges {
     public:
         template <_No_throw_forward_iterator _It, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
-        _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Val) const {
+        _STATIC_CALL_OPERATOR _It operator()(
+            _It _First, iter_difference_t<_It> _Count, const _Ty& _Val) _CONST_CALL_OPERATOR {
             if (_Count <= 0) {
                 return _First;
             }
@@ -517,14 +521,14 @@ namespace ranges {
 
     class _Construct_at_fn {
     public:
-        // clang-format off
         template <class _Ty, class... _Types>
             requires requires(_Ty* _Ptr, _Types&&... _Args) {
                 ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types&&>(_Args)...); // per LWG-3888
             }
-        constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
-            noexcept(noexcept(::new (static_cast<void*>(_Location))
-                    _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
+        _STATIC_CALL_OPERATOR constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) _CONST_CALL_OPERATOR
+            // clang-format off
+            noexcept(noexcept(
+                ::new(static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
             // clang-format on
             _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
         }
@@ -539,7 +543,7 @@ namespace ranges {
     class _Destroy_at_fn {
     public:
         template <destructible _Ty>
-        constexpr void operator()(_Ty* const _Location) const noexcept {
+        _STATIC_CALL_OPERATOR constexpr void operator()(_Ty* const _Location) _CONST_CALL_OPERATOR noexcept {
             if constexpr (is_array_v<_Ty>) {
                 (void) _RANGES _Destroy_unchecked(_RANGES begin(*_Location), _RANGES end(*_Location));
             } else {
@@ -583,7 +587,7 @@ namespace ranges {
     public:
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
-        constexpr _It operator()(_It _First, _Se _Last) const noexcept {
+        _STATIC_CALL_OPERATOR constexpr _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR noexcept {
             _Adl_verify_range(_First, _Last);
             _Seek_wrapped(_First,
                 _RANGES _Destroy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last))));
@@ -592,7 +596,8 @@ namespace ranges {
 
         template <_No_throw_input_range _Rng>
             requires destructible<range_value_t<_Rng>>
-        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
+        _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range) _CONST_CALL_OPERATOR noexcept {
             auto _First = _RANGES begin(_Range);
             _Seek_wrapped(
                 _First, _RANGES _Destroy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range)));
@@ -634,7 +639,8 @@ namespace ranges {
     public:
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
-        constexpr _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
+        _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _First, const iter_difference_t<_It> _Count_raw) _CONST_CALL_OPERATOR noexcept {
             _Algorithm_int_t<iter_difference_t<_It>> _Count = _Count_raw;
             if (_Count <= 0) {
                 return _First;
@@ -685,7 +691,7 @@ namespace ranges {
     public:
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
-        _It operator()(_It _First, _Se _Last) const {
+        _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_default_construct_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
@@ -696,7 +702,7 @@ namespace ranges {
 
         template <_No_throw_forward_range _Rng>
             requires default_initializable<range_value_t<_Rng>>
-        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
+        _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) _CONST_CALL_OPERATOR {
             auto _UResult = _Uninitialized_default_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
 
             return _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -762,7 +768,7 @@ namespace ranges {
     public:
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
-        _It operator()(_It _First, iter_difference_t<_It> _Count) const {
+        _STATIC_CALL_OPERATOR _It operator()(_It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR {
             if (_Count <= 0) {
                 return _First;
             }
@@ -815,7 +821,7 @@ namespace ranges {
     public:
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
-        _It operator()(_It _First, _Se _Last) const {
+        _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_value_construct_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
@@ -826,7 +832,7 @@ namespace ranges {
 
         template <_No_throw_forward_range _Rng>
             requires default_initializable<range_value_t<_Rng>>
-        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
+        _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) _CONST_CALL_OPERATOR {
             auto _UResult = _Uninitialized_value_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
 
             return _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -879,7 +885,7 @@ namespace ranges {
     public:
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
-        _It operator()(_It _First, iter_difference_t<_It> _Count) const {
+        _STATIC_CALL_OPERATOR _It operator()(_It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR {
             if (_Count <= 0) {
                 return _First;
             }
