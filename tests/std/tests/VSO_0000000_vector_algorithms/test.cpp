@@ -179,7 +179,7 @@ void test_min_max_element(mt19937_64& gen) {
 }
 
 template <class T>
-void test_min_max_element_f(mt19937_64& gen) {
+void test_min_max_element_floating(mt19937_64& gen) {
     normal_distribution<T> dis(0.0, 100000.0);
 
     constexpr auto input_of_input_size = dataCount / 2;
@@ -392,9 +392,9 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_min_max_element<long long>(gen);
     test_min_max_element<unsigned long long>(gen);
 
-    test_min_max_element_f<float>(gen);
-    test_min_max_element_f<double>(gen);
-    test_min_max_element_f<long double>(gen);
+    test_min_max_element_floating<float>(gen);
+    test_min_max_element_floating<double>(gen);
+    test_min_max_element_floating<long double>(gen);
 
     test_min_max_element_pointers(gen);
 
