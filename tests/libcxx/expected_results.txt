@@ -184,9 +184,17 @@ std/modules/std.pass.cpp FAIL
 # *** ASAN FAILURES ***
 # Even with `allocator_may_return_null=1`, ASan kills oversized allocations instead of throwing `bad_alloc`.
 # (https://github.com/google/sanitizers/issues/295)
+std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.except.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.except.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.array/new.size.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align_nothrow.except.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/new.size_nothrow.except.pass.cpp:1 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/new.size.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size.pass.cpp:1 FAIL
 std/strings/basic.string/string.capacity/max_size.pass.cpp:1 FAIL
 
