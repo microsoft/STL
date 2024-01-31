@@ -101,28 +101,28 @@ struct _Tzdb_deleter;
 
 template <>
 struct _Tzdb_deleter<__std_tzdb_time_zones_info> {
-    void operator()(__std_tzdb_time_zones_info* _Info) const noexcept {
+    _STATIC_CALL_OPERATOR void operator()(__std_tzdb_time_zones_info* _Info) _CONST_CALL_OPERATOR noexcept {
         __std_tzdb_delete_time_zones(_Info);
     }
 };
 
 template <>
 struct _Tzdb_deleter<__std_tzdb_current_zone_info> {
-    void operator()(__std_tzdb_current_zone_info* _Info) const noexcept {
+    _STATIC_CALL_OPERATOR void operator()(__std_tzdb_current_zone_info* _Info) _CONST_CALL_OPERATOR noexcept {
         __std_tzdb_delete_current_zone(_Info);
     }
 };
 
 template <>
 struct _Tzdb_deleter<__std_tzdb_sys_info> {
-    void operator()(__std_tzdb_sys_info* _Info) const noexcept {
+    _STATIC_CALL_OPERATOR void operator()(__std_tzdb_sys_info* _Info) _CONST_CALL_OPERATOR noexcept {
         __std_tzdb_delete_sys_info(_Info);
     }
 };
 
 template <>
 struct _Tzdb_deleter<__std_tzdb_leap_info[]> {
-    void operator()(__std_tzdb_leap_info* _Info) const noexcept {
+    _STATIC_CALL_OPERATOR void operator()(__std_tzdb_leap_info* _Info) _CONST_CALL_OPERATOR noexcept {
         __std_tzdb_delete_leap_seconds(_Info);
     }
 };

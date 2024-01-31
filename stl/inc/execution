@@ -3658,7 +3658,8 @@ template <class _Ty>
 struct _Casty_plus {
     // Adds the two arguments together and casts the result back to _Ty.
     // pre: the result from adding the two arguments together can fit in _Ty
-    _NODISCARD constexpr _Ty operator()(_Ty _Val1, _Ty _Val2) const noexcept /* terminates */ {
+    _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ty operator()(_Ty _Val1, _Ty _Val2) _CONST_CALL_OPERATOR noexcept
+    /* terminates */ {
         return static_cast<_Ty>(_Val1 + _Val2);
     }
 };

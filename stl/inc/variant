@@ -1689,7 +1689,7 @@ _CONSTEXPR20 void swap(variant<_Types...>& _Left, variant<_Types...>& _Right) no
 
 struct _Variant_hash_visitor { // visitation function for hashing variants
     template <class _Ty, size_t _Idx>
-    _NODISCARD size_t operator()(_Tagged<const _Ty&, _Idx> _Obj) const
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(_Tagged<const _Ty&, _Idx> _Obj) _CONST_CALL_OPERATOR
         noexcept(disjunction_v<bool_constant<_Idx == variant_npos>,
             is_nothrow_invocable<hash<_Ty>, const _Ty&>>) { // hash contained value _Obj
         if constexpr (_Idx == variant_npos) { // hash a valueless variant

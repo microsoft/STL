@@ -345,7 +345,7 @@ namespace filesystem {
     }
 
     struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
-        _NODISCARD constexpr bool operator()(const wchar_t _Ch) const {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(const wchar_t _Ch) _CONST_CALL_OPERATOR {
             return _Ch == L'\\' || _Ch == L'/';
         }
     };

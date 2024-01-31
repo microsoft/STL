@@ -179,7 +179,7 @@ template <class _Traits>
 struct _Char_traits_eq {
     using _Elem = typename _Traits::char_type;
 
-    bool operator()(_Elem _Left, _Elem _Right) const noexcept {
+    _STATIC_CALL_OPERATOR bool operator()(_Elem _Left, _Elem _Right) _CONST_CALL_OPERATOR noexcept {
         return _Traits::eq(_Left, _Right);
     }
 };
@@ -188,7 +188,7 @@ template <class _Traits>
 struct _Char_traits_lt {
     using _Elem = typename _Traits::char_type;
 
-    bool operator()(_Elem _Left, _Elem _Right) const noexcept {
+    _STATIC_CALL_OPERATOR bool operator()(_Elem _Left, _Elem _Right) _CONST_CALL_OPERATOR noexcept {
         return _Traits::lt(_Left, _Right);
     }
 };
@@ -210,7 +210,7 @@ struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Char_traits_lt<char_trai
 template <class _RxTraits>
 struct _Cmp_cs { // functor to compare two character values for equality
     using _Elem = typename _RxTraits::char_type;
-    bool operator()(_Elem _Ex1, _Elem _Ex2) {
+    _STATIC_CALL_OPERATOR bool operator()(_Elem _Ex1, _Elem _Ex2) _CONST_CALL_OPERATOR {
         return _Ex1 == _Ex2;
     }
 };

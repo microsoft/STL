@@ -2259,7 +2259,8 @@ _NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
 
 template <class _Ret>
 struct _Vbase_compare_three_way {
-    _NODISCARD constexpr _Ret operator()(const _Vbase _Left, const _Vbase _Right) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ret operator()(
+        const _Vbase _Left, const _Vbase _Right) _CONST_CALL_OPERATOR noexcept {
         const _Vbase _Differing_bits = _Left ^ _Right;
 
         if (_Differing_bits == 0) { // improves _Countr_zero codegen below

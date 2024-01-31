@@ -1626,7 +1626,7 @@ inline constexpr bool _Is_signed_or_unsigned_large_integer_t =
 class _Width_checker {
 public:
     template <class _Ty>
-    _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
+    _NODISCARD _STATIC_CALL_OPERATOR constexpr unsigned long long operator()(const _Ty _Value) _CONST_CALL_OPERATOR {
         if constexpr (_Is_signed_or_unsigned_large_integer_t<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
@@ -1645,7 +1645,7 @@ public:
 class _Precision_checker {
 public:
     template <class _Ty>
-    _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
+    _NODISCARD _STATIC_CALL_OPERATOR constexpr unsigned long long operator()(const _Ty _Value) _CONST_CALL_OPERATOR {
         if constexpr (_Is_signed_or_unsigned_large_integer_t<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
