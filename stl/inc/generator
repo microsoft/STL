@@ -362,7 +362,7 @@ public:
         return *this;
     }
 
-    _NODISCARD _Ref operator*() const noexcept(is_nothrow_copy_constructible_v<_Ref>) {
+    _NODISCARD _Ref operator*() const noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Top.promise()._Ptr))) {
         _STL_ASSERT(!_Coro.done(), "Can't dereference generator end iterator");
         return static_cast<_Ref>(*_Coro.promise()._Top.promise()._Ptr);
     }
