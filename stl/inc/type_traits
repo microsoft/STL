@@ -2441,7 +2441,7 @@ struct less {
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
     _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
-        noexcept(noexcept(_Fake_copy_init<bool>(_Left < _Right))) /* strengthened */ {
+        noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left < _Right))) /* strengthened */ {
         return _Left < _Right;
     }
 };
