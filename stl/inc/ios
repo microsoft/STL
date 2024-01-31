@@ -206,8 +206,8 @@ _EXPORT_STD inline ios_base& __CLRCALL_OR_CDECL hex(ios_base& _Iosbase) { // set
     return _Iosbase;
 }
 
-_EXPORT_STD inline ios_base& __CLRCALL_OR_CDECL hexfloat(ios_base& _Iosbase) { // set floatfield to hexfloat
-    _Iosbase.setf(ios_base::hexfloat, ios_base::floatfield);
+_EXPORT_STD inline ios_base& __CLRCALL_OR_CDECL hexfloat(ios_base& _Iosbase) { // set floatfield to (scientific | fixed)
+    _Iosbase.setf(ios_base::scientific | ios_base::fixed, ios_base::floatfield);
     return _Iosbase;
 }
 

@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 #include <test_death.hpp>
@@ -116,6 +117,22 @@ struct test_pmr_allocator {
         }
         Stream stream2{init_value, init_value.get_allocator()};
         assert(stream2.rdbuf()->get_allocator() == init_value.get_allocator());
+
+        // GH-4232: <sstream>: basic_stringbuf shouldn't implement moving with swapping
+
+        // Move to another stream buffer with different allocators
+        using SBuf = remove_pointer_t<decltype(stream.rdbuf())>;
+        SBuf& sbuf = *stream.rdbuf();
+        SBuf sbuf2{move(sbuf), init_value.get_allocator()};
+        assert(sbuf2.get_allocator() != sbuf.get_allocator());
+        assert(stream.view().empty());
+        assert(sbuf2.view() == init_value);
+
+        // Move assignment between different memory resources
+        sbuf = move(sbuf2);
+        assert(sbuf2.get_allocator() != sbuf.get_allocator());
+        assert(sbuf2.view().empty());
+        assert(stream.view() == init_value);
     }
 };
 
