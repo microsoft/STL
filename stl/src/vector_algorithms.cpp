@@ -930,7 +930,7 @@ namespace {
             return _mm_loadu_ps(reinterpret_cast<const float*>(_Src));
         }
 
-        static __m128 _Sign_correction(const __m128 _Val, const bool) noexcept {
+        static __m128 _Sign_correction(const __m128 _Val, bool) noexcept {
             return _Val;
         }
 
@@ -1021,7 +1021,7 @@ namespace {
             return _mm_loadu_pd(reinterpret_cast<const double*>(_Src));
         }
 
-        static __m128d _Sign_correction(const __m128d _Val, const bool) noexcept {
+        static __m128d _Sign_correction(const __m128d _Val, bool) noexcept {
             return _Val;
         }
 
