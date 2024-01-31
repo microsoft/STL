@@ -544,6 +544,7 @@ struct slash_test_case {
 };
 
 constexpr slash_test_case slashTestCases[] = {
+    {L""sv, L""sv, L""sv},
     {L"relative"sv, L"other"sv, LR"(relative\other)"sv},
     {L"//server"sv, L"share"sv, LR"(//server\share)"sv},
     {L"//server/"sv, L"share"sv, LR"(//server/share)"sv},
@@ -555,6 +556,7 @@ constexpr slash_test_case slashTestCases[] = {
     {L""sv, L"cat"sv, L"cat"sv},
     {L"./"sv, L"cat"sv, L"./cat"sv}, // original test case catching a bug in the above
     {L"c:"sv, L""sv, L"c:"sv},
+    {L"c:"sv, L"dog"sv, L"c:dog"sv},
     {L"c:cat"sv, L"/dog"sv, L"c:/dog"sv},
     {L"c:/cat"sv, L"/dog"sv, L"c:/dog"sv},
     {L"c:cat"sv, L"c:dog"sv, LR"(c:cat\dog)"sv},
@@ -568,13 +570,23 @@ constexpr slash_test_case slashTestCases[] = {
 bool run_slash_test_case(const slash_test_case& testCase) {
     path p(testCase.a);
     p /= testCase.b;
-    if (p.native() == testCase.expected) {
-        return true;
+
+    if (p.native() != testCase.expected) {
+        wcerr << L"With operator/=, expected " << testCase.a << L" / " << testCase.b << L" to be " << testCase.expected
+              << L" but it was " << p.native() << L"\n";
+        return false;
     }
 
-    wcerr << L"Expected " << testCase.a << L" / " << testCase.b << L" to be " << testCase.expected << L" but it was "
-          << p.native() << L"\n";
-    return false;
+    // Also test operator/, which was optimized by GH-4136.
+    p = path{testCase.a} / path{testCase.b};
+
+    if (p.native() != testCase.expected) {
+        wcerr << L"With operator/, expected " << testCase.a << L" / " << testCase.b << L" to be " << testCase.expected
+              << L" but it was " << p.native() << L"\n";
+        return false;
+    }
+
+    return true;
 }
 
 void test_iterators() {
