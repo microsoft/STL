@@ -198,7 +198,7 @@ void test_min_max_element_floating(mt19937_64& gen) {
     input.reserve(dataCount);
     test_case_min_max_element(input);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        input.push_back(static_cast<T>(input_of_input[idx_dis(gen)]));
+        input.push_back(input_of_input[idx_dis(gen)]);
         test_case_min_max_element(input);
     }
 }
