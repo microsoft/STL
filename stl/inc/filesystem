@@ -1377,6 +1377,35 @@ namespace filesystem {
 #endif // ^^^ !_HAS_CXX20 ^^^
 
         _NODISCARD_FRIEND path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
+            const auto _Right_size  = _Right._Text.size();
+            const auto _Right_first = _Right._Text.data();
+            const auto _Right_last  = _Right_first + _Right_size;
+
+            // Handle the most common case: !has_root_name(_Right) && !has_root_directory(_Right)
+            if (_Right_size != 0 && !_Has_drive_letter_prefix(_Right_first, _Right_last) && !_Is_slash(*_Right_first)) {
+                const auto _Left_size  = _Left._Text.size();
+                const auto _Left_first = _Left._Text.data();
+                const auto _Left_last  = _Left_first + _Left_size;
+
+                // Appending a slash to "X:" would make it an absolute path
+                const bool _Left_is_just_drive = _Left_size == 2 && _Is_drive_prefix(_Left_first);
+                const bool _Is_slash_needed    = _Left_size != 0 && !_Left_is_just_drive && !_Is_slash(_Left_last[-1]);
+
+                const auto _Total_size = _Left_size + static_cast<size_t>(_Is_slash_needed) + _Right_size;
+
+                path _Tmp;
+                _Tmp._Text._Resize_and_overwrite(_Total_size, [=](wchar_t* _Ptr, const size_t _Size) {
+                    _CSTD memcpy(_Ptr, _Left_first, _Left_size * sizeof(wchar_t));
+                    _Ptr += _Left_size;
+                    if (_Is_slash_needed) {
+                        *_Ptr++ = preferred_separator;
+                    }
+                    _CSTD memcpy(_Ptr, _Right_first, _Right_size * sizeof(wchar_t));
+                    return _Size;
+                });
+                return _Tmp;
+            }
+
             path _Tmp = _Left;
             _Tmp /= _Right;
             return _Tmp;
@@ -2505,6 +2534,8 @@ namespace filesystem {
     _EXPORT_STD enum class directory_options { none = 0, follow_directory_symlink = 1, skip_permission_denied = 2 };
     _BITMASK_OPS(_EXPORT_STD, directory_options)
 
+    _EXPORT_STD _NODISCARD inline bool exists(const path& _Target, error_code& _Ec) noexcept;
+
     struct _Dir_enum_impl {
         _NODISCARD static __std_win_error _Advance_and_reset_if_no_more_files(shared_ptr<_Dir_enum_impl>& _Ptr) {
             auto& _Impl = *_Ptr;
@@ -2543,6 +2574,7 @@ namespace filesystem {
                 return __std_win_error::_File_not_found;
             }
 
+            const path _Original_path = _Path;
             _Path /= L"*"sv;
             auto _Error = _Dir._Open(_Path.c_str(), &_Data);
             if (_Error == __std_win_error::_Success) {
@@ -2552,6 +2584,13 @@ namespace filesystem {
             if (_Error == __std_win_error::_Access_denied
                 && _Bitmask_includes_any(_Options_arg, directory_options::skip_permission_denied)) {
                 _Error = __std_win_error::_No_more_files;
+            } else if (_Error == __std_win_error::_File_not_found) {
+                error_code _Ignored; // When exists() returns true, that implies that the error_code is successful.
+                // When exists() returns false, we don't want to interfere with _Open_dir()'s behavior,
+                // as it's going to return __std_win_error::_File_not_found.
+                if (_STD filesystem::exists(_Original_path, _Ignored)) {
+                    _Error = __std_win_error::_No_more_files; // Handle empty volumes, see GH-4291
+                }
             }
 
             return _Error;

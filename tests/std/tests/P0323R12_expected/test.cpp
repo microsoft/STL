@@ -17,6 +17,8 @@ using namespace std;
 enum class IsDefaultConstructible : bool { Not, Yes };
 enum class IsTriviallyCopyConstructible : bool { Not, Yes };
 enum class IsTriviallyMoveConstructible : bool { Not, Yes };
+enum class IsTriviallyCopyAssignable : bool { Not, Yes };
+enum class IsTriviallyMoveAssignable : bool { Not, Yes };
 enum class IsTriviallyDestructible : bool { Not, Yes };
 
 enum class IsNothrowConstructible : bool { Not, Yes };
@@ -1192,6 +1194,170 @@ namespace test_expected {
         test_assignment<NCC::Yes, NMC::Yes, NCA::Yes, NMA::Yes>();
     }
 
+    // Only test the triviality scenarios that occur in practice.
+    template <IsTriviallyCopyConstructible CC, IsTriviallyMoveConstructible MC, IsTriviallyCopyAssignable CA,
+        IsTriviallyMoveAssignable MA, IsTriviallyDestructible D>
+    struct TrivialityScenario {
+        static constexpr auto CopyCtorTriviality   = CC;
+        static constexpr auto MoveCtorTriviality   = MC;
+        static constexpr auto CopyAssignTriviality = CA;
+        static constexpr auto MoveAssignTriviality = MA;
+        static constexpr auto DtorTriviality       = D;
+    };
+
+    // No operations are trivial.
+    using TrivialityScenario1 = TrivialityScenario<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+        IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Not>;
+
+    // Only destruction is trivial.
+    using TrivialityScenario2 = TrivialityScenario<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Not,
+        IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>;
+
+    // Only destruction and move construction are trivial.
+    using TrivialityScenario3 = TrivialityScenario<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+        IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>;
+
+    // Only destruction and move construction/assignment are trivial.
+    using TrivialityScenario4 = TrivialityScenario<IsTriviallyCopyConstructible::Not, IsTriviallyMoveConstructible::Yes,
+        IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>;
+
+    // Only destruction and copy/move construction are trivial.
+    using TrivialityScenario5 = TrivialityScenario<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+        IsTriviallyCopyAssignable::Not, IsTriviallyMoveAssignable::Not, IsTriviallyDestructible::Yes>;
+
+    // All operations are trivial.
+    using TrivialityScenario6 = TrivialityScenario<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
+        IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>;
+
+    // per LWG-4026, see also LLVM-74768
+    template <class PODType, class Scenario>
+    struct TrivialityTester {
+        PODType val{};
+
+        TrivialityTester() = default;
+
+        constexpr explicit TrivialityTester(PODType v) noexcept : val{v} {}
+
+        constexpr TrivialityTester(const TrivialityTester& other) noexcept : val{other.val} {}
+        constexpr TrivialityTester(const TrivialityTester&)
+            requires (Scenario::CopyCtorTriviality == IsTriviallyCopyConstructible::Yes)
+        = default;
+
+        constexpr TrivialityTester(TrivialityTester&& other) noexcept : val{other.val} {}
+        TrivialityTester(TrivialityTester&&)
+            requires (Scenario::MoveCtorTriviality == IsTriviallyMoveConstructible::Yes)
+        = default;
+
+        constexpr TrivialityTester& operator=(const TrivialityTester& other) noexcept {
+            val = other.val;
+            return *this;
+        }
+        TrivialityTester& operator=(const TrivialityTester&)
+            requires (Scenario::CopyAssignTriviality == IsTriviallyCopyAssignable::Yes)
+        = default;
+
+        constexpr TrivialityTester& operator=(TrivialityTester&& other) noexcept {
+            val = other.val;
+            return *this;
+        }
+        TrivialityTester& operator=(TrivialityTester&&)
+            requires (Scenario::MoveAssignTriviality == IsTriviallyMoveAssignable::Yes)
+        = default;
+
+        constexpr ~TrivialityTester() {}
+        ~TrivialityTester()
+            requires (Scenario::DtorTriviality == IsTriviallyDestructible::Yes)
+        = default;
+    };
+
+    template <class Val1, class OtherScenario>
+    constexpr void test_triviality_of_assignment_binary() {
+        using Val2 = TrivialityTester<char, OtherScenario>;
+        using E    = expected<Val1, Val2>;
+
+        static_assert(is_trivially_copy_assignable_v<E>
+                      == (is_trivially_copy_constructible_v<Val1> && is_trivially_copy_assignable_v<Val1>
+                          && is_trivially_destructible_v<Val1> && is_trivially_copy_constructible_v<Val2>
+                          && is_trivially_copy_assignable_v<Val2> && is_trivially_destructible_v<Val2>) );
+        static_assert(is_trivially_move_assignable_v<E>
+                      == (is_trivially_move_constructible_v<Val1> && is_trivially_move_assignable_v<Val1>
+                          && is_trivially_destructible_v<Val1> && is_trivially_move_constructible_v<Val2>
+                          && is_trivially_move_assignable_v<Val2> && is_trivially_destructible_v<Val2>) );
+
+        {
+            E e1{Val1{42}};
+            E e2{unexpect, Val2{'^'}};
+            e1 = e2;
+            assert(!e1.has_value());
+            assert(e1.error().val == '^');
+        }
+        {
+            E e1{Val1{42}};
+            E e2{unexpect, Val2{'^'}};
+            e1 = move(e2);
+            assert(!e1.has_value());
+            assert(e1.error().val == '^');
+        }
+        {
+            E e1{Val1{42}};
+            E e2{unexpect, Val2{'^'}};
+            e2 = e1;
+            assert(e2.has_value());
+            assert(e2.value().val == 42);
+        }
+        {
+            E e1{Val1{42}};
+            E e2{unexpect, Val2{'^'}};
+            e2 = move(e1);
+            assert(e2.has_value());
+            assert(e2.value().val == 42);
+        }
+    }
+
+    template <class Scenario>
+    constexpr void test_triviality_of_assignment() {
+        using Val = TrivialityTester<int, Scenario>;
+        using E   = expected<void, Val>;
+
+        static_assert(is_trivially_copy_assignable_v<E>
+                      == (is_trivially_copy_constructible_v<Val> && is_trivially_copy_assignable_v<Val>
+                          && is_trivially_destructible_v<Val>) );
+        static_assert(is_trivially_move_assignable_v<E>
+                      == (is_trivially_move_constructible_v<Val> && is_trivially_move_assignable_v<Val>
+                          && is_trivially_destructible_v<Val>) );
+
+        {
+            E e1{};
+            E e2{unexpect, Val{42}};
+            e1 = e2;
+            assert(!e1.has_value());
+            assert(e1.error().val == 42);
+        }
+        {
+            E e1{};
+            E e2{unexpect, Val{42}};
+            e1 = move(e2);
+            assert(!e1.has_value());
+            assert(e1.error().val == 42);
+        }
+
+        test_triviality_of_assignment_binary<Val, TrivialityScenario1>();
+        test_triviality_of_assignment_binary<Val, TrivialityScenario2>();
+        test_triviality_of_assignment_binary<Val, TrivialityScenario3>();
+        test_triviality_of_assignment_binary<Val, TrivialityScenario4>();
+        test_triviality_of_assignment_binary<Val, TrivialityScenario5>();
+        test_triviality_of_assignment_binary<Val, TrivialityScenario6>();
+    }
+
+    constexpr void test_triviality_of_assignment_all() {
+        test_triviality_of_assignment<TrivialityScenario1>();
+        test_triviality_of_assignment<TrivialityScenario2>();
+        test_triviality_of_assignment<TrivialityScenario3>();
+        test_triviality_of_assignment<TrivialityScenario4>();
+        test_triviality_of_assignment<TrivialityScenario5>();
+        test_triviality_of_assignment<TrivialityScenario6>();
+    }
+
     constexpr void test_emplace() noexcept {
         struct payload_emplace {
             constexpr payload_emplace(bool& destructor_called) noexcept : _destructor_called(destructor_called) {}
@@ -2026,6 +2192,7 @@ namespace test_expected {
         test_special_members();
         test_constructors();
         test_assignment();
+        test_triviality_of_assignment_all(); // per LWG-4026, see also LLVM-74768
         test_emplace();
         test_swap();
         test_access();

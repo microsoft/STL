@@ -1527,7 +1527,17 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_IO_PFX_SFX
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4046
+#if _HAS_CXX17 && !defined(_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_TR1_RANDOM_DEPRECATION_WARNING) && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
+#define _DEPRECATE_TR1_RANDOM                                                                                          \
+    [[deprecated("warning STL4046: Non-Standard TR1 components in <random> are deprecated and will be REMOVED. You "   \
+                 "can define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING, _SILENCE_TR1_RANDOM_DEPRECATION_WARNING, or " \
+                 "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_TR1_RANDOM
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4047
 
 // next error number: STL1006
 
