@@ -1288,6 +1288,7 @@ namespace {
             }
         }
 #endif // !_M_ARM64EC
+
         if constexpr (_Traits::_Is_floating) {
             if constexpr (_Mode == _Mode_min) {
                 return _Min_tail(_First, _Last, _Res._Min, _Cur_min_val);
