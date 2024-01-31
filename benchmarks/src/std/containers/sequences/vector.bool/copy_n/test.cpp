@@ -4,7 +4,6 @@
 #include <benchmark/benchmark.h>
 //
 #include <algorithm>
-#include <cstddef>
 #include <random>
 #include <vector>
 
@@ -18,7 +17,7 @@ static vector<bool> createRandomVector(const size_t size) {
 }
 
 static void copy_n_block_aligned(benchmark::State& state) {
-    const auto size           = static_cast<size_t>(state.range(0));
+    const auto size           = state.range(0);
     const vector<bool> source = createRandomVector(size);
     vector<bool> dest(size, false);
 
@@ -28,7 +27,7 @@ static void copy_n_block_aligned(benchmark::State& state) {
 }
 
 static void copy_n_source_misaligned(benchmark::State& state) {
-    const auto size           = static_cast<size_t>(state.range(0));
+    const auto size           = state.range(0);
     const vector<bool> source = createRandomVector(size);
     vector<bool> dest(size, false);
 
@@ -38,7 +37,7 @@ static void copy_n_source_misaligned(benchmark::State& state) {
 }
 
 static void copy_n_dest_misaligned(benchmark::State& state) {
-    const auto size           = static_cast<size_t>(state.range(0));
+    const auto size           = state.range(0);
     const vector<bool> source = createRandomVector(size);
     vector<bool> dest(size, false);
 
@@ -49,7 +48,7 @@ static void copy_n_dest_misaligned(benchmark::State& state) {
 
 // Special benchmark for matching char alignment
 static void copy_n_matching_alignment(benchmark::State& state) {
-    const auto size           = static_cast<size_t>(state.range(0));
+    const auto size           = state.range(0);
     const vector<bool> source = createRandomVector(size);
     vector<bool> dest(size, false);
 
