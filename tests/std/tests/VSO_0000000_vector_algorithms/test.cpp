@@ -180,7 +180,7 @@ void test_min_max_element(mt19937_64& gen) {
 
 template <class T>
 void test_min_max_element_floating(mt19937_64& gen) {
-    normal_distribution<T> dis(0.0, 100000.0);
+    normal_distribution<T> dis(-100000.0, 100000.0);
 
     constexpr auto input_of_input_size = dataCount / 2;
     vector<T> input_of_input(input_of_input_size);
