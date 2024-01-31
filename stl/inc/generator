@@ -210,7 +210,7 @@ public:
     }
 
     _NODISCARD auto yield_value(const remove_reference_t<_Yielded>& _Val) noexcept(
-        is_nothrow_constructible_v<remove_cvref_t<_Yielded>, const remove_reference_t<_Yielded>&>)
+        is_nothrow_constructible_v<remove_cvref_t<_Yielded>, const remove_reference_t<_Yielded>&>) /* strengthened */
         requires (is_rvalue_reference_v<_Yielded>
                   && constructible_from<remove_cvref_t<_Yielded>, const remove_reference_t<_Yielded>&>)
     {
@@ -225,7 +225,7 @@ public:
 
     template <_RANGES input_range _Rng, class _Alloc>
         requires convertible_to<_RANGES range_reference_t<_Rng>, _Yielded>
-    _NODISCARD auto yield_value(_RANGES elements_of<_Rng, _Alloc> _Elem) noexcept {
+    _NODISCARD auto yield_value(_RANGES elements_of<_Rng, _Alloc> _Elem) {
         using _Vty = _RANGES range_value_t<_Rng>;
         return _Nested_awaitable<_Yielded, _Vty, _Alloc>{
             [](allocator_arg_t, _Alloc, _RANGES iterator_t<_Rng> _It,
@@ -238,7 +238,7 @@ public:
 
     void await_transform() = delete;
 
-    void return_void() noexcept {}
+    void return_void() const noexcept {}
 
     void unhandled_exception() {
         if (_Info) {
@@ -362,7 +362,7 @@ public:
         return *this;
     }
 
-    _NODISCARD _Ref operator*() const noexcept {
+    _NODISCARD _Ref operator*() const noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Top.promise()._Ptr))) {
         _STL_ASSERT(!_Coro.done(), "Can't dereference generator end iterator");
         return static_cast<_Ref>(*_Coro.promise()._Top.promise()._Ptr);
     }
@@ -377,8 +377,9 @@ public:
         ++*this;
     }
 
-    _NODISCARD bool operator==(default_sentinel_t) const noexcept {
-        return _Coro.done();
+    _NODISCARD_FRIEND bool operator==(const _Gen_iter& _It, default_sentinel_t) noexcept /* strengthened */
+    {
+        return _It._Coro.done();
     }
 
 private:
