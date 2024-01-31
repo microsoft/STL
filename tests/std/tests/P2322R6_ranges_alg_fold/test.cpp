@@ -283,7 +283,7 @@ int main() {
     STATIC_ASSERT((test_bidi<instantiator, const double>(), true));
     test_bidi<instantiator, const double>();
 
-#if !(defined(_DEBUG) && defined(__EDG__)) // TRANSITION, not yet reported, see also GH-1566
+#if !(defined(_DEBUG) && defined(__EDG__)) // TRANSITION, VSO-1949414, see also GH-1566
     STATIC_ASSERT(instantiator::non_dependent());
 #endif // !(defined(_DEBUG) && defined(__EDG__))
     instantiator::non_dependent();
