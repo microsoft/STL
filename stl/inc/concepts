@@ -122,14 +122,14 @@ namespace ranges {
         struct _Cpo {
             template <class _Ty1, class _Ty2>
                 requires _Use_ADL_swap<_Ty1, _Ty2>
-            constexpr void operator()(_Ty1&& __t, _Ty2&& __u) const
+            constexpr _STATIC_CALL_OPERATOR void operator()(_Ty1&& __t, _Ty2&& __u) _CONST_CALL_OPERATOR
                 noexcept(noexcept(swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u)))) { // intentional ADL
                 swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u)); // intentional ADL
             }
 
             template <class _Ty>
                 requires (!_Use_ADL_swap<_Ty&, _Ty&> && move_constructible<_Ty> && assignable_from<_Ty&, _Ty>)
-            constexpr void operator()(_Ty& __x, _Ty& __y) const
+            constexpr _STATIC_CALL_OPERATOR void operator()(_Ty& __x, _Ty& __y) _CONST_CALL_OPERATOR
                 noexcept(is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_assignable_v<_Ty>) {
                 _Ty __tmp(static_cast<_Ty&&>(__x));
                 __x = static_cast<_Ty&&>(__y);
@@ -137,11 +137,11 @@ namespace ranges {
             }
 
             template <class _Ty1, class _Ty2, size_t _Size>
-            constexpr void operator()(_Ty1 (&__t)[_Size], _Ty2 (&__u)[_Size]) const
-                noexcept(noexcept((*this)(__t[0], __u[0])))
-                requires requires { (*this)(__t[0], __u[0]); } {
+            constexpr _STATIC_CALL_OPERATOR void operator()(_Ty1 (&__t)[_Size], _Ty2 (&__u)[_Size]) _CONST_CALL_OPERATOR
+                noexcept(noexcept(operator()(__t[0], __u[0])))
+                requires requires { operator()(__t[0], __u[0]); } {
                 for (size_t __i = 0; __i < _Size; ++__i) {
-                    (*this)(__t[__i], __u[__i]);
+                    operator()(__t[__i], __u[__i]);
                 }
             }
         };

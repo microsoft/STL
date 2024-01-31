@@ -414,8 +414,8 @@ namespace _Strong_order {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr strong_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr strong_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Adl) {
                 return static_cast<strong_ordering>(strong_order(_Left, _Right)); // intentional ADL
@@ -521,8 +521,8 @@ namespace _Weak_order {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr weak_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr weak_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Adl) {
                 return static_cast<weak_ordering>(weak_order(_Left, _Right)); // intentional ADL
@@ -652,8 +652,8 @@ namespace _Partial_order {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr partial_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr partial_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Adl) {
                 return static_cast<partial_ordering>(/* ADL */ partial_order(_Left, _Right));
@@ -714,8 +714,8 @@ namespace _Compare_strong_order_fallback {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr strong_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr strong_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Strong) {
                 return _STD strong_order(_Left, _Right);
@@ -764,8 +764,8 @@ namespace _Compare_weak_order_fallback {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr weak_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr weak_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Weak) {
                 return _STD weak_order(_Left, _Right);
@@ -822,8 +822,8 @@ namespace _Compare_partial_order_fallback {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr partial_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr partial_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Partial) {
                 return _STD partial_order(_Left, _Right);

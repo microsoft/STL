@@ -646,7 +646,8 @@ namespace ranges {
         public:
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) const noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr decltype(auto) operator()(_Ty && _Val) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
@@ -987,7 +988,8 @@ namespace ranges {
         public:
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1, _Ty2>._Strategy != _St::_None)
-            constexpr void operator()(_Ty1&& _Val1, _Ty2&& _Val2) const noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
+            constexpr _STATIC_CALL_OPERATOR void operator()(_Ty1&& _Val1, _Ty2&& _Val2) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty1, _Ty2>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
@@ -2379,7 +2381,8 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Array) {
@@ -2454,7 +2457,8 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Array) {
@@ -2592,7 +2596,8 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -2642,7 +2647,8 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -2708,13 +2714,13 @@ namespace ranges {
                 typename const_iterator<_Begin_on_const<_Ty>>;
                 const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
             }
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR noexcept(
             noexcept(const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES begin(static_cast<_CTy&&>(_Val))))
             requires requires { _RANGES begin(static_cast<_CTy&&>(_Val)); }
         {
@@ -2738,13 +2744,13 @@ namespace ranges {
                 typename const_sentinel<_End_on_const<_Ty>>;
                 const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
             }
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES end(static_cast<_CTy&&>(_Val))))
             requires requires { _RANGES end(static_cast<_CTy&&>(_Val)); }
         {
@@ -2805,7 +2811,8 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -2875,7 +2882,8 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -2906,13 +2914,13 @@ namespace ranges {
                 typename const_iterator<_Rbegin_on_const<_Ty>>;
                 const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
             }
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR noexcept(
             noexcept(const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rbegin(static_cast<_CTy&&>(_Val))))
             requires requires { _RANGES rbegin(static_cast<_CTy&&>(_Val)); }
         {
@@ -2936,13 +2944,13 @@ namespace ranges {
                 typename const_sentinel<_Rend_on_const<_Ty>>;
                 const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
             }
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rend(static_cast<_CTy&&>(_Val))))
             requires requires { _RANGES rend(static_cast<_CTy&&>(_Val)); }
         {
@@ -3015,7 +3023,8 @@ namespace ranges {
         public:
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Array) {
@@ -3080,7 +3089,8 @@ namespace ranges {
         public:
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr bool operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -3136,7 +3146,8 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+                noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -3160,13 +3171,13 @@ namespace ranges {
             requires requires(_Ty& _Val) { //
                 _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
             }
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val)))) {
             return _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
         }
 #else // ^^^ C++23 / C++20 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES data(static_cast<_CTy&&>(_Val))))
             requires requires { _RANGES data(static_cast<_CTy&&>(_Val)); }
         {
@@ -3362,7 +3373,8 @@ namespace ranges {
     class _Ssize_fn {
     public:
         template <class _Rng>
-        _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(noexcept(_RANGES size(_Range)))
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
+            noexcept(noexcept(_RANGES size(_Range)))
             requires requires { _RANGES size(_Range); }
         {
             using _Sty = _Make_signed_like_t<decltype(_RANGES size(_Range))>;
