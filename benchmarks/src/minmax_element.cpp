@@ -28,7 +28,7 @@ void bm(benchmark::State& state) {
         ranges::generate(a, [&] { return dis(gen); });
     } else {
         uniform_int_distribution<conditional_t<sizeof(T) != 1, T, int>> dis(1, 20);
-        ranges::generate(a, [&] { return dis(gen); });
+        ranges::generate(a, [&] { return static_cast<T>(dis(gen)); });
     }
 
     for (auto _ : state) {

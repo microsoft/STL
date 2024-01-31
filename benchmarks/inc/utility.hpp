@@ -18,6 +18,11 @@ std::vector<Contained> random_vector(size_t n) {
     xoshiro256ss prng{id64(rd), id64(rd), id64(rd), id64(rd)};
 
     std::vector<Contained> res(n);
+
+#pragma warning(push)
+#pragma warning(disable : 4244) // conversion from 'uint64_t' to 'Contained', possible loss of data
     std::generate(res.begin(), res.end(), [&prng] { return static_cast<Contained>(prng.next()); });
+#pragma warning(pop)
+
     return res;
 }
