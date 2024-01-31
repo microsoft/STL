@@ -139,7 +139,7 @@ namespace ranges {
             template <class _Ty1, class _Ty2, size_t _Size>
             constexpr _STATIC_CALL_OPERATOR void operator()(_Ty1 (&__t)[_Size], _Ty2 (&__u)[_Size]) _CONST_CALL_OPERATOR
                 noexcept(noexcept(operator()(__t[0], __u[0])))
-                requires requires { operator()(__t[0], __u[0]); } {
+                requires requires(_Cpo __fn) { __fn(__t[0], __u[0]); } {
                 for (size_t __i = 0; __i < _Size; ++__i) {
                     operator()(__t[__i], __u[__i]);
                 }
