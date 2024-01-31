@@ -263,6 +263,48 @@ void test_algorithms() {
     // (void) std::shift_right(varr, varr, 0); // requires Cpp17ValueSwappable
 #endif // _HAS_CXX20
 
+    int iarr3[1]{};
+    validator varr3[1]{};
+
+    (void) std::merge(varr, varr, varr2, varr2, varr3);
+    (void) std::merge(iarr, iarr, iarr2, iarr2, iarr3, validating_less{});
+
+    // std::inplace_merge(varr, varr, varr); // requires Cpp17ValueSwappable
+    std::inplace_merge(iarr, iarr, iarr, validating_less{});
+
+    (void) std::includes(varr, varr, varr, varr);
+    (void) std::includes(iarr, iarr, iarr, iarr, validating_less{});
+
+    (void) std::set_union(varr, varr, varr, varr, varr3);
+    (void) std::set_union(iarr, iarr, iarr, iarr, iarr3, validating_less{});
+
+    (void) std::set_intersection(varr, varr, varr, varr, varr3);
+    (void) std::set_intersection(iarr, iarr, iarr, iarr, iarr3, validating_less{});
+
+    (void) std::set_difference(varr, varr, varr, varr, varr3);
+    (void) std::set_difference(iarr, iarr, iarr, iarr, iarr3, validating_less{});
+
+    (void) std::set_symmetric_difference(varr, varr, varr, varr, varr3);
+    (void) std::set_symmetric_difference(iarr, iarr, iarr, iarr, iarr3, validating_less{});
+
+    std::push_heap(varr3, varr3 + 1); // requires Cpp17ValueSwappable
+    std::push_heap(iarr3, iarr3 + 1, validating_less{});
+
+    std::pop_heap(varr3, varr3 + 1); // requires Cpp17ValueSwappable
+    std::pop_heap(iarr3, iarr3 + 1, validating_less{});
+
+    std::make_heap(varr3, varr3 + 1); // requires Cpp17ValueSwappable
+    std::make_heap(iarr3, iarr3 + 1, validating_less{});
+
+    std::sort_heap(varr3, varr3 + 1); // requires Cpp17ValueSwappable
+    std::sort_heap(iarr3, iarr3 + 1, validating_less{});
+
+    (void) std::is_heap(varr3, varr3 + 1);
+    (void) std::is_heap(iarr3, iarr3 + 1, validating_less{});
+
+    (void) std::is_heap_until(varr3, varr3 + 1);
+    (void) std::is_heap_until(iarr3, iarr3 + 1, validating_less{});
+
     (void) std::min(+varr, +varr);
     (void) std::min(+iarr, +iarr, validating_less{});
     (void) std::min({+varr, +varr});
@@ -299,6 +341,12 @@ void test_algorithms() {
     (void) std::lexicographical_compare_three_way(varr, varr, varr, varr);
     (void) std::lexicographical_compare_three_way(iarr, iarr, iarr, iarr, validating_compare_three_way{});
 #endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
+
+    // (void) std::next_permutation(varr, varr); // requires Cpp17ValueSwappable
+    (void) std::next_permutation(iarr, iarr, validating_less{});
+
+    // (void) std::prev_permutation(varr, varr); // requires Cpp17ValueSwappable
+    (void) std::prev_permutation(iarr, iarr, validating_less{});
 }
 
 #if _HAS_CXX17
@@ -430,6 +478,36 @@ void test_per_execution_policy() {
 
     // (void) std::shift_right(ExecutionPolicy, varr, varr, 0); // requires Cpp17ValueSwappable
 #endif // _HAS_CXX20
+
+    int iarr3[2]{};
+    validator varr3[2]{};
+
+    (void) std::merge(ExecutionPolicy, varr, varr, varr2, varr2, varr3);
+    (void) std::merge(ExecutionPolicy, iarr, iarr, iarr2, iarr2, iarr3, validating_less{});
+
+    // std::inplace_merge(ExecutionPolicy, varr, varr, varr); // requires Cpp17ValueSwappable
+    std::inplace_merge(ExecutionPolicy, iarr, iarr, iarr, validating_less{});
+
+    (void) std::includes(ExecutionPolicy, varr, varr, varr, varr);
+    (void) std::includes(ExecutionPolicy, iarr, iarr, iarr, iarr, validating_less{});
+
+    (void) std::set_union(ExecutionPolicy, varr, varr, varr, varr, varr3);
+    (void) std::set_union(ExecutionPolicy, iarr, iarr, iarr, iarr, iarr3, validating_less{});
+
+    (void) std::set_intersection(ExecutionPolicy, varr, varr, varr, varr, varr3);
+    (void) std::set_intersection(ExecutionPolicy, iarr, iarr, iarr, iarr, iarr3, validating_less{});
+
+    (void) std::set_difference(ExecutionPolicy, varr, varr, varr, varr, varr3);
+    (void) std::set_difference(ExecutionPolicy, iarr, iarr, iarr, iarr, iarr3, validating_less{});
+
+    (void) std::set_symmetric_difference(ExecutionPolicy, varr, varr, varr, varr, varr3);
+    (void) std::set_symmetric_difference(ExecutionPolicy, iarr, iarr, iarr, iarr, iarr3, validating_less{});
+
+    (void) std::is_heap(ExecutionPolicy, varr3, varr3 + 1);
+    (void) std::is_heap(ExecutionPolicy, iarr3, iarr3 + 1, validating_less{});
+
+    (void) std::is_heap_until(ExecutionPolicy, varr3, varr3 + 1);
+    (void) std::is_heap_until(ExecutionPolicy, iarr3, iarr3 + 1, validating_less{});
 
     (void) std::min_element(ExecutionPolicy, varr, varr + 1);
     (void) std::min_element(ExecutionPolicy, iarr, iarr + 1, validating_less{});
