@@ -18,6 +18,15 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#if _USE_STD_VECTOR_ALGORITHMS
+extern "C" {
+__declspec(noalias) void __stdcall __std_bitset_to_string_1(
+    char* _Dest, const void* _Src, size_t _Size_bits, char _Elem0, char _Elem1) noexcept;
+__declspec(noalias) void __stdcall __std_bitset_to_string_2(
+    wchar_t* _Dest, const void* _Src, size_t _Size_bits, wchar_t _Elem0, wchar_t _Elem1) noexcept;
+} // extern "C"
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
 _STD_BEGIN
 _EXPORT_STD template <size_t _Bits>
 class bitset { // store fixed-length sequence of Boolean elements
@@ -348,6 +357,23 @@ public:
         // convert bitset to string
         basic_string<_Elem, _Tr, _Alloc> _Str;
         _Str._Resize_and_overwrite(_Bits, [this, _Elem0, _Elem1](_Elem* _Buf, size_t _Len) {
+#if _USE_STD_VECTOR_ALGORITHMS
+            constexpr size_t _Bitset_vector_threshold = 32;
+            if constexpr (_Bits >= _Bitset_vector_threshold && is_integral_v<_Elem> && sizeof(_Elem) <= 2) {
+                if (!_Is_constant_evaluated()) {
+                    if constexpr (sizeof(_Elem) == 1) {
+                        __std_bitset_to_string_1(reinterpret_cast<char*>(_Buf), _Array, _Len, static_cast<char>(_Elem0),
+                            static_cast<char>(_Elem1));
+                    } else {
+                        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Elem) == 2);
+                        __std_bitset_to_string_2(reinterpret_cast<wchar_t*>(_Buf), _Array, _Len,
+                            static_cast<wchar_t>(_Elem0), static_cast<wchar_t>(_Elem1));
+                    }
+                    return _Len;
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
             for (size_t _Pos = 0; _Pos < _Len; ++_Pos) {
                 _Buf[_Pos] = _Subscript(_Len - 1 - _Pos) ? _Elem1 : _Elem0;
             }
