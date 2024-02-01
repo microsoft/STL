@@ -700,7 +700,7 @@ struct is_trivial : bool_constant<__is_trivial(_Ty)> {}; // determine whether _T
 
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_trivial_v = __is_trivial(_Ty);
-#endif // TRANSITION
+#endif // ^^^ no workaround ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_trivially_copyable : bool_constant<__is_trivially_copyable(_Ty)> {

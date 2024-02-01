@@ -177,7 +177,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
     } else {
         return static_cast<int>(_CountLeadingZeros64(_Val));
     }
-#endif // TRANSITION, GH-1586
+#endif // ^^^ no workaround ^^^
 }
 #endif // defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #endif // _HAS_COUNTL_ZERO_INTRINSICS
