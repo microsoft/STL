@@ -214,7 +214,7 @@ template <class _PairLike, class _Ty1, class _Ty2>
 concept _Can_construct_from_pair_like = _Pair_like<_PairLike> && !_Is_subrange_v<remove_cvref_t<_PairLike>>
                                      && is_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_PairLike>()))>
                                      && is_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_PairLike>()))>;
-#endif // defined(__clang__) || defined(__EDG__)
+#endif // ^^^ workaround ^^^
 #endif // _HAS_CXX23
 #endif // defined(__cpp_lib_concepts)
 

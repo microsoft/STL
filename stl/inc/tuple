@@ -195,7 +195,7 @@ concept _Can_construct_from_tuple_like =
     && (tuple_size_v<_Tuple> != 1
         || (!is_convertible_v<_TupleLike, tuple_element_t<0, _Tuple>>
             && !is_constructible_v<tuple_element_t<0, _Tuple>, _TupleLike>) );
-#endif // defined(__clang__) || defined(__EDG__)
+#endif // ^^^ workaround ^^^
 
 template <class _TTuple, class _UTuple, class _Indices = make_index_sequence<tuple_size_v<_UTuple>>>
 struct _Three_way_comparison_result_with_tuple_like {};
