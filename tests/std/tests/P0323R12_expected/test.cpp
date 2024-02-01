@@ -201,6 +201,7 @@ namespace test_expected {
 
     template <IsDefaultConstructible defaultConstructible>
     constexpr void test_default_constructors() {
+#ifndef __EDG__ // TRANSITION, VSO-1898929
         constexpr bool should_be_defaultable = IsYes(defaultConstructible);
 
         struct payload_default_constructor {
@@ -225,11 +226,13 @@ namespace test_expected {
             assert(defaulted);
             assert(defaulted.value() == 42);
         }
+#endif // !defined(__EDG__)
     }
 
     template <IsTriviallyCopyConstructible triviallyCopyConstructible,
         IsNothrowCopyConstructible nothrowCopyConstructible>
     constexpr void test_copy_constructors() {
+#ifndef __EDG__ // TRANSITION, VSO-1898929
         constexpr bool should_be_trivial  = IsYes(triviallyCopyConstructible);
         constexpr bool should_be_noexcept = should_be_trivial || IsYes(nothrowCopyConstructible);
 
@@ -300,6 +303,7 @@ namespace test_expected {
             assert(from_error.error() == (should_be_trivial ? 0 : 42));
             static_assert(noexcept(Expected{with_error}) == should_be_noexcept);
         }
+#endif // !defined(__EDG__)
 
         { // ensure we are not copy constructible if either the payload or the error are not
             struct not_copy_constructible {
@@ -315,6 +319,7 @@ namespace test_expected {
     template <IsTriviallyMoveConstructible triviallyMoveConstructible,
         IsNothrowMoveConstructible nothrowMoveConstructible>
     constexpr void test_move_constructors() {
+#ifndef __EDG__ // TRANSITION, VSO-1898929
         constexpr bool should_be_trivial  = IsYes(triviallyMoveConstructible);
         constexpr bool should_be_noexcept = should_be_trivial || IsYes(nothrowMoveConstructible);
 
@@ -386,6 +391,7 @@ namespace test_expected {
             assert(from_error.error() == (should_be_trivial ? 0 : 42));
             static_assert(noexcept(Expected{move(error_input)}) == should_be_noexcept);
         }
+#endif // !defined(__EDG__)
 
         { // ensure we are not move constructible if either the payload or the error are not
             struct not_move_constructible {
@@ -1347,9 +1353,13 @@ namespace test_expected {
         test_triviality_of_assignment<TrivialityScenario1>();
         test_triviality_of_assignment<TrivialityScenario2>();
         test_triviality_of_assignment<TrivialityScenario3>();
+#ifndef __EDG__ // TRANSITION, VSO-1949451
         test_triviality_of_assignment<TrivialityScenario4>();
+#endif // ^^^ no workaround ^^^
         test_triviality_of_assignment<TrivialityScenario5>();
+#ifndef __EDG__ // TRANSITION, VSO-1949451
         test_triviality_of_assignment<TrivialityScenario6>();
+#endif // ^^^ no workaround ^^^
     }
 
     constexpr void test_emplace() noexcept {

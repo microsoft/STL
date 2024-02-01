@@ -191,8 +191,8 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
     assert(second >= first);
     static_assert(noexcept(first >= second)); // strengthened
 
-    assert(first <=> second < 0);
-    assert(second <=> first > 0);
+    assert((first <=> second) < 0);
+    assert((second <=> first) > 0);
     static_assert(noexcept(first <=> second)); // strengthened
 
     {
@@ -284,6 +284,10 @@ struct forward_tester {
 };
 
 struct tuple_tester {
+#ifdef __EDG__ // TRANSITION, VSO-1898933
+    template <class Arg1, class Arg2>
+    constexpr tuple_tester(Arg1&& arg1, Arg2&& arg2) : y(forward<Arg1>(arg1)), z(forward<Arg2>(arg2)) {}
+#endif // defined(__EDG__)
     forward_tester y;
     forward_tester z;
 };

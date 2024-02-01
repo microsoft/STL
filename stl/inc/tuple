@@ -186,7 +186,7 @@ template <class... _Types, class _Other, size_t... _Indices>
 inline constexpr bool _Can_construct_values_from_tuple_like_v<tuple<_Types...>, _Other, index_sequence<_Indices...>> =
     conjunction_v<is_constructible<_Types, decltype(_STD get<_Indices>(_STD declval<_Other>()))>...>;
 
-#ifdef __clang__ // TRANSITION, LLVM-59827
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 and VSO-1900279
 template <class _TupleLike, class _Tuple>
 concept _Can_construct_from_tuple_like =
     _Different_from<_TupleLike, _Tuple> && _Tuple_like<_TupleLike> && !_Is_subrange_v<remove_cvref_t<_TupleLike>>
@@ -195,16 +195,16 @@ concept _Can_construct_from_tuple_like =
     && (tuple_size_v<_Tuple> != 1
         || (!is_convertible_v<_TupleLike, tuple_element_t<0, _Tuple>>
             && !is_constructible_v<tuple_element_t<0, _Tuple>, _TupleLike>) );
-#endif // defined(__clang__)
+#endif // defined(__clang__) || defined(__EDG__)
 
 template <class _TTuple, class _UTuple, class _Indices = make_index_sequence<tuple_size_v<_UTuple>>>
 struct _Three_way_comparison_result_with_tuple_like {};
 
 template <class... _TTypes, class _UTuple, size_t... _Indices>
     requires
-#ifndef __clang__ // TRANSITION, DevCom-10265237
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10265237
     (sizeof...(_TTypes) == sizeof...(_Indices)) &&
-#endif // !defined(__clang__)
+#endif // ^^^ workaround ^^^
     (requires { typename _Synth_three_way_result<_TTypes, tuple_element_t<_Indices, _UTuple>>; } && ...)
 struct _Three_way_comparison_result_with_tuple_like<tuple<_TTypes...>, _UTuple, index_sequence<_Indices...>> {
     using type = common_comparison_category_t<_Synth_three_way_result<_TTypes, tuple_element_t<_Indices, _UTuple>>...>;
@@ -432,7 +432,7 @@ public:
         negation_v<conjunction<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _This>,
             is_convertible<decltype(_STD get<_Indices + 1>(_STD declval<_Other>())), _Rest>...>>;
 
-#ifdef __clang__ // TRANSITION, LLVM-59827
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 and VSO-1900279
     template <class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
     template <_Different_from<tuple> _Other>
@@ -540,7 +540,7 @@ public:
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
 
 #ifdef __cpp_lib_concepts
-#ifdef __clang__ // TRANSITION, LLVM-59827
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 and VSO-1900279
     template <class _Alloc, class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
     template <class _Alloc, _Different_from<tuple> _Other>

@@ -230,7 +230,7 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
 };
 
 #if _HAS_CXX20
-#ifdef __EDG__ // TRANSITION, DevCom-1691516
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1691516
 // per LWG-3888
 _EXPORT_STD template <class _Ty, class... _Types,
     class = void_t<decltype(::new(static_cast<void*>(_STD declval<_Ty*>())) _Ty(_STD declval<_Types>()...))>>
@@ -3972,6 +3972,9 @@ struct _Move_iterator_category {
 
 _EXPORT_STD template <class _Iter>
 class move_iterator : public _Move_iterator_category<_Iter> {
+private:
+    _Iter _Current{};
+
 public:
     using iterator_type   = _Iter;
     using value_type      = _Iter_value_t<_Iter>;
@@ -4211,9 +4214,6 @@ public:
     _NODISCARD constexpr iterator_type&& _Get_current() && noexcept {
         return _STD move(_Current);
     }
-
-private:
-    iterator_type _Current{};
 };
 
 _EXPORT_STD template <class _Iter1, class _Iter2>

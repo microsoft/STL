@@ -164,10 +164,12 @@ namespace test_tuple_cat {
     static_assert(CheckTupleCat<tuple<long, long, long, long>, array<long, 2>, pair<long, long>>);
     static_assert(CheckTupleCat<tuple<int, wchar_t*, wchar_t*>, array<int, 1>, subrange<wchar_t*, wchar_t*>>);
     static_assert(!CanTupleCat<void>);
+#ifndef __EDG__ // TRANSITION, VSO-1900281
     static_assert(!CanTupleCat<int>);
     static_assert(!CanTupleCat<int, tuple<int>>);
     static_assert(!CanTupleCat<int, array<int, 1>>);
     static_assert(!CanTupleCat<tuple<>, tuple<int>, int>);
+#endif // !defined(__EDG__)
 
     constexpr bool test() {
         // Test tuple_cat with empty tuple-like types

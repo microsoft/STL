@@ -57,9 +57,17 @@ namespace ranges {
     template <sized_range _Ty>
     inline constexpr auto _Compile_time_max_size<_Ty> = (numeric_limits<range_size_t<_Ty>>::max)();
 
+#ifdef __EDG__ // TRANSITION, VSO-1898880
+    template <class _Ty>
+    concept _Constant_sized_range = sized_range<_Ty> && requires { typename _Require_constant<_Ty::size()>; };
+
+    template <_Constant_sized_range _Ty>
+    inline constexpr auto _Compile_time_max_size<_Ty> = _Ty::size();
+#else // ^^^ workaround / no workaround vvv
     template <sized_range _Ty>
         requires requires { typename _Require_constant<_Ty::size()>; }
     inline constexpr auto _Compile_time_max_size<_Ty> = _Ty::size();
+#endif // ^^^ no workaround ^^^
 
     template <class _Ty, size_t _Size>
     inline constexpr auto _Compile_time_max_size<_Ty[_Size]> = _Size;
@@ -9768,7 +9776,7 @@ namespace ranges {
     template <class _Rng>
     _NODISCARD consteval int _Cartesian_product_max_size_bit_width() {
         using _Size_type = decltype(_Compile_time_max_size<_Rng>);
-        if constexpr (requires(_Size_type _Val) { _STD bit_width(_Val); }) {
+        if constexpr (requires { _STD bit_width(_Compile_time_max_size<_Rng>); }) {
             return _STD bit_width(_Compile_time_max_size<_Rng>);
         } else {
             return numeric_limits<_Size_type>::digits;
