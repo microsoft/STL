@@ -3,18 +3,18 @@
 
 #pragma once
 
-template <typename Contained>
+template <typename Data>
 struct aggregate {
-    Contained c;
+    Data c;
 
     friend bool operator==(const aggregate&, const aggregate&) = default;
 };
 
-template <typename Contained>
+template <typename Data>
 struct non_trivial {
-    Contained c;
+    Data c;
     non_trivial() : c() {}
-    non_trivial(const Contained& src) : c(src) {}
+    non_trivial(const Data& src) : c(src) {}
     non_trivial(const non_trivial& other) : c(other.c) {}
     non_trivial& operator=(const non_trivial& other) {
         c = other.c;
