@@ -563,7 +563,7 @@ constexpr void move_only_test() {
 constexpr void output_range_test() {
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1132704
     if (!is_constant_evaluated())
-#endif // TRANSITION, VSO-1132704
+#endif // ^^^ workaround ^^^
     {
         using R = test::range<output_iterator_tag, int, test::Sized::no, test::CanDifference::no, test::Common::no,
             test::CanCompare::no, test::ProxyRef::yes, test::CanView::yes, test::Copyability::move_only>;

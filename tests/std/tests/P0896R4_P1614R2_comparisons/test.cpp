@@ -426,7 +426,7 @@ constexpr void ordering_test_cases() {
     test_strongly_ordered(&some_deriveds[0], &some_deriveds[1]);
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1168721
     if (!std::is_constant_evaluated())
-#endif // TRANSITION, VSO-1168721
+#endif // ^^^ workaround ^^^
     {
         test_strongly_ordered(static_cast<base const*>(&some_deriveds[0]), &some_deriveds[1]);
         test_strongly_ordered(&some_deriveds[0], static_cast<base const*>(&some_deriveds[1]));
@@ -448,7 +448,7 @@ constexpr void ordering_test_cases() {
     test_partially_ordered(31.625f, 31.625, partial_ordering::equivalent);
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1062601
     if (!std::is_constant_evaluated())
-#endif // TRANSITION, VSO-1062601
+#endif // ^^^ workaround ^^^
     {
         test_partially_ordered(3.14, NaN, partial_ordering::unordered);
         test_partially_ordered(3.14f, NaN, partial_ordering::unordered);

@@ -1167,7 +1167,7 @@ namespace ranges {
         static constexpr bool _Nothrow_minus_equal<_Left, _Right> = true;
 
     public:
-#endif // TRANSITION, DevCom-1347136
+#endif // ^^^ workaround ^^^
 
         constexpr _Ioterator& operator+=(const difference_type _Off)
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1347136
