@@ -757,7 +757,7 @@ int main() {
         assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
 #if !(defined(_DEBUG) && defined(__EDG__)) // TRANSITION, VSO-1948896, see also GH-1566
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
-#endif // !(defined(_DEBUG) && defined(__EDG__))
+#endif // ^^^ no workaround ^^^
     }
 
     { // P2328 range of prvalue string using lambda
@@ -765,7 +765,7 @@ int main() {
         assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
 #if !(defined(_DEBUG) && defined(__EDG__)) // TRANSITION, VSO-1948896, see also GH-1566
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
-#endif // !(defined(_DEBUG) && defined(__EDG__))
+#endif // ^^^ no workaround ^^^
     }
 
     { // Immovable type

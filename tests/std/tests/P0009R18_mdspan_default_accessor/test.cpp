@@ -71,6 +71,6 @@ constexpr bool test() {
 int main() {
 #if !(defined(_DEBUG) && defined(__EDG__)) // TRANSITION, VSO-1898962
     static_assert(test());
-#endif // !(defined(_DEBUG) && defined(__EDG__))
+#endif // ^^^ no workaround ^^^
     test();
 }
