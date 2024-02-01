@@ -3046,6 +3046,7 @@ namespace iter_ops {
         }
 
         {
+#ifndef __EDG__ // TRANSITION, VSO-1898890
             // Call distance(i, s) with arrays which must be decayed to pointers.
             // (This behavior was regressed by LWG-3392.)
             int some_ints[] = {1, 2, 3};
@@ -3063,6 +3064,7 @@ namespace iter_ops {
             STATIC_ASSERT(noexcept(distance(const_ints + 1, const_ints)));
             assert(distance(const_ints, const_ints) == 0);
             STATIC_ASSERT(noexcept(distance(const_ints, const_ints)));
+#endif // !defined(__EDG__)
         }
 
         return true;

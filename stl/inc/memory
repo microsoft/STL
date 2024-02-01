@@ -530,7 +530,11 @@ namespace ranges {
             noexcept(noexcept(
                 ::new(static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
             // clang-format on
+#ifdef __EDG__
+            return _STD construct_at(_Location, _STD forward<_Types>(_Args)...);
+#else // ^^^ EDG / Other vvv
             _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
+#endif // ^^^ Other ^^^
         }
     };
 
