@@ -1077,7 +1077,7 @@ namespace iterator_cust_move_test {
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int(int)>, int (&)(int)>);
 #else // ^^^ no workaround / workaround vvv
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int(int)>, int (*)(int)>);
-#endif // TRANSITION, VSO-1008447
+#endif // ^^^ workaround ^^^
 
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int[4]>, int&&>);
     STATIC_ASSERT(ranges::iter_move(some_ints) == 0);
@@ -1090,7 +1090,7 @@ namespace iterator_cust_move_test {
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
 #else // ^^^ no workaround / workaround vvv
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&&)(int)>);
-#endif // TRANSITION, VSO-1008447
+#endif // ^^^ workaround ^^^
     STATIC_ASSERT(ranges::iter_move (&f)(42) == 43);
     STATIC_ASSERT(noexcept(ranges::iter_move(&f)));
 
