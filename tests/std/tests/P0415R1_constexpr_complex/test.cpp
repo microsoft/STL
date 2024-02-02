@@ -63,7 +63,7 @@ constexpr void test_type() {
     c /= complex<F>{f1, f3};
 #ifndef _M_CEE // TRANSITION, VSO-1665481
     assert(c == complex<F>{f1});
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
     {
         using Other = conditional_t<is_same_v<F, float>, double, float>;
@@ -83,7 +83,7 @@ constexpr void test_type() {
         c /= complex<Other>{Other{1}, Other{3}};
 #ifndef _M_CEE // TRANSITION, VSO-1665481
         assert(c == complex<F>{f1});
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
     }
 
     assert((complex<F>{f1, f1} + complex<F>{f1, f2} == complex<F>{f2, f3}));

@@ -243,7 +243,7 @@ int main(int argc, char* argv[]) {
         test_case_operator_spaceship_incompatible_different_data,
         test_case_operator_spaceship_incompatible_different_size,
         test_case_operator_spaceship_incompatible_value_initialized,
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 

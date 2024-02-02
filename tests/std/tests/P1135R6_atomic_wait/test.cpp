@@ -54,7 +54,7 @@ void test_incomplete_associated_class_all() { // COMPILE-ONLY
     test_incomplete_associated_class<tagged_trivial<uint32_t[3], holder<incomplete>>*>();
     test_incomplete_associated_class<tagged_trivial<uint64_t[3], holder<incomplete>>*>();
 }
-#endif // !defined(_M_CEE)
+#endif // ^^^ no workaround ^^^
 
 int main() {
     assert(__std_atomic_set_api_level(__std_atomic_api_level::__has_wait_on_address)

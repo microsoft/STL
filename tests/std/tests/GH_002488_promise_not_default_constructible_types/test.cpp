@@ -156,7 +156,7 @@ void run_tests() {
         assert(failures == 7);
         assert(succeeded != -1 && f.get().x == succeeded);
     }
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
     {
         (void) std::async(std::launch::async, [] { return T(16); });

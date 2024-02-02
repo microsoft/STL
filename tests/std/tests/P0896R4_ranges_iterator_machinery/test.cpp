@@ -1442,7 +1442,7 @@ namespace iterator_concept_winc_test {
             std::same_as<std::index_sequence<Is...>, std::make_index_sequence<weakly_incrementable_archetype_max>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         STATIC_ASSERT((!weakly_incrementable<weakly_incrementable_archetype<Is>> && ...));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         STATIC_ASSERT(weakly_incrementable<weakly_incrementable_archetype<weakly_incrementable_archetype_max>>);
         return true;
     }
@@ -1483,7 +1483,7 @@ namespace iterator_concept_iterator_test {
         STATIC_ASSERT(std::same_as<std::index_sequence<Is...>, std::make_index_sequence<iterator_archetype_max>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         STATIC_ASSERT((!input_or_output_iterator<iterator_archetype<Is>> && ...));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         STATIC_ASSERT(input_or_output_iterator<iterator_archetype<iterator_archetype_max>>);
         return true;
     }
@@ -1516,7 +1516,7 @@ namespace iterator_concept_sentinel_test {
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         constexpr bool expected = I >= sentinel_archetype_max && J >= iterator_archetype_max;
         STATIC_ASSERT(sentinel_for<sentinel_archetype<I>, iterator_archetype<J>> == expected);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         return true;
     }
 
@@ -1546,7 +1546,7 @@ namespace iterator_concept_sizedsentinel_test {
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         constexpr bool expected = I >= sized_sentinel_archetype_max && J >= iterator_archetype_max;
         STATIC_ASSERT(sized_sentinel_for<sized_sentinel_archetype<I>, iterator_archetype<J>> == expected);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         return true;
     }
 
@@ -1574,7 +1574,7 @@ namespace iterator_concept_input_test {
         STATIC_ASSERT(std::same_as<std::index_sequence<Is...>, std::make_index_sequence<input_iterator_archetype_max>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         STATIC_ASSERT((!input_iterator<input_iterator_archetype<Is>> && ...));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         STATIC_ASSERT(input_iterator<input_iterator_archetype<input_iterator_archetype_max>>);
         return true;
     }
@@ -1602,7 +1602,7 @@ namespace iterator_concept_output_test {
         STATIC_ASSERT((!output_iterator<output_iterator_archetype<Is>, int const> && ...));
         STATIC_ASSERT((!output_iterator<output_iterator_archetype<Is>, int&> && ...));
         STATIC_ASSERT((!output_iterator<output_iterator_archetype<Is>, int const&> && ...));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         STATIC_ASSERT(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int>);
         STATIC_ASSERT(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int const>);
         STATIC_ASSERT(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int&>);
@@ -1800,7 +1800,7 @@ namespace unreachable_sentinel_test {
 
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         STATIC_ASSERT((!Comparable<weakly_incrementable_archetype<Is>> && ...));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         STATIC_ASSERT(Comparable<weakly_incrementable_archetype<weakly_incrementable_archetype_max>>);
 
         return true;

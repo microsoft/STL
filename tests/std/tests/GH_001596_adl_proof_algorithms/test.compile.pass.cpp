@@ -632,4 +632,4 @@ void test_ranges_non_projected_algorithms() {
 #endif // _HAS_CXX23
 }
 #endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^

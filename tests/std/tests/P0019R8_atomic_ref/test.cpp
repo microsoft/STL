@@ -371,7 +371,7 @@ void test_incomplete_associated_class_all() { // COMPILE-ONLY
     test_incomplete_associated_class<tagged_trivial<uint32_t[3], holder<incomplete>>*>();
     test_incomplete_associated_class<tagged_trivial<uint64_t[3], holder<incomplete>>*>();
 }
-#endif // !defined(_M_CEE)
+#endif // ^^^ no workaround ^^^
 
 int main() {
     test_ops<false, char>();

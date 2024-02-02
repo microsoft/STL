@@ -66,7 +66,7 @@ void test_adl_proof() { // COMPILE-ONLY
     (void) std::to_array(a); // intentionally qualified to avoid ADL
     (void) std::to_array(std::move(a)); // intentionally qualified to avoid ADL
 }
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
 int main() {
     assert(assert_constexpr());

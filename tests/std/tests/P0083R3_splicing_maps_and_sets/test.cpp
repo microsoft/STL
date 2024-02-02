@@ -158,7 +158,7 @@ void test_node_handle(NodeHandle& nh1, NodeHandle& nh2, Validator1 v1, Validator
 #pragma warning(suppress : 4640) // C4640 emitted by MSVC because 'NodeHandle' type has non-trivial dtor
     { static constinit NodeHandle static_handle{}; }
 #endif // ^^^ _HAS_CXX20 ^^^
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
     // No copies!
     static_assert(!std::is_copy_constructible_v<NodeHandle>);

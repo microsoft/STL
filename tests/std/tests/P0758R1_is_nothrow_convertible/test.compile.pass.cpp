@@ -130,7 +130,7 @@ struct incomplete;
 
 STATIC_ASSERT(is_nothrow_convertible<holder<incomplete>*, holder<incomplete>*>::value);
 STATIC_ASSERT(is_nothrow_convertible_v<holder<incomplete>*, holder<incomplete>*>);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
 // VSO_0105317_expression_sfinae and VSO_0000000_type_traits provide
 // additional coverage of this machinery

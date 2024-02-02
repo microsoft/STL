@@ -1395,7 +1395,7 @@ _CONSTEXPR20 bool test_mem_fn() {
     assert(mem_fn(&Widget::unary_lv)(&w, 6) == 1061);
 
     assert(mem_fn(&Widget::unary_rv)(move(w), 7) == 1404);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
     return true;
 }

@@ -416,4 +416,4 @@ constexpr bool test_ranges_count() {
     return true;
 }
 static_assert(test_ranges_count());
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^

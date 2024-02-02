@@ -354,7 +354,7 @@ struct use_async_in_a_global_tester {
 };
 
 use_async_in_a_global_tester use_async_in_a_global_instance;
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
 int main() {
     test_DevDiv_235721();
