@@ -161,7 +161,7 @@ struct instantiator {
                 if constexpr (input_iterator<Iter>) { // iter_move
                     Cit iter1{Iter{input}};
 
-                    const same_as<iter_value_t<Iter>> auto element1 = ranges::iter_move(iter1);
+                    const same_as<iter_value_t<Iter>> auto element1(ranges::iter_move(iter1));
                     assert(element1 == P(0, 1));
                 }
 

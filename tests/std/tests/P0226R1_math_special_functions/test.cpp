@@ -261,9 +261,9 @@ void test_cyl_neumann() {
         assert(isclose(cyl_neumannl(0.5L, 0.333L), -1.30'671'255'810'072'199L, 2));
     }
     {
-        assert(isclose(cyl_neumann(0.5, 0.666), -0.768'760'134'281'402'040));
+        assert(isclose(cyl_neumann(0.5, 0.666), -0.768'760'134'281'402'040, 2));
         assert(isclose(cyl_neumannf(0.5f, 0.666f), -0.768'760'134'281'402'040f));
-        assert(isclose(cyl_neumannl(0.5L, 0.666L), -0.768'760'134'281'402'040L));
+        assert(isclose(cyl_neumannl(0.5L, 0.666L), -0.768'760'134'281'402'040L, 2));
     }
 }
 

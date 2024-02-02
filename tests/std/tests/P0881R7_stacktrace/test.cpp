@@ -309,6 +309,8 @@ void test_impl() {
 }
 
 int main() {
+#if !(defined(__clang__) && defined(_M_ARM64)) // TRANSITION, LLVM-74530
     jthread t{test_impl};
     test_impl();
+#endif
 }

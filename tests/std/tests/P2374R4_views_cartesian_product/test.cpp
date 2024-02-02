@@ -861,7 +861,9 @@ struct instantiator {
     template <class R>
     static constexpr void call() {
         typename R::template type<const int> r0{get<0>(some_ranges)};
+#ifndef __EDG__ // TRANSITION, VSO-1900293
         test_one(expected_result_0, r0);
+#endif // !defined(__EDG__)
 
         if constexpr (ranges::forward_range<typename R::template type<const int>>) {
             typename R::template type<const int> r1{get<1>(some_ranges)};
@@ -934,6 +936,7 @@ constexpr void test_gh_3733() {
 
 int main() {
     // Check views
+#ifndef __EDG__ // TRANSITION, VSO-1900293
     { // ... copyable
         constexpr span<const int> s{get<0>(some_ranges)};
         STATIC_ASSERT(test_one(expected_result_0, s));
@@ -945,6 +948,7 @@ int main() {
         span<int> s{arr};
         test_one(expected_result_0, s);
     }
+#endif // !defined(__EDG__)
 
     { // ... move-only
         using test::Common, test::Sized;
@@ -971,8 +975,10 @@ int main() {
     // Check non-views
     {
         constexpr auto& r0 = get<0>(some_ranges);
+#ifndef __EDG__ // TRANSITION, VSO-1900293
         STATIC_ASSERT(test_one(expected_result_0, r0));
         test_one(expected_result_0, r0);
+#endif // !defined(__EDG__)
 
         auto r1 = get<1>(some_ranges) | ranges::to<vector>();
         test_one(expected_result_1, r0, r1);

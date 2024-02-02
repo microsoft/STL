@@ -209,12 +209,12 @@ concept _Tuple_like = _Tuple_like_impl<remove_cvref_t<_Ty>>;
 template <class _Ty>
 concept _Pair_like = _Tuple_like<_Ty> && tuple_size_v<remove_cvref_t<_Ty>> == 2;
 
-#ifdef __clang__ // TRANSITION, LLVM-59827
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 and VSO-1900279
 template <class _PairLike, class _Ty1, class _Ty2>
 concept _Can_construct_from_pair_like = _Pair_like<_PairLike> && !_Is_subrange_v<remove_cvref_t<_PairLike>>
                                      && is_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_PairLike>()))>
                                      && is_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_PairLike>()))>;
-#endif // defined(__clang__)
+#endif // defined(__clang__) || defined(__EDG__)
 #endif // _HAS_CXX23
 #endif // _HAS_CXX20
 

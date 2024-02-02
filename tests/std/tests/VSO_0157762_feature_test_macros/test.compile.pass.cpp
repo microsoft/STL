@@ -197,9 +197,9 @@ STATIC_ASSERT(__cpp_lib_common_reference_wrapper == 202302L);
 
 STATIC_ASSERT(__cpp_lib_complex_udls == 201309L);
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, GH-395
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_concepts == 202207L);
-#elif _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
+#elif _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_concepts == 202002L);
 #elif _HAS_CXX20
 #error __cpp_lib_concepts is defined
@@ -356,7 +356,7 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #endif
 
 #if _HAS_CXX20
-STATIC_ASSERT(__cpp_lib_format == 202207L);
+STATIC_ASSERT(__cpp_lib_format == 202304L);
 #elif defined(__cpp_lib_format)
 #error __cpp_lib_format is defined
 #endif

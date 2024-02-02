@@ -193,33 +193,25 @@ _NODISCARD __forceinline uint64_t __ryu_umul128(const uint64_t __a, const uint64
 #endif // ^^^ intrinsics unavailable ^^^
 
 _NODISCARD inline uint64_t __ryu_shiftright128(const uint64_t __lo, const uint64_t __hi, const uint32_t __dist) {
+  // In the current implementation, the shift value is always < 64.
+  // If larger shift values are ever required, this function will need to be adjusted.
+  _STL_INTERNAL_CHECK(__dist < 64);
+
 #if defined(_M_X64) && !defined(_M_ARM64EC)
-  // For the __shiftright128 intrinsic, the shift value is always
-  // modulo 64.
-  // In the current implementation of the double-precision version
-  // of Ryu, the shift value is always < 64.
-  // (The shift value is in the range [49, 58].)
-  // Check this here in case a future change requires larger shift
-  // values. In this case this function needs to be adjusted.
-  _STL_INTERNAL_CHECK(__dist < 64);
   return __shiftright128(__lo, __hi, static_cast<unsigned char>(__dist));
-#else // ^^^ defined(_M_X64) && !defined(_M_ARM64EC) / !defined(_M_X64) || defined(_M_ARM64EC) vvv
-  // We don't need to handle the case __dist >= 64 here (see above).
-  _STL_INTERNAL_CHECK(__dist < 64);
-#if defined(_WIN64) || defined(_M_HYBRID_X86_ARM64)
-  _STL_INTERNAL_CHECK(__dist > 0);
+#else // ^^^ __shiftright128 intrinsic available / __shiftright128 intrinsic unavailable vvv
+  if (__dist == 0) {
+    return __lo;
+  }
+
   return (__hi << (64 - __dist)) | (__lo >> __dist);
-#else // ^^^ 64-bit or _M_HYBRID_X86_ARM64 / 32-bit vvv
-  // Avoid a 64-bit shift by taking advantage of the range of shift values.
-  _STL_INTERNAL_CHECK(__dist >= 32);
-  return (__hi << (64 - __dist)) | (static_cast<uint32_t>(__lo >> 32) >> (__dist - 32));
-#endif // ^^^ 32-bit ^^^
-#endif // defined(_M_X64) && !defined(_M_ARM64EC)
+#endif // ^^^ __shiftright128 intrinsic unavailable ^^^
 }
 
 
 #ifndef _WIN64
 
+#if !defined(_M_HYBRID_X86_ARM64)
 // Returns the high 64 bits of the 128-bit product of __a and __b.
 _NODISCARD inline uint64_t __umulh(const uint64_t __a, const uint64_t __b) {
   // Reuse the __ryu_umul128 implementation.
@@ -229,6 +221,7 @@ _NODISCARD inline uint64_t __umulh(const uint64_t __a, const uint64_t __b) {
   (void) __ryu_umul128(__a, __b, &__hi);
   return __hi;
 }
+#endif // ^^^ !defined(_M_HYBRID_X86_ARM64) ^^^
 
 // On 32-bit platforms, compilers typically generate calls to library
 // functions for 64-bit divisions, even if the divisor is a constant.
