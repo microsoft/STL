@@ -627,7 +627,7 @@ int main() {
         STATIC_ASSERT(test_one(s, some_ints));
         test_one(s, some_ints);
     }
-#endif // TRANSITION, LLVM-62096 and VSO-1901430
+#endif // ^^^ no workaround ^^^
 
     { // ... move-only
         test_one(move_only_view<input_iterator_tag, test::Common::no>{some_ints}, some_ints);
@@ -696,7 +696,7 @@ int main() {
         STATIC_ASSERT(test_one(Span{}, Span{}));
         test_one(Span{}, Span{});
     }
-#endif // TRANSITION, LLVM-62096 and VSO-1901430
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(instantiation_test());
     instantiation_test();
