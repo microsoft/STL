@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <bitset>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -12,6 +13,7 @@
 #include <limits>
 #include <list>
 #include <random>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -443,6 +445,73 @@ void test_one_container() {
     test_two_containers<Container, list<int>>();
 }
 
+void test_bitset(mt19937_64& gen) {
+    assert(bitset<0>(0x0ULL).to_string() == "");
+    assert(bitset<0>(0xFEDCBA9876543210ULL).to_string() == "");
+    assert(bitset<15>(0x6789ULL).to_string() == "110011110001001");
+    assert(bitset<15>(0xFEDCBA9876543210ULL).to_string() == "011001000010000");
+    assert(bitset<32>(0xABCD1234ULL).to_string() == "10101011110011010001001000110100");
+    assert(bitset<32>(0xFEDCBA9876543210ULL).to_string() == "01110110010101000011001000010000");
+    assert(bitset<45>(0x1701D1729FFFULL).to_string() == "101110000000111010001011100101001111111111111");
+    assert(bitset<45>(0xFEDCBA9876543210ULL).to_string() == "110101001100001110110010101000011001000010000");
+    assert(bitset<64>(0xFEDCBA9876543210ULL).to_string()
+           == "1111111011011100101110101001100001110110010101000011001000010000");
+    assert(bitset<75>(0xFEDCBA9876543210ULL).to_string()
+           == "000000000001111111011011100101110101001100001110110010101000011001000010000");
+
+    assert(bitset<0>(0x0ULL).to_string<wchar_t>() == L"");
+    assert(bitset<0>(0xFEDCBA9876543210ULL).to_string<wchar_t>() == L"");
+    assert(bitset<15>(0x6789ULL).to_string<wchar_t>() == L"110011110001001");
+    assert(bitset<15>(0xFEDCBA9876543210ULL).to_string<wchar_t>() == L"011001000010000");
+    assert(bitset<32>(0xABCD1234ULL).to_string<wchar_t>() == L"10101011110011010001001000110100");
+    assert(bitset<32>(0xFEDCBA9876543210ULL).to_string<wchar_t>() == L"01110110010101000011001000010000");
+    assert(bitset<45>(0x1701D1729FFFULL).to_string<wchar_t>() == L"101110000000111010001011100101001111111111111");
+    assert(bitset<45>(0xFEDCBA9876543210ULL).to_string<wchar_t>() == L"110101001100001110110010101000011001000010000");
+    assert(bitset<64>(0xFEDCBA9876543210ULL).to_string<wchar_t>()
+           == L"1111111011011100101110101001100001110110010101000011001000010000");
+    assert(bitset<75>(0xFEDCBA9876543210ULL).to_string<wchar_t>()
+           == L"000000000001111111011011100101110101001100001110110010101000011001000010000");
+
+    assert(bitset<64>(0xFEDCBA9876543210ULL).to_string('o', 'x')
+           == "xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo");
+    assert(bitset<64>(0xFEDCBA9876543210ULL).to_string<wchar_t>(L'o', L'x')
+           == L"xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo");
+
+#ifdef __cpp_lib_char8_t
+    assert(bitset<75>(0xFEDCBA9876543210ULL).to_string<char8_t>()
+           == u8"000000000001111111011011100101110101001100001110110010101000011001000010000");
+#endif // __cpp_lib_char8_t
+    assert(bitset<75>(0xFEDCBA9876543210ULL).to_string<char16_t>()
+           == u"000000000001111111011011100101110101001100001110110010101000011001000010000");
+    assert(bitset<75>(0xFEDCBA9876543210ULL).to_string<char32_t>()
+           == U"000000000001111111011011100101110101001100001110110010101000011001000010000"); // not vectorized
+
+    {
+        constexpr size_t N = 2048;
+
+        string str;
+        wstring wstr;
+        str.reserve(N);
+        wstr.reserve(N);
+
+        while (str.size() != N) {
+            uint64_t random_value = gen();
+
+            for (int bits = 0; bits < 64; ++bits) {
+                const auto character = '0' + (random_value & 1);
+                str.push_back(static_cast<char>(character));
+                wstr.push_back(static_cast<wchar_t>(character));
+                random_value >>= 1;
+            }
+        }
+
+        const bitset<N> b(str);
+
+        assert(b.to_string() == str);
+        assert(b.to_string<wchar_t>() == wstr);
+    }
+}
+
 void test_various_containers() {
     test_one_container<vector<int>>(); // contiguous, vectorizable
     test_one_container<deque<int>>(); // random-access, not vectorizable
@@ -524,20 +593,24 @@ int main() {
 
     test_vector_algorithms(gen);
     test_various_containers();
+    test_bitset(gen);
 #ifndef _M_CEE_PURE
 #if defined(_M_IX86) || defined(_M_X64)
     disable_instructions(__ISA_AVAILABLE_AVX2);
     test_vector_algorithms(gen);
     test_various_containers();
+    test_bitset(gen);
 
     disable_instructions(__ISA_AVAILABLE_SSE42);
     test_vector_algorithms(gen);
     test_various_containers();
+    test_bitset(gen);
 #endif // defined(_M_IX86) || defined(_M_X64)
 #if defined(_M_IX86)
     disable_instructions(__ISA_AVAILABLE_SSE2);
     test_vector_algorithms(gen);
     test_various_containers();
+    test_bitset(gen);
 #endif // defined(_M_IX86)
 #endif // _M_CEE_PURE
 }

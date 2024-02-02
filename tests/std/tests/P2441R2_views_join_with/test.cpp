@@ -219,6 +219,16 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
         }
     }
 
+    // Also validate that join_with_view iterators are default-constructible
+    {
+        STATIC_ASSERT(is_default_constructible_v<iterator_t<R>>);
+        [[maybe_unused]] iterator_t<R> i;
+        if constexpr (CanMemberBegin<const R>) {
+            STATIC_ASSERT(is_default_constructible_v<iterator_t<const R>>);
+            [[maybe_unused]] iterator_t<const R> ci;
+        }
+    }
+
     // Validate join_with_view::end
     static_assert(CanMemberEnd<R>);
     static_assert(CanMemberEnd<const R>
@@ -364,9 +374,9 @@ struct instantiator {
             Outer empty{span<Inner, 0>{}};
             test_one(empty, "*#"sv, views::empty<char>);
         }
-#ifdef __clang__ // TRANSITION, LLVM-60293
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-60293 and VSO-1900294
         if constexpr (ranges::forward_range<Outer> || ranges::common_range<Outer>)
-#endif // __clang__
+#endif // defined(__clang__) || defined(__EDG__)
         { // Range-of-rvalue delimiter
             Inner inner_ranges[] = {Inner{span{input[0]}}, Inner{span{input[1]}}, Inner{span{input[2]}},
                 Inner{span{input[3]}}, Inner{span{input[4]}}, Inner{span{input[5]}}, Inner{span{input[6]}},
