@@ -1425,7 +1425,9 @@ struct _Variant_dispatcher<index_sequence<_Is...>> {
     template <class _Ret, class _Callable, class... _Types, bool _Any_valueless = ((_Is == 0) || ...)>
     _NODISCARD static constexpr _Ret _Dispatch2(_Callable&& _Obj, _Types&&... _Args) {
         if constexpr (_Any_valueless) {
-            ((void) _Args, ...); // TRANSITION, VSO-1513409
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1513409
+            ((void) _Args, ...);
+#endif // ^^^ workaround ^^^
             _STD _Throw_bad_variant_access();
         }
 #if _HAS_CXX20
