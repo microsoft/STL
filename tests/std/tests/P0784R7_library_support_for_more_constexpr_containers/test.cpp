@@ -52,30 +52,6 @@ constexpr bool destroy_at_noexcept() {
     }
     return true;
 }
-#else // ^^^ Concepts and Ranges / No Concepts or Ranges vvv
-template <class Void, class Ty, class... Types>
-inline constexpr bool can_construct_at_impl = false;
-
-template <class Ty, class... Types>
-inline constexpr bool
-    can_construct_at_impl<void_t<decltype(construct_at(declval<Ty*>(), declval<Types>()...))>, Ty, Types...> = true;
-
-template <class Ty, class... Types>
-inline constexpr bool can_construct_at = can_construct_at_impl<void, Ty, Types...>;
-
-template <class T, class... Args>
-constexpr bool construct_at_noexcept() {
-    if constexpr (can_construct_at<T, Args...>) {
-        return noexcept(construct_at(declval<T*>(), declval<Args>()...));
-    } else {
-        return false;
-    }
-}
-
-template <class T>
-constexpr bool destroy_at_noexcept() {
-    return noexcept(destroy_at(declval<T*>()));
-}
 
 static_assert(can_construct_at<int>);
 static_assert(can_construct_at<int, int>);
