@@ -661,7 +661,7 @@ void test_algorithms(EqualFn equal_fn) {
         assert(!equal_fn(begin(arr6), end(arr6), begin(arr7), end(arr7), equal_to<>{}));
         assert(!equal_fn(begin(arr6), end(arr6), begin(arr7), end(arr7), equal_to<mfn_ptr2>{}));
     }
-#endif // _M_CEE_PURE
+#endif // ^^^ no workaround ^^^
 
     { // Test vector
         vector<int> arr1 = {3, 6, 4, 7, 3};
