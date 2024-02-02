@@ -1061,9 +1061,9 @@ void ordering_test_cases() {
         spaceship_test<std::partial_ordering>(double_seconds{1}, float_milliseconds{1000}, ntsc_fields{60});
 
         constexpr double_seconds nan_s{std::numeric_limits<double>::quiet_NaN()};
-#ifdef __clang__ // TRANSITION, DevCom-445462
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-445462
         static_assert(nan_s <=> nan_s == std::partial_ordering::unordered);
-#endif // defined(__clang__)
+#endif // ^^^ no workaround ^^^
         assert(nan_s <=> nan_s == std::partial_ordering::unordered);
     }
     { // chrono::time_point
@@ -1077,9 +1077,9 @@ void ordering_test_cases() {
         spaceship_test<std::partial_ordering>(sys_tp{}, sys_double_s{}, sys_double_s{double_seconds{1}});
 
         constexpr sys_double_s nan_tp{double_seconds{std::numeric_limits<double>::quiet_NaN()}};
-#ifdef __clang__ // TRANSITION, DevCom-445462
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-445462
         static_assert(nan_tp <=> nan_tp == std::partial_ordering::unordered);
-#endif // defined(__clang__)
+#endif // ^^^ no workaround ^^^
         assert(nan_tp <=> nan_tp == std::partial_ordering::unordered);
 
         using steady_tp = std::chrono::steady_clock::time_point;
