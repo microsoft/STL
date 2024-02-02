@@ -1852,7 +1852,7 @@ void run_tests() {
     test_sstream<Alloc>();
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-54804
     test_exceptions<Alloc>();
-#endif // !(defined(__clang__) && defined(_M_IX86))
+#endif // ^^^ no workaround ^^^
 }
 
 template <class CharType, template <class, class, class> class Alloc>

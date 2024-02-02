@@ -97,7 +97,7 @@ Task triangular_number(const int n) {
 
     co_return n + co_await triangular_number(n - 1);
 }
-#endif // TRANSITION, LLVM-56507
+#endif // ^^^ no workaround ^^^
 
 void test_noop_handle() { // Validate noop_coroutine_handle
     const noop_coroutine_handle noop = noop_coroutine();
@@ -182,7 +182,7 @@ int main() {
     }
 
     assert(g_tasks_destroyed == 11); // triangular_number() called for [0, 10]
-#endif // TRANSITION, LLVM-56507
+#endif // ^^^ no workaround ^^^
 
     {
         // Also test GH-1422: hash<coroutine_handle<>>::operator() must be const
