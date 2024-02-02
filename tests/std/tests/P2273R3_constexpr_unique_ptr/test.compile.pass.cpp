@@ -23,7 +23,7 @@ constexpr bool test_P2273R3_constexpr_unique_ptr() {
         assert(p1 == p1);
         assert(p1 != p2);
 
-#if defined(__EDG__) || defined(__clang__) // TRANSITION, DevCom-1436243
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1436243
         auto p3 = make_unique<int[]>(10);
         auto p4 = make_unique_for_overwrite<int[]>(4);
         swap(p3, p4);
