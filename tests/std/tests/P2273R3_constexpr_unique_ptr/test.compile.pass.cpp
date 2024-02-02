@@ -47,7 +47,7 @@ constexpr bool test_P2273R3_constexpr_unique_ptr() {
         assert(nullptr >= p5);
         assert((p5 <=> nullptr) == strong_ordering::equal);
         assert((nullptr <=> p5) == strong_ordering::equal);
-#endif // !__EDG__
+#endif // ^^^ no workaround ^^^
     }
 
     // changes in [unique.ptr.dltr.dflt] and [unique.ptr.dltr.dflt1]

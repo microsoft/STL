@@ -863,7 +863,7 @@ struct instantiator {
         typename R::template type<const int> r0{get<0>(some_ranges)};
 #ifndef __EDG__ // TRANSITION, VSO-1900293
         test_one(expected_result_0, r0);
-#endif // !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
 
         if constexpr (ranges::forward_range<typename R::template type<const int>>) {
             typename R::template type<const int> r1{get<1>(some_ranges)};
@@ -948,7 +948,7 @@ int main() {
         span<int> s{arr};
         test_one(expected_result_0, s);
     }
-#endif // !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
 
     { // ... move-only
         using test::Common, test::Sized;
@@ -978,7 +978,7 @@ int main() {
 #ifndef __EDG__ // TRANSITION, VSO-1900293
         STATIC_ASSERT(test_one(expected_result_0, r0));
         test_one(expected_result_0, r0);
-#endif // !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
 
         auto r1 = get<1>(some_ranges) | ranges::to<vector>();
         test_one(expected_result_1, r0, r1);

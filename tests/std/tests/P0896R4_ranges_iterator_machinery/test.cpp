@@ -3064,7 +3064,7 @@ namespace iter_ops {
             STATIC_ASSERT(noexcept(distance(const_ints + 1, const_ints)));
             assert(distance(const_ints, const_ints) == 0);
             STATIC_ASSERT(noexcept(distance(const_ints, const_ints)));
-#endif // !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
         }
 
         return true;

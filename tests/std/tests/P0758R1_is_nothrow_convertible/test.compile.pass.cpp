@@ -79,7 +79,7 @@ STATIC_ASSERT(!is_nothrow_convertible_v<int(int, long) const, int(int, long) con
 STATIC_ASSERT(is_nothrow_convertible_v<int (Cat::*)(int, int (*)(int, long)), int (Cat::*)(int, int (*)(int, long))>);
 #ifndef __EDG__ // TRANSITION, VSO-892694
 STATIC_ASSERT(!is_nothrow_convertible_v<Cat, Cat&>);
-#endif
+#endif // ^^^ no workaround ^^^
 STATIC_ASSERT(is_nothrow_convertible_v<Cat&, Cat>);
 STATIC_ASSERT(is_nothrow_convertible_v<Cat, const Cat&>);
 STATIC_ASSERT(is_nothrow_convertible_v<Cat, const Cat>);
@@ -100,7 +100,7 @@ STATIC_ASSERT(is_nothrow_convertible_v<bool, int>);
 STATIC_ASSERT(is_nothrow_convertible_v<int, long long>);
 #ifndef __EDG__ // TRANSITION, VSO-892705
 STATIC_ASSERT(is_nothrow_convertible_v<int[], int*>);
-#endif
+#endif // ^^^ no workaround ^^^
 STATIC_ASSERT(is_nothrow_convertible_v<int[1], int*>);
 STATIC_ASSERT(!is_nothrow_convertible_v<int[], int[]>);
 STATIC_ASSERT(!is_nothrow_convertible_v<int[], int[1]>);
