@@ -351,7 +351,7 @@ _INLINE_VAR constexpr bool is_convertible_v<_Ty&, const volatile _Ty&> = true;
 
 template <class _Ty>
 _INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, const volatile _Ty&> = true;
-#endif // ^^^ workaround
+#endif // ^^^ workaround ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_enum : bool_constant<__is_enum(_Ty)> {}; // determine whether _Ty is an enumerated type
