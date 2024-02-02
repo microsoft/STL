@@ -69,10 +69,10 @@ struct I {
 #endif // ^^^ workaround ^^^
 };
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 static_assert(random_access_iterator<I>);
 static_assert(sortable<I>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 extern Val val;
 extern mt19937 urbg; // UniformRandomBitGenerator
@@ -90,9 +90,9 @@ void test_gh_4109() {
 #endif // _HAS_AUTO_PTR_ETC
     Val (*unop)(Val)       = nullptr;
     Val (*binop)(Val, Val) = nullptr;
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     strong_ordering (*comp_three_way)(Val, Val) = nullptr;
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     (void) all_of(nil, nil, pred);
     (void) any_of(nil, nil, pred);
@@ -230,10 +230,10 @@ void test_gh_4109() {
     (void) minmax_element(nil, nil, comp);
     (void) lexicographical_compare(nil, nil, nil, nil);
     (void) lexicographical_compare(nil, nil, nil, nil, comp);
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     (void) lexicographical_compare_three_way(nil, nil, nil, nil);
     (void) lexicographical_compare_three_way(nil, nil, nil, nil, comp_three_way);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     next_permutation(nil, nil);
     next_permutation(nil, nil, comp);
     prev_permutation(nil, nil);
@@ -395,7 +395,7 @@ void test_gh_4109() {
     uninitialized_fill_n(par, nil, zero, val);
 #endif // __cpp_lib_execution
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     // Non-modifying sequence operations
     (void) ranges::all_of(nil, nil, pred);
     (void) ranges::any_of(nil, nil, pred);
@@ -557,5 +557,5 @@ void test_gh_4109() {
     ranges::uninitialized_move_n(nil, zero, nil, nil);
     ranges::uninitialized_fill(nil, nil, val);
     ranges::uninitialized_fill_n(nil, zero, val);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
