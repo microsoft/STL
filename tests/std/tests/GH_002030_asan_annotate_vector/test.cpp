@@ -1019,8 +1019,7 @@ int main() {
     run_allocator_matrix<non_trivial_can_throw>();
     run_allocator_matrix<non_trivial_cannot_throw>();
 
-// TRANSITION, LLVM-35365
-#ifndef __clang__
+#ifndef __clang__ // TRANSITION, LLVM-35365
     test_push_back_throw();
     test_emplace_back_throw();
     test_insert_range_throw();
