@@ -14,7 +14,7 @@ struct S { // Must be declared at namespace scope due to static data member
 };
 
 constexpr bool test() {
-#ifndef __clang__ // TRANSITION, LLVM-48860
+#if defined(__cpp_lib_is_layout_compatible) && defined(__cpp_lib_is_pointer_interconvertible) // TRANSITION, LLVM-48860
     // is_layout_compatible tests
     {
         struct S0 {
@@ -242,7 +242,7 @@ constexpr bool test() {
         ASSERT(!is_pointer_interconvertible_with_class(&C::f1));
         ASSERT(!is_pointer_interconvertible_with_class(static_cast<int A::*>(nullptr)));
     }
-#endif // __clang__
+#endif // ^^^ defined(__cpp_lib_is_layout_compatible) && defined(__cpp_lib_is_pointer_interconvertible) ^^^
     return true;
 }
 
