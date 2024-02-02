@@ -509,7 +509,7 @@ public:
         return _STD move(_Head)._Item;
     }
 };
-#endif // defined(__cplusplus_winrt)
+#endif // ^^^ workaround ^^^
 
 template <size_t _Idx, class _Storage>
 _NODISCARD constexpr decltype(auto) _Variant_raw_get(_Storage&& _Obj) noexcept {
