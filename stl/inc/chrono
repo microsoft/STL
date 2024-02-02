@@ -5468,7 +5468,7 @@ namespace chrono {
                             continue;
                         }
                     }
-#endif // defined(_MSVC_EXECUTION_CHARACTER_SET) && _MSVC_EXECUTION_CHARACTER_SET == 65001
+#endif // ^^^ no workaround ^^^
 
                     _CharT _Fmt_str[4];
                     _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec, _Fmt_str));
