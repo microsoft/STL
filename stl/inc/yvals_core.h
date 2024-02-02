@@ -1756,13 +1756,13 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifndef __clang__ // TRANSITION, LLVM-48860
 #define __cpp_lib_is_layout_compatible 201907L
-#endif // !defined(__clang__)
+#endif // ^^^ no workaround ^^^
 
 #define __cpp_lib_is_nothrow_convertible 201806L
 
 #ifndef __clang__ // TRANSITION, LLVM-48860
 #define __cpp_lib_is_pointer_interconvertible 201907L
-#endif // !defined(__clang__)
+#endif // ^^^ no workaround ^^^
 
 #define __cpp_lib_jthread                 201911L
 #define __cpp_lib_latch                   201907L
@@ -1771,7 +1771,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
 #define __cpp_lib_modules 202207L
-#endif // !defined(__clang__) && !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
 
 #define __cpp_lib_move_iterator_concept   202207L
 #define __cpp_lib_polymorphic_allocator   201902L
