@@ -327,7 +327,7 @@ struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
 _EXPORT_STD template <class _From, class _To>
 _INLINE_VAR constexpr bool is_convertible_v = __is_convertible_to(_From, _To);
 
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1627396
 template <class _Ty>
 struct is_convertible<_Ty&, volatile _Ty&> : true_type {};
 
@@ -1409,7 +1409,7 @@ struct _Add_qualifiers<_Ty1&&> {
     using _Apply = add_rvalue_reference_t<_Copy_cv<_Ty1, _Ty2>>;
 };
 
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-10095944
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10095944
 template <class _Ty1, class _Ty2>
 using _Cond_res_if_right = // N4950 [meta.trans.other]/2.4
     decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
@@ -2239,7 +2239,7 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
 _EXPORT_STD template <class _From, class _To>
 concept convertible_to =
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1627396
     is_convertible_v<_From, _To>
 #else // ^^^ workaround / no workaround vvv
     __is_convertible_to(_From, _To)

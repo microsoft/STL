@@ -346,7 +346,7 @@ template <>
 struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
 #endif // defined(_CRTBLD)
 
-#if defined(__cpp_char8_t) && !defined(__EDG__) && !defined(__clang__)
+#if defined(__cpp_char8_t) && !defined(__clang__) && !defined(__EDG__)
 #define _HAS_U8_INTRINSICS 1
 #else // ^^^ Use intrinsics for char8_t / don't use said intrinsics vvv
 #define _HAS_U8_INTRINSICS 0
