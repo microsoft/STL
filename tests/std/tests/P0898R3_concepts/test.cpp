@@ -1480,7 +1480,7 @@ namespace test_constructible_from {
 #ifndef __clang__ // TRANSITION, LLVM-44688
     STATIC_ASSERT(!test<int const&, ExplicitTo<int>>());
     STATIC_ASSERT(!test<int&&, ExplicitTo<int>>());
-#endif // TRANSITION, LLVM-44688
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(!test<int const&, ExplicitTo<double&&>>());
     STATIC_ASSERT(!test<int&&, ExplicitTo<double&&>>());
 

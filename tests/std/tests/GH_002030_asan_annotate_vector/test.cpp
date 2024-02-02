@@ -1027,6 +1027,6 @@ int main() {
     test_emplace_throw();
     test_resize_throw();
     test_insert_n_throw();
-#endif // !__clang__
+#endif // ^^^ no workaround ^^^
 #endif // ASan instrumentation enabled
 }

@@ -361,7 +361,7 @@ int main() {
     // Validate other integer types
 #ifndef __clang__ // TRANSITION, LLVM-48173
     static_assert(!CanViewIota<bool, bool>);
-#endif // TRANSITION, LLVM-48173
+#endif // ^^^ no workaround ^^^
     static_assert((test_integral<char>(), true));
     test_integral<char>();
     static_assert((test_integral<wchar_t>(), true));
