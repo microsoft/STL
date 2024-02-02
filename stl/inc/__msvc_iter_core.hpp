@@ -408,7 +408,7 @@ concept weakly_incrementable = movable<_Ty>
     }
 #ifdef __clang__ // TRANSITION, LLVM-48173
     && !same_as<_Ty, bool>
-#endif // TRANSITION, LLVM-48173
+#endif // ^^^ workaround ^^^
     ;
 
 _EXPORT_STD template <class _It>
