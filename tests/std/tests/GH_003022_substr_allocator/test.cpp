@@ -174,11 +174,13 @@ CONSTEXPR20 bool test_substr_allocator() {
         }
     };
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, VSO-1601179
+#if _HAS_CXX23
+#ifndef __EDG__ // TRANSITION, VSO-1601179
     static_assert(!is_constructible_v<string_type, ambiguator&, size_t, size_t>, "This should be ambiguous");
-#else // _HAS_CXX23 && !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     static_assert(is_constructible_v<string_type, ambiguator&, size_t, size_t>, "This should be unambiguous");
-#endif // _HAS_CXX23 && !defined(__EDG__)
+#endif // ^^^ !_HAS_CXX23 ^^^
 
     return true;
 }
