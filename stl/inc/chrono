@@ -2785,7 +2785,7 @@ namespace chrono {
     _EXPORT_STD template <class _Duration>
     using file_time = time_point<file_clock, _Duration>;
 } // namespace chrono
-#endif // ^^^ _HAS_CXX20
+#endif // ^^^ _HAS_CXX20 ^^^
 
 #if _HAS_CXX17
 namespace filesystem {
@@ -2839,10 +2839,10 @@ namespace filesystem {
 
             return _File_time;
         }
-#endif // ^^^ _HAS_CXX20
+#endif // ^^^ _HAS_CXX20 ^^^
     };
 } // namespace filesystem
-#endif // ^^^ _HAS_CXX17
+#endif // ^^^ _HAS_CXX17 ^^^
 
 #if _HAS_CXX20
 namespace chrono {
