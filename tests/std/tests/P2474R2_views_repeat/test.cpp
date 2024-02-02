@@ -287,7 +287,7 @@ struct tuple_tester {
 #ifdef __EDG__ // TRANSITION, VSO-1898933
     template <class Arg1, class Arg2>
     constexpr tuple_tester(Arg1&& arg1, Arg2&& arg2) : y(forward<Arg1>(arg1)), z(forward<Arg2>(arg2)) {}
-#endif // defined(__EDG__)
+#endif // ^^^ workaround ^^^
     forward_tester y;
     forward_tester z;
 };
