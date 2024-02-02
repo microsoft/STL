@@ -540,7 +540,7 @@ namespace test_convertible_to {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     STATIC_ASSERT(convertible_to<int volatile (&)[42], int volatile (&)[42]>);
     STATIC_ASSERT(convertible_to<int volatile (&)[42][13], int volatile (&)[42][13]>);
-#endif // TRANSITION, DevCom-1627396
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(convertible_to<int volatile (&&)[42], int volatile (&&)[42]>);
     STATIC_ASSERT(convertible_to<int volatile (&&)[42][13], int volatile (&&)[42][13]>);
 
@@ -723,7 +723,7 @@ namespace test_common_reference_with {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     STATIC_ASSERT(test<int volatile (&)[42], int volatile (&)[42]>());
     STATIC_ASSERT(test<int volatile (&)[42][13], int volatile (&)[42][13]>());
-#endif // TRANSITION, DevCom-1627396
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(test<int volatile (&&)[42], int volatile (&&)[42]>());
     STATIC_ASSERT(test<int volatile (&&)[42][13], int volatile (&&)[42][13]>());
 } // namespace test_common_reference_with
@@ -2049,7 +2049,7 @@ namespace test_swappable_with {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     STATIC_ASSERT(test<int volatile (&)[4], int volatile (&)[4]>());
     STATIC_ASSERT(test<int volatile (&)[3][4], int volatile (&)[3][4]>());
-#endif // TRANSITION, DevCom-1627396
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(test<MovableFriendSwap, MovableFriendSwap>() == is_permissive);
     STATIC_ASSERT(test<MovableFriendSwap&, MovableFriendSwap&>());
@@ -2259,7 +2259,7 @@ namespace test_copy_constructible {
 
     STATIC_ASSERT(!copy_constructible<NotMutableRef>);
     STATIC_ASSERT(!copy_constructible<NotConstRefRef>);
-#endif // TRANSITION, VSO-119526
+#endif // ^^^ no workaround ^^^
 
     struct UserProvidedCopy {
         UserProvidedCopy(UserProvidedCopy const&);

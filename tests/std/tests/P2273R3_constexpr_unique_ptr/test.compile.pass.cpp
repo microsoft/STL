@@ -29,7 +29,7 @@ constexpr bool test_P2273R3_constexpr_unique_ptr() {
         swap(p3, p4);
         assert(p3 == p3);
         assert(p3 != p4);
-#endif // defined(__EDG__) || defined(__clang__)
+#endif // ^^^ no workaround ^^^
 
         auto p5 = unique_ptr<int>{nullptr};
         assert(p5 == nullptr);

@@ -115,7 +115,7 @@ int main() {
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10416247
     STATIC_ASSERT(std::is_nothrow_default_constructible_v<std::gslice>); // strengthened
-#endif // defined(__clang__) || defined(__EDG__)
+#endif // ^^^ no workaround ^^^
     std::gslice gs{};
     STATIC_ASSERT(noexcept(gs.start())); // strengthened
 }

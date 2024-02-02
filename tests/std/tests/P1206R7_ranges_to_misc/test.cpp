@@ -210,7 +210,7 @@ int main() {
     test_nested_range();
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1588614
     static_assert(test_nested_range());
-#endif // defined(__clang__) || defined(__EDG__)
+#endif // ^^^ no workaround ^^^
 
     test_lwg3733();
     static_assert(test_lwg3733());

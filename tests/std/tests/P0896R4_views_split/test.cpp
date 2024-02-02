@@ -357,7 +357,7 @@ int main() {
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1516290
     STATIC_ASSERT(test_devcom_1559808());
-#endif // TRANSITION, DevCom-1516290
+#endif // ^^^ no workaround ^^^
     test_devcom_1559808();
 
     STATIC_ASSERT(test_LWG_3590());
