@@ -34,6 +34,15 @@ struct tagged_less {
     }
 };
 
+template <class Tag>
+struct tagged_zero_equality {
+    template <class T>
+    constexpr auto operator()(T&& t) const
+        -> decltype(std::forward<T>(t) == std::remove_cv_t<std::remove_reference_t<T>>{}) {
+        return std::forward<T>(t) == std::remove_cv_t<std::remove_reference_t<T>>{};
+    }
+};
+
 #if _HAS_CXX20
 template <class Tag>
 struct tagged_compare_three_way {
@@ -89,6 +98,7 @@ struct incomplete;
 using simple_truth         = tagged_truth<void>;
 using simple_identity      = tagged_identity<void>;
 using simple_left_selector = tagged_left_selector<void>;
+using simple_zero_equality = tagged_zero_equality<void>;
 using simple_urng          = tagged_urng<void>;
 
 using validator                = holder<incomplete>*;
@@ -97,6 +107,7 @@ using validating_equal         = tagged_equal<holder<incomplete>>;
 using validating_less          = tagged_less<holder<incomplete>>;
 using validating_identity      = tagged_identity<holder<incomplete>>;
 using validating_left_selector = tagged_left_selector<holder<incomplete>>;
+using validating_zero_equality = tagged_zero_equality<holder<incomplete>>;
 using validating_urng          = tagged_urng<holder<incomplete>>;
 
 #if _HAS_CXX20
@@ -253,7 +264,7 @@ void test_algorithms() {
 #endif // _HAS_CXX17
 
     // std::shuffle(varr, varr, simple_urng{}); // requires Cpp17ValueSwappable
-    // std::shuffle(iarr, iarr, validating_urng{}); // requires Cpp17ValueSwappable
+    std::shuffle(iarr, iarr, validating_urng{});
 
     // std::random_shuffle (removed in C++17) also requires Cpp17ValueSwappable
 
@@ -263,8 +274,59 @@ void test_algorithms() {
     // (void) std::shift_right(varr, varr, 0); // requires Cpp17ValueSwappable
 #endif // _HAS_CXX20
 
+    // std::sort(varr, varr); // requires Cpp17ValueSwappable
+    std::sort(iarr, iarr, validating_less{});
+
+    // std::stable_sort(varr, varr); // requires Cpp17ValueSwappable
+    std::stable_sort(iarr, iarr, validating_less{});
+
+    std::partial_sort(varr, varr, varr); // requires Cpp17ValueSwappable
+    std::partial_sort(iarr, iarr, iarr, validating_less{});
+
+    void* vparr[1]{};
+
+    (void) std::partial_sort_copy(varr, varr, varr2, varr2); // requires Cpp17ValueSwappable
+    (void) std::partial_sort_copy(varr, varr, vparr, vparr);
+    (void) std::partial_sort_copy(iarr, iarr, iarr2, iarr2, validating_less{});
+
+    (void) std::is_sorted(varr, varr);
+    (void) std::is_sorted(iarr, iarr, validating_less{});
+
+    (void) std::is_sorted_until(varr, varr);
+    (void) std::is_sorted_until(iarr, iarr, validating_less{});
+
+    // std::nth_element(varr, varr, varr); // requires Cpp17ValueSwappable
+    std::nth_element(iarr, iarr, iarr, validating_less{});
+
+    (void) std::lower_bound(varr, varr, validator{});
+    (void) std::lower_bound(iarr, iarr, 0, validating_less{});
+
+    (void) std::upper_bound(varr, varr, validator{});
+    (void) std::upper_bound(iarr, iarr, 0, validating_less{});
+
+    (void) std::equal_range(varr, varr, validator{});
+    (void) std::equal_range(iarr, iarr, 0, validating_less{});
+
+    (void) std::binary_search(varr, varr, validator{});
+    (void) std::binary_search(iarr, iarr, 0, validating_less{});
+
+    (void) std::is_partitioned(varr, varr, simple_zero_equality{});
+    (void) std::is_partitioned(iarr, iarr, validating_zero_equality{});
+
+    // (void) std::partition(varr, varr, simple_zero_equality{}); // requires Cpp17ValueSwappable
+    (void) std::partition(iarr, iarr, validating_zero_equality{});
+
+    // (void) std::stable_partition(varr, varr, simple_zero_equality{}); // requires Cpp17ValueSwappable
+    (void) std::stable_partition(iarr, iarr, validating_zero_equality{});
+
     int iarr3[1]{};
     validator varr3[1]{};
+
+    (void) std::partition_copy(varr, varr, varr2, varr3, simple_zero_equality{});
+    (void) std::partition_copy(iarr, iarr, iarr2, iarr3, validating_zero_equality{});
+
+    (void) std::partition_point(varr, varr, simple_zero_equality{});
+    (void) std::partition_point(iarr, iarr, validating_zero_equality{});
 
     (void) std::merge(varr, varr, varr2, varr2, varr3);
     (void) std::merge(iarr, iarr, iarr2, iarr2, iarr3, validating_less{});
@@ -479,8 +541,45 @@ void test_per_execution_policy() {
     // (void) std::shift_right(ExecutionPolicy, varr, varr, 0); // requires Cpp17ValueSwappable
 #endif // _HAS_CXX20
 
+    // std::sort(ExecutionPolicy, varr, varr); // requires Cpp17ValueSwappable
+    std::sort(ExecutionPolicy, iarr, iarr, validating_less{});
+
+    // std::stable_sort(ExecutionPolicy, varr, varr); // requires Cpp17ValueSwappable
+    std::stable_sort(ExecutionPolicy, iarr, iarr, validating_less{});
+
+    std::partial_sort(ExecutionPolicy, varr, varr, varr); // requires Cpp17ValueSwappable
+    std::partial_sort(ExecutionPolicy, iarr, iarr, iarr, validating_less{});
+
+    void* vparr[1]{};
+
+    (void) std::partial_sort_copy(varr, varr, varr2, varr2); // requires Cpp17ValueSwappable
+    (void) std::partial_sort_copy(ExecutionPolicy, varr, varr, vparr, vparr);
+    (void) std::partial_sort_copy(ExecutionPolicy, iarr, iarr, iarr2, iarr2, validating_less{});
+
+    (void) std::is_sorted(ExecutionPolicy, varr, varr);
+    (void) std::is_sorted(ExecutionPolicy, iarr, iarr, validating_less{});
+
+    (void) std::is_sorted_until(ExecutionPolicy, varr, varr);
+    (void) std::is_sorted_until(ExecutionPolicy, iarr, iarr, validating_less{});
+
+    // std::nth_element(ExecutionPolicy, varr, varr, varr); // requires Cpp17ValueSwappable
+    std::nth_element(ExecutionPolicy, iarr, iarr, iarr, validating_less{});
+
+    (void) std::is_partitioned(ExecutionPolicy, varr, varr, simple_zero_equality{});
+    (void) std::is_partitioned(ExecutionPolicy, iarr, iarr, validating_zero_equality{});
+
+    // (void) std::partition(ExecutionPolicy, varr, varr, simple_zero_equality{}); // requires Cpp17ValueSwappable
+    (void) std::partition(ExecutionPolicy, iarr, iarr, validating_zero_equality{});
+
+    // (void) std::stable_partition(
+    //     ExecutionPolicy, varr, varr, simple_zero_equality{}); // requires Cpp17ValueSwappable
+    (void) std::stable_partition(ExecutionPolicy, iarr, iarr, validating_zero_equality{});
+
     int iarr3[2]{};
     validator varr3[2]{};
+
+    (void) std::partition_copy(ExecutionPolicy, varr, varr, varr2, varr3, simple_zero_equality{});
+    (void) std::partition_copy(ExecutionPolicy, iarr, iarr, iarr2, iarr3, validating_zero_equality{});
 
     (void) std::merge(ExecutionPolicy, varr, varr, varr2, varr2, varr3);
     (void) std::merge(ExecutionPolicy, iarr, iarr, iarr2, iarr2, iarr3, validating_less{});
