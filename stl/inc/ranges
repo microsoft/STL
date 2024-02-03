@@ -7,9 +7,9 @@
 #define _RANGES_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#ifndef __cpp_lib_ranges
+#if !_HAS_CXX20
 _EMIT_STL_WARNING(STL4038, "The contents of <ranges> are available only with C++20 or later.");
-#else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #include <__msvc_int128.hpp>
 #include <iosfwd>
 #include <iterator>
@@ -10427,6 +10427,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // ^^^ defined(__cpp_lib_ranges) ^^^
+#endif // ^^^ _HAS_CXX20 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _RANGES_
