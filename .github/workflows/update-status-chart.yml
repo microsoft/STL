@@ -6,6 +6,8 @@ on:
   schedule:
     - cron: "0 7 * * *"
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     if: ${{ github.repository == 'microsoft/STL' }}
