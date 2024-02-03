@@ -10261,7 +10261,6 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Cartesian_product_fn cartesian_product;
     } // namespace views
 
-#ifdef __cpp_lib_ranges_to_container
     template <class _Range, class _Container>
     concept _Sized_and_reservable = sized_range<_Range> && sized_range<_Container>
                                  && requires(_Container& _Cont, const range_size_t<_Container> _Count) {
@@ -10415,7 +10414,6 @@ namespace ranges {
     _NODISCARD constexpr auto to(_Types&&... _Args) {
         return _Range_closure<_To_template_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
     }
-#endif // defined(__cpp_lib_ranges_to_container)
 #endif // _HAS_CXX23
 } // namespace ranges
 
