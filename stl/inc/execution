@@ -2922,8 +2922,8 @@ struct _Static_partitioned_stable_sort3 {
                     const size_t _Base = _Visitor._Base;
                     const size_t _Mid  = _Base + _Visitor._Shift;
                     const size_t _End  = _Mid + _Visitor._Shift;
-                    _STD _Merge_move(_Temp_buf._Get_first(_Base), _Temp_buf._Get_first(_Mid), _Temp_buf._Get_first(_End),
-                        _Basis._Get_first(_Base, _Team._Get_chunk_offset(_Base)), _Pred);
+                    _STD _Merge_move(_Temp_buf._Get_first(_Base), _Temp_buf._Get_first(_Mid),
+                        _Temp_buf._Get_first(_End), _Basis._Get_first(_Base, _Team._Get_chunk_offset(_Base)), _Pred);
                 }
 
                 if (!_Visitor._Go_to_parent()) {
@@ -3005,7 +3005,8 @@ void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) no
             const auto _Tree_height = _Get_stable_sort_tree_height(static_cast<size_t>(_Count), _Hw_threads);
             if (_Tree_height != 0) {
                 _TRY_BEGIN
-                _Static_partitioned_stable_sort3 _Operation{_Temp_buf, _Count, _Tree_height, _UFirst, _STD _Pass_fn(_Pred)};
+                _Static_partitioned_stable_sort3 _Operation{
+                    _Temp_buf, _Count, _Tree_height, _UFirst, _STD _Pass_fn(_Pred)};
                 _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return;
                 _CATCH(const _Parallelism_resources_exhausted&)
@@ -3078,7 +3079,8 @@ _NODISCARD _FwdIt is_sorted_until(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pre
             if (_Count >= 3) { // ... with at least 3 elements
                 _TRY_BEGIN
                 --_Count; // note unusual offset partitioning
-                _Static_partitioned_is_sorted_until2 _Operation{_UFirst, _ULast, _Hw_threads, _Count, _STD _Pass_fn(_Pred)};
+                _Static_partitioned_is_sorted_until2 _Operation{
+                    _UFirst, _ULast, _Hw_threads, _Count, _STD _Pass_fn(_Pred)};
                 _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 _STD _Seek_wrapped(_First, _Operation._Results._Get_result());
                 return _First;
@@ -3490,17 +3492,18 @@ struct _Static_partitioned_partition2 {
             const auto _Range = _Basis._Get_chunk(_Key);
             if (_Merge_index == 0 || _Chunk_locals[_Merge_index - 1]._State.load() == _Chunk_state::_Done) {
                 // no predecessor, so run serial algorithm directly into results
-                const auto _Chunk_results = _Merge_index == 0 || _Results == _Range._First
-                                              ? _STD _Partition_with_count_unchecked(_Range._First, _Range._Last, _Pred)
-                                              : _STD _Partition_swap_backward(_Range._First, _Range._Last, _Results, _Pred);
-                _Results                  = _Chunk_results.first;
-                _Chunk_data._Chunk_trues  = _Chunk_results.second;
+                const auto _Chunk_results =
+                    _Merge_index == 0 || _Results == _Range._First
+                        ? _STD _Partition_with_count_unchecked(_Range._First, _Range._Last, _Pred)
+                        : _STD _Partition_swap_backward(_Range._First, _Range._Last, _Results, _Pred);
+                _Results                 = _Chunk_results.first;
+                _Chunk_data._Chunk_trues = _Chunk_results.second;
                 _Results_falses += _Key._Size - _Chunk_results.second;
                 _Chunk_data._State.store(_Chunk_state::_Done);
                 ++_Merge_index; // this chunk is already merged
             } else {
                 // predecessor, run serial algorithm in place and attempt to merge later
-                auto _Chunk_results              = _STD _Partition_with_count_unchecked(_Range._First, _Range._Last, _Pred);
+                auto _Chunk_results = _STD _Partition_with_count_unchecked(_Range._First, _Range._Last, _Pred);
                 _Chunk_data._Beginning_of_falses = _Chunk_results.first;
                 _Chunk_data._Chunk_trues         = _Chunk_results.second;
                 _Chunk_data._State.store(_Chunk_state::_Merging);
