@@ -443,6 +443,9 @@ std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_wit
 std/containers/sequences/array/array.cons/initialization.pass.cpp:0 FAIL
 std/containers/sequences/array/array.cons/initialization.pass.cpp:1 FAIL
 
+# DevCom-10456523: MSVC incorrectly raises constant evaluation failure in pointer comparison
+std/algorithms/robust_against_adl.compile.pass.cpp:0 FAIL
+
 # VSO-1923988: constexpr evaluation performs an assignment with a derived type when it should use a base type
 std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:1 FAIL
@@ -542,9 +545,6 @@ std/language.support/cmp/cmp.alg/compare_weak_order_fallback.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/partial_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/strong_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
-
-# GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
-std/algorithms/robust_against_adl.compile.pass.cpp FAIL
 
 # GH-3100: <memory> etc.: ADL should be avoided when calling _Construct_in_place and its friends
 std/utilities/function.objects/func.wrap/func.wrap.func/robust_against_adl.pass.cpp FAIL
