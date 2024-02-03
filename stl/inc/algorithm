@@ -1606,11 +1606,11 @@ _EXPORT_STD template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
 _CONSTEXPR20 pair<_OutIt1, _OutIt2> partition_copy(
     _InIt _First, _InIt _Last, _OutIt1 _Dest_true, _OutIt2 _Dest_false, _Pr _Pred) {
     // copy true partition to _Dest_true, false to _Dest_false
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    auto _UDest_true  = _Get_unwrapped_unverified(_Dest_true);
-    auto _UDest_false = _Get_unwrapped_unverified(_Dest_false);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    auto _UDest_true  = _STD _Get_unwrapped_unverified(_Dest_true);
+    auto _UDest_false = _STD _Get_unwrapped_unverified(_Dest_false);
     for (; _UFirst != _ULast; ++_UFirst) {
         if (_Pred(*_UFirst)) {
             *_UDest_true = *_UFirst;
@@ -1621,8 +1621,8 @@ _CONSTEXPR20 pair<_OutIt1, _OutIt2> partition_copy(
         }
     }
 
-    _Seek_wrapped(_Dest_false, _UDest_false);
-    _Seek_wrapped(_Dest_true, _UDest_true);
+    _STD _Seek_wrapped(_Dest_false, _UDest_false);
+    _STD _Seek_wrapped(_Dest_true, _UDest_true);
     return {_Dest_true, _Dest_false};
 }
 
@@ -1636,7 +1636,7 @@ pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _F
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt3);
-    return _STD partition_copy(_First, _Last, _Dest_true, _Dest_false, _Pass_fn(_Pred));
+    return _STD partition_copy(_First, _Last, _Dest_true, _Dest_false, _STD _Pass_fn(_Pred));
 }
 
 #ifdef __cpp_lib_concepts
@@ -1651,13 +1651,13 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out1> && indirectly_copyable<_It, _Out2>
         constexpr partition_copy_result<_It, _Out1, _Out2> operator()(
             _It _First, _Se _Last, _Out1 _Dest_true, _Out2 _Dest_false, _Pr _Pred, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Partition_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _Get_unwrapped_unverified(_STD move(_Dest_true)),
-                _Get_unwrapped_unverified(_STD move(_Dest_false)), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            _Seek_wrapped(_Dest_true, _STD move(_UResult.out1));
-            _Seek_wrapped(_Dest_false, _STD move(_UResult.out2));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Partition_copy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Get_unwrapped_unverified(_STD move(_Dest_true)),
+                _STD _Get_unwrapped_unverified(_STD move(_Dest_false)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_Dest_true, _STD move(_UResult.out1));
+            _STD _Seek_wrapped(_Dest_false, _STD move(_UResult.out2));
             return {_STD move(_First), _STD move(_Dest_true), _STD move(_Dest_false)};
         }
 
@@ -1667,12 +1667,12 @@ namespace ranges {
         constexpr partition_copy_result<borrowed_iterator_t<_Rng>, _Out1, _Out2> operator()(
             _Rng&& _Range, _Out1 _Dest_true, _Out2 _Dest_false, _Pr _Pred, _Pj _Proj = {}) const {
             auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Partition_copy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _Get_unwrapped_unverified(_STD move(_Dest_true)), _Get_unwrapped_unverified(_STD move(_Dest_false)),
-                _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            _Seek_wrapped(_Dest_true, _STD move(_UResult.out1));
-            _Seek_wrapped(_Dest_false, _STD move(_UResult.out2));
+            auto _UResult = _Partition_copy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                _STD _Get_unwrapped_unverified(_STD move(_Dest_true)), _STD _Get_unwrapped_unverified(_STD move(_Dest_false)),
+                _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_Dest_true, _STD move(_UResult.out1));
+            _STD _Seek_wrapped(_Dest_false, _STD move(_UResult.out2));
             return {_STD move(_First), _STD move(_Dest_true), _STD move(_Dest_false)};
         }
 
@@ -1709,9 +1709,9 @@ namespace ranges {
 _EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_partitioned(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if [_First, _Last) partitioned by _Pred
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
 
     for (;; ++_UFirst) { // skip true partition
         if (_UFirst == _ULast) {
@@ -1744,15 +1744,15 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            return _Is_partitioned_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
-                _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _STD _Adl_verify_range(_First, _Last);
+            return _Is_partitioned_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)),
+                _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
         _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            return _Is_partitioned_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Is_partitioned_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
     private:
@@ -1790,16 +1790,16 @@ namespace ranges {
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find beginning of false partition in [_First, _Last)
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _Count       = _STD distance(_UFirst, _ULast);
     while (0 < _Count) { // divide and conquer, find half that contains answer
         const auto _Count2 = static_cast<_Iter_diff_t<_FwdIt>>(_Count / 2);
         const auto _UMid   = _STD next(_UFirst, _Count2);
 
         if (_Pred(*_UMid)) { // try top half
-            _UFirst = _Next_iter(_UMid);
+            _UFirst = _STD _Next_iter(_UMid);
             _Count -= _Count2;
             --_Count;
         } else {
@@ -1807,7 +1807,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr 
         }
     }
 
-    _Seek_wrapped(_First, _UFirst);
+    _STD _Seek_wrapped(_First, _UFirst);
     return _First;
 }
 
@@ -1818,17 +1818,17 @@ namespace ranges {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             if constexpr (sized_sentinel_for<_Se, _It>) {
-                const auto _Length = _Unwrap_sent<_It>(_STD move(_Last)) - _UFirst;
-                _UFirst = _Partition_point_n_unchecked(_STD move(_UFirst), _Length, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                const auto _Length = _RANGES _Unwrap_sent<_It>(_STD move(_Last)) - _UFirst;
+                _UFirst = _Partition_point_n_unchecked(_STD move(_UFirst), _Length, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             } else {
                 _UFirst = _Partition_point_unchecked(
-                    _STD move(_UFirst), _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                    _STD move(_UFirst), _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             }
 
-            _Seek_wrapped(_First, _STD move(_UFirst));
+            _STD _Seek_wrapped(_First, _STD move(_UFirst));
             return _First;
         }
 
@@ -1837,12 +1837,12 @@ namespace ranges {
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             if constexpr (sized_range<_Rng>) {
                 const auto _Length = _RANGES distance(_Range);
-                auto _UFirst = _Partition_point_n_unchecked(_Ubegin(_Range), _Length, _Pass_fn(_Pred), _Pass_fn(_Proj));
-                return _Rewrap_iterator(_Range, _STD move(_UFirst));
+                auto _UFirst = _Partition_point_n_unchecked(_Ubegin(_Range), _Length, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+                return _RANGES _Rewrap_iterator(_Range, _STD move(_UFirst));
             } else {
                 auto _UFirst =
-                    _Partition_point_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-                return _Rewrap_iterator(_Range, _STD move(_UFirst));
+                    _Partition_point_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+                return _RANGES _Rewrap_iterator(_Range, _STD move(_UFirst));
             }
         }
 
@@ -5791,14 +5791,14 @@ namespace ranges {
 _EXPORT_STD template <class _FwdIt, class _Pr>
 _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // move elements satisfying _Pred to beginning of sequence
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst = _Get_unwrapped(_First);
-    auto _ULast  = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst = _STD _Get_unwrapped(_First);
+    auto _ULast  = _STD _Get_unwrapped(_Last);
     if constexpr (_Is_cpp17_bidi_iter_v<_FwdIt>) {
         for (;;) { // find any out-of-order pair
             for (;;) { // skip in-place elements at beginning
                 if (_UFirst == _ULast) {
-                    _Seek_wrapped(_First, _UFirst);
+                    _STD _Seek_wrapped(_First, _UFirst);
                     return _First;
                 }
 
@@ -5812,7 +5812,7 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
             do { // skip in-place elements at end
                 --_ULast;
                 if (_UFirst == _ULast) {
-                    _Seek_wrapped(_First, _UFirst);
+                    _STD _Seek_wrapped(_First, _UFirst);
                     return _First;
                 }
             } while (!_Pred(*_ULast));
@@ -5823,7 +5823,7 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     } else {
         for (;;) { // skip in-place elements at beginning
             if (_UFirst == _ULast) {
-                _Seek_wrapped(_First, _UFirst);
+                _STD _Seek_wrapped(_First, _UFirst);
                 return _First;
             }
 
@@ -5842,7 +5842,7 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
         }
     }
 
-    _Seek_wrapped(_First, _UFirst);
+    _STD _Seek_wrapped(_First, _UFirst);
     return _First;
 }
 
@@ -5857,18 +5857,18 @@ namespace ranges {
         template <permutable _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         constexpr subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _Partition_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UResult = _Partition_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            auto _UResult = _Partition_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+            auto _UResult = _Partition_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
 
     private:
@@ -6011,7 +6011,7 @@ pair<_BidIt, _Iter_diff_t<_BidIt>> _Stable_partition_unchecked1(_BidIt _First, _
 
         if (_Pred(*_Left)) { // excluded the false range before _Mid, invariants reestablished, recurse
             const pair<_BidIt, _Diff> _Low =
-                _Stable_partition_unchecked1(_First, _Left, _Pred, _Left_true_count, _Temp_ptr, _Capacity);
+                _STD _Stable_partition_unchecked1(_First, _Left, _Pred, _Left_true_count, _Temp_ptr, _Capacity);
             _Left            = _Low.first;
             _Left_true_count = _Low.second;
             break;
@@ -6034,7 +6034,7 @@ pair<_BidIt, _Iter_diff_t<_BidIt>> _Stable_partition_unchecked1(_BidIt _First, _
             const _Diff _Right_count = _Count - _Mid_offset;
             const _Diff _Remaining   = _Right_count - _Right_true_count;
             const pair<_BidIt, _Diff> _High =
-                _Stable_partition_unchecked1(_Right, _Last, _Pred, _Remaining, _Temp_ptr, _Capacity);
+                _STD _Stable_partition_unchecked1(_Right, _Last, _Pred, _Remaining, _Temp_ptr, _Capacity);
             _Right = _High.first;
             _Right_true_count += _High.second;
             break;
@@ -6045,7 +6045,7 @@ pair<_BidIt, _Iter_diff_t<_BidIt>> _Stable_partition_unchecked1(_BidIt _First, _
     }
 
     // swap the [_Left, _Mid) false range with the [_Mid, _Right) true range
-    const _BidIt _Partition_point = _Buffered_rotate_unchecked(_Left, _Mid, _Right,
+    const _BidIt _Partition_point = _STD _Buffered_rotate_unchecked(_Left, _Mid, _Right,
         static_cast<_Diff>(_Mid_offset - _Left_true_count), _Right_true_count, _Temp_ptr, _Capacity);
     return pair<_BidIt, _Diff>(_Partition_point, static_cast<_Diff>(_Left_true_count + _Right_true_count));
 }
@@ -6080,14 +6080,14 @@ _BidIt _Stable_partition_unchecked(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     const _Diff _Temp_count  = _STD distance(_First, _Last); // _Total_count - 1 since we never need to store *_Last
     const _Diff _Total_count = _Temp_count + static_cast<_Diff>(1);
     _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{_Temp_count};
-    return _Stable_partition_unchecked1(_First, _Last, _Pred, _Total_count, _Temp_buf._Data, _Temp_buf._Capacity).first;
+    return _STD _Stable_partition_unchecked1(_First, _Last, _Pred, _Total_count, _Temp_buf._Data, _Temp_buf._Capacity).first;
 }
 
 _EXPORT_STD template <class _BidIt, class _Pr>
 _BidIt stable_partition(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     // partition preserving order of equivalents
-    _Adl_verify_range(_First, _Last);
-    _Seek_wrapped(_First, _Stable_partition_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred)));
+    _STD _Adl_verify_range(_First, _Last);
+    _STD _Seek_wrapped(_First, _STD _Stable_partition_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _STD _Pass_fn(_Pred)));
     return _First;
 }
 
@@ -6097,7 +6097,7 @@ _BidIt stable_partition(_ExPo&&, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcep
     // partition preserving order of equivalents
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_CPP17_MUTABLE_BIDIRECTIONAL_ITERATOR(_BidIt);
-    return _STD stable_partition(_First, _Last, _Pass_fn(_Pred));
+    return _STD stable_partition(_First, _Last, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX17
 
@@ -6143,23 +6143,23 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
             requires permutable<_It>
         subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
-            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
 
             auto _UResult =
-                _Stable_partition_common(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+                _Stable_partition_common(_STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
         template <bidirectional_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires permutable<iterator_t<_Rng>>
         borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            auto _ULast = _Get_final_iterator_unwrapped(_Range);
+            auto _ULast = _RANGES _Get_final_iterator_unwrapped(_Range);
             auto _UResult =
-                _Stable_partition_common(_Ubegin(_Range), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+                _Stable_partition_common(_Ubegin(_Range), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
         }
 
     private:
@@ -6880,12 +6880,12 @@ namespace ranges {
             indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr _It operator()(
             _It _First, _Se _Last, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Unwrap_iter<_Se>(_STD move(_First));
-            const auto _Count = _RANGES distance(_UFirst, _Unwrap_sent<_It>(_STD move(_Last)));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            const auto _Count = _RANGES distance(_UFirst, _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
             _UFirst =
-                _RANGES _Lower_bound_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UFirst));
+                _RANGES _Lower_bound_unchecked(_STD move(_UFirst), _Count, _Val, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            _STD _Seek_wrapped(_First, _STD move(_UFirst));
             return _First;
         }
 
@@ -6895,8 +6895,8 @@ namespace ranges {
             _Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _Count = _RANGES distance(_Range);
             auto _UResult =
-                _RANGES _Lower_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_iterator(_Range, _STD move(_UResult));
+                _RANGES _Lower_bound_unchecked(_Ubegin(_Range), _Count, _Val, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
@@ -6931,12 +6931,12 @@ namespace ranges {
             indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr _It operator()(
             _It _First, _Se _Last, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Unwrap_iter<_Se>(_STD move(_First));
-            const auto _Count = _RANGES distance(_UFirst, _Unwrap_sent<_It>(_STD move(_Last)));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            const auto _Count = _RANGES distance(_UFirst, _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
             _UFirst =
-                _RANGES _Upper_bound_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UFirst));
+                _RANGES _Upper_bound_unchecked(_STD move(_UFirst), _Count, _Val, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            _STD _Seek_wrapped(_First, _STD move(_UFirst));
             return _First;
         }
 
@@ -6946,8 +6946,8 @@ namespace ranges {
             _Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _Count = _RANGES distance(_Range);
             auto _UResult =
-                _RANGES _Upper_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_iterator(_Range, _STD move(_UResult));
+                _RANGES _Upper_bound_unchecked(_Ubegin(_Range), _Count, _Val, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
@@ -6958,33 +6958,33 @@ namespace ranges {
 _EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find range equivalent to _Val
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
 
     using _Diff  = _Iter_diff_t<_FwdIt>;
     _Diff _Count = _STD distance(_UFirst, _ULast);
 
     for (;;) { // divide and conquer, check midpoint
         if (_Count <= 0) {
-            _Seek_wrapped(_Last, _UFirst); // empty range
-            _Seek_wrapped(_First, _UFirst);
+            _STD _Seek_wrapped(_Last, _UFirst); // empty range
+            _STD _Seek_wrapped(_First, _UFirst);
             break;
         }
 
         _Diff _Count2    = _Count / 2;
         const auto _UMid = _STD next(_UFirst, _Count2);
         if (_DEBUG_LT_PRED(_Pred, *_UMid, _Val)) { // range begins above _UMid, loop
-            _UFirst = _Next_iter(_UMid);
+            _UFirst = _STD _Next_iter(_UMid);
             _Count -= _Count2 + 1;
         } else if (_Pred(_Val, *_UMid)) {
             _Count = _Count2; // range in first half, loop
         } else { // range straddles _UMid, find each end and return
-            auto _UFirst2 = _STD lower_bound(_UFirst, _UMid, _Val, _Pass_fn(_Pred));
+            auto _UFirst2 = _STD lower_bound(_UFirst, _UMid, _Val, _STD _Pass_fn(_Pred));
             _STD advance(_UFirst, _Count);
-            auto _ULast2 = _STD upper_bound(_Next_iter(_UMid), _UFirst, _Val, _Pass_fn(_Pred));
-            _Seek_wrapped(_Last, _ULast2);
-            _Seek_wrapped(_First, _UFirst2);
+            auto _ULast2 = _STD upper_bound(_STD _Next_iter(_UMid), _UFirst, _Val, _STD _Pass_fn(_Pred));
+            _STD _Seek_wrapped(_Last, _ULast2);
+            _STD _Seek_wrapped(_First, _UFirst2);
             break;
         }
     }
@@ -7006,11 +7006,11 @@ namespace ranges {
             indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr subrange<_It> operator()(
             _It _First, _Se _Last, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Unwrap_iter<_Se>(_STD move(_First));
-            const auto _Count = _RANGES distance(_UFirst, _Unwrap_sent<_It>(_STD move(_Last)));
-            auto _UResult = _Equal_range_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            const auto _Count = _RANGES distance(_UFirst, _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
+            auto _UResult = _Equal_range_unchecked(_STD move(_UFirst), _Count, _Val, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
         }
 
         template <forward_range _Rng, class _Ty, class _Pj = identity,
@@ -7018,9 +7018,9 @@ namespace ranges {
         _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _Count = _RANGES distance(_Range);
-            auto _UResult     = _Equal_range_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            auto _UResult     = _Equal_range_unchecked(_Ubegin(_Range), _Count, _Val, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             auto _Result      = _RANGES begin(_Range);
-            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Result, _STD move(_UResult));
+            return _RANGES _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Result, _STD move(_UResult));
         }
 
     private:
@@ -7062,10 +7062,10 @@ namespace ranges {
 _EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // test if _Val equivalent to some element
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
-    _UFirst           = _STD lower_bound(_UFirst, _ULast, _Val, _Pass_fn(_Pred));
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+    _UFirst           = _STD lower_bound(_UFirst, _ULast, _Val, _STD _Pass_fn(_Pred));
     return _UFirst != _ULast && !_Pred(_Val, *_UFirst);
 }
 
@@ -7083,12 +7083,12 @@ namespace ranges {
             indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr bool operator()(
             _It _First, _Se _Last, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst      = _Unwrap_iter<_Se>(_STD move(_First));
-            const auto _ULast = _Unwrap_sent<_It>(_STD move(_Last));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            const auto _ULast = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
             const auto _Count = _RANGES distance(_UFirst, _ULast);
             _UFirst =
-                _RANGES _Lower_bound_unchecked(_STD move(_UFirst), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _RANGES _Lower_bound_unchecked(_STD move(_UFirst), _Count, _Val, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _UFirst != _ULast && !_STD invoke(_Pred, _Val, _STD invoke(_Proj, *_UFirst));
         }
 
@@ -7097,7 +7097,7 @@ namespace ranges {
         _NODISCARD constexpr bool operator()(_Rng&& _Range, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _Count = _RANGES distance(_Range);
             const auto _UFirst =
-                _RANGES _Lower_bound_unchecked(_Ubegin(_Range), _Count, _Val, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _RANGES _Lower_bound_unchecked(_Ubegin(_Range), _Count, _Val, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _UFirst != _Uend(_Range) && !_STD invoke(_Pred, _Val, _STD invoke(_Proj, *_UFirst));
         }
     };
@@ -7870,7 +7870,7 @@ _CONSTEXPR20 _BidIt _Insertion_sort_unchecked(const _BidIt _First, const _BidIt 
             _Iter_value_t<_BidIt> _Val(_STD move(*_Mid));
 
             if (_DEBUG_LT_PRED(_Pred, _Val, *_First)) { // found new earliest element, move to front
-                _Move_backward_unchecked(_First, _Mid, ++_Hole);
+                _STD _Move_backward_unchecked(_First, _Mid, ++_Hole);
                 *_First = _STD move(_Val);
             } else { // look for insertion point after first
                 for (_BidIt _Prev = _Hole; _DEBUG_LT_PRED(_Pred, _Val, *--_Prev); _Hole = _Prev) {
@@ -7909,12 +7909,12 @@ _CONSTEXPR20 void _Guess_median_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _La
     if (40 < _Count) { // Tukey's ninther
         const _Diff _Step     = (_Count + 1) >> 3; // +1 can't overflow because range was made inclusive in caller
         const _Diff _Two_step = _Step << 1; // note: intentionally discards low-order bit
-        _Med3_unchecked(_First, _First + _Step, _First + _Two_step, _Pred);
-        _Med3_unchecked(_Mid - _Step, _Mid, _Mid + _Step, _Pred);
-        _Med3_unchecked(_Last - _Two_step, _Last - _Step, _Last, _Pred);
-        _Med3_unchecked(_First + _Step, _Mid, _Last - _Step, _Pred);
+        _STD _Med3_unchecked(_First, _First + _Step, _First + _Two_step, _Pred);
+        _STD _Med3_unchecked(_Mid - _Step, _Mid, _Mid + _Step, _Pred);
+        _STD _Med3_unchecked(_Last - _Two_step, _Last - _Step, _Last, _Pred);
+        _STD _Med3_unchecked(_First + _Step, _Mid, _Last - _Step, _Pred);
     } else {
-        _Med3_unchecked(_First, _Mid, _Last, _Pred);
+        _STD _Med3_unchecked(_First, _Mid, _Last, _Pred);
     }
 }
 
@@ -7922,12 +7922,12 @@ template <class _RanIt, class _Pr>
 _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // partition [_First, _Last)
     _RanIt _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
-    _Guess_median_unchecked(_First, _Mid, _Prev_iter(_Last), _Pred);
+    _STD _Guess_median_unchecked(_First, _Mid, _STD _Prev_iter(_Last), _Pred);
     _RanIt _Pfirst = _Mid;
-    _RanIt _Plast  = _Next_iter(_Pfirst);
+    _RanIt _Plast  = _STD _Next_iter(_Pfirst);
 
-    while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Pfirst), *_Pfirst)
-           && !_Pred(*_Pfirst, *_Prev_iter(_Pfirst))) {
+    while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *_STD _Prev_iter(_Pfirst), *_Pfirst)
+           && !_Pred(*_Pfirst, *_STD _Prev_iter(_Pfirst))) {
         --_Pfirst;
     }
 
@@ -7953,7 +7953,7 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
         }
 
         for (; _First < _Glast; --_Glast) {
-            const auto _Glast_prev = _Prev_iter(_Glast);
+            const auto _Glast_prev = _STD _Prev_iter(_Glast);
             if (_DEBUG_LT_PRED(_Pred, *_Glast_prev, *_Pfirst)) {
                 continue;
             } else if (_Pred(*_Pfirst, *_Glast_prev)) {
@@ -7994,26 +7994,26 @@ _CONSTEXPR20 void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_Ran
     // order [_First, _Last)
     for (;;) {
         if (_Last - _First <= _ISORT_MAX) { // small
-            _Insertion_sort_unchecked(_First, _Last, _Pred);
+            _STD _Insertion_sort_unchecked(_First, _Last, _Pred);
             return;
         }
 
         if (_Ideal <= 0) { // heap sort if too many divisions
-            _Make_heap_unchecked(_First, _Last, _Pred);
-            _Sort_heap_unchecked(_First, _Last, _Pred);
+            _STD _Make_heap_unchecked(_First, _Last, _Pred);
+            _STD _Sort_heap_unchecked(_First, _Last, _Pred);
             return;
         }
 
         // divide and conquer by quicksort
-        auto _Mid = _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
+        auto _Mid = _STD _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
 
         _Ideal = (_Ideal >> 1) + (_Ideal >> 2); // allow 1.5 log2(N) divisions
 
         if (_Mid.first - _First < _Last - _Mid.second) { // loop on second half
-            _Sort_unchecked(_First, _Mid.first, _Ideal, _Pred);
+            _STD _Sort_unchecked(_First, _Mid.first, _Ideal, _Pred);
             _First = _Mid.second;
         } else { // loop on first half
-            _Sort_unchecked(_Mid.second, _Last, _Ideal, _Pred);
+            _STD _Sort_unchecked(_Mid.second, _Last, _Ideal, _Pred);
             _Last = _Mid.first;
         }
     }
@@ -8021,10 +8021,10 @@ _CONSTEXPR20 void _Sort_unchecked(_RanIt _First, _RanIt _Last, _Iter_diff_t<_Ran
 
 _EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void sort(const _RanIt _First, const _RanIt _Last, _Pr _Pred) { // order [_First, _Last)
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    _Sort_unchecked(_UFirst, _ULast, _ULast - _UFirst, _Pass_fn(_Pred));
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
+    _STD _Sort_unchecked(_UFirst, _ULast, _ULast - _UFirst, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _RanIt>
@@ -8103,12 +8103,12 @@ namespace ranges {
         if (_Count > 40) { // Tukey's ninther
             const _Diff _Step     = (_Count + 1) >> 3; // +1 can't overflow because range was made inclusive in caller
             const _Diff _Two_step = _Step << 1; // note: intentionally discards low-order bit
-            _Med3_common(_First, _First + _Step, _First + _Two_step, _Pred, _Proj);
-            _Med3_common(_Mid - _Step, _Mid, _Mid + _Step, _Pred, _Proj);
-            _Med3_common(_Last - _Two_step, _Last - _Step, _Last, _Pred, _Proj);
-            _Med3_common(_First + _Step, _Mid, _Last - _Step, _Pred, _Proj);
+            _RANGES _Med3_common(_First, _First + _Step, _First + _Two_step, _Pred, _Proj);
+            _RANGES _Med3_common(_Mid - _Step, _Mid, _Mid + _Step, _Pred, _Proj);
+            _RANGES _Med3_common(_Last - _Two_step, _Last - _Step, _Last, _Pred, _Proj);
+            _RANGES _Med3_common(_First + _Step, _Mid, _Last - _Step, _Pred, _Proj);
         } else {
-            _Med3_common(_First, _Mid, _Last, _Pred, _Proj);
+            _RANGES _Med3_common(_First, _Mid, _Last, _Pred, _Proj);
         }
     }
 
@@ -8119,7 +8119,7 @@ namespace ranges {
         // elements greater than pivot; return the equal partition as a subrange.
 
         _It _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
-        _Guess_median_common(_First, _Mid, _RANGES prev(_Last), _Pred, _Proj);
+        _RANGES _Guess_median_common(_First, _Mid, _RANGES prev(_Last), _Pred, _Proj);
         _It _Pfirst = _Mid;
         _It _Plast  = _RANGES next(_Pfirst);
 
@@ -8193,12 +8193,12 @@ namespace ranges {
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<_It, _Pr, _Pj>
         constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
-            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
-            _Seek_wrapped(_First, _ULast);
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _STD _Seek_wrapped(_First, _ULast);
             const auto _Count = _ULast - _UFirst;
-            _Sort_common(_STD move(_UFirst), _STD move(_ULast), _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Sort_common(_STD move(_UFirst), _STD move(_ULast), _Count, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _First;
         }
 
@@ -8206,10 +8206,10 @@ namespace ranges {
             requires sortable<iterator_t<_Rng>, _Pr, _Pj>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UFirst      = _Ubegin(_Range);
-            auto _ULast       = _Get_final_iterator_unwrapped(_Range);
+            auto _ULast       = _RANGES _Get_final_iterator_unwrapped(_Range);
             const auto _Count = _ULast - _UFirst;
-            _Sort_common(_STD move(_UFirst), _ULast, _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_iterator(_Range, _STD move(_ULast));
+            _Sort_common(_STD move(_UFirst), _ULast, _Count, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_iterator(_Range, _STD move(_ULast));
         }
 
     private:
@@ -8226,16 +8226,16 @@ namespace ranges {
                 }
 
                 if (_Ideal <= 0) { // heap sort if too many divisions
-                    _Make_heap_common(_First, _Last, _Pred, _Proj);
-                    _Sort_heap_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
+                    _RANGES _Make_heap_common(_First, _Last, _Pred, _Proj);
+                    _RANGES _Sort_heap_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
                     return;
                 }
 
                 // divide and conquer by quicksort
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10452846
-                auto [_Mid_first, _Mid_last] = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+                auto [_Mid_first, _Mid_last] = _RANGES _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
 #else // ^^^ no workaround / workaround vvv
-                auto _Mid       = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+                auto _Mid       = _RANGES _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
                 auto _Mid_first = _Mid.begin();
                 auto _Mid_last  = _Mid.end();
 #endif // TRANSITION, DevCom-10452846
@@ -8323,7 +8323,7 @@ void _Uninitialized_chunked_merge_unchecked2(
         const auto _Chunk2 = (_STD min)(_Isort_max<_BidIt>, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
-        _Backout._Last     = _Uninitialized_merge_move(_First, _Mid1, _Mid2, _Backout._Last, _Pred);
+        _Backout._Last     = _STD _Uninitialized_merge_move(_First, _Mid1, _Mid2, _Backout._Last, _Pred);
         _First             = _Mid2;
     }
 
@@ -8343,7 +8343,7 @@ void _Chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _OutIt _Dest, c
         const auto _Chunk2 = (_STD min)(_Chunk, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
-        _Dest              = _Merge_move(_First, _Mid1, _Mid2, _Dest, _Pred);
+        _Dest              = _STD _Merge_move(_First, _Mid1, _Mid2, _Dest, _Pred);
         _First             = _Mid2;
     }
 
@@ -8355,10 +8355,10 @@ void _Insertion_sort_isort_max_chunks(_BidIt _First, const _BidIt _Last, _Iter_d
     // insertion sort every chunk of distance _Isort_max<_BidIt> in [_First, _Last)
     // pre: _Count == distance(_First, _Last)
     for (; _Isort_max<_BidIt> < _Count; _Count -= _Isort_max<_BidIt>) { // sort chunks
-        _First = _Insertion_sort_unchecked(_First, _STD next(_First, _Isort_max<_BidIt>), _Pred);
+        _First = _STD _Insertion_sort_unchecked(_First, _STD next(_First, _Isort_max<_BidIt>), _Pred);
     }
 
-    _Insertion_sort_unchecked(_First, _Last, _Pred); // sort partial last chunk
+    _STD _Insertion_sort_unchecked(_First, _Last, _Pred); // sort partial last chunk
 }
 
 template <class _BidIt, class _Pr>
@@ -8367,20 +8367,20 @@ void _Buffered_merge_sort_unchecked(const _BidIt _First, const _BidIt _Last, con
     // sort using temp buffer for merges
     // pre: _Last - _First == _Count
     // pre: _Count <= capacity of buffer at _Temp_ptr; also allows safe narrowing to ptrdiff_t
-    _Insertion_sort_isort_max_chunks(_First, _Last, _Count, _Pred);
+    _STD _Insertion_sort_isort_max_chunks(_First, _Last, _Count, _Pred);
     // merge adjacent pairs of chunks to and from temp buffer
     if (_Count <= _Isort_max<_BidIt>) {
         return;
     }
 
     // do the first merge, constructing elements in the temporary buffer
-    _Uninitialized_chunked_merge_unchecked2(_First, _Last, _Temp_ptr, _Count, _Pred);
+    _STD _Uninitialized_chunked_merge_unchecked2(_First, _Last, _Temp_ptr, _Count, _Pred);
     _Uninitialized_backout<_Iter_value_t<_BidIt>*> _Backout{_Temp_ptr, _Temp_ptr + _Count};
     auto _Chunk = _Isort_max<_BidIt>;
     for (;;) {
         // unconditionally merge elements back into the source buffer
         _Chunk <<= 1;
-        _Chunked_merge_unchecked(_Temp_ptr, _Temp_ptr + _Count, _First, static_cast<ptrdiff_t>(_Chunk),
+        _STD _Chunked_merge_unchecked(_Temp_ptr, _Temp_ptr + _Count, _First, static_cast<ptrdiff_t>(_Chunk),
             static_cast<ptrdiff_t>(_Count), _Pred);
         _Chunk <<= 1;
         if (_Count <= _Chunk) { // if the input would be a single chunk, it's already sorted and we're done
@@ -8388,7 +8388,7 @@ void _Buffered_merge_sort_unchecked(const _BidIt _First, const _BidIt _Last, con
         }
 
         // more merges necessary; merge to temporary buffer
-        _Chunked_merge_unchecked(_First, _Last, _Temp_ptr, _Chunk, _Count, _Pred);
+        _STD _Chunked_merge_unchecked(_First, _Last, _Temp_ptr, _Chunk, _Count, _Pred);
     }
 }
 
@@ -8398,20 +8398,20 @@ void _Stable_sort_unchecked(const _BidIt _First, const _BidIt _Last, const _Iter
     // sort preserving order of equivalents
     using _Diff = _Iter_diff_t<_BidIt>;
     if (_Count <= _ISORT_MAX) {
-        _Insertion_sort_unchecked(_First, _Last, _Pred); // small
+        _STD _Insertion_sort_unchecked(_First, _Last, _Pred); // small
     } else { // sort halves and merge
         const auto _Half_count      = static_cast<_Diff>(_Count >> 1); // shift for codegen
         const auto _Half_count_ceil = static_cast<_Diff>(_Count - _Half_count);
         const _BidIt _Mid           = _STD next(_First, _Half_count_ceil);
         if (_Half_count_ceil <= _Capacity) { // temp buffer big enough, sort each half using buffer
-            _Buffered_merge_sort_unchecked(_First, _Mid, _Half_count_ceil, _Temp_ptr, _Pred);
-            _Buffered_merge_sort_unchecked(_Mid, _Last, _Half_count, _Temp_ptr, _Pred);
+            _STD _Buffered_merge_sort_unchecked(_First, _Mid, _Half_count_ceil, _Temp_ptr, _Pred);
+            _STD _Buffered_merge_sort_unchecked(_Mid, _Last, _Half_count, _Temp_ptr, _Pred);
         } else { // temp buffer not big enough, divide and conquer
-            _Stable_sort_unchecked(_First, _Mid, _Half_count_ceil, _Temp_ptr, _Capacity, _Pred);
-            _Stable_sort_unchecked(_Mid, _Last, _Half_count, _Temp_ptr, _Capacity, _Pred);
+            _STD _Stable_sort_unchecked(_First, _Mid, _Half_count_ceil, _Temp_ptr, _Capacity, _Pred);
+            _STD _Stable_sort_unchecked(_Mid, _Last, _Half_count, _Temp_ptr, _Capacity, _Pred);
         }
 
-        _Buffered_inplace_merge_unchecked(
+        _STD _Buffered_inplace_merge_unchecked(
             _First, _Mid, _Last, _Half_count_ceil, _Half_count, _Temp_ptr, _Capacity, _Pred); // merge halves
     }
 }
@@ -8419,17 +8419,17 @@ void _Stable_sort_unchecked(const _BidIt _First, const _BidIt _Last, const _Iter
 _EXPORT_STD template <class _BidIt, class _Pr>
 void stable_sort(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     // sort preserving order of equivalents
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
     const auto _Count  = _STD distance(_UFirst, _ULast);
     if (_Count <= _ISORT_MAX) {
-        _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
+        _STD _Insertion_sort_unchecked(_UFirst, _ULast, _STD _Pass_fn(_Pred));
         return;
     }
 
     _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{_Count - _Count / 2};
-    _Stable_sort_unchecked(_UFirst, _ULast, _Count, _Temp_buf._Data, _Temp_buf._Capacity, _Pass_fn(_Pred));
+    _STD _Stable_sort_unchecked(_UFirst, _ULast, _Count, _Temp_buf._Data, _Temp_buf._Capacity, _STD _Pass_fn(_Pred));
 }
 
 #if _HAS_CXX17
@@ -8457,13 +8457,13 @@ namespace ranges {
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<_It, _Pr, _Pj>
         _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Unwrap_iter<_Se>(_STD move(_First));
-            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
-            _Seek_wrapped(_First, _ULast);
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _STD _Seek_wrapped(_First, _ULast);
 
             const auto _Count = _ULast - _UFirst;
-            _Stable_sort_common(_STD move(_UFirst), _STD move(_ULast), _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Stable_sort_common(_STD move(_UFirst), _STD move(_ULast), _Count, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _First;
         }
 
@@ -8471,11 +8471,11 @@ namespace ranges {
             requires sortable<iterator_t<_Rng>, _Pr, _Pj>
         borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UFirst = _Ubegin(_Range);
-            auto _ULast  = _Get_final_iterator_unwrapped(_Range);
+            auto _ULast  = _RANGES _Get_final_iterator_unwrapped(_Range);
 
             const auto _Count = _ULast - _UFirst;
-            _Stable_sort_common(_STD move(_UFirst), _ULast, _Count, _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_iterator(_Range, _STD move(_ULast));
+            _Stable_sort_common(_STD move(_UFirst), _ULast, _Count, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_iterator(_Range, _STD move(_ULast));
         }
 
     private:
@@ -8704,25 +8704,25 @@ namespace ranges {
 _EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
     // order [_First, _Last) up to _Mid
-    _Adl_verify_range(_First, _Mid);
-    _Adl_verify_range(_Mid, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _UMid  = _Get_unwrapped(_Mid);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Mid);
+    _STD _Adl_verify_range(_Mid, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _UMid  = _STD _Get_unwrapped(_Mid);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
 
     if (_UFirst == _UMid) {
         return; // nothing to do, avoid violating _Pop_heap_hole_unchecked preconditions
     }
 
-    _Make_heap_unchecked(_UFirst, _UMid, _Pass_fn(_Pred));
+    _STD _Make_heap_unchecked(_UFirst, _UMid, _STD _Pass_fn(_Pred));
     for (auto _UNext = _UMid; _UNext < _ULast; ++_UNext) {
         if (_DEBUG_LT_PRED(_Pred, *_UNext, *_UFirst)) { // replace top with new largest
             _Iter_value_t<_RanIt> _Val(_STD move(*_UNext));
-            _STD _Pop_heap_hole_unchecked(_UFirst, _UMid, _UNext, _STD move(_Val), _Pass_fn(_Pred));
+            _STD _Pop_heap_hole_unchecked(_UFirst, _UMid, _UNext, _STD move(_Val), _STD _Pass_fn(_Pred));
         }
     }
 
-    _Sort_heap_unchecked(_UFirst, _UMid, _Pass_fn(_Pred));
+    _STD _Sort_heap_unchecked(_UFirst, _UMid, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _RanIt>
@@ -8737,7 +8737,7 @@ void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) 
     // order [_First, _Last) up to _Mid
     // parallelism suspected to be infeasible
     _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_RanIt);
-    return _STD partial_sort(_First, _Mid, _Last, _Pass_fn(_Pred));
+    return _STD partial_sort(_First, _Mid, _Last, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -8755,19 +8755,19 @@ namespace ranges {
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<_It, _Pr, _Pj>
         constexpr _It operator()(_It _First, _It _Mid, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Mid);
-            _Adl_verify_range(_Mid, _Last);
+            _STD _Adl_verify_range(_First, _Mid);
+            _STD _Adl_verify_range(_Mid, _Last);
 
             if constexpr (is_same_v<_It, _Se>) {
-                _Partial_sort_common(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_iter<_Se>(_STD move(_Mid)),
-                    _Unwrap_sent<_It>(_Last), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _Partial_sort_common(_RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_iter<_Se>(_STD move(_Mid)),
+                    _RANGES _Unwrap_sent<_It>(_Last), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
                 return _Last;
             } else {
-                auto _UMid  = _Unwrap_iter<_Se>(_STD move(_Mid));
-                auto _ULast = _Get_final_iterator_unwrapped<_It>(_UMid, _STD move(_Last));
-                _Seek_wrapped(_Mid, _ULast);
-                _Partial_sort_common(_Unwrap_iter<_Se>(_STD move(_First)), _STD move(_UMid), _STD move(_ULast),
-                    _Pass_fn(_Pred), _Pass_fn(_Proj));
+                auto _UMid  = _RANGES _Unwrap_iter<_Se>(_STD move(_Mid));
+                auto _ULast = _RANGES _Get_final_iterator_unwrapped<_It>(_UMid, _STD move(_Last));
+                _STD _Seek_wrapped(_Mid, _ULast);
+                _Partial_sort_common(_RANGES _Unwrap_iter<_Se>(_STD move(_First)), _STD move(_UMid), _STD move(_ULast),
+                    _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
                 return _Mid;
             }
         }
@@ -8776,19 +8776,19 @@ namespace ranges {
             requires sortable<iterator_t<_Rng>, _Pr, _Pj>
         constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, iterator_t<_Rng> _Mid, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_RANGES begin(_Range), _Mid);
-            _Adl_verify_range(_Mid, _RANGES end(_Range));
+            _STD _Adl_verify_range(_RANGES begin(_Range), _Mid);
+            _STD _Adl_verify_range(_Mid, _RANGES end(_Range));
 
             if constexpr (common_range<_Rng>) {
-                _Partial_sort_common(_Ubegin(_Range), _Unwrap_range_iter<_Rng>(_STD move(_Mid)), _Uend(_Range),
-                    _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _Partial_sort_common(_Ubegin(_Range), _RANGES _Unwrap_range_iter<_Rng>(_STD move(_Mid)), _Uend(_Range),
+                    _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
                 return _RANGES end(_Range);
             } else {
-                auto _UMid  = _Unwrap_range_iter<_Rng>(_STD move(_Mid));
-                auto _ULast = _Get_final_iterator_unwrapped(_Range, _UMid);
-                _Seek_wrapped(_Mid, _ULast);
+                auto _UMid  = _RANGES _Unwrap_range_iter<_Rng>(_STD move(_Mid));
+                auto _ULast = _RANGES _Get_final_iterator_unwrapped(_Range, _UMid);
+                _STD _Seek_wrapped(_Mid, _ULast);
                 _Partial_sort_common(
-                    _Ubegin(_Range), _STD move(_UMid), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                    _Ubegin(_Range), _STD move(_UMid), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
                 return _Mid;
             }
         }
@@ -8803,7 +8803,7 @@ namespace ranges {
                 return; // nothing to do
             }
 
-            _Make_heap_common(_First, _Mid, _Pred, _Proj);
+            _RANGES _Make_heap_common(_First, _Mid, _Pred, _Proj);
             for (auto _Next = _Mid; _Next != _Last; ++_Next) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_First))) {
                     // replace top with new largest
@@ -8812,7 +8812,7 @@ namespace ranges {
                 }
             }
 
-            _Sort_heap_common(_STD move(_First), _STD move(_Mid), _Pred, _Proj);
+            _RANGES _Sort_heap_common(_STD move(_First), _STD move(_Mid), _Pred, _Proj);
         }
     };
 
@@ -8824,32 +8824,32 @@ namespace ranges {
 _EXPORT_STD template <class _InIt, class _RanIt, class _Pr>
 _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2, _Pr _Pred) {
     // copy [_First1, _Last1) into [_First2, _Last2)
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    auto _UFirst1      = _Get_unwrapped(_First1);
-    const auto _ULast1 = _Get_unwrapped(_Last1);
-    auto _UFirst2      = _Get_unwrapped(_First2);
-    const auto _ULast2 = _Get_unwrapped(_Last2);
+    _STD _Adl_verify_range(_First1, _Last1);
+    _STD _Adl_verify_range(_First2, _Last2);
+    auto _UFirst1      = _STD _Get_unwrapped(_First1);
+    const auto _ULast1 = _STD _Get_unwrapped(_Last1);
+    auto _UFirst2      = _STD _Get_unwrapped(_First2);
+    const auto _ULast2 = _STD _Get_unwrapped(_Last2);
     auto _UMid2        = _UFirst2;
     if (_UFirst1 != _ULast1 && _UFirst2 != _ULast2) {
         for (; _UFirst1 != _ULast1 && _UMid2 != _ULast2; ++_UFirst1, (void) ++_UMid2) {
             *_UMid2 = *_UFirst1; // copy min(_ULast1 - _UFirst1, _ULast2 - _UFirst2)
         }
 
-        _Make_heap_unchecked(_UFirst2, _UMid2, _Pass_fn(_Pred));
+        _STD _Make_heap_unchecked(_UFirst2, _UMid2, _STD _Pass_fn(_Pred));
         for (; _UFirst1 != _ULast1; ++_UFirst1) {
             if (_DEBUG_LT_PRED(_Pred, *_UFirst1, *_UFirst2)) {
                 // replace top with new largest:
                 using _Diff = _Iter_diff_t<_RanIt>;
                 _STD _Pop_heap_hole_by_index(
-                    _UFirst2, static_cast<_Diff>(0), static_cast<_Diff>(_UMid2 - _UFirst2), *_UFirst1, _Pass_fn(_Pred));
+                    _UFirst2, static_cast<_Diff>(0), static_cast<_Diff>(_UMid2 - _UFirst2), *_UFirst1, _STD _Pass_fn(_Pred));
             }
         }
 
-        _Sort_heap_unchecked(_UFirst2, _UMid2, _Pass_fn(_Pred));
+        _STD _Sort_heap_unchecked(_UFirst2, _UMid2, _STD _Pass_fn(_Pred));
     }
 
-    _Seek_wrapped(_First2, _UMid2);
+    _STD _Seek_wrapped(_First2, _UMid2);
     return _First2;
 }
 
@@ -8867,7 +8867,7 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
     // parallelism suspected to be infeasible
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_RanIt);
-    return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
+    return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _FwdIt, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -8893,15 +8893,15 @@ namespace ranges {
                   && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>
         constexpr partial_sort_copy_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
             _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            _Adl_verify_range(_First1, _Last1);
-            _Adl_verify_range(_First2, _Last2);
+            _STD _Adl_verify_range(_First1, _Last1);
+            _STD _Adl_verify_range(_First2, _Last2);
 
-            auto _UResult = _Partial_sort_copy_unchecked(_Unwrap_iter<_Se1>(_STD move(_First1)),
-                _Unwrap_sent<_It1>(_STD move(_Last1)), _Unwrap_iter<_Se2>(_STD move(_First2)),
-                _Unwrap_sent<_It2>(_STD move(_Last2)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            auto _UResult = _Partial_sort_copy_unchecked(_RANGES _Unwrap_iter<_Se1>(_STD move(_First1)),
+                _RANGES _Unwrap_sent<_It1>(_STD move(_Last1)), _RANGES _Unwrap_iter<_Se2>(_STD move(_First2)),
+                _RANGES _Unwrap_sent<_It2>(_STD move(_Last2)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj1), _STD _Pass_fn(_Proj2));
 
-            _Seek_wrapped(_First1, _STD move(_UResult.in));
-            _Seek_wrapped(_First2, _STD move(_UResult.out));
+            _STD _Seek_wrapped(_First1, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First2, _STD move(_UResult.out));
             return {_STD move(_First1), _STD move(_First2)};
         }
 
@@ -8913,11 +8913,11 @@ namespace ranges {
         constexpr partial_sort_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             auto _First   = _RANGES begin(_Range1);
-            auto _UResult = _Partial_sort_copy_unchecked(_Unwrap_range_iter<_Rng1>(_STD move(_First)), _Uend(_Range1),
-                _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            auto _UResult = _Partial_sort_copy_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First)), _Uend(_Range1),
+                _Ubegin(_Range2), _Uend(_Range2), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj1), _STD _Pass_fn(_Proj2));
 
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
+            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _RANGES _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
         }
 
     private:
@@ -8945,7 +8945,7 @@ namespace ranges {
                 ++_Mid2;
             } while (_First1 != _Last1 && _Mid2 != _Last2);
 
-            _Make_heap_common(_First2, _Mid2, _Pred, _Proj2); // Make a heap
+            _RANGES _Make_heap_common(_First2, _Mid2, _Pred, _Proj2); // Make a heap
             for (; _First1 != _Last1; ++_First1) { // Scan the remaining elements...
                 // ... for values less than the largest in the heap ...
                 if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
@@ -8957,7 +8957,7 @@ namespace ranges {
             }
 
             // the heap contains the N smallest elements; sort them
-            _Sort_heap_common(_STD move(_First2), _Mid2, _Pred, _Proj2);
+            _RANGES _Sort_heap_common(_STD move(_First2), _Mid2, _Pred, _Proj2);
             return {_STD move(_First1), _STD move(_Mid2)};
         }
     };
@@ -8970,17 +8970,17 @@ namespace ranges {
 _EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
     // order Nth element
-    _Adl_verify_range(_First, _Nth);
-    _Adl_verify_range(_Nth, _Last);
-    auto _UFirst     = _Get_unwrapped(_First);
-    const auto _UNth = _Get_unwrapped(_Nth);
-    auto _ULast      = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Nth);
+    _STD _Adl_verify_range(_Nth, _Last);
+    auto _UFirst     = _STD _Get_unwrapped(_First);
+    const auto _UNth = _STD _Get_unwrapped(_Nth);
+    auto _ULast      = _STD _Get_unwrapped(_Last);
     if (_UNth == _ULast) {
         return; // nothing to do
     }
 
     while (_ISORT_MAX < _ULast - _UFirst) { // divide and conquer, ordering partition containing Nth
-        auto _UMid = _Partition_by_median_guess_unchecked(_UFirst, _ULast, _Pass_fn(_Pred));
+        auto _UMid = _STD _Partition_by_median_guess_unchecked(_UFirst, _ULast, _STD _Pass_fn(_Pred));
 
         if (_UMid.second <= _UNth) {
             _UFirst = _UMid.second;
@@ -8991,7 +8991,7 @@ _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pre
         }
     }
 
-    _Insertion_sort_unchecked(_UFirst, _ULast, _Pass_fn(_Pred)); // sort any remainder
+    _STD _Insertion_sort_unchecked(_UFirst, _ULast, _STD _Pass_fn(_Pred)); // sort any remainder
 }
 
 _EXPORT_STD template <class _RanIt>
@@ -9005,7 +9005,7 @@ void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) n
     // order Nth element
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_RanIt);
-    _STD nth_element(_First, _Nth, _Last, _Pass_fn(_Pred));
+    _STD nth_element(_First, _Nth, _Last, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _ExPo, class _RanIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -9023,14 +9023,14 @@ namespace ranges {
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<_It, _Pr, _Pj>
         constexpr _It operator()(_It _First, _It _Nth, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Nth);
-            _Adl_verify_range(_Nth, _Last);
-            auto _UNth   = _Unwrap_iter<_Se>(_Nth);
-            auto _UFinal = _Get_final_iterator_unwrapped<_It>(_UNth, _STD move(_Last));
-            _Seek_wrapped(_Nth, _UFinal);
+            _STD _Adl_verify_range(_First, _Nth);
+            _STD _Adl_verify_range(_Nth, _Last);
+            auto _UNth   = _RANGES _Unwrap_iter<_Se>(_Nth);
+            auto _UFinal = _RANGES _Get_final_iterator_unwrapped<_It>(_UNth, _STD move(_Last));
+            _STD _Seek_wrapped(_Nth, _UFinal);
 
-            _Nth_element_common(_Unwrap_iter<_Se>(_STD move(_First)), _STD move(_UNth), _STD move(_UFinal),
-                _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Nth_element_common(_RANGES _Unwrap_iter<_Se>(_STD move(_First)), _STD move(_UNth), _STD move(_UFinal),
+                _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _Nth;
         }
 
@@ -9038,9 +9038,9 @@ namespace ranges {
             requires sortable<iterator_t<_Rng>, _Pr, _Pj>
         constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, iterator_t<_Rng> _Nth, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_RANGES begin(_Range), _Nth);
-            _Adl_verify_range(_Nth, _RANGES end(_Range));
-            auto _UNth   = _Unwrap_range_iter<_Rng>(_Nth);
+            _STD _Adl_verify_range(_RANGES begin(_Range), _Nth);
+            _STD _Adl_verify_range(_Nth, _RANGES end(_Range));
+            auto _UNth   = _RANGES _Unwrap_range_iter<_Rng>(_Nth);
             auto _UFinal = [&] {
                 if constexpr (common_range<_Rng>) {
                     return _Uend(_Range);
@@ -9050,10 +9050,10 @@ namespace ranges {
                     return _RANGES next(_UNth, _Uend(_Range));
                 }
             }();
-            _Seek_wrapped(_Nth, _UFinal);
+            _STD _Seek_wrapped(_Nth, _UFinal);
 
             _Nth_element_common(
-                _Ubegin(_Range), _STD move(_UNth), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _Ubegin(_Range), _STD move(_UNth), _STD move(_UFinal), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _Nth;
         }
 
@@ -9068,7 +9068,7 @@ namespace ranges {
             }
 
             while (_ISORT_MAX < _Last - _First) { // divide and conquer, ordering partition containing Nth
-                subrange<_It> _Mid = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+                subrange<_It> _Mid = _RANGES _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
 
                 if (_Mid.end() <= _Nth) {
                     _First = _Mid.end();
@@ -10426,10 +10426,10 @@ namespace ranges {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr bool operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            const auto _ULast  = _Unwrap_sent<_It>(_STD move(_Last));
+            _STD _Adl_verify_range(_First, _Last);
+            const auto _ULast  = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
             const auto _UFirst = _RANGES _Is_sorted_until_unchecked(
-                _Unwrap_iter<_Se>(_STD move(_First)), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _ULast, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _UFirst == _ULast;
         }
 
@@ -10438,7 +10438,7 @@ namespace ranges {
         _NODISCARD constexpr bool operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             const auto _ULast = _Uend(_Range);
             const auto _UFirst =
-                _RANGES _Is_sorted_until_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _RANGES _Is_sorted_until_unchecked(_Ubegin(_Range), _ULast, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _UFirst == _ULast;
         }
     };
@@ -10450,10 +10450,10 @@ namespace ranges {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UFirst = _RANGES _Is_sorted_until_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
-                _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            _Seek_wrapped(_First, _STD move(_UFirst));
+            _STD _Adl_verify_range(_First, _Last);
+            auto _UFirst = _RANGES _Is_sorted_until_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            _STD _Seek_wrapped(_First, _STD move(_UFirst));
             return _First;
         }
 
@@ -10461,8 +10461,8 @@ namespace ranges {
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UResult =
-                _RANGES _Is_sorted_until_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-            return _Rewrap_iterator(_Range, _STD move(_UResult));
+                _RANGES _Is_sorted_until_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+            return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
         }
     };
 
