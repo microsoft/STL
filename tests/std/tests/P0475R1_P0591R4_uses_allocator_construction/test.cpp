@@ -175,9 +175,7 @@ constexpr bool test_P0591R4() {
         static_assert(is_same_v<decltype(tuple13),
             tuple<piecewise_construct_t, MovedConstAllocatorConstructArgs, tuple<const int&&>>>);
     }
-#endif // _HAS_CXX23
 
-#if _HAS_CXX23
     { // pair(PairLike&&) overload
         tuple tpl(i, i);
         auto tuple14 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, tpl);

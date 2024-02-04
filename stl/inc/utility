@@ -11,11 +11,8 @@
 #include <type_traits>
 
 #if _HAS_CXX20
-#include <concepts>
-#endif // _HAS_CXX20
-
-#if _HAS_CXX20
 #include <compare>
+#include <concepts>
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23

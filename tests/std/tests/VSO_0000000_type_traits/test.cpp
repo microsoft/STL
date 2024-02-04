@@ -621,9 +621,7 @@ void test_function_type() {
     STATIC_ASSERT(!is_nothrow_move_assignable_v<T>);
 #if _HAS_CXX17
     STATIC_ASSERT(!is_nothrow_swappable_v<T>);
-#endif // _HAS_CXX17
 
-#if _HAS_CXX17
     STATIC_ASSERT(!has_unique_object_representations_v<T>);
 #endif // _HAS_CXX17
 
