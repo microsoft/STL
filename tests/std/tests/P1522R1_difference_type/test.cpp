@@ -10,11 +10,18 @@
 
 #if _HAS_CXX20
 #include <compare>
+#include <concepts>
+
+#define CONSTEVAL consteval
+#define SAME_AS   std::same_as
 
 namespace ordtest {
     using std::strong_ordering;
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEVAL constexpr
+#define SAME_AS   std::is_same_v
+
 namespace ordtest {
     enum class strong_ordering : signed char {
         less       = -1,
@@ -25,21 +32,7 @@ namespace ordtest {
 }
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-#if _HAS_CXX20
-#include <concepts>
-
-#define SAME_AS std::same_as
-#else // ^^^ has concepts / has no concepts vvv
-#define SAME_AS std::is_same_v
-#endif // ^^^ has no concepts ^^^
-
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
-#if _HAS_CXX20
-#define CONSTEVAL consteval
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-#define CONSTEVAL constexpr
-#endif // ^^^ !_HAS_CXX20 ^^^
 
 using std::_Signed128;
 using std::_Unsigned128;
