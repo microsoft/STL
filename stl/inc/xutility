@@ -3954,12 +3954,12 @@ struct _Move_iterator_category<_Iter> {
     using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
         random_access_iterator_tag, _Iter_cat_t<_Iter>>;
 };
-#else // ^^^ Ranges / no Ranges vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Iter>
 struct _Move_iterator_category {
     using iterator_category = _Iter_cat_t<_Iter>;
 };
-#endif // ^^^ no Ranges ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Iter>
 class move_iterator : public _Move_iterator_category<_Iter> {
@@ -4534,9 +4534,9 @@ template <class _InIt, class _Sent, class _OutIt>
 using _Sent_copy_cat = conditional_t<
 #if _HAS_CXX20
     is_same_v<_Sent, _InIt> || sized_sentinel_for<_Sent, _InIt>,
-#else // ^^^ Concepts support / no Concepts vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     is_same_v<_Sent, _InIt>,
-#endif // ^^^ no Concepts ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
     _Iter_copy_cat<_InIt, _OutIt>, _False_trivial_cat>;
 
 template <class _InIt, class _Sent, class _OutIt>

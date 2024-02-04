@@ -993,13 +993,13 @@ T val() noexcept;
 #if _HAS_CXX20
 template <class T, class U>
 concept CanConditional = requires { true ? val<T>() : val<U>(); };
-#else // ^^^ has concepts / has no concepts vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class T, class U, class = void>
 constexpr bool CanConditional = false;
 
 template <class T, class U>
 constexpr bool CanConditional<T, U, std::void_t<decltype(true ? val<T>() : val<U>())>> = true;
-#endif // ^^^ has no concepts ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 constexpr bool test_cross() {
     // Test the behavior of cross-type operations.

@@ -2379,10 +2379,10 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
 #if _HAS_CXX23
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
     requires _Is_cv_pair<_Ty> && (_Pair_like<_Uty> || !_Is_deducible_as_pair<_Uty&>)
-#else // ^^^ C++23 with concepts / C++20 or no concepts vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_cv_pair<_Ty> && !_Is_deducible_as_pair<_Uty&>, int> = 0>
-#endif // ^^^ C++20 or no concepts ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept;
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_cv_pair<_Ty>, int> = 0>
@@ -2470,10 +2470,10 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
 #if _HAS_CXX23
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
     requires _Is_cv_pair<_Ty> && (_Pair_like<_Uty> || !_Is_deducible_as_pair<_Uty&>)
-#else // ^^^ C++23 with concepts / C++20 or no concepts vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_cv_pair<_Ty> && !_Is_deducible_as_pair<_Uty&>, int> /* = 0 */>
-#endif // ^^^ C++20 or no concepts ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
 #if _HAS_CXX23
     if constexpr (_Pair_like<_Uty> && !_Is_subrange_v<remove_cvref_t<_Uty>>) {

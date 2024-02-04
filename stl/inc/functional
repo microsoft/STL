@@ -2144,7 +2144,7 @@ public:
 
     template <class... _Unbound>
     void operator()(_Unbound&&...) const = delete;
-#else // ^^^ requires available / requires unavailable vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class... _Unbound,
         enable_if_t<_Can_call_binder<_Ret, _Fd, _Seq, _Bound_tuple, tuple<_Unbound&&...>>, int> = 0>
     _CONSTEXPR20 decltype(auto) operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_CALL_BINDER)) {
@@ -2164,7 +2164,7 @@ public:
     template <class... _Unbound,
         enable_if_t<!_Can_call_binder<_Ret, const _Fd, _Seq, const _Bound_tuple, tuple<_Unbound&&...>>, int> = 0>
     void operator()(_Unbound&&...) const = delete;
-#endif // ^^^ requires unavailable ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 #undef _CALL_BINDER
 };
 

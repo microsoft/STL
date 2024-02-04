@@ -724,7 +724,7 @@ int main() {
     test_algorithms([](auto begin1, auto end1, auto begin2, auto end2, auto pred) {
         return ranges::equal(begin1, end1, begin2, end2, pred);
     });
-#endif // test_algorithms
+#endif // _HAS_CXX20
 }
 
 #if _HAS_CXX20

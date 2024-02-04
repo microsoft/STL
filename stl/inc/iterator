@@ -131,10 +131,10 @@ public:
 #if _HAS_CXX20
     using difference_type = ptrdiff_t;
     using _Wrapped_iter   = ranges::iterator_t<_Container>;
-#else // ^^^ implementing Ranges / no Ranges vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     using difference_type = void;
     using _Wrapped_iter   = typename _Container::iterator;
-#endif // ^^^ no Ranges ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _CONSTEXPR20 insert_iterator(_Container& _Cont, _Wrapped_iter _Where)
         : container(_STD addressof(_Cont)), iter(_STD move(_Where)) {}
@@ -174,7 +174,7 @@ template <class _Container>
 _NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
     return insert_iterator<_Container>(_Cont, _Where);
 }
-#else // ^^^ No Ranges / Ranges vvv
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 _EXPORT_STD template <class _Container>
 _NODISCARD constexpr insert_iterator<_Container> inserter(_Container& _Cont, _RANGES iterator_t<_Container> _Where) {
     return insert_iterator<_Container>(_Cont, _Where);
@@ -230,7 +230,7 @@ public:
 private:
     _Se _Last{};
 };
-#endif // ^^^ Ranges ^^^
+#endif // ^^^ _HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
 class istream_iterator {
