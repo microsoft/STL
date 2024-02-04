@@ -778,13 +778,6 @@ _NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const ar
     return _STD equal(_Left.data(), _Left.data() + _Size, _Right.data());
 }
 
-#if !_HAS_CXX20
-template <class _Ty, size_t _Size>
-_NODISCARD bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
-    return !(_Left == _Right);
-}
-#endif // !_HAS_CXX20
-
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
@@ -793,6 +786,11 @@ _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
         _Left.data(), _Left.data() + _Size, _Right.data(), _Right.data() + _Size, _Synth_three_way{});
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Ty, size_t _Size>
+_NODISCARD bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+    return !(_Left == _Right);
+}
+
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return _STD lexicographical_compare(_Left.data(), _Left.data() + _Size, _Right.data(), _Right.data() + _Size);

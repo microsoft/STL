@@ -211,13 +211,6 @@ _NODISCARD bool operator==(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, 
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
 }
 
-#if !_HAS_CXX20
-template <class _Kty, class _Pr, class _Alloc>
-_NODISCARD bool operator!=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
-    return !(_Left == _Right);
-}
-#endif // !_HAS_CXX20
-
 #if _HAS_CXX20
 _EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Kty> operator<=>(
@@ -226,6 +219,11 @@ _NODISCARD _Synth_three_way_result<_Kty> operator<=>(
         _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator!=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
+    return !(_Left == _Right);
+}
+
 template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator<(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare(
@@ -428,13 +426,6 @@ _NODISCARD bool operator==(const multiset<_Kty, _Pr, _Alloc>& _Left, const multi
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
 }
 
-#if !_HAS_CXX20
-template <class _Kty, class _Pr, class _Alloc>
-_NODISCARD bool operator!=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
-    return !(_Left == _Right);
-}
-#endif // !_HAS_CXX20
-
 #if _HAS_CXX20
 _EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Kty> operator<=>(
@@ -443,6 +434,11 @@ _NODISCARD _Synth_three_way_result<_Kty> operator<=>(
         _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator!=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
+    return !(_Left == _Right);
+}
+
 template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator<(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare(
