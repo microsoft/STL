@@ -995,7 +995,7 @@ struct _Static_partition_range_backward<_BidIt, _Diff, false> {
         const auto _Diff_chunks = static_cast<_Diff>(_Chunks);
         for (_Diff _Idx = _Unchunked_items; _Idx < _Diff_chunks; ++_Idx) {
             _STD advance(_Last, _Neg_chunk_size);
-            *++_Result = _Get_unwrapped(_Last);
+            *++_Result = _STD _Get_unwrapped(_Last);
         }
     }
 
