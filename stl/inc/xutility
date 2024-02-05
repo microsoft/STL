@@ -988,7 +988,7 @@ namespace ranges {
         public:
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1, _Ty2>._Strategy != _St::_None)
-            constexpr _STATIC_CALL_OPERATOR void operator()(_Ty1&& _Val1, _Ty2&& _Val2) _CONST_CALL_OPERATOR
+            _STATIC_CALL_OPERATOR constexpr void operator()(_Ty1&& _Val1, _Ty2&& _Val2) _CONST_CALL_OPERATOR
                 noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty1, _Ty2>._Strategy;
 
