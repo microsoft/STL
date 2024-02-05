@@ -8904,16 +8904,16 @@ namespace ranges {
         struct _Zip_transform_fn {
         private:
             template <class _Func, class... _Types>
-            static constexpr bool _Is_invocation_noexcept = []() _STATIC_CALL_OPERATOR noexcept {
+            _NODISCARD static consteval bool _Is_invocation_noexcept() {
                 if constexpr (sizeof...(_Types) == 0) {
                     return true;
                 } else {
                     return noexcept(zip_transform_view(_STD declval<_Func>(), _STD declval<_Types>()...));
                 }
-            }();
+            }
 
             template <class _Func, class... _Types>
-            static constexpr bool _Enable_cpo = []() _STATIC_CALL_OPERATOR noexcept {
+            _NODISCARD static consteval bool _Enable_cpo() {
                 if constexpr (sizeof...(_Types) == 0) {
                     // This is a more efficient implementation of the CPO requirements listed in
                     // N4950 [range.zip.transform.overview]/2.1.1.
@@ -8928,14 +8928,14 @@ namespace ranges {
                         zip_transform_view(_STD forward<_Func>(_Function), _STD forward<_Types>(_Args)...);
                     };
                 }
-            }();
+            }
 
         public:
             template <class _Func, class... _Types>
-                requires _Enable_cpo<_Func, _Types...>
+                requires (_Enable_cpo<_Func, _Types...>())
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
                 _Func&& _Function, _Types&&... _Args) _CONST_CALL_OPERATOR
-                noexcept(_Is_invocation_noexcept<_Func, _Types...>) /* strengthened */ {
+                noexcept(_Is_invocation_noexcept<_Func, _Types...>()) /* strengthened */ {
                 if constexpr (sizeof...(_Types) == 0) {
                     using _Decayed_func = decay_t<_Func>;
                     return empty_view<decay_t<invoke_result_t<_Decayed_func&>>>{};
