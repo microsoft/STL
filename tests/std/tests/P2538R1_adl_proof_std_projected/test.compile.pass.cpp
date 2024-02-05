@@ -283,14 +283,14 @@ void test_ranges_algorithms() {
 
     (void) unique(varr, varr);
     (void) unique(varr);
-    // (void) unique(iarr, iarr, validating_equal{}); // needs to check ADL-found swap
+    (void) unique(iarr, iarr, validating_equal{});
     // (void) unique(iarr, validating_equal{}); // needs to check ADL-found swap
     (void) unique(iarr, iarr, {}, validating_identity{});
     (void) unique(iarr, {}, validating_identity{});
 
     (void) unique_copy(varr, varr, varr2);
     (void) unique_copy(varr, varr2);
-    // (void) unique_copy(iarr, iarr, iarr2, validating_equal{}); // needs to check ADL-found swap
+    (void) unique_copy(iarr, iarr, iarr2, validating_equal{});
     // (void) unique_copy(iarr, iarr2, validating_equal{}); // needs to check ADL-found swap
     (void) unique_copy(iarr, iarr, iarr2, {}, validating_identity{});
     (void) unique_copy(iarr, iarr2, {}, validating_identity{});
