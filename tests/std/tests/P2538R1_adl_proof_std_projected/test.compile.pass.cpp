@@ -353,7 +353,7 @@ void test_ranges_algorithms() {
     nth_element(varr, varr);
     nth_element(iarr, iarr, iarr, validating_less{});
     // nth_element(iarr, iarr, validating_less{}); // need to check ADL-found swap
-    nth_element(iarr, iarr, {}, validating_identity{}); // need to check ADL-found swap
+    nth_element(iarr, iarr, {}, validating_identity{});
 
     (void) lower_bound(varr, varr, validator{});
     (void) lower_bound(varr, validator{});
