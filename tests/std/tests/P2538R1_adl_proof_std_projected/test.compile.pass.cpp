@@ -298,7 +298,7 @@ void test_ranges_algorithms() {
     sort(varr, varr);
     sort(varr);
     sort(varr, varr, less{});
-    // sort(varr, less{}); // need to check ADL-found opeartor==
+    // sort(varr, less{}); // need to check ADL-found operator==
     sort(varr, &less_function<validator>);
     sort(iarr, iarr, validating_less{});
     // sort(iarr, validating_less{}); // need to check ADL-found swap
@@ -307,7 +307,7 @@ void test_ranges_algorithms() {
     stable_sort(varr, varr);
     stable_sort(varr);
     stable_sort(varr, varr, less{});
-    // stable_sort(varr, less{}); // need to check ADL-found opeartor==
+    // stable_sort(varr, less{}); // need to check ADL-found operator==
     stable_sort(varr, &less_function<validator>);
     stable_sort(iarr, iarr, validating_less{});
     // stable_sort(iarr, validating_less{}); // need to check ADL-found swap
@@ -318,7 +318,7 @@ void test_ranges_algorithms() {
     partial_sort(varr, varr);
     partial_sort(subrange{varr, static_cast<holder<incomplete>* const*>(varr)}, varr); // non-common
     partial_sort(varr, varr, varr, less{});
-    // partial_sort(varr, varr, less{}); // need to check ADL-found opeartor==
+    // partial_sort(varr, varr, less{}); // need to check ADL-found operator==
     partial_sort(varr, varr, &less_function<validator>);
     partial_sort(iarr, iarr, iarr, validating_less{});
     partial_sort(iarr, iarr, iarr, {}, validating_identity{});
