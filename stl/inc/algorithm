@@ -1826,7 +1826,7 @@ namespace ranges {
                 _UFirst            = _Partition_point_n_unchecked(
                     _STD move(_UFirst), _Length, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             } else {
-                _UFirst = _Partition_point_unchecked(_STD move(_UFirst), _Unwrap_sent<_It>(_STD move(_Last)),
+                _UFirst = _Partition_point_unchecked(_STD move(_UFirst), _RANGES _Unwrap_sent<_It>(_STD move(_Last)),
                     _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             }
 
