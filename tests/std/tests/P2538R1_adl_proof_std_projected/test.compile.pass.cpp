@@ -323,7 +323,6 @@ void test_ranges_algorithms() {
     partial_sort(iarr, iarr, iarr, {}, validating_identity{});
     partial_sort(iarr, iarr, static_cast<const int*>(iarr), validating_less{}, validating_identity{}); // non-common
     partial_sort(iarr, iarr, static_cast<const int*>(iarr), {}, validating_identity{}); // non-common
-    partial_sort(iarr, iarr, iarr, {}, validating_identity{});
     // partial_sort(iarr, iarr, validating_less{}); // need to check ADL-found swap
     partial_sort(iarr, iarr, {}, validating_identity{});
     partial_sort(subrange{iarr, static_cast<const int*>(iarr)}, iarr, validating_less{}); // non-common
