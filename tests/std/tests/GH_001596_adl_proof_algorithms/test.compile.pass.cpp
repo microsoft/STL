@@ -552,7 +552,7 @@ void test_per_execution_policy() {
 
     void* vparr[1]{};
 
-    (void) std::partial_sort_copy(varr, varr, varr2, varr2); // requires Cpp17ValueSwappable
+    (void) std::partial_sort_copy(ExecutionPolicy, varr, varr, varr2, varr2); // requires Cpp17ValueSwappable
     (void) std::partial_sort_copy(ExecutionPolicy, varr, varr, vparr, vparr);
     (void) std::partial_sort_copy(ExecutionPolicy, iarr, iarr, iarr2, iarr2, validating_less{});
 
