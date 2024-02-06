@@ -281,7 +281,7 @@ void arbitrary_range_test() {
 
     assert(ranges::equal(yield_arbitrary_ranges(), std::array{40, 30, 20, 10, 0, 1, 2, 3, 500, 400, 300}));
 }
-#endif // !(defined(__clang__) && defined(_M_IX86))
+#endif // ^^^ no workaround ^^^
 
 int main() {
     {
@@ -330,7 +330,7 @@ int main() {
             assert((*i).empty());
         }
     }
-#endif // !(defined(__clang__) && defined(_M_IX86))
+#endif // ^^^ no workaround ^^^
 
     static_allocator_test();
     dynamic_allocator_test();
@@ -339,5 +339,5 @@ int main() {
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     recursive_test();
     arbitrary_range_test();
-#endif // !(defined(__clang__) && defined(_M_IX86))
+#endif // ^^^ no workaround ^^^
 }

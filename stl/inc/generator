@@ -195,7 +195,7 @@ public:
 
 #ifndef _PREFAST_ // TRANSITION, VSO-1662733
     _NODISCARD
-#endif // _PREFAST_
+#endif // ^^^ no workaround ^^^
     suspend_always initial_suspend() noexcept {
         return {};
     }
@@ -260,7 +260,7 @@ private:
         constexpr void await_suspend(coroutine_handle<_Promise> _Handle) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
             _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _Promise>);
-#endif // __cpp_lib_is_pointer_interconvertible
+#endif // ^^^ no workaround ^^^
 
             _Gen_promise_base& _Current = _Handle.promise();
             _Current._Ptr               = _STD addressof(_Val);
@@ -284,7 +284,7 @@ private:
         _NODISCARD coroutine_handle<> await_suspend(coroutine_handle<_Promise> _Handle) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
             _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _Promise>);
-#endif // __cpp_lib_is_pointer_interconvertible
+#endif // ^^^ no workaround ^^^
 
             _Gen_promise_base& _Current = _Handle.promise();
             if (!_Current._Info) {
@@ -317,7 +317,7 @@ private:
         _NODISCARD coroutine_handle<_Gen_promise_base> await_suspend(coroutine_handle<_Promise> _Current) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
             _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _Promise>);
-#endif // __cpp_lib_is_pointer_interconvertible
+#endif // ^^^ no workaround ^^^
             auto _Target    = coroutine_handle<_Gen_promise_base>::from_address(_Gen._Coro.address());
             _Nested._Parent = coroutine_handle<_Gen_promise_base>::from_address(_Current.address());
             _Gen_promise_base& _Parent_promise = _Nested._Parent.promise();
@@ -425,7 +425,7 @@ public:
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
     _STL_INTERNAL_STATIC_ASSERT(
         is_pointer_interconvertible_base_of_v<_Gen_promise_base<_Gen_yield_t<_Ref>>, promise_type>);
-#endif // __cpp_lib_is_pointer_interconvertible
+#endif // ^^^ no workaround ^^^
 
     generator(generator&& _That) noexcept : _Coro(_STD exchange(_That._Coro, {})) {}
 
