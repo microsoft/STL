@@ -710,7 +710,7 @@ int main() {
         static constexpr int join_me[5][2] = {{0, 1}, {2, 3}, {4, 5}, {6, 7}, {8, 9}};
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(test_one(join_me, expected_ints));
-#endif // TRANSITION, VSO-934264
+#endif // ^^^ no workaround ^^^
         test_one(join_me, expected_ints);
     }
     { // ... fwd container
@@ -757,7 +757,7 @@ int main() {
         assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
 #if !(defined(_DEBUG) && defined(__EDG__)) // TRANSITION, VSO-1948896, see also GH-1566
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
-#endif // !(defined(_DEBUG) && defined(__EDG__))
+#endif // ^^^ no workaround ^^^
     }
 
     { // P2328 range of prvalue string using lambda
@@ -765,7 +765,7 @@ int main() {
         assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
 #if !(defined(_DEBUG) && defined(__EDG__)) // TRANSITION, VSO-1948896, see also GH-1566
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
-#endif // !(defined(_DEBUG) && defined(__EDG__))
+#endif // ^^^ no workaround ^^^
     }
 
     { // Immovable type

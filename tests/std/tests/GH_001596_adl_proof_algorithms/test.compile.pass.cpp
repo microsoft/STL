@@ -731,4 +731,4 @@ void test_ranges_non_projected_algorithms() {
 #endif // _HAS_CXX23
 }
 #endif // _HAS_CXX20
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^

@@ -1167,14 +1167,14 @@ namespace ranges {
         static constexpr bool _Nothrow_minus_equal<_Left, _Right> = true;
 
     public:
-#endif // TRANSITION, DevCom-1347136
+#endif // ^^^ workaround ^^^
 
         constexpr _Ioterator& operator+=(const difference_type _Off)
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1347136
             noexcept(noexcept(_Current += _Off)) /* strengthened */
 #else // ^^^ no workaround / workaround vvv
             noexcept(_Nothrow_plus_equal<_Wi, difference_type>) /* strengthened */
-#endif // TRANSITION, DevCom-1347136
+#endif // ^^^ workaround ^^^
             requires _Advanceable<_Wi>
         {
             if constexpr (_Integer_like<_Wi>) {
@@ -1198,7 +1198,7 @@ namespace ranges {
             noexcept(noexcept(_Current -= _Off)) /* strengthened */
 #else // ^^^ no workaround / workaround vvv
             noexcept(_Nothrow_minus_equal<_Wi, difference_type>) /* strengthened */
-#endif // TRANSITION, DevCom-1347136
+#endif // ^^^ workaround ^^^
             requires _Advanceable<_Wi>
         {
             if constexpr (_Integer_like<_Wi>) {

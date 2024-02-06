@@ -169,7 +169,7 @@ namespace test_tuple_cat {
     static_assert(!CanTupleCat<int, tuple<int>>);
     static_assert(!CanTupleCat<int, array<int, 1>>);
     static_assert(!CanTupleCat<tuple<>, tuple<int>, int>);
-#endif // !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
 
     constexpr bool test() {
         // Test tuple_cat with empty tuple-like types

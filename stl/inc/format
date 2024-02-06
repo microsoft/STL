@@ -1174,7 +1174,7 @@ public:
                 __std_fs_convert_narrow_to_wide(__std_code_page{_MSVC_EXECUTION_CHARACTER_SET}, _First, 1, &_Wide, 1);
             _Val = _Wide;
             return {_First + 1, _Res._Len != 0};
-#endif // defined(_MSVC_EXECUTION_CHARACTER_SET)
+#endif // ^^^ no workaround ^^^
         } else {
             if (*_First == '\0') {
                 _Val = U'\0';

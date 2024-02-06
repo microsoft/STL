@@ -226,7 +226,7 @@ namespace test_expected {
             assert(defaulted);
             assert(defaulted.value() == 42);
         }
-#endif // !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
     }
 
     template <IsTriviallyCopyConstructible triviallyCopyConstructible,
@@ -303,7 +303,7 @@ namespace test_expected {
             assert(from_error.error() == (should_be_trivial ? 0 : 42));
             static_assert(noexcept(Expected{with_error}) == should_be_noexcept);
         }
-#endif // !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
 
         { // ensure we are not copy constructible if either the payload or the error are not
             struct not_copy_constructible {
@@ -391,7 +391,7 @@ namespace test_expected {
             assert(from_error.error() == (should_be_trivial ? 0 : 42));
             static_assert(noexcept(Expected{move(error_input)}) == should_be_noexcept);
         }
-#endif // !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
 
         { // ensure we are not move constructible if either the payload or the error are not
             struct not_move_constructible {

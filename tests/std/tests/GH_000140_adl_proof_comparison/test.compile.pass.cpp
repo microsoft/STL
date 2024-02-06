@@ -288,4 +288,4 @@ void test_adl_proof_basic_const_iterator_comparison() {
 }
 #endif // _HAS_CXX23
 
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^

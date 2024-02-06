@@ -80,5 +80,5 @@ int main() {
 
 #if !defined(_PREFAST_) && !defined(__EDG__) // TRANSITION, GH-1030 and GH-3567
     test_in_in<instantiator, const pair<int, int>, const pair<long, long>>();
-#endif // TRANSITION, GH-1030 and GH-3567
+#endif // ^^^ no workaround ^^^
 }

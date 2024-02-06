@@ -321,6 +321,6 @@ int main() {
     test<X9, 9>();
     test<X16, 16>();
     test<X20, 20>();
-#endif // !__clang__, TRANSITION, LLVM-46685
+#endif // ^^^ no workaround ^^^
     return 0;
 }

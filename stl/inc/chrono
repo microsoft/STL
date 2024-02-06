@@ -2756,7 +2756,7 @@ namespace chrono {
     _EXPORT_STD template <class _Duration>
     using file_time = time_point<file_clock, _Duration>;
 } // namespace chrono
-#endif // ^^^ _HAS_CXX20
+#endif // ^^^ _HAS_CXX20 ^^^
 
 #if _HAS_CXX17
 namespace filesystem {
@@ -2810,10 +2810,10 @@ namespace filesystem {
 
             return _File_time;
         }
-#endif // ^^^ _HAS_CXX20
+#endif // ^^^ _HAS_CXX20 ^^^
     };
 } // namespace filesystem
-#endif // ^^^ _HAS_CXX17
+#endif // ^^^ _HAS_CXX17 ^^^
 
 #if _HAS_CXX20
 namespace chrono {
@@ -5438,7 +5438,7 @@ namespace chrono {
                             continue;
                         }
                     }
-#endif // defined(_MSVC_EXECUTION_CHARACTER_SET) && _MSVC_EXECUTION_CHARACTER_SET == 65001
+#endif // ^^^ no workaround ^^^
 
                     _CharT _Fmt_str[4];
                     _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec, _Fmt_str));
