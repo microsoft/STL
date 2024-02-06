@@ -45,4 +45,4 @@ static_assert(same_as<void, decltype(prev(nil, 42))>);
 #ifndef __clang__ // TRANSITION, LLVM-75404
 static_assert(same_as<void, decltype(shift_left(nil, nil, 42))>);
 static_assert(same_as<void, decltype(shift_right(nil, nil, 42))>);
-#endif // TRANSITION, LLVM-75404
+#endif // ^^^ no workaround ^^^

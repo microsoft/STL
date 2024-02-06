@@ -825,7 +825,7 @@ namespace mergeable_test {
             using Bad_I1 = readable_archetype<int, readable_status::not_input_iter>;
 #ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!input_iterator<Bad_I1>);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
             STATIC_ASSERT(input_iterator<I2>);
             STATIC_ASSERT(weakly_incrementable<O>);
             STATIC_ASSERT(indirectly_copyable<Bad_I1, O>);
@@ -833,7 +833,7 @@ namespace mergeable_test {
             STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<Bad_I1, Pj1>, projected<I2, Pj2>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!mergeable<Bad_I1, I2, O, Pr, Pj1, Pj2>);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         }
 
         {
@@ -841,14 +841,14 @@ namespace mergeable_test {
             STATIC_ASSERT(input_iterator<I1>);
 #ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!input_iterator<Bad_I2>);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
             STATIC_ASSERT(weakly_incrementable<O>);
             STATIC_ASSERT(indirectly_copyable<I1, O>);
             STATIC_ASSERT(indirectly_copyable<Bad_I2, O>);
             STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<Bad_I2, Pj2>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!mergeable<I1, Bad_I2, O, Pr, Pj1, Pj2>);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         }
 
         {
@@ -857,13 +857,13 @@ namespace mergeable_test {
             STATIC_ASSERT(input_iterator<I2>);
 #ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!weakly_incrementable<Bad_O>);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
             STATIC_ASSERT(indirectly_copyable<I1, Bad_O>);
             STATIC_ASSERT(indirectly_copyable<I2, Bad_O>);
             STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665670
             STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         }
 
         {

@@ -89,9 +89,7 @@ template <class CharType>
 constexpr auto get_sso_input_view() {
     return basic_string_view<CharType>{get_sso_input<CharType>()};
 }
-#endif // _HAS_CXX17
 
-#if _HAS_CXX17
 template <class CharType>
 struct string_view_convertible {
     constexpr operator basic_string_view<CharType>() const noexcept {
@@ -1852,7 +1850,7 @@ void run_tests() {
     test_sstream<Alloc>();
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-54804
     test_exceptions<Alloc>();
-#endif // !(defined(__clang__) && defined(_M_IX86))
+#endif // ^^^ no workaround ^^^
 }
 
 template <class CharType, template <class, class, class> class Alloc>

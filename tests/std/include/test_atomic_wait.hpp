@@ -291,5 +291,5 @@ inline void test_atomic_wait() {
     test_pad_bits<with_padding_bits<16>>(waiting_duration);
     test_pad_bits<with_padding_bits<32>>(waiting_duration);
 #endif // ^^^ !ARM ^^^
-#endif // __clang__, TRANSITION, LLVM-46685
+#endif // ^^^ no workaround ^^^
 }

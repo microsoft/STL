@@ -602,7 +602,7 @@ struct hash<bitset<_Bits>> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = bitset<_Bits>;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD size_t operator()(const bitset<_Bits>& _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const bitset<_Bits>& _Keyval) _CONST_CALL_OPERATOR noexcept {
         return _Hash_representation(_Keyval._Array);
     }
 };
