@@ -534,7 +534,8 @@ namespace ranges {
     public:
         template <input_or_output_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Ty>
             requires indirectly_writable<_It, const _Ty&>
-        constexpr iota_result<_It, _Ty> operator()(_It _First, _Se _Last, _Ty _Val) const {
+        _STATIC_CALL_OPERATOR constexpr iota_result<_It, _Ty> operator()(
+            _It _First, _Se _Last, _Ty _Val) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First, _Last);
             _Seek_wrapped(
                 _First, _Iota_impl(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Val));
@@ -542,7 +543,8 @@ namespace ranges {
         }
 
         template <weakly_incrementable _Ty, output_range<const _Ty&> _Rng>
-        constexpr iota_result<borrowed_iterator_t<_Rng>, _Ty> operator()(_Rng&& _Range, _Ty _Val) const {
+        _STATIC_CALL_OPERATOR constexpr iota_result<borrowed_iterator_t<_Rng>, _Ty> operator()(
+            _Rng&& _Range, _Ty _Val) _CONST_CALL_OPERATOR {
             auto _First = _RANGES begin(_Range);
             _Seek_wrapped(_First, _Iota_impl(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Val));
             return {_STD move(_First), _STD move(_Val)};

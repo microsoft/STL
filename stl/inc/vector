@@ -2259,7 +2259,8 @@ _NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
 
 template <class _Ret>
 struct _Vbase_compare_three_way {
-    _NODISCARD constexpr _Ret operator()(const _Vbase _Left, const _Vbase _Right) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ret operator()(
+        const _Vbase _Left, const _Vbase _Right) _CONST_CALL_OPERATOR noexcept {
         const _Vbase _Differing_bits = _Left ^ _Right;
 
         if (_Differing_bits == 0) { // improves _Countr_zero codegen below
@@ -3563,7 +3564,8 @@ struct hash<vector<bool, _Alloc>> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = vector<bool, _Alloc>;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD size_t operator()(const vector<bool, _Alloc>& _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(
+        const vector<bool, _Alloc>& _Keyval) _CONST_CALL_OPERATOR noexcept {
         return _Hash_array_representation(_Keyval._Myvec.data(), _Keyval._Myvec.size());
     }
 };
