@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <version>
-#ifdef __cpp_lib_stacktrace
+#if _HAS_CXX23
 
 #include <stacktrace>
 
@@ -10,6 +10,6 @@
 
 static_assert(std::is_eq(std::partial_ordering::equivalent));
 
-#endif // __cpp_lib_stacktrace
+#endif // _HAS_CXX23
 
 void test_stacktrace() {}

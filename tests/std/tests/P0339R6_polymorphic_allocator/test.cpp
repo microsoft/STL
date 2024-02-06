@@ -77,7 +77,7 @@ void allocate_object_overflow_test() {
     } catch (...) {
         assert(false);
     }
-#endif // TRANSITION, VSO-1854243
+#endif // ^^^ no workaround ^^^
 
     try {
         [[maybe_unused]] int* vp = alloc.allocate_object<int>(threshold + 1);

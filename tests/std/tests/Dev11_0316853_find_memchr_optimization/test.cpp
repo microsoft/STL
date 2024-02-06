@@ -164,9 +164,9 @@ int main() {
         v.push_back(44);
         v.push_back(55);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         static_assert(_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype(33)>, "should optimize");
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
         static_assert(_Could_compare_equal_to_value_type<signed char*>(33), "should be within limits");
 
         assert(find(v.begin(), v.end(), 33) - v.begin() == 1);
@@ -226,9 +226,9 @@ int main() {
         v.push_back(0x11223344UL);
         v.push_back(0xAABBCCDDUL);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         static_assert(_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype(0x10203040UL)>, "should optimize");
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
         // Make sure we don't look for 0x11 bytes in the range!
 
@@ -265,9 +265,9 @@ int main() {
         vc.push_back('o');
         vc.push_back('w');
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         static_assert(_Vector_alg_in_find_is_safe<decltype(vc.begin()), decltype('m')>, "should optimize");
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
         assert(find(vc.begin(), vc.end(), 'o') == vc.begin() + 3);
         assert(find(vc.begin(), vc.end(), 'X') == vc.end());
@@ -290,9 +290,9 @@ int main() {
         vsc.push_back(-128);
         vsc.push_back(127);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         static_assert(_Vector_alg_in_find_is_safe<decltype(vsc.begin()), decltype(29)>, "should optimize");
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
         assert(find(vsc.begin(), vsc.end(), 17) == vsc.begin());
         assert(find(vsc.begin(), vsc.end(), 29) == vsc.begin() + 1);
@@ -317,9 +317,9 @@ int main() {
         vuc.push_back(254);
         vuc.push_back(255);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         static_assert(_Vector_alg_in_find_is_safe<decltype(vuc.begin()), decltype(47)>, "should optimize");
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
         assert(find(vuc.begin(), vuc.end(), 47) == vuc.begin() + 2);
         assert(find(vuc.begin(), vuc.end(), 255) == vuc.begin() + 4);

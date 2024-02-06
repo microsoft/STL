@@ -380,8 +380,10 @@ namespace test_derived_from {
 
     void PrivateDerived::f() {
         // Check these in a member to verify that access doesn't depend on context
+#ifndef __EDG__ // TRANSITION, VSO-1898937
         STATIC_ASSERT(!derived_from<PrivateDerived, Middle<0>>);
         STATIC_ASSERT(!derived_from<PrivateDerived, Middle<1>>);
+#endif // ^^^ no workaround ^^^
     }
 
     STATIC_ASSERT(!derived_from<PrivateDerived, SimpleBase>);
@@ -538,7 +540,7 @@ namespace test_convertible_to {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     STATIC_ASSERT(convertible_to<int volatile (&)[42], int volatile (&)[42]>);
     STATIC_ASSERT(convertible_to<int volatile (&)[42][13], int volatile (&)[42][13]>);
-#endif // TRANSITION, DevCom-1627396
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(convertible_to<int volatile (&&)[42], int volatile (&&)[42]>);
     STATIC_ASSERT(convertible_to<int volatile (&&)[42][13], int volatile (&&)[42][13]>);
 
@@ -721,7 +723,7 @@ namespace test_common_reference_with {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     STATIC_ASSERT(test<int volatile (&)[42], int volatile (&)[42]>());
     STATIC_ASSERT(test<int volatile (&)[42][13], int volatile (&)[42][13]>());
-#endif // TRANSITION, DevCom-1627396
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(test<int volatile (&&)[42], int volatile (&&)[42]>());
     STATIC_ASSERT(test<int volatile (&&)[42][13], int volatile (&&)[42][13]>());
 } // namespace test_common_reference_with
@@ -1449,7 +1451,9 @@ namespace test_constructible_from {
     };
     STATIC_ASSERT(!test<Multiparameter>());
     STATIC_ASSERT(test<Multiparameter, int>());
-    STATIC_ASSERT(!test<Multiparameter, long>() || is_permissive);
+#ifndef __EDG__ // TRANSITION, VSO-1898939
+    STATIC_ASSERT(test<Multiparameter, long>() == is_permissive);
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(!test<Multiparameter, double>());
     STATIC_ASSERT(!test<Multiparameter, char>());
     STATIC_ASSERT(!test<Multiparameter, void>());
@@ -1476,7 +1480,7 @@ namespace test_constructible_from {
 #ifndef __clang__ // TRANSITION, LLVM-44688
     STATIC_ASSERT(!test<int const&, ExplicitTo<int>>());
     STATIC_ASSERT(!test<int&&, ExplicitTo<int>>());
-#endif // TRANSITION, LLVM-44688
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(!test<int const&, ExplicitTo<double&&>>());
     STATIC_ASSERT(!test<int&&, ExplicitTo<double&&>>());
 
@@ -1499,9 +1503,13 @@ namespace test_default_initializable {
     using std::default_initializable, std::initializer_list;
 
     STATIC_ASSERT(default_initializable<int>);
+#ifndef __EDG__ // TRANSITION, VSO-1898941
     STATIC_ASSERT(!default_initializable<int const>);
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(default_initializable<int volatile>);
+#ifndef __EDG__ // TRANSITION, VSO-1898941
     STATIC_ASSERT(!default_initializable<int const volatile>);
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(default_initializable<double>);
     STATIC_ASSERT(!default_initializable<void>);
 
@@ -1514,7 +1522,9 @@ namespace test_default_initializable {
     STATIC_ASSERT(!default_initializable<int[]>);
     STATIC_ASSERT(!default_initializable<char[]>);
     STATIC_ASSERT(!default_initializable<char[][3]>);
+#ifndef __EDG__ // TRANSITION, VSO-1898941
     STATIC_ASSERT(!default_initializable<int const[2]>);
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(!default_initializable<int&>);
     STATIC_ASSERT(!default_initializable<int const&>);
@@ -1558,14 +1568,14 @@ namespace test_default_initializable {
         int x;
     };
     STATIC_ASSERT(default_initializable<S>);
+#ifndef __EDG__ // TRANSITION, VSO-1898941
     STATIC_ASSERT(!default_initializable<S const>);
+#endif // ^^^ no workaround ^^^
 
     // Also test GH-1603 "default_initializable accepts types that are not default-initializable"
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1326684
+#if defined(__clang__) // TRANSITION, DevCom-1326684 (MSVC) and VSO-1898945 (EDG)
     STATIC_ASSERT(!default_initializable<AggregatesExplicitDefault>);
-#else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
-    STATIC_ASSERT(default_initializable<AggregatesExplicitDefault>);
-#endif // TRANSITION, DevCom-1326684
+#endif // ^^^ no workaround ^^^
 } // namespace test_default_initializable
 
 namespace test_move_constructible {
@@ -2039,7 +2049,7 @@ namespace test_swappable_with {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     STATIC_ASSERT(test<int volatile (&)[4], int volatile (&)[4]>());
     STATIC_ASSERT(test<int volatile (&)[3][4], int volatile (&)[3][4]>());
-#endif // TRANSITION, DevCom-1627396
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(test<MovableFriendSwap, MovableFriendSwap>() == is_permissive);
     STATIC_ASSERT(test<MovableFriendSwap&, MovableFriendSwap&>());
@@ -2249,7 +2259,7 @@ namespace test_copy_constructible {
 
     STATIC_ASSERT(!copy_constructible<NotMutableRef>);
     STATIC_ASSERT(!copy_constructible<NotConstRefRef>);
-#endif // TRANSITION, VSO-119526
+#endif // ^^^ no workaround ^^^
 
     struct UserProvidedCopy {
         UserProvidedCopy(UserProvidedCopy const&);
@@ -2609,7 +2619,9 @@ namespace test_totally_ordered {
     STATIC_ASSERT(test<int[42]>());
     STATIC_ASSERT(test<int(int)>());
 
+#ifndef __EDG__ // TRANSITION, VSO-1898947
     STATIC_ASSERT(!test<std::nullptr_t>());
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(!test<EmptyClass>());
 
     constexpr unsigned int Archetype_max = 6;
@@ -2711,7 +2723,9 @@ namespace test_totally_ordered_with {
     STATIC_ASSERT(test<int>());
     STATIC_ASSERT(test<double>());
     STATIC_ASSERT(test<int, double>());
+#ifndef __EDG__ // TRANSITION, VSO-1898947
     STATIC_ASSERT(!test<std::nullptr_t>());
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(test<void*>());
     STATIC_ASSERT(test<int*>());

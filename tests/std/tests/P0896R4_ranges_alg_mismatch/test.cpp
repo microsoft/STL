@@ -76,7 +76,7 @@ int main() {
     smoke_test();
 }
 
-#ifndef _PREFAST_ // TRANSITION, GH-1030
+#if !defined(_PREFAST_) && !defined(__EDG__) // TRANSITION, GH-1030 and GH-3567
 struct instantiator {
     template <class In1, class In2>
     static void call() {
@@ -108,4 +108,4 @@ struct instantiator {
 };
 
 template void test_in_in<instantiator, const int, const int>();
-#endif // TRANSITION, GH-1030
+#endif // ^^^ no workaround ^^^
