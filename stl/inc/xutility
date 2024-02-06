@@ -48,6 +48,18 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS != 0 ^^^
 #endif // ^^^ no support for vector algorithms ^^^
 
+#ifndef _USE_STD_VECTOR_FLOATING_ALGORITHMS
+#if _USE_STD_VECTOR_ALGORITHMS && !defined(_M_FP_EXCEPT)
+#define _USE_STD_VECTOR_FLOATING_ALGORITHMS 1
+#else // ^^^ use vector algorithms and fast math / not use vector algorithms or not use fast math vvv
+#define _USE_STD_VECTOR_FLOATING_ALGORITHMS 0
+#endif // ^^^ not use vector algorithms or not use fast math ^^^
+#else // ^^^ !defined(_USE_STD_VECTOR_FLOATING_ALGORITHMS) / defined(_USE_STD_VECTOR_FLOATING_ALGORITHMS) vvv
+#if _USE_STD_VECTOR_FLOATING_ALGORITHMS && !_USE_STD_VECTOR_ALGORITHMS
+#error _USE_STD_VECTOR_FLOATING_ALGORITHMS must imply _USE_STD_VECTOR_ALGORITHMS.
+#endif // _USE_STD_VECTOR_FLOATING_ALGORITHMS && !_USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ defined(_USE_STD_VECTOR_FLOATING_ALGORITHMS) ^^^
+
 #if _USE_STD_VECTOR_ALGORITHMS
 extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
@@ -87,11 +99,15 @@ const void* __stdcall __std_min_element_1(const void* _First, const void* _Last,
 const void* __stdcall __std_min_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_min_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
+const void* __stdcall __std_min_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 
 const void* __stdcall __std_max_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_max_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
+const void* __stdcall __std_max_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 } // extern "C"
 
 _STD_BEGIN
@@ -158,7 +174,11 @@ template <class _Ty>
 _Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
-    if constexpr (sizeof(_Ty) == 1) {
+    if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_f(_First, _Last, false)));
+    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_d(_First, _Last, false)));
+    } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_1(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 2) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_2(_First, _Last, _Signed)));
@@ -175,7 +195,11 @@ template <class _Ty>
 _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
-    if constexpr (sizeof(_Ty) == 1) {
+    if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_f(_First, _Last, false)));
+    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_d(_First, _Last, false)));
+    } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_1(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 2) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_2(_First, _Last, _Signed)));
@@ -6607,7 +6631,15 @@ template <class _Iter, class _Pr, class _Elem = _Iter_value_t<_Iter>>
 _INLINE_VAR constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
     _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
     && !_Iterator_is_volatile<_Iter> // The iterator must not be volatile.
-    && conjunction_v<disjunction<is_integral<_Elem>, is_pointer<_Elem>>, // Element is of integral or pointer type.
+    && conjunction_v<disjunction<
+#if _USE_STD_VECTOR_FLOATING_ALGORITHMS
+#if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
+                         is_same<_Elem, float>, is_same<_Elem, double>,
+#else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
+                         is_floating_point<_Elem>, // Element is floating point or...
+#endif // ^^^ 64-bit long double ^^^
+#endif // _USE_STD_VECTOR_FLOATING_ALGORITHMS
+                         is_integral<_Elem>, is_pointer<_Elem>>, // ... integral or pointer type.
         disjunction< // And either of the following:
 #if _HAS_CXX20
             is_same<_Pr, _RANGES less>, // predicate is ranges::less

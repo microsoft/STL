@@ -54,6 +54,8 @@ _Min_max_element_t __stdcall __std_minmax_element_1(const void* _First, const vo
 _Min_max_element_t __stdcall __std_minmax_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 
 const void* __stdcall __std_find_last_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
@@ -68,7 +70,11 @@ _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
 
     _Min_max_element_t _Res;
 
-    if constexpr (sizeof(_Ty) == 1) {
+    if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+        _Res = ::__std_minmax_element_f(_First, _Last, false);
+    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+        _Res = ::__std_minmax_element_d(_First, _Last, false);
+    } else if constexpr (sizeof(_Ty) == 1) {
         _Res = ::__std_minmax_element_1(_First, _Last, _Signed);
     } else if constexpr (sizeof(_Ty) == 2) {
         _Res = ::__std_minmax_element_2(_First, _Last, _Signed);
