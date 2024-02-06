@@ -7,9 +7,9 @@
 #define _FLAT_SET_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#if !_HAS_CXX23 || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if !_HAS_CXX23
 _EMIT_STL_WARNING(STL4038, "The contents of <flat_set> are available only with C++23 or later.");
-#else // ^^^ not supported / supported language mode vvv
+#else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 #include <algorithm>
 #include <compare>
 #include <initializer_list>
@@ -827,6 +827,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // ^^^ supported language mode ^^^
+#endif // ^^^ _HAS_CXX23 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FLAT_SET_
