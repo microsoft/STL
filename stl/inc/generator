@@ -9,9 +9,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#if !_HAS_CXX23 || !defined(__cpp_impl_coroutine) || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
-_EMIT_STL_WARNING(STL4038, "The contents of <generator> are available only with C++23 or later coroutine support.")
-#else // ^^^ no coroutine support / coroutines vvv
+#if !_HAS_CXX23
+_EMIT_STL_WARNING(STL4038, "The contents of <generator> are available only with C++23 or later.");
+#else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
 #include <coroutine>
 #include <exception>
@@ -468,6 +468,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // !_HAS_CXX23 || !defined(__cpp_impl_coroutine)
+#endif // ^^^ _HAS_CXX23 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _GENERATOR_
