@@ -383,7 +383,7 @@ public:
         }
     }
 
-#if defined(__cpp_lib_print) && defined(_CPPRTTI)
+#if _HAS_CXX23 && defined(_CPPRTTI)
     template <class _Filebuf_type>
     friend ios_base::iostate _Print_noformat_unicode(ostream&, string_view);
 #endif

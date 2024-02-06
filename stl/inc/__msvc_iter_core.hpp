@@ -47,7 +47,7 @@ _EXPORT_STD struct bidirectional_iterator_tag : forward_iterator_tag {};
 
 _EXPORT_STD struct random_access_iterator_tag : bidirectional_iterator_tag {};
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD struct contiguous_iterator_tag : random_access_iterator_tag {};
 
 template <class _Ty>
@@ -482,7 +482,7 @@ template <class _It, class _Se, ranges::subrange_kind _Ki>
 struct tuple_element<1, const ranges::subrange<_It, _Se, _Ki>> {
     using type = _Se;
 };
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class, class = void>
 struct _Iterator_traits_base {}; // empty for non-iterators
 
@@ -515,7 +515,7 @@ struct iterator_traits : _Iterator_traits_base<_Iter> {}; // get traits from ite
 
 template <class _Ty>
 struct iterator_traits<_Ty*> : _Iterator_traits_pointer_base<_Ty> {}; // get traits from pointer, if possible
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 _STD_END
 
 #pragma pop_macro("new")

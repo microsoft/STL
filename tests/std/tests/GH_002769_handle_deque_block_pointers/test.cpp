@@ -29,9 +29,9 @@ private:
     friend struct inconsistent_difference_allocator;
 
 public:
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = T;
     using difference_type   = Diff;

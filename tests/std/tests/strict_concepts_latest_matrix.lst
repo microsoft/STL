@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# This file is identical to concepts_latest_matrix.lst, except that all configurations include /permissive-.
+# This file is identical to usual_latest_matrix.lst, except that all configurations include /permissive-.
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST

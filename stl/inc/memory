@@ -47,7 +47,7 @@ _NoThrowFwdIt uninitialized_copy(_ExPo&&, const _FwdIt _First, const _FwdIt _Las
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_copy_result = in_out_result<_In, _Out>;
@@ -57,7 +57,8 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
-        uninitialized_copy_result<_It, _Out> operator()(_It _First1, _Se _Last1, _Out _First2, _OSe _Last2) const {
+        _STATIC_CALL_OPERATOR uninitialized_copy_result<_It, _Out> operator()(
+            _It _First1, _Se _Last1, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UResult = _Uninitialized_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First1)),
@@ -71,8 +72,8 @@ namespace ranges {
 
         template <input_range _Rng1, _No_throw_forward_range _Rng2>
             requires constructible_from<range_value_t<_Rng2>, range_reference_t<_Rng1>>
-        uninitialized_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
-            _Rng1&& _Range1, _Rng2&& _Range2) const {
+        _STATIC_CALL_OPERATOR uninitialized_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
+            operator()(_Rng1&& _Range1, _Rng2&& _Range2) _CONST_CALL_OPERATOR {
             auto _First1  = _RANGES begin(_Range1);
             auto _UResult = _Uninitialized_copy_unchecked(
                 _Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
@@ -120,7 +121,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_copy_fn uninitialized_copy;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
@@ -163,7 +164,7 @@ _NoThrowFwdIt uninitialized_copy_n(_ExPo&&, const _FwdIt _First, const _Diff _Co
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_copy_n_result = in_out_result<_In, _Out>;
@@ -172,8 +173,8 @@ namespace ranges {
     public:
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
-        uninitialized_copy_n_result<_It, _Out> operator()(
-            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) const {
+        _STATIC_CALL_OPERATOR uninitialized_copy_n_result<_It, _Out> operator()(
+            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
             if (_Count <= 0) {
                 return {_STD move(_First1), _STD move(_First2)};
             }
@@ -212,7 +213,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_copy_n_fn uninitialized_copy_n;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _InIt, class _NoThrowFwdIt>
@@ -237,14 +238,15 @@ _NoThrowFwdIt uninitialized_move(_ExPo&&, const _FwdIt _First, const _FwdIt _Las
     return _STD uninitialized_move(_First, _Last, _Dest);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_move_fn {
     public:
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
-        uninitialized_move_result<_It, _Out> operator()(_It _First1, _Se _Last1, _Out _First2, _OSe _Last2) const {
+        _STATIC_CALL_OPERATOR uninitialized_move_result<_It, _Out> operator()(
+            _It _First1, _Se _Last1, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UResult = _RANGES _Uninitialized_move_unchecked(_Unwrap_iter<_Se>(_STD move(_First1)),
@@ -258,8 +260,8 @@ namespace ranges {
 
         template <input_range _Rng1, _No_throw_forward_range _Rng2>
             requires constructible_from<range_value_t<_Rng2>, range_rvalue_reference_t<_Rng1>>
-        uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
-            _Rng1&& _Range1, _Rng2&& _Range2) const {
+        _STATIC_CALL_OPERATOR uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
+            operator()(_Rng1&& _Range1, _Rng2&& _Range2) _CONST_CALL_OPERATOR {
             auto _First1  = _RANGES begin(_Range1);
             auto _UResult = _RANGES _Uninitialized_move_unchecked(
                 _Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
@@ -271,7 +273,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_move_fn uninitialized_move;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _InIt, class _Diff, class _NoThrowFwdIt>
 pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
@@ -325,7 +327,7 @@ void uninitialized_fill(_ExPo&&, const _NoThrowFwdIt _First, const _NoThrowFwdIt
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_move_n_result = in_out_result<_In, _Out>;
@@ -334,8 +336,8 @@ namespace ranges {
     public:
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
-        uninitialized_move_n_result<_It, _Out> operator()(
-            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) const {
+        _STATIC_CALL_OPERATOR uninitialized_move_n_result<_It, _Out> operator()(
+            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
             if (_Count <= 0) {
                 return {_STD move(_First1), _STD move(_First2)};
             }
@@ -378,7 +380,7 @@ namespace ranges {
     public:
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
-        _It operator()(_It _First, _Se _Last, const _Ty& _Val) const {
+        _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last, const _Ty& _Val) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_fill_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Val);
@@ -389,7 +391,8 @@ namespace ranges {
 
         template <_No_throw_forward_range _Rng, class _Ty>
             requires constructible_from<range_value_t<_Rng>, const _Ty&>
-        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val) const {
+        _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val) _CONST_CALL_OPERATOR {
             return _Rewrap_iterator(_Range, _Uninitialized_fill_unchecked(_Ubegin(_Range), _Uend(_Range), _Val));
         }
 
@@ -426,7 +429,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_fill_fn uninitialized_fill;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) {
@@ -477,13 +480,14 @@ _NoThrowFwdIt uninitialized_fill_n(
 }
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_fill_n_fn {
     public:
         template <_No_throw_forward_iterator _It, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
-        _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Val) const {
+        _STATIC_CALL_OPERATOR _It operator()(
+            _It _First, iter_difference_t<_It> _Count, const _Ty& _Val) _CONST_CALL_OPERATOR {
             if (_Count <= 0) {
                 return _First;
             }
@@ -517,14 +521,14 @@ namespace ranges {
 
     class _Construct_at_fn {
     public:
-        // clang-format off
         template <class _Ty, class... _Types>
             requires requires(_Ty* _Ptr, _Types&&... _Args) {
                 ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types&&>(_Args)...); // per LWG-3888
             }
-        constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
-            noexcept(noexcept(::new (static_cast<void*>(_Location))
-                    _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
+        _STATIC_CALL_OPERATOR constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) _CONST_CALL_OPERATOR
+            // clang-format off
+            noexcept(noexcept(
+                ::new(static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
             // clang-format on
 #ifdef __EDG__
             return _STD construct_at(_Location, _STD forward<_Types>(_Args)...);
@@ -543,7 +547,7 @@ namespace ranges {
     class _Destroy_at_fn {
     public:
         template <destructible _Ty>
-        constexpr void operator()(_Ty* const _Location) const noexcept {
+        _STATIC_CALL_OPERATOR constexpr void operator()(_Ty* const _Location) _CONST_CALL_OPERATOR noexcept {
             if constexpr (is_array_v<_Ty>) {
                 (void) _RANGES _Destroy_unchecked(_RANGES begin(*_Location), _RANGES end(*_Location));
             } else {
@@ -554,7 +558,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Destroy_at_fn destroy_at;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
 _EXPORT_STD template <class _NoThrowFwdIt>
@@ -567,7 +571,7 @@ _CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last)
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void destroy(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
@@ -587,7 +591,7 @@ namespace ranges {
     public:
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
-        constexpr _It operator()(_It _First, _Se _Last) const noexcept {
+        _STATIC_CALL_OPERATOR constexpr _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR noexcept {
             _Adl_verify_range(_First, _Last);
             _Seek_wrapped(_First,
                 _RANGES _Destroy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last))));
@@ -596,7 +600,8 @@ namespace ranges {
 
         template <_No_throw_input_range _Rng>
             requires destructible<range_value_t<_Rng>>
-        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
+        _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range) _CONST_CALL_OPERATOR noexcept {
             auto _First = _RANGES begin(_Range);
             _Seek_wrapped(
                 _First, _RANGES _Destroy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range)));
@@ -606,7 +611,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Destroy_fn destroy;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
@@ -632,13 +637,14 @@ _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_ra
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Destroy_n_fn {
     public:
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
-        constexpr _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
+        _STATIC_CALL_OPERATOR constexpr _It operator()(
+            _It _First, const iter_difference_t<_It> _Count_raw) _CONST_CALL_OPERATOR noexcept {
             _Algorithm_int_t<iter_difference_t<_It>> _Count = _Count_raw;
             if (_Count <= 0) {
                 return _First;
@@ -662,7 +668,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Destroy_n_fn destroy_n;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
@@ -683,13 +689,13 @@ void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowF
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void uninitialized_default_construct(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_default_construct_fn {
     public:
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
-        _It operator()(_It _First, _Se _Last) const {
+        _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_default_construct_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
@@ -700,7 +706,7 @@ namespace ranges {
 
         template <_No_throw_forward_range _Rng>
             requires default_initializable<range_value_t<_Rng>>
-        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
+        _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) _CONST_CALL_OPERATOR {
             auto _UResult = _Uninitialized_default_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
 
             return _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -731,7 +737,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_default_construct_fn uninitialized_default_construct;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
@@ -760,13 +766,13 @@ _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_
 _NoThrowFwdIt uninitialized_default_construct_n(
     _ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_default_construct_n_fn {
     public:
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
-        _It operator()(_It _First, iter_difference_t<_It> _Count) const {
+        _STATIC_CALL_OPERATOR _It operator()(_It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR {
             if (_Count <= 0) {
                 return _First;
             }
@@ -789,7 +795,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_default_construct_n_fn uninitialized_default_construct_n;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt>
 void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
@@ -813,13 +819,13 @@ void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwd
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void uninitialized_value_construct(_ExPo&& _Exec, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_value_construct_fn {
     public:
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
-        _It operator()(_It _First, _Se _Last) const {
+        _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_value_construct_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
@@ -830,7 +836,7 @@ namespace ranges {
 
         template <_No_throw_forward_range _Rng>
             requires default_initializable<range_value_t<_Rng>>
-        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
+        _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) _CONST_CALL_OPERATOR {
             auto _UResult = _Uninitialized_value_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
 
             return _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -859,7 +865,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_value_construct_fn uninitialized_value_construct;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
@@ -877,13 +883,13 @@ _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, class _Diff, _Enable_if_
 _NoThrowFwdIt uninitialized_value_construct_n(
     _ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) noexcept; // terminates
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 namespace ranges {
     class _Uninitialized_value_construct_n_fn {
     public:
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
-        _It operator()(_It _First, iter_difference_t<_It> _Count) const {
+        _STATIC_CALL_OPERATOR _It operator()(_It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR {
             if (_Count <= 0) {
                 return _First;
             }
@@ -906,7 +912,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_value_construct_n_fn uninitialized_value_construct_n;
 } // namespace ranges
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
@@ -926,11 +932,11 @@ class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap store
 public:
     using iterator_category = output_iterator_tag;
     using value_type        = void;
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using difference_type = ptrdiff_t;
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     using difference_type = void;
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
     using pointer   = void;
     using reference = void;
 
@@ -3664,7 +3670,7 @@ _NODISCARD bool operator<=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr
     return !(_Right < _Left);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 // clang-format off
 _EXPORT_STD template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
     requires three_way_comparable_with<typename unique_ptr<_Ty1, _Dx1>::pointer,
@@ -3675,7 +3681,7 @@ _NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer,
     // clang-format on
     return _Left.get() <=> _Right.get();
 }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Ty, class _Dx>
 _NODISCARD _CONSTEXPR23 bool operator==(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
@@ -3741,14 +3747,14 @@ _NODISCARD _CONSTEXPR23 bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _
     return !(_Right < _Left);
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Dx>
     requires three_way_comparable<typename unique_ptr<_Ty, _Dx>::pointer>
 _NODISCARD _CONSTEXPR23 compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>::pointer> operator<=>(
     const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
     return _Left.get() <=> static_cast<typename unique_ptr<_Ty, _Dx>::pointer>(nullptr);
 }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class _OutTy, class _PxTy, class = void>
 struct _Can_stream_unique_ptr : false_type {};
@@ -3863,7 +3869,7 @@ struct hash<shared_ptr<_Ty>> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = shared_ptr<_Ty>;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD size_t operator()(const shared_ptr<_Ty>& _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const shared_ptr<_Ty>& _Keyval) _CONST_CALL_OPERATOR noexcept {
         return hash<typename shared_ptr<_Ty>::element_type*>()(_Keyval.get());
     }
 };
@@ -4259,7 +4265,7 @@ public:
 };
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <class _Ty>
 struct _Pointer_of_helper {};
 
@@ -4461,7 +4467,7 @@ _NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
         return inout_ptr_t<_SmartPtr, _Pointer, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
     }
 }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {

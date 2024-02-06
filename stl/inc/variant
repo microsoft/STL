@@ -1378,7 +1378,7 @@ _NODISCARD constexpr bool operator>=(const variant<_Types...>& _Left, const vari
             && _STD _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class... _Types>
     requires (three_way_comparable<_Types> && ...)
 _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Types>...>
@@ -1396,7 +1396,7 @@ _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Ty
              ? _Offset_order
              : _STD _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()});
 }
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 template <class... _Variants>
 inline constexpr size_t _Variant_total_states =
@@ -1691,7 +1691,7 @@ _CONSTEXPR20 void swap(variant<_Types...>& _Left, variant<_Types...>& _Right) no
 
 struct _Variant_hash_visitor { // visitation function for hashing variants
     template <class _Ty, size_t _Idx>
-    _NODISCARD size_t operator()(_Tagged<const _Ty&, _Idx> _Obj) const
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(_Tagged<const _Ty&, _Idx> _Obj) _CONST_CALL_OPERATOR
         noexcept(disjunction_v<bool_constant<_Idx == variant_npos>,
             is_nothrow_invocable<hash<_Ty>, const _Ty&>>) { // hash contained value _Obj
         if constexpr (_Idx == variant_npos) { // hash a valueless variant
@@ -1717,7 +1717,7 @@ struct hash<monostate> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = monostate;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD size_t operator()(monostate) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(monostate) _CONST_CALL_OPERATOR noexcept {
         return 1729; // Arbitrary value
     }
 };
