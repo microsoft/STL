@@ -399,10 +399,10 @@ void test_algorithms() {
     (void) std::lexicographical_compare(varr, varr, varr, varr);
     (void) std::lexicographical_compare(iarr, iarr, iarr, iarr, validating_less{});
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
     (void) std::lexicographical_compare_three_way(varr, varr, varr, varr);
     (void) std::lexicographical_compare_three_way(iarr, iarr, iarr, iarr, validating_compare_three_way{});
-#endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
     // (void) std::next_permutation(varr, varr); // requires Cpp17ValueSwappable
     (void) std::next_permutation(iarr, iarr, validating_less{});
@@ -631,7 +631,7 @@ void test_parallel_algorithms() {
 }
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
 void test_ranges_non_projected_algorithms() {
     using namespace std::ranges;
 
@@ -730,5 +730,5 @@ void test_ranges_non_projected_algorithms() {
     (void) shift_right(varr, 0);
 #endif // _HAS_CXX23
 }
-#endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 #endif // _M_CEE

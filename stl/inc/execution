@@ -3661,7 +3661,8 @@ template <class _Ty>
 struct _Casty_plus {
     // Adds the two arguments together and casts the result back to _Ty.
     // pre: the result from adding the two arguments together can fit in _Ty
-    _NODISCARD constexpr _Ty operator()(_Ty _Val1, _Ty _Val2) const noexcept /* terminates */ {
+    _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ty operator()(_Ty _Val1, _Ty _Val2) _CONST_CALL_OPERATOR noexcept
+    /* terminates */ {
         return static_cast<_Ty>(_Val1 + _Val2);
     }
 };
@@ -5052,6 +5053,13 @@ _FwdIt2 adjacent_difference(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, 
     return _Dest;
 }
 
+template <class _Ty>
+struct _Inplace_destroy_fn {
+    _STATIC_CALL_OPERATOR void operator()(_Ty& _Obj) _CONST_CALL_OPERATOR noexcept {
+        _STD _Destroy_in_place(_Obj);
+    }
+};
+
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void destroy(_ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept /* terminates */ {
     // destroy all elements in [_First, _Last)
@@ -5059,7 +5067,7 @@ void destroy(_ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Las
     _STD _Adl_verify_range(_First, _Last);
     using _Ty = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
     if constexpr (!is_trivially_destructible_v<_Ty>) {
-        _STD for_each(_STD forward<_ExPo>(_Exec), _First, _Last, [](_Ty& _Obj) { _STD _Destroy_in_place(_Obj); });
+        _STD for_each(_STD forward<_ExPo>(_Exec), _First, _Last, _Inplace_destroy_fn<_Ty>{});
     }
 }
 
@@ -5077,10 +5085,17 @@ _NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_
         _STD advance(_First, _Count);
         return _First;
     } else {
-        return _STD for_each_n(
-            _STD forward<_ExPo>(_Exec), _First, _Count, [](_Ty& _Obj) { _STD _Destroy_in_place(_Obj); });
+        return _STD for_each_n(_STD forward<_ExPo>(_Exec), _First, _Count, _Inplace_destroy_fn<_Ty>{});
     }
 }
+
+template <class _Ty>
+struct _Inplace_default_construct_fn {
+    _STATIC_CALL_OPERATOR void operator()(_Ty& _Obj) _CONST_CALL_OPERATOR
+        noexcept(is_nothrow_default_constructible_v<_Ty>) {
+        _STD _Default_construct_in_place(_Obj);
+    }
+};
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void uninitialized_default_construct(_ExPo&& _Exec, const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept
@@ -5090,8 +5105,7 @@ void uninitialized_default_construct(_ExPo&& _Exec, const _NoThrowFwdIt _First, 
     _STD _Adl_verify_range(_First, _Last);
     using _Ty = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
     if constexpr (!is_trivially_default_constructible_v<_Ty>) {
-        _STD for_each(
-            _STD forward<_ExPo>(_Exec), _First, _Last, [](_Ty& _Obj) { _STD _Default_construct_in_place(_Obj); });
+        _STD for_each(_STD forward<_ExPo>(_Exec), _First, _Last, _Inplace_default_construct_fn<_Ty>{});
     }
 }
 
@@ -5110,10 +5124,17 @@ _NoThrowFwdIt uninitialized_default_construct_n(_ExPo&& _Exec, _NoThrowFwdIt _Fi
         _STD advance(_First, _Count);
         return _First;
     } else {
-        return _STD for_each_n(
-            _STD forward<_ExPo>(_Exec), _First, _Count, [](_Ty& _Obj) { _STD _Default_construct_in_place(_Obj); });
+        return _STD for_each_n(_STD forward<_ExPo>(_Exec), _First, _Count, _Inplace_default_construct_fn<_Ty>{});
     }
 }
+
+template <class _Ty>
+struct _Inplace_value_construct_fn {
+    _STATIC_CALL_OPERATOR void operator()(_Ty& _Obj) _CONST_CALL_OPERATOR
+        noexcept(is_nothrow_default_constructible_v<_Ty>) {
+        _STD _Construct_in_place(_Obj);
+    }
+};
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt _Last) noexcept /* terminates */ {
@@ -5131,10 +5152,10 @@ void uninitialized_value_construct(_ExPo&&, _NoThrowFwdIt _First, _NoThrowFwdIt 
             auto _Count = _STD distance(_UFirst, _ULast);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
-                using _Ty     = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
-                auto _Ctor_fn = [](_Ty& _Obj) { _STD _Construct_in_place(_Obj); };
-                _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Ctor_fn)> _Operation{
-                    _Hw_threads, _Count, _Ctor_fn};
+                using _Ty      = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
+                using _Ctor_fn = _Inplace_value_construct_fn<_Ty>;
+                _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), _Ctor_fn> _Operation{
+                    _Hw_threads, _Count, _Ctor_fn{}};
                 _Operation._Basis._Populate(_Operation._Team, _UFirst);
                 _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return;
@@ -5179,10 +5200,10 @@ _NoThrowFwdIt uninitialized_value_construct_n(_ExPo&&, _NoThrowFwdIt _First, con
         const size_t _Hw_threads = _CSTD __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1 && _Count >= 2) { // parallelize on multiprocessor machines with at least 2 elements
             _TRY_BEGIN
-            using _Ty     = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
-            auto _Ctor_fn = [](_Ty& _Obj) { _STD _Construct_in_place(_Obj); };
-            _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), decltype(_Ctor_fn)> _Operation{
-                _Hw_threads, _Count, _Ctor_fn};
+            using _Ty      = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
+            using _Ctor_fn = _Inplace_value_construct_fn<_Ty>;
+            _Static_partitioned_for_each2<decltype(_UFirst), decltype(_Count), _Ctor_fn> _Operation{
+                _Hw_threads, _Count, _Ctor_fn{}};
             _STD _Seek_wrapped(_First, _Operation._Basis._Populate(_Operation._Team, _UFirst));
             _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
             return _First;

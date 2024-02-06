@@ -10,12 +10,12 @@
 #include <type_traits>
 #include <utility>
 
-#ifdef __cpp_lib_ranges
+#if _HAS_CXX20
 #include <iterator>
 #include <list>
 #include <ranges>
 #include <vector>
-#endif // __cpp_lib_ranges
+#endif // _HAS_CXX20
 
 using namespace std;
 
@@ -231,7 +231,7 @@ int main() {
         }
     }
 
-#ifdef __cpp_lib_ranges
+#if _HAS_CXX20
     {
         using ranges::subrange, ranges::subrange_kind;
 
@@ -252,7 +252,7 @@ int main() {
         STATIC_ASSERT(is_same_v<decltype(cat7), tuple<LstIter, LstIter, VecIter, VecConstIter>>);
         assert(cat7 == make_tuple(next(lst.begin()), prev(lst.end()), vec.begin() + 1, vec.cend() - 1));
     }
-#endif // __cpp_lib_ranges
+#endif // _HAS_CXX20
 
 // Also test C++17 apply() and make_from_tuple().
 #if _HAS_CXX17

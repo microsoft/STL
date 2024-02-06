@@ -89,9 +89,7 @@ template <class CharType>
 constexpr auto get_sso_input_view() {
     return basic_string_view<CharType>{get_sso_input<CharType>()};
 }
-#endif // _HAS_CXX17
 
-#if _HAS_CXX17
 template <class CharType>
 struct string_view_convertible {
     constexpr operator basic_string_view<CharType>() const noexcept {

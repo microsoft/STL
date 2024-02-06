@@ -88,7 +88,6 @@ constexpr void test_impl(Optional&& nonempty, Optional&& empty_optional) {
         static_assert(is_same_v<decltype(result), optional<int>>);
         assert(result == 22);
     }
-#ifdef __cpp_lib_concepts
     {
         decltype(auto) result = forward<Optional>(nonempty).or_else(fn<U>{});
         static_assert(is_same_v<decltype(result), optional<Thingy>>);
@@ -98,7 +97,6 @@ constexpr void test_impl(Optional&& nonempty, Optional&& empty_optional) {
         decltype(auto) result = forward<Optional>(empty_optional).or_else(fn<U>{});
         assert(result.value().x == 55);
     }
-#endif // __cpp_lib_concepts
 }
 
 constexpr bool test() {

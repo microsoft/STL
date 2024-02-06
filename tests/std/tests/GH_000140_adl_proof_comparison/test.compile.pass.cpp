@@ -12,13 +12,13 @@
 #include <optional>
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
 #include <ranges>
-#endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 #include <expected>
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 using namespace std;
 
@@ -81,9 +81,9 @@ struct validating_iterator_provider<T>::iterator {
     using reference         = T&;
     using difference_type   = ptrdiff_t;
     using iterator_category = random_access_iterator_tag;
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
     constexpr T& operator*() const noexcept {
         return *ptr_;
@@ -228,13 +228,13 @@ void test_adl_proof_move_iterator_comparison() {
     test_adl_proof_comparison<I, J>();
     test_adl_proof_comparison<J, I>();
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX20
     I i{};
     move_sentinel<validating_iterator_provider<int>::iterator> s{};
 
     (void) (i == s);
     (void) (i != s);
-#endif // _HAS_CXX20 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 }
 
 #if _HAS_CXX17
@@ -248,7 +248,7 @@ void test_adl_proof_optional_comparison() {
 }
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 void test_adl_proof_expected_comparison() {
     expected<test_comparable, test_comparable> ex;
     (void) (ex == ex);
@@ -286,6 +286,6 @@ void test_adl_proof_basic_const_iterator_comparison() {
     test_adl_proof_comparison<I, CJ>();
     test_adl_proof_comparison<J, CJ>();
 }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 #endif // _M_CEE

@@ -38,9 +38,9 @@
 #define _FORMAT_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#ifndef __cpp_lib_concepts
+#if !_HAS_CXX20
 _EMIT_STL_WARNING(STL4038, "The contents of <format> are available only with C++20 or later.");
-#else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <__msvc_format_ucd_tables.hpp>
 #include <__msvc_formatter.hpp>
@@ -703,6 +703,7 @@ public:
         explicit handle(_Ty& _Val) noexcept
             : _Ptr(_STD addressof(_Val)),
               _Format([](basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
+                  // TRANSITION, Clang 18, should be marked _STATIC_CALL_OPERATOR
                   using _Td = remove_const_t<_Ty>;
                   // doesn't drop const-qualifier per an unnumbered LWG issue
                   using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
@@ -1626,7 +1627,7 @@ inline constexpr bool _Is_signed_or_unsigned_large_integer_t =
 class _Width_checker {
 public:
     template <class _Ty>
-    _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
+    _NODISCARD _STATIC_CALL_OPERATOR constexpr unsigned long long operator()(const _Ty _Value) _CONST_CALL_OPERATOR {
         if constexpr (_Is_signed_or_unsigned_large_integer_t<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
@@ -1645,7 +1646,7 @@ public:
 class _Precision_checker {
 public:
     template <class _Ty>
-    _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
+    _NODISCARD _STATIC_CALL_OPERATOR constexpr unsigned long long operator()(const _Ty _Value) _CONST_CALL_OPERATOR {
         if constexpr (_Is_signed_or_unsigned_large_integer_t<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
@@ -4111,6 +4112,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // ^^^ defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ _HAS_CXX20 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FORMAT_
