@@ -199,6 +199,7 @@ void static_allocator_test() {
         assert(ranges::equal(g(std::allocator_arg, {}, 1024), ranges::views::iota(0, 1024)));
     }
 
+#ifndef __EDG__ // TRANSITION, VSO-1951821
     {
         auto g = [](std::allocator_arg_t, stateful_alloc<int>,
                      const int hi) -> std::generator<int, int, stateful_alloc<char>> {
@@ -211,6 +212,7 @@ void static_allocator_test() {
 
         assert(ranges::equal(g(std::allocator_arg, stateful_alloc<int>{42}, 1024), ranges::views::iota(0, 1024)));
     }
+#endif // ^^^ no workaround ^^^
 }
 
 void dynamic_allocator_test() {
@@ -224,7 +226,9 @@ void dynamic_allocator_test() {
 
     assert(ranges::equal(g(std::allocator_arg, std::allocator<float>{}, 1024), ranges::views::iota(0, 1024)));
     assert(ranges::equal(g(std::allocator_arg, stateless_alloc<float>{}, 1024), ranges::views::iota(0, 1024)));
+#ifndef __EDG__ // TRANSITION, VSO-1951821
     assert(ranges::equal(g(std::allocator_arg, stateful_alloc<float>{1729}, 1024), ranges::views::iota(0, 1024)));
+#endif // ^^^ no workaround ^^^
 }
 
 void zip_example() {
