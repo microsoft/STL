@@ -19,9 +19,9 @@
 #include <xfilesystem_abi.h>
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 #include <__msvc_print.hpp>
-#endif // ^^^ defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ _HAS_CXX20 ^^^
 
 // <__msvc_bit_utils.hpp> is included by <bit> and <limits>
 // <__msvc_iter_core.hpp> is included by <tuple>
@@ -51,11 +51,11 @@ void test_gh_2699() {
     assert(cats[1] == 50);
     assert(dogs[1] == 20);
 
-#ifdef __cpp_lib_ranges
+#if _HAS_CXX20
     std::ranges::swap(cats, dogs);
     assert(cats[1] == 20);
     assert(dogs[1] == 50);
-#endif // __cpp_lib_ranges
+#endif // _HAS_CXX20
 }
 
 int main() {

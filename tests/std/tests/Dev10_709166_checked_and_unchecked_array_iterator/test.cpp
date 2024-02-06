@@ -30,12 +30,12 @@ void check_checked_array_iterator_category_and_convertibility() {
 
     STATIC_ASSERT(std::is_convertible_v<stdext::checked_array_iterator<T*>, stdext::checked_array_iterator<const T*>>);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     STATIC_ASSERT(
         std::is_same_v<typename stdext::checked_array_iterator<T*>::iterator_concept, std::contiguous_iterator_tag>);
 
     STATIC_ASSERT(std::contiguous_iterator<stdext::checked_array_iterator<T*>>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 template <class T>
@@ -54,12 +54,12 @@ void check_unchecked_array_iterator_category_and_convertibility() {
     STATIC_ASSERT(
         std::is_convertible_v<stdext::unchecked_array_iterator<T*>, stdext::unchecked_array_iterator<const T*>>);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     STATIC_ASSERT(
         std::is_same_v<typename stdext::unchecked_array_iterator<T*>::iterator_concept, std::contiguous_iterator_tag>);
 
     STATIC_ASSERT(std::contiguous_iterator<stdext::unchecked_array_iterator<T*>>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 int main() {

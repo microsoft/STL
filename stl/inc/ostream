@@ -9,11 +9,11 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <ios>
 
-#ifdef __cpp_lib_print
+#if _HAS_CXX23
 #include <__msvc_filebuf.hpp>
 #include <__msvc_print.hpp>
 #include <format>
-#endif // ^^^ defined(__cpp_lib_print) ^^^
+#endif // ^^^ _HAS_CXX23 ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -1088,7 +1088,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
     return _Ostr << _Errcode.category().name() << ':' << _Errcode.value();
 }
 
-#ifdef __cpp_lib_print
+#if _HAS_CXX23
 #ifdef _CPPRTTI
 template <int = 0>
 ios_base::iostate _Print_noformat_nonunicode(ostream& _Ostr, const string_view _Str) {
@@ -1289,7 +1289,7 @@ void println(ostream&, format_string<_Types...>, _Types&&...) = delete; // requi
 _EXPORT_STD void vprint_unicode(ostream&, string_view, format_args)    = delete; // requires /GR option
 _EXPORT_STD void vprint_nonunicode(ostream&, string_view, format_args) = delete; // requires /GR option
 #endif // ^^^ !defined(_CPPRTTI) ^^^
-#endif // defined(__cpp_lib_print)
+#endif // _HAS_CXX23
 
 _STD_END
 

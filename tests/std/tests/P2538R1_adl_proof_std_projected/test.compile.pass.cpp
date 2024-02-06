@@ -49,6 +49,14 @@ struct tagged_left_selector {
     }
 };
 
+template <class Tag>
+struct tagged_zero_equality {
+    template <class T>
+    constexpr auto operator()(T&& t) const -> decltype(std::forward<T>(t) == std::remove_cvref_t<T>{}) {
+        return std::forward<T>(t) == std::remove_cvref_t<T>{};
+    }
+};
+
 template <class T>
 struct holder {
     T t;
@@ -59,6 +67,7 @@ struct incomplete;
 using simple_truth         = tagged_truth<void>;
 using simple_identity      = tagged_identity<void>;
 using simple_left_selector = tagged_left_selector<void>;
+using simple_zero_equality = tagged_zero_equality<void>;
 
 using validator                = holder<incomplete>*;
 using validating_truth         = tagged_truth<holder<incomplete>>;
@@ -66,6 +75,12 @@ using validating_equal         = tagged_equal<holder<incomplete>>;
 using validating_less          = tagged_less<holder<incomplete>>;
 using validating_identity      = tagged_identity<holder<incomplete>>;
 using validating_left_selector = tagged_left_selector<holder<incomplete>>;
+using validating_zero_equality = tagged_zero_equality<holder<incomplete>>;
+
+template <class T>
+bool less_function(T lhs, T rhs) {
+    return lhs < rhs;
+}
 
 void test_ranges_algorithms() {
     using namespace std::ranges;
@@ -267,20 +282,126 @@ void test_ranges_algorithms() {
 
     (void) unique(varr, varr);
     (void) unique(varr);
-    // (void) unique(iarr, iarr, validating_equal{}); // needs to check ADL-found swap
+    (void) unique(iarr, iarr, validating_equal{});
     // (void) unique(iarr, validating_equal{}); // needs to check ADL-found swap
     (void) unique(iarr, iarr, {}, validating_identity{});
     (void) unique(iarr, {}, validating_identity{});
 
     (void) unique_copy(varr, varr, varr2);
     (void) unique_copy(varr, varr2);
-    // (void) unique_copy(iarr, iarr, iarr2, validating_equal{}); // needs to check ADL-found swap
+    (void) unique_copy(iarr, iarr, iarr2, validating_equal{});
     // (void) unique_copy(iarr, iarr2, validating_equal{}); // needs to check ADL-found swap
     (void) unique_copy(iarr, iarr, iarr2, {}, validating_identity{});
     (void) unique_copy(iarr, iarr2, {}, validating_identity{});
 
+    sort(varr, varr);
+    sort(varr);
+    sort(varr, varr, less{});
+    // sort(varr, less{}); // need to check ADL-found operator==
+    sort(varr, &less_function<validator>);
+    sort(iarr, iarr, validating_less{});
+    // sort(iarr, validating_less{}); // need to check ADL-found swap
+    sort(iarr, iarr, {}, validating_identity{});
+
+    stable_sort(varr, varr);
+    stable_sort(varr);
+    stable_sort(varr, varr, less{});
+    // stable_sort(varr, less{}); // need to check ADL-found operator==
+    stable_sort(varr, &less_function<validator>);
+    stable_sort(iarr, iarr, validating_less{});
+    // stable_sort(iarr, validating_less{}); // need to check ADL-found swap
+    stable_sort(iarr, iarr, {}, validating_identity{});
+
+    partial_sort(varr, varr, varr);
+    partial_sort(varr, varr, static_cast<holder<incomplete>* const*>(varr)); // non-common
+    partial_sort(varr, varr);
+    partial_sort(subrange{varr, static_cast<holder<incomplete>* const*>(varr)}, varr); // non-common
+    partial_sort(varr, varr, varr, less{});
+    // partial_sort(varr, varr, less{}); // need to check ADL-found operator==
+    partial_sort(varr, varr, &less_function<validator>);
+    partial_sort(iarr, iarr, iarr, validating_less{});
+    partial_sort(iarr, iarr, iarr, {}, validating_identity{});
+    partial_sort(iarr, iarr, static_cast<const int*>(iarr), validating_less{}, validating_identity{}); // non-common
+    partial_sort(iarr, iarr, static_cast<const int*>(iarr), {}, validating_identity{}); // non-common
+    // partial_sort(iarr, iarr, validating_less{}); // need to check ADL-found swap
+    partial_sort(iarr, iarr, {}, validating_identity{});
+    partial_sort(subrange{iarr, static_cast<const int*>(iarr)}, iarr, validating_less{}); // non-common
+    partial_sort(subrange{iarr, static_cast<const int*>(iarr)}, iarr, {}, validating_identity{}); // non-common
+
+    void* vparr[2]{};
+
+    (void) partial_sort_copy(varr, varr, varr2, varr2);
+    (void) partial_sort_copy(varr, varr2);
+    (void) partial_sort_copy(varr, varr, vparr, vparr);
+    (void) partial_sort_copy(varr, vparr);
+    (void) partial_sort_copy(iarr, iarr, iarr2, iarr2, validating_less{});
+    (void) partial_sort_copy(iarr, iarr2, validating_less{});
+
+    (void) is_sorted(varr, varr);
+    (void) is_sorted(varr);
+    (void) is_sorted(iarr, iarr, validating_less{});
+    // (void) is_sorted(iarr, validating_less{}); // need to check ADL-found swap
+    (void) is_sorted(iarr, {}, validating_identity{});
+
+    (void) is_sorted_until(varr, varr);
+    (void) is_sorted_until(varr);
+    (void) is_sorted_until(iarr, iarr, validating_less{});
+    // (void) is_sorted_until(iarr, validating_less{}); // need to check ADL-found swap
+    (void) is_sorted_until(iarr, {}, validating_identity{});
+
+    nth_element(varr, varr, varr);
+    nth_element(varr, varr);
+    nth_element(iarr, iarr, iarr, validating_less{});
+    // nth_element(iarr, iarr, validating_less{}); // need to check ADL-found swap
+    nth_element(iarr, iarr, {}, validating_identity{});
+
+    (void) lower_bound(varr, varr, validator{});
+    (void) lower_bound(varr, validator{});
+    (void) lower_bound(iarr, iarr, 0, validating_less{});
+    (void) lower_bound(iarr, 0, validating_less{});
+
+    (void) upper_bound(varr, varr, validator{});
+    (void) upper_bound(varr, validator{});
+    (void) upper_bound(iarr, iarr, 0, validating_less{});
+    (void) upper_bound(iarr, 0, validating_less{});
+
+    (void) equal_range(varr, varr, validator{});
+    (void) equal_range(varr, validator{});
+    (void) equal_range(iarr, iarr, 0, validating_less{});
+    (void) equal_range(iarr, 0, validating_less{});
+
+    (void) binary_search(varr, varr, validator{});
+    (void) binary_search(varr, validator{});
+    (void) binary_search(iarr, iarr, 0, validating_less{});
+    (void) binary_search(iarr, 0, validating_less{});
+
+    (void) is_partitioned(varr, varr, simple_zero_equality{});
+    (void) is_partitioned(varr, simple_zero_equality{});
+    (void) is_partitioned(iarr, iarr, validating_zero_equality{});
+    (void) is_partitioned(iarr, validating_zero_equality{});
+
+    (void) partition(varr, varr, simple_zero_equality{});
+    (void) partition(varr, simple_zero_equality{});
+    (void) partition(iarr, iarr, validating_zero_equality{});
+    (void) partition(iarr, validating_zero_equality{});
+
+    (void) stable_partition(varr, varr, simple_zero_equality{});
+    (void) stable_partition(varr, simple_zero_equality{});
+    (void) stable_partition(iarr, iarr, validating_zero_equality{});
+    (void) stable_partition(iarr, validating_zero_equality{});
+
     int iarr3[2]{};
     validator varr3[2]{};
+
+    (void) partition_copy(varr, varr, varr2, varr3, simple_zero_equality{});
+    (void) partition_copy(varr, varr2, varr3, simple_zero_equality{});
+    (void) partition_copy(iarr, iarr, iarr2, iarr3, validating_zero_equality{});
+    (void) partition_copy(iarr, iarr2, iarr3, validating_zero_equality{});
+
+    (void) partition_point(varr, varr, simple_zero_equality{});
+    (void) partition_point(varr, simple_zero_equality{});
+    (void) partition_point(iarr, iarr, validating_zero_equality{});
+    (void) partition_point(iarr, validating_zero_equality{});
 
     (void) merge(varr, varr, varr2, varr2, varr3);
     (void) merge(varr, varr2, varr3);
@@ -416,4 +537,4 @@ constexpr bool test_ranges_count() {
     return true;
 }
 static_assert(test_ranges_count());
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^

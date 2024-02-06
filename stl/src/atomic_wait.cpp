@@ -410,7 +410,7 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     }
 
     return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
+#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 ^^^
 }
 
 [[nodiscard]] char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
@@ -432,6 +432,6 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     }
 
     return _Value;
-#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
+#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 ^^^
 }
 } // extern "C"
