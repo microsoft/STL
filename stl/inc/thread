@@ -23,9 +23,9 @@
 #include <stop_token>
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 #include <format>
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -296,7 +296,7 @@ basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _I
     return _Str << _RNext;
 }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23
 // Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
 // constrained to character types supported by `format`.
 template <_Format_supported_charT _CharT>
@@ -322,7 +322,7 @@ public:
 private:
     _Fill_align_and_width_formatter<_CharT> _Impl;
 };
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 template <>
 struct hash<thread::id> {

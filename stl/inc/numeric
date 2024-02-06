@@ -525,7 +525,7 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
     }
 }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 namespace ranges {
     _EXPORT_STD template <class _Out, class _Ty>
     using iota_result = out_value_result<_Out, _Ty>;
@@ -565,7 +565,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Iota_fn iota;
 } // namespace ranges
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 #if _HAS_CXX17
 template <class _Integral>

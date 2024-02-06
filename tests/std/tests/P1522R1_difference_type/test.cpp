@@ -10,11 +10,18 @@
 
 #if _HAS_CXX20
 #include <compare>
+#include <concepts>
+
+#define CONSTEVAL consteval
+#define SAME_AS   std::same_as
 
 namespace ordtest {
     using std::strong_ordering;
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEVAL constexpr
+#define SAME_AS   std::is_same_v
+
 namespace ordtest {
     enum class strong_ordering : signed char {
         less       = -1,
@@ -25,21 +32,7 @@ namespace ordtest {
 }
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
-#include <concepts>
-
-#define SAME_AS std::same_as
-#else // ^^^ has concepts / has no concepts vvv
-#define SAME_AS std::is_same_v
-#endif // ^^^ has no concepts ^^^
-
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
-#if _HAS_CXX20
-#define CONSTEVAL consteval
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-#define CONSTEVAL constexpr
-#endif // ^^^ !_HAS_CXX20 ^^^
 
 using std::_Signed128;
 using std::_Unsigned128;
@@ -182,10 +175,10 @@ constexpr void check_order(const I1& x, const I2& y, const ordtest::strong_order
 }
 
 constexpr bool test_unsigned() {
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
     STATIC_ASSERT(std::regular<_Unsigned128>);
     STATIC_ASSERT(std::three_way_comparable<_Unsigned128, ordtest::strong_ordering>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_specialized);
     STATIC_ASSERT(std::numeric_limits<_Unsigned128>::is_exact);
@@ -250,13 +243,13 @@ constexpr bool test_unsigned() {
     };
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, ConversionTarget>, ConversionTarget>);
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
     STATIC_ASSERT(std::_Integer_class<_Unsigned128>);
     STATIC_ASSERT(std::_Integer_like<_Unsigned128>);
     STATIC_ASSERT(!std::_Signed_integer_like<_Unsigned128>);
     STATIC_ASSERT(SAME_AS<std::_Make_unsigned_like_t<_Unsigned128>, _Unsigned128>);
     STATIC_ASSERT(SAME_AS<std::_Make_signed_like_t<_Unsigned128>, _Signed128>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     check_equal(_Unsigned128{});
     check_equal(_Unsigned128{42});
@@ -523,10 +516,10 @@ constexpr bool test_unsigned() {
 }
 
 constexpr bool test_signed() {
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
     STATIC_ASSERT(std::regular<_Signed128>);
     STATIC_ASSERT(std::three_way_comparable<_Signed128, ordtest::strong_ordering>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     STATIC_ASSERT(std::numeric_limits<_Signed128>::is_specialized);
     STATIC_ASSERT(std::numeric_limits<_Signed128>::is_exact);
@@ -589,13 +582,13 @@ constexpr bool test_signed() {
     };
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, ConversionTarget>, ConversionTarget>);
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
     STATIC_ASSERT(std::_Integer_class<_Signed128>);
     STATIC_ASSERT(std::_Integer_like<_Signed128>);
     STATIC_ASSERT(std::_Signed_integer_like<_Signed128>);
     STATIC_ASSERT(SAME_AS<std::_Make_unsigned_like_t<_Signed128>, _Unsigned128>);
     STATIC_ASSERT(SAME_AS<std::_Make_signed_like_t<_Signed128>, _Signed128>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     check_equal(_Signed128{});
     check_equal(_Signed128{42});
@@ -997,16 +990,16 @@ constexpr bool test_signed() {
 template <class T>
 T val() noexcept;
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
 template <class T, class U>
 concept CanConditional = requires { true ? val<T>() : val<U>(); };
-#else // ^^^ has concepts / has no concepts vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class T, class U, class = void>
 constexpr bool CanConditional = false;
 
 template <class T, class U>
 constexpr bool CanConditional<T, U, std::void_t<decltype(true ? val<T>() : val<U>())>> = true;
-#endif // ^^^ has no concepts ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 constexpr bool test_cross() {
     // Test the behavior of cross-type operations.
@@ -1059,13 +1052,13 @@ constexpr bool test_cross() {
     STATIC_ASSERT(!CanConditional<_Unsigned128, _Signed128>);
     STATIC_ASSERT(!CanConditional<_Signed128, _Unsigned128>);
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
     // Conversions between integer-class types with the same width and differing
     // signedness are narrowing, so the three-way comparison operator should
     // reject mixed operands of such types.
     STATIC_ASSERT(!std::three_way_comparable_with<_Unsigned128, _Signed128>);
     STATIC_ASSERT(!std::three_way_comparable_with<_Signed128, _Unsigned128>);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     // Other comparison operators behave as they do for operands of mixed
     // integral types; when the operands have the same width, the signed operand
