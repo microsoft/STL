@@ -2135,7 +2135,7 @@ namespace adl_proof_test {
     STATIC_ASSERT(CanSize<validating_nonmember_range>);
     STATIC_ASSERT(!CanSize<nonsizable_type>);
 } // namespace adl_proof_test
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
 namespace unwrapped_begin_end {
     // Validate the iterator-unwrapping range access CPOs ranges::_Ubegin and ranges::_Uend

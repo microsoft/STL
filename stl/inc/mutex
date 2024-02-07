@@ -488,7 +488,7 @@ public:
         : _MyMutexes(_Mtxes...) {} // construct but don't lock
 
     ~scoped_lock() noexcept {
-        _STD apply([](_Mutexes&... _Mtxes) { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
+        _STD apply([](_Mutexes&... _Mtxes) _STATIC_CALL_OPERATOR { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
     }
 
     scoped_lock(const scoped_lock&)            = delete;

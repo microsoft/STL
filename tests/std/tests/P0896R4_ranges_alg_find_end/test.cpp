@@ -113,9 +113,9 @@ constexpr void test_devcom_1559808() {
 }
 
 int main() {
-#ifndef _PREFAST_ // TRANSITION, GH-1030
+#if !defined(_PREFAST_) && !defined(__EDG__) // TRANSITION, GH-1030 and GH-3567
     test_fwd_fwd<instantiator, const pair<int, int>, const int>();
-#endif // TRANSITION
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(memcmp_test());
     memcmp_test();

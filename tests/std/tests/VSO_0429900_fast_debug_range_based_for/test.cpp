@@ -106,7 +106,7 @@ void test_case_sequence_container() {
     assert(dec.beginCalled);
     assert(dec.endCalled);
 
-#if !defined(__EDG__) && !defined(__clang__)
+#if !defined(__clang__) && !defined(__EDG__)
     StlLikeContainer<Container<char>> stlLike;
     stlLike.assign(elementsArray.begin(), elementsArray.end());
     for (auto&& x : stlLike) {
@@ -114,7 +114,7 @@ void test_case_sequence_container() {
     }
     assert(!stlLike.beginCalled);
     assert(!stlLike.endCalled);
-#endif // !defined(__EDG__) && !defined(__clang__)
+#endif // !defined(__clang__) && !defined(__EDG__)
 }
 
 template <template <class...> class Container>

@@ -64,7 +64,7 @@ void test() {
 
 int main() {
     test<std::function<void(const void* storage, std::size_t storage_size)>>();
-#ifdef __cpp_lib_move_only_function
+#if _HAS_CXX23
     test<std::move_only_function<void(const void* storage, std::size_t storage_size)>>();
 #endif
 }

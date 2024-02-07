@@ -61,6 +61,9 @@ endif()
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
+# /utf-8 affects <format>.
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8>")
+
 if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/google-benchmark/.git")
     message(FATAL_ERROR "google-benchmark is not checked out; make sure to run\n    git submodule update --init benchmarks/google-benchmark")
 endif()
@@ -107,6 +110,7 @@ endfunction()
 
 add_benchmark(bitset_to_string src/bitset_to_string.cpp)
 add_benchmark(locale_classic src/locale_classic.cpp)
+add_benchmark(minmax_element src/minmax_element.cpp)
 add_benchmark(path_lexically_normal src/path_lexically_normal.cpp)
 add_benchmark(priority_queue_push_range src/priority_queue_push_range.cpp)
 add_benchmark(random_integer_generation src/random_integer_generation.cpp)
