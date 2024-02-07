@@ -98,7 +98,7 @@ future<int> f1() {
     auto& imm = imm1;
 #else // ^^^ workaround / no workaround vvv
     auto& imm = co_await fimm();
-#endif // TRANSITION, VSO-974870
+#endif // ^^^ no workaround ^^^
     if (&imm != &imm1) {
         puts("&imm != &imm1");
         co_return 1984;

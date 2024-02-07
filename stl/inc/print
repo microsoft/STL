@@ -7,9 +7,9 @@
 #define _PRINT_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#ifndef __cpp_lib_print
+#if !_HAS_CXX23
 _EMIT_STL_WARNING(STL4038, "The contents of <print> are available only with C++23 or later.");
-#else // ^^^ !defined(__cpp_lib_print) / defined(__cpp_lib_print) vvv
+#else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
 #include <__msvc_print.hpp>
 #include <cstdio>
@@ -163,6 +163,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // ^^^ defined(__cpp_lib_print) ^^^
+#endif // ^^^ _HAS_CXX23 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _PRINT_

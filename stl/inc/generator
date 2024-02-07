@@ -9,9 +9,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#if !_HAS_CXX23 || !defined(__cpp_impl_coroutine) || !defined(__cpp_lib_concepts) // TRANSITION, GH-395
-_EMIT_STL_WARNING(STL4038, "The contents of <generator> are available only with C++23 or later coroutine support.")
-#else // ^^^ no coroutine support / coroutines vvv
+#if !_HAS_CXX23
+_EMIT_STL_WARNING(STL4038, "The contents of <generator> are available only with C++23 or later.");
+#else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
 #include <coroutine>
 #include <exception>
@@ -195,7 +195,7 @@ public:
 
 #ifndef _PREFAST_ // TRANSITION, VSO-1662733
     _NODISCARD
-#endif // _PREFAST_
+#endif // ^^^ no workaround ^^^
     suspend_always initial_suspend() noexcept {
         return {};
     }
@@ -260,7 +260,7 @@ private:
         constexpr void await_suspend(coroutine_handle<_Promise> _Handle) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
             _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _Promise>);
-#endif // __cpp_lib_is_pointer_interconvertible
+#endif // ^^^ no workaround ^^^
 
             _Gen_promise_base& _Current = _Handle.promise();
             _Current._Ptr               = _STD addressof(_Val);
@@ -284,7 +284,7 @@ private:
         _NODISCARD coroutine_handle<> await_suspend(coroutine_handle<_Promise> _Handle) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
             _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _Promise>);
-#endif // __cpp_lib_is_pointer_interconvertible
+#endif // ^^^ no workaround ^^^
 
             _Gen_promise_base& _Current = _Handle.promise();
             if (!_Current._Info) {
@@ -317,7 +317,7 @@ private:
         _NODISCARD coroutine_handle<_Gen_promise_base> await_suspend(coroutine_handle<_Promise> _Current) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
             _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _Promise>);
-#endif // __cpp_lib_is_pointer_interconvertible
+#endif // ^^^ no workaround ^^^
             auto _Target    = coroutine_handle<_Gen_promise_base>::from_address(_Gen._Coro.address());
             _Nested._Parent = coroutine_handle<_Gen_promise_base>::from_address(_Current.address());
             _Gen_promise_base& _Parent_promise = _Nested._Parent.promise();
@@ -425,7 +425,7 @@ public:
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
     _STL_INTERNAL_STATIC_ASSERT(
         is_pointer_interconvertible_base_of_v<_Gen_promise_base<_Gen_yield_t<_Ref>>, promise_type>);
-#endif // __cpp_lib_is_pointer_interconvertible
+#endif // ^^^ no workaround ^^^
 
     generator(generator&& _That) noexcept : _Coro(_STD exchange(_That._Coro, {})) {}
 
@@ -468,6 +468,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // !_HAS_CXX23 || !defined(__cpp_impl_coroutine)
+#endif // ^^^ _HAS_CXX23 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _GENERATOR_

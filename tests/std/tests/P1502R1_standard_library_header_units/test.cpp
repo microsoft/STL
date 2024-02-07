@@ -36,7 +36,9 @@ import <forward_list>;
 import <fstream>;
 import <functional>;
 import <future>;
+#if TEST_STANDARD >= 23
 import <generator>;
+#endif // TEST_STANDARD >= 23
 import <initializer_list>;
 import <iomanip>;
 import <ios>;

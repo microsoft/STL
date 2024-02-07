@@ -199,6 +199,7 @@ void static_allocator_test() {
         assert(ranges::equal(g(std::allocator_arg, {}, 1024), ranges::views::iota(0, 1024)));
     }
 
+#ifndef __EDG__ // TRANSITION, VSO-1951821
     {
         auto g = [](std::allocator_arg_t, stateful_alloc<int>,
                      const int hi) -> std::generator<int, int, stateful_alloc<char>> {
@@ -211,6 +212,7 @@ void static_allocator_test() {
 
         assert(ranges::equal(g(std::allocator_arg, stateful_alloc<int>{42}, 1024), ranges::views::iota(0, 1024)));
     }
+#endif // ^^^ no workaround ^^^
 }
 
 void dynamic_allocator_test() {
@@ -224,7 +226,9 @@ void dynamic_allocator_test() {
 
     assert(ranges::equal(g(std::allocator_arg, std::allocator<float>{}, 1024), ranges::views::iota(0, 1024)));
     assert(ranges::equal(g(std::allocator_arg, stateless_alloc<float>{}, 1024), ranges::views::iota(0, 1024)));
+#ifndef __EDG__ // TRANSITION, VSO-1951821
     assert(ranges::equal(g(std::allocator_arg, stateful_alloc<float>{1729}, 1024), ranges::views::iota(0, 1024)));
+#endif // ^^^ no workaround ^^^
 }
 
 void zip_example() {
@@ -277,7 +281,7 @@ void arbitrary_range_test() {
 
     assert(ranges::equal(yield_arbitrary_ranges(), std::array{40, 30, 20, 10, 0, 1, 2, 3, 500, 400, 300}));
 }
-#endif // !(defined(__clang__) && defined(_M_IX86))
+#endif // ^^^ no workaround ^^^
 
 int main() {
     {
@@ -326,7 +330,7 @@ int main() {
             assert((*i).empty());
         }
     }
-#endif // !(defined(__clang__) && defined(_M_IX86))
+#endif // ^^^ no workaround ^^^
 
     static_allocator_test();
     dynamic_allocator_test();
@@ -335,5 +339,5 @@ int main() {
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     recursive_test();
     arbitrary_range_test();
-#endif // !(defined(__clang__) && defined(_M_IX86))
+#endif // ^^^ no workaround ^^^
 }

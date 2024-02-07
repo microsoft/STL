@@ -505,7 +505,7 @@ constexpr void test_floating() {
             {10, bit_cast<float>(0xFFFFFFFFu)}, // negative quiet NaN, all payload bits set
             {10, bit_cast<float>(0xFFC01234u)}, // negative quiet NaN, some payload bits set
             {10, bit_cast<float>(0xFFC00000u)}, // negative quiet NaN, no payload bits set
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 #ifdef __clang__ // TRANSITION, MSVC "quiets" signaling NaNs into quiet NaNs when constant evaluated
             {10, bit_cast<float>(0xFFBFFFFFu)}, // negative signaling NaN, all payload bits set
             {10, bit_cast<float>(0xFF801234u)}, // negative signaling NaN, some payload bits set
@@ -532,7 +532,7 @@ constexpr void test_floating() {
             {90, bit_cast<float>(0x7FC00000u)}, // quiet NaN, no payload bits set
             {90, bit_cast<float>(0x7FC01234u)}, // quiet NaN, some payload bits set
             {90, bit_cast<float>(0x7FFFFFFFu)}, // quiet NaN, all payload bits set
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         };
 
         test_ranked_values(rank_value_pairs);

@@ -30,10 +30,10 @@ void test_comparison(const char* const left_str, const char* const right_str, co
     const auto left  = vb_from_str(left_str);
     const auto right = vb_from_str(right_str);
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     assert((left <=> right) == (static_cast<int>(order) <=> 0));
     assert((right <=> left) == (0 <=> static_cast<int>(order)));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     switch (order) {
     case Lt:

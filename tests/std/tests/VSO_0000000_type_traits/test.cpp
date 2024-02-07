@@ -621,9 +621,7 @@ void test_function_type() {
     STATIC_ASSERT(!is_nothrow_move_assignable_v<T>);
 #if _HAS_CXX17
     STATIC_ASSERT(!is_nothrow_swappable_v<T>);
-#endif // _HAS_CXX17
 
-#if _HAS_CXX17
     STATIC_ASSERT(!has_unique_object_representations_v<T>);
 #endif // _HAS_CXX17
 
@@ -1487,10 +1485,8 @@ struct bad_reference_wrapper {
 STATIC_ASSERT(is_same_v<common_type_t<int, bad_reference_wrapper<int>>, int>);
 STATIC_ASSERT(is_same_v<common_type_t<bad_reference_wrapper<double>, double>, double>);
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 // P2655R3 common_reference_t Of reference_wrapper Should Be A Reference Type
 STATIC_ASSERT(is_same_v<common_reference_t<int&, reference_wrapper<int>>, int&>);
 STATIC_ASSERT(is_same_v<common_reference_t<int&, reference_wrapper<int>&>, int&>);
 STATIC_ASSERT(is_same_v<common_reference_t<int&, const reference_wrapper<int>&>, int&>);
-#endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
