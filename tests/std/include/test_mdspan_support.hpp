@@ -256,7 +256,7 @@ MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
         return std::views::cartesian_product(std::views::iota(IndexType{0}, get_extent(Indices))...);
     }(rank_indices);
 
-    auto map_index      = [&](const auto& tpl) { return std::apply([&](auto... i) { return mapping(i...); }, tpl); };
+    auto map_index      = [&](const auto& tpl) { return std::apply(mapping, tpl); };
     auto mapped_indices = multidim_indices | std::views::transform(map_index) | std::ranges::to<std::vector>();
     std::ranges::sort(mapped_indices);
 
