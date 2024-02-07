@@ -236,9 +236,8 @@ void test_ostream_exceptions() {
         }
     }
 
-    { // operator<< with exceptions
+    { // operator<< (testing GH-4322 "<ostream>: Exception from streambuf should be caught and not rethrown")
         basic_ostream<CharT> os(buffer.to_buf());
-        os.exceptions(ios_base::goodbit);
 
         try {
             os << &buffer;
@@ -249,7 +248,7 @@ void test_ostream_exceptions() {
         }
     }
 
-    { // operator<< rethrow the caught exception if failbit is set in exceptions()
+    { // operator<< rethrows the caught exception if failbit is set in exceptions()
         basic_ostream<CharT> os(buffer.to_buf());
         os.exceptions(ios_base::failbit);
 
