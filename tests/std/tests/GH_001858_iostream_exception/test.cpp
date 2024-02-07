@@ -36,6 +36,8 @@ struct test_exception {};
 template <class CharT>
 class throwing_buffer : public basic_streambuf<CharT> {
 public:
+    using typename basic_streambuf<CharT>::int_type;
+
     streampos seekoff(streamoff, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out) override {
         throw test_exception{};
     }
@@ -45,6 +47,10 @@ public:
     }
 
     int sync() override {
+        throw test_exception{};
+    }
+
+    int_type underflow() override {
         throw test_exception{};
     }
 
@@ -222,6 +228,33 @@ void test_ostream_exceptions() {
 
         try {
             os.tellp();
+            assert(false);
+        } catch (const ios_base::failure&) {
+            assert(false);
+        } catch (const test_exception&) {
+            // Expected case
+        }
+    }
+
+    { // operator<< with exceptions
+        basic_ostream<CharT> os(buffer.to_buf());
+        os.exceptions(ios_base::goodbit);
+
+        try {
+            os << &buffer;
+        } catch (const ios_base::failure&) {
+            assert(false);
+        } catch (const test_exception&) {
+            assert(false);
+        }
+    }
+
+    { // operator<< rethrow the caught exception if failbit is set in exceptions()
+        basic_ostream<CharT> os(buffer.to_buf());
+        os.exceptions(ios_base::failbit);
+
+        try {
+            os << &buffer;
             assert(false);
         } catch (const ios_base::failure&) {
             assert(false);

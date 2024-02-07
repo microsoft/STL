@@ -493,8 +493,10 @@ public:
                 _TRY_BEGIN
                 _Meta = _Traits::eq_int_type(_Traits::eof(), _Meta) ? _Strbuf->sgetc() : _Strbuf->snextc();
                 _CATCH_ALL
-                _Myios::setstate(ios_base::failbit);
-                _RERAISE;
+                // N4971 [ostream.inserters]/8-9: "...If an exception was thrown
+                // while extracting a character, the function sets failbit in the error state,
+                // and if failbit is set in exceptions() the caught exception is rethrown."
+                _Myios::setstate(ios_base::failbit, (_Myios::exceptions() == ios_base::failbit));
                 _CATCH_END
 
                 if (_Traits::eq_int_type(_Traits::eof(), _Meta)) {
