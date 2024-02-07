@@ -77,8 +77,9 @@ def decodeOutput(bytes):
     try:
         return bytes.decode()
     except UnicodeError:
+        # Use 'backslashreplace' to avoid throwing another exception for unrecognized characters.
         import locale
-        return bytes.decode(locale.getpreferredencoding(do_setlocale=False))
+        return bytes.decode(locale.getpreferredencoding(do_setlocale=False), 'backslashreplace')
 
 
 def executeCommand(command, cwd=None, env=None, input=None, timeout=0):

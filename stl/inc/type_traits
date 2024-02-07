@@ -327,7 +327,7 @@ struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
 _EXPORT_STD template <class _From, class _To>
 _INLINE_VAR constexpr bool is_convertible_v = __is_convertible_to(_From, _To);
 
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1627396
 template <class _Ty>
 struct is_convertible<_Ty&, volatile _Ty&> : true_type {};
 
@@ -351,7 +351,7 @@ _INLINE_VAR constexpr bool is_convertible_v<_Ty&, const volatile _Ty&> = true;
 
 template <class _Ty>
 _INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, const volatile _Ty&> = true;
-#endif // ^^^ workaround
+#endif // ^^^ workaround ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_enum : bool_constant<__is_enum(_Ty)> {}; // determine whether _Ty is an enumerated type
@@ -700,7 +700,7 @@ struct is_trivial : bool_constant<__is_trivial(_Ty)> {}; // determine whether _T
 
 _EXPORT_STD template <class _Ty>
 _INLINE_VAR constexpr bool is_trivial_v = __is_trivial(_Ty);
-#endif // TRANSITION
+#endif // ^^^ no workaround ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_trivially_copyable : bool_constant<__is_trivially_copyable(_Ty)> {
@@ -1409,7 +1409,7 @@ struct _Add_qualifiers<_Ty1&&> {
     using _Apply = add_rvalue_reference_t<_Copy_cv<_Ty1, _Ty2>>;
 };
 
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-10095944
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10095944
 template <class _Ty1, class _Ty2>
 using _Cond_res_if_right = // N4950 [meta.trans.other]/2.4
     decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
@@ -1953,7 +1953,7 @@ _EXPORT_STD template <class _ClassTy1, class _ClassTy2, class _MemberTy1, class 
 _NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::*_Pm1, _MemberTy2 _ClassTy2::*_Pm2) noexcept {
     return __is_corresponding_member(_ClassTy1, _ClassTy2, _Pm1, _Pm2);
 }
-#endif // !defined(__clang__)
+#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX20
 
 template <class _Ty>
@@ -2236,10 +2236,10 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
     // true_type if and only if it is valid to swap two _Ty lvalues by exchanging object representations.
 };
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX20
 _EXPORT_STD template <class _From, class _To>
 concept convertible_to =
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1627396
     is_convertible_v<_From, _To>
 #else // ^^^ workaround / no workaround vvv
     __is_convertible_to(_From, _To)
@@ -2264,7 +2264,7 @@ template <class _Ty, class _RefWrap, template <class> class _TyQual, template <c
 struct basic_common_reference<_Ty, _RefWrap, _TyQual, _RefWrapQual> {
     using type = common_reference_t<typename _RefWrap::type&, _TyQual<_Ty>>;
 };
-#endif // defined(__cpp_lib_concepts)
+#endif // _HAS_CXX20
 
 #define _BITMASK_OPS(_MAYBE_EXPORT, _BITMASK)                                                         \
     _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept { \
@@ -2366,7 +2366,7 @@ struct _Conditionally_enabled_hash { // conditionally enabled hash base
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Kty;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD size_t operator()(const _Kty& _Keyval) const
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const _Kty& _Keyval) _CONST_CALL_OPERATOR
         noexcept(noexcept(hash<_Kty>::_Do_hash(_Keyval))) /* strengthened */ {
         return hash<_Kty>::_Do_hash(_Keyval);
     }
@@ -2394,7 +2394,7 @@ template <>
 struct hash<float> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = float;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD size_t operator()(const float _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const float _Keyval) _CONST_CALL_OPERATOR noexcept {
         return _Hash_representation(_Keyval == 0.0F ? 0.0F : _Keyval); // map -0 to 0
     }
 };
@@ -2403,7 +2403,7 @@ template <>
 struct hash<double> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = double;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD size_t operator()(const double _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const double _Keyval) _CONST_CALL_OPERATOR noexcept {
         return _Hash_representation(_Keyval == 0.0 ? 0.0 : _Keyval); // map -0 to 0
     }
 };
@@ -2412,7 +2412,7 @@ template <>
 struct hash<long double> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = long double;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD size_t operator()(const long double _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const long double _Keyval) _CONST_CALL_OPERATOR noexcept {
         return _Hash_representation(_Keyval == 0.0L ? 0.0L : _Keyval); // map -0 to 0
     }
 };
@@ -2421,7 +2421,7 @@ template <>
 struct hash<nullptr_t> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = nullptr_t;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD size_t operator()(nullptr_t) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(nullptr_t) _CONST_CALL_OPERATOR noexcept {
         void* _Null{};
         return _Hash_representation(_Null);
     }

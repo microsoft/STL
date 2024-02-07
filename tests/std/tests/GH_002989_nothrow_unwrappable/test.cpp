@@ -49,7 +49,7 @@ void do_full_test() {
     do_single_test<reverse_iterator<It>, CopyUnwrapNothrow>();
     do_single_test<move_iterator<It>, CopyUnwrapNothrow>();
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using R = ranges::subrange<It, It>;
 
     // TRANSITION, GH-2997
@@ -59,7 +59,7 @@ void do_full_test() {
     if constexpr (bidirectional_iterator<It>) {
         do_single_test<ranges::iterator_t<ranges::reverse_view<R>>, CopyUnwrapNothrow>();
     }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 struct BidiIterUnwrapThrowing : vector<int>::iterator {

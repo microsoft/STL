@@ -103,7 +103,7 @@ struct incomplete;
 using validating_falsity   = tagged_falsity<holder<incomplete>>;
 using validating_less      = tagged_less<holder<incomplete>>;
 using validating_converter = tagged_converter<holder<incomplete>>;
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
 template <typename T, typename U>
 void math_operators_test(T lhs, U rhs) {
@@ -177,7 +177,7 @@ void construct_from_iterators_test(T value) {
         validating_converter arr[1]{};
         T another_no_adl(+arr, +arr);
         T another_no_adl2(+arr, +arr, value.get_allocator());
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
     });
 }
 
@@ -194,7 +194,7 @@ void construct_tree_containers_from_iterators_test(T value) {
         T another_no_adl(+arr, +arr);
         T another_no_adl2(+arr, +arr, value.key_comp());
         T another_no_adl3(+arr, +arr, value.key_comp(), value.get_allocator());
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
     });
 }
 
@@ -217,7 +217,7 @@ void construct_hash_containers_from_iterators_test(T value) {
         T another_no_adl4(+arr, +arr, value.bucket_count(), value.hash_function(), value.key_eq());
         T another_no_adl5(
             +arr, +arr, value.bucket_count(), value.hash_function(), value.key_eq(), value.get_allocator());
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
     });
 }
 
@@ -267,7 +267,7 @@ void assign_test(T value) {
 #ifndef _M_CEE // TRANSITION, VSO-1659496
     validating_converter arr[1]{};
     another.assign(+arr, +arr);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 }
 
 template <typename T>
@@ -277,7 +277,7 @@ void insert_with_iterator_test(T value) {
 #ifndef _M_CEE // TRANSITION, VSO-1659496
     validating_converter arr[1]{};
     another.insert(+arr, +arr);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 }
 
 template <typename T>
@@ -286,12 +286,12 @@ void erase_if_test(T value) {
     std::experimental::fundamentals_v2::erase_if(value, pr1);
 #ifndef _M_CEE // TRANSITION, VSO-1659496
     std::experimental::fundamentals_v2::erase_if(value, validating_falsity{});
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 #if _HAS_CXX20
     std::erase_if(value, pr1);
 #ifndef _M_CEE // TRANSITION, VSO-1659496
     std::erase_if(value, validating_falsity{});
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX20
 }
 
@@ -310,7 +310,7 @@ void insert_with_iterator_specific_location_test(T value) {
 #ifndef _M_CEE // TRANSITION, VSO-1659496
     validating_converter arr[1]{};
     another.insert(cbegin(another), +arr, +arr);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 }
 
 template <typename T>
@@ -337,7 +337,7 @@ void list_operation_test(T value) {
     value.merge(another, validating_less{});
     value.merge(move(another), validating_less{});
     value.sort(validating_less{});
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 }
 
 template <typename T>
@@ -460,7 +460,7 @@ void forward_list_test() {
 #ifndef _M_CEE // TRANSITION, VSO-1659496
     validating_converter arr[1]{};
     another.insert_after(cbegin(another), +arr, +arr);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 }
 
 // Note about hash*_test:
@@ -690,7 +690,7 @@ void string_test_impl(const CharType* data) {
     validating_converter arr[1]{};
     another.append(+arr, +arr);
     another.replace(cbegin(another), cend(another), +arr, +arr);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 }
 
 void string_test() {

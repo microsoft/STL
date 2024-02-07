@@ -225,7 +225,7 @@ constexpr bool test_float() {
     as_int     = 0x7fc00001;
     float snan = std::bit_cast<float>(as_int);
     assert(as_int == std::bit_cast<unsigned int>(snan));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
     as_int = std::bit_cast<unsigned int>(std::numeric_limits<float>::infinity());
     assert(as_int == 0x7f800000);
