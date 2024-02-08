@@ -7,6 +7,8 @@
 #if _HAS_CXX17
 #include <execution>
 #endif // _HAS_CXX17
+#include <memory>
+#include <new>
 #include <type_traits>
 #include <utility>
 
@@ -80,6 +82,22 @@ struct tagged_urng {
     result_type value_{};
 };
 
+template <class T>
+struct tagged_nontrivial {
+    tagged_nontrivial() noexcept {}
+    tagged_nontrivial(const tagged_nontrivial&) noexcept {}
+    tagged_nontrivial(tagged_nontrivial&&) noexcept {}
+
+    tagged_nontrivial& operator=(const tagged_nontrivial&) noexcept {
+        return *this;
+    }
+    tagged_nontrivial& operator=(tagged_nontrivial&&) noexcept {
+        return *this;
+    }
+
+    ~tagged_nontrivial() noexcept {}
+};
+
 template <class Tag>
 struct tagged_left_selector {
     template <class T>
@@ -109,6 +127,7 @@ using validating_identity      = tagged_identity<holder<incomplete>>;
 using validating_left_selector = tagged_left_selector<holder<incomplete>>;
 using validating_zero_equality = tagged_zero_equality<holder<incomplete>>;
 using validating_urng          = tagged_urng<holder<incomplete>>;
+using validating_nontrivial    = tagged_nontrivial<holder<incomplete>>;
 
 #if _HAS_CXX20
 using validating_compare_three_way = tagged_compare_three_way<holder<incomplete>>;
@@ -409,6 +428,70 @@ void test_algorithms() {
 
     // (void) std::prev_permutation(varr, varr); // requires Cpp17ValueSwappable
     (void) std::prev_permutation(iarr, iarr, validating_less{});
+
+    validating_nontrivial narr[1]{};
+    validating_nontrivial narr2[1]{};
+
+#if _HAS_CXX17
+    std::uninitialized_default_construct(varr, varr);
+    std::uninitialized_default_construct(narr, narr);
+
+    (void) std::uninitialized_default_construct_n(varr, 0);
+    (void) std::uninitialized_default_construct_n(narr, 0);
+
+    std::uninitialized_value_construct(varr, varr);
+    std::uninitialized_value_construct(narr, narr);
+
+    (void) std::uninitialized_value_construct_n(varr, 0);
+    (void) std::uninitialized_value_construct_n(narr, 0);
+#endif // _HAS_CXX17
+
+    (void) std::uninitialized_copy(varr, varr, varr2);
+    (void) std::uninitialized_copy(narr, narr, narr2);
+
+    (void) std::uninitialized_copy_n(varr, 0, varr2);
+    (void) std::uninitialized_copy_n(narr, 0, narr2);
+
+#if _HAS_CXX17
+    (void) std::uninitialized_move(varr, varr, varr2);
+    (void) std::uninitialized_move(narr, narr, narr2);
+
+    (void) std::uninitialized_move_n(varr, 0, varr2);
+    (void) std::uninitialized_move_n(narr, 0, narr2);
+#endif // _HAS_CXX17
+
+    std::uninitialized_fill(varr, varr, validator{});
+    std::uninitialized_fill(narr, narr, validating_nontrivial{});
+
+    (void) std::uninitialized_fill_n(varr, 0, validator{});
+    (void) std::uninitialized_fill_n(narr, 0, validating_nontrivial{});
+
+    std::uninitialized_fill(varr, varr, validator{});
+    std::uninitialized_fill(narr, narr, validating_nontrivial{});
+
+#if _HAS_CXX20
+    {
+        validator vx{};
+        validating_nontrivial nx{};
+
+        std::construct_at(&vx);
+        std::construct_at(std::addressof(nx));
+    }
+#endif // _HAS_CXX20
+
+#if _HAS_CXX17
+    alignas(validator) alignas(
+        validating_nontrivial) unsigned char buffer[std::max(sizeof(validator), sizeof(validating_nontrivial))]{};
+
+    std::destroy_at(new (buffer) validator{});
+    std::destroy_at(new (buffer) validating_nontrivial{});
+
+    std::destroy(varr, varr);
+    std::destroy(narr, narr);
+
+    (void) std::destroy_n(varr, 0);
+    (void) std::destroy_n(narr, 0);
+#endif // _HAS_CXX17
 }
 
 #if _HAS_CXX17
@@ -619,6 +702,45 @@ void test_per_execution_policy() {
 
     (void) std::lexicographical_compare(ExecutionPolicy, varr, varr, varr, varr);
     (void) std::lexicographical_compare(ExecutionPolicy, iarr, iarr, iarr, iarr, validating_less{});
+
+    validating_nontrivial narr[1]{};
+    validating_nontrivial narr2[1]{};
+
+    std::uninitialized_default_construct(ExecutionPolicy, varr, varr);
+    std::uninitialized_default_construct(ExecutionPolicy, narr, narr);
+
+    (void) std::uninitialized_default_construct_n(ExecutionPolicy, varr, 0);
+    (void) std::uninitialized_default_construct_n(ExecutionPolicy, narr, 0);
+
+    std::uninitialized_value_construct(ExecutionPolicy, varr, varr);
+    std::uninitialized_value_construct(ExecutionPolicy, narr, narr);
+
+    (void) std::uninitialized_value_construct_n(ExecutionPolicy, varr, 0);
+    (void) std::uninitialized_value_construct_n(ExecutionPolicy, narr, 0);
+
+    (void) std::uninitialized_copy(ExecutionPolicy, varr, varr, varr2);
+    (void) std::uninitialized_copy(ExecutionPolicy, narr, narr, narr2);
+
+    (void) std::uninitialized_copy_n(ExecutionPolicy, varr, 0, varr2);
+    (void) std::uninitialized_copy_n(ExecutionPolicy, narr, 0, narr2);
+
+    (void) std::uninitialized_move(ExecutionPolicy, varr, varr, varr2);
+    (void) std::uninitialized_move(ExecutionPolicy, narr, narr, narr2);
+
+    (void) std::uninitialized_move_n(ExecutionPolicy, varr, 0, varr2);
+    (void) std::uninitialized_move_n(ExecutionPolicy, narr, 0, narr2);
+
+    std::uninitialized_fill(ExecutionPolicy, varr, varr, validator{});
+    std::uninitialized_fill(ExecutionPolicy, narr, narr, validating_nontrivial{});
+
+    (void) std::uninitialized_fill_n(ExecutionPolicy, varr, 0, validator{});
+    (void) std::uninitialized_fill_n(ExecutionPolicy, narr, 0, validating_nontrivial{});
+
+    std::destroy(ExecutionPolicy, varr, varr);
+    std::destroy(ExecutionPolicy, narr, narr);
+
+    (void) std::destroy_n(ExecutionPolicy, varr, 0);
+    (void) std::destroy_n(ExecutionPolicy, narr, 0);
 }
 
 void test_parallel_algorithms() {
@@ -729,6 +851,78 @@ void test_ranges_non_projected_algorithms() {
     (void) shift_right(varr, varr, 0);
     (void) shift_right(varr, 0);
 #endif // _HAS_CXX23
+
+    validating_nontrivial narr[1]{};
+    validating_nontrivial narr2[1]{};
+
+    (void) uninitialized_default_construct(varr, varr);
+    (void) uninitialized_default_construct(varr);
+    (void) uninitialized_default_construct(narr, narr);
+    (void) uninitialized_default_construct(narr);
+
+    (void) uninitialized_default_construct_n(varr, 0);
+    (void) uninitialized_default_construct_n(narr, 0);
+
+    (void) uninitialized_value_construct(varr, varr);
+    (void) uninitialized_value_construct(varr);
+    (void) uninitialized_value_construct(narr, narr);
+    (void) uninitialized_value_construct(narr);
+
+    (void) uninitialized_value_construct_n(varr, 0);
+    (void) uninitialized_value_construct_n(narr, 0);
+
+    (void) uninitialized_copy(varr, varr, varr2, varr2);
+    (void) uninitialized_copy(narr, narr, narr2, narr2);
+    (void) uninitialized_copy(varr, varr2);
+    (void) uninitialized_copy(narr, narr2);
+
+    (void) uninitialized_copy_n(varr, 0, varr2, varr2);
+    (void) uninitialized_copy_n(narr, 0, narr2, narr2);
+
+    (void) uninitialized_move(varr, varr, varr2, varr2);
+    (void) uninitialized_move(narr, narr, narr2, narr2);
+    (void) uninitialized_move(varr, varr2);
+    (void) uninitialized_move(narr, narr2);
+
+    (void) uninitialized_move_n(varr, 0, varr2, varr2);
+    (void) uninitialized_move_n(narr, 0, narr2, narr2);
+
+    (void) uninitialized_fill(varr, varr, validator{});
+    (void) uninitialized_fill(varr, validator{});
+    (void) uninitialized_fill(narr, narr, validating_nontrivial{});
+    (void) uninitialized_fill(narr, validating_nontrivial{});
+
+    (void) uninitialized_fill_n(varr, 0, validator{});
+    (void) uninitialized_fill_n(narr, 0, validating_nontrivial{});
+
+    {
+        alignas(validator) unsigned char buf[sizeof(validator)];
+        const auto pv = construct_at(reinterpret_cast<validator*>(buf));
+        destroy_at(pv);
+    }
+    {
+        alignas(validating_nontrivial) unsigned char buf[sizeof(validating_nontrivial)];
+        const auto pn = construct_at(reinterpret_cast<validating_nontrivial*>(buf));
+        destroy_at(pn);
+    }
+
+    {
+        alignas(validator[1]) unsigned char buf[sizeof(validator[1])];
+        ::new (buf) validator[1];
+        auto& arr = *std::launder(reinterpret_cast<validator(*)[1]>(buf));
+        destroy(arr, arr);
+        destroy(arr);
+    }
+    {
+        alignas(validating_nontrivial[1]) unsigned char buf[sizeof(validating_nontrivial[1])];
+        ::new (buf) validating_nontrivial[1];
+        auto& arr = *std::launder(reinterpret_cast<validating_nontrivial(*)[1]>(buf));
+        destroy(arr, arr);
+        destroy(arr);
+    }
+
+    (void) destroy_n(varr, 0);
+    (void) destroy_n(narr, 0);
 }
 #endif // _HAS_CXX20
 #endif // ^^^ no workaround ^^^
