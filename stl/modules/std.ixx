@@ -37,7 +37,7 @@ export module std;
 #pragma warning(disable : 5244) // '#include <meow>' in the purview of module 'std' appears erroneous.
 
 #include <yvals_core.h>
-#ifndef _EXPORT_VCR // TRANSITION, VCRuntime update expected in 17.10 Preview 3
+#ifndef _VCRT_EXPORT_STD // TRANSITION, VCRuntime update expected in 17.10 Preview 3
 
 // N4971 [module.interface]/6: "A redeclaration of an entity X is implicitly exported
 // if X was introduced by an exported declaration; otherwise it shall not be exported."
