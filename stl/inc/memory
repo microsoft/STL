@@ -75,8 +75,8 @@ namespace ranges {
         _STATIC_CALL_OPERATOR uninitialized_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
             operator()(_Rng1&& _Range1, _Rng2&& _Range2) _CONST_CALL_OPERATOR {
             auto _First1  = _RANGES begin(_Range1);
-            auto _UResult = _Uninitialized_copy_unchecked(
-                _RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
+            auto _UResult = _Uninitialized_copy_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
+                _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
 
             _STD _Seek_wrapped(_First1, _STD move(_UResult.in));
             return {_STD move(_First1), _RANGES _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
@@ -101,9 +101,11 @@ namespace ranges {
                     return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                         _RANGES next(_OFirst, _STD move(_OLast)));
                 } else if constexpr (_Is_sized1) {
-                    return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                    return _RANGES _Copy_memcpy_distance(
+                        _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
                 } else if constexpr (_Is_sized2) {
-                    return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                    return _RANGES _Copy_memcpy_distance(
+                        _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
                 } else {
                     _STL_ASSERT(false, "Tried to uninitialized_copy two ranges with unreachable sentinels");
                 }
@@ -263,8 +265,8 @@ namespace ranges {
         _STATIC_CALL_OPERATOR uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
             operator()(_Rng1&& _Range1, _Rng2&& _Range2) _CONST_CALL_OPERATOR {
             auto _First1  = _RANGES begin(_Range1);
-            auto _UResult = _RANGES _Uninitialized_move_unchecked(
-                _RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
+            auto _UResult = _RANGES _Uninitialized_move_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
+                _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
 
             _STD _Seek_wrapped(_First1, _STD move(_UResult.in));
             return {_STD move(_First1), _RANGES _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
@@ -393,7 +395,8 @@ namespace ranges {
             requires constructible_from<range_value_t<_Rng>, const _Ty&>
         _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val) _CONST_CALL_OPERATOR {
-            return _RANGES _Rewrap_iterator(_Range, _Uninitialized_fill_unchecked(_Ubegin(_Range), _Uend(_Range), _Val));
+            return _RANGES _Rewrap_iterator(
+                _Range, _Uninitialized_fill_unchecked(_Ubegin(_Range), _Uend(_Range), _Val));
         }
 
     private:
@@ -593,8 +596,8 @@ namespace ranges {
             requires destructible<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR constexpr _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR noexcept {
             _STD _Adl_verify_range(_First, _Last);
-            _STD _Seek_wrapped(_First,
-                _RANGES _Destroy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last))));
+            _STD _Seek_wrapped(_First, _RANGES _Destroy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                                           _RANGES _Unwrap_sent<_It>(_STD move(_Last))));
             return _First;
         }
 
@@ -875,7 +878,8 @@ _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff 
         return _First;
     }
 
-    _STD _Seek_wrapped(_First, _STD _Uninitialized_value_construct_n_unchecked1(_STD _Get_unwrapped_n(_First, _Count), _Count));
+    _STD _Seek_wrapped(
+        _First, _STD _Uninitialized_value_construct_n_unchecked1(_STD _Get_unwrapped_n(_First, _Count), _Count));
     return _First;
 }
 
