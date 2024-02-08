@@ -35,6 +35,7 @@ _STD_END
 
 _STD_BEGIN
 
+// Follow N4971 [module.interface]/6 by exporting aliases:
 _EXPORT_STD using exception     = exception;
 _EXPORT_STD using bad_exception = bad_exception;
 

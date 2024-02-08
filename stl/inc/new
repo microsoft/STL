@@ -38,6 +38,7 @@ _EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, const _STD noth
 
 #ifdef __cpp_aligned_new
 _STD_BEGIN
+// Follow N4971 [module.interface]/6 by exporting aliases:
 _EXPORT_STD using align_val_t = align_val_t;
 _STD_END
 
@@ -65,6 +66,7 @@ _EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, void*) noexcept
 
 _STD_BEGIN
 #if _HAS_EXCEPTIONS
+// Follow N4971 [module.interface]/6 by exporting aliases:
 _EXPORT_STD using bad_alloc            = bad_alloc;
 _EXPORT_STD using bad_array_new_length = bad_array_new_length;
 #else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
