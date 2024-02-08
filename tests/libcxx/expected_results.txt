@@ -913,11 +913,6 @@ std/re/re.alg/re.alg.search/awk.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.search/basic.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.search/ecma.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.search/extended.locale.pass.cpp FAIL
-
-# Not analyzed. Involves incomplete types.
-std/utilities/memory/allocator.traits/allocator.traits.members/construct.pass.cpp FAIL
-std/utilities/memory/allocator.traits/allocator.traits.members/destroy.pass.cpp FAIL
-
 # Not analyzed. Error mentions allocator<const T>.
 std/utilities/memory/specialized.algorithms/specialized.construct/construct_at.pass.cpp FAIL
 
