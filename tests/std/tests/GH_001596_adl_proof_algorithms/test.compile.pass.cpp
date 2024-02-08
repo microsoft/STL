@@ -466,9 +466,6 @@ void test_algorithms() {
     (void) std::uninitialized_fill_n(varr, 0, validator{});
     (void) std::uninitialized_fill_n(narr, 0, validating_nontrivial{});
 
-    std::uninitialized_fill(varr, varr, validator{});
-    std::uninitialized_fill(narr, narr, validating_nontrivial{});
-
 #if _HAS_CXX20
     {
         validator vx{};
