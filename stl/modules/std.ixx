@@ -61,36 +61,49 @@ export extern "C++" enum class align_val_t : size_t;
 #endif // ^^^ defined(__cpp_aligned_new) ^^^
 _STD_END
 
-#pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
-
-export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t);
-export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t, const _STD nothrow_t&) noexcept;
-export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t);
-export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t, const _STD nothrow_t&) noexcept;
-export extern "C++" void __CRTDECL operator delete(void*) noexcept;
-export extern "C++" void __CRTDECL operator delete(void*, size_t) noexcept;
-export extern "C++" void __CRTDECL operator delete(void*, const _STD nothrow_t&) noexcept;
-export extern "C++" void __CRTDECL operator delete[](void*) noexcept;
-export extern "C++" void __CRTDECL operator delete[](void*, size_t) noexcept;
-export extern "C++" void __CRTDECL operator delete[](void*, const _STD nothrow_t&) noexcept;
+export extern "C++" _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+_VCRT_ALLOCATOR void* __CRTDECL operator new(size_t _Size);
+export extern "C++" _NODISCARD _Ret_maybenull_ _Success_(return != NULL)
+    _Post_writable_byte_size_(_Size) _VCRT_ALLOCATOR void* __CRTDECL
+    operator new(size_t _Size, const _STD nothrow_t&) noexcept;
+export extern "C++" _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+_VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t _Size);
+export extern "C++" _NODISCARD _Ret_maybenull_ _Success_(return != NULL)
+    _Post_writable_byte_size_(_Size) _VCRT_ALLOCATOR void* __CRTDECL
+    operator new[](size_t _Size, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block, size_t _Size) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void* _Block) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void* _Block, size_t _Size) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void* _Block, const _STD nothrow_t&) noexcept;
 
 #ifdef __cpp_aligned_new
-export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t, _STD align_val_t);
-export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(
-    size_t, _STD align_val_t, const _STD nothrow_t&) noexcept;
-export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t, _STD align_val_t);
-export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](
-    size_t, _STD align_val_t, const _STD nothrow_t&) noexcept;
-export extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t) noexcept;
-export extern "C++" void __CRTDECL operator delete(void*, size_t, _STD align_val_t) noexcept;
-export extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
-export extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t) noexcept;
-export extern "C++" void __CRTDECL operator delete[](void*, size_t, _STD align_val_t) noexcept;
-export extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
+export extern "C++" _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+_VCRT_ALLOCATOR void* __CRTDECL operator new(size_t _Size, _STD align_val_t _Al);
+export extern "C++" _NODISCARD _Ret_maybenull_ _Success_(return != NULL)
+    _Post_writable_byte_size_(_Size) _VCRT_ALLOCATOR void* __CRTDECL
+    operator new(size_t _Size, _STD align_val_t _Al, const _STD nothrow_t&) noexcept;
+export extern "C++" _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+_VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t _Size, _STD align_val_t _Al);
+export extern "C++" _NODISCARD _Ret_maybenull_ _Success_(return != NULL)
+    _Post_writable_byte_size_(_Size) _VCRT_ALLOCATOR void* __CRTDECL
+    operator new[](size_t _Size, _STD align_val_t _Al, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block, _STD align_val_t _Al) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block, size_t _Size, _STD align_val_t _Al) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block, _STD align_val_t _Al, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void* _Block, _STD align_val_t _Al) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void* _Block, size_t _Size, _STD align_val_t _Al) noexcept;
+export extern "C++" void __CRTDECL operator delete[](
+    void* _Block, _STD align_val_t _Al, const _STD nothrow_t&) noexcept;
 #endif // ^^^ defined(__cpp_aligned_new) ^^^
 
-export extern "C++" _NODISCARD void* __CRTDECL operator new(size_t, void*) noexcept;
-export extern "C++" _NODISCARD void* __CRTDECL operator new[](size_t, void*) noexcept;
+export extern "C++" _NODISCARD _MSVC_CONSTEXPR _Ret_notnull_ _Post_writable_byte_size_(_Size)
+    _Post_satisfies_(return == _Where) void* __CRTDECL
+    operator new(size_t _Size, _Writable_bytes_(_Size) void* _Where) noexcept;
+export extern "C++" _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+    _Post_satisfies_(return == _Where) void* __CRTDECL
+    operator new[](size_t _Size, _Writable_bytes_(_Size) void* _Where) noexcept;
 export extern "C++" void __CRTDECL operator delete(void*, void*) noexcept;
 export extern "C++" void __CRTDECL operator delete[](void*, void*) noexcept;
 
