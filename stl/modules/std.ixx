@@ -7,6 +7,12 @@ module;
 // This named module expects to be built with classic headers, not header units.
 #define _BUILD_STD_MODULE
 
+// N4971 [module.interface]/6: "A redeclaration of an entity X is implicitly exported
+// if X was introduced by an exported declaration; otherwise it shall not be exported."
+// Therefore, we'll need to introduce the `nothrow` object with an exported declaration,
+// instead of allowing <vcruntime_new.h> to declare it.
+#define __NOTHROW_T_DEFINED
+
 // The subset of "C headers" [tab:c.headers] corresponding to
 // the "C++ headers for C library facilities" [tab:headers.cpp.c]
 #include <assert.h>
@@ -35,6 +41,16 @@ export module std;
 
 #pragma warning(push)
 #pragma warning(disable : 5244) // '#include <meow>' in the purview of module 'std' appears erroneous.
+
+#include <yvals_core.h>
+#pragma pack(push, _CRT_PACKING)
+_STD_BEGIN
+_EXPORT_STD extern "C++" struct nothrow_t {
+    explicit nothrow_t() = default;
+};
+_EXPORT_STD extern "C++" const nothrow_t nothrow;
+_STD_END
+#pragma pack(pop)
 
 // "C++ library headers" [tab:headers.cpp]
 #include <algorithm>

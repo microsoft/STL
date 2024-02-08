@@ -23,11 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // Mirroring <vcruntime_new.h> declarations:
 
-_STD_BEGIN
-_EXPORT_STD using nothrow_t = nothrow_t;
-_EXPORT_STD extern "C++" const nothrow_t nothrow;
-_STD_END
-
 _EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t);
 _EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(
     size_t, const _STD nothrow_t&) noexcept;
