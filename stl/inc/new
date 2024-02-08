@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 #if _HAS_EXCEPTIONS
-// Follow N4971 [module.interface]/6 by exporting aliases:
+// Follow N4971 [module.interface]/6 by exporting aliases (a type alias is not an entity, N4971 [basic.pre]/3):
 _EXPORT_STD using bad_alloc            = bad_alloc;
 _EXPORT_STD using bad_array_new_length = bad_array_new_length;
 #else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv

@@ -35,7 +35,7 @@ _STD_END
 
 _STD_BEGIN
 
-// Follow N4971 [module.interface]/6 by exporting aliases:
+// Follow N4971 [module.interface]/6 by exporting aliases (a type alias is not an entity, N4971 [basic.pre]/3):
 _EXPORT_STD using exception     = exception;
 _EXPORT_STD using bad_exception = bad_exception;
 
