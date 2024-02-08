@@ -94,7 +94,11 @@ _EXPORT_STD template <class _Ty>
 _NODISCARD_LAUNDER constexpr _Ty* launder(_Ty* _Ptr) noexcept {
     static_assert(!is_function_v<_Ty> && !is_void_v<_Ty>,
         "N4950 [ptr.launder]/1: Mandates: !is_function_v<T> && !is_void_v<T> is true.");
-    return ::__builtin_launder(_Ptr); // TRANSITION, DevCom-10456452, should not be qualified
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10456452
+    return __builtin_launder(_Ptr);
+#else // ^^^ no workaround / workaround vvv
+    return ::__builtin_launder(_Ptr);
+#endif // ^^^ workaround ^^^
 }
 
 #if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
