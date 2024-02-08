@@ -52,49 +52,47 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-_EXPORT_STD extern "C++" struct nothrow_t;
+export extern "C++" struct nothrow_t;
 
-_EXPORT_STD extern "C++" const nothrow_t nothrow;
+export extern "C++" const nothrow_t nothrow;
 
 #ifdef __cpp_aligned_new
-_EXPORT_STD extern "C++" enum class align_val_t : size_t;
+export extern "C++" enum class align_val_t : size_t;
 #endif // ^^^ defined(__cpp_aligned_new) ^^^
 _STD_END
 
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
-_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t);
-_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(
-    size_t, const _STD nothrow_t&) noexcept;
-_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t);
-_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](
-    size_t, const _STD nothrow_t&) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, size_t) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, const _STD nothrow_t&) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, size_t) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, const _STD nothrow_t&) noexcept;
+export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t);
+export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t, const _STD nothrow_t&) noexcept;
+export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t);
+export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete(void*) noexcept;
+export extern "C++" void __CRTDECL operator delete(void*, size_t) noexcept;
+export extern "C++" void __CRTDECL operator delete(void*, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void*) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void*, size_t) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void*, const _STD nothrow_t&) noexcept;
 
 #ifdef __cpp_aligned_new
-_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t, _STD align_val_t);
-_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(
+export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t, _STD align_val_t);
+export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(
     size_t, _STD align_val_t, const _STD nothrow_t&) noexcept;
-_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t, _STD align_val_t);
-_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](
+export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t, _STD align_val_t);
+export extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](
     size_t, _STD align_val_t, const _STD nothrow_t&) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, size_t, _STD align_val_t) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, size_t, _STD align_val_t) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t) noexcept;
+export extern "C++" void __CRTDECL operator delete(void*, size_t, _STD align_val_t) noexcept;
+export extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void*, size_t, _STD align_val_t) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
 #endif // ^^^ defined(__cpp_aligned_new) ^^^
 
-_EXPORT_STD extern "C++" _NODISCARD void* __CRTDECL operator new(size_t, void*) noexcept;
-_EXPORT_STD extern "C++" _NODISCARD void* __CRTDECL operator new[](size_t, void*) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, void*) noexcept;
-_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, void*) noexcept;
+export extern "C++" _NODISCARD void* __CRTDECL operator new(size_t, void*) noexcept;
+export extern "C++" _NODISCARD void* __CRTDECL operator new[](size_t, void*) noexcept;
+export extern "C++" void __CRTDECL operator delete(void*, void*) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void*, void*) noexcept;
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
