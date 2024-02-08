@@ -268,6 +268,7 @@ void test_ranges_algorithms() {
     (void) ends_with(varr, varr);
     (void) ends_with(iarr, iarr, iarr, iarr, validating_equal{});
     (void) ends_with(iarr, iarr, validating_equal{});
+    (void) ends_with(dptr, bptr, dptr, bptr, validating_true_comparator{});
 #endif // _HAS_CXX23
 
     int iarr2[1]{};
