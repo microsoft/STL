@@ -43,13 +43,7 @@ _EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, const _STD noth
 
 #ifdef __cpp_aligned_new
 _STD_BEGIN
-#ifdef __EDG__ // TRANSITION, VSO-1618988
-extern "C++" {
-_EXPORT_STD enum class align_val_t : size_t;
-}
-#else // ^^^ workaround / no workaround vvv
-_EXPORT_STD extern "C++" enum class align_val_t : size_t;
-#endif // ^^^ no workaround ^^^
+_EXPORT_STD using align_val_t = align_val_t;
 _STD_END
 
 _EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t, _STD align_val_t);
