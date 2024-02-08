@@ -18,6 +18,22 @@ struct tagged_truth {
 };
 
 template <class Tag>
+struct tagged_zeroer {
+    template <class T>
+    constexpr int operator()(T&&) const noexcept {
+        return 0;
+    }
+};
+
+template <class Tag>
+struct tagged_true_comparator {
+    template <class T, class U>
+    constexpr bool operator()(T&&, U&&) const noexcept {
+        return true;
+    }
+};
+
+template <class Tag>
 struct tagged_equal {
     template <class T, class U>
     constexpr auto operator()(T&& t, U&& u) const -> decltype(std::forward<T>(t) == std::forward<U>(u)) {
@@ -57,6 +73,12 @@ struct tagged_zero_equality {
     }
 };
 
+template <class Tag>
+struct tagged_base {};
+
+template <class Tag>
+struct tagged_derived : tagged_base<Tag> {};
+
 template <class T>
 struct holder {
     T t;
@@ -69,13 +91,22 @@ using simple_identity      = tagged_identity<void>;
 using simple_left_selector = tagged_left_selector<void>;
 using simple_zero_equality = tagged_zero_equality<void>;
 
-using validator                = holder<incomplete>*;
-using validating_truth         = tagged_truth<holder<incomplete>>;
-using validating_equal         = tagged_equal<holder<incomplete>>;
-using validating_less          = tagged_less<holder<incomplete>>;
-using validating_identity      = tagged_identity<holder<incomplete>>;
-using validating_left_selector = tagged_left_selector<holder<incomplete>>;
-using validating_zero_equality = tagged_zero_equality<holder<incomplete>>;
+using validator                  = holder<incomplete>*;
+using validating_truth           = tagged_truth<holder<incomplete>>;
+using validating_zeroer          = tagged_zeroer<holder<incomplete>>;
+using validating_true_comparator = tagged_true_comparator<holder<incomplete>>;
+using validating_equal           = tagged_equal<holder<incomplete>>;
+using validating_less            = tagged_less<holder<incomplete>>;
+using validating_identity        = tagged_identity<holder<incomplete>>;
+using validating_left_selector   = tagged_left_selector<holder<incomplete>>;
+using validating_zero_equality   = tagged_zero_equality<holder<incomplete>>;
+using validating_derived         = tagged_derived<holder<incomplete>>;
+using validating_base            = tagged_base<holder<incomplete>>;
+
+static_assert(std::sentinel_for<validating_base*, validating_derived*>);
+#ifndef __EDG__
+static_assert(!std::sized_sentinel_for<validating_base*, validating_derived*>);
+#endif // !defined(__EDG__)
 
 template <class T>
 bool less_function(T lhs, T rhs) {
@@ -87,6 +118,10 @@ void test_ranges_algorithms() {
 
     int iarr[1]{};
     validator varr[1]{};
+
+    validating_derived darr[1]{};
+    validating_derived* const dptr = darr;
+    validating_base* const bptr    = darr; // behaves as a non-sized sentinel
 
     (void) all_of(varr, varr, simple_truth{});
     (void) all_of(varr, simple_truth{});
@@ -161,6 +196,7 @@ void test_ranges_algorithms() {
     (void) find_end(varr, varr, validating_equal{});
     (void) find_end(iarr, iarr, iarr, iarr, validating_equal{});
     (void) find_end(iarr, iarr, validating_equal{});
+    (void) find_end(dptr, bptr, dptr, bptr, validating_true_comparator{});
 
     (void) find_first_of(varr, varr, varr, varr);
     (void) find_first_of(varr, varr);
@@ -175,6 +211,7 @@ void test_ranges_algorithms() {
     (void) adjacent_find(iarr, iarr, {}, validating_identity{});
     // (void) adjacent_find(iarr, validating_equal{}); // needs to check ADL-found swap
     (void) adjacent_find(iarr, {}, validating_identity{});
+    (void) adjacent_find(dptr, bptr, validating_true_comparator{});
 
     (void) count(varr, varr, validator{});
     (void) count(varr, validator{});
@@ -190,11 +227,13 @@ void test_ranges_algorithms() {
     (void) mismatch(varr, varr);
     (void) mismatch(iarr, iarr, iarr, iarr, validating_equal{});
     (void) mismatch(iarr, iarr, validating_equal{});
+    (void) mismatch(dptr, bptr, dptr, bptr, validating_true_comparator{});
 
     (void) equal(varr, varr, varr, varr);
     (void) equal(varr, varr);
     (void) equal(iarr, iarr, iarr, iarr, validating_equal{});
     (void) equal(iarr, iarr, validating_equal{});
+    (void) equal(dptr, bptr, dptr, bptr, validating_true_comparator{});
 
     (void) is_permutation(varr, varr, varr, varr);
     (void) is_permutation(varr, varr);
@@ -204,22 +243,26 @@ void test_ranges_algorithms() {
     (void) is_permutation(iarr, iarr, validating_equal{});
     (void) is_permutation(iarr, iarr, iarr, iarr, {}, validating_identity{});
     (void) is_permutation(iarr, iarr, {}, validating_identity{});
+    (void) is_permutation(dptr, bptr, dptr, bptr, validating_true_comparator{});
 
     (void) search(varr, varr, varr, varr);
     (void) search(varr, varr);
     (void) search(iarr, iarr, iarr, iarr, validating_equal{});
     (void) search(iarr, iarr, validating_equal{});
+    (void) search(dptr, bptr, dptr, bptr, validating_true_comparator{});
 
     (void) search_n(varr, varr, 0, validator{});
     (void) search_n(varr, 0, validator{});
     (void) search_n(iarr, iarr, 0, 0, validating_equal{});
     (void) search_n(iarr, 0, 0, validating_equal{});
+    (void) search_n(dptr, bptr, 0, validating_derived{}, validating_true_comparator{});
 
 #if _HAS_CXX23
     (void) starts_with(varr, varr, varr, varr);
     (void) starts_with(varr, varr);
     (void) starts_with(iarr, iarr, iarr, iarr, validating_equal{});
     (void) starts_with(iarr, iarr, validating_equal{});
+    (void) starts_with(dptr, bptr, dptr, bptr, validating_true_comparator{});
 
     (void) ends_with(varr, varr, varr, varr);
     (void) ends_with(varr, varr);
@@ -402,6 +445,7 @@ void test_ranges_algorithms() {
     (void) partition_point(varr, simple_zero_equality{});
     (void) partition_point(iarr, iarr, validating_zero_equality{});
     (void) partition_point(iarr, validating_zero_equality{});
+    (void) partition_point(dptr, bptr, validating_zero_equality{}, validating_zeroer{});
 
     (void) merge(varr, varr, varr2, varr2, varr3);
     (void) merge(varr, varr2, varr3);
