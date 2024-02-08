@@ -35,8 +35,8 @@ _STD_END
 
 _STD_BEGIN
 
-_EXPORT_STD class exception;
-_EXPORT_STD class bad_exception;
+_EXPORT_STD using exception     = exception;
+_EXPORT_STD using bad_exception = bad_exception;
 
 _EXPORT_STD using ::terminate;
 

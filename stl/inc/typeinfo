@@ -23,7 +23,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #include <vcruntime_typeinfo.h>
 #pragma pop_macro("raw_name")
 
-_EXPORT_STD extern "C++" class type_info; // for typeid, MSVC looks for type_info in the global namespace
+_EXPORT_STD using type_info = type_info; // for typeid, MSVC looks for type_info in the global namespace
 
 _STD_BEGIN
 
@@ -33,8 +33,8 @@ _INLINE_VAR constexpr int _Small_object_num_ptrs = 6 + 16 / sizeof(void*);
 _EXPORT_STD using ::type_info;
 
 #if _HAS_EXCEPTIONS
-_EXPORT_STD class bad_cast;
-_EXPORT_STD class bad_typeid;
+_EXPORT_STD using bad_cast   = bad_cast;
+_EXPORT_STD using bad_typeid = bad_typeid;
 #else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
 _EXPORT_STD class bad_cast : public exception { // base of all bad cast exceptions
 public:
