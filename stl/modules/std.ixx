@@ -7,12 +7,6 @@ module;
 // This named module expects to be built with classic headers, not header units.
 #define _BUILD_STD_MODULE
 
-// N4971 [module.interface]/6: "A redeclaration of an entity X is implicitly exported
-// if X was introduced by an exported declaration; otherwise it shall not be exported."
-// Therefore, we'll need to introduce the `nothrow` object with an exported declaration,
-// instead of allowing <vcruntime_new.h> to declare it.
-#define __NOTHROW_T_DEFINED
-
 // The subset of "C headers" [tab:c.headers] corresponding to
 // the "C++ headers for C library facilities" [tab:headers.cpp.c]
 #include <assert.h>
@@ -43,14 +37,71 @@ export module std;
 #pragma warning(disable : 5244) // '#include <meow>' in the purview of module 'std' appears erroneous.
 
 #include <yvals_core.h>
+#ifndef _EXPORT_VCR // TRANSITION, VCRuntime update expected in 17.10 Preview 3
+
+// N4971 [module.interface]/6: "A redeclaration of an entity X is implicitly exported
+// if X was introduced by an exported declaration; otherwise it shall not be exported."
+
+// Therefore, we'll need to introduce exported declarations of <vcruntime_new.h> machinery before including it.
+
 #pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
 _STD_BEGIN
-_EXPORT_STD extern "C++" struct nothrow_t {
-    explicit nothrow_t() = default;
-};
+_EXPORT_STD extern "C++" struct nothrow_t;
+
 _EXPORT_STD extern "C++" const nothrow_t nothrow;
+
+#ifdef __cpp_aligned_new
+_EXPORT_STD extern "C++" enum class align_val_t : size_t;
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 _STD_END
+
+#pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
+
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t);
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(
+    size_t, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t);
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](
+    size_t, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, size_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, size_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, const _STD nothrow_t&) noexcept;
+
+#ifdef __cpp_aligned_new
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(size_t, _STD align_val_t);
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new(
+    size_t, _STD align_val_t, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t, _STD align_val_t);
+_EXPORT_STD extern "C++" _NODISCARD _VCRT_ALLOCATOR void* __CRTDECL operator new[](
+    size_t, _STD align_val_t, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, size_t, _STD align_val_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, size_t, _STD align_val_t) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, _STD align_val_t, const _STD nothrow_t&) noexcept;
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
+
+_EXPORT_STD extern "C++" _NODISCARD void* __CRTDECL operator new(size_t, void*) noexcept;
+_EXPORT_STD extern "C++" _NODISCARD void* __CRTDECL operator new[](size_t, void*) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete(void*, void*) noexcept;
+_EXPORT_STD extern "C++" void __CRTDECL operator delete[](void*, void*) noexcept;
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
 #pragma pack(pop)
+
+#endif // ^^^ workaround ^^^
 
 // "C++ library headers" [tab:headers.cpp]
 #include <algorithm>
