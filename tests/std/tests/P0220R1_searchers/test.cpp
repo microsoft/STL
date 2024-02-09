@@ -465,13 +465,13 @@ using validating_hash = tagged_hash<holder<incomplete>, T>;
 
 using validating_equal = tagged_equal<holder<incomplete>>;
 
-void test_adl_proof_default_searcher_on_iterators() {
+void test_adl_proof_default_searcher_on_iterators() { // COMPILE-ONLY
     using validator = holder<incomplete>*;
     validator varr[1]{};
     (void) std::search(varr, varr + 1, default_searcher<const validator*>{varr, varr + 1});
 }
 
-void test_adl_proof_default_searcher_on_functors() {
+void test_adl_proof_default_searcher_on_functors() { // COMPILE-ONLY
     char carr[1]{};
     (void) std::search(carr, carr + 1, default_searcher<const char*, validating_equal>{carr, carr + 1});
 
@@ -483,7 +483,7 @@ void test_adl_proof_default_searcher_on_functors() {
 }
 
 template <template <class RanIt, class Hash, class PredEq> class Searcher>
-void test_adl_proof_searcher_on_functors() {
+void test_adl_proof_searcher_on_functors() { // COMPILE-ONLY
     char carr[1]{};
     (void) std::search(carr, carr + 1, Searcher<const char*, validating_hash<char>, validating_equal>{carr, carr + 1});
 
@@ -495,7 +495,7 @@ void test_adl_proof_searcher_on_functors() {
     (void) std::search(iarr, iarr + 1, Searcher<const int*, validating_hash<int>, validating_equal>{iarr, iarr + 1});
 }
 
-void test_adl_proof_searcher_on_functors_all() {
+void test_adl_proof_searcher_on_functors_all() { // COMPILE-ONLY
     test_adl_proof_searcher_on_functors<boyer_moore_searcher>();
     test_adl_proof_searcher_on_functors<boyer_moore_horspool_searcher>();
 }
