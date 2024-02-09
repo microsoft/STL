@@ -1958,7 +1958,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-        
+
         return;
     }
 #endif // !defined(_M_ARM64EC)
