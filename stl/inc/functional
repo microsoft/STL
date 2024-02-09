@@ -2977,7 +2977,7 @@ public:
 
     boyer_moore_searcher& operator=(const boyer_moore_searcher& _Other) noexcept /* strengthened */ {
         boyer_moore_searcher _Cpy(_Other);
-        swap(_Data, _Cpy._Data);
+        _STD swap(_Data, _Cpy._Data);
         return *this;
     }
 
@@ -3015,7 +3015,7 @@ public:
 
     boyer_moore_horspool_searcher& operator=(const boyer_moore_horspool_searcher& _Other) noexcept /* strengthened */ {
         boyer_moore_horspool_searcher _Cpy(_Other);
-        swap(_Data, _Cpy._Data);
+        _STD swap(_Data, _Cpy._Data);
         return *this;
     }
 
