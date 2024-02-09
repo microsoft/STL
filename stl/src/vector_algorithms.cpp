@@ -1918,6 +1918,8 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
+
+        return;
     }
 #endif // !defined(_M_ARM64EC)
     const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
@@ -1956,6 +1958,8 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
+        
+        return;
     }
 #endif // !defined(_M_ARM64EC)
     const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
