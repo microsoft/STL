@@ -243,6 +243,10 @@ function load_charts() {
         },
         {
             min: '2022-01-01',
+            time: { unit: 'year' },
+        },
+        {
+            min: '2023-01-01',
             time: { unit: 'quarter' },
         },
     ];
