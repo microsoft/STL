@@ -6931,7 +6931,7 @@ namespace ranges {
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::max must not be empty. (N4950 [alg.min.max]/13)");
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<const _Ty*, _Pr>) {
                 if (!_Is_constant_evaluated()) {
                     return static_cast<_Ty>(_STD __std_max(_STD _To_address(_First), _STD _To_address(_Last)));
                 }
@@ -7147,7 +7147,7 @@ namespace ranges {
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::min must not be empty. (N4950 [alg.min.max]/5)");
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<const _Ty*, _Pr>) {
                 if (!_Is_constant_evaluated()) {
                     return static_cast<_Ty>(_STD __std_min(_STD _To_address(_First), _STD _To_address(_Last)));
                 }
