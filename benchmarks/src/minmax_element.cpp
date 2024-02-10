@@ -13,6 +13,9 @@ enum class Op {
     Min,
     Max,
     Both,
+    Min_el,
+    Max_el,
+    Both_el,
 };
 
 using namespace std;
@@ -38,6 +41,12 @@ void bm(benchmark::State& state) {
             benchmark::DoNotOptimize(ranges::max_element(a));
         } else if constexpr (Operation == Op::Both) {
             benchmark::DoNotOptimize(ranges::minmax_element(a));
+        } else if constexpr (Operation == Op::Min_el) {
+            benchmark::DoNotOptimize(ranges::min(a));
+        } else if constexpr (Operation == Op::Max_el) {
+            benchmark::DoNotOptimize(ranges::max(a));
+        } else if constexpr (Operation == Op::Both_el) {
+            benchmark::DoNotOptimize(ranges::minmax(a));
         }
     }
 }
@@ -45,42 +54,72 @@ void bm(benchmark::State& state) {
 BENCHMARK(bm<uint8_t, 8021, Op::Min>);
 BENCHMARK(bm<uint8_t, 8021, Op::Max>);
 BENCHMARK(bm<uint8_t, 8021, Op::Both>);
+BENCHMARK(bm<uint8_t, 8021, Op::Min_el>);
+BENCHMARK(bm<uint8_t, 8021, Op::Max_el>);
+BENCHMARK(bm<uint8_t, 8021, Op::Both_el>);
 
 BENCHMARK(bm<uint16_t, 8021, Op::Min>);
 BENCHMARK(bm<uint16_t, 8021, Op::Max>);
 BENCHMARK(bm<uint16_t, 8021, Op::Both>);
+BENCHMARK(bm<uint16_t, 8021, Op::Min_el>);
+BENCHMARK(bm<uint16_t, 8021, Op::Max_el>);
+BENCHMARK(bm<uint16_t, 8021, Op::Both_el>);
 
 BENCHMARK(bm<uint32_t, 8021, Op::Min>);
 BENCHMARK(bm<uint32_t, 8021, Op::Max>);
 BENCHMARK(bm<uint32_t, 8021, Op::Both>);
+BENCHMARK(bm<uint32_t, 8021, Op::Min_el>);
+BENCHMARK(bm<uint32_t, 8021, Op::Max_el>);
+BENCHMARK(bm<uint32_t, 8021, Op::Both_el>);
 
 BENCHMARK(bm<uint64_t, 8021, Op::Min>);
 BENCHMARK(bm<uint64_t, 8021, Op::Max>);
 BENCHMARK(bm<uint64_t, 8021, Op::Both>);
+BENCHMARK(bm<uint64_t, 8021, Op::Min_el>);
+BENCHMARK(bm<uint64_t, 8021, Op::Max_el>);
+BENCHMARK(bm<uint64_t, 8021, Op::Both_el>);
 
 BENCHMARK(bm<int8_t, 8021, Op::Min>);
 BENCHMARK(bm<int8_t, 8021, Op::Max>);
 BENCHMARK(bm<int8_t, 8021, Op::Both>);
+BENCHMARK(bm<int8_t, 8021, Op::Min_el>);
+BENCHMARK(bm<int8_t, 8021, Op::Max_el>);
+BENCHMARK(bm<int8_t, 8021, Op::Both_el>);
 
 BENCHMARK(bm<int16_t, 8021, Op::Min>);
 BENCHMARK(bm<int16_t, 8021, Op::Max>);
 BENCHMARK(bm<int16_t, 8021, Op::Both>);
+BENCHMARK(bm<int16_t, 8021, Op::Min_el>);
+BENCHMARK(bm<int16_t, 8021, Op::Max_el>);
+BENCHMARK(bm<int16_t, 8021, Op::Both_el>);
 
 BENCHMARK(bm<int32_t, 8021, Op::Min>);
 BENCHMARK(bm<int32_t, 8021, Op::Max>);
 BENCHMARK(bm<int32_t, 8021, Op::Both>);
+BENCHMARK(bm<int16_t, 8021, Op::Min_el>);
+BENCHMARK(bm<int16_t, 8021, Op::Max_el>);
+BENCHMARK(bm<int16_t, 8021, Op::Both_el>);
 
 BENCHMARK(bm<int64_t, 8021, Op::Min>);
 BENCHMARK(bm<int64_t, 8021, Op::Max>);
 BENCHMARK(bm<int64_t, 8021, Op::Both>);
+BENCHMARK(bm<int64_t, 8021, Op::Min_el>);
+BENCHMARK(bm<int64_t, 8021, Op::Max_el>);
+BENCHMARK(bm<int64_t, 8021, Op::Both_el>);
 
 BENCHMARK(bm<float, 8021, Op::Min>);
 BENCHMARK(bm<float, 8021, Op::Max>);
 BENCHMARK(bm<float, 8021, Op::Both>);
+BENCHMARK(bm<float, 8021, Op::Min_el>);
+BENCHMARK(bm<float, 8021, Op::Max_el>);
+BENCHMARK(bm<float, 8021, Op::Both_el>);
 
 BENCHMARK(bm<double, 8021, Op::Min>);
 BENCHMARK(bm<double, 8021, Op::Max>);
 BENCHMARK(bm<double, 8021, Op::Both>);
+BENCHMARK(bm<double, 8021, Op::Min_el>);
+BENCHMARK(bm<double, 8021, Op::Max_el>);
+BENCHMARK(bm<double, 8021, Op::Both_el>);
 
 
 BENCHMARK_MAIN();
