@@ -109,26 +109,26 @@ const void* __stdcall __std_max_element_8(const void* _First, const void* _Last,
 const void* __stdcall __std_max_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 const void* __stdcall __std_max_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 
-__declspec(noalias) int8_t __stdcall __std_min_1i(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) uint8_t __stdcall __std_min_1u(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) int16_t __stdcall __std_min_2i(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) uint16_t __stdcall __std_min_2u(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) int32_t __stdcall __std_min_4i(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) uint32_t __stdcall __std_min_4u(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) int64_t __stdcall __std_min_8i(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) uint64_t __stdcall __std_min_8u(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) float __stdcall __std_min_f(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) double __stdcall __std_min_d(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) int8_t __stdcall __std_max_1i(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) uint8_t __stdcall __std_max_1u(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) int16_t __stdcall __std_max_2i(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) uint16_t __stdcall __std_max_2u(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) int32_t __stdcall __std_max_4i(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) uint32_t __stdcall __std_max_4u(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) int64_t __stdcall __std_max_8i(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) uint64_t __stdcall __std_max_8u(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) float __stdcall __std_max_f(const void* const _First, const void* const _Last) noexcept;
-__declspec(noalias) double __stdcall __std_max_d(const void* const _First, const void* const _Last) noexcept;
+__declspec(noalias) int8_t __stdcall __std_min_1i(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) uint8_t __stdcall __std_min_1u(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) int16_t __stdcall __std_min_2i(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) uint16_t __stdcall __std_min_2u(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) int32_t __stdcall __std_min_4i(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) uint32_t __stdcall __std_min_4u(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) int64_t __stdcall __std_min_8i(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) uint64_t __stdcall __std_min_8u(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) float __stdcall __std_min_f(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) double __stdcall __std_min_d(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) int8_t __stdcall __std_max_1i(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) uint8_t __stdcall __std_max_1u(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) int16_t __stdcall __std_max_2i(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) uint16_t __stdcall __std_max_2u(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) int32_t __stdcall __std_max_4i(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) uint32_t __stdcall __std_max_4u(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) int64_t __stdcall __std_max_8i(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) uint64_t __stdcall __std_max_8u(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) float __stdcall __std_max_f(const void* _First, const void* _Last) noexcept;
+__declspec(noalias) double __stdcall __std_max_d(const void* _First, const void* _Last) noexcept;
 } // extern "C"
 
 _STD_BEGIN
