@@ -36,11 +36,11 @@ void bm(benchmark::State& state) {
 
     for (auto _ : state) {
         if constexpr (Operation == Op::Min) {
-            benchmark::DoNotOptimize(ranges::min_valement(a));
+            benchmark::DoNotOptimize(ranges::min_element(a));
         } else if constexpr (Operation == Op::Max) {
-            benchmark::DoNotOptimize(ranges::max_valement(a));
+            benchmark::DoNotOptimize(ranges::max_element(a));
         } else if constexpr (Operation == Op::Both) {
-            benchmark::DoNotOptimize(ranges::minmax_valement(a));
+            benchmark::DoNotOptimize(ranges::minmax_element(a));
         } else if constexpr (Operation == Op::Min_val) {
             benchmark::DoNotOptimize(ranges::min(a));
         } else if constexpr (Operation == Op::Max_val) {
