@@ -111,7 +111,7 @@ void test_case_min_max_element(const std::vector<T>& input) {
     if (input.begin() != input.end()) {
         auto actual_min_value    = std::ranges::min(input);
         auto actual_max_value    = std::ranges::max(input);
-        auto actual_minmax_value = std::ranges::minmax(input);     
+        auto actual_minmax_value = std::ranges::minmax(input);
         assert(*expected_min == actual_min_value);
         assert(*expected_max == actual_max_value);
         assert(*expected_minmax.first == actual_minmax_value.min);
