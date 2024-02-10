@@ -557,8 +557,7 @@ namespace {
     }
 
     template <class _Rx, class _Ty>
-    _Rx _Both_tail_v(
-        const void* const _First, const void* const _Last, _Ty _Cur_min, _Ty _Cur_max) noexcept {
+    _Rx _Both_tail_v(const void* const _First, const void* const _Last, _Ty _Cur_min, _Ty _Cur_max) noexcept {
         for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
             if (*_Ptr < _Cur_min) {
                 _Cur_min = *_Ptr;
