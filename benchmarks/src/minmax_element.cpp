@@ -96,9 +96,9 @@ BENCHMARK(bm<int16_t, 8021, Op::Both_el>);
 BENCHMARK(bm<int32_t, 8021, Op::Min>);
 BENCHMARK(bm<int32_t, 8021, Op::Max>);
 BENCHMARK(bm<int32_t, 8021, Op::Both>);
-BENCHMARK(bm<int16_t, 8021, Op::Min_el>);
-BENCHMARK(bm<int16_t, 8021, Op::Max_el>);
-BENCHMARK(bm<int16_t, 8021, Op::Both_el>);
+BENCHMARK(bm<int32_t, 8021, Op::Min_el>);
+BENCHMARK(bm<int32_t, 8021, Op::Max_el>);
+BENCHMARK(bm<int32_t, 8021, Op::Both_el>);
 
 BENCHMARK(bm<int64_t, 8021, Op::Min>);
 BENCHMARK(bm<int64_t, 8021, Op::Max>);
