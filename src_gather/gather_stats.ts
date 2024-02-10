@@ -362,7 +362,6 @@ type Row = {
     lwg: number;
     issue: number;
     bug: number;
-    avg_age: number;
     sum_age: number;
 };
 
@@ -505,7 +504,6 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
                 lwg: num_lwg,
                 issue: num_issue,
                 bug: num_bug,
-                avg_age: num_pr === 0 ? 0 : combined_pr_age.as('days') / num_pr,
                 sum_age: combined_pr_age.as('months'),
             });
 
@@ -526,7 +524,6 @@ export type DailyRow = {
     lwg: number | null;
     issue: number | null;
     bug: number | null;
-    avg_age: number;
     sum_age: number;
 };
 export const daily_table: DailyRow[] = [
@@ -547,7 +544,6 @@ export const daily_table: DailyRow[] = [
             }
         }
 
-        str += `avg_age: ${row.avg_age.toFixed(2)}, `;
         str += `sum_age: ${row.sum_age.toFixed(2)}, `;
         str += '} as DailyRow,\n';
     }
