@@ -7,6 +7,7 @@
 #define _ALGORITHM_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_minmax.hpp>
 #include <xmemory>
 
 #if _HAS_CXX23
@@ -29,11 +30,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #if _USE_STD_VECTOR_ALGORITHMS
 
 extern "C" {
-struct _Min_max_element_t {
-    const void* _Min;
-    const void* _Max;
-};
-
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
 // those pointers. The optimizer also assumes in that case that a pointer parameter is not returned to the caller via
@@ -61,6 +57,17 @@ const void* __stdcall __std_find_last_trivial_1(const void* _First, const void* 
 const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+
+__declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* const _First, const void* const _Last) noexcept;
+__declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* const _First, const void* const _Last) noexcept;
+__declspec(noalias) _Min_max_2i __stdcall __std_minmax_2i(const void* const _First, const void* const _Last) noexcept;
+__declspec(noalias) _Min_max_2u __stdcall __std_minmax_2u(const void* const _First, const void* const _Last) noexcept;
+__declspec(noalias) _Min_max_4i __stdcall __std_minmax_4i(const void* const _First, const void* const _Last) noexcept;
+__declspec(noalias) _Min_max_4u __stdcall __std_minmax_4u(const void* const _First, const void* const _Last) noexcept;
+__declspec(noalias) _Min_max_8i __stdcall __std_minmax_8i(const void* const _First, const void* const _Last) noexcept;
+__declspec(noalias) _Min_max_8u __stdcall __std_minmax_8u(const void* const _First, const void* const _Last) noexcept;
+__declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* const _First, const void* const _Last) noexcept;
+__declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* const _First, const void* const _Last) noexcept;
 } // extern "C"
 
 _STD_BEGIN
@@ -87,6 +94,53 @@ _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
     }
 
     return {const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
+}
+
+template <class _Ty>
+auto __std_minmax(_Ty* _First, _Ty* _Last) noexcept {
+    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+
+    if constexpr (_STD is_pointer_v<_Ty>) {
+        if constexpr (sizeof(_Ty) == 4) {
+            auto _Result = ::__std_minmax_4u(_First, _Last);
+            return _Min_max_p{reinterpret_cast<void*>(_Result._Min), reinterpret_cast<void*>(_Result._Max)};
+        } else if constexpr (sizeof(_Ty) == 8) {
+            auto _Result = ::__std_minmax_8u(_First, _Last);
+            return _Min_max_p{reinterpret_cast<void*>(_Result._Min), reinterpret_cast<void*>(_Result._Max)};
+        } else {
+            static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        }
+    } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+        return ::__std_minmax_f(_First, _Last);
+    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+        return ::__std_minmax_d(_First, _Last);
+    } else if constexpr (sizeof(_Ty) == 1) {
+        if constexpr (_Signed) {
+            return ::__std_minmax_1i(_First, _Last);
+        } else {
+            return ::__std_minmax_1u(_First, _Last);
+        }
+    } else if constexpr (sizeof(_Ty) == 2) {
+        if constexpr (_Signed) {
+            return ::__std_minmax_2i(_First, _Last);
+        } else {
+            return ::__std_minmax_2u(_First, _Last);
+        }
+    } else if constexpr (sizeof(_Ty) == 4) {
+        if constexpr (_Signed) {
+            return ::__std_minmax_4i(_First, _Last);
+        } else {
+            return ::__std_minmax_4u(_First, _Last);
+        }
+    } else if constexpr (sizeof(_Ty) == 8) {
+        if constexpr (_Signed) {
+            return ::__std_minmax_8i(_First, _Last);
+        } else {
+            return ::__std_minmax_8u(_First, _Last);
+        }
+    } else {
+        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+    }
 }
 
 template <class _Ty, class _TVal>
@@ -10070,6 +10124,14 @@ _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left _MSVC_
 _EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return {leftmost/smallest, rightmost/largest}
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+        if (!_STD _Is_constant_evaluated()) {
+            const auto _Result = _STD __std_minmax(_STD _To_address(_Ilist.begin()), _STD _To_address(_Ilist.end()));
+            return {static_cast<_Ty>(_Result._Min), static_cast<_Ty>(_Result._Max)};
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
     pair<const _Ty*, const _Ty*> _Res =
         _STD _Minmax_element_unchecked(_Ilist.begin(), _Ilist.end(), _STD _Pass_fn(_Pred));
     return pair<_Ty, _Ty>(*_Res.first, *_Res.second);
@@ -10197,8 +10259,8 @@ namespace ranges {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_First);
                     const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                    const auto _Result    = _STD __std_minmax_element(_First_ptr, _Last_ptr);
-                    return {static_cast<_Vty>(*_Result.first), static_cast<_Vty>(*_Result.second)};
+                    const auto _Result    = _STD __std_minmax(_First_ptr, _Last_ptr);
+                    return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS

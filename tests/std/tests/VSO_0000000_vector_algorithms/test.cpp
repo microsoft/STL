@@ -572,6 +572,11 @@ constexpr bool test_constexpr() {
     assert(ranges::minmax_element(a).min == begin(a) + 1);
     assert(ranges::minmax_element(a).max == end(a) - 2);
 
+    assert(ranges::min(a) == 10);
+    assert(ranges::max(a) == 60);
+    assert(ranges::minmax(a).min == 10);
+    assert(ranges::minmax(a).max == 60);
+
     int b[size(a)];
     reverse_copy(begin(a), end(a), begin(b));
     assert(equal(rbegin(a), rend(a), begin(b), end(b)));
