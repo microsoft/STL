@@ -791,23 +791,25 @@ protected:
                     *(_It._Mapped_it) = mapped_type{_STD forward<_MappedArgTypes>(_Args)...};
                     return _It;
                 }
+
+                _Position = lower_bound(_Key_val);
+                if (_Position != _End && _Key_equal(_Key_val, *(_Position._Key_it))) {
+                    auto _Dist        = _STD distance(_Begin._Key_it, _Position._Key_it);
+                    auto _It          = begin() + _Dist;
+                    *(_It._Mapped_it) = mapped_type{_STD forward<_MappedArgTypes>(_Args)...};
+                    return _It;
+                }
+            } else {
+                _Position = lower_bound(_Key_val);
             }
 
-            _Position = lower_bound(_Key_val);
-            if (_OverwriteIfExists && _Position != _End && _Key_equal(_Key_val, *(_Position._Key_it))) {
-                auto _Dist        = _STD distance(_Begin._Key_it, _Position._Key_it);
-                auto _It          = begin() + _Dist;
-                *(_It._Mapped_it) = mapped_type{_STD forward<_MappedArgTypes>(_Args)...};
-                return _It;
-            } else {
-                auto _Dist = _STD distance(_Begin._Key_it, _Position._Key_it);
-                {
-                    key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
-                    mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
-                    _Insert_exact(_Position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
-                }
-                return begin() + _Dist;
+            const auto _Dist = _STD distance(_Begin._Key_it, _Position._Key_it);
+            {
+                key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
+                mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
+                _Insert_exact(_Position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
             }
+            return begin() + _Dist;
         }
     }
 
