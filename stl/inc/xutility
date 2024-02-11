@@ -238,13 +238,11 @@ auto __std_min(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty>) {
-        if constexpr (sizeof(_Ty) == 4) {
-            return reinterpret_cast<void*>(::__std_min_4u(_First, _Last));
-        } else if constexpr (sizeof(_Ty) == 8) {
-            return reinterpret_cast<void*>(::__std_min_8u(_First, _Last));
-        } else {
-            static_assert(_STD _Always_false<_Ty>, "Unexpected size");
-        }
+#ifdef _WIN64
+        return reinterpret_cast<void*>(::__std_min_8u(_First, _Last));
+#else
+        return reinterpret_cast<void*>(::__std_min_4u(_First, _Last));
+#endif
     } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
         return ::__std_min_f(_First, _Last);
     } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
@@ -283,13 +281,11 @@ auto __std_max(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty>) {
-        if constexpr (sizeof(_Ty) == 4) {
-            return reinterpret_cast<void*>(::__std_max_4u(_First, _Last));
-        } else if constexpr (sizeof(_Ty) == 8) {
-            return reinterpret_cast<void*>(::__std_max_8u(_First, _Last));
-        } else {
-            static_assert(_STD _Always_false<_Ty>, "Unexpected size");
-        }
+#ifdef _WIN64
+        return reinterpret_cast<void*>(::__std_max_8u(_First, _Last));
+#else
+        return reinterpret_cast<void*>(::__std_max_4u(_First, _Last));
+#endif
     } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
         return ::__std_max_f(_First, _Last);
     } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {

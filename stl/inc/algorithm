@@ -101,15 +101,12 @@ auto __std_minmax(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty>) {
-        if constexpr (sizeof(_Ty) == 4) {
-            auto _Result = ::__std_minmax_4u(_First, _Last);
-            return _Min_max_p{reinterpret_cast<void*>(_Result._Min), reinterpret_cast<void*>(_Result._Max)};
-        } else if constexpr (sizeof(_Ty) == 8) {
-            auto _Result = ::__std_minmax_8u(_First, _Last);
-            return _Min_max_p{reinterpret_cast<void*>(_Result._Min), reinterpret_cast<void*>(_Result._Max)};
-        } else {
-            static_assert(_STD _Always_false<_Ty>, "Unexpected size");
-        }
+#ifdef _WIN64
+        auto _Result = ::__std_minmax_8u(_First, _Last);
+#else
+        auto _Result = ::__std_minmax_4u(_First, _Last);
+#endif
+        return _Min_max_p{reinterpret_cast<void*>(_Result._Min), reinterpret_cast<void*>(_Result._Max)};
     } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
         return ::__std_minmax_f(_First, _Last);
     } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
