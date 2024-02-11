@@ -18,7 +18,8 @@ template <template <class...> class Tmpl, class... Ts>
 constexpr bool is_specialization_v<Tmpl<Ts...>, Tmpl> = true;
 
 template <typename T>
-concept IsFlatMap = is_specialization_v<remove_cvref_t<T>, flat_map>;
+concept IsFlatMap =
+    is_specialization_v<remove_cvref_t<T>, flat_map> || is_specialization_v<remove_cvref_t<T>, flat_multimap>;
 
 template <IsFlatMap T>
 bool check_container_requirements(T&&) {
@@ -268,37 +269,39 @@ void test_pointer_to_incomplete_type() {
     flat_map<MyType<Incomplete>, shared_ptr<MyType<Incomplete>>> fmap;
 }
 
-// Test MSVC STL-specific SCARY-ness
-namespace scary_test {
-    static_assert(is_same_v<flat_map<int, int>::iterator, flat_map<int, int, greater<int>>::iterator>);
-    static_assert(is_same_v<flat_map<int, int>::iterator,
-        flat_map<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::iterator>);
-    static_assert(is_same_v<flat_map<int, int>::const_iterator, flat_map<int, int, greater<int>>::const_iterator>);
-    static_assert(is_same_v<flat_map<int, int>::const_iterator,
-        flat_map<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::const_iterator>);
+void test_insert_unique() {
+    flat_map<int, char> fm;
 
-    static_assert(is_same_v<flat_multimap<int, int>::iterator, flat_multimap<int, int, greater<int>>::iterator>);
-    static_assert(is_same_v<flat_multimap<int, int>::iterator,
-        flat_multimap<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::iterator>);
-    static_assert(
-        is_same_v<flat_multimap<int, int>::const_iterator, flat_multimap<int, int, greater<int>>::const_iterator>);
-    static_assert(is_same_v<flat_multimap<int, int>::const_iterator,
-        flat_multimap<int, int, less<>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::const_iterator>);
+    const auto p1 = fm.insert({10, 'm'});
+    assert(p1.first->first == 10);
+    assert(p1.first->second == 'm');
+    assert(p1.second);
 
-    static_assert(is_same_v<flat_map<int, int>::iterator, flat_multimap<int, int>::iterator>);
-    static_assert(is_same_v<flat_map<int, int>::const_iterator, flat_multimap<int, int>::const_iterator>);
+    const flat_map<int, char>::value_type val_pair{90, 'w'};
+    const auto p2 = fm.insert(val_pair);
+    assert(p2.first->first == 90);
+    assert(p2.first->second == 'w');
+    assert(p2.second);
 
-    static_assert(is_same_v<flat_map<int, int>::containers, flat_map<int, int, greater<int>>::containers>);
-    static_assert(is_same_v<flat_multimap<int, int>::containers, flat_multimap<int, int, greater<int>>::containers>);
-    static_assert(is_same_v<flat_map<int, int>::containers, flat_multimap<int, int>::containers>);
+    assert(check_key_content(fm, {10, 90}));
+    assert(check_value_content(fm, {'m', 'w'}));
+}
 
-    static_assert(is_same_v<flat_map<int, int>::value_compare,
-        flat_map<int, int, less<int>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>::value_compare>);
-    static_assert(is_same_v<flat_multimap<int, int>::value_compare,
-        flat_multimap<int, int, less<int>, vector<int, MyAllocator<int>>,
-            vector<int, MyAllocator<int>>>::value_compare>);
-    static_assert(is_same_v<flat_map<int, int>::value_compare, flat_multimap<int, int>::value_compare>);
-} // namespace scary_test
+void test_insert_multi() {
+    flat_multimap<int, char> fmm;
+
+    const auto it1 = fmm.insert({10, 'm'});
+    assert(it1->first == 10);
+    assert(it1->second == 'm');
+
+    const flat_multimap<int, char>::value_type val_pair{90, 'w'};
+    const auto it2 = fmm.insert(val_pair);
+    assert(it2->first == 90);
+    assert(it2->second == 'w');
+
+    assert(check_key_content(fmm, {10, 90}));
+    assert(check_value_content(fmm, {'m', 'w'}));
+}
 
 // GH-4344 <flat_map> Fix compile errors
 void test_gh_4344() {
@@ -333,9 +336,108 @@ void test_gh_4344() {
     assert(check_value_content(fm, {'m', 'o', 'e', 'w'}));
 }
 
+void test_insert_or_assign() {
+    flat_map<int, char> fm;
+
+    const auto p1 = fm.insert_or_assign(10, 'm');
+    assert(p1.first->first == 10);
+    assert(p1.first->second == 'm');
+    assert(p1.second);
+
+    const auto p2 = fm.insert_or_assign(70, 'e');
+    assert(p2.first->first == 70);
+    assert(p2.first->second == 'e');
+    assert(p2.second);
+
+    const auto p3 = fm.insert_or_assign(20, 'o');
+    assert(p3.first->first == 20);
+    assert(p3.first->second == 'o');
+    assert(p3.second);
+
+    const auto p4 = fm.insert_or_assign(90, 'w');
+    assert(p4.first->first == 90);
+    assert(p4.first->second == 'w');
+    assert(p4.second);
+
+    const auto p5 = fm.insert_or_assign(70, 'X');
+    assert(p5.first->first == 70);
+    assert(p5.first->second == 'X');
+    assert(!p5.second);
+
+    assert(check_key_content(fm, {10, 20, 70, 90}));
+    assert(check_value_content(fm, {'m', 'o', 'X', 'w'}));
+
+    const auto it6 = fm.insert_or_assign(fm.cbegin(), 10, 'b');
+    assert(it6->first == 10);
+    assert(it6->second == 'b');
+
+    const char ch  = 'a';
+    const auto it7 = fm.insert_or_assign(fm.cbegin(), 20, ch);
+    assert(it7->first == 20);
+    assert(it7->second == 'a');
+
+    assert(check_key_content(fm, {10, 20, 70, 90}));
+    assert(check_value_content(fm, {'b', 'a', 'X', 'w'}));
+}
+
+// Test MSVC STL-specific SCARY-ness
+template <bool IsUnique, class Comparator, class Alloc1, class Alloc2>
+void test_scary_ness_one() { // COMPILE-ONLY
+    using Iter      = flat_map<int, int>::iterator;
+    using OtherIter = conditional_t<IsUnique, flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>,
+        flat_multimap<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>>::iterator;
+    static_assert(is_same_v<Iter, OtherIter>);
+
+    using ConstIter = flat_map<int, int>::const_iterator;
+    using OtherConstIter =
+        conditional_t<IsUnique, flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>,
+            flat_multimap<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>>::const_iterator;
+    static_assert(is_same_v<ConstIter, OtherConstIter>);
+
+    using Cont      = flat_map<int, int, less<int>, vector<int, Alloc1>, vector<int, Alloc2>>::containers;
+    using OtherCont = conditional_t<IsUnique, flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>,
+        flat_multimap<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>>::containers;
+    static_assert(is_same_v<Cont, OtherCont>);
+
+    using ValueComp = flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::value_compare;
+    using OtherValueComp =
+        conditional_t<IsUnique, flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>,
+            flat_multimap<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>>::value_compare;
+    static_assert(is_same_v<ValueComp, OtherValueComp>);
+}
+
+void test_scary_ness() { // COMPILE-ONLY
+    test_scary_ness_one<true, greater<int>, allocator<int>, allocator<int>>();
+    test_scary_ness_one<true, greater<int>, allocator<int>, MyAllocator<int>>();
+    test_scary_ness_one<true, greater<int>, MyAllocator<int>, allocator<int>>();
+
+    test_scary_ness_one<true, less<>, allocator<int>, allocator<int>>();
+    test_scary_ness_one<true, less<>, allocator<int>, MyAllocator<int>>();
+    test_scary_ness_one<true, less<>, MyAllocator<int>, allocator<int>>();
+
+    test_scary_ness_one<true, greater<>, allocator<int>, allocator<int>>();
+    test_scary_ness_one<true, greater<>, allocator<int>, MyAllocator<int>>();
+    test_scary_ness_one<true, greater<>, MyAllocator<int>, allocator<int>>();
+
+    test_scary_ness_one<false, greater<int>, allocator<int>, allocator<int>>();
+    test_scary_ness_one<false, greater<int>, allocator<int>, MyAllocator<int>>();
+    test_scary_ness_one<false, greater<int>, MyAllocator<int>, allocator<int>>();
+
+    test_scary_ness_one<false, less<>, allocator<int>, allocator<int>>();
+    test_scary_ness_one<false, less<>, allocator<int>, MyAllocator<int>>();
+    test_scary_ness_one<false, less<>, MyAllocator<int>, allocator<int>>();
+
+    test_scary_ness_one<false, greater<>, allocator<int>, allocator<int>>();
+    test_scary_ness_one<false, greater<>, allocator<int>, MyAllocator<int>>();
+    test_scary_ness_one<false, greater<>, MyAllocator<int>, allocator<int>>();
+}
+
 int main() {
     test_construction();
     test_pointer_to_incomplete_type();
     test_erase_if();
+    test_insert_unique();
+    test_insert_multi();
     test_gh_4344();
+    test_insert_or_assign();
 }
