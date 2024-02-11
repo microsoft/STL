@@ -1403,7 +1403,7 @@ namespace {
     // (__std_min_Nn, __std_max_Nn, __std_minmax_Nn), up to calling convention.
     // This makes sure the template specialization is fused with the extern "C" function.
     // In optimized builds it avoids an extra call, as this function is too large to inline.
-    template <_Min_max_mode _Mode, class _Traits, const bool _Sign>
+    template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __stdcall _Minmax(const void* _First, const void* const _Last) noexcept {
         using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
