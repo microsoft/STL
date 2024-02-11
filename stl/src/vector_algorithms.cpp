@@ -1433,8 +1433,7 @@ namespace {
                 _Advance_bytes(_First, 16);
 
                 if (_First == _Stop_at) {
-                    // Reached end.
-                    // Compute horizontal min and/or max. Determine horizontal and vertical position of it.
+                    // Reached end. Compute horizontal min and/or max.
 
                     if constexpr ((_Mode & _Mode_min) != 0) {
                         if constexpr (_Sign || _Sign_correction) {
