@@ -10124,7 +10124,7 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist, _Pr _Pr
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
-            const auto _Result = _STD __std_minmax(_STD _To_address(_Ilist.begin()), _STD _To_address(_Ilist.end()));
+            const auto _Result = _STD __std_minmax(_Ilist.begin(), _Ilist.end());
             return {static_cast<_Ty>(_Result._Min), static_cast<_Ty>(_Result._Max)};
         }
     }
