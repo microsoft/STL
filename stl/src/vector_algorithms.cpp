@@ -1407,8 +1407,8 @@ namespace {
     auto __stdcall _Minmax(const void* _First, const void* const _Last) noexcept {
         using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
-        _Ty _Cur_min_val; // initialized in both of branches below
-        _Ty _Cur_max_val; // initialized in both of branches below
+        _Ty _Cur_min_val; // initialized in both of the branches below
+        _Ty _Cur_max_val; // initialized in both of the branches below
 
 #ifndef _M_ARM64EC
         // We don't have unsigned 64-bit stuff, so we'll use sign correction just for that case
