@@ -1423,7 +1423,7 @@ namespace {
             auto _Cur_vals = _Traits::_Load(_First);
 
             if constexpr (_Sign_correction) {
-                _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), false);
+                _Cur_vals = _Traits::_Sign_correction(_Cur_vals, false);
             }
 
             auto _Cur_vals_min = _Cur_vals; // vector of vertical minimum values
@@ -1478,7 +1478,7 @@ namespace {
                 _Cur_vals = _Traits::_Load(_First);
 
                 if constexpr (_Sign_correction) {
-                    _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), false);
+                    _Cur_vals = _Traits::_Sign_correction(_Cur_vals, false);
                 }
 
                 if constexpr ((_Mode & _Mode_min) != 0) {
