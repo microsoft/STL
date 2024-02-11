@@ -7,7 +7,7 @@
 #define __MSVC_MINMAX_HPP
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <stdint.h>
+#include <cstdint>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
