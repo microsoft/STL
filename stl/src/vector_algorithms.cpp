@@ -1519,10 +1519,10 @@ namespace {
                 }
             }
 
-            // _Mode_both could have been handled separately with else
+            // _Mode_both could have been handled separately with 'else'.
             // We have _Cur_min_val / _Cur_max_val initialized by processing at least one element,
-            // so the 'else' would be correct here
-            // But still separate 'if' statements promote branchless codegen
+            // so the 'else' would be correct here.
+            // But still separate 'if' statements promote branchless codegen.
         }
 
         if constexpr (_Mode == _Mode_min) {
