@@ -534,45 +534,6 @@ namespace {
         return _Res;
     }
 
-    template <class _Ty>
-    _Ty _Min_tail_v(const void* const _First, const void* const _Last, _Ty _Cur) noexcept {
-        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-            if (*_Ptr < _Cur) {
-                _Cur = *_Ptr;
-            }
-        }
-
-        return _Cur;
-    }
-
-    template <class _Ty>
-    _Ty _Max_tail_v(const void* const _First, const void* const _Last, _Ty _Cur) noexcept {
-        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-            if (_Cur < *_Ptr) {
-                _Cur = *_Ptr;
-            }
-        }
-
-        return _Cur;
-    }
-
-    template <class _Rx, class _Ty>
-    _Rx _Both_tail_v(const void* const _First, const void* const _Last, _Ty _Cur_min, _Ty _Cur_max) noexcept {
-        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-            if (*_Ptr < _Cur_min) {
-                _Cur_min = *_Ptr;
-            }
-            // Not else!
-            // * Needed for correctness if start with maximum, as we don't handle specially the first element.
-            // * Promote branchless code generation.
-            if (_Cur_max <= *_Ptr) {
-                _Cur_max = *_Ptr;
-            }
-        }
-
-        return {_Cur_min, _Cur_max};
-    }
-
     enum _Min_max_mode {
         _Mode_min  = 1 << 0,
         _Mode_max  = 1 << 1,
@@ -1546,13 +1507,33 @@ namespace {
 
 #endif // !_M_ARM64EC
         if constexpr (_Mode == _Mode_min) {
-            return _Min_tail_v(_First, _Last, static_cast<_Ty>(_Cur_min_val));
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (*_Ptr < _Cur_min_val) {
+                    _Cur_min_val = *_Ptr;
+                }
+            }
+            return _Cur_min_val;
         } else if constexpr (_Mode == _Mode_max) {
-            return _Max_tail_v(_First, _Last, static_cast<_Ty>(_Cur_max_val));
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (_Cur_max_val < *_Ptr) {
+                    _Cur_max_val = *_Ptr;
+                }
+            }
+            return _Cur_max_val;
         } else {
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (*_Ptr < _Cur_min_val) {
+                    _Cur_min_val = *_Ptr;
+                }
+                // Not else!
+                // * Needed for correctness if start with maximum, as we don't handle specially the first element.
+                // * Promote branchless code generation.
+                if (_Cur_max_val <= *_Ptr) {
+                    _Cur_max_val = *_Ptr;
+                }
+            }
             using _Rx = std::conditional_t<_Sign, typename _Traits::_Minmax_i_t, typename _Traits::_Minmax_u_t>;
-
-            return _Both_tail_v<_Rx>(_First, _Last, static_cast<_Ty>(_Cur_min_val), static_cast<_Ty>(_Cur_max_val));
+            return _Rx{_Cur_min_val, _Cur_max_val};
         }
     }
 
