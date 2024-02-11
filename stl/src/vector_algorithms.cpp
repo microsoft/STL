@@ -1540,7 +1540,7 @@ namespace {
         } else {
             _Cur_min_val = *reinterpret_cast<const _Ty*>(_First);
             _Cur_max_val = *reinterpret_cast<const _Ty*>(_First);
-            
+
             _Advance_bytes(_First, sizeof(_Ty));
         }
 
