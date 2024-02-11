@@ -1439,7 +1439,7 @@ namespace {
     }
 
     // _Minmax has exactly the same signature as the extern "C" functions
-    // (__std_min_element_N, __std_max_element_N, __std_minmax_element_N), up to calling convention.
+    // (__std_min_Nn, __std_max_Nn, __std_minmax_Nn), up to calling convention.
     // This makes sure the template specialization is fused with the extern "C" function.
     // In optimized builds it avoids an extra call, as this function is too large to inline.
     template <_Min_max_mode _Mode, class _Traits, const bool _Sign>
@@ -1454,10 +1454,10 @@ namespace {
 
 #ifndef _M_ARM64EC
         if (_Byte_length(_First, _Last) >= 16 && _Traits::_Sse_plain_min_max_available()) {
-            size_t _Portion_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
+            const size_t _Sse_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
 
             const void* _Stop_at = _First;
-            _Advance_bytes(_Stop_at, _Portion_byte_size);
+            _Advance_bytes(_Stop_at, _Sse_byte_size);
 
             auto _Cur_vals = _Traits::_Load(_First);
 
@@ -1472,7 +1472,7 @@ namespace {
                 _Advance_bytes(_First, 16);
 
                 if (_First == _Stop_at) {
-                    // Reached end or indices wrap around point.
+                    // Reached end.
                     // Compute horizontal min and/or max. Determine horizontal and vertical position of it.
 
                     if constexpr ((_Mode & _Mode_min) != 0) {
@@ -1506,7 +1506,7 @@ namespace {
                             _Cur_min_val += _Correction;
                         }
 
-                        if constexpr (_Mode & _Mode_max) {
+                        if constexpr ((_Mode & _Mode_max) != 0) {
                             _Cur_max_val += _Correction;
                         }
                     }
@@ -1529,7 +1529,7 @@ namespace {
                     }
                 }
 
-                if constexpr (_Mode & _Mode_max) {
+                if constexpr ((_Mode & _Mode_max) != 0) {
                     if constexpr (_Sign || _Sign_correction) {
                         _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals); // Update the current maximum
                     } else {
