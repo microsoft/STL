@@ -10121,6 +10121,8 @@ _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left _MSVC_
 _EXPORT_STD template <class _Ty, class _Pr>
 _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return {leftmost/smallest, rightmost/largest}
+    _STL_ASSERT(
+        _Ilist.size() != 0, "An initializer_list passed to std::minmax must not be empty. (N4971 [alg.min.max]/21)");
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
@@ -10178,7 +10180,7 @@ namespace ranges {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
-                "An initializer_list passed to std::ranges::minmax must not be empty. (N4950 [alg.min.max]/21)");
+                "An initializer_list passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
             return _Minmax_fwd_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -10190,7 +10192,7 @@ namespace ranges {
             auto _UFirst = _RANGES _Ubegin(_Range);
             auto _ULast  = _RANGES _Uend(_Range);
             _STL_ASSERT(
-                _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4950 [alg.min.max]/21)");
+                _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
                 return _Minmax_fwd_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
