@@ -1410,10 +1410,10 @@ namespace {
         _Ty _Cur_min_val; // initialized in both of branches below
         _Ty _Cur_max_val; // initialized in both of branches below
 
+#ifndef _M_ARM64EC
         // We don't have unsigned 64-bit stuff, so we'll use sign correction just for that case
         constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Sign;
 
-#ifndef _M_ARM64EC
         if (_Byte_length(_First, _Last) >= 16 && _Traits::_Sse_plain_min_max_available()) {
             const size_t _Sse_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
 
@@ -1497,14 +1497,15 @@ namespace {
                     }
                 }
             }
-        } else {
+        } else
+#endif // !_M_ARM64EC
+        {
             _Cur_min_val = *reinterpret_cast<const _Ty*>(_First);
             _Cur_max_val = *reinterpret_cast<const _Ty*>(_First);
 
             _Advance_bytes(_First, sizeof(_Ty));
         }
 
-#endif // !_M_ARM64EC
         for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
             if constexpr ((_Mode & _Mode_min) != 0) {
                 if (*_Ptr < _Cur_min_val) {
