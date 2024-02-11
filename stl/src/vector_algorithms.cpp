@@ -1506,32 +1506,30 @@ namespace {
         }
 
 #endif // !_M_ARM64EC
-        if constexpr (_Mode == _Mode_min) {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+            if constexpr ((_Mode & _Mode_min) != 0) {
                 if (*_Ptr < _Cur_min_val) {
                     _Cur_min_val = *_Ptr;
                 }
             }
-            return _Cur_min_val;
-        } else if constexpr (_Mode == _Mode_max) {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+
+            if constexpr ((_Mode & _Mode_max) != 0) {
                 if (_Cur_max_val < *_Ptr) {
                     _Cur_max_val = *_Ptr;
                 }
             }
+
+            // _Mode_both could have been handled separately with else
+            // We have _Cur_min_val / _Cur_max_val initialized by processing at least one element,
+            // so the 'else' would be correct here
+            // But still separate 'if' statements promote branchless codegen
+        }
+
+        if constexpr (_Mode == _Mode_min) {
+            return _Cur_min_val;
+        } else if constexpr (_Mode == _Mode_max) {
             return _Cur_max_val;
         } else {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if (*_Ptr < _Cur_min_val) {
-                    _Cur_min_val = *_Ptr;
-                }
-                // Not else!
-                // * Needed for correctness if start with maximum, as we don't handle specially the first element.
-                // * Promote branchless code generation.
-                if (_Cur_max_val <= *_Ptr) {
-                    _Cur_max_val = *_Ptr;
-                }
-            }
             using _Rx = std::conditional_t<_Sign, typename _Traits::_Minmax_i_t, typename _Traits::_Minmax_u_t>;
             return _Rx{_Cur_min_val, _Cur_max_val};
         }
