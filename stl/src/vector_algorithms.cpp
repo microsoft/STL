@@ -638,10 +638,6 @@ namespace {
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
             return _Mask;
         }
-
-        static bool _Sse_plain_min_max_available() noexcept {
-            return _Use_sse42(); // _mm_min_epi8, _mm_max_epi8
-        }
 #endif // !_M_ARM64EC
     };
 
@@ -744,10 +740,6 @@ namespace {
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
             return _Mask;
         }
-
-        static bool _Sse_plain_min_max_available() noexcept {
-            return _Use_sse42(); // _mm_cmpgt_epi16, _mm_min_epi16
-        }
 #endif // !_M_ARM64EC
     };
 
@@ -849,10 +841,6 @@ namespace {
 
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
             return _Mask;
-        }
-
-        static bool _Sse_plain_min_max_available() noexcept {
-            return _Use_sse42(); // _mm_cmpgt_epi32, _mm_min_epi32
         }
 #endif // !_M_ARM64EC
     };
@@ -959,10 +947,6 @@ namespace {
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
             return _Mask;
         }
-
-        static bool _Sse_plain_min_max_available() noexcept {
-            return _Use_sse42(); // _mm_cmpgt_epi64
-        }
 #endif // !_M_ARM64EC
     };
 
@@ -1062,10 +1046,6 @@ namespace {
 
         static __m128i _Mask_cast(__m128 _Mask) noexcept {
             return _mm_castps_si128(_Mask);
-        }
-
-        static bool _Sse_plain_min_max_available() noexcept {
-            return _Use_sse2(); // _mm_min_ps, _mm_max_ps, _mm_shuffle_ps
         }
 #endif // !_M_ARM64EC
     };
@@ -1170,10 +1150,6 @@ namespace {
 
         static __m128i _Mask_cast(__m128d _Mask) noexcept {
             return _mm_castpd_si128(_Mask);
-        }
-
-        static bool _Sse_plain_min_max_available() noexcept {
-            return _Use_sse2(); // _mm_min_pd, _mm_max_pd, _mm_shuffle_pd
         }
 #endif // !_M_ARM64EC
     };
@@ -1414,7 +1390,7 @@ namespace {
         // We don't have unsigned 64-bit stuff, so we'll use sign correction just for that case
         constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Sign;
 
-        if (_Byte_length(_First, _Last) >= 16 && _Traits::_Sse_plain_min_max_available()) {
+        if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
             const size_t _Sse_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
 
             const void* _Stop_at = _First;
