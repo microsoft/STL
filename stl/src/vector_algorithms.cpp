@@ -1410,7 +1410,7 @@ namespace {
         _Ty _Cur_min_val; // initialized in both of branches below
         _Ty _Cur_max_val; // initialized in both of branches below
 
-        // We don't have unsigned 64-bit stuff, so will use sign correction just for that case
+        // We don't have unsigned 64-bit stuff, so we'll use sign correction just for that case
         constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Sign;
 
 #ifndef _M_ARM64EC
