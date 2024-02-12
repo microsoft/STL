@@ -202,6 +202,11 @@ struct with_padding_bits {
 };
 #pragma warning(pop)
 
+template <class T, class U>
+[[nodiscard]] bool ownership_equal(const T& t, const U& u) {
+    return !t.owner_before(u) && !u.owner_before(t);
+}
+
 inline void test_gh_3602(const __std_atomic_api_level level) {
     // GH-3602 std::atomic<std::shared_ptr>::wait does not seem to care about control block difference. Is this a bug?
     {
@@ -241,6 +246,28 @@ inline void test_gh_3602(const __std_atomic_api_level level) {
         asp.wait(sp3);
 
         t.join();
+    }
+
+    { // Also test shared_ptrs that own the null pointer.
+        int* const raw = nullptr;
+
+        std::shared_ptr<int> sp_empty;
+        std::shared_ptr<int> sp_also_empty;
+        std::shared_ptr<int> sp_original(raw);
+        std::shared_ptr<int> sp_copy(sp_original);
+        std::shared_ptr<int> sp_different(raw);
+
+        assert(ownership_equal(sp_empty, sp_also_empty));
+        assert(!ownership_equal(sp_original, sp_empty));
+        assert(ownership_equal(sp_original, sp_copy));
+        assert(!ownership_equal(sp_original, sp_different));
+
+        std::atomic<std::shared_ptr<int>> asp_empty;
+        asp_empty.wait(sp_original);
+
+        std::atomic<std::shared_ptr<int>> asp_copy{sp_copy};
+        asp_copy.wait(sp_empty);
+        asp_copy.wait(sp_different);
     }
 }
 
