@@ -25,7 +25,7 @@ using limits = numeric_limits<Ty>;
 
 #ifdef _M_FP_STRICT
 // According to:
-// https://docs.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior
+// https://learn.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior
 // Under the default /fp:precise mode:
 //  The compiler generates code intended to run in the default floating-point environment and assumes that the
 //  floating-point environment is not accessed or modified at runtime.
@@ -520,7 +520,7 @@ void test_midpoint_floating() {
         assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), limits<Ty>::max()));
         assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(limits<Ty>::max(), mint_nan<Ty>(0, 1)));
         assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), mint_nan<Ty>(0, 1)));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
         assert(isnan(midpoint(limits<Ty>::quiet_NaN(), Ty(2.0))));
         assert(isnan(midpoint(Ty(2.0), limits<Ty>::quiet_NaN())));
@@ -624,7 +624,7 @@ struct LerpNaNTestCase {
 
 template <typename Ty>
 struct LerpCases { // TRANSITION, VSO-934633
-    static inline constexpr LerpTestCase<Ty> lerpTestCases[] = {
+    static constexpr LerpTestCase<Ty> lerpTestCases[] = {
         {Ty(-1.0), Ty(1.0), Ty(2.0), Ty(3.0)},
         {Ty(0.0), Ty(1.0), Ty(2.0), Ty(2.0)},
         {Ty(-1.0), Ty(0.0), Ty(2.0), Ty(1.0)},
@@ -794,12 +794,12 @@ struct LerpCases { // TRANSITION, VSO-934633
         {Ty(1.0), -limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::infinity()},
     };
 
-    static inline constexpr LerpTestCase<Ty> lerpOverflowTestCases[] = {
+    static constexpr LerpTestCase<Ty> lerpOverflowTestCases[] = {
         {limits<Ty>::lowest(), limits<Ty>::max(), Ty(2.0), limits<Ty>::infinity()},
         {limits<Ty>::max(), limits<Ty>::lowest(), Ty(2.0), -limits<Ty>::infinity()},
     };
 
-    static inline constexpr LerpNaNTestCase<Ty> lerpInvalidTestCases[] = {
+    static constexpr LerpNaNTestCase<Ty> lerpInvalidTestCases[] = {
         // if the values are equal and T is an infinity, NaN
         {Ty(0), Ty(0), limits<Ty>::infinity()},
         {Ty(0), Ty(0), -limits<Ty>::infinity()},
@@ -855,7 +855,7 @@ struct LerpCases { // TRANSITION, VSO-934633
         {Ty(1.0), -limits<Ty>::infinity(), -Ty(0.0)},
     };
 
-    static inline constexpr LerpNaNTestCase<Ty> lerpNaNTestCases[] = {
+    static constexpr LerpNaNTestCase<Ty> lerpNaNTestCases[] = {
         {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729),
             {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729)}},
         {Ty(1.0), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729), {mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729)}},

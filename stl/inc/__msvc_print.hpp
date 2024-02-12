@@ -3,11 +3,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef __MSVC_PRINT_HPP
 #define __MSVC_PRINT_HPP
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+
+#if !_HAS_CXX20 // note: <format> includes this header in C++20 mode
+#error The contents of <print> are available only with C++23. (Also, you should not include this internal header.)
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #include <cstdio>
 #include <xfilesystem_abi.h>
@@ -19,7 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_EXTERN_C
+extern "C" {
 
 enum class __std_unicode_console_handle : intptr_t { _Invalid = -1 };
 
@@ -52,7 +55,7 @@ _NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_print_to_unicode_console(_In_ __std_unicode_console_handle _Console_handle,
         _In_reads_(_Str_size) const char* _Str, _In_ size_t _Str_size) noexcept;
 
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 

@@ -89,9 +89,7 @@ template <class CharType>
 constexpr auto get_sso_input_view() {
     return basic_string_view<CharType>{get_sso_input<CharType>()};
 }
-#endif // _HAS_CXX17
 
-#if _HAS_CXX17
 template <class CharType>
 struct string_view_convertible {
     constexpr operator basic_string_view<CharType>() const noexcept {
@@ -1738,7 +1736,6 @@ void test_exceptions() {
             assert(verify_string(append_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str append_iterator_sso{input_sso};
         try {
             assert(verify_string(append_iterator_sso));
@@ -1747,7 +1744,6 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(append_iterator_sso));
         }
-#endif
 
         str append_input_iterator{input};
         try {
@@ -1758,14 +1754,12 @@ void test_exceptions() {
             assert(verify_string(append_input_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str append_input_iterator_sso{input_sso};
         try {
             append_input_iterator_sso.append(input_iter_data.begin(), input_iter_data.end());
         } catch (...) {
             assert(verify_string(append_input_iterator_sso));
         }
-#endif
     }
 
     { // assign
@@ -1778,7 +1772,6 @@ void test_exceptions() {
             assert(verify_string(assign_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str assign_iterator_sso{input_sso};
         try {
             assert(verify_string(assign_iterator_sso));
@@ -1786,7 +1779,6 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(assign_iterator_sso));
         }
-#endif
 
         str assign_input_iterator{input};
         try {
@@ -1797,7 +1789,6 @@ void test_exceptions() {
             assert(verify_string(assign_input_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str assign_input_iterator_sso{input_sso};
         try {
             assert(verify_string(assign_input_iterator_sso));
@@ -1806,7 +1797,6 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(assign_input_iterator_sso));
         }
-#endif
     }
 
     { // insert
@@ -1819,7 +1809,6 @@ void test_exceptions() {
             assert(verify_string(insert_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str insert_iterator_sso{input_sso};
         try {
             assert(verify_string(insert_iterator_sso));
@@ -1828,7 +1817,6 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(insert_iterator_sso));
         }
-#endif
 
         str insert_input_iterator{input};
         try {
@@ -1839,7 +1827,6 @@ void test_exceptions() {
             assert(verify_string(insert_input_iterator));
         }
 
-#if 0 // TRANSITION, DevCom-1527920
         str insert_input_iterator_sso{input_sso};
         try {
             assert(verify_string(insert_input_iterator_sso));
@@ -1849,7 +1836,6 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(insert_input_iterator_sso));
         }
-#endif
     }
 }
 
@@ -1864,7 +1850,7 @@ void run_tests() {
     test_sstream<Alloc>();
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-54804
     test_exceptions<Alloc>();
-#endif // !(defined(__clang__) && defined(_M_IX86))
+#endif // ^^^ no workaround ^^^
 }
 
 template <class CharType, template <class, class, class> class Alloc>
@@ -1913,6 +1899,24 @@ void test_DevCom_10109507() {
     assert(s == "xyefbcd");
 }
 
+void test_gh_3883() {
+    // GH-3883 <string>: basic_string::replace fails under ASan when pos + count > size, and count2 < count
+    string t = "0123456789ABCDEF"; // large string
+    t.replace(0, 30, 7, 'A');
+    assert(t == "AAAAAAA");
+}
+
+void test_gh_3955() {
+    // GH-3955 <xstring>: ASAN report container-overflow in a legal case
+    string s(19, '0');
+    s = &s[3];
+    assert(s == string(16, '0'));
+
+    string t(19, '0');
+    s = &t[0];
+    assert(s == t);
+}
+
 int main() {
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
@@ -1924,4 +1928,6 @@ int main() {
 
     test_DevCom_10116361();
     test_DevCom_10109507();
+    test_gh_3883();
+    test_gh_3955();
 }

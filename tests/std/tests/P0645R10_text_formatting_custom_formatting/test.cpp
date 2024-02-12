@@ -15,11 +15,11 @@ using namespace std;
 
 // copied from the text_formatting_formatting test case
 template <class charT, class... Args>
-auto make_testing_format_args(Args&&... vals) {
+auto make_testing_format_args(Args&&... vals) { // references to temporaries are risky, see P2905R2; we'll be careful
     if constexpr (is_same_v<charT, wchar_t>) {
-        return make_wformat_args(forward<Args>(vals)...);
+        return make_wformat_args(vals...);
     } else {
-        return make_format_args(forward<Args>(vals)...);
+        return make_format_args(vals...);
     }
 }
 
@@ -57,7 +57,7 @@ struct not_const_formattable_type {
 
 template <>
 struct std::formatter<basic_custom_formattable_type, char> {
-    basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
+    constexpr basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
         if (parse_ctx.begin() != parse_ctx.end()) {
             throw format_error{"only empty specs please"};
         }
@@ -71,7 +71,7 @@ struct std::formatter<basic_custom_formattable_type, char> {
 
 template <>
 struct std::formatter<not_const_formattable_type, char> {
-    basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
+    constexpr basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
         if (parse_ctx.begin() != parse_ctx.end()) {
             throw format_error{"only empty specs please"};
         }
@@ -96,7 +96,7 @@ struct std::formatter<custom_formattable_type<T>, charT> : std::formatter<T, cha
     }
 };
 
-constexpr void test_disabled_formatter_is_disabled() {
+constexpr void test_disabled_formatter_is_disabled() { // COMPILE-ONLY
     using F = formatter<void, void>;
 
     static_assert(!is_default_constructible_v<F>);
@@ -184,6 +184,21 @@ void test_custom_formattable_type() {
     test_numeric_custom_formattable_type<float, charT>();
     test_numeric_custom_formattable_type<double, charT>();
     test_numeric_custom_formattable_type<long double, charT>();
+
+    test_custom_equiv_with_format<charT, charT>(STR("{}"), charT(' '));
+    test_custom_equiv_with_format<char, charT>(STR("{}"), ' ');
+
+    charT test_str[] = {charT(' '), charT()};
+    test_custom_equiv_with_format<charT*, charT>(STR("{}"), test_str);
+    test_custom_equiv_with_format<const charT*, charT>(STR("{}"), test_str);
+
+    struct traits : char_traits<charT> {};
+    test_custom_equiv_with_format<basic_string<charT, traits>, charT>(STR("{}"), test_str);
+    test_custom_equiv_with_format<basic_string_view<charT, traits>, charT>(STR("{}"), test_str);
+
+    test_custom_equiv_with_format<nullptr_t, charT>(STR("{}"), nullptr);
+    test_custom_equiv_with_format<void*, charT>(STR("{}"), nullptr);
+    test_custom_equiv_with_format<const void*, charT>(STR("{}"), nullptr);
 }
 
 template <class charT>
@@ -201,6 +216,36 @@ void test_mixed_custom_formattable_type() {
     test_numeric_mixed_args_custom_formattable_type<float, charT>();
     test_numeric_mixed_args_custom_formattable_type<double, charT>();
     test_numeric_mixed_args_custom_formattable_type<long double, charT>();
+
+    test_custom_equiv_with_format_mixed<charT, charT>(STR("{}{}"), charT(' '));
+    test_custom_equiv_with_format_mixed<char, charT>(STR("{}{}"), ' ');
+
+    charT test_str[] = {charT(' '), charT()};
+    test_custom_equiv_with_format_mixed<charT*, charT>(STR("{}{}"), test_str);
+    test_custom_equiv_with_format_mixed<const charT*, charT>(STR("{}{}"), test_str);
+
+    struct traits : char_traits<charT> {};
+    test_custom_equiv_with_format_mixed<basic_string<charT, traits>, charT>(STR("{}{}"), test_str);
+    test_custom_equiv_with_format_mixed<basic_string_view<charT, traits>, charT>(STR("{}{}"), test_str);
+
+    test_custom_equiv_with_format_mixed<nullptr_t, charT>(STR("{}{}"), nullptr);
+    test_custom_equiv_with_format_mixed<void*, charT>(STR("{}{}"), nullptr);
+    test_custom_equiv_with_format_mixed<const void*, charT>(STR("{}{}"), nullptr);
+}
+
+template <class OutIt, class CharT>
+void test_basic_format_arg_handle_construction() {
+    using handle = basic_format_arg<basic_format_context<OutIt, CharT>>::handle;
+
+    static_assert(is_constructible_v<handle, int&>);
+    static_assert(is_constructible_v<handle, const int&>);
+    static_assert(!is_constructible_v<handle, int>);
+    static_assert(is_constructible_v<handle, const int>);
+
+    static_assert(is_constructible_v<handle, custom_formattable_type<CharT>&>);
+    static_assert(is_constructible_v<handle, const custom_formattable_type<CharT>&>);
+    static_assert(!is_constructible_v<handle, custom_formattable_type<CharT>>);
+    static_assert(is_constructible_v<handle, const custom_formattable_type<CharT>>);
 }
 
 int main() {
@@ -210,5 +255,12 @@ int main() {
     test_custom_formattable_type<wchar_t>();
     test_mixed_custom_formattable_type<char>();
     test_mixed_custom_formattable_type<wchar_t>();
+
+    test_basic_format_arg_handle_construction<char*, char>();
+    test_basic_format_arg_handle_construction<string::iterator, char>();
+    test_basic_format_arg_handle_construction<back_insert_iterator<string>, char>();
+    test_basic_format_arg_handle_construction<wchar_t*, wchar_t>();
+    test_basic_format_arg_handle_construction<wstring::iterator, wchar_t>();
+    test_basic_format_arg_handle_construction<back_insert_iterator<wstring>, wchar_t>();
     return 0;
 }

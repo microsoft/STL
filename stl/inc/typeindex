@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _TYPEINDEX_
 #define _TYPEINDEX_
 #include <yvals_core.h>
@@ -46,7 +45,10 @@ public:
             return strong_ordering::equal;
         }
 
+#pragma push_macro("raw_name") // TRANSITION, GH-2195
+#undef raw_name
         return _CSTD strcmp(_Tptr->raw_name() + 1, _Right._Tptr->raw_name() + 1) <=> 0;
+#pragma pop_macro("raw_name")
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const type_index& _Right) const noexcept {
@@ -79,7 +81,7 @@ struct hash<type_index> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = type_index;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD size_t operator()(const type_index& _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const type_index& _Keyval) _CONST_CALL_OPERATOR noexcept {
         return _Keyval.hash_code();
     }
 };

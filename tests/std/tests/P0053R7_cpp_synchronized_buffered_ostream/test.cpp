@@ -16,10 +16,10 @@ static_assert(is_destructible_v<syncbuf>);
 template <class Elem, class Traits, class Alloc>
 class test_syncbuf : public basic_syncbuf<Elem, Traits, Alloc> {
 public:
-    using size_type      = typename Alloc::size_type;
-    using value_type     = typename Alloc::value_type;
+    using size_type      = Alloc::size_type;
+    using value_type     = Alloc::value_type;
     using Mybase         = basic_syncbuf<Elem, Traits, Alloc>;
-    using streambuf_type = typename Mybase::streambuf_type;
+    using streambuf_type = Mybase::streambuf_type;
 
     using Mybase::epptr;
     using Mybase::pbase;
@@ -49,7 +49,7 @@ public:
 template <class Alloc>
 void test_syncbuf_member_functions(string_buffer<typename Alloc::value_type>* buf = nullptr) {
 
-    using value_type = typename Alloc::value_type;
+    using value_type = Alloc::value_type;
     using Syncbuf    = test_syncbuf<value_type, char_traits<value_type>, Alloc>;
     using OStream    = basic_ostream<value_type, char_traits<value_type>>;
 
@@ -124,7 +124,7 @@ template <class Alloc, bool ThrowOnSync = false>
 void test_syncbuf_synchronization(string_buffer<typename Alloc::value_type, ThrowOnSync>* buf) {
     assert(buf); // meaningless to run with nullptr
 
-    using value_type = typename Alloc::value_type;
+    using value_type = Alloc::value_type;
     using Syncbuf    = test_syncbuf<value_type, char_traits<value_type>, Alloc>;
     using OStream    = basic_ostream<value_type, char_traits<value_type>>;
 
@@ -182,7 +182,7 @@ void test_syncbuf_synchronization(string_buffer<typename Alloc::value_type, Thro
 template <class Alloc>
 void test_syncbuf_move_swap_operations(string_buffer<typename Alloc::value_type>* buf) {
 
-    using value_type = typename Alloc::value_type;
+    using value_type = Alloc::value_type;
     using Syncbuf    = test_syncbuf<value_type, char_traits<value_type>, Alloc>;
     using OStream    = basic_ostream<value_type, char_traits<value_type>>;
 
@@ -261,7 +261,7 @@ void test_syncbuf_move_swap_operations(string_buffer<typename Alloc::value_type>
 
 template <class Alloc>
 void test_osyncstream(string_buffer<typename Alloc::value_type>* buf = nullptr) {
-    using value_type  = typename Alloc::value_type;
+    using value_type  = Alloc::value_type;
     using OSyncStream = basic_osyncstream<value_type, char_traits<value_type>, Alloc>;
 
     {

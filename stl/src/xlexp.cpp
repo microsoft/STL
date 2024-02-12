@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// _LExp function
-
 #include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
@@ -16,8 +14,8 @@ static const long double c2     = 1.4286068203094172321214581765680755e-6L;
 static const long double hugexp = LHUGE_EXP;
 static const long double invln2 = 1.4426950408889634073599246810018921L;
 
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(
-    long double* px, long double y, short eoff) { // compute y * e^(*px), (*px) finite, |y| not huge
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(long double* px, long double y, short eoff) noexcept {
+    // compute y * e^(*px), (*px) finite, |y| not huge
     if (y == 0.0L) { // zero
         *px = y;
         return 0;

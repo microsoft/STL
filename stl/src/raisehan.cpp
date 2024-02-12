@@ -5,7 +5,7 @@
 
 #ifndef _M_CEE_PURE
 #define _HAS_EXCEPTIONS 0
-#endif // _M_CEE_PURE
+#endif // !defined(_M_CEE_PURE)
 #include <exception>
 _STD_BEGIN
 

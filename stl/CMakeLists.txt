@@ -7,10 +7,12 @@
 
 set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_bit_utils.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_chrono.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_cxx_stdatomic.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_filebuf.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_format_ucd_tables.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_formatter.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_int128.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_iter_core.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_print.hpp
@@ -176,6 +178,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/list
     ${CMAKE_CURRENT_LIST_DIR}/inc/locale
     ${CMAKE_CURRENT_LIST_DIR}/inc/map
+    ${CMAKE_CURRENT_LIST_DIR}/inc/mdspan
     ${CMAKE_CURRENT_LIST_DIR}/inc/memory
     ${CMAKE_CURRENT_LIST_DIR}/inc/memory_resource
     ${CMAKE_CURRENT_LIST_DIR}/inc/mutex
@@ -494,7 +497,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
 
 # Toolset options must appear before add_library() for the options to take effect.
-add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1 _STL_CONCRT_SUPPORT)
+add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1)
 
 # /Z7 for MSVC, /Zi for MASM
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
@@ -520,6 +523,12 @@ else()
 
     # on ARM64 and ARM, we can unconditionally expect Synchronization.lib to exist
     string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " Synchronization.lib")
+endif()
+
+if(STL_ASAN_BUILD)
+    set(DLL_ASAN_SOURCES ${ASAN_SOURCES})
+else()
+    set(DLL_ASAN_SOURCES "")
 endif()
 
 function(target_stl_compile_options tgt rel_or_dbg)
@@ -552,14 +561,14 @@ function(generate_satellite_def SATELLITE_NAME D_SUFFIX)
 endfunction()
 
 function(add_stl_dlls D_SUFFIX REL_OR_DBG)
-    set(link_options_Release "/LTCG;/opt:ref,icf")
-    set(link_options_Debug "/opt:ref,noicf")
+    set(link_options_Release "/LTCG;/opt:ref,icf;${VCLIBS_EXPLICIT_MACHINE}")
+    set(link_options_Debug "/opt:ref,noicf;${VCLIBS_EXPLICIT_MACHINE}")
 
     set(gl_flag_Release "/GL")
     set(gl_flag_Debug "")
 
     # msvcp140.dll
-    add_library(msvcp${D_SUFFIX}_objects OBJECT ${DLL_SOURCES} ${SOURCES})
+    add_library(msvcp${D_SUFFIX}_objects OBJECT ${DLL_SOURCES} ${SOURCES} ${DLL_ASAN_SOURCES})
     target_compile_definitions(msvcp${D_SUFFIX}_objects PRIVATE CRTDLL2 _DLL)
     target_compile_options(msvcp${D_SUFFIX}_objects PRIVATE ${gl_flag_${REL_OR_DBG}} /EHsc)
     target_stl_compile_options(msvcp${D_SUFFIX}_objects ${REL_OR_DBG})
@@ -652,7 +661,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
     add_library(msvcp${D_SUFFIX}_implib STATIC ${HEADERS})
     target_link_libraries(msvcp${D_SUFFIX}_implib stl_alias_objects msvcp${D_SUFFIX}_implib_objects)
     add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_atomic_wait msvcp${D_SUFFIX}_codecvt_ids)
-    set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_atomic_wait>")
+    set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_atomic_wait>;${VCLIBS_EXPLICIT_MACHINE}")
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES ARCHIVE_OUTPUT_NAME "msvcprt${D_SUFFIX}")
 endfunction()
 
@@ -661,15 +670,16 @@ add_stl_dlls("d" Debug)
 
 function(add_stl_statics FLAVOR_SUFFIX REL_OR_DBG IDL_VALUE)
     add_library(libcpmt${FLAVOR_SUFFIX}_eha OBJECT ${EHA_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING "_ITERATOR_DEBUG_LEVEL=${IDL_VALUE}")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE _ANNOTATE_STL "_ITERATOR_DEBUG_LEVEL=${IDL_VALUE}")
     target_compile_options(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE /EHa)
     target_stl_compile_options(libcpmt${FLAVOR_SUFFIX}_eha ${REL_OR_DBG})
 
     add_library(libcpmt${FLAVOR_SUFFIX} STATIC ${HEADERS} ${IMPLIB_SOURCES} ${SOURCES} ${INITIALIZER_SOURCES} ${STATIC_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING "_ITERATOR_DEBUG_LEVEL=${IDL_VALUE}")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE _ANNOTATE_STL "_ITERATOR_DEBUG_LEVEL=${IDL_VALUE}")
     target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/EHsc>")
     target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math stl_alias_objects libcpmt${FLAVOR_SUFFIX}_eha)
     target_stl_compile_options(libcpmt${FLAVOR_SUFFIX} ${REL_OR_DBG})
+    set_target_properties(libcpmt${FLAVOR_SUFFIX} PROPERTIES STATIC_LIBRARY_OPTIONS "${VCLIBS_EXPLICIT_MACHINE}")
 endfunction()
 
 add_stl_statics("" Release 0)
@@ -679,6 +689,7 @@ add_stl_statics("d1" Debug 1)
 add_stl_statics("d0" Debug 0)
 
 add_library(stl_asan STATIC ${ASAN_SOURCES})
+set_target_properties(stl_asan PROPERTIES STATIC_LIBRARY_OPTIONS "${VCLIBS_EXPLICIT_MACHINE}")
 
 configure_file(set_environment.bat.in "${PROJECT_BINARY_DIR}/set_environment.bat" @ONLY)
 configure_file(set_environment.ps1.in "${PROJECT_BINARY_DIR}/set_environment.ps1" @ONLY)

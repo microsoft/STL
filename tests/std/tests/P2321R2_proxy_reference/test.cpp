@@ -128,13 +128,11 @@ constexpr bool test() {
         static_assert(!is_nothrow_swappable_v<pair<int&, Meow>>);
         static_assert(!is_nothrow_swappable_v<const pair<int&, Meow>>);
 
-#ifdef __cpp_lib_concepts
         // Test basic_common_reference and common_type specializations for pair
         static_assert(is_same_v<common_reference_t<pair<int&, Meow>, pair<const int&, Meow>>, pair<const int&, Meow>>);
         static_assert(is_same_v<common_reference_t<const pair<int&, Meow>, pair<const int&, Meow>>,
             pair<const int&, const Meow>>);
         static_assert(is_same_v<common_type_t<pair<int&, Meow>, pair<const int&, Meow>>, pair<int, Meow>>);
-#endif // __cpp_lib_concepts
 
         tuple<int&, Meow> tris{val, Meow{}};
 
@@ -262,18 +260,17 @@ constexpr bool test() {
         static_assert(!is_nothrow_swappable_v<tuple<int&, Meow>>);
         static_assert(!is_nothrow_swappable_v<const tuple<int&, Meow>>);
 
-#ifdef __cpp_lib_concepts
         // Test basic_common_reference and common_type specializations for tuple
         static_assert(
             is_same_v<common_reference_t<tuple<int&, Meow>, tuple<const int&, Meow>>, tuple<const int&, Meow>>);
         static_assert(is_same_v<common_reference_t<const tuple<int&, Meow>, tuple<const int&, Meow>>,
             tuple<const int&, const Meow>>);
         static_assert(is_same_v<common_type_t<tuple<int&, Meow>, tuple<const int&, Meow>>, tuple<int, Meow>>);
-#endif // __cpp_lib_concepts
     }
 
     { // Test vector<bool>::reference
         static_assert(is_assignable_v<const vector<bool>::reference, bool>);
+        static_assert(is_assignable_v<const vector<bool>::reference&, bool>);
 
         vector<bool> vb{false};
         const vector<bool>::reference r = vb[0];

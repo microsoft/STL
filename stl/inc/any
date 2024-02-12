@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _ANY_
 #define _ANY_
 #include <yvals_core.h>
@@ -79,17 +78,17 @@ struct _Any_small_RTTI { // Hand-rolled vtable for nontrivial types that can be 
 
     template <class _Ty>
     static void __CLRCALL_PURE_OR_CDECL _Destroy_impl(void* const _Target) noexcept {
-        _Destroy_in_place(*static_cast<_Ty*>(_Target));
+        _STD _Destroy_in_place(*static_cast<_Ty*>(_Target));
     }
 
     template <class _Ty>
     static void __CLRCALL_PURE_OR_CDECL _Copy_impl(void* const _Target, const void* const _Source) {
-        _Construct_in_place(*static_cast<_Ty*>(_Target), *static_cast<const _Ty*>(_Source));
+        _STD _Construct_in_place(*static_cast<_Ty*>(_Target), *static_cast<const _Ty*>(_Source));
     }
 
     template <class _Ty>
     static void __CLRCALL_PURE_OR_CDECL _Move_impl(void* const _Target, void* const _Source) noexcept {
-        _Construct_in_place(*static_cast<_Ty*>(_Target), _STD move(*static_cast<_Ty*>(_Source)));
+        _STD _Construct_in_place(*static_cast<_Ty*>(_Target), _STD move(*static_cast<_Ty*>(_Source)));
     }
 
     _Destroy_fn* _Destroy;
@@ -164,13 +163,12 @@ public:
 
     // Assignment [any.assign]
     any& operator=(const any& _That) {
-        *this = any{_That};
+        _Assign(_That);
         return *this;
     }
 
     any& operator=(any&& _That) noexcept {
-        reset();
-        _Move_from(_That);
+        _Assign(_STD move(_That));
         return *this;
     }
 
@@ -179,7 +177,7 @@ public:
                                     int> = 0>
     any& operator=(_ValueType&& _Value) {
         // replace contained value with an object of type decay_t<_ValueType> initialized from _Value
-        *this = any{_STD forward<_ValueType>(_Value)};
+        _Assign(_STD forward<_ValueType>(_Value));
         return *this;
     }
 
@@ -291,19 +289,24 @@ private:
         }
     }
 
+    void _Assign(any _That) noexcept { // intentionally pass by value
+        reset();
+        _Move_from(_That);
+    }
+
     template <class _Decayed, class... _Types>
     _Decayed& _Emplace(_Types&&... _Args) { // emplace construct _Decayed
         if constexpr (_Any_is_trivial<_Decayed>) {
             // using the _Trivial representation
             auto& _Obj = reinterpret_cast<_Decayed&>(_Storage._TrivialData);
-            _Construct_in_place(_Obj, _STD forward<_Types>(_Args)...);
+            _STD _Construct_in_place(_Obj, _STD forward<_Types>(_Args)...);
             _Storage._TypeData =
                 reinterpret_cast<uintptr_t>(&typeid(_Decayed)) | static_cast<uintptr_t>(_Any_representation::_Trivial);
             return _Obj;
         } else if constexpr (_Any_is_small<_Decayed>) {
             // using the _Small representation
             auto& _Obj = reinterpret_cast<_Decayed&>(_Storage._SmallStorage._Data);
-            _Construct_in_place(_Obj, _STD forward<_Types>(_Args)...);
+            _STD _Construct_in_place(_Obj, _STD forward<_Types>(_Args)...);
             _Storage._SmallStorage._RTTI = &_Any_small_RTTI_obj<_Decayed>;
             _Storage._TypeData =
                 reinterpret_cast<uintptr_t>(&typeid(_Decayed)) | static_cast<uintptr_t>(_Any_representation::_Small);

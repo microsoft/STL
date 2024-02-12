@@ -14,14 +14,13 @@ static std::_Init_locks initlocks;
 
 _STD_BEGIN
 
-__PURE_APPDOMAIN_GLOBAL static filebuf ferr(_cpp_stderr);
+__PURE_APPDOMAIN_GLOBAL static filebuf ferr(stderr);
 
 #if defined(_M_CEE_PURE)
 __PURE_APPDOMAIN_GLOBAL extern ostream cerr(&ferr);
-
-#else // defined(_M_CEE_PURE)
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream cerr(&ferr);
-#endif // defined(_M_CEE_PURE)
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 struct _Init_cerr { // ensures that cerr is initialized
     __CLR_OR_THIS_CALL _Init_cerr() { // initialize cerr

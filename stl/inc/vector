@@ -3,18 +3,21 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _VECTOR_
 #define _VECTOR_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_bit_utils.hpp>
+#include <__msvc_sanitizer_annotate_container.hpp>
 #include <xmemory>
 
 #if _HAS_CXX17
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
-#include <__msvc_sanitizer_annotate_container.hpp>
+#if _HAS_CXX23
+#include <__msvc_formatter.hpp>
+#endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -27,9 +30,9 @@ _STD_BEGIN
 template <class _Myvec>
 class _Vector_const_iterator : public _Iterator_base {
 public:
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Myvec::value_type;
     using difference_type   = typename _Myvec::difference_type;
@@ -118,7 +121,7 @@ public:
         if (_Off > 0) {
             _STL_VERIFY(_Off <= _Mycont->_Mylast - _Ptr, "cannot seek vector iterator after end");
         }
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
     }
 
     _CONSTEXPR20 _Vector_const_iterator& operator+=(const difference_type _Off) noexcept {
@@ -151,7 +154,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 difference_type operator-(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
-        return _Ptr - _Right._Ptr;
+        return static_cast<difference_type>(_Ptr - _Right._Ptr);
     }
 
     _NODISCARD _CONSTEXPR20 reference operator[](const difference_type _Off) const noexcept {
@@ -166,7 +169,7 @@ public:
 #if _HAS_CXX20
     _NODISCARD constexpr strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
-        return _Unfancy(_Ptr) <=> _Unfancy(_Right._Ptr);
+        return _STD _Unfancy_maybe_null(_Ptr) <=> _STD _Unfancy_maybe_null(_Right._Ptr);
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Vector_const_iterator& _Right) const noexcept {
@@ -189,7 +192,7 @@ public:
     _NODISCARD bool operator>=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _CONSTEXPR20 void _Compat(const _Vector_const_iterator& _Right) const noexcept {
         // test for compatible iterator pair
@@ -197,7 +200,7 @@ public:
         (void) _Right;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "vector iterators incompatible");
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -211,11 +214,11 @@ public:
     using _Prevent_inheriting_unwrap = _Vector_const_iterator;
 
     _NODISCARD _CONSTEXPR20 const value_type* _Unwrapped() const noexcept {
-        return _Unfancy(_Ptr);
+        return _STD _Unfancy_maybe_null(_Ptr);
     }
 
     _CONSTEXPR20 void _Seek_to(const value_type* _It) noexcept {
-        _Ptr = _Refancy<_Tptr>(const_cast<value_type*>(_It));
+        _Ptr = _STD _Refancy_maybe_null<_Tptr>(const_cast<value_type*>(_It));
     }
 
     _Tptr _Ptr; // pointer to element in vector
@@ -225,8 +228,8 @@ public:
 template <class _Myvec>
 struct pointer_traits<_Vector_const_iterator<_Myvec>> {
     using pointer         = _Vector_const_iterator<_Myvec>;
-    using element_type    = const typename pointer::value_type;
-    using difference_type = typename pointer::difference_type;
+    using element_type    = const typename pointer::value_type; // TRANSITION, VSO-1854115, omit typename
+    using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -253,9 +256,9 @@ class _Vector_iterator : public _Vector_const_iterator<_Myvec> {
 public:
     using _Mybase = _Vector_const_iterator<_Myvec>;
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Myvec::value_type;
     using difference_type   = typename _Myvec::difference_type;
@@ -339,7 +342,7 @@ public:
     using _Prevent_inheriting_unwrap = _Vector_iterator;
 
     _NODISCARD _CONSTEXPR20 value_type* _Unwrapped() const noexcept {
-        return _Unfancy(this->_Ptr);
+        return _STD _Unfancy_maybe_null(this->_Ptr);
     }
 };
 
@@ -347,8 +350,8 @@ public:
 template <class _Myvec>
 struct pointer_traits<_Vector_iterator<_Myvec>> {
     using pointer         = _Vector_iterator<_Myvec>;
-    using element_type    = typename pointer::value_type;
-    using difference_type = typename pointer::difference_type;
+    using element_type    = pointer::value_type;
+    using difference_type = pointer::difference_type;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -370,8 +373,7 @@ struct pointer_traits<_Vector_iterator<_Myvec>> {
 };
 #endif // _HAS_CXX20
 
-template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
-    class _Reference, class _Const_reference>
+template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer>
 struct _Vec_iter_types {
     using value_type      = _Value_type;
     using size_type       = _Size_type;
@@ -402,9 +404,9 @@ public:
 
     _CONSTEXPR20 void _Swap_val(_Vector_val& _Right) noexcept {
         this->_Swap_proxy_and_iterators(_Right);
-        _Swap_adl(_Myfirst, _Right._Myfirst);
-        _Swap_adl(_Mylast, _Right._Mylast);
-        _Swap_adl(_Myend, _Right._Myend);
+        swap(_Myfirst, _Right._Myfirst); // intentional ADL
+        swap(_Mylast, _Right._Mylast); // intentional ADL
+        swap(_Myend, _Right._Myend); // intentional ADL
     }
 
     _CONSTEXPR20 void _Take_contents(_Vector_val& _Right) noexcept {
@@ -422,17 +424,6 @@ public:
     pointer _Mylast; // pointer to current end of sequence
     pointer _Myend; // pointer to end of array
 };
-
-template <class _Ptrty>
-constexpr auto _Unfancy_maybe_null(_Ptrty _Ptr) noexcept {
-    // converts from a (potentially null) fancy pointer to a plain pointer
-    return _Ptr ? _STD addressof(*_Ptr) : nullptr;
-}
-
-template <class _Ty>
-constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain pointers
-    return _Ptr;
-}
 
 _EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
@@ -596,10 +587,10 @@ private:
 #define _ASAN_VECTOR_CREATE_GUARD
 #define _ASAN_VECTOR_EXTEND_GUARD(n)
 #define _ASAN_VECTOR_RELEASE_GUARD
-#endif // !_INSERT_VECTOR_ANNOTATION
+#endif // ^^^ !_INSERT_VECTOR_ANNOTATION ^^^
 
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
-        _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer, _Ty&, const _Ty&>>>;
+        _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer>>>;
 
 public:
     using iterator               = _Vector_iterator<_Scary_val>;
@@ -620,6 +611,9 @@ public:
         _Construct_n(_Count);
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     _CONSTEXPR20 vector(_CRT_GUARDOVERFLOW const size_type _Count, const _Ty& _Val, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_n(_Count, _Val);
@@ -628,19 +622,19 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst = _Get_unwrapped(_First);
-        auto _ULast  = _Get_unwrapped(_Last);
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst = _STD _Get_unwrapped(_First);
+        auto _ULast  = _STD _Get_unwrapped(_Last);
         if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         } else if constexpr (forward_iterator<_Iter>) {
-            const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
         } else {
             auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
             _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
@@ -658,7 +652,7 @@ public:
         _Construct_n(_Convert_size<size_type>(_Ilist.size()), _Ilist.begin(), _Ilist.end());
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr vector(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
@@ -677,7 +671,7 @@ public:
             _Proxy._Release();
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 vector(const vector& _Right)
         : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
@@ -825,10 +819,10 @@ private:
             _Xlength();
         }
 
-        const size_type _Newsize     = _Oldsize + 1;
-        const size_type _Newcapacity = _Calculate_growth(_Newsize);
+        const size_type _Newsize = _Oldsize + 1;
+        size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
-        const pointer _Newvec           = _Al.allocate(_Newcapacity);
+        const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Constructed_last = _Newvec + _Whereoff + 1;
         pointer _Constructed_first      = _Constructed_last;
 
@@ -866,7 +860,7 @@ public:
         return _Result;
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
         (void) _Result;
-#endif // _HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     _CONSTEXPR20 void push_back(const _Ty& _Val) { // insert element at end, provide strong guarantee
@@ -884,7 +878,7 @@ private:
         // insert range [_First, _Last) at end
 
         // For one-at-back, provide strong guarantee.
-        // Otherwise, provide basic guarantee (despite N4928 [vector.modifiers]/2).
+        // Otherwise, provide basic guarantee (despite N4950 [vector.modifiers]/2).
         // Performance note: except for one-at-back, _Emplace_one_at_back()'s strong guarantee is unnecessary here.
 
         for (; _First != _Last; ++_First) {
@@ -892,7 +886,7 @@ private:
         }
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <class _Iter>
     _CONSTEXPR20 void _Append_counted_range(_Iter _First, const size_type _Count) {
         // insert counted range _First + [0, _Count) at end
@@ -912,10 +906,10 @@ private:
                 _Xlength();
             }
 
-            const size_type _Newsize     = _Oldsize + _Count;
-            const size_type _Newcapacity = _Calculate_growth(_Newsize);
+            const size_type _Newsize = _Oldsize + _Count;
+            size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Al.allocate(_Newcapacity);
+            const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
             const pointer _Constructed_last = _Newvec + _Oldsize + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
@@ -949,10 +943,10 @@ private:
             _Orphan_range(_Oldlast, _Oldlast);
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 public:
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr void append_range(_Rng&& _Range) {
         if constexpr (_RANGES forward_range<_Rng> || _RANGES sized_range<_Rng>) {
@@ -963,7 +957,7 @@ public:
             _Append_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     template <class... _Valty>
     _CONSTEXPR20 iterator emplace(const_iterator _Where, _Valty&&... _Val) {
@@ -1033,10 +1027,10 @@ public:
                 _Xlength();
             }
 
-            const size_type _Newsize     = _Oldsize + _Count;
-            const size_type _Newcapacity = _Calculate_growth(_Newsize);
+            const size_type _Newsize = _Oldsize + _Count;
+            size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Al.allocate(_Newcapacity);
+            const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
@@ -1128,31 +1122,31 @@ private:
                 _Xlength();
             }
 
-            const size_type _Newsize     = _Oldsize + _Count;
-            const size_type _Newcapacity = _Calculate_growth(_Newsize);
+            const size_type _Newsize = _Oldsize + _Count;
+            size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Al.allocate(_Newcapacity);
+            const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
             _TRY_BEGIN
-            _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Whereoff, _Al);
+            _STD _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Whereoff, _Al);
             _Constructed_first = _Newvec + _Whereoff;
 
             if (_Count == 1 && _Whereptr == _Oldlast) { // one at back, provide strong guarantee
                 if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-                    _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Al);
+                    _STD _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Al);
                 } else {
-                    _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Al);
+                    _STD _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Al);
                 }
             } else { // provide basic guarantee
-                _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Al);
+                _STD _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Al);
                 _Constructed_first = _Newvec;
-                _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Al);
+                _STD _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Al);
             }
             _CATCH_ALL
-            _Destroy_range(_Constructed_first, _Constructed_last, _Al);
+            _STD _Destroy_range(_Constructed_first, _Constructed_last, _Al);
             _Al.deallocate(_Newvec, _Newcapacity);
             _RERAISE;
             _CATCH_END
@@ -1166,51 +1160,51 @@ private:
 
             _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _Oldfirst) + _Count);
             if (_Count < _Affected_elements) { // some affected elements must be assigned
-                _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
-                _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
-                _Destroy_range(_Whereptr, _Whereptr + _Count, _Al);
+                _Mylast = _STD _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
+                _STD _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
+                _STD _Destroy_range(_Whereptr, _Whereptr + _Count, _Al);
 
                 _TRY_BEGIN
-                _Uninitialized_copy_n(_STD move(_First), _Count, _Whereptr, _Al);
+                _STD _Uninitialized_copy_n(_STD move(_First), _Count, _Whereptr, _Al);
                 _CATCH_ALL
                 // glue the broken pieces back together
 
                 _TRY_BEGIN
-                _Uninitialized_move(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr, _Al);
+                _STD _Uninitialized_move(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr, _Al);
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
-                _Destroy_range(_Whereptr + _Count, _Mylast, _Al);
+                _STD _Destroy_range(_Whereptr + _Count, _Mylast, _Al);
                 _Mylast = _Whereptr;
                 _RERAISE;
                 _CATCH_END
 
                 _STD _Move_unchecked(_Whereptr + 2 * _Count, _Mylast, _Whereptr + _Count);
-                _Destroy_range(_Oldlast, _Mylast, _Al);
+                _STD _Destroy_range(_Oldlast, _Mylast, _Al);
                 _Mylast = _Oldlast;
                 _RERAISE;
                 _CATCH_END
             } else { // affected elements don't overlap before/after
                 const pointer _Relocated = _Whereptr + _Count;
-                _Mylast                  = _Uninitialized_move(_Whereptr, _Oldlast, _Relocated, _Al);
-                _Destroy_range(_Whereptr, _Oldlast, _Al);
+                _Mylast                  = _STD _Uninitialized_move(_Whereptr, _Oldlast, _Relocated, _Al);
+                _STD _Destroy_range(_Whereptr, _Oldlast, _Al);
 
                 _TRY_BEGIN
-                _Uninitialized_copy_n(_STD move(_First), _Count, _Whereptr, _Al);
+                _STD _Uninitialized_copy_n(_STD move(_First), _Count, _Whereptr, _Al);
                 _CATCH_ALL
                 // glue the broken pieces back together
 
                 _TRY_BEGIN
-                _Uninitialized_move(_Relocated, _Mylast, _Whereptr, _Al);
+                _STD _Uninitialized_move(_Relocated, _Mylast, _Whereptr, _Al);
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
-                _Destroy_range(_Relocated, _Mylast, _Al);
+                _STD _Destroy_range(_Relocated, _Mylast, _Al);
                 _Mylast = _Whereptr;
                 _RERAISE;
                 _CATCH_END
 
-                _Destroy_range(_Relocated, _Mylast, _Al);
+                _STD _Destroy_range(_Relocated, _Mylast, _Al);
                 _Mylast = _Oldlast;
                 _RERAISE;
                 _CATCH_END
@@ -1233,27 +1227,27 @@ public:
             "vector insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst         = _Get_unwrapped(_First);
-        auto _ULast          = _Get_unwrapped(_Last);
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst         = _STD _Get_unwrapped(_First);
+        auto _ULast          = _STD _Get_unwrapped(_Last);
         const auto _Whereoff = static_cast<size_type>(_Whereptr - _Oldfirst);
         if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             _Insert_counted_range(_Where, _UFirst, _Count);
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         } else if constexpr (forward_iterator<_Iter>) {
-            const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Insert_counted_range(_Where, _UFirst, _Count);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
         } else {
             _Insert_uncounted_range(_Where, _UFirst, _ULast);
         }
         return _Make_iterator_offset(_Whereoff);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr iterator insert_range(const_iterator _Where, _Rng&& _Range) {
         const pointer _Whereptr = _Where._Ptr;
@@ -1275,7 +1269,7 @@ public:
         }
         return _Make_iterator_offset(_Whereoff);
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
         const pointer _Whereptr = _Where._Ptr;
@@ -1394,11 +1388,11 @@ private:
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
             if constexpr (_Nothrow_construct) {
-                _Mylast = _Uninitialized_copy_n(_STD move(_First), _Newsize, _Myfirst, _Al);
+                _Mylast = _STD _Uninitialized_copy_n(_STD move(_First), _Newsize, _Myfirst, _Al);
                 _ASAN_VECTOR_CREATE;
             } else {
                 _ASAN_VECTOR_CREATE_GUARD;
-                _Mylast = _Uninitialized_copy_n(_STD move(_First), _Newsize, _Myfirst, _Al);
+                _Mylast = _STD _Uninitialized_copy_n(_STD move(_First), _Newsize, _Myfirst, _Al);
             }
             return;
         }
@@ -1425,16 +1419,16 @@ private:
 
             if constexpr (_Nothrow_construct) {
                 _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
-                _Mylast = _Uninitialized_copy_n(_STD move(_First), _Newsize - _Oldsize, _Mylast, _Al);
+                _Mylast = _STD _Uninitialized_copy_n(_STD move(_First), _Newsize - _Oldsize, _Mylast, _Al);
             } else {
                 _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
-                _Mylast = _Uninitialized_copy_n(_STD move(_First), _Newsize - _Oldsize, _Mylast, _Al);
+                _Mylast = _STD _Uninitialized_copy_n(_STD move(_First), _Newsize - _Oldsize, _Mylast, _Al);
                 _ASAN_VECTOR_RELEASE_GUARD;
             }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
-            _Copy_n_unchecked4(_STD move(_First), _Newsize, _Myfirst);
-            _Destroy_range(_Newlast, _Mylast, _Al);
+            _STD _Copy_n_unchecked4(_STD move(_First), _Newsize, _Myfirst);
+            _STD _Destroy_range(_Newlast, _Mylast, _Al);
             _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
@@ -1443,25 +1437,25 @@ private:
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 void assign(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst = _Get_unwrapped(_First);
-        auto _ULast  = _Get_unwrapped(_Last);
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst = _STD _Get_unwrapped(_First);
+        auto _ULast  = _STD _Get_unwrapped(_Last);
         if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             _Assign_counted_range(_UFirst, _Count);
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         } else if constexpr (forward_iterator<_Iter>) {
-            const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             _Assign_counted_range(_UFirst, _Count);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
         } else {
             _Assign_uncounted_range(_UFirst, _ULast);
         }
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr void assign_range(_Rng&& _Range) {
         if constexpr (_RANGES sized_range<_Rng> || _RANGES forward_range<_Rng>) {
@@ -1472,7 +1466,7 @@ public:
             _Assign_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 void assign(const initializer_list<_Ty> _Ilist) {
         const auto _Count = _Convert_size<size_type>(_Ilist.size());
@@ -1518,10 +1512,10 @@ private:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
-        const auto _Oldsize          = static_cast<size_type>(_Mylast - _Myfirst);
-        const size_type _Newcapacity = _Calculate_growth(_Newsize);
+        const auto _Oldsize    = static_cast<size_type>(_Mylast - _Myfirst);
+        size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-        const pointer _Newvec         = _Al.allocate(_Newcapacity);
+        const pointer _Newvec         = _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Appended_first = _Newvec + _Oldsize;
         pointer _Appended_last        = _Appended_first;
 
@@ -1598,7 +1592,10 @@ public:
     }
 
 private:
-    _CONSTEXPR20 void _Reallocate_exactly(const size_type _Newcapacity) {
+    enum class _Reallocation_policy { _At_least, _Exactly };
+
+    template <_Reallocation_policy _Policy>
+    _CONSTEXPR20 void _Reallocate(size_type& _Newcapacity) {
         // set capacity to _Newcapacity (without geometric growth), provide strong guarantee
         auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
@@ -1607,7 +1604,13 @@ private:
 
         const auto _Size = static_cast<size_type>(_Mylast - _Myfirst);
 
-        const pointer _Newvec = _Al.allocate(_Newcapacity);
+        pointer _Newvec;
+        if constexpr (_Policy == _Reallocation_policy::_At_least) {
+            _Newvec = _Allocate_at_least_helper(_Al, _Newcapacity);
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(_Policy == _Reallocation_policy::_Exactly);
+            _Newvec = _Al.allocate(_Newcapacity);
+        }
 
         _TRY_BEGIN
         if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
@@ -1675,14 +1678,14 @@ private:
     }
 
 public:
-    _CONSTEXPR20 void reserve(_CRT_GUARDOVERFLOW const size_type _Newcapacity) {
+    _CONSTEXPR20 void reserve(_CRT_GUARDOVERFLOW size_type _Newcapacity) {
         // increase capacity to _Newcapacity (without geometric growth), provide strong guarantee
         if (_Newcapacity > capacity()) { // something to do (reserve() never shrinks)
             if (_Newcapacity > max_size()) {
                 _Xlength();
             }
 
-            _Reallocate_exactly(_Newcapacity);
+            _Reallocate<_Reallocation_policy::_At_least>(_Newcapacity);
         }
     }
 
@@ -1694,7 +1697,8 @@ public:
             if (_Oldfirst == _Oldlast) {
                 _Tidy();
             } else {
-                _Reallocate_exactly(static_cast<size_type>(_Oldlast - _Oldfirst));
+                size_type _Newcapacity = static_cast<size_type>(_Oldlast - _Oldfirst);
+                _Reallocate<_Reallocation_policy::_Exactly>(_Newcapacity);
             }
         }
     }
@@ -1766,7 +1770,7 @@ public:
         if (_Myfirst == _Mylast) { // already empty, nothing to do
             // This is an optimization for debug mode: we can avoid taking the debug lock to invalidate iterators.
             // Note that when clearing an empty vector, this will preserve past-the-end iterators, which is allowed by
-            // N4928 [sequence.reqmts]/54 "a.clear() [...] may invalidate the past-the-end iterator".
+            // N4950 [sequence.reqmts]/54 "a.clear() [...] may invalidate the past-the-end iterator".
             return;
         }
 
@@ -1843,20 +1847,20 @@ public:
         return rend();
     }
 
-    _NODISCARD _CONSTEXPR20 pointer _Unchecked_begin() noexcept {
-        return _Mypair._Myval2._Myfirst;
+    _NODISCARD _CONSTEXPR20 _Ty* _Unchecked_begin() noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
     }
 
-    _NODISCARD _CONSTEXPR20 const_pointer _Unchecked_begin() const noexcept {
-        return _Mypair._Myval2._Myfirst;
+    _NODISCARD _CONSTEXPR20 const _Ty* _Unchecked_begin() const noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
     }
 
-    _NODISCARD _CONSTEXPR20 pointer _Unchecked_end() noexcept {
-        return _Mypair._Myval2._Mylast;
+    _NODISCARD _CONSTEXPR20 _Ty* _Unchecked_end() noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Mylast);
     }
 
-    _NODISCARD _CONSTEXPR20 const_pointer _Unchecked_end() const noexcept {
-        return _Mypair._Myval2._Mylast;
+    _NODISCARD _CONSTEXPR20 const _Ty* _Unchecked_end() const noexcept {
+        return _Unfancy_maybe_null(_Mypair._Myval2._Mylast);
     }
 
     _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
@@ -1976,7 +1980,7 @@ private:
         return _Geometric; // geometric growth is sufficient
     }
 
-    _CONSTEXPR20 void _Buy_raw(const size_type _Newcapacity) {
+    _CONSTEXPR20 void _Buy_raw(size_type _Newcapacity) {
         // allocate array with _Newcapacity elements
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
@@ -1986,10 +1990,10 @@ private:
         _STL_INTERNAL_CHECK(!_Myfirst && !_Mylast && !_Myend); // check that *this is tidy
         _STL_INTERNAL_CHECK(0 < _Newcapacity && _Newcapacity <= max_size());
 
-        const auto _Newvec = _Getal().allocate(_Newcapacity);
-        _Myfirst           = _Newvec;
-        _Mylast            = _Newvec;
-        _Myend             = _Newvec + _Newcapacity;
+        const pointer _Newvec = _Allocate_at_least_helper(_Getal(), _Newcapacity);
+        _Myfirst              = _Newvec;
+        _Mylast               = _Newvec;
+        _Myend                = _Newvec + _Newcapacity;
     }
 
     _CONSTEXPR20 void _Buy_nonzero(const size_type _Newcapacity) {
@@ -2066,12 +2070,12 @@ private:
             _Buy_nonzero(_Count);
             _Tidy_guard<vector> _Guard{this};
             if constexpr (sizeof...(_Val) == 0) {
-                _My_data._Mylast = _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Al);
+                _My_data._Mylast = _STD _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Al);
             } else if constexpr (sizeof...(_Val) == 1) {
                 _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Valty..., const _Ty&>);
-                _My_data._Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val..., _Al);
+                _My_data._Mylast = _STD _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val..., _Al);
             } else if constexpr (sizeof...(_Val) == 2) {
-                _My_data._Mylast = _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
+                _My_data._Mylast = _STD _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
             } else {
                 static_assert(_Always_false<_Ty>, "Should be unreachable");
             }
@@ -2175,7 +2179,7 @@ private:
     }
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
     _CONSTEXPR20 void _Orphan_range(pointer, pointer) const {}
-#endif // _ITERATOR_DEBUG_LEVEL != 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 2 ^^^
 
     _NODISCARD _CONSTEXPR20 _Alty& _Getal() noexcept {
         return _Mypair._Get_first();
@@ -2204,11 +2208,11 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 vector(_Iter, _Iter, _Alloc = _Alloc()) -> vector<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 vector(from_range_t, _Rng&&, _Alloc = _Alloc()) -> vector<_RANGES range_value_t<_Rng>, _Alloc>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 template <class _Alloc>
 class vector<bool, _Alloc>;
@@ -2255,15 +2259,16 @@ _NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
 
 template <class _Ret>
 struct _Vbase_compare_three_way {
-    _NODISCARD constexpr _Ret operator()(const _Vbase _Left, const _Vbase _Right) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ret operator()(
+        const _Vbase _Left, const _Vbase _Right) _CONST_CALL_OPERATOR noexcept {
         const _Vbase _Differing_bits = _Left ^ _Right;
 
         if (_Differing_bits == 0) { // improves _Countr_zero codegen below
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
             return strong_ordering::equal;
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
             return 0;
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
         }
 
         const int _Bit_index = _Countr_zero(_Differing_bits); // number of least significant bits that match
@@ -2272,15 +2277,15 @@ struct _Vbase_compare_three_way {
         const _Vbase _Mask = _Vbase{1} << _Bit_index; // selects the least significant bit that differs
 
         // Instead of comparing (_Left & _Mask) to (_Right & _Mask), we know that exactly one side will be zero.
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         return (_Left & _Mask) == 0 ? strong_ordering::less : strong_ordering::greater;
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         return (_Left & _Mask) == 0 ? -1 : 1;
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
     }
 };
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
@@ -2305,7 +2310,7 @@ _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
             _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
     }
 }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty, class _Alloc>
 _NODISCARD _CONSTEXPR20 bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if constexpr (is_same_v<_Ty, bool>) {
@@ -2316,7 +2321,7 @@ _NODISCARD _CONSTEXPR20 bool operator<(const vector<_Ty, _Alloc>& _Left, const v
         const auto _Last = _First + (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
 
         for (; _First != _Last; ++_First, (void) ++_Other) {
-            using _Comp = _Vbase_compare_three_way<signed char>;
+            using _Comp        = _Vbase_compare_three_way<signed char>;
             const auto _Result = _Comp{}(*_First, *_Other);
 
             if (_Result < 0) {
@@ -2347,7 +2352,7 @@ template <class _Ty, class _Alloc>
 _NODISCARD _CONSTEXPR20 bool operator>=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Ty, class _Alloc>
 _CONSTEXPR20 void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
@@ -2356,13 +2361,13 @@ _CONSTEXPR20 void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) 
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
-constexpr typename vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    return _Erase_remove(_Cont, _Val);
+constexpr vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+    return _STD _Erase_remove(_Cont, _Val);
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
-constexpr typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+constexpr vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    return _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -2481,15 +2486,12 @@ protected:
 
 template <class _Alvbase_wrapped>
 class _Vb_const_iterator : public _Vb_iter_base<_Alvbase_wrapped> {
-private:
-    using _Mybase = _Vb_iter_base<_Alvbase_wrapped>;
-
 public:
-    using _Mycont          = typename _Mybase::_Mycont;
-    using _Difference_type = typename _Mybase::_Difference_type;
-    using _Size_type       = typename _Mybase::_Size_type;
-    using _Reft            = _Vb_reference<_Alvbase_wrapped>;
-    using const_reference  = bool;
+    using _Mybase         = _Vb_iter_base<_Alvbase_wrapped>;
+    using _Mycont         = typename _Mybase::_Mycont;
+    using _Size_type      = typename _Mybase::_Size_type;
+    using _Reft           = _Vb_reference<_Alvbase_wrapped>;
+    using const_reference = bool;
 
     using iterator_category = random_access_iterator_tag;
     using value_type        = bool;
@@ -2506,7 +2508,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
-        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
+        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<difference_type>(_Cont->_Mysize),
             "vector<bool> iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -2544,7 +2546,7 @@ public:
             if (_Off < 0) {
                 _STL_VERIFY(-_Start_offset <= _Off, "cannot seek vector<bool> iterator before begin");
             } else if (0 < _Off) {
-                _STL_VERIFY(_Off <= static_cast<_Difference_type>(_Cont->_Mysize - _Start_offset),
+                _STL_VERIFY(_Off <= static_cast<difference_type>(_Cont->_Mysize - _Start_offset),
                     "cannot seek vector<bool> iterator after end");
             }
         }
@@ -2628,15 +2630,15 @@ public:
     _NODISCARD bool operator>=(const _Vb_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _CONSTEXPR20 void _Compat(const _Vb_const_iterator& _Right) const noexcept {
         // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
-#else // _ITERATOR_DEBUG_LEVEL == 0
+#else
         _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "vector<bool> iterators incompatible");
-#endif // _ITERATOR_DEBUG_LEVEL
+#endif
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2667,7 +2669,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot increment value-initialized vector<bool> iterator");
-        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
+        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<difference_type>(_Cont->_Mysize),
             "cannot increment vector<bool> end iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -2683,9 +2685,8 @@ public:
 template <class _Alvbase_wrapped>
 class _Vb_iterator : public _Vb_const_iterator<_Alvbase_wrapped> {
 public:
-    using _Mybase          = _Vb_const_iterator<_Alvbase_wrapped>;
-    using _Mycont          = typename _Mybase::_Mycont;
-    using _Difference_type = typename _Mybase::_Difference_type;
+    using _Mybase = _Vb_const_iterator<_Alvbase_wrapped>;
+    using _Mycont = typename _Mybase::_Mycont;
 
     using _Reft           = _Vb_reference<_Alvbase_wrapped>;
     using const_reference = bool;
@@ -2702,7 +2703,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
-        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
+        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<difference_type>(_Cont->_Mysize),
             "vector<bool> iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -2901,7 +2902,7 @@ public:
         insert(begin(), _First, _Last);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<bool> _Rng>
     constexpr vector(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc()) : _Mybase(_Al) {
         if constexpr (_RANGES forward_range<_Rng> || _RANGES sized_range<_Rng>) {
@@ -2912,7 +2913,7 @@ public:
             _Assign_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 vector(vector&& _Right) noexcept : _Mybase(_STD move(_Right)) {
         this->_Swap_proxy_and_iterators(_Right);
@@ -2941,8 +2942,8 @@ public:
         this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         this->_Orphan_all();
-        auto& _Al = this->_Getal();
-        auto& _Right_al = _Right._Getal();
+        auto& _Al                 = this->_Getal();
+        auto& _Right_al           = _Right._Getal();
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alvbase>;
         if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
             using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
@@ -2951,14 +2952,14 @@ public:
                 _Alproxy_type _Oldal(_Al);
                 _Alproxy_type _Right_proxy_al(_Right_al);
                 _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
-                this->_Myvec = _STD move(_Right._Myvec);
+                this->_Myvec  = _STD move(_Right._Myvec);
                 this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
                 _Proxy._Bind(_Oldal, this);
                 this->_Swap_proxy_and_iterators(_Right);
                 return *this;
             }
         } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
-            this->_Myvec = _STD move(_Right._Myvec);
+            this->_Myvec  = _STD move(_Right._Myvec);
             this->_Mysize = _Right._Mysize;
             if (_Right._Myvec.empty()) {
                 // we took _Right's buffer, so zero out size
@@ -2971,11 +2972,11 @@ public:
             return *this;
         }
 
-        this->_Myvec = _STD move(_Right._Myvec);
+        this->_Myvec  = _STD move(_Right._Myvec);
         this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
         this->_Swap_proxy_and_iterators(_Right);
 
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
         return *this;
     }
 
@@ -3024,7 +3025,7 @@ public:
         this->_Mysize = _Right._Mysize;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         this->_Orphan_all();
-        auto& _Al = this->_Getal();
+        auto& _Al       = this->_Getal();
         auto& _Right_al = _Right._Getal();
         if constexpr (_Choose_pocca_v<_Alvbase>) {
             if (_Al != _Right_al) {
@@ -3033,16 +3034,16 @@ public:
                 _Alproxy_type _Oldal(_Al);
                 _Alproxy_type _Right_proxy_al(_Right_al);
                 _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
-                this->_Myvec = _Right._Myvec;
+                this->_Myvec  = _Right._Myvec;
                 this->_Mysize = _Right._Mysize;
                 _Proxy._Bind(_Oldal, this);
                 return *this;
             }
         }
 
-        this->_Myvec = _Right._Myvec;
+        this->_Myvec  = _Right._Myvec;
         this->_Mysize = _Right._Mysize;
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
 
         return *this;
     }
@@ -3238,12 +3239,12 @@ public:
         insert(end(), _Val);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<bool> _Rng>
     constexpr void append_range(_Rng&& _Range) {
         insert_range(end(), _STD forward<_Rng>(_Range));
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 void pop_back() noexcept /* strengthened */ {
         erase(end() - 1);
@@ -3255,7 +3256,7 @@ public:
         insert(begin(), _First, _Last);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <class _Iter>
     constexpr void _Assign_counted_range(_Iter _First, const size_type _Count) {
         _STL_INTERNAL_CHECK(this->_Myvec.empty());
@@ -3313,7 +3314,7 @@ public:
             _Assign_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 void assign(_CRT_GUARDOVERFLOW size_type _Count, const bool& _Val) {
         clear();
@@ -3331,22 +3332,22 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         const difference_type _Saved_offset = _Where - begin();
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst      = _Get_unwrapped(_First);
-        const auto _ULast = _Get_unwrapped(_Last);
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst      = _STD _Get_unwrapped(_First);
+        const auto _ULast = _STD _Get_unwrapped(_Last);
 
         if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _STD _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
         } else if constexpr (forward_iterator<_Iter>) {
-            const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
-            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _STD _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
         } else {
             const auto _Old_size = this->_Mysize;
             for (; _UFirst != _ULast; ++_UFirst) {
@@ -3361,7 +3362,7 @@ public:
         return begin() + _Saved_offset;
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<bool> _Rng>
     constexpr iterator insert_range(const_iterator _Where, _Rng&& _Range) {
         const difference_type _Old_off = _Where - begin();
@@ -3386,7 +3387,7 @@ public:
 
         return begin() + _Old_off;
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 iterator erase(const_iterator _Where_arg) noexcept /* strengthened */ {
         iterator _Where      = _Make_iter(_Where_arg);
@@ -3396,10 +3397,9 @@ public:
         _STL_VERIFY(end() > _Where, "vector<bool> erase iterator outside range");
         _STD copy(_Next_iter(_Where), end(), _Where);
         _Orphan_range(static_cast<size_type>(_Off), this->_Mysize);
-
-#else // _ITERATOR_DEBUG_LEVEL == 2
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
         _STD copy(_Next_iter(_Where), end(), _Where);
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
 
         _Trim(this->_Mysize - 1);
         return begin() + _Off;
@@ -3418,11 +3418,10 @@ public:
             const auto _Newsize = static_cast<size_type>(_Next - begin());
             _Orphan_range(_Newsize, this->_Mysize);
             _Trim(_Newsize);
-
-#else // _ITERATOR_DEBUG_LEVEL == 2
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
             iterator _Next = _STD copy(_Last, end(), _First);
             _Trim(static_cast<size_type>(_Next - begin()));
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
         }
         return begin() + _Off;
     }
@@ -3499,7 +3498,7 @@ public:
 
         _Iterator_base12** _Pnext = &this->_Myproxy->_Myfirstiter;
         while (*_Pnext) { // test offset from beginning of vector
-            const auto& _Pnextiter = static_cast<const_iterator&>(**_Pnext);
+            const auto& _Pnextiter = static_cast<typename const_iterator::_Mybase&>(**_Pnext);
             const auto _Temp       = *_Pnext;
             if (!_Pnextiter._Myptr) { // orphan the iterator
                 _Temp->_Myproxy = nullptr;
@@ -3551,11 +3550,11 @@ public:
         }
     }
 
-    [[noreturn]] void _Xlen() const {
+    [[noreturn]] static void _Xlen() {
         _Xlength_error("vector<bool> too long");
     }
 
-    [[noreturn]] void _Xran() const {
+    [[noreturn]] static void _Xran() {
         _Xout_of_range("invalid vector<bool> subscript");
     }
 };
@@ -3565,7 +3564,8 @@ struct hash<vector<bool, _Alloc>> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = vector<bool, _Alloc>;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD size_t operator()(const vector<bool, _Alloc>& _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(
+        const vector<bool, _Alloc>& _Keyval) _CONST_CALL_OPERATOR noexcept {
         return _Hash_array_representation(_Keyval._Myvec.data(), _Keyval._Myvec.size());
     }
 };
@@ -3576,6 +3576,26 @@ namespace pmr {
     using vector = _STD vector<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23
+template <class _Ty, class _CharT>
+    requires _Is_specialization_v<_Ty, _Vb_reference>
+struct formatter<_Ty, _CharT> {
+private:
+    formatter<bool, _CharT> _Underlying;
+
+public:
+    template <class _ParseContext>
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
+        return _Underlying.parse(_Ctx);
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(const _Ty& _Ref, _FormatContext& _Ctx) const {
+        return _Underlying.format(_Ref, _Ctx);
+    }
+};
+#endif // _HAS_CXX23
 
 template <class _Alloc, bool _RequiresMutable>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutable> = true;
@@ -3720,6 +3740,175 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
 
             return _Count;
         });
+}
+
+template <class _VbIt, class _OutIt>
+_CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
+    // copy [_First, _Last) to [_Dest, ...)
+    if (_First == _Last) {
+        return _Dest;
+    }
+
+    auto _VbFirst       = _First._Myptr;
+    const auto _VbLast  = _Last._Myptr;
+    auto _VbDest        = const_cast<_Vbase*>(_Dest._Myptr);
+    const auto _DestEnd = _Dest + (_Last - _First);
+
+    const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
+    const auto _FirstDestMask   = _Dest._Myoff == 0 ? 0 : (static_cast<_Vbase>(-1) >> (_VBITS - _Dest._Myoff));
+    const auto _LastSourceMask  = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+    const auto _LastDestMask    = static_cast<_Vbase>(-1) << _DestEnd._Myoff;
+
+    const bool _IsSingleBlockSource = _VbFirst == _VbLast;
+    const bool _IsSingleBlockDest   = _VbDest == _DestEnd._Myptr - (_DestEnd._Myoff == 0 ? 1 : 0);
+    const bool _IsRightShift        = _Dest._Myoff < _First._Myoff;
+    if (_IsSingleBlockSource) {
+        // We already excluded _First == _Last, so here _Last._Myoff > 0 and the shift is safe
+        const auto _SourceMask  = _FirstSourceMask & _LastSourceMask;
+        const auto _SourceShift = _IsRightShift ? _First._Myoff - _Dest._Myoff : _Dest._Myoff - _First._Myoff;
+        const auto _SourceVal   = _IsRightShift ? (*_VbFirst & _SourceMask) >> _SourceShift //
+                                                : (*_VbFirst & _SourceMask) << _SourceShift;
+        if (_IsSingleBlockDest) {
+            const auto _DestMask = _FirstDestMask | (_DestEnd._Myoff == 0 ? 0 : _LastDestMask);
+            *_VbDest             = (*_VbDest & _DestMask) | _SourceVal;
+        } else {
+            *_VbDest = (*_VbDest & _FirstDestMask) | _SourceVal;
+            ++_VbDest;
+
+            const auto _LastShift     = _Last._Myoff - _DestEnd._Myoff;
+            const auto _LastSourceVal = (*_VbFirst & _SourceMask) >> _LastShift;
+            *_VbDest                  = (*_VbDest & _LastDestMask) | _LastSourceVal;
+        }
+
+        return _DestEnd;
+    } else if (_IsSingleBlockDest) {
+        const auto _SourceShift = _IsRightShift ? _First._Myoff - _Dest._Myoff : _Dest._Myoff - _First._Myoff;
+        const auto _SourceVal   = _IsRightShift ? (*_VbFirst & _FirstSourceMask) >> _SourceShift //
+                                                : (*_VbFirst & _FirstSourceMask) << _SourceShift;
+
+        const auto _DestMask = _FirstDestMask | (_DestEnd._Myoff == 0 ? 0 : _LastDestMask);
+        if (_Last._Myoff != 0) {
+            const auto _LastShift     = _DestEnd._Myoff - _Last._Myoff;
+            const auto _LastSourceVal = (*_VbLast & _LastSourceMask) << _LastShift;
+            *_VbDest                  = (*_VbDest & _DestMask) | _SourceVal | _LastSourceVal;
+        } else {
+            *_VbDest = (*_VbDest & _DestMask) | _SourceVal;
+        }
+
+        return _DestEnd;
+    }
+
+#if _HAS_CXX20
+    if (!_STD is_constant_evaluated())
+#endif
+    {
+        // If _First and _Dest have matching char alignment, use memmove
+        const auto _UnalignedFirstBits = _First._Myoff & _Vbase{7};
+        const auto _UnalignedDestBits  = _Dest._Myoff & _Vbase{7};
+        if (_UnalignedFirstBits == _UnalignedDestBits) {
+            const auto _UnalignedLastBits = _Last._Myoff & _Vbase{7};
+
+            auto _VbFirst_ch      = reinterpret_cast<const char*>(_VbFirst) + (_First._Myoff - _UnalignedFirstBits) / 8;
+            const auto _VbLast_ch = reinterpret_cast<const char*>(_VbLast) + (_Last._Myoff - _UnalignedLastBits) / 8;
+            auto _VbDest_ch       = reinterpret_cast<char*>(_VbDest) + (_Dest._Myoff - _UnalignedDestBits) / 8;
+
+            // Copy bits until the next char alignment
+            if (_UnalignedFirstBits != 0) {
+                const auto _SourceBitMask = static_cast<char>(UCHAR_MAX << _UnalignedFirstBits);
+                const auto _DestBitMask   = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedFirstBits));
+                *_VbDest_ch               = (*_VbDest_ch & _DestBitMask) | (*_VbFirst_ch & _SourceBitMask);
+                ++_VbFirst_ch;
+                ++_VbDest_ch;
+            }
+
+            _VbDest_ch = _Copy_unchecked(_VbFirst_ch, _VbLast_ch, _VbDest_ch);
+
+            // Copy remaining last bits
+            if (_UnalignedLastBits != 0) {
+                const auto _SourceBitMask = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedLastBits));
+                const auto _DestBitMask   = static_cast<char>(UCHAR_MAX << _UnalignedLastBits);
+                *_VbDest_ch               = (*_VbDest_ch & _DestBitMask) | (*_VbLast_ch & _SourceBitMask);
+            }
+
+            return _DestEnd;
+        }
+    }
+
+    // Unaligned _VbFirst and _VbLast require a two step copy with carry
+    if (_IsRightShift) {
+        const auto _SourceShift = _First._Myoff - _Dest._Myoff;
+        const auto _CarryShift  = _VBITS - _SourceShift;
+        const auto _CarryMask   = static_cast<_Vbase>(-1) >> _SourceShift;
+        const auto _DestMask    = ~_CarryMask;
+
+        const auto _FirstSourceVal = (*_VbFirst & _FirstSourceMask) >> _SourceShift;
+        *_VbDest                   = (*_VbDest & _FirstDestMask) | _FirstSourceVal;
+
+        ++_VbFirst;
+        for (; _VbFirst != _VbLast; ++_VbFirst) {
+            const auto _CarryVal = *_VbFirst << _CarryShift;
+            *_VbDest             = (*_VbDest & _CarryMask) | _CarryVal;
+
+            ++_VbDest;
+            const auto _SourceVal = *_VbFirst >> _SourceShift;
+            *_VbDest              = (*_VbDest & _DestMask) | _SourceVal;
+        }
+
+        if (_Last._Myoff != 0) {
+            const auto _CarryVal = (*_VbFirst & _LastSourceMask) << _CarryShift;
+            if (_Last._Myoff >= _SourceShift) {
+                *_VbDest = (*_VbDest & _CarryMask) | _CarryVal;
+
+                // We have more bits remaining than the final block has left
+                if (_Last._Myoff != _SourceShift) {
+                    ++_VbDest;
+                    const auto _SourceVal = (*_VbFirst & _LastSourceMask) >> _SourceShift;
+                    *_VbDest              = (*_VbDest & _LastDestMask) | _SourceVal;
+                }
+            } else {
+                // There are not enough bits to fill the final block so we need to mask both ends
+                const auto _FinalMask = _CarryMask | _LastDestMask;
+                *_VbDest              = (*_VbDest & _FinalMask) | _CarryVal;
+            }
+        }
+    } else {
+        const auto _SourceShift = _Dest._Myoff - _First._Myoff;
+        const auto _CarryShift  = _VBITS - _SourceShift;
+
+        const auto _FirstSourceVal = (*_VbFirst & _FirstSourceMask) << _SourceShift;
+        *_VbDest                   = (*_VbDest & _FirstDestMask) | _FirstSourceVal;
+        auto _CarryVal             = *_VbFirst >> _CarryShift;
+
+        ++_VbFirst;
+        ++_VbDest;
+        for (; _VbFirst != _VbLast; ++_VbFirst, ++_VbDest) {
+            const auto _SourceVal = *_VbFirst << _SourceShift;
+            *_VbDest              = _CarryVal | _SourceVal;
+            _CarryVal             = *_VbFirst >> _CarryShift;
+        }
+
+        if (_Last._Myoff >= _CarryShift) {
+            const auto _SourceVal = *_VbFirst << _SourceShift;
+            *_VbDest              = _CarryVal | _SourceVal;
+            _CarryVal             = *_VbFirst >> _CarryShift;
+
+            // We have more bits remaining than the final block has left
+            if (_Last._Myoff != _CarryShift) {
+                ++_VbDest;
+                const auto _LastCarryMask = ~_LastDestMask;
+                *_VbDest                  = (*_VbDest & _LastDestMask) | (_CarryVal & _LastCarryMask);
+            }
+        } else if (_Last._Myoff != 0) {
+            // There are not enough bits to fill the final block so we need to mask both ends
+            const auto _LastSourceVal = (*_VbFirst & _LastSourceMask) << _SourceShift;
+            *_VbDest                  = (*_VbDest & _LastDestMask) | _CarryVal | _LastSourceVal;
+        } else {
+            // No new bits, just copy the carry
+            *_VbDest = (*_VbDest & _LastDestMask) | _CarryVal;
+        }
+    }
+
+    return _DestEnd;
 }
 
 #undef _ASAN_VECTOR_MODIFY

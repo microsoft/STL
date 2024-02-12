@@ -5,10 +5,12 @@
     "Version": "1.0",
     "BuildAsHeaderUnits": [
         // "__msvc_all_public_headers.hpp", // for testing, not production
+        "__msvc_bit_utils.hpp",
         "__msvc_chrono.hpp",
         "__msvc_cxx_stdatomic.hpp",
         "__msvc_filebuf.hpp",
         "__msvc_format_ucd_tables.hpp",
+        "__msvc_formatter.hpp",
         "__msvc_int128.hpp",
         "__msvc_iter_core.hpp",
         "__msvc_print.hpp",
@@ -82,6 +84,7 @@
         "list",
         "locale",
         "map",
+        "mdspan",
         "memory",
         "memory_resource",
         "mutex",

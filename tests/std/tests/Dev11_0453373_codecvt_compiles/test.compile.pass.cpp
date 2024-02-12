@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+#define _SILENCE_STDEXT_CVT_DEPRECATION_WARNING
 
 #include <codecvt>
 #include <cvt/one_one>

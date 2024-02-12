@@ -326,9 +326,6 @@ constexpr bool test_interface() {
         assert(c2 == 6);
     }
 
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL == 2 // TRANSITION, VSO-1799670 (expired storage)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
     { // modifiers
         vec range_constructed(begin(input), end(input));
 

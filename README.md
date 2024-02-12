@@ -6,8 +6,8 @@ which ships as part of the MSVC toolset and the Visual Studio IDE.
 * Our [Changelog][] tracks which updates to this repository appear in each VS release.
 * Our [Status Chart][] displays our overall progress over time.
 * Join our [Discord server][].
-
-[![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=main)][Pipelines]
+* [![CI Status Badge][STL-CI-badge]][STL-CI-link] (STL-CI build status)
+* [![ASan CI Status Badge][STL-ASan-CI-badge]][STL-ASan-CI-link] (STL-ASan-CI build status)
 
 # What This Repo Is Useful For
 
@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4944][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4971][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -141,52 +141,50 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.6 Preview 3 or later.
+1. Install Visual Studio 2022 17.9 Preview 2 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.26.0 or later, and [Ninja][] 1.11.0 or later.
-    * We recommend selecting "Python 3 64-bit" in the VS Installer.
-    * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
+    * Otherwise, install [CMake][] 3.27.0 or later, and [Ninja][] 1.11.0 or later.
+    * Make sure [Python][] 3.12 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
 4. In the terminal, invoke `git submodule update --init --progress`
 5. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
-   settings are set by `CMakeSettings.json`.
+   settings are set by `CMakePresets.json`.
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.6 Preview 3 or later.
+1. Install Visual Studio 2022 17.9 Preview 2 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.26.0 or later, and [Ninja][] 1.11.0 or later.
-    * We recommend selecting "Python 3 64-bit" in the VS Installer.
-    * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
+    * Otherwise, install [CMake][] 3.27.0 or later, and [Ninja][] 1.11.0 or later.
+    * Make sure [Python][] 3.12 or later is available to CMake.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
-4. `git clone https://github.com/microsoft/STL --recurse-submodules`
+4. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
 
 To build the x86 target:
 
 1. Open an "x86 Native Tools Command Prompt for VS 2022 Preview".
 2. Change directories to the previously cloned `STL` directory.
-3. `cmake -G Ninja -S . -B out\build\x86`
-4. `ninja -C out\build\x86`
+3. `cmake --preset x86`
+4. `cmake --build --preset x86`
 
 To build the x64 target (recommended):
 
 1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
 2. Change directories to the previously cloned `STL` directory.
-3. `cmake -G Ninja -S . -B out\build\x64`
-4. `ninja -C out\build\x64`
+3. `cmake --preset x64`
+4. `cmake --build --preset x64`
 
 # How To Consume
 
 Consumption of the built library is largely based on the build system you're using. There are at least 2 directories
 you need to hook up. Assuming you built the x64 target with the Visual Studio IDE, with the STL repository cloned to
-`C:\Dev\STL`, build outputs will end up at `C:\Dev\STL\out\build\x64\out`. Ensure that the `inc` directory is searched
+`C:\Dev\STL`, build outputs will end up at `C:\Dev\STL\out\x64\out`. Ensure that the `inc` directory is searched
 for headers, and that `lib\{architecture}` is searched for link libraries, before any defaults supplied by MSVC. The
 names of the import and static libraries are the same as those that ship with MSVC. As a result, the compiler `/MD`,
 `/MDd`, `/MT`, or `/MTd` switches will work without modification of your build scripts or command-line muscle memory.
@@ -210,7 +208,7 @@ variables to ensure that the built headers and libraries are used.
 From an "x64 Native Tools Command Prompt for VS 2022 Preview":
 
 ```
-C:\Users\username\Desktop>C:\Dev\STL\out\build\x64\set_environment.bat
+C:\Users\username\Desktop>C:\Dev\STL\out\x64\set_environment.bat
 
 C:\Users\username\Desktop>type example.cpp
 #include <iostream>
@@ -232,7 +230,7 @@ C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
 # How To Run The Tests With A Native Tools Command Prompt
 
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
-2. Acquire [Python][] 3.9 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
+2. Acquire [Python][] 3.12 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
 3. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
     * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
     `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.
@@ -253,20 +251,20 @@ under a category in libcxx, or running a single test in `std` and `tr1`.
 
 ## Examples
 
-These examples assume that your current directory is `C:\Dev\STL\out\build\x64`.
+These examples assume that your current directory is `C:\Dev\STL\out\x64`.
 
 * This command will run all of the test suites with verbose output.
   + `ctest -V`
 * This command will also run all of the test suites.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test ..\..\..\tests\std ..\..\..\tests\tr1`
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test ..\..\tests\std ..\..\tests\tr1`
 * This command will run all of the std test suite.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std`
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\tests\std`
 * If you want to run a subset of a test suite, you need to point it to the right place in the sources. The following
 will run the single test found under VSO_0000000_any_calling_conventions.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
 * You can invoke `stl-lit` with any arbitrary subdirectory of a test suite. In libcxx this allows you to have finer
 control over what category of tests you would like to run. The following will run all the libcxx map tests.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test\std\containers\associative\map`
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test\std\containers\associative\map`
 
 ## Interpreting The Results Of Tests
 
@@ -368,8 +366,8 @@ steps. Let's assume we want to debug a new feature with tests located in `tests\
 
 As always, build the STL from your branch and run the tests:
 ```
-C:\STL\out\build\x64> ninja
-C:\STL\out\build\x64> python tests\utils\stl-lit\stl-lit.py -v C:\STL\tests\std\tests\GH_XXXX_meow
+C:\STL\out\x64> ninja
+C:\STL\out\x64> python tests\utils\stl-lit\stl-lit.py -v C:\STL\tests\std\tests\GH_XXXX_meow
 ```
 
 Let's assume one of the tests fails an assert and we want to debug that configuration. `stl-lit` will conveniently print
@@ -379,14 +377,14 @@ provide debug symbols: `/Zi /Fdbark.pdb`.
 You can replace `bark` with any descriptive name you like. Add these before the `"-link"` option in the command line
 and recompile. Example:
 ```
-C:\STL\out\build\x64>cl "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp" [... more arguments ...]
-"-FeC:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link"
+C:\STL\out\x64>cl "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp" [... more arguments ...]
+"-FeC:\STL\out\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link"
 [... more arguments ...]
 ```
 
 You can now start debugging the test via:
 ```
-devenv "C:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe"
+devenv "C:\STL\out\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe"
        "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp"
 ```
 
@@ -395,7 +393,7 @@ is that the STL builds those and other DLLs itself and we should under no circum
 If you are testing one of the configurations with dynamic linkage (`/MD` or `/MDd`) the easiest solution is to add the
 build folder to your path:
 ```
-set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
+set PATH=C:\STL\out\x64\out\bin\amd64;%PATH%
 ```
 
 # Benchmarking
@@ -416,28 +414,28 @@ for how _we_ use it.
 To run benchmarks, you'll need to first build the STL, then build the benchmarks:
 
 ```cmd
-cmake -B out\x64 -S . -G Ninja
-cmake --build out\x64
-cmake -B out\benchmark -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64
-cmake --build out\benchmark
+cmake --preset x64
+cmake --build --preset x64
+cmake -B out\bench -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64
+cmake --build out\bench
 ```
 
 You can then run your benchmark with:
 
 ```cmd
-out\benchmark\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
+out\bench\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
 ```
 
 And then you can copy this CSV file into Excel, or another spreadsheet program. For example:
 
 ```cmd
-out\bench\benchmarks\benchmark-std_copy --benchmark_out=benchmark-std_copy-results.csv --benchmark_out_format=csv
+out\bench\benchmark-std_copy --benchmark_out=benchmark-std_copy-results.csv --benchmark_out_format=csv
 ```
 
 If you want to see all the other flags you can pass, run:
 
 ```cmd
-out\bench\benchmarks\benchmark-<benchmark-name> --help
+out\bench\benchmark-<benchmark-name> --help
 ```
 
 # Editing And Testing The Debugger Visualizer
@@ -532,10 +530,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4944]: https://wg21.link/n4944
+[N4971]: https://wg21.link/n4971
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
-[Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
+[STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"
+[STL-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
+[STL-ASan-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-ASan-CI?branchName=main "STL-ASan-CI"
+[STL-ASan-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=5&branchName=main
 [Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Status Chart]: https://microsoft.github.io/STL/
@@ -549,5 +550,5 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [lit]: https://llvm.org/docs/CommandGuide/lit.html
 [lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
-[redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
-[natvis documentation]: https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
+[redistributables]: https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist
+[natvis documentation]: https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects

@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _EXPERIMENTAL_FORWARD_LIST_
 #define _EXPERIMENTAL_FORWARD_LIST_
 #include <yvals_core.h>
@@ -24,7 +23,7 @@ namespace experimental {
 
         template <class _Ty, class _Alloc, class _Pr>
         _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(forward_list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-            _Cont.remove_if(_Pass_fn(_Pred));
+            _Cont.remove_if(_STD _Pass_fn(_Pred));
         }
 
         template <class _Ty, class _Alloc, class _Uty>

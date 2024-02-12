@@ -8,5 +8,5 @@
 using namespace std;
 
 int main() {
-    assert(strcmp(std::bad_alloc().what(), "bad allocation") == 0);
+    assert(strcmp(bad_alloc().what(), "bad allocation") == 0);
 }

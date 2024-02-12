@@ -105,10 +105,10 @@ private:
 
 template <template <class T> class Future>
 class future_value_tester : public future_tester_base<Future, int> { // class for testing Future<T>
-    virtual void do_set_value() override { // set the value
+    void do_set_value() override { // set the value
         this->pr.set_value(3);
     }
-    virtual void do_check_value() override { // check the value
+    void do_check_value() override { // check the value
         CHECK_INT(this->fut.get(), 3);
     }
 };
@@ -120,11 +120,11 @@ public:
     }
 
 private:
-    virtual void do_set_value() override { // set the value
+    void do_set_value() override { // set the value
         value = 3;
         this->pr.set_value(value);
     }
-    virtual void do_check_value() override { // check the value
+    void do_check_value() override { // check the value
         CHECK_INT(this->fut.get(), 3);
     }
     int value;
@@ -132,10 +132,10 @@ private:
 
 template <template <class T> class Future>
 class future_void_tester : public future_tester_base<Future, void> { // class for testing Future<void>
-    virtual void do_set_value() override { // set the value
+    void do_set_value() override { // set the value
         this->pr.set_value();
     }
-    virtual void do_check_value() override { // get the value
+    void do_check_value() override { // get the value
         this->fut.get(); // do not remove
     }
 };

@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _IOS_
 #define _IOS_
 #include <yvals_core.h>
@@ -38,7 +37,7 @@ public:
 
     void __CLR_OR_THIS_CALL clear(iostate _State = goodbit, bool _Reraise = false) {
         // set state, possibly reraise exception
-        ios_base::clear(_State | (_Mystrbuf ? ios_base::_Iostate{} : ios_base::badbit), _Reraise);
+        ios_base::clear(_State | (_Mystrbuf ? ios_base::goodbit : ios_base::badbit), _Reraise);
     }
 
 #if _HAS_OLD_IOSTREAMS_MEMBERS
@@ -161,9 +160,9 @@ protected:
     __CLR_OR_THIS_CALL basic_ios() {}
 
 private:
-    _Mysb* _Mystrbuf; // pointer to stream buffer
-    _Myos* _Tiestr; // pointer to tied output stream
-    _Elem _Fillch; // the fill character
+    _Mysb* _Mystrbuf{}; // pointer to stream buffer
+    _Myos* _Tiestr{}; // pointer to tied output stream
+    _Elem _Fillch{}; // the fill character
 
 public:
     __CLR_OR_THIS_CALL basic_ios(const basic_ios&)            = delete;
@@ -179,7 +178,7 @@ template class _CRTIMP2_PURE_IMPORT basic_ios<wchar_t, char_traits<wchar_t>>;
 
 #ifdef __FORCE_INSTANCE
 template class _CRTIMP2_PURE_IMPORT basic_ios<unsigned short, char_traits<unsigned short>>;
-#endif // __FORCE_INSTANCE
+#endif // defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 
 _EXPORT_STD inline ios_base& __CLRCALL_OR_CDECL boolalpha(ios_base& _Iosbase) { // set boolalpha
@@ -207,8 +206,8 @@ _EXPORT_STD inline ios_base& __CLRCALL_OR_CDECL hex(ios_base& _Iosbase) { // set
     return _Iosbase;
 }
 
-_EXPORT_STD inline ios_base& __CLRCALL_OR_CDECL hexfloat(ios_base& _Iosbase) { // set floatfield to hexfloat
-    _Iosbase.setf(ios_base::hexfloat, ios_base::floatfield);
+_EXPORT_STD inline ios_base& __CLRCALL_OR_CDECL hexfloat(ios_base& _Iosbase) { // set floatfield to (scientific | fixed)
+    _Iosbase.setf(ios_base::scientific | ios_base::fixed, ios_base::floatfield);
     return _Iosbase;
 }
 

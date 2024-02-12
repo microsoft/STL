@@ -76,7 +76,7 @@ namespace fputil {
 #ifdef __clang__
 // TRANSITION, should be #pragma STDC FENV_ACCESS ON
 #else // ^^^ clang / MSVC vvv
-// TRANSITION, VSO-923474 -- should be #pragma STDC FENV_ACCESS ON
+    // TRANSITION, VSO-923474 -- should be #pragma STDC FENV_ACCESS ON
 #pragma fenv_access(on)
 #endif // ^^^ MSVC ^^^
 

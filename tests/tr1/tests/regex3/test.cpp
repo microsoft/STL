@@ -389,12 +389,12 @@ static void test_capturegroups() {
 static void test_iterators() { // needs refining after ++ fixed
     const CHR* pat = T("ax");
     MyIter::regex_type rx(T("a"));
-    MyIter iter(pat, pat + xlen(pat) + 10, rx);
+    MyIter iter(pat, pat + xlen(pat), rx);
     CHECKSTR(iter->str().c_str(), T("a"));
     STD match_results<bidit> mr = *iter;
     CHECK_INT(mr.position(0), 0);
     CHECK_INT(mr.length(0), 1);
-    MyTokIter toIter(pat, pat + xlen(pat) + 10, rx);
+    MyTokIter toIter(pat, pat + xlen(pat), rx);
     CHECKSTR(toIter->str().c_str(), T("a"));
     toIter++;
 #if NO_EXCEPTIONS

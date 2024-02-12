@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _EXPERIMENTAL_UNORDERED_SET_
 #define _EXPERIMENTAL_UNORDERED_SET_
 #include <yvals_core.h>
@@ -24,13 +23,13 @@ namespace experimental {
 
         template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
         _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-            _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+            _STD _Erase_nodes_if(_Cont, _STD _Pass_fn(_Pred));
         }
 
         template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
         _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(
             unordered_multiset<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
-            _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+            _STD _Erase_nodes_if(_Cont, _STD _Pass_fn(_Pred));
         }
 
     } // namespace fundamentals_v2

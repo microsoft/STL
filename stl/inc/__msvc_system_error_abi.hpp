@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef __MSVC_SYSTEM_ERROR_ABI_HPP
 #define __MSVC_SYSTEM_ERROR_ABI_HPP
 #include <yvals_core.h>
@@ -23,14 +22,14 @@ _STL_DISABLE_CLANG_WARNINGS
 #define __CLRCALL_PURE_OR_STDCALL __stdcall
 #endif
 
-_EXTERN_C
+extern "C" {
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
     const char* _Str, size_t _Size) noexcept;
 
 _NODISCARD size_t __CLRCALL_PURE_OR_STDCALL __std_system_error_allocate_message(
     unsigned long _Message_id, char** _Ptr_str) noexcept;
 void __CLRCALL_PURE_OR_STDCALL __std_system_error_deallocate_message(char* _Str) noexcept;
-_END_EXTERN_C
+} // extern "C"
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

@@ -154,7 +154,6 @@ constexpr bool test_leap_second() {
     static_assert(noexcept(equal >= leap));
     static_assert(noexcept(leap >= equal));
 
-#ifdef __cpp_lib_concepts
     static_assert(is_eq(leap <=> equal));
     static_assert(is_lt(leap <=> larger));
     static_assert(is_gt(leap <=> smaller));
@@ -172,7 +171,6 @@ constexpr bool test_leap_second() {
     static_assert(is_lteq(leap <=> leap_second{equal, true, 0s}));
     static_assert(is_gteq(leap <=> leap_second{equal, true, 0s}));
     static_assert(noexcept(leap <=> leap_second{equal, true, 0s}));
-#endif // __cpp_lib_concepts
 
     static_assert(noexcept(leap.date()));
     static_assert(noexcept(leap.value()));
@@ -385,10 +383,11 @@ tzdb copy_tzdb() {
     const auto& my_tzdb = get_tzdb_list().front();
     vector<time_zone> zones;
     vector<time_zone_link> links;
-    transform(my_tzdb.zones.begin(), my_tzdb.zones.end(), back_inserter(zones),
-        [](const auto& tz) { return time_zone{tz.name()}; });
+    transform(my_tzdb.zones.begin(), my_tzdb.zones.end(), back_inserter(zones), [](const auto& tz) {
+        return time_zone{_Secret_time_zone_construct_tag{}, tz.name()};
+    });
     transform(my_tzdb.links.begin(), my_tzdb.links.end(), back_inserter(links), [](const auto& link) {
-        return time_zone_link{link.name(), link.target()};
+        return time_zone_link{_Secret_time_zone_link_construct_tag{}, link.name(), link.target()};
     });
 
     return {my_tzdb.version, move(zones), move(links), my_tzdb.leap_seconds, my_tzdb._All_ls_positive};

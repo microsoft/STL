@@ -62,12 +62,9 @@ struct mapped<basic_string_view<CharT, Traits>> {
     template <class>
     using apply = basic_string_view<CharT, Traits>;
 };
-// clang-format off
 template <class W, class B>
-    requires ranges::random_access_range<ranges::iota_view<W, B>>
-        && ranges::sized_range<ranges::iota_view<W, B>>
+    requires ranges::random_access_range<ranges::iota_view<W, B>> && ranges::sized_range<ranges::iota_view<W, B>>
 struct mapped<ranges::iota_view<W, B>> {
-    // clang-format on
     template <class>
     using apply = ranges::iota_view<W, B>;
 };
@@ -79,7 +76,7 @@ struct mapped<ranges::subrange<I, S, ranges::subrange_kind::sized>> {
 };
 
 template <ranges::viewable_range Rng>
-using mapped_t = typename mapped<remove_cvref_t<Rng>>::template apply<Rng>;
+using mapped_t = mapped<remove_cvref_t<Rng>>::template apply<Rng>;
 
 template <ranges::viewable_range Rng>
 using pipeline_t = mapped_t<mapped_t<mapped_t<mapped_t<Rng>>>>;
@@ -559,7 +556,6 @@ int main() {
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
 
-#ifndef _M_CEE // TRANSITION, VSO-1666180
     {
         // Validate a view borrowed range
         constexpr auto v =
@@ -567,7 +563,6 @@ int main() {
         STATIC_ASSERT(test_one(v, only_four_ints));
         test_one(v, only_four_ints);
     }
-#endif // _M_CEE
 
     { // Validate that we can use something that is convertible to integral (GH-1957)
         constexpr span s{some_ints};

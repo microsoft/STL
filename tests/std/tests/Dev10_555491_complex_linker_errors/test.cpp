@@ -188,6 +188,117 @@ void test_gh_2728() {
     }
 }
 
+template <class F>
+void test_strengthened_exception_specification() {
+    STATIC_ASSERT(is_nothrow_default_constructible_v<complex<F>>);
+
+    STATIC_ASSERT(is_nothrow_constructible_v<complex<F>, const F&>);
+    STATIC_ASSERT(is_nothrow_constructible_v<complex<F>, F>);
+
+    STATIC_ASSERT(is_nothrow_constructible_v<complex<F>, const F&, const F&>);
+    STATIC_ASSERT(is_nothrow_constructible_v<complex<F>, const F&, F>);
+    STATIC_ASSERT(is_nothrow_constructible_v<complex<F>, F, const F&>);
+    STATIC_ASSERT(is_nothrow_constructible_v<complex<F>, F, F>);
+
+    STATIC_ASSERT(is_nothrow_assignable_v<complex<F>&, const F&>);
+    STATIC_ASSERT(is_nothrow_assignable_v<complex<F>&, F>);
+
+    complex<F> c{};
+    F f{};
+
+    STATIC_ASSERT(noexcept(c.real()));
+    STATIC_ASSERT(noexcept(c.real(f)));
+    STATIC_ASSERT(noexcept(c.imag()));
+    STATIC_ASSERT(noexcept(c.imag(f)));
+
+    STATIC_ASSERT(noexcept(+c));
+    STATIC_ASSERT(noexcept(-c));
+
+    STATIC_ASSERT(noexcept(c + c));
+    STATIC_ASSERT(noexcept(c + f));
+    STATIC_ASSERT(noexcept(f + c));
+    STATIC_ASSERT(noexcept(c += c));
+    STATIC_ASSERT(noexcept(c += f));
+
+    STATIC_ASSERT(noexcept(c - c));
+    STATIC_ASSERT(noexcept(c - f));
+    STATIC_ASSERT(noexcept(f - c));
+    STATIC_ASSERT(noexcept(c -= c));
+    STATIC_ASSERT(noexcept(c -= f));
+
+    STATIC_ASSERT(noexcept(c * c));
+    STATIC_ASSERT(noexcept(c * f));
+    STATIC_ASSERT(noexcept(f * c));
+    STATIC_ASSERT(noexcept(c *= c));
+    STATIC_ASSERT(noexcept(c *= f));
+
+    STATIC_ASSERT(noexcept(c / c));
+    STATIC_ASSERT(noexcept(c / f));
+    STATIC_ASSERT(noexcept(f / c));
+    STATIC_ASSERT(noexcept(c /= c));
+    STATIC_ASSERT(noexcept(c /= f));
+
+    STATIC_ASSERT(noexcept(c == c));
+    STATIC_ASSERT(noexcept(c == f));
+    STATIC_ASSERT(noexcept(f == c));
+
+    STATIC_ASSERT(noexcept(c != c));
+    STATIC_ASSERT(noexcept(c != f));
+    STATIC_ASSERT(noexcept(f != c));
+
+    STATIC_ASSERT(noexcept(real(c)));
+    STATIC_ASSERT(noexcept(imag(c)));
+    STATIC_ASSERT(noexcept(abs(c)));
+    STATIC_ASSERT(noexcept(arg(c)));
+    STATIC_ASSERT(noexcept(norm(c)));
+    STATIC_ASSERT(noexcept(conj(c)));
+    STATIC_ASSERT(noexcept(proj(c)));
+
+    STATIC_ASSERT(noexcept(polar(f)));
+    STATIC_ASSERT(noexcept(polar(f, f)));
+
+    STATIC_ASSERT(noexcept(acos(c)));
+    STATIC_ASSERT(noexcept(asin(c)));
+    STATIC_ASSERT(noexcept(atan(c)));
+    STATIC_ASSERT(noexcept(acosh(c)));
+    STATIC_ASSERT(noexcept(asinh(c)));
+    STATIC_ASSERT(noexcept(atanh(c)));
+    STATIC_ASSERT(noexcept(cos(c)));
+    STATIC_ASSERT(noexcept(cosh(c)));
+    STATIC_ASSERT(noexcept(exp(c)));
+    STATIC_ASSERT(noexcept(log(c)));
+    STATIC_ASSERT(noexcept(log10(c)));
+    STATIC_ASSERT(noexcept(sin(c)));
+    STATIC_ASSERT(noexcept(sinh(c)));
+    STATIC_ASSERT(noexcept(sqrt(c)));
+    STATIC_ASSERT(noexcept(tan(c)));
+    STATIC_ASSERT(noexcept(tanh(c)));
+
+    STATIC_ASSERT(noexcept(pow(c, c)));
+    STATIC_ASSERT(noexcept(pow(c, f)));
+    STATIC_ASSERT(noexcept(pow(f, c)));
+}
+
+template <class F1, class F2>
+void test_strengthened_exception_specification_2() {
+    STATIC_ASSERT(is_nothrow_constructible_v<complex<F1>, const complex<F2>&>);
+    STATIC_ASSERT(is_nothrow_constructible_v<complex<F1>, complex<F2>>);
+
+    STATIC_ASSERT(is_nothrow_assignable_v<complex<F1>&, const complex<F2>&>);
+    STATIC_ASSERT(is_nothrow_assignable_v<complex<F1>&, complex<F2>>);
+
+    complex<F1> c1{};
+    complex<F2> c2{};
+
+    STATIC_ASSERT(noexcept(c1 += c2));
+    STATIC_ASSERT(noexcept(c1 -= c2));
+    STATIC_ASSERT(noexcept(c1 *= c2));
+    STATIC_ASSERT(noexcept(c1 /= c2));
+
+    STATIC_ASSERT(noexcept(pow(c1, c2)));
+    STATIC_ASSERT(noexcept(pow(F1{}, c2)));
+}
+
 
 int main() {
     complex<float> f(1, 2);
@@ -293,7 +404,32 @@ int main() {
 
     test_gh_2728();
 
-    // Also test N4928 [complex.numbers.general]/2:
+    // Also test strengthened exception specifications
+    test_strengthened_exception_specification<float>();
+    test_strengthened_exception_specification<double>();
+    test_strengthened_exception_specification<long double>();
+
+    STATIC_ASSERT(noexcept(0if)); // strengthened
+    STATIC_ASSERT(noexcept(0.0if)); // strengthened
+    STATIC_ASSERT(noexcept(0i)); // strengthened
+    STATIC_ASSERT(noexcept(0.0i)); // strengthened
+    STATIC_ASSERT(noexcept(0il)); // strengthened
+    STATIC_ASSERT(noexcept(0.0il)); // strengthened
+
+    test_strengthened_exception_specification_2<float, double>();
+    test_strengthened_exception_specification_2<float, long double>();
+    test_strengthened_exception_specification_2<double, float>();
+    test_strengthened_exception_specification_2<double, long double>();
+    test_strengthened_exception_specification_2<long double, float>();
+    test_strengthened_exception_specification_2<long double, double>();
+
+#if _HAS_CXX20
+    STATIC_ASSERT(is_nothrow_convertible_v<complex<float>, complex<double>>); // strengthened
+    STATIC_ASSERT(is_nothrow_convertible_v<complex<float>, complex<long double>>); // strengthened
+    STATIC_ASSERT(is_nothrow_convertible_v<complex<double>, complex<long double>>); // strengthened
+#endif // _HAS_CXX20
+
+    // Also test N4950 [complex.numbers.general]/2:
     // "Specializations of complex for cv-unqualified floating-point types are trivially-copyable literal types"
     STATIC_ASSERT(is_trivially_copyable_v<complex<float>>);
     STATIC_ASSERT(is_trivially_copyable_v<complex<double>>);

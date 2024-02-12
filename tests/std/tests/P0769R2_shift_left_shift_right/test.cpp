@@ -105,7 +105,7 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
         fill_iota(tmp, tmpSize);
         test_iota(tmp.begin(), shift_left(tmp.begin(), tmp.end(), pos_to_shift), pos_to_shift + 1, tmpSize);
 
-#if __cpp_lib_shift >= 202202L
+#if _HAS_CXX23
         {
             fill_iota(tmp, tmpSize);
             auto [first, last] = ranges::shift_left(tmp.begin(), tmp.end(), pos_to_shift);
@@ -119,7 +119,7 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
             assert(first == tmp.begin());
             test_iota(first, last, pos_to_shift + 1, tmpSize);
         }
-#endif // __cpp_lib_shift >= 202202L
+#endif // _HAS_CXX23
     }
 
     fill_iota(tmp, tmpSize);
@@ -127,7 +127,7 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
         test_iota(shift_left(tmp.begin(), tmp.end(), tmpSize + i), tmp.end(), 1, tmpSize);
     }
 
-#if __cpp_lib_shift >= 202202L
+#if _HAS_CXX23
     fill_iota(tmp, tmpSize);
     for (int i = 0; i < 3; ++i) {
         auto [first, last] = ranges::shift_left(tmp.begin(), tmp.end(), tmpSize + i);
@@ -141,7 +141,7 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
         assert(first == tmp.begin());
         test_iota(last, tmp.end(), 1, tmpSize);
     }
-#endif // __cpp_lib_shift >= 202202L
+#endif // _HAS_CXX23
 }
 
 template <typename Container>
@@ -153,7 +153,7 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
         fill_iota(tmp, tmpSize);
         test_iota(shift_right(tmp.begin(), tmp.end(), pos_to_shift), tmp.end(), 1, tmpSize - pos_to_shift);
 
-#if __cpp_lib_shift >= 202202L
+#if _HAS_CXX23
         {
             fill_iota(tmp, tmpSize);
             auto [first, last] = ranges::shift_right(tmp.begin(), tmp.end(), pos_to_shift);
@@ -167,7 +167,7 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
             assert(last == tmp.end());
             test_iota(first, last, 1, tmpSize - pos_to_shift);
         }
-#endif // __cpp_lib_shift >= 202202L
+#endif // _HAS_CXX23
     }
 
     fill_iota(tmp, tmpSize);
@@ -175,7 +175,7 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
         test_iota(tmp.begin(), shift_right(tmp.begin(), tmp.end(), tmpSize + i), 1, tmpSize);
     }
 
-#if __cpp_lib_shift >= 202202L
+#if _HAS_CXX23
     fill_iota(tmp, tmpSize);
     for (int i = 0; i < 3; ++i) {
         auto [first, last] = ranges::shift_right(tmp.begin(), tmp.end(), tmpSize + i);
@@ -189,7 +189,7 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
         assert(last == tmp.end());
         test_iota(tmp.begin(), first, 1, tmpSize);
     }
-#endif // __cpp_lib_shift >= 202202L
+#endif // _HAS_CXX23
 }
 
 int main() {

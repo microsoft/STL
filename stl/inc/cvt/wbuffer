@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CVT_WBUFFER_
 #define _CVT_WBUFFER_
 #include <yvals_core.h>
@@ -24,7 +23,7 @@ _STL_DISABLE_CLANG_WARNINGS
 // mywcout << static_cast<wchar_t>(0x80); // writes 0xc2 0x80
 
 namespace stdext {
-    namespace cvt {
+    namespace _DEPRECATE_STDEXT_CVT cvt {
 
         template <class _Codecvt, class _Elem = wchar_t, class _Traits = _STD char_traits<_Elem>>
         class wbuffer_convert
@@ -315,7 +314,7 @@ namespace stdext {
             _STD string _Str; // unconsumed input bytes
             _STD locale _Loc; // manages reference to codecvt facet
         };
-    } // namespace cvt
+    } // namespace _DEPRECATE_STDEXT_CVT cvt
 } // namespace stdext
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

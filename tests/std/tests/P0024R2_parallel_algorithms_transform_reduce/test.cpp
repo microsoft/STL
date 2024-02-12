@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma warning(disable : 4242 4244 4365) // test_case_incorrect_special_case_reasoning tests narrowing on purpose
+// test_case_incorrect_special_case_reasoning and test_case_narrowing_conversion test narrowing on purpose
+#pragma warning(disable : 4242 4244 4267 4365)
+
 #include <algorithm>
 #include <cassert>
 #include <execution>
@@ -144,8 +146,26 @@ void test_case_incorrect_special_case_reasoning() {
     assert(transform_reduce(begin(c), end(c), d, 0, multiplies<>{}, plus<unsigned char>{}) == 0);
 }
 
+void test_case_narrowing_conversion() {
+    size_t a[]         = {1, 2, 3};
+    auto return_itself = [](size_t x) { return x; };
+    // Initializing a smaller type (int here) with a larger type (size_t here).
+    // According to N4971 [transform.reduce]/7,
+    // this narrowing conversion should compile without error.
+    assert(transform_reduce(begin(a), end(a), 0, plus<size_t>{}, return_itself) == 6);
+    assert(transform_reduce(seq, begin(a), end(a), 0, plus<size_t>{}, return_itself) == 6);
+    assert(transform_reduce(par, begin(a), end(a), 0, plus<size_t>{}, return_itself) == 6);
+
+    size_t b[] = {1, 2, 3};
+    // Initializing a smaller type (int here) with a larger type (size_t here).
+    // According to N4971 [transform.reduce]/3,
+    // this narrowing conversion should compile without error.
+    assert(transform_reduce(begin(a), end(a), b, 0, plus<size_t>{}, plus<size_t>{}) == 12);
+    assert(transform_reduce(seq, begin(a), end(a), b, 0, plus<size_t>{}, plus<size_t>{}) == 12);
+    assert(transform_reduce(par, begin(a), end(a), b, 0, plus<size_t>{}, plus<size_t>{}) == 12);
+}
+
 int main() {
-#ifndef _M_CEE // TRANSITION, VSO-1659695
     mt19937 gen(1729);
     parallel_test_case(test_case_transform_reduce_binary, gen);
     parallel_test_case(test_case_transform_reduce, gen);
@@ -154,5 +174,5 @@ int main() {
     parallel_test_case([](const size_t testSize) { test_case_move_only(seq, testSize); });
     parallel_test_case([](const size_t testSize) { test_case_move_only(par, testSize); });
     test_case_incorrect_special_case_reasoning();
-#endif // _M_CEE
+    test_case_narrowing_conversion();
 }

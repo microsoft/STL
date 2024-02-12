@@ -7,10 +7,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\crt-common.settings.targets" />
 
     <ItemGroup>
-        <ProjectFile Include="msvcp_2_app\msvcp_2.nativeproj" />
-        <ProjectFile Include="msvcp_2_kernel32\msvcp_2.nativeproj" />
-        <ProjectFile Include="msvcp_2_onecore\msvcp_2.nativeproj" />
-        <ProjectFile Include="msvcp_2_netfx\msvcp_2.nativeproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
+        <ProjectFile Include="msvcp_2_app\msvcp_2.vcxproj" />
+        <ProjectFile Include="msvcp_2_kernel32\msvcp_2.vcxproj" />
+        <ProjectFile Include="msvcp_2_onecore\msvcp_2.vcxproj" />
+        <ProjectFile Include="msvcp_2_netfx\msvcp_2.vcxproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
     </ItemGroup>
 
     <Import Project="$(RepoSrc)\tools\Microsoft.DevDiv.Traversal.targets" />

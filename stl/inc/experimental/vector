@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _EXPERIMENTAL_VECTOR_
 #define _EXPERIMENTAL_VECTOR_
 #include <yvals_core.h>
@@ -24,12 +23,12 @@ namespace experimental {
 
         template <class _Ty, class _Alloc, class _Pr>
         _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-            _Erase_remove_if(_Cont, _Pass_fn(_Pred));
+            _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Pred));
         }
 
         template <class _Ty, class _Alloc, class _Uty>
         _DEPRECATE_EXPERIMENTAL_ERASE void erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-            _Erase_remove(_Cont, _Val);
+            _STD _Erase_remove(_Cont, _Val);
         }
 
     } // namespace fundamentals_v2

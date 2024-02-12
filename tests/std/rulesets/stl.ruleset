@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. -->
+<!-- SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception -->
+<RuleSet Name="STL Ruleset" Description="C++ Core Guidelines rules for microsoft/STL" ToolsVersion="15.0">
+  <Rules AnalyzerId="Microsoft.Analyzers.NativeCodeAnalysis" RuleNamespace="Microsoft.Rules.Native">
+    <!-- The pointer is dangling because it points at a temporary instance that was destroyed. (ES.65) -->
+    <Rule Id="C26815" Action="Warning" />
+    <!-- The pointer points to memory allocated on the stack (ES.65) -->
+    <Rule Id="C26816" Action="Warning" />
+  </Rules>
+</RuleSet>

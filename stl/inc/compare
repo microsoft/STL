@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _COMPARE_
 #define _COMPARE_
 #include <yvals_core.h>
@@ -12,11 +11,7 @@
 #if !_HAS_CXX20
 _EMIT_STL_WARNING(STL4038, "The contents of <compare> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
-#ifdef __cpp_lib_concepts
 #include <concepts>
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
-#include <xtr1common>
-#endif // !__cpp_lib_concepts
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -296,7 +291,6 @@ struct common_comparison_category {
     using type = common_comparison_category_t<_Types...>;
 };
 
-#ifdef __cpp_lib_concepts
 template <class _Ty, class _Cat>
 concept _Compares_as = same_as<common_comparison_category_t<_Ty, _Cat>, _Cat>;
 
@@ -347,11 +341,12 @@ _EXPORT_STD struct compare_three_way {
 
 struct _Synth_three_way {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(const _Ty1& _Left, const _Ty2& _Right) const
+    _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
+        const _Ty1& _Left, const _Ty2& _Right) _CONST_CALL_OPERATOR
         requires requires {
-                     { _Left < _Right } -> _Boolean_testable;
-                     { _Right < _Left } -> _Boolean_testable;
-                 }
+            { _Left < _Right } -> _Boolean_testable;
+            { _Right < _Left } -> _Boolean_testable;
+        }
     {
         if constexpr (three_way_comparable_with<_Ty1, _Ty2>) {
             return _Left <=> _Right;
@@ -381,8 +376,8 @@ namespace _Strong_order {
 
     template <class _Ty1, class _Ty2>
     concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
-                           static_cast<strong_ordering>(strong_order(_Left, _Right)); // intentional ADL
-                       };
+        static_cast<strong_ordering>(strong_order(_Left, _Right)); // intentional ADL
+    };
 
     template <class _Ty1, class _Ty2>
     concept _Can_compare_three_way =
@@ -415,15 +410,15 @@ namespace _Strong_order {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr strong_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr strong_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Adl) {
                 return static_cast<strong_ordering>(strong_order(_Left, _Right)); // intentional ADL
             } else if constexpr (_Strat == _St::_Floating) {
                 using _Floating_type = decay_t<_Ty1>;
                 using _Traits        = _Floating_type_traits<_Floating_type>;
-                using _Uint_type     = typename _Traits::_Uint_type;
+                using _Uint_type     = _Traits::_Uint_type;
                 using _Sint_type     = make_signed_t<_Uint_type>;
 
                 const auto _Left_uint  = _Bit_cast<_Uint_type>(_Left);
@@ -477,8 +472,8 @@ namespace _Weak_order {
 
     template <class _Ty1, class _Ty2>
     concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
-                           static_cast<weak_ordering>(weak_order(_Left, _Right)); // intentional ADL
-                       };
+        static_cast<weak_ordering>(weak_order(_Left, _Right)); // intentional ADL
+    };
 
     template <class _Ty1, class _Ty2>
     concept _Can_compare_three_way =
@@ -522,15 +517,15 @@ namespace _Weak_order {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr weak_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr weak_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Adl) {
                 return static_cast<weak_ordering>(weak_order(_Left, _Right)); // intentional ADL
             } else if constexpr (_Strat == _St::_Floating) {
                 using _Floating_type = decay_t<_Ty1>;
                 using _Traits        = _Floating_type_traits<_Floating_type>;
-                using _Uint_type     = typename _Traits::_Uint_type;
+                using _Uint_type     = _Traits::_Uint_type;
                 using _Sint_type     = make_signed_t<_Uint_type>;
 
                 auto _Left_uint  = _Bit_cast<_Uint_type>(_Left);
@@ -603,8 +598,8 @@ namespace _Partial_order {
 
     template <class _Ty1, class _Ty2>
     concept _Has_ADL = requires(_Ty1& _Left, _Ty2& _Right) {
-                           static_cast<partial_ordering>(partial_order(_Left, _Right)); // intentional ADL
-                       };
+        static_cast<partial_ordering>(partial_order(_Left, _Right)); // intentional ADL
+    };
 
     template <class _Ty1, class _Ty2>
     concept _Can_compare_three_way =
@@ -653,8 +648,8 @@ namespace _Partial_order {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr partial_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr partial_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Adl) {
                 return static_cast<partial_ordering>(/* ADL */ partial_order(_Left, _Right));
@@ -681,9 +676,9 @@ inline namespace _Cpos {
 
 template <class _Ty1, class _Ty2>
 concept _Can_fallback_eq_lt = requires(_Ty1& _Left, _Ty2& _Right) {
-                                  { _Left == _Right } -> _Boolean_testable;
-                                  { _Left < _Right } -> _Boolean_testable;
-                              };
+    { _Left == _Right } -> _Boolean_testable;
+    { _Left < _Right } -> _Boolean_testable;
+};
 
 template <class _Ty1, class _Ty2>
 concept _Can_strong_order = requires(_Ty1& _Left, _Ty2& _Right) { _STD strong_order(_Left, _Right); };
@@ -715,8 +710,8 @@ namespace _Compare_strong_order_fallback {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr strong_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr strong_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Strong) {
                 return _STD strong_order(_Left, _Right);
@@ -765,8 +760,8 @@ namespace _Compare_weak_order_fallback {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr weak_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr weak_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Weak) {
                 return _STD weak_order(_Left, _Right);
@@ -791,10 +786,10 @@ concept _Can_partial_order = requires(_Ty1& _Left, _Ty2& _Right) { _STD partial_
 namespace _Compare_partial_order_fallback {
     template <class _Ty1, class _Ty2>
     concept _Can_fallback_eq_lt_twice = requires(_Ty1& _Left, _Ty2& _Right) {
-                                            { _Left == _Right } -> _Boolean_testable;
-                                            { _Left < _Right } -> _Boolean_testable;
-                                            { _Right < _Left } -> _Boolean_testable;
-                                        };
+        { _Left == _Right } -> _Boolean_testable;
+        { _Left < _Right } -> _Boolean_testable;
+        { _Right < _Left } -> _Boolean_testable;
+    };
 
     class _Cpo {
     private:
@@ -823,8 +818,8 @@ namespace _Compare_partial_order_fallback {
     public:
         template <class _Ty1, class _Ty2>
             requires (_Choice<_Ty1&, _Ty2&>._Strategy != _St::_None)
-        _NODISCARD constexpr partial_ordering operator()(_Ty1&& _Left, _Ty2&& _Right) const
-            noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr partial_ordering operator()(
+            _Ty1&& _Left, _Ty2&& _Right) _CONST_CALL_OPERATOR noexcept(_Choice<_Ty1&, _Ty2&>._No_throw) {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Partial) {
                 return _STD partial_order(_Left, _Right);
@@ -843,8 +838,6 @@ namespace _Compare_partial_order_fallback {
 inline namespace _Cpos {
     _EXPORT_STD inline constexpr _Compare_partial_order_fallback::_Cpo compare_partial_order_fallback;
 }
-
-#endif // __cpp_lib_concepts
 _STD_END
 
 #pragma pop_macro("new")

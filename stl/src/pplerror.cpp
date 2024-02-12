@@ -29,7 +29,7 @@ namespace Concurrency {
                         if (restrictedInfo != nullptr) {
 #ifndef _M_ARM64 // CRT_REFACTOR TODO
                             ::RoReportUnhandledError(restrictedInfo);
-#endif // _M_ARM64
+#endif // !defined(_M_ARM64)
 
                             // IRestrictedErrorInfo should be put back
                             // to make sure that RoFailFastWithErrorContext can extract the information

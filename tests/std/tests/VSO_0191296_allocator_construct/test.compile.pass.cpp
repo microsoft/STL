@@ -587,7 +587,7 @@ void check_all_container_requirements() {
     test_container_copy_constructor<Tag>();
     test_container_move_constructor<Tag>();
     test_container_swap<Tag>();
-};
+}
 
 //
 //

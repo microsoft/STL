@@ -13,12 +13,16 @@ import std;
 void prepare_test_environment();
 void all_std_cmeow_tests();
 void test_module_std_compat();
+void test_include_all_then_import_std();
+void test_include_all_then_import_std_compat();
 
 int main() {
     prepare_test_environment(); // defined in classic.cpp
     all_cpp_header_tests(); // defined in test_header_units_and_modules.hpp
     all_std_cmeow_tests(); // defined below
     test_module_std_compat(); // defined in test2.cpp
+    test_include_all_then_import_std(); // defined in test3.cpp
+    test_include_all_then_import_std_compat(); // defined in test4.cpp
 }
 
 void test_std_cassert() {

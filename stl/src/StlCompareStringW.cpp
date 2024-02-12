@@ -14,7 +14,7 @@
 //
 // Entry:
 //   LPCWSTR  LocaleName  - locale context for the comparison.
-//   DWORD    dwCmpFlags  - see docs.microsoft.com
+//   DWORD    dwCmpFlags  - see https://aka.ms/stl/comparestringex
 //   LPCWSTR  lpStringn   - wide string to be compared
 //   int      cchCountn   - wide char (word) count (NOT including null terminator)
 //                        (-1 if null terminated)
@@ -24,9 +24,9 @@
 //            2 - if lpString1 == lpString2
 //            3 - if lpString1 >  lpString2
 //   Failure: 0
-extern "C" int __cdecl __crtCompareStringW(_In_z_ LPCWSTR LocaleName, _In_ DWORD dwCmpFlags,
+extern "C" _CRTIMP2 int __cdecl __crtCompareStringW(_In_z_ LPCWSTR LocaleName, _In_ DWORD dwCmpFlags,
     _In_reads_(cchCount1) LPCWSTR lpString1, _In_ int cchCount1, _In_reads_(cchCount2) LPCWSTR lpString2,
-    _In_ int cchCount2) {
+    _In_ int cchCount2) noexcept {
     // CompareString will compare past null terminator. Must find null terminator if in string before cchCountn wide
     // characters.
     if (cchCount1 > 0) {

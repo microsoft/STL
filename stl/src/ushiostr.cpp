@@ -27,7 +27,7 @@ __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcout = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcerr = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wclog = nullptr;
 _STD_END
-#else
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 _STD_BEGIN
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wistream* _Ptr_wcin  = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcout = nullptr;
@@ -35,4 +35,4 @@ __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcerr = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wclog = nullptr;
 _STD_END
 #include "wiostrea.cpp"
-#endif
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^

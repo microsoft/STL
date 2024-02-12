@@ -1,15 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// _Stopfx function
-
 #include <cctype>
 
 #include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
-int _Stopfx(const char** ps, char** endptr) { // parse prefix of floating-point field
+int _Stopfx(const char** ps, char** endptr) noexcept { // parse prefix of floating-point field
     const char* s = *ps;
     int code      = 0;
 

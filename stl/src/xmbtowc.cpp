@@ -14,7 +14,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-static int _Utf8_trailing_byte_count(unsigned long* partialCh, unsigned char ch) {
+static int _Utf8_trailing_byte_count(unsigned long* partialCh, unsigned char ch) noexcept {
     if ((ch & 0x80u) == 0x00u) { // high bit unset, plain ASCII
         return 0;
     }
@@ -37,7 +37,7 @@ static int _Utf8_trailing_byte_count(unsigned long* partialCh, unsigned char ch)
     return INT_MAX;
 }
 
-static int _Decode_utf8_trailing_byte(unsigned long* partialCh, unsigned char ch) {
+static int _Decode_utf8_trailing_byte(unsigned long* partialCh, unsigned char ch) noexcept {
     if ((ch & 0xC0) == 0x80) {
         *partialCh <<= 6;
         *partialCh |= ch & 0x3Fu;
@@ -66,7 +66,7 @@ static int _Decode_utf8_trailing_byte(unsigned long* partialCh, unsigned char ch
 //          -2 (if partial conversion)
 //          number of bytes comprising converted mbc
 _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
-    _When_(n != 0, _Out_) wchar_t* pwc, const char* s, size_t n, mbstate_t* pst, const _Cvtvec* ploc) {
+    _When_(n != 0, _Out_) wchar_t* pwc, const char* s, size_t n, mbstate_t* pst, const _Cvtvec* ploc) noexcept {
     (void) pst;
     if (n == 0) { // indicate do not have state-dependent encodings, handle zero length string
         return 0;
@@ -109,7 +109,7 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
 
         if (trailingUtf8Units > 2) { // this would result in a UTF-16 surrogate pair, which we can't emit in our
                                      // singular output wchar_t, so fail
-                                     // see N4750 [locale.codecvt.virtuals]/3
+                                     // see N4950 [locale.codecvt.virtuals]/3
             errno = EILSEQ;
             return -1;
         }
@@ -155,9 +155,10 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
 }
 
 #ifdef MRTDLL
-_MRTIMP2 int __cdecl _Mbrtowc(unsigned short* pwc, const char* s, size_t n, mbstate_t* pst, const _Cvtvec* ploc) {
+_MRTIMP2 int __cdecl _Mbrtowc(
+    unsigned short* pwc, const char* s, size_t n, mbstate_t* pst, const _Cvtvec* ploc) noexcept {
     return _Mbrtowc(reinterpret_cast<wchar_t*>(pwc), s, n, pst, ploc);
 }
-#endif // MRTDLL
+#endif // defined(MRTDLL)
 
 _END_EXTERN_C_UNLESS_PURE

@@ -12,7 +12,7 @@
 
 #include <Windows.h>
 
-_EXTERN_C
+extern "C" {
 
 [[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result
     __stdcall __std_get_unicode_console_handle_from_file_stream(_In_ FILE* const _Stream) noexcept {
@@ -52,7 +52,7 @@ _EXTERN_C
         ._Error = __std_win_error::_Success};
 }
 
-_END_EXTERN_C
+} // extern "C"
 
 namespace {
     class _Allocated_string {
@@ -177,7 +177,7 @@ namespace {
             return {};
         }
 
-        // For vprint_unicode(), N4928 [ostream.formatted.print]/4 suggests replacing invalid code units with U+FFFD.
+        // For vprint_unicode(), N4950 [ostream.formatted.print]/4 suggests replacing invalid code units with U+FFFD.
         // This is done automatically by MultiByteToWideChar(), so long as we do not use the MB_ERR_INVALID_CHARS flag.
         // We transcode up to 8,192 bytes per segment, which easily fits in an int.
         const int32_t _Num_chars_required =
@@ -222,7 +222,7 @@ namespace {
     }
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_print_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle,
@@ -266,4 +266,4 @@ _EXTERN_C
     }
 }
 
-_END_EXTERN_C
+} // extern "C"

@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _SYSTEM_ERROR_
 #define _SYSTEM_ERROR_
 #include <yvals.h>
@@ -16,7 +15,7 @@
 #include <xerrc.h>
 #ifndef _M_CEE_PURE
 #include <atomic>
-#endif // _M_CEE_PURE
+#endif // !defined(_M_CEE_PURE)
 
 #if _HAS_CXX20
 #include <compare>
@@ -28,6 +27,12 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("noop_dtor")
+#undef msvc
+#undef noop_dtor
 
 _STD_BEGIN
 _EXPORT_STD enum class io_errc { // error codes for ios_base::failure
@@ -99,17 +104,15 @@ public:
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
     }
 
-#if !_HAS_CXX20
-    _NODISCARD bool operator!=(const error_category& _Right) const noexcept {
-        return !(*this == _Right);
-    }
-#endif // !_HAS_CXX20
-
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     _NODISCARD strong_ordering operator<=>(const error_category& _Right) const noexcept {
         return _Bit_cast<uintptr_t>(_Addr) <=> _Bit_cast<uintptr_t>(_Right._Addr);
     }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    _NODISCARD bool operator!=(const error_category& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+
     _NODISCARD bool operator<(const error_category& _Right) const noexcept {
 #ifdef _M_CEE_PURE
         return _Addr < _Right._Addr;
@@ -117,7 +120,7 @@ public:
         return _Bit_cast<uintptr_t>(_Addr) < _Bit_cast<uintptr_t>(_Right._Addr);
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
     }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     error_category(const error_category&)            = delete;
     error_category& operator=(const error_category&) = delete;
@@ -217,20 +220,18 @@ public:
         return _System_error_equal(_Left, _Right);
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     _NODISCARD_FRIEND strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
         if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
             return _Result;
         }
         return _Left.value() <=> _Right.value();
     }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD_FRIEND bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
         return _Left.category() < _Right.category()
             || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
     }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
-#if !_HAS_CXX20
     _NODISCARD_FRIEND bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
         return _System_error_equal(_Right, _Left);
     }
@@ -246,7 +247,7 @@ public:
     _NODISCARD_FRIEND bool operator!=(const error_condition& _Left, const error_code& _Right) noexcept {
         return !_System_error_equal(_Right, _Left);
     }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 
 private:
@@ -304,7 +305,7 @@ public:
         return _Left.category() == _Right.category() && _Left.value() == _Right.value();
     }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     _NODISCARD_FRIEND strong_ordering operator<=>(
         const error_condition& _Left, const error_condition& _Right) noexcept {
         if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
@@ -312,17 +313,15 @@ public:
         }
         return _Left.value() <=> _Right.value();
     }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD_FRIEND bool operator<(const error_condition& _Left, const error_condition& _Right) noexcept {
         return _Left.category() < _Right.category()
             || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
     }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
-#if !_HAS_CXX20
     _NODISCARD_FRIEND bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
         return !(_Left == _Right);
     }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     // We grant friendship to the operators from error_code here to allow is_error_code_enum_v but not
     // is_error_condition_enum_v enums to be compared directly with error_condition; for example:
@@ -357,7 +356,7 @@ _EXPORT_STD _NODISCARD inline bool operator==(const error_condition& _Left, cons
     return _Left.category() == _Right.category() && _Left.value() == _Right.value();
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD _NODISCARD inline strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
     if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
         return _Result;
@@ -372,7 +371,7 @@ _EXPORT_STD _NODISCARD inline strong_ordering operator<=>(
     }
     return _Left.value() <=> _Right.value();
 }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 _NODISCARD inline bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
     return _Left.category() < _Right.category()
         || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
@@ -382,9 +381,7 @@ _NODISCARD inline bool operator<(const error_condition& _Left, const error_condi
     return _Left.category() < _Right.category()
         || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-#if !_HAS_CXX20
 _NODISCARD inline bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
     return _Right.category().equivalent(_Right.value(), _Left) || _Left.category().equivalent(_Right, _Left.value());
 }
@@ -404,8 +401,8 @@ _NODISCARD inline bool operator!=(const error_condition& _Left, const error_code
 _NODISCARD inline bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20
-#endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
+#endif // ^^^ !_HAS_CXX20 ^^^
+#endif // ^^^ !_STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS ^^^
 
 _NODISCARD inline error_condition error_category::default_error_condition(int _Errval) const noexcept {
     // make error_condition for error code
@@ -446,7 +443,7 @@ struct hash<error_code> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = error_code;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD size_t operator()(const error_code& _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const error_code& _Keyval) _CONST_CALL_OPERATOR noexcept {
         return hash<int>{}(_Keyval.value());
     }
 };
@@ -456,7 +453,7 @@ struct hash<error_condition> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = error_condition;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD size_t operator()(const error_condition& _Keyval) const noexcept {
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const error_condition& _Keyval) _CONST_CALL_OPERATOR noexcept {
         return hash<int>{}(_Keyval.value());
     }
 };
@@ -649,7 +646,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     [[_Clang::__require_constant_initialization__]] static _Ty _Static;
     return _Static;
 }
-#elif !defined(_M_CEE) // TRANSITION, VSO-1153256
+#elif !defined(_M_CEE)
 template <class _Ty>
 struct _Constexpr_immortalize_impl {
     union {
@@ -671,7 +668,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static _Constexpr_immortalize_impl<_Ty> _Static;
     return _Static._Storage;
 }
-#else // ^^^ no workaround / workaround vvv
+#else // ^^^ !defined(_M_CEE) / defined(_M_CEE), TRANSITION, VSO-1153256 vvv
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     // return reference to a memcpy'd default-initialized _Ty
@@ -690,7 +687,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     _Storage[0].store(_Target_iter[0], memory_order_release);
     return reinterpret_cast<_Ty&>(_Storage);
 }
-#endif // choose immortalize strategy
+#endif // ^^^ defined(_M_CEE), TRANSITION, VSO-1153256 ^^^
 
 _EXPORT_STD _NODISCARD inline const error_category& generic_category() noexcept {
     return _Immortalize_memcpy_image<_Generic_error_category>();
@@ -706,9 +703,9 @@ _EXPORT_STD _NODISCARD inline const error_category& system_category() noexcept {
 _STD_END
 
 #if _HAS_CXX17
-_EXTERN_C
+extern "C" {
 enum class __std_win_error : unsigned long;
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 // We would really love to use the proper way of building error_code by specializing
@@ -716,7 +713,7 @@ _STD_BEGIN
 //   1. We would like to keep the definition of __std_win_error in xfilesystem_abi.h
 //   2. and xfilesystem_abi.h cannot include <system_error>
 //   3. and specialization of is_error_code_enum and overload of make_error_code
-//      need to be kept together with the enum (see limerick in N4810 [temp.expl.spec]/7)
+//      need to be kept together with the enum (see limerick in N4950 [temp.expl.spec]/8)
 // we resort to using this _Make_ec helper.
 _NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make an error_code
     return {static_cast<int>(_Errno), _STD system_category()};
@@ -727,6 +724,10 @@ _NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make
 }
 _STD_END
 #endif // _HAS_CXX17
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("noop_dtor")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

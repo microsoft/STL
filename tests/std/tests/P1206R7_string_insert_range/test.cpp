@@ -36,7 +36,6 @@ static constexpr wchar_t whw[] = L"Hello, World!";
 struct string_instantiator {
     template <ranges::input_range R>
     static void call() {
-        // clang-format off
         constexpr auto& text = []() -> auto& {
             if constexpr (is_same_v<ranges::range_value_t<R>, char>) {
                 return hw;
@@ -44,7 +43,6 @@ struct string_instantiator {
                 return whw;
             }
         }();
-        // clang-format on
 
         test_string(0, 0, R{text}, text);
         STATIC_ASSERT(test_string(0, 0, R{text}, text));

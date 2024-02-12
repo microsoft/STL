@@ -1,15 +1,74 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
+
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <iterator>
+#include <memory>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
+template <class T>
+void check_checked_array_iterator_category_and_convertibility() {
+    STATIC_ASSERT(std::is_same_v<typename stdext::checked_array_iterator<T*>::iterator_category,
+        std::random_access_iterator_tag>);
+
+    STATIC_ASSERT(std::is_same_v<typename stdext::checked_array_iterator<T*>::value_type, std::remove_cv_t<T>>);
+
+    STATIC_ASSERT(std::is_same_v<typename stdext::checked_array_iterator<T*>::difference_type, std::ptrdiff_t>);
+
+    STATIC_ASSERT(std::is_same_v<typename stdext::checked_array_iterator<T*>::pointer, T*>);
+
+    STATIC_ASSERT(std::is_same_v<typename stdext::checked_array_iterator<T*>::reference, T&>);
+
+    STATIC_ASSERT(std::is_convertible_v<stdext::checked_array_iterator<T*>, stdext::checked_array_iterator<const T*>>);
+
+#if _HAS_CXX20
+    STATIC_ASSERT(
+        std::is_same_v<typename stdext::checked_array_iterator<T*>::iterator_concept, std::contiguous_iterator_tag>);
+
+    STATIC_ASSERT(std::contiguous_iterator<stdext::checked_array_iterator<T*>>);
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void check_unchecked_array_iterator_category_and_convertibility() {
+    STATIC_ASSERT(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::iterator_category,
+        std::random_access_iterator_tag>);
+
+    STATIC_ASSERT(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::value_type, std::remove_cv_t<T>>);
+
+    STATIC_ASSERT(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::difference_type, std::ptrdiff_t>);
+
+    STATIC_ASSERT(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::pointer, T*>);
+
+    STATIC_ASSERT(std::is_same_v<typename stdext::unchecked_array_iterator<T*>::reference, T&>);
+
+    STATIC_ASSERT(
+        std::is_convertible_v<stdext::unchecked_array_iterator<T*>, stdext::unchecked_array_iterator<const T*>>);
+
+#if _HAS_CXX20
+    STATIC_ASSERT(
+        std::is_same_v<typename stdext::unchecked_array_iterator<T*>::iterator_concept, std::contiguous_iterator_tag>);
+
+    STATIC_ASSERT(std::contiguous_iterator<stdext::unchecked_array_iterator<T*>>);
+#endif // _HAS_CXX20
+}
+
 int main() {
     {
+        check_checked_array_iterator_category_and_convertibility<int>();
+        check_checked_array_iterator_category_and_convertibility<const int>();
+        check_checked_array_iterator_category_and_convertibility<std::tuple<const char*>>();
+
+
         int* const p = new int[9];
 
         for (int i = 0; i < 9; ++i) {
@@ -19,31 +78,28 @@ int main() {
 
         auto cat = stdext::make_checked_array_iterator(p, 9);
 
-        static_assert(std::is_same_v<decltype(cat), stdext::checked_array_iterator<int*>>,
-            "stdext::make_checked_array_iterator(p, 9)'s return type is wrong!");
+        STATIC_ASSERT(std::is_same_v<decltype(cat), stdext::checked_array_iterator<int*>>);
+
+#if _HAS_CXX20
+        assert(std::to_address(cat) == &*cat);
+        assert(std::to_address(cat + 8) == &*cat + 8);
+        assert(std::to_address(cat + 8) == std::to_address(cat) + 8);
+        assert(std::to_address(cat + 9) == std::to_address(cat) + 9);
+#endif // _HAS_CXX20
 
 
         auto dog = stdext::make_checked_array_iterator(p, 9, 3);
 
-        static_assert(std::is_same_v<decltype(dog), stdext::checked_array_iterator<int*>>,
-            "stdext::make_checked_array_iterator(p, 9, 3)'s return type is wrong!");
+        STATIC_ASSERT(std::is_same_v<decltype(dog), stdext::checked_array_iterator<int*>>);
 
-
-        static_assert(
-            std::is_same_v<stdext::checked_array_iterator<int*>::iterator_category, std::random_access_iterator_tag>,
-            "stdext::checked_array_iterator<int *>::iterator_category is wrong!");
-
-        static_assert(std::is_same_v<stdext::checked_array_iterator<int*>::value_type, int>,
-            "stdext::checked_array_iterator<int *>::value_type is wrong!");
-
-        static_assert(std::is_same_v<stdext::checked_array_iterator<int*>::difference_type, ptrdiff_t>,
-            "stdext::checked_array_iterator<int *>::difference_type is wrong!");
-
-        static_assert(std::is_same_v<stdext::checked_array_iterator<int*>::pointer, int*>,
-            "stdext::checked_array_iterator<int *>::pointer is wrong!");
-
-        static_assert(std::is_same_v<stdext::checked_array_iterator<int*>::reference, int&>,
-            "stdext::checked_array_iterator<int *>::reference is wrong!");
+#if _HAS_CXX20
+        assert(std::to_address(dog) == &*dog);
+        assert(std::to_address(dog + 5) == &*dog + 5);
+        assert(std::to_address(dog + 5) == std::to_address(dog) + 5);
+        assert(std::to_address(dog - 3) == &*dog - 3);
+        assert(std::to_address(dog - 3) == std::to_address(dog) - 3);
+        assert(std::to_address(dog + 6) == std::to_address(dog) + 6);
+#endif // _HAS_CXX20
 
 
         {
@@ -184,6 +240,11 @@ int main() {
     }
 
     {
+        check_unchecked_array_iterator_category_and_convertibility<int>();
+        check_unchecked_array_iterator_category_and_convertibility<const int>();
+        check_unchecked_array_iterator_category_and_convertibility<std::tuple<const char*>>();
+
+
         int* const p = new int[9];
 
         for (int i = 0; i < 9; ++i) {
@@ -193,31 +254,28 @@ int main() {
 
         auto cat = stdext::make_unchecked_array_iterator(p);
 
-        static_assert(std::is_same_v<decltype(cat), stdext::unchecked_array_iterator<int*>>,
-            "stdext::make_unchecked_array_iterator(p)'s return type is wrong!");
+        STATIC_ASSERT(std::is_same_v<decltype(cat), stdext::unchecked_array_iterator<int*>>);
+
+#if _HAS_CXX20
+        assert(std::to_address(cat) == &*cat);
+        assert(std::to_address(cat + 8) == &*cat + 8);
+        assert(std::to_address(cat + 8) == std::to_address(cat) + 8);
+        assert(std::to_address(cat + 9) == std::to_address(cat) + 9);
+#endif // _HAS_CXX20
 
 
         auto dog = stdext::make_unchecked_array_iterator(p + 3);
 
-        static_assert(std::is_same_v<decltype(dog), stdext::unchecked_array_iterator<int*>>,
-            "stdext::make_unchecked_array_iterator(p + 3)'s return type is wrong!");
+        STATIC_ASSERT(std::is_same_v<decltype(dog), stdext::unchecked_array_iterator<int*>>);
 
-
-        static_assert(
-            std::is_same_v<stdext::unchecked_array_iterator<int*>::iterator_category, std::random_access_iterator_tag>,
-            "stdext::unchecked_array_iterator<int *>::iterator_category is wrong!");
-
-        static_assert(std::is_same_v<stdext::unchecked_array_iterator<int*>::value_type, int>,
-            "stdext::unchecked_array_iterator<int *>::value_type is wrong!");
-
-        static_assert(std::is_same_v<stdext::unchecked_array_iterator<int*>::difference_type, ptrdiff_t>,
-            "stdext::unchecked_array_iterator<int *>::difference_type is wrong!");
-
-        static_assert(std::is_same_v<stdext::unchecked_array_iterator<int*>::pointer, int*>,
-            "stdext::unchecked_array_iterator<int *>::pointer is wrong!");
-
-        static_assert(std::is_same_v<stdext::unchecked_array_iterator<int*>::reference, int&>,
-            "stdext::unchecked_array_iterator<int *>::reference is wrong!");
+#if _HAS_CXX20
+        assert(std::to_address(dog) == &*dog);
+        assert(std::to_address(dog + 5) == &*dog + 5);
+        assert(std::to_address(dog + 5) == std::to_address(dog) + 5);
+        assert(std::to_address(dog - 3) == &*dog - 3);
+        assert(std::to_address(dog - 3) == std::to_address(dog) - 3);
+        assert(std::to_address(dog + 6) == std::to_address(dog) + 6);
+#endif // _HAS_CXX20
 
 
         {

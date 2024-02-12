@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// _FExp function
-
 #include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
@@ -14,8 +12,8 @@ static const float c2     = 1.4286068203094172321214581765680755e-6F;
 static const float hugexp = FHUGE_EXP;
 static const float invln2 = 1.4426950408889634073599246810018921F;
 
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(
-    float* px, float y, short eoff) { // compute y * e^(*px), (*px) finite, |y| not huge
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float* px, float y, short eoff) noexcept {
+    // compute y * e^(*px), (*px) finite, |y| not huge
     if (y == 0.0F) { // zero
         *px = y;
         return 0;

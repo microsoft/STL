@@ -15,6 +15,7 @@ config.name           = 'tr1'
 config.suffixes       = ['test[.]cpp$']
 config.test_exec_root = "@TR1_TEST_OUTPUT_DIR@"
 config.test_format    = stl.test.format.STLTestFormat()
+config.substitutions.append(('%{cxx_std}', ''))
 
 lit_config.expected_results = getattr(lit_config, 'expected_results', dict())
 lit_config.include_dirs     = getattr(lit_config, 'include_dirs', dict())

@@ -4,10 +4,12 @@
 Copyright (c) Microsoft Corporation.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
+    <PropertyGroup Label="Configuration">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+    </PropertyGroup>
 
     <PropertyGroup>
         <FinalBinary>p_stl_asan</FinalBinary>
-        <TargetType>LIBRARY</TargetType>
         <Arm64CombinedPdb>true</Arm64CombinedPdb>
     </PropertyGroup>
 

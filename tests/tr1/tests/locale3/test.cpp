@@ -72,41 +72,41 @@ void test_messages() { // test messages<char>
 
 struct Myxmpunct : public STD moneypunct<char, false> { // specify money punctuation
 protected:
-    virtual char do_decimal_point() const { // return decimal point
+    char do_decimal_point() const override { // return decimal point
         return '_';
     }
 
-    virtual char do_thousands_sep() const { // return thousands separator
+    char do_thousands_sep() const override { // return thousands separator
         return ';';
     }
 
-    virtual STD string do_grouping() const { // return grouping rule
+    STD string do_grouping() const override { // return grouping rule
         return "\2";
     }
 
-    virtual STD string do_curr_symbol() const { // return currency symbol
+    STD string do_curr_symbol() const override { // return currency symbol
         return "@@";
     }
 
-    virtual STD string do_positive_sign() const { // return positive sign
+    STD string do_positive_sign() const override { // return positive sign
         return "+";
     }
 
-    virtual STD string do_negative_sign() const { // return negative sign
+    STD string do_negative_sign() const override { // return negative sign
         return "-";
     }
 
-    virtual int do_frac_digits() const { // return number of fraction digits
+    int do_frac_digits() const override { // return number of fraction digits
         return 4;
     }
 
-    virtual pattern do_neg_format() const { // return pattern for negative format
+    pattern do_neg_format() const override { // return pattern for negative format
         static STD money_base::pattern pat = {
             {STD money_base::sign, STD money_base::symbol, STD money_base::value, STD money_base::none}};
         return pat;
     }
 
-    virtual pattern do_pos_format() const { // return pattern for positive format
+    pattern do_pos_format() const override { // return pattern for positive format
         static STD money_base::pattern pat = {
             {STD money_base::sign, STD money_base::none, STD money_base::symbol, STD money_base::value}};
         return pat;
@@ -117,7 +117,7 @@ struct Myxctype2 : public STD ctype<char> { // get protected members
     Myxctype2() { // default construct
     }
 
-    virtual char do_widen(char ch) const { // widen a character
+    char do_widen(char ch) const override { // widen a character
         if (ch == '-') {
             return '@';
         } else if (ch == '0') {
@@ -129,15 +129,15 @@ struct Myxctype2 : public STD ctype<char> { // get protected members
         }
     }
 
-    virtual const char* do_widen(const char* first, const char* last,
-        char* dest) const { // widen a character sequence
+    const char* do_widen(const char* first, const char* last,
+        char* dest) const override { // widen a character sequence
         for (; first != last; ++first, ++dest) {
             *dest = do_widen(*first);
         }
         return first;
     }
 
-    virtual char do_narrow(char ch, char) const { // narrow a character
+    char do_narrow(char ch, char) const override { // narrow a character
         if (ch == 'P') {
             return '%';
         } else if (ch == 'K') {
@@ -149,8 +149,8 @@ struct Myxctype2 : public STD ctype<char> { // get protected members
         }
     }
 
-    virtual const char* do_narrow(
-        const char* first, const char* last, char, char* dest) const { // narrow a character sequence
+    const char* do_narrow(
+        const char* first, const char* last, char, char* dest) const override { // narrow a character sequence
         for (; first != last; ++first, ++dest) {
             *dest = do_narrow(*first, '\0');
         }

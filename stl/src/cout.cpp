@@ -14,14 +14,13 @@ static std::_Init_locks initlocks;
 
 _STD_BEGIN
 
-__PURE_APPDOMAIN_GLOBAL static filebuf fout(_cpp_stdout);
+__PURE_APPDOMAIN_GLOBAL static filebuf fout(stdout);
 
 #if defined(_M_CEE_PURE)
 __PURE_APPDOMAIN_GLOBAL extern ostream cout(&fout);
-
-#else // defined(_M_CEE_PURE)
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream cout(&fout);
-#endif // defined(_M_CEE_PURE)
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 struct _Init_cout { // ensures that cout is initialized
     __CLR_OR_THIS_CALL _Init_cout() { // initialize cout

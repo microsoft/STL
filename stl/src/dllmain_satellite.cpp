@@ -5,7 +5,7 @@
 
 // DllMain for 'satellite' DLLs which don't need TLS.
 
-extern "C" BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID) {
+extern "C" BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID) noexcept {
     if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
         if (!DisableThreadLibraryCalls(hModule)) {
             return FALSE;

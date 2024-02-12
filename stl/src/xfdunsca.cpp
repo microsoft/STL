@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-short _FDunscale(short* pex, float* px) { // separate *px to 1/2 <= |frac| < 1 and 2^*pex
+short _FDunscale(short* pex, float* px) noexcept { // separate *px to 1/2 <= |frac| < 1 and 2^*pex
     const auto ps = reinterpret_cast<_Fval*>(px);
     short xchar   = (ps->_Sh[_F0] & _FMASK) >> _FOFF;
 

@@ -4,6 +4,9 @@
 Copyright (c) Microsoft Corporation.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
+    <PropertyGroup Label="Configuration">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+    </PropertyGroup>
 
     <PropertyGroup>
         <FinalBinary>p_post</FinalBinary>
@@ -11,8 +14,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
         <TargetNetFx Condition="'$(MsvcpFlavor)' == 'netfx'">true</TargetNetFx>
-
-        <TargetType>LIBRARY</TargetType>
     </PropertyGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt_build.settings.targets"/>
@@ -43,15 +44,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <ItemGroup>
         <ProjectReference
-            Include="$(CrtRoot)\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)\msvcp.nativeproj"/>
+            Include="$(CrtRoot)\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)\msvcp.vcxproj"/>
         <ProjectReference
-            Include="$(CrtRoot)\github\stl\msbuild\stl_1\$(CrtBuildModel)\msvcp_1_$(MsvcpFlavor)\msvcp_1.nativeproj"/>
+            Include="$(CrtRoot)\github\stl\msbuild\stl_1\$(CrtBuildModel)\msvcp_1_$(MsvcpFlavor)\msvcp_1.vcxproj"/>
         <ProjectReference
-            Include="$(CrtRoot)\github\stl\msbuild\stl_2\$(CrtBuildModel)\msvcp_2_$(MsvcpFlavor)\msvcp_2.nativeproj"/>
+            Include="$(CrtRoot)\github\stl\msbuild\stl_2\$(CrtBuildModel)\msvcp_2_$(MsvcpFlavor)\msvcp_2.vcxproj"/>
         <ProjectReference
-            Include="$(CrtRoot)\github\stl\msbuild\stl_codecvt_ids\$(CrtBuildModel)\msvcp_codecvt_ids_$(MsvcpFlavor)\msvcp_codecvt_ids.nativeproj"/>
+            Include="$(CrtRoot)\github\stl\msbuild\stl_codecvt_ids\$(CrtBuildModel)\msvcp_codecvt_ids_$(MsvcpFlavor)\msvcp_codecvt_ids.vcxproj"/>
         <ProjectReference
-            Include="$(CrtRoot)\github\stl\msbuild\stl_atomic_wait\$(CrtBuildModel)\msvcp_atomic_wait_$(MsvcpFlavor)\msvcp_atomic_wait.nativeproj"/>
+            Include="$(CrtRoot)\github\stl\msbuild\stl_atomic_wait\$(CrtBuildModel)\msvcp_atomic_wait_$(MsvcpFlavor)\msvcp_atomic_wait.vcxproj"/>
         <Lib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib">
             <IncludeInChameleonLib>false</IncludeInChameleonLib>
         </Lib>

@@ -43,7 +43,7 @@ struct apply_modify_cv<modify_cv::add_cv, T> {
 };
 
 template <modify_cv Modification, class T>
-using apply_modify_cv_t = typename apply_modify_cv<Modification, T>::type;
+using apply_modify_cv_t = apply_modify_cv<Modification, T>::type;
 
 template <modify_cv Modification>
 constexpr void test_cv_floating_point() {

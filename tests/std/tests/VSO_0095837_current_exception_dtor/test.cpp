@@ -45,7 +45,7 @@ struct B {
             assert(uncaught_exceptions() == 1);
             A aa;
             throw runtime_error("oh no!");
-        } catch (exception&) {
+        } catch (const exception&) {
             assert(uncaught_exceptions() == 1);
             auto c = current_exception();
             try {

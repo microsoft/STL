@@ -46,19 +46,19 @@ void assert_P0608R3() {
     static_assert(!is_constructible_v<variant<float, vector<int>>, int>);
     static_assert(!is_constructible_v<variant<float, char>, int>);
 
-    static_assert(is_assignable_v<variant<string, bool>, const char*>);
-    static_assert(is_assignable_v<variant<string, bool>, string>);
-    static_assert(is_assignable_v<variant<char, optional<char16_t>>, char16_t>);
-    static_assert(is_assignable_v<variant<int, reference_wrapper<double>>, double&>);
-    static_assert(is_assignable_v<variant<float, int>, char>);
-    static_assert(is_assignable_v<variant<float, long>, int>);
-    static_assert(is_assignable_v<variant<float, long long>, int>);
-    static_assert(is_assignable_v<variant<float, long, double>, int>);
-    static_assert(is_assignable_v<variant<float, vector<int>, long long>, int>);
-    static_assert(is_assignable_v<variant<float, int, long long>, char>);
-    static_assert(!is_assignable_v<variant<float>, int>);
-    static_assert(!is_assignable_v<variant<float, vector<int>>, int>);
-    static_assert(!is_assignable_v<variant<float, char>, int>);
+    static_assert(is_assignable_v<variant<string, bool>&, const char*>);
+    static_assert(is_assignable_v<variant<string, bool>&, string>);
+    static_assert(is_assignable_v<variant<char, optional<char16_t>>&, char16_t>);
+    static_assert(is_assignable_v<variant<int, reference_wrapper<double>>&, double&>);
+    static_assert(is_assignable_v<variant<float, int>&, char>);
+    static_assert(is_assignable_v<variant<float, long>&, int>);
+    static_assert(is_assignable_v<variant<float, long long>&, int>);
+    static_assert(is_assignable_v<variant<float, long, double>&, int>);
+    static_assert(is_assignable_v<variant<float, vector<int>, long long>&, int>);
+    static_assert(is_assignable_v<variant<float, int, long long>&, char>);
+    static_assert(!is_assignable_v<variant<float>&, int>);
+    static_assert(!is_assignable_v<variant<float, vector<int>>&, int>);
+    static_assert(!is_assignable_v<variant<float, char>&, int>);
 }
 
 void assert_P1957R2() {
@@ -67,9 +67,9 @@ void assert_P1957R2() {
     static_assert(is_constructible_v<variant<bool, int>, bitset<4>::reference>);
     static_assert(is_constructible_v<variant<bool>, bitset<4>::reference>);
 
-    static_assert(is_assignable_v<variant<bool, int>, bool>);
-    static_assert(is_assignable_v<variant<bool, int>, bitset<4>::reference>);
-    static_assert(is_assignable_v<variant<bool>, bitset<4>::reference>);
+    static_assert(is_assignable_v<variant<bool, int>&, bool>);
+    static_assert(is_assignable_v<variant<bool, int>&, bitset<4>::reference>);
+    static_assert(is_assignable_v<variant<bool>&, bitset<4>::reference>);
 }
 
 void assert_more_examples() {
@@ -89,20 +89,20 @@ void assert_more_examples() {
     static_assert(!is_constructible_v<variant<char, default_struct>, int>);
     static_assert(!is_constructible_v<variant<float, long, long long>, int>);
 
-    static_assert(is_assignable_v<variant<double_double>, double>);
-    static_assert(is_assignable_v<variant<vector<vector<int>>, optional<int>, int>, int>);
-    static_assert(is_assignable_v<variant<vector<vector<int>>, optional<int>>, int>);
-    static_assert(is_assignable_v<variant<vector<int>, optional<int>, float>, int>);
-    static_assert(is_assignable_v<variant<bool>, convertible_bool>);
-    static_assert(is_assignable_v<variant<bool, int>, convertible_bool>);
-    static_assert(is_assignable_v<variant<convertible_bool>, bool>);
-    static_assert(is_assignable_v<variant<float, bool, convertible_bool>, convertible_bool>);
-    static_assert(is_assignable_v<variant<float, bool, convertible_bool>, bool>);
-    static_assert(is_assignable_v<variant<char, int>, bool>);
-    static_assert(is_assignable_v<variant<double_double>, int>);
-    static_assert(!is_assignable_v<variant<float>, unsigned int>);
-    static_assert(!is_assignable_v<variant<char, default_struct>, int>);
-    static_assert(!is_assignable_v<variant<float, long, long long>, int>);
+    static_assert(is_assignable_v<variant<double_double>&, double>);
+    static_assert(is_assignable_v<variant<vector<vector<int>>, optional<int>, int>&, int>);
+    static_assert(is_assignable_v<variant<vector<vector<int>>, optional<int>>&, int>);
+    static_assert(is_assignable_v<variant<vector<int>, optional<int>, float>&, int>);
+    static_assert(is_assignable_v<variant<bool>&, convertible_bool>);
+    static_assert(is_assignable_v<variant<bool, int>&, convertible_bool>);
+    static_assert(is_assignable_v<variant<convertible_bool>&, bool>);
+    static_assert(is_assignable_v<variant<float, bool, convertible_bool>&, convertible_bool>);
+    static_assert(is_assignable_v<variant<float, bool, convertible_bool>&, bool>);
+    static_assert(is_assignable_v<variant<char, int>&, bool>);
+    static_assert(is_assignable_v<variant<double_double>&, int>);
+    static_assert(!is_assignable_v<variant<float>&, unsigned int>);
+    static_assert(!is_assignable_v<variant<char, default_struct>&, int>);
+    static_assert(!is_assignable_v<variant<float, long, long long>&, int>);
 }
 
 void test_variant_constructor_P0608R3() {

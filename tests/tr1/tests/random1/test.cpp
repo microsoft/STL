@@ -224,13 +224,15 @@ static void tmt19937() {
     CHECK_INT(rng_t::state_size, 624);
     CHECK_INT(rng_t::shift_size, 397);
     CHECK_INT(rng_t::mask_bits, 31);
-    CHECK_INT((int) rng_t::parameter_a, (int) 0x9908b0df);
-    CHECK_INT(rng_t::output_u, 11);
-    CHECK_INT(rng_t::output_s, 7);
-    CHECK_INT((int) rng_t::output_b, (int) 0x9d2c5680);
-    CHECK_INT(rng_t::output_t, 15);
-    CHECK_INT((int) rng_t::output_c, (int) 0xefc60000);
-    CHECK_INT(rng_t::output_l, 18);
+    CHECK_INT((int) rng_t::xor_mask, (int) 0x9908b0df);
+    CHECK_INT(rng_t::tempering_u, 11);
+    CHECK_INT((int) rng_t::tempering_d, (int) 0xffffffff);
+    CHECK_INT(rng_t::tempering_s, 7);
+    CHECK_INT((int) rng_t::tempering_b, (int) 0x9d2c5680);
+    CHECK_INT(rng_t::tempering_t, 15);
+    CHECK_INT((int) rng_t::tempering_c, (int) 0xefc60000);
+    CHECK_INT(rng_t::tempering_l, 18);
+    CHECK_INT(rng_t::initialization_multiplier, 1812433253);
     rng_t rng;
     Int32 res = 0;
     for (int i = 0; i < 10000; ++i) {
@@ -466,9 +468,11 @@ static void tdiscard() {
     typedef STD discard_block<rng_base_t, 223, 24> rng_t;
     CHECK_INT(rng_t::block_size, 223);
     CHECK_INT(rng_t::used_block, 24);
+#if _HAS_TR1_NAMESPACE
     CHECK_INT(rng_t::base_type::modulus, 1 << 24);
     CHECK_INT(rng_t::base_type::long_lag, 24);
     CHECK_INT(rng_t::base_type::short_lag, 10);
+#endif // _HAS_TR1_NAMESPACE
     bool st = STD is_same<rng_t::result_type, Uint32>::value;
     CHECK(st);
 

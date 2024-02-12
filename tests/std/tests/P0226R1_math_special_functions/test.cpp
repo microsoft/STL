@@ -261,9 +261,9 @@ void test_cyl_neumann() {
         assert(isclose(cyl_neumannl(0.5L, 0.333L), -1.30'671'255'810'072'199L, 2));
     }
     {
-        assert(isclose(cyl_neumann(0.5, 0.666), -0.768'760'134'281'402'040));
+        assert(isclose(cyl_neumann(0.5, 0.666), -0.768'760'134'281'402'040, 2));
         assert(isclose(cyl_neumannf(0.5f, 0.666f), -0.768'760'134'281'402'040f));
-        assert(isclose(cyl_neumannl(0.5L, 0.666L), -0.768'760'134'281'402'040L));
+        assert(isclose(cyl_neumannl(0.5L, 0.666L), -0.768'760'134'281'402'040L, 2));
     }
 }
 
@@ -514,9 +514,7 @@ void test_sph_neumann() {
 
 // Also test GH-3076 <cmath>: Invalid output for incomplete elliptic integral of the second kind with k = 1
 void test_gh_3076() {
-#if !defined(_MSVC_INTERNAL_TESTING) || !defined(_DLL) // TRANSITION, 17.6 Preview 2 unlocked redist
     assert(isclose(ellint_2(1, 6.2831853071795862), 4.0));
-#endif // !defined(_MSVC_INTERNAL_TESTING) || !defined(_DLL)
 }
 
 int main() {

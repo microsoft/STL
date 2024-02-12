@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CSTDLIB_
 #define _CSTDLIB_
 #include <yvals_core.h>
@@ -19,6 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+_EXTERN_CXX_WORKAROUND
 // <stdlib.h> has abs(long) and abs(long long)
 _NODISCARD _Check_return_ inline double abs(_In_ double _Xx) noexcept /* strengthened */ {
     return _CSTD fabs(_Xx);
@@ -31,6 +31,7 @@ _NODISCARD _Check_return_ inline float abs(_In_ float _Xx) noexcept /* strengthe
 _NODISCARD _Check_return_ inline long double abs(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD fabsl(_Xx);
 }
+_END_EXTERN_CXX_WORKAROUND
 
 _STD_BEGIN
 _EXPORT_STD using _CSTD size_t;

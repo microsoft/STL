@@ -38,6 +38,7 @@ class STLTest(Test):
     def configureTest(self, litConfig):
         self.compileFlags = []
         self.cxx = None
+        self.env = {}
         self.fileDependencies = []
         self.flags = []
         self.isenseRspPath = None
@@ -78,6 +79,11 @@ class STLTest(Test):
             self.isenseRspPath = tmpBase + '.isense.rsp'
             self.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + self.isenseRspPath])
 
+        # TRANSITION, google/sanitizers#328: clang-cl does not support /MDd or /MTd with ASan
+        if ('clang' in self.config.available_features and 'asan' in self.config.available_features and
+            ('MTd' in self.config.available_features or 'MDd' in self.config.available_features)):
+            return Result(UNSUPPORTED, 'clang does not support debug variants of the STL with ASan')
+
         self._configureTestType()
 
         forceFail = self.expectedResult and self.expectedResult.isFailure
@@ -98,9 +104,17 @@ class STLTest(Test):
                                                        lit.TestRunner.ParserKind.LIST,
                                                        initial_value=fileDependencies),
             lit.TestRunner.IntegratedTestKeywordParser('ADDITIONAL_COMPILE_FLAGS:',
-                                                       lit.TestRunner.ParserKind.LIST,
+                                                       lit.TestRunner.ParserKind.SPACE_LIST,
                                                        initial_value=additionalCompileFlags)
         ]
+
+        for feature in self.config.available_features:
+            parser = lit.TestRunner.IntegratedTestKeywordParser(
+                "ADDITIONAL_COMPILE_FLAGS({}):".format(feature),
+                lit.TestRunner.ParserKind.SPACE_LIST,
+                initial_value=additionalCompileFlags,
+            )
+            parsers.append(parser)
 
         lit.TestRunner.parseIntegratedTestScript(self, additional_parsers=parsers, require_script=False)
         self.compileFlags.extend(additionalCompileFlags)
@@ -180,6 +194,14 @@ class STLTest(Test):
     def _handleEnvlst(self, litConfig):
         envCompiler = self.envlstEntry.getEnvVal('PM_COMPILER', 'cl')
 
+        if self.config.runPLTags and not self.envlstEntry.hasAnyTag(self.config.runPLTags):
+            return Result(SKIPPED, 'This test was skipped because its tags {}'.format(str(self.envlstEntry._env_tags)) +
+                                   ' do not match any of the selected tags {}'.format(str(self.config.runPLTags)))
+
+        if self.config.runPLNotags and self.envlstEntry.hasAnyTag(self.config.runPLNotags):
+            return Result(SKIPPED, 'This test was skipped because its tags {}'.format(str(self.envlstEntry._env_tags)) +
+                                   ' match any of the excluded tags {}'.format(str(self.config.runPLNotags)))
+
         cxx = None
         if os.path.isfile(envCompiler):
             cxx = envCompiler
@@ -205,6 +227,7 @@ class STLTest(Test):
 
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('clang')
+            self._addCustomFeature('gcc-style-warnings')
 
             targetArch = litConfig.target_arch.casefold()
             if (targetArch == 'x64'.casefold()):
@@ -221,7 +244,7 @@ class STLTest(Test):
             # nvcc only supports targeting x64
             self.requires.append('x64')
         else:
-            self._addCustomFeature('cl')
+            self._addCustomFeature('cl-style-warnings')
 
         self.cxx = os.path.normpath(cxx)
         return None
@@ -234,7 +257,13 @@ class STLTest(Test):
     def _parseFlags(self, litConfig):
         foundStd = False
         foundCRT = False
+        afterAnalyzePlugin = False
         for flag in chain(self.flags, self.compileFlags, self.linkFlags):
+            if afterAnalyzePlugin:
+                if 'EspXEngine.dll'.casefold() in flag.casefold():
+                    self._addCustomFeature('espxengine')
+                afterAnalyzePlugin = False
+
             if flag[1:5] == 'std:':
                 foundStd = True
                 if flag[5:] == 'c++latest':
@@ -245,12 +274,18 @@ class STLTest(Test):
                     self._addCustomFeature('c++17')
                 elif flag[5:] == 'c++14':
                     self._addCustomFeature('c++14')
+            elif flag[1:11] == 'fsanitize=':
+                for sanitizer in flag[11:].split(','):
+                    if sanitizer == 'address':
+                        self._addCustomFeature('asan')
+                    elif sanitizer == 'undefined':
+                        self.requires.append('ubsan') # available for x64, see features.py
+                    else:
+                        pass # :shrug: good luck!
             elif flag[1:] == 'clr:pure':
                 self.requires.append('clr_pure') # TRANSITION, GH-798
             elif flag[1:] == 'clr':
                 self.requires.append('clr') # TRANSITION, GH-797
-            elif flag[1:] == 'fsanitize=undefined':
-                self.requires.append('ubsan') # available for x64, see features.py
             elif flag[1:] == 'BE':
                 self.requires.append('edg') # available for x64, see features.py
             elif flag[1:] == 'arch:AVX2':
@@ -259,8 +294,6 @@ class STLTest(Test):
                 self.requires.append('arch_ia32') # available for x86, see features.py
             elif flag[1:] == 'arch:VFPv4':
                 self.requires.append('arch_vfpv4') # available for arm, see features.py
-            elif flag[1:] == 'fsanitize=address':
-                self._addCustomFeature('asan')
             elif flag[1:] == 'MDd':
                 self._addCustomFeature('MDd')
                 self._addCustomFeature('debug_CRT')
@@ -279,6 +312,8 @@ class STLTest(Test):
                 self._addCustomFeature('MT')
                 self._addCustomFeature('static_CRT')
                 foundCRT = True
+            elif flag[1:] == 'analyze:plugin':
+                afterAnalyzePlugin = True
 
         if not foundStd:
             self._addCustomFeature('c++14')
@@ -294,6 +329,11 @@ class STLTest(Test):
         if 'asan' in self.config.available_features and 'clang' in self.config.available_features:
             self.linkFlags.append("/INFERASANLIBS")
 
+        # code analysis settings
+        if 'espxengine' in self.config.available_features:
+            self.compileFlags.extend(["/analyze:rulesetdirectory", ';'.join(litConfig.ruleset_dirs[self.config.name])])
+            self.env['Esp.Extensions'] = 'CppCoreCheck.dll'
+            self.env['Esp.AnnotationBuildLevel'] = 'Ignore'
 
 class LibcxxTest(STLTest):
     def getTestName(self):

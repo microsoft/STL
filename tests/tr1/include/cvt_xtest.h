@@ -3,8 +3,7 @@
 
 // test a codecvt facet
 #pragma once
-#ifndef _CVT_XTEST_
-#define _CVT_XTEST_
+
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstdlib>
@@ -181,4 +180,3 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma pack(pop)
 
 #endif // _STL_COMPILER_PREPROCESSOR
-#endif // _CVT_XTEST_

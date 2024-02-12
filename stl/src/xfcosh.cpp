@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// _FCosh function
-
 #include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FCosh(float x, float y) { // compute y * cosh(x), |y| <= 1
+_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FCosh(float x, float y) noexcept { // compute y * cosh(x), |y| <= 1
     switch (_FDtest(&x)) { // test for special codes
     case _NANCODE:
     case _INFCODE:

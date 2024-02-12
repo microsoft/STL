@@ -323,7 +323,7 @@ constexpr atomic<Bytes<17>> b17_constexpr_v(Bytes<17>{});
 #endif // __clang__
 
 // Also test trivial destructors
-STATIC_ASSERT(is_trivially_destructible_v<atomic<Bytes<1>>>); // these struct cases (and bool)
+STATIC_ASSERT(is_trivially_destructible_v<atomic<Bytes<1>>>); // these struct cases
 STATIC_ASSERT(is_trivially_destructible_v<atomic<Bytes<2>>>); // aren't technically required to work
 STATIC_ASSERT(is_trivially_destructible_v<atomic<Bytes<3>>>); // in the spec, but we think they should
 STATIC_ASSERT(is_trivially_destructible_v<atomic<Bytes<4>>>); // on any reasonable implementation

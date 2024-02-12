@@ -10,16 +10,23 @@
 
 using namespace std;
 
-// The following monstrosity avoids activating the test code for _DLL compiles
-// that use a non-default value of _ITERATOR_DEBUG_LEVEL (_ITERATOR_DEBUG_LEVEL
-// defaults to "0" for release builds and "2" for _DEBUG).
-#if defined(_DLL) && (_ITERATOR_DEBUG_LEVEL == 1 || (defined(_DEBUG) != (_ITERATOR_DEBUG_LEVEL == 2)))
-#define ENABLE_TEST 0
+// Because std::string crosses the DLL boundary via overridden virtual functions,
+// we can test custom facets only when:
+// * linking statically, or
+// * linking dynamically with IDL set to its default value (so the user code and the DLL match).
+#ifdef _DEBUG
+#define DEFAULT_IDL 2
 #else
-#define ENABLE_TEST 1
-#endif // defined(_DLL) && (_ITERATOR_DEBUG_LEVEL == 1 || (defined(_DEBUG) != (_ITERATOR_DEBUG_LEVEL == 2)))
+#define DEFAULT_IDL 0
+#endif
 
-#if ENABLE_TEST
+#if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL
+#define TEST_CUSTOM_FACET 1
+#else
+#define TEST_CUSTOM_FACET 0
+#endif
+
+#if TEST_CUSTOM_FACET
 void test_Dev11_496153_locale_ctor_should_not_throw() noexcept {
     const locale loc(setlocale(LC_ALL, nullptr));
 
@@ -27,7 +34,7 @@ void test_Dev11_496153_locale_ctor_should_not_throw() noexcept {
 }
 
 struct comma_separator : numpunct<char> {
-    virtual char do_decimal_point() const override {
+    char do_decimal_point() const override {
         return ',';
     }
 };
@@ -39,11 +46,11 @@ void test_VSO_159700_locale_should_support_user_defined_facets() {
     str << 1.5f;
     assert("locale didn't support user-defined facets" && str.str() == "1,5");
 }
-#endif // ENABLE_TEST
+#endif // TEST_CUSTOM_FACET
 
 int main() {
-#if ENABLE_TEST
+#if TEST_CUSTOM_FACET
     test_Dev11_496153_locale_ctor_should_not_throw();
     test_VSO_159700_locale_should_support_user_defined_facets();
-#endif // ENABLE_TEST
+#endif // TEST_CUSTOM_FACET
 }

@@ -39,7 +39,7 @@ public:
 
     T* address(T& r) const {
         return &r;
-    };
+    }
 
     const T* address(const T& s) const {
         return &s;

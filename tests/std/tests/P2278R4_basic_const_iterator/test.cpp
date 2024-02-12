@@ -17,9 +17,9 @@ concept Pointer = is_pointer_v<T>;
 
 template <class It>
 concept HasPeek = requires(const It& iter) {
-                      { iter.peek() } -> Pointer;
-                      { iter.peek() } -> convertible_to<const iter_value_t<It>*>;
-                  };
+    { iter.peek() } -> Pointer;
+    { iter.peek() } -> convertible_to<const iter_value_t<It>*>;
+};
 
 static_assert(!HasPeek<int*>);
 static_assert(!HasPeek<reverse_iterator<int*>>);
@@ -41,7 +41,7 @@ constexpr void test_one(It iter) {
     static_assert(same_as<typename ConstIt::value_type, iter_value_t<It>>);
     static_assert(same_as<typename ConstIt::difference_type, iter_difference_t<It>>);
     if constexpr (forward_iterator<It>) {
-        using Cat = typename iterator_traits<It>::iterator_category;
+        using Cat = iterator_traits<It>::iterator_category;
         static_assert(same_as<typename ConstIt::iterator_category, Cat>);
     }
 
@@ -298,7 +298,89 @@ constexpr void instantiation_test() {
     instantiator::call<test_iterator<contiguous_iterator_tag, CanDifference::yes>>();
 }
 
-int main() {
-    static_assert((instantiation_test(), true));
+template <class T>
+class tracking_input_iterator {
+public:
+    using value_type      = remove_const_t<T>;
+    using difference_type = ptrdiff_t;
+
+    constexpr tracking_input_iterator() = default;
+
+    constexpr tracking_input_iterator(const tracking_input_iterator&) : copied{true} {}
+
+    constexpr tracking_input_iterator(tracking_input_iterator&&) : moved{true} {}
+
+    template <class U>
+        requires convertible_to<const U&, T>
+    constexpr tracking_input_iterator(const tracking_input_iterator<U>&) : copied{true} {}
+
+    template <class U>
+        requires convertible_to<U, T>
+    constexpr tracking_input_iterator(tracking_input_iterator<U>&&) : moved{true} {}
+
+    tracking_input_iterator& operator=(const tracking_input_iterator&) = default;
+    tracking_input_iterator& operator=(tracking_input_iterator&&)      = default;
+
+    constexpr tracking_input_iterator& operator++(); // not defined
+    constexpr void operator++(int); // not defined
+    T& operator*() const; // not defined
+
+    constexpr bool is_copied() const {
+        return copied;
+    }
+
+    constexpr bool is_moved() const {
+        return moved;
+    }
+
+private:
+    bool copied = false;
+    bool moved  = false;
+};
+
+static_assert(input_iterator<tracking_input_iterator<int>>);
+static_assert(!_Constant_iterator<tracking_input_iterator<int>>);
+static_assert(_Constant_iterator<tracking_input_iterator<const int>>);
+
+// P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
+constexpr void test_p2836r1() {
+    { // Code from P2836R1
+        vector<int> v;
+        auto t  = v | views::take_while([](const int x) { return x < 100; });
+        auto f  = [](vector<int>::const_iterator) {};
+        auto i2 = ranges::cbegin(t);
+        f(i2); // Error before P2836R1
+    }
+
+    {
+        tracking_input_iterator<int> i;
+        basic_const_iterator ci{i};
+
+        tracking_input_iterator<const float> j1 = ci;
+        assert(j1.is_copied());
+        assert(!j1.is_moved());
+
+        tracking_input_iterator<const long> j2 = move(ci);
+        assert(!j2.is_copied());
+        assert(j2.is_moved());
+
+        // Incorrect conversions
+        static_assert(!constructible_from<tracking_input_iterator<void* const>, const decltype(ci)&>);
+        static_assert(!constructible_from<tracking_input_iterator<void* const>, decltype(ci)>);
+
+        // Non-const target iterator
+        static_assert(!constructible_from<tracking_input_iterator<float>, const decltype(ci)&>);
+        static_assert(!constructible_from<tracking_input_iterator<long>, decltype(ci)>);
+    }
+}
+
+constexpr bool all_tests() {
     instantiation_test();
+    test_p2836r1();
+    return true;
+}
+
+int main() {
+    static_assert(all_tests());
+    all_tests();
 }

@@ -67,7 +67,7 @@ struct settish_instantiator {
     };
 
     template <template <class...> class C, class Key, class... Args>
-    using deduce_container = typename deduce_container_impl<C>::template apply<Key, Args...>;
+    using deduce_container = deduce_container_impl<C>::template apply<Key, Args...>;
 
     template <template <class...> class C>
     static void test_copy_move() {
@@ -117,8 +117,7 @@ struct settish_instantiator {
             } else {
                 return unique_ints;
             }
-        }
-        ();
+        }();
 
         using Container = C<int>;
         {

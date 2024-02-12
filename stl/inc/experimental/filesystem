@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _EXPERIMENTAL_FILESYSTEM_
 #define _EXPERIMENTAL_FILESYSTEM_
 #include <yvals_core.h>
@@ -28,13 +27,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #error The <experimental/filesystem> header providing std::experimental::filesystem is deprecated by Microsoft \
 and will be REMOVED. It is superseded by the C++17 <filesystem> header providing std::filesystem. \
 You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to suppress this error.
-#endif // _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#endif // !defined(_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING)
 
 #pragma warning(disable : 4365) // conversion from 'type_1' to 'type_2', signed/unsigned mismatch (/Wall)
 
 #ifndef _FS_DLL
 #define _FS_DLL extern "C" _CRTIMP2_PURE
-#endif // _FS_DLL
+#endif // !defined(_FS_DLL)
 
 #define _MAX_FILESYS_NAME 260 // longest Windows or Posix filename + 1
 
@@ -162,33 +161,34 @@ struct space_info { // space information for a file
 };
 
 // wide filenames
-_FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(wchar_t (&)[_MAX_FILESYS_NAME], const wchar_t*, int&, file_type&);
-_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(wchar_t (&)[_MAX_FILESYS_NAME], void*, file_type&);
-_FS_DLL void __CLRCALL_PURE_OR_CDECL _Close_dir(void*);
-_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&)[_MAX_FILESYS_NAME]);
-_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t*);
-_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(wchar_t (&)[_MAX_FILESYS_NAME], const wchar_t*);
-_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&)[_MAX_FILESYS_NAME]);
+_FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
+    wchar_t (&)[_MAX_FILESYS_NAME], const wchar_t*, int&, file_type&) noexcept;
+_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(wchar_t (&)[_MAX_FILESYS_NAME], void*, file_type&) noexcept;
+_FS_DLL void __CLRCALL_PURE_OR_CDECL _Close_dir(void*) noexcept;
+_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&)[_MAX_FILESYS_NAME]) noexcept;
+_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t*) noexcept;
+_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(wchar_t (&)[_MAX_FILESYS_NAME], const wchar_t*) noexcept;
+_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&)[_MAX_FILESYS_NAME]) noexcept;
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Make_dir(const wchar_t*, const wchar_t*);
-_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Remove_dir(const wchar_t*);
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _Make_dir(const wchar_t*, const wchar_t*) noexcept;
+_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Remove_dir(const wchar_t*) noexcept;
 
-_FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t*, perms*);
-_FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Lstat(const wchar_t*, perms*);
-_FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t*);
-_FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t*);
-_FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t*);
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(const wchar_t*, int64_t);
-_FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t*);
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(const wchar_t*, const wchar_t*);
+_FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t*, perms*) noexcept;
+_FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Lstat(const wchar_t*, perms*) noexcept;
+_FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t*) noexcept;
+_FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t*) noexcept;
+_FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t*) noexcept;
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(const wchar_t*, int64_t) noexcept;
+_FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t*) noexcept;
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(const wchar_t*, const wchar_t*) noexcept;
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t*, const wchar_t*);
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t*, const wchar_t*);
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t*, const wchar_t*);
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t*, uintmax_t);
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t*);
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t*, const wchar_t*);
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t*, perms);
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t*, const wchar_t*) noexcept;
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t*, const wchar_t*) noexcept;
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t*, const wchar_t*) noexcept;
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t*, uintmax_t) noexcept;
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t*) noexcept;
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t*, const wchar_t*) noexcept;
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t*, perms) noexcept;
 
 template <class _Inchar, class _Outchar, class _Outtraits = char_traits<_Outchar>,
     class _Outalloc = allocator<_Outchar>>
@@ -267,8 +267,8 @@ struct _Path_cvt<char32_t, char, _Outtraits,
     }
 };
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _To_byte(const wchar_t*, char*);
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _To_wide(const char*, wchar_t*);
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _To_byte(const wchar_t*, char*) noexcept;
+_FS_DLL int __CLRCALL_PURE_OR_CDECL _To_wide(const char*, wchar_t*) noexcept;
 
 template <class _Outtraits, class _Outalloc>
 struct _Path_cvt<char, wchar_t, _Outtraits,
@@ -851,7 +851,7 @@ public:
     path& append(const basic_string<_Elem, _Traits, _Alloc>& _Str0) { // append arbitrary source string
         string_type _Str(_Str0.size(), L'\0');
         // convert _Elem and '/' to '\'
-        _STD transform(_Str0.begin(), _Str0.end(), _Str.begin(), [](const _Elem _Ch) {
+        _STD transform(_Str0.begin(), _Str0.end(), _Str.begin(), [](const _Elem _Ch) _STATIC_CALL_OPERATOR {
             auto _Wch = static_cast<wchar_t>(_Ch);
             if (_Wch == _FS_SLASH) {
                 _Wch = _FS_PREF;
@@ -2583,7 +2583,7 @@ inline void resize_file(const path& _Path, uintmax_t _Newsize) { // change file 
     if (_Code) {
         _Throw_filesystem_error("resize_file(p, n): invalid arguments");
     }
-};
+}
 
 inline void resize_file(const path& _Path, uintmax_t _Newsize,
     error_code& _Code) noexcept { // change file size

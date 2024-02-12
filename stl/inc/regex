@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _REGEX_
 #define _REGEX_
 #include <yvals_core.h>
@@ -36,25 +35,23 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #ifndef _REGEX_MAX_COMPLEXITY_COUNT
 #define _REGEX_MAX_COMPLEXITY_COUNT 10000000L // set to 0 to disable
-#endif // _REGEX_MAX_COMPLEXITY_COUNT
+#endif // !defined(_REGEX_MAX_COMPLEXITY_COUNT)
 
 #ifndef _REGEX_MAX_STACK_COUNT
 #ifdef _WIN64
 #define _REGEX_MAX_STACK_COUNT 600L // set to 0 to disable
-#else // _WIN64
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 #define _REGEX_MAX_STACK_COUNT 1000L // set to 0 to disable
-#endif // _WIN64
-#endif // _REGEX_MAX_STACK_COUNT
+#endif // ^^^ !defined(_WIN64) ^^^
+#endif // !defined(_REGEX_MAX_STACK_COUNT)
 
 #ifndef _ENHANCED_REGEX_VISUALIZER
-
 #ifdef _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 1
-
-#else // _DEBUG
+#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _ENHANCED_REGEX_VISUALIZER 0
-#endif // _DEBUG
-#endif // _ENHANCED_REGEX_VISUALIZER
+#endif // ^^^ !defined(_DEBUG) ^^^
+#endif // !defined(_ENHANCED_REGEX_VISUALIZER)
 
 _STD_BEGIN
 
@@ -182,7 +179,7 @@ template <class _Traits>
 struct _Char_traits_eq {
     using _Elem = typename _Traits::char_type;
 
-    bool operator()(_Elem _Left, _Elem _Right) const noexcept {
+    _STATIC_CALL_OPERATOR bool operator()(_Elem _Left, _Elem _Right) _CONST_CALL_OPERATOR noexcept {
         return _Traits::eq(_Left, _Right);
     }
 };
@@ -191,7 +188,7 @@ template <class _Traits>
 struct _Char_traits_lt {
     using _Elem = typename _Traits::char_type;
 
-    bool operator()(_Elem _Left, _Elem _Right) const noexcept {
+    _STATIC_CALL_OPERATOR bool operator()(_Elem _Left, _Elem _Right) _CONST_CALL_OPERATOR noexcept {
         return _Traits::lt(_Left, _Right);
     }
 };
@@ -213,7 +210,7 @@ struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Char_traits_lt<char_trai
 template <class _RxTraits>
 struct _Cmp_cs { // functor to compare two character values for equality
     using _Elem = typename _RxTraits::char_type;
-    bool operator()(_Elem _Ex1, _Elem _Ex2) {
+    _STATIC_CALL_OPERATOR bool operator()(_Elem _Ex1, _Elem _Ex2) _CONST_CALL_OPERATOR {
         return _Ex1 == _Ex2;
     }
 };
@@ -606,7 +603,7 @@ struct _Get_member_comparison_category {
 
 template <class _Ty>
 struct _Get_member_comparison_category<_Ty, void_t<typename _Ty::comparison_category>> {
-    using type = typename _Ty::comparison_category;
+    using type = _Ty::comparison_category;
 };
 #endif // _HAS_CXX20
 
@@ -624,7 +621,7 @@ public:
     using _Size_type = typename string_type::size_type;
 
 #if _HAS_CXX20
-    using _Comparison_category = typename _Get_member_comparison_category<_Traits>::type;
+    using _Comparison_category = _Get_member_comparison_category<_Traits>::type;
 #endif // _HAS_CXX20
 
     constexpr sub_match() : _Mybase(), matched(false) {}
@@ -737,7 +734,7 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const sub_match<_BidI
 #if _HAS_CXX20
 _EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
-    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
+    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
@@ -764,7 +761,7 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
@@ -774,7 +771,7 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 #if _HAS_CXX20
 _EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
-    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
+    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
@@ -831,7 +828,7 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
@@ -841,8 +838,7 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 #if _HAS_CXX20
 _EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
-    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(
-        _Left._Compare(_STD addressof(_Right), 1) <=> 0);
+    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left._Compare(_STD addressof(_Right), 1) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
@@ -899,7 +895,7 @@ template <class _BidIt>
 _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator==(
@@ -911,7 +907,7 @@ _NODISCARD bool operator==(
 _EXPORT_STD template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD auto operator<=>(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
-    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
+    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left._Compare(_Right.data(), _Right.size()) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt, class _Traits, class _Alloc>
@@ -979,7 +975,7 @@ _NODISCARD bool operator>=(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Elem, class _Traits, class _BidIt>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const sub_match<_BidIt>& _Match) {
@@ -1137,8 +1133,9 @@ public:
     }
 
     void swap(match_results& _Right) noexcept(_Is_nothrow_swappable<_BidIt>::value) /* strengthened */ {
+        using _STD swap;
         _STD swap(_Ready, _Right._Ready);
-        _Swap_adl(_Org, _Right._Org);
+        swap(_Org, _Right._Org); // intentional ADL
         _Matches.swap(_Right._Matches);
         _STD swap(_Prefix, _Right._Prefix);
         _STD swap(_Suffix, _Right._Suffix);
@@ -1366,7 +1363,7 @@ public:
         static_assert(sizeof(_Refs) == sizeof(_Atomic_counter_t), "invalid _Refs size");
     }
 
-    regex_constants::syntax_option_type _Fl;
+    regex_constants::syntax_option_type _Fl{};
     unsigned int _Loops;
     unsigned int _Marks;
     unsigned int _Refs;
@@ -1485,8 +1482,8 @@ struct _Loop_vals_t { // storage for loop administration
 
 class _Node_rep : public _Node_base { // node that marks the beginning of a repetition
 public:
-    _Node_rep(bool _Greedy, int _Mn, int _Mx, _Node_end_rep* _End, unsigned int _Number)
-        : _Node_base(_N_rep, _Greedy ? _Fl_greedy : _Fl_none), _Min(_Mn), _Max(_Mx), _End_rep(_End),
+    _Node_rep(bool _Greedy, int _Min_, int _Max_, _Node_end_rep* _End, unsigned int _Number)
+        : _Node_base(_N_rep, _Greedy ? _Fl_greedy : _Fl_none), _Min(_Min_), _Max(_Max_), _End_rep(_End),
           _Loop_number(_Number), _Simple_loop(-1) {}
 
     const int _Min;
@@ -1871,9 +1868,9 @@ public:
     basic_regex(const basic_regex& _Right)
 #if _ENHANCED_REGEX_VISUALIZER
         : _Rep(nullptr), _Traits(_Right._Traits), _Visualization(_Right._Visualization)
-#else // _ENHANCED_REGEX_VISUALIZER
+#else
         : _Rep(nullptr), _Traits(_Right._Traits)
-#endif // _ENHANCED_REGEX_VISUALIZER
+#endif
     { // construct copy of _Right
         _Reset(_Right._Rep);
     }
@@ -2466,11 +2463,11 @@ public:
     }
 #endif // !_HAS_CXX20
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     _NODISCARD bool operator==(default_sentinel_t) const {
         return !_MyRe;
     }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2659,11 +2656,11 @@ public:
     }
 #endif // !_HAS_CXX20
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     _NODISCARD bool operator==(default_sentinel_t) const {
         return !_Res;
     }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -3135,8 +3132,8 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Gree
         _Insert_node(_Pos, _If_expr);
 
         if (!_Greedy) {
-            _Swap_adl(_If_expr->_Next->_Prev, _If_empty_str->_Next->_Prev);
-            _Swap_adl(_If_expr->_Next, _If_empty_str->_Next);
+            swap(_If_expr->_Next->_Prev, _If_empty_str->_Next->_Prev); // intentional ADL
+            swap(_If_expr->_Next, _If_empty_str->_Next); // intentional ADL
         }
     } else {
         _Node_end_rep* _Node0 = new _Node_end_rep();

@@ -32,7 +32,7 @@ struct iterator_instantiator {
 
         static_assert(_Has_member_iterator_category<I> == forward_iterator<Iter>);
         if constexpr (forward_iterator<Iter>) {
-            using C = typename iterator_traits<Iter>::iterator_category;
+            using C = iterator_traits<Iter>::iterator_category;
             static_assert(is_same_v<typename I::iterator_category,
                 conditional_t<derived_from<C, bidirectional_iterator_tag>, bidirectional_iterator_tag,
                     conditional_t<derived_from<C, forward_iterator_tag>, forward_iterator_tag, input_iterator_tag>>>);

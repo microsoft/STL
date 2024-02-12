@@ -3,16 +3,16 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XNODE_HANDLE_H
 #define _XNODE_HANDLE_H
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <xmemory>
 
 #if !_HAS_CXX17
 #error Node handles are only available with C++17. (Also, you should not include this internal header.)
 #endif // _HAS_CXX17
+
+#include <xmemory>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -175,6 +175,7 @@ public:
     }
 
     void swap(_Node_handle& _That) noexcept /* strengthened */ {
+        using _STD swap;
         if (_Ptr != nullptr) {
             if (_That._Ptr != nullptr) {
                 _Pocs(_Getal(), _That._Getal());
@@ -192,7 +193,7 @@ public:
             _Construct_in_place(_Getal(), _STD move(_That_al));
             _Destroy_in_place(_That_al);
         }
-        _Swap_adl(_Ptr, _That._Ptr);
+        swap(_Ptr, _That._Ptr); // intentional ADL
     }
     friend void swap(_Node_handle& _Left, _Node_handle& _Right) noexcept /* strengthened */ {
         _Left.swap(_Right);

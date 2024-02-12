@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <iterator>
 #include <memory>
@@ -10,27 +11,30 @@
 
 using namespace std;
 
-size_t fancy_counter = 0;
+size_t counter = 0;
 
-template <class T>
+template <class T, class Diff = ptrdiff_t>
 class counting_ptr {
 private:
     T* p_;
 
     explicit counting_ptr(T* raw_ptr) noexcept : p_(raw_ptr) {
-        ++fancy_counter;
+        ++counter;
     }
 
     template <class U>
     friend struct ptr_counting_allocator;
 
+    template <class U>
+    friend struct inconsistent_difference_allocator;
+
 public:
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
     using iterator_category = random_access_iterator_tag;
     using value_type        = T;
-    using difference_type   = ptrdiff_t;
+    using difference_type   = Diff;
     using pointer           = T*;
     using reference         = add_lvalue_reference_t<T>;
 
@@ -48,8 +52,8 @@ public:
     }
 
     ~counting_ptr() {
-        assert(fancy_counter != 0);
-        --fancy_counter;
+        assert(counter != 0);
+        --counter;
     }
 
     explicit operator bool() const noexcept {
@@ -90,46 +94,46 @@ public:
         return tmp;
     }
 
-    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    template <class I = Diff, enable_if_t<is_same_v<I, Diff>, int> = 0>
     T& operator[](I n) const noexcept {
         return p_[n];
     }
 
-    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    template <class I = Diff, enable_if_t<is_same_v<I, Diff>, int> = 0>
     counting_ptr& operator+=(I n) noexcept {
         p_ += n;
         return *this;
     }
 
-    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    template <class I = Diff, enable_if_t<is_same_v<I, Diff>, int> = 0>
     counting_ptr& operator-=(I n) noexcept {
         p_ -= n;
         return *this;
     }
 
-    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    template <class I = Diff, enable_if_t<is_same_v<I, Diff>, int> = 0>
     friend counting_ptr operator+(const counting_ptr& p, I n) noexcept {
         auto tmp = p;
         tmp += n;
         return tmp;
     }
 
-    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    template <class I = Diff, enable_if_t<is_same_v<I, Diff>, int> = 0>
     friend counting_ptr operator+(I n, const counting_ptr& p) noexcept {
         auto tmp = p;
         tmp += n;
         return tmp;
     }
 
-    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    template <class I = Diff, enable_if_t<is_same_v<I, Diff>, int> = 0>
     friend counting_ptr operator-(const counting_ptr& p, I n) noexcept {
         auto tmp = p;
         tmp -= n;
         return tmp;
     }
 
-    friend ptrdiff_t operator-(const counting_ptr& lhs, const counting_ptr& rhs) noexcept {
-        return lhs.p_ - rhs.p_;
+    friend Diff operator-(const counting_ptr& lhs, const counting_ptr& rhs) noexcept {
+        return static_cast<Diff>(lhs.p_ - rhs.p_);
     }
 
     friend bool operator==(const counting_ptr& p, nullptr_t) noexcept {
@@ -211,17 +215,121 @@ struct ptr_counting_allocator {
 #endif // !_HAS_CXX20
 };
 
-int main() {
+// GH-2769 <deque>: For allocators where allocator_traits<T>::pointer is an object, destructors aren't always called
+void test_gh_2769() {
     {
         deque<int, ptr_counting_allocator<int>> dq{3, 1, 4, 1, 5, 9};
         dq.insert(dq.end(), {2, 6, 5, 3, 5, 8});
     }
-    assert(fancy_counter == 0);
+    assert(counter == 0);
 
     {
         deque<int, ptr_counting_allocator<int>> dq(979, 323);
         dq.insert(dq.begin(), 84, 62);
         dq.erase(dq.begin() + 64, dq.begin() + 338);
     }
-    assert(fancy_counter == 0);
+    assert(counter == 0);
+}
+
+size_t count_limit = 0;
+
+struct live_counter {
+    live_counter() {
+        add();
+    }
+    live_counter(const live_counter&) {
+        add();
+    }
+    live_counter& operator=(const live_counter&) = default;
+    ~live_counter() {
+        remove();
+    }
+
+    static void add() {
+        assert(counter <= count_limit);
+        if (counter == count_limit) {
+            throw 42;
+        }
+        ++counter;
+    }
+    static void remove() {
+        assert(counter <= count_limit);
+        assert(counter > 0);
+        --counter;
+    }
+};
+
+void test_gh_3717() {
+    // Also test GH-3717: deque(count) would leak elements if a constructor threw during resize(count)
+
+    // make sure the counter/limit machinery works properly
+    assert(counter == 0);
+    count_limit = 8;
+    {
+        deque<live_counter> d{8};
+        assert(counter == 8);
+    }
+    assert(counter == 0);
+
+    // verify that deque(n) cleans up live objects on construction failure
+    try {
+        deque<live_counter>{16};
+        assert(false);
+    } catch (const int i) {
+        assert(i == 42);
+        assert(counter == 0);
+    }
+}
+
+template <class T>
+struct inconsistent_difference_allocator {
+    using value_type      = T;
+    using size_type       = size_t;
+    using difference_type = conditional_t<is_arithmetic_v<T>, int64_t, int32_t>;
+    using pointer         = counting_ptr<T, difference_type>;
+
+    inconsistent_difference_allocator() = default;
+
+    template <class U>
+    constexpr inconsistent_difference_allocator(inconsistent_difference_allocator<U>) noexcept {}
+
+    pointer allocate(size_type n) {
+        return pointer{allocator<T>{}.allocate(n)};
+    }
+
+    void deallocate(pointer p, size_type n) {
+        allocator<T>{}.deallocate(p.operator->(), n);
+    }
+
+    template <class U>
+    friend constexpr bool operator==(inconsistent_difference_allocator, inconsistent_difference_allocator<U>) noexcept {
+        return true;
+    }
+#if !_HAS_CXX20
+    template <class U>
+    friend constexpr bool operator!=(inconsistent_difference_allocator, inconsistent_difference_allocator<U>) noexcept {
+        return false;
+    }
+#endif // !_HAS_CXX20
+};
+
+void test_inconsistent_difference_types() {
+    {
+        deque<int, inconsistent_difference_allocator<int>> dq{3, 1, 4, 1, 5, 9};
+        dq.insert(dq.end(), {2, 6, 5, 3, 5, 8});
+    }
+    assert(counter == 0);
+
+    {
+        deque<int, inconsistent_difference_allocator<int>> dq(979, 323);
+        dq.insert(dq.begin(), 84, 62);
+        dq.erase(dq.begin() + 64, dq.begin() + 338);
+    }
+    assert(counter == 0);
+}
+
+int main() {
+    test_gh_2769();
+    test_gh_3717();
+    test_inconsistent_difference_types();
 }

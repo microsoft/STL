@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef __MSVC_TZDB_HPP
 #define __MSVC_TZDB_HPP
 #include <yvals.h>
@@ -20,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_EXTERN_C
+extern "C" {
 
 using __std_tzdb_epoch_milli = double;
 
@@ -93,7 +92,7 @@ void __stdcall __std_tzdb_delete_leap_seconds(__std_tzdb_leap_info* _Info) noexc
 _NODISCARD void* __stdcall __std_calloc_crt(size_t _Count, size_t _Size) noexcept;
 void __stdcall __std_free_crt(void* _Ptr) noexcept;
 
-_END_EXTERN_C
+} // extern "C"
 
 _STD_BEGIN
 
@@ -102,28 +101,28 @@ struct _Tzdb_deleter;
 
 template <>
 struct _Tzdb_deleter<__std_tzdb_time_zones_info> {
-    void operator()(__std_tzdb_time_zones_info* _Info) const noexcept {
+    _STATIC_CALL_OPERATOR void operator()(__std_tzdb_time_zones_info* _Info) _CONST_CALL_OPERATOR noexcept {
         __std_tzdb_delete_time_zones(_Info);
     }
 };
 
 template <>
 struct _Tzdb_deleter<__std_tzdb_current_zone_info> {
-    void operator()(__std_tzdb_current_zone_info* _Info) const noexcept {
+    _STATIC_CALL_OPERATOR void operator()(__std_tzdb_current_zone_info* _Info) _CONST_CALL_OPERATOR noexcept {
         __std_tzdb_delete_current_zone(_Info);
     }
 };
 
 template <>
 struct _Tzdb_deleter<__std_tzdb_sys_info> {
-    void operator()(__std_tzdb_sys_info* _Info) const noexcept {
+    _STATIC_CALL_OPERATOR void operator()(__std_tzdb_sys_info* _Info) _CONST_CALL_OPERATOR noexcept {
         __std_tzdb_delete_sys_info(_Info);
     }
 };
 
 template <>
 struct _Tzdb_deleter<__std_tzdb_leap_info[]> {
-    void operator()(__std_tzdb_leap_info* _Info) const noexcept {
+    _STATIC_CALL_OPERATOR void operator()(__std_tzdb_leap_info* _Info) _CONST_CALL_OPERATOR noexcept {
         __std_tzdb_delete_leap_seconds(_Info);
     }
 };
@@ -151,6 +150,11 @@ public:
 
     void deallocate(_Ty* const _Ptr, size_t) noexcept {
         __std_free_crt(_Ptr);
+    }
+
+    template <class _Other>
+    _NODISCARD bool operator==(const _Crt_allocator<_Other>&) const noexcept {
+        return true;
     }
 };
 

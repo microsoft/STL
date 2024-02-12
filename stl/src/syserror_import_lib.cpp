@@ -25,7 +25,7 @@ namespace {
     constexpr _Whitespace_bitmap_t _Whitespace_bitmap;
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 [[nodiscard]] size_t __CLRCALL_PURE_OR_STDCALL __std_get_string_size_without_trailing_whitespace(
     const char* const _Str, size_t _Size) noexcept {
     while (_Size != 0 && _Whitespace_bitmap._Test(_Str[_Size - 1])) {
@@ -56,4 +56,4 @@ _EXTERN_C
 void __CLRCALL_PURE_OR_STDCALL __std_system_error_deallocate_message(char* const _Str) noexcept {
     LocalFree(_Str);
 }
-_END_EXTERN_C
+} // extern "C"

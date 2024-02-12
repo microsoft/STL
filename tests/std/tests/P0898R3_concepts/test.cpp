@@ -33,7 +33,7 @@ template <class>
 constexpr bool always_false = false;
 
 namespace detail {
-    static constexpr bool permissive() {
+    constexpr bool permissive() {
         return false;
     }
 
@@ -184,9 +184,9 @@ template <class First, class Second = IncompleteClass>
 struct ConvertsFrom {
     ConvertsFrom() = default;
     constexpr ConvertsFrom(First) noexcept {}
-    // clang-format off
-    constexpr ConvertsFrom(Second) noexcept requires (!std::is_same_v<IncompleteClass, Second>) {}
-    // clang-format on
+    constexpr ConvertsFrom(Second) noexcept
+        requires (!std::is_same_v<IncompleteClass, Second>)
+    {}
 };
 
 template <int>
@@ -380,8 +380,10 @@ namespace test_derived_from {
 
     void PrivateDerived::f() {
         // Check these in a member to verify that access doesn't depend on context
+#ifndef __EDG__ // TRANSITION, VSO-1898937
         STATIC_ASSERT(!derived_from<PrivateDerived, Middle<0>>);
         STATIC_ASSERT(!derived_from<PrivateDerived, Middle<1>>);
+#endif // ^^^ no workaround ^^^
     }
 
     STATIC_ASSERT(!derived_from<PrivateDerived, SimpleBase>);
@@ -538,7 +540,7 @@ namespace test_convertible_to {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     STATIC_ASSERT(convertible_to<int volatile (&)[42], int volatile (&)[42]>);
     STATIC_ASSERT(convertible_to<int volatile (&)[42][13], int volatile (&)[42][13]>);
-#endif // TRANSITION, DevCom-1627396
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(convertible_to<int volatile (&&)[42], int volatile (&&)[42]>);
     STATIC_ASSERT(convertible_to<int volatile (&&)[42][13], int volatile (&&)[42][13]>);
 
@@ -721,7 +723,7 @@ namespace test_common_reference_with {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     STATIC_ASSERT(test<int volatile (&)[42], int volatile (&)[42]>());
     STATIC_ASSERT(test<int volatile (&)[42][13], int volatile (&)[42][13]>());
-#endif // TRANSITION, DevCom-1627396
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(test<int volatile (&&)[42], int volatile (&&)[42]>());
     STATIC_ASSERT(test<int volatile (&&)[42][13], int volatile (&&)[42][13]>());
 } // namespace test_common_reference_with
@@ -1449,7 +1451,9 @@ namespace test_constructible_from {
     };
     STATIC_ASSERT(!test<Multiparameter>());
     STATIC_ASSERT(test<Multiparameter, int>());
-    STATIC_ASSERT(!test<Multiparameter, long>() || is_permissive);
+#ifndef __EDG__ // TRANSITION, VSO-1898939
+    STATIC_ASSERT(test<Multiparameter, long>() == is_permissive);
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(!test<Multiparameter, double>());
     STATIC_ASSERT(!test<Multiparameter, char>());
     STATIC_ASSERT(!test<Multiparameter, void>());
@@ -1476,7 +1480,7 @@ namespace test_constructible_from {
 #ifndef __clang__ // TRANSITION, LLVM-44688
     STATIC_ASSERT(!test<int const&, ExplicitTo<int>>());
     STATIC_ASSERT(!test<int&&, ExplicitTo<int>>());
-#endif // TRANSITION, LLVM-44688
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(!test<int const&, ExplicitTo<double&&>>());
     STATIC_ASSERT(!test<int&&, ExplicitTo<double&&>>());
 
@@ -1499,9 +1503,13 @@ namespace test_default_initializable {
     using std::default_initializable, std::initializer_list;
 
     STATIC_ASSERT(default_initializable<int>);
+#ifndef __EDG__ // TRANSITION, VSO-1898941
     STATIC_ASSERT(!default_initializable<int const>);
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(default_initializable<int volatile>);
+#ifndef __EDG__ // TRANSITION, VSO-1898941
     STATIC_ASSERT(!default_initializable<int const volatile>);
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(default_initializable<double>);
     STATIC_ASSERT(!default_initializable<void>);
 
@@ -1514,7 +1522,9 @@ namespace test_default_initializable {
     STATIC_ASSERT(!default_initializable<int[]>);
     STATIC_ASSERT(!default_initializable<char[]>);
     STATIC_ASSERT(!default_initializable<char[][3]>);
+#ifndef __EDG__ // TRANSITION, VSO-1898941
     STATIC_ASSERT(!default_initializable<int const[2]>);
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(!default_initializable<int&>);
     STATIC_ASSERT(!default_initializable<int const&>);
@@ -1558,14 +1568,14 @@ namespace test_default_initializable {
         int x;
     };
     STATIC_ASSERT(default_initializable<S>);
+#ifndef __EDG__ // TRANSITION, VSO-1898941
     STATIC_ASSERT(!default_initializable<S const>);
+#endif // ^^^ no workaround ^^^
 
     // Also test GH-1603 "default_initializable accepts types that are not default-initializable"
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1326684
+#if defined(__clang__) // TRANSITION, DevCom-1326684 (MSVC) and VSO-1898945 (EDG)
     STATIC_ASSERT(!default_initializable<AggregatesExplicitDefault>);
-#else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
-    STATIC_ASSERT(default_initializable<AggregatesExplicitDefault>);
-#endif // TRANSITION, DevCom-1326684
+#endif // ^^^ no workaround ^^^
 } // namespace test_default_initializable
 
 namespace test_move_constructible {
@@ -1804,7 +1814,7 @@ namespace test_ranges_swap {
         friend constexpr void swap(DoNotUseFallback&, DoNotUseFallback&) noexcept {}
     };
 
-    constexpr auto for_each_232 = [](auto(&array)[2][3][2], auto f) {
+    constexpr auto for_each_232 = [](auto (&array)[2][3][2], auto f) {
         for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 3; ++j) {
                 for (int k = 0; k < 2; ++k) {
@@ -2039,7 +2049,7 @@ namespace test_swappable_with {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     STATIC_ASSERT(test<int volatile (&)[4], int volatile (&)[4]>());
     STATIC_ASSERT(test<int volatile (&)[3][4], int volatile (&)[3][4]>());
-#endif // TRANSITION, DevCom-1627396
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(test<MovableFriendSwap, MovableFriendSwap>() == is_permissive);
     STATIC_ASSERT(test<MovableFriendSwap&, MovableFriendSwap&>());
@@ -2112,56 +2122,58 @@ namespace test_swappable_with {
 
     namespace example {
         // The example from [concept.swappable] with changes per the proposed resolution of LWG-3175:
-        // clang-format off
         namespace ranges = std::ranges;
 
         template <class T, std::swappable_with<T> U>
         void value_swap(T&& t, U&& u) {
-          ranges::swap(std::forward<T>(t), std::forward<U>(u));
+            ranges::swap(std::forward<T>(t), std::forward<U>(u));
         }
 
         template <std::swappable T>
         void lv_swap(T& t1, T& t2) {
-          ranges::swap(t1, t2);
+            ranges::swap(t1, t2);
         }
 
         namespace N {
-          struct A { int m; };
-          struct Proxy {
-            A* a;
-            Proxy(A& a) : a{&a} {}
-            friend void swap(Proxy x, Proxy y) {
-              ranges::swap(*x.a, *y.a);
+            struct A {
+                int m;
+            };
+            struct Proxy {
+                A* a;
+                Proxy(A& a) : a{&a} {}
+                friend void swap(Proxy x, Proxy y) {
+                    ranges::swap(*x.a, *y.a);
+                }
+            };
+            Proxy proxy(A& a) {
+                return Proxy{a};
             }
-          };
-          Proxy proxy(A& a) { return Proxy{a}; }
-        }
+        } // namespace N
 
         void test() {
-          int i = 1, j = 2;
-          lv_swap(i, j);
-          assert(i == 2 && j == 1);
+            int i = 1, j = 2;
+            lv_swap(i, j);
+            assert(i == 2 && j == 1);
 
-          N::A a1 = { 5 };
-          N::A a2 = { -5 };
-          value_swap(a1, proxy(a2));
-          assert(a1.m == -5 && a2.m == 5);
+            N::A a1 = {5};
+            N::A a2 = {-5};
+            value_swap(a1, proxy(a2));
+            assert(a1.m == -5 && a2.m == 5);
 
-          // additional test cases not from [concept.swappable] for completeness:
-          STATIC_ASSERT(std::is_same_v<std::common_reference_t<N::Proxy, N::A&>, N::Proxy>);
-          STATIC_ASSERT(swappable_with<N::A&, N::Proxy>);
+            // additional test cases not from [concept.swappable] for completeness:
+            STATIC_ASSERT(std::is_same_v<std::common_reference_t<N::Proxy, N::A&>, N::Proxy>);
+            STATIC_ASSERT(swappable_with<N::A&, N::Proxy>);
 
-          value_swap(proxy(a1), a2);
-          assert(a1.m == 5 && a2.m == -5);
+            value_swap(proxy(a1), a2);
+            assert(a1.m == 5 && a2.m == -5);
 
-          value_swap(proxy(a1), proxy(a2));
-          assert(a1.m == -5 && a2.m == 5);
+            value_swap(proxy(a1), proxy(a2));
+            assert(a1.m == -5 && a2.m == 5);
 
-          value_swap(a1, a2);
-          assert(a1.m == 5 && a2.m == -5);
-          // end additional test cases
+            value_swap(a1, a2);
+            assert(a1.m == 5 && a2.m == -5);
+            // end additional test cases
         }
-        // clang-format on
     } // namespace example
 } // namespace test_swappable_with
 
@@ -2247,7 +2259,7 @@ namespace test_copy_constructible {
 
     STATIC_ASSERT(!copy_constructible<NotMutableRef>);
     STATIC_ASSERT(!copy_constructible<NotConstRefRef>);
-#endif // TRANSITION, VSO-119526
+#endif // ^^^ no workaround ^^^
 
     struct UserProvidedCopy {
         UserProvidedCopy(UserProvidedCopy const&);
@@ -2410,12 +2422,12 @@ namespace test_boolean_testable {
 
     template <unsigned int Select> // values in [0, Archetype_max) select a requirement to violate
     struct Archetype {
-        // clang-format off
-        operator bool() const requires (Select != 0); // Archetype<0> is not implicitly convertible to bool
-        explicit operator bool() const requires (Select < 2); // Archetype<1> is not explicitly convertible
-                                                              // to bool (ambiguity)
-        void operator!() const requires (Select == 2); // !Archetype<2> does not model _Boolean_testable_impl
-        // clang-format on
+        operator bool() const
+            requires (Select != 0); // Archetype<0> is not implicitly convertible to bool
+        explicit operator bool() const
+            requires (Select < 2); // Archetype<1> is not explicitly convertible to bool (ambiguity)
+        void operator!() const
+            requires (Select == 2); // !Archetype<2> does not model _Boolean_testable_impl
     };
 
     STATIC_ASSERT(!_Boolean_testable<Archetype<0>>);
@@ -2607,7 +2619,9 @@ namespace test_totally_ordered {
     STATIC_ASSERT(test<int[42]>());
     STATIC_ASSERT(test<int(int)>());
 
+#ifndef __EDG__ // TRANSITION, VSO-1898947
     STATIC_ASSERT(!test<std::nullptr_t>());
+#endif // ^^^ no workaround ^^^
     STATIC_ASSERT(!test<EmptyClass>());
 
     constexpr unsigned int Archetype_max = 6;
@@ -2709,7 +2723,9 @@ namespace test_totally_ordered_with {
     STATIC_ASSERT(test<int>());
     STATIC_ASSERT(test<double>());
     STATIC_ASSERT(test<int, double>());
+#ifndef __EDG__ // TRANSITION, VSO-1898947
     STATIC_ASSERT(!test<std::nullptr_t>());
+#endif // ^^^ no workaround ^^^
 
     STATIC_ASSERT(test<void*>());
     STATIC_ASSERT(test<int*>());
@@ -3332,13 +3348,12 @@ namespace test_relation {
     STATIC_ASSERT(test<std::less<>, int*, void*>());
 
     struct Equivalent {
-        // clang-format off
         template <class T, class U>
-        constexpr decltype(auto) operator()(T&& t, U&& u) const
-            requires requires { static_cast<T&&>(t) == static_cast<U&&>(u); } {
+        constexpr decltype(auto) operator()(T && t, U && u) const
+            requires requires { static_cast<T&&>(t) == static_cast<U&&>(u); }
+        {
             return static_cast<T&&>(t) == static_cast<U&&>(u);
         }
-        // clang-format on
     };
     STATIC_ASSERT(test<Equivalent, int, long>());
 
@@ -3362,14 +3377,12 @@ namespace test_relation {
     STATIC_ASSERT(test<Equivalent, B<0>>());
     STATIC_ASSERT(!test<Equivalent, B<1>>());
 
-    // clang-format off
     template <unsigned int I>
         requires (2 != I)
     bool operator==(A<I>, B<I>); // A<2> == B<2> rewrites to B<2> == A<2>
     template <unsigned int I>
         requires (3 != I)
     bool operator==(B<I>, A<I>); // B<3> == A<3> rewrites to A<3> == B<3>
-    // clang-format on
 
     STATIC_ASSERT(!test<Equivalent, A<0>, B<0>>());
     STATIC_ASSERT(!test<Equivalent, A<1>, B<1>>());

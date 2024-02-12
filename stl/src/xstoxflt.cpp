@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// _Stoxflt function
-
 #include <cctype>
 #include <clocale>
 #include <cstdlib>
@@ -16,8 +14,8 @@ constexpr int _Base   = 16; // hexadecimal
 constexpr int _Ndig   = 7; // hexadecimal digits per long element
 constexpr int _Maxsig = 5 * _Ndig; // maximum significant digits to keep
 
-_In_range_(0, maxsig) int _Stoxflt(
-    const char* s0, const char* s, char** endptr, _Out_writes_(maxsig) long lo[], _In_range_(1, 4) int maxsig) {
+_In_range_(0, maxsig) int _Stoxflt(const char* s0, const char* s, char** endptr, _Out_writes_(maxsig) long lo[],
+    _In_range_(1, 4) int maxsig) noexcept {
     // convert string to array of long plus exponent
     char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig = 0; // number of significant digits seen

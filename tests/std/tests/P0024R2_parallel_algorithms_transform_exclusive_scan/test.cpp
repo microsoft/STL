@@ -151,7 +151,7 @@ struct outputType {
 struct transformUop {
     transformedType operator()(inputType&) {
         return 0;
-    };
+    }
 };
 
 struct typesBop {

@@ -64,10 +64,10 @@ template <bool Expected, class Type1, class Type2>
 
     STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<false, Type1, Type2, not_equal_to<>>());
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<Expected, Type1, Type2, ranges::equal_to>());
     STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<false, Type1, Type2, ranges::not_equal_to>());
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 #if _HAS_CXX17
     auto lambda = [](auto&&, auto&&) { return false; };
@@ -141,9 +141,13 @@ struct StatefulPrivatelyDerived2 : private EmptyBase, private StatefulBase {};
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<EmptyBase, EmptyDerived>);
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<EmptyBase, EmptyPrivatelyDerived>);
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<StatefulBase, StatefulDerived>);
+#ifndef __EDG__ // TRANSITION, VSO-1849453
 STATIC_ASSERT(!is_pointer_interconvertible_base_of_v<EmptyBase, StatefulDerived>);
+#endif // ^^^ no workaround ^^^
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<StatefulBase, StatefulPrivatelyDerived>);
+#ifndef __EDG__ // TRANSITION, VSO-1849453
 STATIC_ASSERT(!is_pointer_interconvertible_base_of_v<EmptyBase, StatefulPrivatelyDerived>);
+#endif // ^^^ no workaround ^^^
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<StatefulBase, StatefulDerived2>);
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<EmptyBase, StatefulDerived2>);
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<StatefulBase, StatefulPrivatelyDerived2>);
@@ -453,8 +457,10 @@ STATIC_ASSERT(test_equal_memcmp_is_safe_for_pointers<enable_derived_to_base, Emp
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_pointers<enable_derived_to_base, EmptyBase, EmptyDerived>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_pointers<enable_derived_to_base, StatefulDerived, StatefulBase>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_pointers<enable_derived_to_base, StatefulBase, StatefulDerived>());
+#ifndef __EDG__ // TRANSITION, VSO-1849453
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_pointers<false, StatefulDerived, EmptyBase>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_pointers<false, EmptyBase, StatefulDerived>());
+#endif // ^^^ no workaround ^^^
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_pointers<enable_derived_to_base, StatefulDerived2, StatefulBase>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_pointers<enable_derived_to_base, StatefulBase, StatefulDerived2>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_pointers<enable_derived_to_base, StatefulDerived2, EmptyBase>());
@@ -504,20 +510,20 @@ STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char16_t, char16_t, _Char
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char32_t, char32_t, _Char_traits_eq<char_traits<char32_t>>>());
 
 // Test different containers
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_containers<true, vector<int>, vector<int>>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_containers<true, array<int, 8>, array<int, 8>>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_containers<true, vector<int>, array<int, 8>>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_containers<true, array<int, 8>, vector<int>>());
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_containers<false, list<int>, list<int>>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_containers<false, vector<int>, list<int>>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_containers<false, list<int>, vector<int>>());
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 // Test counted_iterator
 STATIC_ASSERT(assert_equal_memcmp_is_safe<true, counted_iterator<int*>, int*>());
 STATIC_ASSERT(assert_equal_memcmp_is_safe<true, int*, counted_iterator<int*>>());
 STATIC_ASSERT(assert_equal_memcmp_is_safe<true, counted_iterator<int*>, counted_iterator<int*>>());
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20

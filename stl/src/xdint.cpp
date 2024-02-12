@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-short _Dint(double* px, short xexp) { // test and drop (scaled) fraction bits
+short _Dint(double* px, short xexp) noexcept { // test and drop (scaled) fraction bits
     const auto ps = reinterpret_cast<_Dval*>(px);
     short xchar   = (ps->_Sh[_D0] & _DMASK) >> _DOFF;
 

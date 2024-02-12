@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _OPTIONAL_
 #define _OPTIONAL_
 #include <yvals.h>
@@ -151,7 +150,7 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
 
     template <class _Ty2>
     _CONSTEXPR20 void _Assign(_Ty2&& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty&, _Ty2>&& is_nothrow_constructible_v<_Ty, _Ty2>) {
+        is_nothrow_assignable_v<_Ty&, _Ty2> && is_nothrow_constructible_v<_Ty, _Ty2>) {
         // assign / initialize the contained value from _Right
         if (this->_Has_value) {
             static_cast<_Ty&>(this->_Value) = _STD forward<_Ty2>(_Right);
@@ -171,8 +170,8 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
 
     template <class _Self>
     _CONSTEXPR20 void _Assign_from(_Self&& _Right) noexcept(
-        is_nothrow_constructible_v<_Ty, decltype(*_STD forward<_Self>(_Right))>&&
-            is_nothrow_assignable_v<_Ty&, decltype(*_STD forward<_Self>(_Right))>) {
+        is_nothrow_constructible_v<_Ty, decltype(*_STD forward<_Self>(_Right))>
+        && is_nothrow_assignable_v<_Ty&, decltype(*_STD forward<_Self>(_Right))>) {
         // assign/initialize/destroy contained value from _Right
         if (_Right._Has_value) {
             _Assign(*_STD forward<_Self>(_Right));
@@ -217,9 +216,9 @@ private:
 
 public:
     static_assert(!_Is_any_of_v<remove_cv_t<_Ty>, nullopt_t, in_place_t>,
-        "T in optional<T> must be a type other than nullopt_t or in_place_t (N4828 [optional.optional]/3).");
+        "T in optional<T> must be a type other than nullopt_t or in_place_t (N4950 [optional.optional.general]/3).");
     static_assert(is_object_v<_Ty> && is_destructible_v<_Ty> && !is_array_v<_Ty>,
-        "T in optional<T> must meet the Cpp17Destructible requirements (N4828 [optional.optional]/3).");
+        "T in optional<T> must meet the Cpp17Destructible requirements (N4950 [optional.optional.general]/3).");
 
     using value_type = _Ty;
 
@@ -291,7 +290,7 @@ public:
                                                 is_constructible<_Ty, _Ty2>, is_assignable<_Ty&, _Ty2>>,
                                     int> = 0>
     _CONSTEXPR20 optional& operator=(_Ty2&& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty&, _Ty2>&& is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty&, _Ty2> && is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
         this->_Assign(_STD forward<_Ty2>(_Right));
         return *this;
     }
@@ -306,7 +305,7 @@ public:
                                           is_constructible<_Ty, const _Ty2&>, is_assignable<_Ty&, const _Ty2&>>,
                               int> = 0>
     _CONSTEXPR20 optional& operator=(const optional<_Ty2>& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty&, const _Ty2&>&& is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty&, const _Ty2&> && is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
         if (_Right) {
             this->_Assign(*_Right);
         } else {
@@ -320,7 +319,7 @@ public:
                                           is_assignable<_Ty&, _Ty2>>,
                               int> = 0>
     _CONSTEXPR20 optional& operator=(optional<_Ty2>&& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty&, _Ty2>&& is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty&, _Ty2> && is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
         if (_Right) {
             this->_Assign(_STD move(*_Right));
         } else {
@@ -346,11 +345,12 @@ public:
     }
 
     _CONSTEXPR20 void swap(optional& _Right) noexcept(
-        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_swappable_v<_Ty>) {
+        is_nothrow_move_constructible_v<_Ty> && is_nothrow_swappable_v<_Ty>) {
         static_assert(is_move_constructible_v<_Ty>,
-            "optional<T>::swap requires T to be move constructible (N4828 [optional.swap]/1).");
+            "optional<T>::swap requires T to be move constructible (N4950 [optional.swap]/1).");
         static_assert(!is_move_constructible_v<_Ty> || is_swappable_v<_Ty>,
-            "optional<T>::swap requires T to be swappable (N4828 [optional.swap]/1).");
+            "optional<T>::swap requires T to be swappable (N4950 [optional.swap]/2).");
+        using _STD swap;
         if constexpr (_Is_trivially_swappable_v<_Ty>) {
             using _TrivialBaseTy = _Optional_destruct_base<_Ty>;
             _STD swap(static_cast<_TrivialBaseTy&>(*this), static_cast<_TrivialBaseTy&>(_Right));
@@ -358,7 +358,7 @@ public:
             const bool _Engaged = this->_Has_value;
             if (_Engaged == _Right._Has_value) {
                 if (_Engaged) {
-                    _Swap_adl(**this, *_Right);
+                    swap(**this, *_Right); // intentional ADL
                 }
             } else {
                 optional& _Source = _Engaged ? *this : _Right;
@@ -424,9 +424,9 @@ public:
     _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) const& {
         static_assert(is_convertible_v<const _Ty&, remove_cv_t<_Ty>>,
             "The const overload of optional<T>::value_or requires const T& to be convertible to remove_cv_t<T> "
-            "(N4885 [optional.observe]/17 as modified by LWG-3424).");
+            "(N4950 [optional.observe]/15 as modified by LWG-3424).");
         static_assert(is_convertible_v<_Ty2, _Ty>,
-            "optional<T>::value_or(U) requires U to be convertible to T (N4828 [optional.observe]/18).");
+            "optional<T>::value_or(U) requires U to be convertible to T (N4950 [optional.observe]/15).");
 
         if (this->_Has_value) {
             return static_cast<const _Ty&>(this->_Value);
@@ -438,9 +438,9 @@ public:
     _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) && {
         static_assert(is_convertible_v<_Ty, remove_cv_t<_Ty>>,
             "The rvalue overload of optional<T>::value_or requires T to be convertible to remove_cv_t<T> "
-            "(N4885 [optional.observe]/19 as modified by LWG-3424).");
+            "(N4950 [optional.observe]/17 as modified by LWG-3424).");
         static_assert(is_convertible_v<_Ty2, _Ty>,
-            "optional<T>::value_or(U) requires U to be convertible to T (N4828 [optional.observe]/20).");
+            "optional<T>::value_or(U) requires U to be convertible to T (N4950 [optional.observe]/17).");
 
         if (this->_Has_value) {
             return static_cast<_Ty&&>(this->_Value);
@@ -456,7 +456,7 @@ public:
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
             "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
-            "(N4901 [optional.monadic]/2).");
+            "(N4950 [optional.monadic]/2).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), static_cast<_Ty&>(this->_Value));
@@ -471,7 +471,7 @@ public:
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
             "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
-            "(N4901 [optional.monadic]/2).");
+            "(N4950 [optional.monadic]/2).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), static_cast<const _Ty&>(this->_Value));
@@ -486,7 +486,7 @@ public:
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
             "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
-            "(N4901 [optional.monadic]/5).");
+            "(N4950 [optional.monadic]/5).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), static_cast<_Ty&&>(this->_Value));
@@ -501,7 +501,7 @@ public:
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
             "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
-            "(N4901 [optional.monadic]/5).");
+            "(N4950 [optional.monadic]/5).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), static_cast<const _Ty&&>(this->_Value));
@@ -516,10 +516,10 @@ public:
 
         static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
-            "(N4901 [optional.monadic]/8).");
+            "(N4950 [optional.monadic]/8).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
             "optional<T>::transform(F) requires the return type of F to be a non-array object type "
-            "(N4901 [optional.monadic]/8).");
+            "(N4950 [optional.monadic]/8).");
 
         if (this->_Has_value) {
             return optional<_Uty>{
@@ -535,10 +535,10 @@ public:
 
         static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
-            "(N4901 [optional.monadic]/8).");
+            "(N4950 [optional.monadic]/8).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
             "optional<T>::transform(F) requires the return type of F to be a non-array object type "
-            "(N4901 [optional.monadic]/8).");
+            "(N4950 [optional.monadic]/8).");
 
         if (this->_Has_value) {
             return optional<_Uty>{
@@ -554,10 +554,10 @@ public:
 
         static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
-            "(N4901 [optional.monadic]/11).");
+            "(N4950 [optional.monadic]/11).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
             "optional<T>::transform(F) requires the return type of F to be a non-array object type "
-            "(N4901 [optional.monadic]/11).");
+            "(N4950 [optional.monadic]/11).");
 
         if (this->_Has_value) {
             return optional<_Uty>{
@@ -573,10 +573,10 @@ public:
 
         static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
-            "(N4901 [optional.monadic]/11).");
+            "(N4950 [optional.monadic]/11).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
             "optional<T>::transform(F) requires the return type of F to be a non-array object type "
-            "(N4901 [optional.monadic]/11).");
+            "(N4950 [optional.monadic]/11).");
 
         if (this->_Has_value) {
             return optional<_Uty>{
@@ -586,12 +586,11 @@ public:
         }
     }
 
-#ifdef __cpp_lib_concepts
     template <invocable<> _Fn>
         requires copy_constructible<_Ty>
     constexpr optional or_else(_Fn&& _Func) const& {
         static_assert(is_same_v<remove_cvref_t<invoke_result_t<_Fn>>, optional>,
-            "optional<T>::or_else(F) requires F to return an optional<T> (N4901 [optional.monadic]/14).");
+            "optional<T>::or_else(F) requires F to return an optional<T> (N4950 [optional.monadic]/14).");
 
         if (this->_Has_value) {
             return *this;
@@ -604,7 +603,7 @@ public:
         requires move_constructible<_Ty>
     constexpr optional or_else(_Fn&& _Func) && {
         static_assert(is_same_v<remove_cvref_t<invoke_result_t<_Fn>>, optional>,
-            "optional<T>::or_else(F) requires F to return an optional<T> (N4901 [optional.monadic]/17).");
+            "optional<T>::or_else(F) requires F to return an optional<T> (N4950 [optional.monadic]/17).");
 
         if (this->_Has_value) {
             return _STD move(*this);
@@ -612,7 +611,6 @@ public:
             return _STD forward<_Fn>(_Func)();
         }
     }
-#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
     using _Mybase::reset;
@@ -623,12 +621,12 @@ optional(_Ty) -> optional<_Ty>;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left == *_Right))) /* strengthened */
-#ifdef __cpp_lib_concepts
+    noexcept(_STD _Fake_copy_init<bool>(*_Left == *_Right))) /* strengthened */
+#if _HAS_CXX20
     requires requires {
-                 { *_Left == *_Right } -> _Implicitly_convertible_to<bool>;
-             }
-#endif // __cpp_lib_concepts
+        { *_Left == *_Right } -> _Implicitly_convertible_to<bool>;
+    }
+#endif // _HAS_CXX20
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -640,12 +638,12 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left != *_Right))) /* strengthened */
-#ifdef __cpp_lib_concepts
+    noexcept(_STD _Fake_copy_init<bool>(*_Left != *_Right))) /* strengthened */
+#if _HAS_CXX20
     requires requires {
-                 { *_Left != *_Right } -> _Implicitly_convertible_to<bool>;
-             }
-#endif // __cpp_lib_concepts
+        { *_Left != *_Right } -> _Implicitly_convertible_to<bool>;
+    }
+#endif // _HAS_CXX20
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -657,12 +655,12 @@ _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const optional
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left < *_Right))) /* strengthened */
-#ifdef __cpp_lib_concepts
+    noexcept(_STD _Fake_copy_init<bool>(*_Left < *_Right))) /* strengthened */
+#if _HAS_CXX20
     requires requires {
-                 { *_Left < *_Right } -> _Implicitly_convertible_to<bool>;
-             }
-#endif // __cpp_lib_concepts
+        { *_Left < *_Right } -> _Implicitly_convertible_to<bool>;
+    }
+#endif // _HAS_CXX20
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -674,12 +672,12 @@ _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const optional<
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left > *_Right))) /* strengthened */
-#ifdef __cpp_lib_concepts
+    noexcept(_STD _Fake_copy_init<bool>(*_Left > *_Right))) /* strengthened */
+#if _HAS_CXX20
     requires requires {
-                 { *_Left > *_Right } -> _Implicitly_convertible_to<bool>;
-             }
-#endif // __cpp_lib_concepts
+        { *_Left > *_Right } -> _Implicitly_convertible_to<bool>;
+    }
+#endif // _HAS_CXX20
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -691,12 +689,12 @@ _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const optional<
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left <= *_Right))) /* strengthened */
-#ifdef __cpp_lib_concepts
-    requires requires(const _Ty1& _Elem1, const _Ty2& _Elem2) {
-                 { *_Left <= *_Right } -> _Implicitly_convertible_to<bool>;
-             }
-#endif // __cpp_lib_concepts
+    noexcept(_STD _Fake_copy_init<bool>(*_Left <= *_Right))) /* strengthened */
+#if _HAS_CXX20
+    requires requires {
+        { *_Left <= *_Right } -> _Implicitly_convertible_to<bool>;
+    }
+#endif // _HAS_CXX20
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -708,12 +706,12 @@ _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const optional
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left >= *_Right))) /* strengthened */
-#ifdef __cpp_lib_concepts
+    noexcept(_STD _Fake_copy_init<bool>(*_Left >= *_Right))) /* strengthened */
+#if _HAS_CXX20
     requires requires {
-                 { *_Left >= *_Right } -> _Implicitly_convertible_to<bool>;
-             }
-#endif // __cpp_lib_concepts
+        { *_Left >= *_Right } -> _Implicitly_convertible_to<bool>;
+    }
+#endif // _HAS_CXX20
 {
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
@@ -723,7 +721,7 @@ _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const optional
     return _Left_has_value >= _Right_has_value;
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Ty1, three_way_comparable_with<_Ty1> _Ty2>
 _NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(const optional<_Ty1>& _Left,
     const optional<_Ty2>& _Right) noexcept(noexcept(*_Left <=> *_Right)) /* strengthened */ {
@@ -735,7 +733,7 @@ _NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(const op
 
     return _Left_has_value <=> _Right_has_value;
 }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr bool operator==(const optional<_Ty>& _Left, nullopt_t) noexcept {
@@ -797,7 +795,7 @@ template <class _Ty>
 _NODISCARD constexpr bool operator>=(nullopt_t, const optional<_Ty>& _Right) noexcept {
     return !_Right.has_value();
 }
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Ty>
 using _Enable_if_bool_convertible = enable_if_t<is_convertible_v<_Ty, bool>, int>;
@@ -828,7 +826,7 @@ using _Enable_if_comparable_with_greater_equal =
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left == _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left == _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left == _Right;
     }
@@ -837,7 +835,7 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const _Ty2& _R
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left == *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left == *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left == *_Right;
     }
@@ -846,7 +844,7 @@ _NODISCARD constexpr bool operator==(const _Ty1& _Left, const optional<_Ty2>& _R
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_not_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left != _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left != _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left != _Right;
     }
@@ -854,7 +852,7 @@ _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const _Ty2& _R
 }
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_not_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator!=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left != *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left != *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left != *_Right;
     }
@@ -863,7 +861,7 @@ _NODISCARD constexpr bool operator!=(const _Ty1& _Left, const optional<_Ty2>& _R
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left < _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left < _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left < _Right;
     }
@@ -871,7 +869,7 @@ _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const _Ty2& _Ri
 }
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left < *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left < *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left < *_Right;
     }
@@ -880,7 +878,7 @@ _NODISCARD constexpr bool operator<(const _Ty1& _Left, const optional<_Ty2>& _Ri
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left > _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left > _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left > _Right;
     }
@@ -888,7 +886,7 @@ _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const _Ty2& _Ri
 }
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left > *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left > *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left > *_Right;
     }
@@ -897,7 +895,7 @@ _NODISCARD constexpr bool operator>(const _Ty1& _Left, const optional<_Ty2>& _Ri
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left <= _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left <= _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left <= _Right;
     }
@@ -905,7 +903,7 @@ _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const _Ty2& _R
 }
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left <= *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left <= *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left <= *_Right;
     }
@@ -914,7 +912,7 @@ _NODISCARD constexpr bool operator<=(const _Ty1& _Left, const optional<_Ty2>& _R
 
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left >= _Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(*_Left >= _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left >= _Right;
     }
@@ -922,29 +920,25 @@ _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const _Ty2& _R
 }
 _EXPORT_STD template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left >= *_Right))) /* strengthened */ {
+    noexcept(_STD _Fake_copy_init<bool>(_Left >= *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left >= *_Right;
     }
     return true;
 }
 
-#ifdef __cpp_lib_concepts
-// clang-format off
+#if _HAS_CXX20
 _EXPORT_STD template <class _Ty1, class _Ty2>
-    requires (!_Derived_from_specialization_of<_Ty2, optional>)
-        && three_way_comparable_with<_Ty1, _Ty2>
-_NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2>
-    operator<=>(const optional<_Ty1>& _Left, const _Ty2& _Right)
-        noexcept(noexcept(*_Left <=> _Right)) /* strengthened */ {
-    // clang-format on
+    requires (!_Derived_from_specialization_of<_Ty2, optional>) && three_way_comparable_with<_Ty1, _Ty2>
+_NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(
+    const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(noexcept(*_Left <=> _Right)) /* strengthened */ {
     if (_Left) {
         return *_Left <=> _Right;
     }
 
     return strong_ordering::less;
 }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_swappable_v<_Ty>, int> = 0>
 _CONSTEXPR20 void swap(optional<_Ty>& _Left, optional<_Ty>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
@@ -987,6 +981,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // _HAS_CXX17
+#endif // ^^^ _HAS_CXX17 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _OPTIONAL_

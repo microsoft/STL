@@ -139,7 +139,7 @@ const int free_correct   = 433343; // x86 pure
 #elif defined(_M_X64)
 #if !defined(_M_CEE)
 const int member_correct = 2211112; // x64 native
-const int free_correct = 433334; // x64 native
+const int free_correct   = 433334; // x64 native
 #elif !defined(_M_CEE_PURE)
 const int member_correct = 2211121; // x64 ijw
 const int free_correct   = 433343; // x64 ijw

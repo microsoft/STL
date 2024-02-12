@@ -16,7 +16,7 @@ struct S {
 };
 
 template <typename T>
-using test = typename T::is_transparent;
+using test = T::is_transparent;
 
 int main() {
     STATIC_ASSERT(identity{}(42) == 42);

@@ -13,9 +13,6 @@
 #include <sstream>
 #include <string>
 
-// TRANSITION, VSO-1281038: False C6287 for C++20 synthesized operators
-#pragma warning(disable : 6287) // Redundant code:  the left and right sub-expressions are identical.
-
 static void t_bad_weak_ptr() { // test bad_weak_ptr
     STD bad_weak_ptr ptr;
     STD exception* eptr = &ptr;
@@ -49,8 +46,8 @@ struct X1 { // alternate base object
 };
 
 struct X : public X0, virtual public X1, public STD enable_shared_from_this<X> { // slightly complicated base type
-    virtual void f() {}
-    virtual STD shared_ptr<X> getX() { // return shared_ptr to this
+    void f() override {}
+    STD shared_ptr<X> getX() override { // return shared_ptr to this
         STD shared_ptr<X> sp = shared_from_this();
         CHECK_PTR(sp.get(), this);
         return sp;
@@ -515,8 +512,14 @@ static void t_shared_ptr() { // test shared_ptr interface
         STD shared_ptr<X0> sp0(it0);
         STD shared_ptr<X0> sp1(it1);
         STD shared_ptr<X0> sp2(sp1);
-        CHECK(!(sp0 == sp1) && sp0 != sp1 && sp1 == sp2 && !(sp1 != sp2));
-        CHECK(!(sp1 < sp2) && !(sp2 < sp1));
+
+        CHECK(!(sp0 == sp1));
+        CHECK(sp0 != sp1);
+        CHECK(sp1 == sp2);
+        CHECK(!(sp1 != sp2));
+
+        CHECK(!(sp1 < sp2));
+        CHECK(!(sp2 < sp1));
 
         CHECK(sp1 <= sp2);
         CHECK(!(sp2 > sp1));

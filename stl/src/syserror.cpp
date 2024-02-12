@@ -118,7 +118,7 @@ namespace {
     static_assert(
         _RANGES adjacent_find(_Win_errtab, _RANGES greater_equal{}, &_Win_errtab_t::_Windows) == _STD end(_Win_errtab),
         "The Windows error codes in _Win_errtab should be numerically sorted and unique.");
-#endif // _M_CEE_PURE
+#endif // !defined(_M_CEE_PURE)
 
     struct _Sys_errtab_t { // maps error_code to NTBS
         errc _Errcode;

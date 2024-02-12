@@ -11,7 +11,7 @@
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
 
 #if !defined(MRTDLL)
-_EXTERN_C
+extern "C" {
 #endif // defined(MRTDLL)
 
 #define BIG_EXP   (2 * FMAXEXP) // very large, as exponents go
@@ -29,7 +29,7 @@ _EXTERN_C
 #if 0
 #include <cstdio>
 
-static void printit(const char* s, FTYPE* p, int n) { // print xp array
+static void printit(const char* s, FTYPE* p, int n) noexcept { // print xp array
     int i;
     printf(s);
     for (i = 0; i < n && (p[i] != FLIT(0.0) || i == 0); ++i) {
@@ -39,7 +39,7 @@ static void printit(const char* s, FTYPE* p, int n) { // print xp array
 }
 #endif // 0
 
-FTYPE FNAME(Xp_getw)(const FTYPE* p, int n) { // get total value
+FTYPE FNAME(Xp_getw)(const FTYPE* p, int n) noexcept { // get total value
     if (n == 0) {
         return FLIT(0.0);
     } else if (n == 1 || p[0] == FLIT(0.0) || p[1] == FLIT(0.0)) {
@@ -62,7 +62,7 @@ FTYPE FNAME(Xp_getw)(const FTYPE* p, int n) { // get total value
     }
 }
 
-FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) { // load a full-precision value
+FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) noexcept { // load a full-precision value
     FTYPE x0 = x;
     short errx;
     short xexp;
@@ -111,7 +111,7 @@ FTYPE* FNAME(Xp_setw)(FTYPE* p, int n, FTYPE x) { // load a full-precision value
     return p;
 }
 
-FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) { // add a half-precision value
+FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) noexcept { // add a half-precision value
     FTYPE xscaled = x0;
     short errx;
     short xexp;
@@ -219,7 +219,7 @@ FTYPE* FNAME(Xp_addh)(FTYPE* p, int n, FTYPE x0) { // add a half-precision value
     return p;
 }
 
-FTYPE* FNAME(Xp_mulh)(FTYPE* p, int n, FTYPE x0) { // multiply by a half-precision value
+FTYPE* FNAME(Xp_mulh)(FTYPE* p, int n, FTYPE x0) noexcept { // multiply by a half-precision value
     short errx;
     int j;
     int k;
@@ -280,7 +280,7 @@ FTYPE* FNAME(Xp_mulh)(FTYPE* p, int n, FTYPE x0) { // multiply by a half-precisi
     return p;
 }
 
-FTYPE* FNAME(Xp_setn)(FTYPE* p, int n, long x) { // load a long integer
+FTYPE* FNAME(Xp_setn)(FTYPE* p, int n, long x) noexcept { // load a long integer
 
 #if FBITS == 53
     FNAME(Xp_setw)(p, n, static_cast<FTYPE>(x));
@@ -288,19 +288,19 @@ FTYPE* FNAME(Xp_setn)(FTYPE* p, int n, long x) { // load a long integer
     FNAME(Xp_setw)(p, n, static_cast<FTYPE>(x / 10000));
     FNAME(Xp_mulh)(p, n, static_cast<FTYPE>(10000));
     FNAME(Xp_addh)(p, n, static_cast<FTYPE>(x % 10000));
-#else // FBITS
+#else // ^^^ FBITS == 24 / FBITS != 24 && FBITS != 53 vvv
 #error Unexpected value for FBITS
-#endif // FBITS
+#endif // ^^^ FBITS != 24 && FBITS != 53 ^^^
 
     return p;
 }
 
-FTYPE* FNAME(Xp_movx)(FTYPE* p, int n, const FTYPE* q) { // copy an extended precision value
+FTYPE* FNAME(Xp_movx)(FTYPE* p, int n, const FTYPE* q) noexcept { // copy an extended precision value
     memcpy(p, q, n * sizeof(FTYPE));
     return p;
 }
 
-FTYPE* FNAME(Xp_addx)(FTYPE* p, int n, const FTYPE* q, int m) { // add an extended precision value
+FTYPE* FNAME(Xp_addx)(FTYPE* p, int n, const FTYPE* q, int m) noexcept { // add an extended precision value
     int k;
 
     for (k = 0; k < m && q[k] != FLIT(0.0); ++k) {
@@ -310,7 +310,7 @@ FTYPE* FNAME(Xp_addx)(FTYPE* p, int n, const FTYPE* q, int m) { // add an extend
     return p;
 }
 
-FTYPE* FNAME(Xp_ldexpx)(FTYPE* p, int n, int m) { // scale an extended precision value
+FTYPE* FNAME(Xp_ldexpx)(FTYPE* p, int n, int m) noexcept { // scale an extended precision value
     int k;
     for (k = 0; k < n; ++k) {
         p[k] = static_cast<FTYPE>(FFUN(ldexp)(p[k], m));
@@ -322,7 +322,7 @@ FTYPE* FNAME(Xp_ldexpx)(FTYPE* p, int n, int m) { // scale an extended precision
     return p;
 }
 
-FTYPE* FNAME(Xp_mulx)(FTYPE* p, int n, const FTYPE* q, int m, FTYPE* ptemp2) {
+FTYPE* FNAME(Xp_mulx)(FTYPE* p, int n, const FTYPE* q, int m, FTYPE* ptemp2) noexcept {
     // multiply by an extended precision value (needs 2 * n temp)
     if (n != 0 && m != 0) {
         if (q[0] == FLIT(0.0) || q[1] == FLIT(0.0)) {
@@ -345,7 +345,7 @@ FTYPE* FNAME(Xp_mulx)(FTYPE* p, int n, const FTYPE* q, int m, FTYPE* ptemp2) {
 }
 
 #if !defined(MRTDLL)
-_END_EXTERN_C
+} // extern "C"
 #endif // !defined(MRTDLL)
 
 #pragma warning(pop)

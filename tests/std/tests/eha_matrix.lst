@@ -3,16 +3,27 @@
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/w14640 /Zc:threadSafeInit- /EHa"
+*	PM_CL="/w14640 /Zc:threadSafeInit- /EHa"
 RUNALL_CROSSLIST
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++14"
+ASAN	PM_CL="/MD /std:c++14 -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++17"
+ASAN	PM_CL="/MD /std:c++17 -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++20"
+ASAN	PM_CL="/MD /std:c++20 -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /Zc:char8_t-"
+ASAN	PM_CL="/MD /std:c++latest /permissive- /Zc:char8_t- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /Zc:wchar_t-"
+ASAN	PM_CL="/MDd /std:c++latest /permissive- /Zc:wchar_t- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++14 /fp:except"
+ASAN	PM_CL="/MDd /std:c++14 /fp:except -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++17 /permissive-"
+ASAN	PM_CL="/MDd /std:c++17 /permissive- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++20 /permissive-"
+ASAN	PM_CL="/MDd /std:c++20 /permissive- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/MT /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive-"
+ASAN	PM_CL="/MT /std:c++latest /permissive- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /fp:strict /Zc:noexceptTypes-"
+ASAN	PM_CL="/MTd /std:c++latest /permissive- /fp:strict /Zc:noexceptTypes- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /permissive"
+ASAN	PM_CL="/MTd /std:c++latest /permissive -fsanitize=address /Zi" PM_LINK="/debug"

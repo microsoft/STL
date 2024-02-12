@@ -11,14 +11,15 @@ namespace {
     SRWLOCK _Shared_ptr_lock = SRWLOCK_INIT;
 } // unnamed namespace
 
-_EXTERN_C
+extern "C" {
 
-_CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // TRANSITION, ABI: "spin_lock" name is outdated
+_CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() noexcept { // TRANSITION, ABI: "spin_lock" name is outdated
     AcquireSRWLockExclusive(&_Shared_ptr_lock);
 }
 
-_CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previously obtained lock
+_CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() noexcept { // release previously obtained lock
+    _Analysis_assume_lock_held_(_Shared_ptr_lock);
     ReleaseSRWLockExclusive(&_Shared_ptr_lock);
 }
 
-_END_EXTERN_C
+} // extern "C"

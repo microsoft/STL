@@ -741,7 +741,7 @@ struct BaseMeow {
 };
 
 struct DerivedMeow : BaseMeow {
-    virtual int operator()(int x, int y) override {
+    int operator()(int x, int y) override {
         return x * x * x + y * y * y;
     }
 };
@@ -1049,10 +1049,9 @@ void test_reference_wrapper_invocation() {
 }
 
 
-// Test C++17 invoke().
-#if _HAS_CXX17
+// Test invoke().
 constexpr bool test_invoke_constexpr() {
-    // MSVC implements LWG-2894 in C++17 and later
+    // MSVC implements LWG-2894 unconditionally
     Thing thing;
     auto p = &thing;
 
@@ -1064,25 +1063,20 @@ constexpr bool test_invoke_constexpr() {
 #endif // _HAS_CXX20
     assert(&invoke(&Thing::m_x, p) == &p->m_x);
 
-#ifndef _M_CEE // TRANSITION, DevCom-939490
     assert(invoke(&Thing::sum, *p, 3) == 1023);
 #if _HAS_CXX20
     assert(invoke(&Thing::sum, ref(*p), 4) == 1024);
 #endif // _HAS_CXX20
     assert(invoke(&Thing::sum, p, 5) == 1025);
-#endif // _M_CEE
 
     assert(invoke(square_constexpr, 6) == 36);
     assert(invoke(&cube_constexpr, 7) == 343);
     return true;
 }
-#endif // _HAS_CXX17
 
 void test_invoke() {
-#if _HAS_CXX17
     assert(test_invoke_constexpr());
     STATIC_ASSERT(test_invoke_constexpr());
-#endif // _HAS_CXX17
 
     auto sp = make_shared<Thing>();
 
@@ -1401,7 +1395,7 @@ _CONSTEXPR20 bool test_mem_fn() {
     assert(mem_fn(&Widget::unary_lv)(&w, 6) == 1061);
 
     assert(mem_fn(&Widget::unary_rv)(move(w), 7) == 1404);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
 
     return true;
 }
@@ -1615,6 +1609,11 @@ void test_function() {
         assert(f.target<short (*)(long)>() == nullptr);
         assert(c.target<short (*)(long)>() == nullptr);
 
+        assert(f.target<int(int)>() == nullptr);
+        assert(c.target<int(int)>() == nullptr);
+        assert(f.target<short(long)>() == nullptr);
+        assert(c.target<short(long)>() == nullptr);
+
         f = triple;
         assert(f(1000) == 3000);
         assert(f.target_type() == typeid(int (*)(int)));
@@ -1623,6 +1622,11 @@ void test_function() {
         assert(f.target<short (*)(long)>() == nullptr);
         assert(c.target<short (*)(long)>() == nullptr);
 
+        assert(f.target<int(int)>() == nullptr);
+        assert(c.target<int(int)>() == nullptr);
+        assert(f.target<short(long)>() == nullptr);
+        assert(c.target<short(long)>() == nullptr);
+
         f = short_long;
         assert(f(1000) == 29);
         assert(f.target_type() == typeid(short (*)(long)));
@@ -1630,6 +1634,11 @@ void test_function() {
         assert(c.target<int (*)(int)>() == nullptr);
         assert(*f.target<short (*)(long)>() == &short_long);
         assert(*c.target<short (*)(long)>() == &short_long);
+
+        assert(f.target<int(int)>() == nullptr);
+        assert(c.target<int(int)>() == nullptr);
+        assert(f.target<short(long)>() == nullptr);
+        assert(c.target<short(long)>() == nullptr);
     }
 
 
@@ -1899,90 +1908,91 @@ void test_bind() {
     {
 #ifndef _M_CEE_PURE
 
-        {auto lambda = [](int x, int y, int&& z) { return x * 100 + y * 10 + z; };
+        {
+            auto lambda = [](int x, int y, int&& z) { return x * 100 + y * 10 + z; };
 
-    auto b = bind(lambda, 7, _1, _2);
+            auto b = bind(lambda, 7, _1, _2);
 
-    function<int(int, int&&)> f(b);
+            function<int(int, int&&)> f(b);
 
-    assert(f(8, 9) == 789);
-}
-
-{
-    struct Thingy {
-        int mf(int&& n) {
-            return n * 5;
+            assert(f(8, 9) == 789);
         }
-    };
 
-    Thingy t;
+        {
+            struct Thingy {
+                int mf(int&& n) {
+                    return n * 5;
+                }
+            };
 
-    auto b = bind(&Thingy::mf, t, _1);
+            Thingy t;
 
-    assert(b(7) == 35);
-}
+            auto b = bind(&Thingy::mf, t, _1);
 
-{
-    auto consume_up = [](unique_ptr<int>&& up, int n) { return *up / n; };
+            assert(b(7) == 35);
+        }
 
-    auto b = bind(consume_up, _1, 3);
+        {
+            auto consume_up = [](unique_ptr<int>&& up, int n) { return *up / n; };
 
-    assert(b(make_unique<int>(1000)) == 333);
-}
+            auto b = bind(consume_up, _1, 3);
+
+            assert(b(make_unique<int>(1000)) == 333);
+        }
 
 #endif // _M_CEE_PURE
-}
+    }
 
 
-// Test DevDiv-487679 "<functional> bind: MSVS 2012 C++ std::bind illegal indirection compiler error".
-// Test DevDiv-617421 "<functional> bind: Bind failing to compile with a vector of functions".
-{
-    struct BaseFunctor {
-        int operator()(int n) const {
-            return n + 5;
-        }
-    };
+    // Test DevDiv-487679 "<functional> bind: MSVS 2012 C++ std::bind illegal indirection compiler error".
+    // Test DevDiv-617421 "<functional> bind: Bind failing to compile with a vector of functions".
+    {
+        struct BaseFunctor {
+            int operator()(int n) const {
+                return n + 5;
+            }
+        };
 
-    struct DerivedFunctor : BaseFunctor {};
+        struct DerivedFunctor : BaseFunctor {};
 
-    auto b = bind(&DerivedFunctor::operator(), _1, 200);
+        auto b = bind(&DerivedFunctor::operator(), _1, 200);
 
-    DerivedFunctor df;
+        DerivedFunctor df;
 
-    assert(b(df) == 205);
-}
-
-
-// Test DevDiv-505570 "<functional> bind: Can't bind a pointer to a data member using a pointer, smart pointer or
-// iterator to the object".
-{
-    struct Object {
-        int member = 1000;
-    };
-
-    auto pmd = &Object::member;
-    auto sp  = make_shared<Object>();
-
-    auto b1 = bind(pmd, ref(*sp));
-    auto b2 = bind(pmd, sp.get());
-    auto b3 = bind(pmd, sp);
-
-    assert(sp->member == 1000);
-    ++b1();
-    assert(sp->member == 1001);
-    ++b2();
-    assert(sp->member == 1002);
-    ++b3();
-    assert(sp->member == 1003);
-}
+        assert(b(df) == 205);
+    }
 
 
-// Test DevDiv-535246 "<functional> bind: Cannot call const forwarding call wrapper result of std::bind".
-{
-    const auto cb = bind(&quadruple, 11);
+    // Test DevDiv-505570 "<functional> bind: Can't bind a pointer to a data member using a pointer, smart pointer or
+    // iterator to the object".
+    {
+        struct Object {
+            int member = 1000;
+        };
 
-    assert(cb() == 44);
-}
+        auto pmd = &Object::member;
+        auto sp  = make_shared<Object>();
+
+        auto b1 = bind(pmd, ref(*sp));
+        auto b2 = bind(pmd, sp.get());
+        auto b3 = bind(pmd, sp);
+
+        assert(sp->member == 1000);
+        ++b1();
+        assert(sp->member == 1001);
+        ++b2();
+        assert(sp->member == 1002);
+        ++b3();
+        assert(sp->member == 1003);
+    }
+
+
+    // Test DevDiv-535246 "<functional> bind: Cannot call const forwarding call wrapper result of std::bind".
+    {
+        const auto cb = bind(&quadruple, 11);
+
+        assert(cb() == 44);
+    }
 }
 
 
@@ -2340,6 +2350,62 @@ _CONSTEXPR20 bool test_not_fn() {
 #endif // _HAS_CXX17
     return true;
 }
+
+// Also test the invocability of the return type of std::not_fn before and after the changes in P0356R5.
+#if _HAS_CXX17
+struct ConstOnlyFunctor {
+    bool operator()() = delete;
+    bool operator()() const {
+        return true;
+    }
+};
+
+struct ConstOnlyBooleanTester {
+    void operator()() {}
+    bool operator()() const {
+        return true;
+    }
+};
+
+struct GetPinnedNegatable {
+    struct PinnedNegatable {
+        PinnedNegatable() = default;
+
+        PinnedNegatable(const PinnedNegatable&)            = delete;
+        PinnedNegatable& operator=(const PinnedNegatable&) = delete;
+
+        friend bool operator!(PinnedNegatable) {
+            return false;
+        }
+    };
+
+    PinnedNegatable operator()() const {
+        return {};
+    }
+};
+
+using NegatedConstOnlyFunctor       = decltype(not_fn(ConstOnlyFunctor{}));
+using NegatedConstOnlyBooleanTester = decltype(not_fn(ConstOnlyBooleanTester{}));
+using NegatedGetPinnedNegatable     = decltype(not_fn(GetPinnedNegatable{}));
+
+#if _HAS_CXX20
+constexpr bool not_fn_is_perfect_forwarding = true;
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+constexpr bool not_fn_is_perfect_forwarding = false;
+#endif // ^^^ !_HAS_CXX20 ^^^
+
+static_assert(is_invocable_v<const NegatedConstOnlyFunctor>);
+static_assert(is_invocable_v<const NegatedConstOnlyFunctor&>);
+static_assert(is_invocable_v<const NegatedConstOnlyBooleanTester>);
+static_assert(is_invocable_v<const NegatedConstOnlyBooleanTester&>);
+
+static_assert(is_invocable_v<NegatedConstOnlyFunctor> == !not_fn_is_perfect_forwarding);
+static_assert(is_invocable_v<NegatedConstOnlyFunctor&> == !not_fn_is_perfect_forwarding);
+static_assert(is_invocable_v<NegatedConstOnlyBooleanTester> == !not_fn_is_perfect_forwarding);
+static_assert(is_invocable_v<NegatedConstOnlyBooleanTester&> == !not_fn_is_perfect_forwarding);
+
+static_assert(is_invocable_v<NegatedGetPinnedNegatable> == not_fn_is_perfect_forwarding);
+#endif // _HAS_CXX17
 
 int main() {
     // Test addressof() with functions.

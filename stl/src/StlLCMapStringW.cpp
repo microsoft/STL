@@ -12,7 +12,7 @@
 //
 // Entry:
 //        LPCWSTR  locale_name       - locale context for the comparison.
-//        DWORD    map_flags         - see docs.microsoft.com
+//        DWORD    map_flags         - see https://aka.ms/stl/lcmapstringex
 //        LPCWSTR  source            - pointer to string to be mapped
 //        int      source_count      - wide char (word) count of input string
 //                                     (including null terminator if any)
@@ -30,9 +30,9 @@
 //                 else
 //                    number of wide characters written to destination (including null terminator)
 //        Failure: 0
-extern "C" int __cdecl __crtLCMapStringW(_In_opt_z_ LPCWSTR const locale_name, _In_ DWORD const map_flags,
+extern "C" _CRTIMP2 int __cdecl __crtLCMapStringW(_In_opt_z_ LPCWSTR const locale_name, _In_ DWORD const map_flags,
     _In_reads_(source_count) LPCWSTR const source, _In_ int source_count,
-    _Out_writes_opt_(destination_count) wchar_t* const destination, _In_ int const destination_count) {
+    _Out_writes_opt_(destination_count) wchar_t* const destination, _In_ int const destination_count) noexcept {
     // LCMapString will map past the null terminator.  We must find the null terminator if it occurs in the string
     // before source_count characters and cap the number of characters to be considered.
     if (source_count > 0) {

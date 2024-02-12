@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-short _FDint(float* px, short xexp) { // test and drop (scaled) fraction bits
+short _FDint(float* px, short xexp) noexcept { // test and drop (scaled) fraction bits
     const auto ps = reinterpret_cast<_Fval*>(px);
     short xchar   = (ps->_Sh[_F0] & _FMASK) >> _FOFF;
 

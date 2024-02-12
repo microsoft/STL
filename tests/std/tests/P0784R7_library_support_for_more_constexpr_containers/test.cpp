@@ -16,7 +16,6 @@
 
 using namespace std;
 
-#ifdef __cpp_lib_concepts
 template <class Ty, class... Types>
 concept can_std_construct_at = requires(Ty* ptr, Types&&... args) { construct_at(ptr, forward<Types>(args)...); };
 
@@ -53,31 +52,6 @@ constexpr bool destroy_at_noexcept() {
     }
     return true;
 }
-#else // ^^^ Concepts and Ranges / No Concepts or Ranges vvv
-template <class Void, class Ty, class... Types>
-inline constexpr bool can_construct_at_impl = false;
-
-template <class Ty, class... Types>
-inline constexpr bool
-    can_construct_at_impl<void_t<decltype(construct_at(declval<Ty*>(), declval<Types>()...))>, Ty, Types...> = true;
-
-template <class Ty, class... Types>
-inline constexpr bool can_construct_at = can_construct_at_impl<void, Ty, Types...>;
-
-template <class T, class... Args>
-constexpr bool construct_at_noexcept() {
-    if constexpr (can_construct_at<T, Args...>) {
-        return noexcept(construct_at(declval<T*>(), declval<Args>()...));
-    } else {
-        return false;
-    }
-}
-
-template <class T>
-constexpr bool destroy_at_noexcept() {
-    return noexcept(destroy_at(declval<T*>()));
-}
-#endif // __cpp_lib_concepts
 
 static_assert(can_construct_at<int>);
 static_assert(can_construct_at<int, int>);
@@ -102,7 +76,7 @@ static_assert(!can_construct_at<X, int>);
 struct indestructible {
     void destroy() {
         this->~indestructible();
-    };
+    }
 
 private:
     ~indestructible() = default;
@@ -164,10 +138,8 @@ struct throwing_dtor {
 static_assert(destroy_at_noexcept<throwing_dtor>());
 static_assert(destroy_at_noexcept<throwing_dtor[42]>());
 
-#ifdef __cpp_lib_concepts
 static_assert(!can_ranges_destroy_at<throwing_dtor>);
 static_assert(!can_ranges_destroy_at<throwing_dtor[42]>);
-#endif // __cpp_lib_concepts
 
 template <class Ty>
 void test_runtime(const Ty& val) {
@@ -178,13 +150,11 @@ void test_runtime(const Ty& val) {
     assert(*asPtrTy == val);
     destroy_at(asPtrTy);
 
-#ifdef __cpp_lib_concepts
     // test ranges:
     memset(storage, 42, sizeof(Ty));
     assert(asPtrTy == ranges::construct_at(asPtrTy, val));
     assert(*asPtrTy == val);
     ranges::destroy_at(asPtrTy);
-#endif // __cpp_lib_concepts
 }
 
 template <class T>
@@ -201,13 +171,11 @@ void test_array(const T& val) {
 
     destroy_at(reinterpret_cast<T(*)[N]>(ptr));
 
-#ifdef __cpp_lib_concepts
     for (auto i = 0; i < N; ++i) {
         ranges::construct_at(ptr + i, val);
     }
 
     ranges::destroy_at(reinterpret_cast<T(*)[N]>(ptr));
-#endif // __cpp_lib_concepts
 }
 
 template <class T>
@@ -227,11 +195,9 @@ constexpr void test_compiletime() {
         assert(s.object == 42);
         destroy_at(&s.object);
 
-#ifdef __cpp_lib_concepts
         ranges::construct_at(&s.object, 1729);
         assert(s.object == 1729);
         ranges::destroy_at(&s.object);
-#endif // __cpp_lib_concepts
     }
 
     struct nontrivial {
@@ -247,11 +213,9 @@ constexpr void test_compiletime() {
         assert(s.object.x == 42);
         destroy_at(&s.object);
 
-#ifdef __cpp_lib_concepts
         ranges::construct_at(&s.object, 1729);
         assert(s.object.x == 1729);
         ranges::destroy_at(&s.object);
-#endif // __cpp_lib_concepts
     }
 }
 static_assert((test_compiletime(), true));
@@ -295,7 +259,6 @@ constexpr void test_compiletime_destroy_variants() {
         destroy(a, a + 10);
         alloc.deallocate(a, 10);
     }
-#ifdef __cpp_lib_concepts
     {
         allocator<A<int>> alloc{};
         A<int>* a = alloc.allocate(10);
@@ -334,7 +297,6 @@ constexpr void test_compiletime_destroy_variants() {
         ranges::destroy(s);
         alloc.deallocate(a, 10);
     }
-#endif // __cpp_lib_concepts
     {
         allocator<A<int>> alloc{};
         A<int>* a = alloc.allocate(10);
@@ -353,7 +315,6 @@ constexpr void test_compiletime_destroy_variants() {
         destroy_n(a, 10);
         alloc.deallocate(a, 10);
     }
-#ifdef __cpp_lib_concepts
     {
         allocator<A<int>> alloc{};
         A<int>* a = alloc.allocate(10);
@@ -372,7 +333,6 @@ constexpr void test_compiletime_destroy_variants() {
         ranges::destroy_n(a, 10);
         alloc.deallocate(a, 10);
     }
-#endif // __cpp_lib_concepts
 }
 static_assert((test_compiletime_destroy_variants(), true));
 
@@ -519,7 +479,6 @@ constexpr void test_compiletime_operators() {
 }
 static_assert((test_compiletime_operators(), true));
 
-#ifdef __cpp_lib_concepts
 // Also test LWG-3888 Most ranges uninitialized memory algorithms are underconstrained
 template <class Rng>
 concept CanUninitializedDefaultConstruct = requires(Rng& r) { ranges::uninitialized_default_construct(r); };
@@ -546,19 +505,17 @@ template <class InRng, class OutRng>
 concept CanUninitializedCopy = requires(InRng& ri, OutRng& ro) { ranges::uninitialized_copy(ri, ro); };
 
 template <class InIt, class OutIt, class S>
-concept CanUninitializedCopyN =
-    requires(InIt&& ii, OutIt&& io, S&& s) {
-        ranges::uninitialized_copy_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
-    };
+concept CanUninitializedCopyN = requires(InIt&& ii, OutIt&& io, S&& s) {
+    ranges::uninitialized_copy_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
+};
 
 template <class InRng, class OutRng>
 concept CanUninitializedMove = requires(InRng& ri, OutRng& ro) { ranges::uninitialized_move(ri, ro); };
 
 template <class InIt, class OutIt, class S>
-concept CanUninitializedMoveN =
-    requires(InIt&& ii, OutIt&& io, S&& s) {
-        ranges::uninitialized_move_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
-    };
+concept CanUninitializedMoveN = requires(InIt&& ii, OutIt&& io, S&& s) {
+    ranges::uninitialized_move_n(forward<InIt>(ii), iter_difference_t<InIt>{}, forward<OutIt>(io), forward<S>(s));
+};
 
 template <class Rng>
 concept CanDestroy = requires(Rng&& r) { ranges::destroy(forward<Rng>(r)); };
@@ -625,7 +582,6 @@ static_assert(CanDestroyN<char*>);
 static_assert(!CanDestroyN<const char*>);
 static_assert(!CanDestroyN<volatile char*>);
 static_assert(!CanDestroyN<const volatile char*>);
-#endif // __cpp_lib_concepts
 
 int main() {
     test_runtime(1234);
@@ -638,10 +594,8 @@ int main() {
         construct_at(ptr);
         ptr->destroy();
 
-#ifdef __cpp_lib_concepts
         ranges::construct_at(ptr);
         ptr->destroy();
-#endif // __cpp_lib_concepts
     }
 
     test_array(1234);

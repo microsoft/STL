@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _IOSTREAM_
 #define _IOSTREAM_
 #include <yvals_core.h>
@@ -35,7 +34,7 @@ __PURE_APPDOMAIN_GLOBAL extern wistream* _Ptr_wcin;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcout;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcerr;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wclog;
-#else // _M_CEE_PURE
+#else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 _EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT istream cin;
 _EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT ostream cout;
 _EXPORT_STD extern "C++" __PURE_APPDOMAIN_GLOBAL _CRTDATA2_IMPORT ostream cerr;
@@ -63,9 +62,9 @@ public:
 private:
     __PURE_APPDOMAIN_GLOBAL static int _Init_cnt;
 };
-#endif // _CRTBLD
+#endif // defined(_CRTBLD)
 
-#endif // _M_CEE_PURE
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

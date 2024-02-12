@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// _Exp function
-
 #include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
@@ -15,8 +13,8 @@ static const double c2     = 1.4286068203094172321214581765680755e-6;
 static const double hugexp = HUGE_EXP;
 static const double invln2 = 1.4426950408889634073599246810018921;
 
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(
-    double* px, double y, short eoff) { // compute y * e^(*px), (*px) finite, |y| not huge
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double* px, double y, short eoff) noexcept {
+    // compute y * e^(*px), (*px) finite, |y| not huge
     if (y == 0.0) { // zero
         *px = y;
         return 0;

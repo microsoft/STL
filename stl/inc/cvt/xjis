@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CVT_XJIS_
 #define _CVT_XJIS_
 #include <yvals_core.h>
@@ -23,7 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _CVT_JIS_
 
 namespace stdext {
-    namespace cvt {
+    namespace _DEPRECATE_STDEXT_CVT cvt {
 
         using _Statype = _CSTD mbstate_t;
 
@@ -307,7 +306,7 @@ namespace stdext {
                 return 0; // 0 => varying length
             }
         };
-    } // namespace cvt
+    } // namespace _DEPRECATE_STDEXT_CVT cvt
 } // namespace stdext
 
 #pragma pop_macro("new")

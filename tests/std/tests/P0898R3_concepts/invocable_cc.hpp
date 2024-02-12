@@ -57,7 +57,6 @@ void NAME() {
         }
     }
 
-    // clang-format off
     {
         // N4849 [func.require]/1.7: "f(t_1, t_2, ..., t_N) in all other cases"
         {
@@ -818,7 +817,6 @@ void NAME() {
         STATIC_ASSERT(!test<PMF1PCVRR, S&, int>());
         STATIC_ASSERT(!test<PMF1PCVRR, S&, int, long>());
     }
-// clang-format on
 }
 
 #undef CALLCONV

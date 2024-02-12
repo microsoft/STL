@@ -14,7 +14,7 @@ static std::_Init_locks initlocks;
 
 _STD_BEGIN
 
-__PURE_APPDOMAIN_GLOBAL static wfilebuf wfin(_cpp_stdin);
+__PURE_APPDOMAIN_GLOBAL static wfilebuf wfin(stdin);
 #if defined(_M_CEE_PURE)
 __PURE_APPDOMAIN_GLOBAL extern wistream wcin(&wfin);
 #else

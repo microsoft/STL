@@ -11,21 +11,21 @@ using namespace std;
 
 struct not_std_plus {
     template <class T, class U>
-    constexpr decltype(auto) operator()(T&& t, U&& u) const {
+    constexpr decltype(auto) operator()(T && t, U && u) const {
         return forward<T>(t) + forward<U>(u);
     }
 };
 
 struct not_std_minus {
     template <class T, class U>
-    constexpr decltype(auto) operator()(T&& t, U&& u) const {
+    constexpr decltype(auto) operator()(T && t, U && u) const {
         return forward<T>(t) - forward<U>(u);
     }
 };
 
 struct not_std_multiplies {
     template <class T, class U>
-    constexpr decltype(auto) operator()(T&& t, U&& u) const {
+    constexpr decltype(auto) operator()(T && t, U && u) const {
         return forward<T>(t) * forward<U>(u);
     }
 };

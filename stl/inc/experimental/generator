@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _EXPERIMENTAL_GENERATOR_
 #define _EXPERIMENTAL_GENERATOR_
 #include <yvals_core.h>
@@ -39,7 +38,7 @@ namespace experimental {
             const _Ty* _Value;
 #ifdef _CPPUNWIND
             exception_ptr _Exception;
-#endif // _CPPUNWIND
+#endif // defined(_CPPUNWIND)
 
             generator get_return_object() noexcept {
                 return generator{*this};
@@ -60,8 +59,8 @@ namespace experimental {
             }
 #else // ^^^ defined(_CPPUNWIND) / !defined(_CPPUNWIND) vvv
             void unhandled_exception() noexcept {}
-#endif // _CPPUNWIND
-#endif // _KERNEL_MODE
+#endif // ^^^ !defined(_CPPUNWIND) ^^^
+#endif // !defined(_KERNEL_MODE)
 
 #ifdef _CPPUNWIND
             void _Rethrow_if_exception() {
@@ -69,7 +68,7 @@ namespace experimental {
                     _STD rethrow_exception(_Exception);
                 }
             }
-#endif // _CPPUNWIND
+#endif // defined(_CPPUNWIND)
 
             suspend_always yield_value(const _Ty& _Val) noexcept {
                 _Value = _STD addressof(_Val);
@@ -122,7 +121,7 @@ namespace experimental {
                     _STD exchange(_Coro, nullptr).promise()._Rethrow_if_exception();
 #else // ^^^ defined(_CPPUNWIND) / !defined(_CPPUNWIND) vvv
                     _Coro = nullptr;
-#endif // _CPPUNWIND
+#endif // ^^^ !defined(_CPPUNWIND) ^^^
                 }
 
                 return *this;
@@ -157,7 +156,7 @@ namespace experimental {
                 if (_Coro.done()) {
 #ifdef _CPPUNWIND
                     _Coro.promise()._Rethrow_if_exception();
-#endif // _CPPUNWIND
+#endif // ^^^ defined(_CPPUNWIND) ^^^
                     return {};
                 }
             }

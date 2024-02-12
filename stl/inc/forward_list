@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _FORWARD_LIST_
 #define _FORWARD_LIST_
 #include <yvals_core.h>
@@ -227,7 +226,7 @@ public:
 };
 
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
-    class _Reference, class _Const_reference, class _Nodeptr_type>
+    class _Nodeptr_type>
 struct _Flist_iter_types {
     using value_type      = _Value_type;
     using size_type       = _Size_type;
@@ -524,7 +523,7 @@ private:
 
     using _Scary_val = _Flist_val<conditional_t<_Is_simple_alloc_v<_Alnode>, _Flist_simple_types<_Ty>,
         _Flist_iter_types<_Ty, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
-            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Ty&, const _Ty&, _Nodeptr>>>;
+            typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Nodeptr>>>;
 
 public:
     using value_type      = _Ty;
@@ -562,6 +561,9 @@ public:
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
 
+#if _HAS_CXX17
+    template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+#endif // _HAS_CXX17
     forward_list(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct list from _Count * _Val, allocator
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
@@ -593,23 +595,23 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     forward_list(_Iter _First, _Iter _Last) : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
-        _Insert_op._Append_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _Insert_op._Append_range_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     forward_list(_Iter _First, _Iter _Last, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
-        _Insert_op._Append_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _Insert_op._Append_range_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     forward_list(from_range_t, _Rng&& _Range) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
@@ -625,7 +627,7 @@ public:
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     forward_list(forward_list&& _Right) noexcept // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
@@ -917,12 +919,12 @@ public:
         _Insert_after(_Mypair._Myval2._Before_head(), _Val);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     void prepend_range(_Rng&& _Range) {
         _Insert_range_after(_Mypair._Myval2._Before_head(), _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     void pop_front() noexcept /* strengthened */ {
         _Erase_after(_Mypair._Myval2._Before_head());
@@ -958,16 +960,16 @@ private:
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        _Assign_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        _Assign_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     void assign_range(_Rng&& _Range) {
         _Assign_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) {
         clear();
@@ -1020,11 +1022,11 @@ public:
         _STL_VERIFY(
             _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list insert_after location incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
-        _Adl_verify_range(_First, _Last);
-        return _Insert_range_after(_Where._Ptr, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _STD _Adl_verify_range(_First, _Last);
+        return _Insert_range_after(_Where._Ptr, _STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     iterator insert_range_after(const_iterator _Where, _Rng&& _Range) {
 #if _ITERATOR_DEBUG_LEVEL == 2
@@ -1033,7 +1035,7 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 2
         return _Insert_range_after(_Where._Ptr, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 private:
     void _Erase_after(_Nodeptr _Pnode) noexcept { // erase element after _Pnode
@@ -1097,10 +1099,11 @@ public:
     }
 
     void swap(forward_list& _Right) noexcept /* strengthened */ {
+        using _STD swap;
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
             _Swap_proxy_and_iterators(_Right);
-            _Swap_adl(_Mypair._Myval2._Myhead, _Right._Mypair._Myval2._Myhead);
+            swap(_Mypair._Myval2._Myhead, _Right._Mypair._Myval2._Myhead); // intentional ADL
         }
     }
 
@@ -1227,9 +1230,9 @@ public:
 
 #if _HAS_CXX20
         return _Removed;
-#else // _HAS_CXX20
+#else
         (void) _Removed;
-#endif // _HAS_CXX20
+#endif
     }
 
     auto unique() { // erase each element matching previous
@@ -1257,9 +1260,9 @@ public:
 
 #if _HAS_CXX20
         return _Removed;
-#else // _HAS_CXX20
+#else
         (void) _Removed;
-#endif // _HAS_CXX20
+#endif
     }
 
     void merge(forward_list& _Right) { // merge in elements from _Right, both ordered by operator<
@@ -1272,12 +1275,12 @@ public:
 
     template <class _Pr2>
     void merge(forward_list& _Right, _Pr2 _Pred) { // merge in elements from _Right, both ordered by _Pred
-        _Merge1(_Right, _Pass_fn(_Pred));
+        _Merge1(_Right, _STD _Pass_fn(_Pred));
     }
 
     template <class _Pr2>
     void merge(forward_list&& _Right, _Pr2 _Pred) { // merge in elements from _Right, both ordered by _Pred
-        _Merge1(_Right, _Pass_fn(_Pred));
+        _Merge1(_Right, _STD _Pass_fn(_Pred));
     }
 
 private:
@@ -1394,7 +1397,7 @@ public:
 
     template <class _Pr2>
     void sort(_Pr2 _Pred) { // order sequence
-        _Scary_val::_Sort(_Mypair._Myval2._Before_head(), _Pass_fn(_Pred));
+        _Scary_val::_Sort(_Mypair._Myval2._Before_head(), _STD _Pass_fn(_Pred));
     }
 
     void reverse() noexcept { // reverse sequence
@@ -1468,7 +1471,7 @@ private:
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         if (this != _STD addressof(_Right)) {
@@ -1497,7 +1500,7 @@ private:
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
 
         if (_First == _Last) {
             return;
@@ -1557,11 +1560,11 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 forward_list(_Iter, _Iter, _Alloc = _Alloc()) -> forward_list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 forward_list(from_range_t, _Rng&&, _Alloc = _Alloc()) -> forward_list<_RANGES range_value_t<_Rng>, _Alloc>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty, class _Alloc>
 void swap(forward_list<_Ty, _Alloc>& _Left, forward_list<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
@@ -1574,21 +1577,19 @@ _NODISCARD bool operator==(const forward_list<_Ty, _Alloc>& _Left, const forward
         _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
 }
 
-#if !_HAS_CXX20
-template <class _Ty, class _Alloc>
-_NODISCARD bool operator!=(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
-    return !(_Left == _Right);
-}
-#endif // !_HAS_CXX20
-
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Ty> operator<=>(
     const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
         _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
 }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Ty, class _Alloc>
+_NODISCARD bool operator!=(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
+    return !(_Left == _Right);
+}
+
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare(
@@ -1609,17 +1610,17 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
-typename forward_list<_Ty, _Alloc>::size_type erase(forward_list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+forward_list<_Ty, _Alloc>::size_type erase(forward_list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
     return _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
-typename forward_list<_Ty, _Alloc>::size_type erase_if(forward_list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
-    return _Cont.remove_if(_Pass_fn(_Pred));
+forward_list<_Ty, _Alloc>::size_type erase_if(forward_list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+    return _Cont.remove_if(_STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-short _Dscale(double* px, long lexp) { // scale *px by 2^xexp with checking
+short _Dscale(double* px, long lexp) noexcept { // scale *px by 2^xexp with checking
     const auto ps = reinterpret_cast<_Dval*>(px);
     short xchar   = static_cast<short>((ps->_Sh[_D0] & _DMASK) >> _DOFF);
 

@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CSIGNAL_
 #define _CSIGNAL_
 #include <yvals_core.h>
@@ -23,7 +22,7 @@ _EXPORT_STD using _CSTD sig_atomic_t;
 _EXPORT_STD using _CSTD raise;
 #ifndef _M_CEE_PURE
 _EXPORT_STD using _CSTD signal;
-#endif // _M_CEE_PURE
+#endif // !defined(_M_CEE_PURE)
 _STD_END
 
 #pragma pop_macro("new")

@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _HASH_MAP_
 #define _HASH_MAP_
 #include <yvals_core.h>
@@ -30,7 +29,6 @@ namespace stdext {
     using _STD swap;
     using _STD _Hash;
     using _STD _Is_nothrow_swappable;
-    using _STD _Swap_adl;
     using _STD _Xout_of_range;
 
     template <class _Kty, // key type
@@ -102,14 +100,15 @@ namespace stdext {
         }
 
         void swap(_Hmap_traits& _Rhs) noexcept(_Is_nothrow_swappable<_Tr>::value) {
-            _Swap_adl(static_cast<_Tr&>(*this), static_cast<_Tr&>(_Rhs));
+            using _STD swap;
+            swap(static_cast<_Tr&>(*this), static_cast<_Tr&>(_Rhs)); // intentional ADL
             _STD swap(_Max_buckets, _Rhs._Max_buckets);
         }
 
         float _Max_buckets = 0.0F; // current maximum bucket size
     };
 
-    template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, less<_Kty>>,
+    template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, _STD less<_Kty>>,
         class _Alloc = allocator<pair<const _Kty, _Ty>>>
     class hash_map : public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false>> {
         // hash table of {key, mapped} values, unique keys
@@ -298,7 +297,7 @@ namespace stdext {
         return !(_Left == _Right);
     }
 
-    template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, less<_Kty>>,
+    template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, _STD less<_Kty>>,
         class _Alloc = allocator<pair<const _Kty, _Ty>>>
     class hash_multimap : public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true>> {
         // hash table of {key, mapped} values, non-unique keys

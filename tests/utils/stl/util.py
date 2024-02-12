@@ -44,7 +44,7 @@ def nullContext(value):
 
 def makeReport(cmd, out, err, rc):
     report = "Command: \"%s\"\n" % "\" \"".join(cmd)
-    report += "Exit Code: %d\n" % rc
+    report += f"Exit Code: {rc} (0x{rc:X})\n"
     # Replacing CRLFs with LFs avoids ugly double newlines when this is displayed in Azure Pipelines.
     if out:
         report += "Standard Output:\n--\n%s--\n" % out.replace("\r\n", "\n")
@@ -77,8 +77,9 @@ def decodeOutput(bytes):
     try:
         return bytes.decode()
     except UnicodeError:
+        # Use 'backslashreplace' to avoid throwing another exception for unrecognized characters.
         import locale
-        return bytes.decode(locale.getpreferredencoding(do_setlocale=False))
+        return bytes.decode(locale.getpreferredencoding(do_setlocale=False), 'backslashreplace')
 
 
 def executeCommand(command, cwd=None, env=None, input=None, timeout=0):

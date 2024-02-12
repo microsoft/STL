@@ -4,6 +4,8 @@
 // test <random> C++11 header, part 6
 #define TEST_NAME "<random>, part 6"
 
+#define _SILENCE_TR1_RANDOM_DEPRECATION_WARNING
+
 #include <math.h>
 #define FLOAT_TYPE IS_DOUBLE
 #include "tdefs.h"

@@ -194,40 +194,46 @@ struct instantiator {
                 empty1.begin(), empty1.end(), empty2.begin(), empty2.end(), less{}, get_first, get_second);
             assert(!result);
         }
-        { // Validate memcmp case
-            unsigned char arr1[3]{0, 1, 2};
-            unsigned char arr2[3]{0, 1, 3};
-            assert(lexicographical_compare(arr1, arr2));
-            arr2[2] = 2;
-            assert(!lexicographical_compare(arr1, arr2));
-            arr2[2] = 1;
-            assert(!lexicographical_compare(arr1, arr2));
-        }
-        { // Validate memcmp + unreachable_sentinel cases
-            unsigned char arr1[3]{0, 1, 2};
-            unsigned char arr2[3]{0, 1, 3};
-
-            assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr1), unreachable_sentinel));
-            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr1), end(arr1)));
-
-            assert(lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), unreachable_sentinel));
-            assert(lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
-            assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
-            arr2[2] = 2;
-            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
-            assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
-            arr2[2] = 1;
-            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), unreachable_sentinel));
-            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
-            assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
-        }
     }
 };
+
+constexpr void concrete_tests() {
+    using ranges::lexicographical_compare, ranges::begin, ranges::end;
+
+    { // Validate memcmp case
+        unsigned char arr1[3]{0, 1, 2};
+        unsigned char arr2[3]{0, 1, 3};
+        assert(lexicographical_compare(arr1, arr2));
+        arr2[2] = 2;
+        assert(!lexicographical_compare(arr1, arr2));
+        arr2[2] = 1;
+        assert(!lexicographical_compare(arr1, arr2));
+    }
+    { // Validate memcmp + unreachable_sentinel cases
+        unsigned char arr1[3]{0, 1, 2};
+        unsigned char arr2[3]{0, 1, 3};
+
+        assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr1), unreachable_sentinel));
+        assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr1), end(arr1)));
+
+        assert(lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), unreachable_sentinel));
+        assert(lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
+        assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
+        arr2[2] = 2;
+        assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
+        assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
+        arr2[2] = 1;
+        assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), unreachable_sentinel));
+        assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
+        assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
+    }
+}
 
 #ifdef TEST_EVERYTHING
 int main() {
     // No constexpr tests here: we hit the constexpr step limits too quickly.
     test_in_in<instantiator, const P, const P>();
+    concrete_tests();
 }
 #else // ^^^ test all range combinations / test only interesting combinations vvv
 template <test::ProxyRef IsProxy>
@@ -243,6 +249,8 @@ constexpr void run_tests() {
     instantiator::call<range_type<ProxyRef::yes>, range_type<ProxyRef::no>>();
     instantiator::call<range_type<ProxyRef::no>, range_type<ProxyRef::yes>>();
     instantiator::call<range_type<ProxyRef::no>, range_type<ProxyRef::no>>();
+
+    concrete_tests();
 }
 
 int main() {

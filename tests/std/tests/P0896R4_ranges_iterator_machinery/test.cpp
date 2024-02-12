@@ -420,11 +420,9 @@ struct sentinel_archetype : semiregular_archetype<I> {
         requires (I != 5);
     COPYABLE_OPS(sentinel);
 
-    // clang-format off
     template <std::size_t J>
         requires (I != 6)
     bool operator==(iterator_archetype<J> const&) const;
-    // clang-format on
 };
 
 inline constexpr std::size_t sentinel_archetype_max = 7;
@@ -1079,7 +1077,7 @@ namespace iterator_cust_move_test {
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int(int)>, int (&)(int)>);
 #else // ^^^ no workaround / workaround vvv
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int(int)>, int (*)(int)>);
-#endif // TRANSITION, VSO-1008447
+#endif // ^^^ workaround ^^^
 
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int[4]>, int&&>);
     STATIC_ASSERT(ranges::iter_move(some_ints) == 0);
@@ -1092,7 +1090,7 @@ namespace iterator_cust_move_test {
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
 #else // ^^^ no workaround / workaround vvv
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&&)(int)>);
-#endif // TRANSITION, VSO-1008447
+#endif // ^^^ workaround ^^^
     STATIC_ASSERT(ranges::iter_move (&f)(42) == 43);
     STATIC_ASSERT(noexcept(ranges::iter_move(&f)));
 
@@ -1179,11 +1177,10 @@ namespace iterator_cust_swap_test {
 
     // N4928 [iterator.cust.swap]/4.2: "Otherwise, if the types of E1 and E2 each model indirectly_readable,
     // and if the reference types of E1 and E2 model swappable_with, then ranges::swap(*E1, *E2)."
-    // clang-format off
     template <class T, class U = T>
-    concept bullet2 = !bullet1<T, U> && indirectly_readable<remove_reference_t<T>>
-        && indirectly_readable<remove_reference_t<U>> && swappable_with<iter_reference_t<T>, iter_reference_t<U>>;
-    // clang-format on
+    concept bullet2 =
+        !bullet1<T, U> && indirectly_readable<remove_reference_t<T>> && indirectly_readable<remove_reference_t<U>>
+        && swappable_with<iter_reference_t<T>, iter_reference_t<U>>;
 
     constexpr bool test() {
         // This test notably executes both at runtime and at compiletime.
@@ -1256,7 +1253,7 @@ namespace iterator_cust_swap_test {
 
     // N4928 [iterator.cust.swap]/4.4: "Otherwise, ranges::iter_swap(E1, E2) is ill-formed."
     template <class T, class U>
-    concept bullet4 = (!can_iter_swap<T, U>);
+    concept bullet4 = !can_iter_swap<T, U>;
 
     STATIC_ASSERT(bullet4<void, void>);
     STATIC_ASSERT(bullet4<int, int>);
@@ -1445,7 +1442,7 @@ namespace iterator_concept_winc_test {
             std::same_as<std::index_sequence<Is...>, std::make_index_sequence<weakly_incrementable_archetype_max>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         STATIC_ASSERT((!weakly_incrementable<weakly_incrementable_archetype<Is>> && ...));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         STATIC_ASSERT(weakly_incrementable<weakly_incrementable_archetype<weakly_incrementable_archetype_max>>);
         return true;
     }
@@ -1486,7 +1483,7 @@ namespace iterator_concept_iterator_test {
         STATIC_ASSERT(std::same_as<std::index_sequence<Is...>, std::make_index_sequence<iterator_archetype_max>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         STATIC_ASSERT((!input_or_output_iterator<iterator_archetype<Is>> && ...));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         STATIC_ASSERT(input_or_output_iterator<iterator_archetype<iterator_archetype_max>>);
         return true;
     }
@@ -1519,7 +1516,7 @@ namespace iterator_concept_sentinel_test {
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         constexpr bool expected = I >= sentinel_archetype_max && J >= iterator_archetype_max;
         STATIC_ASSERT(sentinel_for<sentinel_archetype<I>, iterator_archetype<J>> == expected);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         return true;
     }
 
@@ -1549,7 +1546,7 @@ namespace iterator_concept_sizedsentinel_test {
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         constexpr bool expected = I >= sized_sentinel_archetype_max && J >= iterator_archetype_max;
         STATIC_ASSERT(sized_sentinel_for<sized_sentinel_archetype<I>, iterator_archetype<J>> == expected);
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         return true;
     }
 
@@ -1577,7 +1574,7 @@ namespace iterator_concept_input_test {
         STATIC_ASSERT(std::same_as<std::index_sequence<Is...>, std::make_index_sequence<input_iterator_archetype_max>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         STATIC_ASSERT((!input_iterator<input_iterator_archetype<Is>> && ...));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         STATIC_ASSERT(input_iterator<input_iterator_archetype<input_iterator_archetype_max>>);
         return true;
     }
@@ -1605,7 +1602,7 @@ namespace iterator_concept_output_test {
         STATIC_ASSERT((!output_iterator<output_iterator_archetype<Is>, int const> && ...));
         STATIC_ASSERT((!output_iterator<output_iterator_archetype<Is>, int&> && ...));
         STATIC_ASSERT((!output_iterator<output_iterator_archetype<Is>, int const&> && ...));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         STATIC_ASSERT(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int>);
         STATIC_ASSERT(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int const>);
         STATIC_ASSERT(output_iterator<output_iterator_archetype<output_iterator_archetype_max>, int&>);
@@ -1770,7 +1767,6 @@ namespace unreachable_sentinel_test {
     STATIC_ASSERT(std::is_nothrow_copy_assignable_v<unreachable_sentinel_t>);
     STATIC_ASSERT(std::is_nothrow_move_assignable_v<unreachable_sentinel_t>);
 
-    // clang-format off
     template <class T>
     concept Comparable = requires(T const& t) {
         { t == unreachable_sentinel } -> std::same_as<bool>;
@@ -1778,7 +1774,6 @@ namespace unreachable_sentinel_test {
         { unreachable_sentinel == t } -> std::same_as<bool>;
         { unreachable_sentinel != t } -> std::same_as<bool>;
     };
-    // clang-format on
 
     STATIC_ASSERT(Comparable<int>);
 
@@ -1805,7 +1800,7 @@ namespace unreachable_sentinel_test {
 
 #ifndef _M_CEE // TRANSITION, VSO-1665674
         STATIC_ASSERT((!Comparable<weakly_incrementable_archetype<Is>> && ...));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         STATIC_ASSERT(Comparable<weakly_incrementable_archetype<weakly_incrementable_archetype_max>>);
 
         return true;
@@ -1954,14 +1949,13 @@ namespace iter_ops {
             return *this;
         }
 
-        // clang-format off
         constexpr trace_iterator& operator=(default_sentinel_t) noexcept(NoThrow == nothrow::yes)
-            requires (Assign == assign::yes) {
+            requires (Assign == assign::yes)
+        {
             ++trace_->assignments_;
             pos_ = sentinel_position;
             return *this;
         }
-        // clang-format on
 
         int operator*() const noexcept(NoThrow == nothrow::yes);
 
@@ -3052,6 +3046,7 @@ namespace iter_ops {
         }
 
         {
+#ifndef __EDG__ // TRANSITION, VSO-1898890
             // Call distance(i, s) with arrays which must be decayed to pointers.
             // (This behavior was regressed by LWG-3392.)
             int some_ints[] = {1, 2, 3};
@@ -3069,6 +3064,7 @@ namespace iter_ops {
             STATIC_ASSERT(noexcept(distance(const_ints + 1, const_ints)));
             assert(distance(const_ints, const_ints) == 0);
             STATIC_ASSERT(noexcept(distance(const_ints, const_ints)));
+#endif // ^^^ no workaround ^^^
         }
 
         return true;
@@ -3148,17 +3144,13 @@ namespace reverse_iterator_test {
     STATIC_ASSERT(same_as<reverse_iterator<xvalue_bidi_iter>::iterator_category, bidirectional_iterator_tag>);
 
     // Validate operator-> for a pointer, and for non-pointers with and without operator->()
-    // clang-format off
     template <class I, class P>
     concept has_arrow = requires(I i) {
         { i.operator->() } -> same_as<P>;
     };
 
     template <class I>
-    concept has_no_arrow = !requires(I i) {
-        i.operator->();
-    };
-    // clang-format on
+    concept has_no_arrow = !requires(I i) { i.operator->(); };
 
     STATIC_ASSERT(has_arrow<reverse_iterator<int*>, int*>);
     STATIC_ASSERT(same_as<reverse_iterator<int*>::pointer, int*>);

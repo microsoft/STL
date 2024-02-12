@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _YMATH
 #define _YMATH
 #include <yvals.h>
@@ -21,18 +20,18 @@ _EXTERN_C_UNLESS_PURE
 #define _INFCODE 1
 #define _NANCODE 2
 
-_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Cosh(double, double);
-_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double, double);
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double*, double, short);
+_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Cosh(double, double) noexcept;
+_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double, double) noexcept;
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double*, double, short) noexcept;
 
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FCosh(float, float);
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float, float);
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float*, float, short);
+_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FCosh(float, float) noexcept;
+_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float, float) noexcept;
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float*, float, short) noexcept;
 
-_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LCosh(long double, long double);
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LDtest(long double*);
-_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LSinh(long double, long double);
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(long double*, long double, short);
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LCosh(long double, long double) noexcept;
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LDtest(long double*) noexcept;
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LSinh(long double, long double) noexcept;
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(long double*, long double, short) noexcept;
 
 _END_EXTERN_C_UNLESS_PURE
 

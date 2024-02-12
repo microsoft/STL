@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CWCHAR_
 #define _CWCHAR_
 #include <yvals_core.h>
@@ -19,7 +18,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+_EXTERN_CXX_WORKAROUND
 using _Mbstatet = mbstate_t;
+_END_EXTERN_CXX_WORKAROUND
 
 _STD_BEGIN
 #pragma warning(push)

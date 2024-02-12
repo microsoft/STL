@@ -16,7 +16,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-_CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt() { // get conversion info for current locale
+_CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt() noexcept { // get conversion info for current locale
     _Cvtvec _Cvt = {0};
 
     _Cvt._Page      = ___lc_codepage_func();
@@ -56,7 +56,7 @@ _CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt() { // get conversion info
 //     None.
 
 _CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
-    _Wcrtomb(_Out_ char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) {
+    _Wcrtomb(_Out_ char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) noexcept {
     _CRT_UNUSED(pst);
     if (ploc->_Isclocale) {
         if (wchar > 255) { // validate high byte
@@ -86,13 +86,15 @@ _CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
 }
 
 #ifdef MRTDLL
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, unsigned short wchar, mbstate_t* pst, const _Cvtvec* ploc) {
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(
+    char* s, unsigned short wchar, mbstate_t* pst, const _Cvtvec* ploc) noexcept {
     return _Wcrtomb(s, static_cast<wchar_t>(wchar), pst, ploc);
 }
-#endif // MRTDLL
+#endif // defined(MRTDLL)
 
 // TRANSITION, ABI: __Wcrtomb_lk() is preserved for binary compatibility
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL __Wcrtomb_lk(char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) {
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL __Wcrtomb_lk(
+    char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) noexcept {
     return _Wcrtomb(s, wchar, pst, ploc);
 }
 

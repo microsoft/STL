@@ -101,8 +101,8 @@ tuple<int, int, int> read_time(const char* const s) {
     return make_tuple(t.tm_hour, t.tm_min, t.tm_sec);
 }
 
-void test_640278();
-void test_990695();
+void test_DevDiv_640278();
+void test_DevDiv_990695();
 void test_locale_russian();
 void test_locale_german();
 void test_locale_chinese();
@@ -148,8 +148,8 @@ int main() {
 
     assert(read_time("15 : 47 : 60") == make_tuple(15, 47, 60));
 
-    test_640278();
-    test_990695();
+    test_DevDiv_640278();
+    test_DevDiv_990695();
     test_locale_russian();
     test_locale_german();
     test_locale_chinese();
@@ -171,7 +171,7 @@ void test_year(const string& str, const ios_base::iostate expected_err, const in
     assert(t.tm_year == expected_tm_year);
 }
 
-void test_640278() {
+void test_DevDiv_640278() {
     test_year("", ios_base::eofbit | ios_base::failbit, 0);
 
     test_year("xyz", ios_base::failbit, 0);
@@ -197,7 +197,7 @@ void test_640278() {
 }
 
 // DevDiv-990695 "<locale>: time_get should ignore ios_base::iostate's initial value"
-void test_990695() {
+void test_DevDiv_990695() {
     for (int k = 0; k < 2; ++k) {
         const auto Bit = k == 0 ? ios_base::goodbit : ios_base::failbit;
 

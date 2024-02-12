@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XTR1COMMON_
 #define _XTR1COMMON_
 #include <yvals_core.h>
@@ -15,6 +14,12 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("known_semantics")
+#undef msvc
+#undef known_semantics
 
 _STD_BEGIN
 _EXPORT_STD template <class _Ty, _Ty _Val>
@@ -77,7 +82,7 @@ _INLINE_VAR constexpr bool is_same_v<_Ty, _Ty> = true;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct is_same : bool_constant<is_same_v<_Ty1, _Ty2>> {};
-#endif // __clang__
+#endif // ^^^ not Clang ^^^
 
 _EXPORT_STD template <class _Ty>
 struct remove_const { // remove top-level const qualifier
@@ -163,7 +168,11 @@ _INLINE_VAR constexpr bool disjunction_v = disjunction<_Traits...>::value;
 
 template <class _Ty, class... _Types>
 _INLINE_VAR constexpr bool _Is_any_of_v = // true if and only if _Ty is in _Types
+#if _HAS_CXX17
+    (is_same_v<_Ty, _Types> || ...);
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
     disjunction_v<is_same<_Ty, _Types>...>;
+#endif // ^^^ !_HAS_CXX17 ^^^
 
 _NODISCARD constexpr bool _Is_constant_evaluated() noexcept { // Internal function for any standard mode
     return __builtin_is_constant_evaluated();
@@ -180,7 +189,7 @@ _INLINE_VAR constexpr bool is_integral_v = _Is_any_of_v<remove_cv_t<_Ty>, bool, 
     wchar_t,
 #ifdef __cpp_char8_t
     char8_t,
-#endif // __cpp_char8_t
+#endif // defined(__cpp_char8_t)
     char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long>;
 
 _EXPORT_STD template <class _Ty>
@@ -237,6 +246,11 @@ struct remove_cvref {
 #endif // _HAS_CXX20
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("known_semantics")
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

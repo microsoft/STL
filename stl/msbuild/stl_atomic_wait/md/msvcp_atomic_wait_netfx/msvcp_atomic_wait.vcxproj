@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="Dogfood" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+  Copyright (c) Microsoft Corporation.
+  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+  -->
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B0D8709C-8649-43DF-AB53-AA05134A9B83}</ProjectGuid>
+    <UseRetailTargets>true</UseRetailTargets>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Cpp.Default.props))" />
+  <PropertyGroup>
+    <CrtBuildModel>md</CrtBuildModel>
+    <MsvcpFlavor>netfx</MsvcpFlavor>
+    <Arm64X>true</Arm64X>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(msvcp_atomic_wait.settings.targets))" />
+</Project>

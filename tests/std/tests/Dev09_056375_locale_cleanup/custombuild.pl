@@ -6,7 +6,10 @@ use Run;
 sub CustomBuildHook()
 {
     my $cwd = Run::GetCWDName();
-    Run::ExecuteCL("TestDll.cpp /FeTestDll.DLL /link /DLL");
-    Run::ExecuteCL("Test.cpp /Fe$cwd.exe");
+    my $machine = $ENV{'TARGET_ARCHITECTURE'};
+    Run::ExecuteCL("TestDll.cpp /c");
+    Run::ExecuteLink("/machine:$machine /out:TestDll.DLL /DLL TestDll.obj");
+    Run::ExecuteCL("Test.cpp /c");
+    Run::ExecuteLink("/machine:$machine /out:$cwd.exe Test.obj");
 }
 1

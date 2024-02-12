@@ -25,17 +25,17 @@ using maybe_const = conditional_t<B, const T, T>;
 
 // Helper concepts from [range.cartesian.view]
 template <bool IsConst, class First, class... Rest>
-concept CartesianProductIsRandomAccess = (random_access_range<maybe_const<IsConst, First>> && ...
-                                          && (random_access_range<maybe_const<IsConst, Rest>>
-                                              && sized_range<maybe_const<IsConst, Rest>>) );
+concept CartesianProductIsRandomAccess =
+    (random_access_range<maybe_const<IsConst, First>> && ...
+        && (random_access_range<maybe_const<IsConst, Rest>> && sized_range<maybe_const<IsConst, Rest>>) );
 
 template <class Rng>
 concept CartesianProductCommonArg = common_range<Rng> || (sized_range<Rng> && random_access_range<Rng>);
 
 template <bool IsConst, class First, class... Rest>
-concept CartesianProductIsBidirectional = (bidirectional_range<maybe_const<IsConst, First>> && ...
-                                           && (bidirectional_range<maybe_const<IsConst, Rest>>
-                                               && CartesianProductCommonArg<maybe_const<IsConst, Rest>>) );
+concept CartesianProductIsBidirectional =
+    (bidirectional_range<maybe_const<IsConst, First>> && ...
+        && (bidirectional_range<maybe_const<IsConst, Rest>> && CartesianProductCommonArg<maybe_const<IsConst, Rest>>) );
 
 template <class First, class... Rest>
 concept CartesianProductIsCommon = CartesianProductCommonArg<First>;
@@ -53,7 +53,7 @@ template <class... Ranges>
 concept CanViewCartesianProduct = requires(Ranges&&... rs) { views::cartesian_product(forward<Ranges>(rs)...); };
 
 template <class T>
-concept UnsignedIntegerLike = _Integer_like<T> && (!_Signed_integer_like<T>);
+concept UnsignedIntegerLike = _Integer_like<T> && !_Signed_integer_like<T>;
 
 template <class First, class... Rest>
 constexpr bool is_iter_move_nothrow() {
@@ -379,7 +379,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         STATIC_ASSERT(same_as<typename I::iterator_category, input_iterator_tag>);
 
         // Check iterator_concept
-        using IterConcept = typename I::iterator_concept;
+        using IterConcept = I::iterator_concept;
         STATIC_ASSERT(is_random_access == same_as<IterConcept, random_access_iterator_tag>);
         STATIC_ASSERT((is_bidirectional && !is_random_access) == same_as<IterConcept, bidirectional_iterator_tag>);
         STATIC_ASSERT((forward_range<VFirst> && !is_bidirectional) == same_as<IterConcept, forward_iterator_tag>);
@@ -551,7 +551,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
         STATIC_ASSERT(same_as<typename CI::iterator_category, input_iterator_tag>);
 
         // Check iterator_concept
-        using IterConcept = typename CI::iterator_concept;
+        using IterConcept = CI::iterator_concept;
         STATIC_ASSERT(is_const_random_access == same_as<IterConcept, random_access_iterator_tag>);
         STATIC_ASSERT(
             (is_const_bidirectional && !is_const_random_access) == same_as<IterConcept, bidirectional_iterator_tag>);
@@ -861,7 +861,9 @@ struct instantiator {
     template <class R>
     static constexpr void call() {
         typename R::template type<const int> r0{get<0>(some_ranges)};
+#ifndef __EDG__ // TRANSITION, VSO-1900293
         test_one(expected_result_0, r0);
+#endif // ^^^ no workaround ^^^
 
         if constexpr (ranges::forward_range<typename R::template type<const int>>) {
             typename R::template type<const int> r1{get<1>(some_ranges)};
@@ -922,59 +924,19 @@ using move_only_view = test::range<Category, const ValTy, IsSized, test::CanDiff
     test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
 
-namespace check_recommended_practice_implementation { // MSVC STL specific behavior
-    using ranges::cartesian_product_view, ranges::empty_view, ranges::single_view, views::all_t, ranges::range_size_t,
-        ranges::range_difference_t, ranges::ref_view, ranges::owning_view;
-    using Arr  = array<int, 4>;
-    using Vec  = vector<int>;
-    using Span = span<int, 4>;
-
-    // Computing product for such small array does not require big range_size_t
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Arr>>>) <= sizeof(size_t));
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Arr>, all_t<Arr>>>) <= sizeof(size_t));
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Arr>, all_t<Arr>, all_t<Arr>>>) <= sizeof(size_t));
-
-    // Same thing with range_difference_t<array>
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Arr>>>) <= sizeof(ptrdiff_t));
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Arr>, all_t<Arr>>>) <= sizeof(ptrdiff_t));
-    STATIC_ASSERT(
-        sizeof(range_difference_t<cartesian_product_view<all_t<Arr>, all_t<Arr>, all_t<Arr>>>) <= sizeof(ptrdiff_t));
-
-    // Computing product for such small span does not require big range_size_t
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Span>>>) <= sizeof(size_t));
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Span>, all_t<Span>>>) <= sizeof(size_t));
-    STATIC_ASSERT(
-        sizeof(range_size_t<cartesian_product_view<all_t<Span>, all_t<Span>, all_t<Span>>>) <= sizeof(size_t));
-
-    // Same thing with range_difference_t<span>
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Span>>>) <= sizeof(ptrdiff_t));
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Span>, all_t<Span>>>) <= sizeof(ptrdiff_t));
-    STATIC_ASSERT(
-        sizeof(range_difference_t<cartesian_product_view<all_t<Span>, all_t<Span>, all_t<Span>>>) <= sizeof(ptrdiff_t));
-
-    // Check 'single_view' and 'empty_view'
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<empty_view<int>, single_view<int>>>) <= sizeof(size_t));
-    STATIC_ASSERT(
-        sizeof(range_difference_t<cartesian_product_view<empty_view<int>, single_view<int>>>) <= sizeof(ptrdiff_t));
-
-    // Check 'ref_view<(const) V>' and 'owning_view<V>'
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<ref_view<Arr>, ref_view<const Arr>, owning_view<Arr>>>)
-                  <= sizeof(size_t));
-    STATIC_ASSERT(
-        sizeof(range_difference_t<cartesian_product_view<ref_view<Arr>, ref_view<const Arr>, owning_view<Arr>>>)
-        <= sizeof(ptrdiff_t));
-
-    // One vector should not use big integer-class type...
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Vec>>>) <= sizeof(size_t));
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Vec>>>) <= sizeof(ptrdiff_t));
-
-    // ... but two vectors will
-    STATIC_ASSERT(sizeof(range_size_t<cartesian_product_view<all_t<Vec>, all_t<Vec>>>) > sizeof(size_t));
-    STATIC_ASSERT(sizeof(range_difference_t<cartesian_product_view<all_t<Vec>, all_t<Vec>>>) > sizeof(ptrdiff_t));
-} // namespace check_recommended_practice_implementation
+// GH-3733: cartesian_product_view would incorrectly reject a call to size() claiming that big*big*big*0 is not
+// representable as range_size_t because big*big*big is not.
+constexpr void test_gh_3733() {
+    const auto r1   = views::repeat(0, (numeric_limits<ptrdiff_t>::max)());
+    const auto r2   = views::repeat(1, 0);
+    const auto cart = views::cartesian_product(r1, r1, r1, r2);
+    assert(cart.size() == 0);
+    assert(as_const(cart).size() == 0);
+}
 
 int main() {
     // Check views
+#ifndef __EDG__ // TRANSITION, VSO-1900293
     { // ... copyable
         constexpr span<const int> s{get<0>(some_ranges)};
         STATIC_ASSERT(test_one(expected_result_0, s));
@@ -986,6 +948,7 @@ int main() {
         span<int> s{arr};
         test_one(expected_result_0, s);
     }
+#endif // ^^^ no workaround ^^^
 
     { // ... move-only
         using test::Common, test::Sized;
@@ -1012,8 +975,10 @@ int main() {
     // Check non-views
     {
         constexpr auto& r0 = get<0>(some_ranges);
+#ifndef __EDG__ // TRANSITION, VSO-1900293
         STATIC_ASSERT(test_one(expected_result_0, r0));
         test_one(expected_result_0, r0);
+#endif // ^^^ no workaround ^^^
 
         auto r1 = get<1>(some_ranges) | ranges::to<vector>();
         test_one(expected_result_1, r0, r1);
@@ -1029,4 +994,7 @@ int main() {
     STATIC_ASSERT((instantiation_test(), true));
 #endif // TRANSITION, GH-1030
     instantiation_test();
+
+    STATIC_ASSERT((test_gh_3733(), true));
+    test_gh_3733();
 }

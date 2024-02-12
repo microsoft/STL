@@ -53,6 +53,21 @@ void assert_not_constexpr() {
     assert_equal(to_array({"cats"s, "go"s, "meow"s}), array<string, 3>{"cats", "go", "meow"});
 }
 
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+struct incomplete;
+
+template <class T>
+struct holder {
+    T t;
+};
+
+void test_adl_proof() { // COMPILE-ONLY
+    holder<incomplete>* a[1]{};
+    (void) std::to_array(a); // intentionally qualified to avoid ADL
+    (void) std::to_array(std::move(a)); // intentionally qualified to avoid ADL
+}
+#endif // ^^^ no workaround ^^^
+
 int main() {
     assert(assert_constexpr());
     static_assert(assert_constexpr());

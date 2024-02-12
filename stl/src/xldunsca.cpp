@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-short _LDunscale(short* pex, long double* px) { // separate *px to 1/2 <= |frac| < 1 and 2^*pex -- 64-bit
+short _LDunscale(short* pex, long double* px) noexcept { // separate *px to 1/2 <= |frac| < 1 and 2^*pex -- 64-bit
     return _Dunscale(pex, reinterpret_cast<double*>(px));
 }
 

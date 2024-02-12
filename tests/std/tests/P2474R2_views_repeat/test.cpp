@@ -20,9 +20,9 @@ concept CanSize = requires(R& r) { ranges::size(r); };
 
 template <class R>
 concept CanTakeDrop = requires(R r) {
-                          forward<R>(r) | views::take(1);
-                          forward<R>(r) | views::drop(1);
-                      };
+    forward<R>(r) | views::take(1);
+    forward<R>(r) | views::drop(1);
+};
 
 struct non_default {
     int value{};
@@ -191,8 +191,8 @@ constexpr void test_common(T val, B bound = unreachable_sentinel) {
     assert(second >= first);
     static_assert(noexcept(first >= second)); // strengthened
 
-    assert(first <=> second < 0);
-    assert(second <=> first > 0);
+    assert((first <=> second) < 0);
+    assert((second <=> first) > 0);
     static_assert(noexcept(first <=> second)); // strengthened
 
     {
@@ -284,18 +284,25 @@ struct forward_tester {
 };
 
 struct tuple_tester {
+#ifdef __EDG__ // TRANSITION, VSO-1898933
+    template <class Arg1, class Arg2>
+    constexpr tuple_tester(Arg1&& arg1, Arg2&& arg2) : y(forward<Arg1>(arg1)), z(forward<Arg2>(arg2)) {}
+#endif // ^^^ workaround ^^^
     forward_tester y;
     forward_tester z;
-
-#ifdef __clang__ // TRANSITION, Clang needs to implement P0960R3
-#ifdef __cpp_aggregate_paren_init
-#error Remove this workaround
-#else // ^^^ Workaround is useless / workaround is useful vvv
-    template <class T, class U>
-    constexpr tuple_tester(T&& a, U&& b) : y{forward<T>(a)}, z{forward<U>(b)} {}
-#endif // __cpp_aggregate_paren_init
-#endif // __clang__
 };
+
+
+template <class IntLike>
+constexpr void test_iterator_arithmetic() {
+    auto rv    = views::repeat(0, IntLike{20u});
+    auto first = rv.begin();
+    auto last  = rv.end();
+    assert(last - first == 20);
+    first += 2;
+    last -= 3;
+    assert(last - first == 15);
+}
 
 constexpr bool test() {
     using namespace string_literals;
@@ -332,6 +339,27 @@ constexpr bool test() {
         assert(to_copy.x == 1);
         assert(to_move.x == 2);
     }
+
+    // GH-4251: <ranges>: repeat_view<T, unsigned int> emits truncation warnings
+    test_iterator_arithmetic<unsigned char>();
+    test_iterator_arithmetic<unsigned short>();
+    test_iterator_arithmetic<unsigned int>();
+    test_iterator_arithmetic<unsigned long>();
+    test_iterator_arithmetic<unsigned long long>();
+    test_iterator_arithmetic<signed char>();
+    test_iterator_arithmetic<short>();
+    test_iterator_arithmetic<int>();
+    test_iterator_arithmetic<long>();
+    test_iterator_arithmetic<long long>();
+    test_iterator_arithmetic<char>();
+#ifdef __cpp_char8_t
+    test_iterator_arithmetic<char8_t>();
+#endif // defined(__cpp_char8_t)
+    test_iterator_arithmetic<char16_t>();
+    test_iterator_arithmetic<char32_t>();
+    test_iterator_arithmetic<wchar_t>();
+    test_iterator_arithmetic<_Signed128>();
+
     return true;
 }
 

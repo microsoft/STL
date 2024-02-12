@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _XLOCTIME_
 #define _XLOCTIME_
 #include <yvals_core.h>
@@ -25,7 +24,7 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
     const ctype<_Elem>& _Ctype_fac) { // get integer in range [_Lo, _Hi] from [_First, _Last)
     _STL_INTERNAL_CHECK(0 <= _Hi && _Hi <= 9999);
     const int _Hi_digits = (_Hi <= 9 ? 1 : _Hi <= 99 ? 2 : _Hi <= 999 ? 3 : 4);
-    char _Ac[_MAX_INT_DIG];
+    char _Ac[_Max_int_dig];
     char* _Ep;
     char* _Ptr = _Ac;
     char _Ch;
@@ -55,7 +54,7 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
         *_Ptr++ = '0'; // replace one or more with single zero
     }
 
-    for (char* const _Pe = &_Ac[_MAX_INT_DIG - 1];
+    for (char* const _Pe = &_Ac[_Max_int_dig - 1];
          _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _Digits_read < _Hi_digits;
          ++_Digits_read, (void) ++_First) { // copy digits
         *_Ptr = _Ch;
@@ -86,7 +85,9 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
     return _State;
 }
 
-_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base // base class for time_get
+    : locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
+{
     enum dateorder { // constants for different orders of date components
         no_order,
         dmy,
@@ -95,7 +96,8 @@ _EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT time_base : locale::facet {
         ydm
     };
 
-    __CLR_OR_THIS_CALL time_base(size_t _Refs = 0) : locale::facet(_Refs) {}
+    __CLR_OR_THIS_CALL time_base(size_t _Refs = 0) noexcept // strengthened
+        : locale::facet(_Refs) {}
 
     __CLR_OR_THIS_CALL ~time_base() noexcept override {}
 };
@@ -157,11 +159,11 @@ public:
 
         for (; _Fmtfirst != _Fmtlast; ++_Fmtfirst) {
             if (_State != ios_base::goodbit) {
-                // N4878 [locale.time.get.members]/8.2
+                // N4950 [locale.time.get.members]/8.2
                 // _State is fail, eof, or bad. Do not proceed to the next fields. Return with current _State.
                 break;
             } else if (_First == _Last) {
-                // N4878 [locale.time.get.members]/8.3
+                // N4950 [locale.time.get.members]/8.3
                 _State = ios_base::eofbit | ios_base::failbit;
                 break;
             } else if (_Ctype_fac.narrow(*_Fmtfirst) != '%') { // match literal element
@@ -176,7 +178,7 @@ public:
                     ++_First;
                 }
             } else if (++_Fmtfirst == _Fmtlast) {
-                // N4878 [locale.time.get.members]/8.4: "If the number of elements in the range [fmt, fmtend) is not
+                // N4950 [locale.time.get.members]/8.4: "If the number of elements in the range [fmt, fmtend) is not
                 // sufficient to unambiguously determine whether the conversion specification is complete and valid,
                 // the function evaluates err = ios_base::failbit."
                 _State = ios_base::failbit;
@@ -624,14 +626,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem, class _InIt>
 __PURE_APPDOMAIN_GLOBAL locale::id time_get<_Elem, _InIt>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 _EXPORT_STD template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_get_byname : public time_get<_Elem, _InIt> { // time_get for named locale
@@ -763,14 +765,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _Elem, class _OutIt>
 __PURE_APPDOMAIN_GLOBAL locale::id time_put<_Elem, _OutIt>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 extern "C++" template <class _OutIt>
 class time_put<wchar_t, _OutIt> : public locale::facet { // facet for converting encoded times to wchar_t text
@@ -893,14 +895,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _OutIt>
 __PURE_APPDOMAIN_GLOBAL locale::id time_put<wchar_t, _OutIt>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 
 #if defined(_CRTBLD)
 
@@ -1025,14 +1027,14 @@ private:
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
-#endif // __clang__
+#endif // defined(__clang__)
 
 template <class _OutIt>
 __PURE_APPDOMAIN_GLOBAL locale::id time_put<unsigned short, _OutIt>::id;
 
 #ifdef __clang__
 #pragma clang diagnostic pop
-#endif // __clang__
+#endif // defined(__clang__)
 #endif // defined(_CRTBLD)
 
 _EXPORT_STD template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
@@ -1072,7 +1074,7 @@ template class _CRTIMP2_PURE_IMPORT
 template _CRTIMP2_PURE void __CLR_OR_THIS_CALL
     time_get<unsigned short, istreambuf_iterator<unsigned short, char_traits<unsigned short>>>::_Getvals(
         wchar_t, const _Locinfo&);
-#endif // __FORCE_INSTANCE
+#endif // defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 _STD_END
 

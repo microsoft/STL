@@ -81,8 +81,8 @@ struct MyAlloc {
     }
 };
 
-void test_1119194();
-void test_1184701();
+void test_DevDiv_1119194();
+void test_DevDiv_1184701();
 void test_LWG_2455();
 void test_allocator_construct_const();
 
@@ -279,8 +279,8 @@ int main() {
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 #endif // _M_CEE_PURE
 
-    test_1119194();
-    test_1184701();
+    test_DevDiv_1119194();
+    test_DevDiv_1184701();
     test_LWG_2455();
 #if !_HAS_CXX20 // support removed in C++20 by P0619R4
     test_allocator_construct_const();
@@ -328,7 +328,7 @@ void test_swap_copy_move() {
     a = move(b);
 }
 
-void test_1119194() {
+void test_DevDiv_1119194() {
     using AB = NoProp<bool>;
     using AC = NoProp<char>;
     using AI = NoProp<int>;
@@ -395,7 +395,7 @@ struct NonVoid {
     }
 };
 
-void test_1184701() {
+void test_DevDiv_1184701() {
     const vector<int, NonVoid<int>> v = {11, 22, 33};
 
     assert(v[1] == 22);

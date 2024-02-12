@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="Dogfood" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+  Copyright (c) Microsoft Corporation.
+  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+  -->
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3CFB766B-CCA6-4078-9A03-CAE24FF65373}</ProjectGuid>
+    <UseRetailTargets>true</UseRetailTargets>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Cpp.Default.props))" />
+  <PropertyGroup>
+    <CrtBuildModel>xmd</CrtBuildModel>
+    <MsvcpFlavor>kernel32</MsvcpFlavor>
+    <Arm64X>true</Arm64X>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(msvcp_2.settings.targets))" />
+</Project>

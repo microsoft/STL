@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#pragma once
+
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
 #include <new>
 
-#pragma once
 #pragma warning(push)
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 

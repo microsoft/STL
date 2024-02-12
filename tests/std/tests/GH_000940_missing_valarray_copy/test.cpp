@@ -5,7 +5,10 @@
 #include <cassert>
 #include <cstddef>
 #include <iostream>
+#include <type_traits>
 #include <valarray>
+
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 template <class T>
 bool eq(const std::valarray<T>& v, std::initializer_list<T> il) {
@@ -78,10 +81,41 @@ void test_indirect() {
     assert(eq(v, {3, 1, 2, 3, 2}));
 }
 
+template <class T>
+void test_strengthened_exception_specification() {
+    STATIC_ASSERT(std::is_nothrow_default_constructible_v<std::valarray<T>>);
+
+    std::valarray<T> va{};
+    const auto& cva = va;
+    STATIC_ASSERT(noexcept(std::begin(va)));
+    STATIC_ASSERT(noexcept(std::end(va)));
+    STATIC_ASSERT(noexcept(std::begin(cva)));
+    STATIC_ASSERT(noexcept(std::end(cva)));
+
+    STATIC_ASSERT(std::is_nothrow_assignable_v<const std::slice_array<T>, const std::slice_array<T>&>);
+    STATIC_ASSERT(std::is_nothrow_assignable_v<const std::slice_array<T>, std::slice_array<T>>);
+
+    STATIC_ASSERT(std::is_nothrow_assignable_v<const std::mask_array<T>, const std::mask_array<T>&>);
+    STATIC_ASSERT(std::is_nothrow_assignable_v<const std::mask_array<T>, std::mask_array<T>>);
+
+    STATIC_ASSERT(std::is_nothrow_assignable_v<const std::indirect_array<T>, const std::indirect_array<T>&>);
+    STATIC_ASSERT(std::is_nothrow_assignable_v<const std::indirect_array<T>, std::indirect_array<T>>);
+}
+
 int main() {
     test_slice();
     test_gslice();
     test_mask();
     test_indirect();
-    return 0;
+
+    // Also test strengthened exception specifications
+    test_strengthened_exception_specification<bool>();
+    test_strengthened_exception_specification<std::size_t>();
+    test_strengthened_exception_specification<double>();
+
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10416247
+    STATIC_ASSERT(std::is_nothrow_default_constructible_v<std::gslice>); // strengthened
+#endif // ^^^ no workaround ^^^
+    std::gslice gs{};
+    STATIC_ASSERT(noexcept(gs.start())); // strengthened
 }

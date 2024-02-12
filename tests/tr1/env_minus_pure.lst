@@ -3,22 +3,36 @@
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/w14640 /Zc:threadSafeInit-"
+*	PM_CL="/w14640 /Zc:threadSafeInit-"
 RUNALL_CROSSLIST
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++14"
+ASAN	PM_CL="/EHsc /MD /std:c++14 -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++17"
+ASAN	PM_CL="/EHsc /MD /std:c++17 -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive-"
+ASAN	PM_CL="/EHsc /MD /std:c++latest /permissive- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive-"
+ASAN	PM_CL="/EHsc /MDd /std:c++latest /permissive- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive-"
+# No corresponding ASAN config, since the above differs from another config only in IDL
 PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++14"
+ASAN	PM_CL="/EHsc /MDd /std:c++14 -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++17 /permissive-"
+ASAN	PM_CL="/EHsc /MDd /std:c++17 /permissive- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/EHsc /MT /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive-"
+ASAN	PM_CL="/EHsc /MT /std:c++latest /permissive- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/EHsc /MT /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /analyze:only /analyze:autolog-"
+ASAN	PM_CL="/EHsc /MT /std:c++latest /permissive- /analyze:only /analyze:autolog- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/EHsc /MT /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive-"
+# No corresponding ASAN config, since the above differs from another config only in IDL
 PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive-"
+ASAN	PM_CL="/EHsc /MTd /std:c++latest /permissive- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive-"
+# No corresponding ASAN config, since the above differs from another config only in IDL
 PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /permissive"
+ASAN	PM_CL="/EHsc /MTd /std:c++latest /permissive -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /permissive- /analyze:only /analyze:autolog-"
+ASAN	PM_CL="/EHsc /MTd /std:c++latest /permissive- /analyze:only /analyze:autolog- -fsanitize=address /Zi" PM_LINK="/debug"
 PM_CL="/clr /MD /std:c++20"
 PM_CL="/clr /MDd /std:c++20"
 PM_CL="/BE /c /EHsc /MD /std:c++14"

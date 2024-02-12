@@ -15,11 +15,10 @@ using namespace std;
 template <class T>
 concept testable_range = ranges::input_range<T> && (ranges::forward_range<T> || ranges::sized_range<T>);
 
-// clang-format off
 template <class T>
-concept testable_sentinel = ranges::input_range<T>
+concept testable_sentinel =
+    ranges::input_range<T>
     && (ranges::forward_range<T> || sized_sentinel_for<ranges::sentinel_t<T>, ranges::iterator_t<T>>);
-// clang-format on
 
 struct instantiator {
     static constexpr pair<int, int> haystack[]       = {{0, 42}, {1, 42}, {2, 42}, {4, 42}};
@@ -115,7 +114,7 @@ struct instantiator {
 };
 
 int main() {
-#ifndef _PREFAST_ // TRANSITION, GH-1030
+#if !defined(_PREFAST_) && !defined(__EDG__) // TRANSITION, GH-1030 and GH-3567
     test_in_in<instantiator, const pair<int, int>, const pair<long, long>>();
-#endif // TRANSITION, GH-1030
+#endif // ^^^ no workaround ^^^
 }

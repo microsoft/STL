@@ -12,11 +12,11 @@
 #include <string.h>
 
 // static data
-static const STD ios_base::fmtflags ffl[] = {STD ios_base::hexfloat, STD ios_base::dec, STD ios_base::fixed,
-    STD ios_base::hex, STD ios_base::internal, STD ios_base::left, STD ios_base::oct, STD ios_base::right,
-    STD ios_base::scientific, STD ios_base::showbase, STD ios_base::showpoint, STD ios_base::showpos,
-    STD ios_base::skipws, STD ios_base::unitbuf, STD ios_base::uppercase, STD ios_base::boolalpha,
-    STD ios_base::adjustfield, STD ios_base::basefield, STD ios_base::floatfield};
+static const STD ios_base::fmtflags ffl[] = {STD ios_base::dec, STD ios_base::fixed, STD ios_base::hex,
+    STD ios_base::internal, STD ios_base::left, STD ios_base::oct, STD ios_base::right, STD ios_base::scientific,
+    STD ios_base::showbase, STD ios_base::showpoint, STD ios_base::showpos, STD ios_base::skipws, STD ios_base::unitbuf,
+    STD ios_base::uppercase, STD ios_base::boolalpha, STD ios_base::adjustfield, STD ios_base::basefield,
+    STD ios_base::floatfield};
 
 static const STD ios_base::iostate ifl[] = {
     STD ios_base::badbit, STD ios_base::eofbit, STD ios_base::failbit, STD ios_base::goodbit};
@@ -85,8 +85,6 @@ void test_main() { // test basic workings of ios definitions
     CHECK_INT(STD ios_base::left | STD ios_base::right | STD ios_base::internal, STD ios_base::adjustfield);
     CHECK_INT(STD ios_base::dec | STD ios_base::oct | STD ios_base::hex, STD ios_base::basefield);
     CHECK_INT(STD ios_base::scientific | STD ios_base::fixed, STD ios_base::floatfield);
-
-    CHECK_INT(STD ios_base::scientific | STD ios_base::fixed, STD ios_base::hexfloat);
 
     // test assignment and control functions
     CHECK(x && true);
@@ -170,7 +168,7 @@ void test_main() { // test basic workings of ios definitions
     CHECK_INT(x.flags(), STD ios_base::scientific | STD ios_base::unitbuf);
 
     x.clear(STD ios_base::floatfield);
-    x.setf(STD ios_base::hexfloat);
+    x.setf(STD ios_base::scientific | STD ios_base::fixed);
     CHECK_INT(x.flags(), STD ios_base::scientific | STD ios_base::fixed | STD ios_base::unitbuf);
 
     CHECK_INT(x.precision(INT_MIN), 6);
@@ -216,13 +214,13 @@ void test_main() { // test basic workings of ios definitions
     CHECK_INT(po->flags(), STD ios_base::oct | STD ios_base::right | STD ios_base::scientific);
 
     STD hexfloat(*po);
-    CHECK_INT(po->flags(), STD ios_base::oct | STD ios_base::right | STD ios_base::hexfloat);
+    CHECK_INT(po->flags(), STD ios_base::oct | STD ios_base::right | STD ios_base::scientific | STD ios_base::fixed);
 
     STD defaultfloat(*po);
     CHECK_INT(po->flags(), STD ios_base::oct | STD ios_base::right);
 
     STD hexfloat(*po);
-    CHECK_INT(po->flags(), STD ios_base::oct | STD ios_base::right | STD ios_base::hexfloat);
+    CHECK_INT(po->flags(), STD ios_base::oct | STD ios_base::right | STD ios_base::scientific | STD ios_base::fixed);
 
     STD error_code ec1 = STD make_error_code(STD io_errc::stream);
     CHECK(ec1.value() == (int) STD io_errc::stream);

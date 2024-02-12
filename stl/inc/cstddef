@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _CSTDDEF_
 #define _CSTDDEF_
 #include <yvals_core.h>
@@ -18,6 +17,12 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("intrinsic")
+#undef msvc
+#undef intrinsic
 
 _STD_BEGIN
 _EXPORT_STD using _CSTD ptrdiff_t;
@@ -86,14 +91,20 @@ _EXPORT_STD constexpr byte& operator^=(byte& _Left, const byte _Right) noexcept 
 }
 
 _EXPORT_STD template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>
-_NODISCARD constexpr _IntType to_integer(const byte _Arg) noexcept {
+_NODISCARD _MSVC_INTRINSIC constexpr _IntType to_integer(const byte _Arg) noexcept {
     return static_cast<_IntType>(_Arg);
 }
-#endif // __cpp_lib_byte
+#endif // defined(__cpp_lib_byte)
 
 _STD_END
 
+_EXTERN_CXX_WORKAROUND
 using _STD max_align_t; // intentional, for historical reasons
+_END_EXTERN_CXX_WORKAROUND
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("intrinsic")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

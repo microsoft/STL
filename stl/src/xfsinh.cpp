@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// _FSinh function
-
 #include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
@@ -10,7 +8,7 @@ _EXTERN_C_UNLESS_PURE
 // coefficients
 static const float p[] = {0.00020400F, 0.00832983F, 0.16666737F, 0.99999998F};
 
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) { // compute y * sinh(x), |y| <= 1
+_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept { // compute y * sinh(x), |y| <= 1
     short neg;
 
     switch (_FDtest(&x)) { // test for special codes

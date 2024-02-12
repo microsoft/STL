@@ -36,49 +36,49 @@ public:
     }
 
 protected:
-    virtual STD streambuf* setbuf(char*, STD streamsize) { // fake setbuf
+    STD streambuf* setbuf(char*, STD streamsize) override { // fake setbuf
         return nullptr;
     }
 
-    virtual int overflow(int = EOF) { // fake overflow
+    int overflow(int = EOF) override { // fake overflow
         return 1;
     }
 
-    virtual int pbackfail(int = EOF) { // fake pbackfail
+    int pbackfail(int = EOF) override { // fake pbackfail
         return 2;
     }
 
-    virtual STD streamsize showmanyc() { // fake showmanyc
+    STD streamsize showmanyc() override { // fake showmanyc
         return 3;
     }
 
-    virtual int underflow() { // fake underflow
+    int underflow() override { // fake underflow
         return 4;
     }
 
-    virtual int uflow() { // fake uflow
+    int uflow() override { // fake uflow
         return 5;
     }
 
-    virtual STD streamsize xsgetn(char*, STD streamsize) { // fake xsgetn
+    STD streamsize xsgetn(char*, STD streamsize) override { // fake xsgetn
         return 6;
     }
 
-    virtual STD streamsize xsputn(const char*, STD streamsize) { // fake xsputn
+    STD streamsize xsputn(const char*, STD streamsize) override { // fake xsputn
         return 7;
     }
 
-    virtual STD streampos seekoff(STD streamoff, STD ios::seekdir,
-        STD ios::openmode = STD ios::in | STD ios::out) { // fake seekoff
+    STD streampos seekoff(STD streamoff, STD ios::seekdir,
+        STD ios::openmode = STD ios::in | STD ios::out) override { // fake seekoff
         return 8;
     }
 
-    virtual STD streampos seekpos(STD streampos,
-        STD ios::openmode = STD ios::in | STD ios::out) { // fake seekpos
+    STD streampos seekpos(STD streampos,
+        STD ios::openmode = STD ios::in | STD ios::out) override { // fake seekpos
         return 9;
     }
 
-    virtual int sync() { // fake sync
+    int sync() override { // fake sync
         return 10;
     }
 };

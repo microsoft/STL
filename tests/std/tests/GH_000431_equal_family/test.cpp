@@ -133,7 +133,9 @@ struct StatefulDerived2 : EmptyBase, StatefulBase {};
 #ifdef __cpp_lib_is_pointer_interconvertible
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<EmptyBase, EmptyDerived>);
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<StatefulBase, StatefulDerived>);
+#ifndef __EDG__ // TRANSITION, VSO-1849453
 STATIC_ASSERT(!is_pointer_interconvertible_base_of_v<EmptyBase, StatefulDerived>);
+#endif // ^^^ no workaround ^^^
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<StatefulBase, StatefulDerived2>);
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<EmptyBase, StatefulDerived2>);
 #endif // __cpp_lib_is_pointer_interconvertible
@@ -659,7 +661,7 @@ void test_algorithms(EqualFn equal_fn) {
         assert(!equal_fn(begin(arr6), end(arr6), begin(arr7), end(arr7), equal_to<>{}));
         assert(!equal_fn(begin(arr6), end(arr6), begin(arr7), end(arr7), equal_to<mfn_ptr2>{}));
     }
-#endif // _M_CEE_PURE
+#endif // ^^^ no workaround ^^^
 
     { // Test vector
         vector<int> arr1 = {3, 6, 4, 7, 3};
@@ -718,14 +720,14 @@ int main() {
         return equal(begin1, end1, begin2, end2, pred);
     });
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     test_algorithms([](auto begin1, auto end1, auto begin2, auto end2, auto pred) {
         return ranges::equal(begin1, end1, begin2, end2, pred);
     });
-#endif // test_algorithms
+#endif // _HAS_CXX20
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 // Also test GH-1523, in which std::equal didn't properly convert non-pointer contiguous iterators to pointers.
 struct gh1523_iter {
     // a contiguous_iterator that doesn't unwrap into a pointer
@@ -790,4 +792,4 @@ void test_gh_1523() { // COMPILE-ONLY
     // GH-1523 Some StdLib algorithms fail /std:c++latest compilation with custom contiguous iterators
     (void) equal(gh1523_iter{}, gh1523_iter{}, gh1523_iter{}, gh1523_iter{});
 }
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20

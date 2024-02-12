@@ -6,19 +6,21 @@ on:
   schedule:
     - cron: "0 7 * * *"
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     if: ${{ github.repository == 'microsoft/STL' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout gh-pages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: gh-pages
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: ">=17.8.0"
+          node-version: ">=21.4.0"
       - name: Install Packages
         run: |
           npm ci

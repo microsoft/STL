@@ -14,8 +14,7 @@ struct S { // Must be declared at namespace scope due to static data member
 };
 
 constexpr bool test() {
-#ifndef __EDG__ // TRANSITION, VSO-1268984
-#ifndef __clang__ // TRANSITION, LLVM-48860
+#if defined(__cpp_lib_is_layout_compatible) && defined(__cpp_lib_is_pointer_interconvertible) // TRANSITION, LLVM-48860
     // is_layout_compatible tests
     {
         struct S0 {
@@ -72,11 +71,9 @@ constexpr bool test() {
         ASSERT(is_layout_compatible_v<volatile E3, const E4>);
         ASSERT(is_layout_compatible_v<int[], int[]>);
         ASSERT(is_layout_compatible_v<int[3], int[3]>);
-
         ASSERT(is_layout_compatible_v<const int[], int[]>);
         ASSERT(is_layout_compatible_v<const int[3], int[3]>);
         ASSERT(is_layout_compatible_v<int[], volatile int[]>);
-
         ASSERT(!is_layout_compatible_v<int, char>);
         ASSERT(!is_layout_compatible_v<int, void>);
         ASSERT(!is_layout_compatible_v<S1, void>);
@@ -204,7 +201,7 @@ constexpr bool test() {
         ASSERT(!is_corresponding_member(&S5::v3, &S6::v3));
 #ifndef _M_CEE // TRANSITION, VSO-1664293
         ASSERT(!is_corresponding_member<NS, NS>(&NS::v1, &NS::w1));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         ASSERT(!is_corresponding_member(&S7::f1, &S7::f1));
         ASSERT(!is_corresponding_member(static_cast<int S1::*>(nullptr), static_cast<int S2::*>(nullptr)));
         ASSERT(!is_corresponding_member(&S1::v1, static_cast<int S2::*>(nullptr)));
@@ -241,12 +238,11 @@ constexpr bool test() {
         ASSERT(!is_pointer_interconvertible_with_class<NS>(&NS::a));
 #ifndef _M_CEE // TRANSITION, VSO-1664293
         ASSERT(!is_pointer_interconvertible_with_class<NS>(&NS::b));
-#endif // _M_CEE
+#endif // ^^^ no workaround ^^^
         ASSERT(!is_pointer_interconvertible_with_class(&C::f1));
         ASSERT(!is_pointer_interconvertible_with_class(static_cast<int A::*>(nullptr)));
     }
-#endif // __clang__
-#endif // __EDG__
+#endif // ^^^ defined(__cpp_lib_is_layout_compatible) && defined(__cpp_lib_is_pointer_interconvertible) ^^^
     return true;
 }
 

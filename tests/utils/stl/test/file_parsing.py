@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 import itertools
 import os
 import re
@@ -20,6 +20,7 @@ _expected_result_entry_cache = dict()
 @dataclass
 class _TmpEnvEntry:
     env: Dict[str, str] = field(default_factory=dict)
+    tags: Set[str] = field(default_factory=set)
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,10 @@ class EnvEntry:
     def __init__(self, tmp_env: _TmpEnvEntry):
         object.__setattr__(self, "_env_keys", tuple(tmp_env.env.keys()))
         object.__setattr__(self, "_env_vals", tuple(tmp_env.env.values()))
+        object.__setattr__(self, "_env_tags", tmp_env.tags)
+
+    def hasAnyTag(self, tags: Set[str]) -> bool:
+        return bool(self._env_tags & tags)
 
     def getEnvVal(self, key: str, default: Optional[str] = None) \
             -> Optional[str]:
@@ -39,6 +44,7 @@ class EnvEntry:
 
     _env_keys: Tuple[str]
     _env_vals: Tuple[str]
+    _env_tags: Set[str]
 
 
 @dataclass
@@ -49,6 +55,7 @@ class _ParseCtx:
 
 _COMMENT_REGEX = re.compile(r"\s*#.*", re.DOTALL)
 _INCLUDE_REGEX = re.compile(r'^RUNALL_INCLUDE (?P<filename>.+$)')
+_TAGS_REGEX = re.compile(r'^(?P<tags>(\*|\w+(,\w+)*))\t+(?P<remainder>.*)$')
 _ENV_VAR_MULTI_ITEM_REGEX = re.compile(r'(?P<name>\w+)="(?P<value>.*?)"')
 _CROSSLIST_REGEX = re.compile(r'^RUNALL_CROSSLIST$')
 _EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>.*) (?P<result>.*?)$')
@@ -56,6 +63,10 @@ _EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>.*) (?P<result>.*?)$')
 
 def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
     result = _TmpEnvEntry()
+    if (m:=_TAGS_REGEX.match(line)) is not None:
+        tags = m.group("tags").split(',')
+        result.tags = set([x.strip().casefold() for x in tags])
+        line = m.group("remainder")
     for env_match in _ENV_VAR_MULTI_ITEM_REGEX.finditer(line):
         name = env_match.group("name")
         value = env_match.group("value")
@@ -63,9 +74,19 @@ def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
     return result
 
 
-def _append_env_entries(*args) -> _TmpEnvEntry:
+def _merge_crosslist_entries(*args) -> _TmpEnvEntry:
     result = _TmpEnvEntry()
+    result.tags = set(['*'])
     for entry in args:
+        # tags are intersected; `*` matches everything
+        if len(entry.tags) == 1 and '*' in entry.tags:
+            pass
+        elif len(result.tags) == 1 and '*' in result.tags:
+            result.tags = entry.tags
+        else:
+            result.tags &= entry.tags
+
+        # values for identical keys are concatenated
         for k, v in entry.env.items():
             if k not in result.env:
                 result.env[k] = v
@@ -75,7 +96,7 @@ def _append_env_entries(*args) -> _TmpEnvEntry:
 
 
 def _do_crosslist(ctx: _ParseCtx):
-    return itertools.starmap(_append_env_entries,
+    return itertools.starmap(_merge_crosslist_entries,
                              itertools.product(*ctx.result))
 
 

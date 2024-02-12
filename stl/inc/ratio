@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _RATIO_
 #define _RATIO_
 #include <yvals_core.h>
@@ -182,7 +181,7 @@ struct _Big_uint128 {
     uint64_t _Upper;
     uint64_t _Lower;
 
-    constexpr bool operator<(const _Big_uint128 _Rhs) const noexcept {
+    _NODISCARD constexpr bool operator<(const _Big_uint128 _Rhs) const noexcept {
         if (_Upper != _Rhs._Upper) {
             return _Upper < _Rhs._Upper;
         }

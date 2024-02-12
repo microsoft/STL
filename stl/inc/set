@@ -3,7 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
 #ifndef _SET_
 #define _SET_
 #include <yvals_core.h>
@@ -113,7 +112,7 @@ public:
         this->insert(_First, _Last);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<value_type> _Rng>
     set(from_range_t, _Rng&& _Range) : _Mybase(key_compare()) {
         this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
@@ -133,7 +132,7 @@ public:
     set(from_range_t, _Rng&& _Range, const allocator_type& _Al) : _Mybase(key_compare(), _Al) {
         this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     set& operator=(const set& _Right) {
         _Mybase::operator=(_Right);
@@ -144,7 +143,7 @@ public:
 
     set(set&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    set& operator=(set&& _Right) noexcept(_Alnode_traits::is_always_equal::value&& is_nothrow_move_assignable_v<_Pr>) {
+    set& operator=(set&& _Right) noexcept(_Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<_Pr>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -195,7 +194,7 @@ set(_Iter, _Iter, _Alloc) -> set<_Iter_value_t<_Iter>, less<_Iter_value_t<_Iter>
 template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 set(initializer_list<_Kty>, _Alloc) -> set<_Kty, less<_Kty>, _Alloc>;
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>,
     class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
@@ -203,7 +202,7 @@ set(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc()) -> set<_RANGES range_v
 
 template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 set(from_range_t, _Rng&&, _Alloc) -> set<_RANGES range_value_t<_Rng>, less<_RANGES range_value_t<_Rng>>, _Alloc>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
@@ -212,21 +211,19 @@ _NODISCARD bool operator==(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, 
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
 }
 
-#if !_HAS_CXX20
-template <class _Kty, class _Pr, class _Alloc>
-_NODISCARD bool operator!=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
-    return !(_Left == _Right);
-}
-#endif // !_HAS_CXX20
-
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Kty> operator<=>(
     const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
         _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
 }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator!=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
+    return !(_Left == _Right);
+}
+
 template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator<(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare(
@@ -247,7 +244,7 @@ template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator>=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 void swap(set<_Kty, _Pr, _Alloc>& _Left, set<_Kty, _Pr, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
@@ -256,8 +253,8 @@ void swap(set<_Kty, _Pr, _Alloc>& _Left, set<_Kty, _Pr, _Alloc>& _Right) noexcep
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Kty, class _Keylt, class _Alloc, class _Pr>
-typename set<_Kty, _Keylt, _Alloc>::size_type erase_if(set<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+set<_Kty, _Keylt, _Alloc>::size_type erase_if(set<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    return _STD _Erase_nodes_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 
@@ -323,7 +320,7 @@ public:
         this->insert(_First, _Last);
     }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
     template <_Container_compatible_range<value_type> _Rng>
     multiset(from_range_t, _Rng&& _Range) : _Mybase(key_compare()) {
         this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
@@ -343,7 +340,7 @@ public:
     multiset(from_range_t, _Rng&& _Range, const allocator_type& _Al) : _Mybase(key_compare(), _Al) {
         this->_Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 
     multiset& operator=(const multiset& _Right) {
         _Mybase::operator=(_Right);
@@ -355,7 +352,7 @@ public:
     multiset(multiset&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
     multiset& operator=(multiset&& _Right) noexcept(
-        _Alnode_traits::is_always_equal::value&& is_nothrow_move_assignable_v<_Pr>) {
+        _Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<_Pr>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -411,7 +408,7 @@ multiset(_Iter, _Iter, _Alloc) -> multiset<_Iter_value_t<_Iter>, less<_Iter_valu
 template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 multiset(initializer_list<_Kty>, _Alloc) -> multiset<_Kty, less<_Kty>, _Alloc>;
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>,
     class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
@@ -420,7 +417,7 @@ multiset(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc()) -> multiset<_RANG
 template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 multiset(from_range_t, _Rng&&, _Alloc)
     -> multiset<_RANGES range_value_t<_Rng>, less<_RANGES range_value_t<_Rng>>, _Alloc>;
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // _HAS_CXX23
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
@@ -429,21 +426,19 @@ _NODISCARD bool operator==(const multiset<_Kty, _Pr, _Alloc>& _Left, const multi
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
 }
 
-#if !_HAS_CXX20
-template <class _Kty, class _Pr, class _Alloc>
-_NODISCARD bool operator!=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
-    return !(_Left == _Right);
-}
-#endif // !_HAS_CXX20
-
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
 _EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Kty> operator<=>(
     const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
         _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
 }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator!=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
+    return !(_Left == _Right);
+}
+
 template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator<(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
     return _STD lexicographical_compare(
@@ -464,7 +459,7 @@ template <class _Kty, class _Pr, class _Alloc>
 _NODISCARD bool operator>=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
 void swap(multiset<_Kty, _Pr, _Alloc>& _Left, multiset<_Kty, _Pr, _Alloc>& _Right) noexcept(
@@ -474,8 +469,8 @@ void swap(multiset<_Kty, _Pr, _Alloc>& _Left, multiset<_Kty, _Pr, _Alloc>& _Righ
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Kty, class _Keylt, class _Alloc, class _Pr>
-typename multiset<_Kty, _Keylt, _Alloc>::size_type erase_if(multiset<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
-    return _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
+multiset<_Kty, _Keylt, _Alloc>::size_type erase_if(multiset<_Kty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
+    return _STD _Erase_nodes_if(_Cont, _STD _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
 

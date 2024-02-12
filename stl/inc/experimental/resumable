@@ -5,7 +5,6 @@
 
 // Library support of coroutines TS, https://wg21.link/p0057
 
-#pragma once
 #ifndef _EXPERIMENTAL_RESUMABLE_
 #define _EXPERIMENTAL_RESUMABLE_
 #include <yvals_core.h>

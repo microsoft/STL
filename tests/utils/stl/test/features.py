@@ -22,7 +22,11 @@ def hasLocale(loc):
         locale.setlocale(locale.LC_ALL, default_locale)
 
 def getDefaultFeatures(config, litConfig):
-    DEFAULT_FEATURES = [Feature(name='msvc'), Feature(name='windows')]
+    DEFAULT_FEATURES = [
+        Feature(name='has-64-bit-atomics'),
+        Feature(name='msvc'),
+        Feature(name='windows'),
+    ]
     locales = {
       'en_US.UTF-8':     ['en_US.UTF-8', 'en_US.utf8', 'English_United States.1252'],
       'fr_FR.UTF-8':     ['fr_FR.UTF-8', 'fr_FR.utf8', 'French_France.1252'],
@@ -49,7 +53,8 @@ def getDefaultFeatures(config, litConfig):
         DEFAULT_FEATURES.append(Feature(name='x86'))
 
     elif litConfig.target_arch.casefold() == 'x64'.casefold():
-        DEFAULT_FEATURES.append(Feature(name='ubsan'))
+        # TRANSITION, GH-3568
+        # DEFAULT_FEATURES.append(Feature(name='ubsan'))
         DEFAULT_FEATURES.append(Feature(name='edg'))
         DEFAULT_FEATURES.append(Feature(name='arch_avx2'))
         DEFAULT_FEATURES.append(Feature(name='x64'))

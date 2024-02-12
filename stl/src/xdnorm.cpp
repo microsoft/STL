@@ -7,7 +7,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-short _Dnorm(_Dval* ps) { // normalize double fraction
+short _Dnorm(_Dval* ps) noexcept { // normalize double fraction
     short xchar         = 1;
     unsigned short sign = static_cast<unsigned short>(ps->_Sh[_D0] & _DSIGN);
 

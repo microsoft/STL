@@ -362,6 +362,35 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_bounded_array&lt;*&gt;">
+    <DisplayString>make_shared&lt;T[N]&gt;</DisplayString>
+    <Expand>
+      <Item Condition="_Uses != 0" Name="[allocated array]">_Storage._Value</Item>
+    </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_unbounded_array&lt;*,0&gt;">
+    <Intrinsic Name="data" Expression="&amp;(_Storage._Value)" />
+    <Intrinsic Name="size" Expression="_Size" />
+    <DisplayString>make_shared&lt;T[]&gt;</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>data()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_unbounded_array&lt;*,1&gt;">
+    <DisplayString>make_shared&lt;T[]&gt;</DisplayString>
+    <Expand>
+      <Item Condition="_Uses != 0" Name="[original ptr]">_Storage._Value</Item>
+    </Expand>
+  </Type>
+
   <!-- VC 2015 -->
   <Type Name="std::_Ref_count_obj_alloc&lt;*&gt;">
       <DisplayString>allocate_shared</DisplayString>
@@ -384,6 +413,81 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
           <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
           <Item Name="[allocator]">allocator()</Item>
       </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_bounded_array_alloc&lt;*&gt;">
+    <!-- stateless allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+    <!-- stateful allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+    <DisplayString>allocate_shared&lt;T[N]&gt;</DisplayString>
+    <Expand>
+      <Item Condition="_Uses != 0" Name="[allocated array]">_Storage._Value</Item>
+      <Item Name="[allocator]">allocator()</Item>
+    </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_unbounded_array_alloc&lt;*&gt;">
+    <!-- stateless allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+    <!-- stateful allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+    <Intrinsic Name="data" Expression="&amp;(_Storage._Value)" />
+    <Intrinsic Name="size" Expression="_Size" />
+    <DisplayString>allocate_shared&lt;T[]&gt;</DisplayString>
+    <Expand>
+      <Item Name="[allocator]">allocator()</Item>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>data()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_obj_alloc_for_overwrite&lt;*&gt;">
+      <!-- stateless allocator -->
+      <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+      <!-- stateful allocator -->
+      <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+      <DisplayString>allocate_shared_for_overwrite</DisplayString>
+      <Expand>
+          <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
+          <Item Name="[allocator]">allocator()</Item>
+      </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_bounded_array_alloc_for_overwrite&lt;*&gt;">
+    <!-- stateless allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+    <!-- stateful allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+    <DisplayString>allocate_shared_for_overwrite&lt;T[N]&gt;</DisplayString>
+    <Expand>
+      <Item Condition="_Uses != 0" Name="[allocated array]">_Storage._Value</Item>
+      <Item Name="[allocator]">allocator()</Item>
+    </Expand>
+  </Type>
+
+  <!-- VS 2022 17.10 -->
+  <Type Name="std::_Ref_count_unbounded_array_alloc_for_overwrite&lt;*&gt;">
+    <!-- stateless allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+    <!-- stateful allocator -->
+    <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+    <Intrinsic Name="data" Expression="&amp;(_Storage._Value)" />
+    <Intrinsic Name="size" Expression="_Size" />
+    <DisplayString>allocate_shared_for_overwrite&lt;T[]&gt;</DisplayString>
+    <Expand>
+      <Item Name="[allocator]">allocator()</Item>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>data()</ValuePointer>
+      </ArrayItems>
+    </Expand>
   </Type>
 
   <!-- VC 2017, second toolset update -->
@@ -1182,9 +1286,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Intrinsic Name="size" Expression="(size_t)(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst)" />
     <Intrinsic Name="capacity" Expression="(size_t)(_Mypair._Myval2._Myend - _Mypair._Myval2._Myfirst)" />
     <SmartPointer Usage="Indexable" DefaultExpansion="false">data()</SmartPointer>
-    <DisplayString Condition="size() > 0">{data(),na} (size = {size()})</DisplayString>
+    <DisplayString Condition="size() > 0">{data(),[size()]na}</DisplayString>
     <DisplayString Condition="size() == 0">{{empty}}</DisplayString>
     <Expand>
+      <Item Name="[size]" ExcludeView="simple">size()</Item>
       <Item Name="[capacity]" ExcludeView="simple">capacity()</Item>
       <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
       <ArrayItems>
@@ -1583,15 +1688,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <Type Name="std::mutex">
       <AlternativeType Name="std::recursive_mutex"/>
-      <DisplayString Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) == 0">unlocked</DisplayString>
-      <DisplayString Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) != 0">locked</DisplayString>
-      <DisplayString Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) == 0">unlocked</DisplayString>
-      <DisplayString Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) != 0">locked</DisplayString>
+      <DisplayString Condition="_Mtx_storage._Count == 0">unlocked</DisplayString>
+      <DisplayString Condition="_Mtx_storage._Count != 0">locked</DisplayString>
       <Expand>
-          <Item Name="[locking_thread_id]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) != 0">*(long *)((char *)(&amp;_Mtx_storage) + 40)</Item>
-          <Item Name="[locking_thread_id]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) != 0">*(long *)((char *)(&amp;_Mtx_storage) + 72)</Item>
-          <Item Name="[ownership_levels]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) != 0">*(int *)((char *)(&amp;_Mtx_storage) + 44)</Item>
-          <Item Name="[ownership_levels]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) != 0">*(int *)((char *)(&amp;_Mtx_storage) + 76)</Item>
+          <Item Name="[locking_thread_id]" Condition="_Mtx_storage._Count != 0">_Mtx_storage._Thread_id</Item>
+          <Item Name="[ownership_levels]" Condition="_Mtx_storage._Count != 0">_Mtx_storage._Count</Item>
       </Expand>
   </Type>
 

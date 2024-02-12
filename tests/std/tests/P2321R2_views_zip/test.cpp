@@ -208,14 +208,14 @@ constexpr bool do_tuples_reference_same_objects(const LHSTupleType& lhs_tuple, c
     STATIC_ASSERT(tuple_size_v<LHSTupleType> == tuple_size_v<RHSTupleType>);
 
     const auto evaluate_single_element_lambda = [&lhs_tuple, &rhs_tuple]<size_t CurrIndex>() {
-        using reference_type = typename reference_type_solver<tuple_element_t<CurrIndex, LHSTupleType>>::reference_type;
+        using reference_type = reference_type_solver<tuple_element_t<CurrIndex, LHSTupleType>>::reference_type;
         return addressof(static_cast<reference_type>(get<CurrIndex>(lhs_tuple)))
             == addressof(static_cast<reference_type>(get<CurrIndex>(rhs_tuple)));
     };
 
-    using index_sequence_type = make_index_sequence<tuple_size_v<LHSTupleType>>;
-    const auto evaluate_tuples_lambda =
-        [&evaluate_single_element_lambda]<size_t... Indices>(index_sequence<Indices...>) {
+    using index_sequence_type         = make_index_sequence<tuple_size_v<LHSTupleType>>;
+    const auto evaluate_tuples_lambda = [&evaluate_single_element_lambda]<size_t... Indices>(
+                                            index_sequence<Indices...>) {
         return (evaluate_single_element_lambda.template operator()<Indices>() && ...);
     };
 
@@ -437,6 +437,35 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... rngs)
             assert(end == as_const(zipped_range).end());
         }
 
+        // Validate view_interface::cbegin()
+        STATIC_ASSERT(CanMemberCBegin<ZipType>);
+        {
+            const same_as<ranges::const_iterator_t<ZipType>> auto itr = zipped_range.cbegin();
+            assert(do_tuples_reference_same_objects(*itr, tuple_element_arr[0]));
+        }
+
+        STATIC_ASSERT(CanMemberCBegin<const ZipType> == (ranges::range<const AllView<RangeTypes>> && ...));
+        if constexpr (CanMemberCBegin<const ZipType>) {
+            assert(do_tuples_reference_same_objects(*(as_const(zipped_range).cbegin()), const_tuple_element_arr[0]));
+        }
+
+        // Validate view_interface::cend()
+        STATIC_ASSERT(CanMemberCEnd<ZipType>);
+        if constexpr (equality_comparable<ranges::const_iterator_t<ZipType>>) {
+            auto end = zipped_range.cbegin();
+            ranges::advance(end, TestContainerType::smallest_array_size);
+
+            assert(end == zipped_range.cend());
+        }
+
+        STATIC_ASSERT(CanMemberCEnd<const ZipType> == (ranges::range<const AllView<RangeTypes>> && ...));
+        if constexpr (CanMemberCEnd<const ZipType> && equality_comparable<ranges::const_iterator_t<const ZipType>>) {
+            auto end = as_const(zipped_range).cbegin();
+            ranges::advance(end, TestContainerType::smallest_array_size);
+
+            assert(end == as_const(zipped_range).cend());
+        }
+
         const auto validate_iterators_lambda = []<class LocalZipType, class ArrayType, class... LocalRangeTypes>(
                                                    LocalZipType& relevant_range,
                                                    const ArrayType& relevant_tuple_element_arr) {
@@ -645,7 +674,7 @@ class instantiator_impl : private range_type_solver<IsMoveOnly> {
 private:
     template <class OtherCategory, class Element, test::Sized OtherIsSized, test::Common OtherIsCommon,
         test::CanDifference OtherDiff>
-    using range_type = typename range_type_solver<IsMoveOnly>::template range_type<OtherCategory, Element, OtherIsSized,
+    using range_type = range_type_solver<IsMoveOnly>::template range_type<OtherCategory, Element, OtherIsSized,
         OtherIsCommon, OtherDiff>;
 
     template <class... Types>
@@ -740,6 +769,7 @@ constexpr bool instantiation_test_for_category() {
 
     using test::Sized, test::Common, test::CanDifference;
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     InstantiatorType<Category, Sized::no, Common::no, CanDifference::no>::call();
     InstantiatorType<Category, Sized::no, Common::no, CanDifference::yes>::call();
     InstantiatorType<Category, Sized::no, Common::yes, CanDifference::no>::call();
@@ -747,6 +777,7 @@ constexpr bool instantiation_test_for_category() {
     InstantiatorType<Category, Sized::yes, Common::no, CanDifference::no>::call();
     InstantiatorType<Category, Sized::yes, Common::no, CanDifference::yes>::call();
     InstantiatorType<Category, Sized::yes, Common::yes, CanDifference::no>::call();
+#endif // TRANSITION, GH-1030
     InstantiatorType<Category, Sized::yes, Common::yes, CanDifference::yes>::call();
 
     return true;

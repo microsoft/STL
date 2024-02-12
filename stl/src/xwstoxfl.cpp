@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// _WStoxflt function
-
 #include <cctype>
 #include <clocale>
 #include <cwchar>
@@ -17,7 +15,7 @@ constexpr int _Ndig   = 7; // hexadecimal digits per long element
 constexpr int _Maxsig = 5 * _Ndig; // maximum significant digits to keep
 
 _In_range_(0, maxsig) int _WStoxflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr,
-    _Out_writes_(maxsig) long lo[], _In_range_(1, 4) int maxsig) {
+    _Out_writes_(maxsig) long lo[], _In_range_(1, 4) int maxsig) noexcept {
     // convert wide string to array of long plus exponent
     char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig = 0; // number of significant digits seen

@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// _LSinh function
-
 #include <xutility>
 
 #include "xmath.hpp"
@@ -16,7 +14,7 @@ static constexpr long double p[] = {0.0000000000000028486835L, 0.000000000000764
 
 static constexpr size_t NP = std::size(p) - 1;
 
-_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LSinh(long double x, long double y) {
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LSinh(long double x, long double y) noexcept {
     // compute y * sinh(x), |y| <= 1
     short neg;
 
