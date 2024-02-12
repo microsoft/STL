@@ -241,7 +241,24 @@ void test_flat_map() {
     using namespace std;
     puts("Testing <flat_map>.");
 
-    // FIXME! ADD TEST COVERAGE HERE!
+    [[maybe_unused]] constexpr sorted_unique_t unique_tag         = sorted_unique;
+    [[maybe_unused]] constexpr sorted_equivalent_t equivalent_tag = sorted_equivalent;
+
+    constexpr auto simple_truth = [](const auto&) { return true; };
+
+    flat_map<int, int> fm;
+    fm.emplace(1, 1);
+    fm.emplace(1, 2);
+    assert(fm.size() == 1);
+    erase_if(fm, simple_truth);
+    assert(fm.empty());
+
+    flat_multimap<int, int> fmm;
+    fmm.emplace(1, 1);
+    fmm.emplace(1, 2);
+    assert(fmm.size() == 2);
+    erase_if(fmm, simple_truth);
+    assert(fmm.empty());
 }
 #endif // TEST_STANDARD >= 23
 
