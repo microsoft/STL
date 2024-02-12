@@ -202,7 +202,7 @@ struct with_padding_bits {
 };
 #pragma warning(pop)
 
-inline void test_gh_3602(__std_atomic_api_level level) {
+inline void test_gh_3602(const __std_atomic_api_level level) {
     // GH-3602 std::atomic<std::shared_ptr>::wait does not seem to care about control block difference. Is this a bug?
     {
         auto sp1    = std::make_shared<char>();
@@ -245,7 +245,7 @@ inline void test_gh_3602(__std_atomic_api_level level) {
     }
 }
 
-inline void test_atomic_wait(__std_atomic_api_level level) {
+inline void test_atomic_wait(const __std_atomic_api_level level) {
     // wait for all the threads to be waiting; if this value is too small the test might be ineffective but should not
     // fail due to timing assumptions except where otherwise noted; if it is too large the test will only take longer
     // than necessary
