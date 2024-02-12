@@ -36,6 +36,84 @@ export module std;
 #pragma warning(push)
 #pragma warning(disable : 5244) // '#include <meow>' in the purview of module 'std' appears erroneous.
 
+#include <yvals_core.h>
+#ifndef _VCRT_EXPORT_STD // TRANSITION, VCRuntime update expected in 17.10 Preview 3
+
+// N4971 [module.interface]/6: "A redeclaration of an entity X is implicitly exported
+// if X was introduced by an exported declaration; otherwise it shall not be exported."
+
+// Therefore, we'll need to introduce exported declarations of <vcruntime_new.h> machinery before including it.
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+export extern "C++" struct nothrow_t;
+
+export extern "C++" const nothrow_t nothrow;
+
+#ifdef __cpp_aligned_new
+export extern "C++" enum class align_val_t : size_t;
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
+_STD_END
+
+export extern "C++" _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+_VCRT_ALLOCATOR void* __CRTDECL operator new(size_t _Size);
+export extern "C++" _NODISCARD _Ret_maybenull_ _Success_(return != NULL)
+    _Post_writable_byte_size_(_Size) _VCRT_ALLOCATOR void* __CRTDECL
+    operator new(size_t _Size, const _STD nothrow_t&) noexcept;
+export extern "C++" _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+_VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t _Size);
+export extern "C++" _NODISCARD _Ret_maybenull_ _Success_(return != NULL)
+    _Post_writable_byte_size_(_Size) _VCRT_ALLOCATOR void* __CRTDECL
+    operator new[](size_t _Size, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block, size_t _Size) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void* _Block) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void* _Block, size_t _Size) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void* _Block, const _STD nothrow_t&) noexcept;
+
+#ifdef __cpp_aligned_new
+export extern "C++" _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+_VCRT_ALLOCATOR void* __CRTDECL operator new(size_t _Size, _STD align_val_t _Al);
+export extern "C++" _NODISCARD _Ret_maybenull_ _Success_(return != NULL)
+    _Post_writable_byte_size_(_Size) _VCRT_ALLOCATOR void* __CRTDECL
+    operator new(size_t _Size, _STD align_val_t _Al, const _STD nothrow_t&) noexcept;
+export extern "C++" _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+_VCRT_ALLOCATOR void* __CRTDECL operator new[](size_t _Size, _STD align_val_t _Al);
+export extern "C++" _NODISCARD _Ret_maybenull_ _Success_(return != NULL)
+    _Post_writable_byte_size_(_Size) _VCRT_ALLOCATOR void* __CRTDECL
+    operator new[](size_t _Size, _STD align_val_t _Al, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block, _STD align_val_t _Al) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block, size_t _Size, _STD align_val_t _Al) noexcept;
+export extern "C++" void __CRTDECL operator delete(void* _Block, _STD align_val_t _Al, const _STD nothrow_t&) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void* _Block, _STD align_val_t _Al) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void* _Block, size_t _Size, _STD align_val_t _Al) noexcept;
+export extern "C++" void __CRTDECL operator delete[](
+    void* _Block, _STD align_val_t _Al, const _STD nothrow_t&) noexcept;
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
+
+export extern "C++" _NODISCARD _MSVC_CONSTEXPR _Ret_notnull_ _Post_writable_byte_size_(_Size)
+    _Post_satisfies_(return == _Where) void* __CRTDECL
+    operator new(size_t _Size, _Writable_bytes_(_Size) void* _Where) noexcept;
+export extern "C++" _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+    _Post_satisfies_(return == _Where) void* __CRTDECL
+    operator new[](size_t _Size, _Writable_bytes_(_Size) void* _Where) noexcept;
+export extern "C++" void __CRTDECL operator delete(void*, void*) noexcept;
+export extern "C++" void __CRTDECL operator delete[](void*, void*) noexcept;
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // ^^^ workaround ^^^
+
 // "C++ library headers" [tab:headers.cpp]
 #include <algorithm>
 #if _HAS_STATIC_RTTI

@@ -204,6 +204,10 @@ void test_deque() {
 void test_exception() {
     using namespace std;
     puts("Testing <exception>.");
+
+    static_assert(is_class_v<exception>);
+    static_assert(is_class_v<bad_exception>);
+
     assert(uncaught_exceptions() == 0);
     const exception_ptr ep = current_exception();
     assert(!ep);
@@ -471,6 +475,12 @@ void test_mutex() {
 void test_new() {
     using namespace std;
     puts("Testing <new>.");
+
+    static_assert(is_class_v<bad_alloc>);
+    static_assert(is_class_v<bad_array_new_length>);
+    static_assert(is_same_v<underlying_type_t<align_val_t>, size_t>);
+    static_assert(is_class_v<nothrow_t>);
+
     bool caught_bad_alloc = false;
 
     try {
@@ -988,6 +998,11 @@ void test_typeindex() {
 void test_typeinfo() {
     using namespace std;
     puts("Testing <typeinfo>.");
+
+    static_assert(is_class_v<type_info>);
+    static_assert(is_class_v<bad_cast>);
+    static_assert(is_class_v<bad_typeid>);
+
     const type_info& t1 = typeid(int);
     const type_info& t2 = typeid(const int&);
     const type_info& t3 = typeid(double);
