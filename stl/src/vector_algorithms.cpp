@@ -578,17 +578,17 @@ namespace {
             __m128i _H_min_val = _Cur;
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words));
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_bytes));
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words)); // SSSE3
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_bytes)); // SSSE3
             return _H_min_val;
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi8(_Val1, _Val2); });
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi8(_Val1, _Val2); }); // SSE4.1
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi8(_Val1, _Val2); });
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi8(_Val1, _Val2); }); // SSE4.1
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
@@ -604,6 +604,7 @@ namespace {
         }
 
         static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
+            // _mm_shuffle_epi8 is SSSE3:
             return static_cast<_Unsigned_t>(_mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_H_pos))));
         }
 
@@ -678,7 +679,7 @@ namespace {
             __m128i _H_min_val = _Cur;
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words));
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words)); // SSSE3
             return _H_min_val;
         }
 
@@ -691,11 +692,11 @@ namespace {
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu16(_Val1, _Val2); });
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu16(_Val1, _Val2); }); // SSE4.1
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu16(_Val1, _Val2); });
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu16(_Val1, _Val2); }); // SSE4.1
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -705,6 +706,7 @@ namespace {
         static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
             static constexpr _Unsigned_t _Shuf[] = {0x0100, 0x0302, 0x0504, 0x0706, 0x0908, 0x0B0A, 0x0D0C, 0x0F0E};
 
+            // _mm_shuffle_epi8 is SSSE3:
             return static_cast<_Unsigned_t>(
                 _mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_Shuf[_H_pos >> 1]))));
         }
@@ -722,19 +724,19 @@ namespace {
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second, __m128i = _mm_undefined_si128()) noexcept {
-            return _mm_min_epi16(_First, _Second); // SSE4.1
+            return _mm_min_epi16(_First, _Second);
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i = _mm_undefined_si128()) noexcept {
-            return _mm_max_epi16(_First, _Second); // SSE4.1
+            return _mm_max_epi16(_First, _Second);
         }
 
         static __m128i _Min_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_min_epu16(_First, _Second);
+            return _mm_min_epu16(_First, _Second); // SSE4.1
         }
 
         static __m128i _Max_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_max_epu16(_First, _Second);
+            return _mm_max_epu16(_First, _Second); // SSE4.1
         }
 
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
@@ -786,19 +788,19 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi32(_Val1, _Val2); });
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi32(_Val1, _Val2); }); // SSE4.1
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi32(_Val1, _Val2); });
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi32(_Val1, _Val2); }); // SSE4.1
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); });
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); }); // SSE4.1
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); });
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); }); // SSE4.1
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -832,11 +834,11 @@ namespace {
         }
 
         static __m128i _Min_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_min_epu32(_First, _Second);
+            return _mm_min_epu32(_First, _Second); // SSE4.1
         }
 
         static __m128i _Max_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_max_epu32(_First, _Second);
+            return _mm_max_epu32(_First, _Second); // SSE4.1
         }
 
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
@@ -903,7 +905,7 @@ namespace {
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
             return static_cast<_Signed_t>(
-                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
+                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32) // SSE4.1
                 | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
 #else // ^^^ x86 / x64 vvv
             return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
@@ -917,31 +919,31 @@ namespace {
         }
 
         static __m128i _Cmp_eq(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpeq_epi64(_First, _Second);
+            return _mm_cmpeq_epi64(_First, _Second); // SSE4.1
         }
 
         static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpgt_epi64(_First, _Second);
+            return _mm_cmpgt_epi64(_First, _Second); // SSE4.2
         }
 
         static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpeq_epi64(_First, _Second);
+            return _mm_cmpeq_epi64(_First, _Second); // SSE4.1
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Mask);
+            return _mm_blendv_epi8(_First, _Second, _Mask); // SSE4.1
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Mask);
+            return _mm_blendv_epi8(_First, _Second, _Mask); // SSE4.1
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_First, _Second)); // SSE4.2
+            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_First, _Second)); // _Cmp_gt is SSE4.2
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_Second, _First)); // SSE4.2
+            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_Second, _First)); // _Cmp_gt is SSE4.2
         }
 
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
@@ -1007,11 +1009,11 @@ namespace {
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); });
+            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); }); // SSE4.1
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); });
+            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); }); // SSE4.1
         }
 
         static float _Get_any(const __m128 _Cur) noexcept {
@@ -1115,7 +1117,7 @@ namespace {
 
         static uint64_t _Get_any_u(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
-            return (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
+            return (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32) // SSE4.1
                  | static_cast<uint64_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur)));
 #else // ^^^ x86 / x64 vvv
             return static_cast<uint64_t>(_mm_cvtsi128_si64(_Cur));
@@ -1137,7 +1139,7 @@ namespace {
         }
 
         static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpeq_epi64(_First, _Second);
+            return _mm_cmpeq_epi64(_First, _Second); // SSE4.1
         }
 
         static __m128d _Min(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
