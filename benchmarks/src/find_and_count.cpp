@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <ranges>
-#include <type_traits>
 
 enum class Op {
     FindSized,
@@ -20,7 +19,7 @@ template <class T, size_t Size, size_t Pos, Op Operation>
 void bm(benchmark::State& state) {
     T a[Size];
 
-    std::fill_n(a, Size, T{'0'});
+    fill_n(a, Size, T{'0'});
     if constexpr (Pos < Size) {
         a[Pos] = T{'1'};
     } else {
@@ -31,7 +30,7 @@ void bm(benchmark::State& state) {
         if constexpr (Operation == Op::FindSized) {
             benchmark::DoNotOptimize(ranges::find(a, a + Size, T{'1'}));
         } else if constexpr (Operation == Op::FindUnsized) {
-            benchmark::DoNotOptimize(ranges::find(a, std::unreachable_sentinel, T{'1'}));
+            benchmark::DoNotOptimize(ranges::find(a, unreachable_sentinel, T{'1'}));
         } else if constexpr (Operation == Op::Count) {
             benchmark::DoNotOptimize(ranges::count(a, a + Size, T{'1'}));
         }
