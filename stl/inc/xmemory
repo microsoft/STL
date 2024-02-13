@@ -986,12 +986,12 @@ public:
     _CONSTEXPR20 void deallocate(_Ty* const _Ptr, const size_t _Count) {
         _STL_ASSERT(_Ptr != nullptr || _Count == 0, "null pointer cannot point to a block of non-zero size");
         // no overflow check on the following multiply; we assume _Allocate did that check
-        _Deallocate<_New_alignof<_Ty>>(_Ptr, sizeof(_Ty) * _Count);
+        _STD _Deallocate<_New_alignof<_Ty>>(_Ptr, sizeof(_Ty) * _Count);
     }
 
     _NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
         static_assert(sizeof(value_type) > 0, "value_type must be complete before calling allocate.");
-        return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
+        return static_cast<_Ty*>(_STD _Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
 #if _HAS_CXX23
@@ -1104,7 +1104,7 @@ _CONSTEXPR20 void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t
     using _Ty = typename _Alloc::value_type;
     if constexpr (!conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
         for (; _First != _Last; ++_First) {
-            allocator_traits<_Alloc>::destroy(_Al, _Unfancy(_First));
+            allocator_traits<_Alloc>::destroy(_Al, _STD _Unfancy(_First));
         }
     }
 }
@@ -1114,7 +1114,7 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _L
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     if constexpr (!is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
         for (; _First != _Last; ++_First) {
-            _Destroy_in_place(*_First);
+            _STD _Destroy_in_place(*_First);
         }
     }
 }
