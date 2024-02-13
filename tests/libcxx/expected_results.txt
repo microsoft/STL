@@ -183,7 +183,7 @@ std/modules/std.pass.cpp FAIL
 
 # *** ASAN FAILURES ***
 # Even with `allocator_may_return_null=1`, ASan kills oversized allocations instead of throwing `bad_alloc`.
-# (https://github.com/google/sanitizers/issues/295)
+# (google/sanitizers#295)
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.pass.cpp:1 FAIL
