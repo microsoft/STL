@@ -4002,6 +4002,7 @@ protected:
 
     void _Wait(remove_extent_t<_Ty>* _Old_ptr, _Ref_count_base* const _Old_rep, memory_order) const noexcept {
         unsigned long _Remaining_timeout = 16;
+        const unsigned long _Max_timeout = 1048576;
         for (;;) {
             auto _Rep   = _Repptr._Lock_and_load();
             bool _Equal = _Ptr.load(memory_order_relaxed) == _Old_ptr && _Rep == _Old_rep;
@@ -4010,7 +4011,7 @@ protected:
                 break;
             }
             __std_atomic_wait_direct(&_Ptr, &_Old_ptr, sizeof(_Old_ptr), _Remaining_timeout);
-            _Remaining_timeout *= 2;
+            _Remaining_timeout = (_STD min)(_Max_timeout, _Remaining_timeout * 2);
         }
     }
 
