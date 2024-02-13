@@ -44,6 +44,7 @@ _CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t mtx, int type) noexcept { //
     mtx->_Count     = 0;
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t mtx) noexcept { // destroy mutex in situ
     _THREAD_ASSERT(mtx->_Count == 0, "mutex destroyed while busy");
     (void) mtx;
@@ -64,6 +65,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t* mtx, int type) noexcept { /
     return _Thrd_result::_Success;
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t mtx) noexcept { // destroy mutex
     if (mtx) { // something to do, do it
         _Mtx_destroy_in_situ(mtx);
