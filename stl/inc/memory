@@ -4001,8 +4001,8 @@ protected:
         : _Ptr(_Px), _Repptr(_Ref) {}
 
     void _Wait(remove_extent_t<_Ty>* _Old_ptr, _Ref_count_base* const _Old_rep, memory_order) const noexcept {
-        unsigned long _Remaining_timeout = 16;
-        const unsigned long _Max_timeout = 1048576;
+        unsigned long _Remaining_timeout = 16; // milliseconds
+        const unsigned long _Max_timeout = 1048576; // milliseconds, ~17.5 minutes
         for (;;) {
             auto _Rep   = _Repptr._Lock_and_load();
             bool _Equal = _Ptr.load(memory_order_relaxed) == _Old_ptr && _Rep == _Old_rep;
