@@ -4001,6 +4001,7 @@ protected:
         : _Ptr(_Px), _Repptr(_Ref) {}
 
     void _Wait(remove_extent_t<_Ty>* _Old_ptr, _Ref_count_base* const _Old_rep, memory_order) const noexcept {
+        unsigned long _Remaining_timeout = 4;
         for (;;) {
             auto _Rep   = _Repptr._Lock_and_load();
             bool _Equal = _Ptr.load(memory_order_relaxed) == _Old_ptr && _Rep == _Old_rep;
@@ -4008,7 +4009,8 @@ protected:
             if (!_Equal) {
                 break;
             }
-            __std_atomic_wait_direct(&_Ptr, &_Old_ptr, sizeof(_Old_ptr), __std_atomic_wait_no_timeout);
+            __std_atomic_wait_direct(&_Ptr, &_Old_ptr, sizeof(_Old_ptr), _Remaining_timeout);
+            _Remaining_timeout *= 2;
         }
     }
 
