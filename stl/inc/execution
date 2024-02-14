@@ -4373,7 +4373,7 @@ struct _Static_partitioned_exclusive_scan2 {
         const auto _In_range     = _Basis1._Get_chunk(_Key);
         const auto _Dest         = _Basis2._Get_first(_Chunk_number, _Team._Get_chunk_offset(_Chunk_number));
         // Run local exclusive_scan on this chunk
-        const auto _Chunk = _Lookback.begin() + static_cast<ptrdiff_t>(_Chunk_number);
+        const auto _Chunk = _Lookback.data() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
             _STD _Exclusive_scan_per_chunk_complete(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _Initial);
@@ -4502,7 +4502,7 @@ struct _Static_partitioned_inclusive_scan2 {
         const auto _In_range     = _Basis1._Get_chunk(_Key);
         const auto _Dest         = _Basis2._Get_first(_Chunk_number, _Team._Get_chunk_offset(_Chunk_number));
         // Run local inclusive_scan on this chunk
-        const auto _Chunk = _Lookback.begin() + static_cast<ptrdiff_t>(_Chunk_number);
+        const auto _Chunk = _Lookback.data() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
             _STD _Inclusive_scan_per_chunk(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _STD move(_Initial));
@@ -4690,7 +4690,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
         const auto _In_range     = _Basis1._Get_chunk(_Key);
         const auto _Dest         = _Basis2._Get_first(_Chunk_number, _Team._Get_chunk_offset(_Chunk_number));
         // Run local transform_exclusive_scan on this chunk
-        const auto _Chunk = _Lookback.begin() + static_cast<ptrdiff_t>(_Chunk_number);
+        const auto _Chunk = _Lookback.data() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
             _STD _Transform_exclusive_scan_per_chunk_complete(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op, _Chunk->_Sum._Ref(), _Initial);
@@ -4821,7 +4821,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
         const auto _In_range     = _Basis1._Get_chunk(_Key);
         const auto _Dest         = _Basis2._Get_first(_Chunk_number, _Team._Get_chunk_offset(_Chunk_number));
         // Run local transform_inclusive_scan on this chunk
-        const auto _Chunk = _Lookback.begin() + static_cast<ptrdiff_t>(_Chunk_number);
+        const auto _Chunk = _Lookback.data() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
             _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op,
                 _Chunk->_Sum._Ref(), _STD move(_Initial));
