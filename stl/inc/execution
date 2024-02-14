@@ -4095,12 +4095,13 @@ _NODISCARD _Ty reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val
                     _Work._Submit_for_chunks(_Hw_threads, _Chunks);
                     while (const auto _Stolen_key = _Operation._Team._Get_next_key()) {
                         auto _Chunk = _Operation._Basis._Get_chunk(_Stolen_key);
-                        _Val        = _STD reduce(_Chunk._First, _Chunk._Last, _STD move(_Val), _STD _Pass_fn(_Reduce_op));
+                        _Val = _STD reduce(_Chunk._First, _Chunk._Last, _STD move(_Val), _STD _Pass_fn(_Reduce_op));
                     }
                 } // join with _Work_ptr threads
 
                 auto& _Results = _Operation._Results;
-                return _STD _Reduce_move_unchecked(_Results.begin(), _Results.end(), _STD move(_Val), _STD _Pass_fn(_Reduce_op));
+                return _STD _Reduce_move_unchecked(
+                    _Results.begin(), _Results.end(), _STD move(_Val), _STD _Pass_fn(_Reduce_op));
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
@@ -4204,7 +4205,8 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt
                 } // join with _Work_ptr threads
 
                 auto& _Results = _Operation._Results; // note: already transformed
-                return _STD _Reduce_move_unchecked(_Results.begin(), _Results.end(), _STD move(_Val), _STD _Pass_fn(_Reduce_op));
+                return _STD _Reduce_move_unchecked(
+                    _Results.begin(), _Results.end(), _STD move(_Val), _STD _Pass_fn(_Reduce_op));
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
@@ -4216,8 +4218,8 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt
     }
 
     return _STD transform_reduce(_UFirst1, _ULast1,
-        _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_FwdIt1>(_UFirst1, _ULast1)), _STD move(_Val), _STD _Pass_fn(_Reduce_op),
-        _STD _Pass_fn(_Transform_op));
+        _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_FwdIt1>(_UFirst1, _ULast1)), _STD move(_Val),
+        _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op));
 }
 
 template <class _FwdIt, class _Ty, class _BinOp, class _UnaryOp>
@@ -4290,13 +4292,14 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
                     while (auto _Stolen_key = _Operation._Team._Get_next_key()) {
                         // keep processing remaining chunks to comply with N4950 [intro.progress]/14
                         auto _Chunk = _Operation._Basis._Get_chunk(_Stolen_key);
-                        _Val = _STD transform_reduce(_Chunk._First, _Chunk._Last, _STD move(_Val), _STD _Pass_fn(_Reduce_op),
-                            _STD _Pass_fn(_Transform_op));
+                        _Val        = _STD transform_reduce(_Chunk._First, _Chunk._Last, _STD move(_Val),
+                                   _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op));
                     }
                 } // join with _Work_ptr threads
 
                 auto& _Results = _Operation._Results; // note: already transformed
-                return _STD _Reduce_move_unchecked(_Results.begin(), _Results.end(), _STD move(_Val), _STD _Pass_fn(_Reduce_op));
+                return _STD _Reduce_move_unchecked(
+                    _Results.begin(), _Results.end(), _STD move(_Val), _STD _Pass_fn(_Reduce_op));
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
@@ -4304,7 +4307,8 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
         }
     }
 
-    return _STD transform_reduce(_UFirst, _ULast, _STD move(_Val), _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op));
+    return _STD transform_reduce(
+        _UFirst, _ULast, _STD move(_Val), _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op));
 }
 
 struct _No_init_tag {
@@ -4442,14 +4446,15 @@ _FwdIt2 exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdI
                 _CATCH_END
             }
 
-            _STD _Seek_wrapped(_Dest, _STD exclusive_scan(_UFirst, _ULast, _UDest, _STD move(_Val), _STD _Pass_fn(_Reduce_op)));
+            _STD _Seek_wrapped(
+                _Dest, _STD exclusive_scan(_UFirst, _ULast, _UDest, _STD move(_Val), _STD _Pass_fn(_Reduce_op)));
             return _Dest;
         }
     }
 
-    _STD _Seek_wrapped(
-        _Dest, _STD exclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-                   _STD move(_Val), _STD _Pass_fn(_Reduce_op)));
+    _STD _Seek_wrapped(_Dest,
+        _STD exclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+            _STD move(_Val), _STD _Pass_fn(_Reduce_op)));
     return _Dest;
 }
 
@@ -4574,14 +4579,15 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
                 _CATCH_END
             }
 
-            _STD _Seek_wrapped(_Dest, _STD inclusive_scan(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Reduce_op), _STD move(_Val)));
+            _STD _Seek_wrapped(
+                _Dest, _STD inclusive_scan(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Reduce_op), _STD move(_Val)));
             return _Dest;
         }
     }
 
-    _STD _Seek_wrapped(
-        _Dest, _STD inclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-                   _STD _Pass_fn(_Reduce_op), _STD move(_Val)));
+    _STD _Seek_wrapped(_Dest,
+        _STD inclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+            _STD _Pass_fn(_Reduce_op), _STD move(_Val)));
     return _Dest;
 }
 
@@ -4621,8 +4627,9 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
         }
     }
 
-    _STD _Seek_wrapped(_Dest, _STD inclusive_scan(_UFirst, _ULast,
-                             _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _STD _Pass_fn(_Reduce_op)));
+    _STD _Seek_wrapped(_Dest,
+        _STD inclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+            _STD _Pass_fn(_Reduce_op)));
     return _Dest;
 }
 
@@ -4746,8 +4753,8 @@ _FwdIt2 transform_exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
             const auto _UDest = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
-                _Static_partitioned_transform_exclusive_scan2 _Operation{
-                    _Hw_threads, _Count, _UFirst, _Val, _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op), _UDest};
+                _Static_partitioned_transform_exclusive_scan2 _Operation{_Hw_threads, _Count, _UFirst, _Val,
+                    _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op), _UDest};
                 _STD _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
                 // Note that _Val is used as temporary storage by whichever thread runs the first chunk.
                 // If any thread starts any chunk, initialization is complete, so we can't enter the
@@ -4760,14 +4767,14 @@ _FwdIt2 transform_exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
             }
 
             _STD _Seek_wrapped(_Dest, _STD transform_exclusive_scan(_UFirst, _ULast, _UDest, _STD move(_Val),
-                                     _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
+                                          _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
             return _Dest;
         }
     }
 
-    _STD _Seek_wrapped(_Dest,
-        _STD transform_exclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-            _STD move(_Val), _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
+    _STD _Seek_wrapped(_Dest, _STD transform_exclusive_scan(_UFirst, _ULast,
+                                  _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+                                  _STD move(_Val), _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
     return _Dest;
 }
 
@@ -4823,8 +4830,8 @@ struct _Static_partitioned_transform_inclusive_scan2 {
         // Run local transform_inclusive_scan on this chunk
         const auto _Chunk = _Lookback.data() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
-            _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op,
-                _Chunk->_Sum._Ref(), _STD move(_Initial));
+            _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
+                _Transform_op, _Chunk->_Sum._Ref(), _STD move(_Initial));
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
@@ -4832,8 +4839,8 @@ struct _Static_partitioned_transform_inclusive_scan2 {
         const auto _Prev_chunk = _STD _Prev_iter(_Chunk);
         if (_Prev_chunk->_State.load() & _Sum_available) {
             // if predecessor sum already complete, we can incorporate its value directly for 1 pass
-            _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op,
-                _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
+            _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
+                _Transform_op, _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
@@ -4895,14 +4902,14 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
             }
 
             _STD _Seek_wrapped(_Dest, _STD transform_inclusive_scan(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Reduce_op),
-                                     _STD _Pass_fn(_Transform_op), _STD move(_Val)));
+                                          _STD _Pass_fn(_Transform_op), _STD move(_Val)));
             return _Dest;
         }
     }
 
-    _STD _Seek_wrapped(_Dest,
-        _STD transform_inclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-            _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op), _STD move(_Val)));
+    _STD _Seek_wrapped(_Dest, _STD transform_inclusive_scan(_UFirst, _ULast,
+                                  _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+                                  _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op), _STD move(_Val)));
     return _Dest;
 }
 
@@ -4940,15 +4947,15 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
                 _CATCH_END
             }
 
-            _STD _Seek_wrapped(_Dest,
-                _STD transform_inclusive_scan(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
+            _STD _Seek_wrapped(_Dest, _STD transform_inclusive_scan(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Reduce_op),
+                                          _STD _Pass_fn(_Transform_op)));
             return _Dest;
         }
     }
 
-    _STD _Seek_wrapped(_Dest,
-        _STD transform_inclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-            _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
+    _STD _Seek_wrapped(_Dest, _STD transform_inclusive_scan(_UFirst, _ULast,
+                                  _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+                                  _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
     return _Dest;
 }
 
@@ -5048,8 +5055,9 @@ _FwdIt2 adjacent_difference(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, 
     }
 
     // Don't call serial adjacent_difference because it's described as creating a temporary we can avoid
-    _STD _Seek_wrapped(_Dest, _STD _Adjacent_difference_seq(_UFirst, _ULast,
-                             _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _STD _Pass_fn(_Diff_op)));
+    _STD _Seek_wrapped(_Dest,
+        _STD _Adjacent_difference_seq(_UFirst, _ULast,
+            _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _STD _Pass_fn(_Diff_op)));
     return _Dest;
 }
 
