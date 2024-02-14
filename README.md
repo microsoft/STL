@@ -459,6 +459,7 @@ vehicles.
 
 ```mermaid
 flowchart TB
+%%{ init: {"flowchart": {"htmlLabels": true}} }%%
     classDef default text-align:left
     subgraph VisualStudioSubgraph[Visual Studio]
         direction TB

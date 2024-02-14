@@ -437,6 +437,70 @@ void test_case_randomized_cases() {
     }
 }
 
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+template <class Tag, class T>
+struct tagged_hash {
+    std::size_t operator()(const T& t) const {
+        return std::hash<T>{}(t);
+    }
+};
+
+template <class Tag>
+struct tagged_equal {
+    template <class T, class U>
+    constexpr auto operator()(T&& t, U&& u) const -> decltype(std::forward<T>(t) == std::forward<U>(u)) {
+        return std::forward<T>(t) == std::forward<U>(u);
+    }
+};
+
+template <class T>
+struct holder {
+    T t;
+};
+
+struct incomplete;
+
+template <class T>
+using validating_hash = tagged_hash<holder<incomplete>, T>;
+
+using validating_equal = tagged_equal<holder<incomplete>>;
+
+void test_adl_proof_default_searcher_on_iterators() { // COMPILE-ONLY
+    using validator = holder<incomplete>*;
+    validator varr[1]{};
+    (void) std::search(varr, varr + 1, default_searcher<const validator*>{varr, varr + 1});
+}
+
+void test_adl_proof_default_searcher_on_functors() { // COMPILE-ONLY
+    char carr[1]{};
+    (void) std::search(carr, carr + 1, default_searcher<const char*, validating_equal>{carr, carr + 1});
+
+    wchar_t wcarr[1]{};
+    (void) std::search(wcarr, wcarr + 1, default_searcher<const wchar_t*, validating_equal>{wcarr, wcarr + 1});
+
+    int iarr[1]{};
+    (void) std::search(iarr, iarr + 1, default_searcher<const int*, validating_equal>{iarr, iarr + 1});
+}
+
+template <template <class RanIt, class Hash, class PredEq> class Searcher>
+void test_adl_proof_searcher_on_functors() { // COMPILE-ONLY
+    char carr[1]{};
+    (void) std::search(carr, carr + 1, Searcher<const char*, validating_hash<char>, validating_equal>{carr, carr + 1});
+
+    wchar_t wcarr[1]{};
+    (void) std::search(
+        wcarr, wcarr + 1, Searcher<const wchar_t*, validating_hash<wchar_t>, validating_equal>{wcarr, wcarr + 1});
+
+    int iarr[1]{};
+    (void) std::search(iarr, iarr + 1, Searcher<const int*, validating_hash<int>, validating_equal>{iarr, iarr + 1});
+}
+
+void test_adl_proof_searcher_on_functors_all() { // COMPILE-ONLY
+    test_adl_proof_searcher_on_functors<boyer_moore_searcher>();
+    test_adl_proof_searcher_on_functors<boyer_moore_horspool_searcher>();
+}
+#endif // ^^^ no workaround ^^^
+
 int main() {
     test_boyer_moore_table2_construction();
 
