@@ -3037,7 +3037,7 @@ namespace test_predicate {
                 using Fn = NotCallableWithInt;
                 STATIC_ASSERT(predicate<Fn, tag>);
                 STATIC_ASSERT(!predicate<Fn, int>);
-            }; // TRANSITION, semicolon needed to make clang-format happy (LLVM-48305)
+            }
         }
 
         { // function object
