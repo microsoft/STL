@@ -24,7 +24,7 @@
 #include <mbctype.h>
 #endif // !defined(_MSVC_TESTING_NVCC)
 
-#if 1 // TRANSITION, OS-17090155 (UCRT)
+#if 1 // TRANSITION, ArchivedOS-17501595 (UCRT)
 #define _CRT_DECLARE_NONSTDC_NAMES 0
 #ifndef _MSVC_TESTING_NVCC
 #include <sys/stat.h>
@@ -32,7 +32,7 @@
 #include <sys/utime.h>
 #endif // !defined(_MSVC_TESTING_NVCC)
 #undef _CRT_DECLARE_NONSTDC_NAMES
-#endif // TRANSITION, OS-17090155 (UCRT)
+#endif // TRANSITION, ArchivedOS-17501595 (UCRT)
 
 #define _SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING
 #define _SILENCE_CXX20_CISO646_REMOVED_WARNING
