@@ -3687,56 +3687,56 @@ _NODISCARD bool operator==(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) noexce
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator!=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) noexcept {
-    return !(_Left == _Right);
+_NODISCARD bool operator!=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
+    return !(_Left == nullptr);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator!=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
-    return !(_Left == _Right);
+_NODISCARD bool operator!=(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
+    return !(nullptr == _Right);
 }
 #endif // !_HAS_CXX20
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
+_NODISCARD _CONSTEXPR23 bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
-    return less<_Ptr>{}(_Left.get(), _Right);
+    return less<_Ptr>{}(_Left.get(), nullptr);
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator<(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
+_NODISCARD _CONSTEXPR23 bool operator<(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
-    return less<_Ptr>{}(_Left, _Right.get());
+    return less<_Ptr>{}(nullptr, _Right.get());
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator>=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
-    return !(_Left < _Right);
+_NODISCARD _CONSTEXPR23 bool operator>=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
+    return !(_Left < nullptr);
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator>=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
-    return !(_Left < _Right);
+_NODISCARD _CONSTEXPR23 bool operator>=(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) {
+    return !(nullptr < _Right);
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator>(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
-    return _Right < _Left;
+_NODISCARD _CONSTEXPR23 bool operator>(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
+    return nullptr < _Left;
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator>(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
-    return _Right < _Left;
+_NODISCARD _CONSTEXPR23 bool operator>(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) {
+    return _Right < nullptr;
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator<=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
-    return !(_Right < _Left);
+_NODISCARD _CONSTEXPR23 bool operator<=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
+    return !(nullptr < _Left);
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
-    return !(_Right < _Left);
+_NODISCARD _CONSTEXPR23 bool operator<=(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) {
+    return !(_Right < nullptr);
 }
 
 #if _HAS_CXX20
