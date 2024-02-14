@@ -3693,7 +3693,7 @@ void _Surrender_elements_to_next_chunk(const size_t _Chunk_number,
         // that will be placed in _Lookback by adding two of the previous sums together is the total number of elements
         // in the result. Assuming that _Dest has enough space for the result, the value produced by adding two previous
         // sums should fit inside _Diff.
-        _Prev_chunk_sum = _Get_lookback_sum(_Prev_chunk_lookback_data, _Casty_plus<_Diff>{});
+        _Prev_chunk_sum = _STD _Get_lookback_sum(_Prev_chunk_lookback_data, _Casty_plus<_Diff>{});
     }
 
     _Chunk_lookback_data->_Sum._Ref() = _Prev_chunk_sum;
@@ -3813,7 +3813,7 @@ struct _Static_partitioned_set_subtraction {
             // Predecessor overall sum is done, use directly.
             _Prev_chunk_sum = _Prev_chunk_lookback_data->_Sum._Ref();
         } else {
-            _Prev_chunk_sum = _Get_lookback_sum(_Prev_chunk_lookback_data, _Casty_plus<_Diff>{});
+            _Prev_chunk_sum = _STD _Get_lookback_sum(_Prev_chunk_lookback_data, _Casty_plus<_Diff>{});
         }
 
         _Chunk_lookback_data->_Sum._Ref() = static_cast<_Diff>(_Num_results + _Prev_chunk_sum);
