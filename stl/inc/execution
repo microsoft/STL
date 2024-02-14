@@ -295,7 +295,7 @@ struct _Parallelism_allocator {
 
     void deallocate(_Ty* const _Ptr, const size_t _Count) {
         // no overflow check on the following multiply; we assume _Allocate did that check
-        _Deallocate<_New_alignof<_Ty>>(_Ptr, sizeof(_Ty) * _Count);
+        _STD _Deallocate<_New_alignof<_Ty>>(_Ptr, sizeof(_Ty) * _Count);
     }
 
     template <class _Other>
@@ -327,9 +327,9 @@ struct _Generalized_sum_drop { // drop off point for GENERALIZED_SUM intermediat
 
     ~_Generalized_sum_drop() noexcept {
         // pre: the caller has synchronized with all threads that modify _Data.
-        _Destroy_range(begin(), end());
+        _STD _Destroy_range(begin(), end());
         // no overflow check on the following multiply; we assume _Allocate did that check
-        _Deallocate<_New_alignof<_Ty>>(_Data, sizeof(_Ty) * _Slots);
+        _STD _Deallocate<_New_alignof<_Ty>>(_Data, sizeof(_Ty) * _Slots);
     }
 
     template <class... _Args>
@@ -337,7 +337,7 @@ struct _Generalized_sum_drop { // drop off point for GENERALIZED_SUM intermediat
         // constructs a _Ty in place with _Vals parameters perfectly forwarded
         // pre: the number of results added is less than the size the drop was constructed with
         const size_t _Target = _Frontier++;
-        _Construct_in_place(_Data[_Target], _STD forward<_Args>(_Vals)...);
+        _STD _Construct_in_place(_Data[_Target], _STD forward<_Args>(_Vals)...);
     }
 
     _Ty* begin() {
@@ -3602,7 +3602,7 @@ struct _Scan_decoupled_lookback {
     template <class _FwdIt, class _BinOp>
     void _Apply_exclusive_predecessor(_Ty& _Preceding, _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce_op) {
         // apply _Preceding to [_First, _Last) and _Sum._Ref(), using _Reduce_op
-        _Construct_in_place(_Sum._Ref(), _Reduce_op(_Preceding, _Local._Ref()));
+        _STD _Construct_in_place(_Sum._Ref(), _Reduce_op(_Preceding, _Local._Ref()));
         _State.store(_Local_available | _Sum_available);
         *_First = _Preceding;
 
@@ -3615,7 +3615,7 @@ struct _Scan_decoupled_lookback {
     template <class _FwdIt, class _BinOp>
     void _Apply_inclusive_predecessor(_Ty& _Preceding, _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce_op) {
         // apply _Preceding to [_First, _Last) and _Sum._Ref(), using _Reduce_op
-        _Construct_in_place(_Sum._Ref(), _Reduce_op(_Preceding, _Local._Ref()));
+        _STD _Construct_in_place(_Sum._Ref(), _Reduce_op(_Preceding, _Local._Ref()));
         _State.store(_Local_available | _Sum_available);
 
 #pragma loop(ivdep)
@@ -3627,11 +3627,11 @@ struct _Scan_decoupled_lookback {
     ~_Scan_decoupled_lookback() {
         const auto _State_bits = _State.load(memory_order_relaxed);
         if (_State_bits & _Sum_available) {
-            _Destroy_in_place(_Sum._Ref());
+            _STD _Destroy_in_place(_Sum._Ref());
         }
 
         if (_State_bits & _Local_available) {
-            _Destroy_in_place(_Local._Ref());
+            _STD _Destroy_in_place(_Local._Ref());
         }
     }
 };
@@ -4057,7 +4057,7 @@ struct _Static_partitioned_reduce2 {
         auto _Key        = _This->_Team._Get_next_key();
         if (_Key) {
             auto _Chunk        = _This->_Basis._Get_chunk(_Key);
-            auto _Local_result = _Reduce_at_least_two<_Ty>(_Chunk._First, _Chunk._Last, _This->_Reduce_op);
+            auto _Local_result = _STD _Reduce_at_least_two<_Ty>(_Chunk._First, _Chunk._Last, _This->_Reduce_op);
             while ((_Key = _This->_Team._Get_next_key())) {
                 _Chunk        = _This->_Basis._Get_chunk(_Key);
                 _Local_result = _STD reduce(_Chunk._First, _Chunk._Last, _STD move(_Local_result), _This->_Reduce_op);
@@ -4074,9 +4074,9 @@ _NODISCARD _Ty reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val
 /* terminates */ {
     // return commutative and associative reduction of _Val and [_First, _Last), using _Reduce_op
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
@@ -4084,7 +4084,7 @@ _NODISCARD _Ty reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val
             const auto _Chunks = _Get_least2_chunked_work_chunk_count(_Hw_threads, _Count);
             if (_Chunks > 1) {
                 _TRY_BEGIN
-                auto _Passed_fn = _Pass_fn(_Reduce_op);
+                auto _Passed_fn = _STD _Pass_fn(_Reduce_op);
                 _Static_partitioned_reduce2<decltype(_UFirst), _Ty, decltype(_Passed_fn)> _Operation{
                     _Count, _Chunks, _UFirst, _Passed_fn};
                 {
@@ -4095,12 +4095,12 @@ _NODISCARD _Ty reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val
                     _Work._Submit_for_chunks(_Hw_threads, _Chunks);
                     while (const auto _Stolen_key = _Operation._Team._Get_next_key()) {
                         auto _Chunk = _Operation._Basis._Get_chunk(_Stolen_key);
-                        _Val        = _STD reduce(_Chunk._First, _Chunk._Last, _STD move(_Val), _Pass_fn(_Reduce_op));
+                        _Val        = _STD reduce(_Chunk._First, _Chunk._Last, _STD move(_Val), _STD _Pass_fn(_Reduce_op));
                     }
                 } // join with _Work_ptr threads
 
                 auto& _Results = _Operation._Results;
-                return _Reduce_move_unchecked(_Results.begin(), _Results.end(), _STD move(_Val), _Pass_fn(_Reduce_op));
+                return _STD _Reduce_move_unchecked(_Results.begin(), _Results.end(), _STD move(_Val), _STD _Pass_fn(_Reduce_op));
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
@@ -4108,7 +4108,7 @@ _NODISCARD _Ty reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val
         }
     }
 
-    return _STD reduce(_UFirst, _ULast, _STD move(_Val), _Pass_fn(_Reduce_op));
+    return _STD reduce(_UFirst, _ULast, _STD move(_Val), _STD _Pass_fn(_Reduce_op));
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp1, class _BinOp2>
@@ -4172,19 +4172,19 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt
     // return commutative and associative transform-reduction of sequences, using _Reduce_op and _Transform_op
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First1, _Last1);
-    auto _UFirst1      = _Get_unwrapped(_First1);
-    const auto _ULast1 = _Get_unwrapped(_Last1);
+    _STD _Adl_verify_range(_First1, _Last1);
+    auto _UFirst1      = _STD _Get_unwrapped(_First1);
+    const auto _ULast1 = _STD _Get_unwrapped(_Last1);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
             const auto _Count  = _STD distance(_UFirst1, _ULast1);
-            auto _UFirst2      = _Get_unwrapped_n(_First2, _Count);
+            auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _Count);
             const auto _Chunks = _Get_least2_chunked_work_chunk_count(_Hw_threads, _Count);
             if (_Chunks > 1) {
                 _TRY_BEGIN
-                auto _Passed_reduce    = _Pass_fn(_Reduce_op);
-                auto _Passed_transform = _Pass_fn(_Transform_op);
+                auto _Passed_reduce    = _STD _Pass_fn(_Reduce_op);
+                auto _Passed_transform = _STD _Pass_fn(_Transform_op);
                 _Static_partitioned_transform_reduce_binary2<decltype(_UFirst1), decltype(_UFirst2), _Ty,
                     decltype(_Passed_reduce), decltype(_Passed_transform)>
                     _Operation{_Count, _Chunks, _UFirst1, _UFirst2, _Passed_reduce, _Passed_transform};
@@ -4199,25 +4199,25 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt
                         _Val = _STD transform_reduce(_Chunk1._First, _Chunk1._Last,
                             _Operation._Basis2._Get_first(
                                 _Chunk_number, _Operation._Team._Get_chunk_offset(_Chunk_number)),
-                            _STD move(_Val), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op));
+                            _STD move(_Val), _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op));
                     }
                 } // join with _Work_ptr threads
 
                 auto& _Results = _Operation._Results; // note: already transformed
-                return _Reduce_move_unchecked(_Results.begin(), _Results.end(), _STD move(_Val), _Pass_fn(_Reduce_op));
+                return _STD _Reduce_move_unchecked(_Results.begin(), _Results.end(), _STD move(_Val), _STD _Pass_fn(_Reduce_op));
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
             return _STD transform_reduce(
-                _UFirst1, _ULast1, _UFirst2, _STD move(_Val), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op));
+                _UFirst1, _ULast1, _UFirst2, _STD move(_Val), _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op));
         }
     }
 
     return _STD transform_reduce(_UFirst1, _ULast1,
-        _Get_unwrapped_n(_First2, _Idl_distance<_FwdIt1>(_UFirst1, _ULast1)), _STD move(_Val), _Pass_fn(_Reduce_op),
-        _Pass_fn(_Transform_op));
+        _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_FwdIt1>(_UFirst1, _ULast1)), _STD move(_Val), _STD _Pass_fn(_Reduce_op),
+        _STD _Pass_fn(_Transform_op));
 }
 
 template <class _FwdIt, class _Ty, class _BinOp, class _UnaryOp>
@@ -4268,9 +4268,9 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
     _UnaryOp _Transform_op) noexcept /* terminates */ {
     // return commutative and associative reduction of transformed sequence, using _Reduce_op and _Transform_op
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
@@ -4278,8 +4278,8 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
             const auto _Chunks = _Get_least2_chunked_work_chunk_count(_Hw_threads, _Count);
             if (_Chunks > 1) {
                 _TRY_BEGIN
-                auto _Passed_reduce    = _Pass_fn(_Reduce_op);
-                auto _Passed_transform = _Pass_fn(_Transform_op);
+                auto _Passed_reduce    = _STD _Pass_fn(_Reduce_op);
+                auto _Passed_transform = _STD _Pass_fn(_Transform_op);
                 _Static_partitioned_transform_reduce2<decltype(_UFirst), _Ty, decltype(_Passed_reduce),
                     decltype(_Passed_transform)>
                     _Operation{_Count, _Chunks, _UFirst, _Passed_reduce, _Passed_transform};
@@ -4290,13 +4290,13 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
                     while (auto _Stolen_key = _Operation._Team._Get_next_key()) {
                         // keep processing remaining chunks to comply with N4950 [intro.progress]/14
                         auto _Chunk = _Operation._Basis._Get_chunk(_Stolen_key);
-                        _Val = _STD transform_reduce(_Chunk._First, _Chunk._Last, _STD move(_Val), _Pass_fn(_Reduce_op),
-                            _Pass_fn(_Transform_op));
+                        _Val = _STD transform_reduce(_Chunk._First, _Chunk._Last, _STD move(_Val), _STD _Pass_fn(_Reduce_op),
+                            _STD _Pass_fn(_Transform_op));
                     }
                 } // join with _Work_ptr threads
 
                 auto& _Results = _Operation._Results; // note: already transformed
-                return _Reduce_move_unchecked(_Results.begin(), _Results.end(), _STD move(_Val), _Pass_fn(_Reduce_op));
+                return _STD _Reduce_move_unchecked(_Results.begin(), _Results.end(), _STD move(_Val), _STD _Pass_fn(_Reduce_op));
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
@@ -4304,7 +4304,7 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
         }
     }
 
-    return _STD transform_reduce(_UFirst, _ULast, _STD move(_Val), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op));
+    return _STD transform_reduce(_UFirst, _ULast, _STD move(_Val), _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op));
 }
 
 struct _No_init_tag {
@@ -4316,7 +4316,7 @@ _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
     // local-sum for parallel exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and stores
     // successor sum in _Val
     // pre: _Val is *uninitialized* && _First != _Last
-    _Construct_in_place(_Val, *_First);
+    _STD _Construct_in_place(_Val, *_First);
     for (;;) {
         ++_First;
         ++_Dest;
@@ -4336,7 +4336,7 @@ void _Exclusive_scan_per_chunk_complete(
     // Sum for parallel exclusive_scan with predecessor available, into [_Dest, _Dest + (_Last - _First)) and stores
     // successor sum in _Val.
     // Pre: _Val is *uninitialized* && _First != _Last && predecessor sum is in _Init
-    _Construct_in_place(_Val, _Reduce_op(_Init, *_First));
+    _STD _Construct_in_place(_Val, _Reduce_op(_Init, *_First));
     *_Dest = _Init;
     while (++_First != _Last) {
         ++_Dest;
@@ -4375,16 +4375,16 @@ struct _Static_partitioned_exclusive_scan2 {
         // Run local exclusive_scan on this chunk
         const auto _Chunk = _Lookback.begin() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
-            _Exclusive_scan_per_chunk_complete(
+            _STD _Exclusive_scan_per_chunk_complete(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _Initial);
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
-        const auto _Prev_chunk = _Prev_iter(_Chunk);
+        const auto _Prev_chunk = _STD _Prev_iter(_Chunk);
         if (_Prev_chunk->_State.load() & _Sum_available) {
             // if predecessor sum already complete, we can incorporate its value directly for 1 pass
-            _Exclusive_scan_per_chunk_complete(
+            _STD _Exclusive_scan_per_chunk_complete(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
@@ -4392,14 +4392,14 @@ struct _Static_partitioned_exclusive_scan2 {
 
         // Calculate local sum and publish to other threads
         const auto _Last =
-            _Exclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Local._Ref());
+            _STD _Exclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Local._Ref());
         _Chunk->_Store_available_state(_Local_available);
 
         // Apply the predecessor overall sum to current overall sum and elements
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_exclusive_predecessor(_Prev_chunk->_Sum._Ref(), _Dest, _Last, _Reduce_op);
         } else {
-            auto _Tmp = _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+            auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
             _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _Last, _Reduce_op);
         }
 
@@ -4408,7 +4408,7 @@ struct _Static_partitioned_exclusive_scan2 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_exclusive_scan2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_exclusive_scan2*>(_Context));
     }
 };
 
@@ -4419,37 +4419,37 @@ _FwdIt2 exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdI
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
-            const auto _UDest = _Get_unwrapped_n(_Dest, _Count);
+            const auto _UDest = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
                 _Static_partitioned_exclusive_scan2 _Operation{
-                    _Hw_threads, _Count, _UFirst, _Val, _Pass_fn(_Reduce_op), _UDest};
-                _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
+                    _Hw_threads, _Count, _UFirst, _Val, _STD _Pass_fn(_Reduce_op), _UDest};
+                _STD _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
                 // Note that _Val is used as temporary storage by whichever thread runs the first chunk.
                 // If any thread starts any chunk, initialization is complete, so we can't enter the
                 // catch or serial fallback below, so that's OK.
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return _Dest;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
-            _Seek_wrapped(_Dest, _STD exclusive_scan(_UFirst, _ULast, _UDest, _STD move(_Val), _Pass_fn(_Reduce_op)));
+            _STD _Seek_wrapped(_Dest, _STD exclusive_scan(_UFirst, _ULast, _UDest, _STD move(_Val), _STD _Pass_fn(_Reduce_op)));
             return _Dest;
         }
     }
 
-    _Seek_wrapped(
-        _Dest, _STD exclusive_scan(_UFirst, _ULast, _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-                   _STD move(_Val), _Pass_fn(_Reduce_op)));
+    _STD _Seek_wrapped(
+        _Dest, _STD exclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+                   _STD move(_Val), _STD _Pass_fn(_Reduce_op)));
     return _Dest;
 }
 
@@ -4460,9 +4460,9 @@ _FwdIt2 _Inclusive_scan_per_chunk(
     // _Val.
     // pre: _Val is *uninitialized* && _First != _Last
     if constexpr (is_same_v<_No_init_tag, remove_const_t<remove_reference_t<_Ty_fwd>>>) {
-        _Construct_in_place(_Val, *_First);
+        _STD _Construct_in_place(_Val, *_First);
     } else {
-        _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), *_First));
+        _STD _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), *_First));
     }
 
     for (;;) {
@@ -4504,23 +4504,23 @@ struct _Static_partitioned_inclusive_scan2 {
         // Run local inclusive_scan on this chunk
         const auto _Chunk = _Lookback.begin() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
-            _Inclusive_scan_per_chunk(
+            _STD _Inclusive_scan_per_chunk(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _STD move(_Initial));
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
-        const auto _Prev_chunk = _Prev_iter(_Chunk);
+        const auto _Prev_chunk = _STD _Prev_iter(_Chunk);
         if (_Prev_chunk->_State.load() & _Sum_available) {
             // if predecessor sum already complete, we can incorporate its value directly for 1 pass
-            _Inclusive_scan_per_chunk(
+            _STD _Inclusive_scan_per_chunk(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
         // Calculate local sum and publish to other threads
-        const auto _Last = _Inclusive_scan_per_chunk(
+        const auto _Last = _STD _Inclusive_scan_per_chunk(
             _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Local._Ref(), _No_init_tag{});
         _Chunk->_Store_available_state(_Local_available);
 
@@ -4528,7 +4528,7 @@ struct _Static_partitioned_inclusive_scan2 {
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_inclusive_predecessor(_Prev_chunk->_Sum._Ref(), _Dest, _Last, _Reduce_op);
         } else {
-            auto _Tmp = _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+            auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
             _Chunk->_Apply_inclusive_predecessor(_Tmp, _Dest, _Last, _Reduce_op);
         }
 
@@ -4537,7 +4537,7 @@ struct _Static_partitioned_inclusive_scan2 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_inclusive_scan2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_inclusive_scan2*>(_Context));
     }
 };
 
@@ -4548,40 +4548,40 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
     // compute partial noncommutative and associative reductions including _Val into _Dest, using _Reduce_op
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_First, _Last);
-            auto _UDest       = _Get_unwrapped_n(_Dest, _Count);
+            auto _UDest       = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
-                auto _Passed_op = _Pass_fn(_Reduce_op);
+                auto _Passed_op = _STD _Pass_fn(_Reduce_op);
                 _Static_partitioned_inclusive_scan2<_Ty, _Ty, _Unwrapped_t<const _FwdIt1&>, decltype(_UDest),
                     decltype(_Passed_op)>
                     _Operation{_Hw_threads, _Count, _Passed_op, _Val};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
-                _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
+                _STD _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
                 // Note that _Val is moved from by whichever thread runs the first chunk.
                 // If any thread starts any chunk, initialization is complete, so we can't enter the
                 // catch or serial fallback below.
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return _Dest;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
-            _Seek_wrapped(_Dest, _STD inclusive_scan(_UFirst, _ULast, _UDest, _Pass_fn(_Reduce_op), _STD move(_Val)));
+            _STD _Seek_wrapped(_Dest, _STD inclusive_scan(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Reduce_op), _STD move(_Val)));
             return _Dest;
         }
     }
 
-    _Seek_wrapped(
-        _Dest, _STD inclusive_scan(_UFirst, _ULast, _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-                   _Pass_fn(_Reduce_op), _STD move(_Val)));
+    _STD _Seek_wrapped(
+        _Dest, _STD inclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+                   _STD _Pass_fn(_Reduce_op), _STD move(_Val)));
     return _Dest;
 }
 
@@ -4592,37 +4592,37 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
     // compute partial noncommutative and associative reductions into _Dest, using _Reduce_op
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
-            auto _UDest       = _Get_unwrapped_n(_Dest, _Count);
+            auto _UDest       = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
                 _No_init_tag _Tag;
-                auto _Passed_op = _Pass_fn(_Reduce_op);
+                auto _Passed_op = _STD _Pass_fn(_Reduce_op);
                 _Static_partitioned_inclusive_scan2<_Iter_value_t<_FwdIt1>, _No_init_tag, _Unwrapped_t<const _FwdIt1&>,
                     decltype(_UDest), decltype(_Passed_op)>
                     _Operation{_Hw_threads, _Count, _Passed_op, _Tag};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
-                _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return _Dest;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
-            _Seek_wrapped(_Dest, _STD inclusive_scan(_UFirst, _ULast, _UDest, _Pass_fn(_Reduce_op)));
+            _STD _Seek_wrapped(_Dest, _STD inclusive_scan(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Reduce_op)));
             return _Dest;
         }
     }
 
-    _Seek_wrapped(_Dest, _STD inclusive_scan(_UFirst, _ULast,
-                             _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _Pass_fn(_Reduce_op)));
+    _STD _Seek_wrapped(_Dest, _STD inclusive_scan(_UFirst, _ULast,
+                             _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _STD _Pass_fn(_Reduce_op)));
     return _Dest;
 }
 
@@ -4632,7 +4632,7 @@ _FwdIt2 _Transform_exclusive_scan_per_chunk(
     // Local-sum for parallel transform_exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and
     // stores successor sum in _Val.
     // pre: _Val is *uninitialized* && _First != _Last
-    _Construct_in_place(_Val, _Transform_op(*_First));
+    _STD _Construct_in_place(_Val, _Transform_op(*_First));
     for (;;) {
         ++_First;
         ++_Dest;
@@ -4652,7 +4652,7 @@ void _Transform_exclusive_scan_per_chunk_complete(_FwdIt1 _First, const _FwdIt1 
     // Sum for parallel transform_exclusive_scan with predecessor available, into [_Dest, _Dest + (_Last - _First)) and
     // stores successor sum in _Val.
     // pre: _Val is *uninitialized* && _First != _Last && predecessor sum is in _Init
-    _Construct_in_place(_Val, _Reduce_op(_Init, _Transform_op(*_First)));
+    _STD _Construct_in_place(_Val, _Reduce_op(_Init, _Transform_op(*_First)));
     *_Dest = _Init;
     while (++_First != _Last) {
         ++_Dest;
@@ -4692,23 +4692,23 @@ struct _Static_partitioned_transform_exclusive_scan2 {
         // Run local transform_exclusive_scan on this chunk
         const auto _Chunk = _Lookback.begin() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
-            _Transform_exclusive_scan_per_chunk_complete(
+            _STD _Transform_exclusive_scan_per_chunk_complete(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op, _Chunk->_Sum._Ref(), _Initial);
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
-        const auto _Prev_chunk = _Prev_iter(_Chunk);
+        const auto _Prev_chunk = _STD _Prev_iter(_Chunk);
         if (_Prev_chunk->_State.load() & _Sum_available) {
             // if predecessor sum already complete, we can incorporate its value directly for 1 pass
-            _Transform_exclusive_scan_per_chunk_complete(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
+            _STD _Transform_exclusive_scan_per_chunk_complete(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
                 _Transform_op, _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
         // Calculate local sum and publish to other threads
-        const auto _Last = _Transform_exclusive_scan_per_chunk(
+        const auto _Last = _STD _Transform_exclusive_scan_per_chunk(
             _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op, _Chunk->_Local._Ref());
         _Chunk->_Store_available_state(_Local_available);
 
@@ -4716,7 +4716,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_exclusive_predecessor(_Prev_chunk->_Sum._Ref(), _Dest, _Last, _Reduce_op);
         } else {
-            auto _Tmp = _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+            auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
             _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _Last, _Reduce_op);
         }
 
@@ -4725,7 +4725,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_transform_exclusive_scan2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_transform_exclusive_scan2*>(_Context));
     }
 };
 
@@ -4736,38 +4736,38 @@ _FwdIt2 transform_exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of transformed predecessors
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
-            const auto _UDest = _Get_unwrapped_n(_Dest, _Count);
+            const auto _UDest = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
                 _Static_partitioned_transform_exclusive_scan2 _Operation{
-                    _Hw_threads, _Count, _UFirst, _Val, _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op), _UDest};
-                _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
+                    _Hw_threads, _Count, _UFirst, _Val, _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op), _UDest};
+                _STD _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
                 // Note that _Val is used as temporary storage by whichever thread runs the first chunk.
                 // If any thread starts any chunk, initialization is complete, so we can't enter the
                 // catch or serial fallback below, so that's OK.
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return _Dest;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
-            _Seek_wrapped(_Dest, _STD transform_exclusive_scan(_UFirst, _ULast, _UDest, _STD move(_Val),
-                                     _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op)));
+            _STD _Seek_wrapped(_Dest, _STD transform_exclusive_scan(_UFirst, _ULast, _UDest, _STD move(_Val),
+                                     _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
             return _Dest;
         }
     }
 
-    _Seek_wrapped(_Dest,
-        _STD transform_exclusive_scan(_UFirst, _ULast, _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-            _STD move(_Val), _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op)));
+    _STD _Seek_wrapped(_Dest,
+        _STD transform_exclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+            _STD move(_Val), _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
     return _Dest;
 }
 
@@ -4778,9 +4778,9 @@ _FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
     // sum in _Val
     // pre: _Val is *uninitialized* && _First != _Last
     if constexpr (is_same_v<_No_init_tag, remove_const_t<remove_reference_t<_Ty_fwd>>>) {
-        _Construct_in_place(_Val, _Transform_op(*_First));
+        _STD _Construct_in_place(_Val, _Transform_op(*_First));
     } else {
-        _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), _Transform_op(*_First)));
+        _STD _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), _Transform_op(*_First)));
     }
 
     for (;;) {
@@ -4823,23 +4823,23 @@ struct _Static_partitioned_transform_inclusive_scan2 {
         // Run local transform_inclusive_scan on this chunk
         const auto _Chunk = _Lookback.begin() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
-            _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op,
+            _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op,
                 _Chunk->_Sum._Ref(), _STD move(_Initial));
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
-        const auto _Prev_chunk = _Prev_iter(_Chunk);
+        const auto _Prev_chunk = _STD _Prev_iter(_Chunk);
         if (_Prev_chunk->_State.load() & _Sum_available) {
             // if predecessor sum already complete, we can incorporate its value directly for 1 pass
-            _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op,
+            _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op,
                 _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
         // Calculate local sum and publish to other threads
-        const auto _Last = _Transform_inclusive_scan_per_chunk(
+        const auto _Last = _STD _Transform_inclusive_scan_per_chunk(
             _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{});
         _Chunk->_Store_available_state(_Local_available);
 
@@ -4847,7 +4847,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_inclusive_predecessor(_Prev_chunk->_Sum._Ref(), _Dest, _Last, _Reduce_op);
         } else {
-            auto _Tmp = _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+            auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
             _Chunk->_Apply_inclusive_predecessor(_Tmp, _Dest, _Last, _Reduce_op);
         }
 
@@ -4856,7 +4856,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_transform_inclusive_scan2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_transform_inclusive_scan2*>(_Context));
     }
 };
 
@@ -4867,42 +4867,42 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
     // compute partial noncommutative and associative transformed reductions including _Val into _Dest
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
-            auto _UDest       = _Get_unwrapped_n(_Dest, _Count);
+            auto _UDest       = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
-                auto _Passed_reduce    = _Pass_fn(_Reduce_op);
-                auto _Passed_transform = _Pass_fn(_Transform_op);
+                auto _Passed_reduce    = _STD _Pass_fn(_Reduce_op);
+                auto _Passed_transform = _STD _Pass_fn(_Transform_op);
                 _Static_partitioned_transform_inclusive_scan2<_Ty, _Ty, _Unwrapped_t<const _FwdIt1&>, decltype(_UDest),
                     decltype(_Passed_reduce), decltype(_Passed_transform)>
                     _Operation{_Hw_threads, _Count, _Passed_reduce, _Passed_transform, _Val};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
-                _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
+                _STD _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
                 // Note that _Val is moved from by whichever thread runs the first chunk.
                 // If any thread starts any chunk, initialization is complete, so we can't enter the
                 // catch or serial fallback below.
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return _Dest;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
-            _Seek_wrapped(_Dest, _STD transform_inclusive_scan(_UFirst, _ULast, _UDest, _Pass_fn(_Reduce_op),
-                                     _Pass_fn(_Transform_op), _STD move(_Val)));
+            _STD _Seek_wrapped(_Dest, _STD transform_inclusive_scan(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Reduce_op),
+                                     _STD _Pass_fn(_Transform_op), _STD move(_Val)));
             return _Dest;
         }
     }
 
-    _Seek_wrapped(_Dest,
-        _STD transform_inclusive_scan(_UFirst, _ULast, _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-            _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op), _STD move(_Val)));
+    _STD _Seek_wrapped(_Dest,
+        _STD transform_inclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+            _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op), _STD move(_Val)));
     return _Dest;
 }
 
@@ -4913,42 +4913,42 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
     // compute partial noncommutative and associative transformed reductions into _Dest
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
-            auto _UDest       = _Get_unwrapped_n(_Dest, _Count);
+            auto _UDest       = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
                 _No_init_tag _Tag;
-                auto _Passed_reduce    = _Pass_fn(_Reduce_op);
-                auto _Passed_transform = _Pass_fn(_Transform_op);
+                auto _Passed_reduce    = _STD _Pass_fn(_Reduce_op);
+                auto _Passed_transform = _STD _Pass_fn(_Transform_op);
                 using _Intermediate_t  = decay_t<decltype(_Transform_op(*_UFirst))>;
                 _Static_partitioned_transform_inclusive_scan2<_Intermediate_t, _No_init_tag,
                     _Unwrapped_t<const _FwdIt1&>, decltype(_UDest), decltype(_Passed_reduce),
                     decltype(_Passed_transform)>
                     _Operation{_Hw_threads, _Count, _Passed_reduce, _Passed_transform, _Tag};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
-                _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
-                _Run_chunked_parallel_work(_Hw_threads, _Operation);
+                _STD _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
+                _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return _Dest;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
-            _Seek_wrapped(_Dest,
-                _STD transform_inclusive_scan(_UFirst, _ULast, _UDest, _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op)));
+            _STD _Seek_wrapped(_Dest,
+                _STD transform_inclusive_scan(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
             return _Dest;
         }
     }
 
-    _Seek_wrapped(_Dest,
-        _STD transform_inclusive_scan(_UFirst, _ULast, _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
-            _Pass_fn(_Reduce_op), _Pass_fn(_Transform_op)));
+    _STD _Seek_wrapped(_Dest,
+        _STD transform_inclusive_scan(_UFirst, _ULast, _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+            _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op)));
     return _Dest;
 }
 
@@ -4989,7 +4989,7 @@ struct _Static_partitioned_adjacent_difference2 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _Run_available_chunked_work(*static_cast<_Static_partitioned_adjacent_difference2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_adjacent_difference2*>(_Context));
     }
 };
 
@@ -5015,41 +5015,41 @@ _FwdIt2 adjacent_difference(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, 
     // compute adjacent differences into _Dest
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
     _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             auto _Count       = _STD distance(_UFirst, _ULast);
-            const auto _UDest = _Get_unwrapped_n(_Dest, _Count);
+            const auto _UDest = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
                 --_Count; // note unusual offset partitioning
                 _Static_partitioned_adjacent_difference2 _Operation{
-                    _Hw_threads, _Count, _UFirst, _Pass_fn(_Diff_op), _UDest};
-                auto _Result = _Operation._Basis2._Populate(_Operation._Team, _Next_iter(_UDest));
+                    _Hw_threads, _Count, _UFirst, _STD _Pass_fn(_Diff_op), _UDest};
+                auto _Result = _Operation._Basis2._Populate(_Operation._Team, _STD _Next_iter(_UDest));
                 const _Work_ptr _Work_op{_Operation};
                 // setup complete, hereafter nothrow or terminate
                 _Work_op._Submit_for_chunks(_Hw_threads, _Operation._Team._Chunks);
                 // must be done after setup is complete to avoid duplicate assign in serial fallback:
                 *_UDest = *_UFirst;
-                _Run_available_chunked_work(_Operation);
-                _Seek_wrapped(_Dest, _Result);
+                _STD _Run_available_chunked_work(_Operation);
+                _STD _Seek_wrapped(_Dest, _Result);
                 return _Dest;
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
             }
 
-            _Seek_wrapped(_Dest, _Adjacent_difference_seq(_UFirst, _ULast, _UDest, _Pass_fn(_Diff_op)));
+            _STD _Seek_wrapped(_Dest, _STD _Adjacent_difference_seq(_UFirst, _ULast, _UDest, _STD _Pass_fn(_Diff_op)));
             return _Dest;
         }
     }
 
     // Don't call serial adjacent_difference because it's described as creating a temporary we can avoid
-    _Seek_wrapped(_Dest, _Adjacent_difference_seq(_UFirst, _ULast,
-                             _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _Pass_fn(_Diff_op)));
+    _STD _Seek_wrapped(_Dest, _STD _Adjacent_difference_seq(_UFirst, _ULast,
+                             _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _STD _Pass_fn(_Diff_op)));
     return _Dest;
 }
 

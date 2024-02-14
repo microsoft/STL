@@ -1811,12 +1811,12 @@ public:
     _Uninitialized_backout_al& operator=(const _Uninitialized_backout_al&) = delete;
 
     _CONSTEXPR20 ~_Uninitialized_backout_al() {
-        _Destroy_range(_First, _Last, _Al);
+        _STD _Destroy_range(_First, _Last, _Al);
     }
 
     template <class... _Types>
     _CONSTEXPR20 void _Emplace_back(_Types&&... _Vals) { // construct a new element at *_Last and increment
-        allocator_traits<_Alloc>::construct(_Al, _Unfancy(_Last), _STD forward<_Types>(_Vals)...);
+        allocator_traits<_Alloc>::construct(_Al, _STD _Unfancy(_Last), _STD forward<_Types>(_Vals)...);
         ++_Last;
     }
 

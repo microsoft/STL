@@ -1990,7 +1990,7 @@ private:
         _STL_INTERNAL_CHECK(!_Myfirst && !_Mylast && !_Myend); // check that *this is tidy
         _STL_INTERNAL_CHECK(0 < _Newcapacity && _Newcapacity <= max_size());
 
-        const pointer _Newvec = _Allocate_at_least_helper(_Getal(), _Newcapacity);
+        const pointer _Newvec = _STD _Allocate_at_least_helper(_Getal(), _Newcapacity);
         _Myfirst              = _Newvec;
         _Mylast               = _Newvec;
         _Myend                = _Newvec + _Newcapacity;
