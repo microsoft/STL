@@ -146,12 +146,10 @@ namespace ranges {
             void operator()(auto&&) &&      = delete;
             void operator()(auto&&) const&& = delete;
 
-            // TRANSITION, DevCom-10519736, explicit `this->` shouldn't be needed.
-
             template <class _Ty>
             _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) & noexcept(
                 noexcept(_Right(_Left(_STD forward<_Ty>(_Val)))))
-                requires requires { this->_Right(this->_Left(_STD forward<_Ty>(_Val))); }
+                requires requires { _Right(_Left(_STD forward<_Ty>(_Val))); }
             {
                 return _Right(_Left(_STD forward<_Ty>(_Val)));
             }
@@ -159,7 +157,7 @@ namespace ranges {
             template <class _Ty>
             _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) const& noexcept(
                 noexcept(_Right(_Left(_STD forward<_Ty>(_Val)))))
-                requires requires { this->_Right(this->_Left(_STD forward<_Ty>(_Val))); }
+                requires requires { _Right(_Left(_STD forward<_Ty>(_Val))); }
             {
                 return _Right(_Left(_STD forward<_Ty>(_Val)));
             }
@@ -167,7 +165,7 @@ namespace ranges {
             template <class _Ty>
             _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) && noexcept(
                 noexcept(_STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val)))))
-                requires requires { _STD move(this->_Right)(_STD move(this->_Left)(_STD forward<_Ty>(_Val))); }
+                requires requires { _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))); }
             {
                 return _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val)));
             }
@@ -175,7 +173,7 @@ namespace ranges {
             template <class _Ty>
             _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) const&& noexcept(
                 noexcept(_STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val)))))
-                requires requires { _STD move(this->_Right)(_STD move(this->_Left)(_STD forward<_Ty>(_Val))); }
+                requires requires { _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))); }
             {
                 return _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val)));
             }
