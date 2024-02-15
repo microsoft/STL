@@ -4,6 +4,7 @@
 #ifndef _M_CEE // TRANSITION, VSO-1659496
 #include <cstddef>
 #include <functional>
+#include <memory>
 #include <ranges>
 #include <type_traits>
 #include <utility>
@@ -37,9 +38,7 @@ struct validating_iterator_provider<T>::iterator {
     using reference         = T&;
     using difference_type   = ptrdiff_t;
     using iterator_category = random_access_iterator_tag;
-#if _HAS_CXX20
-    using iterator_concept = contiguous_iterator_tag;
-#endif // _HAS_CXX20
+    using iterator_concept  = contiguous_iterator_tag;
 
     constexpr T& operator*() const noexcept {
         return *ptr_;
@@ -208,27 +207,27 @@ void test_views_verification() {
     holder<incomplete>* varr[1]{};
     const validating_view_for_verification validating_view_val{varr, varr + 1};
 
-    for (auto&& _ [[maybe_unused]] : validating_view_val | views::filter(simple_truth))
-        ;
+    for (auto&& _ [[maybe_unused]] : validating_view_val | views::filter(simple_truth)) {
+    }
 
-    for (auto&& _ [[maybe_unused]] : validating_view_val | views::transform(simple_truth))
-        ;
+    for (auto&& _ [[maybe_unused]] : validating_view_val | views::transform(simple_truth)) {
+    }
 
     int iarr[1]{};
     const tagged_ints_view<holder<incomplete>> inner_arr[1]{{iarr, iarr + 1}};
     const validating_view_to_join_for_verification view_to_join{inner_arr, inner_arr + 1};
 
-    for (auto&& _ [[maybe_unused]] : view_to_join | views::join)
-        ;
+    for (auto&& _ [[maybe_unused]] : view_to_join | views::join) {
+    }
 
-    for (auto&& _ [[maybe_unused]] : view_to_join | views::join | views::reverse)
-        ;
+    for (auto&& _ [[maybe_unused]] : view_to_join | views::join | views::reverse) {
+    }
 
 #if _HAS_CXX23
     const tagged_ints_view<void> simple_pattern{iarr, iarr + 1};
 
-    for (auto&& _ [[maybe_unused]] : view_to_join | views::join_with(simple_pattern))
-        ;
+    for (auto&& _ [[maybe_unused]] : view_to_join | views::join_with(simple_pattern)) {
+    }
 #endif // _HAS_CXX23
 }
 
@@ -421,7 +420,7 @@ struct negation_validating_iterator {
 
     friend constexpr boolean_testable_result operator>=(
         const negation_validating_iterator i, const negation_validating_iterator j) noexcept {
-        return {i.ptr_ <= j.ptr_};
+        return {i.ptr_ >= j.ptr_};
     }
 
     int* ptr_;
