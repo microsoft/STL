@@ -405,11 +405,7 @@ concept weakly_incrementable = movable<_Ty>
         requires _Signed_integer_like<iter_difference_t<_Ty>>;
         { ++__i } -> same_as<_Ty&>;
         __i++;
-    }
-#ifdef __clang__ // TRANSITION, LLVM-48173
-    && !same_as<_Ty, bool>
-#endif // ^^^ workaround ^^^
-    ;
+    };
 
 _EXPORT_STD template <class _It>
 concept input_or_output_iterator = requires(_It __i) { { *__i } -> _Can_reference; }
