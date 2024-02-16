@@ -1442,7 +1442,7 @@ private:
             if (_Ffl == ios_base::fixed) {
                 _Ch = 'f';
             } else if (_Ffl == (ios_base::scientific | ios_base::fixed)) {
-                _Ch = 'A'; // added with TR1
+                _Ch = 'A';
             } else if (_Ffl == ios_base::scientific) {
                 _Ch = 'E';
             } else {
@@ -1452,7 +1452,7 @@ private:
             if (_Ffl == ios_base::fixed) {
                 _Ch = 'f';
             } else if (_Ffl == (ios_base::scientific | ios_base::fixed)) {
-                _Ch = 'a'; // added with TR1
+                _Ch = 'a';
             } else if (_Ffl == ios_base::scientific) {
                 _Ch = 'e';
             } else {

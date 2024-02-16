@@ -202,6 +202,75 @@ struct with_padding_bits {
 };
 #pragma warning(pop)
 
+template <class T, class U>
+[[nodiscard]] bool ownership_equal(const T& t, const U& u) {
+    return !t.owner_before(u) && !u.owner_before(t);
+}
+
+inline void test_gh_3602() {
+    // GH-3602 std::atomic<std::shared_ptr>::wait does not seem to care about control block difference. Is this a bug?
+    {
+        auto sp1    = std::make_shared<char>();
+        auto holder = [sp1] {};
+        auto sp2    = std::make_shared<decltype(holder)>(holder);
+        std::shared_ptr<char> sp3{sp2, sp1.get()};
+
+        std::atomic<std::shared_ptr<char>> asp{sp1};
+        asp.wait(sp3);
+    }
+    {
+        auto sp1    = std::make_shared<char>();
+        auto holder = [sp1] {};
+        auto sp2    = std::make_shared<decltype(holder)>(holder);
+        std::shared_ptr<char> sp3{sp2, sp1.get()};
+        std::weak_ptr<char> wp3{sp3};
+
+        std::atomic<std::weak_ptr<char>> awp{sp1};
+        awp.wait(wp3);
+    }
+
+    {
+        auto sp1    = std::make_shared<char>();
+        auto holder = [sp1] {};
+        auto sp2    = std::make_shared<decltype(holder)>(holder);
+        std::shared_ptr<char> sp3{sp2, sp1.get()};
+
+        std::atomic<std::shared_ptr<char>> asp{sp3};
+
+        std::thread t([&] {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            asp = sp1;
+            asp.notify_one();
+        });
+
+        asp.wait(sp3);
+
+        t.join();
+    }
+
+    { // Also test shared_ptrs that own the null pointer.
+        int* const raw = nullptr;
+
+        std::shared_ptr<int> sp_empty;
+        std::shared_ptr<int> sp_also_empty;
+        std::shared_ptr<int> sp_original(raw);
+        std::shared_ptr<int> sp_copy(sp_original);
+        std::shared_ptr<int> sp_different(raw);
+
+        assert(ownership_equal(sp_empty, sp_also_empty));
+        assert(!ownership_equal(sp_original, sp_empty));
+        assert(ownership_equal(sp_original, sp_copy));
+        assert(!ownership_equal(sp_original, sp_different));
+
+        std::atomic<std::shared_ptr<int>> asp_empty;
+        asp_empty.wait(sp_original);
+
+        std::atomic<std::shared_ptr<int>> asp_copy{sp_copy};
+        asp_copy.wait(sp_empty);
+        asp_copy.wait(sp_different);
+    }
+}
+
 inline void test_atomic_wait() {
     // wait for all the threads to be waiting; if this value is too small the test might be ineffective but should not
     // fail due to timing assumptions except where otherwise noted; if it is too large the test will only take longer
@@ -292,4 +361,6 @@ inline void test_atomic_wait() {
     test_pad_bits<with_padding_bits<32>>(waiting_duration);
 #endif // ^^^ !ARM ^^^
 #endif // ^^^ no workaround ^^^
+
+    test_gh_3602();
 }
