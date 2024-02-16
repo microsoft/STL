@@ -3992,15 +3992,18 @@ protected:
     _Atomic_ptr_base(remove_extent_t<_Ty>* const _Px, _Ref_count_base* const _Ref) noexcept
         : _Ptr(_Px), _Repptr(_Ref) {}
 
-    void _Wait(remove_extent_t<_Ty>* _Old, memory_order) const noexcept {
+    void _Wait(remove_extent_t<_Ty>* _Old_ptr, _Ref_count_base* const _Old_rep, memory_order) const noexcept {
+        unsigned long _Remaining_timeout = 16; // milliseconds
+        const unsigned long _Max_timeout = 1048576; // milliseconds, ~17.5 minutes
         for (;;) {
             auto _Rep   = _Repptr._Lock_and_load();
-            bool _Equal = _Ptr.load(memory_order_relaxed) == _Old;
+            bool _Equal = _Ptr.load(memory_order_relaxed) == _Old_ptr && _Rep == _Old_rep;
             _Repptr._Store_and_unlock(_Rep);
             if (!_Equal) {
                 break;
             }
-            __std_atomic_wait_direct(&_Ptr, &_Old, sizeof(_Old), __std_atomic_wait_no_timeout);
+            __std_atomic_wait_direct(&_Ptr, &_Old_ptr, sizeof(_Old_ptr), _Remaining_timeout);
+            _Remaining_timeout = (_STD min)(_Max_timeout, _Remaining_timeout * 2);
         }
     }
 
@@ -4106,7 +4109,7 @@ public:
     }
 
     void wait(shared_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
-        this->_Wait(_Old._Ptr, _Order);
+        this->_Wait(_Old._Ptr, _Old._Rep, _Order);
     }
 
     using _Base::notify_all;
@@ -4229,7 +4232,7 @@ public:
     }
 
     void wait(weak_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
-        this->_Wait(_Old._Ptr, _Order);
+        this->_Wait(_Old._Ptr, _Old._Rep, _Order);
     }
 
     using _Base::notify_all;
