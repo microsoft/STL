@@ -9,6 +9,7 @@
 #endif // _HAS_CXX17
 #include <memory>
 #include <new>
+#include <numeric>
 #include <type_traits>
 #include <utility>
 
@@ -429,6 +430,55 @@ void test_algorithms() {
     // (void) std::prev_permutation(varr, varr); // requires Cpp17ValueSwappable
     (void) std::prev_permutation(iarr, iarr, validating_less{});
 
+    (void) std::accumulate(varr, varr, validator{}, simple_left_selector{});
+    (void) std::accumulate(iarr, iarr, 0, validating_left_selector{});
+
+#if _HAS_CXX17
+    (void) std::reduce(varr, varr, validator{}, simple_left_selector{});
+    (void) std::reduce(iarr, iarr, 0, validating_left_selector{});
+#endif // _HAS_CXX17
+
+    (void) std::inner_product(varr, varr, varr, validator{}, simple_left_selector{}, simple_left_selector{});
+    (void) std::inner_product(iarr, iarr, iarr, 0, validating_left_selector{}, validating_left_selector{});
+
+#if _HAS_CXX17
+    (void) std::transform_reduce(varr, varr, varr, validator{}, simple_left_selector{}, simple_left_selector{});
+    (void) std::transform_reduce(iarr, iarr, iarr, 0, validating_left_selector{}, validating_left_selector{});
+    (void) std::transform_reduce(varr, varr, validator{}, simple_left_selector{}, simple_identity{});
+    (void) std::transform_reduce(iarr, iarr, 0, validating_left_selector{}, simple_identity{});
+#endif // _HAS_CXX17
+
+    (void) std::partial_sum(varr, varr, varr2, simple_left_selector{});
+    (void) std::partial_sum(iarr, iarr, iarr2, validating_left_selector{});
+
+#if _HAS_CXX17
+    (void) std::exclusive_scan(varr, varr, varr2, validator{}, simple_left_selector{});
+    (void) std::exclusive_scan(iarr, iarr, iarr2, 0, validating_left_selector{});
+
+    (void) std::inclusive_scan(varr, varr, varr2, simple_left_selector{});
+    (void) std::inclusive_scan(iarr, iarr, iarr2, validating_left_selector{});
+    (void) std::inclusive_scan(varr, varr, varr2, simple_left_selector{}, validator{});
+    (void) std::inclusive_scan(iarr, iarr, iarr2, validating_left_selector{}, 0);
+
+    (void) std::transform_exclusive_scan(varr, varr, varr2, validator{}, simple_left_selector{}, simple_identity{});
+    (void) std::transform_exclusive_scan(iarr, iarr, iarr2, 0, validating_left_selector{}, validating_identity{});
+
+    (void) std::transform_inclusive_scan(varr, varr, varr2, simple_left_selector{}, simple_identity{});
+    (void) std::transform_inclusive_scan(iarr, iarr, iarr2, validating_left_selector{}, validating_identity{});
+    (void) std::transform_inclusive_scan(varr, varr, varr2, simple_left_selector{}, simple_identity{}, validator{});
+    (void) std::transform_inclusive_scan(iarr, iarr, iarr2, validating_left_selector{}, validating_identity{}, 0);
+#endif // _HAS_CXX17
+
+    (void) std::adjacent_difference(varr, varr, varr2, simple_left_selector{});
+    (void) std::adjacent_difference(iarr, iarr, iarr2, validating_left_selector{});
+
+    validator* pvarr[1]{};
+    std::iota(pvarr, pvarr, +varr);
+
+#if _HAS_CXX20
+    (void) std::midpoint(+varr, +varr);
+#endif // _HAS_CXX20
+
     validating_nontrivial narr[1]{};
     validating_nontrivial narr2[1]{};
 
@@ -700,6 +750,40 @@ void test_per_execution_policy() {
     (void) std::lexicographical_compare(ExecutionPolicy, varr, varr, varr, varr);
     (void) std::lexicographical_compare(ExecutionPolicy, iarr, iarr, iarr, iarr, validating_less{});
 
+    (void) std::reduce(ExecutionPolicy, varr, varr, validator{}, simple_left_selector{});
+    (void) std::reduce(ExecutionPolicy, iarr, iarr, 0, simple_left_selector{});
+
+    (void) std::transform_reduce(
+        ExecutionPolicy, varr, varr, varr, validator{}, simple_left_selector{}, simple_left_selector{});
+    (void) std::transform_reduce(
+        ExecutionPolicy, iarr, iarr, iarr, 0, validating_left_selector{}, validating_left_selector{});
+    (void) std::transform_reduce(ExecutionPolicy, varr, varr, validator{}, simple_left_selector{}, simple_identity{});
+    (void) std::transform_reduce(ExecutionPolicy, iarr, iarr, 0, validating_left_selector{}, simple_identity{});
+
+    (void) std::exclusive_scan(ExecutionPolicy, varr, varr, varr2, validator{}, simple_left_selector{});
+    (void) std::exclusive_scan(ExecutionPolicy, iarr, iarr, iarr2, 0, validating_left_selector{});
+
+    (void) std::inclusive_scan(ExecutionPolicy, varr, varr, varr2, simple_left_selector{});
+    (void) std::inclusive_scan(ExecutionPolicy, iarr, iarr, iarr2, validating_left_selector{});
+    (void) std::inclusive_scan(ExecutionPolicy, varr, varr, varr2, simple_left_selector{}, validator{});
+    (void) std::inclusive_scan(ExecutionPolicy, iarr, iarr, iarr2, validating_left_selector{}, 0);
+
+    (void) std::transform_exclusive_scan(
+        ExecutionPolicy, varr, varr, varr2, validator{}, simple_left_selector{}, simple_identity{});
+    (void) std::transform_exclusive_scan(
+        ExecutionPolicy, iarr, iarr, iarr2, 0, validating_left_selector{}, validating_identity{});
+
+    (void) std::transform_inclusive_scan(ExecutionPolicy, varr, varr, varr2, simple_left_selector{}, simple_identity{});
+    (void) std::transform_inclusive_scan(
+        ExecutionPolicy, iarr, iarr, iarr2, validating_left_selector{}, validating_identity{});
+    (void) std::transform_inclusive_scan(
+        ExecutionPolicy, varr, varr, varr2, simple_left_selector{}, simple_identity{}, validator{});
+    (void) std::transform_inclusive_scan(
+        ExecutionPolicy, iarr, iarr, iarr2, validating_left_selector{}, validating_identity{}, 0);
+
+    (void) std::adjacent_difference(ExecutionPolicy, varr, varr, varr2, simple_left_selector{});
+    (void) std::adjacent_difference(ExecutionPolicy, iarr, iarr, iarr2, validating_left_selector{});
+
     validating_nontrivial narr[1]{};
     validating_nontrivial narr2[1]{};
 
@@ -847,6 +931,10 @@ void test_ranges_non_projected_algorithms() {
 
     (void) shift_right(varr, varr, 0);
     (void) shift_right(varr, 0);
+
+    validator* pvarr[1]{};
+    (void) iota(pvarr, pvarr, +varr);
+    (void) iota(pvarr, +varr);
 #endif // _HAS_CXX23
 
     validating_nontrivial narr[1]{};
