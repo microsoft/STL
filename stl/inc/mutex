@@ -45,10 +45,6 @@ public:
     }
 #endif // ^^^ !defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) ^^^
 
-    ~_Mutex_base() noexcept {
-        _Mtx_destroy_in_situ(_Mymtx());
-    }
-
     _Mutex_base(const _Mutex_base&)            = delete;
     _Mutex_base& operator=(const _Mutex_base&) = delete;
 
