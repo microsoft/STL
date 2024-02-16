@@ -77,7 +77,7 @@ def decodeOutput(bytes):
     try:
         return bytes.decode()
     except UnicodeError:
-        # Use 'backslashreplace' to avoid throwing another exception for unrecognized characters.
+        # Use 'backslashreplace' to avoid throwing another exception when tests emit garbage bytes.
         import locale
         return bytes.decode(locale.getpreferredencoding(do_setlocale=False), 'backslashreplace')
 

@@ -17,7 +17,7 @@ parameters:
 steps:
 - task: CmdLine@2
   displayName: ${{ parameters.displayName }}
-  timeoutInMinutes: 20
+  timeoutInMinutes: 30
   condition: succeeded()
   inputs:
     workingDirectory: $(buildOutputLocation)
