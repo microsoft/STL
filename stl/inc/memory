@@ -59,14 +59,14 @@ namespace ranges {
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
         _STATIC_CALL_OPERATOR uninitialized_copy_result<_It, _Out> operator()(
             _It _First1, _Se _Last1, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
-            _Adl_verify_range(_First1, _Last1);
-            _Adl_verify_range(_First2, _Last2);
-            auto _UResult = _Uninitialized_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First1)),
-                _Unwrap_sent<_It>(_STD move(_Last1)), _Unwrap_iter<_OSe>(_STD move(_First2)),
-                _Unwrap_sent<_Out>(_STD move(_Last2)));
+            _STD _Adl_verify_range(_First1, _Last1);
+            _STD _Adl_verify_range(_First2, _Last2);
+            auto _UResult = _Uninitialized_copy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First1)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last1)), _RANGES _Unwrap_iter<_OSe>(_STD move(_First2)),
+                _RANGES _Unwrap_sent<_Out>(_STD move(_Last2)));
 
-            _Seek_wrapped(_First1, _STD move(_UResult.in));
-            _Seek_wrapped(_First2, _STD move(_UResult.out));
+            _STD _Seek_wrapped(_First1, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First2, _STD move(_UResult.out));
             return {_STD move(_First1), _STD move(_First2)};
         }
 
@@ -75,11 +75,11 @@ namespace ranges {
         _STATIC_CALL_OPERATOR uninitialized_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
             operator()(_Rng1&& _Range1, _Rng2&& _Range2) _CONST_CALL_OPERATOR {
             auto _First1  = _RANGES begin(_Range1);
-            auto _UResult = _Uninitialized_copy_unchecked(
-                _Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
+            auto _UResult = _Uninitialized_copy_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
+                _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
 
-            _Seek_wrapped(_First1, _STD move(_UResult.in));
-            return {_STD move(_First1), _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
+            _STD _Seek_wrapped(_First1, _STD move(_UResult.in));
+            return {_STD move(_First1), _RANGES _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
         }
 
     private:
@@ -98,12 +98,14 @@ namespace ranges {
                           && _Sized_or_unreachable_sentinel_for<_Se, _It>
                           && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (_Is_sized1 && _Is_sized2) {
-                    return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
+                    return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                         _RANGES next(_OFirst, _STD move(_OLast)));
                 } else if constexpr (_Is_sized1) {
-                    return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                    return _RANGES _Copy_memcpy_distance(
+                        _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
                 } else if constexpr (_Is_sized2) {
-                    return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                    return _RANGES _Copy_memcpy_distance(
+                        _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
                 } else {
                     _STL_ASSERT(false, "Tried to uninitialized_copy two ranges with unreachable sentinels");
                 }
@@ -131,10 +133,10 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
         return _Dest;
     }
 
-    auto _UFirst = _Get_unwrapped_n(_First, _Count);
-    auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
+    auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
+    auto _UDest  = _STD _Get_unwrapped_n(_Dest, _Count);
     if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_constructible) {
-        _UDest = _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
+        _UDest = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
 
@@ -145,7 +147,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
         _UDest = _Backout._Release();
     }
 
-    _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -179,19 +181,19 @@ namespace ranges {
                 return {_STD move(_First1), _STD move(_First2)};
             }
 
-            _Adl_verify_range(_First2, _Last2);
-            auto _IFirst = _Get_unwrapped_n(_STD move(_First1), _Count);
-            auto _OFirst = _Unwrap_iter<_OSe>(_STD move(_First2));
-            auto _OLast  = _Unwrap_sent<_Out>(_STD move(_Last2));
+            _STD _Adl_verify_range(_First2, _Last2);
+            auto _IFirst = _STD _Get_unwrapped_n(_STD move(_First1), _Count);
+            auto _OFirst = _RANGES _Unwrap_iter<_OSe>(_STD move(_First2));
+            auto _OLast  = _RANGES _Unwrap_sent<_Out>(_STD move(_Last2));
             if constexpr (_Iter_copy_cat<_It, _Out>::_Bitcopy_constructible
                           && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (sized_sentinel_for<_OSe, _Out>) {
-                    auto _UResult = _Copy_memcpy_common(
+                    auto _UResult = _RANGES _Copy_memcpy_common(
                         _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
                     _IFirst = _STD move(_UResult.in);
                     _OFirst = _STD move(_UResult.out);
                 } else {
-                    auto _UResult = _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
+                    auto _UResult = _RANGES _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
                     _IFirst       = _STD move(_UResult.in);
                     _OFirst       = _STD move(_UResult.out);
                 }
@@ -205,8 +207,8 @@ namespace ranges {
                 _OFirst = _Backout._Release();
             }
 
-            _Seek_wrapped(_First1, _STD move(_IFirst));
-            _Seek_wrapped(_First2, _STD move(_OFirst));
+            _STD _Seek_wrapped(_First1, _STD move(_IFirst));
+            _STD _Seek_wrapped(_First2, _STD move(_OFirst));
             return {_STD move(_First1), _STD move(_First2)};
         }
     };
@@ -219,11 +221,11 @@ namespace ranges {
 _EXPORT_STD template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
-    const auto _UDest  = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    _Seek_wrapped(_Dest, _STD _Uninitialized_move_unchecked(_UFirst, _ULast, _UDest));
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
+    const auto _UDest  = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
+    _STD _Seek_wrapped(_Dest, _STD _Uninitialized_move_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
 
@@ -247,14 +249,14 @@ namespace ranges {
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
         _STATIC_CALL_OPERATOR uninitialized_move_result<_It, _Out> operator()(
             _It _First1, _Se _Last1, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
-            _Adl_verify_range(_First1, _Last1);
-            _Adl_verify_range(_First2, _Last2);
-            auto _UResult = _RANGES _Uninitialized_move_unchecked(_Unwrap_iter<_Se>(_STD move(_First1)),
-                _Unwrap_sent<_It>(_STD move(_Last1)), _Unwrap_iter<_OSe>(_STD move(_First2)),
-                _Unwrap_sent<_Out>(_STD move(_Last2)));
+            _STD _Adl_verify_range(_First1, _Last1);
+            _STD _Adl_verify_range(_First2, _Last2);
+            auto _UResult = _RANGES _Uninitialized_move_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First1)),
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last1)), _RANGES _Unwrap_iter<_OSe>(_STD move(_First2)),
+                _RANGES _Unwrap_sent<_Out>(_STD move(_Last2)));
 
-            _Seek_wrapped(_First1, _STD move(_UResult.in));
-            _Seek_wrapped(_First2, _STD move(_UResult.out));
+            _STD _Seek_wrapped(_First1, _STD move(_UResult.in));
+            _STD _Seek_wrapped(_First2, _STD move(_UResult.out));
             return {_STD move(_First1), _STD move(_First2)};
         }
 
@@ -263,11 +265,11 @@ namespace ranges {
         _STATIC_CALL_OPERATOR uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
             operator()(_Rng1&& _Range1, _Rng2&& _Range2) _CONST_CALL_OPERATOR {
             auto _First1  = _RANGES begin(_Range1);
-            auto _UResult = _RANGES _Uninitialized_move_unchecked(
-                _Unwrap_range_iter<_Rng1>(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
+            auto _UResult = _RANGES _Uninitialized_move_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
+                _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
 
-            _Seek_wrapped(_First1, _STD move(_UResult.in));
-            return {_STD move(_First1), _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
+            _STD _Seek_wrapped(_First1, _STD move(_UResult.in));
+            return {_STD move(_First1), _RANGES _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
         }
     };
 
@@ -283,10 +285,10 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
         return {_First, _Dest};
     }
 
-    auto _UFirst = _Get_unwrapped_n(_First, _Count);
-    auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
+    auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
+    auto _UDest  = _STD _Get_unwrapped_n(_Dest, _Count);
     if constexpr (_Iter_move_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_constructible) {
-        _UDest = _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
+        _UDest = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
         _UFirst += _Count;
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -298,8 +300,8 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
         _UDest = _Backout._Release();
     }
 
-    _Seek_wrapped(_Dest, _UDest);
-    _Seek_wrapped(_First, _UFirst);
+    _STD _Seek_wrapped(_Dest, _UDest);
+    _STD _Seek_wrapped(_First, _UFirst);
     return {_First, _Dest};
 }
 
@@ -342,19 +344,19 @@ namespace ranges {
                 return {_STD move(_First1), _STD move(_First2)};
             }
 
-            _Adl_verify_range(_First2, _Last2);
-            auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
-            auto _OFirst      = _Unwrap_iter<_OSe>(_STD move(_First2));
-            const auto _OLast = _Unwrap_sent<_Out>(_STD move(_Last2));
+            _STD _Adl_verify_range(_First2, _Last2);
+            auto _IFirst      = _STD _Get_unwrapped_n(_STD move(_First1), _Count);
+            auto _OFirst      = _RANGES _Unwrap_iter<_OSe>(_STD move(_First2));
+            const auto _OLast = _RANGES _Unwrap_sent<_Out>(_STD move(_Last2));
             if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible
                           && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (sized_sentinel_for<_OSe, _Out>) {
-                    auto _UResult = _Copy_memcpy_common(
+                    auto _UResult = _RANGES _Copy_memcpy_common(
                         _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
                     _IFirst = _STD move(_UResult.in);
                     _OFirst = _STD move(_UResult.out);
                 } else {
-                    auto _UResult = _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
+                    auto _UResult = _RANGES _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
                     _IFirst       = _STD move(_UResult.in);
                     _OFirst       = _STD move(_UResult.out);
                 }
@@ -368,8 +370,8 @@ namespace ranges {
                 _OFirst = _Backout._Release();
             }
 
-            _Seek_wrapped(_First1, _STD move(_IFirst));
-            _Seek_wrapped(_First2, _STD move(_OFirst));
+            _STD _Seek_wrapped(_First1, _STD move(_IFirst));
+            _STD _Seek_wrapped(_First2, _STD move(_OFirst));
             return {_STD move(_First1), _STD move(_First2)};
         }
     };
@@ -381,11 +383,11 @@ namespace ranges {
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
         _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last, const _Ty& _Val) _CONST_CALL_OPERATOR {
-            _Adl_verify_range(_First, _Last);
+            _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_fill_unchecked(
-                _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Val);
+                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Val);
 
-            _Seek_wrapped(_First, _STD move(_UResult));
+            _STD _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
@@ -393,7 +395,8 @@ namespace ranges {
             requires constructible_from<range_value_t<_Rng>, const _Ty&>
         _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val) _CONST_CALL_OPERATOR {
-            return _Rewrap_iterator(_Range, _Uninitialized_fill_unchecked(_Ubegin(_Range), _Uend(_Range), _Val));
+            return _RANGES _Rewrap_iterator(
+                _Range, _Uninitialized_fill_unchecked(_Ubegin(_Range), _Uend(_Range), _Val));
         }
 
     private:
@@ -405,13 +408,13 @@ namespace ranges {
 
             if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
                 const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
-                _Fill_memset(_OFirst, _Val, static_cast<size_t>(_OFinal - _OFirst));
+                _STD _Fill_memset(_OFirst, _Val, static_cast<size_t>(_OFinal - _OFirst));
                 return _OFinal;
             } else {
                 if constexpr (_Fill_zero_memset_is_safe<_It, _Ty>) {
-                    if (_Is_all_bits_zero(_Val)) {
+                    if (_STD _Is_all_bits_zero(_Val)) {
                         const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
-                        _Fill_zero_memset(_OFirst, static_cast<size_t>(_OFinal - _OFirst));
+                        _STD _Fill_zero_memset(_OFirst, static_cast<size_t>(_OFinal - _OFirst));
                         return _OFinal;
                     }
                 }
@@ -439,15 +442,15 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
         return _First;
     }
 
-    auto _UFirst = _Get_unwrapped_n(_First, _Count);
+    auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
     if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Tval>) {
-        _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
+        _STD _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
         _UFirst += _Count;
     } else {
         if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Tval>) {
-            if (_Is_all_bits_zero(_Val)) {
-                _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
-                _Seek_wrapped(_First, _UFirst + _Count);
+            if (_STD _Is_all_bits_zero(_Val)) {
+                _STD _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
+                _STD _Seek_wrapped(_First, _UFirst + _Count);
                 return _First;
             }
         }
@@ -461,7 +464,7 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
         _UFirst = _Backout._Release();
     }
 
-    _Seek_wrapped(_First, _UFirst);
+    _STD _Seek_wrapped(_First, _UFirst);
     return _First;
 }
 
@@ -492,15 +495,15 @@ namespace ranges {
                 return _First;
             }
 
-            auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-                _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
-                _Seek_wrapped(_First, _UFirst + _Count);
+                _STD _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
+                _STD _Seek_wrapped(_First, _UFirst + _Count);
             } else {
                 if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
-                    if (_Is_all_bits_zero(_Val)) {
-                        _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
-                        _Seek_wrapped(_First, _UFirst + _Count);
+                    if (_STD _Is_all_bits_zero(_Val)) {
+                        _STD _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
+                        _STD _Seek_wrapped(_First, _UFirst + _Count);
                         return _First;
                     }
                 }
@@ -511,7 +514,7 @@ namespace ranges {
                     _Backout._Emplace_back(_Val);
                 }
 
-                _Seek_wrapped(_First, _Backout._Release());
+                _STD _Seek_wrapped(_First, _Backout._Release());
             }
             return _First;
         }
@@ -564,8 +567,8 @@ namespace ranges {
 _EXPORT_STD template <class _NoThrowFwdIt>
 _CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // destroy all elements in [_First, _Last)
-    _Adl_verify_range(_First, _Last);
-    _Destroy_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+    _STD _Adl_verify_range(_First, _Last);
+    _STD _Destroy_range(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last));
 }
 
 _EXPORT_STD template <class _ExPo, class _NoThrowFwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -592,9 +595,9 @@ namespace ranges {
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR constexpr _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR noexcept {
-            _Adl_verify_range(_First, _Last);
-            _Seek_wrapped(_First,
-                _RANGES _Destroy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last))));
+            _STD _Adl_verify_range(_First, _Last);
+            _STD _Seek_wrapped(_First, _RANGES _Destroy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                                           _RANGES _Unwrap_sent<_It>(_STD move(_Last))));
             return _First;
         }
 
@@ -603,8 +606,8 @@ namespace ranges {
         _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range) _CONST_CALL_OPERATOR noexcept {
             auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(
-                _First, _RANGES _Destroy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range)));
+            _STD _Seek_wrapped(
+                _First, _RANGES _Destroy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range)));
             return _First;
         }
     };
@@ -621,16 +624,16 @@ _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_ra
         return _First;
     }
 
-    auto _UFirst = _Get_unwrapped_n(_First, _Count);
+    auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
     if constexpr (is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
         _STD advance(_UFirst, _Count);
     } else {
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
-            _Destroy_in_place(*_UFirst);
+            _STD _Destroy_in_place(*_UFirst);
         }
     }
 
-    _Seek_wrapped(_First, _UFirst);
+    _STD _Seek_wrapped(_First, _UFirst);
     return _First;
 }
 
@@ -650,7 +653,7 @@ namespace ranges {
                 return _First;
             }
 
-            auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
                 _RANGES advance(_UFirst, _Count);
             } else {
@@ -661,7 +664,7 @@ namespace ranges {
                 } while (_Count > 0);
             }
 
-            _Seek_wrapped(_First, _STD move(_UFirst));
+            _STD _Seek_wrapped(_First, _STD move(_UFirst));
             return _First;
         }
     };
@@ -674,12 +677,12 @@ _EXPORT_STD template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // default-initialize all elements in [_First, _Last)
     using _Ty = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
-    _Adl_verify_range(_First, _Last);
+    _STD _Adl_verify_range(_First, _Last);
     if constexpr (!is_trivially_default_constructible_v<_Ty>) {
-        _Uninitialized_backout _Backout{_Get_unwrapped(_First)};
+        _Uninitialized_backout _Backout{_STD _Get_unwrapped(_First)};
 
-        for (const auto _ULast = _Get_unwrapped(_Last); _Backout._Last != _ULast; ++_Backout._Last) {
-            _Default_construct_in_place(*_Backout._Last);
+        for (const auto _ULast = _STD _Get_unwrapped(_Last); _Backout._Last != _ULast; ++_Backout._Last) {
+            _STD _Default_construct_in_place(*_Backout._Last);
         }
 
         _Backout._Release();
@@ -696,11 +699,11 @@ namespace ranges {
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR {
-            _Adl_verify_range(_First, _Last);
+            _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_default_construct_unchecked(
-                _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
+                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
 
-            _Seek_wrapped(_First, _STD move(_UResult));
+            _STD _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
@@ -709,7 +712,7 @@ namespace ranges {
         _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) _CONST_CALL_OPERATOR {
             auto _UResult = _Uninitialized_default_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
 
-            return _Rewrap_iterator(_Range, _STD move(_UResult));
+            return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
         }
 
     private:
@@ -727,7 +730,7 @@ namespace ranges {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
                 for (; _Backout._Last != _OLast; ++_Backout._Last) {
-                    _Default_construct_in_place(*_Backout._Last);
+                    _STD _Default_construct_in_place(*_Backout._Last);
                 }
 
                 return _Backout._Release();
@@ -751,13 +754,13 @@ _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Dif
     if constexpr (is_trivially_default_constructible_v<_Ty>) {
         _STD advance(_First, _Count);
     } else {
-        _Uninitialized_backout _Backout{_Get_unwrapped_n(_First, _Count)};
+        _Uninitialized_backout _Backout{_STD _Get_unwrapped_n(_First, _Count)};
 
         for (; _Count > 0; ++_Backout._Last, (void) --_Count) {
-            _Default_construct_in_place(*_Backout._Last);
+            _STD _Default_construct_in_place(*_Backout._Last);
         }
 
-        _Seek_wrapped(_First, _Backout._Release());
+        _STD _Seek_wrapped(_First, _Backout._Release());
     }
     return _First;
 }
@@ -781,13 +784,13 @@ namespace ranges {
             if constexpr (is_trivially_default_constructible_v<_Ty>) {
                 _RANGES advance(_First, _Count);
             } else {
-                _Uninitialized_backout _Backout{_Get_unwrapped_n(_STD move(_First), _Count)};
+                _Uninitialized_backout _Backout{_STD _Get_unwrapped_n(_STD move(_First), _Count)};
 
                 for (; _Count > 0; --_Count, (void) ++_Backout._Last) {
-                    _Default_construct_in_place(*_Backout._Last);
+                    _STD _Default_construct_in_place(*_Backout._Last);
                 }
 
-                _Seek_wrapped(_First, _Backout._Release());
+                _STD _Seek_wrapped(_First, _Backout._Release());
             }
             return _First;
         }
@@ -800,11 +803,11 @@ namespace ranges {
 _EXPORT_STD template <class _NoThrowFwdIt>
 void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // value-initialize all elements in [_First, _Last)
-    _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _Get_unwrapped(_First);
-    const auto _ULast  = _Get_unwrapped(_Last);
+    _STD _Adl_verify_range(_First, _Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
     if constexpr (_Use_memset_value_construct_v<_Unwrapped_t<const _NoThrowFwdIt&>>) {
-        _Zero_range(_UFirst, _ULast);
+        _STD _Zero_range(_UFirst, _ULast);
     } else {
         _Uninitialized_backout _Backout{_UFirst};
 
@@ -826,11 +829,11 @@ namespace ranges {
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR {
-            _Adl_verify_range(_First, _Last);
+            _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_value_construct_unchecked(
-                _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
+                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
 
-            _Seek_wrapped(_First, _STD move(_UResult));
+            _STD _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
@@ -839,7 +842,7 @@ namespace ranges {
         _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) _CONST_CALL_OPERATOR {
             auto _UResult = _Uninitialized_value_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
 
-            return _Rewrap_iterator(_Range, _STD move(_UResult));
+            return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
         }
 
     private:
@@ -850,7 +853,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(default_initializable<iter_value_t<_It>>);
 
             if constexpr (_Use_memset_value_construct_v<_It>) {
-                return _Zero_range(_OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                return _STD _Zero_range(_OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -875,7 +878,8 @@ _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff 
         return _First;
     }
 
-    _Seek_wrapped(_First, _Uninitialized_value_construct_n_unchecked1(_Get_unwrapped_n(_First, _Count), _Count));
+    _STD _Seek_wrapped(
+        _First, _STD _Uninitialized_value_construct_n_unchecked1(_STD _Get_unwrapped_n(_First, _Count), _Count));
     return _First;
 }
 
@@ -894,9 +898,9 @@ namespace ranges {
                 return _First;
             }
 
-            auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Use_memset_value_construct_v<_It>) {
-                _Seek_wrapped(_First, _Zero_range(_UFirst, _UFirst + _Count));
+                _STD _Seek_wrapped(_First, _STD _Zero_range(_UFirst, _UFirst + _Count));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_UFirst)};
 
@@ -904,7 +908,7 @@ namespace ranges {
                     _Backout._Emplace_back();
                 }
 
-                _Seek_wrapped(_First, _Backout._Release());
+                _STD _Seek_wrapped(_First, _Backout._Release());
             }
             return _First;
         }
@@ -1479,26 +1483,14 @@ struct _SP_convertible : is_convertible<_Yty*, _Ty*>::type {};
 
 template <class _Yty, class _Uty, class _Void>
 struct _SP_convertible<_Yty, _Uty[], _Void> : false_type {};
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10548086
 template <class _Yty, class _Uty>
 struct _SP_convertible<_Yty, _Uty[], void_t<_Yty (*)[]>> : is_convertible<_Yty (*)[], _Uty (*)[]>::type {};
-#else // ^^^ no workaround / workaround vvv
-template <class _Yty, class _Uty>
-struct _SP_convertible<_Yty, _Uty[], void_t<decltype(static_cast<_Yty (*)[]>(nullptr))>>
-    : is_convertible<_Yty (*)[], _Uty (*)[]>::type {};
-#endif // ^^^ workaround ^^^
 
 template <class _Yty, class _Uty, size_t _Ext, class _Void>
 struct _SP_convertible<_Yty, _Uty[_Ext], _Void> : false_type {};
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10548086
 template <class _Yty, class _Uty, size_t _Ext>
 struct _SP_convertible<_Yty, _Uty[_Ext], void_t<_Yty (*)[_Ext]>>
     : is_convertible<_Yty (*)[_Ext], _Uty (*)[_Ext]>::type {};
-#else // ^^^ no workaround / workaround vvv
-template <class _Yty, class _Uty, size_t _Ext>
-struct _SP_convertible<_Yty, _Uty[_Ext], void_t<decltype(static_cast<_Yty (*)[_Ext]>(nullptr))>>
-    : is_convertible<_Yty (*)[_Ext], _Uty (*)[_Ext]>::type {};
-#endif // ^^^ workaround ^^^
 
 template <class _Yty, class _Ty>
 struct _SP_pointer_compatible : is_convertible<_Yty*, _Ty*>::type {
@@ -3695,56 +3687,56 @@ _NODISCARD bool operator==(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) noexce
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator!=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) noexcept {
-    return !(_Left == _Right);
+_NODISCARD bool operator!=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
+    return !(_Left == nullptr);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator!=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
-    return !(_Left == _Right);
+_NODISCARD bool operator!=(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
+    return !(nullptr == _Right);
 }
 #endif // !_HAS_CXX20
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
+_NODISCARD _CONSTEXPR23 bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
-    return less<_Ptr>{}(_Left.get(), _Right);
+    return less<_Ptr>{}(_Left.get(), nullptr);
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator<(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
+_NODISCARD _CONSTEXPR23 bool operator<(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
-    return less<_Ptr>{}(_Left, _Right.get());
+    return less<_Ptr>{}(nullptr, _Right.get());
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator>=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
-    return !(_Left < _Right);
+_NODISCARD _CONSTEXPR23 bool operator>=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
+    return !(_Left < nullptr);
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator>=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
-    return !(_Left < _Right);
+_NODISCARD _CONSTEXPR23 bool operator>=(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) {
+    return !(nullptr < _Right);
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator>(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
-    return _Right < _Left;
+_NODISCARD _CONSTEXPR23 bool operator>(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
+    return nullptr < _Left;
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator>(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
-    return _Right < _Left;
+_NODISCARD _CONSTEXPR23 bool operator>(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) {
+    return _Right < nullptr;
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator<=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
-    return !(_Right < _Left);
+_NODISCARD _CONSTEXPR23 bool operator<=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
+    return !(nullptr < _Left);
 }
 
 _EXPORT_STD template <class _Ty, class _Dx>
-_NODISCARD _CONSTEXPR23 bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
-    return !(_Right < _Left);
+_NODISCARD _CONSTEXPR23 bool operator<=(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) {
+    return !(_Right < nullptr);
 }
 
 #if _HAS_CXX20
@@ -4000,15 +3992,18 @@ protected:
     _Atomic_ptr_base(remove_extent_t<_Ty>* const _Px, _Ref_count_base* const _Ref) noexcept
         : _Ptr(_Px), _Repptr(_Ref) {}
 
-    void _Wait(remove_extent_t<_Ty>* _Old, memory_order) const noexcept {
+    void _Wait(remove_extent_t<_Ty>* _Old_ptr, _Ref_count_base* const _Old_rep, memory_order) const noexcept {
+        unsigned long _Remaining_timeout = 16; // milliseconds
+        const unsigned long _Max_timeout = 1048576; // milliseconds, ~17.5 minutes
         for (;;) {
             auto _Rep   = _Repptr._Lock_and_load();
-            bool _Equal = _Ptr.load(memory_order_relaxed) == _Old;
+            bool _Equal = _Ptr.load(memory_order_relaxed) == _Old_ptr && _Rep == _Old_rep;
             _Repptr._Store_and_unlock(_Rep);
             if (!_Equal) {
                 break;
             }
-            __std_atomic_wait_direct(&_Ptr, &_Old, sizeof(_Old), __std_atomic_wait_no_timeout);
+            __std_atomic_wait_direct(&_Ptr, &_Old_ptr, sizeof(_Old_ptr), _Remaining_timeout);
+            _Remaining_timeout = (_STD min)(_Max_timeout, _Remaining_timeout * 2);
         }
     }
 
@@ -4114,7 +4109,7 @@ public:
     }
 
     void wait(shared_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
-        this->_Wait(_Old._Ptr, _Order);
+        this->_Wait(_Old._Ptr, _Old._Rep, _Order);
     }
 
     using _Base::notify_all;
@@ -4237,7 +4232,7 @@ public:
     }
 
     void wait(weak_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
-        this->_Wait(_Old._Ptr, _Order);
+        this->_Wait(_Old._Ptr, _Old._Rep, _Order);
     }
 
     using _Base::notify_all;
