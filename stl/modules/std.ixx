@@ -42,7 +42,7 @@ export module std;
 // N4971 [module.interface]/6: "A redeclaration of an entity X is implicitly exported
 // if X was introduced by an exported declaration; otherwise it shall not be exported."
 
-// Therefore, we'll need to introduce exported declarations of <vcruntime_new.h> machinery before including it.
+// Therefore, we need to introduce exported declarations of <vcruntime_new.h> machinery before including it.
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

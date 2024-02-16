@@ -1085,7 +1085,7 @@ public:
     using _Mybase::index;
     using _Mybase::valueless_by_exception;
 
-#ifdef __clang__ // TRANSITION, LLVM-45398
+#ifdef __clang__ // TRANSITION, LLVM-35450
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-lambda-capture"
 #endif // ^^^ workaround ^^^
@@ -1147,7 +1147,7 @@ public:
             }
         }
     }
-#ifdef __clang__ // TRANSITION, LLVM-45398
+#ifdef __clang__ // TRANSITION, LLVM-35450
 #pragma clang diagnostic pop
 #endif // ^^^ workaround ^^^
 

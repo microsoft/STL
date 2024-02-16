@@ -53,12 +53,10 @@ constexpr void check_array() {
     static_assert(sizeof(cpv_difference_t<A1, A1>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_difference_t<A1, A1, A1>) <= sizeof(ptrdiff_t));
 
-#ifndef __clang__ // TRANSITION, Clang 17
     // Computing cartesian product for big arrays requires bigger types
     using A2 = all_t<int(&)[500'000'000]>;
     static_assert(sizeof(cpv_size_t<A2, A2, A2>) > sizeof(size_t));
     static_assert(sizeof(cpv_difference_t<A2, A2, A2>) > sizeof(ptrdiff_t));
-#endif // __clang__
 }
 
 constexpr void check_std_array() {

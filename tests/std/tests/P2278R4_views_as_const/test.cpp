@@ -641,10 +641,8 @@ int main() {
     }
 
     { // Validate non-views
-#ifndef __EDG__ // TRANSITION, VSO-1900291
         STATIC_ASSERT(test_one(some_ints, some_ints));
         test_one(some_ints, some_ints);
-#endif // ^^^ no workaround ^^^
 
         // Test with lvalue, rvalue, and wrapped in ref_view non-views
         auto vec = some_ints | ranges::to<vector>();
@@ -659,11 +657,9 @@ int main() {
     }
 
     { // Validate single_view
-#ifndef __EDG__ // TRANSITION, VSO-1900291
         static constexpr int one_int[1] = {333};
         STATIC_ASSERT(test_one(views::single(333), one_int));
         test_one(views::single(333), one_int);
-#endif // ^^^ no workaround ^^^
     }
 
     { // Validate empty_view

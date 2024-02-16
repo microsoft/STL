@@ -876,26 +876,20 @@ constexpr void check_multidimensional_subscript_operator() {
             unsigned long long>);
         static_assert(CanCallMultidimSubscriptOp<Mds, unsigned char, short, unsigned int, long, unsigned long long>);
         static_assert(CanCallMultidimSubscriptOp<Mds, ConvertibleToInt<int>, int, int, int, int>);
-#ifndef __clang__ // TRANSITION, Clang 17
         static_assert(!CanCallMultidimSubscriptOp<Mds, int, int, int, int, NonConvertibleToAnything>);
-#endif // __clang__
     }
 
     { // Check constraint: '(is_nothrow_constructible_v<index_type, OtherIndexTypes> && ...)'
         using Mds = mdspan<char, dextents<signed char, 2>>;
         static_assert(CanCallMultidimSubscriptOp<Mds, ConvertibleToInt<int, IsNothrow::yes>, int>);
-#ifndef __clang__ // TRANSITION, Clang 17
         static_assert(!CanCallMultidimSubscriptOp<Mds, ConvertibleToInt<int, IsNothrow::no>, int>);
-#endif // __clang__
     }
 
     { // Check constraint: 'sizeof...(OtherIndexTypes) == rank()'
         using Mds = mdspan<float, dextents<unsigned short, 3>>;
         static_assert(CanCallMultidimSubscriptOp<Mds, int, int, int>);
-#ifndef __clang__ // TRANSITION, Clang 17
         static_assert(!CanCallMultidimSubscriptOp<Mds, int, int>);
         static_assert(!CanCallMultidimSubscriptOp<Mds, int, int, int, int>);
-#endif // __clang__
     }
 
     { // Check correctness
@@ -908,10 +902,8 @@ constexpr void check_multidimensional_subscript_operator() {
         same_as<vector<bool>::reference> decltype(auto) r2 = as_const(mds)[0, 1];
         assert(!r2);
 
-#ifndef __clang__ // TRANSITION, Clang 17
         static_assert(noexcept(mds[1, 1])); // strengthened
         static_assert(noexcept(as_const(mds)[0, 1])); // strengthened
-#endif // __clang__
     }
 
     { // Check that indices are moved and then casted to 'index_type'
