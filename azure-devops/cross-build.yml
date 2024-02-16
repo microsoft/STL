@@ -19,7 +19,7 @@ jobs:
 - job: '${{ parameters.targetPlatform }}'
   strategy:
     parallel: ${{ parameters.numShards }}
-  timeoutInMinutes: 25
+  timeoutInMinutes: 30
   steps:
   - script: |
       if exist "$(tmpDir)" (rmdir /S /Q $(tmpDir))

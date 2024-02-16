@@ -3459,7 +3459,7 @@ namespace chrono {
                 // 86,400*INTMAX_MAX ~= 7.97e23. This is representable by float and double, so they can always represent
                 // at least one day. On the other hand, one second with the largest possible _Period1 needs a tick count
                 // of 1/(INTMAX_MAX) ~= 1.08e-19, which is also representable in both float and double. So, both
-                // floating point types can represent durations between one second and one day, regardless of _Period1.
+                // floating-point types can represent durations between one second and one day, regardless of _Period1.
                 return true;
             } else {
                 // TRANSITION: user-defined arithmetic-like types

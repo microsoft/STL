@@ -101,7 +101,6 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t*, int) noexcept;
 _CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t) noexcept;
 #endif // _CRTBLD
 _CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t, int) noexcept;
-_CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t) noexcept;
 _CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t) noexcept;
