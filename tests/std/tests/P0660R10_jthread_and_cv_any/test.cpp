@@ -139,7 +139,7 @@ int main() {
         assert(source.stop_possible());
     }
 
-    // TRANSITION, OS-11107628 "_Exit allows cleanup in other DLLs"
+    // TRANSITION, ArchivedOS-12440914 "_Exit allows cleanup in other DLLs"
     // detach() is intentionally not tested
 
     // get_id, get_stop_source, get_stop_token tested above

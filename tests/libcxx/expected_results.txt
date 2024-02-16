@@ -183,7 +183,7 @@ std/modules/std.pass.cpp FAIL
 
 # *** ASAN FAILURES ***
 # Even with `allocator_may_return_null=1`, ASan kills oversized allocations instead of throwing `bad_alloc`.
-# (https://github.com/google/sanitizers/issues/295)
+# (google/sanitizers#295)
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.except.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align.pass.cpp:1 FAIL
@@ -459,6 +459,10 @@ std/algorithms/alg.modifying.operations/alg.move/move_backward.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
 
+# VSO-1948221 x86chk ICE with constexpr type_info: Assertion failed: isIndirection()
+std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:0 FAIL
+std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
@@ -581,7 +585,7 @@ std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothro
 std/depr/depr.c.headers/stdlib_h.aligned_alloc.compile.pass.cpp FAIL
 std/language.support/support.runtime/cstdlib.aligned_alloc.compile.pass.cpp FAIL
 
-# OS-11107628 "_Exit allows cleanup in other DLLs"
+# ArchivedOS-12440914 "_Exit allows cleanup in other DLLs"
 std/thread/thread.threads/thread.thread.class/thread.thread.assign/move2.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp SKIPPED
 
@@ -1020,11 +1024,6 @@ std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:
 std/containers/sequences/vector.bool/enabled_hash.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
 
-# Not analyzed. Appears to involve constexpr dynamic allocation.
-# note: failure was caused by a read of an uninitialized symbol
-std/containers/sequences/vector/iterators.pass.cpp:0 FAIL
-std/containers/sequences/vector/iterators.pass.cpp:1 FAIL
-
 # Not analyzed. Inspecting shift operators for quoted().
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
 
@@ -1221,24 +1220,6 @@ std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:1 FAIL
 
-# Not analyzed. constexpr evaluation fails in assert(element_moved == 1).
-std/ranges/range.adaptors/range.lazy.split/ctor.range.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.lazy.split/ctor.range.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.split/ctor.range.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.split/ctor.range.pass.cpp:1 FAIL
-
-# Not analyzed. constexpr evaluation fails in assert(view_moved == 1).
-std/ranges/range.adaptors/range.lazy.split/ctor.view.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.lazy.split/ctor.view.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.split/ctor.view.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.split/ctor.view.pass.cpp:1 FAIL
-
-# Not analyzed. Testing split_view with an empty pattern, might be an MSVC constexpr bug.
-std/ranges/range.adaptors/range.split/begin.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.split/begin.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.split/general.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.split/general.pass.cpp:1 FAIL
-
 # Not analyzed. Likely MSVC constexpr bug with negative chars passed to __builtin_memcmp.
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:0 FAIL
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:1 FAIL
@@ -1426,9 +1407,6 @@ std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cp
 
 # Similarly, this test is marked as `REQUIRES: 32-bit-pointer`.
 std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
-
-# VSO-1948221 x86chk ICE with constexpr type_info: Assertion failed: isIndirection()
-std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:9 SKIPPED
 
 # These tests are marked as "UNSUPPORTED: !has-unix-headers" with comments saying:
 # "`check_assertion.h` requires Unix headers".

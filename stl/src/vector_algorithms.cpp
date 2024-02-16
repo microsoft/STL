@@ -1351,12 +1351,12 @@ const void* __stdcall __std_min_element_8(
     return _Minmax_element<_Mode_min, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-const void* __stdcall __std_min_element_f(
+const void* __stdcall __std_min_element_f( // _Minmax_element's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
     return _Minmax_element<_Mode_min, _Minmax_traits_f>(_First, _Last, _Unused);
 }
 
-const void* __stdcall __std_min_element_d(
+const void* __stdcall __std_min_element_d( // _Minmax_element's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
     return _Minmax_element<_Mode_min, _Minmax_traits_d>(_First, _Last, _Unused);
 }
@@ -1381,12 +1381,12 @@ const void* __stdcall __std_max_element_8(
     return _Minmax_element<_Mode_max, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-const void* __stdcall __std_max_element_f(
+const void* __stdcall __std_max_element_f( // _Minmax_element's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
     return _Minmax_element<_Mode_max, _Minmax_traits_f>(_First, _Last, _Unused);
 }
 
-const void* __stdcall __std_max_element_d(
+const void* __stdcall __std_max_element_d( // _Minmax_element's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
     return _Minmax_element<_Mode_max, _Minmax_traits_d>(_First, _Last, _Unused);
 }
@@ -1411,12 +1411,12 @@ _Min_max_element_t __stdcall __std_minmax_element_8(
     return _Minmax_element<_Mode_both, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-_Min_max_element_t __stdcall __std_minmax_element_f(
+_Min_max_element_t __stdcall __std_minmax_element_f( // _Minmax_element's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
     return _Minmax_element<_Mode_both, _Minmax_traits_f>(_First, _Last, _Unused);
 }
 
-_Min_max_element_t __stdcall __std_minmax_element_d(
+_Min_max_element_t __stdcall __std_minmax_element_d( // _Minmax_element's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
     return _Minmax_element<_Mode_both, _Minmax_traits_d>(_First, _Last, _Unused);
 }

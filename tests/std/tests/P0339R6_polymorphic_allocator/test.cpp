@@ -69,7 +69,7 @@ void allocate_object_overflow_test() {
 
     polymorphic_allocator<> alloc{};
 
-#ifndef __SANITIZE_ADDRESS__ // TRANSITION, VSO-1854243
+#ifndef __SANITIZE_ADDRESS__ // TRANSITION, google/sanitizers#295
     try {
         int* vp = alloc.allocate_object<int>(threshold);
         alloc.deallocate_object(vp, threshold);

@@ -715,11 +715,9 @@ constexpr bool impl_test_source_location() {
 
 #ifdef __EDG__ // TRANSITION, DevCom-10199227
 #define TEST_DETAILED_FUNCTION_NAME 0
-#elif defined(__clang__) // TRANSITION, Clang 17 has this builtin
-#define TEST_DETAILED_FUNCTION_NAME __has_builtin(__builtin_FUNCSIG)
-#else // ^^^ Clang / MSVC vvv
+#else // ^^^ workaround / no workaround vvv
 #define TEST_DETAILED_FUNCTION_NAME 1
-#endif // ^^^ MSVC ^^^
+#endif // ^^^ no workaround ^^^
 
 #if TEST_DETAILED_FUNCTION_NAME
     assert(sl.function_name() == "bool __cdecl impl_test_source_location(void)"sv);
