@@ -25,6 +25,7 @@
 #include <iterator>
 #include <list>
 #include <map>
+#include <memory>
 #include <numeric>
 #include <queue>
 #include <random>
@@ -103,6 +104,8 @@ struct incomplete;
 using validating_falsity   = tagged_falsity<holder<incomplete>>;
 using validating_less      = tagged_less<holder<incomplete>>;
 using validating_converter = tagged_converter<holder<incomplete>>;
+
+vector<shared_ptr<holder<incomplete>*>> unused_pointers_to_incompletable;
 #endif // ^^^ no workaround ^^^
 
 template <typename T, typename U>
