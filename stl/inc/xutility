@@ -3391,9 +3391,10 @@ namespace ranges {
             } else {
                 _STD _Adl_verify_range(_Where, _Last);
 
-                decltype(auto) _UWhere      = _RANGES _Unwrap_iter<_Se>(static_cast<_It&&>(_Where));
-                constexpr bool _Need_rewrap = !is_reference_v<decltype(_RANGES _Unwrap_iter<_Se>(static_cast<_It&&>(_Where)))>;
-                decltype(auto) _ULast       = _RANGES _Unwrap_sent<_It>(static_cast<_Se&&>(_Last));
+                decltype(auto) _UWhere = _RANGES _Unwrap_iter<_Se>(static_cast<_It&&>(_Where));
+                constexpr bool _Need_rewrap =
+                    !is_reference_v<decltype(_RANGES _Unwrap_iter<_Se>(static_cast<_It&&>(_Where)))>;
+                decltype(auto) _ULast = _RANGES _Unwrap_sent<_It>(static_cast<_Se&&>(_Last));
 
                 while (_UWhere != _ULast) {
                     ++_UWhere;
@@ -3446,11 +3447,13 @@ namespace ranges {
     public:
         template <class _It, sentinel_for<_It> _Se>
             requires (!sized_sentinel_for<_Se, _It>)
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(_It _First,
-            _Se _Last) _CONST_CALL_OPERATOR noexcept(noexcept(_Distance_unchecked(_STD _Get_unwrapped(_STD move(_First)),
-            _STD _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(
+            _It _First, _Se _Last) _CONST_CALL_OPERATOR
+            noexcept(noexcept(_Distance_unchecked(
+                _STD _Get_unwrapped(_STD move(_First)), _STD _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
             _STD _Adl_verify_range(_First, _Last);
-            return _Distance_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
+            return _Distance_unchecked(
+                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
         }
 
         template <class _It, sized_sentinel_for<decay_t<_It>> _Se>
