@@ -4002,7 +4002,8 @@ protected:
             if (!_Equal) {
                 break;
             }
-            ::__std_atomic_wait_direct(_STD addressof(_Ptr), _STD addressof(_Old_ptr), sizeof(_Old_ptr), _Remaining_timeout);
+            ::__std_atomic_wait_direct(
+                _STD addressof(_Ptr), _STD addressof(_Old_ptr), sizeof(_Old_ptr), _Remaining_timeout);
             _Remaining_timeout = (_STD min)(_Max_timeout, _Remaining_timeout * 2);
         }
     }
