@@ -30,7 +30,7 @@ namespace modulo {
     template <int N>
     struct hash {
         size_t operator()(int value) const {
-            return value % N;
+            return static_cast<size_t>(value % N);
         }
     };
 } // namespace modulo
