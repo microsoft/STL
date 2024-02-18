@@ -309,10 +309,10 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #endif
 #endif // !defined(_CRTDATA2_IMPORT)
 
-#define _LOCK_LOCALE         0
-#define _LOCK_MALLOC         1
-#define _LOCK_STREAM         2
-#define _LOCK_DEBUG          3
+#define _LOCK_LOCALE 0
+#define _LOCK_MALLOC 1
+#define _LOCK_STREAM 2
+#define _LOCK_DEBUG  3
 
 #ifndef _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B
 #if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WINBLUE && defined(_WIN64)
