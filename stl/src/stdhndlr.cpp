@@ -3,9 +3,9 @@
 
 // set_new_handler
 
+#include <mutex>
 #include <new.h>
 #include <new>
-#include <mutex>
 
 namespace {
     _STD new_handler _New_handler;
