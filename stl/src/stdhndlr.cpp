@@ -20,7 +20,7 @@ namespace {
 _STD_BEGIN
 
 _CRTIMP2 new_handler __cdecl set_new_handler(_In_opt_ new_handler pnew) noexcept { // remove current handler
-    unique_lock _Lock{_New_handler_mutex};
+    lock_guard _Lock{_New_handler_mutex};
     new_handler pold = _New_handler;
     _New_handler     = pnew;
     _set_new_handler(pnew ? _New_handler_interface : nullptr);
@@ -28,7 +28,7 @@ _CRTIMP2 new_handler __cdecl set_new_handler(_In_opt_ new_handler pnew) noexcept
 }
 
 _CRTIMP2 new_handler __cdecl get_new_handler() noexcept { // get current new handler
-    unique_lock _Lock{_New_handler_mutex};
+    lock_guard _Lock{_New_handler_mutex};
     return _New_handler;
 }
 
