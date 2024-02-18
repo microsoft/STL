@@ -19,11 +19,9 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 // This does not use `_EMIT_STL_ERROR`, as it needs to be checked before we include anything else.
-// However, `_EMIT_STL_ERROR` has a dependency on `_CRT_STRINGIZE`, defined in `<vcruntime.h>`.
-// Here, we employ the same technique as `_CRT_STRINGIZE` in order to avoid needing to update the line number.
-#ifndef __cplusplus
 #define _STL_STRINGIZE_(S) #S
 #define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
+#ifndef __cplusplus
 #pragma message(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): STL1003: Unexpected compiler, expected C++ compiler.")
 #error Error in C++ Standard Library usage
 #endif // !defined(__cplusplus)
