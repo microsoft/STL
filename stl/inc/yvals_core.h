@@ -515,7 +515,7 @@
 #endif
 
 #define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
-#define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _CRT_STRINGIZE(__LINE__) "): " MESSAGE)
+#define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): " MESSAGE)
 
 #define _EMIT_STL_WARNING(NUMBER, MESSAGE) _EMIT_STL_MESSAGE("warning " #NUMBER ": " MESSAGE)
 #define _EMIT_STL_ERROR(NUMBER, MESSAGE)   static_assert(false, "error " #NUMBER ": " MESSAGE)
@@ -1917,8 +1917,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // !defined(_ALLOW_RTCc_IN_STL)
 #endif // defined(_RTC_CONVERSION_CHECKS_ENABLED)
 
-#define _STRINGIZEX(x)  #x
-#define _STRINGIZE(x)   _STRINGIZEX(x)
 #define _EMPTY_ARGUMENT // for empty macro argument
 
 // extern "C++" attaches declarations to the global module, see N4964 [module.unit]/7.2.
