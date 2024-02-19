@@ -13,7 +13,7 @@
 
 _STD_BEGIN
 
-constexpr int _Max_lock = 4; // must be power of two
+constexpr int _Max_lock = 8; // must be power of two; TRANSITION, ABI: may be less now
 
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
