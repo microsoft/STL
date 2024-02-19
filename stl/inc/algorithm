@@ -97,7 +97,7 @@ _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* const _First, _Ty* const _Last) 
 }
 
 template <class _Ty>
-auto __std_minmax(_Ty* _First, _Ty* _Last) noexcept {
+auto __std_minmax(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty>) {
