@@ -72,7 +72,7 @@ __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, cons
 
 _STD_BEGIN
 template <class _Ty>
-_STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
+_STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     _Min_max_element_t _Res;
