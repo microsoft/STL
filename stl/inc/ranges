@@ -8582,6 +8582,10 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Zip_fn zip{};
     } // namespace views
 
+    template <class _Func, class... _ViewTypes>
+    concept _Can_const_iterate_zip_transform_view =
+        range<const zip_view<_ViewTypes...>> && regular_invocable<const _Func&, range_reference_t<const _ViewTypes>...>;
+
     _EXPORT_STD template <class _Func, class... _ViewTypes>
         requires _Zip_transform_constraints<_Func, _ViewTypes...>
     class zip_transform_view : public view_interface<zip_transform_view<_Func, _ViewTypes...>> {
@@ -8833,9 +8837,6 @@ namespace ranges {
             }
         }
 
-        static constexpr bool _Enable_const_begin_end =
-            (range<const _Inner_view> && regular_invocable<const _Func&, range_reference_t<const _ViewTypes>...>);
-
     public:
         zip_transform_view() = default;
 
@@ -8849,7 +8850,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto begin() const noexcept(noexcept(_Iterator<true>{*this, _Zip.begin()})) // strengthened
-            requires _Enable_const_begin_end
+            requires _Can_const_iterate_zip_transform_view<_Func, _ViewTypes...>
         {
             return _Iterator<true>{*this, _Zip.begin()};
         }
@@ -8863,7 +8864,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto end() const noexcept(_Is_end_noexcept<true>()) // strengthened
-            requires _Enable_const_begin_end
+            requires _Can_const_iterate_zip_transform_view<_Func, _ViewTypes...>
         {
             if constexpr (common_range<const _Inner_view>) {
                 return _Iterator<true>{*this, _Zip.end()};
