@@ -141,7 +141,7 @@ auto __std_minmax(_Ty* const _First, _Ty* const _Last) noexcept {
 }
 
 template <class _Ty, class _TVal>
-_Ty* __std_find_last_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
+_Ty* __std_find_last_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return _STD __std_find_last_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
