@@ -36,23 +36,23 @@ namespace modulo {
 } // namespace modulo
 
 // Overloaded function to get a key from a set / map's value_type
-int const& get_key(int const& value) {
+const int& get_key(const int& value) {
     return value;
 }
-int const& get_key(pair<int const, int> const& pair) {
+const int& get_key(const pair<const int, int>& pair) {
     return pair.first;
 }
 
 // Equality comparison for unordered sets and maps as per the C++ standard
 // It also gives the correct result for associative containers (though is sub-optimal)
 template <typename Container>
-bool std_equal(Container const& lhs, Container const& rhs) {
+bool std_equal(const Container& lhs, const Container& rhs) {
     if (lhs.size() != rhs.size()) {
         return false;
     }
 
     for (auto it = lhs.cbegin(); it != lhs.cend();) {
-        auto const& key = get_key(*it);
+        const auto& key = get_key(*it);
         auto l_range    = lhs.equal_range(key);
         auto r_range    = rhs.equal_range(key);
 
