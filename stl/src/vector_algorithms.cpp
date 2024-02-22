@@ -1333,8 +1333,6 @@ namespace {
                             _Cur_vals_max = _Cur_vals;
                             _Cur_idx_max  = _mm_setzero_si128();
                         }
-
-                        continue;
                     } else {
                         break; // No wrapping, so it was the only portion
                     }
