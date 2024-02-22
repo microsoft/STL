@@ -12,30 +12,28 @@
 
 using namespace std;
 
-namespace modulo {
-    // Functors for comparison and hashing
-    // based on modular arithmetic equivalence classes
-    template <int N>
-    struct compare {
-        bool operator()(int lhs, int rhs) const {
-            return (lhs % N) < (rhs % N);
-        }
-    };
+// Functors for comparison and hashing
+// based on modular arithmetic equivalence classes
+template <int N>
+struct ModLess {
+    bool operator()(int lhs, int rhs) const {
+        return (lhs % N) < (rhs % N);
+    }
+};
 
-    template <int N>
-    struct equals {
-        bool operator()(int lhs, int rhs) const {
-            return (lhs % N) == (rhs % N);
-        }
-    };
+template <int N>
+struct ModEqual {
+    bool operator()(int lhs, int rhs) const {
+        return (lhs % N) == (rhs % N);
+    }
+};
 
-    template <int N>
-    struct hash {
-        size_t operator()(int value) const {
-            return static_cast<size_t>(value % N);
-        }
-    };
-} // namespace modulo
+template <int N>
+struct ModHash {
+    size_t operator()(int value) const {
+        return static_cast<size_t>(value % N);
+    }
+};
 
 // Overloaded function to get a key from a set / map's value_type
 const int& get_key(const int& value) {
@@ -86,20 +84,20 @@ bool test_sets() {
 
 // GH-4388: <unordered_set>, <unordered_map>: operator== is incorrect with custom equivalence functor
 void test_gh_4388() {
-    using Set               = set<int, modulo::compare<10>>;
-    using MultiSet          = multiset<int, modulo::compare<10>>;
-    using UnorderedSet      = unordered_set<int, modulo::hash<10>, modulo::equals<10>>;
-    using UnorderedMultiSet = unordered_multiset<int, modulo::hash<10>, modulo::equals<10>>;
+    using Set               = set<int, ModLess<10>>;
+    using MultiSet          = multiset<int, ModLess<10>>;
+    using UnorderedSet      = unordered_set<int, ModHash<10>, ModEqual<10>>;
+    using UnorderedMultiSet = unordered_multiset<int, ModHash<10>, ModEqual<10>>;
 
     assert(test_sets<Set>());
     assert(test_sets<MultiSet>());
     assert(test_sets<UnorderedSet>());
     assert(test_sets<UnorderedMultiSet>());
 
-    using Map               = map<int, int, modulo::compare<10>>;
-    using MultiMap          = multimap<int, int, modulo::compare<10>>;
-    using UnorderedMap      = unordered_map<int, int, modulo::hash<10>, modulo::equals<10>>;
-    using UnorderedMultiMap = unordered_multimap<int, int, modulo::hash<10>, modulo::equals<10>>;
+    using Map               = map<int, int, ModLess<10>>;
+    using MultiMap          = multimap<int, int, ModLess<10>>;
+    using UnorderedMap      = unordered_map<int, int, ModHash<10>, ModEqual<10>>;
+    using UnorderedMultiMap = unordered_multimap<int, int, ModHash<10>, ModEqual<10>>;
 
     assert(test_maps<Map>());
     assert(test_maps<MultiMap>());
