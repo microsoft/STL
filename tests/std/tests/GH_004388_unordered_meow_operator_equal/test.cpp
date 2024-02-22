@@ -66,7 +66,7 @@ bool std_equal(const Container& lhs, const Container& rhs) {
 
 template <typename Map>
 bool test_maps() {
-    // In all cases, these sets should compare not equal, even though their elements are equivalent
+    // In all cases, these maps should compare not equal, even though their elements are equivalent
     Map map1 = {{1, 1}, {2, 2}};
     Map map2 = {{21, 1}, {12, 2}};
 
