@@ -52,9 +52,9 @@ bool std_equal(const Container& lhs, const Container& rhs) {
     }
 
     for (auto it = lhs.cbegin(); it != lhs.cend();) {
-        const auto& key = get_key(*it);
-        auto l_range    = lhs.equal_range(key);
-        auto r_range    = rhs.equal_range(key);
+        const auto& key    = get_key(*it);
+        const auto l_range = lhs.equal_range(key);
+        const auto r_range = rhs.equal_range(key);
 
         if (!is_permutation(l_range.first, l_range.second, r_range.first, r_range.second)) {
             return false;
