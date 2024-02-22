@@ -65,21 +65,33 @@ bool std_equal(const Container& lhs, const Container& rhs) {
 }
 
 template <typename Map>
-bool test_maps() {
-    // In all cases, these maps should compare not equal, even though their elements are equivalent
+void test_maps() {
+    // These maps should compare not equal, even though their elements are equivalent
     Map map1 = {{1, 1}, {2, 2}};
     Map map2 = {{21, 1}, {12, 2}};
 
-    return (map1 == map2) == std_equal(map1, map2);
+    assert(map1 != map2);
+    assert(!std_equal(map1, map2));
+
+    // Test a case that should compare equal
+    Map map3 = {{12, 2}, {21, 1}};
+    assert(map2 == map3);
+    assert(std_equal(map2, map3));
 }
 
 template <typename Set>
-bool test_sets() {
-    // In all cases, these sets should compare not equal, even though their elements are equivalent
+void test_sets() {
+    // These sets should compare not equal, even though their elements are equivalent
     Set set1 = {1, 2};
     Set set2 = {21, 12};
 
-    return (set1 == set2) == std_equal(set1, set2);
+    assert(set1 != set2);
+    assert(!std_equal(set1, set2));
+
+    // Test a case that should compare equal
+    Set set3 = {12, 21};
+    assert(set2 == set3);
+    assert(std_equal(set2, set3));
 }
 
 // GH-4388: <unordered_set>, <unordered_map>: operator== is incorrect with custom equivalence functor
@@ -89,20 +101,20 @@ void test_gh_4388() {
     using UnorderedSet      = unordered_set<int, ModHash<10>, ModEqual<10>>;
     using UnorderedMultiSet = unordered_multiset<int, ModHash<10>, ModEqual<10>>;
 
-    assert(test_sets<Set>());
-    assert(test_sets<MultiSet>());
-    assert(test_sets<UnorderedSet>());
-    assert(test_sets<UnorderedMultiSet>());
+    test_sets<Set>();
+    test_sets<MultiSet>();
+    test_sets<UnorderedSet>();
+    test_sets<UnorderedMultiSet>();
 
     using Map               = map<int, int, ModLess<10>>;
     using MultiMap          = multimap<int, int, ModLess<10>>;
     using UnorderedMap      = unordered_map<int, int, ModHash<10>, ModEqual<10>>;
     using UnorderedMultiMap = unordered_multimap<int, int, ModHash<10>, ModEqual<10>>;
 
-    assert(test_maps<Map>());
-    assert(test_maps<MultiMap>());
-    assert(test_maps<UnorderedMap>());
-    assert(test_maps<UnorderedMultiMap>());
+    test_maps<Map>();
+    test_maps<MultiMap>();
+    test_maps<UnorderedMap>();
+    test_maps<UnorderedMultiMap>();
 }
 
 int main() {
