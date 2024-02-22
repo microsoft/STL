@@ -9,7 +9,7 @@
 
 namespace {
     _STD new_handler _New_handler;
-    constinit std::mutex _New_handler_mutex;
+    constinit _STD mutex _New_handler_mutex;
 
     int __cdecl _New_handler_interface(size_t) { // interface to existing Microsoft _callnewh mechanism
         _New_handler();
