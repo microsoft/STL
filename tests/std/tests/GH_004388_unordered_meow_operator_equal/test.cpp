@@ -39,8 +39,8 @@ namespace modulo {
 const int& get_key(const int& value) {
     return value;
 }
-const int& get_key(const pair<const int, int>& pair) {
-    return pair.first;
+const int& get_key(const pair<const int, int>& p) {
+    return p.first;
 }
 
 // Equality comparison for unordered sets and maps as per the C++ standard
