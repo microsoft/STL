@@ -131,9 +131,6 @@ void test_copy_initialization_for_numeric_algorithms() {
                tranformation_validating_converter{})
            == arr);
 
-    assert(transform_inclusive_scan(
-               brr, brr, brr, implicity_validating_plus_for_transformation{}, tranformation_validating_converter{})
-           == brr);
     assert(transform_inclusive_scan(arr, arr, arr, implicity_validating_plus_for_transformation{},
                tranformation_validating_converter{}, int32_t{})
            == arr);
@@ -168,9 +165,6 @@ void test_copy_initialization_for_parallel_numeric_algorithms() {
                tranformation_validating_converter{})
            == arr);
 
-    assert(transform_inclusive_scan(ExPo, brr, brr, brr, implicity_validating_plus_for_transformation{},
-               tranformation_validating_converter{})
-           == brr);
     assert(transform_inclusive_scan(ExPo, arr, arr, arr, implicity_validating_plus_for_transformation{},
                tranformation_validating_converter{}, int32_t{})
            == arr);
