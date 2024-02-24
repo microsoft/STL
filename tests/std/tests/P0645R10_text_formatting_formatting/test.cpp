@@ -1506,6 +1506,8 @@ constexpr bool test_format_string() {
     return true;
 }
 
+// Also test GH-4316 <format>: The width of output is miscalculated
+// when formatting a floating-point number in the locale-specific form
 template <class charT>
 void test_gh_4316() {
     assert(format(locale{"en-US"}, STR("{:@>8L}"), 12345) == STR("@@12,345"));
