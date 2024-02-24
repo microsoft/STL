@@ -3111,6 +3111,7 @@ _NODISCARD _OutputIt _Fmt_write(
             if (_Specs._Localized) {
                 _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
                 _Separators = _Count_separators(static_cast<size_t>(_Integral_end - _Buffer_start), _Groups);
+                _Width += _Separators;
             }
         }
 
