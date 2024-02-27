@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cstdlib>
+#include <mutex>
 #include <xthreads.h>
 
 #include <Windows.h>
@@ -23,12 +24,11 @@ namespace {
     };
 
     _At_thread_exit_block _Thread_exit_data;
+
+    constinit std::mutex _Thread_exit_data_mutex;
 } // unnamed namespace
 
 extern "C" {
-
-void _Lock_at_thread_exit_mutex() noexcept;
-void _Unlock_at_thread_exit_mutex() noexcept;
 
 _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t cnd, _Mtx_t mtx, int* p) noexcept {
     // register condition variable and mutex for cleanup at thread exit
@@ -36,7 +36,7 @@ _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t cnd, _Mtx_t mtx, 
     // find block with available space
     _At_thread_exit_block* block = &_Thread_exit_data;
 
-    _Lock_at_thread_exit_mutex();
+    std::lock_guard _Lock{_Thread_exit_data_mutex};
     while (block != nullptr) { // loop through list of blocks
         if (block->num_used == _Nitems) { // block is full; move to next block and allocate
             if (block->next == nullptr) {
@@ -58,7 +58,6 @@ _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t cnd, _Mtx_t mtx, 
             block = nullptr;
         }
     }
-    _Unlock_at_thread_exit_mutex();
 }
 
 _CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t mtx) noexcept {
@@ -67,7 +66,7 @@ _CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t mtx) noexcept {
     // find condition variables waiting for this thread to exit
     _At_thread_exit_block* block = &_Thread_exit_data;
 
-    _Lock_at_thread_exit_mutex();
+    std::lock_guard _Lock{_Thread_exit_data_mutex};
     while (block != nullptr) { // loop through list of blocks
         for (int i = 0; block->num_used != 0 && i < _Nitems; ++i) {
             if (block->data[i].mtx == mtx) { // release slot
@@ -78,7 +77,6 @@ _CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t mtx) noexcept {
 
         block = block->next;
     }
-    _Unlock_at_thread_exit_mutex();
 }
 
 _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() noexcept {
@@ -88,7 +86,7 @@ _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() noexcept {
     _At_thread_exit_block* block       = &_Thread_exit_data;
     const unsigned int currentThreadId = _Thrd_id();
 
-    _Lock_at_thread_exit_mutex();
+    std::lock_guard _Lock{_Thread_exit_data_mutex};
     while (block != nullptr) { // loop through list of blocks
         for (int i = 0; block->num_used != 0 && i < _Nitems; ++i) {
             if (block->data[i].mtx != nullptr && block->data[i].id._Id == currentThreadId) { // notify and release slot
@@ -104,7 +102,6 @@ _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() noexcept {
 
         block = block->next;
     }
-    _Unlock_at_thread_exit_mutex();
 }
 
 } // extern "C"
