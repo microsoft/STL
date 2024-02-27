@@ -142,7 +142,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // !defined(_ALLOW_MSC_VER_MISMATCH)
 
 #ifndef _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH
-#pragma detect_mismatch("_ITERATOR_DEBUG_LEVEL", _STRINGIZE(_ITERATOR_DEBUG_LEVEL))
+#pragma detect_mismatch("_ITERATOR_DEBUG_LEVEL", _STL_STRINGIZE(_ITERATOR_DEBUG_LEVEL))
 #endif // !defined(_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH)
 
 #ifndef _ALLOW_RUNTIME_LIBRARY_MISMATCH
@@ -310,7 +310,6 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #endif // !defined(_CRTDATA2_IMPORT)
 
 #define _LOCK_LOCALE 0
-#define _LOCK_MALLOC 1
 #define _LOCK_STREAM 2
 #define _LOCK_DEBUG  3
 

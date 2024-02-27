@@ -1197,7 +1197,37 @@ namespace {
                 // Increment vertical indices. Will stop at exactly wrap around, if not reach the end before
                 _Cur_idx = _Traits::_Inc(_Cur_idx);
 
-                if (_First == _Stop_at) {
+                if (_First != _Stop_at) {
+                    // This is the main part, finding vertical minimum/maximum
+
+                    // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
+                    _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
+
+                    if constexpr ((_Mode & _Mode_min) != 0) {
+                        // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
+                        const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
+                        _Cur_idx_min        = _mm_blendv_epi8(
+                            _Cur_idx_min, _Cur_idx, _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
+                        _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
+                    }
+
+                    if constexpr (_Mode == _Mode_max) {
+                        // Looking for the first occurrence of maximum, don't overwrite with newly found occurrences
+                        const auto _Is_greater =
+                            _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
+                        _Cur_idx_max = _mm_blendv_epi8(_Cur_idx_max, _Cur_idx,
+                            _Traits::_Mask_cast(_Is_greater)); // Remember their vertical indices
+                        _Cur_vals_max =
+                            _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
+                    } else if constexpr (_Mode == _Mode_both) {
+                        // Looking for the last occurrence of maximum, do overwrite with newly found occurrences
+                        const auto _Is_less =
+                            _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
+                        _Cur_idx_max  = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max,
+                             _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
+                        _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
+                    }
+                } else {
                     // Reached end or indices wrap around point.
                     // Compute horizontal min and/or max. Determine horizontal and vertical position of it.
 
@@ -1303,37 +1333,9 @@ namespace {
                             _Cur_vals_max = _Cur_vals;
                             _Cur_idx_max  = _mm_setzero_si128();
                         }
-
-                        continue;
                     } else {
                         break; // No wrapping, so it was the only portion
                     }
-                }
-                // This is the main part, finding vertical minimum/maximum
-
-                // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
-                _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
-
-                if constexpr ((_Mode & _Mode_min) != 0) {
-                    // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
-                    const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
-                    _Cur_idx_min        = _mm_blendv_epi8(
-                        _Cur_idx_min, _Cur_idx, _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
-                    _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
-                }
-
-                if constexpr (_Mode == _Mode_max) {
-                    // Looking for the first occurrence of maximum, don't overwrite with newly found occurrences
-                    const auto _Is_greater = _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
-                    _Cur_idx_max           = _mm_blendv_epi8(
-                        _Cur_idx_max, _Cur_idx, _Traits::_Mask_cast(_Is_greater)); // Remember their vertical indices
-                    _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
-                } else if constexpr (_Mode == _Mode_both) {
-                    // Looking for the last occurrence of maximum, do overwrite with newly found occurrences
-                    const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
-                    _Cur_idx_max        = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max,
-                               _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
-                    _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
                 }
             }
         }
@@ -1410,7 +1412,31 @@ namespace {
             for (;;) {
                 _Advance_bytes(_First, 16);
 
-                if (_First == _Stop_at) {
+                if (_First != _Stop_at) {
+                    // This is the main part, finding vertical minimum/maximum
+
+                    _Cur_vals = _Traits::_Load(_First);
+
+                    if constexpr (_Sign_correction) {
+                        _Cur_vals = _Traits::_Sign_correction(_Cur_vals, false);
+                    }
+
+                    if constexpr ((_Mode & _Mode_min) != 0) {
+                        if constexpr (_Sign || _Sign_correction) {
+                            _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals); // Update the current minimum
+                        } else {
+                            _Cur_vals_min = _Traits::_Min_u(_Cur_vals_min, _Cur_vals); // Update the current minimum
+                        }
+                    }
+
+                    if constexpr ((_Mode & _Mode_max) != 0) {
+                        if constexpr (_Sign || _Sign_correction) {
+                            _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals); // Update the current maximum
+                        } else {
+                            _Cur_vals_max = _Traits::_Max_u(_Cur_vals_max, _Cur_vals); // Update the current maximum
+                        }
+                    }
+                } else {
                     // Reached end. Compute horizontal min and/or max.
 
                     if constexpr ((_Mode & _Mode_min) != 0) {
@@ -1450,29 +1476,6 @@ namespace {
                     }
 
                     break;
-                }
-                // This is the main part, finding vertical minimum/maximum
-
-                _Cur_vals = _Traits::_Load(_First);
-
-                if constexpr (_Sign_correction) {
-                    _Cur_vals = _Traits::_Sign_correction(_Cur_vals, false);
-                }
-
-                if constexpr ((_Mode & _Mode_min) != 0) {
-                    if constexpr (_Sign || _Sign_correction) {
-                        _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals); // Update the current minimum
-                    } else {
-                        _Cur_vals_min = _Traits::_Min_u(_Cur_vals_min, _Cur_vals); // Update the current minimum
-                    }
-                }
-
-                if constexpr ((_Mode & _Mode_max) != 0) {
-                    if constexpr (_Sign || _Sign_correction) {
-                        _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals); // Update the current maximum
-                    } else {
-                        _Cur_vals_max = _Traits::_Max_u(_Cur_vals_max, _Cur_vals); // Update the current maximum
-                    }
                 }
             }
         } else
