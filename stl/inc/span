@@ -288,7 +288,7 @@ public:
 
     template <_Span_compatible_iterator<element_type> _It>
     constexpr explicit(_Extent != dynamic_extent) span(_It _First, size_type _Count) noexcept // strengthened
-        : _Mybase(_STD to_address(_Get_unwrapped_n(_First, _Count)), _Count) {
+        : _Mybase(_STD to_address(_STD _Get_unwrapped_n(_First, _Count)), _Count) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Count == _Extent,
@@ -301,7 +301,7 @@ public:
     constexpr explicit(_Extent != dynamic_extent)
         span(_It _First, _Sentinel _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mybase(_STD to_address(_First), static_cast<size_type>(_Last - _First)) {
-        _Adl_verify_range(_First, _Last);
+        _STD _Adl_verify_range(_First, _Last);
 #if _CONTAINER_DEBUG_LEVEL > 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Last - _First == _Extent,

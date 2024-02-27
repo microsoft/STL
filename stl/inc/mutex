@@ -579,7 +579,7 @@ public:
     template <class _Rep, class _Period, class _Predicate>
     bool wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
-        return wait_until(_Lck, _To_absolute_time(_Rel_time), _Pass_fn(_Pred));
+        return wait_until(_Lck, _To_absolute_time(_Rel_time), _STD _Pass_fn(_Pred));
     }
 
     template <class _Clock, class _Duration>
