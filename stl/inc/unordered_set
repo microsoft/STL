@@ -52,10 +52,6 @@ public:
     static const _Kty& _Kfn(const value_type& _Val) noexcept {
         return _Val;
     }
-
-    static int _Nonkfn(const value_type&) noexcept { // extract "non-key" from element value (for container equality)
-        return 0;
-    }
 };
 
 _EXPORT_STD template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,

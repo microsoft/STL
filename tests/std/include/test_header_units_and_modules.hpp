@@ -596,9 +596,29 @@ void test_random() {
 void test_ranges() {
     using namespace std;
     puts("Testing <ranges>.");
-    constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
-    assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
-    static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
+
+    {
+        constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
+        assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
+        static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
+    }
+
+#if TEST_STANDARD >= 23
+    // Also test GH-4404 "unrecoverable error importing module 'std' with std::ranges::views::pairwise_transform"
+    {
+        constexpr array arr{10, 2, 30, 4, 50};
+
+        constexpr auto pairwise_plus = views::pairwise_transform(plus{});
+        const auto vec2              = ranges::to<vector>(arr | pairwise_plus);
+        const vector correct2{12, 32, 34, 54};
+        assert(vec2 == correct2);
+
+        constexpr auto triplewise_plus = views::adjacent_transform<3>([](int x, int y, int z) { return x + y + z; });
+        const auto vec3                = ranges::to<vector>(arr | triplewise_plus);
+        const vector correct3{42, 36, 84};
+        assert(vec3 == correct3);
+    }
+#endif // TEST_STANDARD >= 23
 }
 
 void test_ratio() {

@@ -63,11 +63,6 @@ namespace stdext {
             return _Val;
         }
 
-        _NODISCARD static int _Nonkfn(const value_type&) noexcept {
-            // extract "non-key" from element value (for container equality)
-            return 0;
-        }
-
         _NODISCARD float& _Get_max_bucket_size() noexcept {
             return _Max_buckets;
         }

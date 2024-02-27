@@ -727,7 +727,7 @@ struct _Default_allocator_traits { // traits for std::allocator
 #endif // _HAS_CXX20
         {
             (void) _Al;
-            _Deallocate<_New_alignof<value_type>>(_Ptr, sizeof(value_type) * _Count);
+            _STD _Deallocate<_New_alignof<value_type>>(_Ptr, sizeof(value_type) * _Count);
         }
     }
 

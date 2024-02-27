@@ -133,7 +133,7 @@ __declspec(noalias) double __stdcall __std_max_d(const void* _First, const void*
 
 _STD_BEGIN
 template <class _Ty, class _TVal>
-__declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
+__declspec(noalias) size_t __std_count_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return _STD __std_count_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
@@ -150,7 +150,7 @@ __declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _T
 }
 
 template <class _Ty, class _TVal>
-_Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
+_Ty* __std_find_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return _STD __std_find_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
@@ -171,7 +171,7 @@ _Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
 }
 
 template <class _Ty, class _TVal>
-_Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
+_Ty* __std_find_trivial_unsized(_Ty* const _First, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return _STD __std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
@@ -192,7 +192,7 @@ _Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
 }
 
 template <class _Ty>
-_Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
+_Ty* __std_min_element(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
@@ -213,7 +213,7 @@ _Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
 }
 
 template <class _Ty>
-_Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
+_Ty* __std_max_element(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
@@ -234,7 +234,7 @@ _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
 }
 
 template <class _Ty>
-auto __std_min(_Ty* _First, _Ty* _Last) noexcept {
+auto __std_min(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty>) {
@@ -277,7 +277,7 @@ auto __std_min(_Ty* _First, _Ty* _Last) noexcept {
 }
 
 template <class _Ty>
-auto __std_max(_Ty* _First, _Ty* _Last) noexcept {
+auto __std_max(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty>) {
@@ -1546,8 +1546,8 @@ _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by 
             _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
         }
 
-        decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
-        constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
+        decltype(auto) _UWhere      = _STD _Get_unwrapped_n(_STD move(_Where), _Off);
+        constexpr bool _Need_rewrap = !is_reference_v<decltype(_STD _Get_unwrapped_n(_STD move(_Where), _Off))>;
 
         if constexpr (is_signed_v<_Diff> && _Is_ranges_bidi_iter_v<_InIt>) {
             for (; _Off < 0; ++_Off) {
@@ -1560,7 +1560,7 @@ _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by 
         }
 
         if constexpr (_Need_rewrap) {
-            _Seek_wrapped(_Where, _STD move(_UWhere));
+            _STD _Seek_wrapped(_Where, _STD move(_UWhere));
         }
     }
 }
@@ -1570,9 +1570,9 @@ _NODISCARD _CONSTEXPR17 _Iter_diff_t<_InIt> distance(_InIt _First, _InIt _Last) 
     if constexpr (_Is_ranges_random_iter_v<_InIt>) {
         return _Last - _First; // assume the iterator will do debug checking
     } else {
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst             = _Get_unwrapped(_First);
-        const auto _ULast        = _Get_unwrapped(_Last);
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst             = _STD _Get_unwrapped(_First);
+        const auto _ULast        = _STD _Get_unwrapped(_Last);
         _Iter_diff_t<_InIt> _Off = 0;
         for (; _UFirst != _ULast; ++_UFirst) {
             ++_Off;
@@ -3363,8 +3363,8 @@ namespace ranges {
                     _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
                 }
 
-                decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
-                constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
+                decltype(auto) _UWhere      = _STD _Get_unwrapped_n(_STD move(_Where), _Off);
+                constexpr bool _Need_rewrap = !is_reference_v<decltype(_STD _Get_unwrapped_n(_STD move(_Where), _Off))>;
 
                 if constexpr (bidirectional_iterator<_It>) {
                     for (; _Off < 0; ++_Off) {
@@ -3377,7 +3377,7 @@ namespace ranges {
                 }
 
                 if constexpr (_Need_rewrap) {
-                    _Seek_wrapped(_Where, _STD move(_UWhere));
+                    _STD _Seek_wrapped(_Where, _STD move(_UWhere));
                 }
             }
         }
@@ -3389,18 +3389,19 @@ namespace ranges {
             } else if constexpr (sized_sentinel_for<_Se, _It>) {
                 operator()(_Where, _Last - _Where);
             } else {
-                _Adl_verify_range(_Where, _Last);
+                _STD _Adl_verify_range(_Where, _Last);
 
-                decltype(auto) _UWhere      = _Unwrap_iter<_Se>(static_cast<_It&&>(_Where));
-                constexpr bool _Need_rewrap = !is_reference_v<decltype(_Unwrap_iter<_Se>(static_cast<_It&&>(_Where)))>;
-                decltype(auto) _ULast       = _Unwrap_sent<_It>(static_cast<_Se&&>(_Last));
+                decltype(auto) _UWhere = _RANGES _Unwrap_iter<_Se>(static_cast<_It&&>(_Where));
+                constexpr bool _Need_rewrap =
+                    !is_reference_v<decltype(_RANGES _Unwrap_iter<_Se>(static_cast<_It&&>(_Where)))>;
+                decltype(auto) _ULast = _RANGES _Unwrap_sent<_It>(static_cast<_Se&&>(_Last));
 
                 while (_UWhere != _ULast) {
                     ++_UWhere;
                 }
 
                 if constexpr (_Need_rewrap) {
-                    _Seek_wrapped(_Where, _STD move(_UWhere));
+                    _STD _Seek_wrapped(_Where, _STD move(_UWhere));
                 }
             }
         }
@@ -3446,11 +3447,13 @@ namespace ranges {
     public:
         template <class _It, sentinel_for<_It> _Se>
             requires (!sized_sentinel_for<_Se, _It>)
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(_It _First,
-            _Se _Last) _CONST_CALL_OPERATOR noexcept(noexcept(_Distance_unchecked(_Get_unwrapped(_STD move(_First)),
-            _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
-            _Adl_verify_range(_First, _Last);
-            return _Distance_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(
+            _It _First, _Se _Last) _CONST_CALL_OPERATOR
+            noexcept(noexcept(_Distance_unchecked(
+                _STD _Get_unwrapped(_STD move(_First)), _STD _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
+            _STD _Adl_verify_range(_First, _Last);
+            return _Distance_unchecked(
+                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
         }
 
         template <class _It, sized_sentinel_for<decay_t<_It>> _Se>
