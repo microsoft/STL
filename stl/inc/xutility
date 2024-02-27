@@ -133,7 +133,7 @@ __declspec(noalias) double __stdcall __std_max_d(const void* _First, const void*
 
 _STD_BEGIN
 template <class _Ty, class _TVal>
-__declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
+__declspec(noalias) size_t __std_count_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return _STD __std_count_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
@@ -150,7 +150,7 @@ __declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _T
 }
 
 template <class _Ty, class _TVal>
-_Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
+_Ty* __std_find_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return _STD __std_find_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
@@ -171,7 +171,7 @@ _Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
 }
 
 template <class _Ty, class _TVal>
-_Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
+_Ty* __std_find_trivial_unsized(_Ty* const _First, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return _STD __std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
@@ -192,7 +192,7 @@ _Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
 }
 
 template <class _Ty>
-_Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
+_Ty* __std_min_element(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
@@ -213,7 +213,7 @@ _Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
 }
 
 template <class _Ty>
-_Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
+_Ty* __std_max_element(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
@@ -234,7 +234,7 @@ _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
 }
 
 template <class _Ty>
-auto __std_min(_Ty* _First, _Ty* _Last) noexcept {
+auto __std_min(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty>) {
@@ -277,7 +277,7 @@ auto __std_min(_Ty* _First, _Ty* _Last) noexcept {
 }
 
 template <class _Ty>
-auto __std_max(_Ty* _First, _Ty* _Last) noexcept {
+auto __std_max(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty>) {
