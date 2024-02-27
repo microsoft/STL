@@ -8972,6 +8972,7 @@ namespace ranges {
     concept _Regular_invocable_with_repeated_type =
         _Regular_invocable_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>;
 
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1975579
     template <class _Fn, class _Ty, class _Indices>
     struct _Invoke_result_with_repeated_type_impl;
 
@@ -8983,6 +8984,19 @@ namespace ranges {
     template <class _Fn, class _Ty, size_t _Nx>
     using _Invoke_result_with_repeated_type =
         _Invoke_result_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>::type;
+#else // ^^^ no workaround / workaround vvv
+    template <class _Fn, class _Ty, size_t _Nx, class... _Types>
+    struct _Invoke_result_with_repeated_type_impl
+        : _Invoke_result_with_repeated_type_impl<_Fn, _Ty, _Nx - 1, _Ty, _Types...> {};
+
+    template <class _Fn, class _Ty, class... _Types>
+    struct _Invoke_result_with_repeated_type_impl<_Fn, _Ty, 0, _Types...> {
+        using type = invoke_result_t<_Fn, _Types...>;
+    };
+
+    template <class _Fn, class _Ty, size_t _Nx>
+    using _Invoke_result_with_repeated_type = _Invoke_result_with_repeated_type_impl<_Fn, _Ty, _Nx>::type;
+#endif // ^^^ workaround ^^^
 
     template <class _Vw, class _Fn, size_t _Nx>
     concept _Adjacent_transform_constraints =
