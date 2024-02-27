@@ -8,6 +8,7 @@
 #include <cstring>
 #include <memory>
 #include <new>
+#include <type_traits>
 
 using namespace std;
 
@@ -194,6 +195,149 @@ void test_and_reset(int mallocs, int frees, int news, int deletes, int scorches,
     test(mallocs, frees, news, deletes, scorches, burns);
     reset();
 }
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+// GH-3100: "<memory> etc.: ADL should be avoided when calling _Construct_in_place and its friends"
+
+template <class T>
+struct adl_proof_allocator_provider {
+    struct alloc;
+};
+
+// adl_proof_allocator<T> is equality-comparable even if T is ADL-incompatible.
+template <class T>
+using adl_proof_allocator = typename adl_proof_allocator_provider<T>::alloc;
+
+template <class, class = void>
+constexpr bool is_adl_proof_allocator = false;
+
+template <class Alloc>
+constexpr bool
+    is_adl_proof_allocator<Alloc, void_t<typename adl_proof_allocator_provider<typename Alloc::value_type>::alloc>> =
+        is_same_v<typename adl_proof_allocator_provider<typename Alloc::value_type>::alloc, Alloc>;
+
+template <class T>
+struct adl_proof_allocator_provider<T>::alloc {
+    using value_type = T;
+
+    template <class U>
+    struct rebind {
+        using other = typename adl_proof_allocator_provider<U>::alloc;
+    };
+
+    alloc() = default;
+    template <class OtherAlloc, enable_if_t<is_adl_proof_allocator<OtherAlloc>, int> = 0>
+    constexpr alloc(const OtherAlloc&) noexcept {}
+
+    T* allocate(const size_t n) {
+        return allocator<T>{}.allocate(n);
+    }
+
+#if _HAS_CXX23
+    allocation_result<T*> allocate_at_least(const size_t n) {
+        return allocator<T>{}.allocate_at_least(n);
+    }
+#endif // _HAS_CXX23
+
+    void deallocate(T* const p, const size_t n) {
+        return allocator<T>{}.deallocate(p, n);
+    }
+
+    template <class OtherAlloc, enable_if_t<is_adl_proof_allocator<OtherAlloc>, int> = 0>
+    friend constexpr bool operator==(const alloc&, const OtherAlloc&) noexcept {
+        return true;
+    }
+#if !_HAS_CXX20
+    template <class OtherAlloc, enable_if_t<is_adl_proof_allocator<OtherAlloc>, int> = 0>
+    friend constexpr bool operator!=(const alloc&, const OtherAlloc&) noexcept {
+        return false;
+    }
+#endif // !_HAS_CXX20
+};
+
+template <class T>
+struct holder {
+    T t;
+};
+
+struct incomplete;
+
+template <class T>
+struct tagged_nontrivial {
+    tagged_nontrivial() noexcept {}
+    tagged_nontrivial(const tagged_nontrivial&) {}
+    tagged_nontrivial(tagged_nontrivial&&) noexcept {}
+    tagged_nontrivial& operator=(const tagged_nontrivial&) {
+        return *this;
+    }
+    tagged_nontrivial& operator=(tagged_nontrivial&&) noexcept {
+        return *this;
+    }
+    ~tagged_nontrivial() noexcept {}
+};
+
+template <class T>
+void test_adl_proof_shared_ptr_creation_one() { // COMPILE-ONLY
+    // Function calls are intentionally qualified.
+    (void) shared_ptr<T>{};
+    (void) shared_ptr<T>{new T};
+    (void) shared_ptr<T>{new T, default_delete<T>{}};
+    (void) shared_ptr<T>{new T, default_delete<T>{}, adl_proof_allocator<T>{}};
+    (void) shared_ptr<T>{std::make_unique<T>()};
+
+    (void) std::make_shared<T>();
+    (void) std::make_shared<T>(T{});
+    (void) std::allocate_shared<T>(adl_proof_allocator<T>{});
+    (void) std::allocate_shared<T>(adl_proof_allocator<T>{}, T{});
+
+#if _HAS_CXX20
+    T src[42]{};
+    T src2[6][6]{};
+
+    (void) std::make_shared<T[]>(42);
+    (void) std::make_shared<T[]>(42, T{});
+    (void) std::make_shared<T[][42]>(42);
+    (void) std::make_shared<T[][42]>(42, src);
+    (void) std::make_shared<T[42][42]>();
+    (void) std::make_shared<T[42][42]>(src);
+
+    (void) std::make_shared<T[][6][6]>(6, src2);
+    (void) std::make_shared<T[6][6][6]>(src2);
+
+    (void) std::make_shared_for_overwrite<T>();
+    (void) std::make_shared_for_overwrite<T[]>(42);
+    (void) std::make_shared_for_overwrite<T[42]>();
+    (void) std::make_shared_for_overwrite<T[][42]>(42);
+    (void) std::make_shared_for_overwrite<T[42][42]>();
+
+    (void) std::allocate_shared<T[]>(adl_proof_allocator<T>{}, 42);
+    (void) std::allocate_shared<T[]>(adl_proof_allocator<T>{}, 42, T{});
+    (void) std::allocate_shared<T[][42]>(adl_proof_allocator<T>{}, 42);
+    (void) std::allocate_shared<T[][42]>(adl_proof_allocator<T>{}, 42, src);
+    (void) std::allocate_shared<T[42]>(adl_proof_allocator<T>{});
+    (void) std::allocate_shared<T[42]>(adl_proof_allocator<T>{}, T{});
+    (void) std::allocate_shared<T[42][42]>(adl_proof_allocator<T>{});
+    (void) std::allocate_shared<T[42][42]>(adl_proof_allocator<T>{}, src);
+
+    (void) std::allocate_shared<T[][6][6]>(adl_proof_allocator<T>{}, 6, src2);
+    (void) std::allocate_shared<T[6][6][6]>(adl_proof_allocator<T>{}, src2);
+
+    (void) std::allocate_shared_for_overwrite<T>(adl_proof_allocator<T>{});
+    (void) std::allocate_shared_for_overwrite<T[]>(adl_proof_allocator<T>{}, 42);
+    (void) std::allocate_shared_for_overwrite<T[42]>(adl_proof_allocator<T>{});
+    (void) std::allocate_shared_for_overwrite<T[][42]>(adl_proof_allocator<T>{}, 42);
+    (void) std::allocate_shared_for_overwrite<T[42][42]>(adl_proof_allocator<T>{});
+#endif // _HAS_CXX20
+}
+
+void test_adl_proof_shared_ptr_creation() { // COMPILE-ONLY
+    using validator             = holder<incomplete>*;
+    using validating_nontrivial = tagged_nontrivial<holder<incomplete>>;
+
+    test_adl_proof_shared_ptr_creation_one<validator>();
+    test_adl_proof_shared_ptr_creation_one<validating_nontrivial>();
+}
+#endif // ^^^ no workaround ^^^
 
 
 int main() {
