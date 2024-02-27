@@ -806,6 +806,20 @@ constexpr bool validate_empty_ranges() {
     return true;
 }
 
+// Also test GH-4414: "<ranges>: zip_transform does not accept non const iterable ranges"
+constexpr bool test_gh_4414() {
+    auto evens_and_odds = views::zip_transform([](int even, int odd) { return even + odd; },
+        views::iota(0, 10) | views::filter([](int i) { return i % 2 == 0; }),
+        views::iota(0, 10) | views::filter([](int i) { return i % 2 != 0; }));
+
+    using ZippedTransformed = decltype(evens_and_odds);
+    STATIC_ASSERT(ranges::range<ZippedTransformed>);
+    STATIC_ASSERT(!ranges::range<const ZippedTransformed>);
+
+    constexpr int expected_results[]{1, 5, 9, 13, 17};
+    return ranges::equal(expected_results, evens_and_odds);
+}
+
 int main() {
     // Empty RangeTypes... parameter pack
     {
@@ -857,6 +871,10 @@ int main() {
             test_element_array_one, test_element_array_two, test_element_array_three));
         test_one(three_element_transform_closure, three_range_transform_results_array, test_element_array_one,
             test_element_array_two, test_element_array_three);
+    }
+    {
+        STATIC_ASSERT(test_gh_4414());
+        assert(test_gh_4414());
     }
 
     return 0;

@@ -8582,6 +8582,10 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Zip_fn zip{};
     } // namespace views
 
+    template <class _Func, class... _ViewTypes>
+    concept _Can_const_iterate_zip_transform_view =
+        range<const zip_view<_ViewTypes...>> && regular_invocable<const _Func&, range_reference_t<const _ViewTypes>...>;
+
     _EXPORT_STD template <class _Func, class... _ViewTypes>
         requires _Zip_transform_constraints<_Func, _ViewTypes...>
     class zip_transform_view : public view_interface<zip_transform_view<_Func, _ViewTypes...>> {
@@ -8833,9 +8837,6 @@ namespace ranges {
             }
         }
 
-        static constexpr bool _Enable_const_begin_end =
-            (range<const _Inner_view> && regular_invocable<const _Func&, range_reference_t<const _ViewTypes>...>);
-
     public:
         zip_transform_view() = default;
 
@@ -8849,7 +8850,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto begin() const noexcept(noexcept(_Iterator<true>{*this, _Zip.begin()})) // strengthened
-            requires _Enable_const_begin_end
+            requires _Can_const_iterate_zip_transform_view<_Func, _ViewTypes...>
         {
             return _Iterator<true>{*this, _Zip.begin()};
         }
@@ -8863,7 +8864,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto end() const noexcept(_Is_end_noexcept<true>()) // strengthened
-            requires _Enable_const_begin_end
+            requires _Can_const_iterate_zip_transform_view<_Func, _ViewTypes...>
         {
             if constexpr (common_range<const _Inner_view>) {
                 return _Iterator<true>{*this, _Zip.end()};
@@ -8971,6 +8972,7 @@ namespace ranges {
     concept _Regular_invocable_with_repeated_type =
         _Regular_invocable_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>;
 
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1975579
     template <class _Fn, class _Ty, class _Indices>
     struct _Invoke_result_with_repeated_type_impl;
 
@@ -8982,6 +8984,19 @@ namespace ranges {
     template <class _Fn, class _Ty, size_t _Nx>
     using _Invoke_result_with_repeated_type =
         _Invoke_result_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>::type;
+#else // ^^^ no workaround / workaround vvv
+    template <class _Fn, class _Ty, size_t _Nx, class... _Types>
+    struct _Invoke_result_with_repeated_type_impl
+        : _Invoke_result_with_repeated_type_impl<_Fn, _Ty, _Nx - 1, _Ty, _Types...> {};
+
+    template <class _Fn, class _Ty, class... _Types>
+    struct _Invoke_result_with_repeated_type_impl<_Fn, _Ty, 0, _Types...> {
+        using type = invoke_result_t<_Fn, _Types...>;
+    };
+
+    template <class _Fn, class _Ty, size_t _Nx>
+    using _Invoke_result_with_repeated_type = _Invoke_result_with_repeated_type_impl<_Fn, _Ty, _Nx>::type;
+#endif // ^^^ workaround ^^^
 
     template <class _Vw, class _Fn, size_t _Nx>
     concept _Adjacent_transform_constraints =

@@ -588,6 +588,67 @@ constinit atomic<shared_ptr<bool>> a{};
 constinit atomic<shared_ptr<bool>> b{nullptr};
 #endif // ^^^ no workaround ^^^
 
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+// GH-3100: "<memory> etc.: ADL should be avoided when calling _Construct_in_place and its friends"
+
+template <class T>
+struct holder {
+    T t;
+};
+
+struct incomplete;
+
+template <class T>
+struct tagged_nontrivial {
+    tagged_nontrivial() noexcept {}
+    tagged_nontrivial(const tagged_nontrivial&) {}
+    tagged_nontrivial(tagged_nontrivial&&) noexcept {}
+    tagged_nontrivial& operator=(const tagged_nontrivial&) {
+        return *this;
+    }
+    tagged_nontrivial& operator=(tagged_nontrivial&&) noexcept {
+        return *this;
+    }
+    ~tagged_nontrivial() noexcept {}
+};
+
+template <class T>
+void test_adl_proof_atomic_shared_weak_ptr_one() { // COMPILE-ONLY
+    {
+        atomic<shared_ptr<T>> sp;
+        (void) sp.wait({});
+        (void) sp.store({});
+        (void) sp.exchange({});
+        (void) sp.load();
+    }
+    {
+        atomic<weak_ptr<T>> wp;
+        (void) wp.wait({});
+        (void) wp.store({});
+        (void) wp.exchange({});
+        (void) wp.load();
+    }
+}
+
+void test_adl_proof_atomic_shared_weak_ptr() { // COMPILE-ONLY
+    using validator = holder<incomplete>*;
+
+    test_adl_proof_atomic_shared_weak_ptr_one<validator>();
+    test_adl_proof_atomic_shared_weak_ptr_one<validator[]>();
+    test_adl_proof_atomic_shared_weak_ptr_one<validator[42]>();
+    test_adl_proof_atomic_shared_weak_ptr_one<validator[][42]>();
+    test_adl_proof_atomic_shared_weak_ptr_one<validator[42][42]>();
+
+    using validating_nontrivial = tagged_nontrivial<holder<incomplete>>;
+
+    test_adl_proof_atomic_shared_weak_ptr_one<validating_nontrivial>();
+    test_adl_proof_atomic_shared_weak_ptr_one<validating_nontrivial[]>();
+    test_adl_proof_atomic_shared_weak_ptr_one<validating_nontrivial[42]>();
+    test_adl_proof_atomic_shared_weak_ptr_one<validating_nontrivial[][42]>();
+    test_adl_proof_atomic_shared_weak_ptr_one<validating_nontrivial[42][42]>();
+}
+#endif // ^^^ no workaround ^^^
+
 int main() {
     // These values for is_always_lock_free are not required by the standard, but they are true for our implementation.
     static_assert(atomic<shared_ptr<int>>::is_always_lock_free == false);
