@@ -15,6 +15,7 @@
 #include <random>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #if _HAS_CXX20
@@ -475,7 +476,7 @@ void test_one_container() {
 }
 
 template <size_t N>
-void test_randomized_bitset(mt19937_64& gen) {
+bool test_randomized_bitset(mt19937_64& gen) {
     string str;
     wstring wstr;
     str.reserve(N);
@@ -496,6 +497,19 @@ void test_randomized_bitset(mt19937_64& gen) {
 
     assert(b.to_string() == str);
     assert(b.template to_string<wchar_t>() == wstr);
+
+    return true;
+}
+
+template <size_t Base, size_t... Vals>
+void test_randomized_bitset_base(index_sequence<Vals...>, mt19937_64& gen) {
+    bool ignored[] = {test_randomized_bitset<Base + Vals>(gen)...};
+    (void) ignored;
+}
+
+template <size_t Base, size_t Count>
+void test_randomized_bitset_base_count(mt19937_64& gen) {
+    test_randomized_bitset_base<Base>(make_index_sequence<Count>{}, gen);
 }
 
 void test_bitset(mt19937_64& gen) {
@@ -539,7 +553,7 @@ void test_bitset(mt19937_64& gen) {
     assert(bitset<75>(0xFEDCBA9876543210ULL).to_string<char32_t>()
            == U"000000000001111111011011100101110101001100001110110010101000011001000010000"); // not vectorized
 
-    test_randomized_bitset<2048>(gen);
+    test_randomized_bitset_base_count<512 - 5, 32 + 10>(gen);
 }
 
 void test_various_containers() {
