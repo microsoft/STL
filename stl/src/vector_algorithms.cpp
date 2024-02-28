@@ -2237,8 +2237,8 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
 
         if (_Size_bits > 0) {
             __assume(_Size_bits < 32);
-            uint32_t _Val;
-            memcpy(&_Val, _Src, _Size_bits / 4);
+            uint32_t _Val = 0;
+            memcpy(&_Val, _Src, (_Size_bits + 7) / 8);
             const __m256i _Elems = _Bitset_to_string_1_step_avx(_Val, _Px0, _Px1);
             char _Tmp[32];
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Elems);
