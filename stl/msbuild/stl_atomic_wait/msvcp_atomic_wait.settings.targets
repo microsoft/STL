@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             <DestFolder2>$(IntermediateOutputDirectory)</DestFolder2>
             <DestFile>$(DllDefName)</DestFile>
         </DefFromI>
-        <RCResourceFile Include="$(MSBuildThisFileDirectory)\msvcprt_atomic_wait.rc"/>
+        <ResourceCompile Include="$(MSBuildThisFileDirectory)\msvcprt_atomic_wait.rc"/>
     </ItemGroup>
 
     <ItemGroup>
