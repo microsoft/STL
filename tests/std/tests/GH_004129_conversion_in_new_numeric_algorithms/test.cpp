@@ -27,7 +27,7 @@ struct implicitly_convertible_to_i32_only {
 static_assert(!is_constructible_v<int32_t, implicitly_convertible_to_i32_only>);
 static_assert(is_convertible_v<implicitly_convertible_to_i32_only, int32_t>);
 
-struct implicity_validating_converter {
+struct implicitly_validating_converter {
     implicitly_convertible_to_i32_only operator()(int n) const noexcept {
         return {n};
     }
@@ -50,7 +50,7 @@ struct transformation_validating_converter {
     }
 };
 
-struct implicity_validating_plus {
+struct implicitly_validating_plus {
     implicitly_convertible_to_i32_only operator()(
         implicitly_convertible_to_i32_only l, implicitly_convertible_to_i32_only r) const noexcept {
         return implicitly_convertible_to_i32_only{l.n + r.n};
@@ -69,7 +69,7 @@ struct implicity_validating_plus {
     }
 };
 
-struct implicity_validating_plus_for_transformation {
+struct implicitly_validating_plus_for_transformation {
     implicitly_convertible_to_i32_only operator()(
         explicitly_convertible_to_i32_only l, explicitly_convertible_to_i32_only r) const noexcept {
         return implicitly_convertible_to_i32_only{l.n + r.n};
@@ -88,7 +88,7 @@ struct implicity_validating_plus_for_transformation {
     }
 };
 
-struct implicity_validating_multiplies {
+struct implicitly_validating_multiplies {
     implicitly_convertible_to_i32_only operator()(
         implicitly_convertible_to_i32_only l, implicitly_convertible_to_i32_only r) const noexcept {
         return implicitly_convertible_to_i32_only{l.n * r.n};
@@ -111,29 +111,29 @@ void test_copy_initialization_for_numeric_algorithms() {
     int arr[1]{};
     implicitly_convertible_to_i32_only brr[1]{};
 
-    assert(reduce(arr, arr, int32_t{}, implicity_validating_plus{}) == 0);
-    assert(reduce(brr, brr, int32_t{}, implicity_validating_plus{}) == 0);
+    assert(reduce(arr, arr, int32_t{}, implicitly_validating_plus{}) == 0);
+    assert(reduce(brr, brr, int32_t{}, implicitly_validating_plus{}) == 0);
 
-    assert(transform_reduce(arr, arr, arr, int32_t{}, implicity_validating_plus{}, implicity_validating_multiplies{})
+    assert(transform_reduce(arr, arr, arr, int32_t{}, implicitly_validating_plus{}, implicitly_validating_multiplies{})
            == 0);
-    assert(transform_reduce(arr, arr, brr, int32_t{}, implicity_validating_plus{}, implicity_validating_multiplies{})
+    assert(transform_reduce(arr, arr, brr, int32_t{}, implicitly_validating_plus{}, implicitly_validating_multiplies{})
            == 0);
 
-    assert(transform_reduce(arr, arr, int32_t{}, implicity_validating_plus{}, implicity_validating_converter{}) == 0);
-    assert(transform_reduce(brr, brr, int32_t{}, implicity_validating_plus{}, implicity_validating_converter{}) == 0);
+    assert(transform_reduce(arr, arr, int32_t{}, implicitly_validating_plus{}, implicitly_validating_converter{}) == 0);
+    assert(transform_reduce(brr, brr, int32_t{}, implicitly_validating_plus{}, implicitly_validating_converter{}) == 0);
 
-    assert(exclusive_scan(arr, arr, arr, int32_t{}, implicity_validating_plus{}) == arr);
+    assert(exclusive_scan(arr, arr, arr, int32_t{}, implicitly_validating_plus{}) == arr);
 
-    assert(inclusive_scan(arr, arr, arr, implicity_validating_plus{}) == arr);
-    assert(inclusive_scan(arr, arr, arr, implicity_validating_plus{}, int32_t{}) == arr);
+    assert(inclusive_scan(arr, arr, arr, implicitly_validating_plus{}) == arr);
+    assert(inclusive_scan(arr, arr, arr, implicitly_validating_plus{}, int32_t{}) == arr);
 
-    assert(transform_exclusive_scan(arr, arr, arr, int32_t{}, implicity_validating_plus_for_transformation{},
+    assert(transform_exclusive_scan(arr, arr, arr, int32_t{}, implicitly_validating_plus_for_transformation{},
                transformation_validating_converter{})
            == arr);
 
-    assert(
-        transform_inclusive_scan(brr, brr, brr, implicity_validating_plus{}, implicity_validating_converter{}) == brr);
-    assert(transform_inclusive_scan(arr, arr, arr, implicity_validating_plus_for_transformation{},
+    assert(transform_inclusive_scan(brr, brr, brr, implicitly_validating_plus{}, implicitly_validating_converter{})
+           == brr);
+    assert(transform_inclusive_scan(arr, arr, arr, implicitly_validating_plus_for_transformation{},
                transformation_validating_converter{}, int32_t{})
            == arr);
 }
@@ -143,33 +143,34 @@ void test_copy_initialization_for_parallel_numeric_algorithms() {
     int arr[1]{};
     implicitly_convertible_to_i32_only brr[1]{};
 
-    assert(reduce(ExPo, arr, arr, int32_t{}, implicity_validating_plus{}) == 0);
-    assert(reduce(ExPo, brr, brr, int32_t{}, implicity_validating_plus{}) == 0);
+    assert(reduce(ExPo, arr, arr, int32_t{}, implicitly_validating_plus{}) == 0);
+    assert(reduce(ExPo, brr, brr, int32_t{}, implicitly_validating_plus{}) == 0);
 
-    assert(
-        transform_reduce(ExPo, arr, arr, arr, int32_t{}, implicity_validating_plus{}, implicity_validating_multiplies{})
-        == 0);
-    assert(
-        transform_reduce(ExPo, arr, arr, brr, int32_t{}, implicity_validating_plus{}, implicity_validating_multiplies{})
-        == 0);
-
-    assert(transform_reduce(ExPo, arr, arr, int32_t{}, implicity_validating_plus{}, implicity_validating_converter{})
+    assert(transform_reduce(
+               ExPo, arr, arr, arr, int32_t{}, implicitly_validating_plus{}, implicitly_validating_multiplies{})
            == 0);
-    assert(transform_reduce(ExPo, brr, brr, int32_t{}, implicity_validating_plus{}, implicity_validating_converter{})
+    assert(transform_reduce(
+               ExPo, arr, arr, brr, int32_t{}, implicitly_validating_plus{}, implicitly_validating_multiplies{})
            == 0);
 
-    assert(exclusive_scan(ExPo, arr, arr, arr, int32_t{}, implicity_validating_plus{}) == arr);
+    assert(transform_reduce(ExPo, arr, arr, int32_t{}, implicitly_validating_plus{}, implicitly_validating_converter{})
+           == 0);
+    assert(transform_reduce(ExPo, brr, brr, int32_t{}, implicitly_validating_plus{}, implicitly_validating_converter{})
+           == 0);
 
-    assert(inclusive_scan(ExPo, arr, arr, arr, implicity_validating_plus{}) == arr);
-    assert(inclusive_scan(ExPo, arr, arr, arr, implicity_validating_plus{}, int32_t{}) == arr);
+    assert(exclusive_scan(ExPo, arr, arr, arr, int32_t{}, implicitly_validating_plus{}) == arr);
 
-    assert(transform_exclusive_scan(ExPo, arr, arr, arr, int32_t{}, implicity_validating_plus_for_transformation{},
+    assert(inclusive_scan(ExPo, arr, arr, arr, implicitly_validating_plus{}) == arr);
+    assert(inclusive_scan(ExPo, arr, arr, arr, implicitly_validating_plus{}, int32_t{}) == arr);
+
+    assert(transform_exclusive_scan(ExPo, arr, arr, arr, int32_t{}, implicitly_validating_plus_for_transformation{},
                transformation_validating_converter{})
            == arr);
 
-    assert(transform_inclusive_scan(ExPo, brr, brr, brr, implicity_validating_plus{}, implicity_validating_converter{})
-           == brr);
-    assert(transform_inclusive_scan(ExPo, arr, arr, arr, implicity_validating_plus_for_transformation{},
+    assert(
+        transform_inclusive_scan(ExPo, brr, brr, brr, implicitly_validating_plus{}, implicitly_validating_converter{})
+        == brr);
+    assert(transform_inclusive_scan(ExPo, arr, arr, arr, implicitly_validating_plus_for_transformation{},
                transformation_validating_converter{}, int32_t{})
            == arr);
 }
