@@ -6,7 +6,6 @@
   -->
   <PropertyGroup Label="Globals">
     <ProjectGuid>{22F86914-609E-4BF5-A1DA-2804C1251044}</ProjectGuid>
-    <UseRetailTargets>true</UseRetailTargets>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Cpp.Default.props))" />
   <PropertyGroup>
