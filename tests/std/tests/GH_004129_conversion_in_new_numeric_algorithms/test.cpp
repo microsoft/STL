@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// intentionally test narrowing conversion form int64_t to int32_t
+// intentionally test narrowing conversion from int64_t to int32_t
 #pragma warning(disable : 4244)
 
 #include <cassert>
