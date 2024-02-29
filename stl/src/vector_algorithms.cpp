@@ -2169,6 +2169,17 @@ __declspec(noalias) size_t
 
 #ifndef _M_ARM64EC
 namespace {
+    __m256i __forceinline _Bitset_to_string_1_step_avx(const uint32_t _Val, const __m256i _Px0, const __m256i _Px1) {
+        const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
+        const __m128i _Vx1 = _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x01010101, 0x02020202, 0x03030303));
+        const __m256i _Vx2 = _mm256_castsi128_si256(_Vx1);
+        const __m256i _Vx3 = _mm256_permutevar8x32_epi32(_Vx2, _mm256_set_epi32(3, 3, 2, 2, 1, 1, 0, 0));
+        const __m256i _Msk = _mm256_and_si256(_Vx3, _mm256_set1_epi64x(0x0102040810204080));
+        const __m256i _Ex0 = _mm256_cmpeq_epi8(_Msk, _mm256_setzero_si256());
+        const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
+        return _Ex1;
+    }
+
     __m128i __forceinline _Bitset_to_string_1_step(const uint16_t _Val, const __m128i _Px0, const __m128i _Px1) {
         const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
         const __m128i _Vx1 = _mm_unpacklo_epi8(_Vx0, _Vx0);
@@ -2177,6 +2188,18 @@ namespace {
         const __m128i _Msk = _mm_and_si128(_Vx3, _mm_set1_epi64x(0x0102040810204080));
         const __m128i _Ex0 = _mm_cmpeq_epi8(_Msk, _mm_setzero_si128());
         const __m128i _Ex1 = _mm_xor_si128(_mm_and_si128(_Ex0, _Px0), _Px1);
+        return _Ex1;
+    }
+
+    __m256i __forceinline _Bitset_to_string_2_step_avx(const uint16_t _Val, const __m256i _Px0, const __m256i _Px1) {
+        const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
+        const __m128i _Vx1 = _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x00000000, 0x01010101, 0x01010101));
+        const __m256i _Vx2 = _mm256_castsi128_si256(_Vx1);
+        const __m256i _Vx3 = _mm256_permute4x64_epi64(_Vx2, _MM_SHUFFLE(1, 1, 0, 0));
+        const __m256i _Msk = _mm256_and_si256(
+            _Vx3, _mm256_set_epi64x(0x0001000200040008, 0x0010002000400080, 0x0001000200040008, 0x0010002000400080));
+        const __m256i _Ex0 = _mm256_cmpeq_epi16(_Msk, _mm256_setzero_si256());
+        const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
         return _Ex1;
     }
 
@@ -2195,6 +2218,38 @@ extern "C" {
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* const _Dest, const void* _Src, size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
 #ifndef _M_ARM64EC
+    if (_Use_avx2() && _Size_bits >= 256) {
+        const __m256i _Px0 = _mm256_broadcastb_epi8(_mm_cvtsi32_si128(_Elem0));
+        const __m256i _Px1 = _mm256_broadcastb_epi8(_mm_cvtsi32_si128(_Elem1));
+        if (_Size_bits >= 32) {
+            char* _Pos = _Dest + _Size_bits;
+            _Size_bits &= 0x1F;
+            char* const _Stop_at = _Dest + _Size_bits;
+            do {
+                uint32_t _Val;
+                memcpy(&_Val, _Src, 4);
+                const __m256i _Elems = _Bitset_to_string_1_step_avx(_Val, _Px0, _Px1);
+                _Pos -= 32;
+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Pos), _Elems);
+                _Advance_bytes(_Src, 4);
+            } while (_Pos != _Stop_at);
+        }
+
+        if (_Size_bits > 0) {
+            __assume(_Size_bits < 32);
+            uint32_t _Val = 0;
+            memcpy(&_Val, _Src, (_Size_bits + 7) / 8);
+            const __m256i _Elems = _Bitset_to_string_1_step_avx(_Val, _Px0, _Px1);
+            char _Tmp[32];
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Elems);
+            const char* const _Tmpd = _Tmp + (32 - _Size_bits);
+            memcpy(_Dest, _Tmpd, _Size_bits);
+        }
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+        return;
+    }
+
     if (_Use_sse2()) {
         const __m128i _Px0 = _mm_set1_epi8(_Elem0 ^ _Elem1);
         const __m128i _Px1 = _mm_set1_epi8(_Elem1);
@@ -2241,6 +2296,43 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     wchar_t* const _Dest, const void* _Src, size_t _Size_bits, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
 #ifndef _M_ARM64EC
+    if (_Use_avx2() && _Size_bits >= 256) {
+        const __m256i _Px0 = _mm256_broadcastw_epi16(_mm_cvtsi32_si128(_Elem0));
+        const __m256i _Px1 = _mm256_broadcastw_epi16(_mm_cvtsi32_si128(_Elem1));
+
+        if (_Size_bits >= 16) {
+            wchar_t* _Pos = _Dest + _Size_bits;
+            _Size_bits &= 0xF;
+            wchar_t* const _Stop_at = _Dest + _Size_bits;
+            do {
+                uint16_t _Val;
+                memcpy(&_Val, _Src, 2);
+                const __m256i _Elems = _Bitset_to_string_2_step_avx(_Val, _Px0, _Px1);
+                _Pos -= 16;
+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Pos), _Elems);
+                _Advance_bytes(_Src, 2);
+            } while (_Pos != _Stop_at);
+        }
+
+        if (_Size_bits > 0) {
+            __assume(_Size_bits < 16);
+            uint16_t _Val;
+            if (_Size_bits > 8) {
+                memcpy(&_Val, _Src, 2);
+            } else {
+                _Val = *reinterpret_cast<const uint8_t*>(_Src);
+            }
+            const __m256i _Elems = _Bitset_to_string_2_step_avx(_Val, _Px0, _Px1);
+            wchar_t _Tmp[16];
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Elems);
+            const wchar_t* const _Tmpd = _Tmp + (16 - _Size_bits);
+            memcpy(_Dest, _Tmpd, _Size_bits * 2);
+        }
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+        return;
+    }
+
     if (_Use_sse2()) {
         const __m128i _Px0 = _mm_set1_epi16(_Elem0 ^ _Elem1);
         const __m128i _Px1 = _mm_set1_epi16(_Elem1);
