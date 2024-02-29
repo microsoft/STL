@@ -175,7 +175,7 @@ STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<true, char8_t, char8_t>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<true, char16_t, char16_t>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<true, char32_t, char32_t>());
 
-// Don't allow diffrent size integrals
+// Don't allow different size integrals
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, short, int>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, long long, int>());
 
