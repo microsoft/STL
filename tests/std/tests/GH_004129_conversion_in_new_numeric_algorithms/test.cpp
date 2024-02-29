@@ -44,7 +44,7 @@ struct explicitly_convertible_to_i32_only {
 static_assert(is_constructible_v<int32_t, explicitly_convertible_to_i32_only>);
 static_assert(!is_convertible_v<explicitly_convertible_to_i32_only, int32_t>);
 
-struct tranformation_validating_converter {
+struct transformation_validating_converter {
     explicitly_convertible_to_i32_only operator()(int n) const noexcept {
         return {n};
     }
@@ -128,13 +128,13 @@ void test_copy_initialization_for_numeric_algorithms() {
     assert(inclusive_scan(arr, arr, arr, implicity_validating_plus{}, int32_t{}) == arr);
 
     assert(transform_exclusive_scan(arr, arr, arr, int32_t{}, implicity_validating_plus_for_transformation{},
-               tranformation_validating_converter{})
+               transformation_validating_converter{})
            == arr);
 
     assert(
         transform_inclusive_scan(brr, brr, brr, implicity_validating_plus{}, implicity_validating_converter{}) == brr);
     assert(transform_inclusive_scan(arr, arr, arr, implicity_validating_plus_for_transformation{},
-               tranformation_validating_converter{}, int32_t{})
+               transformation_validating_converter{}, int32_t{})
            == arr);
 }
 
@@ -164,13 +164,13 @@ void test_copy_initialization_for_parallel_numeric_algorithms() {
     assert(inclusive_scan(ExPo, arr, arr, arr, implicity_validating_plus{}, int32_t{}) == arr);
 
     assert(transform_exclusive_scan(ExPo, arr, arr, arr, int32_t{}, implicity_validating_plus_for_transformation{},
-               tranformation_validating_converter{})
+               transformation_validating_converter{})
            == arr);
 
     assert(transform_inclusive_scan(ExPo, brr, brr, brr, implicity_validating_plus{}, implicity_validating_converter{})
            == brr);
     assert(transform_inclusive_scan(ExPo, arr, arr, arr, implicity_validating_plus_for_transformation{},
-               tranformation_validating_converter{}, int32_t{})
+               transformation_validating_converter{}, int32_t{})
            == arr);
 }
 
