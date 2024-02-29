@@ -143,25 +143,25 @@ void _Construct_in_place_by_deref(_Ty& _Val, const _FwdIt& _Iter) {
 }
 
 template <class _Ty, class _UnaryOp, class _FwdIt>
-void _Construct_in_place_by_transform_deref(_Ty& _Val, _UnaryOp& _Transform_op, const _FwdIt& _Iter) {
+void _Construct_in_place_by_transform_deref(_Ty& _Val, _UnaryOp _Transform_op, const _FwdIt& _Iter) {
     ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(_Transform_op(*_Iter));
 }
 
 template <class _Ty, class _BinaryOp, class _ArgTy>
-void _Implicitly_construct_in_place_by_binary_op(_Ty& _Val, _BinaryOp& _Reduce_op, _ArgTy& _Left, _ArgTy& _Right) {
+void _Implicitly_construct_in_place_by_binary_op(_Ty& _Val, _BinaryOp _Reduce_op, _ArgTy& _Left, _ArgTy& _Right) {
     ::new (static_cast<void*>(_STD addressof(_Val))) _Ty([&]() -> _Ty { return _Reduce_op(_Left, _Right); }());
 }
 
 template <class _Ty, class _BinaryOp, class _LeftTy, class _FwdIt>
 void _Implicitly_construct_in_place_by_binary_op_deref_rhs(
-    _Ty& _Val, _BinaryOp& _Reduce_op, _LeftTy&& _Left, const _FwdIt& _Iter) {
+    _Ty& _Val, _BinaryOp _Reduce_op, _LeftTy&& _Left, const _FwdIt& _Iter) {
     ::new (static_cast<void*>(_STD addressof(_Val)))
         _Ty([&]() -> _Ty { return _Reduce_op(_STD forward<_LeftTy>(_Left), *_Iter); }());
 }
 
 template <class _Ty, class _BinaryOp, class _UnaryOp, class _LeftTy, class _FwdIt>
 void _Implicitly_construct_in_place_by_binary_op_transform_deref_rhs(
-    _Ty& _Val, _BinaryOp& _Reduce_op, _UnaryOp& _Transform_op, _LeftTy&& _Left, const _FwdIt& _Iter) {
+    _Ty& _Val, _BinaryOp _Reduce_op, _UnaryOp _Transform_op, _LeftTy&& _Left, const _FwdIt& _Iter) {
     ::new (static_cast<void*>(_STD addressof(_Val)))
         _Ty([&]() -> _Ty { return _Reduce_op(_STD forward<_LeftTy>(_Left), _Transform_op(*_Iter)); }());
 }
