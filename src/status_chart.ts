@@ -84,7 +84,6 @@ function load_charts() {
                 new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '--color-neutral-emphasis', true),
                 new DatasetInfo('libcxx', 'Skipped Libcxx Tests', 'largeAxis', '--color-attention-emphasis'),
 
-                new DatasetInfo('avg_age', 'Average Age', 'leftAxis', '--color-neutral-emphasis', true),
                 new DatasetInfo('sum_age', 'Combined Age', 'rightAxis', '--color-fg-default'),
 
                 new DatasetInfo('merged', 'Line: Sliding Window', 'mergeAxis', '--color-accent-emphasis'),
@@ -204,10 +203,6 @@ function load_charts() {
     const age_data = {
         datasets: [
             {
-                data: get_daily_values('avg_age'),
-                ...get_dataset_properties('avg_age'),
-            },
-            {
                 data: get_daily_values('sum_age'),
                 ...get_dataset_properties('sum_age'),
             },
@@ -248,6 +243,10 @@ function load_charts() {
         },
         {
             min: '2022-01-01',
+            time: { unit: 'year' },
+        },
+        {
+            min: '2023-01-01',
             time: { unit: 'quarter' },
         },
     ];
@@ -393,7 +392,6 @@ function load_charts() {
         ...make_common_options(),
         scales: {
             x: make_xAxis(timeframes[timeframe_github_idx]),
-            leftAxis: make_yAxis('left', 'Average (days)', 0, 500, 100),
             rightAxis: make_yAxis('right', 'Combined (PR-months)', 0, 500, 100),
         },
     };
@@ -526,18 +524,7 @@ function load_charts() {
         update_all_timeframes();
     });
 
-    const daily_keys = [
-        'cxx20',
-        'cxx23',
-        'cxx26',
-        'lwg',
-        'pr',
-        'bug',
-        'issue',
-        'avg_age',
-        'sum_age',
-        'merged',
-    ] as const;
+    const daily_keys = ['cxx20', 'cxx23', 'cxx26', 'lwg', 'pr', 'bug', 'issue', 'sum_age', 'merged'] as const;
     for (const field of daily_keys) {
         const value = daily_table[daily_table.length - 1][field] ?? 0;
         const span = getElementByIdAs(`currentValue-${field}`, HTMLSpanElement);
