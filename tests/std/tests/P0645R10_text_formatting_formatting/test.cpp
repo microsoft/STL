@@ -1506,6 +1506,14 @@ constexpr bool test_format_string() {
     return true;
 }
 
+// Also test GH-4316 <format>: The width of output is miscalculated
+// when formatting a floating-point number in the locale-specific form
+template <class charT>
+void test_gh_4316() {
+    assert(format(locale{"en-US"}, STR("{:@>8L}"), 12345) == STR("@@12,345"));
+    assert(format(locale{"en-US"}, STR("{:@>8L}"), 12345.0) == STR("@@12,345"));
+}
+
 // Also test GH-4319: incorrect output for some floating-point values
 template <class charT>
 void test_gh_4319() {
@@ -1588,6 +1596,11 @@ void test() {
     test_localized_char<char, char>();
     test_localized_char<wchar_t, char>();
     test_localized_char<wchar_t, wchar_t>();
+
+#if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
+    test_gh_4316<char>();
+    test_gh_4316<wchar_t>();
+#endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 
     test_gh_4319<char>();
     test_gh_4319<wchar_t>();
