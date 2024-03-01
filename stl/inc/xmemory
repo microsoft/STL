@@ -327,7 +327,7 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, _NoThrowSentinel _Last) n
 template <class _Ty>
 _CONSTEXPR20 void _Destroy_in_place(_Ty& _Obj) noexcept {
     if constexpr (is_array_v<_Ty>) {
-        _Destroy_range(_Obj, _Obj + extent_v<_Ty>);
+        _STD _Destroy_range(_Obj, _Obj + extent_v<_Ty>);
     } else {
         _Obj.~_Ty();
     }
@@ -338,7 +338,7 @@ _EXPORT_STD template <class _Ty>
 _CONSTEXPR20 void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
 #if _HAS_CXX20
     if constexpr (is_array_v<_Ty>) {
-        _Destroy_range(_STD begin(*_Location), _STD end(*_Location));
+        _STD _Destroy_range(_STD begin(*_Location), _STD end(*_Location));
     } else
 #endif // _HAS_CXX20
     {
