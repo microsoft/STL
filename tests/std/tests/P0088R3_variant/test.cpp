@@ -6114,7 +6114,7 @@ int run_test()
 #include "variant_test_helpers.h"
 
 namespace visit {
-#if _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+#if _HAS_CXX20 && !defined(TEST_PERMISSIVE)
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
   Fn obj{};
@@ -6563,7 +6563,7 @@ int run_test() {
 #include "variant_test_helpers.h"
 
 namespace visit::return_type {
-#if _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+#if _HAS_CXX20 && !defined(TEST_PERMISSIVE)
 template <typename ReturnType>
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
