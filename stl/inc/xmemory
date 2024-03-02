@@ -1152,7 +1152,7 @@ _CONSTEXPR20 void _Delete_plain_internal(_Alloc& _Al, typename _Alloc::value_typ
     // destroy *_Ptr in place, then deallocate _Ptr using _Al; used for internal container types the user didn't name
     using _Ty = typename _Alloc::value_type;
     _Ptr->~_Ty();
-    _Deallocate_plain(_Al, _Ptr);
+    _STD _Deallocate_plain(_Al, _Ptr);
 }
 
 template <class _Alloc>

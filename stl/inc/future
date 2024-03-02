@@ -40,7 +40,7 @@ struct _Allocator_deleter {
 
     using pointer = typename allocator_traits<_Alloc>::pointer;
     void operator()(pointer _Ptr) noexcept { // delete the pointer
-        _Destroy_in_place(*_Ptr);
+        _STD _Destroy_in_place(*_Ptr);
         _Al.deallocate(_Ptr, 1);
     }
 };
@@ -53,7 +53,7 @@ _NODISCARD _Unique_ptr_alloc<_Alloc> _Make_unique_alloc(_Alloc& _Al, _Args&&... 
     // construct an object with an allocator and return it owned by a unique_ptr
     _Alloc_construct_ptr<_Alloc> _Constructor{_Al};
     _Constructor._Allocate();
-    _Construct_in_place(*_Constructor._Ptr, _STD forward<_Args>(_Vals)...);
+    _STD _Construct_in_place(*_Constructor._Ptr, _STD forward<_Args>(_Vals)...);
     return _Unique_ptr_alloc<_Alloc>(_Constructor._Release(), _Allocator_deleter<_Alloc>{_Al});
 }
 
@@ -455,8 +455,8 @@ void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(_Associated_state<_Ty>* _Sta
 
     _Derived* _Ptr = static_cast<_Derived*>(_State);
 
-    _Delete_plain_internal(_St_alloc, _Ptr);
-    _Delete_plain_internal(_Del_alloc, this);
+    _STD _Delete_plain_internal(_St_alloc, _Ptr);
+    _STD _Delete_plain_internal(_Del_alloc, this);
 }
 
 template <class>
@@ -606,9 +606,9 @@ _Associated_state<_Ty>* _Make_associated_state(const _Alloc& _Al) {
     _Aldelty _Del_alloc(_Al);
     _Alstate _State_alloc(_Al);
     auto _Del = _Make_unique_alloc(_Del_alloc, _Al);
-    auto _Res = _Make_unique_alloc(_State_alloc, _Unfancy(_Del.get()));
+    auto _Res = _STD _Make_unique_alloc(_State_alloc, _STD _Unfancy(_Del.get()));
     (void) _Del.release(); // ownership of _Del.get() now transferred to _Res
-    return _Unfancy(_Res.release()); // ownership transferred to caller
+    return _STD _Unfancy(_Res.release()); // ownership transferred to caller
 }
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
@@ -622,9 +622,9 @@ _Pack_state* _Make_packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al) {
     _Aldelty _Del_alloc(_Al);
     _Alstate _State_alloc(_Al);
     auto _Del = _Make_unique_alloc(_Del_alloc, _Al);
-    auto _Res = _Make_unique_alloc(_State_alloc, _STD forward<_Fty2>(_Fnarg), _Al, _Unfancy(_Del.get()));
+    auto _Res = _STD _Make_unique_alloc(_State_alloc, _STD forward<_Fty2>(_Fnarg), _Al, _STD _Unfancy(_Del.get()));
     (void) _Del.release(); // ownership of _Del.get() now transferred to _Res
-    return _Unfancy(_Res.release()); // ownership transferred to caller
+    return _STD _Unfancy(_Res.release()); // ownership transferred to caller
 }
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
@@ -1277,7 +1277,7 @@ public:
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     template <class _Fty2, class _Alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
     packaged_task(allocator_arg_t, const _Alloc& _Al, _Fty2&& _Fnarg)
-        : _MyPromise(_Make_packaged_state<_MyStateType>(_STD forward<_Fty2>(_Fnarg), _Al)) {}
+        : _MyPromise(_STD _Make_packaged_state<_MyStateType>(_STD forward<_Fty2>(_Fnarg), _Al)) {}
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     ~packaged_task() noexcept {
