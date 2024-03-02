@@ -976,7 +976,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // P0298R3 std::byte
 #ifndef _HAS_STD_BYTE
-#define _HAS_STD_BYTE _HAS_CXX17 // inspected by GSL, do not remove
+#define _HAS_STD_BYTE _HAS_CXX17
 #endif // !defined(_HAS_STD_BYTE)
 
 // P0302R1 Removing Allocator Support In std::function
