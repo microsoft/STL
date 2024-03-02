@@ -288,7 +288,7 @@ _Ty* _Global_new(_Types&&... _Args) { // acts as "new" while disallowing user ov
         void* _Result;
         ~_Guard_type() {
             if (_Result) {
-                _Deallocate<_New_alignof<_Ty>>(_Result, sizeof(_Ty));
+                _STD _Deallocate<_New_alignof<_Ty>>(_Result, sizeof(_Ty));
             }
         }
     };

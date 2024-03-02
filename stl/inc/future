@@ -605,7 +605,7 @@ _Associated_state<_Ty>* _Make_associated_state(const _Alloc& _Al) {
 
     _Aldelty _Del_alloc(_Al);
     _Alstate _State_alloc(_Al);
-    auto _Del = _Make_unique_alloc(_Del_alloc, _Al);
+    auto _Del = _STD _Make_unique_alloc(_Del_alloc, _Al);
     auto _Res = _STD _Make_unique_alloc(_State_alloc, _STD _Unfancy(_Del.get()));
     (void) _Del.release(); // ownership of _Del.get() now transferred to _Res
     return _STD _Unfancy(_Res.release()); // ownership transferred to caller
@@ -621,7 +621,7 @@ _Pack_state* _Make_packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al) {
 
     _Aldelty _Del_alloc(_Al);
     _Alstate _State_alloc(_Al);
-    auto _Del = _Make_unique_alloc(_Del_alloc, _Al);
+    auto _Del = _STD _Make_unique_alloc(_Del_alloc, _Al);
     auto _Res = _STD _Make_unique_alloc(_State_alloc, _STD forward<_Fty2>(_Fnarg), _Al, _STD _Unfancy(_Del.get()));
     (void) _Del.release(); // ownership of _Del.get() now transferred to _Res
     return _STD _Unfancy(_Res.release()); // ownership transferred to caller
