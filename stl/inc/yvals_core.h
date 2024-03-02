@@ -1842,29 +1842,29 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 // macros with language mode sensitivity
 #if _HAS_CXX20
 #define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
-#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#elif _HAS_CXX17
 #define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
-#endif // _HAS_CXX17
+#endif
 
 #if _HAS_CXX20
 #define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
 #elif _HAS_CXX17
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+#else
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
-#endif // ^^^ !_HAS_CXX17 ^^^
+#endif
 
 #if _HAS_CXX23
 #define __cpp_lib_concepts 202207L // P2404R3 Move-Only Types For Comparison Concepts
-#elif _HAS_CXX20 // ^^^ C++23 / C++20 vvv
+#elif _HAS_CXX20
 #define __cpp_lib_concepts 202002L // P1964R2 Replacing boolean With boolean-testable
-#endif // C++20
+#endif
 
 #if _HAS_CXX23
 #define __cpp_lib_constexpr_memory 202202L // P2273R3 constexpr unique_ptr
 #elif _HAS_CXX20
 #define __cpp_lib_constexpr_memory 201811L // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
-#endif // _HAS_CXX20
+#endif
 
 #ifndef _M_CEE_PURE
 #if _HAS_CXX20
@@ -1876,17 +1876,17 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX23
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
-#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#elif _HAS_CXX20
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
-#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#elif _HAS_CXX17
 #define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
-#endif // _HAS_CXX17
+#endif
 
 #if _HAS_CXX23
 #define __cpp_lib_ranges 202302L // P2609R3 Relaxing Ranges Just A Smidge
-#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#elif _HAS_CXX20
 #define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
-#endif // _HAS_CXX20
+#endif
 
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
@@ -1896,15 +1896,15 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX23
 #define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
-#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#elif _HAS_CXX20
 #define __cpp_lib_shift 201806L // P0769R2 shift_left(), shift_right()
-#endif // _HAS_CXX20
+#endif
 
 #if _HAS_CXX20
 #define __cpp_lib_variant 202106L // P2231R1 Completing constexpr In optional And variant
-#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#elif _HAS_CXX17
 #define __cpp_lib_variant 202102L // P2162R2 Inheriting From variant
-#endif // _HAS_CXX17
+#endif
 
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
