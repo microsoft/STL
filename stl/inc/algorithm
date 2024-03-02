@@ -3851,10 +3851,17 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
-        if (*_UFirst == _Oldval) {
-            *_UDest = _Newval;
+        if constexpr (is_integral_v<_Ty> && is_integral_v<iter_value_t<_InIt>>
+                      || is_pointer_v<_Ty> && is_pointer_v<iter_value_t<_InIt>>) {
+            // TRANSITION, DevCom-10606350: help the compiler auto-vectorizing for simple types
+            // by making transformation that can be done for simple types
+            *_UDest = (*_UFirst == _Oldval) ? _Newval : *_UFirst;
         } else {
-            *_UDest = *_UFirst;
+            if (*_UFirst == _Oldval) {
+                *_UDest = _Newval;
+            } else {
+                *_UDest = *_UFirst;
+            }
         }
     }
 
@@ -3921,10 +3928,17 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<equal_to, projected<_It, _Pj>, const _Ty1*>);
 
             for (; _First != _Last; ++_First, (void) ++_Result) {
-                if (_STD invoke(_Proj, *_First) == _Oldval) {
-                    *_Result = _Newval;
+                if constexpr (is_integral_v<_Ty2> && is_integral_v<iter_value_t<_It>>
+                              || is_pointer_v<_Ty2> && is_pointer_v<iter_value_t<_It>>) {
+                    // TRANSITION, DevCom-10606350: help the compiler auto-vectorizing for simple types
+                    // by making transformation that can be done for simple types
+                    *_Result = _STD invoke(_Proj, *_First) == _Oldval ? _Newval : *_First;
                 } else {
-                    *_Result = *_First;
+                    if (_STD invoke(_Proj, *_First) == _Oldval) {
+                        *_Result = _Newval;
+                    } else {
+                        *_Result = *_First;
+                    }
                 }
             }
 
