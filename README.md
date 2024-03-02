@@ -92,7 +92,7 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
     corresponding generator changes should be investigated.
     + Automated updates (controlled by `.github/workflows/update-status-chart.yml` in the main repo)
     will regenerate these files, so you generally don't need to manually update them in PRs.
-* Run `npm run make` to compile `status_chart.ts` and then bundle it and the tables into `built/status_chart.mjs`.
+* Run `npm run make` to compile `status_chart.mts` and then bundle it and the tables into `built/status_chart.mjs`.
     + Automated updates will also regenerate this file. However, you'll need to manually update
     `built/status_chart.mjs` if you're making synchronized changes to `index.html`.
 * Run `npm run view` to preview your changes locally.

@@ -23,6 +23,6 @@ jobs:
       - name: Compile gather_stats.mts
         run: |
           npx tsc --noEmit -p src_gather/tsconfig.json
-      - name: Compile status_chart.ts
+      - name: Compile status_chart.mts
         run: |
           npx tsc -p src/tsconfig.json

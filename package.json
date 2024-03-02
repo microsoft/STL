@@ -7,7 +7,7 @@
     "pregather": "npx tsc -p src_gather/tsconfig.json",
     "gather": "node built/gather_stats.mjs",
     "premake": "npx tsc -p src/tsconfig.json",
-    "make": "npx esbuild src/status_chart.ts --bundle --format=esm --minify --target=es2020 --external:chart.js --external:chartjs-adapter-luxon --outfile=built/status_chart.mjs",
+    "make": "npx esbuild src/status_chart.mts --bundle --format=esm --minify --target=es2020 --external:chart.js --external:chartjs-adapter-luxon --outfile=built/status_chart.mjs",
     "view": "npx http-server -c-1 -o"
   },
   "repository": {
