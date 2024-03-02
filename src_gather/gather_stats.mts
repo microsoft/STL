@@ -550,7 +550,7 @@ export const daily_table: DailyRow[] = [
 
     str += '];\n';
 
-    write_generated_file('./src/daily_table.ts', str);
+    write_generated_file('./src/daily_table.mts', str);
 }
 
 function write_monthly_table(script_start: DateTime, all_prs: CookedPRNode[]) {
@@ -586,7 +586,7 @@ export const monthly_table: MonthlyRow[] = [
 
     str += '];\n';
 
-    write_generated_file('./src/monthly_table.ts', str);
+    write_generated_file('./src/monthly_table.mts', str);
 }
 
 async function async_main() {
