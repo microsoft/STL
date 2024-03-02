@@ -11,32 +11,13 @@
 #include <type_traits>
 #include <utility>
 
+#include <is_permissive.hpp>
+
 #pragma warning(disable : 4793) // function compiled as native: non-clrcall vcall thunks must be compiled as native
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace ranges = std::ranges;
-
-namespace detail {
-    constexpr bool permissive() {
-        return false;
-    }
-
-    template <class>
-    struct DependentBase {
-        static constexpr bool permissive() {
-            return true;
-        }
-    };
-
-    template <class T>
-    struct Derived : DependentBase<T> {
-        static constexpr bool test() {
-            return permissive();
-        }
-    };
-} // namespace detail
-constexpr bool is_permissive = detail::Derived<int>::test();
 
 template <bool>
 struct borrowed { // borrowed<true> is a borrowed_range; borrowed<false> is not
