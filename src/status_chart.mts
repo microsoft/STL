@@ -5,9 +5,9 @@ import { CartesianScaleOptions, Chart, ChartEvent, LegendElement, LegendItem, Ti
 Chart.register(...registerables);
 import 'chartjs-adapter-luxon';
 
-import { DailyRow, daily_table } from './daily_table';
-import { WeeklyRow, weekly_table } from './weekly_table';
-import { MonthlyRow, monthly_table } from './monthly_table';
+import { DailyRow, daily_table } from './daily_table.mjs';
+import { WeeklyRow, weekly_table } from './weekly_table.mjs';
+import { MonthlyRow, monthly_table } from './monthly_table.mjs';
 
 function load_charts() {
     type StlDataPoint = {

@@ -1,7 +1,6 @@
 {
     "extends": "../tsconfig.universal.json",
     "compilerOptions": {
-        "module": "ES2020",
         "noEmit": true,
     },
     "files": [

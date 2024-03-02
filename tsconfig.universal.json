@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "moduleResolution": "node",
+        "module": "nodenext",
         "outDir": "./built",
         "target": "ES2020",
         "allowUnreachableCode": false,
