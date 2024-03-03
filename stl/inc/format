@@ -4107,7 +4107,6 @@ protected:
         }
 
         basic_string<_CharT> _Tmp_buf;
-        auto _Argss = _Fmt_ctx._Get_args();
         basic_format_context<back_insert_iterator<basic_string<_CharT>>, _CharT> _Tmp_ctx{
             _STD back_inserter(_Tmp_buf), {}, _Fmt_ctx._Get_lazy_locale()};
 
