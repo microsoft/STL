@@ -266,6 +266,22 @@ struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     }
 #endif // _HAS_CXX23
 };
+
+#if _HAS_CXX23
+_EXPORT_STD template <class, class>
+struct pair;
+
+_EXPORT_STD template <class...>
+class tuple;
+
+// Specializations for pairs and tuples are forward-declared to avoid mix and mismatch as possible.
+
+template <class _CharT, class _Ty1, class _Ty2>
+struct formatter<pair<_Ty1, _Ty2>, _CharT>;
+
+template <class _CharT, class... _Types>
+struct formatter<tuple<_Types...>, _CharT>;
+#endif // _HAS_CXX23
 _STD_END
 
 #pragma pop_macro("new")
