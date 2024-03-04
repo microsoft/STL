@@ -34,6 +34,8 @@ std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_mov
 std/containers/sequences/array/size_and_alignment.compile.pass.cpp FAIL
 
 # LLVM-83734: [libc++][test] Don't include test_format_context.h in parse.pass.cpp
+std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
+std/thread/thread.threads/thread.thread.class/thread.thread.id/parse.pass.cpp FAIL
 std/utilities/format/format.tuple/parse.pass.cpp FAIL
 
 # Non-Standard regex behavior.
@@ -262,7 +264,6 @@ std/containers/container.adaptors/container.adaptors.format/types.compile.pass.c
 std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.format.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.vformat.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector.bool.fmt/format.pass.cpp FAIL
-std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
 std/input.output/iostream.format/print.fun/includes.compile.pass.cpp FAIL
 std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtdef/format.pass.cpp FAIL
@@ -1112,7 +1113,6 @@ std/input.output/string.streams/stringstream/stringstream.members/str.allocator_
 # says "Please create a vendor specific version of the test functions".
 # If we do, some of these tests should be able to work.
 std/thread/thread.threads/thread.thread.class/thread.thread.id/format.pass.cpp FAIL
-std/thread/thread.threads/thread.thread.class/thread.thread.id/parse.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.context/advance_to.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.context/arg.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.context/ctor.pass.cpp FAIL
