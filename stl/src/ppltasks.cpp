@@ -25,13 +25,6 @@
 static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
     0x0A299774, 0x3E4E, 0xFC42, {0x1D, 0x9D, 0x72, 0xCE, 0xE1, 0x05, 0xCA, 0x57}};
 
-// Introduce stacktrace API for Debug CRT_APP
-#if defined(_CRT_APP) && defined(_DEBUG)
-extern "C" NTSYSAPI _Success_(return != 0) WORD NTAPI
-    RtlCaptureStackBackTrace(_In_ DWORD FramesToSkip, _In_ DWORD FramesToCapture,
-        _Out_writes_to_(FramesToCapture, return) PVOID* BackTrace, _Out_opt_ PDWORD BackTraceHash);
-#endif
-
 namespace Concurrency {
 
     namespace details {
@@ -55,18 +48,8 @@ namespace Concurrency {
             ///     CRT CaptureStackBackTrace API wrapper
             /// </summary>
             _CRTIMP2 size_t __cdecl CaptureCallstack(void** stackData, size_t skipFrames, size_t captureFrames) {
-                size_t capturedFrames = 0;
-                // RtlCaptureStackBackTrace is not available in MSDK, so we only call it under Desktop or _DEBUG MSDK.
-                //  For MSDK unsupported version, we will return zero frame number.
-#if !defined(_CRT_APP) || defined(_DEBUG)
-                capturedFrames = RtlCaptureStackBackTrace(
+                return RtlCaptureStackBackTrace(
                     static_cast<DWORD>(skipFrames + 1), static_cast<DWORD>(captureFrames), stackData, nullptr);
-#else
-                (stackData);
-                (skipFrames);
-                (captureFrames);
-#endif
-                return capturedFrames;
             }
 
             static unsigned int s_asyncId = 0;
