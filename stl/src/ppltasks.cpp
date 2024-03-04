@@ -52,10 +52,6 @@ namespace Concurrency {
             static unsigned int s_asyncId = 0;
 
             _CRTIMP2 unsigned int __cdecl GetNextAsyncId() {
-                //
-                // ASYNC TODO: Determine the requirements on the domain uniqueness of this value.  C++ / C# / WRL are
-                // all supposed to produce "unique" IDs and there is no common broker.
-                //
                 return static_cast<unsigned int>(::_InterlockedIncrement(reinterpret_cast<volatile LONG*>(&s_asyncId)));
             }
 
