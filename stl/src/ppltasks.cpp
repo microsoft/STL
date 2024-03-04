@@ -21,10 +21,6 @@
 #include <windows.foundation.diagnostics.h>
 #endif
 
-// This IID is exported by ole32.dll; we cannot depend on ole32.dll.
-static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
-    0x0A299774, 0x3E4E, 0xFC42, {0x1D, 0x9D, 0x72, 0xCE, 0xE1, 0x05, 0xCA, 0x57}};
-
 namespace Concurrency {
 
     namespace details {
@@ -81,6 +77,10 @@ namespace Concurrency {
         using namespace ABI::Windows::Foundation::Diagnostics;
         using namespace Microsoft::WRL;
         using namespace Microsoft::WRL::Wrappers;
+
+        // This IID is exported by ole32.dll; we cannot depend on ole32.dll.
+        static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
+            0x0A299774, 0x3E4E, 0xFC42, {0x1D, 0x9D, 0x72, 0xCE, 0xE1, 0x05, 0xCA, 0x57}};
 
         static HRESULT __stdcall _PPLTaskContextCallbackBridge(ComCallData* _PParam) {
             auto pFunc = static_cast<std::function<void()>*>(_PParam->pUserDefined);
