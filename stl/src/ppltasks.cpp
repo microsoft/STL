@@ -17,7 +17,8 @@
 #pragma warning(pop)
 #endif
 #include <ctxtcall.h>
-#include <mutex>
+#include <functional>
+#include <stdexcept>
 #include <windows.foundation.diagnostics.h>
 #endif
 
