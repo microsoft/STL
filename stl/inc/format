@@ -3965,7 +3965,7 @@ _FMT_P2286_END
 enum class _Fmt_tuple_type : uint8_t { _None, _Key_value, _No_brackets };
 
 template <class _CharT>
-struct _Tuple_format_specs {
+struct _Fill_align_and_width_specs { // used by pair, tuple, thread::id, and stacktrace_entry formatters
     int _Width               = -1;
     int _Dynamic_width_index = -1;
     _Fmt_align _Alignment    = _Fmt_align::_None;
@@ -3977,8 +3977,8 @@ struct _Tuple_format_specs {
 template <class _CharT, bool _IsTwoTuple>
 class _Tuple_format_specs_setter {
 public:
-    constexpr explicit _Tuple_format_specs_setter(_Tuple_format_specs<_CharT>& _Specs_, _Fmt_tuple_type& _Fmt_type_,
-        basic_format_parse_context<_CharT>& _Parse_ctx_)
+    constexpr explicit _Tuple_format_specs_setter(_Fill_align_and_width_specs<_CharT>& _Specs_,
+        _Fmt_tuple_type& _Fmt_type_, basic_format_parse_context<_CharT>& _Parse_ctx_)
         : _Specs(_Specs_), _Fmt_type(_Fmt_type_), _Parse_ctx(_Parse_ctx_) {}
 
     constexpr void _On_align(const _Fmt_align _Aln) {
@@ -4032,7 +4032,7 @@ public:
     }
 
 private:
-    _Tuple_format_specs<_CharT>& _Specs;
+    _Fill_align_and_width_specs<_CharT>& _Specs;
     _Fmt_tuple_type& _Fmt_type;
     basic_format_parse_context<_CharT>& _Parse_ctx;
 
@@ -4091,14 +4091,15 @@ private:
     basic_string_view<_CharT> _Opening_bracket = _STATICALLY_WIDEN(_CharT, "(");
     basic_string_view<_CharT> _Closing_bracket = _STATICALLY_WIDEN(_CharT, ")");
 
-    _Tuple_format_specs<_CharT> _Specs;
+    _Fill_align_and_width_specs<_CharT> _Specs;
 
 protected:
     static constexpr bool _Is_const_formattable = (formattable<const _Types, _CharT> && ...);
 
     template <class _FormatContext, class... _ArgTypes>
     typename _FormatContext::iterator _Format(_FormatContext& _Fmt_ctx, _ArgTypes&... _Args) const {
-        // _STL_INTERNAL_STATIC_ASSERT((is_same_v<_ArgTypes, _Maybe_const<_Is_const_formattable, _Types>> && ...));
+        _STL_INTERNAL_STATIC_ASSERT(
+            (is_same_v<_ArgTypes, remove_reference_t<_Maybe_const<_Is_const_formattable, _Types>>> && ...));
 
         auto _Format_specs = _Specs;
         if (_Specs._Dynamic_width_index >= 0) {
@@ -4259,16 +4260,6 @@ _NODISCARD inline string _Unescape_braces(const _Add_newline _Add_nl, const stri
 
     return _Unescaped_str;
 }
-
-template <class _CharT>
-struct _Fill_align_and_width_specs { // used by thread::id and stacktrace_entry formatters
-    int _Width               = -1;
-    int _Dynamic_width_index = -1;
-    _Fmt_align _Alignment    = _Fmt_align::_None;
-    uint8_t _Fill_length     = 1;
-    // At most one codepoint (so one char32_t or four utf-8 char8_t).
-    _CharT _Fill[4 / sizeof(_CharT)] = {' '};
-};
 
 template <class _CharT>
 class _Fill_align_and_width_specs_setter {
