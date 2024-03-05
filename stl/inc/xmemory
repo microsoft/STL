@@ -217,13 +217,13 @@ __declspec(allocator) _CONSTEXPR20 void* _Allocate(const size_t _Bytes) {
     {
 #if defined(_M_IX86) || defined(_M_X64)
 #if _HAS_CXX20 // TRANSITION, GH-1532
-        if (!_STD is_constant_evaluated())
+        if (_STD is_constant_evaluated()) {
+            return _Traits::_Allocate(_Bytes);
+        }
 #endif // _HAS_CXX20
-        {
-            if (_Bytes >= _Big_allocation_threshold) {
-                // boost the alignment of big allocations to help autovectorization
-                return _Allocate_manually_vector_aligned<_Traits>(_Bytes);
-            }
+        if (_Bytes >= _Big_allocation_threshold) {
+            // boost the alignment of big allocations to help autovectorization
+            return _Allocate_manually_vector_aligned<_Traits>(_Bytes);
         }
 #endif // defined(_M_IX86) || defined(_M_X64)
         return _Traits::_Allocate(_Bytes);
