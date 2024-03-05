@@ -240,40 +240,33 @@ __declspec(allocator) _CONSTEXPR20 void* _Allocate(const size_t _Bytes) {
 template <size_t _Align>
 _CONSTEXPR20 void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
     // deallocate storage allocated by _Allocate
+#if _HAS_CXX20 // TRANSITION, GH-1532
+    if (_STD is_constant_evaluated()) {
+        ::operator delete(_Ptr);
+        return;
+    }
+#endif // _HAS_CXX20
+
 #ifdef __cpp_aligned_new
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-#if _HAS_CXX20 // TRANSITION, GH-1532
-        if (_STD is_constant_evaluated()) {
-            ::operator delete(_Ptr);
-        } else
-#endif // _HAS_CXX20
-        {
-            size_t _Passed_align = _Align;
+        size_t _Passed_align = _Align;
 #if defined(_M_IX86) || defined(_M_X64)
-            if (_Bytes >= _Big_allocation_threshold) {
-                // boost the alignment of big allocations to help autovectorization
-                _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
-            }
-#endif // defined(_M_IX86) || defined(_M_X64)
-            ::operator delete(_Ptr, _Bytes, align_val_t{_Passed_align});
+        if (_Bytes >= _Big_allocation_threshold) {
+            // boost the alignment of big allocations to help autovectorization
+            _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
         }
+#endif // defined(_M_IX86) || defined(_M_X64)
+        ::operator delete(_Ptr, _Bytes, align_val_t{_Passed_align});
     } else
 #endif // defined(__cpp_aligned_new)
     {
-#if _HAS_CXX20 // TRANSITION, GH-1532
-        if (_STD is_constant_evaluated()) {
-            ::operator delete(_Ptr);
-        } else
-#endif // _HAS_CXX20
-        {
 #if defined(_M_IX86) || defined(_M_X64)
-            if (_Bytes >= _Big_allocation_threshold) {
-                // boost the alignment of big allocations to help autovectorization
-                _Adjust_manually_vector_aligned(_Ptr, _Bytes);
-            }
-#endif // defined(_M_IX86) || defined(_M_X64)
-            ::operator delete(_Ptr, _Bytes);
+        if (_Bytes >= _Big_allocation_threshold) {
+            // boost the alignment of big allocations to help autovectorization
+            _Adjust_manually_vector_aligned(_Ptr, _Bytes);
         }
+#endif // defined(_M_IX86) || defined(_M_X64)
+        ::operator delete(_Ptr, _Bytes);
     }
 }
 
