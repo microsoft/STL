@@ -1862,16 +1862,8 @@ namespace {
             unsigned int _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
 
             _Bingo &= _Mask;
-            if (_Bingo != 0) {
-                unsigned long _Offset = _tzcnt_u32(_Bingo);
-                _Advance_bytes(_First, _Offset);
-                return _First;
-            }
 
             for (;;) {
-                _Data  = _mm256_load_si256(static_cast<const __m256i*>(_First));
-                _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
-
                 if (_Bingo != 0) {
                     unsigned long _Offset = _tzcnt_u32(_Bingo);
                     _Advance_bytes(_First, _Offset);
@@ -1879,6 +1871,9 @@ namespace {
                 }
 
                 _Advance_bytes(_First, 32);
+
+                _Data  = _mm256_load_si256(static_cast<const __m256i*>(_First));
+                _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
             }
         }
 
@@ -1898,17 +1893,8 @@ namespace {
             unsigned int _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
 
             _Bingo &= _Mask;
-            if (_Bingo != 0) {
-                unsigned long _Offset;
-                _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
-                _Advance_bytes(_First, _Offset);
-                return _First;
-            }
 
             for (;;) {
-                _Data  = _mm_load_si128(static_cast<const __m128i*>(_First));
-                _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
-
                 if (_Bingo != 0) {
                     unsigned long _Offset;
                     _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
@@ -1917,6 +1903,9 @@ namespace {
                 }
 
                 _Advance_bytes(_First, 16);
+
+                _Data  = _mm_load_si128(static_cast<const __m128i*>(_First));
+                _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
             }
         }
 #endif // !_M_ARM64EC
