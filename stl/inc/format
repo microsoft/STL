@@ -4111,26 +4111,19 @@ protected:
         basic_format_context<back_insert_iterator<basic_string<_CharT>>, _CharT> _Tmp_ctx{
             _STD back_inserter(_Tmp_buf), {}, _Fmt_ctx._Get_lazy_locale()};
 
-        auto _Writer = [&](back_insert_iterator<basic_string<_CharT>> _Out) {
-            formatter<basic_string_view<_CharT>, _CharT> _Sv_formatter;
-
-            auto _Writer_for_single = [&]<size_t _Idx>(auto& _Arg) {
-                if constexpr (_Idx != 0) {
-                    _Out = _Sv_formatter.format(_Separator, _Tmp_ctx);
-                }
-                _Out = _STD get<_Idx>(_Underlying).format(_Arg, _Tmp_ctx);
-            };
-
-            _Out = _Sv_formatter.format(_Opening_bracket, _Tmp_ctx);
-            [&, _Writer_for_single]<size_t... _Indice>(index_sequence<_Indice...>) {
-                (_Writer_for_single.template operator()<_Indice>(_Args), ...);
-            }(index_sequence_for<_ArgTypes...>{});
-            _Out = _Sv_formatter.format(_Closing_bracket, _Tmp_ctx);
-
-            return _Out;
+        auto _Writer_for_single = [&]<size_t _Idx>(auto& _Arg) {
+            if constexpr (_Idx != 0) {
+                _STD _Copy_unchecked(_Separator._Unchecked_begin(), _Separator._Unchecked_end(), _Tmp_ctx.out());
+            }
+            _STD get<_Idx>(_Underlying).format(_Arg, _Tmp_ctx);
         };
 
-        (void) _STD _Write_aligned(_Tmp_ctx.out(), 0, _Basic_format_specs<_CharT>{}, _Fmt_align::_None, _Writer);
+        _STD _Copy_unchecked(_Opening_bracket._Unchecked_begin(), _Opening_bracket._Unchecked_end(), _Tmp_ctx.out());
+        [&, _Writer_for_single]<size_t... _Indice>(index_sequence<_Indice...>) {
+            (_Writer_for_single.template operator()<_Indice>(_Args), ...);
+        }(index_sequence_for<_ArgTypes...>{});
+        _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Tmp_ctx.out());
+
         return _STD _Write_aligned(_Fmt_ctx.out(), static_cast<int>(_Tmp_buf.size()), _Format_specs, _Fmt_align::_Left,
             [&](typename _FormatContext::iterator _Out) {
                 return _STD _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Tmp_buf});
