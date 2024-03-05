@@ -197,13 +197,14 @@ __declspec(allocator) _CONSTEXPR20 void* _Allocate(const size_t _Bytes) {
         return nullptr;
     }
 
+#if _HAS_CXX20 // TRANSITION, GH-1532
+    if (_STD is_constant_evaluated()) {
+        return _Traits::_Allocate(_Bytes);
+    }
+#endif // _HAS_CXX20
+
 #ifdef __cpp_aligned_new
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-#if _HAS_CXX20 // TRANSITION, GH-1532
-        if (_STD is_constant_evaluated()) {
-            return _Traits::_Allocate(_Bytes);
-        }
-#endif // _HAS_CXX20
         size_t _Passed_align = _Align;
 #if defined(_M_IX86) || defined(_M_X64)
         if (_Bytes >= _Big_allocation_threshold) {
@@ -216,11 +217,6 @@ __declspec(allocator) _CONSTEXPR20 void* _Allocate(const size_t _Bytes) {
 #endif // defined(__cpp_aligned_new)
     {
 #if defined(_M_IX86) || defined(_M_X64)
-#if _HAS_CXX20 // TRANSITION, GH-1532
-        if (_STD is_constant_evaluated()) {
-            return _Traits::_Allocate(_Bytes);
-        }
-#endif // _HAS_CXX20
         if (_Bytes >= _Big_allocation_threshold) {
             // boost the alignment of big allocations to help autovectorization
             return _Allocate_manually_vector_aligned<_Traits>(_Bytes);
