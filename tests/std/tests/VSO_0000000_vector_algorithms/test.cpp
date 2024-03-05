@@ -140,6 +140,32 @@ void test_find(mt19937_64& gen) {
     }
 }
 
+#if _HAS_CXX20
+// GH-4449 <xutility>: ranges::find with unreachable_sentinel / __std_find_trivial_unsized_1 gives wrong result
+template <class T>
+void test_gh_4449() {
+    constexpr T desired_val{11};
+    constexpr T unwanted_val{22};
+
+    T arr[256];
+
+    constexpr int mid1 = 64;
+    constexpr int mid2 = 192;
+
+    ranges::fill(arr, arr + mid1, desired_val);
+    ranges::fill(arr + mid1, arr + mid2, unwanted_val);
+    ranges::fill(arr + mid2, end(arr), desired_val);
+
+    for (int idx = mid1; idx <= mid2; ++idx) { // when idx == mid2, the value is immediately found
+        const auto where = ranges::find(arr + idx, unreachable_sentinel, desired_val);
+
+        assert(where == arr + mid2);
+
+        arr[idx] = desired_val; // get ready for the next iteration
+    }
+}
+#endif // _HAS_CXX20
+
 #if _HAS_CXX23
 template <class T>
 void test_case_find_last(const vector<T>& input, T v) {
@@ -370,6 +396,13 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_find<unsigned int>(gen);
     test_find<long long>(gen);
     test_find<unsigned long long>(gen);
+
+#if _HAS_CXX20
+    test_gh_4449<uint8_t>();
+    test_gh_4449<uint16_t>();
+    test_gh_4449<uint32_t>();
+    test_gh_4449<uint64_t>();
+#endif // _HAS_CXX20
 
 #if _HAS_CXX23
     test_find_last<char>(gen);
