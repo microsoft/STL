@@ -11,8 +11,7 @@ _EXTERN_C_UNLESS_PURE
 
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Getdateorder() noexcept { // return date order for current locale
     const wchar_t* const locale_name = ___lc_locale_name_func()[LC_TIME];
-    if (locale_name == nullptr) {
-        // Enforce std::time_base::mdy for "C" locale
+    if (locale_name == nullptr) { // Indicates "C" locale; GetLocaleInfoEx would see this as LOCALE_NAME_USER_DEFAULT
         return std::time_base::mdy;
     }
 
