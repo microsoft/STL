@@ -14,7 +14,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Getdateorder() noexcept { // return d
     const wchar_t* const locale_name = ___lc_locale_name_func()[LC_TIME];
     if (locale_name == nullptr) {
         // Enforce std::time_base::mdy for "C" locale
-        buf[0] = L'0';
+        return std::time_base::mdy;
     } else {
         GetLocaleInfoEx(locale_name, LOCALE_ILDATE, buf, static_cast<int>(std::size(buf)));
     }
