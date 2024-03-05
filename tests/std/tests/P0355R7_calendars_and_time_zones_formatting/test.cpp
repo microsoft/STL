@@ -54,7 +54,7 @@ struct testing_callbacks {
     size_t expected_dynamic_precision    = static_cast<size_t>(-1);
     bool expected_auto_dynamic_precision = false;
     bool expected_localized              = false;
-    vector<_Chrono_spec<CharT>>& expected_chrono_specs;
+    vector<_Chrono_spec<CharT>>& expected_chrono_specs{};
     size_t curr_index = 0;
 
     void _On_align(_Fmt_align aln) {
