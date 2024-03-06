@@ -319,6 +319,7 @@ def generate_data_tables() -> str:
         if x.prop not in ('Cc', 'Cf', 'Cs', 'Co', 'Cn', 'Zl', 'Zp', 'Zs') or chr(x.lower) == ' '
     ], key=lambda x: x.lower))
 
+    # N4971 [format.string.std]/13
     std_wide_ranges = [
         range(0x4DC0, 0x4DFF),
         range(0x1F300, 0x1F5FF),
