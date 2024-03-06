@@ -141,13 +141,28 @@ void test_find(mt19937_64& gen) {
 }
 
 #if _HAS_CXX20
+template <class T, size_t N>
+struct NormalArrayWrapper {
+    T m_arr[N];
+};
+
+// Also test GH-4454 "vector_algorithms.cpp: __std_find_trivial_unsized_impl assumes N-byte elements are N-aligned"
+#pragma pack(push, 1)
+template <class T, size_t N>
+struct PackedArrayWrapper {
+    uint8_t m_ignored; // to misalign the following array
+    T m_arr[N];
+};
+#pragma pack(pop)
+
 // GH-4449 <xutility>: ranges::find with unreachable_sentinel / __std_find_trivial_unsized_1 gives wrong result
-template <class T>
-void test_gh_4449() {
+template <class T, template <class, size_t> class ArrayWrapper>
+void test_gh_4449_impl() {
     constexpr T desired_val{11};
     constexpr T unwanted_val{22};
 
-    T arr[256];
+    ArrayWrapper<T, 256> wrapper;
+    auto& arr = wrapper.m_arr;
 
     constexpr int mid1 = 64;
     constexpr int mid2 = 192;
@@ -163,6 +178,12 @@ void test_gh_4449() {
 
         arr[idx] = desired_val; // get ready for the next iteration
     }
+}
+
+template <class T>
+void test_gh_4449() {
+    test_gh_4449_impl<T, NormalArrayWrapper>();
+    test_gh_4449_impl<T, PackedArrayWrapper>();
 }
 #endif // _HAS_CXX20
 
