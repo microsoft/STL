@@ -9,7 +9,7 @@ Unicode_data_files = {
     "DerivedGeneralCategory.txt": "https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedGeneralCategory.txt",
     "EastAsianWidth.txt": "https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt",
     "GraphemeBreakProperty.txt": "https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakProperty.txt",
-    "GraphemeBreakText.txt": "https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakTest.txt",
+    "GraphemeBreakTest.txt": "https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakTest.txt",
     "emoji-data.txt": "https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt",
 }
 
