@@ -4111,16 +4111,15 @@ protected:
         basic_format_context<back_insert_iterator<basic_string<_CharT>>, _CharT> _Tmp_ctx{
             _STD back_inserter(_Tmp_buf), {}, _Fmt_ctx._Get_lazy_locale()};
 
-        auto _Writer_for_single = [&]<size_t _Idx>(auto& _Arg) {
-            if constexpr (_Idx != 0) {
-                _STD _Copy_unchecked(_Separator._Unchecked_begin(), _Separator._Unchecked_end(), _Tmp_ctx.out());
-            }
-            _STD get<_Idx>(_Underlying).format(_Arg, _Tmp_ctx);
-        };
-
         _STD _Copy_unchecked(_Opening_bracket._Unchecked_begin(), _Opening_bracket._Unchecked_end(), _Tmp_ctx.out());
-        [&, _Writer_for_single]<size_t... _Indice>(index_sequence<_Indice...>) {
-            (_Writer_for_single.template operator()<_Indice>(_Args), ...);
+        [&]<size_t... _Indice>(index_sequence<_Indice...>) {
+            auto _Single_writer = [&]<size_t _Idx>(auto& _Arg) {
+                if constexpr (_Idx != 0) {
+                    _STD _Copy_unchecked(_Separator._Unchecked_begin(), _Separator._Unchecked_end(), _Tmp_ctx.out());
+                }
+                _STD get<_Idx>(_Underlying).format(_Arg, _Tmp_ctx);
+            };
+            (_Single_writer.template operator()<_Indice>(_Args), ...);
         }(index_sequence_for<_ArgTypes...>{});
         _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Tmp_ctx.out());
 
