@@ -1844,7 +1844,10 @@ namespace {
     template <class _Traits, class _Ty>
     const void* __stdcall __std_find_trivial_unsized_impl(const void* _First, const _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
-        if (_Use_avx2()) {
+        if ((reinterpret_cast<uintptr_t>(_First) & (sizeof(_Ty) - 1)) != 0) {
+            // _First isn't aligned to sizeof(_Ty), so we need to use the scalar fallback below.
+            // This can happen with 8-byte elements on x86's 4-aligned stack. It can also happen with packed structs.
+        } else if (_Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
             // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
@@ -1875,9 +1878,7 @@ namespace {
                 _Data  = _mm256_load_si256(static_cast<const __m256i*>(_First));
                 _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
             }
-        }
-
-        if (_Traits::_Sse_available()) {
+        } else if (_Traits::_Sse_available()) {
             // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
             // From start partial piece we mask out matches that don't belong to the range.
             // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
