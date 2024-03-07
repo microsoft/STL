@@ -3843,6 +3843,10 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
+template <class _UOutIt, class _InTy, class _NewTy>
+constexpr bool _Can_vectorize_replace =
+    conjunction_v<is_pointer<_UOutIt>, is_same<_InTy, _NewTy>, disjunction<is_integral<_InTy>, is_pointer<_InTy>>>;
+
 _EXPORT_STD template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval, const _Ty& _Newval) {
     // copy replacing each matching _Oldval with _Newval
@@ -3851,8 +3855,7 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
-        if constexpr ((is_integral_v<_Ty> && is_integral_v<_Iter_value_t<_InIt>>)
-                      || (is_pointer_v<_Ty> && is_pointer_v<_Iter_value_t<_InIt>>) ) {
+        if constexpr (_Can_vectorize_replace<decltype(_UDest), _Iter_value_t<_InIt>, _Ty>) {
             // TRANSITION, DevCom-10606350: help the compiler auto-vectorizing for simple types
             // by making transformation that can be done for simple types
             *_UDest = (*_UFirst == _Oldval) ? _Newval : *_UFirst;
@@ -3928,8 +3931,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<equal_to, projected<_It, _Pj>, const _Ty1*>);
 
             for (; _First != _Last; ++_First, (void) ++_Result) {
-                if constexpr ((is_integral_v<_Ty2> && is_integral_v<iter_value_t<_It>>)
-                              || (is_pointer_v<_Ty2> && is_pointer_v<iter_value_t<_It>>) ) {
+                if constexpr (_Can_vectorize_replace<_Out, _Iter_value_t<_It>, _Ty2>) {
                     // TRANSITION, DevCom-10606350: help the compiler auto-vectorizing for simple types
                     // by making transformation that can be done for simple types
                     *_Result = _STD invoke(_Proj, *_First) == _Oldval ? _Newval : *_First;
