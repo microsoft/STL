@@ -35,10 +35,12 @@ const char src[] =
     "euismod eros, ut posuere ligula ullamcorper id. Nullam aliquam malesuada est at dignissim. Pellentesque finibus "
     "sagittis libero nec bibendum. Phasellus dolor ipsum, finibus quis turpis quis, mollis interdum felis.";
 
+#pragma warning(disable : 4244)
+
 template <class T>
-void bm(benchmark::State& state) {
-    T a[std::size(src)];
-    T b[std::size(src)];
+void rc(benchmark::State& state) {
+    std::vector<T> a(std::size(src));
+    std::vector<T> b(std::size(src));
 
     std::copy(std::begin(src), std::end(src), std::begin(a));
 
@@ -47,9 +49,28 @@ void bm(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bm<uint8_t>);
-BENCHMARK(bm<uint16_t>);
-BENCHMARK(bm<uint32_t>);
-BENCHMARK(bm<uint64_t>);
+template <class T>
+void rc_if(benchmark::State& state) {
+    std::vector<T> a(std::size(src));
+    std::vector<T> b(std::size(src));
+
+    std::copy(std::begin(src), std::end(src), std::begin(a));
+
+    for (auto _ : state) {
+        std::replace_copy_if(
+            std::begin(a), std::end(a), std::begin(b), [](auto x) { return x <= 'Z'; }, T{'X'});
+    }
+}
+
+BENCHMARK(rc<uint8_t>);
+BENCHMARK(rc<uint16_t>);
+BENCHMARK(rc<uint32_t>);
+BENCHMARK(rc<uint64_t>);
+
+
+BENCHMARK(rc_if<uint8_t>);
+BENCHMARK(rc_if<uint16_t>);
+BENCHMARK(rc_if<uint32_t>);
+BENCHMARK(rc_if<uint64_t>);
 
 BENCHMARK_MAIN();
