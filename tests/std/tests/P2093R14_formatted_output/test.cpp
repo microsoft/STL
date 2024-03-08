@@ -153,10 +153,10 @@ namespace test {
     public:
         // Construct a new semaphore in the parent process.
         win_semaphore() {
-            SECURITY_ATTRIBUTES semaphore_attributes{
-                .nLength        = sizeof(SECURITY_ATTRIBUTES),
-                .bInheritHandle = TRUE, // The child process will inherit this handle.
-            };
+            SECURITY_ATTRIBUTES semaphore_attributes{};
+            semaphore_attributes.nLength        = sizeof(SECURITY_ATTRIBUTES);
+            semaphore_attributes.bInheritHandle = TRUE; // The child process will inherit this handle.
+
             m_handle = CreateSemaphoreW(&semaphore_attributes, 0, 1, nullptr);
             assert(m_handle != nullptr);
         }
@@ -648,11 +648,10 @@ int main(int argc, char* argv[]) {
 
             // The entire purpose of this code is to hide the child process's console window,
             // to avoid rapid flickering during test runs.
-            STARTUPINFOW startup_info{
-                .cb          = sizeof(STARTUPINFOW),
-                .dwFlags     = STARTF_USESHOWWINDOW,
-                .wShowWindow = SW_HIDE,
-            };
+            STARTUPINFOW startup_info{};
+            startup_info.cb          = sizeof(STARTUPINFOW);
+            startup_info.dwFlags     = STARTF_USESHOWWINDOW;
+            startup_info.wShowWindow = SW_HIDE;
 
             constexpr BOOL inherit_handles = TRUE;
 
