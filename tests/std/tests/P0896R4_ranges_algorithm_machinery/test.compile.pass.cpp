@@ -1108,7 +1108,7 @@ namespace special_memory_concepts {
     STATIC_ASSERT(ranges::range<range_archetype<range_status::input>>);
     STATIC_ASSERT(ranges::range<range_archetype<range_status::forward>>);
 
-    // Validate _No_throw_input_range; note that the distinction betweeen range<R> and
+    // Validate _No_throw_input_range; note that the distinction between range<R> and
     // no-throw-sentinel-for<sentinel_t<R>, iterator_t<R>> is purely semantic, so we can't test them separately.
     STATIC_ASSERT(!_No_throw_input_range<range_archetype<range_status::not_range>>);
     STATIC_ASSERT(!_No_throw_input_range<range_archetype<range_status::not_input>>);

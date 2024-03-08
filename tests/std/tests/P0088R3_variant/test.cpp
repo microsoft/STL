@@ -6528,11 +6528,11 @@ int run_test() {
 
   return 0;
 }
-#else // ^^ real test / vv workaround
+#else // ^^^ no workaround / workaround vvv
 int run_test() {
   return 0;
 }
-#endif // _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+#endif // ^^^ workaround ^^^
 
 } // namespace visit
 // -- END: test/std/utilities/variant/variant.visit/visit.pass.cpp
@@ -7058,11 +7058,11 @@ int run_test() {
 
   return 0;
 }
-#else // ^^ real tests / vv workaround
+#else // ^^^ no workaround / workaround vvv
 int run_test() {
   return 0;
 }
-#endif // _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+#endif // ^^^ workaround ^^^
 } // namespace visit::return_type
 // -- END: test/std/utilities/variant/variant.visit/visit_return_type.pass.cpp
 

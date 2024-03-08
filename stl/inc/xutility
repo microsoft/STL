@@ -1423,27 +1423,27 @@ template <class _Iter>
 using _Guide_key_t =
 #if _HAS_CXX23
     remove_const_t<tuple_element_t<0, typename iterator_traits<_Iter>::value_type>>;
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     remove_const_t<typename iterator_traits<_Iter>::value_type::first_type>;
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 template <class _Iter>
 using _Guide_val_t =
 #if _HAS_CXX23
     tuple_element_t<1, typename iterator_traits<_Iter>::value_type>;
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     typename iterator_traits<_Iter>::value_type::second_type;
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 template <class _Iter>
 using _Guide_pair_t =
 #if _HAS_CXX23
     pair<add_const_t<tuple_element_t<0, typename iterator_traits<_Iter>::value_type>>,
         tuple_element_t<1, typename iterator_traits<_Iter>::value_type>>;
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     pair<add_const_t<typename iterator_traits<_Iter>::value_type::first_type>,
         typename iterator_traits<_Iter>::value_type::second_type>;
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_execution_policy : false_type {};
@@ -2840,7 +2840,7 @@ namespace ranges {
             noexcept(const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES begin(static_cast<_CTy&&>(_Val))))
@@ -2848,7 +2848,7 @@ namespace ranges {
         {
             return _RANGES begin(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -2870,7 +2870,7 @@ namespace ranges {
             noexcept(noexcept(const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES end(static_cast<_CTy&&>(_Val))))
@@ -2878,7 +2878,7 @@ namespace ranges {
         {
             return _RANGES end(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -3040,7 +3040,7 @@ namespace ranges {
             noexcept(const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rbegin(static_cast<_CTy&&>(_Val))))
@@ -3048,7 +3048,7 @@ namespace ranges {
         {
             return _RANGES rbegin(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -3070,7 +3070,7 @@ namespace ranges {
             noexcept(noexcept(const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rend(static_cast<_CTy&&>(_Val))))
@@ -3078,7 +3078,7 @@ namespace ranges {
         {
             return _RANGES rend(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -3297,7 +3297,7 @@ namespace ranges {
             noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val)))) {
             return _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES data(static_cast<_CTy&&>(_Val))))
@@ -3305,7 +3305,7 @@ namespace ranges {
         {
             return _RANGES data(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
