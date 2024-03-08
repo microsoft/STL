@@ -5,7 +5,10 @@
 #include <cassert>
 #include <cstdio>
 
+#pragma warning(push) // TRANSITION, OS-23694920
+#pragma warning(disable : 4668) // 'MEOW' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 #include <Windows.h>
+#pragma warning(pop)
 
 int main() {
     // A customer wanted to read a std::atomic from a read-only memory-mapped file.
