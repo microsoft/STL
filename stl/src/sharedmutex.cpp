@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <__msvc_threads_core.hpp>
 #include <synchapi.h>
+
+#include "primitives.hpp"
 
 // these declarations must be in sync with those in xthreads.h
 
 extern "C" {
-using _Smtx_t = void*;
-
 static_assert(sizeof(_Smtx_t) == sizeof(SRWLOCK), "_Smtx_t must be the same size as SRWLOCK.");
 static_assert(alignof(_Smtx_t) == alignof(SRWLOCK), "_Smtx_t must be the same alignment as SRWLOCK.");
 
@@ -39,4 +40,23 @@ void __cdecl _Smtx_unlock_shared(_Smtx_t* smtx) noexcept { // unlock non-exclusi
 void __stdcall _Thrd_sleep_for(const unsigned long ms) noexcept { // suspend current thread for `ms` milliseconds
     Sleep(ms);
 }
+
+_Thrd_result __stdcall _Cnd_timedwait_for(
+    const _Cnd_t cond, const _Mtx_t mtx, const unsigned target) noexcept {
+    _Thrd_result res = _Thrd_result::_Success;
+    const auto cs    = &mtx->_Critical_section;
+    const auto start = GetTickCount64();
+    if (!cond->_get_cv()->wait_for(cs, target)) { // report timeout
+        const auto end = GetTickCount64();
+        if ((end - start) >= target) {
+            res = _Thrd_result::_Timedout;
+        }
+    }
+    // TRANSITION: replace with _Mtx_reset_owner(mtx);
+    mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
+    ++mtx->_Count;
+    
+    return res;
+}
+
 } // extern "C"

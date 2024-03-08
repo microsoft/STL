@@ -3,9 +3,7 @@
 
 #pragma once
 
-#include <exception>
-#include <new>
-
+#include <cstdlib>
 #include <Windows.h>
 
 namespace Concurrency {
@@ -43,13 +41,14 @@ namespace Concurrency {
             CONDITION_VARIABLE m_condition_variable = CONDITION_VARIABLE_INIT;
         };
 
-        // TRANSITION, only used when constexpr mutex constructor is not enabled
-        inline void create_stl_critical_section(_Stl_critical_section* p) {
-            new (p) _Stl_critical_section;
-        }
-
-        inline void create_stl_condition_variable(stl_condition_variable_win7* p) {
-            new (p) stl_condition_variable_win7;
-        }
     } // namespace details
 } // namespace Concurrency
+
+struct _Cnd_internal_imp_t {
+    typename std::_Aligned_storage<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment>::type cv;
+
+    [[nodiscard]] Concurrency::details::stl_condition_variable_win7* _get_cv() noexcept {
+        // get pointer to implementation
+        return reinterpret_cast<Concurrency::details::stl_condition_variable_win7*>(&cv);
+    }
+};

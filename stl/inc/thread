@@ -179,6 +179,24 @@ _NODISCARD auto _To_absolute_time(const chrono::duration<_Rep, _Period>& _Rel_ti
     return _Abs_time;
 }
 
+struct _Clamped_rel_time_ms_count_result {
+    unsigned long _Count;
+    bool _Clamped;
+};
+
+template <class _Duration>
+_NODISCARD _Clamped_rel_time_ms_count_result _Clamped_rel_time_ms_count(const _Duration& _Rel) {
+    // _Clamp must be less than 2^32 - 1 (INFINITE) milliseconds, but is otherwise arbitrary.
+    constexpr chrono::milliseconds _Clamp{chrono::hours{24}};
+
+    if (_Rel >= _Clamp) {
+        return {static_cast<unsigned long>(_Clamp.count()), true};
+    } else {
+        const auto _Rel_ms = chrono::ceil<chrono::milliseconds>(_Rel);
+        return {static_cast<unsigned long>(_Rel_ms.count()), false};
+    }
+}
+
 namespace this_thread {
     _EXPORT_STD _NODISCARD thread::id get_id() noexcept;
 
@@ -197,16 +215,8 @@ namespace this_thread {
                 return;
             }
 
-            // _Clamp must be less than 2^32 - 1 (INFINITE) milliseconds, but is otherwise arbitrary.
-            constexpr chrono::milliseconds _Clamp{chrono::hours{24}};
-
-            const auto _Rel = _Abs_time - _Now;
-            if (_Rel >= _Clamp) {
-                _Thrd_sleep_for(static_cast<unsigned long>(_Clamp.count()));
-            } else {
-                const auto _Rel_ms = chrono::ceil<chrono::milliseconds>(_Rel);
-                _Thrd_sleep_for(static_cast<unsigned long>(_Rel_ms.count()));
-            }
+            const unsigned long _Rel_ms_count = _Clamped_rel_time_ms_count(_Abs_time - _Now)._Count;
+            _Thrd_sleep_for(_Rel_ms_count);
         }
     }
 
