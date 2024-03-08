@@ -47,7 +47,7 @@ _Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, c
     const auto start = GetTickCount64();
 
     // TRANSITION: replace with _Mtx_clear_owner(mtx);
-    mtx->_Thread_id  = -1;
+    mtx->_Thread_id = -1;
     --mtx->_Count;
 
     if (!cond->_get_cv()->wait_for(cs, target)) { // report timeout
