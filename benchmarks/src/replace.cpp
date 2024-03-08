@@ -35,8 +35,6 @@ const char src[] =
     "euismod eros, ut posuere ligula ullamcorper id. Nullam aliquam malesuada est at dignissim. Pellentesque finibus "
     "sagittis libero nec bibendum. Phasellus dolor ipsum, finibus quis turpis quis, mollis interdum felis.";
 
-#pragma warning(disable : 4244)
-
 template <class T>
 void rc(benchmark::State& state) {
     std::vector<T> a(std::size(src));
@@ -66,7 +64,6 @@ BENCHMARK(rc<uint8_t>);
 BENCHMARK(rc<uint16_t>);
 BENCHMARK(rc<uint32_t>);
 BENCHMARK(rc<uint64_t>);
-
 
 BENCHMARK(rc_if<uint8_t>);
 BENCHMARK(rc_if<uint16_t>);
