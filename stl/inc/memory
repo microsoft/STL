@@ -3036,7 +3036,7 @@ _NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
     const size_t _Bytes         = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
     const size_t _Storage_units = _Bytes / sizeof(_Storage);
     _Allocate_n_ptr _Guard{_Rebound, _Storage_units};
-    const auto _Rx = reinterpret_cast<_Refc*>(_Unfancy(_Guard._Ptr));
+    const auto _Rx = reinterpret_cast<_Refc*>(_STD _Unfancy(_Guard._Ptr));
     ::new (static_cast<void*>(_Rx)) _Refc(_Al, _Count, _Args...);
     _Guard._Ptr = nullptr;
     shared_ptr<_Ty> _Ret;
