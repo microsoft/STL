@@ -282,22 +282,6 @@ _CONSTEXPR20 void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
 
 #undef _HAS_ALIGNED_NEW
 
-template <class _Ty, class... _Types>
-_Ty* _Global_new(_Types&&... _Args) { // acts as "new" while disallowing user overload selection
-    struct _NODISCARD _Guard_type {
-        void* _Result;
-        ~_Guard_type() {
-            if (_Result) {
-                _Deallocate<_New_alignof<_Ty>>(_Result, sizeof(_Ty));
-            }
-        }
-    };
-
-    _Guard_type _Guard{_Allocate<_New_alignof<_Ty>>(sizeof(_Ty))};
-    ::new (_Guard._Result) _Ty(_STD forward<_Types>(_Args)...);
-    return static_cast<_Ty*>(_STD exchange(_Guard._Result, nullptr));
-}
-
 template <class _Ptr, class _Ty>
 using _Rebind_pointer_t = typename pointer_traits<_Ptr>::template rebind<_Ty>;
 
@@ -327,7 +311,7 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, _NoThrowSentinel _Last) n
 template <class _Ty>
 _CONSTEXPR20 void _Destroy_in_place(_Ty& _Obj) noexcept {
     if constexpr (is_array_v<_Ty>) {
-        _Destroy_range(_Obj, _Obj + extent_v<_Ty>);
+        _STD _Destroy_range(_Obj, _Obj + extent_v<_Ty>);
     } else {
         _Obj.~_Ty();
     }
@@ -338,7 +322,7 @@ _EXPORT_STD template <class _Ty>
 _CONSTEXPR20 void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
 #if _HAS_CXX20
     if constexpr (is_array_v<_Ty>) {
-        _Destroy_range(_STD begin(*_Location), _STD end(*_Location));
+        _STD _Destroy_range(_STD begin(*_Location), _STD end(*_Location));
     } else
 #endif // _HAS_CXX20
     {
@@ -1152,7 +1136,7 @@ _CONSTEXPR20 void _Delete_plain_internal(_Alloc& _Al, typename _Alloc::value_typ
     // destroy *_Ptr in place, then deallocate _Ptr using _Al; used for internal container types the user didn't name
     using _Ty = typename _Alloc::value_type;
     _Ptr->~_Ty();
-    _Deallocate_plain(_Al, _Ptr);
+    _STD _Deallocate_plain(_Al, _Ptr);
 }
 
 template <class _Alloc>

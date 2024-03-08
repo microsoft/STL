@@ -143,7 +143,7 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
     _CONSTEXPR20 _Ty& _Construct(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
         // transition from the empty to the value-containing state
         _STL_INTERNAL_CHECK(!this->_Has_value);
-        _Construct_in_place(this->_Value, _STD forward<_Types>(_Args)...);
+        _STD _Construct_in_place(this->_Value, _STD forward<_Types>(_Args)...);
         this->_Has_value = true;
         return this->_Value;
     }
