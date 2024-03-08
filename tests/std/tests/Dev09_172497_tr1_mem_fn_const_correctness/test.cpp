@@ -37,10 +37,23 @@ struct Cat {
     double purr_cv(int) const volatile {
         return 22.2;
     }
+
+    long double hiss(int, int) {
+        return 33.3l;
+    }
+    long double hiss_c(int, int) const {
+        return 33.3l;
+    }
+    long double hiss_v(int, int) volatile {
+        return 33.3l;
+    }
+    long double hiss_cv(int, int) const volatile {
+        return 33.3l;
+    }
 };
 
-// FDIS 20.8.10 [func.memfn]/2: "The simple call wrapper shall define two nested types named
-// argument_type and result_type as synonyms for cv T* and Ret, respectively, when pm is a pointer to
+// N4659 [depr.func.adaptor.typedefs]/10: "The simple call wrapper returned from a call to mem_fn(pm) shall define two
+// nested types named argument_type and result_type as synonyms for cv T* and Ret, respectively, when pm is a pointer to
 // member function with cv-qualifier cv and taking no arguments, where Ret is pm's return type."
 template <typename Ptr, typename F>
 void test_unary(F) {
@@ -48,8 +61,8 @@ void test_unary(F) {
     STATIC_ASSERT(is_same_v<typename F::result_type, float>);
 }
 
-// FDIS 20.8.10 [func.memfn]/3: "The simple call wrapper shall define three nested types named
-// first_argument_type, second_argument_type, and result_type as synonyms for cv T*, T1, and Ret,
+// N4659 [depr.func.adaptor.typedefs]/11: "The simple call wrapper returned from a call to mem_fn(pm) shall define three
+// nested types named first_argument_type, second_argument_type, and result_type as synonyms for cv T*, T1, and Ret,
 // respectively, when pm is a pointer to member function with cv-qualifier cv and taking one argument
 // of type T1, where Ret is pm's return type."
 template <typename Ptr, typename F>
@@ -57,6 +70,13 @@ void test_binary(F) {
     STATIC_ASSERT(is_same_v<typename F::first_argument_type, Ptr>);
     STATIC_ASSERT(is_same_v<typename F::second_argument_type, int>);
     STATIC_ASSERT(is_same_v<typename F::result_type, double>);
+}
+
+// N4659 [depr.func.adaptor.typedefs]/9: "The simple call wrapper returned from a call to mem_fn(pm) shall have a
+// nested type result_type that is a synonym for the return type of pm when pm is a pointer to member function."
+template <typename F>
+void test_ternary(F) {
+    STATIC_ASSERT(is_same_v<typename F::result_type, long double>);
 }
 
 int main() {
@@ -69,4 +89,9 @@ int main() {
     test_binary<const Cat*>(mem_fn(&Cat::purr_c));
     test_binary<volatile Cat*>(mem_fn(&Cat::purr_v));
     test_binary<const volatile Cat*>(mem_fn(&Cat::purr_cv));
+
+    test_ternary(mem_fn(&Cat::hiss));
+    test_ternary(mem_fn(&Cat::hiss_c));
+    test_ternary(mem_fn(&Cat::hiss_v));
+    test_ternary(mem_fn(&Cat::hiss_cv));
 }
