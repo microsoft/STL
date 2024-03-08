@@ -22,6 +22,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <is_permissive.hpp>
+
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 template <class, class = void>
@@ -31,27 +33,6 @@ constexpr bool is_trait<T, std::void_t<typename T::type>> = true;
 
 template <class>
 constexpr bool always_false = false;
-
-namespace detail {
-    constexpr bool permissive() {
-        return false;
-    }
-
-    template <class>
-    struct DependentBase {
-        static constexpr bool permissive() {
-            return true;
-        }
-    };
-
-    template <class T>
-    struct Derived : DependentBase<T> {
-        static constexpr bool test() {
-            return permissive();
-        }
-    };
-} // namespace detail
-constexpr bool is_permissive = detail::Derived<int>::test();
 
 struct IncompleteClass;
 union IncompleteUnion;

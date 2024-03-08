@@ -10,7 +10,10 @@
 #include <mutex>
 #include <thread>
 
+#pragma warning(push) // TRANSITION, OS-23694920
+#pragma warning(disable : 4668) // 'MEOW' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 #include <Windows.h>
+#pragma warning(pop)
 
 class one_shot {
     bool unblock = false;

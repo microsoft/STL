@@ -179,6 +179,11 @@ public:
 
     template <class _RanIt>
     void generate(_RanIt _First, _RanIt _Last) const { // generate randomized interval from seeds
+        static_assert(_Is_any_of_v<remove_cv_t<typename iterator_traits<_RanIt>::value_type>, //
+                          unsigned int, unsigned long, unsigned long long>,
+            "N4971 [rand.util.seedseq]/7 requires the value type of the iterator to be an unsigned type that is at "
+            "least 32-bit.");
+
         _Adl_verify_range(_First, _Last);
         auto _UFirst   = _Get_unwrapped(_First);
         const auto _Nx = static_cast<size_t>(_Get_unwrapped(_Last) - _UFirst);

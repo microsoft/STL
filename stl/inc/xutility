@@ -134,7 +134,7 @@ __declspec(noalias) double __stdcall __std_max_d(const void* _First, const void*
 _STD_BEGIN
 template <class _Ty, class _TVal>
 __declspec(noalias) size_t __std_count_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
-    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
         return _STD __std_count_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
         return ::__std_count_trivial_1(_First, _Last, static_cast<uint8_t>(_Val));
@@ -145,13 +145,13 @@ __declspec(noalias) size_t __std_count_trivial(_Ty* const _First, _Ty* const _La
     } else if constexpr (sizeof(_Ty) == 8) {
         return ::__std_count_trivial_8(_First, _Last, static_cast<uint64_t>(_Val));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty, class _TVal>
 _Ty* __std_find_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
-    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
         return _STD __std_find_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
@@ -166,13 +166,13 @@ _Ty* __std_find_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) n
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty, class _TVal>
 _Ty* __std_find_trivial_unsized(_Ty* const _First, const _TVal _Val) noexcept {
-    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
         return _STD __std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
@@ -187,17 +187,17 @@ _Ty* __std_find_trivial_unsized(_Ty* const _First, const _TVal _Val) noexcept {
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_unsized_8(_First, static_cast<uint64_t>(_Val))));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty>
 _Ty* __std_min_element(_Ty* const _First, _Ty* const _Last) noexcept {
-    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+    constexpr bool _Signed = is_signed_v<_Ty>;
 
-    if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+    if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_f(_First, _Last, false)));
-    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_d(_First, _Last, false)));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_1(_First, _Last, _Signed)));
@@ -208,17 +208,17 @@ _Ty* __std_min_element(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty>
 _Ty* __std_max_element(_Ty* const _First, _Ty* const _Last) noexcept {
-    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+    constexpr bool _Signed = is_signed_v<_Ty>;
 
-    if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+    if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_f(_First, _Last, false)));
-    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_d(_First, _Last, false)));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_1(_First, _Last, _Signed)));
@@ -229,23 +229,23 @@ _Ty* __std_max_element(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty>
 auto __std_min(_Ty* const _First, _Ty* const _Last) noexcept {
-    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+    constexpr bool _Signed = is_signed_v<_Ty>;
 
-    if constexpr (_STD is_pointer_v<_Ty>) {
+    if constexpr (is_pointer_v<_Ty>) {
 #ifdef _WIN64
         return reinterpret_cast<void*>(::__std_min_8u(_First, _Last));
 #else
         return reinterpret_cast<void*>(::__std_min_4u(_First, _Last));
 #endif
-    } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+    } else if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         return ::__std_min_f(_First, _Last);
-    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         return ::__std_min_d(_First, _Last);
     } else if constexpr (sizeof(_Ty) == 1) {
         if constexpr (_Signed) {
@@ -272,23 +272,23 @@ auto __std_min(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_min_8u(_First, _Last);
         }
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty>
 auto __std_max(_Ty* const _First, _Ty* const _Last) noexcept {
-    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+    constexpr bool _Signed = is_signed_v<_Ty>;
 
-    if constexpr (_STD is_pointer_v<_Ty>) {
+    if constexpr (is_pointer_v<_Ty>) {
 #ifdef _WIN64
         return reinterpret_cast<void*>(::__std_max_8u(_First, _Last));
 #else
         return reinterpret_cast<void*>(::__std_max_4u(_First, _Last));
 #endif
-    } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+    } else if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         return ::__std_max_f(_First, _Last);
-    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         return ::__std_max_d(_First, _Last);
     } else if constexpr (sizeof(_Ty) == 1) {
         if constexpr (_Signed) {
@@ -315,7 +315,7 @@ auto __std_max(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_max_8u(_First, _Last);
         }
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 _STD_END
@@ -1423,27 +1423,27 @@ template <class _Iter>
 using _Guide_key_t =
 #if _HAS_CXX23
     remove_const_t<tuple_element_t<0, typename iterator_traits<_Iter>::value_type>>;
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     remove_const_t<typename iterator_traits<_Iter>::value_type::first_type>;
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 template <class _Iter>
 using _Guide_val_t =
 #if _HAS_CXX23
     tuple_element_t<1, typename iterator_traits<_Iter>::value_type>;
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     typename iterator_traits<_Iter>::value_type::second_type;
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 template <class _Iter>
 using _Guide_pair_t =
 #if _HAS_CXX23
     pair<add_const_t<tuple_element_t<0, typename iterator_traits<_Iter>::value_type>>,
         tuple_element_t<1, typename iterator_traits<_Iter>::value_type>>;
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     pair<add_const_t<typename iterator_traits<_Iter>::value_type::first_type>,
         typename iterator_traits<_Iter>::value_type::second_type>;
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_execution_policy : false_type {};
@@ -2840,7 +2840,7 @@ namespace ranges {
             noexcept(const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES begin(static_cast<_CTy&&>(_Val))))
@@ -2848,7 +2848,7 @@ namespace ranges {
         {
             return _RANGES begin(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -2870,7 +2870,7 @@ namespace ranges {
             noexcept(noexcept(const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES end(static_cast<_CTy&&>(_Val))))
@@ -2878,7 +2878,7 @@ namespace ranges {
         {
             return _RANGES end(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -3040,7 +3040,7 @@ namespace ranges {
             noexcept(const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rbegin(static_cast<_CTy&&>(_Val))))
@@ -3048,7 +3048,7 @@ namespace ranges {
         {
             return _RANGES rbegin(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -3070,7 +3070,7 @@ namespace ranges {
             noexcept(noexcept(const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rend(static_cast<_CTy&&>(_Val))))
@@ -3078,7 +3078,7 @@ namespace ranges {
         {
             return _RANGES rend(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -3297,7 +3297,7 @@ namespace ranges {
             noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val)))) {
             return _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES data(static_cast<_CTy&&>(_Val))))
@@ -3305,7 +3305,7 @@ namespace ranges {
         {
             return _RANGES data(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
