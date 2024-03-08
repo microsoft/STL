@@ -18,12 +18,9 @@
 
 #if _STL_COMPILER_PREPROCESSOR
 
-// This does not use `_EMIT_STL_ERROR`, as it needs to be checked before we include anything else.
-#define _STL_STRINGIZE_(S) #S
-#define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
+// This does not use `_EMIT_STL_ERROR`, as it is checking the language itself.
 #ifndef __cplusplus
-#pragma message(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): STL1003: Unexpected compiler, expected C++ compiler.")
-#error Error in C++ Standard Library usage
+#error error STL1003: Unexpected compiler, expected C++ compiler.
 #endif // !defined(__cplusplus)
 
 // Implemented unconditionally:
@@ -503,6 +500,9 @@
 
 #include <vcruntime.h>
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
+
+#define _STL_STRINGIZE_(S) #S
+#define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
 
 // Note that _STL_PRAGMA is load-bearing;
 // it still needs to exist even once CUDA and ICC support _Pragma.
