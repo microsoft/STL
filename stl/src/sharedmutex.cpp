@@ -45,6 +45,11 @@ _Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, c
     _Thrd_result res = _Thrd_result::_Success;
     const auto cs    = &mtx->_Critical_section;
     const auto start = GetTickCount64();
+
+    // TRANSITION: replace with _Mtx_clear_owner(mtx);
+    mtx->_Thread_id  = -1;
+    --mtx->_Count;
+
     if (!cond->_get_cv()->wait_for(cs, target)) { // report timeout
         const auto end = GetTickCount64();
         if ((end - start) >= target) {
