@@ -16,12 +16,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-namespace Concurrency {
-    namespace details {
-        class stl_condition_variable_win7;
-    } // namespace details
-} // namespace Concurrency
-
 extern "C" {
 using _Thrd_id_t = unsigned int;
 struct _Thrd_t { // thread identifier for Win32
