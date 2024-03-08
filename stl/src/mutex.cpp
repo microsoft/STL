@@ -4,8 +4,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <internal_shared.h>
-#include <new>
 #include <mutex>
+#include <new>
 #include <type_traits>
 #include <xthreads.h>
 #include <xtimec.h>
