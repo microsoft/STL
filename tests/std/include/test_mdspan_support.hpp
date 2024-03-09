@@ -17,6 +17,8 @@
 #include <utility>
 #include <vector>
 
+#include <is_permissive.hpp>
+
 enum class IsExplicit : bool { no, yes };
 enum class IsNothrow : bool { no, yes };
 
@@ -173,7 +175,7 @@ constexpr bool check_accessor_policy_requirements() {
     return true;
 }
 
-namespace details {
+namespace detail {
     template <size_t... Extents, class Fn>
     constexpr void check_members_with_mixed_extents(Fn&& fn) {
         auto select_extent = [](size_t e) consteval {
@@ -221,40 +223,18 @@ namespace details {
             static_assert(sizeof...(Seq) <= 16, "We don't need more testing.");
         }
     }
-} // namespace details
+} // namespace detail
 
 template <class Fn>
 constexpr void check_members_with_various_extents(Fn&& fn) {
-    details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<1>{});
-    details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<2>{});
-    details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<4>{});
-    details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<8>{});
+    detail::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<1>{});
+    detail::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<2>{});
+    detail::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<4>{});
+    detail::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<8>{});
     if (!std::is_constant_evaluated()) {
-        details::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<16>{});
+        detail::check_members_with_various_extents_impl(std::forward<Fn>(fn), std::make_index_sequence<16>{});
     }
 }
-
-namespace details {
-    constexpr bool permissive() {
-        return false;
-    }
-
-    template <class>
-    struct PermissiveTestBase {
-        static constexpr bool permissive() {
-            return true;
-        }
-    };
-
-    template <class T>
-    struct PermissiveTest : PermissiveTestBase<T> {
-        static constexpr bool test() {
-            return permissive();
-        }
-    };
-} // namespace details
-
-inline constexpr bool is_permissive = details::PermissiveTest<int>::test();
 
 template <class Mapping>
 struct MappingProperties {
@@ -265,7 +245,7 @@ struct MappingProperties {
 };
 
 template <class Mapping>
-    requires (!details::PermissiveTest<Mapping>::test())
+    requires (!is_permissive_v<Mapping>)
 MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
     using IndexType     = Mapping::index_type;
     constexpr auto rank = Mapping::extents_type::rank();
@@ -327,7 +307,7 @@ MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
 }
 
 template <class Mapping>
-    requires (details::PermissiveTest<Mapping>::test())
+    requires (is_permissive_v<Mapping>)
 constexpr MappingProperties<Mapping> get_mapping_properties(const Mapping&) {
     return {}; // we cannot get properties in '/permissive' mode
 }

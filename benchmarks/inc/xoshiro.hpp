@@ -10,16 +10,17 @@ SPDX-License-Identifier: CC0-1.0 */
 #pragma once
 
 #include <bit>
-#include <stdint.h>
+#include <cstdint>
 
 struct xoshiro256ss {
     xoshiro256ss() = delete;
-    xoshiro256ss(uint64_t s0, uint64_t s1, uint64_t s2, uint64_t s3) : s0_(s0), s1_(s1), s2_(s2), s3_(s3) {}
+    xoshiro256ss(std::uint64_t s0, std::uint64_t s1, std::uint64_t s2, std::uint64_t s3)
+        : s0_(s0), s1_(s1), s2_(s2), s3_(s3) {}
 
-    uint64_t next() {
+    std::uint64_t next() {
         auto result = std::rotl(s1_ * 5, 7) * 9;
 
-        const uint64_t t = s1_ << 17;
+        const std::uint64_t t = s1_ << 17;
 
         s2_ ^= s0_;
         s3_ ^= s1_;
@@ -34,8 +35,8 @@ struct xoshiro256ss {
     }
 
 private:
-    uint64_t s0_;
-    uint64_t s1_;
-    uint64_t s2_;
-    uint64_t s3_;
+    std::uint64_t s0_;
+    std::uint64_t s1_;
+    std::uint64_t s2_;
+    std::uint64_t s3_;
 };

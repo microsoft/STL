@@ -613,11 +613,11 @@ STATIC_ASSERT(!ranges::view<int (&)[]>);
 #if _HAS_CXX23 // ranges::cbegin and ranges::cdata behavior differs in C++20 and C++23 modes
 STATIC_ASSERT(test_cbegin<int (&)[]>());
 STATIC_ASSERT(test_cdata<int (&)[]>());
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 STATIC_ASSERT(test_cbegin<int (&)[], int const*>());
 // Can't use test_cdata here because it uses range_value_t and this isn't a range
 STATIC_ASSERT(std::same_as<decltype(ranges::cdata(std::declval<int (&)[]>())), int const*>);
-#endif // C++20
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 STATIC_ASSERT(test_begin<int const (&)[], int const*>());
 STATIC_ASSERT(test_end<int const (&)[]>());
@@ -636,11 +636,11 @@ STATIC_ASSERT(!ranges::view<int const (&)[]>);
 #if _HAS_CXX23 // ranges::cbegin and ranges::cdata behavior differs in C++20 and C++23 modes
 STATIC_ASSERT(test_cbegin<int const (&)[]>());
 STATIC_ASSERT(test_cdata<int const (&)[]>());
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 STATIC_ASSERT(test_cbegin<int const (&)[], int const*>());
 // Can't use test_cdata here because it uses range_value_t and this isn't a range
 STATIC_ASSERT(std::same_as<decltype(ranges::cdata(std::declval<int const (&)[]>())), int const*>);
-#endif // C++20
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 // Validate behavior before/after completing the bound of an array
 extern int initially_unbounded[];
@@ -658,10 +658,10 @@ STATIC_ASSERT(ranges::data(initially_unbounded) == initially_unbounded);
 #if _HAS_CXX23 // ranges::cbegin and ranges::cdata behavior differs in C++20 and C++23 modes
 STATIC_ASSERT(!CanCBegin<decltype((initially_unbounded))>);
 STATIC_ASSERT(!CanCData<decltype((initially_unbounded))>);
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 STATIC_ASSERT(ranges::cbegin(initially_unbounded) == initially_unbounded);
 STATIC_ASSERT(ranges::cdata(initially_unbounded) == initially_unbounded);
-#endif // C++20
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 int initially_unbounded[42];
 STATIC_ASSERT(ranges::begin(initially_unbounded) == initially_unbounded);
@@ -1046,13 +1046,13 @@ STATIC_ASSERT(test_cend<std::span<int>, std::span<int>::const_iterator>());
 STATIC_ASSERT(test_crbegin<std::span<int>, std::span<int>::const_reverse_iterator>());
 STATIC_ASSERT(test_crend<std::span<int>, std::span<int>::const_reverse_iterator>());
 STATIC_ASSERT(test_cdata<std::span<int>, const int*>());
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 STATIC_ASSERT(test_cbegin<std::span<int>, std::span<int>::iterator>());
 STATIC_ASSERT(test_cend<std::span<int>, std::span<int>::iterator>());
 STATIC_ASSERT(test_crbegin<std::span<int>, std::reverse_iterator<std::span<int>::iterator>>());
 STATIC_ASSERT(test_crend<std::span<int>, std::reverse_iterator<std::span<int>::iterator>>());
 STATIC_ASSERT(test_cdata<std::span<int>, int*>());
-#endif // C++20
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 STATIC_ASSERT(test_begin<std::span<int> const, std::span<int>::iterator>());
 STATIC_ASSERT(test_end<std::span<int> const, std::span<int>::iterator>());
@@ -1070,13 +1070,13 @@ STATIC_ASSERT(test_cend<std::span<int> const, std::span<int>::const_iterator>())
 STATIC_ASSERT(test_crbegin<std::span<int> const, std::span<int>::const_reverse_iterator>());
 STATIC_ASSERT(test_crend<std::span<int> const, std::span<int>::const_reverse_iterator>());
 STATIC_ASSERT(test_cdata<std::span<int> const, const int*>());
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 STATIC_ASSERT(test_cbegin<std::span<int> const, std::span<int>::iterator>());
 STATIC_ASSERT(test_cend<std::span<int> const, std::span<int>::iterator>());
 STATIC_ASSERT(test_crbegin<std::span<int> const, std::reverse_iterator<std::span<int>::iterator>>());
 STATIC_ASSERT(test_crend<std::span<int> const, std::reverse_iterator<std::span<int>::iterator>>());
 STATIC_ASSERT(test_cdata<std::span<int> const, int*>());
-#endif // C++20
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 STATIC_ASSERT(test_begin<std::span<int>&, std::span<int>::iterator>());
 STATIC_ASSERT(test_end<std::span<int>&, std::span<int>::iterator>());
@@ -1094,13 +1094,13 @@ STATIC_ASSERT(test_cend<std::span<int>&, std::span<int>::const_iterator>());
 STATIC_ASSERT(test_crbegin<std::span<int>&, std::span<int>::const_reverse_iterator>());
 STATIC_ASSERT(test_crend<std::span<int>&, std::span<int>::const_reverse_iterator>());
 STATIC_ASSERT(test_cdata<std::span<int>&, const int*>());
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 STATIC_ASSERT(test_cbegin<std::span<int>&, std::span<int>::iterator>());
 STATIC_ASSERT(test_cend<std::span<int>&, std::span<int>::iterator>());
 STATIC_ASSERT(test_crbegin<std::span<int>&, std::reverse_iterator<std::span<int>::iterator>>());
 STATIC_ASSERT(test_crend<std::span<int>&, std::reverse_iterator<std::span<int>::iterator>>());
 STATIC_ASSERT(test_cdata<std::span<int>&, int*>());
-#endif // C++20
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 STATIC_ASSERT(test_begin<std::span<int> const&, std::span<int>::iterator>());
 STATIC_ASSERT(test_end<std::span<int> const&, std::span<int>::iterator>());
@@ -1118,13 +1118,13 @@ STATIC_ASSERT(test_cend<std::span<int> const&, std::span<int>::const_iterator>()
 STATIC_ASSERT(test_crbegin<std::span<int> const&, std::span<int>::const_reverse_iterator>());
 STATIC_ASSERT(test_crend<std::span<int> const&, std::span<int>::const_reverse_iterator>());
 STATIC_ASSERT(test_cdata<std::span<int> const&, const int*>());
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 STATIC_ASSERT(test_cbegin<std::span<int> const&, std::span<int>::iterator>());
 STATIC_ASSERT(test_cend<std::span<int> const&, std::span<int>::iterator>());
 STATIC_ASSERT(test_crbegin<std::span<int> const&, std::reverse_iterator<std::span<int>::iterator>>());
 STATIC_ASSERT(test_crend<std::span<int> const&, std::reverse_iterator<std::span<int>::iterator>>());
 STATIC_ASSERT(test_cdata<std::span<int> const&, int*>());
-#endif // C++20
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 using valarray_int_iterator       = decltype(std::begin(std::declval<std::valarray<int>&>()));
 using const_valarray_int_iterator = decltype(std::begin(std::declval<const std::valarray<int>&>()));

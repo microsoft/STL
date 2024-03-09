@@ -305,9 +305,9 @@ concept three_way_comparable_with =
     three_way_comparable<_Ty1, _Cat> && three_way_comparable<_Ty2, _Cat>
 #if _HAS_CXX23
     && _Comparison_common_type_with<_Ty1, _Ty2>
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     && common_reference_with<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>
-#endif // C++20
+#endif // ^^^ !_HAS_CXX23 ^^^
     && three_way_comparable<common_reference_t<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>, _Cat>
     && _Weakly_equality_comparable_with<_Ty1, _Ty2> && _Partially_ordered_with<_Ty1, _Ty2>
     && requires(const remove_reference_t<_Ty1>& __t, const remove_reference_t<_Ty2>& __u) {

@@ -1943,15 +1943,15 @@ namespace iter_ops {
         std::random_access_iterator_tag;
 
     struct trace {
-        unsigned int compares_;
-        unsigned int differences_;
-        unsigned int increments_;
-        unsigned int decrements_;
-        unsigned int assignments_;
-        unsigned int seeks_;
-        unsigned int sizes_;
-        unsigned int begins_;
-        unsigned int ends_;
+        unsigned int compares_    = 0;
+        unsigned int differences_ = 0;
+        unsigned int increments_  = 0;
+        unsigned int decrements_  = 0;
+        unsigned int assignments_ = 0;
+        unsigned int seeks_       = 0;
+        unsigned int sizes_       = 0;
+        unsigned int begins_      = 0;
+        unsigned int ends_        = 0;
 
         bool operator==(trace const&) const = default;
     };

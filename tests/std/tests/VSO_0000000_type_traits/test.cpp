@@ -9,6 +9,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <is_permissive.hpp>
+
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
@@ -1267,27 +1269,6 @@ namespace {
     constexpr bool is_trait = false;
     template <class T>
     constexpr bool is_trait<T, void_t<typename T::type>> = true;
-
-    namespace detail {
-        constexpr bool permissive() {
-            return false;
-        }
-
-        template <class>
-        struct DependentBase {
-            static constexpr bool permissive() {
-                return true;
-            }
-        };
-
-        template <class T>
-        struct Derived : DependentBase<T> {
-            static constexpr bool test() {
-                return permissive();
-            }
-        };
-    } // namespace detail
-    constexpr bool is_permissive = detail::Derived<int>::test();
 
     struct move_only {
         move_only()                       = default;
