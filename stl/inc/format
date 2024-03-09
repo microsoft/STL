@@ -4073,7 +4073,7 @@ protected:
     static constexpr bool _Is_const_formattable = (formattable<const _Types, _CharT> && ...);
 
     template <class _FormatContext, class... _ArgTypes>
-    typename _FormatContext::iterator _Format(_FormatContext& _Fmt_ctx, _ArgTypes&... _Args) const {
+    _FormatContext::iterator _Format(_FormatContext& _Fmt_ctx, _ArgTypes&... _Args) const {
         _STL_INTERNAL_STATIC_ASSERT(
             (is_same_v<_ArgTypes, remove_reference_t<_Maybe_const<_Is_const_formattable, _Types>>> && ...));
 
@@ -4117,7 +4117,7 @@ public:
     }
 
     template <class _ParseContext>
-    constexpr typename _ParseContext::iterator parse(_ParseContext& _Ctx) {
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
         _Fmt_tuple_type _Fmt_type = _Fmt_tuple_type::_None;
         _Tuple_format_specs_setter<_CharT, sizeof...(_Types) == 2> _Callback{_Specs, _Fmt_type, _Ctx};
         const auto _It = _STD _Parse_tuple_format_specs(_Ctx._Unchecked_begin(), _Ctx._Unchecked_end(), _Callback);
@@ -4159,7 +4159,7 @@ private:
 
 public:
     template <class _FormatContext>
-    typename _FormatContext::iterator format(_Formatted_type& _Elems, _FormatContext& _Ctx) const {
+    _FormatContext::iterator format(_Formatted_type& _Elems, _FormatContext& _Ctx) const {
         return this->_Format(_Ctx, _Elems.first, _Elems.second);
     }
 };
@@ -4172,7 +4172,7 @@ private:
 
 public:
     template <class _FormatContext>
-    typename _FormatContext::iterator format(_Formatted_type& _Elems, _FormatContext& _Ctx) const {
+    _FormatContext::iterator format(_Formatted_type& _Elems, _FormatContext& _Ctx) const {
         return _STD apply([this, &_Ctx](auto&... _Args) { return this->_Format(_Ctx, _Args...); }, _Elems);
     }
 };
