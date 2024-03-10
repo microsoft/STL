@@ -2079,7 +2079,7 @@ namespace {
     template <class _Ty>
     const void* __stdcall __std_find_first_of_trivial_impl(
         const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-
+#ifndef _M_ARM64EC
         constexpr bool _Bytes = sizeof(_Ty) == 1;
         constexpr int _Op =
             (_Bytes ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT;
@@ -2126,6 +2126,7 @@ namespace {
             _Advance_bytes(_First1, _Last_part_size);
             return _First1;
         }
+#endif // !_M_ARM64EC
 
         auto _Ptr_haystack           = static_cast<const _Ty*>(_First1);
         const auto _Ptr_haystack_end = static_cast<const _Ty*>(_Last1);
