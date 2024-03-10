@@ -862,27 +862,30 @@ private:
         _Clear_flat_map_scope_guard _Guard{this};
 
         // Insert the new elements at the end
-        size_type _OldSize = size();
-        size_type _NewSize = _STD distance(_First, _Last);
+        const size_type _Old_size = size();
+        if constexpr (_Is_cpp17_fwd_iter_v<_InputIterator>) {
+            const auto _New_size = static_cast<size_type>(_STD distance(_First, _Last));
 
-        _Data.keys.reserve(_Data.keys.size() + _NewSize);
-        _Data.values.reserve(_Data.values.size() + _NewSize);
+            _Data.keys.reserve(_Data.keys.size() + _New_size);
+            _Data.values.reserve(_Data.values.size() + _New_size);
+        }
 
         for (; _First != _Last; ++_First) {
-            _Data.keys.emplace_back(_STD move(_First->first));
-            _Data.values.emplace_back(_STD move(_First->second));
+            value_type _Val = *_First;
+            _Data.keys.emplace_back(_STD move(_Val.first));
+            _Data.values.emplace_back(_STD move(_Val.second));
         }
 
         // Sort the newly inserted elements
         auto _Sorted_view = _View_to_mutate();
         if constexpr (_NeedSorting) {
             auto _Sorted_new_elements = _Sorted_view;
-            _Sorted_new_elements.advance(_OldSize);
+            _Sorted_new_elements.advance(_Old_size);
             _RANGES sort(_Sorted_new_elements, value_compare(_Key_compare));
         }
 
         // Merge the newly inserted elements with the existing elements
-        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _OldSize, value_compare(_Key_compare));
+        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_size, value_compare(_Key_compare));
 
         if constexpr (_NeedDeduping) {
             _Dedup();
