@@ -184,7 +184,7 @@ _Ty* __std_find_first_of_trivial(
 template <class _It1, class _It2, class _Ty1 = _Iter_value_t<_It1>, class _Ty2 = _Iter_value_t<_It2>>
 _INLINE_VAR constexpr bool _Vector_alg_in_find_first_of_is_safe =
     _Iterator_is_contiguous<_It1> && _Iterator_is_contiguous<_It2> // contigous
-    && !_Iterator_is_volatile<_It1> && !_Iterator_is_volatile<_It2>  // non-volatile
+    && !_Iterator_is_volatile<_It1> && !_Iterator_is_volatile<_It2> // non-volatile
     && is_same_v<_Ty1, _Ty2> // same types
     && sizeof(_Ty1) <= 2 // pcmpestri compatible size
     && disjunction_v<
@@ -3362,7 +3362,8 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
                   && _Is_any_of_v<_Pr, equal_to<>, equal_to<_Ty1>>) {
         if (!_STD _Is_constant_evaluated() && _ULast1 - _UFirst1 >= _Threshold) {
             const auto _First1_ptr = _STD _To_address(_UFirst1);
-            const auto _Result     = _STD __std_find_first_of_trivial(_First1_ptr, _STD _To_address(_ULast1), _STD _To_address(_UFirst2), _STD _To_address(_ULast2));
+            const auto _Result     = _STD __std_find_first_of_trivial(
+                    _First1_ptr, _STD _To_address(_ULast1), _STD _To_address(_UFirst2), _STD _To_address(_ULast2));
 
             if constexpr (is_pointer_v<decltype(_UFirst1)>) {
                 _UFirst1 = _Result;
