@@ -722,8 +722,9 @@ public:
     }
 
     _NODISCARD_FRIEND auto operator<=>(const _Derived& _Left, const _Derived& _Right) {
-        return _STD lexicographical_compare_three_way(
-            _Left.cbegin(), _Left.cend(), _Right.cbegin(), _Right.cend(), _Synth_three_way{});
+        return _STD lexicographical_compare_three_way(_STD _Get_unwrapped(_Left.cbegin()),
+            _STD _Get_unwrapped(_Left.cend()), _STD _Get_unwrapped(_Right.cbegin()), _STD _Get_unwrapped(_Right.cend()),
+            _Synth_three_way{});
     }
 
     friend void swap(_Derived& _Left, _Derived& _Right) noexcept {
@@ -737,7 +738,6 @@ protected:
 
     template <class _Predicate>
     size_type _Erase_if(_Predicate _Pred) {
-
         auto _View           = _View_to_mutate();
         auto _Mut_first      = _View.begin();
         auto _Mut_last       = _View.end();
@@ -848,11 +848,11 @@ private:
 
     void _Dedup() {
         _Clear_flat_map_scope_guard _Guard{this};
-        auto _Sorted_view     = _View_to_mutate();
-        auto _Subrange        = _RANGES unique(_Sorted_view, [this](const_reference _Left, const_reference _Right) {
+        auto _Sorted_view = _View_to_mutate();
+        auto _Subrange    = _RANGES unique(_Sorted_view, [this](const_reference _Left, const_reference _Right) {
             return this->_Key_equal(_Left.first, _Right.first);
         });
-        auto _Remaining_count = _Subrange.begin() - _Sorted_view.begin();
+        const auto _Remaining_count = _Subrange.begin() - _Sorted_view.begin();
         _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
         _Data.values.erase(_Data.values.begin() + _Remaining_count, _Data.values.end());
         _Guard._Clearable = nullptr;
@@ -941,36 +941,56 @@ private:
     template <class _KeyTy>
     _NODISCARD iterator _Lower_bound(const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
-        auto _Key_it     = _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
-        const auto _Dist = _Key_it - _Data.keys.cbegin();
-        auto _Val_it     = _Data.values.begin() + _Dist;
+        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_Data.keys.cbegin());
+        const auto _Key_unchecked_it =
+            _STD lower_bound(_Key_unchecked_begin, _STD _Get_unwrapped(_Data.keys.cend()), _Key_val, _Key_compare);
+        const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
+
+        auto _Key_it = _Data.keys.cbegin();
+        _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
+        auto _Val_it = _Data.values.begin() + _Dist;
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
     template <class _KeyTy>
     _NODISCARD const_iterator _Lower_bound(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
-        auto _Key_it     = _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
-        const auto _Dist = _Key_it - _Data.keys.cbegin();
-        auto _Val_it     = _Data.values.cbegin() + _Dist;
+        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_Data.keys.cbegin());
+        const auto _Key_unchecked_it =
+            _STD lower_bound(_Key_unchecked_begin, _STD _Get_unwrapped(_Data.keys.cend()), _Key_val, _Key_compare);
+        const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
+
+        auto _Key_it = _Data.keys.cbegin();
+        _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
+        auto _Val_it = _Data.values.cbegin() + _Dist;
         return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
     template <class _KeyTy>
     _NODISCARD iterator _Upper_bound(const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
-        auto _Key_it     = _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
-        const auto _Dist = _Key_it - _Data.keys.cbegin();
-        auto _Val_it     = _Data.values.begin() + _Dist;
+        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_Data.keys.cbegin());
+        const auto _Key_unchecked_it =
+            _STD upper_bound(_Key_unchecked_begin, _STD _Get_unwrapped(_Data.keys.cend()), _Key_val, _Key_compare);
+        const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
+
+        auto _Key_it = _Data.keys.cbegin();
+        _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
+        auto _Val_it = _Data.values.begin() + _Dist;
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
     template <class _KeyTy>
     _NODISCARD const_iterator _Upper_bound(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
-        auto _Key_it     = _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
-        const auto _Dist = _Key_it - _Data.keys.cbegin();
-        auto _Val_it     = _Data.values.cbegin() + _Dist;
+        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_Data.keys.cbegin());
+        const auto _Key_unchecked_it =
+            _STD upper_bound(_Key_unchecked_begin, _STD _Get_unwrapped(_Data.keys.cend()), _Key_val, _Key_compare);
+        const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
+
+        auto _Key_it = _Data.keys.cbegin();
+        _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
+        auto _Val_it = _Data.values.cbegin() + _Dist;
         return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
