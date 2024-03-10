@@ -126,7 +126,7 @@ struct _Pairing_iterator_provider {
         }
 
         pointer operator->() const {
-            return pointer{*(*this)};
+            return pointer{**this};
         }
 
         _Iterator& operator++() {
@@ -767,50 +767,50 @@ protected:
         bool _Insert_before_position        = false;
         bool _Insert_after_position_minus_1 = false;
         if constexpr (_IsUnique) {
-            _Insert_before_position        = (_Position == _End) || _Key_compare(_Key_val, *(_Position._Key_it));
-            _Insert_after_position_minus_1 = (_Position == _Begin) || _Key_compare(*(_Position._Key_it - 1), _Key_val);
+            _Insert_before_position        = _Position == _End || _Key_compare(_Key_val, *_Position._Key_it);
+            _Insert_after_position_minus_1 = _Position == _Begin || _Key_compare(_Position._Key_it[-1], _Key_val);
         } else {
-            _Insert_before_position        = (_Position == _End) || !_Key_compare(*(_Position._Key_it), _Key_val);
-            _Insert_after_position_minus_1 = (_Position == _Begin) || !_Key_compare(_Key_val, *(_Position._Key_it - 1));
+            _Insert_before_position        = _Position == _End || !_Key_compare(*_Position._Key_it, _Key_val);
+            _Insert_after_position_minus_1 = _Position == _Begin || !_Key_compare(_Key_val, _Position._Key_it[-1]);
         }
-        bool _Hint_is_accurate = _Insert_before_position && _Insert_after_position_minus_1;
+        const bool _Hint_is_accurate = _Insert_before_position && _Insert_after_position_minus_1;
 
         if (_Hint_is_accurate) {
-            auto _Dist = _STD distance(_Begin._Key_it, _Position._Key_it);
+            const auto _Dist = _Position._Key_it - _Begin._Key_it;
             {
                 key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
                 mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
                 _Insert_exact(_Position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
             }
             return begin() + _Dist;
+        } 
+
+        if constexpr (_OverwriteIfExists) {
+            if (_Key_equal(_Key_val, *_Position._Key_it)) {
+                const auto _Dist = _Position._Key_it - _Begin._Key_it;
+                const auto _It   = begin() + _Dist;
+                *_It._Mapped_it  = mapped_type{_STD forward<_MappedArgTypes>(_Args)...};
+                return _It;
+            }
+
+            _Position = lower_bound(_Key_val);
+            if (_Position != _End && _Key_equal(_Key_val, *_Position._Key_it)) {
+                const auto _Dist = _Position._Key_it - _Begin._Key_it;
+                auto _It         = begin() + _Dist;
+                *_It._Mapped_it  = mapped_type{_STD forward<_MappedArgTypes>(_Args)...};
+                return _It;
+            }
         } else {
-            if constexpr (_OverwriteIfExists) {
-                if (_Key_equal(_Key_val, *(_Position._Key_it))) {
-                    auto _Dist        = _STD distance(_Begin._Key_it, _Position._Key_it);
-                    auto _It          = begin() + _Dist;
-                    *(_It._Mapped_it) = mapped_type{_STD forward<_MappedArgTypes>(_Args)...};
-                    return _It;
-                }
-
-                _Position = lower_bound(_Key_val);
-                if (_Position != _End && _Key_equal(_Key_val, *(_Position._Key_it))) {
-                    auto _Dist        = _STD distance(_Begin._Key_it, _Position._Key_it);
-                    auto _It          = begin() + _Dist;
-                    *(_It._Mapped_it) = mapped_type{_STD forward<_MappedArgTypes>(_Args)...};
-                    return _It;
-                }
-            } else {
-                _Position = lower_bound(_Key_val);
-            }
-
-            const auto _Dist = _STD distance(_Begin._Key_it, _Position._Key_it);
-            {
-                key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
-                mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
-                _Insert_exact(_Position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
-            }
-            return begin() + _Dist;
+            _Position = lower_bound(_Key_val);
         }
+
+        const auto _Dist = _Position._Key_it - _Begin._Key_it;
+        {
+            key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
+            mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
+            _Insert_exact(_Position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
+        }
+        return begin() + _Dist;
     }
 
     void _Insert_exact(const_iterator _Position, key_type&& _Key_val, mapped_type&& _Mapped_val) {
@@ -850,7 +850,7 @@ private:
         auto _Subrange        = _RANGES unique(_Sorted_view, [this](const_reference _Left, const_reference _Right) {
             return this->_Key_equal(_Left.first, _Right.first);
         });
-        auto _Remaining_count = _STD distance(_Sorted_view.begin(), _Subrange.begin());
+        auto _Remaining_count = _Subrange.begin() - _Sorted_view.begin();
         _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
         _Data.values.erase(_Data.values.begin() + _Remaining_count, _Data.values.end());
         _Guard._Clearable = nullptr;
@@ -936,36 +936,36 @@ private:
     template <class _KeyTy>
     _NODISCARD iterator _Lower_bound(const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
-        auto _Key_it = _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
-        auto _Dist   = _STD distance(_Data.keys.cbegin(), _Key_it);
-        auto _Val_it = _Data.values.begin() + _Dist;
+        auto _Key_it     = _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
+        const auto _Dist = _Key_it - _Data.keys.cbegin();
+        auto _Val_it     = _Data.values.begin() + _Dist;
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
     template <class _KeyTy>
     _NODISCARD const_iterator _Lower_bound(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
-        auto _Key_it = _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
-        auto _Dist   = _STD distance(_Data.keys.cbegin(), _Key_it);
-        auto _Val_it = _Data.values.cbegin() + _Dist;
+        auto _Key_it     = _STD lower_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
+        const auto _Dist = _Key_it - _Data.keys.cbegin();
+        auto _Val_it     = _Data.values.cbegin() + _Dist;
         return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
     template <class _KeyTy>
     _NODISCARD iterator _Upper_bound(const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
-        auto _Key_it = _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
-        auto _Dist   = _STD distance(_Data.keys.cbegin(), _Key_it);
-        auto _Val_it = _Data.values.begin() + _Dist;
+        auto _Key_it     = _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
+        const auto _Dist = _Key_it - _Data.keys.cbegin();
+        auto _Val_it     = _Data.values.begin() + _Dist;
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
     template <class _KeyTy>
     _NODISCARD const_iterator _Upper_bound(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
-        auto _Key_it = _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
-        auto _Dist   = _STD distance(_Data.keys.cbegin(), _Key_it);
-        auto _Val_it = _Data.values.cbegin() + _Dist;
+        auto _Key_it     = _STD upper_bound(_Data.keys.cbegin(), _Data.keys.cend(), _Key_val, _Key_compare);
+        const auto _Dist = _Key_it - _Data.keys.cbegin();
+        auto _Val_it     = _Data.values.cbegin() + _Dist;
         return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
@@ -1167,9 +1167,9 @@ private:
         const auto _Position = this->find(_Key_val);
         if (_Position == this->end()) {
             _Xout_of_range("std::flat_map::at: the specified key does not exist.");
-        } else {
-            return _Position->second;
         }
+
+        return _Position->second;
     }
 
     template <class _KeyTy>
@@ -1178,9 +1178,9 @@ private:
         const auto _Position = this->find(_Key_val);
         if (_Position == this->end()) {
             _Xout_of_range("std::flat_map::at: the specified key does not exist.");
-        } else {
-            return _Position->second;
         }
+
+        return _Position->second;
     }
 
     template <class _KeyTy, class... _MappedArgTypes>
@@ -1188,17 +1188,17 @@ private:
         auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
         if (_Key_it != _Data.keys.end() && _Key_equal(*_Key_it, _STD forward<_KeyTy>(_Key_val))) {
             // Already exists
-            return {this->begin() + _STD distance(_Data.keys.begin(), _Key_it), false};
-        } else {
-            // Need to insert
-            auto _Index = _STD distance(_Data.keys.begin(), _Key_it);
-            {
-                key_type _Key_to_insert(_STD forward<_KeyTy>(_Key_val));
-                mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Mapped_args)...);
-                this->_Insert_exact(this->cbegin() + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
-            }
-            return {this->begin() + _Index, true};
+            return {this->begin() + (_Key_it - _Data.keys.begin()), false};
         }
+
+        // Need to insert
+        const auto _Index = _Key_it - _Data.keys.begin();
+        {
+            key_type _Key_to_insert(_STD forward<_KeyTy>(_Key_val));
+            mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Mapped_args)...);
+            this->_Insert_exact(this->cbegin() + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
+        }
+        return {this->begin() + _Index, true};
     }
 
     template <class _KeyTy, class _MappedTy>
@@ -1333,7 +1333,7 @@ private:
     template <class _KeyTy, class _MappedTy>
     iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
         const auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
-        const auto _Index  = _STD distance(_Data.keys.begin(), _Key_it);
+        const auto _Index  = _Key_it - _Data.keys.begin();
 
         {
             _Key _Key_to_insert(_STD forward<_KeyTy>(_Key_val));
