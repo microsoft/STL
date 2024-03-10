@@ -764,16 +764,18 @@ protected:
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
-        bool _Insert_before_position        = false;
-        bool _Insert_after_position_minus_1 = false;
-        if constexpr (_IsUnique) {
-            _Insert_before_position        = _Position == _End || _Key_compare(_Key_val, *_Position._Key_it);
-            _Insert_after_position_minus_1 = _Position == _Begin || _Key_compare(_Position._Key_it[-1], _Key_val);
-        } else {
-            _Insert_before_position        = _Position == _End || !_Key_compare(*_Position._Key_it, _Key_val);
-            _Insert_after_position_minus_1 = _Position == _Begin || !_Key_compare(_Key_val, _Position._Key_it[-1]);
-        }
-        const bool _Hint_is_accurate = _Insert_before_position && _Insert_after_position_minus_1;
+        const bool _Hint_is_accurate = [&] {
+            if constexpr (_IsUnique) {
+                if (_Position == _End || _Key_compare(_Key_val, *_Position._Key_it)) {
+                    return _Position == _Begin || _Key_compare(_Position._Key_it[-1], _Key_val);
+                }
+            } else {
+                if (_Position == _End || !_Key_compare(*_Position._Key_it, _Key_val)) {
+                    return _Position == _Begin || !_Key_compare(_Key_val, _Position._Key_it[-1]);
+                }
+            }
+            return false;
+        }();
 
         if (_Hint_is_accurate) {
             const auto _Dist = _Position._Key_it - _Begin._Key_it;
@@ -783,7 +785,7 @@ protected:
                 _Insert_exact(_Position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
             }
             return begin() + _Dist;
-        } 
+        }
 
         if constexpr (_OverwriteIfExists) {
             if (_Key_equal(_Key_val, *_Position._Key_it)) {
