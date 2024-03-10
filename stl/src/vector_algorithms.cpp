@@ -2115,7 +2115,7 @@ namespace {
 
             alignas(16) uint8_t _Tmp2[16];
             memcpy(_Tmp2, _First1, _Last_part_size);
-            const __m128i _Haystack_last_part = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+            const __m128i _Haystack_last_part = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
 
             if (_mm_cmpestrc(_Needle, _Needle_length_el, _Haystack_last_part, _Last_part_size_el, _Op)) {
                 const int _Pos = _mm_cmpestri(_Needle, _Needle_length_el, _Haystack_last_part, _Last_part_size_el, _Op);
