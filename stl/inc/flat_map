@@ -789,7 +789,7 @@ protected:
             if (_Key_equal(_Key_val, *_Position._Key_it)) {
                 const auto _Dist = _Position._Key_it - _Begin._Key_it;
                 const auto _It   = begin() + _Dist;
-                *_It._Mapped_it  = mapped_type{_STD forward<_MappedArgTypes>(_Args)...};
+                *_It._Mapped_it  = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
                 return _It;
             }
 
@@ -797,7 +797,7 @@ protected:
             if (_Position != _End && _Key_equal(_Key_val, *_Position._Key_it)) {
                 const auto _Dist = _Position._Key_it - _Begin._Key_it;
                 auto _It         = begin() + _Dist;
-                *_It._Mapped_it  = mapped_type{_STD forward<_MappedArgTypes>(_Args)...};
+                *_It._Mapped_it  = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
                 return _It;
             }
         } else {

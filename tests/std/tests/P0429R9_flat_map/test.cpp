@@ -336,6 +336,28 @@ void test_gh_4344() {
     assert(check_value_content(fm, {'m', 'o', 'e', 'w'}));
 }
 
+class direct_init_only {
+private:
+    unsigned int n_ = 0u;
+
+public:
+    struct src_type {
+        unsigned int n_ = 0u;
+
+        friend bool operator==(const src_type&, const src_type&) = default;
+    };
+
+    explicit direct_init_only(const src_type& s) noexcept : n_(s.n_) {}
+    direct_init_only(initializer_list<src_type>) = delete;
+
+    direct_init_only& operator=(const src_type& s) noexcept {
+        n_ = s.n_;
+        return *this;
+    }
+
+    friend bool operator==(const direct_init_only&, const direct_init_only&) = default;
+};
+
 void test_insert_or_assign() {
     flat_map<int, char> fm;
 
@@ -378,6 +400,13 @@ void test_insert_or_assign() {
 
     assert(check_key_content(fm, {10, 20, 70, 90}));
     assert(check_value_content(fm, {'b', 'a', 'X', 'w'}));
+
+    // ensure direct-initialization
+    flat_map<int, direct_init_only> direct_fm;
+    direct_fm.insert_or_assign(direct_fm.end(), 0, direct_init_only::src_type{42u});
+
+    assert(check_key_content(direct_fm, {0}));
+    assert(check_value_content(direct_fm, {direct_init_only(direct_init_only::src_type{42u})}));
 }
 
 // Test MSVC STL-specific SCARY-ness
