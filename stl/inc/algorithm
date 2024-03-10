@@ -3845,7 +3845,7 @@ namespace ranges {
 
 // TRANSITION, DevCom-10606350: help the compiler auto-vectorizing for simple types
 // by making transformation that can be done for simple types
-template <class _UOutIt, class _InTy, class _NewTy, class _OutTy = remove_pointer_t<_UOutIt>>
+template <class _UOutIt, class _InTy, class _NewTy, class _OutTy = _Iter_value_t<_UOutIt>>
 constexpr bool _Can_vectorize_replace_copy = conjunction_v<is_pointer<_UOutIt>, is_same<_InTy, _NewTy>,
     disjunction<
 #ifdef __cpp_lib_byte
