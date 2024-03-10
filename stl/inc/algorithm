@@ -58,6 +58,11 @@ const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* 
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
+const void* __stdcall __std_find_first_of_trivial_1(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+const void* __stdcall __std_find_first_of_trivial_2(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_2i __stdcall __std_minmax_2i(const void* _First, const void* _Last) noexcept;
@@ -160,6 +165,33 @@ _Ty* __std_find_last_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _V
         static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
+
+template <class _Ty>
+_Ty* __std_find_first_of_trivial(
+    _Ty* const _First1, _Ty* const _Last1, _Ty* const _First2, _Ty* const _Last2) noexcept {
+    if constexpr (sizeof(_Ty) == 1) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_first_of_trivial_1(_First1, _Last1, _First2, _Last2)));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_first_of_trivial_2(_First1, _Last1, _First2, _Last2)));
+    } else {
+        static_assert(_Always_false<_Ty>, "Unexpected size");
+    }
+}
+
+// Can we activate the vector algorithms for find_first_of?
+template <class _It1, class _It2, class _Ty1 = _Iter_value_t<_It1>, class _Ty2 = _Iter_value_t<_It2>>
+_INLINE_VAR constexpr bool _Vector_alg_in_find_first_of_is_safe =
+    _Iterator_is_contiguous<_It1> && _Iterator_is_contiguous<_It2> // contigous
+    && !_Iterator_is_volatile<_It1> && !_Iterator_is_volatile<_It2>  // non-volatile
+    && is_same_v<_Ty1, _Ty2> // same types
+    && sizeof(_Ty1) <= 2 // pcmpestri compatible size
+    && disjunction_v<
+#ifdef __cpp_lib_byte
+        is_same<_Ty1, byte>, // byte or...
+#endif // defined(__cpp_lib_byte)
+        is_integral<_Ty1>>; // ...integer
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -3321,6 +3353,26 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
     const auto _ULast1  = _STD _Get_unwrapped(_Last1);
     const auto _UFirst2 = _STD _Get_unwrapped(_First2);
     const auto _ULast2  = _STD _Get_unwrapped(_Last2);
+#if _USE_STD_VECTOR_ALGORITHMS
+    using _Ty1 = _Iter_value_t<_FwdIt1>;
+
+    constexpr ptrdiff_t _Threshold = 16; // vectorization is likely to be a win after this size
+
+    if constexpr (_Vector_alg_in_find_first_of_is_safe<_FwdIt1, _FwdIt2>
+                  && _Is_any_of_v<_Pr, equal_to<>, equal_to<_Ty1>>) {
+        if (!_STD _Is_constant_evaluated() && _ULast1 - _UFirst1 >= _Threshold) {
+            const auto _First1_ptr = _STD _To_address(_UFirst1);
+            const auto _Result     = _STD __std_find_first_of_trivial(_First1_ptr, _STD _To_address(_ULast1), _STD _To_address(_UFirst2), _STD _To_address(_ULast2));
+
+            if constexpr (is_pointer_v<decltype(_UFirst1)>) {
+                _UFirst1 = _Result;
+            } else {
+                _UFirst1 += (_Result - _First1_ptr);
+            }
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
     for (; _UFirst1 != _ULast1; ++_UFirst1) {
         for (auto _UMid2 = _UFirst2; _UMid2 != _ULast2; ++_UMid2) {
             if (_Pred(*_UFirst1, *_UMid2)) {

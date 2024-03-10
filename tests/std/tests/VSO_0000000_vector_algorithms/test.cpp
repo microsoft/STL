@@ -120,6 +120,18 @@ auto last_known_good_find_last(FwdIt first, FwdIt last, T v) {
     }
 }
 
+template <class FwdItH, class FwdItN>
+auto last_known_good_find_first_of(FwdItH h_first, FwdItH h_last, FwdItN n_first, FwdItN n_last) {
+    for (; h_first != h_last; ++h_first) {
+        for (FwdItN n = n_first; n != n_last; ++n) {
+            if (*h_first == *n) {
+                return h_first;
+            }
+        }
+    }
+    return h_first;
+}
+
 template <class T>
 void test_case_find(const vector<T>& input, T v) {
     auto expected = last_known_good_find(input.begin(), input.end(), v);
@@ -210,6 +222,42 @@ void test_find_last(mt19937_64& gen) {
     }
 }
 #endif // _HAS_CXX23
+
+template <class T>
+void test_case_find_first_of(const vector<T>& input_haystack, const vector<T>& input_needle) {
+    auto expected = last_known_good_find_first_of(
+        input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    auto actual = find_first_of(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    assert(expected == actual);
+}
+
+template <class T>
+void test_find_first_of(mt19937_64& gen) {
+    constexpr size_t needleDataCount = 30;
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    uniform_int_distribution<TD> dis('a', 'z');
+    vector<T> input_haystack;
+    vector<T> input_needle;
+    input_haystack.reserve(dataCount);
+    input_needle.reserve(needleDataCount);
+    for (;;) {
+
+        input_needle.clear();
+
+        test_case_find_first_of(input_haystack, input_needle);
+        for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
+            input_needle.push_back(static_cast<T>(dis(gen)));
+            test_case_find_first_of(input_haystack, input_needle);
+        }
+
+        if (input_haystack.size() == dataCount) {
+            break;
+        }
+        
+        input_haystack.push_back(static_cast<T>(dis(gen)));
+    }
+}
+
 
 template <class T>
 void test_min_max_element(mt19937_64& gen) {
@@ -436,6 +484,16 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_find_last<long long>(gen);
     test_find_last<unsigned long long>(gen);
 #endif // _HAS_CXX23
+
+    test_find_first_of<char>(gen);
+    test_find_first_of<signed char>(gen);
+    test_find_first_of<unsigned char>(gen);
+    test_find_first_of<short>(gen);
+    test_find_first_of<unsigned short>(gen);
+    test_find_first_of<int>(gen);
+    test_find_first_of<unsigned int>(gen);
+    test_find_first_of<long long>(gen);
+    test_find_first_of<unsigned long long>(gen);
 
     test_min_max_element<char>(gen);
     test_min_max_element<signed char>(gen);
