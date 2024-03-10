@@ -1282,7 +1282,17 @@ flat_map(from_range_t, _Rng&&, _Compare = _Compare(), _Allocator = _Allocator())
     -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Compare,
         vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
         vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_mapped_type<_Rng>>>>;
-#endif // defined(__cpp_lib_byte)
+#else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
+template <_RANGES input_range _Rng, class _Compare = less<_Range_key_type<_Rng>>>
+flat_map(from_range_t, _Rng&&, _Compare = _Compare()) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
+    _Compare, vector<_Range_key_type<_Rng>, allocator<_Range_key_type<_Rng>>>,
+    vector<_Range_mapped_type<_Rng>, allocator<_Range_mapped_type<_Rng>>>>;
+
+template <_RANGES input_range _Rng, class _Compare, class _Allocator>
+flat_map(from_range_t, _Rng&&, _Compare, _Allocator) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
+    _Compare, vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
+    vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_mapped_type<_Rng>>>>;
+#endif // ^^^ !defined(__cpp_lib_byte) ^^^
 
 template <_RANGES input_range _Rng, class _Allocator>
 flat_map(from_range_t, _Rng&&, _Allocator) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
@@ -1410,7 +1420,18 @@ flat_multimap(from_range_t, _Rng&&, _Compare = _Compare(), _Allocator = _Allocat
     -> flat_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Compare,
         vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
         vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_mapped_type<_Rng>>>>;
-#endif // defined(__cpp_lib_byte)
+#else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
+template <_RANGES input_range _Rng, class _Compare = less<_Range_key_type<_Rng>>>
+flat_multimap(from_range_t, _Rng&&, _Compare = _Compare()) -> flat_multimap<_Range_key_type<_Rng>,
+    _Range_mapped_type<_Rng>, _Compare, vector<_Range_key_type<_Rng>, allocator<_Range_key_type<_Rng>>>,
+    vector<_Range_mapped_type<_Rng>, allocator<_Range_mapped_type<_Rng>>>>;
+
+template <_RANGES input_range _Rng, class _Compare, class _Allocator>
+flat_multimap(from_range_t, _Rng&&, _Compare, _Allocator)
+    -> flat_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Compare,
+        vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
+        vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_mapped_type<_Rng>>>>;
+#endif // ^^^ !defined(__cpp_lib_byte) ^^^
 
 template <_RANGES input_range _Rng, class _Allocator>
 flat_multimap(from_range_t, _Rng&&, _Allocator) -> flat_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
