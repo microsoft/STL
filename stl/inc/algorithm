@@ -3370,6 +3370,8 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
             } else {
                 _UFirst1 += (_Result - _First1_ptr);
             }
+            _STD _Seek_wrapped(_First1, _UFirst1);
+            return _First1;
         }
     }
 #endif // _USE_STD_VECTOR_ALGORITHMS
