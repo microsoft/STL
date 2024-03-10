@@ -796,7 +796,7 @@ protected:
             }
 
             _Position = lower_bound(_Key_val);
-            if (_Position != _End && _Key_equal(_Key_val, *_Position._Key_it)) {
+            if (_Position != _End && !_Key_compare(_Key_val, *_Position._Key_it)) {
                 const auto _Dist = _Position._Key_it - _Begin._Key_it;
                 auto _It         = begin() + _Dist;
                 *_It._Mapped_it  = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
@@ -908,7 +908,7 @@ private:
     _NODISCARD iterator _Find(const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
         iterator _Position = lower_bound(_Key_val);
-        if (_Position != end() && _Key_equal(_Position->first, _Key_val)) {
+        if (_Position != end() && !_Key_compare(_Key_val, _Position->first)) {
             return _Position;
         } else {
             return end();
@@ -919,7 +919,7 @@ private:
     _NODISCARD const_iterator _Find(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
         const_iterator _Position = lower_bound(_Key_val);
-        if (_Position != cend() && _Key_equal(_Position->first, _Key_val)) {
+        if (_Position != cend() && !_Key_compare(_Key_val, _Position->first)) {
             return _Position;
         } else {
             return cend();
@@ -1191,7 +1191,7 @@ private:
     template <class _KeyTy, class... _MappedArgTypes>
     pair<iterator, bool> _Try_emplace(_KeyTy&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
         auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
-        if (_Key_it != _Data.keys.end() && _Key_equal(*_Key_it, _STD forward<_KeyTy>(_Key_val))) {
+        if (_Key_it != _Data.keys.end() && !_Key_compare(_STD forward<_KeyTy>(_Key_val), *_Key_it)) {
             // Already exists
             return {this->begin() + (_Key_it - _Data.keys.begin()), false};
         }
