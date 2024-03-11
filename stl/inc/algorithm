@@ -194,7 +194,7 @@ _INLINE_VAR constexpr bool _Vector_alg_in_find_first_of_is_safe =
         is_integral<_Ty1>> // ...integer
     && _Is_any_of_v<_Pr, // predicate is equal
 #if _HAS_CXX20
-        _RANGES equal_to,
+        ranges::equal_to,
 #endif // _HAS_CXX20
         equal_to<>, equal_to<_Ty1>>;
 _STD_END
@@ -3359,8 +3359,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
     const auto _UFirst2 = _STD _Get_unwrapped(_First2);
     const auto _ULast2  = _STD _Get_unwrapped(_Last2);
 #if _USE_STD_VECTOR_ALGORITHMS
-    using _Ty1 = _Iter_value_t<_FwdIt1>;
-
     constexpr ptrdiff_t _Threshold = 16; // vectorization is likely to be a win after this size
 
     if constexpr (_Vector_alg_in_find_first_of_is_safe<_FwdIt1, _FwdIt2, _Pr>) {
