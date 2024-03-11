@@ -155,16 +155,7 @@
 #include <ctgmath>
 
 // Non-Core Experimental Headers
-#include <experimental/deque>
 #include <experimental/filesystem>
-#include <experimental/forward_list>
-#include <experimental/list>
-#include <experimental/map>
-#include <experimental/set>
-#include <experimental/string>
-#include <experimental/unordered_map>
-#include <experimental/unordered_set>
-#include <experimental/vector>
 
 #endif // !defined(_CORE_HEADERS_ONLY)
 

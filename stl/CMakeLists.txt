@@ -145,18 +145,9 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/execution
     ${CMAKE_CURRENT_LIST_DIR}/inc/expected
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/coroutine
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/deque
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/filesystem
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/forward_list
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/generator
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/list
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/map
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/resumable
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/set
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/string
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/unordered_map
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/unordered_set
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/vector
     ${CMAKE_CURRENT_LIST_DIR}/inc/filesystem
     ${CMAKE_CURRENT_LIST_DIR}/inc/format
     ${CMAKE_CURRENT_LIST_DIR}/inc/forward_list
