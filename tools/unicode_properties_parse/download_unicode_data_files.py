@@ -3,6 +3,7 @@
 
 from pathlib import PurePosixPath
 import sys
+from urllib.error import HTTPError
 from urllib.request import urlretrieve
 
 
@@ -36,7 +37,10 @@ def download_unicode_data_files():
         url = base_url + data_file
         filename = PurePosixPath(data_file).name
         print(f"Downloading: {url}")
-        urlretrieve(url, filename)
+        try:
+            urlretrieve(url, filename)
+        except HTTPError as http_error:
+            sys.exit(f"{http_error}")
 
 
 if __name__ == "__main__":
