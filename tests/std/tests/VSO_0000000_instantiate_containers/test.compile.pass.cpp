@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _USE_NAMED_IDL_NAMESPACE 1
-#define _SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 #include <array>
 #include <bitset>
