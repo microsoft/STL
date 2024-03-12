@@ -258,7 +258,7 @@ public:
         if (_Info) {
             _Info->_Except = _STD current_exception();
         } else {
-            throw;
+            _RERAISE;
         }
     }
 
