@@ -49,9 +49,9 @@ private:
             return _Al.allocate(_Count);
         } else {
             // store stateful allocator
-            static constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
-            const size_t _Count            = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
-            void* const _Ptr               = _Al.allocate(_Count);
+            constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+            const size_t _Count     = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
+            void* const _Ptr        = _Al.allocate(_Count);
             const auto _Al_address =
                 (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
             ::new (reinterpret_cast<void*>(_Al_address)) _Alloc(_STD move(_Al));
@@ -92,8 +92,8 @@ public:
             _Alloc _Al{_STD move(_Stored_al)};
             _Stored_al.~_Alloc();
 
-            static constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
-            const size_t _Count            = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
+            constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+            const size_t _Count     = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
             _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Count);
         }
     }
@@ -124,7 +124,7 @@ private:
             return _Ptr;
         } else {
             // store stateful allocator
-            static constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+            constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
 
             const _Dealloc_fn _Dealloc = [](void* const _Ptr, size_t _Size) {
                 _Size += sizeof(_Dealloc_fn);
