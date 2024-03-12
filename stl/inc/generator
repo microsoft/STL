@@ -416,21 +416,23 @@ class generator : public _RANGES view_interface<generator<_Rty, _Vty, _Alloc>> {
 private:
     using _Value = _Gen_value_t<_Rty, _Vty>;
     static_assert(same_as<remove_cvref_t<_Value>, _Value> && is_object_v<_Value>,
-        "generator's value type must be a cv-unqualified object type");
+        "generator's value type must be a cv-unqualified object type (N4971 [coro.generator.class]/1.2)");
 
     using _Ref = _Gen_reference_t<_Rty, _Vty>;
     static_assert(
         is_reference_v<_Ref> || (is_object_v<_Ref> && same_as<remove_cv_t<_Ref>, _Ref> && copy_constructible<_Ref>),
-        "generator's second argument must be a reference type or a cv-unqualified "
-        "copy-constructible object type");
+        "generator's selected reference type must be an actual reference type "
+        "or a cv-unqualified copy-constructible object type (N4971 [coro.generator.class]/1.3)");
 
     using _RRef = conditional_t<is_lvalue_reference_v<_Ref>, remove_reference_t<_Ref>&&, _Ref>;
 
     static_assert(common_reference_with<_Ref&&, _Value&> && common_reference_with<_Ref&&, _RRef&&>
                       && common_reference_with<_RRef&&, const _Value&>,
-        "an iterator with the selected value and reference types cannot model indirectly_readable");
+        "generator's iterator type must model indirectly_readable, "
+        "but that's impossible with the selected value and reference types (N4971 [coro.generator.class]/1.4)");
 
-    static_assert(_Has_real_pointers<_Alloc>, "generator allocators must use raw pointers");
+    static_assert(_Has_real_pointers<_Alloc>, "generator allocators must use raw pointers "
+                                              "(N4971 [coro.generator.class]/1.1)");
 
     friend _Gen_promise_base<_Gen_yield_t<_Ref>>;
 
