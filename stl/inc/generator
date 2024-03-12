@@ -231,7 +231,7 @@ public:
         requires same_as<_Gen_yield_t<_Gen_reference_t<_Rty, _Vty>>, _Yielded>
     _NODISCARD auto yield_value(_RANGES elements_of<generator<_Rty, _Vty, _Alloc>&&, _Unused> _Elem) noexcept {
         using _Nested_awaitable = _Nested_awaitable_provider<_Rty, _Vty, _Alloc>::_Awaitable;
-        return _Nested_awaitable{std::move(_Elem.range)};
+        return _Nested_awaitable{_STD move(_Elem.range)};
     }
 
     template <_RANGES input_range _Rng, class _Alloc>
