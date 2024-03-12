@@ -132,7 +132,7 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64EC',
   'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
-  'Microsoft.VisualStudio.Component.Windows11SDK.22000'
+  'Microsoft.VisualStudio.Component.Windows11SDK.22621'
 )
 
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
