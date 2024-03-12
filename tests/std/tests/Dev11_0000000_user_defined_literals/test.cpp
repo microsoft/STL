@@ -369,9 +369,9 @@ int main() {
     }
 
 
-    {
-// P0458R2 contains() For Ordered And Unordered Associative Containers
 #if _HAS_CXX20
+    // P0458R2 contains() For Ordered And Unordered Associative Containers
+    {
         std::map<int, int> m                  = {{2, 20}, {4, 40}, {6, 60}};
         std::multimap<int, int> mm            = {{2, 20}, {4, 40}, {6, 60}};
         std::set<int> s                       = {2, 4, 6};
@@ -434,10 +434,8 @@ int main() {
         assert(!const_umm.contains(5));
         assert(!const_us.contains(1));
         assert(!const_ums.contains(3));
-#endif // _HAS_CXX20
     }
 
-#if _HAS_CXX20
     // P1209R0 erase_if(), erase()
     {
         // Note that the standard actually requires these to be copyable. As an extension, we want
