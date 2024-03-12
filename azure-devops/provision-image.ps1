@@ -302,15 +302,6 @@ Write-Host 'AdminUser password not supplied; assuming already running as AdminUs
 # Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
 cmd /c ver
 
-Write-Host 'Configuring AntiVirus exclusions...'
-Add-MpPreference -ExclusionPath C:\agent
-Add-MpPreference -ExclusionPath D:\
-Add-MpPreference -ExclusionProcess ninja.exe
-Add-MpPreference -ExclusionProcess clang-cl.exe
-Add-MpPreference -ExclusionProcess cl.exe
-Add-MpPreference -ExclusionProcess link.exe
-Add-MpPreference -ExclusionProcess python.exe
-
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
 InstallCuda -Url $CudaUrl
