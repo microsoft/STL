@@ -102,7 +102,7 @@ public:
 template <>
 class _Promise_allocator<void> { // type-erased allocator
 private:
-    using _Dealloc_fn = void (*)(void*, size_t);
+    using _Dealloc_fn = void(__stdcall*)(void*, size_t);
 
     template <class _ProtoAlloc>
     static void* _Allocate(const _ProtoAlloc& _Proto, size_t _Size) {
