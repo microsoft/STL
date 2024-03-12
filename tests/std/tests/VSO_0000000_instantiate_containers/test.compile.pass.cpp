@@ -281,14 +281,18 @@ void erase_if_test(T value) {
 #ifndef _M_CEE // TRANSITION, VSO-1659496
     std::erase_if(value, validating_falsity{});
 #endif // ^^^ no workaround ^^^
-#endif // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) value;
+#endif // ^^^ !_HAS_CXX20 ^^^
 }
 
 template <typename T>
 void erase_test(T value) {
 #if _HAS_CXX20
     std::erase(value, static_cast<typename T::value_type>(1));
-#endif // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) value;
+#endif // ^^^ !_HAS_CXX20 ^^^
 }
 
 template <typename T>
