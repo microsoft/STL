@@ -130,7 +130,7 @@ private:
                 _Size += sizeof(_Dealloc_fn);
                 const auto _Al_address =
                     (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
-                auto& _Stored_al = *reinterpret_cast<const _Alloc*>(_Al_address);
+                auto& _Stored_al = *reinterpret_cast<_Alloc*>(_Al_address);
                 _Alloc _Al{_STD move(_Stored_al)};
                 _Stored_al.~_Alloc();
 
