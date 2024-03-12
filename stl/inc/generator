@@ -412,7 +412,7 @@ private:
 };
 
 _EXPORT_STD template <class _Rty, class _Vty, class _Alloc>
-class generator : public ranges::view_interface<generator<_Rty, _Vty, _Alloc>> {
+class generator : public _RANGES view_interface<generator<_Rty, _Vty, _Alloc>> {
 private:
     using _Value = _Gen_value_t<_Rty, _Vty>;
     static_assert(same_as<remove_cvref_t<_Value>, _Value> && is_object_v<_Value>,
