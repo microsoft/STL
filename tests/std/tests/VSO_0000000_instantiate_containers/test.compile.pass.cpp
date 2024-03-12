@@ -275,12 +275,8 @@ void insert_with_iterator_test(T value) {
 
 template <typename T>
 void erase_if_test(T value) {
-    auto pr1 = [](auto) { return false; };
-    std::experimental::fundamentals_v2::erase_if(value, pr1);
-#ifndef _M_CEE // TRANSITION, VSO-1659496
-    std::experimental::fundamentals_v2::erase_if(value, validating_falsity{});
-#endif // ^^^ no workaround ^^^
 #if _HAS_CXX20
+    auto pr1 = [](auto) { return false; };
     std::erase_if(value, pr1);
 #ifndef _M_CEE // TRANSITION, VSO-1659496
     std::erase_if(value, validating_falsity{});
@@ -290,7 +286,6 @@ void erase_if_test(T value) {
 
 template <typename T>
 void erase_test(T value) {
-    std::experimental::fundamentals_v2::erase(value, static_cast<typename T::value_type>(1));
 #if _HAS_CXX20
     std::erase(value, static_cast<typename T::value_type>(1));
 #endif // _HAS_CXX20
@@ -630,9 +625,8 @@ void vector_test() {
     vector_test_impl<vector<bool>>();
 
     erase_test(vector<int>());
-    vector<bool> vb;
-    std::experimental::fundamentals_v2::erase(vb, true);
 #if _HAS_CXX20
+    vector<bool> vb;
     std::erase(vb, true);
 #endif // _HAS_CXX20
 
