@@ -10,6 +10,8 @@
 #include <random>
 #include <ranges>
 #include <sstream>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace ranges = std::ranges;
@@ -281,6 +283,39 @@ void arbitrary_range_test() {
 
     assert(ranges::equal(yield_arbitrary_ranges(), std::array{40, 30, 20, 10, 0, 1, 2, 3, 500, 400, 300}));
 }
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+template <class T>
+struct holder {
+    T t;
+};
+
+struct incomplete;
+
+void adl_proof_test() {
+    using validator  = holder<incomplete>*;
+    auto yield_range = []() -> std::generator<validator> {
+        co_yield ranges::elements_of(
+            ranges::views::repeat(nullptr, 42) | ranges::views::transform([](std::nullptr_t) { return validator{}; }));
+    };
+
+    using R = decltype(yield_range());
+    static_assert(ranges::input_range<R>);
+
+    using It = ranges::iterator_t<R>;
+    static_assert(std::is_same_v<decltype(&std::declval<It&>()), It*>);
+
+    using Promise = R::promise_type;
+    static_assert(std::is_same_v<decltype(&std::declval<Promise&>()), Promise*>);
+
+    std::size_t i = 0;
+    for (const auto elem : yield_range()) {
+        ++i;
+        assert(elem == nullptr);
+    }
+    assert(i == 42);
+}
+#endif // ^^^ no workaround ^^^
 #endif // ^^^ no workaround ^^^
 
 int main() {
@@ -339,5 +374,9 @@ int main() {
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     recursive_test();
     arbitrary_range_test();
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    adl_proof_test();
+#endif // ^^^ no workaround ^^^
 #endif // ^^^ no workaround ^^^
 }
