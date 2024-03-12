@@ -2914,7 +2914,7 @@ struct _NODISCARD _Global_delete_guard {
     }
 };
 
-_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <class _Ty, class... _ArgTypes>
+template <class _Ty, class... _ArgTypes>
 _NODISCARD shared_ptr<_Ty> _Make_shared_unbounded_array(const size_t _Count, const _ArgTypes&... _Args) {
     // make a shared_ptr to an unbounded array
     static_assert(is_unbounded_array_v<_Ty>);
@@ -3022,7 +3022,7 @@ struct _Allocate_n_ptr {
     _Allocate_n_ptr& operator=(const _Allocate_n_ptr&) = delete;
 };
 
-_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <bool _IsForOverwrite, class _Ty, class _Alloc, class... _ArgTypes>
+template <bool _IsForOverwrite, class _Ty, class _Alloc, class... _ArgTypes>
 _NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
     const _Alloc& _Al, const size_t _Count, const _ArgTypes&... _Args) {
     // make a shared_ptr to an unbounded array
