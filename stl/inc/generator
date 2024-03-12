@@ -270,10 +270,10 @@ private:
             return false;
         }
 
-        template <class _Promise>
-        constexpr void await_suspend(coroutine_handle<_Promise> _Handle) noexcept {
+        template <class _CoroPromise>
+        constexpr void await_suspend(coroutine_handle<_CoroPromise> _Handle) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
-            _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _Promise>);
+            _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
 
             _Base& _Current = _Handle.promise();
@@ -294,10 +294,10 @@ private:
             return false;
         }
 
-        template <class _Promise>
-        _NODISCARD coroutine_handle<> await_suspend(coroutine_handle<_Promise> _Handle) noexcept {
+        template <class _CoroPromise>
+        _NODISCARD coroutine_handle<> await_suspend(coroutine_handle<_CoroPromise> _Handle) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
-            _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _Promise>);
+            _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
 
             _Base& _Current = _Handle.promise();
@@ -328,10 +328,10 @@ private:
                 return !_Gen._Coro;
             }
 
-            template <class _Promise>
-            _NODISCARD coroutine_handle<_Base> await_suspend(coroutine_handle<_Promise> _Current) noexcept {
+            template <class _CoroPromise>
+            _NODISCARD coroutine_handle<_Base> await_suspend(coroutine_handle<_CoroPromise> _Current) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
-                _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _Promise>);
+                _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
                 auto _Target           = coroutine_handle<_Base>::from_address(_Gen._Coro.address());
                 _Nested._Parent        = coroutine_handle<_Base>::from_address(_Current.address());
