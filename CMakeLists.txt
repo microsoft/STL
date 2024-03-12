@@ -9,12 +9,12 @@ project(msvc_standard_libraries LANGUAGES CXX)
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles([=[
 #include <sdkddkver.h>
-static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_CO, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
+static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_NI, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
 int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
 
 if(NOT WINDOWS_SDK_VERSION_CHECK)
-    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.22000.0) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
+    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.22621.0) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
 endif()
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
