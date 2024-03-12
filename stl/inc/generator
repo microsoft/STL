@@ -239,12 +239,15 @@ public:
     _NODISCARD auto yield_value(_RANGES elements_of<_Rng, _Alloc> _Elem) {
         using _Vty              = _RANGES range_value_t<_Rng>;
         using _Nested_awaitable = _Nested_awaitable_provider<_Yielded, _Vty, _Alloc>::_Awaitable;
-        return _Nested_awaitable{[](allocator_arg_t, _Alloc, _RANGES iterator_t<_Rng> _It,
-                                     const _RANGES sentinel_t<_Rng> _Se) -> generator<_Yielded, _Vty, _Alloc> {
+
+        auto _Lambda = [](allocator_arg_t, _Alloc, _RANGES iterator_t<_Rng> _It,
+                           const _RANGES sentinel_t<_Rng> _Se) -> generator<_Yielded, _Vty, _Alloc> {
             for (; _It != _Se; ++_It) {
                 co_yield static_cast<_Yielded>(*_It);
             }
-        }(allocator_arg, _Elem.allocator, _RANGES begin(_Elem.range), _RANGES end(_Elem.range))};
+        };
+        return _Nested_awaitable{
+            _Lambda(allocator_arg, _Elem.allocator, _RANGES begin(_Elem.range), _RANGES end(_Elem.range))};
     }
 
     void await_transform() = delete;
