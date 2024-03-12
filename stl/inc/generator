@@ -102,7 +102,33 @@ public:
 template <>
 class _Promise_allocator<void> { // type-erased allocator
 private:
-    using _Dealloc_fn = void(__stdcall*)(void*, size_t);
+    using _Dealloc_fn = void(__stdcall*)(void*, size_t) _NOEXCEPT_FNPTR;
+
+    template <class _Alloc>
+    static void __stdcall _Dealloc_stateless(void* const _Ptr, const size_t _Size) noexcept {
+        _Alloc _Al{};
+        const size_t _Count = (_Size + sizeof(_Dealloc_fn) + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
+        _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Count);
+    }
+
+    template <class _Alloc>
+    static void __stdcall _Dealloc_stateful(void* const _Ptr, size_t _Size) noexcept {
+        constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+
+        _Size += sizeof(_Dealloc_fn);
+        const auto _Al_address =
+            (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
+        auto& _Stored_al = *reinterpret_cast<_Alloc*>(_Al_address);
+        _Alloc _Al{_STD move(_Stored_al)};
+        _Stored_al.~_Alloc();
+
+        const size_t _Count = (_Size + sizeof(_Al) + _Align - 1) / sizeof(_Aligned_block);
+        _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Count);
+    }
+
+    static void __stdcall _Dealloc_delete(void* const _Ptr, const size_t _Size) noexcept {
+        ::operator delete[](_Ptr, _Size + sizeof(_Dealloc_fn));
+    }
 
     template <class _ProtoAlloc>
     static void* _Allocate(const _ProtoAlloc& _Proto, size_t _Size) {
@@ -111,12 +137,7 @@ private:
 
         if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
             // don't store stateless allocator
-            const _Dealloc_fn _Dealloc = [](void* const _Ptr, const size_t _Size) {
-                _Alloc _Al{};
-                const size_t _Count =
-                    (_Size + sizeof(_Dealloc_fn) + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
-                _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Count);
-            };
+            const _Dealloc_fn _Dealloc = _Dealloc_stateless<_Alloc>;
 
             const size_t _Count = (_Size + sizeof(_Dealloc_fn) + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
             void* const _Ptr    = _Al.allocate(_Count);
@@ -126,17 +147,7 @@ private:
             // store stateful allocator
             constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
 
-            const _Dealloc_fn _Dealloc = [](void* const _Ptr, size_t _Size) {
-                _Size += sizeof(_Dealloc_fn);
-                const auto _Al_address =
-                    (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
-                auto& _Stored_al = *reinterpret_cast<_Alloc*>(_Al_address);
-                _Alloc _Al{_STD move(_Stored_al)};
-                _Stored_al.~_Alloc();
-
-                const size_t _Count = (_Size + sizeof(_Al) + _Align - 1) / sizeof(_Aligned_block);
-                _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Count);
-            };
+            const _Dealloc_fn _Dealloc = _Dealloc_stateful<_Alloc>;
 
             const size_t _Count = (_Size + sizeof(_Dealloc_fn) + sizeof(_Al) + _Align - 1) / sizeof(_Aligned_block);
             void* const _Ptr    = _Al.allocate(_Count);
@@ -152,9 +163,7 @@ private:
 public:
     static void* operator new(const size_t _Size) { // default: new/delete
         void* const _Ptr           = ::operator new[](_Size + sizeof(_Dealloc_fn));
-        const _Dealloc_fn _Dealloc = [](void* const _Ptr, const size_t _Size) {
-            ::operator delete[](_Ptr, _Size + sizeof(_Dealloc_fn));
-        };
+        const _Dealloc_fn _Dealloc = _Dealloc_delete;
         _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc_fn));
         return _Ptr;
     }
