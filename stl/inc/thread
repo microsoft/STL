@@ -189,7 +189,7 @@ _NODISCARD _Clamped_rel_time_ms_count_result _Clamped_rel_time_ms_count(const _D
     // _Clamp must be less than 2^32 - 1 (INFINITE) milliseconds, but is otherwise arbitrary.
     constexpr chrono::milliseconds _Clamp{chrono::hours{24}};
 
-    if (_Rel >= _Clamp) {
+    if (_Rel > _Clamp) {
         return {static_cast<unsigned long>(_Clamp.count()), true};
     } else {
         const auto _Rel_ms = chrono::ceil<chrono::milliseconds>(_Rel);
