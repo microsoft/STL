@@ -4,6 +4,7 @@
 #include <atomic>
 #include <cassert>
 #include <concepts>
+#include <deque>
 #include <flat_map>
 #include <functional>
 #include <memory>
@@ -269,38 +270,45 @@ void test_pointer_to_incomplete_type() {
     flat_map<MyType<Incomplete>, shared_ptr<MyType<Incomplete>>> fmap;
 }
 
-void test_insert_unique() {
+void test_insert() {
     flat_map<int, char> fm;
 
-    const auto p1 = fm.insert({10, 'm'});
-    assert(p1.first->first == 10);
-    assert(p1.first->second == 'm');
-    assert(p1.second);
+    const auto res1 = fm.insert({10, 'm'});
+    assert(res1.first->first == 10);
+    assert(res1.first->second == 'm');
+    assert(res1.second);
+
+    const auto res2 = fm.insert({10, 'n'});
+    assert(res2.first->first == 10);
+    assert(res2.first->second == 'm');
+    assert(!res2.second);
 
     const flat_map<int, char>::value_type val_pair{90, 'w'};
-    const auto p2 = fm.insert(val_pair);
-    assert(p2.first->first == 90);
-    assert(p2.first->second == 'w');
-    assert(p2.second);
+    const auto res3 = fm.insert(val_pair);
+    assert(res3.first->first == 90);
+    assert(res3.first->second == 'w');
+    assert(res3.second);
 
     assert(check_key_content(fm, {10, 90}));
     assert(check_value_content(fm, {'m', 'w'}));
-}
 
-void test_insert_multi() {
     flat_multimap<int, char> fmm;
 
     const auto it1 = fmm.insert({10, 'm'});
     assert(it1->first == 10);
     assert(it1->second == 'm');
 
-    const flat_multimap<int, char>::value_type val_pair{90, 'w'};
-    const auto it2 = fmm.insert(val_pair);
-    assert(it2->first == 90);
-    assert(it2->second == 'w');
+    const auto it2 = fmm.insert({10, 'n'});
+    assert(it2->first == 10);
+    assert(it2->second == 'n');
 
-    assert(check_key_content(fmm, {10, 90}));
-    assert(check_value_content(fmm, {'m', 'w'}));
+    const flat_multimap<int, char>::value_type val_pair2{90, 'w'};
+    const auto it3 = fmm.insert(val_pair2);
+    assert(it3->first == 90);
+    assert(it3->second == 'w');
+
+    assert(check_key_content(fmm, {10, 10, 90}));
+    assert(check_value_content(fmm, {'n', 'm', 'w'}));
 }
 
 // GH-4344 <flat_map> Fix compile errors
@@ -335,6 +343,28 @@ void test_gh_4344() {
     assert(check_key_content(fm, {10, 20, 70, 90}));
     assert(check_value_content(fm, {'m', 'o', 'e', 'w'}));
 }
+
+class direct_init_only {
+private:
+    unsigned int n_ = 0u;
+
+public:
+    struct src_type {
+        unsigned int n_ = 0u;
+
+        friend bool operator==(const src_type&, const src_type&) = default;
+    };
+
+    explicit direct_init_only(const src_type& s) noexcept : n_(s.n_) {}
+    direct_init_only(initializer_list<src_type>) = delete;
+
+    direct_init_only& operator=(const src_type& s) noexcept {
+        n_ = s.n_;
+        return *this;
+    }
+
+    friend bool operator==(const direct_init_only&, const direct_init_only&) = default;
+};
 
 void test_insert_or_assign() {
     flat_map<int, char> fm;
@@ -378,32 +408,62 @@ void test_insert_or_assign() {
 
     assert(check_key_content(fm, {10, 20, 70, 90}));
     assert(check_value_content(fm, {'b', 'a', 'X', 'w'}));
+
+    // ensure direct-initialization
+    flat_map<int, direct_init_only> direct_fm;
+    direct_fm.insert_or_assign(direct_fm.end(), 0, direct_init_only::src_type{42u});
+
+    assert(check_key_content(direct_fm, {0}));
+    assert(check_value_content(direct_fm, {direct_init_only(direct_init_only::src_type{42u})}));
 }
 
 // Test MSVC STL-specific SCARY-ness
+
+template <bool>
+struct flat_map_unique_if_impl;
+template <>
+struct flat_map_unique_if_impl<true> {
+    template <class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
+    using type = flat_map<Key, Mapped, Comp, KeyCont, MappedCont>;
+};
+template <>
+struct flat_map_unique_if_impl<false> {
+    template <class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
+    using type = flat_multimap<Key, Mapped, Comp, KeyCont, MappedCont>;
+};
+
+template <bool IsUnique, class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
+using flat_map_unique_if = flat_map_unique_if_impl<IsUnique>::template type<Key, Mapped, Comp, KeyCont, MappedCont>;
+
 template <bool IsUnique, class Comparator, class Alloc1, class Alloc2>
 void test_scary_ness_one() { // COMPILE-ONLY
-    using Iter      = flat_map<int, int>::iterator;
-    using OtherIter = conditional_t<IsUnique, flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>,
-        flat_multimap<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>>::iterator;
+    using Iter = flat_map<int, int>::iterator;
+    using OtherIter =
+        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::iterator;
     static_assert(is_same_v<Iter, OtherIter>);
 
     using ConstIter = flat_map<int, int>::const_iterator;
     using OtherConstIter =
-        conditional_t<IsUnique, flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>,
-            flat_multimap<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>>::const_iterator;
+        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::const_iterator;
     static_assert(is_same_v<ConstIter, OtherConstIter>);
 
-    using Cont      = flat_map<int, int, less<int>, vector<int, Alloc1>, vector<int, Alloc2>>::containers;
-    using OtherCont = conditional_t<IsUnique, flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>,
-        flat_multimap<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>>::containers;
+    using Cont = flat_map<int, int, less<int>, vector<int, Alloc1>, vector<int, Alloc2>>::containers;
+    using OtherCont =
+        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::containers;
     static_assert(is_same_v<Cont, OtherCont>);
 
     using ValueComp = flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::value_compare;
-    using OtherValueComp =
-        conditional_t<IsUnique, flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>,
-            flat_multimap<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>>::value_compare;
-    static_assert(is_same_v<ValueComp, OtherValueComp>);
+    using OtherValueComp1 =
+        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::value_compare;
+    using OtherValueComp2 = flat_map_unique_if<IsUnique, int, int, Comparator, vector<int>, vector<int>>::value_compare;
+    using OtherValueComp3 =
+        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, deque<int, Alloc2>>::value_compare;
+    using OtherValueComp4 =
+        flat_map_unique_if<IsUnique, int, int, Comparator, deque<int, Alloc1>, vector<int, Alloc2>>::value_compare;
+    static_assert(is_same_v<ValueComp, OtherValueComp1>);
+    static_assert(is_same_v<ValueComp, OtherValueComp2>);
+    static_assert(is_same_v<ValueComp, OtherValueComp3>);
+    static_assert(is_same_v<ValueComp, OtherValueComp4>);
 }
 
 void test_scary_ness() { // COMPILE-ONLY
@@ -436,8 +496,7 @@ int main() {
     test_construction();
     test_pointer_to_incomplete_type();
     test_erase_if();
-    test_insert_unique();
-    test_insert_multi();
+    test_insert();
     test_gh_4344();
     test_insert_or_assign();
 }

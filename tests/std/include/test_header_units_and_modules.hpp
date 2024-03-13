@@ -251,17 +251,17 @@ void test_flat_map() {
     constexpr auto simple_truth = [](const auto&) { return true; };
 
     flat_map<int, int> fm;
-    fm.emplace(1, 1);
-    fm.emplace(1, 2);
+    fm.emplace(42, 172);
+    fm.emplace(42, 729);
     assert(fm.size() == 1);
-    erase_if(fm, simple_truth);
+    assert(erase_if(fm, simple_truth) == 1);
     assert(fm.empty());
 
     flat_multimap<int, int> fmm;
-    fmm.emplace(1, 1);
-    fmm.emplace(1, 2);
+    fmm.emplace(42, 172);
+    fmm.emplace(42, 729);
     assert(fmm.size() == 2);
-    erase_if(fmm, simple_truth);
+    assert(erase_if(fmm, simple_truth) == 2);
     assert(fmm.empty());
 }
 #endif // TEST_STANDARD >= 23
