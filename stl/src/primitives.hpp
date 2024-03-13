@@ -45,6 +45,8 @@ namespace Concurrency {
     } // namespace details
 } // namespace Concurrency
 
+extern "C" {
+
 struct _Cnd_internal_imp_t {
     typename std::_Aligned_storage<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment>::type cv;
 
@@ -53,3 +55,5 @@ struct _Cnd_internal_imp_t {
         return reinterpret_cast<Concurrency::details::stl_condition_variable_win7*>(&cv);
     }
 };
+
+} // extern "C"
