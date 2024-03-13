@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <type_traits>
 
 #include <Windows.h>
 
@@ -48,7 +49,7 @@ namespace Concurrency {
 extern "C" {
 
 struct _Cnd_internal_imp_t {
-    typename std::_Aligned_storage<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment>::type cv;
+    std::_Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> cv;
 
     [[nodiscard]] Concurrency::details::stl_condition_variable_win7* _get_cv() noexcept {
         // get pointer to implementation
