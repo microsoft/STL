@@ -3742,17 +3742,7 @@ _NODISCARD auto make_format_args(_Args&... _Vals) {
 
 _EXPORT_STD template <class... _Args>
 _NODISCARD auto make_wformat_args(_Args&... _Vals) {
-    if constexpr ((_Formattable_with_non_const<remove_const_t<_Args>, wformat_context> && ...)) {
-        static_assert((_Formattable_with<remove_const_t<_Args>, wformat_context> && ...),
-            "The format() member function can't be called on const formatter<T>. "
-            "To make the formatter usable, add const to format(). "
-            "See N4971 [format.arg.store]/2 and [formatter.requirements].");
-    } else {
-        static_assert((_Formattable_with<remove_const_t<_Args>, wformat_context> && ...),
-            "Cannot format an argument. To make this type formattable, provide a formatter<T> specialization. "
-            "See N4971 [format.arg.store]/2 and [formatter.requirements].");
-    }
-    return _Format_arg_store<wformat_context, _Args...>{_Vals...};
+    return _STD make_format_args<wformat_context>(_Vals...);
 }
 
 _FMT_P2286_BEGIN
