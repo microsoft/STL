@@ -52,7 +52,7 @@ _Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, c
 
     if (!cond->_get_cv()->wait_for(cs, target)) { // report timeout
         const auto end = GetTickCount64();
-        if ((end - start) >= target) {
+        if (end - start >= target) {
             res = _Thrd_result::_Timedout;
         }
     }
