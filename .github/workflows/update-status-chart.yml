@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ">=21.4.0"
+          node-version: ">=21.7.1"
       - name: Install Packages
         run: |
           npm ci
