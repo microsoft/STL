@@ -227,7 +227,7 @@ private:
     }
 
     template <class _Lock>
-    cv_status _Wait_for_ms_count(_Lock& _Lck, const unsigned _Rel_ms_count) {
+    cv_status _Wait_for_ms_count(_Lock& _Lck, const unsigned int _Rel_ms_count) {
         // wait for signal with timeout
         const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
         unique_lock<mutex> _Guard{*_Ptr};
