@@ -274,7 +274,7 @@ struct pair;
 _EXPORT_STD template <class...>
 class tuple;
 
-// Specializations for pairs and tuples are forward-declared to avoid mix and mismatch as possible.
+// Specializations for pairs and tuples are forward-declared to avoid any risk of using the disabled primary template.
 
 template <class _CharT, class _Ty1, class _Ty2>
 struct formatter<pair<_Ty1, _Ty2>, _CharT>;
