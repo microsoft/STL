@@ -41,18 +41,18 @@ void __stdcall _Thrd_sleep_for(const unsigned long ms) noexcept { // suspend cur
     Sleep(ms);
 }
 
-_Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target) noexcept {
-    _Thrd_result res = _Thrd_result::_Success;
-    const auto cs    = &mtx->_Critical_section;
-    const auto start = GetTickCount64();
+_Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target_ms) noexcept {
+    _Thrd_result res    = _Thrd_result::_Success;
+    const auto cs       = &mtx->_Critical_section;
+    const auto start_ms = GetTickCount64();
 
     // TRANSITION: replace with _Mtx_clear_owner(mtx);
     mtx->_Thread_id = -1;
     --mtx->_Count;
 
-    if (!cond->_get_cv()->wait_for(cs, target)) { // report timeout
-        const auto end = GetTickCount64();
-        if (end - start >= target) {
+    if (!cond->_get_cv()->wait_for(cs, target_ms)) { // report timeout
+        const auto end_ms = GetTickCount64();
+        if (end_ms - start_ms >= target_ms) {
             res = _Thrd_result::_Timedout;
         }
     }
