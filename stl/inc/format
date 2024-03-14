@@ -4056,12 +4056,13 @@ _NODISCARD constexpr const _CharT* _Parse_tuple_format_specs(
     return _Begin;
 }
 
-inline constexpr auto _Tuple_debug_format_setter = [](auto& _Formatter, auto& _Parse_ctx) _STATIC_CALL_OPERATOR {
+template <class _FormatterType, class _ParseContext>
+constexpr void _Set_tuple_debug_format(_FormatterType& _Formatter, _ParseContext& _Parse_ctx) {
     _Formatter.parse(_Parse_ctx);
     if constexpr (requires { _Formatter.set_debug_format(); }) {
         _Formatter.set_debug_format();
     }
-};
+}
 
 template <class _CharT, formattable<_CharT>... _Types>
 struct _Tuple_formatter_common_base {
@@ -4139,7 +4140,7 @@ public:
         }
 
         _Ctx.advance_to(_Ctx.begin() + (_It - _Ctx._Unchecked_begin()));
-        _STD apply([&_Ctx](auto&&... _Elems) { (_Tuple_debug_format_setter(_Elems, _Ctx), ...); }, _Underlying);
+        _STD apply([&_Ctx](auto&&... _Elems) { (_Set_tuple_debug_format(_Elems, _Ctx), ...); }, _Underlying);
 
         return _Ctx.begin();
     }
