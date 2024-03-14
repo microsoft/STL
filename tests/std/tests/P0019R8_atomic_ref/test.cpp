@@ -373,6 +373,19 @@ void test_incomplete_associated_class_all() { // COMPILE-ONLY
 }
 #endif // ^^^ no workaround ^^^
 
+void test_gh4472() {
+    struct two_pointers_t {
+        void* left;
+        void* right;
+    } two_pointers;
+
+    static_assert(std::atomic_ref<two_pointers_t>::required_alignment == sizeof(two_pointers_t));
+    static_assert(std::atomic_ref<two_pointers_t>::is_always_lock_free == _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B);
+
+    // we expect tests to run on DCAS machine. Win8+ require that
+    assert(std::atomic_ref<two_pointers_t>(two_pointers).is_lock_free());
+}
+
 int main() {
     test_ops<false, char>();
     test_ops<false, signed char>();
