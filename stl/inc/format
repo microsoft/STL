@@ -4092,14 +4092,14 @@ protected:
             _STD back_inserter(_Tmp_buf), {}, _Fmt_ctx._Get_lazy_locale()};
 
         _STD _Copy_unchecked(_Opening_bracket._Unchecked_begin(), _Opening_bracket._Unchecked_end(), _Tmp_ctx.out());
-        [&]<size_t... _Indice>(index_sequence<_Indice...>) {
+        [&]<size_t... _Indices>(index_sequence<_Indices...>) {
             auto _Single_writer = [&]<size_t _Idx>(auto& _Arg) {
                 if constexpr (_Idx != 0) {
                     _STD _Copy_unchecked(_Separator._Unchecked_begin(), _Separator._Unchecked_end(), _Tmp_ctx.out());
                 }
                 _STD get<_Idx>(_Underlying).format(_Arg, _Tmp_ctx);
             };
-            (_Single_writer.template operator()<_Indice>(_Args), ...);
+            (_Single_writer.template operator()<_Indices>(_Args), ...);
         }(index_sequence_for<_ArgTypes...>{});
         _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Tmp_ctx.out());
 
