@@ -4150,9 +4150,9 @@ public:
 
 template <class _TupleOrPair, class _CharT>
 struct _Tuple_formatter_base {
-    _Tuple_formatter_base()                                       = delete;
-    _Tuple_formatter_base(const _Tuple_formatter_base&)           = delete;
-    _Tuple_formatter_base operator=(const _Tuple_formatter_base&) = delete;
+    _Tuple_formatter_base()                                        = delete;
+    _Tuple_formatter_base(const _Tuple_formatter_base&)            = delete;
+    _Tuple_formatter_base& operator=(const _Tuple_formatter_base&) = delete;
 };
 
 template <class _CharT, formattable<_CharT> _Ty1, formattable<_CharT> _Ty2>
