@@ -380,7 +380,12 @@ void test_gh4472() {
     } two_pointers;
 
     static_assert(std::atomic_ref<two_pointers_t>::required_alignment == sizeof(two_pointers_t));
+
+#ifdef _WIN64
     static_assert(std::atomic_ref<two_pointers_t>::is_always_lock_free == _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B);
+#else
+    static_assert(std::atomic_ref<two_pointers_t>::is_always_lock_free);
+#endif
 
     // we expect tests to run on DCAS machine. Win8+ require that
     assert(std::atomic_ref<two_pointers_t>(two_pointers).is_lock_free());
