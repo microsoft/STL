@@ -3967,7 +3967,7 @@ public:
         }
 
         if (_Sv == _STATICALLY_WIDEN(_CharT, ":")) {
-            _Throw_format_error("Invalid fill \":\" for tuples and pairs.");
+            _Throw_format_error(R"(Invalid fill ":" for tuples and pairs.)");
         }
 
         const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
