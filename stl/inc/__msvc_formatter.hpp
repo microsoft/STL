@@ -127,9 +127,9 @@ concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
 // makes it "disabled" as per N4950 [format.formatter.spec]/5
 _EXPORT_STD template <class _Ty, class _CharT = char>
 struct formatter {
-    formatter()                           = delete;
-    formatter(const formatter&)           = delete;
-    formatter operator=(const formatter&) = delete;
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
 };
 
 _FMT_P2286_BEGIN
