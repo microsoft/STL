@@ -377,7 +377,9 @@ void test_gh_4472() {
     struct two_pointers_t {
         void* left;
         void* right;
-    } two_pointers;
+    };
+
+    alignas(std::atomic_ref<two_pointers_t>::required_alignment) two_pointers_t two_pointers;
 
     static_assert(std::atomic_ref<two_pointers_t>::required_alignment == sizeof(two_pointers_t));
 
