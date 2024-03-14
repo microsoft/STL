@@ -3965,6 +3965,7 @@ public:
         if (_Sv.size() > _STD size(_Specs._Fill)) {
             _Throw_format_error("Invalid fill (too long).");
         }
+
         if (_Sv == _STATICALLY_WIDEN(_CharT, ":")) {
             _Throw_format_error("Invalid fill \":\" for tuples and pairs.");
         }
@@ -3994,16 +3995,19 @@ public:
         if (_Type == _CharT{}) {
             return;
         }
+
         if (_Type == static_cast<_CharT>('n')) {
             _Fmt_type = _Fmt_tuple_type::_No_brackets;
             return;
         }
+
         if constexpr (_IsTwoTuple) {
             if (_Type == static_cast<_CharT>('m')) {
                 _Fmt_type = _Fmt_tuple_type::_Key_value;
                 return;
             }
         }
+
         _Throw_format_error("Invalid type specification.");
     }
 
