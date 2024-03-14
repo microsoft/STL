@@ -296,12 +296,12 @@ void test_tuple_int_string(TestFunction check, ExceptionTest check_exception) {
 
 template <class CharT, class TestFunction, class ExceptionTest, class Nested>
 void test_nested(TestFunction check, ExceptionTest check_exception, Nested&& input) {
-    // [format.formatter.spec]/2
+    // N4971 [format.formatter.spec]/2
     //   A debug-enabled specialization of formatter additionally provides a
     //   public, constexpr, non-static member function set_debug_format()
     //   which modifies the state of the formatter to be as if the type of the
     //   std-format-spec parsed by the last call to parse were ?.
-    // pair and tuple are not debug-enabled specializations to the
+    // pair and tuple are not debug-enabled specializations so the
     // set_debug_format is not propagated. The paper
     //   P2733 Fix handling of empty specifiers in format
     // addressed this.
@@ -408,7 +408,7 @@ auto test_format = []<class CharT, class... Args>(basic_string_view<CharT> expec
 
 auto test_format_exception = []<class CharT, class... Args>(string_view, basic_string_view<CharT>, Args&&...) {
     // After P2216 most exceptions thrown by format become ill-formed.
-    // Therefore this tests does nothing.
+    // Therefore this test does nothing.
     // A basic ill-formed test is done in format.verify.cpp
     // The exceptions are tested by other functions that don't use the basic-format-string as fmt argument.
 };
