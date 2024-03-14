@@ -373,7 +373,7 @@ void test_incomplete_associated_class_all() { // COMPILE-ONLY
 }
 #endif // ^^^ no workaround ^^^
 
-void test_gh4472() {
+void test_gh_4472() {
     struct two_pointers_t {
         void* left;
         void* right;
@@ -443,4 +443,5 @@ int main() {
     test_ptr_ops<long*>();
 
     test_gh_1497();
+    test_gh_4472();
 }
