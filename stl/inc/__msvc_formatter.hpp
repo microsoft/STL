@@ -276,10 +276,13 @@ class tuple;
 
 // Specializations for pairs and tuples are forward-declared to avoid any risk of using the disabled primary template.
 
-template <class _CharT, class _Ty1, class _Ty2>
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+
+template <_Format_supported_charT _CharT, class _Ty1, class _Ty2>
 struct formatter<pair<_Ty1, _Ty2>, _CharT>;
 
-template <class _CharT, class... _Types>
+template <_Format_supported_charT _CharT, class... _Types>
 struct formatter<tuple<_Types...>, _CharT>;
 #endif // _HAS_CXX23
 _STD_END
