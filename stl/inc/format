@@ -4065,7 +4065,7 @@ constexpr void _Set_tuple_debug_format(_FormatterType& _Formatter, _ParseContext
 }
 
 template <class _CharT, formattable<_CharT>... _Types>
-struct _Tuple_formatter_common_base {
+class _Tuple_formatter_common_base {
 private:
     tuple<formatter<remove_cvref_t<_Types>, _CharT>...> _Underlying;
     basic_string_view<_CharT> _Separator       = _STATICALLY_WIDEN(_CharT, ", ");
