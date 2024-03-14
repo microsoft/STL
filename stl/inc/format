@@ -4140,7 +4140,7 @@ public:
         }
 
         _Ctx.advance_to(_Ctx.begin() + (_It - _Ctx._Unchecked_begin()));
-        _STD apply([&_Ctx](auto&&... _Elems) { (_Set_tuple_debug_format(_Elems, _Ctx), ...); }, _Underlying);
+        _STD apply([&_Ctx](auto&... _Elems) { (_Set_tuple_debug_format(_Elems, _Ctx), ...); }, _Underlying);
 
         return _Ctx.begin();
     }
