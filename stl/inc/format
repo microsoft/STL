@@ -4159,8 +4159,8 @@ struct _Tuple_formatter_base {
 template <class _CharT, formattable<_CharT> _Ty1, formattable<_CharT> _Ty2>
 struct _Tuple_formatter_base<pair<_Ty1, _Ty2>, _CharT> : _Tuple_formatter_common_base<_CharT, _Ty1, _Ty2> {
 private:
-    using _Formatted_type =
-        _Maybe_const<_Tuple_formatter_common_base<_CharT, _Ty1, _Ty2>::_Is_const_formattable, pair<_Ty1, _Ty2>>;
+    using _Base           = _Tuple_formatter_common_base<_CharT, _Ty1, _Ty2>;
+    using _Formatted_type = _Maybe_const<_Base::_Is_const_formattable, pair<_Ty1, _Ty2>>;
 
 public:
     template <class _FormatContext>
@@ -4172,8 +4172,8 @@ public:
 template <class _CharT, formattable<_CharT>... _Types>
 struct _Tuple_formatter_base<tuple<_Types...>, _CharT> : _Tuple_formatter_common_base<_CharT, _Types...> {
 private:
-    using _Formatted_type =
-        _Maybe_const<_Tuple_formatter_common_base<_CharT, _Types...>::_Is_const_formattable, tuple<_Types...>>;
+    using _Base           = _Tuple_formatter_common_base<_CharT, _Types...>;
+    using _Formatted_type = _Maybe_const<_Base::_Is_const_formattable, tuple<_Types...>>;
 
 public:
     template <class _FormatContext>
