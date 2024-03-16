@@ -3686,7 +3686,7 @@ public:
     template <class _Ty>
         requires convertible_to<const _Ty&, basic_string_view<_CharT>>
     consteval basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
-        if (_Is_execution_charset_self_synchronizing()) {
+        if constexpr (!is_same_v<_CharT, char> || _Is_execution_charset_self_synchronizing()) {
             using _Context             = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
             constexpr size_t _Num_args = sizeof...(_Args);
             constexpr _Basic_format_arg_type _Arg_types[_Num_args > 0 ? _Num_args : 1] = {
