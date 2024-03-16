@@ -1324,15 +1324,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_DEPRECATE_IS_POD
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX20 && !defined(_SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING)
-#define _DEPRECATE_EXPERIMENTAL_ERASE                                                                                 \
-    [[deprecated("warning STL4026: "                                                                                  \
-                 "std::experimental::erase() and std::experimental::erase_if() are deprecated by Microsoft and will " \
-                 "be REMOVED. They are superseded by std::erase() and std::erase_if(). "                              \
-                 "You can define _SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_EXPERIMENTAL_ERASE
-#endif // ^^^ warning disabled ^^^
+// STL4026 was
+// "std::experimental::erase() and std::experimental::erase_if() are deprecated by Microsoft and will be REMOVED."
 
 // P0768R1 [depr.relops]
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING) \
@@ -1897,7 +1890,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_variant 202102L // P2162R2 Inheriting From variant
 #endif
 
-#define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
