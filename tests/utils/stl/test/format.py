@@ -65,7 +65,7 @@ def _getEnvLst(sourcePath, localConfig):
 def _isLegalDirectory(sourcePath, test_subdirs):
     for prefix in test_subdirs:
         common = os.path.normpath(os.path.commonpath((sourcePath, prefix)))
-        if common == sourcePath or common == prefix:
+        if os.path.samefile(common, sourcePath) or os.path.samefile(common, prefix):
             return True
 
     return False

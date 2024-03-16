@@ -12,33 +12,14 @@
 #include <type_traits>
 #include <utility>
 
+#include <is_permissive.hpp>
+
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace ranges = std::ranges;
 
 template <class>
 inline constexpr bool always_false = false;
-
-namespace detail {
-    constexpr bool permissive() {
-        return false;
-    }
-
-    template <class>
-    struct DependentBase {
-        static constexpr bool permissive() {
-            return true;
-        }
-    };
-
-    template <class T>
-    struct Derived : DependentBase<T> {
-        static constexpr bool test() {
-            return permissive();
-        }
-    };
-} // namespace detail
-constexpr bool is_permissive = detail::Derived<int>::test();
 
 template <class T>
 inline constexpr T* nullptr_to = nullptr;

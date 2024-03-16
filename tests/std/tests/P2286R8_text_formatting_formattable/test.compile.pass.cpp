@@ -213,6 +213,9 @@ void test_P2286_vector_bool() {
 // Tests for P2286 Formatting ranges
 template <class CharT>
 void test_P2286() {
+    assert_is_formattable<pair<int, int>, CharT>();
+    assert_is_formattable<tuple<int>, CharT>();
+
     test_P2286_vector_bool<CharT, vector<bool>>();
     test_P2286_vector_bool<CharT, pmr::vector<bool>>();
     test_P2286_vector_bool<CharT, vector<bool, alternative_allocator<bool>>>();

@@ -18,14 +18,9 @@
 
 #if _STL_COMPILER_PREPROCESSOR
 
-// This does not use `_EMIT_STL_ERROR`, as it needs to be checked before we include anything else.
-// However, `_EMIT_STL_ERROR` has a dependency on `_CRT_STRINGIZE`, defined in `<vcruntime.h>`.
-// Here, we employ the same technique as `_CRT_STRINGIZE` in order to avoid needing to update the line number.
+// This does not use `_EMIT_STL_ERROR`, as it is checking the language itself.
 #ifndef __cplusplus
-#define _STL_STRINGIZE_(S) #S
-#define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
-#pragma message(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): STL1003: Unexpected compiler, expected C++ compiler.")
-#error Error in C++ Standard Library usage
+#error error STL1003: Unexpected compiler, expected C++ compiler.
 #endif // !defined(__cplusplus)
 
 // Implemented unconditionally:
@@ -507,6 +502,9 @@
 #include <vcruntime.h>
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
+#define _STL_STRINGIZE_(S) #S
+#define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
+
 // Note that _STL_PRAGMA is load-bearing;
 // it still needs to exist even once CUDA and ICC support _Pragma.
 #if defined(__CUDACC__) || defined(__INTEL_COMPILER)
@@ -516,7 +514,7 @@
 #endif
 
 #define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
-#define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _CRT_STRINGIZE(__LINE__) "): " MESSAGE)
+#define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): " MESSAGE)
 
 #define _EMIT_STL_WARNING(NUMBER, MESSAGE) _EMIT_STL_MESSAGE("warning " #NUMBER ": " MESSAGE)
 #define _EMIT_STL_ERROR(NUMBER, MESSAGE)   static_assert(false, "error " #NUMBER ": " MESSAGE)
@@ -781,6 +779,7 @@
 #endif // !defined(_STL_EXTRA_DISABLED_WARNINGS)
 
 // warning C4180: qualifier applied to function type has no meaning; ignored
+// warning C4324: structure was padded due to alignment specifier
 // warning C4412: function signature contains type 'meow'; C++ objects are unsafe to pass between pure code
 //                and mixed or native. (/Wall)
 // warning C4455: literal suffix identifiers that do not start with an underscore are reserved
@@ -812,9 +811,9 @@
 #ifndef _STL_DISABLED_WARNINGS
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
-    4180 4412 4455 4494 4514 4574 4582 4583 4587 4588 \
-    4619 4623 4625 4626 4643 4648 4702 4793 4820 4868 \
-    4988 5026 5027 5045 5220 6294                     \
+    4180 4324 4412 4455 4494 4514 4574 4582 4583 4587 \
+    4588 4619 4623 4625 4626 4643 4648 4702 4793 4820 \
+    4868 4988 5026 5027 5045 5220 6294                \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -886,12 +885,12 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202402L
+#define _MSVC_STL_UPDATE  202403L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 11 || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ < 6)
-_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or newer.");
+#if __CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4)
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -978,7 +977,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // P0298R3 std::byte
 #ifndef _HAS_STD_BYTE
-#define _HAS_STD_BYTE _HAS_CXX17 // inspected by GSL, do not remove
+#define _HAS_STD_BYTE _HAS_CXX17
 #endif // !defined(_HAS_STD_BYTE)
 
 // P0302R1 Removing Allocator Support In std::function
@@ -1326,15 +1325,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_DEPRECATE_IS_POD
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX20 && !defined(_SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING)
-#define _DEPRECATE_EXPERIMENTAL_ERASE                                                                                 \
-    [[deprecated("warning STL4026: "                                                                                  \
-                 "std::experimental::erase() and std::experimental::erase_if() are deprecated by Microsoft and will " \
-                 "be REMOVED. They are superseded by std::erase() and std::erase_if(). "                              \
-                 "You can define _SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_EXPERIMENTAL_ERASE
-#endif // ^^^ warning disabled ^^^
+// STL4026 was
+// "std::experimental::erase() and std::experimental::erase_if() are deprecated by Microsoft and will be REMOVED."
 
 // P0768R1 [depr.relops]
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING) \
@@ -1507,16 +1499,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_STDEXT_ARR_ITERS
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX17 && !defined(_SILENCE_STDEXT_CVT_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
-#define _DEPRECATE_STDEXT_CVT                                                                                          \
-    [[deprecated("warning STL4044: The contents of the stdext::cvt namespace are non-Standard extensions and will be " \
-                 "removed in the future. The MultiByteToWideChar() and WideCharToMultiByte() functions can be used "   \
-                 "instead. You can define _SILENCE_STDEXT_CVT_DEPRECATION_WARNING or "                                 \
-                 "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_STDEXT_CVT
-#endif // ^^^ warning disabled ^^^
+// STL4044 was "The contents of the stdext::cvt namespace are non-Standard extensions and will be removed"
 
 #if _HAS_CXX17 && !defined(_SILENCE_IO_PFX_SFX_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
@@ -1845,29 +1828,29 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 // macros with language mode sensitivity
 #if _HAS_CXX20
 #define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
-#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#elif _HAS_CXX17
 #define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
-#endif // _HAS_CXX17
+#endif
 
 #if _HAS_CXX20
 #define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
 #elif _HAS_CXX17
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+#else
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
-#endif // ^^^ !_HAS_CXX17 ^^^
+#endif
 
 #if _HAS_CXX23
 #define __cpp_lib_concepts 202207L // P2404R3 Move-Only Types For Comparison Concepts
-#elif _HAS_CXX20 // ^^^ C++23 / C++20 vvv
+#elif _HAS_CXX20
 #define __cpp_lib_concepts 202002L // P1964R2 Replacing boolean With boolean-testable
-#endif // C++20
+#endif
 
 #if _HAS_CXX23
 #define __cpp_lib_constexpr_memory 202202L // P2273R3 constexpr unique_ptr
 #elif _HAS_CXX20
 #define __cpp_lib_constexpr_memory 201811L // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
-#endif // _HAS_CXX20
+#endif
 
 #ifndef _M_CEE_PURE
 #if _HAS_CXX20
@@ -1879,17 +1862,17 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX23
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
-#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#elif _HAS_CXX20
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
-#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#elif _HAS_CXX17
 #define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
-#endif // _HAS_CXX17
+#endif
 
 #if _HAS_CXX23
 #define __cpp_lib_ranges 202302L // P2609R3 Relaxing Ranges Just A Smidge
-#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#elif _HAS_CXX20
 #define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
-#endif // _HAS_CXX20
+#endif
 
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
@@ -1899,17 +1882,16 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #if _HAS_CXX23
 #define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
-#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#elif _HAS_CXX20
 #define __cpp_lib_shift 201806L // P0769R2 shift_left(), shift_right()
-#endif // _HAS_CXX20
+#endif
 
 #if _HAS_CXX20
 #define __cpp_lib_variant 202106L // P2231R1 Completing constexpr In optional And variant
-#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#elif _HAS_CXX17
 #define __cpp_lib_variant 202102L // P2162R2 Inheriting From variant
-#endif // _HAS_CXX17
+#endif
 
-#define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
@@ -1919,8 +1901,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // !defined(_ALLOW_RTCc_IN_STL)
 #endif // defined(_RTC_CONVERSION_CHECKS_ENABLED)
 
-#define _STRINGIZEX(x)  #x
-#define _STRINGIZE(x)   _STRINGIZEX(x)
 #define _EMPTY_ARGUMENT // for empty macro argument
 
 // extern "C++" attaches declarations to the global module, see N4964 [module.unit]/7.2.

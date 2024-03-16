@@ -6114,7 +6114,7 @@ int run_test()
 #include "variant_test_helpers.h"
 
 namespace visit {
-#if _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+#if _HAS_CXX20 && !defined(TEST_PERMISSIVE)
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
   Fn obj{};
@@ -6528,11 +6528,11 @@ int run_test() {
 
   return 0;
 }
-#else // ^^ real test / vv workaround
+#else // ^^^ no workaround / workaround vvv
 int run_test() {
   return 0;
 }
-#endif // _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+#endif // ^^^ workaround ^^^
 
 } // namespace visit
 // -- END: test/std/utilities/variant/variant.visit/visit.pass.cpp
@@ -6563,7 +6563,7 @@ int run_test() {
 #include "variant_test_helpers.h"
 
 namespace visit::return_type {
-#if _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+#if _HAS_CXX20 && !defined(TEST_PERMISSIVE)
 template <typename ReturnType>
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
@@ -7058,11 +7058,11 @@ int run_test() {
 
   return 0;
 }
-#else // ^^ real tests / vv workaround
+#else // ^^^ no workaround / workaround vvv
 int run_test() {
   return 0;
 }
-#endif // _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+#endif // ^^^ workaround ^^^
 } // namespace visit::return_type
 // -- END: test/std/utilities/variant/variant.visit/visit_return_type.pass.cpp
 
@@ -7674,10 +7674,8 @@ namespace msvc {
                 };
 
                 using VarTestConv = std::variant<convertible_to_immobile_one, convertible_to_immobile_other>;
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10112408
                 assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_one{}}).x == 1729);
                 assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_other{}}).x == 1138);
-#endif // TRANSITION, DevCom-10112408
                 auto immobile_converter = [](auto src) -> immobile_data { return src; };
                 assert(std::visit<R>(immobile_converter, VarTestConv{convertible_to_immobile_one{}}).x == 1729);
                 assert(std::visit<R>(immobile_converter, VarTestConv{convertible_to_immobile_other{}}).x == 1138);

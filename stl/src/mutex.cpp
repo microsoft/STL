@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <internal_shared.h>
 #include <mutex>
+#include <new>
 #include <type_traits>
 #include <xthreads.h>
 #include <xtimec.h>
@@ -38,7 +39,7 @@ _CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_enum) noexcep
 
 // TRANSITION, only used when constexpr mutex constructor is not enabled
 _CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t mtx, int type) noexcept { // initialize mutex in situ
-    Concurrency::details::create_stl_critical_section(&mtx->_Critical_section);
+    new (&mtx->_Critical_section) _Stl_critical_section;
     mtx->_Thread_id = -1;
     mtx->_Type      = type;
     mtx->_Count     = 0;

@@ -533,6 +533,31 @@ void test_algorithms() {
     std::destroy_at(new (buffer) validator{});
     std::destroy_at(new (buffer) validating_nontrivial{});
 
+#if _HAS_CXX20
+    {
+        alignas(validator[1]) unsigned char buf[sizeof(validator[1])];
+        ::new (static_cast<void*>(buf)) validator[1]{};
+        const auto p_arr = std::launder(reinterpret_cast<validator(*)[1]>(buf));
+
+        std::destroy(p_arr, p_arr);
+
+        (void) std::destroy_n(p_arr, 0);
+
+        std::destroy_at(p_arr);
+    }
+    {
+        alignas(validating_nontrivial[1]) unsigned char buf[sizeof(validating_nontrivial[1])];
+        ::new (static_cast<void*>(buf)) validating_nontrivial[1]{};
+        const auto p_arr = std::launder(reinterpret_cast<validating_nontrivial(*)[1]>(buf));
+
+        std::destroy(p_arr, p_arr);
+
+        (void) std::destroy_n(p_arr, 0);
+
+        std::destroy_at(p_arr);
+    }
+#endif // _HAS_CXX20
+
     std::destroy(varr, varr);
     std::destroy(narr, narr);
 
@@ -822,6 +847,17 @@ void test_per_execution_policy() {
 
     (void) std::destroy_n(ExecutionPolicy, varr, 0);
     (void) std::destroy_n(ExecutionPolicy, narr, 0);
+
+#if _HAS_CXX20
+    validator varr_2d[1][1]{};
+    validating_nontrivial narr_2d[1][1]{};
+
+    std::destroy(ExecutionPolicy, varr_2d, varr_2d);
+    std::destroy(ExecutionPolicy, narr_2d, narr_2d);
+
+    (void) std::destroy_n(ExecutionPolicy, varr_2d, 0);
+    (void) std::destroy_n(ExecutionPolicy, narr_2d, 0);
+#endif // _HAS_CXX20
 }
 
 void test_parallel_algorithms() {
@@ -989,6 +1025,16 @@ void test_ranges_non_projected_algorithms() {
         alignas(validating_nontrivial) unsigned char buf[sizeof(validating_nontrivial)];
         const auto pn = construct_at(reinterpret_cast<validating_nontrivial*>(buf));
         destroy_at(pn);
+    }
+    {
+        alignas(validator[1]) unsigned char buf[sizeof(validator[1])];
+        ::new (static_cast<void*>(buf)) validator[1]{};
+        destroy_at(std::launder(reinterpret_cast<validator(*)[1]>(buf)));
+    }
+    {
+        alignas(validating_nontrivial[1]) unsigned char buf[sizeof(validating_nontrivial[1])];
+        ::new (static_cast<void*>(buf)) validating_nontrivial[1]{};
+        destroy_at(std::launder(reinterpret_cast<validating_nontrivial(*)[1]>(buf)));
     }
 
     {

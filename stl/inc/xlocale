@@ -800,7 +800,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id codecvt<_Elem, _Byte, _Statype>::id;
 #pragma clang diagnostic pop
 #endif // defined(__clang__)
 
-_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <class _CvtTy, class _Byte, class _Statype>
+template <class _CvtTy, class _Byte, class _Statype>
 _NODISCARD int _Codecvt_do_length(
     const _CvtTy& _Cvt, _Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) {
     // return p - _First1, for the largest value p in [_First1, _Last1] such that _Cvt will successfully convert
