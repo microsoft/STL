@@ -1847,6 +1847,10 @@ namespace {
         return _Ptr;
     }
 
+    // The below functions have exactly the same signature as the extern "C" functions, up to calling convention.
+    // This makes sure the template specialization can be fused with the extern "C" function.
+    // In optimized builds it avoids an extra call, as these functions are too large to inline.
+
     template <class _Traits, class _Ty>
     const void* __stdcall __std_find_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
