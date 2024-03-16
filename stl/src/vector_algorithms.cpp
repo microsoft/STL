@@ -1839,7 +1839,7 @@ namespace {
 
     // TRANSITION, ABI: used only in functions preserved for binary compatibility
     template <class _Ty>
-    const void* __std_find_trivial_unsized_impl(const void* _First, const _Ty _Val) noexcept {
+    const void* __std_find_trivial_unsized_impl(const void* const _First, const _Ty _Val) noexcept {
         auto _Ptr = static_cast<const _Ty*>(_First);
         while (*_Ptr != _Val) {
             ++_Ptr;
