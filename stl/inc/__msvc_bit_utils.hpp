@@ -202,17 +202,19 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
         // hence we split the value so that it fits in 32-bit registers
         return _Popcount_fallback(static_cast<unsigned long>(_Val))
              + _Popcount_fallback(static_cast<unsigned long>(_Val >> 32));
-    }
+    } else
 #endif // (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || defined(_M_ARM)
-    // we static_cast these bit patterns in order to truncate them to the correct size
-    _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
-    _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
-                            + ((_Val >> 2) & static_cast<_Ty>(0x3333'3333'3333'3333ull)));
-    _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F'0F0F'0F0F'0F0Full));
-    // Multiply by one in each byte, so that it will have the sum of all source bytes in the highest byte
-    _Val = static_cast<_Ty>(_Val * static_cast<_Ty>(0x0101'0101'0101'0101ull));
-    // Extract highest byte
-    return static_cast<int>(_Val >> (_Digits - 8));
+    {
+        // we static_cast these bit patterns in order to truncate them to the correct size
+        _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
+        _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
+                                + ((_Val >> 2) & static_cast<_Ty>(0x3333'3333'3333'3333ull)));
+        _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F'0F0F'0F0F'0F0Full));
+        // Multiply by one in each byte, so that it will have the sum of all source bytes in the highest byte
+        _Val = static_cast<_Ty>(_Val * static_cast<_Ty>(0x0101'0101'0101'0101ull));
+        // Extract highest byte
+        return static_cast<int>(_Val >> (_Digits - 8));
+    }
 }
 
 #if ((defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))) \

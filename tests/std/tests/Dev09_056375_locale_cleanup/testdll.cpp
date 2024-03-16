@@ -3,9 +3,6 @@
 
 #include <cassert>
 #include <locale>
-
-#include <Windows.h>
-
 using namespace std;
 
 // Tests for DLL

@@ -16,9 +16,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\tzdb.cpp;
             $(CrtRoot)\github\stl\src\ulocale.cpp;
             ">
-            <IncludeInLink>false</IncludeInLink>
-            <IncludeInLib>true</IncludeInLib>
-            <IncludeInImportLib>false</IncludeInImportLib>
+            <LinkCompiled>false</LinkCompiled>
+            <LibCompiled>true</LibCompiled>
+            <ImpLibCompiled>false</ImpLibCompiled>
         </ClCompile>
 
         <ClCompile Include="$(CrtRoot)\github\stl\src\excptptr.cpp;">
@@ -149,7 +149,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         </ClCompile>
 
         <!-- Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib
-             (controlled by IncludeInLink and IncludeInImportLib). -->
+             (controlled by ExtraImpLibCompiled). -->
         <ClCompile Include="
             $(CrtRoot)\github\stl\src\asan_noop.cpp;
             $(CrtRoot)\github\stl\src\charconv.cpp;
@@ -167,22 +167,20 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\xcharconv_tables_float.cpp;
             $(CrtRoot)\github\stl\src\xonce2.cpp;
             ">
-            <IncludeInLink>false</IncludeInLink>
-            <IncludeInImportLib>true</IncludeInImportLib>
+            <ExtraImpLibCompiled>true</ExtraImpLibCompiled>
             <PreprocessorDefinitions>$(ClDefines);_ENFORCE_ONLY_CORE_HEADERS</PreprocessorDefinitions>
         </ClCompile>
     </ItemGroup>
 
     <ItemGroup Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'amd64'">
         <!-- Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib
-             (controlled by IncludeInLink and IncludeInImportLib). -->
+             (controlled by ExtraImpLibCompiled). -->
         <BuildFiles Include="
             $(CrtRoot)\github\stl\src\alias_init_once_begin_initialize.asm;
             $(CrtRoot)\github\stl\src\alias_init_once_complete.asm;
             ">
             <BuildAs>asm</BuildAs>
-            <IncludeInLink>false</IncludeInLink>
-            <IncludeInImportLib>true</IncludeInImportLib>
+            <ExtraImpLibCompiled>true</ExtraImpLibCompiled>
         </BuildFiles>
     </ItemGroup>
 

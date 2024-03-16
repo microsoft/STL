@@ -9,6 +9,7 @@
 // Also test GH-3103 "<xatomic.h>: Investigate making this a core header" and other internal core headers
 #include <__msvc_int128.hpp>
 #include <__msvc_system_error_abi.hpp>
+#include <__msvc_threads_core.hpp>
 #include <__msvc_xlocinfo_types.hpp>
 #include <xatomic.h>
 #include <xbit_ops.h>

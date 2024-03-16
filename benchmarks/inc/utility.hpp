@@ -14,7 +14,7 @@
 template <class Contained>
 std::vector<Contained> random_vector(size_t n) {
     std::random_device rd;
-    std::uniform_int_distribution<uint64_t> id64;
+    std::uniform_int_distribution<std::uint64_t> id64;
     xoshiro256ss prng{id64(rd), id64(rd), id64(rd), id64(rd)};
 
     std::vector<Contained> res(n);

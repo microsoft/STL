@@ -137,6 +137,35 @@ template <>
 struct is_execution_policy<execution::unsequenced_policy> : true_type {};
 #endif // _HAS_CXX20
 
+template <class _Ty, class _FwdIt>
+void _Construct_in_place_by_deref(_Ty& _Val, const _FwdIt& _Iter) {
+    ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter);
+}
+
+template <class _Ty, class _UnaryOp, class _FwdIt>
+void _Construct_in_place_by_transform_deref(_Ty& _Val, _UnaryOp _Transform_op, const _FwdIt& _Iter) {
+    ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(_Transform_op(*_Iter));
+}
+
+template <class _Ty, class _BinaryOp, class _ArgTy>
+void _Implicitly_construct_in_place_by_binary_op(_Ty& _Val, _BinaryOp _Reduce_op, _ArgTy& _Left, _ArgTy& _Right) {
+    ::new (static_cast<void*>(_STD addressof(_Val))) _Ty([&]() -> _Ty { return _Reduce_op(_Left, _Right); }());
+}
+
+template <class _Ty, class _BinaryOp, class _LeftTy, class _FwdIt>
+void _Implicitly_construct_in_place_by_binary_op_deref_rhs(
+    _Ty& _Val, _BinaryOp _Reduce_op, _LeftTy&& _Left, const _FwdIt& _Iter) {
+    ::new (static_cast<void*>(_STD addressof(_Val)))
+        _Ty([&]() -> _Ty { return _Reduce_op(_STD forward<_LeftTy>(_Left), *_Iter); }());
+}
+
+template <class _Ty, class _BinaryOp, class _UnaryOp, class _LeftTy, class _FwdIt>
+void _Implicitly_construct_in_place_by_binary_op_transform_deref_rhs(
+    _Ty& _Val, _BinaryOp _Reduce_op, _UnaryOp _Transform_op, _LeftTy&& _Left, const _FwdIt& _Iter) {
+    ::new (static_cast<void*>(_STD addressof(_Val)))
+        _Ty([&]() -> _Ty { return _Reduce_op(_STD forward<_LeftTy>(_Left), _Transform_op(*_Iter)); }());
+}
+
 struct _Parallelism_resources_exhausted : exception {
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
@@ -542,8 +571,6 @@ struct alignas(_Ty) alignas(size_t) alignas(_Atomic_counter_t) _Circular_buffer 
     }
 };
 
-#pragma warning(push)
-#pragma warning(disable : 4324) // structure was padded due to alignment specifier
 template <class _Ty>
 class alignas(hardware_destructive_interference_size) _Work_stealing_deque {
     // thread-local work-stealing deque, which allows efficient access from a single owner thread at the "bottom"
@@ -657,7 +684,6 @@ private:
     _Guarded_by_(_Segment_lock) _Circular_buffer<_Ty>* _Segment{_Circular_buffer<_Ty>::_New_circular_buffer()};
     mutex _Segment_lock{};
 };
-#pragma warning(pop)
 
 enum class _Steal_result { _Success, _Abort, _Done };
 
@@ -2495,13 +2521,10 @@ struct _Static_partitioned_remove_if2 {
         // may transition from _Serial directly to _Done, doing the moving step implicitly.
     };
 
-#pragma warning(push)
-#pragma warning(disable : 4324) // structure was padded due to alignment specifier
     struct alignas(hardware_destructive_interference_size) alignas(_FwdIt) _Chunk_local_data {
         atomic<_Chunk_state> _State;
         _FwdIt _New_end;
     };
-#pragma warning(pop)
 
     _Static_partition_team<_Iter_diff_t<_FwdIt>> _Team;
     _Static_partition_range<_FwdIt> _Basis;
@@ -3457,14 +3480,11 @@ struct _Static_partitioned_partition2 {
         _Done // when a chunk becomes _Done, it is complete / will never need to touch _Results again
     };
 
-#pragma warning(push)
-#pragma warning(disable : 4324) // structure was padded due to alignment specifier
     struct alignas(hardware_destructive_interference_size) alignas(_FwdIt) _Chunk_local_data {
         atomic<_Chunk_state> _State;
         _FwdIt _Beginning_of_falses;
         _Diff _Chunk_trues;
     };
-#pragma warning(pop)
 
     _Static_partition_team<_Diff> _Team;
     _Static_partition_range<_FwdIt> _Basis;
@@ -3602,7 +3622,7 @@ struct _Scan_decoupled_lookback {
     template <class _FwdIt, class _BinOp>
     void _Apply_exclusive_predecessor(_Ty& _Preceding, _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce_op) {
         // apply _Preceding to [_First, _Last) and _Sum._Ref(), using _Reduce_op
-        _STD _Construct_in_place(_Sum._Ref(), _Reduce_op(_Preceding, _Local._Ref()));
+        _STD _Implicitly_construct_in_place_by_binary_op(_Sum._Ref(), _Reduce_op, _Preceding, _Local._Ref());
         _State.store(_Local_available | _Sum_available);
         *_First = _Preceding;
 
@@ -3615,7 +3635,7 @@ struct _Scan_decoupled_lookback {
     template <class _FwdIt, class _BinOp>
     void _Apply_inclusive_predecessor(_Ty& _Preceding, _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce_op) {
         // apply _Preceding to [_First, _Last) and _Sum._Ref(), using _Reduce_op
-        _STD _Construct_in_place(_Sum._Ref(), _Reduce_op(_Preceding, _Local._Ref()));
+        _STD _Implicitly_construct_in_place_by_binary_op(_Sum._Ref(), _Reduce_op, _Preceding, _Local._Ref());
         _State.store(_Local_available | _Sum_available);
 
 #pragma loop(ivdep)
@@ -3645,8 +3665,8 @@ typename _Iter_value_t<_BidIt>::value_type _Get_lookback_sum(const _BidIt _Curre
     auto _Prev = _Current;
     --_Prev;
     auto _Prev_state = _Prev->_Get_available_state();
-    typename _Iter_value_t<_BidIt>::value_type _Result(
-        _Reduce_op(_Prev_state & _Sum_available ? _Prev->_Sum._Ref() : _Prev->_Local._Ref(), _Current->_Local._Ref()));
+    typename _Iter_value_t<_BidIt>::value_type _Result =
+        _Reduce_op(_Prev_state & _Sum_available ? _Prev->_Sum._Ref() : _Prev->_Local._Ref(), _Current->_Local._Ref());
     while (!(_Prev_state & _Sum_available)) {
         --_Prev;
         _Prev_state = _Prev->_Get_available_state();
@@ -4334,9 +4354,9 @@ _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
             return _Dest;
         }
 
-        _Ty _Tmp(_Reduce_op(_Val, *_First)); // temp to enable _First == _Dest
-        *_Dest = _Val;
-        _Val   = _STD move(_Tmp);
+        _Ty _Tmp = _Reduce_op(_Val, *_First); // temp to enable _First == _Dest
+        *_Dest   = _Val;
+        _Val     = _STD move(_Tmp);
     }
 }
 
@@ -4346,13 +4366,13 @@ void _Exclusive_scan_per_chunk_complete(
     // Sum for parallel exclusive_scan with predecessor available, into [_Dest, _Dest + (_Last - _First)) and stores
     // successor sum in _Val.
     // Pre: _Val is *uninitialized* && _First != _Last && predecessor sum is in _Init
-    _STD _Construct_in_place(_Val, _Reduce_op(_Init, *_First));
+    _STD _Implicitly_construct_in_place_by_binary_op_deref_rhs(_Val, _Reduce_op, _Init, _First);
     *_Dest = _Init;
     while (++_First != _Last) {
         ++_Dest;
-        _Ty _Tmp(_Reduce_op(_Val, *_First)); // temp to enable _First == _Dest
-        *_Dest = _STD move(_Val);
-        _Val   = _STD move(_Tmp);
+        _Ty _Tmp = _Reduce_op(_Val, *_First); // temp to enable _First == _Dest
+        *_Dest   = _STD move(_Val);
+        _Val     = _STD move(_Tmp);
     }
 }
 
@@ -4471,9 +4491,10 @@ _FwdIt2 _Inclusive_scan_per_chunk(
     // _Val.
     // pre: _Val is *uninitialized* && _First != _Last
     if constexpr (is_same_v<_No_init_tag, remove_const_t<remove_reference_t<_Ty_fwd>>>) {
-        _STD _Construct_in_place(_Val, *_First);
+        _STD _Construct_in_place_by_deref(_Val, _First);
     } else {
-        _STD _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), *_First));
+        _STD _Implicitly_construct_in_place_by_binary_op_deref_rhs(
+            _Val, _Reduce_op, _STD forward<_Ty_fwd>(_Predecessor), _First);
     }
 
     for (;;) {
@@ -4645,7 +4666,7 @@ _FwdIt2 _Transform_exclusive_scan_per_chunk(
     // Local-sum for parallel transform_exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and
     // stores successor sum in _Val.
     // pre: _Val is *uninitialized* && _First != _Last
-    _STD _Construct_in_place(_Val, _Transform_op(*_First));
+    _STD _Construct_in_place_by_transform_deref(_Val, _Transform_op, _First);
     for (;;) {
         ++_First;
         ++_Dest;
@@ -4653,9 +4674,9 @@ _FwdIt2 _Transform_exclusive_scan_per_chunk(
             return _Dest;
         }
 
-        _Ty _Tmp(_Reduce_op(_Val, _Transform_op(*_First))); // temp to enable _First == _Dest
-        *_Dest = _Val;
-        _Val   = _STD move(_Tmp);
+        _Ty _Tmp = _Reduce_op(_Val, _Transform_op(*_First)); // temp to enable _First == _Dest
+        *_Dest   = _Val;
+        _Val     = _STD move(_Tmp);
     }
 }
 
@@ -4665,13 +4686,14 @@ void _Transform_exclusive_scan_per_chunk_complete(_FwdIt1 _First, const _FwdIt1 
     // Sum for parallel transform_exclusive_scan with predecessor available, into [_Dest, _Dest + (_Last - _First)) and
     // stores successor sum in _Val.
     // pre: _Val is *uninitialized* && _First != _Last && predecessor sum is in _Init
-    _STD _Construct_in_place(_Val, _Reduce_op(_Init, _Transform_op(*_First)));
+    _STD _Implicitly_construct_in_place_by_binary_op_transform_deref_rhs(
+        _Val, _Reduce_op, _Transform_op, _Init, _First);
     *_Dest = _Init;
     while (++_First != _Last) {
         ++_Dest;
-        _Ty _Tmp(_Reduce_op(_Val, _Transform_op(*_First))); // temp to enable _First == _Dest
-        *_Dest = _STD move(_Val);
-        _Val   = _STD move(_Tmp);
+        _Ty _Tmp = _Reduce_op(_Val, _Transform_op(*_First)); // temp to enable _First == _Dest
+        *_Dest   = _STD move(_Val);
+        _Val     = _STD move(_Tmp);
     }
 }
 
@@ -4791,9 +4813,10 @@ _FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
     // sum in _Val
     // pre: _Val is *uninitialized* && _First != _Last
     if constexpr (is_same_v<_No_init_tag, remove_const_t<remove_reference_t<_Ty_fwd>>>) {
-        _STD _Construct_in_place(_Val, _Transform_op(*_First));
+        _STD _Construct_in_place_by_transform_deref(_Val, _Transform_op, _First);
     } else {
-        _STD _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), _Transform_op(*_First)));
+        _STD _Implicitly_construct_in_place_by_binary_op_transform_deref_rhs(
+            _Val, _Reduce_op, _Transform_op, _STD forward<_Ty_fwd>(_Predecessor), _First);
     }
 
     for (;;) {

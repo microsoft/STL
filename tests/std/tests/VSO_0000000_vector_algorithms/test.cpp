@@ -15,6 +15,7 @@
 #include <random>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #if _HAS_CXX20
@@ -138,6 +139,53 @@ void test_find(mt19937_64& gen) {
         test_case_find(input, static_cast<T>(dis(gen)));
     }
 }
+
+#if _HAS_CXX20
+template <class T, size_t N>
+struct NormalArrayWrapper {
+    T m_arr[N];
+};
+
+// Also test GH-4454 "vector_algorithms.cpp: __std_find_trivial_unsized_impl assumes N-byte elements are N-aligned"
+#pragma pack(push, 1)
+template <class T, size_t N>
+struct PackedArrayWrapper {
+    uint8_t m_ignored; // to misalign the following array
+    T m_arr[N];
+};
+#pragma pack(pop)
+
+// GH-4449 <xutility>: ranges::find with unreachable_sentinel / __std_find_trivial_unsized_1 gives wrong result
+template <class T, template <class, size_t> class ArrayWrapper>
+void test_gh_4449_impl() {
+    constexpr T desired_val{11};
+    constexpr T unwanted_val{22};
+
+    ArrayWrapper<T, 256> wrapper;
+    auto& arr = wrapper.m_arr;
+
+    constexpr int mid1 = 64;
+    constexpr int mid2 = 192;
+
+    ranges::fill(arr, arr + mid1, desired_val);
+    ranges::fill(arr + mid1, arr + mid2, unwanted_val);
+    ranges::fill(arr + mid2, end(arr), desired_val);
+
+    for (int idx = mid1; idx <= mid2; ++idx) { // when idx == mid2, the value is immediately found
+        const auto where = ranges::find(arr + idx, unreachable_sentinel, desired_val);
+
+        assert(where == arr + mid2);
+
+        arr[idx] = desired_val; // get ready for the next iteration
+    }
+}
+
+template <class T>
+void test_gh_4449() {
+    test_gh_4449_impl<T, NormalArrayWrapper>();
+    test_gh_4449_impl<T, PackedArrayWrapper>();
+}
+#endif // _HAS_CXX20
 
 #if _HAS_CXX23
 template <class T>
@@ -370,6 +418,13 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_find<long long>(gen);
     test_find<unsigned long long>(gen);
 
+#if _HAS_CXX20
+    test_gh_4449<uint8_t>();
+    test_gh_4449<uint16_t>();
+    test_gh_4449<uint32_t>();
+    test_gh_4449<uint64_t>();
+#endif // _HAS_CXX20
+
 #if _HAS_CXX23
     test_find_last<char>(gen);
     test_find_last<signed char>(gen);
@@ -474,6 +529,43 @@ void test_one_container() {
     test_two_containers<Container, list<int>>();
 }
 
+template <size_t N>
+bool test_randomized_bitset(mt19937_64& gen) {
+    string str;
+    wstring wstr;
+    str.reserve(N);
+    wstr.reserve(N);
+
+    while (str.size() != N) {
+        uint64_t random_value = gen();
+
+        for (int bits = 0; bits < 64 && str.size() != N; ++bits) {
+            const auto character = '0' + (random_value & 1);
+            str.push_back(static_cast<char>(character));
+            wstr.push_back(static_cast<wchar_t>(character));
+            random_value >>= 1;
+        }
+    }
+
+    const bitset<N> b(str);
+
+    assert(b.to_string() == str);
+    assert(b.template to_string<wchar_t>() == wstr);
+
+    return true;
+}
+
+template <size_t Base, size_t... Vals>
+void test_randomized_bitset_base(index_sequence<Vals...>, mt19937_64& gen) {
+    bool ignored[] = {test_randomized_bitset<Base + Vals>(gen)...};
+    (void) ignored;
+}
+
+template <size_t Base, size_t Count>
+void test_randomized_bitset_base_count(mt19937_64& gen) {
+    test_randomized_bitset_base<Base>(make_index_sequence<Count>{}, gen);
+}
+
 void test_bitset(mt19937_64& gen) {
     assert(bitset<0>(0x0ULL).to_string() == "");
     assert(bitset<0>(0xFEDCBA9876543210ULL).to_string() == "");
@@ -515,30 +607,7 @@ void test_bitset(mt19937_64& gen) {
     assert(bitset<75>(0xFEDCBA9876543210ULL).to_string<char32_t>()
            == U"000000000001111111011011100101110101001100001110110010101000011001000010000"); // not vectorized
 
-    {
-        constexpr size_t N = 2048;
-
-        string str;
-        wstring wstr;
-        str.reserve(N);
-        wstr.reserve(N);
-
-        while (str.size() != N) {
-            uint64_t random_value = gen();
-
-            for (int bits = 0; bits < 64; ++bits) {
-                const auto character = '0' + (random_value & 1);
-                str.push_back(static_cast<char>(character));
-                wstr.push_back(static_cast<wchar_t>(character));
-                random_value >>= 1;
-            }
-        }
-
-        const bitset<N> b(str);
-
-        assert(b.to_string() == str);
-        assert(b.to_string<wchar_t>() == wstr);
-    }
+    test_randomized_bitset_base_count<512 - 5, 32 + 10>(gen);
 }
 
 void test_various_containers() {

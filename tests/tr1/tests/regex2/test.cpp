@@ -395,12 +395,12 @@ static const regex_test tests[] = {
 
     {__LINE__, T("\\x1b"), T("\x1b"), "1 0 1", ECMA},
 
-#if WIDE
+#ifdef WIDE
     {__LINE__, T("\\u12cd"), T("\u12cd"), "1 0 1", ECMA},
     {__LINE__, T("\\u12cd"), T(""), "-1", NOT_ECMA},
-#else
+#else // defined WIDE
     {__LINE__, T("\\u12cd"), T(""), "-1", ALL},
-#endif
+#endif // defined WIDE
 
     {__LINE__, T("\\07"), T("\07"), "1 0 1", AWK},
     {__LINE__, T("\\177"), T("\177"), "1 0 1", AWK},
@@ -495,11 +495,11 @@ static const regex_test tests[] = {
     {__LINE__, T("[\\x1b]"), T("x"), "1 0 1", NOT_ECMA},
     {__LINE__, T("[\\x1b]"), T("1"), "1 0 1", NOT_ECMA},
     {__LINE__, T("[\\x1b]"), T("b"), "1 0 1", NOT_ECMA},
-#if WIDE
+#ifdef WIDE
     {__LINE__, T("[\\u12cd]"), T("\u12cd"), "1 0 1", ECMA},
-#else
+#else // defined WIDE
     {__LINE__, T("[\\u12cd]"), T(""), "-1", ECMA},
-#endif
+#endif // defined WIDE
     {__LINE__, T("[\\u12cd]"), T("\\"), "1 0 1", NOT_ECMA},
     {__LINE__, T("[\\u12cd]"), T("u"), "1 0 1", NOT_ECMA},
     {__LINE__, T("[\\u12cd]"), T("1"), "1 0 1", NOT_ECMA},

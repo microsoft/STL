@@ -9,12 +9,12 @@ project(msvc_standard_libraries LANGUAGES CXX)
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles([=[
 #include <sdkddkver.h>
-static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_CO, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
+static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_NI, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
 int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
 
 if(NOT WINDOWS_SDK_VERSION_CHECK)
-    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.22000.0) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
+    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.22621.0) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
 endif()
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
@@ -95,7 +95,7 @@ set(STL_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR
 set(STL_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR_AMD64}")
 add_compile_definitions(
     _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH WIN32_LEAN_AND_MEAN STRICT _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS
-    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_CO)
+    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_NI)
 
 if(STL_USE_ANALYZE)
     # TRANSITION OS-40109504: Windows SDK: incorrect SAL annotations on functions the STL uses
@@ -103,7 +103,7 @@ if(STL_USE_ANALYZE)
     # does not apply to a value type.
     # There's a bug in the declaration for LCMapStringEx - it applies _In_opt_ to an LPARAM.
     # LPARAM is a LONG_PTR (intptr_t), and it's invalid to apply _In_opt_ to a non-pointer.
-    # As of the Windows 11 SDK (10.0.22000.0), there are 5 total occurrences of warning C6553 affecting the STL's build.
+    # As of the Windows 11 SDK (10.0.22621.0), there are 5 total occurrences of warning C6553 affecting the STL's build.
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
 endif()
 

@@ -105,9 +105,9 @@ namespace ranges {
     concept _Valid_movable_box_object =
 #if _HAS_CXX23
         move_constructible<_Ty>
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         copy_constructible<_Ty>
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
         && _Destructible_object<_Ty>;
 
     template <class _It>
@@ -3906,8 +3906,7 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Fake_copy_init<bool>(
-                    _Left._Outer == _Right._Outer && _Left._Inner == _Right._Inner))) /* strengthened */
+                noexcept(_Left._Outer == _Right._Outer && _Left._Inner == _Right._Inner)) /* strengthened */
                 requires _Deref_is_glvalue && forward_range<_Base> && equality_comparable<_InnerIter>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -5696,14 +5695,14 @@ namespace ranges {
     concept _Has_tuple_element =
 #if _HAS_CXX23
         _Tuple_like<_Tuple> && _Index < tuple_size_v<_Tuple>;
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         requires(_Tuple __t) {
             typename tuple_size<_Tuple>::type;
             requires _Index < tuple_size_v<_Tuple>;
             typename tuple_element_t<_Index, _Tuple>;
             { _STD get<_Index>(__t) } -> convertible_to<const tuple_element_t<_Index, _Tuple>&>;
         };
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
     template <class _Tuple, size_t _Index>
     concept _Returnable_element = is_reference_v<_Tuple> || move_constructible<tuple_element_t<_Index, _Tuple>>;
@@ -8582,6 +8581,10 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Zip_fn zip{};
     } // namespace views
 
+    template <class _Func, class... _ViewTypes>
+    concept _Can_const_iterate_zip_transform_view =
+        range<const zip_view<_ViewTypes...>> && regular_invocable<const _Func&, range_reference_t<const _ViewTypes>...>;
+
     _EXPORT_STD template <class _Func, class... _ViewTypes>
         requires _Zip_transform_constraints<_Func, _ViewTypes...>
     class zip_transform_view : public view_interface<zip_transform_view<_Func, _ViewTypes...>> {
@@ -8833,9 +8836,6 @@ namespace ranges {
             }
         }
 
-        static constexpr bool _Enable_const_begin_end =
-            (range<const _Inner_view> && regular_invocable<const _Func&, range_reference_t<const _ViewTypes>...>);
-
     public:
         zip_transform_view() = default;
 
@@ -8849,7 +8849,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto begin() const noexcept(noexcept(_Iterator<true>{*this, _Zip.begin()})) // strengthened
-            requires _Enable_const_begin_end
+            requires _Can_const_iterate_zip_transform_view<_Func, _ViewTypes...>
         {
             return _Iterator<true>{*this, _Zip.begin()};
         }
@@ -8863,7 +8863,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto end() const noexcept(_Is_end_noexcept<true>()) // strengthened
-            requires _Enable_const_begin_end
+            requires _Can_const_iterate_zip_transform_view<_Func, _ViewTypes...>
         {
             if constexpr (common_range<const _Inner_view>) {
                 return _Iterator<true>{*this, _Zip.end()};
@@ -8971,6 +8971,7 @@ namespace ranges {
     concept _Regular_invocable_with_repeated_type =
         _Regular_invocable_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>;
 
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1975579
     template <class _Fn, class _Ty, class _Indices>
     struct _Invoke_result_with_repeated_type_impl;
 
@@ -8982,6 +8983,19 @@ namespace ranges {
     template <class _Fn, class _Ty, size_t _Nx>
     using _Invoke_result_with_repeated_type =
         _Invoke_result_with_repeated_type_impl<_Fn, _Ty, make_index_sequence<_Nx>>::type;
+#else // ^^^ no workaround / workaround vvv
+    template <class _Fn, class _Ty, size_t _Nx, class... _Types>
+    struct _Invoke_result_with_repeated_type_impl
+        : _Invoke_result_with_repeated_type_impl<_Fn, _Ty, _Nx - 1, _Ty, _Types...> {};
+
+    template <class _Fn, class _Ty, class... _Types>
+    struct _Invoke_result_with_repeated_type_impl<_Fn, _Ty, 0, _Types...> {
+        using type = invoke_result_t<_Fn, _Types...>;
+    };
+
+    template <class _Fn, class _Ty, size_t _Nx>
+    using _Invoke_result_with_repeated_type = _Invoke_result_with_repeated_type_impl<_Fn, _Ty, _Nx>::type;
+#endif // ^^^ workaround ^^^
 
     template <class _Vw, class _Fn, size_t _Nx>
     concept _Adjacent_transform_constraints =
