@@ -658,6 +658,14 @@ concept _Formattable_with = semiregular<_Formatter>
                                 { __cf.format(__t, __fc) } -> same_as<typename _Context::iterator>;
                             };
 
+template <class _Ty, class _Context, class _Formatter = _Context::template formatter_type<remove_const_t<_Ty>>>
+concept _Formattable_with_non_const = semiregular<_Formatter>
+                                   && requires(_Formatter& __f, _Ty&& __t, _Context __fc,
+                                       basic_format_parse_context<typename _Context::char_type> __pc) {
+                                          { __f.parse(__pc) } -> same_as<typename decltype(__pc)::iterator>;
+                                          { __f.format(__t, __fc) } -> same_as<typename _Context::iterator>;
+                                      };
+
 template <class _Ty, class _CharT>
 inline constexpr bool _Is_basic_string_like_for = false;
 
@@ -711,15 +719,23 @@ public:
                   using _Td = remove_const_t<_Ty>;
                   // doesn't drop const-qualifier per an unnumbered LWG issue
                   using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
+                  if constexpr (_Formattable_with_non_const<_Tq, _Context>) {
+                      static_assert(_Formattable_with<_Tq, _Context>,
+                          "The format() member function can't be called on const formatter<T>. "
+                          "To make the formatter usable, add const to format(). "
+                          "See N4971 [format.arg]/12, [format.formattable], and [formatter.requirements].");
+                  } else {
+                      static_assert(_Formattable_with<_Tq, _Context>,
+                          "Cannot format an argument. "
+                          "To make this type formattable, provide a formatter<T> specialization. "
+                          "See N4971 [format.arg]/12, [format.formattable], and [formatter.requirements].");
+                  }
+
                   typename _Context::template formatter_type<_Td> _Formatter;
                   _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
                   _Format_ctx.advance_to(
                       _Formatter.format(*const_cast<_Tq*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
-              }) {
-            // ditto doesn't drop const-qualifier
-            using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
-            static_assert(_Formattable_with<_Tq, _Context>);
-        }
+              }) {}
 
         void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) const {
             _Format(_Parse_ctx, _Format_ctx, _Ptr);
@@ -3715,20 +3731,22 @@ _EXPORT_STD using wformat_args = basic_format_args<wformat_context>;
 
 _EXPORT_STD template <class _Context = format_context, class... _Args>
 _NODISCARD auto make_format_args(_Args&... _Vals) {
-    // TRANSITION, should cite the new working draft
-    static_assert((_Formattable_with<remove_const_t<_Args>, _Context> && ...),
-        "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4964 [format.arg.store]/2 (along with modification in P2905R2) and [formatter.requirements].");
+    if constexpr ((_Formattable_with_non_const<remove_const_t<_Args>, _Context> && ...)) {
+        static_assert((_Formattable_with<remove_const_t<_Args>, _Context> && ...),
+            "The format() member function can't be called on const formatter<T>. "
+            "To make the formatter usable, add const to format(). "
+            "See N4971 [format.arg.store]/2 and [formatter.requirements].");
+    } else {
+        static_assert((_Formattable_with<remove_const_t<_Args>, _Context> && ...),
+            "Cannot format an argument. To make T formattable, provide a formatter<T> specialization. "
+            "See N4971 [format.arg.store]/2 and [formatter.requirements].");
+    }
     return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
 _EXPORT_STD template <class... _Args>
 _NODISCARD auto make_wformat_args(_Args&... _Vals) {
-    // TRANSITION, should cite the new working draft
-    static_assert((_Formattable_with<remove_const_t<_Args>, wformat_context> && ...),
-        "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4964 [format.arg.store]/2 (along with modification in P2905R2) and [formatter.requirements].");
-    return _Format_arg_store<wformat_context, _Args...>{_Vals...};
+    return _STD make_format_args<wformat_context>(_Vals...);
 }
 
 _FMT_P2286_BEGIN
