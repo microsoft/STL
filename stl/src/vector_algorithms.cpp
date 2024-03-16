@@ -1837,79 +1837,9 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
-    // The below functions have exactly the same signature as the extern "C" functions, up to calling convention.
-    // This makes sure the template specialization is fused with the extern "C" function.
-    // In optimized builds it avoids an extra call, as this function is too large to inline.
-
-    template <class _Traits, class _Ty>
-    const void* __stdcall __std_find_trivial_unsized_impl(const void* _First, const _Ty _Val) noexcept {
-#ifndef _M_ARM64EC
-        if ((reinterpret_cast<uintptr_t>(_First) & (sizeof(_Ty) - 1)) != 0) {
-            // _First isn't aligned to sizeof(_Ty), so we need to use the scalar fallback below.
-            // This can happen with 8-byte elements on x86's 4-aligned stack. It can also happen with packed structs.
-        } else if (_Use_avx2()) {
-            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
-
-            // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
-            // From start partial piece we mask out matches that don't belong to the range.
-            // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
-            constexpr size_t _Vector_pad_mask = 0x1F;
-            constexpr unsigned int _Full_mask = 0xFFFF'FFFF;
-
-            const __m256i _Comparand  = _Traits::_Set_avx(_Val);
-            const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
-            const unsigned int _Mask  = _Full_mask << _Pad_start;
-            _Advance_bytes(_First, -_Pad_start);
-
-            __m256i _Data       = _mm256_load_si256(static_cast<const __m256i*>(_First));
-            unsigned int _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
-
-            _Bingo &= _Mask;
-
-            for (;;) {
-                if (_Bingo != 0) {
-                    unsigned long _Offset = _tzcnt_u32(_Bingo);
-                    _Advance_bytes(_First, _Offset);
-                    return _First;
-                }
-
-                _Advance_bytes(_First, 32);
-
-                _Data  = _mm256_load_si256(static_cast<const __m256i*>(_First));
-                _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
-            }
-        } else if (_Traits::_Sse_available()) {
-            // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
-            // From start partial piece we mask out matches that don't belong to the range.
-            // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
-            constexpr size_t _Vector_pad_mask = 0xF;
-            constexpr unsigned int _Full_mask = 0xFFFF;
-
-            const __m128i _Comparand  = _Traits::_Set_sse(_Val);
-            const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
-            const unsigned int _Mask  = _Full_mask << _Pad_start;
-            _Advance_bytes(_First, -_Pad_start);
-
-            __m128i _Data       = _mm_load_si128(static_cast<const __m128i*>(_First));
-            unsigned int _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
-
-            _Bingo &= _Mask;
-
-            for (;;) {
-                if (_Bingo != 0) {
-                    unsigned long _Offset;
-                    _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
-                    _Advance_bytes(_First, _Offset);
-                    return _First;
-                }
-
-                _Advance_bytes(_First, 16);
-
-                _Data  = _mm_load_si128(static_cast<const __m128i*>(_First));
-                _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
-            }
-        }
-#endif // !_M_ARM64EC
+    // TRANSITION, ABI: used only in functions preserved for binary compatibility
+    template <class _Ty>
+    const void* __std_find_trivial_unsized_impl(const void* _First, const _Ty _Val) noexcept {
         auto _Ptr = static_cast<const _Ty*>(_First);
         while (*_Ptr != _Val) {
             ++_Ptr;
@@ -2079,20 +2009,25 @@ namespace {
 
 extern "C" {
 
+// TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_1(const void* const _First, const uint8_t _Val) noexcept {
-    return __std_find_trivial_unsized_impl<_Find_traits_1>(_First, _Val);
+    return memchr(_First, _Val, SIZE_MAX);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_2(const void* const _First, const uint16_t _Val) noexcept {
-    return __std_find_trivial_unsized_impl<_Find_traits_2>(_First, _Val);
+    // TRANSITION, DevCom-1614562: not trying wmemchr
+    return __std_find_trivial_unsized_impl(_First, _Val);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_4(const void* const _First, const uint32_t _Val) noexcept {
-    return __std_find_trivial_unsized_impl<_Find_traits_4>(_First, _Val);
+    return __std_find_trivial_unsized_impl(_First, _Val);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_8(const void* const _First, const uint64_t _Val) noexcept {
-    return __std_find_trivial_unsized_impl<_Find_traits_8>(_First, _Val);
+    return __std_find_trivial_unsized_impl(_First, _Val);
 }
 
 const void* __stdcall __std_find_trivial_1(
