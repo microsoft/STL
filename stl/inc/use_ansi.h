@@ -35,7 +35,7 @@
 #define _LIB_STEM "libcpmt"
 
 #if _ITERATOR_DEBUG_LEVEL != _IDL_DEFAULT
-#define _IDL_AFFIX _STRINGIZE(_ITERATOR_DEBUG_LEVEL)
+#define _IDL_AFFIX _STL_STRINGIZE(_ITERATOR_DEBUG_LEVEL)
 #endif // _ITERATOR_DEBUG_LEVEL != _IDL_DEFAULT
 #endif // ^^^ !defined(_DLL) || defined(_STATIC_CPPLIB) ^^^
 

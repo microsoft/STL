@@ -1197,7 +1197,37 @@ namespace {
                 // Increment vertical indices. Will stop at exactly wrap around, if not reach the end before
                 _Cur_idx = _Traits::_Inc(_Cur_idx);
 
-                if (_First == _Stop_at) {
+                if (_First != _Stop_at) {
+                    // This is the main part, finding vertical minimum/maximum
+
+                    // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
+                    _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
+
+                    if constexpr ((_Mode & _Mode_min) != 0) {
+                        // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
+                        const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
+                        _Cur_idx_min        = _mm_blendv_epi8(
+                            _Cur_idx_min, _Cur_idx, _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
+                        _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
+                    }
+
+                    if constexpr (_Mode == _Mode_max) {
+                        // Looking for the first occurrence of maximum, don't overwrite with newly found occurrences
+                        const auto _Is_greater =
+                            _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
+                        _Cur_idx_max = _mm_blendv_epi8(_Cur_idx_max, _Cur_idx,
+                            _Traits::_Mask_cast(_Is_greater)); // Remember their vertical indices
+                        _Cur_vals_max =
+                            _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
+                    } else if constexpr (_Mode == _Mode_both) {
+                        // Looking for the last occurrence of maximum, do overwrite with newly found occurrences
+                        const auto _Is_less =
+                            _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
+                        _Cur_idx_max  = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max,
+                             _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
+                        _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
+                    }
+                } else {
                     // Reached end or indices wrap around point.
                     // Compute horizontal min and/or max. Determine horizontal and vertical position of it.
 
@@ -1303,37 +1333,9 @@ namespace {
                             _Cur_vals_max = _Cur_vals;
                             _Cur_idx_max  = _mm_setzero_si128();
                         }
-
-                        continue;
                     } else {
                         break; // No wrapping, so it was the only portion
                     }
-                }
-                // This is the main part, finding vertical minimum/maximum
-
-                // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
-                _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
-
-                if constexpr ((_Mode & _Mode_min) != 0) {
-                    // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
-                    const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
-                    _Cur_idx_min        = _mm_blendv_epi8(
-                        _Cur_idx_min, _Cur_idx, _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
-                    _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
-                }
-
-                if constexpr (_Mode == _Mode_max) {
-                    // Looking for the first occurrence of maximum, don't overwrite with newly found occurrences
-                    const auto _Is_greater = _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
-                    _Cur_idx_max           = _mm_blendv_epi8(
-                        _Cur_idx_max, _Cur_idx, _Traits::_Mask_cast(_Is_greater)); // Remember their vertical indices
-                    _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
-                } else if constexpr (_Mode == _Mode_both) {
-                    // Looking for the last occurrence of maximum, do overwrite with newly found occurrences
-                    const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
-                    _Cur_idx_max        = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max,
-                               _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
-                    _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
                 }
             }
         }
@@ -1410,7 +1412,31 @@ namespace {
             for (;;) {
                 _Advance_bytes(_First, 16);
 
-                if (_First == _Stop_at) {
+                if (_First != _Stop_at) {
+                    // This is the main part, finding vertical minimum/maximum
+
+                    _Cur_vals = _Traits::_Load(_First);
+
+                    if constexpr (_Sign_correction) {
+                        _Cur_vals = _Traits::_Sign_correction(_Cur_vals, false);
+                    }
+
+                    if constexpr ((_Mode & _Mode_min) != 0) {
+                        if constexpr (_Sign || _Sign_correction) {
+                            _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals); // Update the current minimum
+                        } else {
+                            _Cur_vals_min = _Traits::_Min_u(_Cur_vals_min, _Cur_vals); // Update the current minimum
+                        }
+                    }
+
+                    if constexpr ((_Mode & _Mode_max) != 0) {
+                        if constexpr (_Sign || _Sign_correction) {
+                            _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals); // Update the current maximum
+                        } else {
+                            _Cur_vals_max = _Traits::_Max_u(_Cur_vals_max, _Cur_vals); // Update the current maximum
+                        }
+                    }
+                } else {
                     // Reached end. Compute horizontal min and/or max.
 
                     if constexpr ((_Mode & _Mode_min) != 0) {
@@ -1450,29 +1476,6 @@ namespace {
                     }
 
                     break;
-                }
-                // This is the main part, finding vertical minimum/maximum
-
-                _Cur_vals = _Traits::_Load(_First);
-
-                if constexpr (_Sign_correction) {
-                    _Cur_vals = _Traits::_Sign_correction(_Cur_vals, false);
-                }
-
-                if constexpr ((_Mode & _Mode_min) != 0) {
-                    if constexpr (_Sign || _Sign_correction) {
-                        _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals); // Update the current minimum
-                    } else {
-                        _Cur_vals_min = _Traits::_Min_u(_Cur_vals_min, _Cur_vals); // Update the current minimum
-                    }
-                }
-
-                if constexpr ((_Mode & _Mode_max) != 0) {
-                    if constexpr (_Sign || _Sign_correction) {
-                        _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals); // Update the current maximum
-                    } else {
-                        _Cur_vals_max = _Traits::_Max_u(_Cur_vals_max, _Cur_vals); // Update the current maximum
-                    }
                 }
             }
         } else
@@ -1841,7 +1844,10 @@ namespace {
     template <class _Traits, class _Ty>
     const void* __stdcall __std_find_trivial_unsized_impl(const void* _First, const _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
-        if (_Use_avx2()) {
+        if ((reinterpret_cast<uintptr_t>(_First) & (sizeof(_Ty) - 1)) != 0) {
+            // _First isn't aligned to sizeof(_Ty), so we need to use the scalar fallback below.
+            // This can happen with 8-byte elements on x86's 4-aligned stack. It can also happen with packed structs.
+        } else if (_Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
             // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
@@ -1859,16 +1865,8 @@ namespace {
             unsigned int _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
 
             _Bingo &= _Mask;
-            if (_Bingo != 0) {
-                unsigned long _Offset = _tzcnt_u32(_Bingo);
-                _Advance_bytes(_First, _Offset);
-                return _First;
-            }
 
             for (;;) {
-                _Data  = _mm256_load_si256(static_cast<const __m256i*>(_First));
-                _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
-
                 if (_Bingo != 0) {
                     unsigned long _Offset = _tzcnt_u32(_Bingo);
                     _Advance_bytes(_First, _Offset);
@@ -1876,10 +1874,11 @@ namespace {
                 }
 
                 _Advance_bytes(_First, 32);
-            }
-        }
 
-        if (_Traits::_Sse_available()) {
+                _Data  = _mm256_load_si256(static_cast<const __m256i*>(_First));
+                _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
+            }
+        } else if (_Traits::_Sse_available()) {
             // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
             // From start partial piece we mask out matches that don't belong to the range.
             // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
@@ -1895,17 +1894,8 @@ namespace {
             unsigned int _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
 
             _Bingo &= _Mask;
-            if (_Bingo != 0) {
-                unsigned long _Offset;
-                _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
-                _Advance_bytes(_First, _Offset);
-                return _First;
-            }
 
             for (;;) {
-                _Data  = _mm_load_si128(static_cast<const __m128i*>(_First));
-                _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
-
                 if (_Bingo != 0) {
                     unsigned long _Offset;
                     _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
@@ -1914,6 +1904,9 @@ namespace {
                 }
 
                 _Advance_bytes(_First, 16);
+
+                _Data  = _mm_load_si128(static_cast<const __m128i*>(_First));
+                _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
             }
         }
 #endif // !_M_ARM64EC
@@ -2166,6 +2159,17 @@ __declspec(noalias) size_t
 
 #ifndef _M_ARM64EC
 namespace {
+    __m256i __forceinline _Bitset_to_string_1_step_avx(const uint32_t _Val, const __m256i _Px0, const __m256i _Px1) {
+        const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
+        const __m128i _Vx1 = _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x01010101, 0x02020202, 0x03030303));
+        const __m256i _Vx2 = _mm256_castsi128_si256(_Vx1);
+        const __m256i _Vx3 = _mm256_permutevar8x32_epi32(_Vx2, _mm256_set_epi32(3, 3, 2, 2, 1, 1, 0, 0));
+        const __m256i _Msk = _mm256_and_si256(_Vx3, _mm256_set1_epi64x(0x0102040810204080));
+        const __m256i _Ex0 = _mm256_cmpeq_epi8(_Msk, _mm256_setzero_si256());
+        const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
+        return _Ex1;
+    }
+
     __m128i __forceinline _Bitset_to_string_1_step(const uint16_t _Val, const __m128i _Px0, const __m128i _Px1) {
         const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
         const __m128i _Vx1 = _mm_unpacklo_epi8(_Vx0, _Vx0);
@@ -2174,6 +2178,18 @@ namespace {
         const __m128i _Msk = _mm_and_si128(_Vx3, _mm_set1_epi64x(0x0102040810204080));
         const __m128i _Ex0 = _mm_cmpeq_epi8(_Msk, _mm_setzero_si128());
         const __m128i _Ex1 = _mm_xor_si128(_mm_and_si128(_Ex0, _Px0), _Px1);
+        return _Ex1;
+    }
+
+    __m256i __forceinline _Bitset_to_string_2_step_avx(const uint16_t _Val, const __m256i _Px0, const __m256i _Px1) {
+        const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
+        const __m128i _Vx1 = _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x00000000, 0x01010101, 0x01010101));
+        const __m256i _Vx2 = _mm256_castsi128_si256(_Vx1);
+        const __m256i _Vx3 = _mm256_permute4x64_epi64(_Vx2, _MM_SHUFFLE(1, 1, 0, 0));
+        const __m256i _Msk = _mm256_and_si256(
+            _Vx3, _mm256_set_epi64x(0x0001000200040008, 0x0010002000400080, 0x0001000200040008, 0x0010002000400080));
+        const __m256i _Ex0 = _mm256_cmpeq_epi16(_Msk, _mm256_setzero_si256());
+        const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
         return _Ex1;
     }
 
@@ -2192,6 +2208,38 @@ extern "C" {
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* const _Dest, const void* _Src, size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
 #ifndef _M_ARM64EC
+    if (_Use_avx2() && _Size_bits >= 256) {
+        const __m256i _Px0 = _mm256_broadcastb_epi8(_mm_cvtsi32_si128(_Elem0));
+        const __m256i _Px1 = _mm256_broadcastb_epi8(_mm_cvtsi32_si128(_Elem1));
+        if (_Size_bits >= 32) {
+            char* _Pos = _Dest + _Size_bits;
+            _Size_bits &= 0x1F;
+            char* const _Stop_at = _Dest + _Size_bits;
+            do {
+                uint32_t _Val;
+                memcpy(&_Val, _Src, 4);
+                const __m256i _Elems = _Bitset_to_string_1_step_avx(_Val, _Px0, _Px1);
+                _Pos -= 32;
+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Pos), _Elems);
+                _Advance_bytes(_Src, 4);
+            } while (_Pos != _Stop_at);
+        }
+
+        if (_Size_bits > 0) {
+            __assume(_Size_bits < 32);
+            uint32_t _Val = 0;
+            memcpy(&_Val, _Src, (_Size_bits + 7) / 8);
+            const __m256i _Elems = _Bitset_to_string_1_step_avx(_Val, _Px0, _Px1);
+            char _Tmp[32];
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Elems);
+            const char* const _Tmpd = _Tmp + (32 - _Size_bits);
+            memcpy(_Dest, _Tmpd, _Size_bits);
+        }
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+        return;
+    }
+
     if (_Use_sse2()) {
         const __m128i _Px0 = _mm_set1_epi8(_Elem0 ^ _Elem1);
         const __m128i _Px1 = _mm_set1_epi8(_Elem1);
@@ -2238,6 +2286,43 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     wchar_t* const _Dest, const void* _Src, size_t _Size_bits, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
 #ifndef _M_ARM64EC
+    if (_Use_avx2() && _Size_bits >= 256) {
+        const __m256i _Px0 = _mm256_broadcastw_epi16(_mm_cvtsi32_si128(_Elem0));
+        const __m256i _Px1 = _mm256_broadcastw_epi16(_mm_cvtsi32_si128(_Elem1));
+
+        if (_Size_bits >= 16) {
+            wchar_t* _Pos = _Dest + _Size_bits;
+            _Size_bits &= 0xF;
+            wchar_t* const _Stop_at = _Dest + _Size_bits;
+            do {
+                uint16_t _Val;
+                memcpy(&_Val, _Src, 2);
+                const __m256i _Elems = _Bitset_to_string_2_step_avx(_Val, _Px0, _Px1);
+                _Pos -= 16;
+                _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Pos), _Elems);
+                _Advance_bytes(_Src, 2);
+            } while (_Pos != _Stop_at);
+        }
+
+        if (_Size_bits > 0) {
+            __assume(_Size_bits < 16);
+            uint16_t _Val;
+            if (_Size_bits > 8) {
+                memcpy(&_Val, _Src, 2);
+            } else {
+                _Val = *reinterpret_cast<const uint8_t*>(_Src);
+            }
+            const __m256i _Elems = _Bitset_to_string_2_step_avx(_Val, _Px0, _Px1);
+            wchar_t _Tmp[16];
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Elems);
+            const wchar_t* const _Tmpd = _Tmp + (16 - _Size_bits);
+            memcpy(_Dest, _Tmpd, _Size_bits * 2);
+        }
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+        return;
+    }
+
     if (_Use_sse2()) {
         const __m128i _Px0 = _mm_set1_epi16(_Elem0 ^ _Elem1);
         const __m128i _Px1 = _mm_set1_epi16(_Elem1);

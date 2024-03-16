@@ -133,8 +133,8 @@ __declspec(noalias) double __stdcall __std_max_d(const void* _First, const void*
 
 _STD_BEGIN
 template <class _Ty, class _TVal>
-__declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
-    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+__declspec(noalias) size_t __std_count_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
+    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
         return _STD __std_count_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
         return ::__std_count_trivial_1(_First, _Last, static_cast<uint8_t>(_Val));
@@ -145,13 +145,13 @@ __declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _T
     } else if constexpr (sizeof(_Ty) == 8) {
         return ::__std_count_trivial_8(_First, _Last, static_cast<uint64_t>(_Val));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty, class _TVal>
-_Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
-    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+_Ty* __std_find_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
+    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
         return _STD __std_find_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
@@ -166,13 +166,13 @@ _Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty, class _TVal>
-_Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
-    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+_Ty* __std_find_trivial_unsized(_Ty* const _First, const _TVal _Val) noexcept {
+    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
         return _STD __std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
@@ -187,17 +187,17 @@ _Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_unsized_8(_First, static_cast<uint64_t>(_Val))));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty>
-_Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
-    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+_Ty* __std_min_element(_Ty* const _First, _Ty* const _Last) noexcept {
+    constexpr bool _Signed = is_signed_v<_Ty>;
 
-    if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+    if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_f(_First, _Last, false)));
-    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_d(_First, _Last, false)));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_1(_First, _Last, _Signed)));
@@ -208,17 +208,17 @@ _Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty>
-_Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
-    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+_Ty* __std_max_element(_Ty* const _First, _Ty* const _Last) noexcept {
+    constexpr bool _Signed = is_signed_v<_Ty>;
 
-    if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+    if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_f(_First, _Last, false)));
-    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_d(_First, _Last, false)));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_1(_First, _Last, _Signed)));
@@ -229,23 +229,23 @@ _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty>
-auto __std_min(_Ty* _First, _Ty* _Last) noexcept {
-    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+auto __std_min(_Ty* const _First, _Ty* const _Last) noexcept {
+    constexpr bool _Signed = is_signed_v<_Ty>;
 
-    if constexpr (_STD is_pointer_v<_Ty>) {
+    if constexpr (is_pointer_v<_Ty>) {
 #ifdef _WIN64
         return reinterpret_cast<void*>(::__std_min_8u(_First, _Last));
 #else
         return reinterpret_cast<void*>(::__std_min_4u(_First, _Last));
 #endif
-    } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+    } else if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         return ::__std_min_f(_First, _Last);
-    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         return ::__std_min_d(_First, _Last);
     } else if constexpr (sizeof(_Ty) == 1) {
         if constexpr (_Signed) {
@@ -272,23 +272,23 @@ auto __std_min(_Ty* _First, _Ty* _Last) noexcept {
             return ::__std_min_8u(_First, _Last);
         }
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty>
-auto __std_max(_Ty* _First, _Ty* _Last) noexcept {
-    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+auto __std_max(_Ty* const _First, _Ty* const _Last) noexcept {
+    constexpr bool _Signed = is_signed_v<_Ty>;
 
-    if constexpr (_STD is_pointer_v<_Ty>) {
+    if constexpr (is_pointer_v<_Ty>) {
 #ifdef _WIN64
         return reinterpret_cast<void*>(::__std_max_8u(_First, _Last));
 #else
         return reinterpret_cast<void*>(::__std_max_4u(_First, _Last));
 #endif
-    } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+    } else if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         return ::__std_max_f(_First, _Last);
-    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         return ::__std_max_d(_First, _Last);
     } else if constexpr (sizeof(_Ty) == 1) {
         if constexpr (_Signed) {
@@ -315,7 +315,7 @@ auto __std_max(_Ty* _First, _Ty* _Last) noexcept {
             return ::__std_max_8u(_First, _Last);
         }
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 _STD_END
@@ -1423,27 +1423,27 @@ template <class _Iter>
 using _Guide_key_t =
 #if _HAS_CXX23
     remove_const_t<tuple_element_t<0, typename iterator_traits<_Iter>::value_type>>;
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     remove_const_t<typename iterator_traits<_Iter>::value_type::first_type>;
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 template <class _Iter>
 using _Guide_val_t =
 #if _HAS_CXX23
     tuple_element_t<1, typename iterator_traits<_Iter>::value_type>;
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     typename iterator_traits<_Iter>::value_type::second_type;
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 template <class _Iter>
 using _Guide_pair_t =
 #if _HAS_CXX23
     pair<add_const_t<tuple_element_t<0, typename iterator_traits<_Iter>::value_type>>,
         tuple_element_t<1, typename iterator_traits<_Iter>::value_type>>;
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     pair<add_const_t<typename iterator_traits<_Iter>::value_type::first_type>,
         typename iterator_traits<_Iter>::value_type::second_type>;
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 _EXPORT_STD template <class _Ty>
 struct is_execution_policy : false_type {};
@@ -1546,8 +1546,8 @@ _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by 
             _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
         }
 
-        decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
-        constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
+        decltype(auto) _UWhere      = _STD _Get_unwrapped_n(_STD move(_Where), _Off);
+        constexpr bool _Need_rewrap = !is_reference_v<decltype(_STD _Get_unwrapped_n(_STD move(_Where), _Off))>;
 
         if constexpr (is_signed_v<_Diff> && _Is_ranges_bidi_iter_v<_InIt>) {
             for (; _Off < 0; ++_Off) {
@@ -1560,7 +1560,7 @@ _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by 
         }
 
         if constexpr (_Need_rewrap) {
-            _Seek_wrapped(_Where, _STD move(_UWhere));
+            _STD _Seek_wrapped(_Where, _STD move(_UWhere));
         }
     }
 }
@@ -1570,9 +1570,9 @@ _NODISCARD _CONSTEXPR17 _Iter_diff_t<_InIt> distance(_InIt _First, _InIt _Last) 
     if constexpr (_Is_ranges_random_iter_v<_InIt>) {
         return _Last - _First; // assume the iterator will do debug checking
     } else {
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst             = _Get_unwrapped(_First);
-        const auto _ULast        = _Get_unwrapped(_Last);
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst             = _STD _Get_unwrapped(_First);
+        const auto _ULast        = _STD _Get_unwrapped(_Last);
         _Iter_diff_t<_InIt> _Off = 0;
         for (; _UFirst != _ULast; ++_UFirst) {
             ++_Off;
@@ -2840,7 +2840,7 @@ namespace ranges {
             noexcept(const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES begin(static_cast<_CTy&&>(_Val))))
@@ -2848,7 +2848,7 @@ namespace ranges {
         {
             return _RANGES begin(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -2870,7 +2870,7 @@ namespace ranges {
             noexcept(noexcept(const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES end(static_cast<_CTy&&>(_Val))))
@@ -2878,7 +2878,7 @@ namespace ranges {
         {
             return _RANGES end(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -3040,7 +3040,7 @@ namespace ranges {
             noexcept(const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rbegin(static_cast<_CTy&&>(_Val))))
@@ -3048,7 +3048,7 @@ namespace ranges {
         {
             return _RANGES rbegin(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -3070,7 +3070,7 @@ namespace ranges {
             noexcept(noexcept(const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rend(static_cast<_CTy&&>(_Val))))
@@ -3078,7 +3078,7 @@ namespace ranges {
         {
             return _RANGES rend(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -3297,7 +3297,7 @@ namespace ranges {
             noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val)))) {
             return _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
         }
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES data(static_cast<_CTy&&>(_Val))))
@@ -3305,7 +3305,7 @@ namespace ranges {
         {
             return _RANGES data(static_cast<_CTy&&>(_Val));
         }
-#endif // ^^^ C++20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
     };
 
     inline namespace _Cpos {
@@ -3363,8 +3363,8 @@ namespace ranges {
                     _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
                 }
 
-                decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
-                constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
+                decltype(auto) _UWhere      = _STD _Get_unwrapped_n(_STD move(_Where), _Off);
+                constexpr bool _Need_rewrap = !is_reference_v<decltype(_STD _Get_unwrapped_n(_STD move(_Where), _Off))>;
 
                 if constexpr (bidirectional_iterator<_It>) {
                     for (; _Off < 0; ++_Off) {
@@ -3377,7 +3377,7 @@ namespace ranges {
                 }
 
                 if constexpr (_Need_rewrap) {
-                    _Seek_wrapped(_Where, _STD move(_UWhere));
+                    _STD _Seek_wrapped(_Where, _STD move(_UWhere));
                 }
             }
         }
@@ -3389,18 +3389,19 @@ namespace ranges {
             } else if constexpr (sized_sentinel_for<_Se, _It>) {
                 operator()(_Where, _Last - _Where);
             } else {
-                _Adl_verify_range(_Where, _Last);
+                _STD _Adl_verify_range(_Where, _Last);
 
-                decltype(auto) _UWhere      = _Unwrap_iter<_Se>(static_cast<_It&&>(_Where));
-                constexpr bool _Need_rewrap = !is_reference_v<decltype(_Unwrap_iter<_Se>(static_cast<_It&&>(_Where)))>;
-                decltype(auto) _ULast       = _Unwrap_sent<_It>(static_cast<_Se&&>(_Last));
+                decltype(auto) _UWhere = _RANGES _Unwrap_iter<_Se>(static_cast<_It&&>(_Where));
+                constexpr bool _Need_rewrap =
+                    !is_reference_v<decltype(_RANGES _Unwrap_iter<_Se>(static_cast<_It&&>(_Where)))>;
+                decltype(auto) _ULast = _RANGES _Unwrap_sent<_It>(static_cast<_Se&&>(_Last));
 
                 while (_UWhere != _ULast) {
                     ++_UWhere;
                 }
 
                 if constexpr (_Need_rewrap) {
-                    _Seek_wrapped(_Where, _STD move(_UWhere));
+                    _STD _Seek_wrapped(_Where, _STD move(_UWhere));
                 }
             }
         }
@@ -3446,11 +3447,13 @@ namespace ranges {
     public:
         template <class _It, sentinel_for<_It> _Se>
             requires (!sized_sentinel_for<_Se, _It>)
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(_It _First,
-            _Se _Last) _CONST_CALL_OPERATOR noexcept(noexcept(_Distance_unchecked(_Get_unwrapped(_STD move(_First)),
-            _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
-            _Adl_verify_range(_First, _Last);
-            return _Distance_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)));
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(
+            _It _First, _Se _Last) _CONST_CALL_OPERATOR
+            noexcept(noexcept(_Distance_unchecked(
+                _STD _Get_unwrapped(_STD move(_First)), _STD _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
+            _STD _Adl_verify_range(_First, _Last);
+            return _Distance_unchecked(
+                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
         }
 
         template <class _It, sized_sentinel_for<decay_t<_It>> _Se>
@@ -3862,10 +3865,6 @@ namespace ranges {
         constexpr explicit _Subrange_base(const _Size_type& _Size_) noexcept : _Size(_Size_) {}
     };
 
-#if 1 // TRANSITION, VSO-1695918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
-#pragma warning(push)
-#pragma warning(disable : 4324) // structure was padded due to alignment specifier
-#endif // ^^^ workaround ^^^
     _EXPORT_STD template <input_or_output_iterator _It, sentinel_for<_It> _Se, subrange_kind _Ki>
         requires (_Ki == subrange_kind::sized || !sized_sentinel_for<_Se, _It>)
     class subrange : public _Subrange_base<_It, _Se, _Ki> {
@@ -4029,9 +4028,6 @@ namespace ranges {
             return *this;
         }
     };
-#if 1 // TRANSITION, VSO-1695918 - Warning C4324 incorrectly firing in the presence of `pragma pack`
-#pragma warning(pop)
-#endif // ^^^ workaround ^^^
 
     template <input_or_output_iterator _It, sentinel_for<_It> _Se>
     subrange(_It, _Se) -> subrange<_It, _Se>;

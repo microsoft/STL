@@ -91,7 +91,7 @@ def line_to_cpp_data_line_utf8(line: BreakTestItem) -> str:
 
 
 """
-Generate test data from "GraphemeBreakText.txt"
+Generate test data from "GraphemeBreakTest.txt"
 This file can be downloaded from: https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakTest.txt
 This script looks for GraphemeBreakTest.txt in same directory as this script
 """

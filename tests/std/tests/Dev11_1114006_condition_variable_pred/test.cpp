@@ -97,6 +97,50 @@ void test(const int waiter, const int sleeper) {
     t1.join();
 }
 
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+// GH-140: "STL: We should _STD qualify _Ugly function calls to avoid ADL"
+template <class T>
+struct tagged_pred {
+    bool operator()() const noexcept {
+        return true;
+    }
+};
+
+template <class T>
+struct holder {
+    T t;
+};
+
+struct incomplete;
+
+template <class CV>
+void test_adl_proof_waiting() { // COMPILE-ONLY
+    using validating_pred = tagged_pred<holder<incomplete>>;
+
+    mutex mut;
+    {
+        CV cv;
+        unique_lock<mutex> guard(mut);
+        (void) cv.wait(guard, validating_pred{});
+    }
+    {
+        CV cv;
+        unique_lock<mutex> guard(mut);
+        (void) cv.wait_for(guard, 1ms, validating_pred{});
+    }
+    {
+        CV cv;
+        unique_lock<mutex> guard(mut);
+        (void) cv.wait_until(guard, steady_clock::now() + 1ms, validating_pred{});
+    }
+}
+
+void test_adl_proof_waiting_all() { // COMPILE-ONLY
+    test_adl_proof_waiting<condition_variable>();
+    test_adl_proof_waiting<condition_variable_any>();
+}
+#endif // ^^^ no workaround ^^^
+
 int main() {
     for (int waiter = 0; waiter < 3; ++waiter) {
         for (int sleeper = 0; sleeper < 3; ++sleeper) { // Intentionally test a case without sleeping.
