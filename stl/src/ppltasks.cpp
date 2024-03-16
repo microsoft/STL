@@ -17,19 +17,9 @@
 #pragma warning(pop)
 #endif
 #include <ctxtcall.h>
-#include <mutex>
+#include <functional>
+#include <stdexcept>
 #include <windows.foundation.diagnostics.h>
-#endif
-
-// This IID is exported by ole32.dll; we cannot depend on ole32.dll.
-static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
-    0x0A299774, 0x3E4E, 0xFC42, {0x1D, 0x9D, 0x72, 0xCE, 0xE1, 0x05, 0xCA, 0x57}};
-
-// Introduce stacktrace API for Debug CRT_APP
-#if defined(_CRT_APP) && defined(_DEBUG)
-extern "C" NTSYSAPI _Success_(return != 0) WORD NTAPI
-    RtlCaptureStackBackTrace(_In_ DWORD FramesToSkip, _In_ DWORD FramesToCapture,
-        _Out_writes_to_(FramesToCapture, return) PVOID* BackTrace, _Out_opt_ PDWORD BackTraceHash);
 #endif
 
 namespace Concurrency {
@@ -55,27 +45,13 @@ namespace Concurrency {
             ///     CRT CaptureStackBackTrace API wrapper
             /// </summary>
             _CRTIMP2 size_t __cdecl CaptureCallstack(void** stackData, size_t skipFrames, size_t captureFrames) {
-                size_t capturedFrames = 0;
-                // RtlCaptureStackBackTrace is not available in MSDK, so we only call it under Desktop or _DEBUG MSDK.
-                //  For MSDK unsupported version, we will return zero frame number.
-#if !defined(_CRT_APP) || defined(_DEBUG)
-                capturedFrames = RtlCaptureStackBackTrace(
+                return RtlCaptureStackBackTrace(
                     static_cast<DWORD>(skipFrames + 1), static_cast<DWORD>(captureFrames), stackData, nullptr);
-#else
-                (stackData);
-                (skipFrames);
-                (captureFrames);
-#endif
-                return capturedFrames;
             }
 
             static unsigned int s_asyncId = 0;
 
             _CRTIMP2 unsigned int __cdecl GetNextAsyncId() {
-                //
-                // ASYNC TODO: Determine the requirements on the domain uniqueness of this value.  C++ / C# / WRL are
-                // all supposed to produce "unique" IDs and there is no common broker.
-                //
                 return static_cast<unsigned int>(::_InterlockedIncrement(reinterpret_cast<volatile LONG*>(&s_asyncId)));
             }
 
@@ -98,6 +74,10 @@ namespace Concurrency {
         using namespace ABI::Windows::Foundation::Diagnostics;
         using namespace Microsoft::WRL;
         using namespace Microsoft::WRL::Wrappers;
+
+        // This IID is exported by ole32.dll; we cannot depend on ole32.dll.
+        static GUID const Local_IID_ICallbackWithNoReentrancyToApplicationSTA = {
+            0x0A299774, 0x3E4E, 0xFC42, {0x1D, 0x9D, 0x72, 0xCE, 0xE1, 0x05, 0xCA, 0x57}};
 
         static HRESULT __stdcall _PPLTaskContextCallbackBridge(ComCallData* _PParam) {
             auto pFunc = static_cast<std::function<void()>*>(_PParam->pUserDefined);

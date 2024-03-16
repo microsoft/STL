@@ -43,9 +43,11 @@ namespace {
 
 BENCHMARK(BM_bitset_to_string<15, char>);
 BENCHMARK(BM_bitset_to_string<64, char>);
+BENCHMARK(BM_bitset_to_string<512, char>);
 BENCHMARK(BM_bitset_to_string_large_single<char>);
 BENCHMARK(BM_bitset_to_string<7, wchar_t>);
 BENCHMARK(BM_bitset_to_string<64, wchar_t>);
+BENCHMARK(BM_bitset_to_string<512, wchar_t>);
 BENCHMARK(BM_bitset_to_string_large_single<wchar_t>);
 
 BENCHMARK_MAIN();

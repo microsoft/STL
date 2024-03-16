@@ -244,7 +244,11 @@ void test_algorithms(EqualFn equal_fn) {
         assert(equal_fn(begin(arr2), end(arr2), begin(arr3), end(arr3), equal_to<short>{}));
         assert(equal_fn(begin(arr2), end(arr2), begin(arr3), end(arr3), equal_to<int>{}));
 
+#if !_HAS_CXX23
+        // The return type of equal_to<void>::operator()(T, U) SFINAEs
+        // when T and U are different enumeration types.
         assert(equal_fn(begin(arr3), end(arr3), begin(arr4), end(arr4), equal_to<>{}));
+#endif // !_HAS_CXX23
         assert(equal_fn(begin(arr3), end(arr3), begin(arr4), end(arr4), equal_to<short>{}));
         assert(equal_fn(begin(arr3), end(arr3), begin(arr4), end(arr4), equal_to<int>{}));
     }

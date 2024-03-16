@@ -212,9 +212,9 @@ _EXPORT_STD template <class _Ty1, class _Ty2>
 concept equality_comparable_with = equality_comparable<_Ty1> && equality_comparable<_Ty2>
 #if _HAS_CXX23
     && _Comparison_common_type_with<_Ty1, _Ty2>
-#else // ^^^ C++23 / C++20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
     && common_reference_with<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>
-#endif // C++20
+#endif // ^^^ !_HAS_CXX23 ^^^
     && equality_comparable<common_reference_t<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>>
     && _Weakly_equality_comparable_with<_Ty1, _Ty2>;
 

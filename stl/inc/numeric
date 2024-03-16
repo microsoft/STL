@@ -281,8 +281,8 @@ _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, _OutIt
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     if (_UFirst != _ULast) {
         for (;;) {
-            _Ty _Tmp(_Reduce_op(_Val, *_UFirst)); // temp to enable _First == _Dest, also requirement missing
-            *_UDest = _Val;
+            _Ty _Tmp = _Reduce_op(_Val, *_UFirst); // temp to enable _First == _Dest, also requirement missing
+            *_UDest  = _Val;
             ++_UDest;
             ++_UFirst;
             if (_UFirst == _ULast) {
@@ -389,8 +389,8 @@ _CONSTEXPR20 _OutIt transform_exclusive_scan(
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     if (_UFirst != _ULast) {
         for (;;) {
-            _Ty _Tmp(_Reduce_op(_Val, _Transform_op(*_UFirst))); // temp to enable _First == _Dest
-            *_UDest = _Val;
+            _Ty _Tmp = _Reduce_op(_Val, _Transform_op(*_UFirst)); // temp to enable _First == _Dest
+            *_UDest  = _Val;
             ++_UDest;
             ++_UFirst;
             if (_UFirst == _ULast) {

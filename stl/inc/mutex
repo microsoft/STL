@@ -579,7 +579,7 @@ public:
     template <class _Rep, class _Period, class _Predicate>
     bool wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
-        return wait_until(_Lck, _To_absolute_time(_Rel_time), _Pass_fn(_Pred));
+        return wait_until(_Lck, _To_absolute_time(_Rel_time), _STD _Pass_fn(_Pred));
     }
 
     template <class _Clock, class _Duration>
@@ -601,11 +601,9 @@ public:
                 return cv_status::timeout;
             }
 
-            // TRANSITION, ABI: should use a steady clock
-            _timespec64 _Tgt;
-            (void) _To_timespec64_sys_10_day_clamped(_Tgt, _Abs_time - _Now);
-            // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
-            const _Thrd_result _Res = _Cnd_timedwait(_Mycnd(), _Lck.mutex()->_Mymtx(), &_Tgt);
+            const unsigned long _Rel_ms_count = _Clamped_rel_time_ms_count(_Abs_time - _Now)._Count;
+
+            const _Thrd_result _Res = _Cnd_timedwait_for(_Mycnd(), _Lck.mutex()->_Mymtx(), _Rel_ms_count);
             if (_Res == _Thrd_result::_Success) {
                 return cv_status::no_timeout;
             }
