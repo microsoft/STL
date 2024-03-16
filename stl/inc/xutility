@@ -5956,7 +5956,7 @@ namespace ranges {
         constexpr bool _Is_memchr_sized_elements = sizeof(_Iter_value_t<_It>) == 1;
 
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty>
-                      && (_Is_sized && (_USE_STD_VECTOR_ALGORITHMS || _Is_memchr_sized_elements)
+                      && ((_Is_sized && (_USE_STD_VECTOR_ALGORITHMS || _Is_memchr_sized_elements))
                           || same_as<_Se, unreachable_sentinel_t> && _Is_memchr_sized_elements)
                       && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
