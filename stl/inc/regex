@@ -4153,9 +4153,13 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expre
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_capture_group() { // add capture group
-    // if (_MAX_GRP <= ++_Grp_idx)
-    //     _Error(regex_constants::error_complexity);
-    _Node_base* _Pos1 = _Nfa._Begin_capture_group(++_Grp_idx);
+    ++_Grp_idx;
+
+    if (_Grp_idx >= 1000) { // hardcoded limit
+        _Xregex_error(regex_constants::error_stack);
+    }
+
+    _Node_base* _Pos1 = _Nfa._Begin_capture_group(_Grp_idx);
     _Disjunction();
     _Nfa._End_group(_Pos1);
     _Finished_grps.resize(_Grp_idx + 1);

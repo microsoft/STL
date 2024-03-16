@@ -132,13 +132,13 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64EC',
   'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
-  'Microsoft.VisualStudio.Component.Windows11SDK.22000'
+  'Microsoft.VisualStudio.Component.Windows11SDK.22621'
 )
 
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
 $PythonUrl = 'https://www.python.org/ftp/python/3.12.2/python-3.12.2-amd64.exe'
 
-$CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_511.23_windows.exe'
+$CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_551.61_windows.exe'
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -301,15 +301,6 @@ Write-Host 'AdminUser password not supplied; assuming already running as AdminUs
 
 # Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
 cmd /c ver
-
-Write-Host 'Configuring AntiVirus exclusions...'
-Add-MpPreference -ExclusionPath C:\agent
-Add-MpPreference -ExclusionPath D:\
-Add-MpPreference -ExclusionProcess ninja.exe
-Add-MpPreference -ExclusionProcess clang-cl.exe
-Add-MpPreference -ExclusionProcess cl.exe
-Add-MpPreference -ExclusionProcess link.exe
-Add-MpPreference -ExclusionProcess python.exe
 
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl

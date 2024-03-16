@@ -33,6 +33,11 @@ std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_mov
 # LLVM-79783: [libc++][test] array/size_and_alignment.compile.pass.cpp includes non-Standard <__type_traits/datasizeof.h>
 std/containers/sequences/array/size_and_alignment.compile.pass.cpp FAIL
 
+# LLVM-83734: [libc++][test] Don't include test_format_context.h in parse.pass.cpp
+std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
+std/thread/thread.threads/thread.thread.class/thread.thread.id/parse.pass.cpp FAIL
+std/utilities/format/format.tuple/parse.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -259,7 +264,6 @@ std/containers/container.adaptors/container.adaptors.format/types.compile.pass.c
 std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.format.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.vformat.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector.bool.fmt/format.pass.cpp FAIL
-std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
 std/input.output/iostream.format/print.fun/includes.compile.pass.cpp FAIL
 std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtdef/format.pass.cpp FAIL
@@ -285,12 +289,6 @@ std/utilities/format/format.range/format.range.formatter/parse.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/set_brackets.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/set_separator.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/underlying.pass.cpp FAIL
-std/utilities/format/format.tuple/format.functions.format.pass.cpp FAIL
-std/utilities/format/format.tuple/format.functions.vformat.pass.cpp FAIL
-std/utilities/format/format.tuple/format.pass.cpp FAIL
-std/utilities/format/format.tuple/parse.pass.cpp FAIL
-std/utilities/format/format.tuple/set_brackets.pass.cpp FAIL
-std/utilities/format/format.tuple/set_separator.pass.cpp FAIL
 std/utilities/format/types.compile.pass.cpp FAIL
 
 # P2363R5 Extending Associative Containers With The Remaining Heterogeneous Overloads
@@ -551,9 +549,6 @@ std/language.support/cmp/cmp.alg/partial_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/strong_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
 
-# GH-3100: <memory> etc.: ADL should be avoided when calling _Construct_in_place and its friends
-std/utilities/function.objects/func.wrap/func.wrap.func/robust_against_adl.pass.cpp FAIL
-
 # GH-4238: <chrono>: file_clock::to_utc() overflows for file_time<nanoseconds>
 # This test also has a bogus assumption about the file_time epoch, and file_time<nanoseconds> is doomed on Windows.
 std/time/time.clock/time.clock.file/ostream.pass.cpp FAIL
@@ -567,10 +562,6 @@ std/input.output/string.streams/stringbuf/stringbuf.members/str.pass.cpp FAIL
 std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
-
-# GH-4316: <format>: The width of output is miscalculated when formatting a floating-point number in the locale-specific form
-std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/locale-specific_form.pass.cpp FAIL
-std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
 
 
 # *** VCRUNTIME BUGS ***
@@ -1119,7 +1110,6 @@ std/input.output/string.streams/stringstream/stringstream.members/str.allocator_
 # says "Please create a vendor specific version of the test functions".
 # If we do, some of these tests should be able to work.
 std/thread/thread.threads/thread.thread.class/thread.thread.id/format.pass.cpp FAIL
-std/thread/thread.threads/thread.thread.class/thread.thread.id/parse.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.context/advance_to.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.context/arg.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.context/ctor.pass.cpp FAIL
@@ -1137,6 +1127,7 @@ std/utilities/format/format.formatter/format.formatter.spec/formatter.pointer.pa
 std/utilities/format/format.formatter/format.formatter.spec/formatter.signed_integral.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.string.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.unsigned_integral.pass.cpp FAIL
+std/utilities/format/format.tuple/format.pass.cpp FAIL
 
 # Not analyzed. Apparent false positives from static analysis where it thinks that array indexing is out of bounds.
 # warning C28020: The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call.
