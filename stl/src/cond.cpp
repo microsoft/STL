@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <internal_shared.h>
+#include <new>
 #include <type_traits>
 #include <xthreads.h>
 #include <xtimec.h>
@@ -11,17 +12,9 @@
 
 extern "C" {
 
-struct _Cnd_internal_imp_t {
-    typename std::_Aligned_storage<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment>::type cv;
-
-    [[nodiscard]] Concurrency::details::stl_condition_variable_win7* _get_cv() noexcept {
-        // get pointer to implementation
-        return reinterpret_cast<Concurrency::details::stl_condition_variable_win7*>(&cv);
-    }
-};
 
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(const _Cnd_t cond) noexcept { // initialize condition variable in situ
-    Concurrency::details::create_stl_condition_variable(cond->_get_cv());
+    new (cond->_get_cv()) Concurrency::details::stl_condition_variable_win7;
 }
 
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) noexcept {} // destroy condition variable in situ
@@ -66,7 +59,7 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
-// wait until signaled or timeout
+// TRANSITION, ABI: preserved for compatibility; wait until signaled or timeout
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(
     const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const target) noexcept {
     _Thrd_result res = _Thrd_result::_Success;
