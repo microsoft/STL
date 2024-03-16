@@ -2615,7 +2615,7 @@ private:
         _STL_INTERNAL_CHECK(_Capacity > _Small_string_capacity);
         ++_Capacity; // Take null terminator into consideration
 
-        pointer _Fancy_ptr;
+        pointer _Fancy_ptr = nullptr;
         if constexpr (_Policy == _Allocation_policy::_At_least) {
             _Fancy_ptr = _Allocate_at_least_helper(_Al, _Capacity);
         } else {
