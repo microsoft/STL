@@ -1,9 +1,6 @@
 {
     "extends": "../tsconfig.universal.json",
-    "compilerOptions": {
-        "module": "CommonJS",
-    },
     "files": [
-        "gather_stats.ts",
+        "gather_stats.mts",
     ],
 }

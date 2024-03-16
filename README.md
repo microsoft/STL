@@ -77,7 +77,7 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
     as `dependencies` in `package.json` (e.g. `@octokit/graphql@latest dotenv@latest`).
     + Ensure that the `importmap` in `index.html` remains synchronized to the same versions.
 * Update other dependencies in `index.html` (e.g. Primer CSS).
-* Update `weekly_table.ts` by adding a new row.
+* Update `weekly_table.mts` by adding a new row.
     + We update it every Friday, although nothing bad will happen if we skip a week or update it on a different day.
     + `vso` is the number of Active work items under the STL's Area Path.
     + `libcxx` is the number of skipped/failing tests in `tests/libcxx/expected_results.txt`, excluding
@@ -85,14 +85,14 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
       ```
       python tools/count_libcxx.py STL_REPO/tests/libcxx/expected_results.txt
       ```
-* Run `npm run gather` to compile `gather_stats.ts` and then regenerate `daily_table.ts` and `monthly_table.ts`.
+* Run `npm run gather` to compile `gather_stats.mts` and then regenerate `daily_table.mts` and `monthly_table.mts`.
     + This regenerates the files from scratch, but the diff should be small because the data is stable and the process
     is deterministic.
     + It's possible for previous values to change, e.g. if an issue is relabeled, but dramatic changes without
     corresponding generator changes should be investigated.
     + Automated updates (controlled by `.github/workflows/update-status-chart.yml` in the main repo)
     will regenerate these files, so you generally don't need to manually update them in PRs.
-* Run `npm run make` to compile `status_chart.ts` and then bundle it and the tables into `built/status_chart.mjs`.
+* Run `npm run make` to compile `status_chart.mts` and then bundle it and the tables into `built/status_chart.mjs`.
     + Automated updates will also regenerate this file. However, you'll need to manually update
     `built/status_chart.mjs` if you're making synchronized changes to `index.html`.
 * Run `npm run view` to preview your changes locally.

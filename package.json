@@ -2,12 +2,12 @@
   "name": "stl-status-chart",
   "version": "1.0.0",
   "description": "STL Status Chart",
-  "main": "gather_stats.js",
+  "main": "gather_stats.mjs",
   "scripts": {
     "pregather": "npx tsc -p src_gather/tsconfig.json",
-    "gather": "node built/gather_stats.js",
+    "gather": "node built/gather_stats.mjs",
     "premake": "npx tsc -p src/tsconfig.json",
-    "make": "npx esbuild src/status_chart.ts --bundle --format=esm --minify --target=es2020 --external:chart.js --external:chartjs-adapter-luxon --outfile=built/status_chart.mjs",
+    "make": "npx esbuild src/status_chart.mts --bundle --format=esm --minify --target=es2020 --external:chart.js --external:chartjs-adapter-luxon --outfile=built/status_chart.mjs",
     "view": "npx http-server -c-1 -o"
   },
   "repository": {
@@ -30,19 +30,19 @@
     "tabWidth": 4
   },
   "dependencies": {
-    "@octokit/graphql": "^7.0.2",
+    "@octokit/graphql": "^8.0.1",
     "@types/cli-progress": "^3.11.5",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^20.11.20",
+    "@types/node": "^20.11.28",
     "@types/yargs": "^17.0.32",
-    "chart.js": "^4.4.1",
+    "chart.js": "^4.4.2",
     "chartjs-adapter-luxon": "^1.3.1",
     "cli-progress": "^3.12.0",
     "dotenv": "^16.4.5",
-    "esbuild": "^0.20.1",
+    "esbuild": "^0.20.2",
     "http-server": "^14.1.1",
     "luxon": "^3.4.4",
-    "typescript": "^5.3.3",
+    "typescript": "^5.4.2",
     "yargs": "^17.7.2"
   }
 }
