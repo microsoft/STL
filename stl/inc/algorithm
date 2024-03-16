@@ -72,14 +72,14 @@ __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, cons
 
 _STD_BEGIN
 template <class _Ty>
-_STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
-    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+pair<_Ty*, _Ty*> __std_minmax_element(_Ty* const _First, _Ty* const _Last) noexcept {
+    constexpr bool _Signed = is_signed_v<_Ty>;
 
     _Min_max_element_t _Res;
 
-    if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+    if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         _Res = ::__std_minmax_element_f(_First, _Last, false);
-    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         _Res = ::__std_minmax_element_d(_First, _Last, false);
     } else if constexpr (sizeof(_Ty) == 1) {
         _Res = ::__std_minmax_element_1(_First, _Last, _Signed);
@@ -90,26 +90,26 @@ _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         _Res = ::__std_minmax_element_8(_First, _Last, _Signed);
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 
     return {const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
 }
 
 template <class _Ty>
-auto __std_minmax(_Ty* _First, _Ty* _Last) noexcept {
-    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+auto __std_minmax(_Ty* const _First, _Ty* const _Last) noexcept {
+    constexpr bool _Signed = is_signed_v<_Ty>;
 
-    if constexpr (_STD is_pointer_v<_Ty>) {
+    if constexpr (is_pointer_v<_Ty>) {
 #ifdef _WIN64
         const auto _Result = ::__std_minmax_8u(_First, _Last);
 #else
         const auto _Result = ::__std_minmax_4u(_First, _Last);
 #endif
         return _Min_max_p{reinterpret_cast<void*>(_Result._Min), reinterpret_cast<void*>(_Result._Max)};
-    } else if constexpr (_STD is_same_v<_STD remove_const_t<_Ty>, float>) {
+    } else if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         return ::__std_minmax_f(_First, _Last);
-    } else if constexpr (_STD _Is_any_of_v<_STD remove_const_t<_Ty>, double, long double>) {
+    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         return ::__std_minmax_d(_First, _Last);
     } else if constexpr (sizeof(_Ty) == 1) {
         if constexpr (_Signed) {
@@ -136,13 +136,13 @@ auto __std_minmax(_Ty* _First, _Ty* _Last) noexcept {
             return ::__std_minmax_8u(_First, _Last);
         }
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 
 template <class _Ty, class _TVal>
-_Ty* __std_find_last_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
-    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+_Ty* __std_find_last_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
+    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
         return _STD __std_find_last_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
@@ -157,7 +157,7 @@ _Ty* __std_find_last_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
     } else {
-        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty>, "Unexpected size");
     }
 }
 _STD_END

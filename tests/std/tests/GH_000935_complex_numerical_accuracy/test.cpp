@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wnan-infinity-disabled"
+#endif // __clang__
+
 #include <cassert>
 #include <complex>
 #include <limits>

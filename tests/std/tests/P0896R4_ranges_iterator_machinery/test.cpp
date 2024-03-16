@@ -1725,6 +1725,58 @@ namespace incomplete_test {
     using V = std::iter_value_t<E*>;
     using D = std::iter_difference_t<E*>;
     using R = std::iter_reference_t<E*>;
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    // GH-1596: "<algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation"
+
+    template <class Tag>
+    struct tagged_base {};
+
+    template <class Tag>
+    struct tagged_derived : tagged_base<Tag> {};
+
+    template <class T>
+    struct holder {
+        T t;
+    };
+
+    struct incomplete;
+
+    void test_adl_proof_ranges_advance_distance() { // COMPILE-ONLY
+        using std::ranges::advance, std::ranges::distance;
+        using validating_base    = tagged_base<holder<incomplete>>;
+        using validating_derived = tagged_derived<holder<incomplete>>;
+
+        struct validating_empty_range {
+            constexpr validating_derived* begin() const noexcept {
+                return ptr_;
+            }
+            constexpr validating_base* end() const noexcept {
+                return ptr_;
+            }
+
+            validating_derived* ptr_;
+        };
+
+        static_assert(std::sentinel_for<validating_base*, validating_derived*>);
+#ifndef __EDG__ // TRANSITION, DevCom-10581519
+        static_assert(!std::sized_sentinel_for<validating_base*, validating_derived*>);
+#endif // ^^^ no workaround ^^^
+
+        validating_derived darr[1]{};
+        validating_derived* const pd = +darr;
+        validating_base* const pb    = +darr;
+        auto pd_mut                  = pd;
+        const validating_empty_range r{+darr};
+
+        (void) advance(pd_mut, 0);
+        (void) advance(pd_mut, pb);
+        (void) advance(pd_mut, 0, pb);
+
+        (void) distance(pd, pb);
+        (void) distance(r);
+    }
+#endif // ^^^ no workaround ^^^
 } // namespace incomplete_test
 
 namespace default_sentinel_test {
@@ -1891,15 +1943,15 @@ namespace iter_ops {
         std::random_access_iterator_tag;
 
     struct trace {
-        unsigned int compares_;
-        unsigned int differences_;
-        unsigned int increments_;
-        unsigned int decrements_;
-        unsigned int assignments_;
-        unsigned int seeks_;
-        unsigned int sizes_;
-        unsigned int begins_;
-        unsigned int ends_;
+        unsigned int compares_    = 0;
+        unsigned int differences_ = 0;
+        unsigned int increments_  = 0;
+        unsigned int decrements_  = 0;
+        unsigned int assignments_ = 0;
+        unsigned int seeks_       = 0;
+        unsigned int sizes_       = 0;
+        unsigned int begins_      = 0;
+        unsigned int ends_        = 0;
 
         bool operator==(trace const&) const = default;
     };

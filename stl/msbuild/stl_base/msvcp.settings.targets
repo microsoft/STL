@@ -64,7 +64,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             <DestFolder2>$(IntermediateOutputDirectory)</DestFolder2>
             <DestFile>$(DllDefName)</DestFile>
         </DefFromI>
-        <RCResourceFile Include="$(CrtRoot)\crtw32\msvcprt.rc"/>
+        <ResourceCompile Include="$(CrtRoot)\crtw32\msvcprt.rc"/>
     </ItemGroup>
 
     <ItemGroup>

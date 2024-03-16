@@ -46,7 +46,7 @@ template <typename CharT>
 template <typename CharT>
 struct testing_callbacks {
     _Fmt_align expected_alignment = _Fmt_align::_None;
-    basic_string_view<CharT> expected_fill;
+    basic_string_view<CharT> expected_fill{};
     int expected_width                   = -1;
     size_t expected_dynamic_width        = static_cast<size_t>(-1);
     bool expected_auto_dynamic_width     = false;

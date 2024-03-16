@@ -1036,11 +1036,11 @@ int run_test() {
   static_assert(test());
   return 0;
 }
-#else
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 int run_test() {
     return 0;
 }
-#endif // _HAS_CXX23
+#endif // ^^^ !_HAS_CXX23 ^^^
 } // namespace and_then
 // -- END: test/std/utilities/optional/optional.monadic/and_then.pass.cpp
 
@@ -1119,11 +1119,11 @@ int run_test() {
   static_assert(test());
   return 0;
 }
-#else // ^^ _HAS_CXX23 / vv no _HAS_CXX23
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 int run_test() {
     return 0;
 }
-#endif // _HAS_CXX23
+#endif // ^^^ !_HAS_CXX23 ^^^
 } // namespace or_else
 // -- END: test/std/utilities/optional/optional.monadic/or_else.pass.cpp
 // -- BEGIN: test/std/utilities/optional/optional.monadic/transform.pass.cpp
@@ -1337,11 +1337,11 @@ int run_test() {
   static_assert(test());
   return 0;
 }
-#else // ^^ _HAS_CXX23 / vv no _HAS_CXX23
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 int run_test() {
     return 0;
 }
-#endif // _HAS_CXX23
+#endif // ^^^ !_HAS_CXX23 ^^^
 } // namespace transform
 // -- END: test/std/utilities/optional/optional.monadic/transform.pass.cpp
 

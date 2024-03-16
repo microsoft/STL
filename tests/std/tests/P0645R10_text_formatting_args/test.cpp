@@ -12,6 +12,8 @@
 #include <type_traits>
 #include <variant>
 
+#include <is_permissive.hpp>
+
 using namespace std;
 
 template <class CharType>
@@ -264,27 +266,6 @@ template <class Context>
 void test_lvalue_only_visitation() {
     visit_format_arg(lvalue_only_visitor{}, basic_format_arg<Context>{});
 }
-
-namespace detail {
-    constexpr bool permissive() {
-        return false;
-    }
-
-    template <class>
-    struct DependentBase {
-        static constexpr bool permissive() {
-            return true;
-        }
-    };
-
-    template <class T>
-    struct Derived : DependentBase<T> {
-        static constexpr bool test() {
-            return permissive();
-        }
-    };
-} // namespace detail
-constexpr bool is_permissive = detail::Derived<int>::test();
 
 template <class Context, class... Args>
 concept CanMakeFormatArgs = requires(Args&&... args) { make_format_args<Context>(static_cast<Args&&>(args)...); };

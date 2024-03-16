@@ -13,7 +13,7 @@
 
 _STD_BEGIN
 
-constexpr int _Max_lock = 8; // must be power of two
+constexpr int _Max_lock = 8; // must be power of two; TRANSITION, ABI: may be less now
 
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
@@ -121,14 +121,4 @@ void __cdecl _Lockit::_Lockit_dtor(int kind) noexcept { // unlock the mutex
         _Mtxunlock(&mtx[kind & (_Max_lock - 1)]);
     }
 }
-
-extern "C" {
-void _Lock_at_thread_exit_mutex() noexcept { // lock the at-thread-exit mutex
-    _Mtxlock(&mtx[_LOCK_AT_THREAD_EXIT]);
-}
-void _Unlock_at_thread_exit_mutex() noexcept { // unlock the at-thread-exit mutex
-    _Mtxunlock(&mtx[_LOCK_AT_THREAD_EXIT]);
-}
-} // extern "C"
-
 _STD_END

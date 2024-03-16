@@ -2,22 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _USE_NAMED_IDL_NAMESPACE 1
-#define _SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 #include <array>
 #include <bitset>
 #include <complex>
 #include <cstdio>
 #include <deque>
-#include <experimental/deque>
-#include <experimental/forward_list>
-#include <experimental/list>
-#include <experimental/map>
-#include <experimental/set>
-#include <experimental/string>
-#include <experimental/unordered_map>
-#include <experimental/unordered_set>
-#include <experimental/vector>
 #include <forward_list>
 #include <hash_map>
 #include <hash_set>
@@ -285,25 +275,24 @@ void insert_with_iterator_test(T value) {
 
 template <typename T>
 void erase_if_test(T value) {
-    auto pr1 = [](auto) { return false; };
-    std::experimental::fundamentals_v2::erase_if(value, pr1);
-#ifndef _M_CEE // TRANSITION, VSO-1659496
-    std::experimental::fundamentals_v2::erase_if(value, validating_falsity{});
-#endif // ^^^ no workaround ^^^
 #if _HAS_CXX20
+    auto pr1 = [](auto) { return false; };
     std::erase_if(value, pr1);
 #ifndef _M_CEE // TRANSITION, VSO-1659496
     std::erase_if(value, validating_falsity{});
 #endif // ^^^ no workaround ^^^
-#endif // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) value;
+#endif // ^^^ !_HAS_CXX20 ^^^
 }
 
 template <typename T>
 void erase_test(T value) {
-    std::experimental::fundamentals_v2::erase(value, static_cast<typename T::value_type>(1));
 #if _HAS_CXX20
     std::erase(value, static_cast<typename T::value_type>(1));
-#endif // _HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) value;
+#endif // ^^^ !_HAS_CXX20 ^^^
 }
 
 template <typename T>
@@ -640,9 +629,8 @@ void vector_test() {
     vector_test_impl<vector<bool>>();
 
     erase_test(vector<int>());
-    vector<bool> vb;
-    std::experimental::fundamentals_v2::erase(vb, true);
 #if _HAS_CXX20
+    vector<bool> vb;
     std::erase(vb, true);
 #endif // _HAS_CXX20
 

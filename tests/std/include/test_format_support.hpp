@@ -70,7 +70,7 @@ template <typename CharT>
 struct testing_callbacks {
     std::_Fmt_align expected_alignment = std::_Fmt_align::_None;
     std::_Fmt_sign expected_sign       = std::_Fmt_sign::_None;
-    std::basic_string_view<CharT> expected_fill;
+    std::basic_string_view<CharT> expected_fill{};
     int expected_width                     = -1;
     std::size_t expected_dynamic_width     = static_cast<std::size_t>(-1);
     bool expected_auto_dynamic_width       = false;

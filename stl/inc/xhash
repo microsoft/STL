@@ -2002,7 +2002,7 @@ template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17
 
-_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <class _Traits>
+template <class _Traits>
 _NODISCARD bool _Hash_equal(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right) {
     if (_Left.size() != _Right.size()) {
         return false;
@@ -2015,7 +2015,7 @@ _NODISCARD bool _Hash_equal(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _
             // look for element with equivalent key
             const auto& _Keyval = _Traits::_Kfn(_LVal);
             const auto _Next2   = _Right._Find_last(_Keyval, _Right._Traitsobj(_Keyval))._Duplicate;
-            if (!(static_cast<bool>(_Next2) && _Traits::_Nonkfn(_LVal) == _Traits::_Nonkfn(_Next2->_Myval))) {
+            if (!(static_cast<bool>(_Next2) && _LVal == _Next2->_Myval)) {
                 return false;
             }
         }

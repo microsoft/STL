@@ -19,6 +19,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_print.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_sanitizer_annotate_container.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_threads_core.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_tzdb.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_xlocinfo_types.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/algorithm
@@ -60,84 +61,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/ctgmath
     ${CMAKE_CURRENT_LIST_DIR}/inc/ctime
     ${CMAKE_CURRENT_LIST_DIR}/inc/cuchar
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_1
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_10
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_13
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_14
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_15
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_16
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_2
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_3
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_4
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_5
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_6
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_7
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_8
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/8859_9
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/baltic
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/big5
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp037
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1006
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1026
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1250
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1251
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1252
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1253
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1254
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1255
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1256
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1257
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp1258
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp424
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp437
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp500
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp737
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp775
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp850
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp852
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp855
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp856
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp857
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp860
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp861
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp862
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp863
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp864
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp865
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp866
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp869
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp874
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp875
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp932
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp936
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp949
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cp950
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/cyrillic
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/ebcdic
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/euc
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/euc_0208
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/gb12345
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/gb2312
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/greek
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/iceland
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/jis
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/jis0201
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/jis_0208
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/ksc5601
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/latin2
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/one_one
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/roman
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/sjis
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/sjis_0208
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/turkish
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/utf16
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/utf8
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/utf8_utf16
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/wbuffer
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/wstring
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/xjis
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/xone_byte
-    ${CMAKE_CURRENT_LIST_DIR}/inc/cvt/xtwo_byte
     ${CMAKE_CURRENT_LIST_DIR}/inc/cwchar
     ${CMAKE_CURRENT_LIST_DIR}/inc/cwctype
     ${CMAKE_CURRENT_LIST_DIR}/inc/deque
@@ -145,18 +68,9 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/execution
     ${CMAKE_CURRENT_LIST_DIR}/inc/expected
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/coroutine
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/deque
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/filesystem
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/forward_list
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/generator
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/list
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/map
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/resumable
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/set
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/string
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/unordered_map
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/unordered_set
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/vector
     ${CMAKE_CURRENT_LIST_DIR}/inc/filesystem
     ${CMAKE_CURRENT_LIST_DIR}/inc/flat_map
     ${CMAKE_CURRENT_LIST_DIR}/inc/format

@@ -20,20 +20,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ">=21.4.0"
+          node-version: ">=21.7.1"
       - name: Install Packages
         run: |
           npm ci
-      - name: Compile And Run gather_stats.ts
+      - name: Compile And Run gather_stats.mts
         run: |
           SECRET_GITHUB_PERSONAL_ACCESS_TOKEN="${{ github.token }}" npm run gather
-      - name: Compile And Bundle status_chart.ts
+      - name: Compile And Bundle status_chart.mts
         run: |
           npm run make
       - name: Commit Changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/daily_table.ts src/monthly_table.ts built/status_chart.mjs
+          git add src/daily_table.mts src/monthly_table.mts built/status_chart.mjs
           git diff-index --quiet HEAD || git commit -m "Automated update."
           git push origin gh-pages

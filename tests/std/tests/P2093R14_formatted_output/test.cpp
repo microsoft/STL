@@ -18,7 +18,10 @@
 #include <string_view>
 #include <vector>
 
+#pragma warning(push) // TRANSITION, OS-23694920
+#pragma warning(disable : 4668) // 'MEOW' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 #include <Windows.h>
+#pragma warning(pop)
 
 #include "temp_file_name.hpp"
 
@@ -153,10 +156,10 @@ namespace test {
     public:
         // Construct a new semaphore in the parent process.
         win_semaphore() {
-            SECURITY_ATTRIBUTES semaphore_attributes{
-                .nLength        = sizeof(SECURITY_ATTRIBUTES),
-                .bInheritHandle = TRUE, // The child process will inherit this handle.
-            };
+            SECURITY_ATTRIBUTES semaphore_attributes{};
+            semaphore_attributes.nLength        = sizeof(SECURITY_ATTRIBUTES);
+            semaphore_attributes.bInheritHandle = TRUE; // The child process will inherit this handle.
+
             m_handle = CreateSemaphoreW(&semaphore_attributes, 0, 1, nullptr);
             assert(m_handle != nullptr);
         }
@@ -648,11 +651,10 @@ int main(int argc, char* argv[]) {
 
             // The entire purpose of this code is to hide the child process's console window,
             // to avoid rapid flickering during test runs.
-            STARTUPINFOW startup_info{
-                .cb          = sizeof(STARTUPINFOW),
-                .dwFlags     = STARTF_USESHOWWINDOW,
-                .wShowWindow = SW_HIDE,
-            };
+            STARTUPINFOW startup_info{};
+            startup_info.cb          = sizeof(STARTUPINFOW);
+            startup_info.dwFlags     = STARTF_USESHOWWINDOW;
+            startup_info.wShowWindow = SW_HIDE;
 
             constexpr BOOL inherit_handles = TRUE;
 

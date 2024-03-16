@@ -934,6 +934,20 @@ constexpr void test_gh_3733() {
     assert(as_const(cart).size() == 0);
 }
 
+// GH-4425 <ranges>: views::cartesian_product and views::filter emit
+// spurious warning C4324 'structure was padded due to alignment specifier'
+constexpr void test_gh_4425() {
+    const vector<int> vec{11, 22, 33, 44};
+
+    const auto strictly_ascending = [](const auto& t) { return get<0>(t) < get<1>(t); };
+
+    const auto result = ranges::to<vector>(views::cartesian_product(vec, vec) | views::filter(strictly_ascending));
+
+    const vector<tuple<int, int>> correct{{11, 22}, {11, 33}, {11, 44}, {22, 33}, {22, 44}, {33, 44}};
+
+    assert(result == correct);
+}
+
 int main() {
     // Check views
 #ifndef __EDG__ // TRANSITION, VSO-1900293
@@ -997,4 +1011,7 @@ int main() {
 
     STATIC_ASSERT((test_gh_3733(), true));
     test_gh_3733();
+
+    STATIC_ASSERT((test_gh_4425(), true));
+    test_gh_4425();
 }

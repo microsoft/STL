@@ -126,7 +126,8 @@ struct intermediateType {
     intermediateType() = delete;
     explicit intermediateType(int) {} // so that the test can make one of these
     explicit intermediateType(inputType&) {} // Intermediate tmp(*first)
-    explicit intermediateType(bopResult&&) {} // Intermediate tmp(binary_op((one of tmp, move(tmp), *first), *first))
+    // Intermediate tmp = binary_op((one of tmp, move(tmp), *first), *first);
+    /* implicit */ intermediateType(bopResult&&) {}
     intermediateType(const intermediateType&)            = delete;
     intermediateType(intermediateType&&)                 = default; // tmp = move(tmp)
     intermediateType& operator=(const intermediateType&) = delete;

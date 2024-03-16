@@ -7,8 +7,8 @@
 #define _THR_XTHREADS_H
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_threads_core.hpp>
 #include <climits>
-#include <type_traits>
 #include <xtimec.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -19,67 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 extern "C" {
-using _Thrd_id_t = unsigned int;
-struct _Thrd_t { // thread identifier for Win32
-    void* _Hnd; // Win32 HANDLE
-    _Thrd_id_t _Id;
-};
-
-using _Smtx_t = void*;
-
-struct _Stl_critical_section {
-    void* _Unused       = nullptr; // TRANSITION, ABI: was the vptr
-    _Smtx_t _M_srw_lock = nullptr;
-};
-
-struct _Mtx_internal_imp_t {
-#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-#ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 16;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-    static constexpr size_t _Critical_section_size = 8;
-#endif // ^^^ !defined(_WIN64) ^^^
-#else // ^^^ Windows private STL / public STL vvv
-#ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 64;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-    static constexpr size_t _Critical_section_size = 36;
-#endif // ^^^ !defined(_WIN64) ^^^
-#endif // ^^^ public STL ^^^
-
-    static constexpr size_t _Critical_section_align = alignof(void*);
-
-    int _Type{};
-    union {
-        _Stl_critical_section _Critical_section{};
-        _STD _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs_storage;
-    };
-    long _Thread_id{};
-    int _Count{};
-};
-
-// Size and alignment for _Cnd_internal_imp_t
-#if defined(_CRT_WINDOWS) // for Windows-internal code
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 2 * sizeof(void*);
-#elif defined(_WIN64) // ordinary 64-bit code
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 72;
-#else // vvv ordinary 32-bit code vvv
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 40;
-#endif // ^^^ ordinary 32-bit code ^^^
-
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = alignof(void*);
-
-using _Mtx_t = _Mtx_internal_imp_t*;
-
-#ifdef _M_CEE // avoid warning LNK4248: unresolved typeref token for '_Cnd_internal_imp_t'; image may not run
-using _Cnd_t = void*;
-#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
-struct _Cnd_internal_imp_t;
-using _Cnd_t = _Cnd_internal_imp_t*;
-#endif // ^^^ !defined(_M_CEE) ^^^
-
-enum class _Thrd_result : int { _Success, _Nomem, _Timedout, _Busy, _Error };
-
 // threads
 _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_detach(_Thrd_t) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_join(_Thrd_t, int*) noexcept;
@@ -123,12 +62,12 @@ _CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t) noexcept;
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t) noexcept;
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(_Cnd_t, _Mtx_t) noexcept; // TRANSITION, ABI: Always succeeds
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(_Cnd_t, _Mtx_t, const _timespec64*) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(_Cnd_t) noexcept; // TRANSITION, ABI: Always succeeds
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(_Cnd_t) noexcept; // TRANSITION, ABI: Always succeeds
 _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t, _Mtx_t, int*) noexcept;
 _CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t) noexcept;
 _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() noexcept;
+_Thrd_result __stdcall _Cnd_timedwait_for(_Cnd_t, _Mtx_t, unsigned int) noexcept;
 } // extern "C"
 
 _STD_BEGIN

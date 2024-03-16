@@ -11,32 +11,13 @@
 #include <type_traits>
 #include <utility>
 
+#include <is_permissive.hpp>
+
 #pragma warning(disable : 4793) // function compiled as native: non-clrcall vcall thunks must be compiled as native
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace ranges = std::ranges;
-
-namespace detail {
-    constexpr bool permissive() {
-        return false;
-    }
-
-    template <class>
-    struct DependentBase {
-        static constexpr bool permissive() {
-            return true;
-        }
-    };
-
-    template <class T>
-    struct Derived : DependentBase<T> {
-        static constexpr bool test() {
-            return permissive();
-        }
-    };
-} // namespace detail
-constexpr bool is_permissive = detail::Derived<int>::test();
 
 template <bool>
 struct borrowed { // borrowed<true> is a borrowed_range; borrowed<false> is not
@@ -1108,7 +1089,7 @@ namespace special_memory_concepts {
     STATIC_ASSERT(ranges::range<range_archetype<range_status::input>>);
     STATIC_ASSERT(ranges::range<range_archetype<range_status::forward>>);
 
-    // Validate _No_throw_input_range; note that the distinction betweeen range<R> and
+    // Validate _No_throw_input_range; note that the distinction between range<R> and
     // no-throw-sentinel-for<sentinel_t<R>, iterator_t<R>> is purely semantic, so we can't test them separately.
     STATIC_ASSERT(!_No_throw_input_range<range_archetype<range_status::not_range>>);
     STATIC_ASSERT(!_No_throw_input_range<range_archetype<range_status::not_input>>);
