@@ -467,11 +467,7 @@ private:
     }              \
     }
 
-#ifdef _DEBUG
-#define _RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
-#else
 #define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
-#endif
 
 #define _RERAISE
 #define _THROW(...) (__VA_ARGS__)._Raise()
