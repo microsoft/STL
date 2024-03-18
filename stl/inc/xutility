@@ -5950,13 +5950,13 @@ namespace ranges {
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
         // TRANSITION, DevCom-1614562: not trying wmemchr
-        // Only byte sized elements are suitable for unsized optimization
-        constexpr bool _Is_memchr_sized_elements = sizeof(_Iter_value_t<_It>) == 1;
-        constexpr bool _Is_sized                 = sized_sentinel_for<_Se, _It>;
+        // Only one-byte elements are suitable for unsized optimization
+        constexpr bool _Single_byte_elements = sizeof(_Iter_value_t<_It>) == 1;
+        constexpr bool _Is_sized             = sized_sentinel_for<_Se, _It>;
 
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty>
-                      && ((_Is_sized && (_USE_STD_VECTOR_ALGORITHMS || _Is_memchr_sized_elements))
-                          || (same_as<_Se, unreachable_sentinel_t> && _Is_memchr_sized_elements))
+                      && ((_Is_sized && (_USE_STD_VECTOR_ALGORITHMS || _Single_byte_elements))
+                          || (same_as<_Se, unreachable_sentinel_t> && _Single_byte_elements))
                       && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
@@ -5977,12 +5977,12 @@ namespace ranges {
                     const auto _Last_ptr = _First_ptr + (_Last - _First);
                     _Result              = _STD __std_find_trivial(_First_ptr, _Last_ptr, _Val);
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(_Is_memchr_sized_elements);
+                    _STL_INTERNAL_STATIC_ASSERT(_Single_byte_elements);
 
                     _Result = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), SIZE_MAX));
                 }
 #else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
-                _STL_INTERNAL_STATIC_ASSERT(_Is_memchr_sized_elements);
+                _STL_INTERNAL_STATIC_ASSERT(_Single_byte_elements);
 
                 size_t _Count;
                 if constexpr (_Is_sized) {
