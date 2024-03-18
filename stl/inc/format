@@ -2209,8 +2209,6 @@ public:
     template <class _Ty>
     using formatter_type = formatter<_Ty, _CharT>;
 
-    basic_format_context() = default;
-
     _NODISCARD basic_format_arg<basic_format_context> arg(size_t _Id) const noexcept {
         return _Args.get(_Id);
     }

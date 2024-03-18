@@ -264,14 +264,14 @@ template <class OutIt, class CharT>
 void test_basic_format_context_construction() {
     using context = basic_format_context<OutIt, CharT>;
 
-    static_assert(is_default_constructible_v<context> == is_default_constructible_v<OutIt>);
+    static_assert(!is_default_constructible_v<context>);
     static_assert(is_copy_constructible_v<context> == is_copy_constructible_v<OutIt>);
     static_assert(is_move_constructible_v<context>);
 
     static_assert(!is_constructible_v<context, OutIt, basic_format_args<context>>);
     static_assert(!is_constructible_v<context, OutIt, const basic_format_args<context>&>);
 
-    static_assert(is_constructible_with_trailing_empty_brace_impl<context> == is_default_constructible_v<OutIt>);
+    static_assert(!is_constructible_with_trailing_empty_brace_impl<context>);
     static_assert(!is_constructible_with_trailing_empty_brace_impl<context, OutIt, basic_format_args<context>>);
     static_assert(!is_constructible_with_trailing_empty_brace_impl<context, OutIt, const basic_format_args<context>&>);
 }
