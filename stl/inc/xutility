@@ -5989,6 +5989,12 @@ namespace ranges {
                     }
 
                     _Result = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+
+                    if constexpr (_Is_sized) {
+                        if (_Result == nullptr) {
+                            return _RANGES next(_STD move(_First), _Last);
+                        }
+                    }
                 }
 
                 if constexpr (is_pointer_v<_It>) {
