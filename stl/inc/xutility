@@ -5949,7 +5949,7 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
-        // TRANSITION, DevCom - 1614562 : not trying wmemchr
+        // TRANSITION, DevCom-1614562: not trying wmemchr
         // Only byte sized elements are suitable for unsized optimization
         constexpr bool _Is_memchr_sized_elements = sizeof(_Iter_value_t<_It>) == 1;
         constexpr bool _Is_sized                 = sized_sentinel_for<_Se, _It>;
