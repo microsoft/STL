@@ -717,7 +717,7 @@ public:
                   using _Td = remove_const_t<_Ty>;
                   // doesn't drop const-qualifier per an unnumbered LWG issue
                   using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
-                  static_assert(_Formattable_with<_Tq, _Context>);
+                  _STL_INTERNAL_STATIC_ASSERT(_Formattable_with<_Tq, _Context>);
 
                   typename _Context::template formatter_type<_Td> _Formatter;
                   _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
