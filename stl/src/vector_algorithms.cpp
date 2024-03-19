@@ -2237,10 +2237,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-        return;
-    }
-
-    if (_Use_sse2()) {
+    } else if (_Use_sse2()) {
         const __m128i _Px0 = _mm_set1_epi8(_Elem0 ^ _Elem1);
         const __m128i _Px1 = _mm_set1_epi8(_Elem1);
         if (_Size_bits >= 16) {
@@ -2273,13 +2270,13 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-
-        return;
-    }
+    } else
 #endif // !defined(_M_ARM64EC)
-    const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
-    for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
-        _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+    {
+        const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
+        for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+            _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+        }
     }
 }
 
@@ -2320,10 +2317,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-        return;
-    }
-
-    if (_Use_sse2()) {
+    } else if (_Use_sse2()) {
         const __m128i _Px0 = _mm_set1_epi16(_Elem0 ^ _Elem1);
         const __m128i _Px1 = _mm_set1_epi16(_Elem1);
         if (_Size_bits >= 8) {
@@ -2350,13 +2344,13 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-
-        return;
-    }
+    } else
 #endif // !defined(_M_ARM64EC)
-    const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
-    for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
-        _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+    {
+        const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
+        for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+            _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+        }
     }
 }
 
