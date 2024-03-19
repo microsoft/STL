@@ -884,12 +884,12 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202402L
+#define _MSVC_STL_UPDATE  202403L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 11 || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ < 6)
-_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or newer.");
+#if __CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4)
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -1324,15 +1324,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_DEPRECATE_IS_POD
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX20 && !defined(_SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING)
-#define _DEPRECATE_EXPERIMENTAL_ERASE                                                                                 \
-    [[deprecated("warning STL4026: "                                                                                  \
-                 "std::experimental::erase() and std::experimental::erase_if() are deprecated by Microsoft and will " \
-                 "be REMOVED. They are superseded by std::erase() and std::erase_if(). "                              \
-                 "You can define _SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_EXPERIMENTAL_ERASE
-#endif // ^^^ warning disabled ^^^
+// STL4026 was
+// "std::experimental::erase() and std::experimental::erase_if() are deprecated by Microsoft and will be REMOVED."
 
 // P0768R1 [depr.relops]
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_REL_OPS_DEPRECATION_WARNING) \
@@ -1505,16 +1498,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_STDEXT_ARR_ITERS
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX17 && !defined(_SILENCE_STDEXT_CVT_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
-#define _DEPRECATE_STDEXT_CVT                                                                                          \
-    [[deprecated("warning STL4044: The contents of the stdext::cvt namespace are non-Standard extensions and will be " \
-                 "removed in the future. The MultiByteToWideChar() and WideCharToMultiByte() functions can be used "   \
-                 "instead. You can define _SILENCE_STDEXT_CVT_DEPRECATION_WARNING or "                                 \
-                 "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_STDEXT_CVT
-#endif // ^^^ warning disabled ^^^
+// STL4044 was "The contents of the stdext::cvt namespace are non-Standard extensions and will be removed"
 
 #if _HAS_CXX17 && !defined(_SILENCE_IO_PFX_SFX_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
@@ -1906,7 +1890,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_variant 202102L // P2162R2 Inheriting From variant
 #endif
 
-#define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED

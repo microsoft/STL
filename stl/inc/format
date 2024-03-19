@@ -58,6 +58,10 @@ _EMIT_STL_WARNING(STL4038, "The contents of <format> are available only with C++
 #include <xstring>
 #include <xutility>
 
+#if _HAS_CXX23
+#include <tuple>
+#endif // _HAS_CXX23
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -654,6 +658,14 @@ concept _Formattable_with = semiregular<_Formatter>
                                 { __cf.format(__t, __fc) } -> same_as<typename _Context::iterator>;
                             };
 
+template <class _Ty, class _Context, class _Formatter = _Context::template formatter_type<remove_const_t<_Ty>>>
+concept _Formattable_with_non_const = semiregular<_Formatter>
+                                   && requires(_Formatter& __f, _Ty&& __t, _Context __fc,
+                                       basic_format_parse_context<typename _Context::char_type> __pc) {
+                                          { __f.parse(__pc) } -> same_as<typename decltype(__pc)::iterator>;
+                                          { __f.format(__t, __fc) } -> same_as<typename _Context::iterator>;
+                                      };
+
 template <class _Ty, class _CharT>
 inline constexpr bool _Is_basic_string_like_for = false;
 
@@ -707,15 +719,23 @@ public:
                   using _Td = remove_const_t<_Ty>;
                   // doesn't drop const-qualifier per an unnumbered LWG issue
                   using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
+                  if constexpr (_Formattable_with_non_const<_Tq, _Context>) {
+                      static_assert(_Formattable_with<_Tq, _Context>,
+                          "The format() member function can't be called on const formatter<T>. "
+                          "To make the formatter usable, add const to format(). "
+                          "See N4971 [format.arg]/12, [format.formattable], and [formatter.requirements].");
+                  } else {
+                      static_assert(_Formattable_with<_Tq, _Context>,
+                          "Cannot format an argument. "
+                          "To make this type formattable, provide a formatter<T> specialization. "
+                          "See N4971 [format.arg]/12, [format.formattable], and [formatter.requirements].");
+                  }
+
                   typename _Context::template formatter_type<_Td> _Formatter;
                   _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
                   _Format_ctx.advance_to(
                       _Formatter.format(*const_cast<_Tq*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
-              }) {
-            // ditto doesn't drop const-qualifier
-            using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
-            static_assert(_Formattable_with<_Tq, _Context>);
-        }
+              }) {}
 
         void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) const {
             _Format(_Parse_ctx, _Format_ctx, _Ptr);
@@ -3682,7 +3702,7 @@ public:
     template <class _Ty>
         requires convertible_to<const _Ty&, basic_string_view<_CharT>>
     consteval basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
-        if (_Is_execution_charset_self_synchronizing()) {
+        if constexpr (!is_same_v<_CharT, char> || _Is_execution_charset_self_synchronizing()) {
             using _Context             = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
             constexpr size_t _Num_args = sizeof...(_Args);
             constexpr _Basic_format_arg_type _Arg_types[_Num_args > 0 ? _Num_args : 1] = {
@@ -3711,20 +3731,22 @@ _EXPORT_STD using wformat_args = basic_format_args<wformat_context>;
 
 _EXPORT_STD template <class _Context = format_context, class... _Args>
 _NODISCARD auto make_format_args(_Args&... _Vals) {
-    // TRANSITION, should cite the new working draft
-    static_assert((_Formattable_with<remove_const_t<_Args>, _Context> && ...),
-        "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4964 [format.arg.store]/2 (along with modification in P2905R2) and [formatter.requirements].");
+    if constexpr ((_Formattable_with_non_const<remove_const_t<_Args>, _Context> && ...)) {
+        static_assert((_Formattable_with<remove_const_t<_Args>, _Context> && ...),
+            "The format() member function can't be called on const formatter<T>. "
+            "To make the formatter usable, add const to format(). "
+            "See N4971 [format.arg.store]/2 and [formatter.requirements].");
+    } else {
+        static_assert((_Formattable_with<remove_const_t<_Args>, _Context> && ...),
+            "Cannot format an argument. To make T formattable, provide a formatter<T> specialization. "
+            "See N4971 [format.arg.store]/2 and [formatter.requirements].");
+    }
     return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
 _EXPORT_STD template <class... _Args>
 _NODISCARD auto make_wformat_args(_Args&... _Vals) {
-    // TRANSITION, should cite the new working draft
-    static_assert((_Formattable_with<remove_const_t<_Args>, wformat_context> && ...),
-        "Cannot format an argument. To make type T formattable, provide a formatter<T> specialization. "
-        "See N4964 [format.arg.store]/2 (along with modification in P2905R2) and [formatter.requirements].");
-    return _Format_arg_store<wformat_context, _Args...>{_Vals...};
+    return _STD make_format_args<wformat_context>(_Vals...);
 }
 
 _FMT_P2286_BEGIN
@@ -3934,6 +3956,259 @@ _NODISCARD size_t formatted_size(const locale& _Loc, const wformat_string<_Types
 _FMT_P2286_END
 
 #if _HAS_CXX23
+enum class _Fmt_tuple_type : uint8_t { _None, _Key_value, _No_brackets };
+
+template <class _CharT>
+struct _Fill_align_and_width_specs { // used by pair, tuple, thread::id, and stacktrace_entry formatters
+    int _Width               = -1;
+    int _Dynamic_width_index = -1;
+    _Fmt_align _Alignment    = _Fmt_align::_None;
+    uint8_t _Fill_length     = 1;
+    // At most one codepoint (so one char32_t or four utf-8 char8_t).
+    _CharT _Fill[4 / sizeof(_CharT)]{' '};
+};
+
+template <class _CharT, bool _IsTwoTuple>
+class _Tuple_format_specs_setter {
+public:
+    constexpr explicit _Tuple_format_specs_setter(_Fill_align_and_width_specs<_CharT>& _Specs_,
+        _Fmt_tuple_type& _Fmt_type_, basic_format_parse_context<_CharT>& _Parse_ctx_)
+        : _Specs(_Specs_), _Fmt_type(_Fmt_type_), _Parse_ctx(_Parse_ctx_) {}
+
+    constexpr void _On_align(const _Fmt_align _Aln) {
+        _Specs._Alignment = _Aln;
+    }
+
+    constexpr void _On_fill(const basic_string_view<_CharT> _Sv) {
+        if (_Sv.size() > _STD size(_Specs._Fill)) {
+            _Throw_format_error("Invalid fill (too long).");
+        }
+
+        if (_Sv == _STATICALLY_WIDEN(_CharT, ":")) {
+            _Throw_format_error(R"(Invalid fill ":" for tuples and pairs.)");
+        }
+
+        const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
+        _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
+        _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
+    }
+
+    constexpr void _On_width(const int _Width) {
+        _Specs._Width = _Width;
+    }
+
+    constexpr void _On_dynamic_width(const size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Parse_ctx._Check_dynamic_spec_integral(_Arg_id);
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
+    }
+
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
+        const size_t _Arg_id = _Parse_ctx.next_arg_id();
+        _Parse_ctx._Check_dynamic_spec_integral(_Arg_id);
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
+    }
+
+    constexpr void _On_type(const _CharT _Type) {
+        if (_Type == _CharT{}) {
+            return;
+        }
+
+        if (_Type == static_cast<_CharT>('n')) {
+            _Fmt_type = _Fmt_tuple_type::_No_brackets;
+            return;
+        }
+
+        if constexpr (_IsTwoTuple) {
+            if (_Type == static_cast<_CharT>('m')) {
+                _Fmt_type = _Fmt_tuple_type::_Key_value;
+                return;
+            }
+        }
+
+        _Throw_format_error("Invalid type specification.");
+    }
+
+private:
+    _Fill_align_and_width_specs<_CharT>& _Specs;
+    _Fmt_tuple_type& _Fmt_type;
+    basic_format_parse_context<_CharT>& _Parse_ctx;
+
+    _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
+        if (!_STD in_range<int>(_Idx)) {
+            _Throw_format_error("Dynamic width index is too large.");
+        }
+
+        return static_cast<int>(_Idx);
+    }
+};
+
+template <class _CharT, class _Callbacks_type>
+_NODISCARD constexpr const _CharT* _Parse_tuple_format_specs(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}') {
+        return _Begin;
+    }
+
+    _Begin = _STD _Parse_align(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    _Begin = _STD _Parse_width(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    // If there's anything remaining we assume it's a type.
+    if (*_Begin != '}') {
+        _Callbacks._On_type(*_Begin);
+        ++_Begin;
+    } else {
+        // call the type callback so it gets a default type, this is required
+        // since _Specs_checker needs to be able to tell that it got a default type
+        // to raise an error for default formatted bools with a sign modifier
+        _Callbacks._On_type(_CharT{});
+    }
+
+    return _Begin;
+}
+
+template <class _FormatterType, class _ParseContext>
+constexpr void _Set_tuple_debug_format(_FormatterType& _Formatter, _ParseContext& _Parse_ctx) {
+    _Formatter.parse(_Parse_ctx);
+    if constexpr (requires { _Formatter.set_debug_format(); }) {
+        _Formatter.set_debug_format();
+    }
+}
+
+template <class _CharT, formattable<_CharT>... _Types>
+class _Tuple_formatter_common_base {
+private:
+    tuple<formatter<remove_cvref_t<_Types>, _CharT>...> _Underlying;
+    basic_string_view<_CharT> _Separator       = _STATICALLY_WIDEN(_CharT, ", ");
+    basic_string_view<_CharT> _Opening_bracket = _STATICALLY_WIDEN(_CharT, "(");
+    basic_string_view<_CharT> _Closing_bracket = _STATICALLY_WIDEN(_CharT, ")");
+
+    _Fill_align_and_width_specs<_CharT> _Specs;
+
+protected:
+    static constexpr bool _Is_const_formattable = (formattable<const _Types, _CharT> && ...);
+
+    template <class _FormatContext, class... _ArgTypes>
+    _FormatContext::iterator _Format(_FormatContext& _Fmt_ctx, _ArgTypes&... _Args) const {
+        _STL_INTERNAL_STATIC_ASSERT(
+            (is_same_v<_ArgTypes, remove_reference_t<_Maybe_const<_Is_const_formattable, _Types>>> && ...));
+
+        auto _Format_specs = _Specs;
+        if (_Specs._Dynamic_width_index >= 0) {
+            _Format_specs._Width =
+                _STD _Get_dynamic_specs<_Width_checker>(_Fmt_ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
+        }
+
+        basic_string<_CharT> _Tmp_buf;
+        basic_format_context<back_insert_iterator<basic_string<_CharT>>, _CharT> _Tmp_ctx{
+            _STD back_inserter(_Tmp_buf), {}, _Fmt_ctx._Get_lazy_locale()};
+
+        _STD _Copy_unchecked(_Opening_bracket._Unchecked_begin(), _Opening_bracket._Unchecked_end(), _Tmp_ctx.out());
+        [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+            auto _Single_writer = [&]<size_t _Idx>(auto& _Arg) {
+                if constexpr (_Idx != 0) {
+                    _STD _Copy_unchecked(_Separator._Unchecked_begin(), _Separator._Unchecked_end(), _Tmp_ctx.out());
+                }
+                _STD get<_Idx>(_Underlying).format(_Arg, _Tmp_ctx);
+            };
+            (_Single_writer.template operator()<_Indices>(_Args), ...);
+        }(index_sequence_for<_ArgTypes...>{});
+        _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Tmp_ctx.out());
+
+        return _STD _Write_aligned(_Fmt_ctx.out(), static_cast<int>(_Tmp_buf.size()), _Format_specs, _Fmt_align::_Left,
+            [&](typename _FormatContext::iterator _Out) {
+                return _STD _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Tmp_buf});
+            });
+    }
+
+public:
+    constexpr void set_separator(const basic_string_view<_CharT> _Sep) noexcept {
+        _Separator = _Sep;
+    }
+
+    constexpr void set_brackets(
+        const basic_string_view<_CharT> _Opening, const basic_string_view<_CharT> _Closing) noexcept {
+        _Opening_bracket = _Opening;
+        _Closing_bracket = _Closing;
+    }
+
+    template <class _ParseContext>
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
+        _Fmt_tuple_type _Fmt_type = _Fmt_tuple_type::_None;
+        _Tuple_format_specs_setter<_CharT, sizeof...(_Types) == 2> _Callback{_Specs, _Fmt_type, _Ctx};
+        const auto _It = _STD _Parse_tuple_format_specs(_Ctx._Unchecked_begin(), _Ctx._Unchecked_end(), _Callback);
+        if (_It != _Ctx._Unchecked_end() && *_It != '}') {
+            _STD _Throw_format_error("Missing '}' in format string.");
+        }
+
+        if (_Fmt_type == _Fmt_tuple_type::_No_brackets) {
+            set_brackets({}, {});
+        } else if constexpr (sizeof...(_Types) == 2) {
+            if (_Fmt_type == _Fmt_tuple_type::_Key_value) {
+                set_separator(_STATICALLY_WIDEN(_CharT, ": "));
+                set_brackets({}, {});
+            }
+        }
+
+        _Ctx.advance_to(_Ctx.begin() + (_It - _Ctx._Unchecked_begin()));
+        _STD apply([&_Ctx](auto&... _Elems) { (_Set_tuple_debug_format(_Elems, _Ctx), ...); }, _Underlying);
+
+        return _Ctx.begin();
+    }
+};
+
+// formatter definition for all pairs and tuples, the deleted default constructor
+// makes it "disabled" as per N4971 [format.formatter.spec]/5
+
+template <class _TupleOrPair, class _CharT>
+struct _Tuple_formatter_base {
+    _Tuple_formatter_base()                                        = delete;
+    _Tuple_formatter_base(const _Tuple_formatter_base&)            = delete;
+    _Tuple_formatter_base& operator=(const _Tuple_formatter_base&) = delete;
+};
+
+template <class _CharT, formattable<_CharT> _Ty1, formattable<_CharT> _Ty2>
+struct _Tuple_formatter_base<pair<_Ty1, _Ty2>, _CharT> : _Tuple_formatter_common_base<_CharT, _Ty1, _Ty2> {
+private:
+    using _Base           = _Tuple_formatter_common_base<_CharT, _Ty1, _Ty2>;
+    using _Formatted_type = _Maybe_const<_Base::_Is_const_formattable, pair<_Ty1, _Ty2>>;
+
+public:
+    template <class _FormatContext>
+    _FormatContext::iterator format(_Formatted_type& _Elems, _FormatContext& _Ctx) const {
+        return this->_Format(_Ctx, _Elems.first, _Elems.second);
+    }
+};
+
+template <class _CharT, formattable<_CharT>... _Types>
+struct _Tuple_formatter_base<tuple<_Types...>, _CharT> : _Tuple_formatter_common_base<_CharT, _Types...> {
+private:
+    using _Base           = _Tuple_formatter_common_base<_CharT, _Types...>;
+    using _Formatted_type = _Maybe_const<_Base::_Is_const_formattable, tuple<_Types...>>;
+
+public:
+    template <class _FormatContext>
+    _FormatContext::iterator format(_Formatted_type& _Elems, _FormatContext& _Ctx) const {
+        return _STD apply([this, &_Ctx](auto&... _Args) { return this->_Format(_Ctx, _Args...); }, _Elems);
+    }
+};
+
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+
+template <_Format_supported_charT _CharT, class _Ty1, class _Ty2>
+struct formatter<pair<_Ty1, _Ty2>, _CharT> : _Tuple_formatter_base<pair<_Ty1, _Ty2>, _CharT> {};
+
+template <_Format_supported_charT _CharT, class... _Types>
+struct formatter<tuple<_Types...>, _CharT> : _Tuple_formatter_base<tuple<_Types...>, _CharT> {};
+
 enum class _Add_newline : bool { _Nope, _Yes };
 
 _NODISCARD inline string _Unescape_braces(const _Add_newline _Add_nl, const string_view _Old_str) {
@@ -3979,16 +4254,6 @@ _NODISCARD inline string _Unescape_braces(const _Add_newline _Add_nl, const stri
 
     return _Unescaped_str;
 }
-
-template <class _CharT>
-struct _Fill_align_and_width_specs { // used by thread::id and stacktrace_entry formatters
-    int _Width               = -1;
-    int _Dynamic_width_index = -1;
-    _Fmt_align _Alignment    = _Fmt_align::_None;
-    uint8_t _Fill_length     = 1;
-    // At most one codepoint (so one char32_t or four utf-8 char8_t).
-    _CharT _Fill[4 / sizeof(_CharT)] = {' '};
-};
 
 template <class _CharT>
 class _Fill_align_and_width_specs_setter {

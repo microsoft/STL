@@ -1,18 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING
-#define _SILENCE_STDEXT_CVT_DEPRECATION_WARNING
 
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <chrono>
+#include <codecvt>
 #include <cstdlib>
 #include <cstring>
-#include <cvt/cp1251>
-#include <cvt/sjis>
-#include <cvt/utf8_utf16>
 #include <filesystem>
 #include <forward_list>
 #include <fstream>
@@ -3018,34 +3016,12 @@ void test_status() {
 
 void test_locale_conversions() {
     {
-        const locale cyrillic_locale(locale::classic(), new stdext::cvt::codecvt_cp1251<wchar_t>());
-
-        const string_view cp1251_koshka = "\xEA\xEE\xF8\xEA\xE0"sv;
-        const wstring_view utf16_koshka = L"\x043A\x043E\x0448\x043A\x0430"sv;
-
-        const path p1(cp1251_koshka, cyrillic_locale);
-        EXPECT(p1.native() == utf16_koshka);
-
-        const path p2(cp1251_koshka.begin(), cp1251_koshka.end(), cyrillic_locale);
-        EXPECT(p2.native() == utf16_koshka);
-    }
-
-    {
-        const locale sjis_locale(locale::classic(), new stdext::cvt::codecvt_sjis<wchar_t>());
-        const string_view sjis_katakana_letter_yo   = "\x83\x88"sv;
-        const wstring_view utf16_katakana_letter_yo = L"\x30E8"sv;
-
-        const path p3(sjis_katakana_letter_yo.begin(), sjis_katakana_letter_yo.end(), sjis_locale);
-        EXPECT(p3.native() == utf16_katakana_letter_yo);
-    }
-
-    {
         const string_view utf8_koshka_cat = "\xD0\xBA\xD0\xBE\xD1\x88\xD0\xBA\xD0\xB0_\xF0\x9F\x90\x88"sv;
         EXPECT(narrow_equal(utf8_koshka_cat, u8"\u043A\u043E\u0448\u043A\u0430_\U0001F408"sv)); // UTF-8 basic check
         const wstring_view utf16_koshka_cat = L"\x043A\x043E\x0448\x043A\x0430_\xD83D\xDC08"sv;
         EXPECT(u8path(utf8_koshka_cat).native() == utf16_koshka_cat); // UTF-16 basic check
 
-        const locale utf8_locale(locale::classic(), new stdext::cvt::codecvt_utf8_utf16<wchar_t>());
+        const locale utf8_locale(locale::classic(), new codecvt_utf8_utf16<wchar_t>());
 
         const path p4(utf8_koshka_cat.begin(), utf8_koshka_cat.end(), utf8_locale);
         EXPECT(p4.native() == utf16_koshka_cat);
@@ -3053,8 +3029,6 @@ void test_locale_conversions() {
         EXPECT(throws_system_error([&] {
             (void) path{utf8_koshka_cat.begin() + 1, utf8_koshka_cat.end(), utf8_locale};
         }));
-
-        // stdext::cvt::codecvt_utf8_utf16 doesn't appear to handle codecvt_base::partial correctly.
     }
 }
 

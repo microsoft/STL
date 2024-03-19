@@ -127,9 +127,9 @@ concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
 // makes it "disabled" as per N4950 [format.formatter.spec]/5
 _EXPORT_STD template <class _Ty, class _CharT = char>
 struct formatter {
-    formatter()                           = delete;
-    formatter(const formatter&)           = delete;
-    formatter operator=(const formatter&) = delete;
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
 };
 
 _FMT_P2286_BEGIN
@@ -266,6 +266,25 @@ struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     }
 #endif // _HAS_CXX23
 };
+
+#if _HAS_CXX23
+_EXPORT_STD template <class, class>
+struct pair;
+
+_EXPORT_STD template <class...>
+class tuple;
+
+// Specializations for pairs and tuples are forward-declared to avoid any risk of using the disabled primary template.
+
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+
+template <_Format_supported_charT _CharT, class _Ty1, class _Ty2>
+struct formatter<pair<_Ty1, _Ty2>, _CharT>;
+
+template <_Format_supported_charT _CharT, class... _Types>
+struct formatter<tuple<_Types...>, _CharT>;
+#endif // _HAS_CXX23
 _STD_END
 
 #pragma pop_macro("new")
