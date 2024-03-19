@@ -58,7 +58,6 @@ def getDefaultFeatures(config, litConfig):
         DEFAULT_FEATURES.append(Feature(name='edg'))
         DEFAULT_FEATURES.append(Feature(name='arch_avx2'))
         DEFAULT_FEATURES.append(Feature(name='x64'))
-        DEFAULT_FEATURES.append(Feature(name='cx16'))
 
     elif litConfig.target_arch.casefold() == 'arm'.casefold():
         DEFAULT_FEATURES.append(Feature(name='arch_vfpv4'))

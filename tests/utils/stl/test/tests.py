@@ -314,8 +314,6 @@ class STLTest(Test):
                 foundCRT = True
             elif flag[1:] == 'analyze:plugin':
                 afterAnalyzePlugin = True
-            elif flag[1:] == 'D_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B=1':
-                self.requires.append('cx16')
 
         if not foundStd:
             self._addCustomFeature('c++14')
