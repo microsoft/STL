@@ -373,6 +373,8 @@ void test_incomplete_associated_class_all() { // COMPILE-ONLY
 }
 #endif // ^^^ no workaround ^^^
 
+// GH-4472 "<atomic>: With _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B defined to 1,
+// atomic_ref<16 bytes> does not report is_lock_free and is_always_lock_free correctly"
 void test_gh_4472() {
     struct two_pointers_t {
         void* left;
