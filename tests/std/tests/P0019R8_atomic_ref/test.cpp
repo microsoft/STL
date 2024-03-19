@@ -392,7 +392,8 @@ void test_gh_4472() {
 #endif
 
     // We expect tests to run on machines that support DCAS, which is required by Win8+.
-    assert(std::atomic_ref<two_pointers_t>(two_pointers).is_lock_free());
+    std::atomic_ref<two_pointers_t> ar{two_pointers};
+    assert(ar.is_lock_free());
 }
 
 int main() {
