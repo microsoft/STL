@@ -3843,10 +3843,9 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
-// TRANSITION, DevCom-10606350: help the compiler auto-vectorizing for simple types
-// by making transformation that can be done for simple types
+// TRANSITION, DevCom-10606350: help the compiler auto-vectorize for simple types
 template <class _UOutIt, class _InTy, class _NewTy, class _OutTy = remove_pointer_t<_UOutIt>>
-constexpr bool _Can_vectorize_replace_copy = conjunction_v<is_pointer<_UOutIt>, is_same<_InTy, _NewTy>,
+_INLINE_VAR constexpr bool _Can_vectorize_replace_copy = conjunction_v<is_pointer<_UOutIt>, is_same<_InTy, _NewTy>,
     disjunction<
 #ifdef __cpp_lib_byte
         conjunction<is_same<_InTy, byte>, is_same<_OutTy, byte>>,
@@ -3862,7 +3861,7 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
         if constexpr (_Can_vectorize_replace_copy<decltype(_UDest), _Iter_value_t<_InIt>, _Ty>) {
-            *_UDest = (*_UFirst == _Oldval) ? _Newval : *_UFirst;
+            *_UDest = *_UFirst == _Oldval ? _Newval : *_UFirst;
         } else {
             if (*_UFirst == _Oldval) {
                 *_UDest = _Newval;

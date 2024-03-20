@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <benchmark/benchmark.h>
+#include <cstdint>
+#include <vector>
 
 const char src[] =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mollis imperdiet massa, at dapibus elit interdum "
@@ -37,10 +39,8 @@ const char src[] =
 
 template <class T>
 void rc(benchmark::State& state) {
-    std::vector<T> a(std::size(src));
+    const std::vector<T> a(std::begin(src), std::end(src));
     std::vector<T> b(std::size(src));
-
-    std::copy(std::begin(src), std::end(src), std::begin(a));
 
     for (auto _ : state) {
         std::replace_copy(std::begin(a), std::end(a), std::begin(b), T{'m'}, T{'w'});
@@ -49,25 +49,23 @@ void rc(benchmark::State& state) {
 
 template <class T>
 void rc_if(benchmark::State& state) {
-    std::vector<T> a(std::size(src));
+    const std::vector<T> a(std::begin(src), std::end(src));
     std::vector<T> b(std::size(src));
 
-    std::copy(std::begin(src), std::end(src), std::begin(a));
-
     for (auto _ : state) {
-        std::replace_copy_if(
-            std::begin(a), std::end(a), std::begin(b), [](auto x) { return x <= 'Z'; }, T{'X'});
+        (void) std::replace_copy_if(
+            std::begin(a), std::end(a), std::begin(b), [](auto x) { return x <= T{'Z'}; }, T{'X'});
     }
 }
 
-BENCHMARK(rc<uint8_t>);
-BENCHMARK(rc<uint16_t>);
-BENCHMARK(rc<uint32_t>);
-BENCHMARK(rc<uint64_t>);
+BENCHMARK(rc<std::uint8_t>);
+BENCHMARK(rc<std::uint16_t>);
+BENCHMARK(rc<std::uint32_t>);
+BENCHMARK(rc<std::uint64_t>);
 
-BENCHMARK(rc_if<uint8_t>);
-BENCHMARK(rc_if<uint16_t>);
-BENCHMARK(rc_if<uint32_t>);
-BENCHMARK(rc_if<uint64_t>);
+BENCHMARK(rc_if<std::uint8_t>);
+BENCHMARK(rc_if<std::uint16_t>);
+BENCHMARK(rc_if<std::uint32_t>);
+BENCHMARK(rc_if<std::uint64_t>);
 
 BENCHMARK_MAIN();
