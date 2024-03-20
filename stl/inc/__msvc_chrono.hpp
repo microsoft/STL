@@ -715,30 +715,6 @@ namespace chrono {
     _EXPORT_STD using high_resolution_clock = steady_clock;
 } // namespace chrono
 
-template <class _Rep, class _Period>
-_NODISCARD bool _To_timespec64_sys_10_day_clamped(
-    _timespec64& _Ts64, const _CHRONO duration<_Rep, _Period>& _Rel_time) noexcept(is_arithmetic_v<_Rep>) {
-    // Convert duration to _timespec64 representing system time, maximum 10 days from now, returns whether clamping
-    // occurred. If clamped, timeouts will be transformed into spurious non-timeout wakes, due to ABI restrictions where
-    // the other side of the DLL boundary overflows int32_t milliseconds.
-    // Every function calling this one is TRANSITION, ABI
-    constexpr _CHRONO nanoseconds _Ten_days{_CHRONO hours{24} * 10};
-    constexpr _CHRONO duration<double> _Ten_days_d{_Ten_days};
-    _CHRONO nanoseconds _Tx0 = _CHRONO system_clock::duration{_Xtime_get_ticks()};
-    const bool _Clamped      = _Ten_days_d < _Rel_time;
-    if (_Clamped) {
-        _Tx0 += _Ten_days;
-    } else {
-        _Tx0 += _CHRONO duration_cast<_CHRONO nanoseconds>(_Rel_time);
-    }
-
-    const auto _Whole_seconds = _CHRONO duration_cast<_CHRONO seconds>(_Tx0);
-    _Ts64.tv_sec              = _Whole_seconds.count();
-    _Tx0 -= _Whole_seconds;
-    _Ts64.tv_nsec = static_cast<long>(_Tx0.count());
-    return _Clamped;
-}
-
 inline namespace literals {
     inline namespace chrono_literals {
         _EXPORT_STD _NODISCARD constexpr _CHRONO hours operator""h(unsigned long long _Val) noexcept

@@ -3,12 +3,17 @@
 
 #include <array>
 #include <cassert>
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
+
+#if _HAS_CXX17
+#include <string_view>
+#endif // _HAS_CXX17
 
 #if _HAS_CXX20
 #include <iterator>
@@ -21,8 +26,26 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
+#if _HAS_CXX17
+#define CONSTEXPR17 constexpr
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+#define CONSTEXPR17 inline
+#endif // ^^^ !_HAS_CXX17 ^^^
+
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEXPR20 inline
+#endif // ^^^ !_HAS_CXX20 ^^^
+
+#if _HAS_CXX23
+#define CONSTEXPR23 constexpr
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+#define CONSTEXPR23 inline
+#endif // ^^^ !_HAS_CXX23 ^^^
+
 template <template <typename...> class PairOrTuple>
-void test_value_categories() {
+constexpr void test_value_categories() {
     int n1       = 10;
     const int n2 = 20;
     int n3       = 30;
@@ -56,7 +79,7 @@ void test_value_categories() {
     }
 }
 
-int main() {
+constexpr bool test() {
     {
         tuple<> x;
 
@@ -131,42 +154,6 @@ int main() {
     }
 
     {
-        unique_ptr<int> up;
-
-        up.reset(new int(10));
-        tuple<string, unique_ptr<int>, int> a("ten", move(up), 11);
-
-        up.reset(new int(20));
-        tuple<string, int, unique_ptr<int>> b("twenty", 22, move(up));
-
-        up.reset(new int(30));
-        tuple<int, string, unique_ptr<int>> c(33, "thirty", move(up));
-
-        tuple<int, int> d(44, 55);
-
-        auto t0 = tuple_cat(move(a), move(b), move(c), d);
-
-        STATIC_ASSERT(is_same_v<decltype(t0),
-            tuple<string, unique_ptr<int>, int, string, int, unique_ptr<int>, int, string, unique_ptr<int>, int, int>>);
-
-        assert(!get<1>(a));
-        assert(!get<2>(b));
-        assert(!get<2>(c));
-
-        assert(get<0>(t0) == "ten");
-        assert(*get<1>(t0) == 10);
-        assert(get<2>(t0) == 11);
-        assert(get<3>(t0) == "twenty");
-        assert(get<4>(t0) == 22);
-        assert(*get<5>(t0) == 20);
-        assert(get<6>(t0) == 33);
-        assert(get<7>(t0) == "thirty");
-        assert(*get<8>(t0) == 30);
-        assert(get<9>(t0) == 44);
-        assert(get<10>(t0) == 55);
-    }
-
-    {
         int w = 11, x = 22, y = 33, z = 44;
 
         tuple<int&, const int&, int&&, const int&&> t0(w, x, move(y), move(z));
@@ -185,30 +172,6 @@ int main() {
         assert(&get<3>(t1) == &x);
         assert(&get<4>(t1) == &y);
         assert(&get<5>(t1) == &z);
-    }
-
-    {
-        pair<int, int> p(11, 22);
-
-        const char* const s = "meow";
-
-        array<short, 0> zero;
-
-        array<int, 1> one = {{40}};
-
-        array<long, 2> two = {{50L, 60L}};
-
-        auto make_array = [] {
-            array<char, 3> ret = {{'x', 'y', 'z'}};
-            return ret;
-        };
-
-        const auto t = tuple_cat(p, make_pair(33U, s), zero, one, two, make_array(), make_tuple(1234LL));
-
-        STATIC_ASSERT(is_same_v<decltype(t),
-            const tuple<int, int, unsigned int, const char*, int, long, long, char, char, char, long long>>);
-
-        assert(t == make_tuple(11, 22, 33U, s, 40, 50L, 60L, 'x', 'y', 'z', 1234LL));
     }
 
     test_value_categories<pair>();
@@ -231,29 +194,6 @@ int main() {
         }
     }
 
-#if _HAS_CXX20
-    {
-        using ranges::subrange, ranges::subrange_kind;
-
-        list<int> lst     = {10, 20, 30, 40, 50};
-        using LstIter     = list<int>::iterator;
-        using LstSubrange = subrange<LstIter>; // test unsized
-        STATIC_ASSERT(is_same_v<LstSubrange, subrange<LstIter, LstIter, subrange_kind::unsized>>);
-        LstSubrange lst_subrange(next(lst.begin()), prev(lst.end()));
-
-        vector<int> vec    = {60, 70, 80, 90, 100};
-        using VecIter      = vector<int>::iterator;
-        using VecConstIter = vector<int>::const_iterator;
-        using VecSubrange  = subrange<VecIter, VecConstIter>; // test sized, and different iterator/sentinel types
-        STATIC_ASSERT(is_same_v<VecSubrange, subrange<VecIter, VecConstIter, subrange_kind::sized>>);
-        VecSubrange vec_subrange(vec.begin() + 1, vec.cend() - 1);
-
-        auto cat7 = tuple_cat(lst_subrange, vec_subrange);
-        STATIC_ASSERT(is_same_v<decltype(cat7), tuple<LstIter, LstIter, VecIter, VecConstIter>>);
-        assert(cat7 == make_tuple(next(lst.begin()), prev(lst.end()), vec.begin() + 1, vec.cend() - 1));
-    }
-#endif // _HAS_CXX20
-
 // Also test C++17 apply() and make_from_tuple().
 #if _HAS_CXX17
     {
@@ -261,7 +201,7 @@ int main() {
             int x;
             int y;
 
-            int add(int z) const {
+            constexpr int add(int z) const {
                 return x + y + z;
             }
         };
@@ -270,22 +210,12 @@ int main() {
 
         assert(apply(&Point::add, make_tuple(&p, 3)) == 123);
 
-        assert(make_from_tuple<string>(make_tuple(static_cast<size_t>(5), 's')) == "sssss");
+        assert(make_from_tuple<string_view>(make_tuple("Hello world!", static_cast<size_t>(5))) == "Hello");
     }
 #endif // _HAS_CXX17
 
     // Also test VSO-181496 "Variadic template emits spurious warning C4100: unreferenced formal parameter".
     {
-        auto b1 = bind([] { return 256; });
-        assert(b1() == 256);
-
-        auto b2 = bind([](int i) { return i * 3; }, b1);
-        assert(b2() == 768);
-
-        const pair<int, int> p(piecewise_construct, tuple<>{}, tuple<>{});
-        assert(p.first == 0);
-        assert(p.second == 0);
-
         assert(tuple_cat() == tuple<>{});
 
 #if _HAS_CXX17
@@ -295,9 +225,160 @@ int main() {
 #endif // _HAS_CXX17
     }
 
-    // LWG-3211 std::tuple<> should be trivially constructible
-    STATIC_ASSERT(is_trivially_default_constructible_v<tuple<>>);
+    return true;
 }
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+// Also test GH-140 "STL: We should _STD qualify _Ugly function calls to avoid ADL"
+template <class T>
+struct holder {
+    T t;
+};
+
+struct incomplete;
+using validator = holder<incomplete>*;
+
+constexpr bool test_adl_proof() {
+    // Function calls are intentionally qualified.
+
+    auto concatenated = std::tuple_cat(std::make_tuple(validator{}), std::make_tuple(42));
+    STATIC_ASSERT(is_same_v<decltype(concatenated), tuple<validator, int>>);
+
+    assert(std::get<0>(concatenated) == nullptr);
+    assert(std::get<1>(concatenated) == 42);
+
+#if _HAS_CXX17
+    assert(std::make_from_tuple<validator>(std::make_tuple(validator{})) == nullptr);
+    assert(std::apply([](auto) { return 42; }, std::make_tuple(validator{})) == 42);
+#endif // _HAS_CXX17
+
+    return true;
+}
+#endif // ^^^ no workaround ^^^
+
+CONSTEXPR17 bool test_using_lambda() {
+    pair<int, int> p(11, 22);
+
+    const char* const s = "meow";
+
+    array<short, 0> zero;
+
+    array<int, 1> one = {{40}};
+
+    array<long, 2> two = {{50L, 60L}};
+
+    auto make_array = [] {
+        array<char, 3> ret = {{'x', 'y', 'z'}};
+        return ret;
+    };
+
+    const auto t = tuple_cat(p, make_pair(33U, s), zero, one, two, make_array(), make_tuple(1234LL));
+
+    STATIC_ASSERT(is_same_v<decltype(t),
+        const tuple<int, int, unsigned int, const char*, int, long, long, char, char, char, long long>>);
+
+    assert(t == make_tuple(11, 22, 33U, s, 40, 50L, 60L, 'x', 'y', 'z', 1234LL));
+
+    return true;
+}
+
+CONSTEXPR20 bool test_bind_and_piecewise_construction() {
+    // Also test VSO-181496 "Variadic template emits spurious warning C4100: unreferenced formal parameter".
+    auto b1 = bind([] { return 256; });
+    assert(b1() == 256);
+
+    auto b2 = bind([](int i) { return i * 3; }, b1);
+    assert(b2() == 768);
+
+    const pair<int, int> p(piecewise_construct, tuple<>{}, tuple<>{});
+    assert(p.first == 0);
+    assert(p.second == 0);
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    const pair<validator, int> p2(piecewise_construct, tuple<validator>{}, tuple<int>{});
+    assert(p2.first == nullptr);
+    assert(p2.second == 0);
+#endif // ^^^ no workaround ^^^
+
+    return true;
+}
+
+#if _HAS_CXX17
+// Also test C++17 make_from_tuple() and C++20 constexpr string.
+CONSTEXPR20 bool test_make_from_tuple_and_string() {
+    assert(make_from_tuple<string>(tuple<>{}).empty());
+    assert(make_from_tuple<string>(make_tuple(static_cast<size_t>(5), 's')) == "sssss");
+
+    assert(make_from_tuple<wstring>(tuple<>{}).empty());
+    assert(make_from_tuple<wstring>(make_tuple(static_cast<size_t>(5), L's')) == L"sssss");
+
+    return true;
+}
+#endif // _HAS_CXX17
+
+CONSTEXPR23 bool test_unique_ptr_and_string() {
+    unique_ptr<int> up;
+
+    up.reset(new int(10));
+    tuple<string, unique_ptr<int>, int> a("ten", move(up), 11);
+
+    up.reset(new int(20));
+    tuple<string, int, unique_ptr<int>> b("twenty", 22, move(up));
+
+    up.reset(new int(30));
+    tuple<int, string, unique_ptr<int>> c(33, "thirty", move(up));
+
+    tuple<int, int> d(44, 55);
+
+    auto t0 = tuple_cat(move(a), move(b), move(c), d);
+
+    STATIC_ASSERT(is_same_v<decltype(t0),
+        tuple<string, unique_ptr<int>, int, string, int, unique_ptr<int>, int, string, unique_ptr<int>, int, int>>);
+
+    assert(!get<1>(a));
+    assert(!get<2>(b));
+    assert(!get<2>(c));
+
+    assert(get<0>(t0) == "ten");
+    assert(*get<1>(t0) == 10);
+    assert(get<2>(t0) == 11);
+    assert(get<3>(t0) == "twenty");
+    assert(get<4>(t0) == 22);
+    assert(*get<5>(t0) == 20);
+    assert(get<6>(t0) == 33);
+    assert(get<7>(t0) == "thirty");
+    assert(*get<8>(t0) == 30);
+    assert(get<9>(t0) == 44);
+    assert(get<10>(t0) == 55);
+
+    return true;
+}
+
+#if _HAS_CXX20
+void test_subrange_and_containers() {
+    using ranges::subrange, ranges::subrange_kind;
+
+    list<int> lst     = {10, 20, 30, 40, 50};
+    using LstIter     = list<int>::iterator;
+    using LstSubrange = subrange<LstIter>; // test unsized
+    STATIC_ASSERT(is_same_v<LstSubrange, subrange<LstIter, LstIter, subrange_kind::unsized>>);
+    LstSubrange lst_subrange(next(lst.begin()), prev(lst.end()));
+
+    vector<int> vec    = {60, 70, 80, 90, 100};
+    using VecIter      = vector<int>::iterator;
+    using VecConstIter = vector<int>::const_iterator;
+    using VecSubrange  = subrange<VecIter, VecConstIter>; // test sized, and different iterator/sentinel types
+    STATIC_ASSERT(is_same_v<VecSubrange, subrange<VecIter, VecConstIter, subrange_kind::sized>>);
+    VecSubrange vec_subrange(vec.begin() + 1, vec.cend() - 1);
+
+    auto cat7 = tuple_cat(lst_subrange, vec_subrange);
+    STATIC_ASSERT(is_same_v<decltype(cat7), tuple<LstIter, LstIter, VecIter, VecConstIter>>);
+    assert(cat7 == make_tuple(next(lst.begin()), prev(lst.end()), vec.begin() + 1, vec.cend() - 1));
+}
+#endif // _HAS_CXX20
+
+// LWG-3211 std::tuple<> should be trivially constructible
+STATIC_ASSERT(is_trivially_default_constructible_v<tuple<>>);
 
 // Also test DevDiv-1205400 "C++ compiler: static_assert in std::tuple_element prevents SFINAE".
 template <typename T, typename = void>
@@ -318,3 +399,38 @@ struct HasTupleSize<T, void_t<typename tuple_size<T>::type>> : true_type {};
 
 STATIC_ASSERT(!HasTupleSize<int>::value);
 STATIC_ASSERT(HasTupleSize<tuple<short, long>>::value);
+
+STATIC_ASSERT(test());
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+STATIC_ASSERT(test_adl_proof());
+#endif // ^^^ no workaround ^^^
+
+#if _HAS_CXX17
+STATIC_ASSERT(test_using_lambda());
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20
+STATIC_ASSERT(test_bind_and_piecewise_construction());
+STATIC_ASSERT(test_make_from_tuple_and_string());
+#endif // _HAS_CXX20
+
+#if _HAS_CXX23
+STATIC_ASSERT(test_unique_ptr_and_string());
+#endif // _HAS_CXX23
+
+int main() {
+    test();
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    test_adl_proof();
+#endif // ^^^ no workaround ^^^
+    test_using_lambda();
+    test_bind_and_piecewise_construction();
+#if _HAS_CXX17
+    test_make_from_tuple_and_string();
+#endif // _HAS_CXX17
+#if _HAS_CXX20
+    test_subrange_and_containers();
+#endif //_HAS_CXX20
+    test_unique_ptr_and_string();
+}

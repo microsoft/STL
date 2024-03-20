@@ -3578,7 +3578,9 @@ namespace pmr {
 #endif // _HAS_CXX17
 
 #if _HAS_CXX23
-template <class _Ty, class _CharT>
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+template <class _Ty, _Format_supported_charT _CharT>
     requires _Is_specialization_v<_Ty, _Vb_reference>
 struct formatter<_Ty, _CharT> {
 private:

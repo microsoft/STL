@@ -4,7 +4,6 @@
 #define _HAS_DEPRECATED_RAW_STORAGE_ITERATOR 1
 #define _SILENCE_CXX17_RAW_STORAGE_ITERATOR_DEPRECATION_WARNING
 #define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
-#define _SILENCE_EXPERIMENTAL_ERASE_DEPRECATION_WARNING
 
 #include <algorithm>
 #include <array>
@@ -13,15 +12,6 @@
 #include <complex>
 #include <cstddef>
 #include <deque>
-#include <experimental/deque>
-#include <experimental/forward_list>
-#include <experimental/list>
-#include <experimental/map>
-#include <experimental/set>
-#include <experimental/string>
-#include <experimental/unordered_map>
-#include <experimental/unordered_set>
-#include <experimental/vector>
 #include <forward_list>
 #include <iterator>
 #include <list>
@@ -379,106 +369,18 @@ int main() {
     }
 
 
-    // N4273 Uniform Container Erasure
-    {
-        // Note that the standard actually requires these to be copyable. As an extension, we want
-        // to ensure we don't copy them, because copying some functors (e.g. std::function) is comparatively
-        // expensive, and even for relatively cheap to copy function objects we care (somewhat) about debug
-        // mode perf.
-        struct no_copy {
-            no_copy()                          = default;
-            no_copy(const no_copy&)            = delete;
-            no_copy(no_copy&&)                 = default;
-            no_copy& operator=(const no_copy&) = delete;
-            no_copy& operator=(no_copy&&)      = delete;
-        };
-
-        struct is_vowel : no_copy {
-            bool operator()(const char c) const {
-                return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u';
-            }
-        };
-
-        std::string str1{"cute fluffy kittens"};
-        std::experimental::erase_if(str1, is_vowel{});
-        assert(str1 == "ct flffy kttns");
-
-        std::string str2{"asynchronous beat"};
-        std::experimental::erase(str2, 'a');
-        assert(str2 == "synchronous bet");
-
-        struct is_odd : no_copy {
-            bool operator()(const int i) const {
-                return i % 2 != 0;
-            }
-        };
-
-        std::deque<int> d{1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1};
-        std::experimental::erase_if(d, is_odd{});
-        assert((d == std::deque<int>{2, 4, 6, 6, 4, 2}));
-        std::experimental::erase(d, 4);
-        assert((d == std::deque<int>{2, 6, 6, 2}));
-
-        std::vector<int> v{1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1};
-        std::experimental::erase_if(v, is_odd{});
-        assert((v == std::vector<int>{2, 4, 6, 6, 4, 2}));
-        std::experimental::erase(v, 4);
-        assert((v == std::vector<int>{2, 6, 6, 2}));
-
-        std::forward_list<int> fl{1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1};
-        std::experimental::erase_if(fl, is_odd{});
-        assert((fl == std::forward_list<int>{2, 4, 6, 6, 4, 2}));
-        std::experimental::erase(fl, 4);
-        assert((fl == std::forward_list<int>{2, 6, 6, 2}));
-
-        std::list<int> l{1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1};
-        std::experimental::erase_if(l, is_odd{});
-        assert((l == std::list<int>{2, 4, 6, 6, 4, 2}));
-        std::experimental::erase(l, 4);
-        assert((l == std::list<int>{2, 6, 6, 2}));
-
-        struct is_first_odd : no_copy {
-            bool operator()(const std::pair<const int, int>& p) const {
-                return p.first % 2 != 0;
-            }
-        };
-
-        std::map<int, int> m{{1, 10}, {2, 20}, {3, 30}, {4, 40}, {5, 50}, {6, 60}, {7, 70}};
-        std::experimental::erase_if(m, is_first_odd{});
-        assert((m == std::map<int, int>{{2, 20}, {4, 40}, {6, 60}}));
-
-        std::multimap<int, int> mm{{1, 10}, {2, 20}, {3, 30}, {4, 40}, {5, 50}, {6, 60}, {7, 70}};
-        std::experimental::erase_if(mm, is_first_odd{});
-        assert((mm == std::multimap<int, int>{{2, 20}, {4, 40}, {6, 60}}));
-
-        std::set<int> s{1, 2, 3, 4, 5, 6, 7};
-        std::experimental::erase_if(s, is_odd{});
-        assert((s == std::set<int>{2, 4, 6}));
-
-        std::multiset<int> ms{1, 2, 3, 4, 5, 6, 7};
-        std::experimental::erase_if(ms, is_odd{});
-        assert((ms == std::multiset<int>{2, 4, 6}));
-
-        // Note that unordered equality considers permutations.
-
-        std::unordered_map<int, int> um{{1, 10}, {2, 20}, {3, 30}, {4, 40}, {5, 50}, {6, 60}, {7, 70}};
-        std::experimental::erase_if(um, is_first_odd{});
-        assert((um == std::unordered_map<int, int>{{2, 20}, {4, 40}, {6, 60}}));
-
-        std::unordered_multimap<int, int> umm{{1, 10}, {2, 20}, {3, 30}, {4, 40}, {5, 50}, {6, 60}, {7, 70}};
-        std::experimental::erase_if(umm, is_first_odd{});
-        assert((umm == std::unordered_multimap<int, int>{{2, 20}, {4, 40}, {6, 60}}));
-
-        std::unordered_set<int> us{1, 2, 3, 4, 5, 6, 7};
-        std::experimental::erase_if(us, is_odd{});
-        assert((us == std::unordered_set<int>{2, 4, 6}));
-
-        std::unordered_multiset<int> ums{1, 2, 3, 4, 5, 6, 7};
-        std::experimental::erase_if(ums, is_odd{});
-        assert((ums == std::unordered_multiset<int>{2, 4, 6}));
-
-// P0458R2 contains() For Ordered And Unordered Associative Containers
 #if _HAS_CXX20
+    // P0458R2 contains() For Ordered And Unordered Associative Containers
+    {
+        std::map<int, int> m                  = {{2, 20}, {4, 40}, {6, 60}};
+        std::multimap<int, int> mm            = {{2, 20}, {4, 40}, {6, 60}};
+        std::set<int> s                       = {2, 4, 6};
+        std::multiset<int> ms                 = {2, 4, 6};
+        std::unordered_map<int, int> um       = {{2, 20}, {4, 40}, {6, 60}};
+        std::unordered_multimap<int, int> umm = {{2, 20}, {4, 40}, {6, 60}};
+        std::unordered_set<int> us            = {2, 4, 6};
+        std::unordered_multiset<int> ums      = {2, 4, 6};
+
         assert(m.contains(2));
         assert(mm.contains(4));
         assert(s.contains(6));
@@ -532,10 +434,8 @@ int main() {
         assert(!const_umm.contains(5));
         assert(!const_us.contains(1));
         assert(!const_ums.contains(3));
-#endif // _HAS_CXX20
     }
 
-#if _HAS_CXX20
     // P1209R0 erase_if(), erase()
     {
         // Note that the standard actually requires these to be copyable. As an extension, we want

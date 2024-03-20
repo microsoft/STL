@@ -42,31 +42,12 @@ BENCHMARK(bm<uint8_t, 8021, 3056, Op::FindUnsized>);
 BENCHMARK(bm<uint8_t, 8021, 3056, Op::Count>);
 
 BENCHMARK(bm<uint16_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<uint16_t, 8021, 3056, Op::FindUnsized>);
 BENCHMARK(bm<uint16_t, 8021, 3056, Op::Count>);
 
 BENCHMARK(bm<uint32_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<uint32_t, 8021, 3056, Op::FindUnsized>);
 BENCHMARK(bm<uint32_t, 8021, 3056, Op::Count>);
 
 BENCHMARK(bm<uint64_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<uint64_t, 8021, 3056, Op::FindUnsized>);
 BENCHMARK(bm<uint64_t, 8021, 3056, Op::Count>);
-
-BENCHMARK(bm<int8_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<int8_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<int8_t, 8021, 3056, Op::Count>);
-
-BENCHMARK(bm<int16_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<int16_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<int16_t, 8021, 3056, Op::Count>);
-
-BENCHMARK(bm<int32_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<int32_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<int32_t, 8021, 3056, Op::Count>);
-
-BENCHMARK(bm<int64_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<int64_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<int64_t, 8021, 3056, Op::Count>);
 
 BENCHMARK_MAIN();
