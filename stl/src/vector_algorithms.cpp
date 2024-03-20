@@ -2080,14 +2080,13 @@ namespace {
     const void* __stdcall __std_find_first_of_trivial_impl(
         const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
 #ifndef _M_ARM64EC
-        constexpr bool _Bytes = sizeof(_Ty) == 1;
-        constexpr int _Op =
-            (_Bytes ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT;
-        constexpr int _Part_size_el = _Bytes ? 16 : 8;
-
         const size_t _Needle_length = _Byte_length(_First2, _Last2);
 
         if (_Use_sse42() && _Needle_length <= 16) {
+            constexpr int _Op =
+                (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT;
+            constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
+
             const int _Needle_length_el = static_cast<int>(_Byte_length(_First2, _Last2) / sizeof(_Ty));
 
             alignas(16) uint8_t _Tmp1[16];
