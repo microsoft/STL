@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
+#include <vector>
 
 using namespace std;
 
