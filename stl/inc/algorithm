@@ -180,7 +180,8 @@ _Ty1* __std_find_first_of_trivial(
     }
 }
 
-constexpr ptrdiff_t _Threshold_find_first_of = 16; // find_first_of vectorization is likely to be a win after this size
+// find_first_of vectorization is likely to be a win after this size (in elements)
+_INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
 
 // Can we activate the vector algorithms for find_first_of?
 template <class _It1, class _It2, class _Pr, class _Ty1 = _Iter_value_t<_It1>, class _Ty2 = _Iter_value_t<_It2>>
