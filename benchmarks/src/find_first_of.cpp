@@ -18,7 +18,7 @@ void bm(benchmark::State& state) {
 
     static_assert(Pos < HSize);
     static_assert(Which < NSize);
-    h[Pos] = n[Which[)];
+    h[Pos] = n[Which];
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(find_first_of(h.begin(), h.end(), n.begin(), n.end()));
