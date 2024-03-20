@@ -240,8 +240,8 @@ void test_find_first_of(mt19937_64& gen) {
     vector<T> input_needle;
     input_haystack.reserve(dataCount);
     input_needle.reserve(needleDataCount);
-    for (;;) {
 
+    for (;;) {
         input_needle.clear();
 
         test_case_find_first_of(input_haystack, input_needle);
@@ -256,6 +256,14 @@ void test_find_first_of(mt19937_64& gen) {
 
         input_haystack.push_back(static_cast<T>(dis(gen)));
     }
+}
+
+template <class C1, class C2>
+void test_find_first_of_containers() {
+    C1 haystack{'m', 'e', 'o', 'w', 'C', 'A', 'T', 'S'};
+    C2 needle{'R', 'S', 'T'};
+    const auto result = find_first_of(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+    assert(result == haystack.begin() + 6);
 }
 
 template <class T>
@@ -493,6 +501,14 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_find_first_of<unsigned int>(gen);
     test_find_first_of<long long>(gen);
     test_find_first_of<unsigned long long>(gen);
+
+    test_find_first_of_containers<vector<char>, vector<signed char>>();
+    test_find_first_of_containers<vector<char>, vector<unsigned char>>();
+    test_find_first_of_containers<vector<wchar_t>, vector<char>>();
+    test_find_first_of_containers<const vector<char>, const vector<char>>();
+    test_find_first_of_containers<vector<char>, const vector<char>>();
+    test_find_first_of_containers<const vector<wchar_t>, vector<wchar_t>>();
+    test_find_first_of_containers<vector<char>, vector<int>>();
 
     test_min_max_element<char>(gen);
     test_min_max_element<signed char>(gen);

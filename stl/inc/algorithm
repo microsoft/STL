@@ -166,32 +166,33 @@ _Ty* __std_find_last_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _V
     }
 }
 
-template <class _Ty>
-_Ty* __std_find_first_of_trivial(
-    _Ty* const _First1, _Ty* const _Last1, _Ty* const _First2, _Ty* const _Last2) noexcept {
-    if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_first_of_trivial_1(_First1, _Last1, _First2, _Last2)));
-    } else if constexpr (sizeof(_Ty) == 2) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_first_of_trivial_2(_First1, _Last1, _First2, _Last2)));
+template <class _Ty1, class _Ty2>
+_Ty1* __std_find_first_of_trivial(
+    _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, _Ty2* const _Last2) noexcept {
+    if constexpr (sizeof(_Ty1) == 1) {
+        return const_cast<_Ty1*>(
+            static_cast<const _Ty1*>(::__std_find_first_of_trivial_1(_First1, _Last1, _First2, _Last2)));
+    } else if constexpr (sizeof(_Ty1) == 2) {
+        return const_cast<_Ty1*>(
+            static_cast<const _Ty1*>(::__std_find_first_of_trivial_2(_First1, _Last1, _First2, _Last2)));
     } else {
-        static_assert(_Always_false<_Ty>, "Unexpected size");
+        static_assert(_Always_false<_Ty1>, "Unexpected size");
     }
 }
 
 // Can we activate the vector algorithms for find_first_of?
 template <class _It1, class _It2, class _Pr, class _Ty1 = _Iter_value_t<_It1>, class _Ty2 = _Iter_value_t<_It2>>
 _INLINE_VAR constexpr bool _Vector_alg_in_find_first_of_is_safe =
-    _Iterator_is_contiguous<_It1> && _Iterator_is_contiguous<_It2> // contigous
+    _Iterators_are_contiguous<_It1,_It2> // contiguous
     && !_Iterator_is_volatile<_It1> && !_Iterator_is_volatile<_It2> // non-volatile
-    && is_same_v<_Ty1, _Ty2> // same types
-    && sizeof(_Ty1) <= 2 // pcmpestri compatible size
     && disjunction_v<
 #ifdef __cpp_lib_byte
-        is_same<_Ty1, byte>, // byte or...
+        conjunction<is_same<_Ty1, byte>, is_same<_Ty2, byte>>, // byte or...
 #endif // defined(__cpp_lib_byte)
-        is_integral<_Ty1>> // ...integer
+        conjunction<is_integral<_Ty1>, is_integral<_Ty2>>> // ...integer
+    && sizeof(_Ty1) == sizeof(_Ty2) // same sizes
+    && is_signed_v<_Ty1> == is_signed_v<_Ty2> // same signedness
+    && sizeof(_Ty1) <= 2 // pcmpestri compatible size
     && _Is_any_of_v<_Pr, // predicate is equal
 #if _HAS_CXX20
         ranges::equal_to,
@@ -3370,7 +3371,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
             if constexpr (is_pointer_v<decltype(_UFirst1)>) {
                 _UFirst1 = _Result;
             } else {
-                _UFirst1 += (_Result - _First1_ptr);
+                _UFirst1 += _Result - _First1_ptr;
             }
             _STD _Seek_wrapped(_First1, _UFirst1);
             return _First1;
