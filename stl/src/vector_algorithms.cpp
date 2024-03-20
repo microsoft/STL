@@ -2087,7 +2087,7 @@ namespace {
                 (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT;
             constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
 
-            const int _Needle_length_el = static_cast<int>(_Byte_length(_First2, _Last2) / sizeof(_Ty));
+            const int _Needle_length_el = static_cast<int>(_Needle_length / sizeof(_Ty));
 
             alignas(16) uint8_t _Tmp1[16];
             memcpy(_Tmp1, _First2, _Needle_length);
