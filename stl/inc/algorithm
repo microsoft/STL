@@ -641,6 +641,19 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
     auto _UFirst1      = _STD _Get_unwrapped(_First1);
     const auto _ULast1 = _STD _Get_unwrapped(_Last1);
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_InIt1>(_UFirst1, _ULast1));
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+        using _Ty              = _Iter_value_t<_InIt1>;
+        const auto _First1_ptr = _STD _To_address(_UFirst1);
+        const auto _First2_ptr = _STD _To_address(_UFirst2);
+        const auto _Count_el   = static_cast<size_t>(_ULast1 - _UFirst1);
+
+        const auto _Skip = __std_mismatch_byte_helper(_First1_ptr, _First2_ptr, _Count_el * sizeof(_Ty)) / sizeof(_Ty);
+
+        _UFirst1 += _Skip;
+        _UFirst2 += _Skip;
+    }
+#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
     while (_UFirst1 != _ULast1 && _Pred(*_UFirst1, *_UFirst2)) {
         ++_UFirst1;
         ++_UFirst2;
@@ -688,6 +701,20 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         const _CT _Count2 = _ULast2 - _UFirst2;
         const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min)(_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+            using _Ty              = _Iter_value_t<_InIt1>;
+            const auto _First1_ptr = _STD _To_address(_UFirst1);
+            const auto _First2_ptr = _STD _To_address(_UFirst2);
+            const auto _Count_el   = static_cast<size_t>(_Count);
+
+            const auto _Skip =
+                __std_mismatch_byte_helper(_First1_ptr, _First2_ptr, _Count_el * sizeof(_Ty)) / sizeof(_Ty);
+
+            _UFirst1 += _Skip;
+            _UFirst2 += _Skip;
+        }
+#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
         while (_UFirst1 != _ULast1 && _Pred(*_UFirst1, *_UFirst2)) {
             ++_UFirst1;
             ++_UFirst2;

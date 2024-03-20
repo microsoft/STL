@@ -88,6 +88,24 @@ namespace {
     void _Advance_bytes(const void*& _Target, _Integral _Offset) noexcept {
         _Target = static_cast<const unsigned char*>(_Target) + _Offset;
     }
+    
+    __m256i _Avx2_tail_mask_32(const size_t _Count_in_dwords) {
+        constexpr unsigned int _Dx = 0; // All zeros 32 bit mask
+        constexpr unsigned int _Ex = ~_Dx; // All ones 32 bit mask
+        // clang-format off
+        static alignas(32) constexpr unsigned int _Tail_masks[8][8] = {
+            {_Dx, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx},
+            {_Ex, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx},
+            {_Ex, _Ex, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx},
+            {_Ex, _Ex, _Ex, _Dx, _Dx, _Dx, _Dx, _Dx},
+            {_Ex, _Ex, _Ex, _Ex, _Dx, _Dx, _Dx, _Dx},
+            {_Ex, _Ex, _Ex, _Ex, _Ex, _Dx, _Dx, _Dx},
+            {_Ex, _Ex, _Ex, _Ex, _Ex, _Ex, _Dx, _Dx},
+            {_Ex, _Ex, _Ex, _Ex, _Ex, _Ex, _Ex, _Dx},
+        };
+        // clang-format on
+        return _mm256_load_si256(reinterpret_cast<const __m256i*>(_Tail_masks[_Count_in_dwords]));
+    }
 } // unnamed namespace
 
 extern "C" {
@@ -2296,6 +2314,64 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
     for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
         _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+    }
+}
+
+__declspec(noalias) size_t __stdcall __std_mismatch_byte_helper(
+    const void* const _First1, const void* const _First2, const size_t _Count_bytes) {
+#ifndef _M_ARM64EC
+    const auto _First1_ch = static_cast<const char*>(_First1);
+    const auto _First2_ch = static_cast<const char*>(_First2);
+
+    if (_Use_avx2()) {
+        const size_t _Count_bytes_avx_full = _Count_bytes & ~size_t{0x1F};
+
+        size_t _Result = 0;
+        for (; _Result != _Count_bytes_avx_full; _Result += 0x20) {
+            const __m256i _Elem1 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First1_ch + _Result));
+            const __m256i _Elem2 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First2_ch + _Result));
+            const auto _Bingo    = ~static_cast<unsigned int>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(_Elem1, _Elem2)));
+            if (_Bingo != 0) {
+                return _Result + _tzcnt_u32(_Bingo);
+            }
+        }
+
+        size_t _Count_tail = _Count_bytes & size_t{0x1C};
+
+        if (_Count_tail == 0) {
+            return _Result;
+        }
+
+        const __m256i _Tail_mask = _Avx2_tail_mask_32(_Count_tail >> 2);
+        const __m256i _Elem1 = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First1_ch + _Result), _Tail_mask);
+        const __m256i _Elem2 = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First2_ch + _Result), _Tail_mask);
+
+        const auto _Bingo = ~static_cast<unsigned int>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(_Elem1, _Elem2)));
+        if (_Bingo != 0) {
+            return _Result + _tzcnt_u32(_Bingo);
+        }
+
+        return _Result + _Count_tail;
+    } else if (_Use_sse2()) {
+        const size_t _Count_bytes_sse = _Count_bytes & ~size_t{0xF};
+
+        size_t _Result = 0;
+        for (; _Result != _Count_bytes_sse; _Result += 0xF) {
+            const __m128i _Elem1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First1_ch + _Result));
+            const __m128i _Elem2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2_ch + _Result));
+            const auto _Bingo    = ~static_cast<unsigned short>(_mm_movemask_epi8(_mm_cmpeq_epi8(_Elem1, _Elem2)));
+            if (_Bingo != 0) {
+                unsigned long _Offset;
+                _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
+                return _Result + _Offset;
+            }
+        }
+
+        return _Result;
+    } else
+#endif // !defined(_M_ARM64EC)
+    {
+        return 0;
     }
 }
 

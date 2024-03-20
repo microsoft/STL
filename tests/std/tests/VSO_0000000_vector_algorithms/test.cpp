@@ -313,6 +313,88 @@ void test_min_max_element_special_cases() {
            == v.begin() + 2 * block_size_in_elements + last_vector_first_elem + 9);
 }
 
+template <class FwdIt>
+auto last_known_good_mismatch(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
+    for (; first1 != last1 && first2 != last2; ++first1, ++first2) {
+        if (*first1 != *first2) {
+            break;
+        }
+    }
+
+    return std::make_pair(first1, first2);
+}
+
+template <class T>
+void test_case_mismatch(const vector<T>& a, const vector<T>& b) {
+    auto expected = last_known_good_mismatch(a.begin(), a.end(), b.begin(), b.end());
+    auto actual = mismatch(a.begin(), a.end(), b.begin(), b.end());
+    assert(expected == actual);
+#if _HAS_CXX20
+    auto ranges_actual = ranges::mismatch(a, b);
+    assert(get<0>(expected) == ranges_actual.in1);
+    assert(get<1>(expected) == ranges_actual.in2);
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_mismatch(mt19937_64& gen) {
+    constexpr size_t shrinkCount   = 4;
+    constexpr size_t mismatchCount = 30;
+    using TD                       = conditional_t<sizeof(T) == 1, int, T>;
+    uniform_int_distribution<TD> dis('a', 'z');
+    vector<T> input_a;
+    vector<T> input_b;
+    input_a.reserve(dataCount);
+    input_b.reserve(dataCount);
+
+    for (;;) {
+        // equal
+        test_case_mismatch(input_a, input_b);
+
+        // different sizes
+        for (size_t i = 0; i != shrinkCount && !input_b.empty(); ++i) {
+            test_case_mismatch(input_a, input_b);
+            test_case_mismatch(input_b, input_a);
+        }
+
+        // actual mismatch (or maybe not, depending on random)
+        if (!input_b.empty()) {
+            uniform_int_distribution<size_t> mismatch_dis(0, input_a.size() - 1);
+
+            for (size_t attempts = 0; attempts < mismatchCount; ++attempts) {
+                size_t possible_mismatch_pos   = mismatch_dis(gen);
+                input_a[possible_mismatch_pos] = static_cast<T>(dis(gen));
+                test_case_mismatch(input_a, input_b);
+                test_case_mismatch(input_b, input_a);
+            }
+        }
+
+        if (input_a.size() == dataCount) {
+            break;
+        }
+
+        input_a.push_back(static_cast<T>(dis(gen)));
+        input_b = input_a;
+    }
+}
+
+template <class C1, class C2>
+void test_mismatch_containers() {
+    C1 a{'m', 'e', 'o', 'w', ' ', 'C', 'A', 'T', 'S'};
+    C2 b{'m', 'e', 'o', 'w', ' ', 'K', 'I', 'T', 'T', 'E', 'N', 'S'};
+    const auto result_4 = mismatch(a.begin(), a.end(), b.begin(), b.end());
+    const auto result_3 = mismatch(a.begin(), a.end(), b.begin());
+    assert(get<0>(result_4) == a.begin() + 5);
+    assert(get<1>(result_4) == b.begin() + 5);
+    assert(get<0>(result_3) == a.begin() + 5);
+    assert(get<1>(result_3) == b.begin() + 5);
+#if _HAS_CXX20
+    const auto result_r = ranges::mismatch(a, b);
+    assert(result_r.in1 == a.begin() + 5);
+    assert(result_r.in2 == b.begin() + 5);
+#endif // _HAS_CXX_20
+}
+
 template <class BidIt>
 void last_known_good_reverse(BidIt first, BidIt last) {
     for (; first != last && first != --last; ++first) {
@@ -463,6 +545,24 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_case_min_max_element(vector<int64_t>{10, 0x8000'0000LL, 20, 30});
     test_case_min_max_element(
         vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
+
+    test_mismatch<char>(gen);
+    test_mismatch<signed char>(gen);
+    test_mismatch<unsigned char>(gen);
+    test_mismatch<short>(gen);
+    test_mismatch<unsigned short>(gen);
+    test_mismatch<int>(gen);
+    test_mismatch<unsigned int>(gen);
+    test_mismatch<long long>(gen);
+    test_mismatch<unsigned long long>(gen);
+
+    test_mismatch_containers<vector<char>, vector<signed char>>();
+    test_mismatch_containers<vector<char>, vector<unsigned char>>();
+    test_mismatch_containers<vector<wchar_t>, vector<char>>();
+    test_mismatch_containers<const vector<char>, const vector<char>>();
+    test_mismatch_containers<vector<char>, const vector<char>>();
+    test_mismatch_containers<const vector<wchar_t>, vector<wchar_t>>();
+    test_mismatch_containers<vector<char>, vector<int>>();
 
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
