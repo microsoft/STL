@@ -229,6 +229,10 @@ void test_case_find_first_of(const vector<T>& input_haystack, const vector<T>& i
         input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
     auto actual = find_first_of(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
     assert(expected == actual);
+#if _HAS_CXX20
+    auto ranges_actual = ranges::find_first_of(input_haystack, input_needle);
+    assert(expected == ranges_actual);
+#endif // _HAS_CXX20
 }
 
 template <class T>
@@ -264,6 +268,10 @@ void test_find_first_of_containers() {
     C2 needle{'R', 'S', 'T'};
     const auto result = find_first_of(haystack.begin(), haystack.end(), needle.begin(), needle.end());
     assert(result == haystack.begin() + 6);
+#if _HAS_CXX20
+    const auto ranges_result = ranges::find_first_of(haystack, needle);
+    assert(ranges_result == haystack.begin() + 6);
+#endif // _HAS_CXX20
 }
 
 template <class T>
