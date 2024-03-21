@@ -2043,7 +2043,7 @@ namespace {
                 _Advance_bytes(_First1, 16);
             }
 
-            const size_t _Last_part_size = (_Haystack_length & 0xF);
+            const size_t _Last_part_size = _Haystack_length & 0xF;
             const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
 
             alignas(16) uint8_t _Tmp2[16];
