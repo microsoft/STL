@@ -648,8 +648,8 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
         const auto _First2_ptr = _STD _To_address(_UFirst2);
         const auto _Count_el   = static_cast<size_t>(_ULast1 - _UFirst1);
 
-        const auto _Skip =
-            ::__std_mismatch_byte_helper(_First1_ptr, _First2_ptr, _Count_el * sizeof(_Ty)) / sizeof(_Ty);
+        const auto _Skip = static_cast<decltype(_Count)>(
+            ::__std_mismatch_byte_helper(_First1_ptr, _First2_ptr, _Count_el * sizeof(_Ty)) / sizeof(_Ty));
 
         _UFirst1 += _Skip;
         _UFirst2 += _Skip;
@@ -709,8 +709,8 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
             const auto _First2_ptr = _STD _To_address(_UFirst2);
             const auto _Count_el   = static_cast<size_t>(_Count);
 
-            const auto _Skip =
-                ::__std_mismatch_byte_helper(_First1_ptr, _First2_ptr, _Count_el * sizeof(_Ty)) / sizeof(_Ty);
+            const auto _Skip = static_cast<decltype(_Count)>(
+                ::__std_mismatch_byte_helper(_First1_ptr, _First2_ptr, _Count_el * sizeof(_Ty)) / sizeof(_Ty));
 
             _UFirst1 += _Skip;
             _UFirst2 += _Skip;

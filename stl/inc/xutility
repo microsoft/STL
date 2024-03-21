@@ -5491,8 +5491,9 @@ namespace ranges {
             const auto _First1_ptr = _STD _To_address(_First1);
             const auto _First2_ptr = _STD _To_address(_First2);
             const auto _Count_el   = static_cast<size_t>(_Count);
-            const auto _Skip =
-                ::__std_mismatch_byte_helper(_First1_ptr, _First2_ptr, _Count_el * sizeof(_Ty)) / sizeof(_Ty);
+
+            const auto _Skip = static_cast<decltype(_Count)>(
+                ::__std_mismatch_byte_helper(_First1_ptr, _First2_ptr, _Count_el * sizeof(_Ty)) / sizeof(_Ty));
 
             _First1 += _Skip;
             _First2 += _Skip;
