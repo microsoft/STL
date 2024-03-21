@@ -2356,7 +2356,7 @@ __declspec(noalias) size_t __stdcall __std_mismatch_byte_helper(
         const size_t _Count_bytes_sse = _Count_bytes & ~size_t{0xF};
 
         size_t _Result = 0;
-        for (; _Result != _Count_bytes_sse; _Result += 0xF) {
+        for (; _Result != _Count_bytes_sse; _Result += 0x10) {
             const __m128i _Elem1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First1_ch + _Result));
             const __m128i _Elem2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2_ch + _Result));
             const auto _Bingo    = ~static_cast<unsigned short>(_mm_movemask_epi8(_mm_cmpeq_epi8(_Elem1, _Elem2)));
