@@ -644,16 +644,17 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
-            using _Ty              = _Iter_value_t<_InIt1>;
-            const auto _First1_ptr = _STD _To_address(_UFirst1);
-            const auto _First2_ptr = _STD _To_address(_UFirst2);
-            const auto _Count_el   = static_cast<size_t>(_ULast1 - _UFirst1);
+            constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
-            const auto _Skip = static_cast<decltype(_ULast1 - _UFirst1)>(
-                ::__std_mismatch_byte_helper(_First1_ptr, _First2_ptr, _Count_el * sizeof(_Ty)) / sizeof(_Ty));
+            const auto _Pos = static_cast<decltype(_ULast1 - _UFirst1)>(_STD __std_mismatch<_Elem_size>(
+                _STD _To_address(_UFirst1), _STD _To_address(_UFirst2), static_cast<size_t>(_ULast1 - _UFirst1)));
 
-            _UFirst1 += _Skip;
-            _UFirst2 += _Skip;
+            _UFirst1 += _Pos;
+            _UFirst2 += _Pos;
+
+            _STD _Seek_wrapped(_First2, _UFirst2);
+            _STD _Seek_wrapped(_First1, _UFirst1);
+            return {_First1, _First2};
         }
     }
 #endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
@@ -707,16 +708,17 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
 #if _USE_STD_VECTOR_ALGORITHMS
         if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
-                using _Ty              = _Iter_value_t<_InIt1>;
-                const auto _First1_ptr = _STD _To_address(_UFirst1);
-                const auto _First2_ptr = _STD _To_address(_UFirst2);
-                const auto _Count_el   = static_cast<size_t>(_Count);
+                constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
-                const auto _Skip = static_cast<decltype(_Count)>(
-                    ::__std_mismatch_byte_helper(_First1_ptr, _First2_ptr, _Count_el * sizeof(_Ty)) / sizeof(_Ty));
+                const auto _Pos = static_cast<decltype(_Count)>(_STD __std_mismatch<_Elem_size>(
+                    _STD _To_address(_UFirst1), _STD _To_address(_UFirst2), static_cast<size_t>(_Count)));
 
-                _UFirst1 += _Skip;
-                _UFirst2 += _Skip;
+                _UFirst1 += _Pos;
+                _UFirst2 += _Pos;
+
+                _STD _Seek_wrapped(_First2, _UFirst2);
+                _STD _Seek_wrapped(_First1, _UFirst1);
+                return {_First1, _First2};
             }
         }
 #endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^

@@ -2027,6 +2027,78 @@ namespace {
         }
         return _Result;
     }
+
+    template <class _Traits, class _Ty>
+    __declspec(noalias) size_t
+        __stdcall _Mismatch(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+        size_t _Result = 0;
+#ifndef _M_ARM64EC
+        const auto _First1_ch = static_cast<const char*>(_First1);
+        const auto _First2_ch = static_cast<const char*>(_First2);
+
+        if (_Use_avx2()) {
+            const size_t _Count_bytes          = _Count * sizeof(_Ty);
+            const size_t _Count_bytes_avx_full = _Count_bytes & ~size_t{0x1F};
+
+            for (; _Result != _Count_bytes_avx_full; _Result += 0x20) {
+                const __m256i _Elem1 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First1_ch + _Result));
+                const __m256i _Elem2 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First2_ch + _Result));
+                const auto _Bingo = ~static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Elem1, _Elem2)));
+                if (_Bingo != 0) {
+                    return (_Result + _tzcnt_u32(_Bingo)) / sizeof(_Ty);
+                }
+            }
+
+            size_t _Count_tail = _Count_bytes & size_t{0x1C};
+
+            if (_Count_tail != 0) {
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Count_tail >> 2);
+                const __m256i _Elem1 =
+                    _mm256_maskload_epi32(reinterpret_cast<const int*>(_First1_ch + _Result), _Tail_mask);
+                const __m256i _Elem2 =
+                    _mm256_maskload_epi32(reinterpret_cast<const int*>(_First2_ch + _Result), _Tail_mask);
+
+                const auto _Bingo = ~static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Elem1, _Elem2)));
+                if (_Bingo != 0) {
+                    return (_Result + _tzcnt_u32(_Bingo)) / sizeof(_Ty);
+                }
+
+                _Result += _Count_tail;
+            }
+
+            _Result /= sizeof(_Ty);
+
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _Result;
+            }
+        } else if (_Use_sse2()) {
+            const size_t _Count_bytes_sse = (_Count * sizeof(_Ty)) & ~size_t{0xF};
+
+            for (; _Result != _Count_bytes_sse; _Result += 0x10) {
+                const __m128i _Elem1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First1_ch + _Result));
+                const __m128i _Elem2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2_ch + _Result));
+                const auto _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Elem1, _Elem2))) ^ 0xFFFF;
+                if (_Bingo != 0) {
+                    unsigned long _Offset;
+                    _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
+                    return (_Result + _Offset) / sizeof(_Ty);
+                }
+            }
+
+            _Result /= sizeof(_Ty);
+        }
+#endif // !defined(_M_ARM64EC)
+        const auto _First1_el = static_cast<const _Ty*>(_First1);
+        const auto _First2_el = static_cast<const _Ty*>(_First2);
+
+        for (; _Result != _Count; ++_Result) {
+            if (_First1_el[_Result] != _First2_el[_Result]) {
+                break;
+            }
+        }
+
+        return _Result;
+    }
 } // unnamed namespace
 
 extern "C" {
@@ -2110,6 +2182,26 @@ __declspec(noalias) size_t
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_8(const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
     return __std_count_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t
+    __stdcall __std_mismatch_1(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    return _Mismatch<_Find_traits_1, uint8_t>(_First1, _First2, _Count);
+}
+
+__declspec(noalias) size_t
+    __stdcall __std_mismatch_2(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    return _Mismatch<_Find_traits_2, uint16_t>(_First1, _First2, _Count);
+}
+
+__declspec(noalias) size_t
+    __stdcall __std_mismatch_4(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    return _Mismatch<_Find_traits_4, uint32_t>(_First1, _First2, _Count);
+}
+
+__declspec(noalias) size_t
+    __stdcall __std_mismatch_8(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    return _Mismatch<_Find_traits_8, uint64_t>(_First1, _First2, _Count);
 }
 
 } // extern "C"
@@ -2314,64 +2406,6 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
     for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
         _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
-    }
-}
-
-__declspec(noalias) size_t __stdcall __std_mismatch_byte_helper(
-    const void* const _First1, const void* const _First2, const size_t _Count_bytes) {
-#ifndef _M_ARM64EC
-    const auto _First1_ch = static_cast<const char*>(_First1);
-    const auto _First2_ch = static_cast<const char*>(_First2);
-
-    if (_Use_avx2()) {
-        const size_t _Count_bytes_avx_full = _Count_bytes & ~size_t{0x1F};
-
-        size_t _Result = 0;
-        for (; _Result != _Count_bytes_avx_full; _Result += 0x20) {
-            const __m256i _Elem1 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First1_ch + _Result));
-            const __m256i _Elem2 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First2_ch + _Result));
-            const auto _Bingo    = ~static_cast<unsigned int>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(_Elem1, _Elem2)));
-            if (_Bingo != 0) {
-                return _Result + _tzcnt_u32(_Bingo);
-            }
-        }
-
-        size_t _Count_tail = _Count_bytes & size_t{0x1C};
-
-        if (_Count_tail == 0) {
-            return _Result;
-        }
-
-        const __m256i _Tail_mask = _Avx2_tail_mask_32(_Count_tail >> 2);
-        const __m256i _Elem1 = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First1_ch + _Result), _Tail_mask);
-        const __m256i _Elem2 = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First2_ch + _Result), _Tail_mask);
-
-        const auto _Bingo = ~static_cast<unsigned int>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(_Elem1, _Elem2)));
-        if (_Bingo != 0) {
-            return _Result + _tzcnt_u32(_Bingo);
-        }
-
-        return _Result + _Count_tail;
-    } else if (_Use_sse2()) {
-        const size_t _Count_bytes_sse = _Count_bytes & ~size_t{0xF};
-
-        size_t _Result = 0;
-        for (; _Result != _Count_bytes_sse; _Result += 0x10) {
-            const __m128i _Elem1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First1_ch + _Result));
-            const __m128i _Elem2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2_ch + _Result));
-            const auto _Bingo    = ~static_cast<unsigned short>(_mm_movemask_epi8(_mm_cmpeq_epi8(_Elem1, _Elem2)));
-            if (_Bingo != 0) {
-                unsigned long _Offset;
-                _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
-                return _Result + _Offset;
-            }
-        }
-
-        return _Result;
-    } else
-#endif // !defined(_M_ARM64EC)
-    {
-        return 0;
     }
 }
 
