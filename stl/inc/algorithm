@@ -184,23 +184,10 @@ _Ty1* __std_find_first_of_trivial(
 _INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
 
 // Can we activate the vector algorithms for find_first_of?
-template <class _It1, class _It2, class _Pr, class _Ty1 = _Iter_value_t<_It1>, class _Ty2 = _Iter_value_t<_It2>>
+template <class _It1, class _It2, class _Pr>
 _INLINE_VAR constexpr bool _Vector_alg_in_find_first_of_is_safe =
-    _Iterators_are_contiguous<_It1, _It2> // contiguous
-    && !_Iterator_is_volatile<_It1> && !_Iterator_is_volatile<_It2> // non-volatile
-    && disjunction_v<
-#ifdef __cpp_lib_byte
-        conjunction<is_same<_Ty1, byte>, is_same<_Ty2, byte>>, // byte or...
-#endif // defined(__cpp_lib_byte)
-        conjunction<is_integral<_Ty1>, is_integral<_Ty2>>> // ...integer
-    && sizeof(_Ty1) == sizeof(_Ty2) // same sizes
-    && is_signed_v<_Ty1> == is_signed_v<_Ty2> // same signedness
-    && sizeof(_Ty1) <= 2 // pcmpestri compatible size
-    && _Is_any_of_v<_Pr, // predicate is equal
-#if _HAS_CXX20
-        ranges::equal_to,
-#endif // _HAS_CXX20
-        equal_to<>, equal_to<_Ty1>>;
+    _Equal_memcmp_is_safe<_It1, _It2, _Pr> // can replace value comparison with bitwise comparison
+    && sizeof(_Iter_value_t<_It1>) <= 2; // pcmpestri compatible size
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
