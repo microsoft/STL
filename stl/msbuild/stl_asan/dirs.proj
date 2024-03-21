@@ -10,5 +10,5 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ProjectFile Include="stl_asan.vcxproj" />
     </ItemGroup>
 
-    <Import Project="$(RepoSrc)\tools\Microsoft.DevDiv.Traversal.targets" />
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Traversal.targets))" />
 </Project>

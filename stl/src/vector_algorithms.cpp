@@ -2028,6 +2028,74 @@ namespace {
         return _Result;
     }
 
+    template <class _Ty>
+    const void* __stdcall __std_find_first_of_trivial_impl(
+        const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+#ifndef _M_ARM64EC
+        const size_t _Needle_length = _Byte_length(_First2, _Last2);
+
+        if (_Use_sse42() && _Needle_length <= 16) {
+            constexpr int _Op =
+                (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT;
+            constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
+
+            const int _Needle_length_el = static_cast<int>(_Needle_length / sizeof(_Ty));
+
+            alignas(16) uint8_t _Tmp1[16];
+            memcpy(_Tmp1, _First2, _Needle_length);
+            const __m128i _Needle = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+
+            const size_t _Haystack_length = _Byte_length(_First1, _Last1);
+            const void* _Stop_at          = _First1;
+            _Advance_bytes(_Stop_at, _Haystack_length & ~size_t{0xF});
+
+            while (_First1 != _Stop_at) {
+                const __m128i _Haystack_part = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+
+                if (_mm_cmpestrc(_Needle, _Needle_length_el, _Haystack_part, _Part_size_el, _Op)) {
+                    const int _Pos = _mm_cmpestri(_Needle, _Needle_length_el, _Haystack_part, _Part_size_el, _Op);
+                    _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                    return _First1;
+                }
+
+                _Advance_bytes(_First1, 16);
+            }
+
+            const size_t _Last_part_size = _Haystack_length & 0xF;
+            const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+
+            alignas(16) uint8_t _Tmp2[16];
+            memcpy(_Tmp2, _First1, _Last_part_size);
+            const __m128i _Haystack_last_part = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+
+            if (_mm_cmpestrc(_Needle, _Needle_length_el, _Haystack_last_part, _Last_part_size_el, _Op)) {
+                const int _Pos = _mm_cmpestri(_Needle, _Needle_length_el, _Haystack_last_part, _Last_part_size_el, _Op);
+                _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                return _First1;
+            }
+
+            _Advance_bytes(_First1, _Last_part_size);
+            return _First1;
+        }
+#endif // !_M_ARM64EC
+
+        auto _Ptr_haystack           = static_cast<const _Ty*>(_First1);
+        const auto _Ptr_haystack_end = static_cast<const _Ty*>(_Last1);
+        const auto _Ptr_needle       = static_cast<const _Ty*>(_First2);
+        const auto _Ptr_needle_end   = static_cast<const _Ty*>(_Last2);
+
+        for (; _Ptr_haystack != _Ptr_haystack_end; ++_Ptr_haystack) {
+            for (auto _Ptr = _Ptr_needle; _Ptr != _Ptr_needle_end; ++_Ptr) {
+                if (*_Ptr_haystack == *_Ptr) {
+                    return _Ptr_haystack;
+                }
+            }
+        }
+
+        return _Ptr_haystack;
+    }
+
+
     template <class _Traits, class _Ty>
     __declspec(noalias) size_t
         __stdcall _Mismatch(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
@@ -2185,6 +2253,16 @@ __declspec(noalias) size_t
     return __std_count_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
 }
 
+const void* __stdcall __std_find_first_of_trivial_1(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
+    return __std_find_first_of_trivial_impl<uint8_t>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_find_first_of_trivial_2(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
+    return __std_find_first_of_trivial_impl<uint16_t>(_First1, _Last1, _First2, _Last2);
+}
+
 __declspec(noalias) size_t
     __stdcall __std_mismatch_1(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     return _Mismatch<_Find_traits_1, uint8_t>(_First1, _First2, _Count);
@@ -2287,10 +2365,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-        return;
-    }
-
-    if (_Use_sse2()) {
+    } else if (_Use_sse2()) {
         const __m128i _Px0 = _mm_set1_epi8(_Elem0 ^ _Elem1);
         const __m128i _Px1 = _mm_set1_epi8(_Elem1);
         if (_Size_bits >= 16) {
@@ -2323,13 +2398,13 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-
-        return;
-    }
+    } else
 #endif // !defined(_M_ARM64EC)
-    const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
-    for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
-        _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+    {
+        const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
+        for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+            _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+        }
     }
 }
 
@@ -2370,10 +2445,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-        return;
-    }
-
-    if (_Use_sse2()) {
+    } else if (_Use_sse2()) {
         const __m128i _Px0 = _mm_set1_epi16(_Elem0 ^ _Elem1);
         const __m128i _Px1 = _mm_set1_epi16(_Elem1);
         if (_Size_bits >= 8) {
@@ -2400,13 +2472,13 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-
-        return;
-    }
+    } else
 #endif // !defined(_M_ARM64EC)
-    const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
-    for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
-        _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+    {
+        const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
+        for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+            _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+        }
     }
 }
 
