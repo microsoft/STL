@@ -299,8 +299,7 @@ auto __std_max(_Ty* const _First, _Ty* const _Last) noexcept {
 }
 
 template <size_t _Element_size>
-inline // TRANSITION, GH-4496
-    size_t
+size_t inline // TRANSITION, GH-4496
     __std_mismatch(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     if constexpr (_Element_size == 1) {
         return __std_mismatch_1(_First1, _First2, _Count);
