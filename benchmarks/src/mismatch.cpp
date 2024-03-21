@@ -12,8 +12,8 @@ using namespace std;
 
 constexpr int64_t no_pos = -1;
 
-template<class T>
-void bm(benchmark::State& state) {    
+template <class T>
+void bm(benchmark::State& state) {
     vector<T> a(static_cast<size_t>(state.range(0)), T{'.'});
     vector<T> b(static_cast<size_t>(state.range(0)), T{'.'});
 

@@ -327,7 +327,7 @@ auto last_known_good_mismatch(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt las
 template <class T>
 void test_case_mismatch(const vector<T>& a, const vector<T>& b) {
     auto expected = last_known_good_mismatch(a.begin(), a.end(), b.begin(), b.end());
-    auto actual = mismatch(a.begin(), a.end(), b.begin(), b.end());
+    auto actual   = mismatch(a.begin(), a.end(), b.begin(), b.end());
     assert(expected == actual);
 #if _HAS_CXX20
     auto ranges_actual = ranges::mismatch(a, b);
