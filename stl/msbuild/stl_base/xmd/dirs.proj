@@ -10,14 +10,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
                            '$(Configuration)' == 'chk' or
                            '$(Configuration)' == 'dbg')">
         <!-- Other components in dbg and chk builds depend on msvcprtd.lib -->
-        <ProjectFile Include="msvcp_app\msvcp.vcxproj" />
-        <ProjectFile Include="msvcp_kernel32\msvcp.vcxproj" />
-        <ProjectFile Include="msvcp_onecore\msvcp.vcxproj" />
+        <ProjectFile Include="msvcp_base_xmd_app.vcxproj" />
+        <ProjectFile Include="msvcp_base_xmd_kernel32.vcxproj" />
+        <ProjectFile Include="msvcp_base_xmd_onecore.vcxproj" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(SpectreBuildMode)' == ''">
-        <ProjectFile Include="msvcp_netfx\msvcp.vcxproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
+        <ProjectFile Include="msvcp_base_xmd_netfx.vcxproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
     </ItemGroup>
 
-    <Import Project="$(RepoSrc)\tools\Microsoft.DevDiv.Traversal.targets" />
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Traversal.targets))" />
 </Project>
