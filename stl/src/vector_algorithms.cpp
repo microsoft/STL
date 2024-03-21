@@ -88,7 +88,7 @@ namespace {
     void _Advance_bytes(const void*& _Target, _Integral _Offset) noexcept {
         _Target = static_cast<const unsigned char*>(_Target) + _Offset;
     }
-    
+
     __m256i _Avx2_tail_mask_32(const size_t _Count_in_dwords) {
         constexpr unsigned int _Dx = 0; // All zeros 32 bit mask
         constexpr unsigned int _Ex = ~_Dx; // All ones 32 bit mask
