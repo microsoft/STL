@@ -954,7 +954,7 @@ _NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const
     return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
 }
 
-_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <size_t _Index, class... _Types>
+template <size_t _Index, class... _Types>
 _NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept {
     // used by pair's piecewise constructor
     using _Ty    = tuple_element_t<_Index, tuple<_Types...>>;
@@ -1053,7 +1053,7 @@ _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::_Ret tuple_cat(_Tuples&&.
     using _Ret    = typename _Cat1::_Ret;
     using _Kx_seq = typename _Cat1::_Kx_seq;
     using _Ix_seq = typename _Cat1::_Ix_seq;
-    return _Tuple_cat<_Ret>(_Kx_seq{}, _Ix_seq{}, _STD forward_as_tuple(_STD forward<_Tuples>(_Tpls)...));
+    return _STD _Tuple_cat<_Ret>(_Kx_seq{}, _Ix_seq{}, _STD forward_as_tuple(_STD forward<_Tuples>(_Tpls)...));
 }
 
 #if _HAS_CXX17
@@ -1073,9 +1073,9 @@ _EXPORT_STD template <class _Callable, _Tuple_like _Tuple>
 _EXPORT_STD template <class _Callable, class _Tuple>
 #endif // ^^^ !_HAS_CXX23 ^^^
 constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) noexcept(
-    noexcept(_Apply_impl(_STD forward<_Callable>(_Obj), _STD forward<_Tuple>(_Tpl),
+    noexcept(_STD _Apply_impl(_STD forward<_Callable>(_Obj), _STD forward<_Tuple>(_Tpl),
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{}))) {
-    return _Apply_impl(_STD forward<_Callable>(_Obj), _STD forward<_Tuple>(_Tpl),
+    return _STD _Apply_impl(_STD forward<_Callable>(_Obj), _STD forward<_Tuple>(_Tpl),
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
 }
 
@@ -1097,10 +1097,10 @@ _EXPORT_STD template <class _Ty, _Tuple_like _Tuple>
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 _EXPORT_STD template <class _Ty, class _Tuple>
 #endif // ^^^ !_HAS_CXX23 ^^^
-_NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) noexcept(noexcept(_Make_from_tuple_impl<_Ty>(
+_NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) noexcept(noexcept(_STD _Make_from_tuple_impl<_Ty>(
     _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{}))) /* strengthened */ {
     // construct _Ty from the elements of _Tpl
-    return _Make_from_tuple_impl<_Ty>(
+    return _STD _Make_from_tuple_impl<_Ty>(
         _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
 }
 #endif // _HAS_CXX17

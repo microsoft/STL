@@ -69,11 +69,7 @@ public:
     _CONSTEXPR20 ~nontrivial_pointer() = default;
 
     _CONSTEXPR20 explicit operator bool() const noexcept {
-#ifdef __EDG__ // TRANSITION, VSO-1888157
-        return static_cast<bool>(ptr);
-#else // ^^^ workaround / no workaround vvv
         return ptr != nullptr;
-#endif // ^^^ no workaround ^^^
     }
     _CONSTEXPR20 add_lvalue_reference_t<T> operator*() const noexcept {
         return *ptr;

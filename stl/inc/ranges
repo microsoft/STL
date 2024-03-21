@@ -3906,8 +3906,7 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Fake_copy_init<bool>(
-                    _Left._Outer == _Right._Outer && _Left._Inner == _Right._Inner))) /* strengthened */
+                noexcept(_Left._Outer == _Right._Outer && _Left._Inner == _Right._Inner)) /* strengthened */
                 requires _Deref_is_glvalue && forward_range<_Base> && equality_comparable<_InnerIter>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0

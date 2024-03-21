@@ -155,7 +155,7 @@ struct tuple_element;
 _EXPORT_STD template <size_t _Index, class _Tuple>
 using tuple_element_t = typename tuple_element<_Index, _Tuple>::type;
 
-_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <size_t _Index, class... _Types>
+template <size_t _Index, class... _Types>
 _NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
 
 _EXPORT_STD template <size_t _Index, class... _Types>
@@ -304,7 +304,8 @@ struct pair { // store a pair of values
 
     template <class _Tuple1, class _Tuple2, size_t... _Indices1, size_t... _Indices2>
     constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indices1...>, index_sequence<_Indices2...>)
-        : first(_Tuple_get<_Indices1>(_STD move(_Val1))...), second(_Tuple_get<_Indices2>(_STD move(_Val2))...) {}
+        : first(_STD _Tuple_get<_Indices1>(_STD move(_Val1))...),
+          second(_STD _Tuple_get<_Indices2>(_STD move(_Val2))...) {}
 
     template <class... _Types1, class... _Types2>
     _CONSTEXPR20 pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2)

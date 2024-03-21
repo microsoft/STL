@@ -233,19 +233,47 @@ void test_mixed_custom_formattable_type() {
     test_custom_equiv_with_format_mixed<const void*, charT>(STR("{}{}"), nullptr);
 }
 
+// Test that handle doesn't have public non-Standard constructors.
 template <class OutIt, class CharT>
 void test_basic_format_arg_handle_construction() {
     using handle = basic_format_arg<basic_format_context<OutIt, CharT>>::handle;
 
-    static_assert(is_constructible_v<handle, int&>);
-    static_assert(is_constructible_v<handle, const int&>);
-    static_assert(!is_constructible_v<handle, int>);
-    static_assert(is_constructible_v<handle, const int>);
+    static_assert(is_constructible_v<handle, handle>);
+    static_assert(is_constructible_v<handle, const handle&>);
 
-    static_assert(is_constructible_v<handle, custom_formattable_type<CharT>&>);
-    static_assert(is_constructible_v<handle, const custom_formattable_type<CharT>&>);
+    static_assert(!is_constructible_v<handle, int&>);
+    static_assert(!is_constructible_v<handle, const int&>);
+    static_assert(!is_constructible_v<handle, int>);
+    static_assert(!is_constructible_v<handle, const int>);
+
+    static_assert(!is_constructible_v<handle, custom_formattable_type<CharT>&>);
+    static_assert(!is_constructible_v<handle, const custom_formattable_type<CharT>&>);
     static_assert(!is_constructible_v<handle, custom_formattable_type<CharT>>);
-    static_assert(is_constructible_v<handle, const custom_formattable_type<CharT>>);
+    static_assert(!is_constructible_v<handle, const custom_formattable_type<CharT>>);
+}
+
+template <class T, class... Args>
+constexpr bool is_constructible_with_trailing_empty_brace_impl = requires { T(declval<Args>()..., {}); };
+
+static_assert(is_constructible_with_trailing_empty_brace_impl<string>);
+static_assert(is_constructible_with_trailing_empty_brace_impl<pair<int, int>, int>);
+static_assert(!is_constructible_with_trailing_empty_brace_impl<pair<int, int>, int, int>);
+
+// Test that basic_format_context doesn't have public non-Standard constructors.
+template <class OutIt, class CharT>
+void test_basic_format_context_construction() {
+    using context = basic_format_context<OutIt, CharT>;
+
+    static_assert(!is_default_constructible_v<context>);
+    static_assert(is_copy_constructible_v<context> == is_copy_constructible_v<OutIt>);
+    static_assert(is_move_constructible_v<context>);
+
+    static_assert(!is_constructible_v<context, OutIt, basic_format_args<context>>);
+    static_assert(!is_constructible_v<context, OutIt, const basic_format_args<context>&>);
+
+    static_assert(!is_constructible_with_trailing_empty_brace_impl<context>);
+    static_assert(!is_constructible_with_trailing_empty_brace_impl<context, OutIt, basic_format_args<context>>);
+    static_assert(!is_constructible_with_trailing_empty_brace_impl<context, OutIt, const basic_format_args<context>&>);
 }
 
 int main() {
@@ -262,5 +290,12 @@ int main() {
     test_basic_format_arg_handle_construction<wchar_t*, wchar_t>();
     test_basic_format_arg_handle_construction<wstring::iterator, wchar_t>();
     test_basic_format_arg_handle_construction<back_insert_iterator<wstring>, wchar_t>();
+
+    test_basic_format_context_construction<char*, char>();
+    test_basic_format_context_construction<string::iterator, char>();
+    test_basic_format_context_construction<back_insert_iterator<string>, char>();
+    test_basic_format_context_construction<wchar_t*, wchar_t>();
+    test_basic_format_context_construction<wstring::iterator, wchar_t>();
+    test_basic_format_context_construction<back_insert_iterator<wstring>, wchar_t>();
     return 0;
 }

@@ -90,11 +90,6 @@ const void* __stdcall __std_find_trivial_2(const void* _First, const void* _Last
 const void* __stdcall __std_find_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
-const void* __stdcall __std_find_trivial_unsized_1(const void* _First, uint8_t _Val) noexcept;
-const void* __stdcall __std_find_trivial_unsized_2(const void* _First, uint16_t _Val) noexcept;
-const void* __stdcall __std_find_trivial_unsized_4(const void* _First, uint32_t _Val) noexcept;
-const void* __stdcall __std_find_trivial_unsized_8(const void* _First, uint64_t _Val) noexcept;
-
 const void* __stdcall __std_min_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
@@ -165,27 +160,6 @@ _Ty* __std_find_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) n
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
-    } else {
-        static_assert(_Always_false<_Ty>, "Unexpected size");
-    }
-}
-
-template <class _Ty, class _TVal>
-_Ty* __std_find_trivial_unsized(_Ty* const _First, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
-        return _STD __std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_trivial_unsized_1(_First, static_cast<uint8_t>(_Val))));
-    } else if constexpr (sizeof(_Ty) == 2) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_trivial_unsized_2(_First, static_cast<uint16_t>(_Val))));
-    } else if constexpr (sizeof(_Ty) == 4) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_trivial_unsized_4(_First, static_cast<uint32_t>(_Val))));
-    } else if constexpr (sizeof(_Ty) == 8) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_trivial_unsized_8(_First, static_cast<uint64_t>(_Val))));
     } else {
         static_assert(_Always_false<_Ty>, "Unexpected size");
     }
@@ -5975,8 +5949,14 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
-        constexpr bool _Is_sized = sized_sentinel_for<_Se, _It>;
-        if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && _Sized_or_unreachable_sentinel_for<_Se, _It>
+        // TRANSITION, DevCom-1614562: not trying wmemchr
+        // Only single-byte elements are suitable for unsized optimization
+        constexpr bool _Single_byte_elements = sizeof(_Iter_value_t<_It>) == 1;
+        constexpr bool _Is_sized             = sized_sentinel_for<_Se, _It>;
+
+        if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty>
+                      && (_Single_byte_elements ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
+                                                : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)
                       && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
@@ -5988,27 +5968,19 @@ namespace ranges {
                     }
                 }
 
-                using _Ptr_t = remove_reference_t<_Iter_ref_t<_It>>*;
-#if _USE_STD_VECTOR_ALGORITHMS
+                using _Ptr_t          = remove_reference_t<_Iter_ref_t<_It>>*;
                 const auto _First_ptr = _STD _To_address(_First);
 
                 _Ptr_t _Result;
-
+#if _USE_STD_VECTOR_ALGORITHMS
                 if constexpr (_Is_sized) {
+                    // When _Is_sized && _Single_byte_elements, prefer this over memchr() for performance
                     const auto _Last_ptr = _First_ptr + (_Last - _First);
-
-                    _Result = _STD __std_find_trivial(_First_ptr, _Last_ptr, _Val);
-                } else {
-                    _Result = _STD __std_find_trivial_unsized(_First_ptr, _Val);
-                }
-
-                if constexpr (is_pointer_v<_It>) {
-                    return _Result;
-                } else {
-                    return _RANGES next(_STD move(_First), _Result - _First_ptr);
-                }
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
-                if constexpr (sizeof(_Iter_value_t<_It>) == 1) {
+                    _Result              = _STD __std_find_trivial(_First_ptr, _Last_ptr, _Val);
+                } else
+#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
+                {
+                    _STL_INTERNAL_STATIC_ASSERT(_Single_byte_elements);
                     size_t _Count;
                     if constexpr (_Is_sized) {
                         _Count = static_cast<size_t>(_Last - _First);
@@ -6016,21 +5988,20 @@ namespace ranges {
                         _Count = SIZE_MAX;
                     }
 
-                    const auto _First_ptr = _STD to_address(_First);
-                    const auto _Result =
-                        static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
-                    if (_Result) {
-                        if constexpr (is_pointer_v<_It>) {
-                            return _Result;
-                        } else {
-                            return _RANGES next(_STD move(_First), _Result - _First_ptr);
+                    _Result = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+
+                    if constexpr (_Is_sized) {
+                        if (_Result == nullptr) {
+                            return _RANGES next(_STD move(_First), _Last);
                         }
-                    } else {
-                        return _RANGES next(_STD move(_First), _Last);
                     }
                 }
-                // TRANSITION, DevCom-1614562: not trying wmemchr
-#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
+
+                if constexpr (is_pointer_v<_It>) {
+                    return _Result;
+                } else {
+                    return _RANGES next(_STD move(_First), _Result - _First_ptr);
+                }
             }
         }
 
