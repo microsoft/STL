@@ -2097,8 +2097,8 @@ namespace {
 
 
     template <class _Traits, class _Ty>
-    __declspec(noalias) size_t
-        __stdcall _Mismatch(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    __declspec(noalias) size_t __stdcall __std_mismatch_impl(
+        const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
         size_t _Result = 0;
 #ifndef _M_ARM64EC
         const auto _First1_ch = static_cast<const char*>(_First1);
@@ -2265,22 +2265,22 @@ const void* __stdcall __std_find_first_of_trivial_2(
 
 __declspec(noalias) size_t
     __stdcall __std_mismatch_1(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatch<_Find_traits_1, uint8_t>(_First1, _First2, _Count);
+    return __std_mismatch_impl<_Find_traits_1, uint8_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_mismatch_2(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatch<_Find_traits_2, uint16_t>(_First1, _First2, _Count);
+    return __std_mismatch_impl<_Find_traits_2, uint16_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_mismatch_4(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatch<_Find_traits_4, uint32_t>(_First1, _First2, _Count);
+    return __std_mismatch_impl<_Find_traits_4, uint32_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_mismatch_8(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatch<_Find_traits_8, uint64_t>(_First1, _First2, _Count);
+    return __std_mismatch_impl<_Find_traits_8, uint64_t>(_First1, _First2, _Count);
 }
 
 } // extern "C"
