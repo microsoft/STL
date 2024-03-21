@@ -209,9 +209,6 @@ std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothro
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align_nothrow.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size_nothrow.pass.cpp:1 FAIL
 
-# ASAN runtime intercepts `strtol` and breaks LWG-2009 (VSO-1875597)
-std/strings/string.conversions/stol.pass.cpp:1 FAIL
-
 # Not analyzed. SKIPPED because this is x86-specific.
 # ERROR: AddressSanitizer: allocator is out of memory trying to allocate NNNN bytes
 std/atomics/atomics.types.generic/atomics.types.float/compare_exchange_strong.pass.cpp:1 SKIPPED
