@@ -453,7 +453,7 @@ namespace test_mismatch_sizes_and_alignments {
     };
 #pragma pack(pop)
 
-   template <class T, size_t Size, size_t PadSize>
+    template <class T, size_t Size, size_t PadSize>
     char stack_array_various_alignments_impl() {
         with_pad<T, Size + 1, PadSize + 1> a = {};
         with_pad<T, Size + 1, PadSize + 1> b = {};
@@ -498,7 +498,7 @@ namespace test_mismatch_sizes_and_alignments {
         for (size_t i = 0; i != range; ++i) {
             T* a = static_cast<T*>(calloc(i, sizeof(T)));
             T* b = static_cast<T*>(calloc(i, sizeof(T)));
-            assert(mismatch(a, a+i, b, b+i) == make_pair(a+i, b+i));
+            assert(mismatch(a, a + i, b, b + i) == make_pair(a + i, b + i));
             free(a);
             free(b);
         }
@@ -512,7 +512,7 @@ namespace test_mismatch_sizes_and_alignments {
             a[i + 1] = 0;
         }
     }
-} // namespace test_mismatchsizes_and_alignmnets
+} // namespace test_mismatch_sizes_and_alignments
 
 template <class C1, class C2>
 void test_mismatch_containers() {
