@@ -441,6 +441,79 @@ void test_mismatch(mt19937_64& gen) {
     }
 }
 
+namespace test_mismatch_sizes_and_alignments {
+    constexpr size_t range     = 33;
+    constexpr size_t alignment = 32;
+
+#pragma pack(push, 1)
+    template <class T, size_t Size, size_t PadSize>
+    struct with_pad {
+        char p[PadSize];
+        T v[Size];
+    };
+#pragma pack(pop)
+
+   template <class T, size_t Size, size_t PadSize>
+    char stack_array_various_alignments_impl() {
+        with_pad<T, Size + 1, PadSize + 1> a = {};
+        with_pad<T, Size + 1, PadSize + 1> b = {};
+        assert(mismatch(begin(a.v), end(a.v), begin(b.v), end(b.v)) == make_pair(end(a.v), end(b.v)));
+        return 0;
+    }
+
+    template <class T, size_t Size, size_t... PadsSizes>
+    void stack_array_various_alignments(index_sequence<PadsSizes...>) {
+        char ignored[] = {stack_array_various_alignments_impl<T, Size, PadsSizes>()...};
+        (void) ignored;
+    }
+
+    template <class T, size_t Size>
+    char stack_array_impl() {
+        T a[Size + 1] = {};
+        T b[Size + 1] = {};
+        assert(mismatch(begin(a), end(a), begin(b), end(b)) == make_pair(end(a), end(b)));
+        stack_array_various_alignments<T, Size>(make_index_sequence<alignment>{});
+        return 0;
+    }
+
+    template <class T, size_t... Sizes>
+    void stack_array(index_sequence<Sizes...>) {
+        char ignored[] = {stack_array_impl<T, Sizes>()...};
+        (void) ignored;
+    }
+
+    template <class T>
+    void test() {
+        // stack with different sizes and alignments. ASan would catch out-of-range reads
+        stack_array<T>(make_index_sequence<range>{});
+
+        // vector with different sizes. ASan vector annotations would catch out-of-range reads
+        for (size_t i = 0; i != range; ++i) {
+            std::vector<T> a(i, 0);
+            std::vector<T> b(i, 0);
+            assert(mismatch(begin(a), end(a), begin(b), end(b)) == make_pair(end(a), end(b)));
+        }
+
+        // heap with different sizes. ASan would catch out-of-range reads
+        for (size_t i = 0; i != range; ++i) {
+            T* a = static_cast<T*>(calloc(i, sizeof(T)));
+            T* b = static_cast<T*>(calloc(i, sizeof(T)));
+            assert(mismatch(a, a+i, b, b+i) == make_pair(a+i, b+i));
+            free(a);
+            free(b);
+        }
+
+        // subarray from stack array. We would have wrong result if run out of the range (whole range plus one)
+        T a[range + 1] = {};
+        T b[range + 1] = {};
+        for (size_t i = 0; i != range; ++i) {
+            a[i + 1] = 1;
+            assert(mismatch(a, a + i, b, b + i) == make_pair(a + i, b + i));
+            a[i + 1] = 0;
+        }
+    }
+} // namespace test_mismatchsizes_and_alignmnets
+
 template <class C1, class C2>
 void test_mismatch_containers() {
     C1 a{'m', 'e', 'o', 'w', ' ', 'C', 'A', 'T', 'S'};
@@ -644,6 +717,11 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_mismatch_containers<vector<char>, const vector<char>>();
     test_mismatch_containers<const vector<wchar_t>, vector<wchar_t>>();
     test_mismatch_containers<vector<char>, vector<int>>();
+
+    test_mismatch_sizes_and_alignments::test<char>();
+    test_mismatch_sizes_and_alignments::test<short>();
+    test_mismatch_sizes_and_alignments::test<int>();
+    test_mismatch_sizes_and_alignments::test<long long>();
 
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
