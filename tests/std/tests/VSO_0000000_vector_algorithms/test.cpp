@@ -504,7 +504,8 @@ namespace test_mismatch_sizes_and_alignments {
             free(b);
         }
 
-        // subarray from stack array. We would have wrong result if run out of the range (whole range plus ontwoe)
+        // subarray from stack array. We would have wrong result if run out of the range.
+        // The mismatch is at whole range plus two, and past the end is whole range plus one.
         T a[range + 2] = {};
         T b[range + 2] = {};
         for (size_t i = 0; i != range; ++i) {
