@@ -4702,12 +4702,13 @@ namespace ranges {
             private:
                 /* [[no_unique_address]] */ _Outer_iter _First{};
 
-            public:
-                value_type() = default;
                 constexpr explicit value_type(_Outer_iter _First_) noexcept(
-                    is_nothrow_move_constructible_v<_Outer_iter>) // strengthened
+                    is_nothrow_move_constructible_v<_Outer_iter>)
                     : _First{_STD move(_First_)} {}
 
+                friend _Outer_iter;
+
+            public:
                 _NODISCARD constexpr auto begin() const {
                     return _Inner_iter<_Const>{_First};
                 }

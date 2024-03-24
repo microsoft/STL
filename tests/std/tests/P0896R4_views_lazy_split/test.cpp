@@ -63,6 +63,10 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
         STATIC_ASSERT(same_as<decltype(base | closure), R>);
         STATIC_ASSERT(noexcept(base | closure) == is_noexcept);
+
+        using outer_iterator = decltype(views::lazy_split(base, delimiter).begin());
+        STATIC_ASSERT(!is_default_constructible_v<iter_value_t<outer_iterator>>); // LWG-4013
+        STATIC_ASSERT(!is_constructible_v<iter_value_t<outer_iterator>, outer_iterator>); // LWG-4013
     }
 
     // ... with const lvalue argument
@@ -77,6 +81,10 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
         STATIC_ASSERT(same_as<decltype(as_const(base) | closure), R>);
         STATIC_ASSERT(noexcept(as_const(base) | closure) == is_noexcept);
+
+        using outer_iterator = decltype(views::lazy_split(as_const(base), delimiter).begin());
+        STATIC_ASSERT(!is_default_constructible_v<iter_value_t<outer_iterator>>); // LWG-4013
+        STATIC_ASSERT(!is_constructible_v<iter_value_t<outer_iterator>, outer_iterator>); // LWG-4013
     } else if constexpr (!is_view) {
         using LSV                  = ranges::lazy_split_view<ranges::ref_view<const remove_reference_t<Base>>, DV>;
         constexpr bool is_noexcept = is_nothrow_constructible_v<LSV, const remove_reference_t<Base>&, Delimiter&>;
@@ -99,6 +107,10 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
         STATIC_ASSERT(same_as<decltype(move(base) | closure), R>);
         STATIC_ASSERT(noexcept(move(base) | closure) == is_noexcept);
+
+        using outer_iterator = decltype(views::lazy_split(move(base), delimiter).begin());
+        STATIC_ASSERT(!is_default_constructible_v<iter_value_t<outer_iterator>>); // LWG-4013
+        STATIC_ASSERT(!is_constructible_v<iter_value_t<outer_iterator>, outer_iterator>); // LWG-4013
     } else if constexpr (movable<remove_reference_t<Base>>) {
         using RS = ranges::lazy_split_view<ranges::owning_view<remove_reference_t<Base>>, DV>;
         constexpr bool is_noexcept =
@@ -123,6 +135,10 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
         STATIC_ASSERT(same_as<decltype(move(as_const(base)) | closure), R>);
         STATIC_ASSERT(noexcept(move(as_const(base)) | closure) == is_noexcept);
+
+        using outer_iterator = decltype(views::lazy_split(move(as_const(base)), delimiter).begin());
+        STATIC_ASSERT(!is_default_constructible_v<iter_value_t<outer_iterator>>); // LWG-4013
+        STATIC_ASSERT(!is_constructible_v<iter_value_t<outer_iterator>, outer_iterator>); // LWG-4013
     }
 
     // Validate deduction guide
