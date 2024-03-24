@@ -418,6 +418,7 @@ void test_mismatch(mt19937_64& gen) {
         for (size_t i = 0; i != shrinkCount && !input_b.empty(); ++i) {
             test_case_mismatch(input_a, input_b);
             test_case_mismatch(input_b, input_a);
+            input_b.pop_back();
         }
 
         // actual mismatch (or maybe not, depending on random)
