@@ -510,7 +510,7 @@ namespace test_mismatch_sizes_and_alignments {
         for (size_t i = 0; i != range; ++i) {
             a[i + 1] = 1;
             // whole range mistmatch finds mismatch after past-the-end
-            assert(mismatch(a, a + i + 1, b, b + i + 1) == make_pair(a + i + 1, b + i + 1));
+            assert(mismatch(a, a + range + 1, b, b + range + 1) == make_pair(a + i + 1, b + i + 1));
             // limited range mismatch gets to past-the-end
             assert(mismatch(a, a + i, b, b + i) == make_pair(a + i, b + i));
             a[i + 1] = 0;
