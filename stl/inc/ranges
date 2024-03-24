@@ -1042,6 +1042,9 @@ namespace ranges {
             return _STD addressof(*_Val);
         }
 
+        _NODISCARD static constexpr bool empty() noexcept {
+            return false;
+        }
     private:
         /* [[no_unique_address]] */ _Movable_box<_Ty> _Val{};
     };

@@ -52,6 +52,13 @@ constexpr bool test_one_type(T value, Args&&... args) {
     same_as<R> auto r0 = ranges::single_view{value};
     const R& cr0       = r0;
 
+    // validate member empty
+    static_assert(same_as<decltype(R::empty()), bool>);
+    static_assert(R::empty() == false);
+    static_assert(noexcept(R::empty()));
+    static_assert(noexcept(ranges::empty(r0)));
+    static_assert(noexcept(ranges::empty(cr0)));
+
     // validate member size
     static_assert(same_as<decltype(R::size()), size_t>);
     static_assert(R::size() == 1);
