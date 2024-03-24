@@ -203,7 +203,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert((as_const(r).begin() == s) == is_empty);
         }
 
-        STATIC_ASSERT(common_range<R> == (common_range<V> && sized_range<V>) );
+        STATIC_ASSERT(common_range<R> == (forward_range<V> && common_range<V> && sized_range<V>) );
         if constexpr (common_range<V> && sized_range<V> && bidirectional_range<V>) {
             if (!is_empty) {
                 assert(*prev(s) == *prev(end(expected)));
@@ -228,7 +228,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert((r.begin() == cs) == is_empty);
         }
 
-        STATIC_ASSERT(common_range<const R> == (common_range<const V> && sized_range<const V>) );
+        STATIC_ASSERT(
+            common_range<const R> == (forward_range<const V> && common_range<const V> && sized_range<const V>) );
         if constexpr (common_range<const V> && sized_range<const V> && bidirectional_range<const V>) {
             if (!is_empty) {
                 assert(*prev(cs) == *prev(end(expected)));
