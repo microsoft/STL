@@ -505,13 +505,15 @@ namespace test_mismatch_sizes_and_alignments {
         }
 
         // subarray from stack array. We would have wrong result if run out of the range.
-        // The mismatch is at whole range plus two, and past the end is whole range plus one.
-        T a[range + 2] = {};
-        T b[range + 2] = {};
+        T a[range + 1] = {};
+        T b[range + 1] = {};
         for (size_t i = 0; i != range; ++i) {
-            a[i + 2] = 1;
+            a[i + 1] = 1;
+            // whole range mistmatch finds mismatch after past-the-end
+            assert(mismatch(a, a + i + 1, b, b + i + 1) == make_pair(a + i + 1, b + i + 1));
+            // limited range mismatch gets to past-the-end
             assert(mismatch(a, a + i, b, b + i) == make_pair(a + i, b + i));
-            a[i + 2] = 0;
+            a[i + 1] = 0;
         }
     }
 } // namespace test_mismatch_sizes_and_alignments
