@@ -1031,6 +1031,10 @@ namespace ranges {
             return data() + 1;
         }
 
+        _NODISCARD static constexpr bool empty() noexcept {
+            return false;
+        }
+
         _NODISCARD static constexpr size_t size() noexcept {
             return 1;
         }
@@ -1040,10 +1044,6 @@ namespace ranges {
         }
         _NODISCARD constexpr const _Ty* data() const noexcept {
             return _STD addressof(*_Val);
-        }
-
-        _NODISCARD static constexpr bool empty() noexcept {
-            return false;
         }
 
     private:
