@@ -40,7 +40,7 @@ uint32_t can_make_from_tuple(...) {
 
 template <class T, class Tuple>
 inline constexpr bool has_make_from_tuple_sfinae =
-    std::is_same_v<decltype(can_make_from_tuple<T, Tuple>(std::declval<T>(), std::declval<Tuple>())), uint8_t>;                                                            
+    std::is_same_v<decltype(can_make_from_tuple<T, Tuple>(std::declval<T>(), std::declval<Tuple>())), uint8_t>;
 
 template <class T, class Tuple>
 auto can_make_from_tuple_impl(T&&, Tuple&& t)
@@ -58,8 +58,8 @@ template <class T, class Tuple>
 inline constexpr bool has_make_from_tuple_impl_sfinae =
     std::is_same_v<decltype(can_make_from_tuple_impl<T, Tuple>(std::declval<T>(), std::declval<Tuple>())), uint8_t>;
 
-template <class _Ty, class _Tuple, class _Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<_Tuple>>>,
-    class = void>
+template <class _Ty, class _Tuple,
+    class _Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<_Tuple>>>, class = void>
 inline constexpr bool has_make_from_tuple = false;
 template <class _Ty, class _Tuple, size_t... _Indices>
 inline constexpr bool has_make_from_tuple<_Ty, _Tuple, std::index_sequence<_Indices...>,

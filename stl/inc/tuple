@@ -1096,8 +1096,8 @@ template <class _Ty, class _Tuple, size_t... _Indices>
 constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>)
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty, class _Tuple, size_t... _Indices>
-constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>,
-    enable_if_t<_Can_make_from_tuple<_Ty, _Tuple>, int> = 0)
+constexpr _Ty _Make_from_tuple_impl(
+    _Tuple&& _Tpl, index_sequence<_Indices...>, enable_if_t<_Can_make_from_tuple<_Ty, _Tuple>, int> = 0)
 #endif // ^^^ !_HAS_CXX20 ^^^
     noexcept(is_nothrow_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>) {
     return _Ty(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
