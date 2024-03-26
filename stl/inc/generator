@@ -37,7 +37,7 @@ struct alignas(__STDCPP_DEFAULT_NEW_ALIGNMENT__) _Aligned_block {
 template <class _Alloc>
 concept _Has_real_pointers = same_as<_Alloc, void> || is_pointer_v<typename allocator_traits<_Alloc>::pointer>;
 
-template <class _Allocator = void>
+template <class _Allocator>
 class _Promise_allocator { // statically specified allocator type
 private:
     using _Alloc           = _Rebind_alloc_t<_Allocator, _Aligned_block>;
