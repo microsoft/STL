@@ -3,9 +3,12 @@
 
 #include <cassert>
 #include <coroutine>
+#include <cstddef>
+#include <cstdint>
 #include <forward_list>
 #include <generator>
 #include <list>
+#include <memory>
 #include <memory_resource>
 #include <new>
 #include <ranges>
