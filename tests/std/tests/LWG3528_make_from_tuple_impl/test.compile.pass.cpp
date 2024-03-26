@@ -34,35 +34,36 @@ enum class D {
 };
 
 template <class T, class Tuple>
-auto can_make_from_tuple(T&&, Tuple&& t) -> decltype(std::make_from_tuple<T>(t), uint8_t()) {
+auto can_make_from_tuple(T&&, Tuple&& t) -> decltype(std::make_from_tuple<T>(t), std::uint8_t()) {
     return 0;
 }
 
 template <class T, class Tuple>
-uint32_t can_make_from_tuple(...) {
+std::uint32_t can_make_from_tuple(...) {
     return 0;
 }
 
 template <class T, class Tuple>
 inline constexpr bool has_make_from_tuple_sfinae =
-    std::is_same_v<decltype(can_make_from_tuple<T, Tuple>(std::declval<T>(), std::declval<Tuple>())), uint8_t>;
+    std::is_same_v<decltype(can_make_from_tuple<T, Tuple>(std::declval<T>(), std::declval<Tuple>())), std::uint8_t>;
 
 template <class T, class Tuple>
 auto can_make_from_tuple_impl(T&&, Tuple&& t)
     -> decltype(std::_Make_from_tuple_impl<T>(std::forward<Tuple>(t),
                     std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{}),
-        uint8_t()) {
+        std::uint8_t()) {
     return 0;
 }
 
 template <class T, class Tuple>
-uint32_t can_make_from_tuple_impl(...) {
+std::uint32_t can_make_from_tuple_impl(...) {
     return 0;
 }
 
 template <class T, class Tuple>
 inline constexpr bool has_make_from_tuple_impl_sfinae =
-    std::is_same_v<decltype(can_make_from_tuple_impl<T, Tuple>(std::declval<T>(), std::declval<Tuple>())), uint8_t>;
+    std::is_same_v<decltype(can_make_from_tuple_impl<T, Tuple>(std::declval<T>(), std::declval<Tuple>())),
+        std::uint8_t>;
 
 template <class _Ty, class _Tuple,
     class _Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<_Tuple>>>, class = void>
