@@ -1261,6 +1261,79 @@ void test_C6510_warning() { // compile-only
     (void) sv;
 }
 
+#if _HAS_CXX20
+// LWG-3950 "std::basic_string_view comparison operators are overspecified"
+namespace test_lwg_3950 {
+    template <class Traits>
+    struct get_string_comparison_category {
+        using type = weak_ordering;
+    };
+
+    template <class Traits>
+        requires requires { typename Traits::comparison_category; }
+    struct get_string_comparison_category<Traits> {
+        using type = Traits::comparison_category;
+
+        static_assert(disjunction_v<is_same<type, partial_ordering>, is_same<type, weak_ordering>,
+            is_same<type, strong_ordering>>);
+    };
+
+    template <class Traits>
+    using get_string_comparison_category_t = get_string_comparison_category<Traits>::type;
+
+    template <class Traits>
+    concept characterized_traits = requires { typename Traits::is_characterized; };
+
+#ifdef __clang__ // TRANSITION, LLVM-75404
+#define CONST_PARAM const
+#else // ^^^ workaround / no workaround vvv
+#define CONST_PARAM
+#endif // ^^^ no workaround ^^^
+
+    template <class CharT, characterized_traits Traits>
+    constexpr bool operator==(CONST_PARAM basic_string_view<CharT, Traits> x,
+        CONST_PARAM type_identity_t<basic_string_view<CharT, Traits>> y) noexcept {
+        return x.size() == y.size() && x.compare(y) == 0;
+    }
+    template <class CharT, characterized_traits Traits>
+    constexpr get_string_comparison_category_t<Traits> operator<=>(CONST_PARAM basic_string_view<CharT, Traits> x,
+        CONST_PARAM type_identity_t<basic_string_view<CharT, Traits>> y) noexcept {
+        return static_cast<get_string_comparison_category_t<Traits>>(x.compare(y) <=> 0);
+    }
+
+    template <class CharT>
+    struct test_traits : char_traits<CharT> {
+        using is_characterized = void;
+    };
+
+    using test_string_view = basic_string_view<char, test_traits<char>>;
+
+    static_assert(test_string_view{} == test_string_view{});
+    static_assert(!(test_string_view{} != test_string_view{}));
+    static_assert(!(test_string_view{} < test_string_view{}));
+    static_assert(!(test_string_view{} > test_string_view{}));
+    static_assert(test_string_view{} <= test_string_view{});
+    static_assert(test_string_view{} >= test_string_view{});
+    static_assert(test_string_view{} <=> test_string_view{} == strong_ordering::equal);
+
+    static_assert(test_string_view{} == "");
+    static_assert(!(test_string_view{} != ""));
+    static_assert(!(test_string_view{} < ""));
+    static_assert(!(test_string_view{} > ""));
+    static_assert(test_string_view{} <= "");
+    static_assert(test_string_view{} >= "");
+    static_assert(test_string_view{} <=> "" == strong_ordering::equal);
+
+    static_assert("" == test_string_view{});
+    static_assert(!("" != test_string_view{}));
+    static_assert(!("" < test_string_view{}));
+    static_assert(!("" > test_string_view{}));
+    static_assert("" <= test_string_view{});
+    static_assert("" >= test_string_view{});
+    static_assert("" <=> test_string_view{} == strong_ordering::equal);
+} // namespace test_lwg_3950
+#endif // _HAS_CXX20
+
 int main() {
     test_case_default_constructor();
     test_case_ntcts_constructor();
