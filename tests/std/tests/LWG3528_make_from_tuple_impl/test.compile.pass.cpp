@@ -18,6 +18,7 @@
 struct A {
     int a;
 };
+
 struct B : public A {};
 
 struct C {
@@ -25,14 +26,15 @@ struct C {
 };
 
 enum class D {
-    ONE,
-    TWO,
+    one,
+    two,
 };
 
 template <class T, class Tuple>
 auto can_make_from_tuple(T&&, Tuple&& t) -> decltype(std::make_from_tuple<T>(t), uint8_t()) {
     return 0;
 }
+
 template <class T, class Tuple>
 uint32_t can_make_from_tuple(...) {
     return 0;
@@ -49,6 +51,7 @@ auto can_make_from_tuple_impl(T&&, Tuple&& t)
         uint8_t()) {
     return 0;
 }
+
 template <class T, class Tuple>
 uint32_t can_make_from_tuple_impl(...) {
     return 0;
@@ -61,6 +64,7 @@ inline constexpr bool has_make_from_tuple_impl_sfinae =
 template <class _Ty, class _Tuple,
     class _Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<_Tuple>>>, class = void>
 inline constexpr bool has_make_from_tuple = false;
+
 template <class _Ty, class _Tuple, size_t... _Indices>
 inline constexpr bool has_make_from_tuple<_Ty, _Tuple, std::index_sequence<_Indices...>,
     std::void_t<decltype(std::make_from_tuple<_Ty>(std::declval<_Tuple>()))>> = true;
@@ -68,6 +72,7 @@ inline constexpr bool has_make_from_tuple<_Ty, _Tuple, std::index_sequence<_Indi
 template <class _Ty, class _Tuple,
     class _Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<_Tuple>>>, class = void>
 inline constexpr bool has_make_from_tuple_impl = false;
+
 template <class _Ty, class _Tuple, size_t... _Indices>
 inline constexpr bool has_make_from_tuple_impl<_Ty, _Tuple, std::index_sequence<_Indices...>,
     std::void_t<decltype(std::_Make_from_tuple_impl<_Ty>(std::declval<_Tuple>(),
