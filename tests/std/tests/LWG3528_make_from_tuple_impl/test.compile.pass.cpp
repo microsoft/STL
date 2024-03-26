@@ -80,7 +80,7 @@ inline constexpr bool has_make_from_tuple_impl = false;
 template <class _Ty, class _Tuple, size_t... _Indices>
 inline constexpr bool has_make_from_tuple_impl<_Ty, _Tuple, std::index_sequence<_Indices...>,
     std::void_t<decltype(std::_Make_from_tuple_impl<_Ty>(std::declval<_Tuple>(),
-        std::declval<std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<_Tuple>>>>()))>> = true;
+        std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<_Tuple>>>{}))>> = true;
 
 // Test std::make_from_tuple.
 
