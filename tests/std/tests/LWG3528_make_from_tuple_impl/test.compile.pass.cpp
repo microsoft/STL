@@ -34,7 +34,7 @@ enum class D {
 };
 
 template <class T, class Tuple>
-auto can_make_from_tuple(T&&, Tuple&& t) -> decltype(std::make_from_tuple<T>(t), std::uint8_t()) {
+auto can_make_from_tuple(T&&, Tuple&& t) -> decltype(std::make_from_tuple<T>(t), std::uint8_t{}) {
     return 0;
 }
 
@@ -51,7 +51,7 @@ template <class T, class Tuple>
 auto can_make_from_tuple_impl(T&&, Tuple&& t)
     -> decltype(std::_Make_from_tuple_impl<T>(std::forward<Tuple>(t),
                     std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{}),
-        std::uint8_t()) {
+        std::uint8_t{}) {
     return 0;
 }
 
