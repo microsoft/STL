@@ -84,23 +84,23 @@ inline constexpr bool has_make_from_tuple_impl<T, Tuple, std::index_sequence<Ind
 
 // Test std::make_from_tuple.
 
-// reinterpret_cast && std::tuple<T> && partial specialization
+// reinterpret_cast, std::tuple<T>, partial specialization
 static_assert(!has_make_from_tuple<int*, std::tuple<A*>>);
 static_assert(has_make_from_tuple<A*, std::tuple<A*>>);
 
-// reinterpret_cast && std::array<T, 1> && partial specialization
+// reinterpret_cast, std::array<T, 1>, partial specialization
 static_assert(!has_make_from_tuple<int*, std::array<A*, 1>>);
 static_assert(has_make_from_tuple<A*, std::array<A*, 1>>);
 
-// reinterpret_cast && std::tuple<T> && SFINAE
+// reinterpret_cast, std::tuple<T>, SFINAE
 static_assert(!has_make_from_tuple_sfinae<int*, std::tuple<A*>>);
 static_assert(has_make_from_tuple_sfinae<A*, std::tuple<A*>>);
 
-// reinterpret_cast && std::array<T, 1> && SFINAE
+// reinterpret_cast, std::array<T, 1>, SFINAE
 static_assert(!has_make_from_tuple_sfinae<int*, std::array<A*, 1>>);
 static_assert(has_make_from_tuple_sfinae<A*, std::array<A*, 1>>);
 
-// const_cast && std::tuple<T> && partial specialization
+// const_cast, std::tuple<T>, partial specialization
 static_assert(!has_make_from_tuple<char*, std::tuple<const char*>>);
 static_assert(!has_make_from_tuple<volatile char*, std::tuple<const volatile char*>>);
 static_assert(has_make_from_tuple<volatile char*, std::tuple<volatile char*>>);
@@ -108,7 +108,7 @@ static_assert(has_make_from_tuple<char*, std::tuple<char*>>);
 static_assert(has_make_from_tuple<const char*, std::tuple<char*>>);
 static_assert(has_make_from_tuple<const volatile char*, std::tuple<volatile char*>>);
 
-// const_cast && std::array<T, 1> && partial specialization
+// const_cast, std::array<T, 1>, partial specialization
 static_assert(!has_make_from_tuple<char*, std::array<const char*, 1>>);
 static_assert(!has_make_from_tuple<volatile char*, std::array<const volatile char*, 1>>);
 static_assert(has_make_from_tuple<volatile char*, std::array<volatile char*, 1>>);
@@ -116,7 +116,7 @@ static_assert(has_make_from_tuple<char*, std::array<char*, 1>>);
 static_assert(has_make_from_tuple<const char*, std::array<char*, 1>>);
 static_assert(has_make_from_tuple<const volatile char*, std::array<volatile char*, 1>>);
 
-// const_cast && std::tuple<T> && SFINAE
+// const_cast, std::tuple<T>, SFINAE
 static_assert(!has_make_from_tuple_sfinae<char*, std::tuple<const char*>>);
 static_assert(!has_make_from_tuple_sfinae<volatile char*, std::tuple<const volatile char*>>);
 static_assert(has_make_from_tuple_sfinae<volatile char*, std::tuple<volatile char*>>);
@@ -124,7 +124,7 @@ static_assert(has_make_from_tuple_sfinae<char*, std::tuple<char*>>);
 static_assert(has_make_from_tuple_sfinae<const char*, std::tuple<char*>>);
 static_assert(has_make_from_tuple_sfinae<const volatile char*, std::tuple<volatile char*>>);
 
-// const_cast && std::array<T, 1> && SFINAE
+// const_cast, std::array<T, 1>, SFINAE
 static_assert(!has_make_from_tuple_sfinae<char*, std::array<const char*, 1>>);
 static_assert(!has_make_from_tuple_sfinae<volatile char*, std::array<const volatile char*, 1>>);
 static_assert(has_make_from_tuple_sfinae<volatile char*, std::array<volatile char*, 1>>);
@@ -132,28 +132,28 @@ static_assert(has_make_from_tuple_sfinae<char*, std::array<char*, 1>>);
 static_assert(has_make_from_tuple_sfinae<const char*, std::array<char*, 1>>);
 static_assert(has_make_from_tuple_sfinae<const volatile char*, std::array<volatile char*, 1>>);
 
-// static_cast && std::tuple<T> && partial specialization
+// static_cast, std::tuple<T>, partial specialization
 static_assert(!has_make_from_tuple<int, std::tuple<D>>);
 static_assert(!has_make_from_tuple<D, std::tuple<int>>);
 static_assert(has_make_from_tuple<long, std::tuple<int>>);
 static_assert(has_make_from_tuple<double, std::tuple<float>>);
 static_assert(has_make_from_tuple<float, std::tuple<double>>);
 
-// static_cast && std::array<T, 1> && partial specialization
+// static_cast, std::array<T, 1>, partial specialization
 static_assert(!has_make_from_tuple<int, std::array<D, 1>>);
 static_assert(!has_make_from_tuple<D, std::array<int, 1>>);
 static_assert(has_make_from_tuple<long, std::array<int, 1>>);
 static_assert(has_make_from_tuple<double, std::array<float, 1>>);
 static_assert(has_make_from_tuple<float, std::array<double, 1>>);
 
-// static_cast && std::tuple<T> && SFINAE
+// static_cast, std::tuple<T>, SFINAE
 static_assert(!has_make_from_tuple_sfinae<int, std::tuple<D>>);
 static_assert(!has_make_from_tuple_sfinae<D, std::tuple<int>>);
 static_assert(has_make_from_tuple_sfinae<long, std::tuple<int>>);
 static_assert(has_make_from_tuple_sfinae<double, std::tuple<float>>);
 static_assert(has_make_from_tuple_sfinae<float, std::tuple<double>>);
 
-// static_cast && std::array<T, 1> && SFINAE
+// static_cast, std::array<T, 1>, SFINAE
 static_assert(!has_make_from_tuple_sfinae<int, std::array<D, 1>>);
 static_assert(!has_make_from_tuple_sfinae<D, std::array<int, 1>>);
 static_assert(has_make_from_tuple_sfinae<long, std::array<int, 1>>);
@@ -162,23 +162,23 @@ static_assert(has_make_from_tuple_sfinae<float, std::array<double, 1>>);
 
 // Test std::__Make_from_tuple_impl.
 
-// reinterpret_cast && std::tuple<T> && partial specialization
+// reinterpret_cast, std::tuple<T>, partial specialization
 static_assert(!has_make_from_tuple_impl<int*, std::tuple<A*>>);
 static_assert(has_make_from_tuple_impl<A*, std::tuple<A*>>);
 
-// reinterpret_cast && std::array<T, 1> && partial specialization
+// reinterpret_cast, std::array<T, 1>, partial specialization
 static_assert(!has_make_from_tuple_impl<int*, std::array<A*, 1>>);
 static_assert(has_make_from_tuple_impl<A*, std::array<A*, 1>>);
 
-// reinterpret_cast && std::tuple<T> && SFINAE
+// reinterpret_cast, std::tuple<T>, SFINAE
 static_assert(!has_make_from_tuple_impl_sfinae<int*, std::tuple<A*>>);
 static_assert(has_make_from_tuple_impl_sfinae<A*, std::tuple<A*>>);
 
-// reinterpret_cast && std::array<T, 1> && SFINAE
+// reinterpret_cast, std::array<T, 1>, SFINAE
 static_assert(!has_make_from_tuple_impl_sfinae<int*, std::array<A*, 1>>);
 static_assert(has_make_from_tuple_impl_sfinae<A*, std::array<A*, 1>>);
 
-// const_cast && std::tuple<T> && partial specialization
+// const_cast, std::tuple<T>, partial specialization
 static_assert(!has_make_from_tuple_impl<char*, std::tuple<const char*>>);
 static_assert(!has_make_from_tuple_impl<volatile char*, std::tuple<const volatile char*>>);
 static_assert(has_make_from_tuple_impl<volatile char*, std::tuple<volatile char*>>);
@@ -186,7 +186,7 @@ static_assert(has_make_from_tuple_impl<char*, std::tuple<char*>>);
 static_assert(has_make_from_tuple_impl<const char*, std::tuple<char*>>);
 static_assert(has_make_from_tuple_impl<const volatile char*, std::tuple<volatile char*>>);
 
-// const_cast && std::array<T, 1> && partial specialization
+// const_cast, std::array<T, 1>, partial specialization
 static_assert(!has_make_from_tuple_impl<char*, std::array<const char*, 1>>);
 static_assert(!has_make_from_tuple_impl<volatile char*, std::array<const volatile char*, 1>>);
 static_assert(has_make_from_tuple_impl<volatile char*, std::array<volatile char*, 1>>);
@@ -194,7 +194,7 @@ static_assert(has_make_from_tuple_impl<char*, std::array<char*, 1>>);
 static_assert(has_make_from_tuple_impl<const char*, std::array<char*, 1>>);
 static_assert(has_make_from_tuple_impl<const volatile char*, std::array<volatile char*, 1>>);
 
-// const_cast && std::tuple<T> && SFINAE
+// const_cast, std::tuple<T>, SFINAE
 static_assert(!has_make_from_tuple_impl_sfinae<char*, std::tuple<const char*>>);
 static_assert(!has_make_from_tuple_impl_sfinae<volatile char*, std::tuple<const volatile char*>>);
 static_assert(has_make_from_tuple_impl_sfinae<volatile char*, std::tuple<volatile char*>>);
@@ -202,7 +202,7 @@ static_assert(has_make_from_tuple_impl_sfinae<char*, std::tuple<char*>>);
 static_assert(has_make_from_tuple_impl_sfinae<const char*, std::tuple<char*>>);
 static_assert(has_make_from_tuple_impl_sfinae<const volatile char*, std::tuple<volatile char*>>);
 
-// const_cast && std::array<T, 1> && SFINAE
+// const_cast, std::array<T, 1>, SFINAE
 static_assert(!has_make_from_tuple_impl_sfinae<char*, std::array<const char*, 1>>);
 static_assert(!has_make_from_tuple_impl_sfinae<volatile char*, std::array<const volatile char*, 1>>);
 static_assert(has_make_from_tuple_impl_sfinae<volatile char*, std::array<volatile char*, 1>>);
@@ -210,28 +210,28 @@ static_assert(has_make_from_tuple_impl_sfinae<char*, std::array<char*, 1>>);
 static_assert(has_make_from_tuple_impl_sfinae<const char*, std::array<char*, 1>>);
 static_assert(has_make_from_tuple_impl_sfinae<const volatile char*, std::array<volatile char*, 1>>);
 
-// static_cast && std::tuple<T> && partial specialization
+// static_cast, std::tuple<T>, partial specialization
 static_assert(!has_make_from_tuple_impl<int, std::tuple<D>>);
 static_assert(!has_make_from_tuple_impl<D, std::tuple<int>>);
 static_assert(has_make_from_tuple_impl<long, std::tuple<int>>);
 static_assert(has_make_from_tuple_impl<double, std::tuple<float>>);
 static_assert(has_make_from_tuple_impl<float, std::tuple<double>>);
 
-// static_cast && std::array<T, 1> && partial specialization
+// static_cast, std::array<T, 1>, partial specialization
 static_assert(!has_make_from_tuple_impl<int, std::array<D, 1>>);
 static_assert(!has_make_from_tuple_impl<D, std::array<int, 1>>);
 static_assert(has_make_from_tuple_impl<long, std::array<int, 1>>);
 static_assert(has_make_from_tuple_impl<double, std::array<float, 1>>);
 static_assert(has_make_from_tuple_impl<float, std::array<double, 1>>);
 
-// static_cast && std::tuple<T> && SFINAE
+// static_cast, std::tuple<T>, SFINAE
 static_assert(!has_make_from_tuple_impl_sfinae<int, std::tuple<D>>);
 static_assert(!has_make_from_tuple_impl_sfinae<D, std::tuple<int>>);
 static_assert(has_make_from_tuple_impl_sfinae<long, std::tuple<int>>);
 static_assert(has_make_from_tuple_impl_sfinae<double, std::tuple<float>>);
 static_assert(has_make_from_tuple_impl_sfinae<float, std::tuple<double>>);
 
-// static_cast && std::array<T, 1> && SFINAE
+// static_cast, std::array<T, 1>, SFINAE
 static_assert(!has_make_from_tuple_impl_sfinae<int, std::array<D, 1>>);
 static_assert(!has_make_from_tuple_impl_sfinae<D, std::array<int, 1>>);
 static_assert(has_make_from_tuple_impl_sfinae<long, std::array<int, 1>>);
