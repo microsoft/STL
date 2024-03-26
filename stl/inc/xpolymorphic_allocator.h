@@ -269,7 +269,7 @@ namespace pmr {
 
         template <class _Uty>
         void delete_object(_Uty* const _Ptr) noexcept /* strengthened */ {
-            _STD _Destroy_in_place(*_Ptr);
+            _Ptr->~_Uty();
             deallocate_object(_Ptr);
         }
 #endif // _HAS_CXX20
@@ -296,8 +296,8 @@ namespace pmr {
         }
 
         template <class _Uty>
-        _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY void destroy(_Uty* const _Ptr) noexcept /* strengthened */ {
-            _STD _Destroy_in_place(*_Ptr);
+        void destroy(_Uty* const _Ptr) noexcept /* strengthened */ {
+            _Ptr->~_Uty();
         }
 
         _NODISCARD polymorphic_allocator select_on_container_copy_construction() const noexcept /* strengthened */ {
