@@ -160,7 +160,7 @@ static_assert(has_make_from_tuple_sfinae<long, std::array<int, 1>>);
 static_assert(has_make_from_tuple_sfinae<double, std::array<float, 1>>);
 static_assert(has_make_from_tuple_sfinae<float, std::array<double, 1>>);
 
-// Test std::__Make_from_tuple_impl.
+// Test std::_Make_from_tuple_impl.
 
 // reinterpret_cast, std::tuple<T>, partial specialization
 static_assert(!has_make_from_tuple_impl<int*, std::tuple<A*>>);
