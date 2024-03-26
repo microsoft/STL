@@ -65,22 +65,22 @@ inline constexpr bool has_make_from_tuple_impl_sfinae =
     std::is_same_v<decltype(can_make_from_tuple_impl<T, Tuple>(std::declval<T>(), std::declval<Tuple>())),
         std::uint8_t>;
 
-template <class T, class _Tuple,
-    class _Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<_Tuple>>>, class = void>
+template <class T, class Tuple,
+    class _Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>, class = void>
 inline constexpr bool has_make_from_tuple = false;
 
-template <class T, class _Tuple, size_t... _Indices>
-inline constexpr bool has_make_from_tuple<T, _Tuple, std::index_sequence<_Indices...>,
-    std::void_t<decltype(std::make_from_tuple<T>(std::declval<_Tuple>()))>> = true;
+template <class T, class Tuple, size_t... _Indices>
+inline constexpr bool has_make_from_tuple<T, Tuple, std::index_sequence<_Indices...>,
+    std::void_t<decltype(std::make_from_tuple<T>(std::declval<Tuple>()))>> = true;
 
-template <class T, class _Tuple,
-    class _Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<_Tuple>>>, class = void>
+template <class T, class Tuple,
+    class _Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>, class = void>
 inline constexpr bool has_make_from_tuple_impl = false;
 
-template <class T, class _Tuple, size_t... _Indices>
-inline constexpr bool has_make_from_tuple_impl<T, _Tuple, std::index_sequence<_Indices...>,
-    std::void_t<decltype(std::_Make_from_tuple_impl<T>(std::declval<_Tuple>(),
-        std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<_Tuple>>>{}))>> = true;
+template <class T, class Tuple, size_t... _Indices>
+inline constexpr bool has_make_from_tuple_impl<T, Tuple, std::index_sequence<_Indices...>,
+    std::void_t<decltype(std::_Make_from_tuple_impl<T>(
+        std::declval<Tuple>(), std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{}))>> = true;
 
 // Test std::make_from_tuple.
 
