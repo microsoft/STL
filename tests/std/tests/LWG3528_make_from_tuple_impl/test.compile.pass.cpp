@@ -22,7 +22,7 @@ struct A {
     int a;
 };
 
-struct B : public A {};
+struct B : A {};
 
 struct C {
     C(const B&) {}
