@@ -1264,7 +1264,7 @@ void test_C6510_warning() { // compile-only
 #if _HAS_CXX20
 // LWG-3950 "std::basic_string_view comparison operators are overspecified"
 namespace test_lwg_3950 {
-    template <class _Traits>
+    template <class Traits>
     struct get_string_comparison_category {
         using type = weak_ordering;
     };
