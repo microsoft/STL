@@ -805,7 +805,7 @@
 // warning C5045: Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified (/Wall)
 // warning C5220: a non-static data member with a volatile qualified type no longer implies that compiler generated
 //                copy/move constructors and copy/move assignment operators are not trivial (/Wall)
-// warning C5246 : 'member': the initialization of a subobject should be wrapped in braces (/Wall)
+// warning C5246: 'member': the initialization of a subobject should be wrapped in braces (/Wall)
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
