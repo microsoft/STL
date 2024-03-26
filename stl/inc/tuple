@@ -1079,12 +1079,11 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) noexcept(
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
 }
 
-template <class _Ty, class _Tuple, class _Seq = make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>,
-    class = void>
+template <class _Ty, class _Tuple, class _Seq = make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>>
 inline constexpr bool _Can_make_from_tuple = false;
 template <class _Ty, class _Tuple, size_t... _Indices>
-inline constexpr bool _Can_make_from_tuple<_Ty, _Tuple, index_sequence<_Indices...>,
-    enable_if_t<is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD declval<_Tuple>()))...>>> = true;
+inline constexpr bool _Can_make_from_tuple<_Ty, _Tuple, index_sequence<_Indices...>> =
+    is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD declval<_Tuple>()))...>;
 
 template <class _Ty, class _Tuple, size_t... _Indices>
 constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) noexcept(
