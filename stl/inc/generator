@@ -445,20 +445,19 @@ private:
     static_assert(_Has_real_pointers<_Alloc>, "generator allocators must use raw pointers "
                                               "(N4971 [coro.generator.class]/1.1)");
 
-    friend _Gen_promise_base<_Gen_yield_t<_Ref>>;
-
 public:
     using yielded = _Gen_yield_t<_Ref>;
 
-    struct __declspec(empty_bases) promise_type : _Promise_allocator<_Alloc>, _Gen_promise_base<_Gen_yield_t<_Ref>> {
+    friend _Gen_promise_base<yielded>;
+
+    struct __declspec(empty_bases) promise_type : _Promise_allocator<_Alloc>, _Gen_promise_base<yielded> {
         _NODISCARD generator get_return_object() noexcept {
             return generator{_Gen_secret_tag{}, coroutine_handle<promise_type>::from_promise(*this)};
         }
     };
     _STL_INTERNAL_STATIC_ASSERT(is_standard_layout_v<promise_type>);
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
-    _STL_INTERNAL_STATIC_ASSERT(
-        is_pointer_interconvertible_base_of_v<_Gen_promise_base<_Gen_yield_t<_Ref>>, promise_type>);
+    _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base<yielded>, promise_type>);
 #endif // ^^^ no workaround ^^^
 
     generator(generator&& _That) noexcept : _Coro(_STD exchange(_That._Coro, {})) {}
@@ -479,7 +478,7 @@ public:
         _STL_ASSERT(_Coro, "Can't call begin on moved-from generator");
         _Coro.resume();
         return typename _Gen_iter_provider<_Value, _Ref>::_Iterator{
-            _Gen_secret_tag{}, coroutine_handle<_Gen_promise_base<_Gen_yield_t<_Ref>>>::from_address(_Coro.address())};
+            _Gen_secret_tag{}, coroutine_handle<_Gen_promise_base<yielded>>::from_address(_Coro.address())};
     }
 
     _NODISCARD default_sentinel_t end() const noexcept {
