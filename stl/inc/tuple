@@ -1103,16 +1103,15 @@ constexpr _Ty _Make_from_tuple_impl(
     return _Ty(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 
-#if _HAS_CXX20
 #if _HAS_CXX23
 _EXPORT_STD template <class _Ty, _Tuple_like _Tuple>
-#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+    requires _Can_make_from_tuple<_Ty, _Tuple>
+#elif _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Tuple>
-#endif // ^^^ !_HAS_CXX23 ^^^
     requires _Can_make_from_tuple<_Ty, _Tuple>
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-_EXPORT_STD template <class _Ty, class _Tuple, enable_if_t<_Can_make_from_tuple<_Ty, _Tuple>, int> = 0>
-#endif // ^^^ !_HAS_CXX23 ^^^
+template <class _Ty, class _Tuple, enable_if_t<_Can_make_from_tuple<_Ty, _Tuple>, int> = 0>
+#endif // ^^^ !_HAS_CXX20 ^^^
 _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) noexcept(noexcept(_STD _Make_from_tuple_impl<_Ty>(
     _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{}))) /* strengthened */ {
     // construct _Ty from the elements of _Tpl
