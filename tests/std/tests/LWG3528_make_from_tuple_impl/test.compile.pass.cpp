@@ -22,12 +22,6 @@ struct A {
     int a;
 };
 
-struct B : A {};
-
-struct C {
-    C(const B&) {}
-};
-
 enum class D {
     one,
     two,
