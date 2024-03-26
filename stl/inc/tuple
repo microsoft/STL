@@ -1079,24 +1079,27 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) noexcept(
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
 }
 
-#if _HAS_CXX23
-template <class _Ty, _Tuple_like _Tuple, size_t... _Indices>
-#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+template <class _Ty, class _Tuple, class _Seq = make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>>
+inline constexpr bool _Can_make_from_tuple = false;
 template <class _Ty, class _Tuple, size_t... _Indices>
-#endif // ^^^ !_HAS_CXX23 ^^^
+inline constexpr bool _Can_make_from_tuple<_Ty, _Tuple, index_sequence<_Indices...>> =
+    is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD declval<_Tuple>()))...>;
+
+template <class _Ty, class _Tuple, size_t... _Indices>
 constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) noexcept(
     is_nothrow_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>) {
-    // construct _Ty from the elements of _Tpl
-    static_assert(is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>,
-        "the target type must be constructible from the fields of the argument tuple (N4950 [tuple.apply]/4).");
     return _Ty(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 
 #if _HAS_CXX23
 _EXPORT_STD template <class _Ty, _Tuple_like _Tuple>
-#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+    requires _Can_make_from_tuple<_Ty, _Tuple>
+#elif _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Tuple>
-#endif // ^^^ !_HAS_CXX23 ^^^
+    requires _Can_make_from_tuple<_Ty, _Tuple>
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Ty, class _Tuple, enable_if_t<_Can_make_from_tuple<_Ty, _Tuple>, int> = 0>
+#endif // ^^^ !_HAS_CXX20 ^^^
 _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) noexcept(noexcept(_STD _Make_from_tuple_impl<_Ty>(
     _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{}))) /* strengthened */ {
     // construct _Ty from the elements of _Tpl
