@@ -47,12 +47,12 @@ private:
         if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
             // do not store stateless allocator
             const size_t _Count = (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
-            return _Al.allocate(static_cast<_Alloc_size_type>(_Count));
+            return _Al.allocate(_Convert_size<_Alloc_size_type>(_Count));
         } else {
             // store stateful allocator
             constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
             const size_t _Count     = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
-            void* const _Ptr        = _Al.allocate(static_cast<_Alloc_size_type>(_Count));
+            void* const _Ptr        = _Al.allocate(_Convert_size<_Alloc_size_type>(_Count));
             const auto _Al_address =
                 (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
             ::new (reinterpret_cast<void*>(_Al_address)) _Alloc(_STD move(_Al));
@@ -142,7 +142,7 @@ private:
             const _Dealloc_fn _Dealloc = _Dealloc_stateless<_Alloc>;
 
             const size_t _Count = (_Size + sizeof(_Dealloc_fn) + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
-            void* const _Ptr    = _Al.allocate(static_cast<_Alloc_size_type>(_Count));
+            void* const _Ptr    = _Al.allocate(_Convert_size<_Alloc_size_type>(_Count));
             _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
             return _Ptr;
         } else {
@@ -152,7 +152,7 @@ private:
             const _Dealloc_fn _Dealloc = _Dealloc_stateful<_Alloc>;
 
             const size_t _Count = (_Size + sizeof(_Dealloc_fn) + sizeof(_Al) + _Align - 1) / sizeof(_Aligned_block);
-            void* const _Ptr    = _Al.allocate(static_cast<_Alloc_size_type>(_Count));
+            void* const _Ptr    = _Al.allocate(_Convert_size<_Alloc_size_type>(_Count));
             _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
             _Size += sizeof(_Dealloc_fn);
             const auto _Al_address =
