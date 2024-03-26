@@ -9,6 +9,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //===----------------------------------------------------------------------===//
 
+// derived from libc++'s test files:
+// * std/utilities/tuple/tuple.tuple/tuple.apply/make_from_tuple.pass.cpp
+
 #include <array>
 #include <cstdint>
 #include <tuple>
