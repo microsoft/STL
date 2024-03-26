@@ -26,20 +26,18 @@ enum class D {
     two,
 };
 
-template <class T, class Tuple, class Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>,
-    class = void>
+template <class T, class Tuple, class = void>
 inline constexpr bool has_make_from_tuple = false;
 
-template <class T, class Tuple, size_t... Indices>
-inline constexpr bool has_make_from_tuple<T, Tuple, std::index_sequence<Indices...>,
-    std::void_t<decltype(std::make_from_tuple<T>(std::declval<Tuple>()))>> = true;
+template <class T, class Tuple>
+inline constexpr bool
+    has_make_from_tuple<T, Tuple, std::void_t<decltype(std::make_from_tuple<T>(std::declval<Tuple>()))>> = true;
 
-template <class T, class Tuple, class Seq = std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>,
-    class = void>
+template <class T, class Tuple, class = void>
 inline constexpr bool has_make_from_tuple_impl = false;
 
-template <class T, class Tuple, size_t... Indices>
-inline constexpr bool has_make_from_tuple_impl<T, Tuple, std::index_sequence<Indices...>,
+template <class T, class Tuple>
+inline constexpr bool has_make_from_tuple_impl<T, Tuple,
     std::void_t<decltype(std::_Make_from_tuple_impl<T>(
         std::declval<Tuple>(), std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{}))>> = true;
 
