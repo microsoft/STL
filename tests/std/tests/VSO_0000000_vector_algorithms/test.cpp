@@ -443,6 +443,23 @@ void test_mismatch(mt19937_64& gen) {
     }
 }
 
+template <class C1, class C2>
+void test_mismatch_containers() {
+    C1 a{'m', 'e', 'o', 'w', ' ', 'C', 'A', 'T', 'S'};
+    C2 b{'m', 'e', 'o', 'w', ' ', 'K', 'I', 'T', 'T', 'E', 'N', 'S'};
+    const auto result_4 = mismatch(a.begin(), a.end(), b.begin(), b.end());
+    const auto result_3 = mismatch(a.begin(), a.end(), b.begin());
+    assert(get<0>(result_4) == a.begin() + 5);
+    assert(get<1>(result_4) == b.begin() + 5);
+    assert(get<0>(result_3) == a.begin() + 5);
+    assert(get<1>(result_3) == b.begin() + 5);
+#if _HAS_CXX20
+    const auto result_r = ranges::mismatch(a, b);
+    assert(result_r.in1 == a.begin() + 5);
+    assert(result_r.in2 == b.begin() + 5);
+#endif // _HAS_CXX20
+}
+
 namespace test_mismatch_sizes_and_alignments {
     constexpr size_t range     = 33;
     constexpr size_t alignment = 32;
@@ -518,23 +535,6 @@ namespace test_mismatch_sizes_and_alignments {
         }
     }
 } // namespace test_mismatch_sizes_and_alignments
-
-template <class C1, class C2>
-void test_mismatch_containers() {
-    C1 a{'m', 'e', 'o', 'w', ' ', 'C', 'A', 'T', 'S'};
-    C2 b{'m', 'e', 'o', 'w', ' ', 'K', 'I', 'T', 'T', 'E', 'N', 'S'};
-    const auto result_4 = mismatch(a.begin(), a.end(), b.begin(), b.end());
-    const auto result_3 = mismatch(a.begin(), a.end(), b.begin());
-    assert(get<0>(result_4) == a.begin() + 5);
-    assert(get<1>(result_4) == b.begin() + 5);
-    assert(get<0>(result_3) == a.begin() + 5);
-    assert(get<1>(result_3) == b.begin() + 5);
-#if _HAS_CXX20
-    const auto result_r = ranges::mismatch(a, b);
-    assert(result_r.in1 == a.begin() + 5);
-    assert(result_r.in2 == b.begin() + 5);
-#endif // _HAS_CXX20
-}
 
 template <class BidIt>
 void last_known_good_reverse(BidIt first, BidIt last) {
