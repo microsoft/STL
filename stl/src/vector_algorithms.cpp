@@ -90,20 +90,9 @@ namespace {
     }
 
     __m256i _Avx2_tail_mask_32(const size_t _Count_in_dwords) {
-        constexpr unsigned int _Dx = 0; // All zeros 32 bit mask
-        constexpr unsigned int _Ex = ~_Dx; // All ones 32 bit mask
-
-        alignas(32) static constexpr unsigned int _Tail_masks[8][8] = {
-            {_Dx, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx},
-            {_Ex, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx},
-            {_Ex, _Ex, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx},
-            {_Ex, _Ex, _Ex, _Dx, _Dx, _Dx, _Dx, _Dx},
-            {_Ex, _Ex, _Ex, _Ex, _Dx, _Dx, _Dx, _Dx},
-            {_Ex, _Ex, _Ex, _Ex, _Ex, _Dx, _Dx, _Dx},
-            {_Ex, _Ex, _Ex, _Ex, _Ex, _Ex, _Dx, _Dx},
-            {_Ex, _Ex, _Ex, _Ex, _Ex, _Ex, _Ex, _Dx},
-        };
-        return _mm256_load_si256(reinterpret_cast<const __m256i*>(_Tail_masks[_Count_in_dwords]));
+        // _Count_in_dwords must be within [1, 7].
+        static constexpr unsigned int _Tail_masks[14] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0, 0, 0, 0};
+        return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tail_masks + (7 - _Count_in_dwords)));
     }
 } // unnamed namespace
 
