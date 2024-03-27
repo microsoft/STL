@@ -463,9 +463,9 @@ namespace test_mismatch_sizes_and_alignments {
         return 0;
     }
 
-    template <class T, size_t Size, size_t... PadsSizes>
-    void stack_array_various_alignments(index_sequence<PadsSizes...>) {
-        char ignored[] = {stack_array_various_alignments_impl<T, Size, PadsSizes>()...};
+    template <class T, size_t Size, size_t... PadSizes>
+    void stack_array_various_alignments(index_sequence<PadSizes...>) {
+        char ignored[] = {stack_array_various_alignments_impl<T, Size, PadSizes>()...};
         (void) ignored;
     }
 
