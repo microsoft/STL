@@ -532,7 +532,7 @@ void test_mismatch_containers() {
     const auto result_r = ranges::mismatch(a, b);
     assert(result_r.in1 == a.begin() + 5);
     assert(result_r.in2 == b.begin() + 5);
-#endif // _HAS_CXX_20
+#endif // _HAS_CXX20
 }
 
 template <class BidIt>

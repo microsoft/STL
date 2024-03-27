@@ -5510,7 +5510,7 @@ namespace ranges {
                 return {_STD move(_First1 + _Pos), _STD move(_First2 + _Pos)};
             }
         }
-#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
         for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
             if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
                 break;
