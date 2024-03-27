@@ -384,7 +384,7 @@ auto last_known_good_mismatch(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt las
         }
     }
 
-    return std::make_pair(first1, first2);
+    return make_pair(first1, first2);
 }
 
 template <class T>
@@ -490,8 +490,8 @@ namespace test_mismatch_sizes_and_alignments {
 
         // vector with different sizes. ASan vector annotations would catch out-of-range reads
         for (size_t i = 0; i != range; ++i) {
-            std::vector<T> a(i, 0);
-            std::vector<T> b(i, 0);
+            vector<T> a(i, 0);
+            vector<T> b(i, 0);
             assert(mismatch(begin(a), end(a), begin(b), end(b)) == make_pair(end(a), end(b)));
         }
 
