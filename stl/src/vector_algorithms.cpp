@@ -2139,7 +2139,7 @@ namespace {
             if constexpr (sizeof(_Ty) >= 4) {
                 return _Result;
             }
-        } else if (_Use_sse2()) {
+        } else if (_Traits::_Sse_available()) {
             const size_t _Count_bytes_sse = (_Count * sizeof(_Ty)) & ~size_t{0xF};
 
             for (; _Result != _Count_bytes_sse; _Result += 0x10) {
