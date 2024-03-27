@@ -505,14 +505,14 @@ namespace test_mismatch_sizes_and_alignments {
             free(b);
         }
 
-        // subarray from stack array. We would have wrong result if run out of the range.
+        // subarray from stack array. We would have wrong results if we run out of the range.
         T a[range + 1] = {};
         T b[range + 1] = {};
         for (size_t i = 0; i != range; ++i) {
             a[i + 1] = 1;
-            // whole range mistmatch finds mismatch after past-the-end
+            // whole range mismatch finds mismatch after past-the-end of the subarray
             assert(mismatch(a, a + range + 1, b, b + range + 1) == make_pair(a + i + 1, b + i + 1));
-            // limited range mismatch gets to past-the-end
+            // limited range mismatch gets to past-the-end of the subarray
             assert(mismatch(a, a + i, b, b + i) == make_pair(a + i, b + i));
             a[i + 1] = 0;
         }
