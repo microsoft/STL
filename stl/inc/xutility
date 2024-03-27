@@ -5507,7 +5507,7 @@ namespace ranges {
                 const auto _Pos = static_cast<decltype(_Count)>(_STD __std_mismatch<_Elem_size>(
                     _STD _To_address(_First1), _STD _To_address(_First2), static_cast<size_t>(_Count)));
 
-                return {_STD move(_First1 + _Pos), _STD move(_First2 + _Pos)};
+                return {_First1 + _Pos, _First2 + _Pos};
             }
         }
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
