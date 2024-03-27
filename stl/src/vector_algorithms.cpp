@@ -93,7 +93,7 @@ namespace {
         constexpr unsigned int _Dx = 0; // All zeros 32 bit mask
         constexpr unsigned int _Ex = ~_Dx; // All ones 32 bit mask
         // clang-format off
-        static alignas(32) constexpr unsigned int _Tail_masks[8][8] = {
+        alignas(32) static constexpr unsigned int _Tail_masks[8][8] = {
             {_Dx, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx},
             {_Ex, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx},
             {_Ex, _Ex, _Dx, _Dx, _Dx, _Dx, _Dx, _Dx},
