@@ -674,11 +674,11 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
         if (!_STD _Is_constant_evaluated()) {
             constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
-            const auto _Pos = static_cast<decltype(_ULast1 - _UFirst1)>(_STD __std_mismatch<_Elem_size>(
-                _STD _To_address(_UFirst1), _STD _To_address(_UFirst2), static_cast<size_t>(_ULast1 - _UFirst1)));
+            const size_t _Pos = _STD __std_mismatch<_Elem_size>(
+                _STD _To_address(_UFirst1), _STD _To_address(_UFirst2), static_cast<size_t>(_ULast1 - _UFirst1));
 
-            _UFirst1 += _Pos;
-            _UFirst2 += _Pos;
+            _UFirst1 += static_cast<_Iter_diff_t<_InIt1>>(_Pos);
+            _UFirst2 += static_cast<_Iter_diff_t<_InIt2>>(_Pos);
 
             _STD _Seek_wrapped(_First2, _UFirst2);
             _STD _Seek_wrapped(_First1, _UFirst1);
@@ -738,11 +738,11 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
             if (!_STD _Is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
-                const auto _Pos = static_cast<decltype(_Count)>(_STD __std_mismatch<_Elem_size>(
-                    _STD _To_address(_UFirst1), _STD _To_address(_UFirst2), static_cast<size_t>(_Count)));
+                const size_t _Pos = _STD __std_mismatch<_Elem_size>(
+                    _STD _To_address(_UFirst1), _STD _To_address(_UFirst2), static_cast<size_t>(_Count));
 
-                _UFirst1 += _Pos;
-                _UFirst2 += _Pos;
+                _UFirst1 += static_cast<_Iter_diff_t<_InIt1>>(_Pos);
+                _UFirst2 += static_cast<_Iter_diff_t<_InIt2>>(_Pos);
 
                 _STD _Seek_wrapped(_First2, _UFirst2);
                 _STD _Seek_wrapped(_First1, _UFirst1);

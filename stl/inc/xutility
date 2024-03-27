@@ -5504,10 +5504,11 @@ namespace ranges {
             if (!_STD is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(iter_value_t<_It1>);
 
-                const auto _Pos = static_cast<decltype(_Count)>(_STD __std_mismatch<_Elem_size>(
-                    _STD _To_address(_First1), _STD _To_address(_First2), static_cast<size_t>(_Count)));
+                const size_t _Pos = _STD __std_mismatch<_Elem_size>(
+                    _STD _To_address(_First1), _STD _To_address(_First2), static_cast<size_t>(_Count));
 
-                return {_First1 + _Pos, _First2 + _Pos};
+                return {_First1 + static_cast<iter_difference_t<_It1>>(_Pos),
+                    _First2 + static_cast<iter_difference_t<_It2>>(_Pos)};
             }
         }
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
