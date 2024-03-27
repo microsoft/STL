@@ -2105,7 +2105,7 @@ namespace {
                 }
             }
 
-            size_t _Count_tail = _Count_bytes & size_t{0x1C};
+            const size_t _Count_tail = _Count_bytes & size_t{0x1C};
 
             if (_Count_tail != 0) {
                 const __m256i _Tail_mask = _Avx2_tail_mask_32(_Count_tail >> 2);

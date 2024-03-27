@@ -426,8 +426,8 @@ void test_mismatch(mt19937_64& gen) {
             uniform_int_distribution<size_t> mismatch_dis(0, input_a.size() - 1);
 
             for (size_t attempts = 0; attempts < mismatchCount; ++attempts) {
-                size_t possible_mismatch_pos   = mismatch_dis(gen);
-                input_a[possible_mismatch_pos] = static_cast<T>(dis(gen));
+                const size_t possible_mismatch_pos = mismatch_dis(gen);
+                input_a[possible_mismatch_pos]     = static_cast<T>(dis(gen));
                 test_case_mismatch(input_a, input_b);
                 test_case_mismatch(input_b, input_a);
             }
