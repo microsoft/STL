@@ -363,14 +363,20 @@ constexpr bool test() {
     return true;
 }
 
-// Check LWG-3875
+// Check LWG-3875 "std::ranges::repeat_view<T, IntegerClass>::iterator may be ill-formed"
 static_assert(CanViewRepeat<string, long long>);
 static_assert(CanViewRepeat<string, unsigned long long>);
 static_assert(CanViewRepeat<string, _Signed128>);
 static_assert(
     !CanViewRepeat<string, _Unsigned128>); // _Unsigned128 does not satisfy 'integer-like-with-usable-difference-type'
 
-// Check GH-3392
+// Check LWG-4054 "Repeating a repeat_view should repeat the view"
+static_assert(
+    std::is_same_v<decltype(views::repeat(views::repeat(42))), ranges::repeat_view<ranges::repeat_view<int>>>);
+static_assert(std::is_same_v<decltype(views::repeat("Hello world!")), ranges::repeat_view<const char*>>);
+static_assert(std::is_same_v<decltype(views::repeat(test)), ranges::repeat_view<bool (*)()>>);
+
+// Check GH-3392 "<ranges>: views::repeat(...) | views::take(...) is not always a valid range"
 static_assert(ranges::range<decltype(views::repeat('3', 100ull) | views::take(3))>);
 static_assert(ranges::range<decltype(views::repeat('3', 100ull) | views::drop(3))>);
 
