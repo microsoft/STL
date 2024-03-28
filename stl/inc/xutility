@@ -124,6 +124,11 @@ __declspec(noalias) int64_t __stdcall __std_max_8i(const void* _First, const voi
 __declspec(noalias) uint64_t __stdcall __std_max_8u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) float __stdcall __std_max_f(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) double __stdcall __std_max_d(const void* _First, const void* _Last) noexcept;
+
+__declspec(noalias) size_t __stdcall __std_mismatch_1(const void* _First1, const void* _First2, size_t _Count) noexcept;
+__declspec(noalias) size_t __stdcall __std_mismatch_2(const void* _First1, const void* _First2, size_t _Count) noexcept;
+__declspec(noalias) size_t __stdcall __std_mismatch_4(const void* _First1, const void* _First2, size_t _Count) noexcept;
+__declspec(noalias) size_t __stdcall __std_mismatch_8(const void* _First1, const void* _First2, size_t _Count) noexcept;
 } // extern "C"
 
 _STD_BEGIN
@@ -290,6 +295,22 @@ auto __std_max(_Ty* const _First, _Ty* const _Last) noexcept {
         }
     } else {
         static_assert(_Always_false<_Ty>, "Unexpected size");
+    }
+}
+
+template <size_t _Element_size>
+inline size_t // TRANSITION, GH-4496
+    __std_mismatch(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    if constexpr (_Element_size == 1) {
+        return __std_mismatch_1(_First1, _First2, _Count);
+    } else if constexpr (_Element_size == 2) {
+        return __std_mismatch_2(_First1, _First2, _Count);
+    } else if constexpr (_Element_size == 4) {
+        return __std_mismatch_4(_First1, _First2, _Count);
+    } else if constexpr (_Element_size == 8) {
+        return __std_mismatch_8(_First1, _First2, _Count);
+    } else {
+        static_assert(_Always_false<integral_constant<size_t, _Element_size>>, "Unexpected size");
     }
 }
 _STD_END
@@ -5477,6 +5498,20 @@ namespace ranges {
     _NODISCARD constexpr mismatch_result<_It1, _It2> _Mismatch_n(
         _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
         _STL_INTERNAL_CHECK(_Count >= 0);
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (_Equal_memcmp_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
+                      && is_same_v<_Pj2, identity>) {
+            if (!_STD is_constant_evaluated()) {
+                constexpr size_t _Elem_size = sizeof(iter_value_t<_It1>);
+
+                const size_t _Pos = _STD __std_mismatch<_Elem_size>(
+                    _STD _To_address(_First1), _STD _To_address(_First2), static_cast<size_t>(_Count));
+
+                return {_First1 + static_cast<iter_difference_t<_It1>>(_Pos),
+                    _First2 + static_cast<iter_difference_t<_It2>>(_Pos)};
+            }
+        }
+#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
         for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
             if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
                 break;
