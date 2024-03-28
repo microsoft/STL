@@ -633,7 +633,9 @@ _GENERIC_MATH_ISNORMAL(char8_t)
 #endif // defined(__cpp_char8_t)
 _GENERIC_MATH_ISNORMAL(char16_t)
 _GENERIC_MATH_ISNORMAL(char32_t)
+#ifdef _NATIVE_WCHAR_T_DEFINED
 _GENERIC_MATH_ISNORMAL(wchar_t)
+#endif // #ifdef _NATIVE_WCHAR_T_DEFINED
 #undef _GENERIC_MATH_ISNORMAL
 
 #define _GENERIC_MATH1_BASE(NAME, RET, FUN)                                  \
@@ -694,6 +696,12 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
 #define _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T(FUN, RETV)
 #endif // ^^^ !defined(__cpp_char8_t) ^^^
 
+#ifdef _NATIVE_WCHAR_T_DEFINED
+#define _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T(FUN, RETV) _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, wchar_t, RETV)
+#else // ^^^ defined(__cpp_char8_t) / !defined(__cpp_char8_t) vvv
+#define _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T(FUN, RETV)
+#endif // ^^^ !defined(_NATIVE_WCHAR_T_DEFINED) ^^^
+
 #define _GENERIC_MATH_CLASSIFY1_RETV(FUN, RETV)                          \
     _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, signed char, RETV)        \
     _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned char, RETV)      \
@@ -710,7 +718,7 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
     _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T(FUN, RETV)                      \
     _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, char16_t, RETV)           \
     _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, char32_t, RETV)           \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, wchar_t, RETV)
+    _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T(FUN, RETV)
 
 // The following order matches N4950 [cmath.syn].
 _GENERIC_MATH1(acos)
