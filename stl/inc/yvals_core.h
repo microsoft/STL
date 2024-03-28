@@ -132,6 +132,7 @@
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (including __cpp_lib_freestanding_charconv)
 // P2517R1 Conditional noexcept For apply()
+// P2875R4 Undeprecate polymorphic_allocator::destroy
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -1387,17 +1388,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX17 && !defined(_SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
-#define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY                                                   \
-    [[deprecated("warning STL4032: "                                                                     \
-                 "std::pmr::polymorphic_allocator::destroy() is deprecated in C++17 by LWG-3036. "       \
-                 "Prefer std::destroy_at() or std::allocator_traits<polymorphic_allocator>::destroy(). " \
-                 "You can define _SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING "      \
-                 "or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
-#endif // ^^^ warning disabled ^^^
+// STL4032 was "std::pmr::polymorphic_allocator::destroy() is deprecated in C++17 by LWG-3036." (reverted by P2875R4)
 
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_IS_ALWAYS_EQUAL_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
