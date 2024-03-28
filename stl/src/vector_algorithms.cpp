@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <cstring>
 #include <xtr1common>
+
 #ifndef _M_ARM64EC
 #include <intrin.h>
 #include <isa_availability.h>
@@ -47,6 +48,12 @@ namespace {
             _mm256_zeroupper();
         }
     };
+
+    __m256i _Avx2_tail_mask_32(const size_t _Count_in_dwords) noexcept {
+        // _Count_in_dwords must be within [1, 7].
+        static constexpr unsigned int _Tail_masks[14] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0, 0, 0, 0};
+        return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tail_masks + (7 - _Count_in_dwords)));
+    }
 } // namespace
 #endif // !defined(_M_ARM64EC)
 
@@ -87,12 +94,6 @@ namespace {
     template <class _Integral>
     void _Advance_bytes(const void*& _Target, _Integral _Offset) noexcept {
         _Target = static_cast<const unsigned char*>(_Target) + _Offset;
-    }
-
-    __m256i _Avx2_tail_mask_32(const size_t _Count_in_dwords) noexcept {
-        // _Count_in_dwords must be within [1, 7].
-        static constexpr unsigned int _Tail_masks[14] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0, 0, 0, 0};
-        return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tail_masks + (7 - _Count_in_dwords)));
     }
 } // unnamed namespace
 
