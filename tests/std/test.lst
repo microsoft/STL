@@ -168,6 +168,7 @@ tests\GH_000431_lex_compare_family
 tests\GH_000431_lex_compare_memcmp_classify
 tests\GH_000442_random_subtract_with_carry_engine_io
 tests\GH_000457_system_error_message
+tests\GH_000519_cmath_int_overloads
 tests\GH_000527_remove_allocator_void
 tests\GH_000545_include_compare
 tests\GH_000625_vector_bool_optimization

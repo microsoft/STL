@@ -594,6 +594,48 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
     }
 }
 
+// TRANSITION, GH-519, should be provided by UCRT
+template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
+_Check_return_ _CONSTEXPR23 int fpclassify(_In_ const _Ty _Ix) noexcept /* strengthened */ {
+    return _Ix ? FP_NORMAL : FP_ZERO;
+}
+
+// TRANSITION, GH-519, should be provided by UCRT
+template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
+_Check_return_ _CONSTEXPR23 bool signbit(_In_ const _Ty _Ix) noexcept /* strengthened */ {
+    if constexpr (static_cast<_Ty>(-1) < _Ty{}) {
+        return _Ix < 0;
+    } else {
+        return false;
+    }
+}
+
+// TRANSITION, GH-519, additional overloads are not templated to avoid ambiguity with the major overload in UCRT
+#define _GENERIC_MATH_ISNORMAL(TYPE)                                                                        \
+    _NODISCARD _Check_return_ _CONSTEXPR23 bool isnormal(_In_ const TYPE _Ix) noexcept /* strengthened */ { \
+        return _Ix != 0;                                                                                    \
+    }
+
+_GENERIC_MATH_ISNORMAL(signed char)
+_GENERIC_MATH_ISNORMAL(unsigned char)
+_GENERIC_MATH_ISNORMAL(short)
+_GENERIC_MATH_ISNORMAL(unsigned short)
+_GENERIC_MATH_ISNORMAL(int)
+_GENERIC_MATH_ISNORMAL(unsigned int)
+_GENERIC_MATH_ISNORMAL(long)
+_GENERIC_MATH_ISNORMAL(unsigned long)
+_GENERIC_MATH_ISNORMAL(long long)
+_GENERIC_MATH_ISNORMAL(unsigned long long)
+_GENERIC_MATH_ISNORMAL(bool)
+_GENERIC_MATH_ISNORMAL(char)
+#ifdef __cpp_char8_t
+_GENERIC_MATH_ISNORMAL(char8_t)
+#endif // defined(__cpp_char8_t)
+_GENERIC_MATH_ISNORMAL(char16_t)
+_GENERIC_MATH_ISNORMAL(char32_t)
+_GENERIC_MATH_ISNORMAL(wchar_t)
+#undef _GENERIC_MATH_ISNORMAL
+
 #define _GENERIC_MATH1_BASE(NAME, RET, FUN)                                  \
     template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0> \
     _NODISCARD RET NAME(_Ty _Left) noexcept /* strengthened */ {             \
@@ -639,6 +681,36 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #else // ^^^ defined(__clang__) / intrinsics unavailable vvv
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
+
+// TRANSITION, GH-519, additional overloads are not templated to avoid ambiguity with the major overload in UCRT
+#define _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, TYPE, RETV)                               \
+    _NODISCARD _Check_return_ _CONSTEXPR23 bool FUN(_In_ TYPE) noexcept /* strengthened */ { \
+        return RETV;                                                                         \
+    }
+
+#ifdef __cpp_char8_t
+#define _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T(FUN, RETV) _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, char8_t, RETV)
+#else // ^^^ defined(__cpp_char8_t) / !defined(__cpp_char8_t) vvv
+#define _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T(FUN, RETV)
+#endif // ^^^ !defined(__cpp_char8_t) ^^^
+
+#define _GENERIC_MATH_CLASSIFY1_RETV(FUN, RETV)                          \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, signed char, RETV)        \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned char, RETV)      \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, short, RETV)              \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned short, RETV)     \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, int, RETV)                \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned int, RETV)       \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, long, RETV)               \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned long, RETV)      \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, long long, RETV)          \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned long long, RETV) \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, bool, RETV)               \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, char, RETV)               \
+    _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T(FUN, RETV)                      \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, char16_t, RETV)           \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, char32_t, RETV)           \
+    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, wchar_t, RETV)
 
 // The following order matches N4950 [cmath.syn].
 _GENERIC_MATH1(acos)
@@ -701,7 +773,12 @@ _GENERIC_MATH2(fmax)
 _GENERIC_MATH2(fmin)
 // fma() is hand-crafted
 // lerp() is hand-crafted
-// The "classification/comparison functions" (fpclassify(), etc.) are exempt, LWG-1327
+// fpclassify() is hand-crafted
+_GENERIC_MATH_CLASSIFY1_RETV(isfinite, true)
+_GENERIC_MATH_CLASSIFY1_RETV(isinf, false)
+_GENERIC_MATH_CLASSIFY1_RETV(isnan, false)
+// isnormal() is half-hand-crafted
+// signbit() is hand-crafted
 
 #undef _GENERIC_MATH1_BASE
 #undef _GENERIC_MATH1R
@@ -711,6 +788,9 @@ _GENERIC_MATH2(fmin)
 #undef _GENERIC_MATH2_BASE
 #undef _GENERIC_MATH2
 #undef _GENERIC_MATH2I
+#undef _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV
+#undef _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T
+#undef _GENERIC_MATH_CLASSIFY1_RETV
 #undef _HAS_CMATH_INTRINSICS
 _END_EXTERN_CXX_WORKAROUND
 
