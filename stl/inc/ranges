@@ -5289,7 +5289,9 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto begin() noexcept(
-            noexcept(_RANGES begin(_Base)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
+            noexcept(_RANGES begin(_Base)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */
+            requires (!_Simple_view<_Vw>)
+        {
             if constexpr (random_access_range<_Vw> && sized_range<_Vw>) {
                 return _RANGES begin(_Base);
             } else {
@@ -5308,7 +5310,9 @@ namespace ranges {
             }
         }
 
-        _NODISCARD constexpr auto end() {
+        _NODISCARD constexpr auto end()
+            requires (!_Simple_view<_Vw>)
+        {
             if constexpr (random_access_range<_Vw> && sized_range<_Vw>) {
                 return _RANGES begin(_Base) + _RANGES distance(_Base);
             } else {

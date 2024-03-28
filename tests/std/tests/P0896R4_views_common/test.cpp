@@ -541,6 +541,34 @@ constexpr bool test_lwg3717() {
     return true;
 }
 
+constexpr bool test_lwg_4012() {
+    struct simple_view_with_difference_on_const : ranges::view_interface<simple_view_with_difference_on_const> {
+        constexpr difference_type_only_iterator<int> begin() noexcept {
+            return {nullptr};
+        }
+        constexpr difference_type_only_sentinel<int> end() noexcept {
+            return {nullptr};
+        }
+        constexpr difference_type_only_iterator<int> begin() const noexcept {
+            return {p_};
+        }
+        constexpr difference_type_only_sentinel<int> end() const noexcept {
+            return {p_};
+        }
+
+        int* p_;
+    };
+
+    int n{};
+    auto cv = views::common(simple_view_with_difference_on_const{{}, &n});
+
+    assert(cv.begin() == as_const(cv).begin());
+    assert(cv.begin() == as_const(cv).end());
+    assert(as_const(cv).begin() == cv.end());
+
+    return true;
+}
+
 int main() {
     // Get full instantiation coverage
     static_assert((test_in<instantiator, const int>(), true));
@@ -551,4 +579,7 @@ int main() {
 
     assert(test_lwg3717<int>());
     assert(test_lwg3717<const int>());
+
+    static_assert(test_lwg_4012());
+    test_lwg_4012();
 }
