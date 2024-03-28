@@ -6390,7 +6390,7 @@ namespace ranges {
         _NODISCARD constexpr auto end() noexcept(_Is_end_nothrow_v<_Vw>) // strengthened
             requires (!_Simple_view<_Vw>)
         {
-            if constexpr (common_range<_Vw> && sized_range<_Vw>) {
+            if constexpr (forward_range<_Vw> && common_range<_Vw> && sized_range<_Vw>) {
                 return _Iterator<false>{_RANGES end(_Range), _RANGES distance(_Range)};
             } else {
                 return _Sentinel<false>{_RANGES end(_Range)};
@@ -6400,7 +6400,7 @@ namespace ranges {
         _NODISCARD constexpr auto end() const noexcept(_Is_end_nothrow_v<const _Vw>) // strengthened
             requires _Range_with_movable_references<const _Vw>
         {
-            if constexpr (common_range<const _Vw> && sized_range<const _Vw>) {
+            if constexpr (forward_range<const _Vw> && common_range<const _Vw> && sized_range<const _Vw>) {
                 return _Iterator<true>{_RANGES end(_Range), _RANGES distance(_Range)};
             } else {
                 return _Sentinel<true>{_RANGES end(_Range)};
