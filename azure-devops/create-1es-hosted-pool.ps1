@@ -218,7 +218,7 @@ $ProvisionImageResult = Invoke-AzVMRunCommand `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\provision-image.ps1"
 
-Write-Host "provision-image.ps1 output: $($ProvisionImageResult.value.Message)"
+Write-Host $ProvisionImageResult.value.Message
 
 ####################################################################################################
 Display-ProgressBar -Status 'Restarting VM'
