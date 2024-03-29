@@ -10,18 +10,7 @@ provision-image.ps1 runs on an existing, freshly provisioned virtual machine,
 and sets up that virtual machine as a build machine. After this is done,
 (outside of this script), we take that machine and make it an image to be copied
 for setting up new VMs in the scale set.
-
-This script must either be run as admin, or one must pass AdminUserPassword;
-if the script is run with AdminUserPassword, it runs itself again as an
-administrator.
-
-.PARAMETER AdminUserPassword
-The administrator user's password; if this is $null, or not passed, then the
-script assumes it's running on an administrator account.
 #>
-param(
-  [string]$AdminUserPassword = $null
-)
 
 $ErrorActionPreference = 'Stop'
 
@@ -79,16 +68,8 @@ Function DownloadAndExtractZip {
 
 $TranscriptPath = 'C:\provision-image-transcript.txt'
 
-if ([string]::IsNullOrEmpty($AdminUserPassword)) {
-  Start-Transcript -Path $TranscriptPath -UseMinimalHeader
-} else {
-  Write-Host 'AdminUser password supplied; switching to AdminUser.'
-
-  # https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
-  $PsToolsZipUrl = 'https://download.sysinternals.com/files/PSTools.zip'
-  Write-Host "Downloading: $PsToolsZipUrl"
-  $ExtractedPsToolsPath = DownloadAndExtractZip -Url $PsToolsZipUrl
-  $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
+if ($PSVersionTable.PSVersion -lt [Version]::new('7.4.1')) {
+  Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 
   # https://github.com/PowerShell/PowerShell/releases/latest
   $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.1/PowerShell-7.4.1-win-x64.zip'
@@ -96,31 +77,23 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
   $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
   $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
 
-  $PsExecArgs = @(
-    '-u',
-    'AdminUser',
-    '-p',
-    'AdminUserPassword_REDACTED',
-    '-accepteula',
-    '-i',
-    '-h',
-    $PwshPath,
+  $PwshArgs = @(
     '-ExecutionPolicy',
     'Unrestricted',
     '-File',
     $PSCommandPath
   )
-  Write-Host "Executing: $PsExecPath $PsExecArgs"
-  $PsExecArgs[3] = $AdminUserPassword
+  Write-Host "Executing: $PwshPath $PwshArgs"
 
-  $proc = Start-Process -FilePath $PsExecPath -ArgumentList $PsExecArgs -Wait -PassThru
+  $proc = Start-Process -FilePath $PwshPath -ArgumentList $PwshArgs -Wait -PassThru
   Write-Host 'Reading transcript...'
   Get-Content -Path $TranscriptPath
   Write-Host 'Cleaning up...'
-  Remove-Item -Recurse -Path $ExtractedPsToolsPath
   Remove-Item -Recurse -Path $ExtractedPowerShellPath
   exit $proc.ExitCode
 }
+
+Start-Transcript -Path $TranscriptPath -UseMinimalHeader
 
 $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.ASAN',
@@ -296,8 +269,6 @@ Function PipInstall {
     Write-Error "Failed to install or upgrade $Package."
   }
 }
-
-Write-Host 'AdminUser password not supplied; assuming already running as AdminUser.'
 
 # Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
 cmd /c ver
