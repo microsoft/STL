@@ -27,13 +27,10 @@ filename component in the temporary directory with that extension.
 The extension to use for the path.
 #>
 Function Get-TempFilePath {
+  [CmdletBinding(PositionalBinding=$false)]
   Param(
-    [String]$Extension
+    [Parameter(Mandatory)][String]$Extension
   )
-
-  if ([String]::IsNullOrWhiteSpace($Extension)) {
-    throw 'Missing Extension'
-  }
 
   $tempPath = [System.IO.Path]::GetTempPath()
   $tempName = [System.IO.Path]::GetRandomFileName() + '.' + $Extension
@@ -51,13 +48,10 @@ DownloadAndExtractZip returns a path containing the extracted contents.
 The URL of the ZIP file to download.
 #>
 Function DownloadAndExtractZip {
+  [CmdletBinding(PositionalBinding=$false)]
   Param(
-    [String]$Url
+    [Parameter(Mandatory)][String]$Url
   )
-
-  if ([String]::IsNullOrWhiteSpace($Url)) {
-    throw 'Missing Url'
-  }
 
   $ZipPath = Get-TempFilePath -Extension 'zip'
   curl.exe -L -o $ZipPath -s -S $Url
@@ -134,10 +128,11 @@ The URL of the installer.
 The command-line arguments to pass to the installer.
 #>
 Function DownloadAndInstall {
+  [CmdletBinding(PositionalBinding=$false)]
   Param(
-    [String]$Name,
-    [String]$Url,
-    [String[]]$Args
+    [Parameter(Mandatory)][String]$Name,
+    [Parameter(Mandatory)][String]$Url,
+    [Parameter(Mandatory)][String[]]$Args
   )
 
   try {
@@ -177,8 +172,9 @@ Installs or upgrades a pip package specified in $Package.
 The name of the package to be installed or upgraded.
 #>
 Function PipInstall {
+  [CmdletBinding(PositionalBinding=$false)]
   Param(
-    [String]$Package
+    [Parameter(Mandatory)][String]$Package
   )
 
   try {
@@ -215,8 +211,8 @@ Write-Host 'Finished updating PATH!'
 
 Write-Host 'Running PipInstall...'
 
-PipInstall pip
-PipInstall psutil
+PipInstall -Package pip
+PipInstall -Package psutil
 
 Write-Host 'Finished running PipInstall!'
 
