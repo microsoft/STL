@@ -307,3 +307,5 @@ Write-Host 'Setting other environment variables...'
 Write-Host 'Finished setting other environment variables!'
 
 Write-Host 'Done!'
+
+exit
