@@ -635,7 +635,7 @@ _GENERIC_MATH_ISNORMAL(char16_t)
 _GENERIC_MATH_ISNORMAL(char32_t)
 #ifdef _NATIVE_WCHAR_T_DEFINED
 _GENERIC_MATH_ISNORMAL(wchar_t)
-#endif // #ifdef _NATIVE_WCHAR_T_DEFINED
+#endif // defined(_NATIVE_WCHAR_T_DEFINED)
 #undef _GENERIC_MATH_ISNORMAL
 
 #define _GENERIC_MATH1_BASE(NAME, RET, FUN)                                  \
