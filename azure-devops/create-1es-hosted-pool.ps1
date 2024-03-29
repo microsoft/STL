@@ -79,9 +79,9 @@ function New-Password {
     }
   }
 
-  $result = ''
+  [SecureString] $result = [SecureString]::new()
   for ($idx = 0; $idx -lt $Length; $idx++) {
-    $result += $alphabet[$randomData[$idx] -band $mask]
+    $result.AppendChar($alphabet[$randomData[$idx] -band $mask])
   }
 
   return $result
@@ -143,8 +143,7 @@ New-AzResourceGroup `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating credentials'
 
-$AdminPW = New-Password
-$AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
+$AdminPWSecure = New-Password
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
 ####################################################################################################
