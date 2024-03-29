@@ -13,6 +13,7 @@ for setting up new VMs in the scale set.
 #>
 
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 
 <#
 .SYNOPSIS
@@ -114,9 +115,6 @@ $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
 $PythonUrl = 'https://www.python.org/ftp/python/3.12.2/python-3.12.2-amd64.exe'
 
 $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_551.61_windows.exe'
-
-$ErrorActionPreference = 'Stop'
-$ProgressPreference = 'SilentlyContinue'
 
 <#
 .SYNOPSIS
