@@ -91,7 +91,7 @@ if ($PSVersionTable.PSVersion -lt [Version]::new('7.4.1')) {
   exit
 }
 
-$Workloads = @(
+$VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.ASAN',
   'Microsoft.VisualStudio.Component.VC.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.CMake.Project',
@@ -104,128 +104,65 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.Windows11SDK.22621'
 )
 
-$VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
+$VisualStudioUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
+$VisualStudioArgs = @('--quiet', '--norestart', '--wait', '--nocache')
+foreach ($workload in $VisualStudioWorkloads) {
+  $VisualStudioArgs += '--add'
+  $VisualStudioArgs += $workload
+}
+
 $PythonUrl = 'https://www.python.org/ftp/python/3.12.2/python-3.12.2-amd64.exe'
+$PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
 
 $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_551.61_windows.exe'
+$CudaArgs = @('-s')
 
 <#
 .SYNOPSIS
-Install Visual Studio.
+Download and install a component.
 
 .DESCRIPTION
-InstallVisualStudio takes the $Workloads array, and installs it with the
-installer that's pointed at by $BootstrapperUrl.
+DownloadAndInstall downloads an executable from the given URL, and runs it with the given command-line arguments.
 
-.PARAMETER Workloads
-The set of VS workloads to install.
-
-.PARAMETER BootstrapperUrl
-The URL of the Visual Studio installer, i.e. one of vs_*.exe.
-#>
-Function InstallVisualStudio {
-  Param(
-    [String[]]$Workloads,
-    [String]$BootstrapperUrl
-  )
-
-  try {
-    Write-Host 'Downloading Visual Studio...'
-    [string]$bootstrapperExe = Get-TempFilePath -Extension 'exe'
-    curl.exe -L -o $bootstrapperExe -s -S $BootstrapperUrl
-    Write-Host 'Installing Visual Studio...'
-    $args = @('--quiet', '--norestart', '--wait', '--nocache')
-    foreach ($workload in $Workloads) {
-      $args += '--add'
-      $args += $workload
-    }
-
-    $proc = Start-Process -FilePath $bootstrapperExe -ArgumentList $args -Wait -PassThru
-    $exitCode = $proc.ExitCode
-
-    # 3010 is probably ERROR_SUCCESS_REBOOT_REQUIRED
-    if ($exitCode -eq 0 -or $exitCode -eq 3010) {
-      Write-Host "Installation successful! Exited with $exitCode."
-    }
-    else {
-      Write-Error "Installation failed! Exited with $exitCode."
-    }
-
-    Remove-Item -Path $bootstrapperExe
-  }
-  catch {
-    Write-Error "Failed to install Visual Studio! $($_.Exception.Message)"
-  }
-}
-
-<#
-.SYNOPSIS
-Installs Python.
-
-.DESCRIPTION
-InstallPython installs Python from the supplied URL.
+.PARAMETER Name
+The name of the component, to be displayed in logging messages.
 
 .PARAMETER Url
-The URL of the Python installer.
+The URL of the installer.
+
+.PARAMETER Args
+The command-line arguments to pass to the installer.
 #>
-Function InstallPython {
+Function DownloadAndInstall {
   Param(
-    [String]$Url
+    [String]$Name,
+    [String]$Url,
+    [String[]]$Args
   )
 
   try {
-    Write-Host 'Downloading Python...'
+    Write-Host "Downloading $Name..."
     [string]$installerPath = Get-TempFilePath -Extension 'exe'
     curl.exe -L -o $installerPath -s -S $Url
-    Write-Host 'Installing Python...'
-    $args = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
-    $proc = Start-Process -FilePath $installerPath -ArgumentList $args -Wait -PassThru
+
+    Write-Host "Installing $Name..."
+    $proc = Start-Process -FilePath $installerPath -ArgumentList $Args -Wait -PassThru
     $exitCode = $proc.ExitCode
+
     if ($exitCode -eq 0) {
       Write-Host 'Installation successful!'
     }
-    else {
-      Write-Error "Installation failed! Exited with $exitCode."
-    }
-    Remove-Item -Path $installerPath
-  }
-  catch {
-    Write-Error "Failed to install Python! $($_.Exception.Message)"
-  }
-}
-
-<#
-.SYNOPSIS
-Installs NVIDIA's CUDA Toolkit.
-
-.DESCRIPTION
-InstallCuda installs the CUDA Toolkit.
-
-.PARAMETER Url
-The URL of the CUDA installer.
-#>
-Function InstallCuda {
-  Param(
-    [String]$Url
-  )
-
-  try {
-    Write-Host 'Downloading CUDA...'
-    [string]$installerPath = Get-TempFilePath -Extension 'exe'
-    curl.exe -L -o $installerPath -s -S $Url
-    Write-Host 'Installing CUDA...'
-    $proc = Start-Process -FilePath $installerPath -ArgumentList @('-s') -Wait -PassThru
-    $exitCode = $proc.ExitCode
-    if ($exitCode -eq 0) {
-      Write-Host 'Installation successful!'
+    elseif ($exitCode -eq 3010) {
+      Write-Host 'Installation successful! Exited with 3010 (ERROR_SUCCESS_REBOOT_REQUIRED).'
     }
     else {
       Write-Error "Installation failed! Exited with $exitCode."
     }
+
     Remove-Item -Path $installerPath
   }
   catch {
-    Write-Error "Failed to install CUDA! $($_.Exception.Message)"
+    Write-Error "Installation failed! Exception: $($_.Exception.Message)"
   }
 }
 
@@ -257,9 +194,9 @@ Function PipInstall {
 # Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
 cmd /c ver
 
-InstallPython $PythonUrl
-InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
-InstallCuda -Url $CudaUrl
+DownloadAndInstall -Name 'Python'        -Url $PythonUrl       -Args $PythonArgs
+DownloadAndInstall -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStudioArgs
+DownloadAndInstall -Name 'CUDA'          -Url $CudaUrl         -Args $CudaArgs
 
 Write-Host 'Updating PATH...'
 
