@@ -111,32 +111,6 @@ $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/12.4.0/local_inst
 
 <#
 .SYNOPSIS
-Writes a message to the screen depending on ExitCode.
-
-.DESCRIPTION
-Since msiexec can return either 0 or 3010 successfully, in both cases
-we write that installation succeeded, and which exit code it exited with.
-If msiexec returns anything else, we write an error.
-
-.PARAMETER ExitCode
-The exit code that msiexec returned.
-#>
-Function PrintMsiExitCodeMessage {
-  Param(
-    $ExitCode
-  )
-
-  # 3010 is probably ERROR_SUCCESS_REBOOT_REQUIRED
-  if ($ExitCode -eq 0 -or $ExitCode -eq 3010) {
-    Write-Host "Installation successful! Exited with $ExitCode."
-  }
-  else {
-    Write-Error "Installation failed! Exited with $ExitCode."
-  }
-}
-
-<#
-.SYNOPSIS
 Install Visual Studio.
 
 .DESCRIPTION
@@ -167,7 +141,16 @@ Function InstallVisualStudio {
     }
 
     $proc = Start-Process -FilePath cmd.exe -ArgumentList $args -Wait -PassThru
-    PrintMsiExitCodeMessage $proc.ExitCode
+    $exitCode = $proc.ExitCode
+
+    # 3010 is probably ERROR_SUCCESS_REBOOT_REQUIRED
+    if ($exitCode -eq 0 -or $exitCode -eq 3010) {
+      Write-Host "Installation successful! Exited with $exitCode."
+    }
+    else {
+      Write-Error "Installation failed! Exited with $exitCode."
+    }
+
     Remove-Item -Path $bootstrapperExe
   }
   catch {
