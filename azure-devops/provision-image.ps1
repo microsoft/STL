@@ -203,8 +203,8 @@ Function InstallPython {
   [string]$installerPath = Get-TempFilePath -Extension 'exe'
   curl.exe -L -o $installerPath -s -S $Url
   Write-Host 'Installing Python...'
-  $proc = Start-Process -FilePath $installerPath -ArgumentList `
-  @('/passive', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1') -Wait -PassThru
+  $args = @('/passive', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1')
+  $proc = Start-Process -FilePath $installerPath -ArgumentList $args -Wait -PassThru
   $exitCode = $proc.ExitCode
   if ($exitCode -eq 0) {
     Write-Host 'Installation successful!'
