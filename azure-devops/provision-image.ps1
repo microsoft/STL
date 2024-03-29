@@ -62,6 +62,7 @@ Function DownloadAndExtractZip {
   curl.exe -L -o $ZipPath -s -S $Url
   $TempSubdirPath = Get-TempFilePath -Extension 'dir'
   Expand-Archive -Path $ZipPath -DestinationPath $TempSubdirPath -Force
+  Remove-Item -Path $ZipPath
 
   return $TempSubdirPath
 }
@@ -90,6 +91,7 @@ if ($PSVersionTable.PSVersion -lt [Version]::new('7.4.1')) {
   Get-Content -Path $TranscriptPath
   Write-Host 'Cleaning up...'
   Remove-Item -Recurse -Path $ExtractedPowerShellPath
+  Remove-Item -Path $TranscriptPath
   exit $proc.ExitCode
 }
 
@@ -175,6 +177,7 @@ Function InstallVisualStudio {
 
     $proc = Start-Process -FilePath cmd.exe -ArgumentList $args -Wait -PassThru
     PrintMsiExitCodeMessage $proc.ExitCode
+    Remove-Item -Path $bootstrapperExe
   }
   catch {
     Write-Error "Failed to install Visual Studio! $($_.Exception.Message)"
@@ -209,6 +212,7 @@ Function InstallPython {
   else {
     Write-Error "Installation failed! Exited with $exitCode."
   }
+  Remove-Item -Path $installerPath
 }
 
 <#
@@ -239,6 +243,7 @@ Function InstallCuda {
     else {
       Write-Error "Installation failed! Exited with $exitCode."
     }
+    Remove-Item -Path $installerPath
   }
   catch {
     Write-Error "Failed to install CUDA! $($_.Exception.Message)"
