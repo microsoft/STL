@@ -104,6 +104,8 @@ function Wait-Shutdown {
 Display-ProgressBar -Status 'Silencing breaking change warnings'
 
 # https://aka.ms/azps-changewarnings
+$Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
+
 Update-AzConfig `
   -DisplayBreakingChangeWarning $false `
   -Scope 'Process' | Out-Null
