@@ -60,28 +60,11 @@ function New-Password {
   Param([int]$Length = 32)
 
   # This 64-character alphabet generates 6 bits of entropy per character.
-  # The power-of-2 alphabet size allows us to select a character by masking a random Byte with bitwise-AND.
-  $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
-  $mask = 63
-  if ($alphabet.Length -ne 64) {
-    throw 'Bad alphabet length'
-  }
-
-  [Byte[]]$randomData = [Byte[]]::new($Length)
-  $rng = $null
-  try {
-    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-    $rng.GetBytes($randomData)
-  }
-  finally {
-    if ($null -ne $rng) {
-      $rng.Dispose()
-    }
-  }
+  $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'.ToCharArray()
 
   [SecureString] $result = [SecureString]::new()
   for ($idx = 0; $idx -lt $Length; $idx++) {
-    $result.AppendChar($alphabet[$randomData[$idx] -band $mask])
+    $result.AppendChar((Get-SecureRandom -InputObject $alphabet))
   }
 
   return $result
