@@ -161,60 +161,12 @@ Function DownloadAndInstall {
   }
 }
 
-<#
-.SYNOPSIS
-Install or upgrade a pip package.
-
-.DESCRIPTION
-Installs or upgrades a pip package specified in $Package.
-
-.PARAMETER Package
-The name of the package to be installed or upgraded.
-#>
-Function PipInstall {
-  [CmdletBinding(PositionalBinding=$false)]
-  Param(
-    [Parameter(Mandatory)][String]$Package
-  )
-
-  try {
-    Write-Host "Installing or upgrading $Package..."
-    python.exe -m pip install --progress-bar off --upgrade $Package
-    Write-Host "Done installing or upgrading $Package."
-  }
-  catch {
-    Write-Error "Failed to install or upgrade $Package."
-  }
-}
-
 # Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
 cmd /c ver
 
 DownloadAndInstall -Name 'Python'        -Url $PythonUrl       -Args $PythonArgs
 DownloadAndInstall -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStudioArgs
 DownloadAndInstall -Name 'CUDA'          -Url $CudaUrl         -Args $CudaArgs
-
-Write-Host 'Updating PATH...'
-
-# Step 1: Read the system path, which was just updated by installing Python.
-$currentSystemPath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
-
-# Step 2: Update the local path (for this running script), so PipInstall can run python.exe.
-# Additional directories can be added here (e.g. if we extracted a zip file
-# or installed something that didn't update the system path).
-$Env:PATH="$($currentSystemPath)"
-
-# Step 3: Update the system path, permanently recording any additional directories that were added in the previous step.
-[Environment]::SetEnvironmentVariable('Path', "$Env:PATH", 'Machine')
-
-Write-Host 'Finished updating PATH!'
-
-Write-Host 'Running PipInstall...'
-
-PipInstall -Package pip
-PipInstall -Package psutil
-
-Write-Host 'Finished running PipInstall!'
 
 Write-Host 'Setting other environment variables...'
 
