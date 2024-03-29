@@ -134,13 +134,13 @@ Function InstallVisualStudio {
     [string]$bootstrapperExe = Get-TempFilePath -Extension 'exe'
     curl.exe -L -o $bootstrapperExe -s -S $BootstrapperUrl
     Write-Host 'Installing Visual Studio...'
-    $args = @('/c', $bootstrapperExe, '--quiet', '--norestart', '--wait', '--nocache')
+    $args = @('--quiet', '--norestart', '--wait', '--nocache')
     foreach ($workload in $Workloads) {
       $args += '--add'
       $args += $workload
     }
 
-    $proc = Start-Process -FilePath cmd.exe -ArgumentList $args -Wait -PassThru
+    $proc = Start-Process -FilePath $bootstrapperExe -ArgumentList $args -Wait -PassThru
     $exitCode = $proc.ExitCode
 
     # 3010 is probably ERROR_SUCCESS_REBOOT_REQUIRED
