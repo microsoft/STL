@@ -68,8 +68,6 @@ Function DownloadAndExtractZip {
   return $TempSubdirPath
 }
 
-$TranscriptPath = 'C:\provision-image-transcript.txt'
-
 if ($PSVersionTable.PSVersion -lt [Version]::new('7.4.1')) {
   Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 
@@ -86,17 +84,12 @@ if ($PSVersionTable.PSVersion -lt [Version]::new('7.4.1')) {
     $PSCommandPath
   )
   Write-Host "Executing: $PwshPath $PwshArgs"
+  & $PwshPath $PwshArgs
 
-  $proc = Start-Process -FilePath $PwshPath -ArgumentList $PwshArgs -Wait -PassThru
-  Write-Host 'Reading transcript...'
-  Get-Content -Path $TranscriptPath
   Write-Host 'Cleaning up...'
   Remove-Item -Recurse -Path $ExtractedPowerShellPath
-  Remove-Item -Path $TranscriptPath
-  exit $proc.ExitCode
+  exit
 }
-
-Start-Transcript -Path $TranscriptPath -UseMinimalHeader
 
 $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.ASAN',
