@@ -199,20 +199,25 @@ Function InstallPython {
     [String]$Url
   )
 
-  Write-Host 'Downloading Python...'
-  [string]$installerPath = Get-TempFilePath -Extension 'exe'
-  curl.exe -L -o $installerPath -s -S $Url
-  Write-Host 'Installing Python...'
-  $args = @('/passive', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1')
-  $proc = Start-Process -FilePath $installerPath -ArgumentList $args -Wait -PassThru
-  $exitCode = $proc.ExitCode
-  if ($exitCode -eq 0) {
-    Write-Host 'Installation successful!'
+  try {
+    Write-Host 'Downloading Python...'
+    [string]$installerPath = Get-TempFilePath -Extension 'exe'
+    curl.exe -L -o $installerPath -s -S $Url
+    Write-Host 'Installing Python...'
+    $args = @('/passive', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1')
+    $proc = Start-Process -FilePath $installerPath -ArgumentList $args -Wait -PassThru
+    $exitCode = $proc.ExitCode
+    if ($exitCode -eq 0) {
+      Write-Host 'Installation successful!'
+    }
+    else {
+      Write-Error "Installation failed! Exited with $exitCode."
+    }
+    Remove-Item -Path $installerPath
   }
-  else {
-    Write-Error "Installation failed! Exited with $exitCode."
+  catch {
+    Write-Error "Failed to install Python! $($_.Exception.Message)"
   }
-  Remove-Item -Path $installerPath
 }
 
 <#
