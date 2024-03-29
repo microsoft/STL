@@ -168,12 +168,10 @@ DownloadAndInstall -Name 'Python'        -Url $PythonUrl       -Args $PythonArgs
 DownloadAndInstall -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStudioArgs
 DownloadAndInstall -Name 'CUDA'          -Url $CudaUrl         -Args $CudaArgs
 
-Write-Host 'Setting other environment variables...'
+Write-Host 'Setting environment variables...'
 
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
 [Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
-
-Write-Host 'Finished setting other environment variables!'
 
 Write-Host 'Done!'
 
