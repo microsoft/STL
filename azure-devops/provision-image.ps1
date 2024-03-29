@@ -59,7 +59,7 @@ Function DownloadAndExtractZip {
   }
 
   $ZipPath = Get-TempFilePath -Extension 'zip'
-  & curl.exe -L -o $ZipPath -s -S $Url
+  curl.exe -L -o $ZipPath -s -S $Url
   $TempSubdirPath = Get-TempFilePath -Extension 'dir'
   Expand-Archive -Path $ZipPath -DestinationPath $TempSubdirPath -Force
 
