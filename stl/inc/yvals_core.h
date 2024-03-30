@@ -1253,9 +1253,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
     [[deprecated("warning STL4020: "                                                                                   \
                  "std::codecvt<char16_t, char, mbstate_t>, std::codecvt<char32_t, char, mbstate_t>, "                  \
                  "std::codecvt_byname<char16_t, char, mbstate_t>, and std::codecvt_byname<char32_t, char, mbstate_t> " \
-                 "are deprecated in C++20 and replaced by specializations with a second argument of type char8_t. "    \
-                 "You can define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING "                                   \
-                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to suppress this warning.")]]
+                 "are deprecated in C++20. std::filesystem::path can be used for desired conversions. You can define " \
+                 "_SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to "    \
+                 "suppress this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _CXX20_DEPRECATE_CODECVT_FACETS
 #endif // ^^^ warning disabled ^^^
@@ -1514,7 +1514,20 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_TR1_RANDOM
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4047
+#if _HAS_CXX20 && defined(__cpp_char8_t) && !defined(_SILENCE_CXX20_CODECVT_CHAR8_T_FACETS_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS                                                                       \
+    [[deprecated(                                                                                                     \
+        "warning STL4047: std::codecvt<char16_t, char8_t, mbstate_t>, std::codecvt<char32_t, char8_t, mbstate_t>, "   \
+        "std::codecvt_byname<char16_t, char8_t, mbstate_t>, and "                                                     \
+        "std::codecvt_byname<char32_t, char8_t, mbstate_t> are deprecated by LWG-3767. std::filesystem::path can be " \
+        "used for desired conversions. You can define _SILENCE_CXX20_CODECVT_CHAR8_T_FACETS_DEPRECATION_WARNING or "  \
+        "_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4048
 
 // next error number: STL1006
 

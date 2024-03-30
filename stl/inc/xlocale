@@ -1397,7 +1397,7 @@ struct _NODISCARD _Codecvt_guard {
 };
 
 extern "C++" template <>
-class codecvt<char16_t, char8_t, mbstate_t> : public codecvt_base {
+class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS codecvt<char16_t, char8_t, mbstate_t> : public codecvt_base {
     // facet for converting between UTF-16 and UTF-8 sequences
 public:
     using intern_type = char16_t;
@@ -1678,7 +1678,7 @@ protected:
 };
 
 extern "C++" template <>
-class codecvt<char32_t, char8_t, mbstate_t> : public codecvt_base {
+class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS codecvt<char32_t, char8_t, mbstate_t> : public codecvt_base {
     // facet for converting between UTF-32 and UTF-8 sequences
 public:
     using intern_type = char32_t;
