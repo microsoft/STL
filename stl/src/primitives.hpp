@@ -50,11 +50,11 @@ namespace Concurrency {
 extern "C" {
 
 struct _Cnd_internal_imp_t {
-    std::_Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> cv;
+    std::_Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cv_storage;
 
     [[nodiscard]] Concurrency::details::stl_condition_variable_win7* _get_cv() noexcept {
         // get pointer to implementation
-        return reinterpret_cast<Concurrency::details::stl_condition_variable_win7*>(&cv);
+        return reinterpret_cast<Concurrency::details::stl_condition_variable_win7*>(&_Cv_storage);
     }
 };
 
