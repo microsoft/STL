@@ -49,11 +49,3 @@ namespace Concurrency {
         }
     } // namespace details
 } // namespace Concurrency
-
-extern "C" {
-
-struct _Cnd_internal_imp_t {
-    std::_Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cv_storage;
-};
-
-} // extern "C"

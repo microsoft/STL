@@ -71,12 +71,11 @@ _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = alignof(void*);
 
 using _Mtx_t = _Mtx_internal_imp_t*;
 
-#ifdef _M_CEE // avoid warning LNK4248: unresolved typeref token for '_Cnd_internal_imp_t'; image may not run
-using _Cnd_t = void*;
-#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
-struct _Cnd_internal_imp_t;
+struct _Cnd_internal_imp_t {
+    _STD _Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cv_storage;
+};
+
 using _Cnd_t = _Cnd_internal_imp_t*;
-#endif // ^^^ !defined(_M_CEE) ^^^
 } // extern "C"
 
 #pragma pop_macro("new")
