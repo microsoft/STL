@@ -58,20 +58,19 @@ struct _Mtx_internal_imp_t {
     int _Count{};
 };
 
-// Size and alignment for _Cnd_internal_imp_t
-#if defined(_CRT_WINDOWS) // for Windows-internal code
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 2 * sizeof(void*);
-#elif defined(_WIN64) // ordinary 64-bit code
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 72;
-#else // vvv ordinary 32-bit code vvv
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 40;
-#endif // ^^^ ordinary 32-bit code ^^^
-
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = alignof(void*);
-
 using _Mtx_t = _Mtx_internal_imp_t*;
 
 struct _Cnd_internal_imp_t {
+#if defined(_CRT_WINDOWS) // for Windows-internal code
+    static constexpr size_t _Cnd_internal_imp_size = 2 * sizeof(void*);
+#elif defined(_WIN64) // ordinary 64-bit code
+    static constexpr size_t _Cnd_internal_imp_size = 72;
+#else // vvv ordinary 32-bit code vvv
+    static constexpr size_t _Cnd_internal_imp_size = 40;
+#endif // ^^^ ordinary 32-bit code ^^^
+
+    static constexpr size_t _Cnd_internal_imp_alignment = alignof(void*);
+
     _STD _Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cv_storage;
 };
 
