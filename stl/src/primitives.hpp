@@ -44,6 +44,9 @@ namespace Concurrency {
             CONDITION_VARIABLE m_condition_variable = CONDITION_VARIABLE_INIT;
         };
 
+        [[nodiscard]] inline stl_condition_variable_win7* _Get_cond_var(::_Cnd_internal_imp_t* _Cond) noexcept {
+            return reinterpret_cast<stl_condition_variable_win7*>(&_Cond->_Cv_storage);
+        }
     } // namespace details
 } // namespace Concurrency
 
@@ -51,11 +54,6 @@ extern "C" {
 
 struct _Cnd_internal_imp_t {
     std::_Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cv_storage;
-
-    [[nodiscard]] Concurrency::details::stl_condition_variable_win7* _get_cv() noexcept {
-        // get pointer to implementation
-        return reinterpret_cast<Concurrency::details::stl_condition_variable_win7*>(&_Cv_storage);
-    }
 };
 
 } // extern "C"
