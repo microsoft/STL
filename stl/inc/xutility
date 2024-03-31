@@ -132,6 +132,19 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(const void* _First1, const
 } // extern "C"
 
 _STD_BEGIN
+template<size_t _Nx>
+__declspec(noalias) void _Reverse_trivially_swappable(void* _First, void* _Last) noexcept {
+    if constexpr (_Nx == 1) {
+        ::__std_reverse_trivially_swappable_1(_First, _Last);
+    } else if constexpr (_Nx == 2) {
+        ::__std_reverse_trivially_swappable_2(_First, _Last);
+    } else if constexpr (_Nx == 4) {
+        ::__std_reverse_trivially_swappable_4(_First, _Last);
+    } else {
+        ::__std_reverse_trivially_swappable_8(_First, _Last);
+    }
+}
+
 template <class _Ty, class _TVal>
 __declspec(noalias) size_t _Count_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
@@ -6315,16 +6328,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            if constexpr (_Nx == 1) {
-                ::__std_reverse_trivially_swappable_1(_STD _To_address(_UFirst), _STD _To_address(_ULast));
-            } else if constexpr (_Nx == 2) {
-                ::__std_reverse_trivially_swappable_2(_STD _To_address(_UFirst), _STD _To_address(_ULast));
-            } else if constexpr (_Nx == 4) {
-                ::__std_reverse_trivially_swappable_4(_STD _To_address(_UFirst), _STD _To_address(_ULast));
-            } else {
-                ::__std_reverse_trivially_swappable_8(_STD _To_address(_UFirst), _STD _To_address(_ULast));
-            }
-
+            _STD _Reverse_trivially_swappable<_Nx>(_STD _To_address(_UFirst), _STD _To_address(_ULast));
             return;
         }
     }

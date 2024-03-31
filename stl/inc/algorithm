@@ -76,6 +76,20 @@ __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, cons
 } // extern "C"
 
 _STD_BEGIN
+template<size_t _Nx>
+__declspec(noalias) void _Reverse_copy_trivially_copyable(
+    const void* _First, const void* _Last, void* _Dest) {
+    if constexpr (_Nx == 1) {
+        ::__std_reverse_copy_trivially_copyable_1(_First, _Last, _Dest);
+    } else if constexpr (_Nx == 2) {
+        ::__std_reverse_copy_trivially_copyable_2(_First, _Last, _Dest);
+    } else if constexpr (_Nx == 4) {
+        ::__std_reverse_copy_trivially_copyable_4(_First, _Last, _Dest);
+    } else {
+        ::__std_reverse_copy_trivially_copyable_8(_First, _Last, _Dest);
+    }
+}
+
 template <class _Ty>
 pair<_Ty*, _Ty*> _Minmax_element(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
@@ -4921,18 +4935,7 @@ namespace ranges {
 
             if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                 if (!_STD is_constant_evaluated()) {
-                    _Elem* const _First_addr = _STD to_address(_First);
-                    _Elem* const _Last_addr  = _STD to_address(_Last);
-                    if constexpr (_Nx == 1) {
-                        ::__std_reverse_trivially_swappable_1(_First_addr, _Last_addr);
-                    } else if constexpr (_Nx == 2) {
-                        ::__std_reverse_trivially_swappable_2(_First_addr, _Last_addr);
-                    } else if constexpr (_Nx == 4) {
-                        ::__std_reverse_trivially_swappable_4(_First_addr, _Last_addr);
-                    } else {
-                        ::__std_reverse_trivially_swappable_8(_First_addr, _Last_addr);
-                    }
-
+                    _STD _Reverse_trivially_swappable<_Nx>(_STD _To_address(_First), _STD _To_address(_Last));
                     return;
                 }
             }
@@ -4991,20 +4994,8 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            if constexpr (_Nx == 1) {
-                ::__std_reverse_copy_trivially_copyable_1(
-                    _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
-            } else if constexpr (_Nx == 2) {
-                ::__std_reverse_copy_trivially_copyable_2(
-                    _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
-            } else if constexpr (_Nx == 4) {
-                ::__std_reverse_copy_trivially_copyable_4(
-                    _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
-            } else {
-                ::__std_reverse_copy_trivially_copyable_8(
-                    _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
-            }
-
+            _Reverse_copy_trivially_copyable(
+                _STD to_address(_UFirst), _STD to_address(_ULast), _STD to_address(_UDest));
             _UDest += _ULast - _UFirst;
             _STD _Seek_wrapped(_Dest, _UDest);
             return _Dest;
@@ -5080,19 +5071,8 @@ namespace ranges {
 
                 if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                     if (!_STD is_constant_evaluated()) {
-                        _Elem* const _First_addr      = _STD to_address(_First);
-                        _Elem* const _Last_addr       = _STD to_address(_Last);
-                        _DestElem* const _Result_addr = _STD to_address(_Result);
-                        if constexpr (_Nx == 1) {
-                            ::__std_reverse_copy_trivially_copyable_1(_First_addr, _Last_addr, _Result_addr);
-                        } else if constexpr (_Nx == 2) {
-                            ::__std_reverse_copy_trivially_copyable_2(_First_addr, _Last_addr, _Result_addr);
-                        } else if constexpr (_Nx == 4) {
-                            ::__std_reverse_copy_trivially_copyable_4(_First_addr, _Last_addr, _Result_addr);
-                        } else {
-                            ::__std_reverse_copy_trivially_copyable_8(_First_addr, _Last_addr, _Result_addr);
-                        }
-
+                        _Reverse_copy_trivially_copyable(
+                            _STD to_address(_First), _STD to_address(_Last), _STD to_address(_Result));
                         _Result += _Last - _First;
                         return _Result;
                     }
