@@ -47,12 +47,10 @@ struct _Mtx_internal_imp_t {
 #endif // ^^^ !defined(_WIN64) ^^^
 #endif // ^^^ public STL ^^^
 
-    static constexpr size_t _Critical_section_align = alignof(void*);
-
     int _Type{};
     union {
         _Stl_critical_section _Critical_section{};
-        _STD _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs_storage;
+        _STD _Aligned_storage_t<_Critical_section_size, alignof(void*)> _Cs_storage;
     };
     long _Thread_id{};
     int _Count{};
@@ -69,9 +67,7 @@ struct _Cnd_internal_imp_t {
     static constexpr size_t _Cnd_internal_imp_size = 40;
 #endif // ^^^ ordinary 32-bit code ^^^
 
-    static constexpr size_t _Cnd_internal_imp_alignment = alignof(void*);
-
-    _STD _Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cv_storage;
+    _STD _Aligned_storage_t<_Cnd_internal_imp_size, alignof(void*)> _Cv_storage;
 };
 
 using _Cnd_t = _Cnd_internal_imp_t*;
