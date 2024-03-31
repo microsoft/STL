@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <__msvc_threads_core.hpp>
 #include <cstdlib>
 #include <type_traits>
 
