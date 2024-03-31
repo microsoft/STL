@@ -132,7 +132,7 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(const void* _First1, const
 } // extern "C"
 
 _STD_BEGIN
-template<size_t _Nx>
+template <size_t _Nx>
 __declspec(noalias) void _Reverse_trivially_swappable(void* _First, void* _Last) noexcept {
     if constexpr (_Nx == 1) {
         ::__std_reverse_trivially_swappable_1(_First, _Last);

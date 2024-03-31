@@ -76,9 +76,8 @@ __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, cons
 } // extern "C"
 
 _STD_BEGIN
-template<size_t _Nx>
-__declspec(noalias) void _Reverse_copy_trivially_copyable(
-    const void* _First, const void* _Last, void* _Dest) {
+template <size_t _Nx>
+__declspec(noalias) void _Reverse_copy_trivially_copyable(const void* _First, const void* _Last, void* _Dest) {
     if constexpr (_Nx == 1) {
         ::__std_reverse_copy_trivially_copyable_1(_First, _Last, _Dest);
     } else if constexpr (_Nx == 2) {
@@ -3506,8 +3505,7 @@ namespace ranges {
                     const auto _First2_ptr = _STD _To_address(_First2);
                     const auto _Last2_ptr  = _First2_ptr + _Count2;
 
-                    const auto _Result =
-                        _STD _Find_first_of_trivial(_First1_ptr, _Last1_ptr, _First2_ptr, _Last2_ptr);
+                    const auto _Result = _STD _Find_first_of_trivial(_First1_ptr, _Last1_ptr, _First2_ptr, _Last2_ptr);
 
                     if constexpr (is_pointer_v<_It1>) {
                         return _Result;
