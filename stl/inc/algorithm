@@ -4936,7 +4936,7 @@ namespace ranges {
 
             if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                 if (!_STD is_constant_evaluated()) {
-                    _STD _Reverse_trivially_swappable<_Nx>(_STD _To_address(_First), _STD _To_address(_Last));
+                    _STD _Reverse_trivially_swappable<_Nx>(_STD to_address(_First), _STD to_address(_Last));
                     return;
                 }
             }
@@ -4996,7 +4996,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 #endif // _HAS_CXX20
         {
             _STD _Reverse_copy_trivially_copyable<_Nx>(
-                _STD to_address(_UFirst), _STD to_address(_ULast), _STD to_address(_UDest));
+                _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
             _UDest += _ULast - _UFirst;
             _STD _Seek_wrapped(_Dest, _UDest);
             return _Dest;
