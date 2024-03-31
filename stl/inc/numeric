@@ -49,7 +49,7 @@ _NODISCARD _CONSTEXPR20 _Ty accumulate(const _InIt _First, const _InIt _Last, _T
 #if _HAS_CXX17
 #if _STD_VECTORIZE_WITH_FLOAT_CONTROL
 template <class _InIt, class _Ty, class _BinOp>
-inline constexpr bool _Plus_on_arithmetic_ranges_reduction_v =
+constexpr bool _Plus_on_arithmetic_ranges_reduction_v =
     conjunction_v<is_arithmetic<_Ty>, is_arithmetic<remove_pointer_t<_InIt>>, is_same<plus<>, _BinOp>>;
 
 #pragma float_control(precise, off, push)
@@ -150,7 +150,7 @@ _NODISCARD _CONSTEXPR20 _Ty inner_product(const _InIt1 _First1, const _InIt1 _La
 #if _HAS_CXX17
 #if _STD_VECTORIZE_WITH_FLOAT_CONTROL
 template <class _InIt1, class _InIt2, class _Ty, class _BinOp1, class _BinOp2>
-inline constexpr bool _Default_ops_transform_reduce_v =
+constexpr bool _Default_ops_transform_reduce_v =
     conjunction_v<is_arithmetic<_Ty>, is_arithmetic<remove_pointer_t<_InIt1>>, is_arithmetic<remove_pointer_t<_InIt2>>,
         is_same<plus<>, _BinOp1>, is_same<multiplies<>, _BinOp2>>;
 
@@ -646,7 +646,7 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> lcm(const _Mt _Mx, const _Nt _Nx) n
 
 #if _HAS_CXX20
 template <class _Flt>
-inline constexpr _Flt _Floating_max{};
+constexpr _Flt _Floating_max{};
 template <>
 inline constexpr float _Floating_max<float> = FLT_MAX;
 template <>
@@ -655,7 +655,7 @@ template <>
 inline constexpr long double _Floating_max<long double> = LDBL_MAX;
 
 template <class _Flt>
-inline constexpr _Flt _Floating_min{};
+constexpr _Flt _Floating_min{};
 template <>
 inline constexpr float _Floating_min<float> = FLT_MIN;
 template <>

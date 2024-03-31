@@ -15,17 +15,17 @@
 using namespace std;
 
 template <class CharT>
-inline constexpr auto input_ptr = "1 2 3 4 5";
+constexpr auto input_ptr = "1 2 3 4 5";
 template <>
 inline constexpr auto input_ptr<wchar_t> = L"1 2 3 4 5";
 
 template <class CharT>
-inline constexpr auto input_view = "1 2 3 4 5"sv;
+constexpr auto input_view = "1 2 3 4 5"sv;
 template <>
 inline constexpr auto input_view<wchar_t> = L"1 2 3 4 5"sv;
 
 template <class CharT>
-inline constexpr array input_std_array{'1', ' ', '2', ' ', '3', ' ', '4', ' ', '5'};
+constexpr array input_std_array{'1', ' ', '2', ' ', '3', ' ', '4', ' ', '5'};
 template <>
 inline constexpr array input_std_array<wchar_t>{L'1', L' ', L'2', L' ', L'3', L' ', L'4', L' ', L'5'};
 

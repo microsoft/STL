@@ -51,7 +51,7 @@ namespace experimental {
 
 // clang-format off
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_any_path = _Is_any_of_v<_Ty
+constexpr bool _Is_any_path = _Is_any_of_v<_Ty
 #if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
     , experimental::filesystem::path
 #endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM

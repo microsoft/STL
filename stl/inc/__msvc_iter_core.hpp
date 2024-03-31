@@ -34,7 +34,7 @@ _EXPORT_STD template <class _Ty, class _Alloc>
 struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {};
 
 _EXPORT_STD template <class _Ty, class _Alloc>
-_INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
+constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
 
 // from <iterator>
 _EXPORT_STD struct input_iterator_tag {};
@@ -386,7 +386,7 @@ struct iterator_traits<_Ty*> {
 };
 
 template <class _Ty>
-inline constexpr bool _Integer_class = requires {
+constexpr bool _Integer_class = requires {
     typename _Ty::_Signed_type;
     typename _Ty::_Unsigned_type;
 };
@@ -418,7 +418,7 @@ concept sentinel_for = semiregular<_Se>
 // clang-format on
 
 _EXPORT_STD template <class _Se, class _It>
-inline constexpr bool disable_sized_sentinel_for = false;
+constexpr bool disable_sized_sentinel_for = false;
 
 // clang-format off
 _EXPORT_STD template <class _Se, class _It>
@@ -454,7 +454,7 @@ namespace ranges {
 _EXPORT_STD using ranges::get;
 
 template <class _It, class _Se, ranges::subrange_kind _Ki>
-inline constexpr bool _Is_subrange_v<ranges::subrange<_It, _Se, _Ki>> = true;
+constexpr bool _Is_subrange_v<ranges::subrange<_It, _Se, _Ki>> = true;
 
 template <class _It, class _Se, ranges::subrange_kind _Ki>
 struct tuple_size<ranges::subrange<_It, _Se, _Ki>> : integral_constant<size_t, 2> {};

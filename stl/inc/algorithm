@@ -185,7 +185,7 @@ _INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
 
 // Can we activate the vector algorithms for find_first_of?
 template <class _It1, class _It2, class _Pr>
-_INLINE_VAR constexpr bool _Vector_alg_in_find_first_of_is_safe =
+constexpr bool _Vector_alg_in_find_first_of_is_safe =
     _Equal_memcmp_is_safe<_It1, _It2, _Pr> // can replace value comparison with bitwise comparison
     && sizeof(_Iter_value_t<_It1>) <= 2; // pcmpestri compatible size
 _STD_END
@@ -202,7 +202,7 @@ _STD_BEGIN
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 template <class _It>
-_INLINE_VAR constexpr _Iter_diff_t<_It> _Isort_max{_ISORT_MAX};
+constexpr _Iter_diff_t<_It> _Isort_max{_ISORT_MAX};
 
 template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
@@ -3516,11 +3516,11 @@ namespace ranges {
     _EXPORT_STD inline constexpr _Find_first_of_fn find_first_of;
 
     template <class _Ty>
-    inline constexpr bool _Is_trivially_ranges_swappable_v =
+    constexpr bool _Is_trivially_ranges_swappable_v =
         disjunction_v<conjunction<is_scalar<_Ty>, negation<is_enum<_Ty>>>, _Is_trivially_swappable<_Ty>>;
 
     template <class _Ty, size_t _Len>
-    inline constexpr bool _Is_trivially_ranges_swappable_v<_Ty[_Len]> = _Is_trivially_ranges_swappable_v<_Ty>;
+    constexpr bool _Is_trivially_ranges_swappable_v<_Ty[_Len]> = _Is_trivially_ranges_swappable_v<_Ty>;
 
     template <class _Ty>
     struct _Is_trivially_ranges_swappable : bool_constant<_Is_trivially_ranges_swappable_v<_Ty>> {};
@@ -3948,7 +3948,7 @@ namespace ranges {
 
 // TRANSITION, DevCom-10606350: help the compiler auto-vectorize for simple types
 template <class _UOutIt, class _InTy, class _NewTy, class _OutTy = remove_pointer_t<_UOutIt>>
-_INLINE_VAR constexpr bool _Can_vectorize_replace_copy = conjunction_v<is_pointer<_UOutIt>, is_same<_InTy, _NewTy>,
+constexpr bool _Can_vectorize_replace_copy = conjunction_v<is_pointer<_UOutIt>, is_same<_InTy, _NewTy>,
     disjunction<
 #ifdef __cpp_lib_byte
         conjunction<is_same<_InTy, byte>, is_same<_OutTy, byte>>,
@@ -4718,7 +4718,7 @@ template <class _InIt, class _OutIt>
 #if _HAS_CXX20
 concept
 #else
-_INLINE_VAR constexpr bool
+constexpr bool
 #endif
     _Can_reread_dest = _Is_cpp17_fwd_iter_v<_OutIt> && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
 

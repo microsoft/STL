@@ -22,76 +22,75 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 template <bool _Same, class _Dest, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_conditional_explicit_v0 = false;
+constexpr bool _Tuple_conditional_explicit_v0 = false;
 
 template <class... _Dests, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_conditional_explicit_v0<true, tuple<_Dests...>, _Srcs...> =
+constexpr bool _Tuple_conditional_explicit_v0<true, tuple<_Dests...>, _Srcs...> =
     !conjunction_v<is_convertible<_Srcs, _Dests>...>;
 
 template <class _Dest, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_conditional_explicit_v =
+constexpr bool _Tuple_conditional_explicit_v =
     _Tuple_conditional_explicit_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
 template <bool _Same, class _Dest, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_constructible_v0 = false;
+constexpr bool _Tuple_constructible_v0 = false;
 
 template <class... _Dests, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_constructible_v0<true, tuple<_Dests...>, _Srcs...> =
+constexpr bool _Tuple_constructible_v0<true, tuple<_Dests...>, _Srcs...> =
     conjunction_v<is_constructible<_Dests, _Srcs>...>;
 
 template <class _Dest, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_constructible_v =
+constexpr bool _Tuple_constructible_v =
     _Tuple_constructible_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
 template <class _Dest, class... _Srcs>
 struct _Tuple_constructible_val : bool_constant<_Tuple_constructible_v<_Dest, _Srcs...>> {};
 
 template <bool _Same, class _Dest, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_nothrow_constructible_v0 = false;
+constexpr bool _Tuple_nothrow_constructible_v0 = false;
 
 template <class... _Dests, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_nothrow_constructible_v0<true, tuple<_Dests...>, _Srcs...> =
+constexpr bool _Tuple_nothrow_constructible_v0<true, tuple<_Dests...>, _Srcs...> =
     conjunction_v<is_nothrow_constructible<_Dests, _Srcs>...>;
 
 template <class _Dest, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_nothrow_constructible_v =
+constexpr bool _Tuple_nothrow_constructible_v =
     _Tuple_nothrow_constructible_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
 template <bool _Same, class _Dest, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_assignable_v0 = false;
+constexpr bool _Tuple_assignable_v0 = false;
 
 template <class... _Dests, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_assignable_v0<true, tuple<_Dests...>, _Srcs...> =
+constexpr bool _Tuple_assignable_v0<true, tuple<_Dests...>, _Srcs...> =
     conjunction_v<is_assignable<_Dests&, _Srcs>...>; // note _Dests& instead of _Dests
 
 #if _HAS_CXX23
 template <class... _Dests, class... _Srcs>
-inline constexpr bool _Tuple_assignable_v0<true, const tuple<_Dests...>, _Srcs...> =
+constexpr bool _Tuple_assignable_v0<true, const tuple<_Dests...>, _Srcs...> =
     conjunction_v<is_assignable<const _Dests&, _Srcs>...>;
 #endif // _HAS_CXX23
 
 template <class _Dest, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_assignable_v =
-    _Tuple_assignable_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
+constexpr bool _Tuple_assignable_v = _Tuple_assignable_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
 template <class _Dest, class... _Srcs>
 struct _Tuple_assignable_val : bool_constant<_Tuple_assignable_v<_Dest, _Srcs...>> {};
 
 template <bool _Same, class _Dest, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v0 = false;
+constexpr bool _Tuple_nothrow_assignable_v0 = false;
 
 template <class... _Dests, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v0<true, tuple<_Dests...>, _Srcs...> =
+constexpr bool _Tuple_nothrow_assignable_v0<true, tuple<_Dests...>, _Srcs...> =
     conjunction_v<is_nothrow_assignable<_Dests&, _Srcs>...>; // note _Dests& instead of _Dests
 
 #if _HAS_CXX23
 template <class... _Dests, class... _Srcs>
-inline constexpr bool _Tuple_nothrow_assignable_v0<true, const tuple<_Dests...>, _Srcs...> =
+constexpr bool _Tuple_nothrow_assignable_v0<true, const tuple<_Dests...>, _Srcs...> =
     conjunction_v<is_nothrow_assignable<const _Dests&, _Srcs>...>;
 #endif // _HAS_CXX23
 
 template <class _Dest, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v =
+constexpr bool _Tuple_nothrow_assignable_v =
     _Tuple_nothrow_assignable_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
 // Constrain tuple's converting constructors
@@ -180,10 +179,10 @@ struct _Alloc_unpack_tuple_t {
 
 #if _HAS_CXX23
 template <class _Tuple, class _Other, class _Indices = make_index_sequence<tuple_size_v<_Tuple>>>
-inline constexpr bool _Can_construct_values_from_tuple_like_v = false;
+constexpr bool _Can_construct_values_from_tuple_like_v = false;
 
 template <class... _Types, class _Other, size_t... _Indices>
-inline constexpr bool _Can_construct_values_from_tuple_like_v<tuple<_Types...>, _Other, index_sequence<_Indices...>> =
+constexpr bool _Can_construct_values_from_tuple_like_v<tuple<_Types...>, _Other, index_sequence<_Indices...>> =
     conjunction_v<is_constructible<_Types, decltype(_STD get<_Indices>(_STD declval<_Other>()))>...>;
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 and VSO-1900279
@@ -1080,9 +1079,9 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) noexcept(
 }
 
 template <class _Ty, class _Tuple, class _Seq = make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>>
-inline constexpr bool _Can_make_from_tuple = false;
+constexpr bool _Can_make_from_tuple = false;
 template <class _Ty, class _Tuple, size_t... _Indices>
-inline constexpr bool _Can_make_from_tuple<_Ty, _Tuple, index_sequence<_Indices...>> =
+constexpr bool _Can_make_from_tuple<_Ty, _Tuple, index_sequence<_Indices...>> =
     is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD declval<_Tuple>()))...>;
 
 template <class _Ty, class _Tuple, size_t... _Indices>
