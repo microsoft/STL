@@ -4995,7 +4995,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _STD _Reverse_copy_trivially_copyable(
+            _STD _Reverse_copy_trivially_copyable<_Nx>(
                 _STD to_address(_UFirst), _STD to_address(_ULast), _STD to_address(_UDest));
             _UDest += _ULast - _UFirst;
             _STD _Seek_wrapped(_Dest, _UDest);
@@ -5072,7 +5072,7 @@ namespace ranges {
 
                 if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                     if (!_STD is_constant_evaluated()) {
-                        _STD _Reverse_copy_trivially_copyable(
+                        _STD _Reverse_copy_trivially_copyable<_Nx>(
                             _STD to_address(_First), _STD to_address(_Last), _STD to_address(_Result));
                         _Result += _Last - _First;
                         return _Result;
