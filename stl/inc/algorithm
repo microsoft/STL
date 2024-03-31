@@ -2968,6 +2968,8 @@ namespace ranges {
                     const auto _First_ptr = _STD _To_address(_First);
                     const auto _Last_ptr  = _First_ptr + _Count;
 
+                    _Ty* _Result;
+
                     if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
 #ifdef _WIN64
                         _Result = const_cast<_Ty*>(static_cast<const _Ty*>(
