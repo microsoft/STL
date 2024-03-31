@@ -33,19 +33,13 @@ struct _Stl_critical_section {
 };
 
 struct _Mtx_internal_imp_t {
-#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-#ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 16;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-    static constexpr size_t _Critical_section_size = 8;
-#endif // ^^^ !defined(_WIN64) ^^^
-#else // ^^^ Windows private STL / public STL vvv
-#ifdef _WIN64
+#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT) // for Windows-internal code
+    static constexpr size_t _Critical_section_size = 2 * sizeof(void*);
+#elif defined(_WIN64) // ordinary 64-bit code
     static constexpr size_t _Critical_section_size = 64;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+#else // vvv ordinary 32-bit code vvv
     static constexpr size_t _Critical_section_size = 36;
-#endif // ^^^ !defined(_WIN64) ^^^
-#endif // ^^^ public STL ^^^
+#endif // ^^^ ordinary 32-bit code ^^^
 
     int _Type{};
     union {
