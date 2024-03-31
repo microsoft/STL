@@ -145,33 +145,6 @@ auto _Minmax(_Ty* const _First, _Ty* const _Last) noexcept {
     }
 }
 
-template <class _Ty, class _TVal>
-_Ty* _Find_last_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
-#ifdef _WIN64
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, reinterpret_cast<uint64_t>(_Val))));
-#else
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_4(_First, _Last, reinterpret_cast<uint32_t>(_Val))));
-#endif
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_1(_First, _Last, static_cast<uint8_t>(_Val))));
-    } else if constexpr (sizeof(_Ty) == 2) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_2(_First, _Last, static_cast<uint16_t>(_Val))));
-    } else if constexpr (sizeof(_Ty) == 4) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_4(_First, _Last, static_cast<uint32_t>(_Val))));
-    } else if constexpr (sizeof(_Ty) == 8) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
-    } else {
-        static_assert(_Always_false<_Ty>, "Unexpected size");
-    }
-}
-
 template <class _Ty1, class _Ty2>
 _Ty1* _Find_first_of_trivial(
     _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, _Ty2* const _Last2) noexcept {
@@ -2982,7 +2955,30 @@ namespace ranges {
                     const auto _First_ptr = _STD _To_address(_First);
                     const auto _Last_ptr  = _First_ptr + _Count;
 
-                    const auto _Result = _STD _Find_last_trivial(_First_ptr, _Last_ptr, _Value);
+                    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
+#ifdef _WIN64
+                        _Result = const_cast<_Ty*>(static_cast<const _Ty*>(
+                            ::__std_find_last_trivial_8(_First_ptr, _Last_ptr, reinterpret_cast<uint64_t>(_Value))));
+#else
+                        _Result = const_cast<_Ty*>(static_cast<const _Ty*>(
+                            ::__std_find_last_trivial_4(_First_ptr, _Last_ptr, reinterpret_cast<uint32_t>(_Value))));
+#endif
+                    } else if constexpr (sizeof(_Ty) == 1) {
+                        _Result = const_cast<_Ty*>(static_cast<const _Ty*>(
+                            ::__std_find_last_trivial_1(_First_ptr, _Last_ptr, static_cast<uint8_t>(_Value))));
+                    } else if constexpr (sizeof(_Ty) == 2) {
+                        _Result = const_cast<_Ty*>(static_cast<const _Ty*>(
+                            ::__std_find_last_trivial_2(_First_ptr, _Last_ptr, static_cast<uint16_t>(_Value))));
+                    } else if constexpr (sizeof(_Ty) == 4) {
+                        _Result = const_cast<_Ty*>(static_cast<const _Ty*>(
+                            ::__std_find_last_trivial_4(_First_ptr, _Last_ptr, static_cast<uint32_t>(_Value))));
+                    } else if constexpr (sizeof(_Ty) == 8) {
+                        _Result = const_cast<_Ty*>(static_cast<const _Ty*>(
+                            ::__std_find_last_trivial_8(_First_ptr, _Last_ptr, static_cast<uint64_t>(_Value))));
+                    } else {
+                        static_assert(_Always_false<_Ty>, "Unexpected size");
+                    }
+
                     if constexpr (is_pointer_v<_It>) {
                         return {_Result, _Last_ptr};
                     } else {
