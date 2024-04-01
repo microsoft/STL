@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <bitset>
 #include <cassert>
-#include <compare>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -21,8 +20,9 @@
 #include <vector>
 
 #if _HAS_CXX20
+#include <compare>
 #include <ranges>
-#endif
+#endif // _HAS_CXX20
 
 #include "test_min_max_element_support.hpp"
 
@@ -404,6 +404,7 @@ bool last_known_good_lex_compare(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt 
     }
 }
 
+#if _HAS_CXX20
 template <class FwdIt>
 auto last_known_good_lex_compare_3way(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
     for (;; ++first1, ++first2) {
@@ -423,6 +424,7 @@ auto last_known_good_lex_compare_3way(FwdIt first1, FwdIt last1, FwdIt first2, F
         }
     }
 }
+#endif // _HAS_CXX20
 
 template <class T>
 void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<T>& b) {
