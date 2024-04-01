@@ -11,7 +11,7 @@ using namespace std;
 constexpr int some_ints[] = {0, 1, 2, 3};
 
 void test_constructor_negative_size() {
-    (void) views::drop(some_ints, -3); // Number of elements to take must be non-negative
+    (void) views::take(some_ints, -3); // Number of elements to take must be non-negative
 }
 
 int main(int argc, char* argv[]) {
