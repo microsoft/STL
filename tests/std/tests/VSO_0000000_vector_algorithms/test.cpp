@@ -429,7 +429,7 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
     auto expected_mismatch = last_known_good_mismatch(a.begin(), a.end(), b.begin(), b.end());
     auto actual_mismatch   = mismatch(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_mismatch == actual_mismatch);
-    
+
     auto expected_lex = last_known_good_lex_compare(a.begin(), a.end(), b.begin(), b.end());
     auto actual_lex   = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_lex == actual_lex);
@@ -492,7 +492,7 @@ template <class C1, class C2>
 void test_mismatch_and_lex_compare_family_containers() {
     C1 a{'m', 'e', 'o', 'w', ' ', 'C', 'A', 'T', 'S'};
     C2 b{'m', 'e', 'o', 'w', ' ', 'K', 'I', 'T', 'T', 'E', 'N', 'S'};
-    
+
     const auto result_mismatch_4 = mismatch(a.begin(), a.end(), b.begin(), b.end());
     const auto result_mismatch_3 = mismatch(a.begin(), a.end(), b.begin());
     assert(get<0>(result_mismatch_4) == a.begin() + 5);

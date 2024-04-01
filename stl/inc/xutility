@@ -5651,7 +5651,7 @@ struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, less<_Elem3>> {
 template <class _Elem1, class _Elem2>
 struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, less<>> {
     static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>;
-    using _Pred = conditional_t<_Opt != _Lex_cmp_opt::_None, less<int>, void>;
+    using _Pred                        = conditional_t<_Opt != _Lex_cmp_opt::_None, less<int>, void>;
 };
 
 template <class _Elem1, class _Elem2, class _Elem3>
@@ -5831,8 +5831,8 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1
     using _Memcmp_pred = _Lex_compare_three_way_memcmp_classify<decltype(_UFirst1), decltype(_UFirst2), _Cmp>;
     if constexpr (!is_void_v<typename _Memcmp_pred::_Comp>) {
         if (!_STD is_constant_evaluated()) {
-            const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
-            const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
+            const auto _Num1  = static_cast<size_t>(_ULast1 - _UFirst1);
+            const auto _Num2  = static_cast<size_t>(_ULast2 - _UFirst2);
             const size_t _Num = (_STD min)(_Num1, _Num2);
 
 #if _USE_STD_VECTOR_ALGORITHMS
