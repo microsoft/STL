@@ -216,10 +216,16 @@ _INLINE_VAR constexpr bool _Vector_alg_in_find_first_of_is_safe =
     && sizeof(_Iter_value_t<_It1>) <= 2; // pcmpestri compatible size
 
 // Can we activate the vector algorithms for replace?
-template <class _Iter, class _Ty1, class _Ty2>
+template <class _Iter, class _Ty1>
 _INLINE_VAR constexpr bool _Vector_alg_in_replace_is_safe =
     _Vector_alg_in_find_is_safe<_Iter, _Ty1> // can search for the value
     && sizeof(_Iter_value_t<_Iter>) >= 4 // avx masked op compatible size
+    && _Vector_alg_in_find_is_safe_elem<_Ty2, _Iter_value_t<_Iter>>; // replacement fits
+
+// Can we activate the vector algorithms for replace?
+template <class _Iter, class _Ty1, class _Ty2>
+_INLINE_VAR constexpr bool _Vector_alg_in_replace_with_maybe_other_type_is_safe =
+    _Vector_alg_in_replace_is_safe<_Iter, _Ty1> // can search and replace
     && _Vector_alg_in_find_is_safe_elem<_Ty2, _Iter_value_t<_Iter>>; // replacement fits
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
@@ -3842,7 +3848,7 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
     const auto _ULast = _STD _Get_unwrapped(_Last);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Vector_alg_in_replace_is_safe<_FwdIt, _Ty, _Ty>) {
+    if constexpr (_Vector_alg_in_replace_is_safe<_FwdIt, _Ty>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -3910,8 +3916,8 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_replace_is_safe<_It, _Ty1, _Ty2>
-                          && sized_sentinel_for<_Se, _It>) {
+            if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
+                          && _Vector_alg_in_replace_with_maybe_other_type_is_safe<_It, _Ty1, _Ty2>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _Count = _Last - _First;
 
