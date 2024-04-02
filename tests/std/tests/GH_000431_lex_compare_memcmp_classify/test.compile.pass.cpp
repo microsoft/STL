@@ -256,6 +256,10 @@ void lex_compare_memcmp_classify_test_cases() {
     test_lex_compare_memcmp_classify_for_1byte_integrals<true, bool, char8_t>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<true, char8_t, bool>();
 #endif // __cpp_lib_char8_t
+    test_lex_compare_memcmp_classify_for_1byte_integrals<vec_alg && is_unsigned_v<char>, char, bool>();
+    test_lex_compare_memcmp_classify_for_1byte_integrals<vec_alg && is_unsigned_v<char>, bool, char>();
+    test_lex_compare_memcmp_classify_for_1byte_integrals<false, signed char, bool>();
+    test_lex_compare_memcmp_classify_for_1byte_integrals<false, bool, signed char>();
 
     // Don't allow enums
     test_lex_compare_memcmp_classify_for_types<false, char_enum, char_enum>();
