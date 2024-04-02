@@ -2362,8 +2362,7 @@ __declspec(noalias) void __stdcall __std_replace_trivial_8(
 #ifdef _WIN64
         const __m256i _Comparand   = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_Old_val));
         const __m256i _Replacement = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_New_val));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-        // Workaround, _mm_cvtsi64_si128 does not compile
+#else // ^^^ defined(_WIN64) / !defined(_WIN64), workaround, _mm_cvtsi64_si128 does not compile vvv
         const __m256i _Comparand   = _mm256_set1_epi64x(_Old_val);
         const __m256i _Replacement = _mm256_set1_epi64x(_New_val);
 #endif // ^^^ !defined(_WIN64) ^^^
