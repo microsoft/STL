@@ -217,13 +217,13 @@ _INLINE_VAR constexpr bool _Vector_alg_in_find_first_of_is_safe =
 
 // Can we activate the vector algorithms for replace?
 template <class _Iter, class _Ty1>
-_INLINE_VAR constexpr bool _Vector_alg_in_replace_is_safe =
+constexpr bool _Vector_alg_in_replace_is_safe =
     _Vector_alg_in_find_is_safe<_Iter, _Ty1> // can search for the value
     && sizeof(_Iter_value_t<_Iter>) >= 4; // avx masked op compatible size
 
 // Can we activate the vector algorithms for replace?
 template <class _Iter, class _Ty1, class _Ty2>
-_INLINE_VAR constexpr bool _Vector_alg_in_replace_with_maybe_other_type_is_safe =
+constexpr bool _Vector_alg_in_replace_with_maybe_other_type_is_safe =
     _Vector_alg_in_replace_is_safe<_Iter, _Ty1> // can search and replace
     && _Vector_alg_in_find_is_safe_elem<_Ty2, _Iter_value_t<_Iter>>; // replacement fits
 _STD_END
