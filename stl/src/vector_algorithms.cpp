@@ -2359,8 +2359,15 @@ __declspec(noalias) void __stdcall __std_replace_trivial_4(
 __declspec(noalias) void __stdcall __std_replace_trivial_8(
     void* _First, void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
     if (_Use_avx2()) {
+#ifdef _WIN64
         const __m256i _Comparand   = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_Old_val));
         const __m256i _Replacement = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_New_val));
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+        // Workaround, _mm_cvtsi64_si128 does not compile
+        const __m256i _Comparand   = _mm256_set1_epi64x(_Old_val);
+        const __m256i _Replacement = _mm256_set1_epi64x(_New_val);
+#endif // ^^^ !defined(_WIN64) ^^^
+
 
         const size_t _Full_length = _Byte_length(_First, _Last);
 
