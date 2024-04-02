@@ -2327,8 +2327,7 @@ __declspec(noalias) void __stdcall __std_replace_trivial_4(
     if (_Use_avx2()) {
         const __m256i _Comparand   = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_Old_val));
         const __m256i _Replacement = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_New_val));
-
-        const size_t _Full_length = _Byte_length(_First, _Last);
+        const size_t _Full_length  = _Byte_length(_First, _Last);
 
         void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Full_length & ~size_t{0x1F});
@@ -2366,8 +2365,6 @@ __declspec(noalias) void __stdcall __std_replace_trivial_8(
         const __m256i _Comparand   = _mm256_set1_epi64x(_Old_val);
         const __m256i _Replacement = _mm256_set1_epi64x(_New_val);
 #endif // ^^^ !defined(_WIN64) ^^^
-
-
         const size_t _Full_length = _Byte_length(_First, _Last);
 
         void* _Stop_at = _First;
