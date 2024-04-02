@@ -48,7 +48,6 @@ void r(benchmark::State& state) {
     }
 }
 
-
 template <class T>
 void rc(benchmark::State& state) {
     const std::vector<T> a(std::begin(src), std::end(src));

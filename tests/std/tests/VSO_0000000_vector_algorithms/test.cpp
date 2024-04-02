@@ -562,7 +562,7 @@ void test_case_replace(const vector<T>& input, T old_val, T new_val) {
 
 template <class T>
 void test_replace(mt19937_64& gen) {
-    using TD                       = conditional_t<sizeof(T) == 1, int, T>;
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis(0, 9);
     vector<T> input;
 
@@ -776,7 +776,7 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_replace<unsigned int>(gen);
     test_replace<long long>(gen);
     test_replace<unsigned long long>(gen);
-    
+
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
     test_reverse<unsigned char>(gen);

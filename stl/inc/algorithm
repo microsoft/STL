@@ -3850,7 +3850,7 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
             if (_STD _Could_compare_equal_to_value_type<_FwdIt>(_Oldval)) {
                 _STD _Replace_trivial(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Oldval, _Newval);
             }
-            
+
             return;
         }
     }
@@ -3912,8 +3912,7 @@ namespace ranges {
 #if _USE_STD_VECTOR_ALGORITHMS
             if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_replace_is_safe<_It, _Ty1, _Ty2>
                           && sized_sentinel_for<_Se, _It>) {
-                if (!_STD is_constant_evaluated())
-                {
+                if (!_STD is_constant_evaluated()) {
                     const auto _Count = _Last - _First;
 
                     if (_STD _Could_compare_equal_to_value_type<_It>(_Oldval)) {
