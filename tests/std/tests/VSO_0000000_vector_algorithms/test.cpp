@@ -238,7 +238,7 @@ void test_case_find_first_of(const vector<T>& input_haystack, const vector<T>& i
 
 template <class T>
 void test_find_first_of(mt19937_64& gen) {
-    constexpr size_t needleDataCount = 30;
+    constexpr size_t needleDataCount = 50;
     using TD                         = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('a', 'z');
     vector<T> input_haystack;

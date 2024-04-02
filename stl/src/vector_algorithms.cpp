@@ -2021,18 +2021,21 @@ namespace {
     const void* __stdcall __std_find_first_of_trivial_impl(
         const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
 #ifndef _M_ARM64EC
-        const size_t _Needle_length = _Byte_length(_First2, _Last2);
-
-        if (_Use_sse42() && _Needle_length <= 16) {
+        if (_Use_sse42()) {
             constexpr int _Op =
                 (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT;
             constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
 
-            const int _Needle_length_el = static_cast<int>(_Needle_length / sizeof(_Ty));
+            const size_t _Needle_length = _Byte_length(_First2, _Last2);
+            const void* _Last_needle    = _First2;
+            _Advance_bytes(_Last_needle, _Needle_length & ~size_t{0xF});
+
+            const int _Last_needle_length = static_cast<int>(_Needle_length & 0xF);
 
             alignas(16) uint8_t _Tmp1[16];
-            memcpy(_Tmp1, _First2, _Needle_length);
-            const __m128i _Needle = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+            memcpy(_Tmp1, _First2, _Last_needle_length);
+            const __m128i _Last_needle_val = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+            const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
             const size_t _Haystack_length = _Byte_length(_First1, _Last1);
             const void* _Stop_at          = _First1;
@@ -2041,6 +2044,18 @@ namespace {
             while (_First1 != _Stop_at) {
                 const __m128i _Haystack_part = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
 
+                for (const void* _Cur_needle = _First2; _Cur_needle != _Last_needle; _Advance_bytes(_Cur_needle, 16)) {
+                    const __m128i _Needle = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+
+                    if (_mm_cmpestrc(_Needle, _Part_size_el, _Haystack_part, _Part_size_el, _Op)) {
+                        const int _Pos = _mm_cmpestri(_Needle, _Part_size_el, _Haystack_part, _Part_size_el, _Op);
+                        _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                        return _First1;
+                    }
+                }
+
+                const int _Needle_length_el = _Last_needle_length_el;
+                const __m128i _Needle       = _Last_needle_val;
                 if (_mm_cmpestrc(_Needle, _Needle_length_el, _Haystack_part, _Part_size_el, _Op)) {
                     const int _Pos = _mm_cmpestri(_Needle, _Needle_length_el, _Haystack_part, _Part_size_el, _Op);
                     _Advance_bytes(_First1, _Pos * sizeof(_Ty));
@@ -2057,6 +2072,18 @@ namespace {
             memcpy(_Tmp2, _First1, _Last_part_size);
             const __m128i _Haystack_last_part = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
 
+            for (const void* _Cur_needle = _First2; _Cur_needle != _Last_needle; _Advance_bytes(_Cur_needle, 16)) {
+                const __m128i _Needle = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+
+                if (_mm_cmpestrc(_Needle, _Part_size_el, _Haystack_last_part, _Last_part_size_el, _Op)) {
+                    const int _Pos = _mm_cmpestri(_Needle, _Part_size_el, _Haystack_last_part, _Last_part_size_el, _Op);
+                    _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                    return _First1;
+                }
+            }
+
+            const int _Needle_length_el = _Last_needle_length_el;
+            const __m128i _Needle       = _Last_needle_val;
             if (_mm_cmpestrc(_Needle, _Needle_length_el, _Haystack_last_part, _Last_part_size_el, _Op)) {
                 const int _Pos = _mm_cmpestri(_Needle, _Needle_length_el, _Haystack_last_part, _Last_part_size_el, _Op);
                 _Advance_bytes(_First1, _Pos * sizeof(_Ty));
