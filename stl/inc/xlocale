@@ -2321,7 +2321,7 @@ private:
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 
 _EXPORT_STD template <class _Elem, class _Byte, class _Statype>
-class codecvt_byname : public codecvt<_Elem, _Byte, _Statype> { // codecvt for named locale
+class codecvt_byname : public codecvt<_Elem, _Byte, _Statype> {
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS
                       || _Is_any_of_v<codecvt_byname,
@@ -2332,10 +2332,10 @@ public:
         _FACET_SPECIALIZATION_MESSAGE);
 
     explicit __CLR_OR_THIS_CALL codecvt_byname(const char* _Locname, size_t _Refs = 0)
-        : codecvt<_Elem, _Byte, _Statype>(_Locinfo(_Locname), _Refs) {} // construct for named locale
+        : codecvt<_Elem, _Byte, _Statype>(_Locinfo(_Locname), _Refs) {}
 
     explicit __CLR_OR_THIS_CALL codecvt_byname(const string& _Str, size_t _Refs = 0)
-        : codecvt<_Elem, _Byte, _Statype>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
+        : codecvt<_Elem, _Byte, _Statype>(_Locinfo(_Str.c_str()), _Refs) {}
 
 protected:
     __CLR_OR_THIS_CALL ~codecvt_byname() noexcept override {}
