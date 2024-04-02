@@ -271,7 +271,7 @@ template <class... _Types>
 constexpr unsigned char _Classify_category =
     _Comparison_category{(_Classify_category<_Types> | ... | _Comparison_category_strong)};
 template <class _Ty>
-inline constexpr unsigned char _Classify_category<_Ty> = _Comparison_category_none;
+constexpr unsigned char _Classify_category<_Ty> = _Comparison_category_none;
 template <>
 inline constexpr unsigned char _Classify_category<partial_ordering> = _Comparison_category_partial;
 template <>
