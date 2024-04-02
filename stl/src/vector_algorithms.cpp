@@ -2322,6 +2322,74 @@ namespace {
 
 extern "C" {
 
+__declspec(noalias) void __stdcall __std_replace_trivial_4(
+    void* _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
+    if (_Use_avx2()) {
+        const __m256i _Comparand   = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_Old_val));
+        const __m256i _Replacement = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_New_val));
+
+        const size_t _Full_length = _Byte_length(_First, _Last);
+
+        void* _Stop_at = _First;
+        _Advance_bytes(_Stop_at, _Full_length & ~size_t{0x1F});
+
+        while (_First != _Stop_at) {
+            const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
+            const __m256i _Mask = _mm256_cmpeq_epi32(_Comparand, _Data);
+            _mm256_maskstore_epi32(reinterpret_cast<int*>(_First), _Mask, _Replacement);
+
+            _Advance_bytes(_First, 32);
+        }
+
+        if (const size_t _Tail_length = _Full_length & 0x1C; _Tail_length != 0) {
+            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length >> 2);
+            const __m256i _Data      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First), _Tail_mask);
+            const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi32(_Comparand, _Data), _Tail_mask);
+            _mm256_maskstore_epi32(reinterpret_cast<int*>(_First), _Mask, _Replacement);
+        }
+    } else {
+        for (auto _Cur = reinterpret_cast<uint32_t*>(_First); _Cur != _Last; ++_Cur) {
+            if (*_Cur == _Old_val) {
+                *_Cur = _New_val;
+            }
+        }
+    }
+}
+
+__declspec(noalias) void __stdcall __std_replace_trivial_8(
+    void* _First, void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
+    if (_Use_avx2()) {
+        const __m256i _Comparand   = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_Old_val));
+        const __m256i _Replacement = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_New_val));
+
+        const size_t _Full_length = _Byte_length(_First, _Last);
+
+        void* _Stop_at = _First;
+        _Advance_bytes(_Stop_at, _Full_length & ~size_t{0x1F});
+
+        while (_First != _Stop_at) {
+            const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
+            const __m256i _Mask = _mm256_cmpeq_epi64(_Comparand, _Data);
+            _mm256_maskstore_epi64(reinterpret_cast<long long*>(_First), _Mask, _Replacement);
+
+            _Advance_bytes(_First, 32);
+        }
+
+        if (const size_t _Tail_length = _Full_length & 0x18; _Tail_length != 0) {
+            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length >> 2);
+            const __m256i _Data      = _mm256_maskload_epi64(reinterpret_cast<const long long*>(_First), _Tail_mask);
+            const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi64(_Comparand, _Data), _Tail_mask);
+            _mm256_maskstore_epi64(reinterpret_cast<long long*>(_First), _Mask, _Replacement);
+        }
+    } else {
+        for (auto _Cur = reinterpret_cast<uint64_t*>(_First); _Cur != _Last; ++_Cur) {
+            if (*_Cur == _Old_val) {
+                *_Cur = _New_val;
+            }
+        }
+    }
+}
+
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* const _Dest, const void* _Src, size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
 #ifndef _M_ARM64EC

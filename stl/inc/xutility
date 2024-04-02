@@ -5830,30 +5830,34 @@ struct _Vector_alg_in_find_is_safe_object_pointers<_Ty1*, _Ty2*>
           // either _Ty1 is the same as _Ty2 (ignoring cv-qualifiers), or one of the two is void
           disjunction<is_same<remove_cv_t<_Ty1>, remove_cv_t<_Ty2>>, is_void<_Ty1>, is_void<_Ty2>>> {};
 
+// Can we activate the vector algorithms for a value and container elements
+template <class _Ty, class _Elem>
+_INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe_elem = disjunction_v<
+#ifdef __cpp_lib_byte
+    // We're finding a std::byte in a range of std::byte.
+    conjunction<is_same<_Ty, byte>, is_same<_Elem, byte>>,
+#endif // defined(__cpp_lib_byte)
+    // We're finding an integer in a range of integers.
+    // This case is the one that requires careful runtime handling in _Could_compare_equal_to_value_type.
+    conjunction<is_integral<_Ty>, is_integral<_Elem>>,
+    // We're finding an (object or function) pointer in a range of pointers of the same type.
+    conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>,
+    // We're finding a nullptr in a range of (object or function) pointers.
+    conjunction<is_same<_Ty, nullptr_t>, is_pointer<_Elem>>,
+    // We're finding an object pointer in a range of object pointers, and:
+    // - One of the pointer types is a cv void*.
+    // - One of the pointer types is a cv1 U* and the other is a cv2 U*.
+    _Vector_alg_in_find_is_safe_object_pointers<_Ty, _Elem>>;
+
 // Can we activate the vector algorithms for find/count?
-template <class _Iter, class _Ty, class _Elem = _Iter_value_t<_Iter>>
+template <class _Iter, class _Ty>
 _INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe =
     // The iterator must be contiguous so we can get raw pointers.
     _Iterator_is_contiguous<_Iter>
     // The iterator must not be volatile.
     && !_Iterator_is_volatile<_Iter>
-    // And one of the following conditions must be met:
-    && disjunction_v<
-#ifdef __cpp_lib_byte
-        // We're finding a std::byte in a range of std::byte.
-        conjunction<is_same<_Ty, byte>, is_same<_Elem, byte>>,
-#endif // defined(__cpp_lib_byte)
-       // We're finding an integer in a range of integers.
-       // This case is the one that requires careful runtime handling in _Could_compare_equal_to_value_type.
-        conjunction<is_integral<_Ty>, is_integral<_Elem>>,
-        // We're finding an (object or function) pointer in a range of pointers of the same type.
-        conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>,
-        // We're finding a nullptr in a range of (object or function) pointers.
-        conjunction<is_same<_Ty, nullptr_t>, is_pointer<_Elem>>,
-        // We're finding an object pointer in a range of object pointers, and:
-        // - One of the pointer types is a cv void*.
-        // - One of the pointer types is a cv1 U* and the other is a cv2 U*.
-        _Vector_alg_in_find_is_safe_object_pointers<_Ty, _Elem>>;
+    // The elements and the value of a certain matching types.
+    && _Vector_alg_in_find_is_safe_elem<_Ty, _Iter_value_t<_Iter>>;
 
 template <class _InIt, class _Ty>
 _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
