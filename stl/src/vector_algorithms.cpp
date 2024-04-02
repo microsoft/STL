@@ -2034,7 +2034,7 @@ namespace {
 
             alignas(16) uint8_t _Tmp1[16];
             memcpy(_Tmp1, _First2, _Last_needle_length);
-            const __m128i _Last_needle_val = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+            const __m128i _Last_needle_val   = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
             const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
             const size_t _Haystack_length = _Byte_length(_First1, _Last1);
