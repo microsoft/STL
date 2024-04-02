@@ -2324,11 +2324,8 @@ _EXPORT_STD template <class _Elem, class _Byte, class _Statype>
 class codecvt_byname : public codecvt<_Elem, _Byte, _Statype> {
 public:
     static_assert(!_ENFORCE_FACET_SPECIALIZATIONS
-                      || _Is_any_of_v<codecvt_byname,
-#ifdef __cpp_char8_t
-                          codecvt_byname<char16_t, char8_t, mbstate_t>, codecvt_byname<char32_t, char8_t, mbstate_t>,
-#endif // defined(__cpp_char8_t)
-                          codecvt_byname<char, char, mbstate_t>, codecvt_byname<wchar_t, char, mbstate_t>>,
+                      || _Is_any_of_v<codecvt_byname, codecvt_byname<char, char, mbstate_t>,
+                          codecvt_byname<wchar_t, char, mbstate_t>>,
         _FACET_SPECIALIZATION_MESSAGE);
 
     explicit __CLR_OR_THIS_CALL codecvt_byname(const char* _Locname, size_t _Refs = 0)
@@ -2340,6 +2337,68 @@ public:
 protected:
     __CLR_OR_THIS_CALL ~codecvt_byname() noexcept override {}
 };
+
+_STL_DISABLE_DEPRECATED_WARNING
+
+template <>
+class _CXX20_DEPRECATE_CODECVT_FACETS codecvt_byname<char16_t, char, mbstate_t>
+    : public codecvt<char16_t, char, mbstate_t> {
+public:
+    explicit __CLR_OR_THIS_CALL codecvt_byname(const char* _Locname, size_t _Refs = 0)
+        : codecvt(_Locinfo(_Locname), _Refs) {}
+
+    explicit __CLR_OR_THIS_CALL codecvt_byname(const string& _Str, size_t _Refs = 0)
+        : codecvt(_Locinfo(_Str.c_str()), _Refs) {}
+
+protected:
+    __CLR_OR_THIS_CALL ~codecvt_byname() noexcept override {}
+};
+
+template <>
+class _CXX20_DEPRECATE_CODECVT_FACETS codecvt_byname<char32_t, char, mbstate_t>
+    : public codecvt<char32_t, char, mbstate_t> {
+public:
+    explicit __CLR_OR_THIS_CALL codecvt_byname(const char* _Locname, size_t _Refs = 0)
+        : codecvt(_Locinfo(_Locname), _Refs) {}
+
+    explicit __CLR_OR_THIS_CALL codecvt_byname(const string& _Str, size_t _Refs = 0)
+        : codecvt(_Locinfo(_Str.c_str()), _Refs) {}
+
+protected:
+    __CLR_OR_THIS_CALL ~codecvt_byname() noexcept override {}
+};
+
+#ifdef __cpp_char8_t
+template <>
+class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS codecvt_byname<char16_t, char8_t, mbstate_t>
+    : public codecvt<char16_t, char8_t, mbstate_t> {
+public:
+    explicit __CLR_OR_THIS_CALL codecvt_byname(const char* _Locname, size_t _Refs = 0)
+        : codecvt(_Locinfo(_Locname), _Refs) {}
+
+    explicit __CLR_OR_THIS_CALL codecvt_byname(const string& _Str, size_t _Refs = 0)
+        : codecvt(_Locinfo(_Str.c_str()), _Refs) {}
+
+protected:
+    __CLR_OR_THIS_CALL ~codecvt_byname() noexcept override {}
+};
+
+template <>
+class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS codecvt_byname<char32_t, char8_t, mbstate_t>
+    : public codecvt<char32_t, char8_t, mbstate_t> {
+public:
+    explicit __CLR_OR_THIS_CALL codecvt_byname(const char* _Locname, size_t _Refs = 0)
+        : codecvt(_Locinfo(_Locname), _Refs) {}
+
+    explicit __CLR_OR_THIS_CALL codecvt_byname(const string& _Str, size_t _Refs = 0)
+        : codecvt(_Locinfo(_Str.c_str()), _Refs) {}
+
+protected:
+    __CLR_OR_THIS_CALL ~codecvt_byname() noexcept override {}
+};
+#endif // defined(__cpp_char8_t)
+
+_STL_RESTORE_DEPRECATED_WARNING
 
 #define _XA 0x100 // extra alphabetic
 #define _BB _CONTROL // BEL, BS, etc.
