@@ -2322,7 +2322,7 @@ namespace {
 
 extern "C" {
 
-__declspec(noalias) void __stdcall __std_replace_trivial_4(
+__declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
     if (_Use_avx2()) {
         const __m256i _Comparand   = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_Old_val));
@@ -2355,7 +2355,7 @@ __declspec(noalias) void __stdcall __std_replace_trivial_4(
     }
 }
 
-__declspec(noalias) void __stdcall __std_replace_trivial_8(
+__declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
     if (_Use_avx2()) {
 #ifdef _WIN64

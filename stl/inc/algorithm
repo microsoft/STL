@@ -75,9 +75,9 @@ __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* _First, cons
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, const void* _Last) noexcept;
 
 // TRANSITION, DevCom-10610477
-__declspec(noalias) void __stdcall __std_replace_trivial_4(
+__declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* _Last, uint32_t _Old_val, uint32_t _New_val) noexcept;
-__declspec(noalias) void __stdcall __std_replace_trivial_8(
+__declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* _Last, uint64_t _Old_val, uint64_t _New_val) noexcept;
 } // extern "C"
 
@@ -187,20 +187,18 @@ _Ty1* __std_find_first_of_trivial(
 }
 
 template <class _Ty, class _TVal1, class _TVal2>
-__declspec(noalias) void _Replace_trivial(
+__declspec(noalias) void _Replace_vectorized(
     _Ty* const _First, _Ty* const _Last, const _TVal1 _Old_val, const _TVal2 _New_val) noexcept {
     if constexpr (is_pointer_v<_Ty>) {
 #ifdef _WIN64
-        ::__std_replace_trivial_8(
-            _First, _Last, reinterpret_cast<uint64_t>(_Old_val), reinterpret_cast<uint64_t>(_New_val));
+        ::__std_replace_8(_First, _Last, reinterpret_cast<uint64_t>(_Old_val), reinterpret_cast<uint64_t>(_New_val));
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-        ::__std_replace_trivial_4(
-            _First, _Last, reinterpret_cast<uint32_t>(_Old_val), reinterpret_cast<uint32_t>(_New_val));
+        ::__std_replace_4(_First, _Last, reinterpret_cast<uint32_t>(_Old_val), reinterpret_cast<uint32_t>(_New_val));
 #endif // ^^^ !defined(_WIN64) ^^^
     } else if constexpr (sizeof(_Ty) == 4) {
-        ::__std_replace_trivial_4(_First, _Last, static_cast<uint32_t>(_Old_val), static_cast<uint32_t>(_New_val));
+        ::__std_replace_4(_First, _Last, static_cast<uint32_t>(_Old_val), static_cast<uint32_t>(_New_val));
     } else if constexpr (sizeof(_Ty) == 8) {
-        ::__std_replace_trivial_8(_First, _Last, static_cast<uint64_t>(_Old_val), static_cast<uint64_t>(_New_val));
+        ::__std_replace_8(_First, _Last, static_cast<uint64_t>(_Old_val), static_cast<uint64_t>(_New_val));
     } else {
         static_assert(_Always_false<_Ty>, "Unexpected size");
     }
@@ -3852,7 +3850,7 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
 #endif // _HAS_CXX20
         {
             if (_STD _Could_compare_equal_to_value_type<_FwdIt>(_Oldval)) {
-                _STD _Replace_trivial(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Oldval, _Newval);
+                _STD _Replace_vectorized(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Oldval, _Newval);
             }
 
             return;
@@ -3922,7 +3920,7 @@ namespace ranges {
                     if (_STD _Could_compare_equal_to_value_type<_It>(_Oldval)) {
                         const auto _First_ptr = _STD to_address(_First);
                         const auto _Last_ptr  = _First_ptr + _Count;
-                        _STD _Replace_trivial(_First_ptr, _Last_ptr, _Oldval, _Newval);
+                        _STD _Replace_vectorized(_First_ptr, _Last_ptr, _Oldval, _Newval);
                     }
 
                     return _First + _Count;
