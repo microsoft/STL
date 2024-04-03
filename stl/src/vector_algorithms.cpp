@@ -2017,7 +2017,7 @@ namespace {
         return _Result;
     }
 
-     template <class _Ty>
+    template <class _Ty>
     const void* __stdcall __std_find_first_of_trivial_impl(
         const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
 #ifndef _M_ARM64EC
