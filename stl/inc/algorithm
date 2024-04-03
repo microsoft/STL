@@ -84,8 +84,10 @@ __declspec(noalias) void _Reverse_copy_trivially_copyable(const void* _First, co
         ::__std_reverse_copy_trivially_copyable_2(_First, _Last, _Dest);
     } else if constexpr (_Nx == 4) {
         ::__std_reverse_copy_trivially_copyable_4(_First, _Last, _Dest);
-    } else {
+    } else if constexpr (_Nx == 8) {
         ::__std_reverse_copy_trivially_copyable_8(_First, _Last, _Dest);
+    } else {
+        static_assert(_Always_false<integral_constant<size_t, _Nx>>, "Unexpected size");
     }
 }
 

@@ -140,8 +140,10 @@ __declspec(noalias) void _Reverse_trivially_swappable(void* _First, void* _Last)
         ::__std_reverse_trivially_swappable_2(_First, _Last);
     } else if constexpr (_Nx == 4) {
         ::__std_reverse_trivially_swappable_4(_First, _Last);
-    } else {
+    } else if constexpr (_Nx == 8) {
         ::__std_reverse_trivially_swappable_8(_First, _Last);
+    } else {
+        static_assert(_Always_false<integral_constant<size_t, _Nx>>, "Unexpected size");
     }
 }
 
