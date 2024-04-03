@@ -77,7 +77,7 @@ __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, cons
 
 _STD_BEGIN
 template <size_t _Nx>
-__declspec(noalias) void _Reverse_copy_trivially_copyable(const void* _First, const void* _Last, void* _Dest) {
+__declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void* _Last, void* _Dest) {
     if constexpr (_Nx == 1) {
         ::__std_reverse_copy_trivially_copyable_1(_First, _Last, _Dest);
     } else if constexpr (_Nx == 2) {
@@ -4998,7 +4998,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _STD _Reverse_copy_trivially_copyable<_Nx>(
+            _STD _Reverse_copy_vectorized<_Nx>(
                 _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
             _UDest += _ULast - _UFirst;
             _STD _Seek_wrapped(_Dest, _UDest);
@@ -5075,7 +5075,7 @@ namespace ranges {
 
                 if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                     if (!_STD is_constant_evaluated()) {
-                        _STD _Reverse_copy_trivially_copyable<_Nx>(
+                        _STD _Reverse_copy_vectorized<_Nx>(
                             _STD to_address(_First), _STD to_address(_Last), _STD to_address(_Result));
                         _Result += _Last - _First;
                         return _Result;
