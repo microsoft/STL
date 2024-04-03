@@ -325,7 +325,7 @@ auto _Max(_Ty* const _First, _Ty* const _Last) noexcept {
 
 template <size_t _Element_size>
 inline size_t // TRANSITION, GH-4496
-    _Mismatch(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    _Mismatch_vectorized(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     if constexpr (_Element_size == 1) {
         return __std_mismatch_1(_First1, _First2, _Count);
     } else if constexpr (_Element_size == 2) {
@@ -5529,7 +5529,7 @@ namespace ranges {
             if (!_STD is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(iter_value_t<_It1>);
 
-                const size_t _Pos = _STD _Mismatch<_Elem_size>(
+                const size_t _Pos = _STD _Mismatch_vectorized<_Elem_size>(
                     _STD _To_address(_First1), _STD _To_address(_First2), static_cast<size_t>(_Count));
 
                 return {_First1 + static_cast<iter_difference_t<_It1>>(_Pos),
