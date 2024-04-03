@@ -148,7 +148,7 @@ __declspec(noalias) void _Reverse_trivially_swappable(void* _First, void* _Last)
 }
 
 template <class _Ty, class _TVal>
-__declspec(noalias) size_t _Count_trivial(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
+__declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
 #ifdef _WIN64
         return ::__std_count_trivial_8(_First, _Last, reinterpret_cast<uint64_t>(_Val));
@@ -6126,7 +6126,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
                 }
 
                 return static_cast<_Iter_diff_t<_InIt>>(
-                    _STD _Count_trivial(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Val));
+                    _STD _Count_vectorized(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Val));
             }
         }
 #endif // _USE_STD_VECTOR_ALGORITHMS
