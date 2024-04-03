@@ -4939,7 +4939,7 @@ namespace ranges {
 
             if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                 if (!_STD is_constant_evaluated()) {
-                    _STD _Reverse_trivially_swappable<_Nx>(_STD to_address(_First), _STD to_address(_Last));
+                    _STD _Reverse_vectorized<_Nx>(_STD to_address(_First), _STD to_address(_Last));
                     return;
                 }
             }
