@@ -163,7 +163,13 @@ auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 template <class _Ty, class _TVal>
 _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
-        return _STD _Find_last_vectorized(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
+#ifdef _WIN64
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, reinterpret_cast<uint64_t>(_Val))));
+#else
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_4(_First, _Last, reinterpret_cast<uint32_t>(_Val))));
+#endif
     } else if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_last_trivial_1(_First, _Last, static_cast<uint8_t>(_Val))));
