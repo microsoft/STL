@@ -5830,7 +5830,7 @@ struct _Vector_alg_in_find_is_safe_object_pointers<_Ty1*, _Ty2*>
           // either _Ty1 is the same as _Ty2 (ignoring cv-qualifiers), or one of the two is void
           disjunction<is_same<remove_cv_t<_Ty1>, remove_cv_t<_Ty2>>, is_void<_Ty1>, is_void<_Ty2>>> {};
 
-// Can we activate the vector algorithms for a value and container elements
+// Can we activate the vector algorithms to find a value in a range of elements?
 template <class _Ty, class _Elem>
 constexpr bool _Vector_alg_in_find_is_safe_elem = disjunction_v<
 #ifdef __cpp_lib_byte
@@ -5856,7 +5856,7 @@ constexpr bool _Vector_alg_in_find_is_safe =
     _Iterator_is_contiguous<_Iter>
     // The iterator must not be volatile.
     && !_Iterator_is_volatile<_Iter>
-    // The elements and the value of a certain matching types.
+    // The type of the value to find must be compatible with the type of the elements.
     && _Vector_alg_in_find_is_safe_elem<_Ty, _Iter_value_t<_Iter>>;
 
 template <class _InIt, class _Ty>
