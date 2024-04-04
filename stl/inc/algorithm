@@ -2972,10 +2972,10 @@ namespace ranges {
             if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
-                    const auto _Count     = _Last - _First;
+                    const auto _Count = _Last - _First;
 
                     if (!_STD _Could_compare_equal_to_value_type<_It>(_Value)) {
-                        return {_First + _Count, _First + _Count};   
+                        return {_First + _Count, _First + _Count};
                     }
 
                     const auto _First_ptr = _STD _To_address(_First);
