@@ -55,14 +55,24 @@ void test_limit_check_elements_impl() {
         if constexpr (is_signed_v<ValueType>) {
             if constexpr (numeric_limits<ValueType>::min() < min_val) {
                 assert(find(begin(sc), end(sc), ValueType{ValueType{min_val} - 1}) == end(sc));
+#if _HAS_CXX23
+                assert(ranges::find_last(sc, ValueType{min_val} - 1).begin() == end(sc));
+#endif // _HAS_CXX23
             }
 
             if constexpr (sizeof(ElementType) <= sizeof(ValueType)) {
                 assert(find(begin(sc), end(sc), ValueType{min_val}) == begin(sc));
+#if _HAS_CXX23
+                assert(ranges::find_last(sc, ValueType{min_val}).begin() == begin(sc));
+#endif // _HAS_CXX23
             }
             assert(find(begin(sc), end(sc), ValueType{-1}) == begin(sc) + 4);
 
             assert(count(begin(sc), end(sc), ValueType{-1}) == 2);
+
+#if _HAS_CXX23
+            assert(ranges::find_last(sc, ValueType{-1}).begin() == begin(sc) + 5);
+#endif // _HAS_CXX23
         } else {
             constexpr auto max_vt = numeric_limits<ValueType>::max();
             if constexpr (ElementType{-1} == max_vt) {
@@ -72,12 +82,22 @@ void test_limit_check_elements_impl() {
 
                 assert(count(begin(sc), end(sc), max_vt) == 2);
                 assert(count(begin(sc), end(sc), max_vt - 1) == 1);
+
+#if _HAS_CXX23
+                assert(ranges::find_last(sc, max_vt).begin() == begin(sc) + 5);
+                assert(ranges::find_last(sc, max_vt - 1).begin() == begin(sc) + 3);
+#endif // _HAS_CXX23
             } else {
                 assert(find(begin(sc), end(sc), max_vt) == end(sc));
                 assert(find(begin(sc), end(sc), max_vt - 1) == end(sc));
 
                 assert(count(begin(sc), end(sc), max_vt) == 0);
                 assert(count(begin(sc), end(sc), max_vt - 1) == 0);
+
+#if _HAS_CXX23
+                assert(ranges::find_last(sc, max_vt).begin() == end(sc));
+                assert(ranges::find_last(sc, max_vt - 1).begin() == end(sc));
+#endif // _HAS_CXX23
             }
         }
 
@@ -86,9 +106,17 @@ void test_limit_check_elements_impl() {
         assert(find(begin(sc), end(sc), ValueType{0}) == begin(sc) + 6);
         assert(find(begin(sc), end(sc), ValueType{5}) == end(sc));
 
+#if _HAS_CXX23
+        assert(ranges::find_last(sc, ValueType{0}).begin() == begin(sc) + 6);
+        assert(ranges::find_last(sc, ValueType{5}).begin() == end(sc));
+#endif // _HAS_CXX23
+
         if constexpr (sizeof(ElementType) <= sizeof(ValueType)) {
             assert(find(begin(sc), end(sc), ValueType{max_val}) == begin(sc) + 12);
             assert(count(begin(sc), end(sc), ValueType{max_val}) == 1);
+#if _HAS_CXX23
+            assert(ranges::find_last(sc, ValueType{max_val}).begin() == begin(sc) + 12);
+#endif // _HAS_CXX23
 
             if constexpr (sizeof(ElementType) < sizeof(ValueType)) {
                 assert(find(begin(sc), end(sc), ValueType{ValueType{max_val} + 1}) == end(sc));
@@ -96,6 +124,11 @@ void test_limit_check_elements_impl() {
 
                 assert(count(begin(sc), end(sc), ValueType{ValueType{max_val} + 1}) == 0);
                 assert(count(begin(sc), end(sc), ValueType{umax_val}) == 0);
+
+#if _HAS_CXX23
+                assert(ranges::find_last(sc, ValueType{ValueType{max_val} + 1}).begin() == end(sc));
+                assert(ranges::find_last(sc, ValueType{umax_val}).begin() == end(sc));
+#endif // _HAS_CXX23
             }
         }
     } else {
@@ -107,6 +140,11 @@ void test_limit_check_elements_impl() {
         assert(find(begin(uc), end(uc), ValueType{0}) == begin(uc));
         assert(find(begin(uc), end(uc), ValueType{2}) == begin(uc) + 3);
         assert(find(begin(uc), end(uc), ValueType{6}) == end(uc));
+#if _HAS_CXX23
+        assert(ranges::find_last(uc, ValueType{0}).begin() == begin(uc));
+        assert(ranges::find_last(uc, ValueType{2}).begin() == begin(uc) + 3);
+        assert(ranges::find_last(uc, ValueType{6}).begin() == end(uc));
+#endif // _HAS_CXX23
 
         if constexpr (is_signed_v<ValueType>) {
             if constexpr (ValueType{-1} == max_val) {
@@ -116,12 +154,20 @@ void test_limit_check_elements_impl() {
 
                 assert(count(begin(uc), end(uc), ValueType{-1}) == 1);
                 assert(count(begin(uc), end(uc), ValueType{-2}) == 1);
+#if _HAS_CXX23
+                assert(ranges::find_last(uc, ValueType{-1}).begin() == begin(uc) + 6);
+                assert(ranges::find_last(uc, ValueType{-2}).begin() == begin(uc) + 5);
+#endif // _HAS_CXX23
             } else {
                 assert(find(begin(uc), end(uc), ValueType{-1}) == end(uc));
                 assert(find(begin(uc), end(uc), ValueType{-2}) == end(uc));
 
                 assert(count(begin(uc), end(uc), ValueType{-1}) == 0);
                 assert(count(begin(uc), end(uc), ValueType{-2}) == 0);
+#if _HAS_CXX23
+                assert(ranges::find_last(uc, ValueType{-1}).begin() == end(uc));
+                assert(ranges::find_last(uc, ValueType{-2}).begin() == end(uc));
+#endif // _HAS_CXX23
             }
         }
 
@@ -133,6 +179,9 @@ void test_limit_check_elements_impl() {
                 assert(find(begin(uc), end(uc), ValueType{ValueType{max_val} + 1}) == end(uc));
                 if constexpr (sizeof(ElementType) < sizeof(ValueType)) {
                     assert(find(begin(uc), end(uc), max_vt) == end(uc));
+#if _HAS_CXX23
+                    assert(ranges::find_last(uc, max_vt).begin() == end(uc));
+#endif // _HAS_CXX23
                 }
             }
         }
@@ -205,6 +254,11 @@ int main() {
 
         assert(count(l.begin(), l.end(), 44) == 2);
         assert(count(l.begin(), l.end(), 17) == 0);
+
+#if _HAS_CXX23
+        assert(ranges::find_last(l, 44).begin() == next(l.begin(), 4));
+        assert(ranges::find_last(l, 16).begin() == l.end());
+#endif // _HAS_CXX23
     }
 
     { // Optimization inapplicable due to bogus element type and bogus value type
