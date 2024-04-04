@@ -2272,56 +2272,6 @@ __declspec(noalias) size_t
     return __std_mismatch_impl<_Find_traits_8, uint64_t>(_First1, _First2, _Count);
 }
 
-} // extern "C"
-
-#ifndef _M_ARM64EC
-namespace {
-    __m256i __forceinline _Bitset_to_string_1_step_avx(const uint32_t _Val, const __m256i _Px0, const __m256i _Px1) {
-        const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
-        const __m128i _Vx1 = _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x01010101, 0x02020202, 0x03030303));
-        const __m256i _Vx2 = _mm256_castsi128_si256(_Vx1);
-        const __m256i _Vx3 = _mm256_permutevar8x32_epi32(_Vx2, _mm256_set_epi32(3, 3, 2, 2, 1, 1, 0, 0));
-        const __m256i _Msk = _mm256_and_si256(_Vx3, _mm256_set1_epi64x(0x0102040810204080));
-        const __m256i _Ex0 = _mm256_cmpeq_epi8(_Msk, _mm256_setzero_si256());
-        const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
-        return _Ex1;
-    }
-
-    __m128i __forceinline _Bitset_to_string_1_step(const uint16_t _Val, const __m128i _Px0, const __m128i _Px1) {
-        const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
-        const __m128i _Vx1 = _mm_unpacklo_epi8(_Vx0, _Vx0);
-        const __m128i _Vx2 = _mm_unpacklo_epi8(_Vx1, _Vx1);
-        const __m128i _Vx3 = _mm_shuffle_epi32(_Vx2, _MM_SHUFFLE(0, 0, 1, 1));
-        const __m128i _Msk = _mm_and_si128(_Vx3, _mm_set1_epi64x(0x0102040810204080));
-        const __m128i _Ex0 = _mm_cmpeq_epi8(_Msk, _mm_setzero_si128());
-        const __m128i _Ex1 = _mm_xor_si128(_mm_and_si128(_Ex0, _Px0), _Px1);
-        return _Ex1;
-    }
-
-    __m256i __forceinline _Bitset_to_string_2_step_avx(const uint16_t _Val, const __m256i _Px0, const __m256i _Px1) {
-        const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
-        const __m128i _Vx1 = _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x00000000, 0x01010101, 0x01010101));
-        const __m256i _Vx2 = _mm256_castsi128_si256(_Vx1);
-        const __m256i _Vx3 = _mm256_permute4x64_epi64(_Vx2, _MM_SHUFFLE(1, 1, 0, 0));
-        const __m256i _Msk = _mm256_and_si256(
-            _Vx3, _mm256_set_epi64x(0x0001000200040008, 0x0010002000400080, 0x0001000200040008, 0x0010002000400080));
-        const __m256i _Ex0 = _mm256_cmpeq_epi16(_Msk, _mm256_setzero_si256());
-        const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
-        return _Ex1;
-    }
-
-    __m128i __forceinline _Bitset_to_string_2_step(const uint8_t _Val, const __m128i _Px0, const __m128i _Px1) {
-        const __m128i _Vx  = _mm_set1_epi16(_Val);
-        const __m128i _Msk = _mm_and_si128(_Vx, _mm_set_epi64x(0x0001000200040008, 0x0010002000400080));
-        const __m128i _Ex0 = _mm_cmpeq_epi16(_Msk, _mm_setzero_si128());
-        const __m128i _Ex1 = _mm_xor_si128(_mm_and_si128(_Ex0, _Px0), _Px1);
-        return _Ex1;
-    }
-} // unnamed namespace
-#endif // !defined(_M_ARM64EC)
-
-extern "C" {
-
 __declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
     if (_Use_avx2()) {
@@ -2392,6 +2342,56 @@ __declspec(noalias) void __stdcall __std_replace_8(
         }
     }
 }
+
+} // extern "C"
+
+#ifndef _M_ARM64EC
+namespace {
+    __m256i __forceinline _Bitset_to_string_1_step_avx(const uint32_t _Val, const __m256i _Px0, const __m256i _Px1) {
+        const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
+        const __m128i _Vx1 = _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x01010101, 0x02020202, 0x03030303));
+        const __m256i _Vx2 = _mm256_castsi128_si256(_Vx1);
+        const __m256i _Vx3 = _mm256_permutevar8x32_epi32(_Vx2, _mm256_set_epi32(3, 3, 2, 2, 1, 1, 0, 0));
+        const __m256i _Msk = _mm256_and_si256(_Vx3, _mm256_set1_epi64x(0x0102040810204080));
+        const __m256i _Ex0 = _mm256_cmpeq_epi8(_Msk, _mm256_setzero_si256());
+        const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
+        return _Ex1;
+    }
+
+    __m128i __forceinline _Bitset_to_string_1_step(const uint16_t _Val, const __m128i _Px0, const __m128i _Px1) {
+        const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
+        const __m128i _Vx1 = _mm_unpacklo_epi8(_Vx0, _Vx0);
+        const __m128i _Vx2 = _mm_unpacklo_epi8(_Vx1, _Vx1);
+        const __m128i _Vx3 = _mm_shuffle_epi32(_Vx2, _MM_SHUFFLE(0, 0, 1, 1));
+        const __m128i _Msk = _mm_and_si128(_Vx3, _mm_set1_epi64x(0x0102040810204080));
+        const __m128i _Ex0 = _mm_cmpeq_epi8(_Msk, _mm_setzero_si128());
+        const __m128i _Ex1 = _mm_xor_si128(_mm_and_si128(_Ex0, _Px0), _Px1);
+        return _Ex1;
+    }
+
+    __m256i __forceinline _Bitset_to_string_2_step_avx(const uint16_t _Val, const __m256i _Px0, const __m256i _Px1) {
+        const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
+        const __m128i _Vx1 = _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x00000000, 0x01010101, 0x01010101));
+        const __m256i _Vx2 = _mm256_castsi128_si256(_Vx1);
+        const __m256i _Vx3 = _mm256_permute4x64_epi64(_Vx2, _MM_SHUFFLE(1, 1, 0, 0));
+        const __m256i _Msk = _mm256_and_si256(
+            _Vx3, _mm256_set_epi64x(0x0001000200040008, 0x0010002000400080, 0x0001000200040008, 0x0010002000400080));
+        const __m256i _Ex0 = _mm256_cmpeq_epi16(_Msk, _mm256_setzero_si256());
+        const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
+        return _Ex1;
+    }
+
+    __m128i __forceinline _Bitset_to_string_2_step(const uint8_t _Val, const __m128i _Px0, const __m128i _Px1) {
+        const __m128i _Vx  = _mm_set1_epi16(_Val);
+        const __m128i _Msk = _mm_and_si128(_Vx, _mm_set_epi64x(0x0001000200040008, 0x0010002000400080));
+        const __m128i _Ex0 = _mm_cmpeq_epi16(_Msk, _mm_setzero_si128());
+        const __m128i _Ex1 = _mm_xor_si128(_mm_and_si128(_Ex0, _Px0), _Px1);
+        return _Ex1;
+    }
+} // unnamed namespace
+#endif // !defined(_M_ARM64EC)
+
+extern "C" {
 
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* const _Dest, const void* _Src, size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
