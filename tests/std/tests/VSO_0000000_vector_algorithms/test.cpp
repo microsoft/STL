@@ -568,10 +568,17 @@ void test_replace(mt19937_64& gen) {
 
     input.reserve(dataCount);
 
-    test_case_replace(input, static_cast<T>(dis(gen)), static_cast<T>(dis(gen)));
+    {
+        const T old_val = static_cast<T>(dis(gen));
+        const T new_val = static_cast<T>(dis(gen));
+        test_case_replace(input, old_val, new_val);
+    }
+
     for (size_t i = 0; i != dataCount; ++i) {
         input.push_back(static_cast<T>(dis(gen)));
-        test_case_replace(input, static_cast<T>(dis(gen)), static_cast<T>(dis(gen)));
+        const T old_val = static_cast<T>(dis(gen));
+        const T new_val = static_cast<T>(dis(gen));
+        test_case_replace(input, old_val, new_val);
     }
 }
 
