@@ -5832,7 +5832,7 @@ struct _Vector_alg_in_find_is_safe_object_pointers<_Ty1*, _Ty2*>
 
 // Can we activate the vector algorithms for a value and container elements
 template <class _Ty, class _Elem>
-_INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe_elem = disjunction_v<
+constexpr bool _Vector_alg_in_find_is_safe_elem = disjunction_v<
 #ifdef __cpp_lib_byte
     // We're finding a std::byte in a range of std::byte.
     conjunction<is_same<_Ty, byte>, is_same<_Elem, byte>>,
@@ -5851,7 +5851,7 @@ _INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe_elem = disjunction_v<
 
 // Can we activate the vector algorithms for find/count?
 template <class _Iter, class _Ty>
-_INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe =
+constexpr bool _Vector_alg_in_find_is_safe =
     // The iterator must be contiguous so we can get raw pointers.
     _Iterator_is_contiguous<_Iter>
     // The iterator must not be volatile.
