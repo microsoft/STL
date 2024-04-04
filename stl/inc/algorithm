@@ -3844,12 +3844,12 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
     const auto _ULast = _STD _Get_unwrapped(_Last);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Vector_alg_in_replace_is_safe<_FwdIt, _Ty>) {
+    if constexpr (_Vector_alg_in_replace_is_safe<decltype(_UFirst), _Ty>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            if (_STD _Could_compare_equal_to_value_type<_FwdIt>(_Oldval)) {
+            if (_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Oldval)) {
                 _STD _Replace_vectorized(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Oldval, _Newval);
             }
 
