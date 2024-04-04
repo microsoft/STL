@@ -180,6 +180,12 @@ int main() {
         assert(count(v.cbegin(), v.cend(), 33) == 1);
         assert(count(v.cbegin(), v.cend(), 44) == 2);
         assert(count(v.cbegin(), v.cend(), 255) == 0);
+
+#if _HAS_CXX23
+        assert(ranges::find_last(v.cbegin(), v.cend(), 33).begin() - v.cbegin() == 1);
+        assert(ranges::find_last(v.cbegin(), v.cend(), -1).begin() - v.cbegin() == 2);
+        assert(ranges::find_last(v.cbegin(), v.cend(), 255).begin() - v.cbegin() == 6);
+#endif // _HAS_CXX23
     }
 
 
