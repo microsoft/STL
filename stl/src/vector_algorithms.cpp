@@ -2274,6 +2274,7 @@ __declspec(noalias) size_t
 
 __declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
+#ifndef _M_ARM64EC
     if (_Use_avx2()) {
         const __m256i _Comparand   = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_Old_val));
         const __m256i _Replacement = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_New_val));
@@ -2296,7 +2297,9 @@ __declspec(noalias) void __stdcall __std_replace_4(
             const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi32(_Comparand, _Data), _Tail_mask);
             _mm256_maskstore_epi32(reinterpret_cast<int*>(_First), _Mask, _Replacement);
         }
-    } else {
+    } else
+#endif // !defined(_M_ARM64EC)
+    {
         for (auto _Cur = reinterpret_cast<uint32_t*>(_First); _Cur != _Last; ++_Cur) {
             if (*_Cur == _Old_val) {
                 *_Cur = _New_val;
@@ -2307,6 +2310,7 @@ __declspec(noalias) void __stdcall __std_replace_4(
 
 __declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
+#ifndef _M_ARM64EC
     if (_Use_avx2()) {
 #ifdef _WIN64
         const __m256i _Comparand   = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_Old_val));
@@ -2334,7 +2338,9 @@ __declspec(noalias) void __stdcall __std_replace_8(
             const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi64(_Comparand, _Data), _Tail_mask);
             _mm256_maskstore_epi64(reinterpret_cast<long long*>(_First), _Mask, _Replacement);
         }
-    } else {
+    } else
+#endif // !defined(_M_ARM64EC)
+    {
         for (auto _Cur = reinterpret_cast<uint64_t*>(_First); _Cur != _Last; ++_Cur) {
             if (*_Cur == _Old_val) {
                 *_Cur = _New_val;
