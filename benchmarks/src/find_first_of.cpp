@@ -37,6 +37,9 @@ BENCHMARK(bm<uint16_t, 9, 3>);
 BENCHMARK(bm<uint8_t, 22, 5>);
 BENCHMARK(bm<uint16_t, 22, 5>);
 
+BENCHMARK(bm<uint8_t, 325, 1>);
+BENCHMARK(bm<uint16_t, 325, 1>);
+
 BENCHMARK(bm<uint8_t, 3056, 7>);
 BENCHMARK(bm<uint16_t, 3056, 7>);
 
