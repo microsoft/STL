@@ -774,11 +774,7 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_mismatch_sizes_and_alignments::test<int>();
     test_mismatch_sizes_and_alignments::test<long long>();
 
-    test_replace<char>(gen);
-    test_replace<signed char>(gen);
-    test_replace<unsigned char>(gen);
-    test_replace<short>(gen);
-    test_replace<unsigned short>(gen);
+    // replace() is vectorized for 4 and 8 bytes only.
     test_replace<int>(gen);
     test_replace<unsigned int>(gen);
     test_replace<long long>(gen);
