@@ -275,6 +275,11 @@ int main() {
 
         assert(count(v.begin(), v.end(), "cute") == 2);
         assert(count(v.begin(), v.end(), "zombies") == 0);
+
+#if _HAS_CXX23
+        assert(ranges::find_last(v, "fluffy").begin() == v.begin() + 2);
+        assert(ranges::find_last(v, "zombies").begin() == v.end());
+#endif // _HAS_CXX23
     }
 
     {
@@ -297,6 +302,11 @@ int main() {
 
         assert(count(v.begin(), v.end(), 0xAABBCCDDUL) == 1);
         assert(count(v.begin(), v.end(), 0x11UL) == 0);
+
+#if _HAS_CXX23
+        assert(ranges::find_last(v, 0xAABBCCDDUL).begin() == v.begin() + 2);
+        assert(ranges::find_last(v, 0x11UL).begin() == v.end());
+#endif // _HAS_CXX23
     }
 
     { // Optimization inapplicable due to bogus value type (although the element type is good)
@@ -340,6 +350,11 @@ int main() {
 
         assert(count(vc.cbegin(), vc.cend(), 'o') == 2);
         assert(count(vc.cbegin(), vc.cend(), 'X') == 0);
+
+#if _HAS_CXX23
+        assert(ranges::find_last(vc, 'o').begin() == vc.cbegin() + 4);
+        assert(ranges::find_last(vc, 'X').begin() == vc.cend());
+#endif // _HAS_CXX23
     }
 
     { // Test optimized element types.
@@ -367,6 +382,15 @@ int main() {
         assert(find(vsc.cbegin(), vsc.cend(), -128) == vsc.cbegin() + 3);
         assert(find(vsc.cbegin(), vsc.cend(), 127) == vsc.cbegin() + 4);
         assert(find(vsc.cbegin(), vsc.cend(), 255) == vsc.cend());
+
+#if _HAS_CXX23
+        assert(ranges::find_last(vsc, 17).begin() == vsc.begin());
+        assert(ranges::find_last(vsc, 29).begin() == vsc.begin() + 1);
+        assert(ranges::find_last(vsc, -1).begin() == vsc.begin() + 2);
+        assert(ranges::find_last(vsc, -128).begin() == vsc.begin() + 3);
+        assert(ranges::find_last(vsc, 127).begin() == vsc.begin() + 4);
+        assert(ranges::find_last(vsc, 255).begin() == vsc.end());
+#endif // _HAS_CXX23
     }
 
     { // Test optimized element types.
@@ -388,6 +412,12 @@ int main() {
         assert(find(vuc.cbegin(), vuc.cend(), 47) == vuc.cbegin() + 2);
         assert(find(vuc.cbegin(), vuc.cend(), 255) == vuc.cbegin() + 4);
         assert(find(vuc.cbegin(), vuc.cend(), -1) == vuc.cend());
+
+#if _HAS_CXX23
+        assert(ranges::find_last(vuc, 47).begin() == vuc.begin() + 2);
+        assert(ranges::find_last(vuc, 255).begin() == vuc.begin() + 4);
+        assert(ranges::find_last(vuc, -1).begin() == vuc.end());
+#endif // _HAS_CXX23
     }
 
 
