@@ -260,8 +260,7 @@ void test_construction() {
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
         flat_multimap<Packaged<int>, Packaged<int>, PackagedCompare<int>,
-            vector<Packaged<int>, MyAllocator<Packaged<int>>>,
-            vector<Packaged<int>, MyAllocator<Packaged<int>>>>
+            vector<Packaged<int>, MyAllocator<Packaged<int>>>, vector<Packaged<int>, MyAllocator<Packaged<int>>>>
             fmmap(comp, alloc);
         assert(check_requirements(fmmap));
         assert(check_key_content(fmmap, {}));
@@ -276,8 +275,7 @@ void test_construction() {
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
         flat_multimap<Packaged<int>, Packaged<int>, PackagedCompare<int>,
-            vector<Packaged<int>, MyAllocator<Packaged<int>>>,
-            vector<Packaged<int>, MyAllocator<Packaged<int>>>>
+            vector<Packaged<int>, MyAllocator<Packaged<int>>>, vector<Packaged<int>, MyAllocator<Packaged<int>>>>
             fmmap(alloc);
         assert(check_requirements(fmmap));
         assert(check_key_content(fmmap, {}));
