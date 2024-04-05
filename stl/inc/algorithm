@@ -3390,7 +3390,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
 #endif // _HAS_CXX20
         _STD equal_to<>>;
 
-    if constexpr (_Is_ranges_random_iter_v<_FwdIt2> && _Is_predicate_equal) {
+    if constexpr (_Is_ranges_random_iter_v<decltype(_UFirst2)> && _Is_predicate_equal) {
         const auto _Count2 = _Last2 - _First2;
         if (_Count2 == 1) {
             _UFirst1 = _STD _Find_unchecked(_STD move(_UFirst1), _STD move(_ULast1), *_UFirst2);
@@ -3398,7 +3398,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
             return _First1;
         }
     }
-
 
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Vector_alg_in_find_first_of_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
