@@ -5,6 +5,7 @@
 #include <benchmark/benchmark.h>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <numeric>
 #include <vector>
 
