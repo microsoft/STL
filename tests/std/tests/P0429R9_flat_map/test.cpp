@@ -72,6 +72,44 @@ bool check_value_content(const T& obj, const typename T::mapped_container_type& 
     return ranges::equal(actual, expected);
 }
 
+enum class subrange_type : bool {
+    equal,
+    permutation,
+};
+
+struct subrange_t {
+    ptrdiff_t first_index;
+    ptrdiff_t last_index;
+    subrange_type type;
+};
+
+using subranges_t = std::vector<subrange_t>;
+
+template <IsFlatMap T>
+bool check_value_content(
+    const T& obj, const typename T::mapped_container_type& expected, const subranges_t& subranges) {
+    const auto& actual = obj.values();
+    if (actual.size() != expected.size()) {
+        return false;
+    }
+
+    for (const subrange_t& subrange : subranges) {
+        if (subrange.type == subrange_type::equal) {
+            if (!ranges::equal(actual.begin() + subrange.first_index, actual.begin() + subrange.last_index + 1,
+                    expected.begin() + subrange.first_index, expected.begin() + subrange.last_index + 1)) {
+                return false;
+            }
+        } else {
+            if (!ranges::is_permutation(actual.begin() + subrange.first_index, actual.begin() + subrange.last_index + 1,
+                    expected.begin() + subrange.first_index, expected.begin() + subrange.last_index + 1)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 template <typename T>
 class MyAllocator : public allocator<T> {
 public:
@@ -163,6 +201,15 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+        flat_multimap fmmap(keys, vals);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+            {
+                {0, 1, subrange_type::equal},
+                {2, 3, subrange_type::permutation},
+                {4, 5, subrange_type::equal},
+            }));
     }
     {
         vector<int, MyAllocator<int>> keys = {0, 1, 2, 3, 4, 2};
@@ -172,6 +219,16 @@ void test_construction() {
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
         assert(MyAllocator<int>::getActiveAllocationCount() > activeAllocations);
+        activeAllocations = MyAllocator<int>::getActiveAllocationCount();
+        flat_multimap fmmap(keys, vals);
+        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+            {
+                {0, 1, subrange_type::equal},
+                {2, 3, subrange_type::permutation},
+                {4, 5, subrange_type::equal},
+            }));
+        assert(MyAllocator<int>::getActiveAllocationCount() > activeAllocations);
     }
     {
         vector<int> keys = {0, 1, 2, 3, 38, 242};
@@ -180,6 +237,7 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 38, 242}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5, 7}));
+        static_assert(!is_constructible_v<flat_multimap<int, int>, sorted_unique_t, vector<int>, vector<int>>);
     }
     {
         PackagedCompare<int> comp;
@@ -187,6 +245,10 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
+        flat_multimap<Packaged<int>, int, PackagedCompare<int>> fmmap(comp);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {}));
+        assert(check_value_content(fmmap, {}));
     }
     {
         PackagedCompare<int> comp;
@@ -197,6 +259,13 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
+        flat_multimap<Packaged<int>, Packaged<int>, PackagedCompare<int>,
+            vector<Packaged<int>, MyAllocator<Packaged<int>>>,
+            vector<Packaged<int>, MyAllocator<Packaged<int>>>>
+            fmmap(comp, alloc);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {}));
+        assert(check_value_content(fmmap, {}));
     }
     {
         MyAllocator<Packaged<int>> alloc;
@@ -206,6 +275,13 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
+        flat_multimap<Packaged<int>, Packaged<int>, PackagedCompare<int>,
+            vector<Packaged<int>, MyAllocator<Packaged<int>>>,
+            vector<Packaged<int>, MyAllocator<Packaged<int>>>>
+            fmmap(alloc);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {}));
+        assert(check_value_content(fmmap, {}));
     }
     {
         MyAllocator<Packaged<int>> alloc;
@@ -215,6 +291,12 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
+        flat_multimap<Packaged<int>, int, PackagedCompare<int>, vector<Packaged<int>, MyAllocator<Packaged<int>>>,
+            vector<int, MyAllocator<int>>>
+            fmmap(alloc);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {}));
+        assert(check_value_content(fmmap, {}));
     }
     {
         PackagedCompare<int> comp;
@@ -225,6 +307,15 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+        flat_multimap fmmap(keys, vals, comp, alloc);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+            {
+                {0, 1, subrange_type::equal},
+                {2, 3, subrange_type::permutation},
+                {4, 5, subrange_type::equal},
+            }));
     }
     {
         TransparentPackagedCompare<int> comp;
@@ -235,6 +326,15 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+        flat_multimap fmmap(keys, vals, comp, alloc);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+            {
+                {0, 1, subrange_type::equal},
+                {2, 3, subrange_type::permutation},
+                {4, 5, subrange_type::equal},
+            }));
     }
 }
 
