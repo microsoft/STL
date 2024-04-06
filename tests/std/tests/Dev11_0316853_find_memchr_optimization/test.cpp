@@ -66,10 +66,9 @@ void test_limit_check_elements_impl() {
                 assert(ranges::find_last(sc, ValueType{min_val}).begin() == begin(sc));
 #endif // _HAS_CXX23
             }
+
             assert(find(begin(sc), end(sc), ValueType{-1}) == begin(sc) + 4);
-
             assert(count(begin(sc), end(sc), ValueType{-1}) == 2);
-
 #if _HAS_CXX23
             assert(ranges::find_last(sc, ValueType{-1}).begin() == begin(sc) + 5);
 #endif // _HAS_CXX23
