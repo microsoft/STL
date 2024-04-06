@@ -56,7 +56,7 @@ void test_limit_check_elements_impl() {
             if constexpr (numeric_limits<ValueType>::min() < min_val) {
                 assert(find(begin(sc), end(sc), ValueType{ValueType{min_val} - 1}) == end(sc));
 #if _HAS_CXX23
-                assert(ranges::find_last(sc, ValueType{min_val} - 1).begin() == end(sc));
+                assert(ranges::find_last(sc, ValueType{ValueType{min_val} - 1}).begin() == end(sc));
 #endif // _HAS_CXX23
             }
 
