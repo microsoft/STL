@@ -257,7 +257,7 @@ int main() {
 
 #if _HAS_CXX23
         assert(ranges::find_last(l, 44).begin() == next(l.begin(), 4));
-        assert(ranges::find_last(l, 16).begin() == l.end());
+        assert(ranges::find_last(l, 17).begin() == l.end());
 #endif // _HAS_CXX23
     }
 
