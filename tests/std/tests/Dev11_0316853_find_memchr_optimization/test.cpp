@@ -231,9 +231,9 @@ int main() {
         assert(count(v.cbegin(), v.cend(), 255) == 0);
 
 #if _HAS_CXX23
-        assert(ranges::find_last(v.cbegin(), v.cend(), 33).begin() - v.cbegin() == 1);
-        assert(ranges::find_last(v.cbegin(), v.cend(), -1).begin() - v.cbegin() == 2);
-        assert(ranges::find_last(v.cbegin(), v.cend(), 255).begin() - v.cbegin() == 6);
+        assert(ranges::find_last(v, 33).begin() - v.begin() == 1);
+        assert(ranges::find_last(v, -1).begin() - v.begin() == 2);
+        assert(ranges::find_last(v, 255).begin() - v.begin() == 6);
 #endif // _HAS_CXX23
     }
 
