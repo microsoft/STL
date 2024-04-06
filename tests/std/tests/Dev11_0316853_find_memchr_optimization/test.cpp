@@ -175,8 +175,19 @@ void test_limit_check_elements_impl() {
             assert(find(begin(uc), end(uc), ValueType{max_val - 3}) == end(uc));
             assert(find(begin(uc), end(uc), ValueType{max_val - 2}) == begin(uc) + 4);
             assert(find(begin(uc), end(uc), ValueType{max_val}) == begin(uc) + 6);
+
+#if _HAS_CXX23
+            assert(ranges::find_last(uc, ValueType{max_val - 3}).begin() == end(uc));
+            assert(ranges::find_last(uc, ValueType{max_val - 2}).begin() == begin(uc) + 4);
+            assert(ranges::find_last(uc, ValueType{max_val}).begin() == begin(uc) + 6);
+#endif // _HAS_CXX23
+
             if constexpr (max_val < max_vt) {
                 assert(find(begin(uc), end(uc), ValueType{ValueType{max_val} + 1}) == end(uc));
+#if _HAS_CXX23
+                assert(ranges::find_last(uc, ValueType{ValueType{max_val} + 1}).begin() == end(uc));
+#endif // _HAS_CXX23
+
                 if constexpr (sizeof(ElementType) < sizeof(ValueType)) {
                     assert(find(begin(uc), end(uc), max_vt) == end(uc));
 #if _HAS_CXX23
@@ -443,6 +454,26 @@ int main() {
 
         assert(find(begin(arr), end(arr), false) == begin(arr) + 2);
         assert(find(begin(arr), end(arr), true) == end(arr));
+
+#if _HAS_CXX23
+        assert(ranges::find_last(arr, static_cast<signed char>(30)).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, static_cast<short>(30)).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, static_cast<int>(30)).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, static_cast<long>(30)).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, static_cast<long long>(30)).begin() == begin(arr) + 4);
+
+        assert(ranges::find_last(arr, static_cast<unsigned char>(30)).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, static_cast<unsigned short>(30)).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, static_cast<unsigned int>(30)).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, static_cast<unsigned long>(30)).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, static_cast<unsigned long long>(30)).begin() == begin(arr) + 4);
+
+        assert(ranges::find_last(arr, static_cast<char>(30)).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, static_cast<wchar_t>(30)).begin() == begin(arr) + 4);
+
+        assert(ranges::find_last(arr, false).begin() == begin(arr) + 2);
+        assert(ranges::find_last(arr, true).begin() == end(arr));
+#endif // _HAS_CXX23
     }
 
     // Test limit checks.
@@ -485,6 +516,26 @@ int main() {
         assert(find(begin(sc), end(sc), 0xFFFFFFFFFFFFFF7FULL) == end(sc));
         assert(find(begin(sc), end(sc), 0xFFFFFFFFFFFFFF00ULL) == end(sc));
 
+#if _HAS_CXX23
+        assert(ranges::find_last(sc, static_cast<unsigned short>(0xFFFF)).begin() == end(sc));
+
+        assert(ranges::find_last(sc, 0xFFFFFFFFUL).begin() == begin(sc) + 4);
+        assert(ranges::find_last(sc, 0xFFFFFFFEUL).begin() == begin(sc) + 3);
+        assert(ranges::find_last(sc, 0xFFFFFFAAUL).begin() == end(sc));
+        assert(ranges::find_last(sc, 0xFFFFFF81UL).begin() == begin(sc) + 1);
+        assert(ranges::find_last(sc, 0xFFFFFF80UL).begin() == begin(sc));
+        assert(ranges::find_last(sc, 0xFFFFFF7FUL).begin() == end(sc));
+        assert(ranges::find_last(sc, 0xFFFFFF00UL).begin() == end(sc));
+
+        assert(ranges::find_last(sc, 0xFFFFFFFFFFFFFFFFULL).begin() == begin(sc) + 4);
+        assert(ranges::find_last(sc, 0xFFFFFFFFFFFFFFFEULL).begin() == begin(sc) + 3);
+        assert(ranges::find_last(sc, 0xFFFFFFFFFFFFFFAAULL).begin() == end(sc));
+        assert(ranges::find_last(sc, 0xFFFFFFFFFFFFFF81ULL).begin() == begin(sc) + 1);
+        assert(ranges::find_last(sc, 0xFFFFFFFFFFFFFF80ULL).begin() == begin(sc));
+        assert(ranges::find_last(sc, 0xFFFFFFFFFFFFFF7FULL).begin() == end(sc));
+        assert(ranges::find_last(sc, 0xFFFFFFFFFFFFFF00ULL).begin() == end(sc));
+#endif // _HAS_CXX23
+
         const short ss[] = {-32768, -32767, -32766, -2, -1, 0, 1, 2, 32765, 32766, 32767};
 
         STATIC_ASSERT(static_cast<short>(-1) != static_cast<unsigned short>(0xFFFF));
@@ -511,6 +562,26 @@ int main() {
         assert(find(begin(ss), end(ss), 0xFFFFFFFFFFFF7FFFULL) == end(ss));
         assert(find(begin(ss), end(ss), 0xFFFFFFFFFFFF0000ULL) == end(ss));
 
+#if _HAS_CXX23
+        assert(ranges::find_last(ss, static_cast<unsigned short>(0xFFFF)).begin() == end(ss));
+
+        assert(ranges::find_last(ss, 0xFFFFFFFFUL).begin() == begin(ss) + 4);
+        assert(ranges::find_last(ss, 0xFFFFFFFEUL).begin() == begin(ss) + 3);
+        assert(ranges::find_last(ss, 0xFFFFAAAAUL).begin() == end(ss));
+        assert(ranges::find_last(ss, 0xFFFF8001UL).begin() == begin(ss) + 1);
+        assert(ranges::find_last(ss, 0xFFFF8000UL).begin() == begin(ss));
+        assert(ranges::find_last(ss, 0xFFFF7FFFUL).begin() == end(ss));
+        assert(ranges::find_last(ss, 0xFFFF0000UL).begin() == end(ss));
+
+        assert(ranges::find_last(ss, 0xFFFFFFFFFFFFFFFFULL).begin() == begin(ss) + 4);
+        assert(ranges::find_last(ss, 0xFFFFFFFFFFFFFFFEULL).begin() == begin(ss) + 3);
+        assert(ranges::find_last(ss, 0xFFFFFFFFFFFFAAAAULL).begin() == end(ss));
+        assert(ranges::find_last(ss, 0xFFFFFFFFFFFF8001ULL).begin() == begin(ss) + 1);
+        assert(ranges::find_last(ss, 0xFFFFFFFFFFFF8000ULL).begin() == begin(ss));
+        assert(ranges::find_last(ss, 0xFFFFFFFFFFFF7FFFULL).begin() == end(ss));
+        assert(ranges::find_last(ss, 0xFFFFFFFFFFFF0000ULL).begin() == end(ss));
+#endif // _HAS_CXX23
+
         // No longer integral promotions, still repeat the applicable part once to be sure
 
         const long sl[] = {long_min, long_min + 1, long_min + 2, -2, -1, 0, 1, 2, long_max - 2, long_max - 1, long_max};
@@ -536,6 +607,24 @@ int main() {
         assert(find(begin(sl), end(sl), 0xFFFFFFFF80000000ULL) == begin(sl));
         assert(find(begin(sl), end(sl), 0xFFFFFFFF7FFFFFFFULL) == end(sl));
         assert(find(begin(sl), end(sl), 0xFFFFFFFF00000000ULL) == end(sl));
+
+#if _HAS_CXX23
+        assert(ranges::find_last(sl, static_cast<unsigned short>(0xFFFF)).begin() == end(sl));
+
+        assert(ranges::find_last(sl, 0xFFFFFFFFUL).begin() == begin(sl) + 4);
+        assert(ranges::find_last(sl, 0xFFFFFFFEUL).begin() == begin(sl) + 3);
+        assert(ranges::find_last(sl, 0xAAAAAAAAUL).begin() == end(sl));
+        assert(ranges::find_last(sl, 0x80000001UL).begin() == begin(sl) + 1);
+        assert(ranges::find_last(sl, 0x80000000UL).begin() == begin(sl));
+
+        assert(ranges::find_last(sl, 0xFFFFFFFFFFFFFFFFULL).begin() == begin(sl) + 4);
+        assert(ranges::find_last(sl, 0xFFFFFFFFFFFFFFFEULL).begin() == begin(sl) + 3);
+        assert(ranges::find_last(sl, 0xFFFFFFFFAAAAAAAAULL).begin() == end(sl));
+        assert(ranges::find_last(sl, 0xFFFFFFFF80000001ULL).begin() == begin(sl) + 1);
+        assert(ranges::find_last(sl, 0xFFFFFFFF80000000ULL).begin() == begin(sl));
+        assert(ranges::find_last(sl, 0xFFFFFFFF7FFFFFFFULL).begin() == end(sl));
+        assert(ranges::find_last(sl, 0xFFFFFFFF00000000ULL).begin() == end(sl));
+#endif // _HAS_CXX23
     }
 
     { // unsigned int == int, weird conversions yay! (GH-3244)
@@ -546,6 +635,14 @@ int main() {
         assert(find(begin(ui), end(ui), 3) == end(ui));
         assert(find(begin(ui), end(ui), -2) == begin(ui) + 4);
         assert(find(begin(ui), end(ui), -1) == begin(ui) + 5);
+
+#if _HAS_CXX23
+        assert(ranges::find_last(ui, 0).begin() == begin(ui));
+        assert(ranges::find_last(ui, 2).begin() == begin(ui) + 2);
+        assert(ranges::find_last(ui, 3).begin() == end(ui));
+        assert(ranges::find_last(ui, -2).begin() == begin(ui) + 4);
+        assert(ranges::find_last(ui, -1).begin() == begin(ui) + 5);
+#endif // _HAS_CXX23
     }
 
     { // Test bools
@@ -560,6 +657,12 @@ int main() {
         assert(count(begin(arr), end(arr), false) == 2);
         assert(count(begin(arr), end(arr), true) == 4);
         assert(count(begin(arr), end(arr), 2) == 0);
+
+#if _HAS_CXX23
+        assert(ranges::find_last(arr, false).begin() == begin(arr) + 5);
+        assert(ranges::find_last(arr, true).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, 2).begin() == end(arr));
+#endif // _HAS_CXX23
     }
 
     { // Test pointers
@@ -598,6 +701,22 @@ int main() {
         assert(count(begin(arr), end(arr), static_cast<const char*>(nullptr)) == 1);
         assert(count(begin(arr), end(arr), nullptr) == 1);
 
+#if _HAS_CXX23
+        assert(ranges::find_last(arr, s).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, const_cast<char*>(s)).begin() == begin(arr) + 4);
+        assert(ranges::find_last(arr, const_cast<volatile char*>(s)).begin() == begin(arr) + 4);
+
+        assert(ranges::find_last(arr, s + 1).begin() == begin(arr) + 2);
+        assert(ranges::find_last(arr, static_cast<const void*>(s + 1)).begin() == begin(arr) + 2);
+
+        assert(ranges::find_last(arr, s + 3).begin() == end(arr));
+        assert(ranges::find_last(arr, static_cast<const void*>(s + 3)).begin() == end(arr));
+
+        assert(ranges::find_last(arr, static_cast<const char*>(nullptr)).begin() == begin(arr) + 6);
+        assert(ranges::find_last(arr, static_cast<const void*>(nullptr)).begin() == begin(arr) + 6);
+        assert(ranges::find_last(arr, nullptr).begin() == begin(arr) + 6);
+#endif // _HAS_CXX23
+
         // const void pointer range
         assert(find(begin(arr_void), end(arr_void), s) == begin(arr_void));
         assert(find(begin(arr_void), end(arr_void), const_cast<char*>(s)) == begin(arr_void));
@@ -618,6 +737,22 @@ int main() {
         assert(count(begin(arr_void), end(arr_void), s + 3) == 0);
         assert(count(begin(arr_void), end(arr_void), static_cast<const char*>(nullptr)) == 1);
         assert(count(begin(arr_void), end(arr_void), nullptr) == 1);
+
+#if _HAS_CXX23
+        assert(ranges::find_last(arr_void, s).begin() == begin(arr_void) + 4);
+        assert(ranges::find_last(arr_void, const_cast<char*>(s)).begin() == begin(arr_void) + 4);
+        assert(ranges::find_last(arr_void, const_cast<volatile char*>(s)).begin() == begin(arr_void) + 4);
+
+        assert(ranges::find_last(arr_void, s + 1).begin() == begin(arr_void) + 2);
+        assert(ranges::find_last(arr_void, static_cast<const void*>(s + 1)).begin() == begin(arr_void) + 2);
+
+        assert(ranges::find_last(arr_void, s + 3).begin() == end(arr_void));
+        assert(ranges::find_last(arr_void, static_cast<const void*>(s + 3)).begin() == end(arr_void));
+
+        assert(ranges::find_last(arr_void, static_cast<const char*>(nullptr)).begin() == begin(arr_void) + 6);
+        assert(ranges::find_last(arr_void, static_cast<const void*>(nullptr)).begin() == begin(arr_void) + 6);
+        assert(ranges::find_last(arr_void, nullptr).begin() == begin(arr_void) + 6);
+#endif // _HAS_CXX23
     }
 
     { // random other checks for _Vector_alg_in_find_is_safe
