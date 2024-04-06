@@ -352,8 +352,8 @@ int main() {
         assert(count(vc.cbegin(), vc.cend(), 'X') == 0);
 
 #if _HAS_CXX23
-        assert(ranges::find_last(vc, 'o').begin() == vc.cbegin() + 4);
-        assert(ranges::find_last(vc, 'X').begin() == vc.cend());
+        assert(ranges::find_last(vc, 'o').begin() == vc.begin() + 4);
+        assert(ranges::find_last(vc, 'X').begin() == vc.end());
 #endif // _HAS_CXX23
     }
 
