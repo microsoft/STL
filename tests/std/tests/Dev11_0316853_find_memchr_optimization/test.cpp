@@ -101,10 +101,11 @@ void test_limit_check_elements_impl() {
             }
         }
 
-        assert(count(begin(sc), end(sc), ValueType{0}) == 1);
-
         assert(find(begin(sc), end(sc), ValueType{0}) == begin(sc) + 6);
         assert(find(begin(sc), end(sc), ValueType{5}) == end(sc));
+
+        assert(count(begin(sc), end(sc), ValueType{0}) == 1);
+        assert(count(begin(sc), end(sc), ValueType{5}) == 0);
 
 #if _HAS_CXX23
         assert(ranges::find_last(sc, ValueType{0}).begin() == begin(sc) + 6);
