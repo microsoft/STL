@@ -97,14 +97,17 @@ bool check_value_content(
     }
 
     for (const subrange_t& subrange : subranges) {
+        const ranges::subrange actual_subrange{
+            actual.begin() + subrange.first_index, actual.begin() + subrange.last_index + 1};
+        const ranges::subrange expected_subrange{
+            expected.begin() + subrange.first_index, expected.begin() + subrange.last_index + 1};
+
         if (subrange.type == subrange_type::equal) {
-            if (!ranges::equal(actual.begin() + subrange.first_index, actual.begin() + subrange.last_index + 1,
-                    expected.begin() + subrange.first_index, expected.begin() + subrange.last_index + 1)) {
+            if (!ranges::equal(actual_subrange, expected_subrange)) {
                 return false;
             }
         } else {
-            if (!ranges::is_permutation(actual.begin() + subrange.first_index, actual.begin() + subrange.last_index + 1,
-                    expected.begin() + subrange.first_index, expected.begin() + subrange.last_index + 1)) {
+            if (!ranges::is_permutation(actual_subrange, expected_subrange)) {
                 return false;
             }
         }
