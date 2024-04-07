@@ -105,22 +105,17 @@ bool check_value_content(
         assert(ranges::adjacent_find(subranges, is_gap_or_overlap) == subranges.end());
     }
 
-    for (const auto& [first_index, last_index, type] : subranges) {
+    return ranges::all_of(subranges, [&expected, &actual](const subrange_t& subrange) {
+        const auto& [first_index, last_index, type] = subrange;
         const ranges::subrange actual_subrange{actual.begin() + first_index, actual.begin() + last_index + 1};
         const ranges::subrange expected_subrange{expected.begin() + first_index, expected.begin() + last_index + 1};
 
         if (type == subrange_type::equal) {
-            if (!ranges::equal(actual_subrange, expected_subrange)) {
-                return false;
-            }
+            return ranges::equal(actual_subrange, expected_subrange);
         } else {
-            if (!ranges::is_permutation(actual_subrange, expected_subrange)) {
-                return false;
-            }
+            return ranges::is_permutation(actual_subrange, expected_subrange);
         }
-    }
-
-    return true;
+    });
 }
 
 template <typename T>
