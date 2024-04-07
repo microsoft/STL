@@ -59,20 +59,12 @@ bool check_requirements(T&& obj) {
 
 template <IsFlatMap T>
 bool check_key_content(const T& obj, const typename T::key_container_type& expected) {
-    const auto& actual = obj.keys();
-    if (actual.size() != expected.size()) {
-        return false;
-    }
-    return ranges::equal(actual, expected);
+    return ranges::equal(obj.keys(), expected);
 }
 
 template <IsFlatMap T>
 bool check_value_content(const T& obj, const typename T::mapped_container_type& expected) {
-    const auto& actual = obj.values();
-    if (actual.size() != expected.size()) {
-        return false;
-    }
-    return ranges::equal(actual, expected);
+    return ranges::equal(obj.values(), expected);
 }
 
 enum class subrange_type : bool {
