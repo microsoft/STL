@@ -80,7 +80,7 @@ enum class subrange_type : bool {
     permutation,
 };
 
-struct subrange_t {
+struct subrange_t { // represents a closed subrange [first_index, last_index]
     ptrdiff_t first_index;
     ptrdiff_t last_index;
     subrange_type type;
