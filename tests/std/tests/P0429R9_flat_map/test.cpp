@@ -86,11 +86,9 @@ struct subrange_t { // represents a closed subrange [first_index, last_index]
     subrange_type type;
 };
 
-using subranges_t = vector<subrange_t>;
-
 template <IsFlatMap T>
 bool check_value_content(
-    const T& obj, const typename T::mapped_container_type& expected, const subranges_t& subranges) {
+    const T& obj, const typename T::mapped_container_type& expected, const vector<subrange_t>& subranges) {
     const auto& actual = obj.values();
     if (actual.size() != expected.size()) {
         return false;
