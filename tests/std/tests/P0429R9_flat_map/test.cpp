@@ -84,6 +84,11 @@ struct subrange_t { // represents a closed subrange [first_index, last_index]
     ptrdiff_t first_index;
     ptrdiff_t last_index;
     subrange_type type;
+
+    subrange_t(const ptrdiff_t first_index_, const ptrdiff_t last_index_, const subrange_type type_) noexcept
+        : first_index(first_index_), last_index(last_index_), type(type_) {
+        assert(first_index <= last_index);
+    }
 };
 
 template <IsFlatMap T>
@@ -92,6 +97,20 @@ bool check_value_content(
     const auto& actual = obj.values();
     if (actual.size() != expected.size()) {
         return false;
+    }
+
+    // Verify that the subranges cover the entire range with no gaps or overlaps.
+    // We assert instead of returning false because any problems would be caused by the check_value_content() call.
+    if (expected.empty()) {
+        assert(subranges.empty());
+    } else {
+        assert(!subranges.empty());
+        assert(subranges.front().first_index == 0);
+        assert(subranges.back().last_index == static_cast<ptrdiff_t>(expected.size() - 1));
+        const auto is_gap_or_overlap = [](const subrange_t& sr1, const subrange_t& sr2) {
+            return sr1.last_index + 1 != sr2.first_index;
+        };
+        assert(ranges::adjacent_find(subranges, is_gap_or_overlap) == subranges.end());
     }
 
     for (const auto& [first_index, last_index, type] : subranges) {
