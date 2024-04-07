@@ -83,7 +83,7 @@ struct subrange_t {
     subrange_type type;
 };
 
-using subranges_t = std::vector<subrange_t>;
+using subranges_t = vector<subrange_t>;
 
 template <IsFlatMap T>
 bool check_value_content(
