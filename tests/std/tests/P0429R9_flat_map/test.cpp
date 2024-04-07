@@ -264,6 +264,8 @@ void test_construction() {
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5, 7}));
         static_assert(!is_constructible_v<flat_multimap<int, int>, sorted_unique_t, vector<int>, vector<int>>);
     }
+    // FIXME, test flat_multimap construction from sorted_equivalent_t
+    // FIXME, test more flat_map and flat_multimap constructors
     {
         PackagedCompare<int> comp;
         flat_map<Packaged<int>, int, PackagedCompare<int>> fmap(comp);
