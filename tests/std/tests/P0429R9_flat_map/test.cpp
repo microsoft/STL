@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <atomic>
 #include <cassert>
 #include <concepts>
+#include <cstddef>
 #include <deque>
 #include <flat_map>
 #include <functional>
 #include <memory>
+#include <ranges>
 #include <type_traits>
 #include <vector>
 
