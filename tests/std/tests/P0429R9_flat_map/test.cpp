@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <atomic>
 #include <cassert>
 #include <concepts>
+#include <cstddef>
 #include <deque>
 #include <flat_map>
 #include <functional>
 #include <memory>
+#include <ranges>
 #include <type_traits>
 #include <vector>
 
@@ -56,20 +59,63 @@ bool check_requirements(T&& obj) {
 
 template <IsFlatMap T>
 bool check_key_content(const T& obj, const typename T::key_container_type& expected) {
-    const auto& actual = obj.keys();
-    if (actual.size() != expected.size()) {
-        return false;
-    }
-    return ranges::equal(actual, expected);
+    return ranges::equal(obj.keys(), expected);
 }
 
 template <IsFlatMap T>
 bool check_value_content(const T& obj, const typename T::mapped_container_type& expected) {
+    return ranges::equal(obj.values(), expected);
+}
+
+enum class subrange_type : bool {
+    equal,
+    permutation,
+};
+
+struct subrange_t { // represents a closed subrange [first_index, last_index]
+    ptrdiff_t first_index;
+    ptrdiff_t last_index;
+    subrange_type type;
+
+    subrange_t(const ptrdiff_t first_index_, const ptrdiff_t last_index_, const subrange_type type_) noexcept
+        : first_index(first_index_), last_index(last_index_), type(type_) {
+        assert(first_index <= last_index);
+    }
+};
+
+template <IsFlatMap T>
+bool check_value_content(
+    const T& obj, const typename T::mapped_container_type& expected, const vector<subrange_t>& subranges) {
     const auto& actual = obj.values();
     if (actual.size() != expected.size()) {
         return false;
     }
-    return ranges::equal(actual, expected);
+
+    // Verify that the subranges cover the entire range with no gaps or overlaps.
+    // We assert instead of returning false because any problems would be caused by the check_value_content() call.
+    if (expected.empty()) {
+        assert(subranges.empty());
+    } else {
+        assert(!subranges.empty());
+        assert(subranges.front().first_index == 0);
+        assert(subranges.back().last_index == static_cast<ptrdiff_t>(expected.size() - 1));
+        const auto is_gap_or_overlap = [](const subrange_t& sr1, const subrange_t& sr2) {
+            return sr1.last_index + 1 != sr2.first_index;
+        };
+        assert(ranges::adjacent_find(subranges, is_gap_or_overlap) == subranges.end());
+    }
+
+    return ranges::all_of(subranges, [&expected, &actual](const subrange_t& subrange) {
+        const auto& [first_index, last_index, type] = subrange;
+        const ranges::subrange actual_subrange{actual.begin() + first_index, actual.begin() + last_index + 1};
+        const ranges::subrange expected_subrange{expected.begin() + first_index, expected.begin() + last_index + 1};
+
+        if (type == subrange_type::equal) {
+            return ranges::equal(actual_subrange, expected_subrange);
+        } else {
+            return ranges::is_permutation(actual_subrange, expected_subrange);
+        }
+    });
 }
 
 template <typename T>
@@ -155,6 +201,10 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
+        flat_multimap<int, int> fmmap;
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {}));
+        assert(check_value_content(fmmap, {}));
     }
     {
         vector<int> keys = {0, 1, 2, 3, 4, 2};
@@ -163,6 +213,15 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+        flat_multimap fmmap(keys, vals);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+            {
+                {0, 1, subrange_type::equal},
+                {2, 3, subrange_type::permutation},
+                {4, 5, subrange_type::equal},
+            }));
     }
     {
         vector<int, MyAllocator<int>> keys = {0, 1, 2, 3, 4, 2};
@@ -172,6 +231,16 @@ void test_construction() {
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
         assert(MyAllocator<int>::getActiveAllocationCount() > activeAllocations);
+        activeAllocations = MyAllocator<int>::getActiveAllocationCount();
+        flat_multimap fmmap(keys, vals); // FIXME, should use MyAllocator<int>(); deduction guides must be constrained
+        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+            {
+                {0, 1, subrange_type::equal},
+                {2, 3, subrange_type::permutation},
+                {4, 5, subrange_type::equal},
+            }));
+        assert(MyAllocator<int>::getActiveAllocationCount() > activeAllocations);
     }
     {
         vector<int> keys = {0, 1, 2, 3, 38, 242};
@@ -180,13 +249,20 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 38, 242}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5, 7}));
+        static_assert(!is_constructible_v<flat_multimap<int, int>, sorted_unique_t, vector<int>, vector<int>>);
     }
+    // FIXME, test flat_multimap construction from sorted_equivalent_t
+    // FIXME, test more flat_map and flat_multimap constructors
     {
         PackagedCompare<int> comp;
         flat_map<Packaged<int>, int, PackagedCompare<int>> fmap(comp);
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
+        flat_multimap<Packaged<int>, int, PackagedCompare<int>> fmmap(comp);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {}));
+        assert(check_value_content(fmmap, {}));
     }
     {
         PackagedCompare<int> comp;
@@ -197,6 +273,12 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
+        flat_multimap<Packaged<int>, Packaged<int>, PackagedCompare<int>,
+            vector<Packaged<int>, MyAllocator<Packaged<int>>>, vector<Packaged<int>, MyAllocator<Packaged<int>>>>
+            fmmap(comp, alloc);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {}));
+        assert(check_value_content(fmmap, {}));
     }
     {
         MyAllocator<Packaged<int>> alloc;
@@ -206,6 +288,12 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
+        flat_multimap<Packaged<int>, Packaged<int>, PackagedCompare<int>,
+            vector<Packaged<int>, MyAllocator<Packaged<int>>>, vector<Packaged<int>, MyAllocator<Packaged<int>>>>
+            fmmap(alloc);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {}));
+        assert(check_value_content(fmmap, {}));
     }
     {
         MyAllocator<Packaged<int>> alloc;
@@ -215,6 +303,12 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
+        flat_multimap<Packaged<int>, int, PackagedCompare<int>, vector<Packaged<int>, MyAllocator<Packaged<int>>>,
+            vector<int, MyAllocator<int>>>
+            fmmap(alloc);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {}));
+        assert(check_value_content(fmmap, {}));
     }
     {
         PackagedCompare<int> comp;
@@ -225,6 +319,15 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+        flat_multimap fmmap(keys, vals, comp, alloc);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+            {
+                {0, 1, subrange_type::equal},
+                {2, 3, subrange_type::permutation},
+                {4, 5, subrange_type::equal},
+            }));
     }
     {
         TransparentPackagedCompare<int> comp;
@@ -235,6 +338,15 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+        flat_multimap fmmap(keys, vals, comp, alloc);
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+            {
+                {0, 1, subrange_type::equal},
+                {2, 3, subrange_type::permutation},
+                {4, 5, subrange_type::equal},
+            }));
     }
 }
 
