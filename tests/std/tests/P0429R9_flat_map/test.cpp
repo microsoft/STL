@@ -197,6 +197,10 @@ void test_construction() {
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
+        flat_multimap<int, int> fmmap;
+        assert(check_requirements(fmmap));
+        assert(check_key_content(fmmap, {}));
+        assert(check_value_content(fmmap, {}));
     }
     {
         vector<int> keys = {0, 1, 2, 3, 4, 2};
