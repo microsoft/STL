@@ -96,13 +96,11 @@ bool check_value_content(
         return false;
     }
 
-    for (const subrange_t& subrange : subranges) {
-        const ranges::subrange actual_subrange{
-            actual.begin() + subrange.first_index, actual.begin() + subrange.last_index + 1};
-        const ranges::subrange expected_subrange{
-            expected.begin() + subrange.first_index, expected.begin() + subrange.last_index + 1};
+    for (const auto& [first_index, last_index, type] : subranges) {
+        const ranges::subrange actual_subrange{actual.begin() + first_index, actual.begin() + last_index + 1};
+        const ranges::subrange expected_subrange{expected.begin() + first_index, expected.begin() + last_index + 1};
 
-        if (subrange.type == subrange_type::equal) {
+        if (type == subrange_type::equal) {
             if (!ranges::equal(actual_subrange, expected_subrange)) {
                 return false;
             }
