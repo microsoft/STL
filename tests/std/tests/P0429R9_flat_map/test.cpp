@@ -245,7 +245,7 @@ void test_construction() {
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
         assert(MyAllocator<int>::getActiveAllocationCount() > activeAllocations);
         activeAllocations = MyAllocator<int>::getActiveAllocationCount();
-        flat_multimap fmmap(keys, vals);
+        flat_multimap fmmap(keys, vals); // FIXME, should use MyAllocator<int>(); deduction guides must be constrained
         assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
         assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
             {
