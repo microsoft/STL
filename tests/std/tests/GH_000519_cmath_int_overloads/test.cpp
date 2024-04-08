@@ -22,11 +22,11 @@ CONSTEXPR23 void test_bool_overloads() {
     assert(std::isfinite(false));
     assert(std::isfinite(true));
 
-    assert(!std::isnan(false));
-    assert(!std::isnan(true));
-
     assert(!std::isinf(false));
     assert(!std::isinf(true));
+
+    assert(!std::isnan(false));
+    assert(!std::isnan(true));
 
     assert(!std::isnormal(false));
     assert(std::isnormal(true));
@@ -42,11 +42,11 @@ CONSTEXPR23 void test_bool_overloads() {
     assert(::isfinite(false));
     assert(::isfinite(true));
 
-    assert(!::isnan(false));
-    assert(!::isnan(true));
-
     assert(!::isinf(false));
     assert(!::isinf(true));
+
+    assert(!::isnan(false));
+    assert(!::isnan(true));
 
     assert(!::isnormal(false));
     assert(::isnormal(true));
@@ -67,13 +67,13 @@ CONSTEXPR23 void test_other_integral_overloads() {
     assert(std::isfinite(static_cast<I>(42)));
     assert(std::isfinite(static_cast<I>(-42)));
 
-    assert(!std::isnan(I{}));
-    assert(!std::isnan(static_cast<I>(42)));
-    assert(!std::isnan(static_cast<I>(-42)));
-
     assert(!std::isinf(I{}));
     assert(!std::isinf(static_cast<I>(42)));
     assert(!std::isinf(static_cast<I>(-42)));
+
+    assert(!std::isnan(I{}));
+    assert(!std::isnan(static_cast<I>(42)));
+    assert(!std::isnan(static_cast<I>(-42)));
 
     assert(!std::isnormal(I{}));
     assert(std::isnormal(static_cast<I>(42)));
@@ -93,13 +93,13 @@ CONSTEXPR23 void test_other_integral_overloads() {
     assert(::isfinite(static_cast<I>(42)));
     assert(::isfinite(static_cast<I>(-42)));
 
-    assert(!::isnan(I{}));
-    assert(!::isnan(static_cast<I>(42)));
-    assert(!::isnan(static_cast<I>(-42)));
-
     assert(!::isinf(I{}));
     assert(!::isinf(static_cast<I>(42)));
     assert(!::isinf(static_cast<I>(-42)));
+
+    assert(!::isnan(I{}));
+    assert(!::isnan(static_cast<I>(42)));
+    assert(!::isnan(static_cast<I>(-42)));
 
     assert(!::isnormal(I{}));
     assert(::isnormal(static_cast<I>(42)));
