@@ -34,6 +34,18 @@ CONSTEXPR23 void test_bool_overloads() {
     assert(!std::signbit(false));
     assert(!std::signbit(true));
 
+#if _HAS_CXX23 // TRANSITION, UCRT should implement P0533R9 "constexpr For <cmath> And <cstdlib>"
+    if (!std::is_constant_evaluated())
+#endif // ^^^ _HAS_CXX23 ^^^
+    {
+        assert(!std::isgreater(false, true));
+        assert(!std::isgreaterequal(false, true));
+        assert(std::isless(false, true));
+        assert(std::islessequal(false, true));
+        assert(std::islessgreater(false, true));
+        assert(!std::isunordered(false, true));
+    }
+
     // test overloads in the global namespace
 
     assert(::fpclassify(false) == FP_ZERO);
@@ -53,6 +65,18 @@ CONSTEXPR23 void test_bool_overloads() {
 
     assert(!::signbit(false));
     assert(!::signbit(true));
+
+#if _HAS_CXX23 // TRANSITION, UCRT should implement P0533R9 "constexpr For <cmath> And <cstdlib>"
+    if (!std::is_constant_evaluated())
+#endif // ^^^ _HAS_CXX23 ^^^
+    {
+        assert(!::isgreater(false, true));
+        assert(!::isgreaterequal(false, true));
+        assert(::isless(false, true));
+        assert(::islessequal(false, true));
+        assert(::islessgreater(false, true));
+        assert(!::isunordered(false, true));
+    }
 }
 
 template <class I>
@@ -83,6 +107,18 @@ CONSTEXPR23 void test_other_integral_overloads() {
     assert(!std::signbit(static_cast<I>(42)));
     assert(std::signbit(static_cast<I>(-42)) == std::is_signed_v<I>);
 
+#if _HAS_CXX23 // TRANSITION, UCRT should implement P0533R9 "constexpr For <cmath> And <cstdlib>"
+    if (!std::is_constant_evaluated())
+#endif // ^^^ _HAS_CXX23 ^^^
+    {
+        assert(!std::isgreater(static_cast<I>(17), static_cast<I>(29)));
+        assert(!std::isgreaterequal(static_cast<I>(17), static_cast<I>(29)));
+        assert(std::isless(static_cast<I>(17), static_cast<I>(29)));
+        assert(std::islessequal(static_cast<I>(17), static_cast<I>(29)));
+        assert(std::islessgreater(static_cast<I>(17), static_cast<I>(29)));
+        assert(!std::isunordered(static_cast<I>(17), static_cast<I>(29)));
+    }
+
     // test overloads in the global namespace
 
     assert(::fpclassify(I{}) == FP_ZERO);
@@ -108,6 +144,18 @@ CONSTEXPR23 void test_other_integral_overloads() {
     assert(!::signbit(I{}));
     assert(!::signbit(static_cast<I>(42)));
     assert(::signbit(static_cast<I>(-42)) == std::is_signed_v<I>);
+
+#if _HAS_CXX23 // TRANSITION, UCRT should implement P0533R9 "constexpr For <cmath> And <cstdlib>"
+    if (!std::is_constant_evaluated())
+#endif // ^^^ _HAS_CXX23 ^^^
+    {
+        assert(!::isgreater(static_cast<I>(17), static_cast<I>(29)));
+        assert(!::isgreaterequal(static_cast<I>(17), static_cast<I>(29)));
+        assert(::isless(static_cast<I>(17), static_cast<I>(29)));
+        assert(::islessequal(static_cast<I>(17), static_cast<I>(29)));
+        assert(::islessgreater(static_cast<I>(17), static_cast<I>(29)));
+        assert(!::isunordered(static_cast<I>(17), static_cast<I>(29)));
+    }
 }
 
 CONSTEXPR23 bool test_all_integral_overloads() {
