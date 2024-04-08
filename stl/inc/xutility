@@ -5827,7 +5827,7 @@ struct _Vector_alg_in_find_is_safe_object_pointers<_Ty1*, _Ty2*>
 
 // Can we activate the vector algorithms for find/count?
 template <class _Iter, class _Ty, class _Elem = _Iter_value_t<_Iter>>
-constexpr bool _Vector_alg_in_find_is_safe =
+_INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe =
     // The iterator must be contiguous so we can get raw pointers.
     _Iterator_is_contiguous<_Iter>
     // The iterator must not be volatile.
