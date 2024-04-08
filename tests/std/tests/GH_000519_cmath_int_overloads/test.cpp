@@ -36,23 +36,23 @@ CONSTEXPR23 void test_bool_overloads() {
 
     // test overloads in the global namespace
 
-    assert(fpclassify(false) == FP_ZERO);
-    assert(fpclassify(true) == FP_NORMAL);
+    assert(::fpclassify(false) == FP_ZERO);
+    assert(::fpclassify(true) == FP_NORMAL);
 
-    assert(isfinite(false));
-    assert(isfinite(true));
+    assert(::isfinite(false));
+    assert(::isfinite(true));
 
-    assert(!isnan(false));
-    assert(!isnan(true));
+    assert(!::isnan(false));
+    assert(!::isnan(true));
 
-    assert(!isinf(false));
-    assert(!isinf(true));
+    assert(!::isinf(false));
+    assert(!::isinf(true));
 
-    assert(!isnormal(false));
-    assert(isnormal(true));
+    assert(!::isnormal(false));
+    assert(::isnormal(true));
 
-    assert(!signbit(false));
-    assert(!signbit(true));
+    assert(!::signbit(false));
+    assert(!::signbit(true));
 }
 
 template <class I>
@@ -85,29 +85,29 @@ CONSTEXPR23 void test_other_integral_overloads() {
 
     // test overloads in the global namespace
 
-    assert(fpclassify(I{}) == FP_ZERO);
-    assert(fpclassify(static_cast<I>(42)) == FP_NORMAL);
-    assert(fpclassify(static_cast<I>(-42)) == FP_NORMAL);
+    assert(::fpclassify(I{}) == FP_ZERO);
+    assert(::fpclassify(static_cast<I>(42)) == FP_NORMAL);
+    assert(::fpclassify(static_cast<I>(-42)) == FP_NORMAL);
 
-    assert(isfinite(I{}));
-    assert(isfinite(static_cast<I>(42)));
-    assert(isfinite(static_cast<I>(-42)));
+    assert(::isfinite(I{}));
+    assert(::isfinite(static_cast<I>(42)));
+    assert(::isfinite(static_cast<I>(-42)));
 
-    assert(!isnan(I{}));
-    assert(!isnan(static_cast<I>(42)));
-    assert(!isnan(static_cast<I>(-42)));
+    assert(!::isnan(I{}));
+    assert(!::isnan(static_cast<I>(42)));
+    assert(!::isnan(static_cast<I>(-42)));
 
-    assert(!isinf(I{}));
-    assert(!isinf(static_cast<I>(42)));
-    assert(!isinf(static_cast<I>(-42)));
+    assert(!::isinf(I{}));
+    assert(!::isinf(static_cast<I>(42)));
+    assert(!::isinf(static_cast<I>(-42)));
 
-    assert(!isnormal(I{}));
-    assert(isnormal(static_cast<I>(42)));
-    assert(isnormal(static_cast<I>(-42)));
+    assert(!::isnormal(I{}));
+    assert(::isnormal(static_cast<I>(42)));
+    assert(::isnormal(static_cast<I>(-42)));
 
-    assert(!signbit(I{}));
-    assert(!signbit(static_cast<I>(42)));
-    assert(signbit(static_cast<I>(-42)) == std::is_signed_v<I>);
+    assert(!::signbit(I{}));
+    assert(!::signbit(static_cast<I>(42)));
+    assert(::signbit(static_cast<I>(-42)) == std::is_signed_v<I>);
 }
 
 CONSTEXPR23 bool test_all_integral_overloads() {
