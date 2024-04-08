@@ -44,8 +44,8 @@ BENCHMARK(bm<uint16_t, op::mismatch>)->Apply(common_args);
 BENCHMARK(bm<uint32_t, op::mismatch>)->Apply(common_args);
 BENCHMARK(bm<uint64_t, op::mismatch>)->Apply(common_args);
 
-BENCHMARK(bm<uint8_t, op::lexi>)->Apply(common_args);
-BENCHMARK(bm<int8_t, op::lexi>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, op::lexi>)->Apply(common_args); // still optimized without vector algorithms using memcmp
+BENCHMARK(bm<int8_t, op::lexi>)->Apply(common_args); // optimized with vector algorithms only
 BENCHMARK(bm<uint16_t, op::lexi>)->Apply(common_args);
 BENCHMARK(bm<uint32_t, op::lexi>)->Apply(common_args);
 BENCHMARK(bm<uint64_t, op::lexi>)->Apply(common_args);
