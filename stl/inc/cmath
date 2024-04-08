@@ -685,39 +685,39 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
 #endif // ^^^ intrinsics unavailable ^^^
 
 // TRANSITION, GH-519, additional overloads are not templated to avoid ambiguity with the major overload in UCRT
-#define _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, TYPE, RETV)                               \
+#define _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, TYPE)                                \
     _NODISCARD _Check_return_ _CONSTEXPR23 bool FUN(_In_ TYPE) noexcept /* strengthened */ { \
         return RETV;                                                                         \
     }
 
 #ifdef __cpp_char8_t
-#define _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T(FUN, RETV) _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, char8_t, RETV)
+#define _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T(FUN, RETV) _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, char8_t)
 #else // ^^^ defined(__cpp_char8_t) / !defined(__cpp_char8_t) vvv
 #define _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T(FUN, RETV)
 #endif // ^^^ !defined(__cpp_char8_t) ^^^
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
-#define _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T(FUN, RETV) _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, wchar_t, RETV)
+#define _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T(FUN, RETV) _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, wchar_t)
 #else // ^^^ defined(_NATIVE_WCHAR_T_DEFINED) / !defined(_NATIVE_WCHAR_T_DEFINED) vvv
 #define _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T(FUN, RETV)
 #endif // ^^^ !defined(_NATIVE_WCHAR_T_DEFINED) ^^^
 
-#define _GENERIC_MATH_CLASSIFY1_RETV(FUN, RETV)                          \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, signed char, RETV)        \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned char, RETV)      \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, short, RETV)              \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned short, RETV)     \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, int, RETV)                \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned int, RETV)       \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, long, RETV)               \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned long, RETV)      \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, long long, RETV)          \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, unsigned long long, RETV) \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, bool, RETV)               \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, char, RETV)               \
-    _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T(FUN, RETV)                      \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, char16_t, RETV)           \
-    _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, char32_t, RETV)           \
+#define _GENERIC_MATH_CLASSIFY1_RETV(FUN, RETV)                         \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, signed char)        \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, unsigned char)      \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, short)              \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, unsigned short)     \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, int)                \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, unsigned int)       \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, long)               \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, unsigned long)      \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, long long)          \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, unsigned long long) \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, bool)               \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, char)               \
+    _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T(FUN, RETV)                     \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, char16_t)           \
+    _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, char32_t)           \
     _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T(FUN, RETV)
 
 // The following order matches N4950 [cmath.syn].
@@ -796,7 +796,7 @@ _GENERIC_MATH_CLASSIFY1_RETV(isnan, false)
 #undef _GENERIC_MATH2_BASE
 #undef _GENERIC_MATH2
 #undef _GENERIC_MATH2I
-#undef _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV
+#undef _GENERIC_MATH_CLASSIFY1_RETV_INTEGER
 #undef _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T
 #undef _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T
 #undef _GENERIC_MATH_CLASSIFY1_RETV
