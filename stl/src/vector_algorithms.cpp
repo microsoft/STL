@@ -30,14 +30,6 @@ namespace {
         return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
     }
 
-    bool _Use_sse2() noexcept {
-#ifdef _M_IX86
-        return __isa_enabled & (1 << __ISA_AVAILABLE_SSE2);
-#else
-        return true;
-#endif
-    }
-
     struct [[nodiscard]] _Zeroupper_on_exit { // TRANSITION, DevCom-10331414
         _Zeroupper_on_exit() = default;
 
@@ -118,7 +110,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     }
 
     constexpr size_t _Mask_16 = ~((static_cast<size_t>(1) << 4) - 1);
-    if (_Byte_length(_First1, _Last1) >= 16 && _Use_sse2()) {
+    if (_Byte_length(_First1, _Last1) >= 16 && _Use_sse42()) {
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_16);
         do {
@@ -214,7 +206,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
             const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
-            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_char_sse); // SSSE3
+            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_char_sse);
             const __m128i _Right_reversed = _mm_shuffle_epi8(_Right, _Reverse_char_sse);
             _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
             _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
@@ -258,7 +250,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
             const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
-            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_short_sse); // SSSE3
+            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_short_sse);
             const __m128i _Right_reversed = _mm_shuffle_epi8(_Right, _Reverse_short_sse);
             _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
             _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
@@ -290,7 +282,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
-    if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
         do {
@@ -328,7 +320,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
-    if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
         do {
@@ -375,7 +367,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-            const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_char_sse); // SSSE3
+            const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_char_sse);
             _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
@@ -414,7 +406,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-            const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_short_sse); // SSSE3
+            const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_short_sse);
             _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
@@ -443,7 +435,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
-    if (_Byte_length(_First, _Last) >= 16 && _Use_sse2()) {
+    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
         do {
@@ -477,7 +469,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
-    if (_Byte_length(_First, _Last) >= 16 && _Use_sse2()) {
+    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
         do {
@@ -585,17 +577,17 @@ namespace {
             __m128i _H_min_val = _Cur;
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words)); // SSSE3
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_bytes)); // SSSE3
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words));
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_bytes));
             return _H_min_val;
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi8(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi8(_Val1, _Val2); });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi8(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi8(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
@@ -611,7 +603,6 @@ namespace {
         }
 
         static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-            // _mm_shuffle_epi8 is SSSE3:
             return static_cast<_Unsigned_t>(_mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_H_pos))));
         }
 
@@ -628,11 +619,11 @@ namespace {
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second, __m128i = _mm_undefined_si128()) noexcept {
-            return _mm_min_epi8(_First, _Second); // SSE4.1
+            return _mm_min_epi8(_First, _Second);
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i = _mm_undefined_si128()) noexcept {
-            return _mm_max_epi8(_First, _Second); // SSE4.1
+            return _mm_max_epi8(_First, _Second);
         }
 
         static __m128i _Min_u(const __m128i _First, const __m128i _Second) noexcept {
@@ -686,7 +677,7 @@ namespace {
             __m128i _H_min_val = _Cur;
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words)); // SSSE3
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words));
             return _H_min_val;
         }
 
@@ -699,11 +690,11 @@ namespace {
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu16(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu16(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu16(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu16(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -713,7 +704,6 @@ namespace {
         static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
             static constexpr _Unsigned_t _Shuf[] = {0x0100, 0x0302, 0x0504, 0x0706, 0x0908, 0x0B0A, 0x0D0C, 0x0F0E};
 
-            // _mm_shuffle_epi8 is SSSE3:
             return static_cast<_Unsigned_t>(
                 _mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_Shuf[_H_pos >> 1]))));
         }
@@ -739,11 +729,11 @@ namespace {
         }
 
         static __m128i _Min_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_min_epu16(_First, _Second); // SSE4.1
+            return _mm_min_epu16(_First, _Second);
         }
 
         static __m128i _Max_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_max_epu16(_First, _Second); // SSE4.1
+            return _mm_max_epu16(_First, _Second);
         }
 
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
@@ -795,19 +785,19 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi32(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi32(_Val1, _Val2); });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi32(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi32(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -833,19 +823,19 @@ namespace {
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second, __m128i = _mm_undefined_si128()) noexcept {
-            return _mm_min_epi32(_First, _Second); // SSE4.1
+            return _mm_min_epi32(_First, _Second);
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i = _mm_undefined_si128()) noexcept {
-            return _mm_max_epi32(_First, _Second); // SSE4.1
+            return _mm_max_epi32(_First, _Second);
         }
 
         static __m128i _Min_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_min_epu32(_First, _Second); // SSE4.1
+            return _mm_min_epu32(_First, _Second);
         }
 
         static __m128i _Max_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_max_epu32(_First, _Second); // SSE4.1
+            return _mm_max_epu32(_First, _Second);
         }
 
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
@@ -912,7 +902,7 @@ namespace {
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
             return static_cast<_Signed_t>(
-                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32) // SSE4.1
+                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
                 | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
 #else // ^^^ x86 / x64 vvv
             return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
@@ -926,31 +916,31 @@ namespace {
         }
 
         static __m128i _Cmp_eq(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpeq_epi64(_First, _Second); // SSE4.1
+            return _mm_cmpeq_epi64(_First, _Second);
         }
 
         static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpgt_epi64(_First, _Second); // SSE4.2
+            return _mm_cmpgt_epi64(_First, _Second);
         }
 
         static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpeq_epi64(_First, _Second); // SSE4.1
+            return _mm_cmpeq_epi64(_First, _Second);
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Mask); // SSE4.1
+            return _mm_blendv_epi8(_First, _Second, _Mask);
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Mask); // SSE4.1
+            return _mm_blendv_epi8(_First, _Second, _Mask);
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_First, _Second)); // _Cmp_gt is SSE4.2
+            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_First, _Second));
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_Second, _First)); // _Cmp_gt is SSE4.2
+            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_Second, _First));
         }
 
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
@@ -1016,11 +1006,11 @@ namespace {
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); }); // SSE4.1
+            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); }); // SSE4.1
+            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); });
         }
 
         static float _Get_any(const __m128 _Cur) noexcept {
@@ -1124,7 +1114,7 @@ namespace {
 
         static uint64_t _Get_any_u(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
-            return (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32) // SSE4.1
+            return (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
                  | static_cast<uint64_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur)));
 #else // ^^^ x86 / x64 vvv
             return static_cast<uint64_t>(_mm_cvtsi128_si64(_Cur));
@@ -1146,7 +1136,7 @@ namespace {
         }
 
         static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpeq_epi64(_First, _Second); // SSE4.1
+            return _mm_cmpeq_epi64(_First, _Second);
         }
 
         static __m128d _Min(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
@@ -1751,7 +1741,7 @@ namespace {
         }
 
         static __m128i _Set_sse(const uint8_t _Val) noexcept {
-            return _mm_set1_epi8(_Val);
+            return _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
         }
 
         static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
@@ -1760,10 +1750,6 @@ namespace {
 
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi8(_Lhs, _Rhs);
-        }
-
-        static bool _Sse_available() noexcept {
-            return _Use_sse2();
         }
 #endif // !_M_ARM64EC
     };
@@ -1787,10 +1773,6 @@ namespace {
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi16(_Lhs, _Rhs);
         }
-
-        static bool _Sse_available() noexcept {
-            return _Use_sse2();
-        }
 #endif // !_M_ARM64EC
     };
 
@@ -1813,10 +1795,6 @@ namespace {
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi32(_Lhs, _Rhs);
         }
-
-        static bool _Sse_available() noexcept {
-            return _Use_sse2();
-        }
 #endif // !_M_ARM64EC
     };
 
@@ -1837,11 +1815,7 @@ namespace {
         }
 
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-            return _mm_cmpeq_epi64(_Lhs, _Rhs); // SSE4.1
-        }
-
-        static bool _Sse_available() noexcept {
-            return _Use_sse42(); // for pcmpeqq on _Cmp_sse
+            return _mm_cmpeq_epi64(_Lhs, _Rhs);
         }
 #endif // !_M_ARM64EC
     };
@@ -1888,7 +1862,7 @@ namespace {
         }
 
         const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
-        if (_Sse_size != 0 && _Traits::_Sse_available()) {
+        if (_Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _First;
             _Advance_bytes(_Stop_at, _Sse_size);
@@ -1942,7 +1916,7 @@ namespace {
         }
 
         const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
-        if (_Sse_size != 0 && _Traits::_Sse_available()) {
+        if (_Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _Last;
             _Rewind_bytes(_Stop_at, _Sse_size);
@@ -2130,7 +2104,7 @@ namespace {
             if constexpr (sizeof(_Ty) >= 4) {
                 return _Result;
             }
-        } else if (_Traits::_Sse_available()) {
+        } else if (_Use_sse42()) {
             const size_t _Count_bytes_sse = (_Count * sizeof(_Ty)) & ~size_t{0xF};
 
             for (; _Result != _Count_bytes_sse; _Result += 0x10) {
@@ -2291,12 +2265,10 @@ namespace {
 
     __m128i __forceinline _Bitset_to_string_1_step(const uint16_t _Val, const __m128i _Px0, const __m128i _Px1) {
         const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
-        const __m128i _Vx1 = _mm_unpacklo_epi8(_Vx0, _Vx0);
-        const __m128i _Vx2 = _mm_unpacklo_epi8(_Vx1, _Vx1);
-        const __m128i _Vx3 = _mm_shuffle_epi32(_Vx2, _MM_SHUFFLE(0, 0, 1, 1));
-        const __m128i _Msk = _mm_and_si128(_Vx3, _mm_set1_epi64x(0x0102040810204080));
+        const __m128i _Vx1 = _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x00000000, 0x01010101, 0x01010101));
+        const __m128i _Msk = _mm_and_si128(_Vx1, _mm_set1_epi64x(0x0102040810204080));
         const __m128i _Ex0 = _mm_cmpeq_epi8(_Msk, _mm_setzero_si128());
-        const __m128i _Ex1 = _mm_xor_si128(_mm_and_si128(_Ex0, _Px0), _Px1);
+        const __m128i _Ex1 = _mm_blendv_epi8(_Px1, _Px0, _Ex0);
         return _Ex1;
     }
 
@@ -2316,7 +2288,7 @@ namespace {
         const __m128i _Vx  = _mm_set1_epi16(_Val);
         const __m128i _Msk = _mm_and_si128(_Vx, _mm_set_epi64x(0x0001000200040008, 0x0010002000400080));
         const __m128i _Ex0 = _mm_cmpeq_epi16(_Msk, _mm_setzero_si128());
-        const __m128i _Ex1 = _mm_xor_si128(_mm_and_si128(_Ex0, _Px0), _Px1);
+        const __m128i _Ex1 = _mm_blendv_epi8(_Px1, _Px0, _Ex0);
         return _Ex1;
     }
 } // unnamed namespace
@@ -2356,9 +2328,9 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    } else if (_Use_sse2()) {
-        const __m128i _Px0 = _mm_set1_epi8(_Elem0 ^ _Elem1);
-        const __m128i _Px1 = _mm_set1_epi8(_Elem1);
+    } else if (_Use_sse42()) {
+        const __m128i _Px0 = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Elem0), _mm_setzero_si128());
+        const __m128i _Px1 = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Elem1), _mm_setzero_si128());
         if (_Size_bits >= 16) {
             char* _Pos = _Dest + _Size_bits;
             _Size_bits &= 0xF;
@@ -2436,8 +2408,8 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    } else if (_Use_sse2()) {
-        const __m128i _Px0 = _mm_set1_epi16(_Elem0 ^ _Elem1);
+    } else if (_Use_sse42()) {
+        const __m128i _Px0 = _mm_set1_epi16(_Elem0);
         const __m128i _Px1 = _mm_set1_epi16(_Elem1);
         if (_Size_bits >= 8) {
             wchar_t* _Pos = _Dest + _Size_bits;
