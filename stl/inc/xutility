@@ -5608,31 +5608,19 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
-enum class _Lex_cmp_opt {
-    _None,
-    _Memcmp,
-#if _USE_STD_VECTOR_ALGORITHMS
-    _Mismatch,
-#endif // _USE_STD_VECTOR_ALGORITHMS
-};
-
 template <class _Elem1, class _Elem2>
-_INLINE_VAR constexpr _Lex_cmp_opt _Lex_compare_memcmp_classify_elements =
-    conjunction_v<_Is_character_or_bool<_Elem1>, _Is_character_or_bool<_Elem2>, is_unsigned<_Elem1>,
-        is_unsigned<_Elem2>>
-        ? _Lex_cmp_opt::_Memcmp
+constexpr bool _Lex_compare_memcmp_classify_elements =
 #if _USE_STD_VECTOR_ALGORITHMS
-        : ((is_integral_v<_Elem1> && is_integral_v<_Elem2> && sizeof(_Elem1) == sizeof(_Elem2)
-               && is_unsigned_v<_Elem1> == is_unsigned_v<_Elem2>)
-                ? _Lex_cmp_opt::_Mismatch
-                : _Lex_cmp_opt::_None);
+    is_integral_v<_Elem1> && is_integral_v<_Elem2> && sizeof(_Elem1) == sizeof(_Elem2)
+    && is_unsigned_v<_Elem1> == is_unsigned_v<_Elem2>;
 #else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
-        : _Lex_cmp_opt::_None;
+    conjunction_v<_Is_character_or_bool<_Elem1>, _Is_character_or_bool<_Elem2>, is_unsigned<_Elem1>,
+        is_unsigned<_Elem2>>;
 #endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
 
 #ifdef __cpp_lib_byte
 template <>
-inline constexpr _Lex_cmp_opt _Lex_compare_memcmp_classify_elements<byte, byte> = _Lex_cmp_opt::_Memcmp;
+inline constexpr bool _Lex_compare_memcmp_classify_elements<byte, byte> = true;
 #endif // defined(__cpp_lib_byte)
 
 template <class _Elem1, class _Elem2, class _Pr>
@@ -5642,55 +5630,46 @@ struct _Lex_compare_memcmp_classify_pred {
 
 template <class _Elem1, class _Elem2, class _Elem3>
 struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, less<_Elem3>> {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem3, _Elem3>;
-    using _Pred = conditional_t<_Opt != _Lex_cmp_opt::_None && _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem3, _Elem3>
+                                    && _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible
                                     && _Iter_copy_cat<_Elem2*, _Elem3*>::_Bitcopy_constructible,
         less<int>, void>;
 };
 
 template <class _Elem1, class _Elem2>
 struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, less<>> {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>;
-    using _Pred                        = conditional_t<_Opt != _Lex_cmp_opt::_None, less<int>, void>;
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>, less<int>, void>;
 };
 
 template <class _Elem1, class _Elem2, class _Elem3>
 struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, greater<_Elem3>> {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem3, _Elem3>;
-    using _Pred = conditional_t<_Opt != _Lex_cmp_opt::_None && _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem3, _Elem3>
+                                    && _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible
                                     && _Iter_copy_cat<_Elem2*, _Elem3*>::_Bitcopy_constructible,
         greater<int>, void>;
 };
 
 template <class _Elem1, class _Elem2>
 struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, greater<>> {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>;
-    using _Pred                        = conditional_t<_Opt != _Lex_cmp_opt::_None, greater<int>, void>;
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>, greater<int>, void>;
 };
 
 #if _HAS_CXX20
 template <class _Elem1, class _Elem2>
 struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, _RANGES less> {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>;
-    using _Pred                        = conditional_t<_Opt != _Lex_cmp_opt::_None, less<int>, void>;
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>, less<int>, void>;
 };
 
 template <class _Elem1, class _Elem2>
 struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, _RANGES greater> {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>;
-    using _Pred                        = conditional_t<_Opt != _Lex_cmp_opt::_None, greater<int>, void>;
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>, greater<int>, void>;
 };
 #endif // _HAS_CXX20
-
-struct _Lex_compare_memcmp_disable {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_cmp_opt::_None;
-    using _Pred                        = void;
-};
 
 template <class _It1, class _It2, class _Pr>
 using _Lex_compare_memcmp_classify =
     conditional_t<_Iterators_are_contiguous<_It1, _It2> && !_Iterator_is_volatile<_It1> && !_Iterator_is_volatile<_It2>,
-        _Lex_compare_memcmp_classify_pred<_Iter_value_t<_It1>, _Iter_value_t<_It2>, _Pr>, _Lex_compare_memcmp_disable>;
+        typename _Lex_compare_memcmp_classify_pred<_Iter_value_t<_It1>, _Iter_value_t<_It2>, _Pr>::_Pred, void>;
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
@@ -5704,7 +5683,7 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
     const auto _ULast2 = _STD _Get_unwrapped(_Last2);
 
     using _Memcmp_pred = _Lex_compare_memcmp_classify<decltype(_UFirst1), decltype(_UFirst2), _Pr>;
-    if constexpr (!is_void_v<typename _Memcmp_pred::_Pred>) {
+    if constexpr (!is_void_v<_Memcmp_pred>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -5713,23 +5692,20 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
             const auto _Num2  = static_cast<size_t>(_ULast2 - _UFirst2);
             const size_t _Num = (_STD min)(_Num1, _Num2);
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (_Memcmp_pred::_Opt == _Lex_cmp_opt::_Mismatch) {
-                const auto _First1_ptr = _STD _To_address(_UFirst1);
-                const auto _First2_ptr = _STD _To_address(_UFirst2);
-                const size_t _Pos      = __std_mismatch<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
-                if (_Pos == _Num2) {
-                    return false;
-                } else if (_Pos == _Num1) {
-                    return true;
-                } else {
-                    return _Pred(_First1_ptr[_Pos], _First2_ptr[_Pos]);
-                }
-            } else
-#endif // _USE_STD_VECTOR_ALGORITHMS
-            {
-                const int _Ans = _STD _Memcmp_count(_UFirst1, _UFirst2, _Num);
-                return typename _Memcmp_pred::_Pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
+            const auto _First1_ptr = _STD _To_address(_UFirst1);
+            const auto _First2_ptr = _STD _To_address(_UFirst2);
+            const size_t _Pos      = __std_mismatch<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
+            if (_Pos == _Num2) {
+                return false;
+            } else if (_Pos == _Num1) {
+                return true;
+            } else {
+                return _Pred(_First1_ptr[_Pos], _First2_ptr[_Pos]);
             }
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
+            const int _Ans = _STD _Memcmp_count(_UFirst1, _UFirst2, _Num);
+            return _Memcmp_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
+#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
         }
     }
 
@@ -5781,42 +5757,37 @@ struct _Lex_compare_three_way_memcmp_classify_comp {
 
 template <class _Elem1, class _Elem2>
 struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, compare_three_way> {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>;
-    using _Comp = conditional_t<_Opt != _Lex_cmp_opt::_None && three_way_comparable_with<const _Elem1&, const _Elem2&>,
+    using _Comp = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>
+                                    && three_way_comparable_with<const _Elem1&, const _Elem2&>,
         compare_three_way, void>;
 };
 
 template <class _Elem1, class _Elem2>
 struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, _Strong_order::_Cpo> {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>;
     using _Comp =
-        conditional_t<_Opt != _Lex_cmp_opt::_None && _Can_strong_order<_Elem1, _Elem2>, _Strong_order::_Cpo, void>;
+        conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2> && _Can_strong_order<_Elem1, _Elem2>,
+            _Strong_order::_Cpo, void>;
 };
 
 template <class _Elem1, class _Elem2>
 struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, _Weak_order::_Cpo> {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>;
     using _Comp =
-        conditional_t<_Opt != _Lex_cmp_opt::_None && _Can_weak_order<_Elem1, _Elem2>, _Weak_order::_Cpo, void>;
+        conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2> && _Can_weak_order<_Elem1, _Elem2>,
+            _Weak_order::_Cpo, void>;
 };
 
 template <class _Elem1, class _Elem2>
 struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, _Partial_order::_Cpo> {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>;
     using _Comp =
-        conditional_t<_Opt != _Lex_cmp_opt::_None && _Can_partial_order<_Elem1, _Elem2>, _Partial_order::_Cpo, void>;
-};
-
-struct _Lex_compare_three_way_memcmp_disable {
-    static constexpr _Lex_cmp_opt _Opt = _Lex_cmp_opt::_None;
-    using _Comp                        = void;
+        conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2> && _Can_partial_order<_Elem1, _Elem2>,
+            _Partial_order::_Cpo, void>;
 };
 
 template <class _It1, class _It2, class _Cmp>
 using _Lex_compare_three_way_memcmp_classify =
     conditional_t<_Iterators_are_contiguous<_It1, _It2> && !_Iterator_is_volatile<_It1> && !_Iterator_is_volatile<_It2>,
-        _Lex_compare_three_way_memcmp_classify_comp<_Iter_value_t<_It1>, _Iter_value_t<_It2>, _Cmp>,
-        _Lex_compare_three_way_memcmp_disable>;
+        typename _Lex_compare_three_way_memcmp_classify_comp<_Iter_value_t<_It1>, _Iter_value_t<_It2>, _Cmp>::_Comp,
+        void>;
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _Cmp>
 _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1, const _InIt1 _Last1,
@@ -5829,34 +5800,30 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1
     const auto _ULast2 = _STD _Get_unwrapped(_Last2);
 
     using _Memcmp_pred = _Lex_compare_three_way_memcmp_classify<decltype(_UFirst1), decltype(_UFirst2), _Cmp>;
-    if constexpr (!is_void_v<typename _Memcmp_pred::_Comp>) {
+    if constexpr (!is_void_v<_Memcmp_pred>) {
         if (!_STD is_constant_evaluated()) {
             const auto _Num1  = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2  = static_cast<size_t>(_ULast2 - _UFirst2);
             const size_t _Num = (_STD min)(_Num1, _Num2);
-
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (_Memcmp_pred::_Opt == _Lex_cmp_opt::_Mismatch) {
-                const auto _First1_ptr = _STD to_address(_UFirst1);
-                const auto _First2_ptr = _STD to_address(_UFirst2);
-                const size_t _Pos      = __std_mismatch<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
-                if (_Pos == _Num1) {
-                    return _Pos == _Num2 ? strong_ordering::equal : strong_ordering::less;
-                } else if (_Pos == _Num2) {
-                    return strong_ordering::greater;
-                } else {
-                    return _Comp(_First1_ptr[_Pos], _First2_ptr[_Pos]);
-                }
-            } else
-#endif // _USE_STD_VECTOR_ALGORITHMS
-            {
-                const int _Ans = _STD _Memcmp_count(_UFirst1, _UFirst2, _Num);
-                if (_Ans == 0) {
-                    return _Num1 <=> _Num2;
-                } else {
-                    return typename _Memcmp_pred::_Comp{}(_Ans, 0);
-                }
+            const auto _First1_ptr = _STD to_address(_UFirst1);
+            const auto _First2_ptr = _STD to_address(_UFirst2);
+            const size_t _Pos      = __std_mismatch<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
+            if (_Pos == _Num1) {
+                return _Pos == _Num2 ? strong_ordering::equal : strong_ordering::less;
+            } else if (_Pos == _Num2) {
+                return strong_ordering::greater;
+            } else {
+                return _Comp(_First1_ptr[_Pos], _First2_ptr[_Pos]);
             }
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
+            const int _Ans = _STD _Memcmp_count(_UFirst1, _UFirst2, _Num);
+            if (_Ans == 0) {
+                return _Num1 <=> _Num2;
+            } else {
+                return _Memcmp_pred{}(_Ans, 0);
+            }
+#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
         }
     }
 

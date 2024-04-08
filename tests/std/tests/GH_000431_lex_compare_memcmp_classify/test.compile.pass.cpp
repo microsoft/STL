@@ -22,13 +22,13 @@ using namespace std;
 
 template <class Expected, class It1, class It2, class Pred>
 void assert_lex_compare_memcmp_classify() {
-    STATIC_ASSERT(is_same_v<typename _Lex_compare_memcmp_classify<It1, It2, Pred>::_Pred, Expected>);
+    STATIC_ASSERT(is_same_v<_Lex_compare_memcmp_classify<It1, It2, Pred>, Expected>);
 }
 
 #if _HAS_CXX20
 template <class Expected, class It1, class It2, class Comp>
 void assert_lex_compare_three_way_memcmp_classify() {
-    STATIC_ASSERT(is_same_v<typename _Lex_compare_three_way_memcmp_classify<It1, It2, Comp>::_Comp, Expected>);
+    STATIC_ASSERT(is_same_v<_Lex_compare_three_way_memcmp_classify<It1, It2, Comp>, Expected>);
 }
 #endif // _HAS_CXX20
 
