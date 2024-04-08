@@ -1705,10 +1705,10 @@ namespace ranges {
         struct _Repeat_fn {
             template <class _Ty>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Value) _CONST_CALL_OPERATOR
-                noexcept(noexcept(repeat_view(_STD forward<_Ty>(_Value))))
-                requires requires { repeat_view(_STD forward<_Ty>(_Value)); }
+                noexcept(noexcept(repeat_view<decay_t<_Ty>>(_STD forward<_Ty>(_Value))))
+                requires requires { repeat_view<decay_t<_Ty>>(_STD forward<_Ty>(_Value)); }
             {
-                return repeat_view(_STD forward<_Ty>(_Value));
+                return repeat_view<decay_t<_Ty>>(_STD forward<_Ty>(_Value));
             }
 
             template <class _Ty1, class _Ty2>
