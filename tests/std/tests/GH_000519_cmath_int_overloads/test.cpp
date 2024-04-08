@@ -6,7 +6,7 @@
 #include <math.h>
 #include <type_traits>
 
-// Also test the partial implemention of P0533R9 "constexpr for cmath and cstdlib"
+// Also test the partial implementation of P0533R9 "constexpr For <cmath> And <cstdlib>"
 #if _HAS_CXX23
 #define CONSTEXPR23 constexpr
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv

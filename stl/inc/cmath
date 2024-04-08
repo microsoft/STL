@@ -698,7 +698,7 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
 #define _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T(FUN, RETV) _GENERIC_MATH_CLASSIFY1_PER_TYPE_RETV(FUN, wchar_t, RETV)
-#else // ^^^ defined(__cpp_char8_t) / !defined(__cpp_char8_t) vvv
+#else // ^^^ defined(_NATIVE_WCHAR_T_DEFINED) / !defined(_NATIVE_WCHAR_T_DEFINED) vvv
 #define _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T(FUN, RETV)
 #endif // ^^^ !defined(_NATIVE_WCHAR_T_DEFINED) ^^^
 
