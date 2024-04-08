@@ -596,13 +596,13 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 
 // TRANSITION, GH-519, should be provided by UCRT
 template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
-_Check_return_ _CONSTEXPR23 int fpclassify(_In_ const _Ty _Ix) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR23 int fpclassify(_In_ const _Ty _Ix) noexcept /* strengthened */ {
     return _Ix ? FP_NORMAL : FP_ZERO;
 }
 
 // TRANSITION, GH-519, should be provided by UCRT
 template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
-_Check_return_ _CONSTEXPR23 bool signbit(_In_ const _Ty _Ix) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR23 bool signbit(_In_ const _Ty _Ix) noexcept /* strengthened */ {
     if constexpr (static_cast<_Ty>(-1) < _Ty{}) {
         return _Ix < 0;
     } else {
