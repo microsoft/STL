@@ -730,10 +730,10 @@ struct _Unused_parameter { // generic unused parameter struct
 };
 
 template <class _Ty, class = void> // checks whether a container/view is a non-customized specialization
-_INLINE_VAR constexpr bool _Has_unchecked_begin_end = false;
+constexpr bool _Has_unchecked_begin_end = false;
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Has_unchecked_begin_end<_Ty,
+constexpr bool _Has_unchecked_begin_end<_Ty,
     void_t<decltype(_STD declval<_Ty&>()._Unchecked_begin()), decltype(_STD declval<_Ty&>()._Unchecked_end())>> = true;
 
 template <class _Ty>
@@ -1211,49 +1211,49 @@ template <class _Iter>
 using _Iter_cat_t = typename iterator_traits<_Iter>::iterator_category;
 
 template <class _Ty, class = void>
-_INLINE_VAR constexpr bool _Is_iterator_v = false;
+constexpr bool _Is_iterator_v = false;
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_iterator_v<_Ty, void_t<_Iter_cat_t<_Ty>>> = true;
+constexpr bool _Is_iterator_v<_Ty, void_t<_Iter_cat_t<_Ty>>> = true;
 
 template <class _Ty>
 struct _Is_iterator : bool_constant<_Is_iterator_v<_Ty>> {};
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_cpp17_input_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, input_iterator_tag>;
+constexpr bool _Is_cpp17_input_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, input_iterator_tag>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_ranges_input_iter_v =
+constexpr bool _Is_ranges_input_iter_v =
 #if _HAS_CXX20
     (input_iterator<_Iter> && sentinel_for<_Iter, _Iter>) ||
 #endif
     _Is_cpp17_input_iter_v<_Iter>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_cpp17_fwd_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, forward_iterator_tag>;
+constexpr bool _Is_cpp17_fwd_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, forward_iterator_tag>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_ranges_fwd_iter_v =
+constexpr bool _Is_ranges_fwd_iter_v =
 #if _HAS_CXX20
     forward_iterator<_Iter> ||
 #endif
     _Is_cpp17_fwd_iter_v<_Iter>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_cpp17_bidi_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
+constexpr bool _Is_cpp17_bidi_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_ranges_bidi_iter_v =
+constexpr bool _Is_ranges_bidi_iter_v =
 #if _HAS_CXX20
     bidirectional_iterator<_Iter> ||
 #endif
     _Is_cpp17_bidi_iter_v<_Iter>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_cpp17_random_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, random_access_iterator_tag>;
+constexpr bool _Is_cpp17_random_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, random_access_iterator_tag>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_ranges_random_iter_v =
+constexpr bool _Is_ranges_random_iter_v =
 #if _HAS_CXX20
     random_access_iterator<_Iter> ||
 #endif
@@ -1279,17 +1279,17 @@ constexpr void _Verify_range(const _Ty* const _First, const _Ty* const _Last) no
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
 template <class _Iter, class = void>
-_INLINE_VAR constexpr bool _Allow_inheriting_unwrap_v = true;
+constexpr bool _Allow_inheriting_unwrap_v = true;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Allow_inheriting_unwrap_v<_Iter, void_t<typename _Iter::_Prevent_inheriting_unwrap>> =
+constexpr bool _Allow_inheriting_unwrap_v<_Iter, void_t<typename _Iter::_Prevent_inheriting_unwrap>> =
     is_same_v<_Iter, typename _Iter::_Prevent_inheriting_unwrap>;
 
 template <class _Iter, class _Sentinel = _Iter, class = void>
-_INLINE_VAR constexpr bool _Range_verifiable_v = false;
+constexpr bool _Range_verifiable_v = false;
 
 template <class _Iter, class _Sentinel>
-_INLINE_VAR constexpr bool _Range_verifiable_v<_Iter, _Sentinel,
+constexpr bool _Range_verifiable_v<_Iter, _Sentinel,
     void_t<decltype(_Verify_range(_STD declval<const _Iter&>(), _STD declval<const _Sentinel&>()))>> =
     _Allow_inheriting_unwrap_v<_Iter>;
 
@@ -1306,17 +1306,17 @@ constexpr void _Adl_verify_range(const _Iter& _First, const _Sentinel& _Last) {
 }
 
 template <class _Iter, class = void>
-_INLINE_VAR constexpr bool _Unwrappable_v = false;
+constexpr bool _Unwrappable_v = false;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Unwrappable_v<_Iter,
+constexpr bool _Unwrappable_v<_Iter,
     void_t<decltype(_STD declval<_Remove_cvref_t<_Iter>&>()._Seek_to(_STD declval<_Iter>()._Unwrapped()))>> =
     _Allow_inheriting_unwrap_v<_Remove_cvref_t<_Iter>>;
 
 template <class _Iter, class = void>
-_INLINE_VAR constexpr bool _Has_nothrow_unwrapped = false;
+constexpr bool _Has_nothrow_unwrapped = false;
 template <class _Iter>
-_INLINE_VAR constexpr bool _Has_nothrow_unwrapped<_Iter, void_t<decltype(_STD declval<_Iter>()._Unwrapped())>> =
+constexpr bool _Has_nothrow_unwrapped<_Iter, void_t<decltype(_STD declval<_Iter>()._Unwrapped())>> =
     noexcept(_STD declval<_Iter>()._Unwrapped());
 
 template <class _Iter>
@@ -1336,15 +1336,14 @@ template <class _Iter>
 using _Unwrapped_t = _Remove_cvref_t<decltype(_STD _Get_unwrapped(_STD declval<_Iter>()))>;
 
 template <class _Iter, class = bool>
-_INLINE_VAR constexpr bool _Do_unwrap_when_unverified_v = false;
+constexpr bool _Do_unwrap_when_unverified_v = false;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool
-    _Do_unwrap_when_unverified_v<_Iter, decltype(static_cast<bool>(_Iter::_Unwrap_when_unverified))> =
-        static_cast<bool>(_Iter::_Unwrap_when_unverified);
+constexpr bool _Do_unwrap_when_unverified_v<_Iter, decltype(static_cast<bool>(_Iter::_Unwrap_when_unverified))> =
+    static_cast<bool>(_Iter::_Unwrap_when_unverified);
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Unwrappable_for_unverified_v =
+constexpr bool _Unwrappable_for_unverified_v =
     _Unwrappable_v<_Iter> && _Do_unwrap_when_unverified_v<_Remove_cvref_t<_Iter>>;
 
 template <class _Iter>
@@ -1369,22 +1368,21 @@ struct _Distance_unknown {
 };
 
 template <class _Diff>
-_INLINE_VAR constexpr _Diff _Max_possible_v{static_cast<_Make_unsigned_like_t<_Diff>>(-1) >> 1};
+constexpr _Diff _Max_possible_v{static_cast<_Make_unsigned_like_t<_Diff>>(-1) >> 1};
 
 template <class _Diff>
-_INLINE_VAR constexpr _Diff _Min_possible_v{-_Max_possible_v<_Diff> - 1};
+constexpr _Diff _Min_possible_v{-_Max_possible_v<_Diff> - 1};
 
 template <class _Iter, class = void>
-_INLINE_VAR constexpr bool _Offset_verifiable_v = false;
+constexpr bool _Offset_verifiable_v = false;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool
+constexpr bool
     _Offset_verifiable_v<_Iter, void_t<decltype(_STD declval<const _Iter&>()._Verify_offset(_Iter_diff_t<_Iter>{}))>> =
         true;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Unwrappable_for_offset_v =
-    _Unwrappable_v<_Iter> && _Offset_verifiable_v<_Remove_cvref_t<_Iter>>;
+constexpr bool _Unwrappable_for_offset_v = _Unwrappable_v<_Iter> && _Offset_verifiable_v<_Remove_cvref_t<_Iter>>;
 
 template <class _Iter, class _Diff>
 _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _Off) {
@@ -1413,10 +1411,10 @@ _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _O
 }
 
 template <class _Iter, class _UIter, class = void>
-_INLINE_VAR constexpr bool _Wrapped_seekable_v = false;
+constexpr bool _Wrapped_seekable_v = false;
 
 template <class _Iter, class _UIter>
-_INLINE_VAR constexpr bool
+constexpr bool
     _Wrapped_seekable_v<_Iter, _UIter, void_t<decltype(_STD declval<_Iter&>()._Seek_to(_STD declval<_UIter>()))>> =
         true;
 
@@ -1469,7 +1467,7 @@ _EXPORT_STD template <class _Ty>
 struct is_execution_policy : false_type {};
 
 _EXPORT_STD template <class _Ty>
-inline constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
+constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 
 // Note: The noexcept specifiers on all parallel algorithm overloads enforce termination as per
 // N4950 [execpol.seq]/2, [execpol.par]/2, [execpol.parunseq]/2, and [execpol.unseq]/2
@@ -1631,10 +1629,10 @@ _NODISCARD _CONSTEXPR17 _BidIt prev(
 }
 
 template <class _Iter, class _Pointer, bool = is_pointer_v<_Remove_cvref_t<_Iter>>>
-_INLINE_VAR constexpr bool _Has_nothrow_operator_arrow = _Is_nothrow_convertible_v<_Iter, _Pointer>;
+constexpr bool _Has_nothrow_operator_arrow = _Is_nothrow_convertible_v<_Iter, _Pointer>;
 
 template <class _Iter, class _Pointer>
-_INLINE_VAR constexpr bool _Has_nothrow_operator_arrow<_Iter, _Pointer, false> =
+constexpr bool _Has_nothrow_operator_arrow<_Iter, _Pointer, false> =
     noexcept(_STD _Fake_copy_init<_Pointer>(_STD declval<_Iter>().operator->()));
 
 _EXPORT_STD template <class _BidIt>
@@ -1934,7 +1932,7 @@ _NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> make_reverse_iterator(_BidIt _I
 #if _HAS_CXX20
 template <class _BidIt1, class _BidIt2>
     requires (!sized_sentinel_for<_BidIt1, _BidIt2>)
-inline constexpr bool disable_sized_sentinel_for<reverse_iterator<_BidIt1>, reverse_iterator<_BidIt2>> = true;
+constexpr bool disable_sized_sentinel_for<reverse_iterator<_BidIt1>, reverse_iterator<_BidIt2>> = true;
 #endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Container>
@@ -2465,14 +2463,14 @@ _NODISCARD constexpr const_sentinel<_Sent> make_const_sentinel(_Sent _Se) noexce
 
 namespace ranges {
     template <class>
-    inline constexpr bool _Has_complete_elements = false;
+    constexpr bool _Has_complete_elements = false;
 
     template <class _Ty>
         requires requires(_Ty& __t) { sizeof(__t[0]); }
-    inline constexpr bool _Has_complete_elements<_Ty> = true;
+    constexpr bool _Has_complete_elements<_Ty> = true;
 
     _EXPORT_STD template <class>
-    inline constexpr bool enable_borrowed_range = false;
+    constexpr bool enable_borrowed_range = false;
 
     template <class _Rng>
     concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_borrowed_range<remove_cvref_t<_Rng>>;
@@ -3106,7 +3104,7 @@ namespace ranges {
     }
 
     _EXPORT_STD template <class>
-    inline constexpr bool disable_sized_range = false;
+    constexpr bool disable_sized_range = false;
 
     namespace _Size {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
@@ -3349,7 +3347,7 @@ namespace ranges {
     class view_interface;
 
     _EXPORT_STD template <class _Ty>
-    inline constexpr bool enable_view =
+    constexpr bool enable_view =
         derived_from<_Ty, view_base> || _Strictly_derived_from_specialization_of<_Ty, view_interface>;
 
     _EXPORT_STD template <class _Ty>
@@ -4065,7 +4063,7 @@ namespace ranges {
         -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>, subrange_kind::sized>;
 
     template <class _It, class _Se, subrange_kind _Ki>
-    inline constexpr bool enable_borrowed_range<subrange<_It, _Se, _Ki>> = true;
+    constexpr bool enable_borrowed_range<subrange<_It, _Se, _Ki>> = true;
 
     _EXPORT_STD template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
         requires ((_Idx == 0 && copyable<_It>) || _Idx == 1)
@@ -4473,7 +4471,7 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) noexc
 #if _HAS_CXX20
 template <class _Iter1, class _Iter2>
     requires (!sized_sentinel_for<_Iter1, _Iter2>)
-inline constexpr bool disable_sized_sentinel_for<move_iterator<_Iter1>, move_iterator<_Iter2>> = true;
+constexpr bool disable_sized_sentinel_for<move_iterator<_Iter1>, move_iterator<_Iter2>> = true;
 
 _EXPORT_STD struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
@@ -4495,7 +4493,7 @@ _EXPORT_STD inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 #if _HAS_CXX20
 // When concepts are available, we can detect arbitrary contiguous iterators.
 template <class _Iter>
-inline constexpr bool _Iterator_is_contiguous = contiguous_iterator<_Iter>;
+constexpr bool _Iterator_is_contiguous = contiguous_iterator<_Iter>;
 
 template <class _Iter>
 _NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
@@ -4505,7 +4503,7 @@ _NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 // When concepts aren't available, we can detect pointers. (Iterators should be unwrapped before using this.)
 template <class _Iter>
-_INLINE_VAR constexpr bool _Iterator_is_contiguous = is_pointer_v<_Iter>;
+constexpr bool _Iterator_is_contiguous = is_pointer_v<_Iter>;
 
 template <class _Iter>
 _NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
@@ -4522,19 +4520,18 @@ _NODISCARD constexpr auto _To_address(const move_iterator<_Iter>& _Val) noexcept
 // _Iterators_are_contiguous<_Iter1, _Iter2> reports whether both iterators are known to be contiguous.
 
 template <class _Iter1, class _Iter2>
-_INLINE_VAR constexpr bool _Iterators_are_contiguous =
-    _Iterator_is_contiguous<_Iter1> && _Iterator_is_contiguous<_Iter2>;
+constexpr bool _Iterators_are_contiguous = _Iterator_is_contiguous<_Iter1> && _Iterator_is_contiguous<_Iter2>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Iterator_is_volatile = is_volatile_v<remove_reference_t<_Iter_ref_t<_Iter>>>;
+constexpr bool _Iterator_is_volatile = is_volatile_v<remove_reference_t<_Iter_ref_t<_Iter>>>;
 
 template <class _Source, class _Dest>
-_INLINE_VAR constexpr bool _Is_pointer_address_convertible = is_void_v<_Source>
-                                                          || is_void_v<_Dest>
-                                                          // NOTE: is_same_v is required for function pointers to work
-                                                          || is_same_v<remove_cv_t<_Source>, remove_cv_t<_Dest>>
+constexpr bool _Is_pointer_address_convertible = is_void_v<_Source>
+                                              || is_void_v<_Dest>
+                                              // NOTE: is_same_v is required for function pointers to work
+                                              || is_same_v<remove_cv_t<_Source>, remove_cv_t<_Dest>>
 #ifdef __cpp_lib_is_pointer_interconvertible
-                                                          || is_pointer_interconvertible_base_of_v<_Dest, _Source>
+                                              || is_pointer_interconvertible_base_of_v<_Dest, _Source>
 #endif // defined(__cpp_lib_is_pointer_interconvertible)
     ;
 
@@ -4657,7 +4654,7 @@ _OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Count, _OutCtgIt _Dest) {
 }
 
 template <class _It, bool _RequiresMutable = false>
-_INLINE_VAR constexpr bool _Is_vb_iterator = false;
+constexpr bool _Is_vb_iterator = false;
 
 template <class _VbIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest);
@@ -5117,20 +5114,20 @@ struct _Is_character_or_byte_or_bool<byte> : true_type {};
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill.
 // Need to explicitly test for volatile because _Unwrap_enum_t discards qualifiers.
 template <class _FwdIt, class _Ty, bool = _Iterator_is_contiguous<_FwdIt>>
-_INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
+constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
     _Is_character_or_byte_or_bool<_Unwrap_enum_t<remove_reference_t<_Iter_ref_t<_FwdIt>>>>,
     negation<is_volatile<remove_reference_t<_Iter_ref_t<_FwdIt>>>>, is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
 
 template <class _FwdIt, class _Ty>
-_INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
+constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
 
 template <class _FwdIt, class _Ty, bool = _Iterator_is_contiguous<_FwdIt>>
-_INLINE_VAR constexpr bool _Fill_zero_memset_is_safe =
+constexpr bool _Fill_zero_memset_is_safe =
     conjunction_v<is_scalar<_Ty>, is_scalar<_Iter_value_t<_FwdIt>>, negation<is_member_pointer<_Iter_value_t<_FwdIt>>>,
         negation<is_volatile<remove_reference_t<_Iter_ref_t<_FwdIt>>>>, is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
 
 template <class _FwdIt, class _Ty>
-_INLINE_VAR constexpr bool _Fill_zero_memset_is_safe<_FwdIt, _Ty, false> = false;
+constexpr bool _Fill_zero_memset_is_safe<_FwdIt, _Ty, false> = false;
 
 template <class _CtgIt, class _Ty>
 void _Fill_memset(_CtgIt _Dest, const _Ty _Val, const size_t _Count) {
@@ -5283,15 +5280,15 @@ namespace ranges {
 #endif // _HAS_CXX20
 
 template <class _Ty1, class _Ty2, class = void>
-_INLINE_VAR constexpr bool _Can_compare_with_operator_equal = false;
+constexpr bool _Can_compare_with_operator_equal = false;
 
 template <class _Ty1, class _Ty2>
-_INLINE_VAR constexpr bool
+constexpr bool
     _Can_compare_with_operator_equal<_Ty1, _Ty2, void_t<decltype(_STD declval<_Ty1&>() == _STD declval<_Ty2&>())>> =
         true;
 
 template <class _Ty1, class _Ty2>
-_INLINE_VAR constexpr bool _Is_pointer_address_comparable =
+constexpr bool _Is_pointer_address_comparable =
     _Can_compare_with_operator_equal<_Ty1*, _Ty2*>
     && (_Is_pointer_address_convertible<_Ty1, _Ty2> || _Is_pointer_address_convertible<_Ty2, _Ty1>);
 
@@ -5306,7 +5303,7 @@ _INLINE_VAR constexpr bool _Is_pointer_address_comparable =
 #pragma warning(disable : 4806) // no value of type 'bool' promoted to type 'char' can equal the given constant
 template <class _Elem1, class _Elem2,
     bool = sizeof(_Elem1) == sizeof(_Elem2) && is_integral_v<_Elem1> && is_integral_v<_Elem2>>
-_INLINE_VAR constexpr bool _Can_memcmp_elements =
+constexpr bool _Can_memcmp_elements =
     is_same_v<_Elem1, bool> || is_same_v<_Elem2, bool> || static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 #pragma warning(pop)
 
@@ -5321,46 +5318,44 @@ inline constexpr bool _Can_memcmp_elements<byte, byte, false> = true;
 // Pointer elements are eligible for memcmp when they point to the same type, ignoring cv-qualification.
 // This handles pointers to object types, pointers to void, and pointers to function types.
 template <class _Ty1, class _Ty2>
-_INLINE_VAR constexpr bool _Can_memcmp_elements<_Ty1*, _Ty2*, false> = _Is_pointer_address_comparable<_Ty1, _Ty2>;
+constexpr bool _Can_memcmp_elements<_Ty1*, _Ty2*, false> = _Is_pointer_address_comparable<_Ty1, _Ty2>;
 
 template <class _Elem1, class _Elem2>
-_INLINE_VAR constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> = false;
+constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> = false;
 
 // _Can_memcmp_elements_with_pred<_Elem1, _Elem2, _Pr> reports whether the memcmp optimization is applicable,
 // given contiguously stored elements. (This avoids having to repeat the metaprogramming that finds the element types.)
 // _Elem1 and _Elem2 aren't top-level const here.
 template <class _Elem1, class _Elem2, class _Pr>
-_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred = false;
+constexpr bool _Can_memcmp_elements_with_pred = false;
 
 // With equal_to<_Elem3> we need to make sure that both _Elem1 and _Elem2 are convertible to _Elem3 without changing
 // object representation (we use _Iter_copy_cat for this task) and _Elem3 can be safely memcmp'ed with itself
 template <class _Elem1, class _Elem2, class _Elem3>
-_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, equal_to<_Elem3>> =
+constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, equal_to<_Elem3>> =
     _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible && _Iter_copy_cat<_Elem2*, _Elem3*>::_Bitcopy_constructible
     && _Can_memcmp_elements<remove_cv_t<_Elem3>, remove_cv_t<_Elem3>>;
 
 // equal_to<> is transparent.
 template <class _Elem1, class _Elem2>
-_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, equal_to<>> =
-    _Can_memcmp_elements<_Elem1, _Elem2>;
+constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, equal_to<>> = _Can_memcmp_elements<_Elem1, _Elem2>;
 
 #if _HAS_CXX20
 // ranges::equal_to is also transparent.
 template <class _Elem1, class _Elem2>
-_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, _RANGES equal_to> =
-    _Can_memcmp_elements<_Elem1, _Elem2>;
+constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, _RANGES equal_to> = _Can_memcmp_elements<_Elem1, _Elem2>;
 #endif // _HAS_CXX20
 
 // _Equal_memcmp_is_safe<_Iter1, _Iter2, _Pr> reports whether we can activate the memcmp optimization
 // for arbitrary iterators and predicates.
 // It ignores top-level constness on the iterators and on the elements.
 template <class _Iter1, class _Iter2, class _Pr>
-_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper =
+constexpr bool _Equal_memcmp_is_safe_helper =
     _Iterators_are_contiguous<_Iter1, _Iter2> && !_Iterator_is_volatile<_Iter1> && !_Iterator_is_volatile<_Iter2>
     && _Can_memcmp_elements_with_pred<_Iter_value_t<_Iter1>, _Iter_value_t<_Iter2>, _Pr>;
 
 template <class _Iter1, class _Iter2, class _Pr>
-_INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
+constexpr bool _Equal_memcmp_is_safe =
     _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, _Pr>;
 
 template <class _CtgIt1, class _CtgIt2>
@@ -5634,7 +5629,7 @@ namespace ranges {
 #endif // _HAS_CXX20
 
 template <class _Elem1, class _Elem2>
-_INLINE_VAR constexpr bool _Lex_compare_memcmp_classify_elements = conjunction_v<_Is_character_or_bool<_Elem1>,
+constexpr bool _Lex_compare_memcmp_classify_elements = conjunction_v<_Is_character_or_bool<_Elem1>,
     _Is_character_or_bool<_Elem2>, is_unsigned<_Elem1>, is_unsigned<_Elem2>>;
 
 #ifdef __cpp_lib_byte
@@ -6753,7 +6748,7 @@ namespace ranges {
 #endif // _HAS_CXX20
 
 template <class _Iter, class _Pr, class _Elem = _Iter_value_t<_Iter>>
-_INLINE_VAR constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
+constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
     _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
     && !_Iterator_is_volatile<_Iter> // The iterator must not be volatile.
     && conjunction_v<disjunction<

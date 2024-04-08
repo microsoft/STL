@@ -37,7 +37,7 @@ template <class _IndexType>
 struct _Maybe_empty_array<_IndexType, 0> {};
 
 template <size_t... _Extents>
-inline constexpr size_t _Calculate_rank_dynamic = (static_cast<size_t>(_Extents == dynamic_extent) + ... + 0);
+constexpr size_t _Calculate_rank_dynamic = (static_cast<size_t>(_Extents == dynamic_extent) + ... + 0);
 
 struct _Extents_from_tuple {
     explicit _Extents_from_tuple() = default;
@@ -315,7 +315,7 @@ public:
 };
 
 template <class>
-inline constexpr size_t _Repeat_dynamic_extent = dynamic_extent;
+constexpr size_t _Repeat_dynamic_extent = dynamic_extent;
 
 template <class... _Integrals>
     requires (is_convertible_v<_Integrals, size_t> && ...)
@@ -333,10 +333,10 @@ _EXPORT_STD template <class _IndexType, size_t _Rank>
 using dextents = _Dextents_impl<_IndexType, make_index_sequence<_Rank>>::type;
 
 template <class _Ty>
-inline constexpr bool _Is_extents = false;
+constexpr bool _Is_extents = false;
 
 template <class _IndexType, size_t... _Args>
-inline constexpr bool _Is_extents<extents<_IndexType, _Args...>> = true;
+constexpr bool _Is_extents<extents<_IndexType, _Args...>> = true;
 
 template <class _Extents>
 class _Fwd_prod_of_extents {
@@ -425,7 +425,7 @@ public:
 };
 
 template <class _Layout, class _Mapping>
-inline constexpr bool _Is_mapping_of =
+constexpr bool _Is_mapping_of =
     is_same_v<typename _Layout::template mapping<typename _Mapping::extents_type>, _Mapping>;
 
 _EXPORT_STD struct layout_left {

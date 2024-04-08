@@ -42,14 +42,14 @@ public:
 inline constexpr size_t _Any_trivial_space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Ty>
-inline constexpr bool _Any_is_trivial =
+constexpr bool _Any_is_trivial =
     alignof(_Ty) <= alignof(max_align_t) && is_trivially_copyable_v<_Ty> && sizeof(_Ty) <= _Any_trivial_space_size;
 
 inline constexpr size_t _Any_small_space_size = (_Small_object_num_ptrs - 2) * sizeof(void*);
 
 template <class _Ty>
-inline constexpr bool _Any_is_small = alignof(_Ty) <= alignof(max_align_t)
-                                   && is_nothrow_move_constructible_v<_Ty> && sizeof(_Ty) <= _Any_small_space_size;
+constexpr bool _Any_is_small = alignof(_Ty) <= alignof(max_align_t)
+                            && is_nothrow_move_constructible_v<_Ty> && sizeof(_Ty) <= _Any_small_space_size;
 
 enum class _Any_representation : uintptr_t { _Trivial, _Big, _Small };
 
@@ -97,11 +97,10 @@ struct _Any_small_RTTI { // Hand-rolled vtable for nontrivial types that can be 
 };
 
 template <class _Ty>
-inline constexpr _Any_big_RTTI _Any_big_RTTI_obj = {
-    &_Any_big_RTTI::_Destroy_impl<_Ty>, &_Any_big_RTTI::_Copy_impl<_Ty>};
+constexpr _Any_big_RTTI _Any_big_RTTI_obj = {&_Any_big_RTTI::_Destroy_impl<_Ty>, &_Any_big_RTTI::_Copy_impl<_Ty>};
 
 template <class _Ty>
-inline constexpr _Any_small_RTTI _Any_small_RTTI_obj = {
+constexpr _Any_small_RTTI _Any_small_RTTI_obj = {
     &_Any_small_RTTI::_Destroy_impl<_Ty>, &_Any_small_RTTI::_Copy_impl<_Ty>, &_Any_small_RTTI::_Move_impl<_Ty>};
 
 _EXPORT_STD class any { // storage for any (CopyConstructible) type

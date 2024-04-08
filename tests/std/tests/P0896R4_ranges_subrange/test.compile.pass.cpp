@@ -989,9 +989,9 @@ namespace test_subrange {
 
     // Validate many properties of a specialization of subrange
     template <class>
-    inline constexpr bool is_subrange = false;
+    constexpr bool is_subrange = false;
     template <class I, class S, subrange_kind K>
-    inline constexpr bool is_subrange<subrange<I, S, K>> = true;
+    constexpr bool is_subrange<subrange<I, S, K>> = true;
 
     template <class T>
     struct illformed {
@@ -999,9 +999,9 @@ namespace test_subrange {
     };
 
     template <class T>
-    inline constexpr auto kind_of = illformed<T>{};
+    constexpr auto kind_of = illformed<T>{};
     template <class I, class S, subrange_kind K>
-    inline constexpr auto kind_of<subrange<I, S, K>> = K;
+    constexpr auto kind_of<subrange<I, S, K>> = K;
 
     template <class Subrange, class Rng>
     constexpr bool test_subrange() {

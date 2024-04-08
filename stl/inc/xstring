@@ -886,7 +886,7 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
 }
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_EcharT = _Is_any_of_v<_Ty, char, wchar_t,
+constexpr bool _Is_EcharT = _Is_any_of_v<_Ty, char, wchar_t,
 #ifdef __cpp_char8_t
     char8_t,
 #endif // defined(__cpp_char8_t)
@@ -1637,9 +1637,9 @@ basic_string_view(_Range&&) -> basic_string_view<_RANGES range_value_t<_Range>>;
 
 namespace ranges {
     template <class _Elem, class _Traits>
-    inline constexpr bool enable_view<basic_string_view<_Elem, _Traits>> = true;
+    constexpr bool enable_view<basic_string_view<_Elem, _Traits>> = true;
     template <class _Elem, class _Traits>
-    inline constexpr bool enable_borrowed_range<basic_string_view<_Elem, _Traits>> = true;
+    constexpr bool enable_borrowed_range<basic_string_view<_Elem, _Traits>> = true;
 } // namespace ranges
 #endif // _HAS_CXX20
 
@@ -2307,7 +2307,7 @@ public:
 
 // get _Ty's size after being EBCO'd
 template <class _Ty>
-_INLINE_VAR constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty);
+constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty);
 
 struct _String_constructor_concat_tag {
     // tag to select constructors used by basic_string's concatenation operators (operator+)

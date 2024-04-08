@@ -26,6 +26,6 @@ namespace detail {
 } // namespace detail
 
 template <class T>
-_INLINE_VAR constexpr bool is_permissive_v = detail::PermissiveTest<T>::test();
+constexpr bool is_permissive_v = detail::PermissiveTest<T>::test();
 
 _INLINE_VAR constexpr bool is_permissive = is_permissive_v<int>;

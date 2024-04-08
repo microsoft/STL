@@ -177,10 +177,10 @@ struct tagged_ints_view {
 };
 
 template <class Tag>
-inline constexpr bool ranges::enable_view<tagged_ints_view<Tag>> = true;
+constexpr bool ranges::enable_view<tagged_ints_view<Tag>> = true;
 
 template <class Tag>
-inline constexpr bool ranges::enable_borrowed_range<tagged_ints_view<Tag>> = true;
+constexpr bool ranges::enable_borrowed_range<tagged_ints_view<Tag>> = true;
 
 struct validating_view_to_join_for_verification {
     constexpr const tagged_ints_view<holder<incomplete>>* begin() const noexcept {

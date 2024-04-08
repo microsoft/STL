@@ -330,8 +330,7 @@ struct _Storage_for {
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
 template <class _Ty>
-inline constexpr bool _Might_have_non_value_bits =
-    !has_unique_object_representations_v<_Ty> && !is_floating_point_v<_Ty>;
+constexpr bool _Might_have_non_value_bits = !has_unique_object_representations_v<_Ty> && !is_floating_point_v<_Ty>;
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
 _EXPORT_STD extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
@@ -1648,22 +1647,22 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
 
 #if 1 // TRANSITION, ABI
 template <size_t _TypeSize>
-_INLINE_VAR constexpr bool _Is_always_lock_free = _TypeSize <= 8 && (_TypeSize & (_TypeSize - 1)) == 0;
+constexpr bool _Is_always_lock_free = _TypeSize <= 8 && (_TypeSize & (_TypeSize - 1)) == 0;
 #else // ^^^ don't break ABI / break ABI vvv
 #if _ATOMIC_HAS_DCAS
 template <size_t _TypeSize>
-_INLINE_VAR constexpr bool _Is_always_lock_free = _TypeSize <= 2 * sizeof(void*);
+constexpr bool _Is_always_lock_free = _TypeSize <= 2 * sizeof(void*);
 #else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
 template <size_t _TypeSize>
-_INLINE_VAR constexpr bool _Is_always_lock_free = _TypeSize <= sizeof(void*);
+constexpr bool _Is_always_lock_free = _TypeSize <= sizeof(void*);
 #endif // ^^^ !_ATOMIC_HAS_DCAS ^^^
 #endif // ^^^ break ABI ^^^
 
 template <class _Ty, bool _Is_lock_free = _Is_always_lock_free<sizeof(_Ty)>>
-_INLINE_VAR constexpr bool _Deprecate_non_lock_free_volatile = true;
+constexpr bool _Deprecate_non_lock_free_volatile = true;
 
 template <class _Ty>
-_CXX20_DEPRECATE_VOLATILE _INLINE_VAR constexpr bool _Deprecate_non_lock_free_volatile<_Ty, false> = true;
+_CXX20_DEPRECATE_VOLATILE constexpr bool _Deprecate_non_lock_free_volatile<_Ty, false> = true;
 
 template <class _Ty>
 struct _Atomic_integral_facade : _Atomic_integral<_Ty> {

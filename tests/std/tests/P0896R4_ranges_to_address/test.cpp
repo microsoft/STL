@@ -10,9 +10,9 @@
 #include <test_death.hpp>
 
 template <class, template <class...> class>
-inline constexpr bool is_specialization = false;
+constexpr bool is_specialization = false;
 template <class... Args, template <class...> class T>
-inline constexpr bool is_specialization<T<Args...>, T> = true;
+constexpr bool is_specialization<T<Args...>, T> = true;
 
 template <bool IsConst, class C>
 using maybe_const_iter = std::conditional_t<IsConst, typename C::const_iterator, typename C::iterator>;
