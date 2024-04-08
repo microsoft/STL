@@ -38,6 +38,17 @@ const char src[] =
     "sagittis libero nec bibendum. Phasellus dolor ipsum, finibus quis turpis quis, mollis interdum felis.";
 
 template <class T>
+void r(benchmark::State& state) {
+    const std::vector<T> a(std::begin(src), std::end(src));
+    std::vector<T> b(std::size(src));
+
+    for (auto _ : state) {
+        b = a;
+        std::replace(std::begin(b), std::end(b), T{'m'}, T{'w'});
+    }
+}
+
+template <class T>
 void rc(benchmark::State& state) {
     const std::vector<T> a(std::begin(src), std::end(src));
     std::vector<T> b(std::size(src));
@@ -57,6 +68,10 @@ void rc_if(benchmark::State& state) {
             std::begin(a), std::end(a), std::begin(b), [](auto x) { return x <= T{'Z'}; }, T{'X'});
     }
 }
+
+// replace() is vectorized for 4 and 8 bytes only.
+BENCHMARK(r<std::uint32_t>);
+BENCHMARK(r<std::uint64_t>);
 
 BENCHMARK(rc<std::uint8_t>);
 BENCHMARK(rc<std::uint16_t>);
