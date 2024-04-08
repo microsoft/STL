@@ -35,17 +35,19 @@ void bm(benchmark::State& state) {
     }
 }
 
-#define COMMON_ARGS Args({8, 3})->Args({24, 22})->Args({105, -1})->Args({4021, 3056})
+void common_args(auto bm) {
+    bm->Args({8, 3})->Args({24, 22})->Args({105, -1})->Args({4021, 3056});
+}
 
-BENCHMARK(bm<uint8_t, op::mismatch>)->COMMON_ARGS;
-BENCHMARK(bm<uint16_t, op::mismatch>)->COMMON_ARGS;
-BENCHMARK(bm<uint32_t, op::mismatch>)->COMMON_ARGS;
-BENCHMARK(bm<uint64_t, op::mismatch>)->COMMON_ARGS;
+BENCHMARK(bm<uint8_t, op::mismatch>)->Apply(common_args);
+BENCHMARK(bm<uint16_t, op::mismatch>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, op::mismatch>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, op::mismatch>)->Apply(common_args);
 
-BENCHMARK(bm<uint8_t, op::lexi>)->COMMON_ARGS;
-BENCHMARK(bm<int8_t, op::lexi>)->COMMON_ARGS;
-BENCHMARK(bm<uint16_t, op::lexi>)->COMMON_ARGS;
-BENCHMARK(bm<uint32_t, op::lexi>)->COMMON_ARGS;
-BENCHMARK(bm<uint64_t, op::lexi>)->COMMON_ARGS;
+BENCHMARK(bm<uint8_t, op::lexi>)->Apply(common_args);
+BENCHMARK(bm<int8_t, op::lexi>)->Apply(common_args);
+BENCHMARK(bm<uint16_t, op::lexi>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, op::lexi>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, op::lexi>)->Apply(common_args);
 
 BENCHMARK_MAIN();
