@@ -5,19 +5,27 @@
 #include <benchmark/benchmark.h>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <numeric>
 #include <vector>
 
 using namespace std;
 
-template <class T, size_t Pos, size_t NSize, size_t HSize = Pos * 2, size_t Which = 0>
+template <class T>
 void bm(benchmark::State& state) {
+    const size_t Pos   = static_cast<size_t>(state.range(0));
+    const size_t NSize = static_cast<size_t>(state.range(1));
+    const size_t HSize = Pos * 2;
+    const size_t Which = 0;
+
     vector<T> h(HSize, T{'.'});
     vector<T> n(NSize);
     iota(n.begin(), n.end(), T{'a'});
 
-    static_assert(Pos < HSize);
-    static_assert(Which < NSize);
+    if (Pos >= HSize || Which >= NSize) {
+        abort();
+    }
+
     h[Pos] = n[Which];
 
     for (auto _ : state) {
@@ -25,22 +33,18 @@ void bm(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bm<uint8_t, 2, 3>);
-BENCHMARK(bm<uint16_t, 2, 3>);
+#define ARGS               \
+    Args({2, 3})           \
+        ->Args({7, 4})     \
+        ->Args({9, 3})     \
+        ->Args({22, 5})    \
+        ->Args({58, 2})    \
+        ->Args({102, 4})   \
+        ->Args({325, 1})   \
+        ->Args({1011, 11}) \
+        ->Args({3056, 7});
 
-BENCHMARK(bm<uint8_t, 7, 4>);
-BENCHMARK(bm<uint16_t, 7, 4>);
-
-BENCHMARK(bm<uint8_t, 9, 3>);
-BENCHMARK(bm<uint16_t, 9, 3>);
-
-BENCHMARK(bm<uint8_t, 22, 5>);
-BENCHMARK(bm<uint16_t, 22, 5>);
-
-BENCHMARK(bm<uint8_t, 3056, 7>);
-BENCHMARK(bm<uint16_t, 3056, 7>);
-
-BENCHMARK(bm<uint8_t, 1011, 11>);
-BENCHMARK(bm<uint16_t, 1011, 11>);
+BENCHMARK(bm<uint8_t>)->ARGS;
+BENCHMARK(bm<uint16_t>)->ARGS;
 
 BENCHMARK_MAIN();
