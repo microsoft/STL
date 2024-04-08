@@ -484,10 +484,6 @@ std/utilities/expected/expected.void/equality/equality.other_expected.pass.cpp:2
 
 
 # *** STL BUGS ***
-# GH-519 <cmath>: signbit() misses overloads for integer types
-std/depr/depr.c.headers/math_h.pass.cpp FAIL
-std/numerics/c.math/cmath.pass.cpp FAIL
-
 # GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
 std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp FAIL
 
