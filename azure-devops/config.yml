@@ -22,3 +22,6 @@ variables:
 - name: Codeql.SkipTaskAutoInjection
   value: true
   readonly: true
+- name: skipComponentGovernanceDetection
+  value: true
+  readonly: true
