@@ -213,7 +213,7 @@ namespace _Math_algorithms {
         static constexpr float value{9.2233715e+18f};
     };
     template <class _Ty>
-    _INLINE_VAR constexpr _Ty _Hypot_leg_huge = _Hypot_leg_huge_helper<_Ty>::value;
+    constexpr _Ty _Hypot_leg_huge = _Hypot_leg_huge_helper<_Ty>::value;
 
     template <class _Ty>
     struct _Hypot_leg_tiny_helper {
@@ -224,7 +224,7 @@ namespace _Math_algorithms {
         static constexpr float value{4.440892e-16f};
     };
     template <class _Ty>
-    _INLINE_VAR constexpr _Ty _Hypot_leg_tiny = _Hypot_leg_tiny_helper<_Ty>::value;
+    constexpr _Ty _Hypot_leg_tiny = _Hypot_leg_tiny_helper<_Ty>::value;
 
     template <class _Ty>
     _NODISCARD _Ty _Norm_minus_one(const _Ty _Xval, const _Ty _Yval) noexcept {
@@ -912,7 +912,7 @@ public:
 };
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_unqual_fp = _Is_any_of_v<_Ty, float, double, long double>;
+constexpr bool _Is_unqual_fp = _Is_any_of_v<_Ty, float, double, long double>;
 
 template <class _Ty>
 struct _Complex_value {

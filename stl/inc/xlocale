@@ -653,7 +653,7 @@ protected:
 };
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_one_byte_char_like_v = _Is_any_of_v<remove_cv_t<_Ty>, signed char, unsigned char,
+constexpr bool _Is_one_byte_char_like_v = _Is_any_of_v<remove_cv_t<_Ty>, signed char, unsigned char,
 #ifdef __cpp_lib_byte
     byte,
 #endif // defined(__cpp_lib_byte)
@@ -663,7 +663,7 @@ _INLINE_VAR constexpr bool _Is_one_byte_char_like_v = _Is_any_of_v<remove_cv_t<_
     char>;
 
 template <class _Elem, class _Byte>
-_INLINE_VAR constexpr bool _Is_codecvt_do_always_noconv_v =
+constexpr bool _Is_codecvt_do_always_noconv_v =
     is_same_v<_Byte, _Elem> || (_Is_one_byte_char_like_v<_Byte> && _Is_one_byte_char_like_v<_Elem>);
 
 _EXPORT_STD extern "C++" template <class _Elem, class _Byte, class _Statype>

@@ -333,7 +333,7 @@ struct _CXX20_DEPRECATE_VOLATILE variant_size<volatile _Ty> : variant_size<_Ty>:
 template <class _Ty>
 struct _CXX20_DEPRECATE_VOLATILE variant_size<const volatile _Ty> : variant_size<_Ty>::type {};
 _EXPORT_STD template <class _Ty>
-inline constexpr size_t variant_size_v = variant_size<_Ty>::value;
+constexpr size_t variant_size_v = variant_size<_Ty>::value;
 
 template <class... _Types>
 struct variant_size<variant<_Types...>> : integral_constant<size_t, sizeof...(_Types)> {};
@@ -580,10 +580,10 @@ _NODISCARD constexpr _Variant_raw_visit_t<_Fn, _Storage> _Variant_raw_visit_valu
 }
 
 template <class _Fn, class _Storage, class _Indices = make_index_sequence<remove_reference_t<_Storage>::_Size>>
-inline constexpr bool _Variant_raw_visit_noexcept = false;
+constexpr bool _Variant_raw_visit_noexcept = false;
 
 template <class _Fn, class _Storage, size_t... _Idxs>
-inline constexpr bool _Variant_raw_visit_noexcept<_Fn, _Storage, index_sequence<_Idxs...>> =
+constexpr bool _Variant_raw_visit_noexcept<_Fn, _Storage, index_sequence<_Idxs...>> =
     conjunction_v<is_nothrow_invocable<_Fn, _Tagged<_Storage&&, variant_npos>>,
         is_nothrow_invocable<_Fn, _Variant_tagged_ref_t<_Storage, _Idxs>>...>;
 
@@ -720,7 +720,7 @@ struct _Variant_construct_visitor { // visitor that constructs the same alternat
 };
 
 template <class _Target, class... _Types>
-inline constexpr bool _Variant_should_directly_construct_v =
+constexpr bool _Variant_should_directly_construct_v =
     disjunction_v<is_nothrow_constructible<_Target, _Types...>, negation<is_nothrow_move_constructible<_Target>>>;
 
 template <class... _Types>
@@ -957,9 +957,9 @@ using _Variant_init_index = _Meta_front<typename _Variant_init_helper<void, _Ty,
 #endif // ^^^ not Clang ^^^
 
 template <class>
-inline constexpr bool _Is_in_place_index_specialization = false;
+constexpr bool _Is_in_place_index_specialization = false;
 template <size_t _Idx>
-inline constexpr bool _Is_in_place_index_specialization<in_place_index_t<_Idx>> = true;
+constexpr bool _Is_in_place_index_specialization<in_place_index_t<_Idx>> = true;
 
 _EXPORT_STD template <class... _Types>
 class variant : private _SMF_control<_Variant_destroy_layer<_Types...>, _Types...> { // discriminated union
@@ -1399,7 +1399,7 @@ _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Ty
 #endif // _HAS_CXX20
 
 template <class... _Variants>
-inline constexpr size_t _Variant_total_states =
+constexpr size_t _Variant_total_states =
     (size_t{1} * ... * (variant_size_v<_Variants> + 1)); // +1 to account for the valueless state
 
 _NODISCARD constexpr size_t _Variant_visit_index1(const size_t _Acc) noexcept {
@@ -1567,29 +1567,29 @@ constexpr _Ret _Visit_impl(_Callable&& _Obj, _Variants&&... _Args) {
 }
 
 template <class _Expected, class _Callable, class _ArgList, class... _Variants>
-inline constexpr bool _Variant_all_visit_results_same = false;
+constexpr bool _Variant_all_visit_results_same = false;
 
 template <class _Expected, class _Callable, class... _Args>
-inline constexpr bool _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>> =
+constexpr bool _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>> =
     is_same_v<decltype(_STD invoke(_STD declval<_Callable>(), _STD declval<_Args>()...)), _Expected>;
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
-inline constexpr bool
+constexpr bool
     _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>, variant<_Types...>&, _Rest...> =
         (_Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args..., _Types&>, _Rest...> && ...);
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
-inline constexpr bool
+constexpr bool
     _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>, const variant<_Types...>&, _Rest...> =
         (_Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args..., const _Types&>, _Rest...> && ...);
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
-inline constexpr bool
+constexpr bool
     _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>, variant<_Types...>&&, _Rest...> =
         (_Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args..., _Types>, _Rest...> && ...);
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
-inline constexpr bool
+constexpr bool
     _Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args...>, const variant<_Types...>&&, _Rest...> =
         (_Variant_all_visit_results_same<_Expected, _Callable, _Meta_list<_Args..., const _Types>, _Rest...> && ...);
 
@@ -1612,30 +1612,30 @@ constexpr _Variant_visit_result_t<_Callable, _As_variant<_Variants>...> visit(_C
 
 #if _HAS_CXX20
 template <class _Expected, class _Callable, class _ArgList, class... _Variants>
-inline constexpr bool _Variant_all_visit_results_convertible = false;
+constexpr bool _Variant_all_visit_results_convertible = false;
 
 template <class _Expected, class _Callable, class... _Args>
-inline constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>> =
+constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>> =
     _Invoke_convertible<decltype(_STD invoke(_STD declval<_Callable>(), _STD declval<_Args>()...)), _Expected>::value;
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
-inline constexpr bool
+constexpr bool
     _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>, variant<_Types...>&, _Rest...> =
         (_Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args..., _Types&>, _Rest...> && ...);
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
-inline constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>,
+constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>,
     const variant<_Types...>&, _Rest...> =
     (_Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args..., const _Types&>, _Rest...>
         && ...);
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
-inline constexpr bool
+constexpr bool
     _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>, variant<_Types...>&&, _Rest...> =
         (_Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args..., _Types>, _Rest...> && ...);
 
 template <class _Expected, class _Callable, class... _Args, class... _Types, class... _Rest>
-inline constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>,
+constexpr bool _Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args...>,
     const variant<_Types...>&&, _Rest...> =
     (_Variant_all_visit_results_convertible<_Expected, _Callable, _Meta_list<_Args..., const _Types>, _Rest...> && ...);
 

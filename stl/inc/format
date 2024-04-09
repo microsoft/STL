@@ -667,13 +667,13 @@ concept _Formattable_with_non_const = semiregular<_Formatter>
                                       };
 
 template <class _Ty, class _CharT>
-inline constexpr bool _Is_basic_string_like_for = false;
+constexpr bool _Is_basic_string_like_for = false;
 
 template <class _CharT, class _Traits, class _Alloc>
-inline constexpr bool _Is_basic_string_like_for<basic_string<_CharT, _Traits, _Alloc>, _CharT> = true;
+constexpr bool _Is_basic_string_like_for<basic_string<_CharT, _Traits, _Alloc>, _CharT> = true;
 
 template <class _CharT, class _Traits>
-inline constexpr bool _Is_basic_string_like_for<basic_string_view<_CharT, _Traits>, _CharT> = true;
+constexpr bool _Is_basic_string_like_for<basic_string_view<_CharT, _Traits>, _CharT> = true;
 
 template <class _Context>
 struct _Format_arg_traits {
@@ -1612,7 +1612,7 @@ _NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const _Context& _Ctx, c
 }
 
 template <class _Ty>
-inline constexpr bool _Is_signed_or_unsigned_large_integer_t =
+constexpr bool _Is_signed_or_unsigned_large_integer_t =
     _Is_any_of_v<remove_cv_t<_Ty>, int, unsigned int, long, unsigned long, long long, unsigned long long>;
 
 // Checks that the type and value of an argument associated with a dynamic
@@ -2464,20 +2464,20 @@ struct _Invalid_format_kind {
 };
 
 _EXPORT_STD template <class _Ty>
-inline constexpr _Invalid_format_kind<_Ty> format_kind;
+constexpr _Invalid_format_kind<_Ty> format_kind;
 
 template <class _Ty>
-inline constexpr bool _Is_two_tuple = false;
+constexpr bool _Is_two_tuple = false;
 
 template <class _Ty, class _Uty>
-inline constexpr bool _Is_two_tuple<pair<_Ty, _Uty>> = true;
+constexpr bool _Is_two_tuple<pair<_Ty, _Uty>> = true;
 
 template <class _Ty, class _Uty>
-inline constexpr bool _Is_two_tuple<tuple<_Ty, _Uty>> = true;
+constexpr bool _Is_two_tuple<tuple<_Ty, _Uty>> = true;
 
 template <_RANGES input_range _Rng>
     requires same_as<_Rng, remove_cvref_t<_Rng>>
-inline constexpr range_format format_kind<_Rng> = []() consteval {
+constexpr range_format format_kind<_Rng> = []() consteval {
     using _Ref_value_t = remove_cvref_t<_RANGES range_reference_t<_Rng>>;
     if constexpr (same_as<_Ref_value_t, _Rng>) {
         return range_format::disabled;

@@ -27,11 +27,11 @@ enum class D {
 };
 
 template <class T, class Tuple, class = void>
-inline constexpr bool has_make_from_tuple = false;
+constexpr bool has_make_from_tuple = false;
 
 template <class T, class Tuple>
-inline constexpr bool
-    has_make_from_tuple<T, Tuple, std::void_t<decltype(std::make_from_tuple<T>(std::declval<Tuple>()))>> = true;
+constexpr bool has_make_from_tuple<T, Tuple, std::void_t<decltype(std::make_from_tuple<T>(std::declval<Tuple>()))>> =
+    true;
 
 // Test std::make_from_tuple.
 

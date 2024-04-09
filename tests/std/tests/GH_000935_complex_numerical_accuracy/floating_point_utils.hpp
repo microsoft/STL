@@ -15,25 +15,25 @@ namespace fputil {
     using float_bits_t = typename _STD _Floating_type_traits<T>::_Uint_type;
 
     template <typename T>
-    _INLINE_VAR constexpr float_bits_t<T> sign_mask_v = _STD _Floating_type_traits<T>::_Shifted_sign_mask;
+    constexpr float_bits_t<T> sign_mask_v = _STD _Floating_type_traits<T>::_Shifted_sign_mask;
 
     template <typename T>
-    _INLINE_VAR constexpr float_bits_t<T> magnitude_mask_v = ~sign_mask_v<T>;
+    constexpr float_bits_t<T> magnitude_mask_v = ~sign_mask_v<T>;
 
     template <typename T>
-    _INLINE_VAR constexpr float_bits_t<T> exponent_mask_v = _STD _Floating_type_traits<T>::_Shifted_exponent_mask;
+    constexpr float_bits_t<T> exponent_mask_v = _STD _Floating_type_traits<T>::_Shifted_exponent_mask;
 
     template <typename T>
-    _INLINE_VAR constexpr float_bits_t<T> significand_mask_v = magnitude_mask_v<T> & ~exponent_mask_v<T>;
+    constexpr float_bits_t<T> significand_mask_v = magnitude_mask_v<T> & ~exponent_mask_v<T>;
 
     template <typename T>
-    _INLINE_VAR constexpr float_bits_t<T> norm_min_bits_v = significand_mask_v<T> + 1U;
+    constexpr float_bits_t<T> norm_min_bits_v = significand_mask_v<T> + 1U;
 
     template <typename T>
-    _INLINE_VAR constexpr float_bits_t<T> norm_max_bits_v = exponent_mask_v<T> - 1U;
+    constexpr float_bits_t<T> norm_max_bits_v = exponent_mask_v<T> - 1U;
 
     template <typename T>
-    _INLINE_VAR constexpr float_bits_t<T> infinity_bits_v = exponent_mask_v<T>;
+    constexpr float_bits_t<T> infinity_bits_v = exponent_mask_v<T>;
 
     // not affected by abrupt underflow
     template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>

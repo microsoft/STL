@@ -62,13 +62,13 @@ concept NotImplicitlyConstructibleFrom = std::constructible_from<T, Args...> && 
 
 namespace detail {
     template <class T>
-    inline constexpr bool is_extents_v = false;
+    constexpr bool is_extents_v = false;
 
     template <class T, size_t... E>
-    inline constexpr bool is_extents_v<std::extents<T, E...>> = true;
+    constexpr bool is_extents_v<std::extents<T, E...>> = true;
 
     template <class Layout, class Mapping>
-    inline constexpr bool is_mapping_of_v =
+    constexpr bool is_mapping_of_v =
         std::is_same_v<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>;
 
     template <class M>
