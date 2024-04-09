@@ -33,50 +33,38 @@ struct _Stl_critical_section {
 };
 
 struct _Mtx_internal_imp_t {
-#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-#ifdef _WIN64
-    static constexpr size_t _Critical_section_size = 16;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-    static constexpr size_t _Critical_section_size = 8;
-#endif // ^^^ !defined(_WIN64) ^^^
-#else // ^^^ Windows private STL / public STL vvv
-#ifdef _WIN64
+#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT) // for Windows-internal code
+    static constexpr size_t _Critical_section_size = 2 * sizeof(void*);
+#elif defined(_WIN64) // ordinary 64-bit code
     static constexpr size_t _Critical_section_size = 64;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+#else // vvv ordinary 32-bit code vvv
     static constexpr size_t _Critical_section_size = 36;
-#endif // ^^^ !defined(_WIN64) ^^^
-#endif // ^^^ public STL ^^^
-
-    static constexpr size_t _Critical_section_align = alignof(void*);
+#endif // ^^^ ordinary 32-bit code ^^^
 
     int _Type{};
     union {
         _Stl_critical_section _Critical_section{};
-        _STD _Aligned_storage_t<_Critical_section_size, _Critical_section_align> _Cs_storage;
+        _STD _Aligned_storage_t<_Critical_section_size, alignof(void*)> _Cs_storage;
     };
     long _Thread_id{};
     int _Count{};
 };
 
-// Size and alignment for _Cnd_internal_imp_t
-#if defined(_CRT_WINDOWS) // for Windows-internal code
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 2 * sizeof(void*);
-#elif defined(_WIN64) // ordinary 64-bit code
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 72;
-#else // vvv ordinary 32-bit code vvv
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size = 40;
-#endif // ^^^ ordinary 32-bit code ^^^
-
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = alignof(void*);
-
 using _Mtx_t = _Mtx_internal_imp_t*;
 
-#ifdef _M_CEE // avoid warning LNK4248: unresolved typeref token for '_Cnd_internal_imp_t'; image may not run
-using _Cnd_t = void*;
-#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
-struct _Cnd_internal_imp_t;
+struct _Cnd_internal_imp_t {
+#if defined(_CRT_WINDOWS) // for Windows-internal code
+    static constexpr size_t _Cnd_internal_imp_size = 2 * sizeof(void*);
+#elif defined(_WIN64) // ordinary 64-bit code
+    static constexpr size_t _Cnd_internal_imp_size = 72;
+#else // vvv ordinary 32-bit code vvv
+    static constexpr size_t _Cnd_internal_imp_size = 40;
+#endif // ^^^ ordinary 32-bit code ^^^
+
+    _STD _Aligned_storage_t<_Cnd_internal_imp_size, alignof(void*)> _Cv_storage;
+};
+
 using _Cnd_t = _Cnd_internal_imp_t*;
-#endif // ^^^ !defined(_M_CEE) ^^^
 } // extern "C"
 
 #pragma pop_macro("new")
