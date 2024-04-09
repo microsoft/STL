@@ -480,6 +480,7 @@ tests\P0896R4_views_common
 tests\P0896R4_views_counted
 tests\P0896R4_views_counted_death
 tests\P0896R4_views_drop
+tests\P0896R4_views_drop_death
 tests\P0896R4_views_drop_while
 tests\P0896R4_views_drop_while_death
 tests\P0896R4_views_elements
@@ -495,6 +496,7 @@ tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0896R4_views_split
 tests\P0896R4_views_take
+tests\P0896R4_views_take_death
 tests\P0896R4_views_take_while
 tests\P0896R4_views_take_while_death
 tests\P0896R4_views_transform
