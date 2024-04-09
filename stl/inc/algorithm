@@ -73,6 +73,12 @@ __declspec(noalias) _Min_max_8i __stdcall __std_minmax_8i(const void* _First, co
 __declspec(noalias) _Min_max_8u __stdcall __std_minmax_8u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, const void* _Last) noexcept;
+
+// TRANSITION, DevCom-10610477
+__declspec(noalias) void __stdcall __std_replace_4(
+    void* _First, void* _Last, uint32_t _Old_val, uint32_t _New_val) noexcept;
+__declspec(noalias) void __stdcall __std_replace_8(
+    void* _First, void* _Last, uint64_t _Old_val, uint64_t _New_val) noexcept;
 } // extern "C"
 
 _STD_BEGIN
@@ -201,6 +207,24 @@ _Ty1* _Find_first_of_vectorized(
     }
 }
 
+template <class _Ty, class _TVal1, class _TVal2>
+__declspec(noalias) void _Replace_vectorized(
+    _Ty* const _First, _Ty* const _Last, const _TVal1 _Old_val, const _TVal2 _New_val) noexcept {
+    if constexpr (is_pointer_v<_Ty>) {
+#ifdef _WIN64
+        ::__std_replace_8(_First, _Last, reinterpret_cast<uint64_t>(_Old_val), reinterpret_cast<uint64_t>(_New_val));
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+        ::__std_replace_4(_First, _Last, reinterpret_cast<uint32_t>(_Old_val), reinterpret_cast<uint32_t>(_New_val));
+#endif // ^^^ !defined(_WIN64) ^^^
+    } else if constexpr (sizeof(_Ty) == 4) {
+        ::__std_replace_4(_First, _Last, static_cast<uint32_t>(_Old_val), static_cast<uint32_t>(_New_val));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        ::__std_replace_8(_First, _Last, static_cast<uint64_t>(_Old_val), static_cast<uint64_t>(_New_val));
+    } else {
+        static_assert(_Always_false<_Ty>, "Unexpected size");
+    }
+}
+
 // find_first_of vectorization is likely to be a win after this size (in elements)
 _INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
 
@@ -209,6 +233,17 @@ template <class _It1, class _It2, class _Pr>
 constexpr bool _Vector_alg_in_find_first_of_is_safe =
     _Equal_memcmp_is_safe<_It1, _It2, _Pr> // can replace value comparison with bitwise comparison
     && sizeof(_Iter_value_t<_It1>) <= 2; // pcmpestri compatible size
+
+// Can we activate the vector algorithms for replace?
+template <class _Iter, class _Ty1>
+constexpr bool _Vector_alg_in_replace_is_safe = _Vector_alg_in_find_is_safe<_Iter, _Ty1> // can search for the value
+                                             && sizeof(_Iter_value_t<_Iter>) >= 4; // avx masked op compatible size
+
+// Can we activate the vector algorithms for ranges::replace?
+template <class _Iter, class _Ty1, class _Ty2>
+constexpr bool _Vector_alg_in_ranges_replace_is_safe =
+    _Vector_alg_in_replace_is_safe<_Iter, _Ty1> // can search and replace
+    && _Vector_alg_in_find_is_safe_elem<_Ty2, _Iter_value_t<_Iter>>; // replacement fits
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -3828,6 +3863,22 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Vector_alg_in_replace_is_safe<decltype(_UFirst), _Ty>) {
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            if (_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Oldval)) {
+                _STD _Replace_vectorized(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Oldval, _Newval);
+            }
+
+            return;
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
     for (; _UFirst != _ULast; ++_UFirst) {
         if (*_UFirst == _Oldval) {
             *_UFirst = _Newval;
@@ -3880,6 +3931,23 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_writable<_It, const _Ty2&>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
+                          && _Vector_alg_in_ranges_replace_is_safe<_It, _Ty1, _Ty2>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _Count = _Last - _First;
+
+                    if (_STD _Could_compare_equal_to_value_type<_It>(_Oldval)) {
+                        const auto _First_ptr = _STD to_address(_First);
+                        const auto _Last_ptr  = _First_ptr + _Count;
+                        _STD _Replace_vectorized(_First_ptr, _Last_ptr, _Oldval, _Newval);
+                    }
+
+                    return _First + _Count;
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
             for (; _First != _Last; ++_First) {
                 if (_STD invoke(_Proj, *_First) == _Oldval) {
