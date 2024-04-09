@@ -5814,7 +5814,10 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1
             } else if (_Pos == _Num2) {
                 return strong_ordering::greater;
             } else {
-                return _Comp(_First1_ptr[_Pos], _First2_ptr[_Pos]);
+                const auto _Val1 = _First1_ptr[_Pos];
+                const auto _Val2 = _First2_ptr[_Pos];
+                __assume(_Val1 != _Val2); // avoid one comparison
+                return _Comp(_Val1, _Val2);
             }
 #else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
             const int _Ans = _STD _Memcmp_count(_UFirst1, _UFirst2, _Num);
