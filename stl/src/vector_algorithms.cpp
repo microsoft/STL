@@ -1837,15 +1837,15 @@ namespace {
     template <class _Traits, class _Ty>
     const void* __stdcall __std_find_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
-        size_t _Size_bytes = _Byte_length(_First, _Last);
-
-        const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
-        if (_Avx_size != 0 && _Use_avx2()) {
+        const size_t _Size_bytes = _Byte_length(_First, _Last);
+        
+        if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
             const void* _Stop_at     = _First;
             _Advance_bytes(_Stop_at, _Avx_size);
+
             do {
                 const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
                 const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
@@ -1858,14 +1858,29 @@ namespace {
 
                 _Advance_bytes(_First, 32);
             } while (_First != _Stop_at);
-            _Size_bytes &= 0x1F;
-        }
+            
+            if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                const int _Bingo    = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
 
-        const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
-        if (_Sse_size != 0 && _Use_sse42()) {
+                if (_Bingo != 0) {
+                    const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                    _Advance_bytes(_First, _Offset);
+                    return _First;
+                }
+
+                _Advance_bytes(_First, _Avx_tail_size);
+            }
+
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _First;
+            }
+        } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _First;
             _Advance_bytes(_Stop_at, _Sse_size);
+
             do {
                 const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
                 const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
@@ -1892,15 +1907,15 @@ namespace {
     const void* __stdcall __std_find_last_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
         const void* const _Real_last = _Last;
 #ifndef _M_ARM64EC
-        size_t _Size_bytes = _Byte_length(_First, _Last);
+        const size_t _Size_bytes = _Byte_length(_First, _Last);
 
-        const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
-        if (_Avx_size != 0 && _Use_avx2()) {
+        if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
             const void* _Stop_at     = _Last;
             _Rewind_bytes(_Stop_at, _Avx_size);
+
             do {
                 _Rewind_bytes(_Last, 32);
                 const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
@@ -1912,14 +1927,28 @@ namespace {
                     return _Last;
                 }
             } while (_Last != _Stop_at);
-            _Size_bytes &= 0x1F;
-        }
 
-        const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
-        if (_Sse_size != 0 && _Use_sse42()) {
+            if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
+                _Rewind_bytes(_Last, _Avx_tail_size);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Tail_mask);
+                const int _Bingo    = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+
+                if (_Bingo != 0) {
+                    const unsigned long _Offset = _lzcnt_u32(_Bingo);
+                    _Advance_bytes(_Last, (31 - _Offset) - (sizeof(_Ty) - 1));
+                    return _Last;
+                }
+            }
+
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _Real_last;
+            }
+        } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _Last;
             _Rewind_bytes(_Stop_at, _Sse_size);
+
             do {
                 _Rewind_bytes(_Last, 16);
                 const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
@@ -1952,29 +1981,38 @@ namespace {
         size_t _Result = 0;
 
 #ifndef _M_ARM64EC
-        size_t _Size_bytes = _Byte_length(_First, _Last);
+        const size_t _Size_bytes = _Byte_length(_First, _Last);
 
-        const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
-        if (_Avx_size != 0 && _Use_avx2()) {
+        if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
             const void* _Stop_at     = _First;
             _Advance_bytes(_Stop_at, _Avx_size);
+
             do {
                 const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
                 const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
                 _Result += __popcnt(_Bingo); // Assume available with SSE4.2
                 _Advance_bytes(_First, 32);
             } while (_First != _Stop_at);
-            _Size_bytes &= 0x1F;
+
+            if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                const int _Bingo    = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+                _Result += __popcnt(_Bingo); // Assume available with SSE4.2
+                _Advance_bytes(_First, _Avx_tail_size);
+            }
 
             _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-        }
 
-        const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
-        if (_Sse_size != 0 && _Use_sse42()) {
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _Result >>= _Traits::_Shift;
+            }
+        } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _First;
             _Advance_bytes(_Stop_at, _Sse_size);
+
             do {
                 const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
                 const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
@@ -1984,8 +2022,8 @@ namespace {
         }
 #endif // !_M_ARM64EC
         _Result >>= _Traits::_Shift;
-        auto _Ptr = static_cast<const _Ty*>(_First);
-        for (; _Ptr != _Last; ++_Ptr) {
+
+        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
             if (*_Ptr == _Val) {
                 ++_Result;
             }
