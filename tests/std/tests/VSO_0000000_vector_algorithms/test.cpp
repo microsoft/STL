@@ -239,7 +239,7 @@ void test_case_find_first_of(const vector<T>& input_haystack, const vector<T>& i
 
 template <class T>
 void test_find_first_of(mt19937_64& gen) {
-    constexpr size_t needleDataCount = 30;
+    constexpr size_t needleDataCount = 50;
     using TD                         = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('a', 'z');
     vector<T> input_haystack;
@@ -591,6 +591,52 @@ namespace test_mismatch_sizes_and_alignments {
     }
 } // namespace test_mismatch_sizes_and_alignments
 
+template <class FwdIt, class T>
+void last_known_good_replace(FwdIt first, FwdIt last, const T old_val, const T new_val) {
+    for (; first != last; ++first) {
+        if (*first == old_val) {
+            *first = new_val;
+        }
+    }
+}
+
+template <class T>
+void test_case_replace(const vector<T>& input, T old_val, T new_val) {
+    vector<T> replaced_actual(input);
+    vector<T> replaced_expected(input);
+    replace(replaced_actual.begin(), replaced_actual.end(), old_val, new_val);
+    last_known_good_replace(replaced_expected.begin(), replaced_expected.end(), old_val, new_val);
+    assert(replaced_expected == replaced_actual);
+
+#if _HAS_CXX20
+    vector<T> replaced_actual_r(input);
+    ranges::replace(replaced_actual_r, old_val, new_val);
+    assert(replaced_expected == replaced_actual_r);
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_replace(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    uniform_int_distribution<TD> dis(0, 9);
+    vector<T> input;
+
+    input.reserve(dataCount);
+
+    {
+        const T old_val = static_cast<T>(dis(gen));
+        const T new_val = static_cast<T>(dis(gen));
+        test_case_replace(input, old_val, new_val);
+    }
+
+    for (size_t i = 0; i != dataCount; ++i) {
+        input.push_back(static_cast<T>(dis(gen)));
+        const T old_val = static_cast<T>(dis(gen));
+        const T new_val = static_cast<T>(dis(gen));
+        test_case_replace(input, old_val, new_val);
+    }
+}
+
 template <class BidIt>
 void last_known_good_reverse(BidIt first, BidIt last) {
     for (; first != last && first != --last; ++first) {
@@ -782,6 +828,12 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_mismatch_sizes_and_alignments::test<short>();
     test_mismatch_sizes_and_alignments::test<int>();
     test_mismatch_sizes_and_alignments::test<long long>();
+
+    // replace() is vectorized for 4 and 8 bytes only.
+    test_replace<int>(gen);
+    test_replace<unsigned int>(gen);
+    test_replace<long long>(gen);
+    test_replace<unsigned long long>(gen);
 
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);

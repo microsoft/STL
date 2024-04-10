@@ -12,11 +12,11 @@
 using namespace std;
 
 template <class>
-inline constexpr void* must_be_countable = nullptr;
+constexpr void* must_be_countable = nullptr;
 
 template <input_or_output_iterator I>
     requires requires { typename counted_iterator<I>; }
-inline constexpr bool must_be_countable<I> = true;
+constexpr bool must_be_countable<I> = true;
 
 template <class... Is>
 concept Counted = (must_be_countable<Is> && ...);

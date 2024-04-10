@@ -168,6 +168,7 @@ tests\GH_000431_lex_compare_family
 tests\GH_000431_lex_compare_memcmp_classify
 tests\GH_000442_random_subtract_with_carry_engine_io
 tests\GH_000457_system_error_message
+tests\GH_000519_cmath_int_overloads
 tests\GH_000527_remove_allocator_void
 tests\GH_000545_include_compare
 tests\GH_000625_vector_bool_optimization
@@ -479,6 +480,7 @@ tests\P0896R4_views_common
 tests\P0896R4_views_counted
 tests\P0896R4_views_counted_death
 tests\P0896R4_views_drop
+tests\P0896R4_views_drop_death
 tests\P0896R4_views_drop_while
 tests\P0896R4_views_drop_while_death
 tests\P0896R4_views_elements
@@ -494,6 +496,7 @@ tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0896R4_views_split
 tests\P0896R4_views_take
+tests\P0896R4_views_take_death
 tests\P0896R4_views_take_while
 tests\P0896R4_views_take_while_death
 tests\P0896R4_views_transform
