@@ -399,4 +399,9 @@ Remove-AzNetworkSecurityGroup `
 Write-Progress -Activity $ProgressActivity -Completed
 
 Write-Host "Elapsed time: $(((Get-Date) - $CurrentDate).ToString('hh\:mm\:ss'))"
-Write-Host "Finished creating pool: $PoolName"
+
+if ((Get-AzResource -ResourceGroupName $ResourceGroupName -Name $PoolName) -ne $null) {
+  Write-Host "Created pool: $PoolName"
+} else {
+  Write-Error "Failed to create pool: $PoolName"
+}
