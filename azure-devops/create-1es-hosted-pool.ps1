@@ -314,7 +314,7 @@ $ImageVersion = New-AzGalleryImageVersion `
   -GalleryName $GalleryName `
   -GalleryImageDefinitionName $ImageDefinitionName `
   -Name $ImageVersionName `
-  -SourceImageId $VM.ID
+  -SourceImageVMId $VM.ID
 
 ####################################################################################################
 Display-ProgressBar -Status 'Registering CloudTest resource provider'
