@@ -105,7 +105,7 @@ foreach ($workload in $VisualStudioWorkloads) {
   $VisualStudioArgs += $workload
 }
 
-$PythonUrl = 'https://www.python.org/ftp/python/3.12.2/python-3.12.2-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.12.3/python-3.12.3-amd64.exe'
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
 
 $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_551.61_windows.exe'
