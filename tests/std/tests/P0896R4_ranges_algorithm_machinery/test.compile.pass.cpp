@@ -522,7 +522,7 @@ namespace dangling_test {
 
     STATIC_ASSERT(std::is_class_v<dangling>);
     STATIC_ASSERT(std::semiregular<dangling>);
-    STATIC_ASSERT(std::is_trivial_v<dangling>); // not guaranteed, but likely portable nonetheless
+    STATIC_ASSERT(std::is_trivially_default_constructible_v<dangling>);
 
     // dangling is constructible from any sequence of arguments without throwing
     STATIC_ASSERT(is_nothrow_constructible_v<dangling>);
