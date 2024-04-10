@@ -18,36 +18,9 @@
 #include <vector>
 
 #include "range_algorithm_support.hpp"
+#include "test_generator_support.hpp"
 
 using namespace std;
-
-template <class T, class AlwaysEqual = true_type, signed_integral DifferenceType = ptrdiff_t>
-class TestAllocator : public allocator<T> {
-public:
-    using value_type      = T;
-    using is_always_equal = AlwaysEqual;
-    using difference_type = DifferenceType;
-    using size_type       = make_unsigned_t<difference_type>;
-
-    TestAllocator() = default;
-
-    template <class U>
-    TestAllocator(const TestAllocator<U, AlwaysEqual, DifferenceType>&) {}
-
-    T* allocate(const size_type s) {
-        return static_cast<T*>(::operator new(static_cast<size_t>(s * sizeof(T)), align_val_t{alignof(T)}));
-    }
-
-    void deallocate(T* const p, size_type s) {
-        ::operator delete(p, s * sizeof(T), align_val_t{alignof(T)});
-    }
-
-    operator pmr::polymorphic_allocator<void>() const {
-        return {};
-    }
-
-    bool operator==(const TestAllocator&) const = default;
-};
 
 template <class Promise, class... Args>
 concept HasOperatorNew = requires(Args&&... args) {
@@ -60,28 +33,6 @@ struct generator_allocator {};
 template <class Ref, class V, class Alloc>
 struct generator_allocator<generator<Ref, V, Alloc>> {
     using type = Alloc;
-};
-
-struct MoveOnly {
-    MoveOnly(const MoveOnly&)            = delete;
-    MoveOnly& operator=(const MoveOnly&) = delete;
-    MoveOnly(MoveOnly&&)                 = default;
-    MoveOnly& operator=(MoveOnly&&)      = default;
-};
-
-static_assert(movable<MoveOnly>);
-static_assert(!copyable<MoveOnly>);
-
-struct Immovable {
-    Immovable(Immovable&&)            = delete;
-    Immovable& operator=(Immovable&&) = delete;
-};
-
-static_assert(!movable<Immovable>);
-
-template <class T>
-struct Proxy {
-    Proxy(const T&); // not defined
 };
 
 template <class Gen, class Range>
