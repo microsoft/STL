@@ -146,17 +146,14 @@ Function DownloadAndInstall {
 
     if ($exitCode -eq 0) {
       Write-Host 'Installation successful!'
-    }
-    elseif ($exitCode -eq 3010) {
+    } elseif ($exitCode -eq 3010) {
       Write-Host 'Installation successful! Exited with 3010 (ERROR_SUCCESS_REBOOT_REQUIRED).'
-    }
-    else {
+    } else {
       Write-Error "Installation failed! Exited with $exitCode."
     }
 
     Remove-Item -Path $installerPath
-  }
-  catch {
+  } catch {
     Write-Error "Installation failed! Exception: $($_.Exception.Message)"
   }
 }
