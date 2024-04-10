@@ -10975,7 +10975,7 @@ namespace ranges {
 #if _USE_STD_VECTOR_ALGORITHMS
                     const auto _First1_ptr = _STD to_address(_First1);
                     const auto _First2_ptr = _STD to_address(_First2);
-                    const size_t _Pos      = __std_mismatch<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
+                    const size_t _Pos      = _Mismatch_vectorized<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
                     if (_Pos == _Num2) {
                         return false;
                     } else if (_Pos == _Num1) {
