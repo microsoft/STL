@@ -48,6 +48,7 @@ void test_one() {
     using Gen  = generator<Ref, V, Alloc>;
     using Iter = ranges::iterator_t<Gen>;
     static_assert(input_iterator<Iter>);
+    static_assert(sizeof(Iter) == sizeof(void*)); // NB: implementation defined
 
     // Test member types
     static_assert(same_as<typename Iter::value_type, conditional_t<is_void_v<V>, remove_cvref_t<Ref>, V>>);
@@ -75,7 +76,6 @@ void test_one() {
         same_as<Iter&> decltype(auto) k = (i = move(j));
         assert(&k == &i);
         assert(k == default_sentinel);
-
         static_assert(is_nothrow_move_assignable_v<Iter>);
     }
 
@@ -127,9 +127,6 @@ void test_one() {
         same_as<bool> decltype(auto) b4 = default_sentinel != j;
         assert(!b4);
     }
-
-    // Test sizeof
-    static_assert(sizeof(Iter) == sizeof(void*)); // NB: implementation defined
 }
 
 template <class Ref, class V = void>
