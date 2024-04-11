@@ -955,7 +955,7 @@ _NODISCARD constexpr _Ty& get(tuple<_Types...>& _Tuple) noexcept {
         return static_cast<_Ttype&>(_Tuple)._Myfirst._Val;
     } else {
         static_assert(_Always_false<_Ty>,
-            "get<T>(tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/3)");
+            "get<T>(tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/5)");
     }
 }
 
@@ -967,7 +967,7 @@ _NODISCARD constexpr const _Ty& get(const tuple<_Types...>& _Tuple) noexcept {
         return static_cast<const _Ttype&>(_Tuple)._Myfirst._Val;
     } else {
         static_assert(_Always_false<_Ty>,
-            "get<T>(const tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/3)");
+            "get<T>(const tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/5)");
     }
 }
 
@@ -979,7 +979,7 @@ _NODISCARD constexpr _Ty&& get(tuple<_Types...>&& _Tuple) noexcept {
         return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
     } else {
         static_assert(_Always_false<_Ty>,
-            "get<T>(tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/3)");
+            "get<T>(tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/5)");
     }
 }
 
@@ -991,7 +991,7 @@ _NODISCARD constexpr const _Ty&& get(const tuple<_Types...>&& _Tuple) noexcept {
         return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
     } else {
         static_assert(_Always_false<_Ty>,
-            "get<T>(const tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/3)");
+            "get<T>(const tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/5)");
     }
 }
 
