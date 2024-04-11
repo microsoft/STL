@@ -2008,8 +2008,10 @@ namespace {
 
             _mm256_zeroupper(); // TRANSITION, DevCom-10331414
 
+            _Result >>= _Traits::_Shift;
+
             if constexpr (sizeof(_Ty) >= 4) {
-                return _Result >>= _Traits::_Shift;
+                return _Result;
             }
         } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
@@ -2022,9 +2024,10 @@ namespace {
                 _Result += __popcnt(_Bingo); // Assume available with SSE4.2
                 _Advance_bytes(_First, 16);
             } while (_First != _Stop_at);
+
+            _Result >>= _Traits::_Shift;
         }
 #endif // !_M_ARM64EC
-        _Result >>= _Traits::_Shift;
 
         for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
             if (*_Ptr == _Val) {
