@@ -441,6 +441,9 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
     assert(get<0>(expected_mismatch) == ranges_actual_mismatch.in1);
     assert(get<1>(expected_mismatch) == ranges_actual_mismatch.in2);
 
+    auto ranges_actual_lex = ranges::lexicographical_compare(a, b);
+    assert(expected_lex == ranges_actual_lex);
+
     auto expected_lex_3way = last_known_good_lex_compare_3way(a.begin(), a.end(), b.begin(), b.end());
     auto actual_lex_3way   = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_lex_3way == actual_lex_3way);
@@ -509,6 +512,9 @@ void test_mismatch_and_lex_compare_family_containers() {
     const auto result_mismatch_r = ranges::mismatch(a, b);
     assert(result_mismatch_r.in1 == a.begin() + 5);
     assert(result_mismatch_r.in2 == b.begin() + 5);
+
+    const auto result_lex_r = ranges::lexicographical_compare(a, b);
+    assert(result_lex_r == true);
 
     const auto result_lex_3way = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
     assert(result_lex_3way == strong_ordering::less);
