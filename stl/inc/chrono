@@ -2176,7 +2176,7 @@ namespace chrono {
 
     _NODISCARD inline string _Tzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
         string _Icu_version{_Version.substr(0, _Version.find_last_of('.'))};
-        return _STD move(_Icu_version) + "." + _STD to_string(_Num_leap_seconds);
+        return (_Icu_version += '.') += _STD to_string(_Num_leap_seconds);
     }
 
     struct _Secret_tzdb_list_construct_tag {
