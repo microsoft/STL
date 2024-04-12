@@ -60,28 +60,11 @@ function New-Password {
   Param([int]$Length = 32)
 
   # This 64-character alphabet generates 6 bits of entropy per character.
-  # The power-of-2 alphabet size allows us to select a character by masking a random Byte with bitwise-AND.
-  $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
-  $mask = 63
-  if ($alphabet.Length -ne 64) {
-    throw 'Bad alphabet length'
-  }
-
-  [Byte[]]$randomData = [Byte[]]::new($Length)
-  $rng = $null
-  try {
-    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-    $rng.GetBytes($randomData)
-  }
-  finally {
-    if ($null -ne $rng) {
-      $rng.Dispose()
-    }
-  }
+  $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'.ToCharArray()
 
   [SecureString] $result = [SecureString]::new()
   for ($idx = 0; $idx -lt $Length; $idx++) {
-    $result.AppendChar($alphabet[$randomData[$idx] -band $mask])
+    $result.AppendChar((Get-SecureRandom -InputObject $alphabet))
   }
 
   return $result
@@ -121,6 +104,8 @@ function Wait-Shutdown {
 Display-ProgressBar -Status 'Silencing breaking change warnings'
 
 # https://aka.ms/azps-changewarnings
+$Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
+
 Update-AzConfig `
   -DisplayBreakingChangeWarning $false `
   -Scope 'Process' | Out-Null
@@ -231,10 +216,9 @@ $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\provision-image.ps1" `
-  -Parameter @{ 'AdminUserPassword' = $AdminPW; }
+  -ScriptPath "$PSScriptRoot\provision-image.ps1"
 
-Write-Host "provision-image.ps1 output: $($ProvisionImageResult.value.Message)"
+Write-Host $ProvisionImageResult.value.Message
 
 ####################################################################################################
 Display-ProgressBar -Status 'Restarting VM'
@@ -330,7 +314,7 @@ $ImageVersion = New-AzGalleryImageVersion `
   -GalleryName $GalleryName `
   -GalleryImageDefinitionName $ImageDefinitionName `
   -Name $ImageVersionName `
-  -SourceImageId $VM.ID
+  -SourceImageVMId $VM.ID
 
 ####################################################################################################
 Display-ProgressBar -Status 'Registering CloudTest resource provider'
@@ -415,4 +399,9 @@ Remove-AzNetworkSecurityGroup `
 Write-Progress -Activity $ProgressActivity -Completed
 
 Write-Host "Elapsed time: $(((Get-Date) - $CurrentDate).ToString('hh\:mm\:ss'))"
-Write-Host "Finished creating pool: $PoolName"
+
+if ((Get-AzResource -ResourceGroupName $ResourceGroupName -Name $PoolName) -ne $null) {
+  Write-Host "Created pool: $PoolName"
+} else {
+  Write-Error "Failed to create pool: $PoolName"
+}
