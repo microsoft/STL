@@ -232,7 +232,7 @@ public:
         return _Frames.crend();
     }
 
-    _NODISCARD_EMPTY_STACKTRACE_MEMBER bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER_NO_CLEAR bool empty() const noexcept {
         return _Frames.empty();
     }
 

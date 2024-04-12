@@ -38,9 +38,9 @@ struct evil_convertible_to_difference {
 constexpr auto pipeline = views::drop(1) | views::drop(1) | views::drop(1) | views::drop(1);
 
 template <class>
-inline constexpr bool is_subrange = false;
+constexpr bool is_subrange = false;
 template <class I, class S, ranges::subrange_kind K>
-inline constexpr bool is_subrange<ranges::subrange<I, S, K>> = true;
+constexpr bool is_subrange<ranges::subrange<I, S, K>> = true;
 
 template <class>
 struct mapped {

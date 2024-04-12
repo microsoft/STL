@@ -41,7 +41,7 @@ _INLINE_VAR constexpr int _Stl_isa_available_sse42 = 2; // equal to __ISA_AVAILA
 _INLINE_VAR constexpr int _Stl_isa_available_avx2  = 5; // equal to __ISA_AVAILABLE_AVX2
 
 template <class _UInt>
-_INLINE_VAR constexpr int _Unsigned_integer_digits = sizeof(_UInt) * CHAR_BIT;
+constexpr int _Unsigned_integer_digits = sizeof(_UInt) * CHAR_BIT;
 
 // Implementation of countl_zero without using specialized CPU instructions.
 // Used at compile time and when said instructions are not supported.
@@ -356,7 +356,7 @@ _NODISCARD inline int _Arm64_popcount(const unsigned long long _Val) noexcept {
 #endif // _HAS_NEON_INTRINSICS
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_standard_unsigned_integer =
+constexpr bool _Is_standard_unsigned_integer =
     _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>

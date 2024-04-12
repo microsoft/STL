@@ -2223,7 +2223,6 @@ namespace test_copy_constructible {
     STATIC_ASSERT(test<Immobile const&>());
     STATIC_ASSERT(!test<Immobile const&&>());
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-119526
     // https://github.com/ericniebler/stl2/issues/301
     struct NotMutableRef {
         NotMutableRef()                     = default;
@@ -2240,7 +2239,6 @@ namespace test_copy_constructible {
 
     STATIC_ASSERT(!copy_constructible<NotMutableRef>);
     STATIC_ASSERT(!copy_constructible<NotConstRefRef>);
-#endif // ^^^ no workaround ^^^
 
     struct UserProvidedCopy {
         UserProvidedCopy(UserProvidedCopy const&);

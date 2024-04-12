@@ -130,8 +130,10 @@ void test_lex_compare_memcmp_classify_for_types() {
     test_lex_compare_memcmp_classify_for_pred<expected_less, Type1, Type2, less<>>();
     test_lex_compare_memcmp_classify_for_pred<expected_greater, Type1, Type2, greater<>>();
 
-    test_lex_compare_memcmp_classify_for_pred<void, Type1, Type2, less<int>>();
-    test_lex_compare_memcmp_classify_for_pred<void, Type1, Type2, greater<int>>();
+    using bigger_type = conditional_t<sizeof(Type1) == sizeof(int), long long, int>;
+
+    test_lex_compare_memcmp_classify_for_pred<void, Type1, Type2, less<bigger_type>>();
+    test_lex_compare_memcmp_classify_for_pred<void, Type1, Type2, greater<bigger_type>>();
 
     test_lex_compare_memcmp_classify_for_pred<void, Type1, Type2, less<volatile Type1>>();
     test_lex_compare_memcmp_classify_for_pred<void, Type1, Type2, greater<volatile Type1>>();
@@ -176,13 +178,15 @@ void test_lex_compare_memcmp_classify_for_types() {
 #endif // _HAS_CXX20
 }
 
+constexpr bool vec_alg = _USE_STD_VECTOR_ALGORITHMS;
+
 template <bool Expected, class Type1, class Type2>
 void test_lex_compare_memcmp_classify_for_1byte_integrals() {
     test_lex_compare_memcmp_classify_for_types<Expected, Type1, Type2>();
 
-    test_lex_compare_memcmp_classify_for_opaque_preds<is_unsigned_v<char>, Type1, Type2, char>();
+    test_lex_compare_memcmp_classify_for_opaque_preds<is_unsigned_v<char> || vec_alg, Type1, Type2, char>();
     test_lex_compare_memcmp_classify_for_opaque_preds<true, Type1, Type2, unsigned char>();
-    test_lex_compare_memcmp_classify_for_opaque_preds<false, Type1, Type2, signed char>();
+    test_lex_compare_memcmp_classify_for_opaque_preds<vec_alg, Type1, Type2, signed char>();
 #ifdef __cpp_lib_char8_t
     test_lex_compare_memcmp_classify_for_opaque_preds<true, Type1, Type2, char8_t>();
 #endif // __cpp_lib_char8_t
@@ -224,14 +228,14 @@ bool operator<(const user_struct&, const user_struct&) {
 }
 
 void lex_compare_memcmp_classify_test_cases() {
-    // Allow unsigned 1 byte integrals
-    test_lex_compare_memcmp_classify_for_1byte_integrals<is_unsigned_v<char>, char, char>();
+    // Test 1 byte integrals
+    test_lex_compare_memcmp_classify_for_1byte_integrals<is_unsigned_v<char> || vec_alg, char, char>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<is_unsigned_v<char>, unsigned char, char>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<is_unsigned_v<char>, char, unsigned char>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<true, unsigned char, unsigned char>();
-    test_lex_compare_memcmp_classify_for_1byte_integrals<false, signed char, signed char>();
-    test_lex_compare_memcmp_classify_for_1byte_integrals<false, char, signed char>();
-    test_lex_compare_memcmp_classify_for_1byte_integrals<false, signed char, char>();
+    test_lex_compare_memcmp_classify_for_1byte_integrals<vec_alg, signed char, signed char>();
+    test_lex_compare_memcmp_classify_for_1byte_integrals<vec_alg && is_signed_v<char>, char, signed char>();
+    test_lex_compare_memcmp_classify_for_1byte_integrals<vec_alg && is_signed_v<char>, signed char, char>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<false, unsigned char, signed char>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<false, signed char, unsigned char>();
 #ifdef __cpp_lib_char8_t
@@ -252,8 +256,8 @@ void lex_compare_memcmp_classify_test_cases() {
     test_lex_compare_memcmp_classify_for_1byte_integrals<true, bool, char8_t>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<true, char8_t, bool>();
 #endif // __cpp_lib_char8_t
-    test_lex_compare_memcmp_classify_for_1byte_integrals<false, char, bool>();
-    test_lex_compare_memcmp_classify_for_1byte_integrals<false, bool, char>();
+    test_lex_compare_memcmp_classify_for_1byte_integrals<vec_alg && is_unsigned_v<char>, char, bool>();
+    test_lex_compare_memcmp_classify_for_1byte_integrals<vec_alg && is_unsigned_v<char>, bool, char>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<false, signed char, bool>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<false, bool, signed char>();
 
@@ -278,13 +282,13 @@ void lex_compare_memcmp_classify_test_cases() {
     test_lex_compare_memcmp_classify_for_types<true, byte, byte>();
 #endif // __cpp_lib_byte
 
-    // Don't allow bigger integrals
+    // Test bigger integrals
     test_lex_compare_memcmp_classify_for_types<false, unsigned char, int>();
     test_lex_compare_memcmp_classify_for_types<false, int, unsigned char>();
-    test_lex_compare_memcmp_classify_for_types<false, int, int>();
-    test_lex_compare_memcmp_classify_for_types<false, unsigned int, unsigned int>();
-    test_lex_compare_memcmp_classify_for_types<false, short, short>();
-    test_lex_compare_memcmp_classify_for_types<false, unsigned short, unsigned short>();
+    test_lex_compare_memcmp_classify_for_types<vec_alg, int, int>();
+    test_lex_compare_memcmp_classify_for_types<vec_alg, unsigned int, unsigned int>();
+    test_lex_compare_memcmp_classify_for_types<vec_alg, short, short>();
+    test_lex_compare_memcmp_classify_for_types<vec_alg, unsigned short, unsigned short>();
 
     // Don't allow pointers
     test_lex_compare_memcmp_classify_for_types<false, int*, int*>();
@@ -298,9 +302,11 @@ void lex_compare_memcmp_classify_test_cases() {
     test_lex_compare_memcmp_classify_for_pred<less<int>, char8_t, char8_t, _Char_traits_lt<char_traits<char8_t>>>();
 #endif // __cpp_lib_char8_t
 
-    test_lex_compare_memcmp_classify_for_pred<void, wchar_t, wchar_t, _Char_traits_lt<char_traits<wchar_t>>>();
-    test_lex_compare_memcmp_classify_for_pred<void, char16_t, char16_t, _Char_traits_lt<char_traits<char16_t>>>();
-    test_lex_compare_memcmp_classify_for_pred<void, char32_t, char32_t, _Char_traits_lt<char_traits<char32_t>>>();
+    using vless = conditional_t<vec_alg, less<int>, void>;
+
+    test_lex_compare_memcmp_classify_for_pred<vless, wchar_t, wchar_t, _Char_traits_lt<char_traits<wchar_t>>>();
+    test_lex_compare_memcmp_classify_for_pred<vless, char16_t, char16_t, _Char_traits_lt<char_traits<char16_t>>>();
+    test_lex_compare_memcmp_classify_for_pred<vless, char32_t, char32_t, _Char_traits_lt<char_traits<char32_t>>>();
 
     // Test different containers
 #if _HAS_CXX20

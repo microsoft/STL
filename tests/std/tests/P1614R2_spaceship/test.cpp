@@ -172,9 +172,9 @@ constexpr bool spaceship_test(const SmallType& smaller, const EqualType& smaller
 }
 
 template <class T>
-inline constexpr bool has_synth_ordered = false;
+constexpr bool has_synth_ordered = false;
 template <class V>
-inline constexpr bool has_synth_ordered<std::pair<const SynthOrdered, V>> = true;
+constexpr bool has_synth_ordered<std::pair<const SynthOrdered, V>> = true;
 template <>
 inline constexpr bool has_synth_ordered<SynthOrdered> = true;
 

@@ -23,27 +23,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #include <vcruntime_typeinfo.h>
 #pragma pop_macro("raw_name")
 
-#ifndef _VCRT_EXPORT_STD // TRANSITION, VCRuntime update expected in 17.10 Preview 3
-// Follow N4971 [module.interface]/6 by exporting aliases (a type alias is not an entity, N4971 [basic.pre]/3):
-_EXPORT_STD using type_info = type_info; // for typeid, MSVC looks for type_info in the global namespace
-#endif // ^^^ workaround ^^^
-
 _STD_BEGIN
 
 // size in pointers of std::function and std::any (roughly 3 pointers larger than std::string when building debug)
 _INLINE_VAR constexpr int _Small_object_num_ptrs = 6 + 16 / sizeof(void*);
 
-#ifndef _VCRT_EXPORT_STD // TRANSITION, VCRuntime update expected in 17.10 Preview 3
-_EXPORT_STD using ::type_info;
-#endif // ^^^ workaround ^^^
-
-#if _HAS_EXCEPTIONS
-#ifndef _VCRT_EXPORT_STD // TRANSITION, VCRuntime update expected in 17.10 Preview 3
-// Follow N4971 [module.interface]/6 by exporting aliases (a type alias is not an entity, N4971 [basic.pre]/3):
-_EXPORT_STD using bad_cast   = bad_cast;
-_EXPORT_STD using bad_typeid = bad_typeid;
-#endif // ^^^ workaround ^^^
-#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
+#if !_HAS_EXCEPTIONS
 _EXPORT_STD class bad_cast : public exception { // base of all bad cast exceptions
 public:
     bad_cast(const char* _Message = "bad cast") noexcept : exception(_Message) {}

@@ -1543,7 +1543,7 @@ namespace chrono {
     }
 
     template <class _To, class _From>
-    inline constexpr bool
+    constexpr bool
         _Duration_underflows_with = !treat_as_floating_point_v<typename _From::rep>
                                  && _From::period::den / _Gcd(_From::period::den, _To::period::den)
                                         > INTMAX_MAX / (_To::period::num / _Gcd(_From::period::num, _To::period::num));
@@ -2176,7 +2176,9 @@ namespace chrono {
 
     _NODISCARD inline string _Tzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
         string _Icu_version{_Version.substr(0, _Version.find_last_of('.'))};
-        return _STD move(_Icu_version) + "." + _STD to_string(_Num_leap_seconds);
+        _Icu_version += '.';
+        _Icu_version += _STD to_string(_Num_leap_seconds);
+        return _Icu_version;
     }
 
     struct _Secret_tzdb_list_construct_tag {
@@ -2872,10 +2874,10 @@ namespace chrono {
     // [time.clock.cast.sys]
 
     template <class _TimePoint, class _Clock>
-    inline constexpr bool _Is_time_point_for_clock = false;
+    constexpr bool _Is_time_point_for_clock = false;
 
     template <class _Clock, class _Duration>
-    inline constexpr bool _Is_time_point_for_clock<time_point<_Clock, _Duration>, _Clock> = true;
+    constexpr bool _Is_time_point_for_clock<time_point<_Clock, _Duration>, _Clock> = true;
 
     template <class _SourceClock>
     struct clock_time_conversion<system_clock, _SourceClock> {
@@ -2947,17 +2949,17 @@ namespace chrono {
     };
 
     template <class _Conv1, class _Conv2, class _Tp, class = void>
-    inline constexpr bool _Has_two_step_conversion = false;
+    constexpr bool _Has_two_step_conversion = false;
 
     template <class _Conv1, class _Conv2, class _Tp>
-    inline constexpr bool
+    constexpr bool
         _Has_two_step_conversion<_Conv1, _Conv2, _Tp, void_t<decltype(_Conv1{}(_Conv2{}(_STD declval<_Tp>())))>> = true;
 
     template <class _Conv1, class _Conv2, class _Conv3, class _Tp, class = void>
-    inline constexpr bool _Has_three_step_conversion = false;
+    constexpr bool _Has_three_step_conversion = false;
 
     template <class _Conv1, class _Conv2, class _Conv3, class _Tp>
-    inline constexpr bool _Has_three_step_conversion<_Conv1, _Conv2, _Conv3, _Tp,
+    constexpr bool _Has_three_step_conversion<_Conv1, _Conv2, _Conv3, _Tp,
         void_t<decltype(_Conv1{}(_Conv2{}(_Conv3{}(_STD declval<_Tp>()))))>> = true;
 
     template <class _DestClock, class _SourceClock, class _Duration>
@@ -3004,7 +3006,7 @@ namespace chrono {
     }
 
     template <class _DestClock, class _SourceClock, class _Duration>
-    inline constexpr auto _Clock_cast_choice = _Choose_clock_cast<_DestClock, _SourceClock, _Duration>();
+    constexpr auto _Clock_cast_choice = _Choose_clock_cast<_DestClock, _SourceClock, _Duration>();
 
     _EXPORT_STD template <class _DestClock, class _SourceClock, class _Duration,
         enable_if_t<_Clock_cast_choice<_DestClock, _SourceClock, _Duration> != _Clock_cast_strategy::_None, int> = 0>

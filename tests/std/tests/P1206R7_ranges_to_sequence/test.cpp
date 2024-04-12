@@ -57,6 +57,11 @@ struct sequence_instantiator {
     template <template <class...> class C, class T, class... Args>
     using deduce_container = deduce_container_impl<C>::template apply<T, Args...>;
 
+    template <class>
+    static constexpr bool is_basic_string = false;
+    template <class CharT, class Traits, class Alloc>
+    static constexpr bool is_basic_string<std::basic_string<CharT, Traits, Alloc>> = true;
+
     static constexpr auto meow = "meow"sv;
 
     template <template <class...> class C>
@@ -95,6 +100,12 @@ struct sequence_instantiator {
         {
             std::same_as<C<char>> auto c7 = c | ranges::to<C>();
             assert(c7 == c);
+        }
+        if constexpr (!is_basic_string<C<char>>) { // LWG-3984 "ranges::to's recursion branch may be ill-formed"
+            auto owning                     = std::views::all(C<C<char>>{c});
+            std::same_as<C<C<int>>> auto c8 = owning | ranges::to<C<C<int>>>();
+            assert(
+                ranges::equal(c8, C<C<char>>{c}, [](const auto& r1, const auto& r2) { return ranges::equal(r1, r2); }));
         }
 
         return true;

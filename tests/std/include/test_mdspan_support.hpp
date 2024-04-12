@@ -62,13 +62,13 @@ concept NotImplicitlyConstructibleFrom = std::constructible_from<T, Args...> && 
 
 namespace detail {
     template <class T>
-    inline constexpr bool is_extents_v = false;
+    constexpr bool is_extents_v = false;
 
     template <class T, size_t... E>
-    inline constexpr bool is_extents_v<std::extents<T, E...>> = true;
+    constexpr bool is_extents_v<std::extents<T, E...>> = true;
 
     template <class Layout, class Mapping>
-    inline constexpr bool is_mapping_of_v =
+    constexpr bool is_mapping_of_v =
         std::is_same_v<typename Layout::template mapping<typename Mapping::extents_type>, Mapping>;
 
     template <class M>
@@ -256,7 +256,7 @@ MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
         return std::views::cartesian_product(std::views::iota(IndexType{0}, get_extent(Indices))...);
     }(rank_indices);
 
-    auto map_index      = [&](const auto& tpl) { return std::apply([&](auto... i) { return mapping(i...); }, tpl); };
+    auto map_index      = [&](const auto& tpl) { return std::apply(mapping, tpl); };
     auto mapped_indices = multidim_indices | std::views::transform(map_index) | std::ranges::to<std::vector>();
     std::ranges::sort(mapped_indices);
 
