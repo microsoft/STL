@@ -913,20 +913,6 @@ constexpr void swap(const tuple<_Types...>& _Left, const tuple<_Types...>& _Righ
 }
 #endif // _HAS_CXX23
 
-template <class _Ty, class _Tuple>
-struct _Tuple_element {}; // backstop _Tuple_element definition
-
-template <class _This, class... _Rest>
-struct _Tuple_element<_This, tuple<_This, _Rest...>> { // select first element
-    static_assert(!_Is_any_of_v<_This, _Rest...>, "duplicate type T in get<T>(tuple)");
-    using _Ttype = tuple<_This, _Rest...>;
-};
-
-template <class _Ty, class _This, class... _Rest>
-struct _Tuple_element<_Ty, tuple<_This, _Rest...>> { // recursive _Tuple_element definition
-    using _Ttype = typename _Tuple_element<_Ty, tuple<_Rest...>>::_Ttype;
-};
-
 _EXPORT_STD template <size_t _Index, class... _Types>
 _NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept {
     using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
@@ -963,26 +949,50 @@ _NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept {
 
 _EXPORT_STD template <class _Ty, class... _Types>
 _NODISCARD constexpr _Ty& get(tuple<_Types...>& _Tuple) noexcept {
-    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
-    return static_cast<_Ttype&>(_Tuple)._Myfirst._Val;
+    constexpr size_t _Idx = _Meta_find_unique_index<tuple<_Types...>, _Ty>::value;
+    if constexpr (_Idx < sizeof...(_Types)) {
+        using _Ttype = typename tuple_element<_Idx, tuple<_Types...>>::_Ttype;
+        return static_cast<_Ttype&>(_Tuple)._Myfirst._Val;
+    } else {
+        static_assert(_Always_false<_Ty>,
+            "get<T>(tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/5)");
+    }
 }
 
 _EXPORT_STD template <class _Ty, class... _Types>
 _NODISCARD constexpr const _Ty& get(const tuple<_Types...>& _Tuple) noexcept {
-    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
-    return static_cast<const _Ttype&>(_Tuple)._Myfirst._Val;
+    constexpr size_t _Idx = _Meta_find_unique_index<tuple<_Types...>, _Ty>::value;
+    if constexpr (_Idx < sizeof...(_Types)) {
+        using _Ttype = typename tuple_element<_Idx, tuple<_Types...>>::_Ttype;
+        return static_cast<const _Ttype&>(_Tuple)._Myfirst._Val;
+    } else {
+        static_assert(_Always_false<_Ty>,
+            "get<T>(const tuple<Types...>&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/5)");
+    }
 }
 
 _EXPORT_STD template <class _Ty, class... _Types>
 _NODISCARD constexpr _Ty&& get(tuple<_Types...>&& _Tuple) noexcept {
-    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
-    return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
+    constexpr size_t _Idx = _Meta_find_unique_index<tuple<_Types...>, _Ty>::value;
+    if constexpr (_Idx < sizeof...(_Types)) {
+        using _Ttype = typename tuple_element<_Idx, tuple<_Types...>>::_Ttype;
+        return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
+    } else {
+        static_assert(_Always_false<_Ty>,
+            "get<T>(tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/5)");
+    }
 }
 
 _EXPORT_STD template <class _Ty, class... _Types>
 _NODISCARD constexpr const _Ty&& get(const tuple<_Types...>&& _Tuple) noexcept {
-    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
-    return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
+    constexpr size_t _Idx = _Meta_find_unique_index<tuple<_Types...>, _Ty>::value;
+    if constexpr (_Idx < sizeof...(_Types)) {
+        using _Ttype = typename tuple_element<_Idx, tuple<_Types...>>::_Ttype;
+        return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
+    } else {
+        static_assert(_Always_false<_Ty>,
+            "get<T>(const tuple<Types...>&&) requires T to occur exactly once in Types. (N4971 [tuple.elem]/5)");
+    }
 }
 
 template <class _This, class... _Rest>
