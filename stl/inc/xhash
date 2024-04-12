@@ -116,7 +116,7 @@ struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
 #endif // _HAS_CXX20
 
 template <class _Hasher, class _Kty>
-_INLINE_VAR constexpr bool _Nothrow_hash =
+constexpr bool _Nothrow_hash =
     noexcept(static_cast<size_t>(_STD declval<const _Hasher&>()(_STD declval<const _Kty&>())));
 
 template <class _Kty, class _Hasher, class _Keyeq>

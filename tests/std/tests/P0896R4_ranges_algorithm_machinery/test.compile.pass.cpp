@@ -522,7 +522,7 @@ namespace dangling_test {
 
     STATIC_ASSERT(std::is_class_v<dangling>);
     STATIC_ASSERT(std::semiregular<dangling>);
-    STATIC_ASSERT(std::is_trivial_v<dangling>); // not guaranteed, but likely portable nonetheless
+    STATIC_ASSERT(std::is_trivially_default_constructible_v<dangling>);
 
     // dangling is constructible from any sequence of arguments without throwing
     STATIC_ASSERT(is_nothrow_constructible_v<dangling>);
@@ -1015,7 +1015,7 @@ namespace special_memory_concepts {
     STATIC_ASSERT(forward_iterator<iterator_archetype<iterator_status::forward>>);
 
     template <class I>
-    inline constexpr bool has_lvalue_reference = std::is_lvalue_reference_v<std::iter_reference_t<I>>;
+    constexpr bool has_lvalue_reference = std::is_lvalue_reference_v<std::iter_reference_t<I>>;
     STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::not_input>>);
     STATIC_ASSERT(!has_lvalue_reference<iterator_archetype<iterator_status::not_lvalue_reference>>);
     STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::different_reference_and_value>>);
@@ -1023,7 +1023,7 @@ namespace special_memory_concepts {
     STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::forward>>);
 
     template <class I>
-    inline constexpr bool same_reference_value =
+    constexpr bool same_reference_value =
         std::same_as<std::remove_cvref_t<std::iter_reference_t<I>>, std::iter_value_t<I>>;
     STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::not_input>>);
     STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::not_lvalue_reference>>);
