@@ -667,13 +667,13 @@ concept _Formattable_with_non_const = semiregular<_Formatter>
                                       };
 
 template <class _Ty, class _CharT>
-inline constexpr bool _Is_basic_string_like_for = false;
+constexpr bool _Is_basic_string_like_for = false;
 
 template <class _CharT, class _Traits, class _Alloc>
-inline constexpr bool _Is_basic_string_like_for<basic_string<_CharT, _Traits, _Alloc>, _CharT> = true;
+constexpr bool _Is_basic_string_like_for<basic_string<_CharT, _Traits, _Alloc>, _CharT> = true;
 
 template <class _CharT, class _Traits>
-inline constexpr bool _Is_basic_string_like_for<basic_string_view<_CharT, _Traits>, _CharT> = true;
+constexpr bool _Is_basic_string_like_for<basic_string_view<_CharT, _Traits>, _CharT> = true;
 
 template <class _Context>
 struct _Format_arg_traits {
@@ -708,9 +708,7 @@ public:
     private:
         const void* _Ptr;
         void(__cdecl* _Format)(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void*);
-        friend basic_format_arg;
 
-    public:
         template <class _Ty>
         explicit handle(_Ty& _Val) noexcept
             : _Ptr(_STD addressof(_Val)),
@@ -719,17 +717,7 @@ public:
                   using _Td = remove_const_t<_Ty>;
                   // doesn't drop const-qualifier per an unnumbered LWG issue
                   using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
-                  if constexpr (_Formattable_with_non_const<_Tq, _Context>) {
-                      static_assert(_Formattable_with<_Tq, _Context>,
-                          "The format() member function can't be called on const formatter<T>. "
-                          "To make the formatter usable, add const to format(). "
-                          "See N4971 [format.arg]/12, [format.formattable], and [formatter.requirements].");
-                  } else {
-                      static_assert(_Formattable_with<_Tq, _Context>,
-                          "Cannot format an argument. "
-                          "To make this type formattable, provide a formatter<T> specialization. "
-                          "See N4971 [format.arg]/12, [format.formattable], and [formatter.requirements].");
-                  }
+                  _STL_INTERNAL_STATIC_ASSERT(_Formattable_with<_Tq, _Context>);
 
                   typename _Context::template formatter_type<_Td> _Formatter;
                   _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
@@ -737,8 +725,14 @@ public:
                       _Formatter.format(*const_cast<_Tq*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
               }) {}
 
+    public:
         void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) const {
             _Format(_Parse_ctx, _Format_ctx, _Ptr);
+        }
+
+        template <class _Ty>
+        _NODISCARD static handle _Make_from(_Ty& _Val) noexcept {
+            return handle{_Val};
         }
     };
 
@@ -755,7 +749,7 @@ public:
     // Function template _Make_from mirrors the exposition-only single-argument constructor template of
     // basic_format_arg (N4950 [format.arg]).
     template <_Formattable_with<_Context> _Ty>
-    static basic_format_arg _Make_from(_Ty& _Val) noexcept {
+    _NODISCARD static basic_format_arg _Make_from(_Ty& _Val) noexcept {
         using _Erased_type = _Format_arg_traits<_Context>::template _Storage_type<_Ty>;
         if constexpr (is_same_v<remove_const_t<_Ty>, char> && is_same_v<_CharType, wchar_t>) {
             return basic_format_arg(static_cast<_Erased_type>(static_cast<unsigned char>(_Val)));
@@ -892,7 +886,7 @@ auto _Format_arg_traits<_Context>::_Type_eraser() {
         return static_cast<const void*>(nullptr);
     } else {
         int _Dummy{};
-        return typename basic_format_arg<_Context>::handle{_Dummy};
+        return basic_format_arg<_Context>::handle::_Make_from(_Dummy);
     }
 }
 
@@ -1618,7 +1612,7 @@ _NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const _Context& _Ctx, c
 }
 
 template <class _Ty>
-inline constexpr bool _Is_signed_or_unsigned_large_integer_t =
+constexpr bool _Is_signed_or_unsigned_large_integer_t =
     _Is_any_of_v<remove_cv_t<_Ty>, int, unsigned int, long, unsigned long, long long, unsigned long long>;
 
 // Checks that the type and value of an argument associated with a dynamic
@@ -2051,6 +2045,8 @@ private:
         if constexpr (is_same_v<remove_const_t<remove_reference_t<_Ty>>, char> && is_same_v<_CharType, wchar_t>) {
             _Store_impl<_Erased_type>(
                 _Arg_index, _Arg_type, static_cast<_Erased_type>(static_cast<unsigned char>(_Val)));
+        } else if constexpr (is_same_v<_Erased_type, typename basic_format_arg<_Context>::handle>) {
+            _Store_impl<_Erased_type>(_Arg_index, _Arg_type, _Erased_type::_Make_from(_Val));
         }
 #if !_HAS_CXX23
         // Workaround towards N4950 [format.arg]/6.8 in C++20
@@ -2199,19 +2195,19 @@ private:
     basic_format_args<basic_format_context> _Args;
     _Lazy_locale _Loc;
 
+    constexpr basic_format_context(_Out&& _OutputIt_, const basic_format_args<basic_format_context>& _Ctx_args)
+        : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args) {}
+
+    constexpr basic_format_context(
+        _Out&& _OutputIt_, const basic_format_args<basic_format_context>& _Ctx_args, const _Lazy_locale& _Loc_)
+        : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
+
 public:
     using iterator  = _Out;
     using char_type = _CharT;
 
     template <class _Ty>
     using formatter_type = formatter<_Ty, _CharT>;
-
-    constexpr basic_format_context(_Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args)
-        : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args) {}
-
-    constexpr basic_format_context(
-        _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const _Lazy_locale& _Loc_)
-        : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
 
     _NODISCARD basic_format_arg<basic_format_context> arg(size_t _Id) const noexcept {
         return _Args.get(_Id);
@@ -2231,6 +2227,15 @@ public:
     }
     _NODISCARD _Lazy_locale _Get_lazy_locale() const {
         return _Loc;
+    }
+
+    _NODISCARD static constexpr basic_format_context _Make_from(
+        _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args) {
+        return basic_format_context{_STD move(_OutputIt_), _Ctx_args};
+    }
+    _NODISCARD static constexpr basic_format_context _Make_from(
+        _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const _Lazy_locale& _Loc_) {
+        return basic_format_context{_STD move(_OutputIt_), _Ctx_args, _Loc_};
     }
 };
 
@@ -2459,20 +2464,20 @@ struct _Invalid_format_kind {
 };
 
 _EXPORT_STD template <class _Ty>
-inline constexpr _Invalid_format_kind<_Ty> format_kind;
+constexpr _Invalid_format_kind<_Ty> format_kind;
 
 template <class _Ty>
-inline constexpr bool _Is_two_tuple = false;
+constexpr bool _Is_two_tuple = false;
 
 template <class _Ty, class _Uty>
-inline constexpr bool _Is_two_tuple<pair<_Ty, _Uty>> = true;
+constexpr bool _Is_two_tuple<pair<_Ty, _Uty>> = true;
 
 template <class _Ty, class _Uty>
-inline constexpr bool _Is_two_tuple<tuple<_Ty, _Uty>> = true;
+constexpr bool _Is_two_tuple<tuple<_Ty, _Uty>> = true;
 
 template <_RANGES input_range _Rng>
     requires same_as<_Rng, remove_cvref_t<_Rng>>
-inline constexpr range_format format_kind<_Rng> = []() consteval {
+constexpr range_format format_kind<_Rng> = []() consteval {
     using _Ref_value_t = remove_cvref_t<_RANGES range_reference_t<_Rng>>;
     if constexpr (same_as<_Ref_value_t, _Rng>) {
         return range_format::disabled;
@@ -3540,7 +3545,7 @@ struct _Default_arg_formatter {
 
     _OutputIt operator()(basic_format_arg<_Context>::handle _Handle) && {
         basic_format_parse_context<_CharT> _Parse_ctx({});
-        basic_format_context<_OutputIt, _CharT> _Format_ctx(_STD move(_Out), _Args, _Loc);
+        auto _Format_ctx = _Context::_Make_from(_STD move(_Out), _Args, _Loc);
         _Handle.format(_Parse_ctx, _Format_ctx);
         return _Format_ctx.out();
     }
@@ -3626,11 +3631,11 @@ struct _Format_handler {
     _Context _Ctx;
 
     explicit _Format_handler(_OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args)
-        : _Parse_context(_Str), _Ctx(_STD move(_Out), _Format_args) {}
+        : _Parse_context(_Str), _Ctx(_Context::_Make_from(_STD move(_Out), _Format_args)) {}
 
     explicit _Format_handler(_OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args,
         const _Lazy_locale& _Loc)
-        : _Parse_context(_Str), _Ctx(_STD move(_Out), _Format_args, _Loc) {}
+        : _Parse_context(_Str), _Ctx(_Context::_Make_from(_STD move(_Out), _Format_args, _Loc)) {}
 
     void _On_text(const _CharT* _First, const _CharT* _Last) {
         _Ctx.advance_to(_RANGES _Copy_unchecked(_First, _Last, _Ctx.out()).out);
@@ -4107,8 +4112,8 @@ protected:
         }
 
         basic_string<_CharT> _Tmp_buf;
-        basic_format_context<back_insert_iterator<basic_string<_CharT>>, _CharT> _Tmp_ctx{
-            _STD back_inserter(_Tmp_buf), {}, _Fmt_ctx._Get_lazy_locale()};
+        auto _Tmp_ctx = basic_format_context<back_insert_iterator<basic_string<_CharT>>, _CharT>::_Make_from(
+            _STD back_inserter(_Tmp_buf), {}, _Fmt_ctx._Get_lazy_locale());
 
         _STD _Copy_unchecked(_Opening_bracket._Unchecked_begin(), _Opening_bracket._Unchecked_end(), _Tmp_ctx.out());
         [&]<size_t... _Indices>(index_sequence<_Indices...>) {

@@ -46,7 +46,7 @@ template <>
 struct is_error_code_enum<io_errc> : true_type {};
 
 _EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr bool is_error_code_enum_v = is_error_code_enum<_Ty>::value;
+constexpr bool is_error_code_enum_v = is_error_code_enum<_Ty>::value;
 
 _EXPORT_STD template <class _Enum>
 struct is_error_condition_enum : false_type {};
@@ -55,7 +55,7 @@ template <>
 struct is_error_condition_enum<errc> : true_type {};
 
 _EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr bool is_error_condition_enum_v = is_error_condition_enum<_Ty>::value;
+constexpr bool is_error_condition_enum_v = is_error_condition_enum<_Ty>::value;
 
 _EXPORT_STD class error_code;
 _EXPORT_STD class error_condition;

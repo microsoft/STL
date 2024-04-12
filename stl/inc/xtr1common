@@ -70,15 +70,15 @@ using conditional_t = typename conditional<_Test, _Ty1, _Ty2>::type;
 
 #ifdef __clang__
 _EXPORT_STD template <class _Ty1, class _Ty2>
-_INLINE_VAR constexpr bool is_same_v = __is_same(_Ty1, _Ty2);
+constexpr bool is_same_v = __is_same(_Ty1, _Ty2);
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct is_same : bool_constant<__is_same(_Ty1, _Ty2)> {};
 #else // ^^^ Clang / not Clang vvv
 _EXPORT_STD template <class, class>
-_INLINE_VAR constexpr bool is_same_v = false; // determine whether arguments are the same type
+constexpr bool is_same_v = false; // determine whether arguments are the same type
 template <class _Ty>
-_INLINE_VAR constexpr bool is_same_v<_Ty, _Ty> = true;
+constexpr bool is_same_v<_Ty, _Ty> = true;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct is_same : bool_constant<is_same_v<_Ty1, _Ty2>> {};
@@ -164,10 +164,10 @@ struct disjunction<_First, _Rest...> : _Disjunction<_First::value, _First, _Rest
 };
 
 _EXPORT_STD template <class... _Traits>
-_INLINE_VAR constexpr bool disjunction_v = disjunction<_Traits...>::value;
+constexpr bool disjunction_v = disjunction<_Traits...>::value;
 
 template <class _Ty, class... _Types>
-_INLINE_VAR constexpr bool _Is_any_of_v = // true if and only if _Ty is in _Types
+constexpr bool _Is_any_of_v = // true if and only if _Ty is in _Types
 #if _HAS_CXX17
     (is_same_v<_Ty, _Types> || ...);
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
@@ -185,8 +185,7 @@ _EXPORT_STD _NODISCARD constexpr bool is_constant_evaluated() noexcept {
 #endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr bool is_integral_v = _Is_any_of_v<remove_cv_t<_Ty>, bool, char, signed char, unsigned char,
-    wchar_t,
+constexpr bool is_integral_v = _Is_any_of_v<remove_cv_t<_Ty>, bool, char, signed char, unsigned char, wchar_t,
 #ifdef __cpp_char8_t
     char8_t,
 #endif // defined(__cpp_char8_t)
@@ -196,13 +195,13 @@ _EXPORT_STD template <class _Ty>
 struct is_integral : bool_constant<is_integral_v<_Ty>> {};
 
 _EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr bool is_floating_point_v = _Is_any_of_v<remove_cv_t<_Ty>, float, double, long double>;
+constexpr bool is_floating_point_v = _Is_any_of_v<remove_cv_t<_Ty>, float, double, long double>;
 
 _EXPORT_STD template <class _Ty>
 struct is_floating_point : bool_constant<is_floating_point_v<_Ty>> {};
 
 _EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr bool is_arithmetic_v = // determine whether _Ty is an arithmetic type
+constexpr bool is_arithmetic_v = // determine whether _Ty is an arithmetic type
     is_integral_v<_Ty> || is_floating_point_v<_Ty>;
 
 _EXPORT_STD template <class _Ty>

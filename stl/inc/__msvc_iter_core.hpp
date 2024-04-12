@@ -34,7 +34,7 @@ _EXPORT_STD template <class _Ty, class _Alloc>
 struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {};
 
 _EXPORT_STD template <class _Ty, class _Alloc>
-_INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
+constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
 
 // from <iterator>
 _EXPORT_STD struct input_iterator_tag {};
@@ -386,7 +386,7 @@ struct iterator_traits<_Ty*> {
 };
 
 template <class _Ty>
-inline constexpr bool _Integer_class = requires {
+constexpr bool _Integer_class = requires {
     typename _Ty::_Signed_type;
     typename _Ty::_Unsigned_type;
 };
@@ -418,7 +418,7 @@ concept sentinel_for = semiregular<_Se>
 // clang-format on
 
 _EXPORT_STD template <class _Se, class _It>
-inline constexpr bool disable_sized_sentinel_for = false;
+constexpr bool disable_sized_sentinel_for = false;
 
 // clang-format off
 _EXPORT_STD template <class _Se, class _It>
@@ -454,7 +454,7 @@ namespace ranges {
 _EXPORT_STD using ranges::get;
 
 template <class _It, class _Se, ranges::subrange_kind _Ki>
-inline constexpr bool _Is_subrange_v<ranges::subrange<_It, _Se, _Ki>> = true;
+constexpr bool _Is_subrange_v<ranges::subrange<_It, _Se, _Ki>> = true;
 
 template <class _It, class _Se, ranges::subrange_kind _Ki>
 struct tuple_size<ranges::subrange<_It, _Se, _Ki>> : integral_constant<size_t, 2> {};
@@ -512,6 +512,45 @@ struct iterator_traits : _Iterator_traits_base<_Iter> {}; // get traits from ite
 template <class _Ty>
 struct iterator_traits<_Ty*> : _Iterator_traits_pointer_base<_Ty> {}; // get traits from pointer, if possible
 #endif // ^^^ !_HAS_CXX20 ^^^
+
+_INLINE_VAR constexpr auto _Meta_npos = ~size_t{0};
+
+constexpr size_t _Meta_find_index_i_(const bool* const _Ptr, const size_t _Count, size_t _Idx = 0) {
+    // return the index of the first true in the _Count bools at _Ptr, or _Meta_npos if all are false
+    for (; _Idx < _Count; ++_Idx) {
+        if (_Ptr[_Idx]) {
+            return _Idx;
+        }
+    }
+
+    return _Meta_npos;
+}
+
+template <class _List, class _Ty>
+struct _Meta_find_unique_index_ {
+    using type = integral_constant<size_t, _Meta_npos>;
+};
+template <class _List, class _Ty>
+using _Meta_find_unique_index =
+    // The index of _Ty in _List if it occurs exactly once, otherwise _Meta_npos
+    typename _Meta_find_unique_index_<_List, _Ty>::type;
+
+constexpr size_t _Meta_find_unique_index_i_2(const bool* const _Ptr, const size_t _Count, const size_t _First) {
+    // return _First if there is no _First < j < _Count such that _Ptr[j] is true, otherwise _Meta_npos
+    return _First != _Meta_npos && _STD _Meta_find_index_i_(_Ptr, _Count, _First + 1) == _Meta_npos ? _First
+                                                                                                    : _Meta_npos;
+}
+
+constexpr size_t _Meta_find_unique_index_i_(const bool* const _Ptr, const size_t _Count) {
+    // Pass the smallest i such that _Ptr[i] is true to _Meta_find_unique_index_i_2
+    return _STD _Meta_find_unique_index_i_2(_Ptr, _Count, _STD _Meta_find_index_i_(_Ptr, _Count));
+}
+
+template <template <class...> class _List, class _First, class... _Rest, class _Ty>
+struct _Meta_find_unique_index_<_List<_First, _Rest...>, _Ty> {
+    static constexpr bool _Bools[] = {is_same_v<_First, _Ty>, is_same_v<_Rest, _Ty>...};
+    using type = integral_constant<size_t, _STD _Meta_find_unique_index_i_(_Bools, 1 + sizeof...(_Rest))>;
+};
 _STD_END
 
 #pragma pop_macro("new")

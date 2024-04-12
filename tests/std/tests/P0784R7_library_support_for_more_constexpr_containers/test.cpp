@@ -27,7 +27,7 @@ template <class Ty>
 concept can_ranges_destroy_at = requires(Ty* ptr) { ranges::destroy_at(ptr); };
 
 template <class Ty, class... Types>
-inline constexpr bool can_construct_at = [] {
+constexpr bool can_construct_at = [] {
     constexpr bool result = can_std_construct_at<Ty, Types...>;
     static_assert(can_ranges_construct_at<Ty, Types...> == result);
     return result;

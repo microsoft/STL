@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING
+#define _SILENCE_CXX20_CODECVT_CHAR8_T_FACETS_DEPRECATION_WARNING
 
 #include <cassert>
 #include <cstdio>

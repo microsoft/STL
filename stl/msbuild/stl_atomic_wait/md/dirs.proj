@@ -7,11 +7,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\crt-common.settings.targets" />
 
     <ItemGroup>
-        <ProjectFile Include="msvcp_atomic_wait_app\msvcp_atomic_wait.vcxproj" />
-        <ProjectFile Include="msvcp_atomic_wait_kernel32\msvcp_atomic_wait.vcxproj" />
-        <ProjectFile Include="msvcp_atomic_wait_onecore\msvcp_atomic_wait.vcxproj" />
-        <ProjectFile Include="msvcp_atomic_wait_netfx\msvcp_atomic_wait.vcxproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
+        <ProjectFile Include="msvcp_atomic_wait_md_app.vcxproj" />
+        <ProjectFile Include="msvcp_atomic_wait_md_kernel32.vcxproj" />
+        <ProjectFile Include="msvcp_atomic_wait_md_onecore.vcxproj" />
+        <ProjectFile Include="msvcp_atomic_wait_md_netfx.vcxproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
     </ItemGroup>
 
-    <Import Project="$(RepoSrc)\tools\Microsoft.DevDiv.Traversal.targets" />
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Traversal.targets))" />
 </Project>
