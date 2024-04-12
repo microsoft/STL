@@ -132,6 +132,7 @@
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (including __cpp_lib_freestanding_charconv)
 // P2517R1 Conditional noexcept For apply()
+// P2875R4 Undeprecate polymorphic_allocator::destroy
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -597,34 +598,27 @@
     _NODISCARD_MSG("The 'unique' algorithm returns the iterator past the last element that should be kept. " \
                    "You need to call container.erase(result, container.end()) afterwards.")
 
-#define _NODISCARD_EMPTY_MEMBER                                                                                    \
-    _NODISCARD_MSG(                                                                                                \
-        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
-        "It is not useful to call this member function and discard the return value. "                             \
+#define _NODISCARD_EMPTY_MEMBER                                                                                     \
+    _NODISCARD_MSG(                                                                                                 \
+        "This member function returns a bool indicating whether the collection is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                              \
         "Use the 'clear()' member function if you want to erase all elements.")
 
-#define _NODISCARD_EMPTY_ARRAY_MEMBER                                                                              \
-    _NODISCARD_MSG(                                                                                                \
-        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
-        "It is not useful to call this member function and discard the return value. "                             \
+#define _NODISCARD_EMPTY_ARRAY_MEMBER                                                                          \
+    _NODISCARD_MSG(                                                                                            \
+        "This member function returns a bool indicating whether the array is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                         \
         "There's no way to clear an array as its size is fixed.")
 
-#define _NODISCARD_EMPTY_STACKTRACE_MEMBER                                                                         \
-    _NODISCARD_MSG(                                                                                                \
-        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
-        "It is not useful to call this member function and discard the return value. "                             \
-        "'std::stacktrace' can be cleared by assigning an empty value to it.")
+#define _NODISCARD_EMPTY_MEMBER_NO_CLEAR                                                                            \
+    _NODISCARD_MSG(                                                                                                 \
+        "This member function returns a bool indicating whether the collection is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                              \
+        "This collection can be cleared by assigning an empty value to it.")
 
-#define _NODISCARD_EMPTY_NON_MEMBER                                                                            \
-    _NODISCARD_MSG(                                                                                            \
-        "This function returns a bool indicating whether the container or container-like object is empty and " \
-        "has no other effects. It is not useful to call this function and discard the return value.")
-
-#define _NODISCARD_EMPTY_ADAPTOR_MEMBER                                                                            \
-    _NODISCARD_MSG(                                                                                                \
-        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
-        "It is not useful to call this member function and discard the return value. "                             \
-        "Container adaptors don't provide 'clear()' member functions, but you can assign an empty object to them.")
+#define _NODISCARD_EMPTY_NON_MEMBER                                                               \
+    _NODISCARD_MSG("This function returns a bool indicating whether the collection is empty and " \
+                   "has no other effects. It is not useful to call this function and discard the return value.")
 
 #define _NODISCARD_BARRIER_TOKEN \
     _NODISCARD_MSG("The token from 'arrive()' should not be discarded; it should be passed to 'wait()'.")
@@ -806,6 +800,7 @@
 // warning C5045: Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified (/Wall)
 // warning C5220: a non-static data member with a volatile qualified type no longer implies that compiler generated
 //                copy/move constructors and copy/move assignment operators are not trivial (/Wall)
+// warning C5246: 'member': the initialization of a subobject should be wrapped in braces (/Wall)
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
@@ -813,7 +808,7 @@
 #define _STL_DISABLED_WARNINGS                        \
     4180 4324 4412 4455 4494 4514 4574 4582 4583 4587 \
     4588 4619 4623 4625 4626 4643 4648 4702 4793 4820 \
-    4868 4988 5026 5027 5045 5220 6294                \
+    4868 4988 5026 5027 5045 5220 5246 6294           \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -885,7 +880,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202403L
+#define _MSVC_STL_UPDATE  202404L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1252,8 +1247,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
     [[deprecated("warning STL4020: "                                                                                   \
                  "std::codecvt<char16_t, char, mbstate_t>, std::codecvt<char32_t, char, mbstate_t>, "                  \
                  "std::codecvt_byname<char16_t, char, mbstate_t>, and std::codecvt_byname<char32_t, char, mbstate_t> " \
-                 "are deprecated in C++20 and replaced by specializations with a second argument of type char8_t. "    \
-                 "You can define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING "                                   \
+                 "are deprecated in C++20. You can define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING "          \
                  "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to suppress this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _CXX20_DEPRECATE_CODECVT_FACETS
@@ -1387,17 +1381,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX17 && !defined(_SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
-#define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY                                                   \
-    [[deprecated("warning STL4032: "                                                                     \
-                 "std::pmr::polymorphic_allocator::destroy() is deprecated in C++17 by LWG-3036. "       \
-                 "Prefer std::destroy_at() or std::allocator_traits<polymorphic_allocator>::destroy(). " \
-                 "You can define _SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING "      \
-                 "or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
-#endif // ^^^ warning disabled ^^^
+// STL4032 was "std::pmr::polymorphic_allocator::destroy() is deprecated in C++17 by LWG-3036." (reverted by P2875R4)
 
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_IS_ALWAYS_EQUAL_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
@@ -1523,7 +1507,19 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_TR1_RANDOM
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4047
+#if _HAS_CXX20 && defined(__cpp_char8_t) && !defined(_SILENCE_CXX20_CODECVT_CHAR8_T_FACETS_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS                                                                     \
+    [[deprecated(                                                                                                   \
+        "warning STL4047: std::codecvt<char16_t, char8_t, mbstate_t>, std::codecvt<char32_t, char8_t, mbstate_t>, " \
+        "std::codecvt_byname<char16_t, char8_t, mbstate_t>, and std::codecvt_byname<char32_t, char8_t, mbstate_t> " \
+        "are deprecated by LWG-3767. You can define _SILENCE_CXX20_CODECVT_CHAR8_T_FACETS_DEPRECATION_WARNING or "  \
+        "_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4048
 
 // next error number: STL1006
 

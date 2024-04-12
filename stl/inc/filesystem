@@ -162,14 +162,14 @@ namespace filesystem {
     }
 
     template <class _Ty, class = void>
-    inline constexpr bool _Is_Source_impl = false;
+    constexpr bool _Is_Source_impl = false;
 
     template <class _Ty>
-    inline constexpr bool _Is_Source_impl<_Ty, void_t<typename iterator_traits<_Ty>::value_type>> =
+    constexpr bool _Is_Source_impl<_Ty, void_t<typename iterator_traits<_Ty>::value_type>> =
         _Is_EcharT<typename iterator_traits<_Ty>::value_type>;
 
     template <class _Ty>
-    inline constexpr bool _Is_Source = _Is_Source_impl<decay_t<_Ty>>;
+    constexpr bool _Is_Source = _Is_Source_impl<decay_t<_Ty>>;
 
     _EXPORT_STD class path;
 
@@ -178,10 +178,10 @@ namespace filesystem {
                                                     // iterator_traits when determining if path is copyable.
 
     template <class _Elem, class _Traits, class _Alloc>
-    inline constexpr bool _Is_Source<basic_string<_Elem, _Traits, _Alloc>> = _Is_EcharT<_Elem>;
+    constexpr bool _Is_Source<basic_string<_Elem, _Traits, _Alloc>> = _Is_EcharT<_Elem>;
 
     template <class _Elem, class _Traits>
-    inline constexpr bool _Is_Source<basic_string_view<_Elem, _Traits>> = _Is_EcharT<_Elem>;
+    constexpr bool _Is_Source<basic_string_view<_Elem, _Traits>> = _Is_EcharT<_Elem>;
 
     struct _Normal_conversion {};
 

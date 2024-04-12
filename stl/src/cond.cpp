@@ -14,7 +14,7 @@ extern "C" {
 
 
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(const _Cnd_t cond) noexcept { // initialize condition variable in situ
-    new (cond->_get_cv()) Concurrency::details::stl_condition_variable_win7;
+    new (Concurrency::details::_Get_cond_var(cond)) Concurrency::details::stl_condition_variable_win7;
 }
 
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) noexcept {} // destroy condition variable in situ
@@ -54,7 +54,7 @@ _CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t mtx) noexcept { // set owner 
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) noexcept { // wait until signaled
     const auto cs = &mtx->_Critical_section;
     _Mtx_clear_owner(mtx);
-    cond->_get_cv()->wait(cs);
+    Concurrency::details::_Get_cond_var(cond)->wait(cs);
     _Mtx_reset_owner(mtx);
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
@@ -66,13 +66,14 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(
     const auto cs    = &mtx->_Critical_section;
     if (target == nullptr) { // no target time specified, wait on mutex
         _Mtx_clear_owner(mtx);
-        cond->_get_cv()->wait(cs);
+        Concurrency::details::_Get_cond_var(cond)->wait(cs);
         _Mtx_reset_owner(mtx);
     } else { // target time specified, wait for it
         _timespec64 now;
         _Timespec64_get_sys(&now);
         _Mtx_clear_owner(mtx);
-        if (!cond->_get_cv()->wait_for(cs, _Xtime_diff_to_millis2(target, &now))) { // report timeout
+        if (!Concurrency::details::_Get_cond_var(cond)->wait_for(
+                cs, _Xtime_diff_to_millis2(target, &now))) { // report timeout
             _Timespec64_get_sys(&now);
             if (_Xtime_diff_to_millis2(target, &now) == 0) {
                 res = _Thrd_result::_Timedout;
@@ -84,12 +85,12 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(
 }
 
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(const _Cnd_t cond) noexcept { // release one waiting thread
-    cond->_get_cv()->notify_one();
+    Concurrency::details::_Get_cond_var(cond)->notify_one();
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(const _Cnd_t cond) noexcept { // release all waiting threads
-    cond->_get_cv()->notify_all();
+    Concurrency::details::_Get_cond_var(cond)->notify_all();
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 

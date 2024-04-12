@@ -11,5 +11,5 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ProjectFile Condition="'$(CrtBuildXMD)' != 'false'" Include="xmd\dirs.proj" />
     </ItemGroup>
 
-    <Import Project="$(RepoSrc)\tools\Microsoft.DevDiv.Traversal.targets" />
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Traversal.targets))" />
 </Project>

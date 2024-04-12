@@ -28,58 +28,58 @@ namespace numbers {
     };
 
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty e_v = _Invalid<_Ty>{};
+    constexpr _Ty e_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty log2e_v = _Invalid<_Ty>{};
+    constexpr _Ty log2e_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty log10e_v = _Invalid<_Ty>{};
+    constexpr _Ty log10e_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty pi_v = _Invalid<_Ty>{};
+    constexpr _Ty pi_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty inv_pi_v = _Invalid<_Ty>{};
+    constexpr _Ty inv_pi_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty inv_sqrtpi_v = _Invalid<_Ty>{};
+    constexpr _Ty inv_sqrtpi_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty ln2_v = _Invalid<_Ty>{};
+    constexpr _Ty ln2_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty ln10_v = _Invalid<_Ty>{};
+    constexpr _Ty ln10_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty sqrt2_v = _Invalid<_Ty>{};
+    constexpr _Ty sqrt2_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty sqrt3_v = _Invalid<_Ty>{};
+    constexpr _Ty sqrt3_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty inv_sqrt3_v = _Invalid<_Ty>{};
+    constexpr _Ty inv_sqrt3_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty egamma_v = _Invalid<_Ty>{};
+    constexpr _Ty egamma_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>
-    inline constexpr _Ty phi_v = _Invalid<_Ty>{};
+    constexpr _Ty phi_v = _Invalid<_Ty>{};
 
     template <floating_point _Floating>
-    inline constexpr _Floating e_v<_Floating> = static_cast<_Floating>(2.718281828459045);
+    constexpr _Floating e_v<_Floating> = static_cast<_Floating>(2.718281828459045);
     template <floating_point _Floating>
-    inline constexpr _Floating log2e_v<_Floating> = static_cast<_Floating>(1.4426950408889634);
+    constexpr _Floating log2e_v<_Floating> = static_cast<_Floating>(1.4426950408889634);
     template <floating_point _Floating>
-    inline constexpr _Floating log10e_v<_Floating> = static_cast<_Floating>(0.4342944819032518);
+    constexpr _Floating log10e_v<_Floating> = static_cast<_Floating>(0.4342944819032518);
     template <floating_point _Floating>
-    inline constexpr _Floating pi_v<_Floating> = static_cast<_Floating>(3.141592653589793);
+    constexpr _Floating pi_v<_Floating> = static_cast<_Floating>(3.141592653589793);
     template <floating_point _Floating>
-    inline constexpr _Floating inv_pi_v<_Floating> = static_cast<_Floating>(0.3183098861837907);
+    constexpr _Floating inv_pi_v<_Floating> = static_cast<_Floating>(0.3183098861837907);
     template <floating_point _Floating>
-    inline constexpr _Floating inv_sqrtpi_v<_Floating> = static_cast<_Floating>(0.5641895835477563);
+    constexpr _Floating inv_sqrtpi_v<_Floating> = static_cast<_Floating>(0.5641895835477563);
     template <floating_point _Floating>
-    inline constexpr _Floating ln2_v<_Floating> = static_cast<_Floating>(0.6931471805599453);
+    constexpr _Floating ln2_v<_Floating> = static_cast<_Floating>(0.6931471805599453);
     template <floating_point _Floating>
-    inline constexpr _Floating ln10_v<_Floating> = static_cast<_Floating>(2.302585092994046);
+    constexpr _Floating ln10_v<_Floating> = static_cast<_Floating>(2.302585092994046);
     template <floating_point _Floating>
-    inline constexpr _Floating sqrt2_v<_Floating> = static_cast<_Floating>(1.4142135623730951);
+    constexpr _Floating sqrt2_v<_Floating> = static_cast<_Floating>(1.4142135623730951);
     template <floating_point _Floating>
-    inline constexpr _Floating sqrt3_v<_Floating> = static_cast<_Floating>(1.7320508075688772);
+    constexpr _Floating sqrt3_v<_Floating> = static_cast<_Floating>(1.7320508075688772);
     template <floating_point _Floating>
-    inline constexpr _Floating inv_sqrt3_v<_Floating> = static_cast<_Floating>(0.5773502691896257);
+    constexpr _Floating inv_sqrt3_v<_Floating> = static_cast<_Floating>(0.5773502691896257);
     template <floating_point _Floating>
-    inline constexpr _Floating egamma_v<_Floating> = static_cast<_Floating>(0.5772156649015329);
+    constexpr _Floating egamma_v<_Floating> = static_cast<_Floating>(0.5772156649015329);
     template <floating_point _Floating>
-    inline constexpr _Floating phi_v<_Floating> = static_cast<_Floating>(1.618033988749895);
+    constexpr _Floating phi_v<_Floating> = static_cast<_Floating>(1.618033988749895);
 
     _EXPORT_STD inline constexpr double e          = e_v<double>;
     _EXPORT_STD inline constexpr double log2e      = log2e_v<double>;

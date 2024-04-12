@@ -19,7 +19,6 @@ parameters:
 - name: litFlags
   type: object
   default:
-    - '--timeout=240'
     - '-j$(testParallelism)'
     - '--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
     - '--order=lexical'

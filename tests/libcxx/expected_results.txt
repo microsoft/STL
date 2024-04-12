@@ -165,6 +165,10 @@ std/utilities/memory/specialized.algorithms/uninitialized.fill.n/ranges_uninitia
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-4013
+std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.default.pass.cpp FAIL
+std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.iter.pass.cpp FAIL
+
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
 
@@ -208,9 +212,6 @@ std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size_align_nothrow.pass.cpp:1 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.single/new.size_nothrow.pass.cpp:1 FAIL
-
-# ASAN runtime intercepts `strtol` and breaks LWG-2009 (VSO-1875597)
-std/strings/string.conversions/stol.pass.cpp:1 FAIL
 
 # Not analyzed. SKIPPED because this is x86-specific.
 # ERROR: AddressSanitizer: allocator is out of memory trying to allocate NNNN bytes
@@ -483,10 +484,6 @@ std/utilities/expected/expected.void/equality/equality.other_expected.pass.cpp:2
 
 
 # *** STL BUGS ***
-# GH-519 <cmath>: signbit() misses overloads for integer types
-std/depr/depr.c.headers/math_h.pass.cpp FAIL
-std/numerics/c.math/cmath.pass.cpp FAIL
-
 # GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
 std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp FAIL
 

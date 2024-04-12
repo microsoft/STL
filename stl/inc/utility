@@ -147,7 +147,7 @@ _EXPORT_STD template <class _Tuple>
 struct tuple_size;
 
 _EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
+constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
 
 _EXPORT_STD template <size_t _Index, class _Tuple>
 struct tuple_element;
@@ -187,17 +187,17 @@ template <class _Ty1, class _Ty2>
 concept _Different_from = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
 template <class>
-inline constexpr bool _Is_std_array_v = false;
+constexpr bool _Is_std_array_v = false;
 
 template <class _Ty, size_t _Size>
-inline constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
+constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
 
 template <class>
-inline constexpr bool _Is_subrange_v = false;
+constexpr bool _Is_subrange_v = false;
 
 #if _HAS_CXX23
 template <class _Ty>
-inline constexpr bool _Tuple_like_impl =
+constexpr bool _Tuple_like_impl =
     _Is_specialization_v<_Ty, tuple> || _Is_specialization_v<_Ty, pair> || _Is_std_array_v<_Ty> || _Is_subrange_v<_Ty>;
 
 template <class _Ty>
@@ -304,7 +304,8 @@ struct pair { // store a pair of values
 
     template <class _Tuple1, class _Tuple2, size_t... _Indices1, size_t... _Indices2>
     constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indices1...>, index_sequence<_Indices2...>)
-        : first(_Tuple_get<_Indices1>(_STD move(_Val1))...), second(_Tuple_get<_Indices2>(_STD move(_Val2))...) {}
+        : first(_STD _Tuple_get<_Indices1>(_STD move(_Val1))...),
+          second(_STD _Tuple_get<_Indices2>(_STD move(_Val2))...) {}
 
     template <class... _Types1, class... _Types2>
     _CONSTEXPR20 pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2)
@@ -777,27 +778,27 @@ struct in_place_type_t { // tag that selects a type to construct in place
     explicit in_place_type_t() = default;
 };
 _EXPORT_STD template <class _Ty>
-inline constexpr in_place_type_t<_Ty> in_place_type{};
+constexpr in_place_type_t<_Ty> in_place_type{};
 
 _EXPORT_STD template <size_t>
 struct in_place_index_t { // tag that selects the index of a type to construct in place
     explicit in_place_index_t() = default;
 };
 _EXPORT_STD template <size_t _Idx>
-inline constexpr in_place_index_t<_Idx> in_place_index{};
+constexpr in_place_index_t<_Idx> in_place_index{};
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
 template <class _Ty>
-inline constexpr bool _Is_standard_integer = is_integral_v<_Ty>
-                                          && !_Is_any_of_v<remove_cv_t<_Ty>, bool, char,
+constexpr bool _Is_standard_integer = is_integral_v<_Ty>
+                                   && !_Is_any_of_v<remove_cv_t<_Ty>, bool, char,
 #ifdef _NATIVE_WCHAR_T_DEFINED
-                                              wchar_t,
+                                       wchar_t,
 #endif // _NATIVE_WCHAR_T_DEFINED
 #ifdef __cpp_char8_t
-                                              char8_t,
+                                       char8_t,
 #endif // defined(__cpp_char8_t)
-                                              char16_t, char32_t>;
+                                       char16_t, char32_t>;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {

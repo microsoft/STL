@@ -637,10 +637,10 @@ public:
     }
 
 private:
-    _Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cnd_storage;
+    _Cnd_internal_imp_t _Cnd_storage;
 
-    _Cnd_t _Mycnd() noexcept { // get pointer to _Cnd_internal_imp_t inside _Cnd_storage
-        return reinterpret_cast<_Cnd_t>(&_Cnd_storage);
+    _Cnd_t _Mycnd() noexcept {
+        return &_Cnd_storage;
     }
 };
 

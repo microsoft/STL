@@ -9,14 +9,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <ItemGroup Condition="('$(SpectreBuildMode)' == '' or
                            '$(Configuration)' == 'chk' or
                            '$(Configuration)' == 'dbg')">
-        <ProjectFile Include="msvcp_2_app\msvcp_2.vcxproj" />
-        <ProjectFile Include="msvcp_2_kernel32\msvcp_2.vcxproj" />
-        <ProjectFile Include="msvcp_2_onecore\msvcp_2.vcxproj" />
+        <ProjectFile Include="msvcp_2_xmd_app.vcxproj" />
+        <ProjectFile Include="msvcp_2_xmd_kernel32.vcxproj" />
+        <ProjectFile Include="msvcp_2_xmd_onecore.vcxproj" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(SpectreBuildMode)' == ''">
-        <ProjectFile Include="msvcp_2_netfx\msvcp_2.vcxproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
+        <ProjectFile Include="msvcp_2_xmd_netfx.vcxproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
     </ItemGroup>
 
-    <Import Project="$(RepoSrc)\tools\Microsoft.DevDiv.Traversal.targets" />
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(VCTools.Traversal.targets))" />
 </Project>

@@ -31,7 +31,7 @@ namespace chrono {
     struct treat_as_floating_point : is_floating_point<_Rep> {}; // tests for floating-point type
 
     _EXPORT_STD template <class _Rep>
-    _INLINE_VAR constexpr bool treat_as_floating_point_v = treat_as_floating_point<_Rep>::value;
+    constexpr bool treat_as_floating_point_v = treat_as_floating_point<_Rep>::value;
 
     _EXPORT_STD template <class _Rep>
     struct duration_values { // gets arithmetic properties of a type
@@ -53,10 +53,10 @@ namespace chrono {
 
 #if _HAS_CXX20
     template <class _Clock, class = void>
-    inline constexpr bool _Is_clock_v = false;
+    constexpr bool _Is_clock_v = false;
 
     template <class _Clock>
-    inline constexpr bool
+    constexpr bool
         _Is_clock_v<_Clock, void_t<typename _Clock::rep, typename _Clock::period, typename _Clock::duration,
                                 typename _Clock::time_point, decltype(_Clock::is_steady), decltype(_Clock::now())>> =
             true; // TRANSITION, GH-602
@@ -64,14 +64,14 @@ namespace chrono {
     _EXPORT_STD template <class _Clock>
     struct is_clock : bool_constant<_Is_clock_v<_Clock>> {};
     _EXPORT_STD template <class _Clock>
-    inline constexpr bool is_clock_v = _Is_clock_v<_Clock>;
+    constexpr bool is_clock_v = _Is_clock_v<_Clock>;
 #endif // _HAS_CXX20
 
     _EXPORT_STD template <class _Rep, class _Period = ratio<1>>
     class duration;
 
     template <class _Ty>
-    _INLINE_VAR constexpr bool _Is_duration_v = _Is_specialization_v<_Ty, duration>;
+    constexpr bool _Is_duration_v = _Is_specialization_v<_Ty, duration>;
 
     _EXPORT_STD template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> = 0>
     constexpr _To duration_cast(const duration<_Rep, _Period>&) noexcept(
@@ -252,11 +252,10 @@ namespace chrono {
 } // namespace chrono
 
 template <class _Rep, class _Period>
-_INLINE_VAR constexpr bool _Is_trivially_swappable_v<chrono::duration<_Rep, _Period>> = _Is_trivially_swappable_v<_Rep>;
+constexpr bool _Is_trivially_swappable_v<chrono::duration<_Rep, _Period>> = _Is_trivially_swappable_v<_Rep>;
 
 template <class _Clock, class _Duration>
-_INLINE_VAR constexpr bool _Is_trivially_swappable_v<chrono::time_point<_Clock, _Duration>> =
-    _Is_trivially_swappable_v<_Duration>;
+constexpr bool _Is_trivially_swappable_v<chrono::time_point<_Clock, _Duration>> = _Is_trivially_swappable_v<_Duration>;
 
 _NODISCARD constexpr intmax_t _Lcm(const intmax_t _Ax, const intmax_t _Bx) noexcept {
     return (_Ax / _Gcd(_Ax, _Bx)) * _Bx;
