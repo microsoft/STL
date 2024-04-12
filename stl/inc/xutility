@@ -5629,8 +5629,14 @@ namespace ranges {
 #endif // _HAS_CXX20
 
 template <class _Elem1, class _Elem2>
-constexpr bool _Lex_compare_memcmp_classify_elements = conjunction_v<_Is_character_or_bool<_Elem1>,
-    _Is_character_or_bool<_Elem2>, is_unsigned<_Elem1>, is_unsigned<_Elem2>>;
+constexpr bool _Lex_compare_memcmp_classify_elements =
+#if _USE_STD_VECTOR_ALGORITHMS
+    is_integral_v<_Elem1> && is_integral_v<_Elem2> && sizeof(_Elem1) == sizeof(_Elem2)
+    && is_unsigned_v<_Elem1> == is_unsigned_v<_Elem2>;
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
+    conjunction_v<_Is_character_or_bool<_Elem1>, _Is_character_or_bool<_Elem2>, is_unsigned<_Elem1>,
+        is_unsigned<_Elem2>>;
+#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
 
 #ifdef __cpp_lib_byte
 template <>
@@ -5702,10 +5708,24 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
-            const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _STD _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
+            const auto _Num1  = static_cast<size_t>(_ULast1 - _UFirst1);
+            const auto _Num2  = static_cast<size_t>(_ULast2 - _UFirst2);
+            const size_t _Num = (_STD min)(_Num1, _Num2);
+#if _USE_STD_VECTOR_ALGORITHMS
+            const auto _First1_ptr = _STD _To_address(_UFirst1);
+            const auto _First2_ptr = _STD _To_address(_UFirst2);
+            const size_t _Pos      = _Mismatch_vectorized<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
+            if (_Pos == _Num2) {
+                return false;
+            } else if (_Pos == _Num1) {
+                return true;
+            } else {
+                return _Pred(_First1_ptr[_Pos], _First2_ptr[_Pos]);
+            }
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
+            const int _Ans = _STD _Memcmp_count(_UFirst1, _UFirst2, _Num);
             return _Memcmp_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
+#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
         }
     }
 
@@ -5802,14 +5822,31 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1
     using _Memcmp_pred = _Lex_compare_three_way_memcmp_classify<decltype(_UFirst1), decltype(_UFirst2), _Cmp>;
     if constexpr (!is_void_v<_Memcmp_pred>) {
         if (!_STD is_constant_evaluated()) {
-            const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
-            const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _STD _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
+            const auto _Num1  = static_cast<size_t>(_ULast1 - _UFirst1);
+            const auto _Num2  = static_cast<size_t>(_ULast2 - _UFirst2);
+            const size_t _Num = (_STD min)(_Num1, _Num2);
+#if _USE_STD_VECTOR_ALGORITHMS
+            const auto _First1_ptr = _STD to_address(_UFirst1);
+            const auto _First2_ptr = _STD to_address(_UFirst2);
+            const size_t _Pos      = _Mismatch_vectorized<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
+            if (_Pos == _Num1) {
+                return _Pos == _Num2 ? strong_ordering::equal : strong_ordering::less;
+            } else if (_Pos == _Num2) {
+                return strong_ordering::greater;
+            } else {
+                const auto _Val1 = _First1_ptr[_Pos];
+                const auto _Val2 = _First2_ptr[_Pos];
+                __assume(_Val1 != _Val2); // avoid one comparison
+                return _Comp(_Val1, _Val2);
+            }
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
+            const int _Ans = _STD _Memcmp_count(_UFirst1, _UFirst2, _Num);
             if (_Ans == 0) {
                 return _Num1 <=> _Num2;
             } else {
                 return _Memcmp_pred{}(_Ans, 0);
             }
+#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
         }
     }
 

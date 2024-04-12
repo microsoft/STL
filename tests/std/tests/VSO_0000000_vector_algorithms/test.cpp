@@ -20,8 +20,9 @@
 #include <vector>
 
 #if _HAS_CXX20
+#include <compare>
 #include <ranges>
-#endif
+#endif // _HAS_CXX20
 
 #include "test_min_max_element_support.hpp"
 
@@ -388,20 +389,69 @@ auto last_known_good_mismatch(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt las
     return make_pair(first1, first2);
 }
 
-template <class T>
-void test_case_mismatch(const vector<T>& a, const vector<T>& b) {
-    auto expected = last_known_good_mismatch(a.begin(), a.end(), b.begin(), b.end());
-    auto actual   = mismatch(a.begin(), a.end(), b.begin(), b.end());
-    assert(expected == actual);
+template <class FwdIt>
+bool last_known_good_lex_compare(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
+    for (;; ++first1, ++first2) {
+        if (first2 == last2) {
+            return false;
+        } else if (first1 == last1) {
+            return true;
+        } else if (*first1 < *first2) {
+            return true;
+        } else if (*first2 < *first1) {
+            return false;
+        }
+    }
+}
+
 #if _HAS_CXX20
-    auto ranges_actual = ranges::mismatch(a, b);
-    assert(get<0>(expected) == ranges_actual.in1);
-    assert(get<1>(expected) == ranges_actual.in2);
+template <class FwdIt>
+auto last_known_good_lex_compare_3way(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
+    for (;; ++first1, ++first2) {
+        if (first2 == last2) {
+            if (first1 == last1) {
+                return strong_ordering::equal;
+            } else {
+                return strong_ordering::greater;
+            }
+        } else if (first1 == last1) {
+            return strong_ordering::less;
+        } else {
+            auto order = *first1 <=> *first2;
+            if (order != 0) {
+                return order;
+            }
+        }
+    }
+}
+#endif // _HAS_CXX20
+
+template <class T>
+void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<T>& b) {
+    auto expected_mismatch = last_known_good_mismatch(a.begin(), a.end(), b.begin(), b.end());
+    auto actual_mismatch   = mismatch(a.begin(), a.end(), b.begin(), b.end());
+    assert(expected_mismatch == actual_mismatch);
+
+    auto expected_lex = last_known_good_lex_compare(a.begin(), a.end(), b.begin(), b.end());
+    auto actual_lex   = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
+    assert(expected_lex == actual_lex);
+
+#if _HAS_CXX20
+    auto ranges_actual_mismatch = ranges::mismatch(a, b);
+    assert(get<0>(expected_mismatch) == ranges_actual_mismatch.in1);
+    assert(get<1>(expected_mismatch) == ranges_actual_mismatch.in2);
+
+    auto ranges_actual_lex = ranges::lexicographical_compare(a, b);
+    assert(expected_lex == ranges_actual_lex);
+
+    auto expected_lex_3way = last_known_good_lex_compare_3way(a.begin(), a.end(), b.begin(), b.end());
+    auto actual_lex_3way   = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+    assert(expected_lex_3way == actual_lex_3way);
 #endif // _HAS_CXX20
 }
 
 template <class T>
-void test_mismatch(mt19937_64& gen) {
+void test_mismatch_and_lex_compare_family(mt19937_64& gen) {
     constexpr size_t shrinkCount   = 4;
     constexpr size_t mismatchCount = 30;
     using TD                       = conditional_t<sizeof(T) == 1, int, T>;
@@ -413,13 +463,13 @@ void test_mismatch(mt19937_64& gen) {
 
     for (;;) {
         // equal
-        test_case_mismatch(input_a, input_b);
+        test_case_mismatch_and_lex_compare_family(input_a, input_b);
 
         // different sizes
         for (size_t i = 0; i != shrinkCount && !input_b.empty(); ++i) {
-            test_case_mismatch(input_a, input_b);
-            test_case_mismatch(input_b, input_a);
             input_b.pop_back();
+            test_case_mismatch_and_lex_compare_family(input_a, input_b);
+            test_case_mismatch_and_lex_compare_family(input_b, input_a);
         }
 
         // actual mismatch (or maybe not, depending on random)
@@ -429,8 +479,8 @@ void test_mismatch(mt19937_64& gen) {
             for (size_t attempts = 0; attempts < mismatchCount; ++attempts) {
                 const size_t possible_mismatch_pos = mismatch_dis(gen);
                 input_a[possible_mismatch_pos]     = static_cast<T>(dis(gen));
-                test_case_mismatch(input_a, input_b);
-                test_case_mismatch(input_b, input_a);
+                test_case_mismatch_and_lex_compare_family(input_a, input_b);
+                test_case_mismatch_and_lex_compare_family(input_b, input_a);
             }
         }
 
@@ -444,19 +494,30 @@ void test_mismatch(mt19937_64& gen) {
 }
 
 template <class C1, class C2>
-void test_mismatch_containers() {
+void test_mismatch_and_lex_compare_family_containers() {
     C1 a{'m', 'e', 'o', 'w', ' ', 'C', 'A', 'T', 'S'};
     C2 b{'m', 'e', 'o', 'w', ' ', 'K', 'I', 'T', 'T', 'E', 'N', 'S'};
-    const auto result_4 = mismatch(a.begin(), a.end(), b.begin(), b.end());
-    const auto result_3 = mismatch(a.begin(), a.end(), b.begin());
-    assert(get<0>(result_4) == a.begin() + 5);
-    assert(get<1>(result_4) == b.begin() + 5);
-    assert(get<0>(result_3) == a.begin() + 5);
-    assert(get<1>(result_3) == b.begin() + 5);
+
+    const auto result_mismatch_4 = mismatch(a.begin(), a.end(), b.begin(), b.end());
+    const auto result_mismatch_3 = mismatch(a.begin(), a.end(), b.begin());
+    assert(get<0>(result_mismatch_4) == a.begin() + 5);
+    assert(get<1>(result_mismatch_4) == b.begin() + 5);
+    assert(get<0>(result_mismatch_3) == a.begin() + 5);
+    assert(get<1>(result_mismatch_3) == b.begin() + 5);
+
+    const auto result_lex = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
+    assert(result_lex == true);
+
 #if _HAS_CXX20
-    const auto result_r = ranges::mismatch(a, b);
-    assert(result_r.in1 == a.begin() + 5);
-    assert(result_r.in2 == b.begin() + 5);
+    const auto result_mismatch_r = ranges::mismatch(a, b);
+    assert(result_mismatch_r.in1 == a.begin() + 5);
+    assert(result_mismatch_r.in2 == b.begin() + 5);
+
+    const auto result_lex_r = ranges::lexicographical_compare(a, b);
+    assert(result_lex_r == true);
+
+    const auto result_lex_3way = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+    assert(result_lex_3way == strong_ordering::less);
 #endif // _HAS_CXX20
 }
 
@@ -751,23 +812,23 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_case_min_max_element(
         vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
 
-    test_mismatch<char>(gen);
-    test_mismatch<signed char>(gen);
-    test_mismatch<unsigned char>(gen);
-    test_mismatch<short>(gen);
-    test_mismatch<unsigned short>(gen);
-    test_mismatch<int>(gen);
-    test_mismatch<unsigned int>(gen);
-    test_mismatch<long long>(gen);
-    test_mismatch<unsigned long long>(gen);
+    test_mismatch_and_lex_compare_family<char>(gen);
+    test_mismatch_and_lex_compare_family<signed char>(gen);
+    test_mismatch_and_lex_compare_family<unsigned char>(gen);
+    test_mismatch_and_lex_compare_family<short>(gen);
+    test_mismatch_and_lex_compare_family<unsigned short>(gen);
+    test_mismatch_and_lex_compare_family<int>(gen);
+    test_mismatch_and_lex_compare_family<unsigned int>(gen);
+    test_mismatch_and_lex_compare_family<long long>(gen);
+    test_mismatch_and_lex_compare_family<unsigned long long>(gen);
 
-    test_mismatch_containers<vector<char>, vector<signed char>>();
-    test_mismatch_containers<vector<char>, vector<unsigned char>>();
-    test_mismatch_containers<vector<wchar_t>, vector<char>>();
-    test_mismatch_containers<const vector<char>, const vector<char>>();
-    test_mismatch_containers<vector<char>, const vector<char>>();
-    test_mismatch_containers<const vector<wchar_t>, vector<wchar_t>>();
-    test_mismatch_containers<vector<char>, vector<int>>();
+    test_mismatch_and_lex_compare_family_containers<vector<char>, vector<signed char>>();
+    test_mismatch_and_lex_compare_family_containers<vector<char>, vector<unsigned char>>();
+    test_mismatch_and_lex_compare_family_containers<vector<wchar_t>, vector<char>>();
+    test_mismatch_and_lex_compare_family_containers<const vector<char>, const vector<char>>();
+    test_mismatch_and_lex_compare_family_containers<vector<char>, const vector<char>>();
+    test_mismatch_and_lex_compare_family_containers<const vector<wchar_t>, vector<wchar_t>>();
+    test_mismatch_and_lex_compare_family_containers<vector<char>, vector<int>>();
 
     test_mismatch_sizes_and_alignments::test<char>();
     test_mismatch_sizes_and_alignments::test<short>();

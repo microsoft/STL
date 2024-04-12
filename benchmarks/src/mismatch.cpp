@@ -12,7 +12,12 @@ using namespace std;
 
 constexpr int64_t no_pos = -1;
 
-template <class T>
+enum class op {
+    mismatch,
+    lexi,
+};
+
+template <class T, op Op>
 void bm(benchmark::State& state) {
     vector<T> a(static_cast<size_t>(state.range(0)), T{'.'});
     vector<T> b(static_cast<size_t>(state.range(0)), T{'.'});
@@ -22,15 +27,27 @@ void bm(benchmark::State& state) {
     }
 
     for (auto _ : state) {
-        benchmark::DoNotOptimize(ranges::mismatch(a, b));
+        if constexpr (Op == op::mismatch) {
+            benchmark::DoNotOptimize(ranges::mismatch(a, b));
+        } else if constexpr (Op == op::lexi) {
+            benchmark::DoNotOptimize(ranges::lexicographical_compare(a, b));
+        }
     }
 }
 
-#define COMMON_ARGS Args({8, 3})->Args({24, 22})->Args({105, -1})->Args({4021, 3056})
+void common_args(auto bm) {
+    bm->Args({8, 3})->Args({24, 22})->Args({105, -1})->Args({4021, 3056});
+}
 
-BENCHMARK(bm<uint8_t>)->COMMON_ARGS;
-BENCHMARK(bm<uint16_t>)->COMMON_ARGS;
-BENCHMARK(bm<uint32_t>)->COMMON_ARGS;
-BENCHMARK(bm<uint64_t>)->COMMON_ARGS;
+BENCHMARK(bm<uint8_t, op::mismatch>)->Apply(common_args);
+BENCHMARK(bm<uint16_t, op::mismatch>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, op::mismatch>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, op::mismatch>)->Apply(common_args);
+
+BENCHMARK(bm<uint8_t, op::lexi>)->Apply(common_args); // still optimized without vector algorithms using memcmp
+BENCHMARK(bm<int8_t, op::lexi>)->Apply(common_args); // optimized with vector algorithms only
+BENCHMARK(bm<uint16_t, op::lexi>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, op::lexi>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, op::lexi>)->Apply(common_args);
 
 BENCHMARK_MAIN();
