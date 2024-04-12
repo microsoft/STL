@@ -886,7 +886,7 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
 }
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_EcharT = _Is_any_of_v<_Ty, char, wchar_t,
+constexpr bool _Is_EcharT = _Is_any_of_v<_Ty, char, wchar_t,
 #ifdef __cpp_char8_t
     char8_t,
 #endif // defined(__cpp_char8_t)
@@ -1637,125 +1637,19 @@ basic_string_view(_Range&&) -> basic_string_view<_RANGES range_value_t<_Range>>;
 
 namespace ranges {
     template <class _Elem, class _Traits>
-    inline constexpr bool enable_view<basic_string_view<_Elem, _Traits>> = true;
+    constexpr bool enable_view<basic_string_view<_Elem, _Traits>> = true;
     template <class _Elem, class _Traits>
-    inline constexpr bool enable_borrowed_range<basic_string_view<_Elem, _Traits>> = true;
+    constexpr bool enable_borrowed_range<basic_string_view<_Elem, _Traits>> = true;
 } // namespace ranges
 #endif // _HAS_CXX20
 
-_EXPORT_STD template <class _Elem, class _Traits>
-_NODISCARD constexpr bool operator==(
-    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return _Lhs._Equal(_Rhs);
-}
-
-#if !_HAS_CXX20
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator==(
-    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return _Lhs._Equal(_Rhs);
-}
-#endif // !_HAS_CXX20
-
-_EXPORT_STD template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator==(
-    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
-    return _Lhs._Equal(_Rhs);
-}
-
-#if !_HAS_CXX20
-template <class _Elem, class _Traits>
-_NODISCARD constexpr bool operator!=(
-    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return !_Lhs._Equal(_Rhs);
-}
-
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator!=(
-    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return !_Lhs._Equal(_Rhs);
-}
-
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator!=(
-    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
-    return !_Lhs._Equal(_Rhs);
-}
-
-template <class _Elem, class _Traits>
-_NODISCARD constexpr bool operator<(
-    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) < 0;
-}
-
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator<(
-    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) < 0;
-}
-
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator<(
-    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) < 0;
-}
-
-template <class _Elem, class _Traits>
-_NODISCARD constexpr bool operator>(
-    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) > 0;
-}
-
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator>(
-    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) > 0;
-}
-
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator>(
-    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) > 0;
-}
-
-template <class _Elem, class _Traits>
-_NODISCARD constexpr bool operator<=(
-    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) <= 0;
-}
-
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator<=(
-    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) <= 0;
-}
-
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator<=(
-    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) <= 0;
-}
-
-template <class _Elem, class _Traits>
-_NODISCARD constexpr bool operator>=(
-    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) >= 0;
-}
-
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator>=(
-    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) >= 0;
-}
-
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
-_NODISCARD constexpr bool operator>=(
-    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
-    return _Lhs.compare(_Rhs) >= 0;
-}
-#endif // !_HAS_CXX20
-
 #if _HAS_CXX20
+_EXPORT_STD template <class _Elem, class _Traits>
+_NODISCARD constexpr bool operator==(const basic_string_view<_Elem, _Traits> _Lhs,
+    const type_identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
+    return _Lhs._Equal(_Rhs);
+}
+
 template <class _Traits, class = void>
 struct _Get_comparison_category {
     using type = weak_ordering;
@@ -1766,24 +1660,126 @@ struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_cat
     using type = _Traits::comparison_category;
 
     static_assert(_Is_any_of_v<type, partial_ordering, weak_ordering, strong_ordering>,
-        "N4950 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
+        "N4971 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
 };
 
 template <class _Traits>
 using _Get_comparison_category_t = _Get_comparison_category<_Traits>::type;
 
 _EXPORT_STD template <class _Elem, class _Traits>
-_NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
-    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+_NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(const basic_string_view<_Elem, _Traits> _Lhs,
+    const type_identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return static_cast<_Get_comparison_category_t<_Traits>>(_Lhs.compare(_Rhs) <=> 0);
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Elem, class _Traits>
+_NODISCARD constexpr bool operator==(
+    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return _Lhs._Equal(_Rhs);
 }
 
-_EXPORT_STD template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
-_NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
-    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
-    return static_cast<_Get_comparison_category_t<_Traits>>(_Lhs.compare(_Rhs) <=> 0);
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator==(
+    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return _Lhs._Equal(_Rhs);
 }
-#endif // _HAS_CXX20
+
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator==(
+    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
+    return _Lhs._Equal(_Rhs);
+}
+
+template <class _Elem, class _Traits>
+_NODISCARD constexpr bool operator!=(
+    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return !_Lhs._Equal(_Rhs);
+}
+
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator!=(
+    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return !_Lhs._Equal(_Rhs);
+}
+
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator!=(
+    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
+    return !_Lhs._Equal(_Rhs);
+}
+
+template <class _Elem, class _Traits>
+_NODISCARD constexpr bool operator<(
+    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) < 0;
+}
+
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator<(
+    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) < 0;
+}
+
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator<(
+    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) < 0;
+}
+
+template <class _Elem, class _Traits>
+_NODISCARD constexpr bool operator>(
+    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) > 0;
+}
+
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator>(
+    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) > 0;
+}
+
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator>(
+    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) > 0;
+}
+
+template <class _Elem, class _Traits>
+_NODISCARD constexpr bool operator<=(
+    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) <= 0;
+}
+
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator<=(
+    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) <= 0;
+}
+
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator<=(
+    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) <= 0;
+}
+
+template <class _Elem, class _Traits>
+_NODISCARD constexpr bool operator>=(
+    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) >= 0;
+}
+
+template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator>=(
+    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) >= 0;
+}
+
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
+_NODISCARD constexpr bool operator>=(
+    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
+    return _Lhs.compare(_Rhs) >= 0;
+}
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD using string_view = basic_string_view<char>;
 #ifdef __cpp_lib_char8_t
@@ -2311,7 +2307,7 @@ public:
 
 // get _Ty's size after being EBCO'd
 template <class _Ty>
-_INLINE_VAR constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty);
+constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty);
 
 struct _String_constructor_concat_tag {
     // tag to select constructors used by basic_string's concatenation operators (operator+)

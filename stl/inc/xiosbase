@@ -61,9 +61,9 @@ public:
     static constexpr int ate        = 0x04;
     static constexpr int app        = 0x08;
     static constexpr int trunc      = 0x10;
+    static constexpr int binary     = 0x20;
     static constexpr int _Nocreate  = 0x40;
     static constexpr int _Noreplace = 0x80;
-    static constexpr int binary     = 0x20;
 #if _HAS_CXX23
     static constexpr int noreplace = _Noreplace;
 #endif

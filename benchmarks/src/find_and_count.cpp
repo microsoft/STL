@@ -5,7 +5,9 @@
 #include <benchmark/benchmark.h>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <ranges>
+#include <vector>
 
 enum class Op {
     FindSized,
@@ -15,58 +17,50 @@ enum class Op {
 
 using namespace std;
 
-template <class T, size_t Size, size_t Pos, Op Operation>
+template <class T, Op Operation>
 void bm(benchmark::State& state) {
-    T a[Size];
+    const auto size = static_cast<size_t>(state.range(0));
+    const auto pos  = static_cast<size_t>(state.range(1));
 
-    fill_n(a, Size, T{'0'});
-    if constexpr (Pos < Size) {
-        a[Pos] = T{'1'};
+    vector<T> a(size, T{'0'});
+
+    if (pos < size) {
+        a[pos] = T{'1'};
     } else {
-        static_assert(Operation != Op::FindUnsized);
+        if constexpr (Operation == Op::FindUnsized) {
+            abort();
+        }
     }
 
     for (auto _ : state) {
         if constexpr (Operation == Op::FindSized) {
-            benchmark::DoNotOptimize(ranges::find(a, a + Size, T{'1'}));
+            benchmark::DoNotOptimize(ranges::find(a.begin(), a.end(), T{'1'}));
         } else if constexpr (Operation == Op::FindUnsized) {
-            benchmark::DoNotOptimize(ranges::find(a, unreachable_sentinel, T{'1'}));
+            benchmark::DoNotOptimize(ranges::find(a.begin(), unreachable_sentinel, T{'1'}));
         } else if constexpr (Operation == Op::Count) {
-            benchmark::DoNotOptimize(ranges::count(a, a + Size, T{'1'}));
+            benchmark::DoNotOptimize(ranges::count(a.begin(), a.end(), T{'1'}));
         }
     }
 }
 
-BENCHMARK(bm<uint8_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<uint8_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<uint8_t, 8021, 3056, Op::Count>);
+void common_args(auto bm) {
+    bm->Args({8021, 3056});
+    // AVX tail tests
+    bm->Args({63, 62})->Args({31, 30})->Args({15, 14})->Args({7, 6});
+}
 
-BENCHMARK(bm<uint16_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<uint16_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<uint16_t, 8021, 3056, Op::Count>);
 
-BENCHMARK(bm<uint32_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<uint32_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<uint32_t, 8021, 3056, Op::Count>);
+BENCHMARK(bm<uint8_t, Op::FindSized>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, Op::FindUnsized>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, Op::Count>)->Apply(common_args);
 
-BENCHMARK(bm<uint64_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<uint64_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<uint64_t, 8021, 3056, Op::Count>);
+BENCHMARK(bm<uint16_t, Op::FindSized>)->Apply(common_args);
+BENCHMARK(bm<uint16_t, Op::Count>)->Apply(common_args);
 
-BENCHMARK(bm<int8_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<int8_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<int8_t, 8021, 3056, Op::Count>);
+BENCHMARK(bm<uint32_t, Op::FindSized>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, Op::Count>)->Apply(common_args);
 
-BENCHMARK(bm<int16_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<int16_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<int16_t, 8021, 3056, Op::Count>);
-
-BENCHMARK(bm<int32_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<int32_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<int32_t, 8021, 3056, Op::Count>);
-
-BENCHMARK(bm<int64_t, 8021, 3056, Op::FindSized>);
-BENCHMARK(bm<int64_t, 8021, 3056, Op::FindUnsized>);
-BENCHMARK(bm<int64_t, 8021, 3056, Op::Count>);
+BENCHMARK(bm<uint64_t, Op::FindSized>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, Op::Count>)->Apply(common_args);
 
 BENCHMARK_MAIN();

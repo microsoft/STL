@@ -7102,7 +7102,7 @@ namespace msvc {
         };
 
         template <class... Ts>
-        inline constexpr bool check_size = sizeof(std::variant<Ts...>) == sizeof(fake_variant<Ts...>);
+        constexpr bool check_size = sizeof(std::variant<Ts...>) == sizeof(fake_variant<Ts...>);
 
         template <int>
         struct empty {};
@@ -7757,9 +7757,9 @@ namespace msvc {
     } // namespace visit_pointer_to_member
 
     template <class, class = void>
-    inline constexpr bool has_type = false;
+    constexpr bool has_type = false;
     template <class T>
-    inline constexpr bool has_type<T, std::void_t<typename T::type>> = true;
+    constexpr bool has_type<T, std::void_t<typename T::type>> = true;
 
     // Verify that `_Meta_at_<_Meta_list<>, size_t(-1)>` has no member named `type`, and that instantiating it doesn't
     // consume the entire compiler heap.

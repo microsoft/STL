@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <cstring>
 #include <xtr1common>
+
 #ifndef _M_ARM64EC
 #include <intrin.h>
 #include <isa_availability.h>
@@ -29,14 +30,6 @@ namespace {
         return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
     }
 
-    bool _Use_sse2() noexcept {
-#ifdef _M_IX86
-        return __isa_enabled & (1 << __ISA_AVAILABLE_SSE2);
-#else
-        return true;
-#endif
-    }
-
     struct [[nodiscard]] _Zeroupper_on_exit { // TRANSITION, DevCom-10331414
         _Zeroupper_on_exit() = default;
 
@@ -47,6 +40,12 @@ namespace {
             _mm256_zeroupper();
         }
     };
+
+    __m256i _Avx2_tail_mask_32(const size_t _Count_in_dwords) noexcept {
+        // _Count_in_dwords must be within [1, 7].
+        static constexpr unsigned int _Tail_masks[14] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0, 0, 0, 0};
+        return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tail_masks + (7 - _Count_in_dwords)));
+    }
 } // namespace
 #endif // !defined(_M_ARM64EC)
 
@@ -111,7 +110,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     }
 
     constexpr size_t _Mask_16 = ~((static_cast<size_t>(1) << 4) - 1);
-    if (_Byte_length(_First1, _Last1) >= 16 && _Use_sse2()) {
+    if (_Byte_length(_First1, _Last1) >= 16 && _Use_sse42()) {
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_16);
         do {
@@ -207,7 +206,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
             const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
-            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_char_sse); // SSSE3
+            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_char_sse);
             const __m128i _Right_reversed = _mm_shuffle_epi8(_Right, _Reverse_char_sse);
             _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
             _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
@@ -251,7 +250,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
             const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
-            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_short_sse); // SSSE3
+            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_short_sse);
             const __m128i _Right_reversed = _mm_shuffle_epi8(_Right, _Reverse_short_sse);
             _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
             _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
@@ -283,7 +282,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
-    if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
         do {
@@ -321,7 +320,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
-    if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
         do {
@@ -368,7 +367,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-            const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_char_sse); // SSSE3
+            const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_char_sse);
             _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
@@ -407,7 +406,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-            const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_short_sse); // SSSE3
+            const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_short_sse);
             _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
@@ -436,7 +435,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
-    if (_Byte_length(_First, _Last) >= 16 && _Use_sse2()) {
+    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
         do {
@@ -470,7 +469,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
-    if (_Byte_length(_First, _Last) >= 16 && _Use_sse2()) {
+    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
         do {
@@ -578,17 +577,17 @@ namespace {
             __m128i _H_min_val = _Cur;
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words)); // SSSE3
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_bytes)); // SSSE3
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words));
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_bytes));
             return _H_min_val;
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi8(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi8(_Val1, _Val2); });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi8(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi8(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
@@ -604,7 +603,6 @@ namespace {
         }
 
         static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-            // _mm_shuffle_epi8 is SSSE3:
             return static_cast<_Unsigned_t>(_mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_H_pos))));
         }
 
@@ -621,11 +619,11 @@ namespace {
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second, __m128i = _mm_undefined_si128()) noexcept {
-            return _mm_min_epi8(_First, _Second); // SSE4.1
+            return _mm_min_epi8(_First, _Second);
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i = _mm_undefined_si128()) noexcept {
-            return _mm_max_epi8(_First, _Second); // SSE4.1
+            return _mm_max_epi8(_First, _Second);
         }
 
         static __m128i _Min_u(const __m128i _First, const __m128i _Second) noexcept {
@@ -679,7 +677,7 @@ namespace {
             __m128i _H_min_val = _Cur;
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words)); // SSSE3
+            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi8(_H_min_val, _Shuf_words));
             return _H_min_val;
         }
 
@@ -692,11 +690,11 @@ namespace {
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu16(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu16(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu16(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu16(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -706,7 +704,6 @@ namespace {
         static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
             static constexpr _Unsigned_t _Shuf[] = {0x0100, 0x0302, 0x0504, 0x0706, 0x0908, 0x0B0A, 0x0D0C, 0x0F0E};
 
-            // _mm_shuffle_epi8 is SSSE3:
             return static_cast<_Unsigned_t>(
                 _mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_Shuf[_H_pos >> 1]))));
         }
@@ -732,11 +729,11 @@ namespace {
         }
 
         static __m128i _Min_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_min_epu16(_First, _Second); // SSE4.1
+            return _mm_min_epu16(_First, _Second);
         }
 
         static __m128i _Max_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_max_epu16(_First, _Second); // SSE4.1
+            return _mm_max_epu16(_First, _Second);
         }
 
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
@@ -788,19 +785,19 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi32(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi32(_Val1, _Val2); });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi32(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi32(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); }); // SSE4.1
+            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -826,19 +823,19 @@ namespace {
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second, __m128i = _mm_undefined_si128()) noexcept {
-            return _mm_min_epi32(_First, _Second); // SSE4.1
+            return _mm_min_epi32(_First, _Second);
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second, __m128i = _mm_undefined_si128()) noexcept {
-            return _mm_max_epi32(_First, _Second); // SSE4.1
+            return _mm_max_epi32(_First, _Second);
         }
 
         static __m128i _Min_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_min_epu32(_First, _Second); // SSE4.1
+            return _mm_min_epu32(_First, _Second);
         }
 
         static __m128i _Max_u(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_max_epu32(_First, _Second); // SSE4.1
+            return _mm_max_epu32(_First, _Second);
         }
 
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
@@ -905,7 +902,7 @@ namespace {
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
             return static_cast<_Signed_t>(
-                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32) // SSE4.1
+                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
                 | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
 #else // ^^^ x86 / x64 vvv
             return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
@@ -919,31 +916,31 @@ namespace {
         }
 
         static __m128i _Cmp_eq(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpeq_epi64(_First, _Second); // SSE4.1
+            return _mm_cmpeq_epi64(_First, _Second);
         }
 
         static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpgt_epi64(_First, _Second); // SSE4.2
+            return _mm_cmpgt_epi64(_First, _Second);
         }
 
         static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpeq_epi64(_First, _Second); // SSE4.1
+            return _mm_cmpeq_epi64(_First, _Second);
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Mask); // SSE4.1
+            return _mm_blendv_epi8(_First, _Second, _Mask);
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Mask); // SSE4.1
+            return _mm_blendv_epi8(_First, _Second, _Mask);
         }
 
         static __m128i _Min(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_First, _Second)); // _Cmp_gt is SSE4.2
+            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_First, _Second));
         }
 
         static __m128i _Max(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_Second, _First)); // _Cmp_gt is SSE4.2
+            return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_Second, _First));
         }
 
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
@@ -1009,11 +1006,11 @@ namespace {
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); }); // SSE4.1
+            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); }); // SSE4.1
+            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); });
         }
 
         static float _Get_any(const __m128 _Cur) noexcept {
@@ -1117,7 +1114,7 @@ namespace {
 
         static uint64_t _Get_any_u(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
-            return (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32) // SSE4.1
+            return (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
                  | static_cast<uint64_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur)));
 #else // ^^^ x86 / x64 vvv
             return static_cast<uint64_t>(_mm_cvtsi128_si64(_Cur));
@@ -1139,7 +1136,7 @@ namespace {
         }
 
         static __m128i _Cmp_eq_idx(const __m128i _First, const __m128i _Second) noexcept {
-            return _mm_cmpeq_epi64(_First, _Second); // SSE4.1
+            return _mm_cmpeq_epi64(_First, _Second);
         }
 
         static __m128d _Min(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
@@ -1156,12 +1153,12 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
-    // _Minmax_element has exactly the same signature as the extern "C" functions
+    // __std_minmax_element_impl has exactly the same signature as the extern "C" functions
     // (__std_min_element_N, __std_max_element_N, __std_minmax_element_N), up to calling convention.
     // This makes sure the template specialization is fused with the extern "C" function.
     // In optimized builds it avoids an extra call, as this function is too large to inline.
     template <_Min_max_mode _Mode, class _Traits>
-    auto __stdcall _Minmax_element(const void* _First, const void* const _Last, const bool _Sign) noexcept {
+    auto __stdcall __std_minmax_element_impl(const void* _First, const void* const _Last, const bool _Sign) noexcept {
         _Min_max_element_t _Res = {_First, _First};
         auto _Cur_min_val       = _Traits::_Init_min_val;
         auto _Cur_max_val       = _Traits::_Init_max_val;
@@ -1379,12 +1376,12 @@ namespace {
         }
     }
 
-    // _Minmax has exactly the same signature as the extern "C" functions
+    // __std_minmax_impl has exactly the same signature as the extern "C" functions
     // (__std_min_Nn, __std_max_Nn, __std_minmax_Nn), up to calling convention.
     // This makes sure the template specialization is fused with the extern "C" function.
     // In optimized builds it avoids an extra call, as this function is too large to inline.
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
-    auto __stdcall _Minmax(const void* _First, const void* const _Last) noexcept {
+    auto __stdcall __std_minmax_impl(const void* _First, const void* const _Last) noexcept {
         using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
         _Ty _Cur_min_val; // initialized in both of the branches below
@@ -1522,212 +1519,214 @@ extern "C" {
 
 const void* __stdcall __std_min_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_min, _Minmax_traits_1>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_1>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_min_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_min, _Minmax_traits_2>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_2>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_min_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_min, _Minmax_traits_4>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_4>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_min_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_min, _Minmax_traits_8>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-const void* __stdcall __std_min_element_f( // _Minmax_element's "signature" comment explains `bool _Unused`
+const void* __stdcall __std_min_element_f( // __std_minmax_element_impl's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return _Minmax_element<_Mode_min, _Minmax_traits_f>(_First, _Last, _Unused);
+    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_f>(_First, _Last, _Unused);
 }
 
-const void* __stdcall __std_min_element_d( // _Minmax_element's "signature" comment explains `bool _Unused`
+const void* __stdcall __std_min_element_d( // __std_minmax_element_impl's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return _Minmax_element<_Mode_min, _Minmax_traits_d>(_First, _Last, _Unused);
+    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_d>(_First, _Last, _Unused);
 }
 
 const void* __stdcall __std_max_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_max, _Minmax_traits_1>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_1>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_max_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_max, _Minmax_traits_2>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_2>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_max_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_max, _Minmax_traits_4>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_4>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_max_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_max, _Minmax_traits_8>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-const void* __stdcall __std_max_element_f( // _Minmax_element's "signature" comment explains `bool _Unused`
+const void* __stdcall __std_max_element_f( // __std_minmax_element_impl's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return _Minmax_element<_Mode_max, _Minmax_traits_f>(_First, _Last, _Unused);
+    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_f>(_First, _Last, _Unused);
 }
 
-const void* __stdcall __std_max_element_d( // _Minmax_element's "signature" comment explains `bool _Unused`
+const void* __stdcall __std_max_element_d( // __std_minmax_element_impl's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return _Minmax_element<_Mode_max, _Minmax_traits_d>(_First, _Last, _Unused);
+    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_d>(_First, _Last, _Unused);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_both, _Minmax_traits_1>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_1>(_First, _Last, _Signed);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_both, _Minmax_traits_2>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_2>(_First, _Last, _Signed);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_both, _Minmax_traits_4>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_4>(_First, _Last, _Signed);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Minmax_element<_Mode_both, _Minmax_traits_8>(_First, _Last, _Signed);
+    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-_Min_max_element_t __stdcall __std_minmax_element_f( // _Minmax_element's "signature" comment explains `bool _Unused`
+// __std_minmax_element_impl's "signature" comment explains `bool _Unused`
+_Min_max_element_t __stdcall __std_minmax_element_f(
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return _Minmax_element<_Mode_both, _Minmax_traits_f>(_First, _Last, _Unused);
+    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_f>(_First, _Last, _Unused);
 }
 
-_Min_max_element_t __stdcall __std_minmax_element_d( // _Minmax_element's "signature" comment explains `bool _Unused`
+// __std_minmax_element_impl's "signature" comment explains `bool _Unused`
+_Min_max_element_t __stdcall __std_minmax_element_d(
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return _Minmax_element<_Mode_both, _Minmax_traits_d>(_First, _Last, _Unused);
+    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_d>(_First, _Last, _Unused);
 }
 
 __declspec(noalias) int8_t __stdcall __std_min_1i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_min, _Minmax_traits_1, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_min, _Minmax_traits_1, true>(_First, _Last);
 }
 
 __declspec(noalias) uint8_t __stdcall __std_min_1u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_min, _Minmax_traits_1, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_min, _Minmax_traits_1, false>(_First, _Last);
 }
 
 __declspec(noalias) int16_t __stdcall __std_min_2i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_min, _Minmax_traits_2, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_min, _Minmax_traits_2, true>(_First, _Last);
 }
 
 __declspec(noalias) uint16_t __stdcall __std_min_2u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_min, _Minmax_traits_2, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_min, _Minmax_traits_2, false>(_First, _Last);
 }
 
 __declspec(noalias) int32_t __stdcall __std_min_4i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_min, _Minmax_traits_4, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_min, _Minmax_traits_4, true>(_First, _Last);
 }
 
 __declspec(noalias) uint32_t __stdcall __std_min_4u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_min, _Minmax_traits_4, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_min, _Minmax_traits_4, false>(_First, _Last);
 }
 
 __declspec(noalias) int64_t __stdcall __std_min_8i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_min, _Minmax_traits_8, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_min, _Minmax_traits_8, true>(_First, _Last);
 }
 
 __declspec(noalias) uint64_t __stdcall __std_min_8u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_min, _Minmax_traits_8, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_min, _Minmax_traits_8, false>(_First, _Last);
 }
 
 __declspec(noalias) float __stdcall __std_min_f(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_min, _Minmax_traits_f, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_min, _Minmax_traits_f, true>(_First, _Last);
 }
 
 __declspec(noalias) double __stdcall __std_min_d(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_min, _Minmax_traits_d, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_min, _Minmax_traits_d, true>(_First, _Last);
 }
 
 __declspec(noalias) int8_t __stdcall __std_max_1i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_max, _Minmax_traits_1, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_max, _Minmax_traits_1, true>(_First, _Last);
 }
 
 __declspec(noalias) uint8_t __stdcall __std_max_1u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_max, _Minmax_traits_1, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_max, _Minmax_traits_1, false>(_First, _Last);
 }
 
 __declspec(noalias) int16_t __stdcall __std_max_2i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_max, _Minmax_traits_2, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_max, _Minmax_traits_2, true>(_First, _Last);
 }
 
 __declspec(noalias) uint16_t __stdcall __std_max_2u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_max, _Minmax_traits_2, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_max, _Minmax_traits_2, false>(_First, _Last);
 }
 
 __declspec(noalias) int32_t __stdcall __std_max_4i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_max, _Minmax_traits_4, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_max, _Minmax_traits_4, true>(_First, _Last);
 }
 
 __declspec(noalias) uint32_t __stdcall __std_max_4u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_max, _Minmax_traits_4, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_max, _Minmax_traits_4, false>(_First, _Last);
 }
 
 __declspec(noalias) int64_t __stdcall __std_max_8i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_max, _Minmax_traits_8, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_max, _Minmax_traits_8, true>(_First, _Last);
 }
 
 __declspec(noalias) uint64_t __stdcall __std_max_8u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_max, _Minmax_traits_8, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_max, _Minmax_traits_8, false>(_First, _Last);
 }
 
 __declspec(noalias) float __stdcall __std_max_f(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_max, _Minmax_traits_f, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_max, _Minmax_traits_f, true>(_First, _Last);
 }
 
 __declspec(noalias) double __stdcall __std_max_d(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_max, _Minmax_traits_d, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_max, _Minmax_traits_d, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_both, _Minmax_traits_1, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_both, _Minmax_traits_1, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_both, _Minmax_traits_1, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_both, _Minmax_traits_1, false>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_2i __stdcall __std_minmax_2i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_both, _Minmax_traits_2, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_both, _Minmax_traits_2, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_2u __stdcall __std_minmax_2u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_both, _Minmax_traits_2, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_both, _Minmax_traits_2, false>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_4i __stdcall __std_minmax_4i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_both, _Minmax_traits_4, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_both, _Minmax_traits_4, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_4u __stdcall __std_minmax_4u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_both, _Minmax_traits_4, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_both, _Minmax_traits_4, false>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_8i __stdcall __std_minmax_8i(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_both, _Minmax_traits_8, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_both, _Minmax_traits_8, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_8u __stdcall __std_minmax_8u(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_both, _Minmax_traits_8, false>(_First, _Last);
+    return __std_minmax_impl<_Mode_both, _Minmax_traits_8, false>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_both, _Minmax_traits_f, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_both, _Minmax_traits_f, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* const _First, const void* const _Last) noexcept {
-    return _Minmax<_Mode_both, _Minmax_traits_d, true>(_First, _Last);
+    return __std_minmax_impl<_Mode_both, _Minmax_traits_d, true>(_First, _Last);
 }
 
 } // extern "C"
@@ -1742,7 +1741,7 @@ namespace {
         }
 
         static __m128i _Set_sse(const uint8_t _Val) noexcept {
-            return _mm_set1_epi8(_Val);
+            return _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
         }
 
         static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
@@ -1751,10 +1750,6 @@ namespace {
 
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi8(_Lhs, _Rhs);
-        }
-
-        static bool _Sse_available() noexcept {
-            return _Use_sse2();
         }
 #endif // !_M_ARM64EC
     };
@@ -1778,10 +1773,6 @@ namespace {
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi16(_Lhs, _Rhs);
         }
-
-        static bool _Sse_available() noexcept {
-            return _Use_sse2();
-        }
 #endif // !_M_ARM64EC
     };
 
@@ -1804,10 +1795,6 @@ namespace {
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi32(_Lhs, _Rhs);
         }
-
-        static bool _Sse_available() noexcept {
-            return _Use_sse2();
-        }
 #endif // !_M_ARM64EC
     };
 
@@ -1828,88 +1815,14 @@ namespace {
         }
 
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-            return _mm_cmpeq_epi64(_Lhs, _Rhs); // SSE4.1
-        }
-
-        static bool _Sse_available() noexcept {
-            return _Use_sse42(); // for pcmpeqq on _Cmp_sse
+            return _mm_cmpeq_epi64(_Lhs, _Rhs);
         }
 #endif // !_M_ARM64EC
     };
 
-    // The below functions have exactly the same signature as the extern "C" functions, up to calling convention.
-    // This makes sure the template specialization is fused with the extern "C" function.
-    // In optimized builds it avoids an extra call, as this function is too large to inline.
-
-    template <class _Traits, class _Ty>
-    const void* __stdcall __std_find_trivial_unsized_impl(const void* _First, const _Ty _Val) noexcept {
-#ifndef _M_ARM64EC
-        if ((reinterpret_cast<uintptr_t>(_First) & (sizeof(_Ty) - 1)) != 0) {
-            // _First isn't aligned to sizeof(_Ty), so we need to use the scalar fallback below.
-            // This can happen with 8-byte elements on x86's 4-aligned stack. It can also happen with packed structs.
-        } else if (_Use_avx2()) {
-            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
-
-            // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
-            // From start partial piece we mask out matches that don't belong to the range.
-            // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
-            constexpr size_t _Vector_pad_mask = 0x1F;
-            constexpr unsigned int _Full_mask = 0xFFFF'FFFF;
-
-            const __m256i _Comparand  = _Traits::_Set_avx(_Val);
-            const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
-            const unsigned int _Mask  = _Full_mask << _Pad_start;
-            _Advance_bytes(_First, -_Pad_start);
-
-            __m256i _Data       = _mm256_load_si256(static_cast<const __m256i*>(_First));
-            unsigned int _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
-
-            _Bingo &= _Mask;
-
-            for (;;) {
-                if (_Bingo != 0) {
-                    unsigned long _Offset = _tzcnt_u32(_Bingo);
-                    _Advance_bytes(_First, _Offset);
-                    return _First;
-                }
-
-                _Advance_bytes(_First, 32);
-
-                _Data  = _mm256_load_si256(static_cast<const __m256i*>(_First));
-                _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
-            }
-        } else if (_Traits::_Sse_available()) {
-            // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
-            // From start partial piece we mask out matches that don't belong to the range.
-            // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
-            constexpr size_t _Vector_pad_mask = 0xF;
-            constexpr unsigned int _Full_mask = 0xFFFF;
-
-            const __m128i _Comparand  = _Traits::_Set_sse(_Val);
-            const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
-            const unsigned int _Mask  = _Full_mask << _Pad_start;
-            _Advance_bytes(_First, -_Pad_start);
-
-            __m128i _Data       = _mm_load_si128(static_cast<const __m128i*>(_First));
-            unsigned int _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
-
-            _Bingo &= _Mask;
-
-            for (;;) {
-                if (_Bingo != 0) {
-                    unsigned long _Offset;
-                    _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
-                    _Advance_bytes(_First, _Offset);
-                    return _First;
-                }
-
-                _Advance_bytes(_First, 16);
-
-                _Data  = _mm_load_si128(static_cast<const __m128i*>(_First));
-                _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
-            }
-        }
-#endif // !_M_ARM64EC
+    // TRANSITION, ABI: used only in functions preserved for binary compatibility
+    template <class _Ty>
+    const void* __std_find_trivial_unsized_impl(const void* const _First, const _Ty _Val) noexcept {
         auto _Ptr = static_cast<const _Ty*>(_First);
         while (*_Ptr != _Val) {
             ++_Ptr;
@@ -1917,18 +1830,22 @@ namespace {
         return _Ptr;
     }
 
+    // The below functions have exactly the same signature as the extern "C" functions, up to calling convention.
+    // This makes sure the template specialization can be fused with the extern "C" function.
+    // In optimized builds it avoids an extra call, as these functions are too large to inline.
+
     template <class _Traits, class _Ty>
     const void* __stdcall __std_find_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
-        size_t _Size_bytes = _Byte_length(_First, _Last);
+        const size_t _Size_bytes = _Byte_length(_First, _Last);
 
-        const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
-        if (_Avx_size != 0 && _Use_avx2()) {
+        if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
             const void* _Stop_at     = _First;
             _Advance_bytes(_Stop_at, _Avx_size);
+
             do {
                 const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
                 const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
@@ -1941,14 +1858,30 @@ namespace {
 
                 _Advance_bytes(_First, 32);
             } while (_First != _Stop_at);
-            _Size_bytes &= 0x1F;
-        }
 
-        const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
-        if (_Sse_size != 0 && _Traits::_Sse_available()) {
+            if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                const int _Bingo =
+                    _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+
+                if (_Bingo != 0) {
+                    const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                    _Advance_bytes(_First, _Offset);
+                    return _First;
+                }
+
+                _Advance_bytes(_First, _Avx_tail_size);
+            }
+
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _First;
+            }
+        } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _First;
             _Advance_bytes(_Stop_at, _Sse_size);
+
             do {
                 const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
                 const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
@@ -1975,15 +1908,15 @@ namespace {
     const void* __stdcall __std_find_last_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
         const void* const _Real_last = _Last;
 #ifndef _M_ARM64EC
-        size_t _Size_bytes = _Byte_length(_First, _Last);
+        const size_t _Size_bytes = _Byte_length(_First, _Last);
 
-        const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
-        if (_Avx_size != 0 && _Use_avx2()) {
+        if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
             const void* _Stop_at     = _Last;
             _Rewind_bytes(_Stop_at, _Avx_size);
+
             do {
                 _Rewind_bytes(_Last, 32);
                 const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
@@ -1995,14 +1928,29 @@ namespace {
                     return _Last;
                 }
             } while (_Last != _Stop_at);
-            _Size_bytes &= 0x1F;
-        }
 
-        const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
-        if (_Sse_size != 0 && _Traits::_Sse_available()) {
+            if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
+                _Rewind_bytes(_Last, _Avx_tail_size);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Tail_mask);
+                const int _Bingo =
+                    _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+
+                if (_Bingo != 0) {
+                    const unsigned long _Offset = _lzcnt_u32(_Bingo);
+                    _Advance_bytes(_Last, (31 - _Offset) - (sizeof(_Ty) - 1));
+                    return _Last;
+                }
+            }
+
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _Real_last;
+            }
+        } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _Last;
             _Rewind_bytes(_Stop_at, _Sse_size);
+
             do {
                 _Rewind_bytes(_Last, 16);
                 const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
@@ -2035,64 +1983,311 @@ namespace {
         size_t _Result = 0;
 
 #ifndef _M_ARM64EC
-        size_t _Size_bytes = _Byte_length(_First, _Last);
+        const size_t _Size_bytes = _Byte_length(_First, _Last);
 
-        const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
-        if (_Avx_size != 0 && _Use_avx2()) {
+        if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
             const void* _Stop_at     = _First;
             _Advance_bytes(_Stop_at, _Avx_size);
+
             do {
                 const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
                 const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
                 _Result += __popcnt(_Bingo); // Assume available with SSE4.2
                 _Advance_bytes(_First, 32);
             } while (_First != _Stop_at);
-            _Size_bytes &= 0x1F;
+
+            if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                const int _Bingo =
+                    _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+                _Result += __popcnt(_Bingo); // Assume available with SSE4.2
+                _Advance_bytes(_First, _Avx_tail_size);
+            }
 
             _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-        }
 
-        const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
-        if (_Sse_size != 0 && _Use_sse42()) {
+            _Result >>= _Traits::_Shift;
+
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _Result;
+            }
+        } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _First;
             _Advance_bytes(_Stop_at, _Sse_size);
+
             do {
                 const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
                 const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
                 _Result += __popcnt(_Bingo); // Assume available with SSE4.2
                 _Advance_bytes(_First, 16);
             } while (_First != _Stop_at);
+
+            _Result >>= _Traits::_Shift;
         }
 #endif // !_M_ARM64EC
-        _Result >>= _Traits::_Shift;
-        auto _Ptr = static_cast<const _Ty*>(_First);
-        for (; _Ptr != _Last; ++_Ptr) {
+
+        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
             if (*_Ptr == _Val) {
                 ++_Result;
             }
         }
         return _Result;
     }
+
+    template <class _Ty>
+    const void* __stdcall __std_find_first_of_trivial_impl(
+        const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+#ifndef _M_ARM64EC
+        if (_Use_sse42()) {
+            constexpr int _Op =
+                (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT;
+            constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
+            const size_t _Needle_length = _Byte_length(_First2, _Last2);
+
+            if (_Needle_length <= 16) {
+                // Special handling of small needle
+                // The generic branch could also handle it but with slightly worse performance
+
+                const int _Needle_length_el = static_cast<int>(_Needle_length / sizeof(_Ty));
+
+                alignas(16) uint8_t _Tmp1[16];
+                memcpy(_Tmp1, _First2, _Needle_length);
+                const __m128i _Needle = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+
+                const size_t _Haystack_length = _Byte_length(_First1, _Last1);
+                const void* _Stop_at          = _First1;
+                _Advance_bytes(_Stop_at, _Haystack_length & ~size_t{0xF});
+
+                while (_First1 != _Stop_at) {
+                    const __m128i _Haystack_part = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                    if (_mm_cmpestrc(_Needle, _Needle_length_el, _Haystack_part, _Part_size_el, _Op)) {
+                        const int _Pos = _mm_cmpestri(_Needle, _Needle_length_el, _Haystack_part, _Part_size_el, _Op);
+                        _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                        return _First1;
+                    }
+
+                    _Advance_bytes(_First1, 16);
+                }
+
+                const size_t _Last_part_size = _Haystack_length & 0xF;
+                const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+
+                alignas(16) uint8_t _Tmp2[16];
+                memcpy(_Tmp2, _First1, _Last_part_size);
+                const __m128i _Haystack_part = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+
+                if (_mm_cmpestrc(_Needle, _Needle_length_el, _Haystack_part, _Last_part_size_el, _Op)) {
+                    const int _Pos = _mm_cmpestri(_Needle, _Needle_length_el, _Haystack_part, _Last_part_size_el, _Op);
+                    _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                    return _First1;
+                }
+
+                _Advance_bytes(_First1, _Last_part_size);
+                return _First1;
+            } else {
+                const void* _Last_needle = _First2;
+                _Advance_bytes(_Last_needle, _Needle_length & ~size_t{0xF});
+
+                const int _Last_needle_length = static_cast<int>(_Needle_length & 0xF);
+
+                alignas(16) uint8_t _Tmp1[16];
+                memcpy(_Tmp1, _Last_needle, _Last_needle_length);
+                const __m128i _Last_needle_val   = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
+
+                constexpr int _Not_found = 16; // arbitrary value greater than any found value
+
+                int _Found_pos = _Not_found;
+
+                const size_t _Haystack_length = _Byte_length(_First1, _Last1);
+                const void* _Stop_at          = _First1;
+                _Advance_bytes(_Stop_at, _Haystack_length & ~size_t{0xF});
+
+                while (_First1 != _Stop_at) {
+                    const __m128i _Haystack_part = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+
+                    for (const void* _Cur_needle = _First2; _Cur_needle != _Last_needle;
+                         _Advance_bytes(_Cur_needle, 16)) {
+                        const __m128i _Needle = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+                        if (_mm_cmpestrc(_Needle, _Part_size_el, _Haystack_part, _Part_size_el, _Op)) {
+                            const int _Pos = _mm_cmpestri(_Needle, _Part_size_el, _Haystack_part, _Part_size_el, _Op);
+                            if (_Pos < _Found_pos) {
+                                _Found_pos = _Pos;
+                            }
+                        }
+                    }
+
+                    if (const int _Needle_length_el = _Last_needle_length_el; _Needle_length_el != 0) {
+                        const __m128i _Needle = _Last_needle_val;
+                        if (_mm_cmpestrc(_Needle, _Needle_length_el, _Haystack_part, _Part_size_el, _Op)) {
+                            const int _Pos =
+                                _mm_cmpestri(_Needle, _Needle_length_el, _Haystack_part, _Part_size_el, _Op);
+                            if (_Pos < _Found_pos) {
+                                _Found_pos = _Pos;
+                            }
+                        }
+                    }
+
+                    if (_Found_pos != _Not_found) {
+                        _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
+                        return _First1;
+                    }
+
+                    _Advance_bytes(_First1, 16);
+                }
+
+                const size_t _Last_part_size = _Haystack_length & 0xF;
+                const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+
+                alignas(16) uint8_t _Tmp2[16];
+                memcpy(_Tmp2, _First1, _Last_part_size);
+                const __m128i _Haystack_part = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+
+                _Found_pos = _Last_part_size_el;
+
+                for (const void* _Cur_needle = _First2; _Cur_needle != _Last_needle; _Advance_bytes(_Cur_needle, 16)) {
+                    const __m128i _Needle = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+
+                    if (_mm_cmpestrc(_Needle, _Part_size_el, _Haystack_part, _Last_part_size_el, _Op)) {
+                        const int _Pos = _mm_cmpestri(_Needle, _Part_size_el, _Haystack_part, _Last_part_size_el, _Op);
+                        if (_Pos < _Found_pos) {
+                            _Found_pos = _Pos;
+                        }
+                    }
+                }
+
+                if (const int _Needle_length_el = _Last_needle_length_el; _Needle_length_el != 0) {
+                    const __m128i _Needle = _Last_needle_val;
+                    if (_mm_cmpestrc(_Needle, _Needle_length_el, _Haystack_part, _Last_part_size_el, _Op)) {
+                        const int _Pos =
+                            _mm_cmpestri(_Needle, _Needle_length_el, _Haystack_part, _Last_part_size_el, _Op);
+                        if (_Pos < _Found_pos) {
+                            _Found_pos = _Pos;
+                        }
+                    }
+                }
+
+                _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
+                return _First1;
+            }
+        }
+#endif // !_M_ARM64EC
+
+        auto _Ptr_haystack           = static_cast<const _Ty*>(_First1);
+        const auto _Ptr_haystack_end = static_cast<const _Ty*>(_Last1);
+        const auto _Ptr_needle       = static_cast<const _Ty*>(_First2);
+        const auto _Ptr_needle_end   = static_cast<const _Ty*>(_Last2);
+
+        for (; _Ptr_haystack != _Ptr_haystack_end; ++_Ptr_haystack) {
+            for (auto _Ptr = _Ptr_needle; _Ptr != _Ptr_needle_end; ++_Ptr) {
+                if (*_Ptr_haystack == *_Ptr) {
+                    return _Ptr_haystack;
+                }
+            }
+        }
+
+        return _Ptr_haystack;
+    }
+
+
+    template <class _Traits, class _Ty>
+    __declspec(noalias) size_t __stdcall __std_mismatch_impl(
+        const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+        size_t _Result = 0;
+#ifndef _M_ARM64EC
+        const auto _First1_ch = static_cast<const char*>(_First1);
+        const auto _First2_ch = static_cast<const char*>(_First2);
+
+        if (_Use_avx2()) {
+            const size_t _Count_bytes          = _Count * sizeof(_Ty);
+            const size_t _Count_bytes_avx_full = _Count_bytes & ~size_t{0x1F};
+
+            for (; _Result != _Count_bytes_avx_full; _Result += 0x20) {
+                const __m256i _Elem1 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First1_ch + _Result));
+                const __m256i _Elem2 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First2_ch + _Result));
+                const auto _Bingo = ~static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Elem1, _Elem2)));
+                if (_Bingo != 0) {
+                    return (_Result + _tzcnt_u32(_Bingo)) / sizeof(_Ty);
+                }
+            }
+
+            const size_t _Count_tail = _Count_bytes & size_t{0x1C};
+
+            if (_Count_tail != 0) {
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Count_tail >> 2);
+                const __m256i _Elem1 =
+                    _mm256_maskload_epi32(reinterpret_cast<const int*>(_First1_ch + _Result), _Tail_mask);
+                const __m256i _Elem2 =
+                    _mm256_maskload_epi32(reinterpret_cast<const int*>(_First2_ch + _Result), _Tail_mask);
+
+                const auto _Bingo = ~static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Elem1, _Elem2)));
+                if (_Bingo != 0) {
+                    return (_Result + _tzcnt_u32(_Bingo)) / sizeof(_Ty);
+                }
+
+                _Result += _Count_tail;
+            }
+
+            _Result /= sizeof(_Ty);
+
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _Result;
+            }
+        } else if (_Use_sse42()) {
+            const size_t _Count_bytes_sse = (_Count * sizeof(_Ty)) & ~size_t{0xF};
+
+            for (; _Result != _Count_bytes_sse; _Result += 0x10) {
+                const __m128i _Elem1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First1_ch + _Result));
+                const __m128i _Elem2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2_ch + _Result));
+                const auto _Bingo =
+                    static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Elem1, _Elem2))) ^ 0xFFFF;
+                if (_Bingo != 0) {
+                    unsigned long _Offset;
+                    _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
+                    return (_Result + _Offset) / sizeof(_Ty);
+                }
+            }
+
+            _Result /= sizeof(_Ty);
+        }
+#endif // !defined(_M_ARM64EC)
+        const auto _First1_el = static_cast<const _Ty*>(_First1);
+        const auto _First2_el = static_cast<const _Ty*>(_First2);
+
+        for (; _Result != _Count; ++_Result) {
+            if (_First1_el[_Result] != _First2_el[_Result]) {
+                break;
+            }
+        }
+
+        return _Result;
+    }
 } // unnamed namespace
 
 extern "C" {
 
+// TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_1(const void* const _First, const uint8_t _Val) noexcept {
-    return __std_find_trivial_unsized_impl<_Find_traits_1>(_First, _Val);
+    return memchr(_First, _Val, SIZE_MAX);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_2(const void* const _First, const uint16_t _Val) noexcept {
-    return __std_find_trivial_unsized_impl<_Find_traits_2>(_First, _Val);
+    // TRANSITION, DevCom-1614562: not trying wmemchr
+    return __std_find_trivial_unsized_impl(_First, _Val);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_4(const void* const _First, const uint32_t _Val) noexcept {
-    return __std_find_trivial_unsized_impl<_Find_traits_4>(_First, _Val);
+    return __std_find_trivial_unsized_impl(_First, _Val);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_8(const void* const _First, const uint64_t _Val) noexcept {
-    return __std_find_trivial_unsized_impl<_Find_traits_8>(_First, _Val);
+    return __std_find_trivial_unsized_impl(_First, _Val);
 }
 
 const void* __stdcall __std_find_trivial_1(
@@ -2155,6 +2350,113 @@ __declspec(noalias) size_t
     return __std_count_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
 }
 
+const void* __stdcall __std_find_first_of_trivial_1(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
+    return __std_find_first_of_trivial_impl<uint8_t>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_find_first_of_trivial_2(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
+    return __std_find_first_of_trivial_impl<uint16_t>(_First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) size_t
+    __stdcall __std_mismatch_1(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    return __std_mismatch_impl<_Find_traits_1, uint8_t>(_First1, _First2, _Count);
+}
+
+__declspec(noalias) size_t
+    __stdcall __std_mismatch_2(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    return __std_mismatch_impl<_Find_traits_2, uint16_t>(_First1, _First2, _Count);
+}
+
+__declspec(noalias) size_t
+    __stdcall __std_mismatch_4(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    return __std_mismatch_impl<_Find_traits_4, uint32_t>(_First1, _First2, _Count);
+}
+
+__declspec(noalias) size_t
+    __stdcall __std_mismatch_8(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+    return __std_mismatch_impl<_Find_traits_8, uint64_t>(_First1, _First2, _Count);
+}
+
+__declspec(noalias) void __stdcall __std_replace_4(
+    void* _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
+#ifndef _M_ARM64EC
+    if (_Use_avx2()) {
+        const __m256i _Comparand   = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_Old_val));
+        const __m256i _Replacement = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_New_val));
+        const size_t _Full_length  = _Byte_length(_First, _Last);
+
+        void* _Stop_at = _First;
+        _Advance_bytes(_Stop_at, _Full_length & ~size_t{0x1F});
+
+        while (_First != _Stop_at) {
+            const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
+            const __m256i _Mask = _mm256_cmpeq_epi32(_Comparand, _Data);
+            _mm256_maskstore_epi32(reinterpret_cast<int*>(_First), _Mask, _Replacement);
+
+            _Advance_bytes(_First, 32);
+        }
+
+        if (const size_t _Tail_length = _Full_length & 0x1C; _Tail_length != 0) {
+            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length >> 2);
+            const __m256i _Data      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First), _Tail_mask);
+            const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi32(_Comparand, _Data), _Tail_mask);
+            _mm256_maskstore_epi32(reinterpret_cast<int*>(_First), _Mask, _Replacement);
+        }
+    } else
+#endif // !defined(_M_ARM64EC)
+    {
+        for (auto _Cur = reinterpret_cast<uint32_t*>(_First); _Cur != _Last; ++_Cur) {
+            if (*_Cur == _Old_val) {
+                *_Cur = _New_val;
+            }
+        }
+    }
+}
+
+__declspec(noalias) void __stdcall __std_replace_8(
+    void* _First, void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
+#ifndef _M_ARM64EC
+    if (_Use_avx2()) {
+#ifdef _WIN64
+        const __m256i _Comparand   = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_Old_val));
+        const __m256i _Replacement = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_New_val));
+#else // ^^^ defined(_WIN64) / !defined(_WIN64), workaround, _mm_cvtsi64_si128 does not compile vvv
+        const __m256i _Comparand   = _mm256_set1_epi64x(_Old_val);
+        const __m256i _Replacement = _mm256_set1_epi64x(_New_val);
+#endif // ^^^ !defined(_WIN64) ^^^
+        const size_t _Full_length = _Byte_length(_First, _Last);
+
+        void* _Stop_at = _First;
+        _Advance_bytes(_Stop_at, _Full_length & ~size_t{0x1F});
+
+        while (_First != _Stop_at) {
+            const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
+            const __m256i _Mask = _mm256_cmpeq_epi64(_Comparand, _Data);
+            _mm256_maskstore_epi64(reinterpret_cast<long long*>(_First), _Mask, _Replacement);
+
+            _Advance_bytes(_First, 32);
+        }
+
+        if (const size_t _Tail_length = _Full_length & 0x18; _Tail_length != 0) {
+            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length >> 2);
+            const __m256i _Data      = _mm256_maskload_epi64(reinterpret_cast<const long long*>(_First), _Tail_mask);
+            const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi64(_Comparand, _Data), _Tail_mask);
+            _mm256_maskstore_epi64(reinterpret_cast<long long*>(_First), _Mask, _Replacement);
+        }
+    } else
+#endif // !defined(_M_ARM64EC)
+    {
+        for (auto _Cur = reinterpret_cast<uint64_t*>(_First); _Cur != _Last; ++_Cur) {
+            if (*_Cur == _Old_val) {
+                *_Cur = _New_val;
+            }
+        }
+    }
+}
+
 } // extern "C"
 
 #ifndef _M_ARM64EC
@@ -2172,12 +2474,10 @@ namespace {
 
     __m128i __forceinline _Bitset_to_string_1_step(const uint16_t _Val, const __m128i _Px0, const __m128i _Px1) {
         const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
-        const __m128i _Vx1 = _mm_unpacklo_epi8(_Vx0, _Vx0);
-        const __m128i _Vx2 = _mm_unpacklo_epi8(_Vx1, _Vx1);
-        const __m128i _Vx3 = _mm_shuffle_epi32(_Vx2, _MM_SHUFFLE(0, 0, 1, 1));
-        const __m128i _Msk = _mm_and_si128(_Vx3, _mm_set1_epi64x(0x0102040810204080));
+        const __m128i _Vx1 = _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x00000000, 0x01010101, 0x01010101));
+        const __m128i _Msk = _mm_and_si128(_Vx1, _mm_set1_epi64x(0x0102040810204080));
         const __m128i _Ex0 = _mm_cmpeq_epi8(_Msk, _mm_setzero_si128());
-        const __m128i _Ex1 = _mm_xor_si128(_mm_and_si128(_Ex0, _Px0), _Px1);
+        const __m128i _Ex1 = _mm_blendv_epi8(_Px1, _Px0, _Ex0);
         return _Ex1;
     }
 
@@ -2197,7 +2497,7 @@ namespace {
         const __m128i _Vx  = _mm_set1_epi16(_Val);
         const __m128i _Msk = _mm_and_si128(_Vx, _mm_set_epi64x(0x0001000200040008, 0x0010002000400080));
         const __m128i _Ex0 = _mm_cmpeq_epi16(_Msk, _mm_setzero_si128());
-        const __m128i _Ex1 = _mm_xor_si128(_mm_and_si128(_Ex0, _Px0), _Px1);
+        const __m128i _Ex1 = _mm_blendv_epi8(_Px1, _Px0, _Ex0);
         return _Ex1;
     }
 } // unnamed namespace
@@ -2237,12 +2537,9 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-        return;
-    }
-
-    if (_Use_sse2()) {
-        const __m128i _Px0 = _mm_set1_epi8(_Elem0 ^ _Elem1);
-        const __m128i _Px1 = _mm_set1_epi8(_Elem1);
+    } else if (_Use_sse42()) {
+        const __m128i _Px0 = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Elem0), _mm_setzero_si128());
+        const __m128i _Px1 = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Elem1), _mm_setzero_si128());
         if (_Size_bits >= 16) {
             char* _Pos = _Dest + _Size_bits;
             _Size_bits &= 0xF;
@@ -2273,13 +2570,13 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-
-        return;
-    }
+    } else
 #endif // !defined(_M_ARM64EC)
-    const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
-    for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
-        _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+    {
+        const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
+        for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+            _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+        }
     }
 }
 
@@ -2320,11 +2617,8 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-        return;
-    }
-
-    if (_Use_sse2()) {
-        const __m128i _Px0 = _mm_set1_epi16(_Elem0 ^ _Elem1);
+    } else if (_Use_sse42()) {
+        const __m128i _Px0 = _mm_set1_epi16(_Elem0);
         const __m128i _Px1 = _mm_set1_epi16(_Elem1);
         if (_Size_bits >= 8) {
             wchar_t* _Pos = _Dest + _Size_bits;
@@ -2350,13 +2644,13 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
                 _Dest[_Ix] = _Tmpd[_Ix];
             }
         }
-
-        return;
-    }
+    } else
 #endif // !defined(_M_ARM64EC)
-    const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
-    for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
-        _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+    {
+        const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
+        for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
+            _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
+        }
     }
 }
 

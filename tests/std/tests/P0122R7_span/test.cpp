@@ -142,7 +142,7 @@ struct BasicRange {
 
 namespace std::ranges {
     template <typename T, bool Borrowed>
-    inline constexpr bool enable_borrowed_range<BasicRange<T, Borrowed>> = Borrowed;
+    constexpr bool enable_borrowed_range<BasicRange<T, Borrowed>> = Borrowed;
 }
 
 using ContiguousSizedRange = BasicRange<int>;
@@ -154,10 +154,10 @@ template <typename T, size_t Extent = dynamic_extent>
 constexpr void FunctionTakingSpan(type_identity_t<span<T, Extent>>) {}
 
 template <typename U, typename = void>
-inline constexpr bool AsWritableBytesCompilesFor = false;
+constexpr bool AsWritableBytesCompilesFor = false;
 
 template <typename U>
-inline constexpr bool AsWritableBytesCompilesFor<U, void_t<decltype(as_writable_bytes(declval<U>()))>> = true;
+constexpr bool AsWritableBytesCompilesFor<U, void_t<decltype(as_writable_bytes(declval<U>()))>> = true;
 
 constexpr bool test() {
     {

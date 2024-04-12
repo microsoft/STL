@@ -172,8 +172,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _STL_CRT_SECURE_INVALID_PARAMETER
 #ifdef _STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CSTD abort()
-#elif defined(_DEBUG) // avoid emitting unused long strings for function names; see GH-1956
-#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
+#elif defined(_DEBUG) // Avoid emitting unused long strings for function names; see GH-1956.
+// static_cast<unsigned int>(__LINE__) avoids warning C4365 (signed/unsigned mismatch) with the /ZI compiler option.
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) \
+    ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, static_cast<unsigned int>(__LINE__), 0)
 #else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
 #endif // ^^^ !defined(_DEBUG) ^^^
@@ -465,11 +467,7 @@ private:
     }              \
     }
 
-#ifdef _DEBUG
-#define _RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
-#else
 #define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
-#endif
 
 #define _RERAISE
 #define _THROW(...) (__VA_ARGS__)._Raise()
