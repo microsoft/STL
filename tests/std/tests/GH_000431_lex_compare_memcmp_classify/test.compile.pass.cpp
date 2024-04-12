@@ -228,7 +228,7 @@ bool operator<(const user_struct&, const user_struct&) {
 }
 
 void lex_compare_memcmp_classify_test_cases() {
-    // Allow unsigned 1 byte integrals
+    // Test 1 byte integrals
     test_lex_compare_memcmp_classify_for_1byte_integrals<is_unsigned_v<char> || vec_alg, char, char>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<is_unsigned_v<char>, unsigned char, char>();
     test_lex_compare_memcmp_classify_for_1byte_integrals<is_unsigned_v<char>, char, unsigned char>();
@@ -282,7 +282,7 @@ void lex_compare_memcmp_classify_test_cases() {
     test_lex_compare_memcmp_classify_for_types<true, byte, byte>();
 #endif // __cpp_lib_byte
 
-    // Don't allow bigger integrals
+    // Test bigger integrals
     test_lex_compare_memcmp_classify_for_types<false, unsigned char, int>();
     test_lex_compare_memcmp_classify_for_types<false, int, unsigned char>();
     test_lex_compare_memcmp_classify_for_types<vec_alg, int, int>();
