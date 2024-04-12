@@ -597,34 +597,27 @@
     _NODISCARD_MSG("The 'unique' algorithm returns the iterator past the last element that should be kept. " \
                    "You need to call container.erase(result, container.end()) afterwards.")
 
-#define _NODISCARD_EMPTY_MEMBER                                                                                    \
-    _NODISCARD_MSG(                                                                                                \
-        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
-        "It is not useful to call this member function and discard the return value. "                             \
+#define _NODISCARD_EMPTY_MEMBER                                                                                     \
+    _NODISCARD_MSG(                                                                                                 \
+        "This member function returns a bool indicating whether the collection is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                              \
         "Use the 'clear()' member function if you want to erase all elements.")
 
-#define _NODISCARD_EMPTY_ARRAY_MEMBER                                                                              \
-    _NODISCARD_MSG(                                                                                                \
-        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
-        "It is not useful to call this member function and discard the return value. "                             \
+#define _NODISCARD_EMPTY_ARRAY_MEMBER                                                                          \
+    _NODISCARD_MSG(                                                                                            \
+        "This member function returns a bool indicating whether the array is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                         \
         "There's no way to clear an array as its size is fixed.")
 
-#define _NODISCARD_EMPTY_STACKTRACE_MEMBER                                                                         \
-    _NODISCARD_MSG(                                                                                                \
-        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
-        "It is not useful to call this member function and discard the return value. "                             \
-        "'std::stacktrace' can be cleared by assigning an empty value to it.")
+#define _NODISCARD_EMPTY_MEMBER_NO_CLEAR                                                                            \
+    _NODISCARD_MSG(                                                                                                 \
+        "This member function returns a bool indicating whether the collection is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                              \
+        "This collection can be cleared by assigning an empty value to it.")
 
-#define _NODISCARD_EMPTY_NON_MEMBER                                                                            \
-    _NODISCARD_MSG(                                                                                            \
-        "This function returns a bool indicating whether the container or container-like object is empty and " \
-        "has no other effects. It is not useful to call this function and discard the return value.")
-
-#define _NODISCARD_EMPTY_ADAPTOR_MEMBER                                                                            \
-    _NODISCARD_MSG(                                                                                                \
-        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
-        "It is not useful to call this member function and discard the return value. "                             \
-        "Container adaptors don't provide 'clear()' member functions, but you can assign an empty object to them.")
+#define _NODISCARD_EMPTY_NON_MEMBER                                                               \
+    _NODISCARD_MSG("This function returns a bool indicating whether the collection is empty and " \
+                   "has no other effects. It is not useful to call this function and discard the return value.")
 
 #define _NODISCARD_BARRIER_TOKEN \
     _NODISCARD_MSG("The token from 'arrive()' should not be discarded; it should be passed to 'wait()'.")
