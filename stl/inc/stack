@@ -82,7 +82,7 @@ public:
         : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range), _Al)) {}
 #endif // _HAS_CXX23
 
-    _NODISCARD_EMPTY_ADAPTOR_MEMBER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
+    _NODISCARD_EMPTY_MEMBER_NO_CLEAR bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
         return c.empty();
     }
 

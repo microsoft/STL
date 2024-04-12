@@ -35,12 +35,6 @@ _STD_END
 
 _STD_BEGIN
 
-#ifndef _VCRT_EXPORT_STD // TRANSITION, VCRuntime update expected in 17.10 Preview 3
-// Follow N4971 [module.interface]/6 by exporting aliases (a type alias is not an entity, N4971 [basic.pre]/3):
-_EXPORT_STD using exception     = exception;
-_EXPORT_STD using bad_exception = bad_exception;
-#endif // ^^^ workaround ^^^
-
 _EXPORT_STD using ::terminate;
 
 #ifndef _M_CEE_PURE

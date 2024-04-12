@@ -15,8 +15,7 @@ concept CanCommonType = requires { typename common_type<T, U>::type; };
 
 template <class T, class U, class Expected>
     requires CanCommonType<T, U>
-inline constexpr bool test_common_type =
-    same_as<common_type_t<T, U>, Expected> && same_as<common_type_t<U, T>, Expected>;
+constexpr bool test_common_type = same_as<common_type_t<T, U>, Expected> && same_as<common_type_t<U, T>, Expected>;
 
 struct Sentinel {
     bool operator==(const auto&) const; // not defined

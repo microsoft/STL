@@ -706,7 +706,7 @@ _EXPORT_STD template <class _Fty>
 class function;
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Testable_callable_v =
+constexpr bool _Testable_callable_v =
     disjunction_v<is_pointer<_Ty>, _Is_specialization<_Ty, function>, is_member_pointer<_Ty>>;
 
 template <class _Ty>
@@ -745,8 +745,8 @@ private:
 _INLINE_VAR constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Impl> // determine whether _Impl must be dynamically allocated
-_INLINE_VAR constexpr bool _Is_large = sizeof(_Impl) > _Space_size || alignof(_Impl) > alignof(max_align_t)
-                                    || !_Impl::_Nothrow_move::value;
+constexpr bool _Is_large = sizeof(_Impl) > _Space_size || alignof(_Impl) > alignof(max_align_t)
+                        || !_Impl::_Nothrow_move::value;
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 template <class _Callable, class _Alloc, class _Rx, class... _Types>
@@ -1391,7 +1391,7 @@ void __stdcall _Function_destroy_large(_Move_only_function_data& _Self) noexcept
 }
 
 template <class _Vt>
-inline constexpr size_t _Function_small_copy_size = // We copy Impl* and the functor data at once
+constexpr size_t _Function_small_copy_size = // We copy Impl* and the functor data at once
     _Move_only_function_data::_Buf_offset<_Vt> // Impl* plus possible alignment
     + (size_t{sizeof(_Vt) + sizeof(void*) - 1} & ~size_t{sizeof(void*) - 1}); // size in whole pointers
 
@@ -1972,7 +1972,7 @@ template <class _Tx>
 struct is_placeholder<const volatile _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers
 
 _EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
+constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
 
 template <class _Ret, class _Fx, class... _Types>
 class _Binder;
@@ -1993,7 +1993,7 @@ template <class _Tx>
 struct is_bind_expression<const volatile _Tx> : is_bind_expression<_Tx>::type {}; // ignore cv-qualifiers
 
 _EXPORT_STD template <class _Ty>
-_INLINE_VAR constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
+constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
 
 template <class _Cv_TiD, bool = _Is_specialization_v<remove_cv_t<_Cv_TiD>, reference_wrapper>,
     bool = is_bind_expression_v<_Cv_TiD>, int = is_placeholder_v<_Cv_TiD>>
@@ -2102,10 +2102,10 @@ concept _Can_call_binder = requires(_CvFD& _Fx, _CvBoundTuple& _Bound_tuple, _Un
 };
 #else // ^^^ concept available / concept unavailable vvv
 template <class _Ret, class _CvFD, class _IntSeq, class _CvBoundTuple, class _UnboundTuple, class = void>
-_INLINE_VAR constexpr bool _Can_call_binder = false;
+constexpr bool _Can_call_binder = false;
 
 template <class _Ret, class _CvFD, class _IntSeq, class _CvBoundTuple, class _UnboundTuple>
-_INLINE_VAR constexpr bool _Can_call_binder<_Ret, _CvFD, _IntSeq, _CvBoundTuple, _UnboundTuple,
+constexpr bool _Can_call_binder<_Ret, _CvFD, _IntSeq, _CvBoundTuple, _UnboundTuple,
     void_t<decltype(_STD _Call_binder(_Invoker_ret<_Ret>{}, _IntSeq{}, _STD declval<_CvFD&>(),
         _STD declval<_CvBoundTuple&>(), _STD declval<_UnboundTuple>()))>> = true;
 #endif // ^^^ concept unavailable ^^^

@@ -34,7 +34,7 @@ template <const auto& CPO, typename E, typename F = E>
 using CpoResult = CpoResultImpl<CPO, E, F>::type;
 
 template <const auto& CPO, typename E, typename F = E>
-inline constexpr bool NoexceptCpo = noexcept(CPO(declval<E>(), declval<F>()));
+constexpr bool NoexceptCpo = noexcept(CPO(declval<E>(), declval<F>()));
 
 // Test when the decayed types differ.
 static_assert(is_same_v<CpoResult<std::strong_order, int, long>, IllFormed>); // [cmp.alg]/1.1

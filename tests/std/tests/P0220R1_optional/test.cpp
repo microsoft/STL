@@ -8114,7 +8114,7 @@ namespace msvc {
         struct __declspec(empty_bases) many_bases : empty<0>, empty<1>, empty<2>, empty<3> {};
 
         template <class T>
-        inline constexpr bool check_size = sizeof(std::optional<T>) == sizeof(T) + alignof(T);
+        constexpr bool check_size = sizeof(std::optional<T>) == sizeof(T) + alignof(T);
 
         STATIC_ASSERT(check_size<bool>);
         STATIC_ASSERT(check_size<char>);

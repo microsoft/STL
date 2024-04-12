@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if defined(TEST_CMPXCHG16B) && (defined(__clang__) || !defined(_M_X64))
+// Skip Clang because it would require the -mcx16 compiler option.
+// Skip non-x64 because _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B is always 1 for ARM64, and is forbidden to be 1 for 32-bit.
+int main() {}
+#else // ^^^ skip test / run test vvv
+
 #include <atomic>
 #include <cassert>
 #include <cstddef>
@@ -373,6 +379,29 @@ void test_incomplete_associated_class_all() { // COMPILE-ONLY
 }
 #endif // ^^^ no workaround ^^^
 
+// GH-4472 "<atomic>: With _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B defined to 1,
+// atomic_ref<16 bytes> does not report is_lock_free and is_always_lock_free correctly"
+void test_gh_4472() {
+    struct two_pointers_t {
+        void* left;
+        void* right;
+    };
+
+    alignas(std::atomic_ref<two_pointers_t>::required_alignment) two_pointers_t two_pointers;
+
+    static_assert(std::atomic_ref<two_pointers_t>::required_alignment == sizeof(two_pointers_t));
+
+#ifdef _WIN64
+    static_assert(std::atomic_ref<two_pointers_t>::is_always_lock_free == _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B);
+#else
+    static_assert(std::atomic_ref<two_pointers_t>::is_always_lock_free);
+#endif
+
+    // We expect tests to run on machines that support DCAS, which is required by Win8+.
+    std::atomic_ref<two_pointers_t> ar{two_pointers};
+    assert(ar.is_lock_free());
+}
+
 int main() {
     test_ops<false, char>();
     test_ops<false, signed char>();
@@ -425,4 +454,7 @@ int main() {
     test_ptr_ops<long*>();
 
     test_gh_1497();
+    test_gh_4472();
 }
+
+#endif // ^^^ run test ^^^

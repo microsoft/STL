@@ -168,6 +168,7 @@ tests\GH_000431_lex_compare_family
 tests\GH_000431_lex_compare_memcmp_classify
 tests\GH_000442_random_subtract_with_carry_engine_io
 tests\GH_000457_system_error_message
+tests\GH_000519_cmath_int_overloads
 tests\GH_000527_remove_allocator_void
 tests\GH_000545_include_compare
 tests\GH_000625_vector_bool_optimization
@@ -241,6 +242,7 @@ tests\GH_004129_conversion_in_new_numeric_algorithms
 tests\GH_004201_chrono_formatter
 tests\GH_004275_seeking_fancy_iterators
 tests\GH_004388_unordered_meow_operator_equal
+tests\GH_004477_mdspan_warning_5246
 tests\LWG2381_num_get_floating_point
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
@@ -249,6 +251,7 @@ tests\LWG3146_excessive_unwrapping_ref_cref
 tests\LWG3234_math_special_overloads
 tests\LWG3422_seed_seq_ctors
 tests\LWG3480_directory_iterator_range
+tests\LWG3528_make_from_tuple_impl
 tests\LWG3545_pointer_traits_sfinae
 tests\LWG3561_discard_block_engine_counter
 tests\LWG3610_iota_view_size_and_integer_class
@@ -478,6 +481,7 @@ tests\P0896R4_views_common
 tests\P0896R4_views_counted
 tests\P0896R4_views_counted_death
 tests\P0896R4_views_drop
+tests\P0896R4_views_drop_death
 tests\P0896R4_views_drop_while
 tests\P0896R4_views_drop_while_death
 tests\P0896R4_views_elements
@@ -493,6 +497,7 @@ tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0896R4_views_split
 tests\P0896R4_views_take
+tests\P0896R4_views_take_death
 tests\P0896R4_views_take_while
 tests\P0896R4_views_take_while_death
 tests\P0896R4_views_transform
