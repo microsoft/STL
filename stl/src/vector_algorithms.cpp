@@ -2209,7 +2209,7 @@ namespace {
                 return _mm256_broadcastq_epi64(_mm256_castsi256_si128(_Val));
             } else if constexpr (_Amount == 4) {
                 if (_Needle_length_el < 4) {
-                    _Val = _mm256_insert_epi32(_Val, _mm256_cvtsi256_si32(_Val), 3);
+                    _Val = _mm256_shuffle_epi32(_Val, _MM_SHUFFLE(0, 2, 1, 0));
                 }
 
                 return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 1, 0));
@@ -2252,7 +2252,7 @@ namespace {
                 return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 1, 0));
             } else if constexpr (_Amount == 4) {
                 if (_Needle_length_el < 4) {
-                    _Val = _mm256_insert_epi64(_Val, _mm256_cvtsi256_si64(_Val), 3);
+                    return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(0, 2, 1, 0));
                 }
 
                 return _Val;
