@@ -19,21 +19,12 @@ parameters:
 - name: litFlags
   type: object
   default:
-    - '-j$(testParallelism)'
     - '--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
     - '--order=lexical'
     - '--num-shards=$(System.TotalJobsInPhase)'
     - '--run-shard=$(System.JobPositionInPhase)'
 
 steps:
-- task: PowerShell@2
-  displayName: 'Get Test Parallelism'
-  timeoutInMinutes: 1
-  inputs:
-    targetType: inline
-    script: |
-      $testParallelism = $env:NUMBER_OF_PROCESSORS
-      Write-Host "##vso[task.setvariable variable=testParallelism;]$testParallelism"
 - script: |
     if exist "$(buildOutputLocation)" (
       rmdir /S /Q "$(buildOutputLocation)"
