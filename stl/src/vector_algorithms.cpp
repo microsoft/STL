@@ -2227,7 +2227,7 @@ namespace {
             }
         }
 
-        template<size_t _Amount>
+        template <size_t _Amount>
         static __m256i _Shuffle_avx(const __m256i _Val) noexcept {
             if constexpr (_Amount == 1) {
                 return _mm256_shuffle_epi32(_Val, _MM_SHUFFLE(2, 3, 0, 1));
@@ -2248,7 +2248,7 @@ namespace {
         static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
             if constexpr (_Amount == 1) {
                 return _mm256_broadcastq_epi64(_mm256_castsi256_si128(_Val));
-            } else if constexpr(_Amount == 2) {
+            } else if constexpr (_Amount == 2) {
                 return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 1, 0));
             } else if constexpr (_Amount == 4) {
                 if (_Needle_length_el < 4) {
@@ -2300,10 +2300,11 @@ namespace {
     }
 
     template <class _Traits, size_t _Needle_length_el_magnitude>
-    const void* __std_find_first_of_trivial_shuffle_impl(const void* _First1, const void* const _Last1,
-        const void* const _First2, const size_t _Needle_length_el) {
+    const void* __std_find_first_of_trivial_shuffle_impl(
+        const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Needle_length_el) {
         using _Ty            = typename _Traits::_Ty;
-        const __m256i _Data2 = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First2), _Avx2_tail_mask_32(_Needle_length_el * (sizeof(_Ty) / 4)));
+        const __m256i _Data2 = _mm256_maskload_epi32(
+            reinterpret_cast<const int*>(_First2), _Avx2_tail_mask_32(_Needle_length_el * (sizeof(_Ty) / 4)));
         const __m256i _Data2s0 = _Traits::_Spread_avx<_Needle_length_el_magnitude>(_Data2, _Needle_length_el);
 
         const size_t _Haystack_length = _Byte_length(_First1, _Last1);
@@ -2344,8 +2345,8 @@ namespace {
     }
 
     template <class _Traits>
-    const void* __stdcall __std_find_first_of_trivial_48_impl(
-        const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    const void* __stdcall __std_find_first_of_trivial_48_impl(const void* const _First1, const void* const _Last1,
+        const void* const _First2, const void* const _Last2) noexcept {
         using _Ty = typename _Traits::_Ty;
 #ifndef _M_ARM64EC
         if (_Use_avx2()) {
