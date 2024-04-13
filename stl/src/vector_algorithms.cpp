@@ -42,9 +42,10 @@ namespace {
     };
 
     __m256i _Avx2_tail_mask_32(const size_t _Count_in_dwords) noexcept {
-        // _Count_in_dwords must be within [1, 7].
-        static constexpr unsigned int _Tail_masks[14] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0, 0, 0, 0};
-        return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tail_masks + (7 - _Count_in_dwords)));
+        // _Count_in_dwords must be within [0, 8].
+        static constexpr unsigned int _Tail_masks[16] = {
+            ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0, 0, 0, 0, 0};
+        return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tail_masks + (8 - _Count_in_dwords)));
     }
 } // namespace
 #endif // !defined(_M_ARM64EC)
@@ -2038,7 +2039,26 @@ namespace {
     }
 
     template <class _Ty>
-    const void* __stdcall __std_find_first_of_trivial_impl(
+    const void* __stdcall __std_find_first_of_trivial_fallback(
+        const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) {
+        auto _Ptr_haystack           = static_cast<const _Ty*>(_First1);
+        const auto _Ptr_haystack_end = static_cast<const _Ty*>(_Last1);
+        const auto _Ptr_needle       = static_cast<const _Ty*>(_First2);
+        const auto _Ptr_needle_end   = static_cast<const _Ty*>(_Last2);
+
+        for (; _Ptr_haystack != _Ptr_haystack_end; ++_Ptr_haystack) {
+            for (auto _Ptr = _Ptr_needle; _Ptr != _Ptr_needle_end; ++_Ptr) {
+                if (*_Ptr_haystack == *_Ptr) {
+                    return _Ptr_haystack;
+                }
+            }
+        }
+
+        return _Ptr_haystack;
+    }
+
+    template <class _Ty>
+    const void* __stdcall __std_find_first_of_trivial_pcmpestri_impl(
         const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
 #ifndef _M_ARM64EC
         if (_Use_sse42()) {
@@ -2175,21 +2195,216 @@ namespace {
             }
         }
 #endif // !_M_ARM64EC
+        return __std_find_first_of_trivial_fallback<_Ty>(_First1, _Last1, _First2, _Last2);
+    }
 
-        auto _Ptr_haystack           = static_cast<const _Ty*>(_First1);
-        const auto _Ptr_haystack_end = static_cast<const _Ty*>(_Last1);
-        const auto _Ptr_needle       = static_cast<const _Ty*>(_First2);
-        const auto _Ptr_needle_end   = static_cast<const _Ty*>(_Last2);
+    struct _Find_first_of_traits_4 : _Find_traits_4 {
+        using _Ty = uint32_t;
 
-        for (; _Ptr_haystack != _Ptr_haystack_end; ++_Ptr_haystack) {
-            for (auto _Ptr = _Ptr_needle; _Ptr != _Ptr_needle_end; ++_Ptr) {
-                if (*_Ptr_haystack == *_Ptr) {
-                    return _Ptr_haystack;
+        template <size_t _Amount>
+        static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
+            if constexpr (_Amount == 1) {
+                return _mm256_broadcastd_epi32(_mm256_castsi256_si128(_Val));
+            } else if constexpr (_Amount == 2) {
+                return _mm256_broadcastq_epi64(_mm256_castsi256_si128(_Val));
+            } else if constexpr (_Amount == 4) {
+                if (_Needle_length_el < 4) {
+                    _Val = _mm256_insert_epi32(_Val, _mm256_cvtsi256_si32(_Val), 3);
                 }
+
+                return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 1, 0));
+            } else if constexpr (_Amount == 8) {
+                if (_Needle_length_el < _Amount) {
+                    const __m256i _Mask = _Avx2_tail_mask_32(_Needle_length_el);
+                    // zero unused elements in sequenctial permutation mask, so will be filled by 1st
+                    const __m256i _Perm = _mm256_and_si256(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _Mask);
+                    _Val                = _mm256_permutevar8x32_epi32(_Val, _Perm);
+                }
+
+                return _Val;
+            } else {
+                static_assert(_Amount != _Amount, "Unexpected amount");
             }
         }
 
-        return _Ptr_haystack;
+        template<size_t _Amount>
+        static __m256i _Shuffle_avx(const __m256i _Val) noexcept {
+            if constexpr (_Amount == 1) {
+                return _mm256_shuffle_epi32(_Val, _MM_SHUFFLE(2, 3, 0, 1));
+            } else if constexpr (_Amount == 2) {
+                return _mm256_shuffle_epi32(_Val, _MM_SHUFFLE(1, 0, 3, 2));
+            } else if constexpr (_Amount == 4) {
+                return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 3, 2));
+            } else {
+                static_assert(_Amount != _Amount, "Unexpected amount");
+            }
+        }
+    };
+
+    struct _Find_first_of_traits_8 : _Find_traits_8 {
+        using _Ty = uint64_t;
+
+        template <size_t _Amount>
+        static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
+            if constexpr (_Amount == 1) {
+                return _mm256_broadcastq_epi64(_mm256_castsi256_si128(_Val));
+            } else if constexpr(_Amount == 2) {
+                return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 1, 0));
+            } else if constexpr (_Amount == 4) {
+                if (_Needle_length_el < 4) {
+                    _Val = _mm256_insert_epi64(_Val, _mm256_cvtsi256_si64(_Val), 3);
+                }
+
+                return _Val;
+            } else {
+                static_assert(_Amount != _Amount, "Unexpected amount");
+            }
+        }
+
+        template <size_t _Amount>
+        static __m256i _Shuffle_avx(const __m256i _Val) noexcept {
+            if constexpr (_Amount == 1) {
+                return _mm256_shuffle_epi32(_Val, _MM_SHUFFLE(1, 0, 3, 2));
+            } else if constexpr (_Amount == 2) {
+                return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 3, 2));
+            } else {
+                static_assert(_Amount != _Amount, "Unexpected amount");
+            }
+        }
+    };
+
+    template <class _Traits, size_t _Needle_length_el_magnitude>
+    const __m256i __std_find_first_of_trivial_shuffle_step(const __m256i _Data1, const __m256i _Data2s0) {
+        __m256i _Eq = _Traits::_Cmp_avx(_Data1, _Data2s0);
+        if constexpr (_Needle_length_el_magnitude >= 2) {
+            const __m256i _Data2s1 = _Traits::_Shuffle_avx<1>(_Data2s0);
+            _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s1));
+            if constexpr (_Needle_length_el_magnitude >= 4) {
+                const __m256i _Data2s2 = _Traits::_Shuffle_avx<2>(_Data2s0);
+                _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s2));
+                const __m256i _Data2s3 = _Traits::_Shuffle_avx<1>(_Data2s2);
+                _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s3));
+                if constexpr (_Needle_length_el_magnitude >= 8) {
+                    const __m256i _Data2s4 = _Traits::_Shuffle_avx<4>(_Data2s0);
+                    _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s4));
+                    const __m256i _Data2s5 = _Traits::_Shuffle_avx<1>(_Data2s4);
+                    _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s5));
+                    const __m256i _Data2s6 = _Traits::_Shuffle_avx<2>(_Data2s4);
+                    _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s6));
+                    const __m256i _Data2s7 = _Traits::_Shuffle_avx<1>(_Data2s6);
+                    _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s7));
+                }
+            }
+        }
+        return _Eq;
+    }
+
+    template <class _Traits, size_t _Needle_length_el_magnitude>
+    const void* __std_find_first_of_trivial_shuffle_impl(const void* _First1, const void* const _Last1,
+        const void* const _First2, const size_t _Needle_length_el) {
+        using _Ty            = typename _Traits::_Ty;
+        const __m256i _Data2 = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First2), _Avx2_tail_mask_32(_Needle_length_el * (sizeof(_Ty) / 4)));
+        const __m256i _Data2s0 = _Traits::_Spread_avx<_Needle_length_el_magnitude>(_Data2, _Needle_length_el);
+
+        const size_t _Haystack_length = _Byte_length(_First1, _Last1);
+
+        const void* _Stop1 = _First1;
+        _Advance_bytes(_Stop1, _Haystack_length & ~size_t{0x1F});
+
+        for (; _First1 != _Stop1; _Advance_bytes(_First1, 32)) {
+            const __m256i _Data1 = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
+            const __m256i _Eq =
+                __std_find_first_of_trivial_shuffle_step<_Traits, _Needle_length_el_magnitude>(_Data1, _Data2s0);
+            const int _Bingo = _mm256_movemask_epi8(_Eq);
+
+            if (_Bingo != 0) {
+                const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                _Advance_bytes(_First1, _Offset);
+                return _First1;
+            }
+        }
+
+        if (const size_t _Haystack_tail_length = _Haystack_length & 0x1C; _Haystack_tail_length != 0) {
+            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Haystack_tail_length >> 2);
+            const __m256i _Data1     = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
+            const __m256i _Eq =
+                __std_find_first_of_trivial_shuffle_step<_Traits, _Needle_length_el_magnitude>(_Data1, _Data2s0);
+            const int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Eq, _Tail_mask));
+
+            if (_Bingo != 0) {
+                const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                _Advance_bytes(_First1, _Offset);
+                return _First1;
+            }
+
+            _Advance_bytes(_First1, _Haystack_tail_length);
+        }
+
+        return _First1;
+    }
+
+    template <class _Traits>
+    const void* __stdcall __std_find_first_of_trivial_48_impl(
+        const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+        using _Ty = typename _Traits::_Ty;
+#ifndef _M_ARM64EC
+        if (_Use_avx2()) {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+            const size_t _Needle_length = _Byte_length(_First2, _Last2);
+            const int _Needle_length_el = static_cast<int>(_Needle_length / sizeof(_Ty));
+
+            // Special handling of small needle
+            // The generic approach could also handle it but with worse performance
+            if (_Needle_length_el == 0) {
+                return _Last1;
+            } else if (_Needle_length_el == 1) {
+                // This is expected to be done on an upper level with better efficeiency
+                return __std_find_first_of_trivial_shuffle_impl<_Traits, 1>(
+                    _First1, _Last1, _First2, _Needle_length_el);
+            } else if (_Needle_length_el == 2) {
+                return __std_find_first_of_trivial_shuffle_impl<_Traits, 2>(
+                    _First1, _Last1, _First2, _Needle_length_el);
+            } else if (_Needle_length_el <= 4) {
+                return __std_find_first_of_trivial_shuffle_impl<_Traits, 4>(
+                    _First1, _Last1, _First2, _Needle_length_el);
+            } else if (_Needle_length_el <= 8) {
+                if constexpr (sizeof(_Ty) == 4) {
+                    return __std_find_first_of_trivial_shuffle_impl<_Traits, 8>(
+                        _First1, _Last1, _First2, _Needle_length_el);
+                }
+            }
+
+            // Generic approach
+            const size_t _Needle_length_tail = _Needle_length & 0x1C;
+            const __m256i _Tail_mask         = _Avx2_tail_mask_32(_Needle_length_tail >> 2);
+
+            const void* _Stop2 = _First2;
+            _Advance_bytes(_Stop2, _Needle_length & ~size_t{0x1F});
+
+            for (auto _Ptr1 = static_cast<const _Ty*>(_First1); _Ptr1 != _Last1; ++_Ptr1) {
+                const auto _Data1 = _Traits::_Set_avx(*_Ptr1);
+                for (auto _Ptr2 = _First2; _Ptr2 != _Stop2; _Advance_bytes(_Ptr2, 32)) {
+                    const __m256i _Data2 = _mm256_loadu_si256(static_cast<const __m256i*>(_Ptr2));
+                    const __m256i _Eq    = _Traits::_Cmp_avx(_Data1, _Data2);
+                    if (!_mm256_testz_si256(_Eq, _Eq)) {
+                        return _Ptr1;
+                    }
+                }
+
+                if (_Needle_length_tail != 0) {
+                    const __m256i _Data2 = _mm256_maskload_epi32(static_cast<const int*>(_Stop2), _Tail_mask);
+                    const __m256i _Eq    = _Traits::_Cmp_avx(_Data1, _Data2);
+                    if (!_mm256_testz_si256(_Eq, _Tail_mask)) {
+                        return _Ptr1;
+                    }
+                }
+            }
+
+            return _Last1;
+        }
+#endif // !_M_ARM64EC
+        return __std_find_first_of_trivial_fallback<_Ty>(_First1, _Last1, _First2, _Last2);
     }
 
 
@@ -2352,12 +2567,22 @@ __declspec(noalias) size_t
 
 const void* __stdcall __std_find_first_of_trivial_1(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
-    return __std_find_first_of_trivial_impl<uint8_t>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of_trivial_pcmpestri_impl<uint8_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_2(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
-    return __std_find_first_of_trivial_impl<uint16_t>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of_trivial_pcmpestri_impl<uint16_t>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_find_first_of_trivial_4(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
+    return __std_find_first_of_trivial_48_impl<_Find_first_of_traits_4>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_find_first_of_trivial_8(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
+    return __std_find_first_of_trivial_48_impl<_Find_first_of_traits_8>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) size_t

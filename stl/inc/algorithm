@@ -62,6 +62,11 @@ const void* __stdcall __std_find_first_of_trivial_1(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 const void* __stdcall __std_find_first_of_trivial_2(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+const void* __stdcall __std_find_first_of_trivial_4(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+const void* __stdcall __std_find_first_of_trivial_8(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+
 
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* _First, const void* _Last) noexcept;
@@ -202,6 +207,12 @@ _Ty1* _Find_first_of_vectorized(
     } else if constexpr (sizeof(_Ty1) == 2) {
         return const_cast<_Ty1*>(
             static_cast<const _Ty1*>(::__std_find_first_of_trivial_2(_First1, _Last1, _First2, _Last2)));
+    } else if constexpr (sizeof(_Ty1) == 4) {
+        return const_cast<_Ty1*>(
+            static_cast<const _Ty1*>(::__std_find_first_of_trivial_4(_First1, _Last1, _First2, _Last2)));
+    } else if constexpr (sizeof(_Ty1) == 8) {
+        return const_cast<_Ty1*>(
+            static_cast<const _Ty1*>(::__std_find_first_of_trivial_8(_First1, _Last1, _First2, _Last2)));
     } else {
         static_assert(_Always_false<_Ty1>, "Unexpected size");
     }
@@ -230,9 +241,7 @@ _INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
 
 // Can we activate the vector algorithms for find_first_of?
 template <class _It1, class _It2, class _Pr>
-constexpr bool _Vector_alg_in_find_first_of_is_safe =
-    _Equal_memcmp_is_safe<_It1, _It2, _Pr> // can replace value comparison with bitwise comparison
-    && sizeof(_Iter_value_t<_It1>) <= 2; // pcmpestri compatible size
+constexpr bool _Vector_alg_in_find_first_of_is_safe = _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
 
 // Can we activate the vector algorithms for replace?
 template <class _Iter, class _Ty1>
