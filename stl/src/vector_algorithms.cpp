@@ -2223,7 +2223,7 @@ namespace {
 
                 return _Val;
             } else {
-                static_assert(_Amount != _Amount, "Unexpected amount");
+                static_assert(false, "Unexpected amount");
             }
         }
 
@@ -2236,7 +2236,7 @@ namespace {
             } else if constexpr (_Amount == 4) {
                 return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 3, 2));
             } else {
-                static_assert(_Amount != _Amount, "Unexpected amount");
+                static_assert(false, "Unexpected amount");
             }
         }
     };
@@ -2257,7 +2257,7 @@ namespace {
 
                 return _Val;
             } else {
-                static_assert(_Amount != _Amount, "Unexpected amount");
+                static_assert(false, "Unexpected amount");
             }
         }
 
@@ -2268,7 +2268,7 @@ namespace {
             } else if constexpr (_Amount == 2) {
                 return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 3, 2));
             } else {
-                static_assert(_Amount != _Amount, "Unexpected amount");
+                static_assert(false, "Unexpected amount");
             }
         }
     };
