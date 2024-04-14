@@ -67,7 +67,6 @@ const void* __stdcall __std_find_first_of_trivial_4(
 const void* __stdcall __std_find_first_of_trivial_8(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 
-
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_2i __stdcall __std_minmax_2i(const void* _First, const void* _Last) noexcept;
