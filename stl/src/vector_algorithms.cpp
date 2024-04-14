@@ -2303,7 +2303,7 @@ namespace {
         template <class _Traits, size_t _Needle_length_el_magnitude>
         const void* __shuffle_impl(
             const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Needle_length_el) {
-            using _Ty            = typename _Traits::_Ty;
+            using _Ty            = _Traits::_Ty;
             const __m256i _Data2 = _mm256_maskload_epi32(
                 reinterpret_cast<const int*>(_First2), _Avx2_tail_mask_32(_Needle_length_el * (sizeof(_Ty) / 4)));
             const __m256i _Data2s0 = _Traits::_Spread_avx<_Needle_length_el_magnitude>(_Data2, _Needle_length_el);
@@ -2346,7 +2346,7 @@ namespace {
         template <class _Traits>
         const void* __stdcall __48_impl(const void* const _First1, const void* const _Last1, const void* const _First2,
             const void* const _Last2) noexcept {
-            using _Ty = typename _Traits::_Ty;
+            using _Ty = _Traits::_Ty;
 #ifndef _M_ARM64EC
             if (_Use_avx2()) {
                 _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
