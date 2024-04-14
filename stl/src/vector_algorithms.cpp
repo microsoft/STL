@@ -2115,9 +2115,9 @@ namespace {
 
                     const int _Last_needle_length = static_cast<int>(_Needle_length & 0xF);
 
-                    alignas(16) uint8_t _Tmp1[16];
-                    memcpy(_Tmp1, _Last_needle, _Last_needle_length);
-                    const __m128i _Last_needle_val   = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    alignas(16) uint8_t _Tmp2[16];
+                    memcpy(_Tmp2, _Last_needle, _Last_needle_length);
+                    const __m128i _Last_needle_val   = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
                     const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
                     constexpr int _Not_found = 16; // arbitrary value greater than any found value
@@ -2163,9 +2163,9 @@ namespace {
                     const size_t _Last_part_size = _Haystack_length & 0xF;
                     const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
 
-                    alignas(16) uint8_t _Tmp2[16];
-                    memcpy(_Tmp2, _First1, _Last_part_size);
-                    const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+                    alignas(16) uint8_t _Tmp1[16];
+                    memcpy(_Tmp1, _First1, _Last_part_size);
+                    const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
 
                     _Found_pos = _Last_part_size_el;
 
