@@ -2344,7 +2344,7 @@ namespace {
         }
 
         template <class _Traits>
-        const void* __stdcall __48_impl(const void* const _First1, const void* const _Last1, const void* const _First2,
+        const void* __stdcall __4_8_impl(const void* const _First1, const void* const _Last1, const void* const _First2,
             const void* const _Last2) noexcept {
             using _Ty = _Traits::_Ty;
 #ifndef _M_ARM64EC
@@ -2572,12 +2572,12 @@ const void* __stdcall __std_find_first_of_trivial_2(
 
 const void* __stdcall __std_find_first_of_trivial_4(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
-    return __std_find_first_of::__48_impl<__std_find_first_of::_Traits_4>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::__4_8_impl<__std_find_first_of::_Traits_4>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_8(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
-    return __std_find_first_of::__48_impl<__std_find_first_of::_Traits_8>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::__4_8_impl<__std_find_first_of::_Traits_8>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) size_t
