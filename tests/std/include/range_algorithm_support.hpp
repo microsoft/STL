@@ -69,12 +69,12 @@ namespace test {
 
     template <class T>
     void operator&(T&&) {
-        STATIC_ASSERT(always_false<T>);
+        STATIC_ASSERT(false);
     }
 
     template <class T, class U>
     void operator,(T&&, U&&) {
-        STATIC_ASSERT(always_false<T>);
+        STATIC_ASSERT(false);
     }
 
     enum class CanDifference : bool { no, yes };
@@ -492,29 +492,29 @@ namespace test {
         }
 
         auto operator--() & {
-            STATIC_ASSERT(always_false<Category>);
+            STATIC_ASSERT(false);
         }
         auto operator--(int) & {
-            STATIC_ASSERT(always_false<Category>);
+            STATIC_ASSERT(false);
         }
 
         friend void iter_swap(iterator const&, iterator const&)
             requires std::is_same_v<Category, output>
         {
-            STATIC_ASSERT(always_false<Category>);
+            STATIC_ASSERT(false);
         }
 
         void operator<(iterator const&) const {
-            STATIC_ASSERT(always_false<Category>);
+            STATIC_ASSERT(false);
         }
         void operator>(iterator const&) const {
-            STATIC_ASSERT(always_false<Category>);
+            STATIC_ASSERT(false);
         }
         void operator<=(iterator const&) const {
-            STATIC_ASSERT(always_false<Category>);
+            STATIC_ASSERT(false);
         }
         void operator>=(iterator const&) const {
-            STATIC_ASSERT(always_false<Category>);
+            STATIC_ASSERT(false);
         }
 
         // input iterator operations:
@@ -928,11 +928,11 @@ namespace test {
         }
 
         void operator&() const {
-            STATIC_ASSERT(always_false<Category>);
+            STATIC_ASSERT(false);
         }
         template <class T>
         friend void operator,(range const&, T&&) {
-            STATIC_ASSERT(always_false<Category>);
+            STATIC_ASSERT(false);
         }
     };
 } // namespace test

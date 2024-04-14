@@ -102,9 +102,6 @@ void test_syncstream() {
     test_stream_overflow(ss);
 }
 
-template <class>
-constexpr bool always_false = false;
-
 template <class T>
 struct icky_allocator : allocator<T> {
     template <class U>
@@ -118,7 +115,7 @@ struct icky_allocator : allocator<T> {
         // call allocate_at_least in the std::allocator base (which would then call std::allocator::allocate),
         // and would then call deallocate in the derived class (hiding the base implementation), a terrible mismatch.
         // We now detect public derivation from std::allocator and avoid using allocate_at_least in that case.
-        static_assert(always_false<T>);
+        static_assert(false);
     }
 };
 

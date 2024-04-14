@@ -10,9 +10,6 @@
 
 using namespace std;
 
-template <class>
-constexpr bool always_false = false;
-
 struct only_copy_constructible {
     int val;
 
@@ -24,12 +21,12 @@ struct only_copy_constructible {
 
     template <class T = void>
     auto operator&() const {
-        static_assert(always_false<T>);
+        static_assert(false);
     }
 
     template <class U>
     auto operator,(U&&) const {
-        static_assert(always_false<U>);
+        static_assert(false);
     }
 };
 
