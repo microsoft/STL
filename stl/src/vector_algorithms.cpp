@@ -8,7 +8,6 @@
 #if defined(_M_IX86) || defined(_M_X64) // NB: includes _M_ARM64EC
 #include <__msvc_minmax.hpp>
 #include <cstdint>
-#include <cstdlib>
 #include <cstring>
 #include <xtr1common>
 
@@ -2360,8 +2359,7 @@ namespace {
                 if (_Needle_length_el == 0) {
                     return _Last1;
                 } else if (_Needle_length_el == 1) {
-                    // This is expected to be forwarded to 'find' on an upper level
-                    _CSTD abort();
+                    _STL_UNREACHABLE; // This is expected to be forwarded to 'find' on an upper level
                 } else if (_Needle_length_el == 2) {
                     return __shuffle_impl<_Traits, 2>(_First1, _Last1, _First2, _Needle_length_el);
                 } else if (_Needle_length_el <= 4) {
