@@ -2359,8 +2359,8 @@ namespace {
                 if (_Needle_length_el == 0) {
                     return _Last1;
                 } else if (_Needle_length_el == 1) {
-                    // This is expected to be done on an upper level with better efficeiency
-                    return __shuffle_impl<_Traits, 1>(_First1, _Last1, _First2, _Needle_length_el);
+                    // This is expected to be forwarded to 'find' on an upper level
+                    _CSTD abort();
                 } else if (_Needle_length_el == 2) {
                     return __shuffle_impl<_Traits, 2>(_First1, _Last1, _First2, _Needle_length_el);
                 } else if (_Needle_length_el <= 4) {
