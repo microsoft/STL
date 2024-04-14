@@ -10,8 +10,6 @@
 using namespace std;
 using namespace std::placeholders;
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 class point {
 public:
     point(double x, double y) : m_x(x), m_y(y) {}
