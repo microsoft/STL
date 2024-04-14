@@ -643,9 +643,6 @@ void test_VSO_191303() {
 // VSO-215996 "<tuple>: Wrong tuple constructor overload resolution causes stack overflow"
 // VSO-216014 "<tuple>: Tuple constructor overload resolution error"
 
-template <typename X>
-struct AlwaysFalse : false_type {};
-
 // AbsorbingRef and AbsorbingVal need to appear to be omni-constructible,
 // so they use static_assert instead of =delete.
 
@@ -656,7 +653,7 @@ struct AbsorbingRef {
 
     template <typename T>
     AbsorbingRef(const T&) {
-        STATIC_ASSERT(AlwaysFalse<T>::value);
+        STATIC_ASSERT(false);
     }
 };
 
@@ -667,7 +664,7 @@ struct AbsorbingVal {
 
     template <typename U>
     AbsorbingVal(U) {
-        STATIC_ASSERT(AlwaysFalse<U>::value);
+        STATIC_ASSERT(false);
     }
 };
 
