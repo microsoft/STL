@@ -2060,8 +2060,8 @@ namespace {
         }
 
         template <class _Ty>
-        const void* __stdcall __pcmpestri_impl(const void* _First1, const void* const _Last1,
-            const void* const _First2, const void* const _Last2) noexcept {
+        const void* __stdcall __pcmpestri_impl(const void* _First1, const void* const _Last1, const void* const _First2,
+            const void* const _Last2) noexcept {
 #ifndef _M_ARM64EC
             if (_Use_sse42()) {
                 constexpr int _Op = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY
@@ -2344,8 +2344,8 @@ namespace {
         }
 
         template <class _Traits>
-        const void* __stdcall __48_impl(const void* const _First1, const void* const _Last1,
-            const void* const _First2, const void* const _Last2) noexcept {
+        const void* __stdcall __48_impl(const void* const _First1, const void* const _Last1, const void* const _First2,
+            const void* const _Last2) noexcept {
             using _Ty = typename _Traits::_Ty;
 #ifndef _M_ARM64EC
             if (_Use_avx2()) {
