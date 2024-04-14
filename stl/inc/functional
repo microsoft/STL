@@ -2607,7 +2607,7 @@ public:
             } else if constexpr (_Del == _Deletion_kind::_Normal_array) {
                 delete[] _Ptr;
             } else {
-                static_assert(_Always_false<_Ty>, "Unknown _Deletion_kind.");
+                static_assert(false, "Unknown _Deletion_kind.");
             }
         }
     }

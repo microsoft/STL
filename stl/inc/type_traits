@@ -128,7 +128,7 @@ using add_rvalue_reference_t = typename _Add_reference<_Ty>::_Rvalue;
 
 _EXPORT_STD template <class _Ty>
 add_rvalue_reference_t<_Ty> declval() noexcept {
-    static_assert(_Always_false<_Ty>, "Calling declval is ill-formed, see N4950 [declval]/2.");
+    static_assert(false, "Calling declval is ill-formed, see N4950 [declval]/2.");
 }
 
 _EXPORT_STD template <class _Ty>
