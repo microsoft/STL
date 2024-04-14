@@ -28,8 +28,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 template <class>
-// TRANSITION, CWG-2518: false value attached to a dependent name (for static_assert)
-constexpr bool _Always_false = false;
+constexpr bool _Always_false = false; // TRANSITION, VSO-2016422 (EDG)
 
 template <bool _First_value, class _First, class... _Rest>
 struct _Conjunction { // handle false trait or last trait
