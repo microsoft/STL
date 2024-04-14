@@ -12,12 +12,12 @@
 using namespace std;
 
 // Validate that copy_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::copy_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(
+static_assert(
     same_as<decltype(ranges::copy(borrowed<false>{}, nullptr_to<int>)), ranges::copy_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::copy(borrowed<true>{}, nullptr_to<int>)), ranges::copy_result<int*, int*>>);
+static_assert(same_as<decltype(ranges::copy(borrowed<true>{}, nullptr_to<int>)), ranges::copy_result<int*, int*>>);
 
 struct instantiator {
     static constexpr int input[3] = {13, 42, 1729};
@@ -30,7 +30,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = copy(wrapped_input.begin(), wrapped_input.end(), Write{output});
-            STATIC_ASSERT(same_as<decltype(result), copy_result<iterator_t<Read>, Write>>);
+            static_assert(same_as<decltype(result), copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 3);
             assert(ranges::equal(output, input));
@@ -40,7 +40,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = copy(wrapped_input, Write{output});
-            STATIC_ASSERT(same_as<decltype(result), copy_result<iterator_t<Read>, Write>>);
+            static_assert(same_as<decltype(result), copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 3);
             assert(ranges::equal(output, input));
@@ -49,6 +49,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_in_write<instantiator, int const, int>(), true));
+    static_assert((test_in_write<instantiator, int const, int>(), true));
     test_in_write<instantiator, int const, int>();
 }

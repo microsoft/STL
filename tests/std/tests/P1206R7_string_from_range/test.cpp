@@ -58,7 +58,7 @@ struct string_instantiator {
     template <ranges::input_range R>
     static void call() {
         test_string(R{span_hw}, hw);
-        STATIC_ASSERT(test_string(R{span_hw}, hw));
+        static_assert(test_string(R{span_hw}, hw));
     }
 };
 
@@ -70,7 +70,7 @@ struct u8string_instantiator {
     template <ranges::input_range R>
     static void call() {
         test_string(R{span_hw_u8}, hw_u8);
-        STATIC_ASSERT(test_string(R{span_hw_u8}, hw_u8));
+        static_assert(test_string(R{span_hw_u8}, hw_u8));
     }
 };
 #endif // defined(__cpp_char8_t)
@@ -90,7 +90,7 @@ struct u16string_instantiator {
     template <ranges::input_range R>
     static void call() {
         test_string(R{span_hw_u16}, hw_u16);
-        STATIC_ASSERT(test_string(R{span_hw_u16}, hw_u16));
+        static_assert(test_string(R{span_hw_u16}, hw_u16));
     }
 };
 
@@ -116,7 +116,7 @@ struct u32string_instantiator {
     template <ranges::input_range R>
     static void call() {
         test_string(R{span_hw_u32}, hw_u32);
-        STATIC_ASSERT(test_string(R{span_hw_u32}, hw_u32));
+        static_assert(test_string(R{span_hw_u32}, hw_u32));
     }
 };
 
@@ -136,7 +136,7 @@ struct wstring_instantiator {
     template <ranges::input_range R>
     static void call() {
         test_string(R{span_whw}, whw);
-        STATIC_ASSERT(test_string(R{span_whw}, whw));
+        static_assert(test_string(R{span_whw}, whw));
     }
 };
 
@@ -354,20 +354,20 @@ void test_lvalue_forward_list() {
 int main() {
     // Validate views
     test_copyable_views();
-    STATIC_ASSERT(test_copyable_views());
+    static_assert(test_copyable_views());
 
     test_move_only_views();
-    STATIC_ASSERT(test_move_only_views());
+    static_assert(test_move_only_views());
 
     // Validate non-views
     test_c_array();
-    STATIC_ASSERT(test_c_array());
+    static_assert(test_c_array());
 
     test_std_array();
-    STATIC_ASSERT(test_std_array());
+    static_assert(test_std_array());
 
     test_lvalue_vector();
-    STATIC_ASSERT(test_lvalue_vector());
+    static_assert(test_lvalue_vector());
 
     test_lvalue_forward_list();
 

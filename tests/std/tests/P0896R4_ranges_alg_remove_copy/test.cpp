@@ -12,12 +12,12 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate that remove_copy_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::remove_copy_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::remove_copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::remove_copy(borrowed<false>{}, static_cast<int*>(nullptr), 42)),
+static_assert(same_as<decltype(ranges::remove_copy(borrowed<false>{}, static_cast<int*>(nullptr), 42)),
     ranges::remove_copy_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::remove_copy(borrowed<true>{}, static_cast<int*>(nullptr), 42)),
+static_assert(same_as<decltype(ranges::remove_copy(borrowed<true>{}, static_cast<int*>(nullptr), 42)),
     ranges::remove_copy_result<int*, int*>>);
 
 struct counted_projection {
@@ -50,7 +50,7 @@ struct instantiator {
                 Read wrapped_input{input};
 
                 auto result = remove_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, 47, projection);
-                STATIC_ASSERT(same_as<decltype(result), remove_copy_result<iterator_t<Read>, Write>>);
+                static_assert(same_as<decltype(result), remove_copy_result<iterator_t<Read>, Write>>);
                 assert(result.in == wrapped_input.end());
                 assert(result.out.peek() == output + 3);
                 assert(equal(output, expected));
@@ -64,7 +64,7 @@ struct instantiator {
                 Read wrapped_input{input};
 
                 auto result = remove_copy(wrapped_input, Write{output}, 47, projection);
-                STATIC_ASSERT(same_as<decltype(result), remove_copy_result<iterator_t<Read>, Write>>);
+                static_assert(same_as<decltype(result), remove_copy_result<iterator_t<Read>, Write>>);
                 assert(result.in == wrapped_input.end());
                 assert(result.out.peek() == output + 3);
                 assert(equal(output, expected));
@@ -83,7 +83,7 @@ using test_range = test::range<Category, const P, IsSized,
 
 int main() {
 #ifdef TEST_EVERYTHING
-    STATIC_ASSERT((test_in_write<instantiator, const P, P>(), true));
+    static_assert((test_in_write<instantiator, const P, P>(), true));
     test_in_write<instantiator, const P, P>();
 #else // ^^^ test all input range permutations / test only "interesting" permutations vvv
     // The algorithm is insensitive to _every_ range property; it's simply a conditional copy.
