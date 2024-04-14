@@ -375,6 +375,13 @@ void test_erase_if() {
         assert(fmap.size() == 4);
         assert(check_key_content(fmap, {0, 1, 2, 3}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433}));
+        flat_multimap fmmap(keys, vals);
+        const auto erased_num_m = erase_if(
+            fmmap, [](pair<const int&, const int&> refpr) { return refpr.first % 2 == 0 && refpr.second % 2 != 0; });
+        assert(erased_num_m == 2);
+        assert(fmmap.size() == 4);
+        assert(check_key_content(fmmap, {0, 1, 2, 3}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 433}));
     }
 }
 
