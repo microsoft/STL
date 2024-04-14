@@ -390,10 +390,12 @@ struct MyType {
 void test_pointer_to_incomplete_type() {
     struct Test {
         unique_ptr<flat_map<Test, Test>> ptr;
+        unique_ptr<flat_multimap<Test, Test>> ptr_m;
     };
 
     Test t;
     flat_map<MyType<Incomplete>, shared_ptr<MyType<Incomplete>>> fmap;
+    flat_multimap<MyType<Incomplete>, shared_ptr<MyType<Incomplete>>> fmmap;
 }
 
 void test_insert() {
