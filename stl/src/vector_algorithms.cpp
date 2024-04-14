@@ -8,6 +8,7 @@
 #if defined(_M_IX86) || defined(_M_X64) // NB: includes _M_ARM64EC
 #include <__msvc_minmax.hpp>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <xtr1common>
 
