@@ -2075,9 +2075,9 @@ namespace {
 
                     const int _Needle_length_el = static_cast<int>(_Needle_length / sizeof(_Ty));
 
-                    alignas(16) uint8_t _Tmp1[16];
-                    memcpy(_Tmp1, _First2, _Needle_length);
-                    const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    alignas(16) uint8_t _Tmp2[16];
+                    memcpy(_Tmp2, _First2, _Needle_length);
+                    const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
 
                     const size_t _Haystack_length = _Byte_length(_First1, _Last1);
                     const void* _Stop_at          = _First1;
@@ -2097,9 +2097,9 @@ namespace {
                     const size_t _Last_part_size = _Haystack_length & 0xF;
                     const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
 
-                    alignas(16) uint8_t _Tmp2[16];
-                    memcpy(_Tmp2, _First1, _Last_part_size);
-                    const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+                    alignas(16) uint8_t _Tmp1[16];
+                    memcpy(_Tmp1, _First1, _Last_part_size);
+                    const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
 
                     if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op)) {
                         const int _Pos = _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op);
