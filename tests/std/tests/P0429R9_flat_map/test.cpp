@@ -243,6 +243,7 @@ void test_construction() {
         assert(MyAllocator<int>::getActiveAllocationCount() > activeAllocations);
     }
     {
+        static_assert(is_constructible_v<flat_map<int, int>, sorted_unique_t, vector<int>, vector<int>>);
         vector<int> keys = {0, 1, 2, 3, 38, 242};
         vector<int> vals = {44, 2324, 635462, 433, 5, 7};
         flat_map fmap(sorted_unique, keys, vals);
@@ -251,7 +252,20 @@ void test_construction() {
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5, 7}));
         static_assert(!is_constructible_v<flat_multimap<int, int>, sorted_unique_t, vector<int>, vector<int>>);
     }
-    // FIXME, test flat_multimap construction from sorted_equivalent_t
+    {
+        static_assert(!is_constructible_v<flat_map<int, int>, sorted_equivalent_t, vector<int>, vector<int>>);
+        static_assert(is_constructible_v<flat_multimap<int, int>, sorted_equivalent_t, vector<int>, vector<int>>);
+        vector<int, MyAllocator<int>> keys = {0, 1, 2, 2, 3, 4};
+        vector<int, MyAllocator<int>> vals = {44, 2324, 635462, 7, 433, 5};
+        flat_multimap fmmap(sorted_equivalent, keys, vals);
+        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+            {
+                {0, 1, subrange_type::equal},
+                {2, 3, subrange_type::permutation},
+                {4, 5, subrange_type::equal},
+            }));
+    }
     // FIXME, test more flat_map and flat_multimap constructors
     {
         PackagedCompare<int> comp;
