@@ -2041,8 +2041,8 @@ namespace {
     namespace __std_find_first_of {
 
         template <class _Ty>
-        const void* __stdcall __fallback(
-            const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) {
+        const void* __stdcall __fallback(const void* _First1, const void* const _Last1, const void* const _First2,
+            const void* const _Last2) noexcept {
             auto _Ptr_haystack           = static_cast<const _Ty*>(_First1);
             const auto _Ptr_haystack_end = static_cast<const _Ty*>(_Last1);
             const auto _Ptr_needle       = static_cast<const _Ty*>(_First2);
@@ -2275,7 +2275,7 @@ namespace {
         };
 
         template <class _Traits, size_t _Needle_length_el_magnitude>
-        const __m256i __shuffle_step(const __m256i _Data1, const __m256i _Data2s0) {
+        const __m256i __shuffle_step(const __m256i _Data1, const __m256i _Data2s0) noexcept {
             __m256i _Eq = _Traits::_Cmp_avx(_Data1, _Data2s0);
             if constexpr (_Needle_length_el_magnitude >= 2) {
                 const __m256i _Data2s1 = _Traits::_Shuffle_avx<1>(_Data2s0);
@@ -2301,8 +2301,8 @@ namespace {
         }
 
         template <class _Traits, size_t _Needle_length_el_magnitude>
-        const void* __shuffle_impl(
-            const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Needle_length_el) {
+        const void* __shuffle_impl(const void* _First1, const void* const _Last1, const void* const _First2,
+            const size_t _Needle_length_el) noexcept {
             using _Ty            = _Traits::_Ty;
             const __m256i _Data2 = _mm256_maskload_epi32(
                 reinterpret_cast<const int*>(_First2), _Avx2_tail_mask_32(_Needle_length_el * (sizeof(_Ty) / 4)));
