@@ -2247,7 +2247,7 @@ namespace {
             using _Ty = uint64_t;
 #ifndef _M_ARM64EC
             template <size_t _Amount>
-            static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
+            static __m256i _Spread_avx(const __m256i _Val, const size_t _Needle_length_el) noexcept {
                 if constexpr (_Amount == 1) {
                     return _mm256_broadcastq_epi64(_mm256_castsi256_si128(_Val));
                 } else if constexpr (_Amount == 2) {
