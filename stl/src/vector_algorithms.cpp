@@ -2041,7 +2041,7 @@ namespace {
     namespace __std_find_first_of {
 
         template <class _Ty>
-        const void* __stdcall __fallback(const void* _First1, const void* const _Last1, const void* const _First2,
+        const void* __stdcall _Fallback(const void* _First1, const void* const _Last1, const void* const _First2,
             const void* const _Last2) noexcept {
             auto _Ptr_haystack           = static_cast<const _Ty*>(_First1);
             const auto _Ptr_haystack_end = static_cast<const _Ty*>(_Last1);
@@ -2060,7 +2060,7 @@ namespace {
         }
 
         template <class _Ty>
-        const void* __stdcall __pcmpestri_impl(const void* _First1, const void* const _Last1, const void* const _First2,
+        const void* __stdcall _Impl_pcmpestri(const void* _First1, const void* const _Last1, const void* const _First2,
             const void* const _Last2) noexcept {
 #ifndef _M_ARM64EC
             if (_Use_sse42()) {
@@ -2196,7 +2196,7 @@ namespace {
                 }
             }
 #endif // !_M_ARM64EC
-            return __fallback<_Ty>(_First1, _Last1, _First2, _Last2);
+            return _Fallback<_Ty>(_First1, _Last1, _First2, _Last2);
         }
 
         struct _Traits_4 : _Find_traits_4 {
@@ -2278,7 +2278,7 @@ namespace {
 
 #ifndef _M_ARM64EC
         template <class _Traits, size_t _Needle_length_el_magnitude>
-        const __m256i __shuffle_step(const __m256i _Data1, const __m256i _Data2s0) noexcept {
+        const __m256i _Shuffle_step(const __m256i _Data1, const __m256i _Data2s0) noexcept {
             __m256i _Eq = _Traits::_Cmp_avx(_Data1, _Data2s0);
             if constexpr (_Needle_length_el_magnitude >= 2) {
                 const __m256i _Data2s1 = _Traits::_Shuffle_avx<1>(_Data2s0);
@@ -2304,7 +2304,7 @@ namespace {
         }
 
         template <class _Traits, size_t _Needle_length_el_magnitude>
-        const void* __shuffle_impl(const void* _First1, const void* const _Last1, const void* const _First2,
+        const void* _Shuffle_impl(const void* _First1, const void* const _Last1, const void* const _First2,
             const size_t _Needle_length_el) noexcept {
             using _Ty            = _Traits::_Ty;
             const __m256i _Data2 = _mm256_maskload_epi32(
@@ -2318,7 +2318,7 @@ namespace {
 
             for (; _First1 != _Stop1; _Advance_bytes(_First1, 32)) {
                 const __m256i _Data1 = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
-                const __m256i _Eq    = __shuffle_step<_Traits, _Needle_length_el_magnitude>(_Data1, _Data2s0);
+                const __m256i _Eq    = _Shuffle_step<_Traits, _Needle_length_el_magnitude>(_Data1, _Data2s0);
                 const int _Bingo     = _mm256_movemask_epi8(_Eq);
 
                 if (_Bingo != 0) {
@@ -2331,7 +2331,7 @@ namespace {
             if (const size_t _Haystack_tail_length = _Haystack_length & 0x1C; _Haystack_tail_length != 0) {
                 const __m256i _Tail_mask = _Avx2_tail_mask_32(_Haystack_tail_length >> 2);
                 const __m256i _Data1     = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
-                const __m256i _Eq        = __shuffle_step<_Traits, _Needle_length_el_magnitude>(_Data1, _Data2s0);
+                const __m256i _Eq        = _Shuffle_step<_Traits, _Needle_length_el_magnitude>(_Data1, _Data2s0);
                 const int _Bingo         = _mm256_movemask_epi8(_mm256_and_si256(_Eq, _Tail_mask));
 
                 if (_Bingo != 0) {
@@ -2349,7 +2349,7 @@ namespace {
 #endif // !_M_ARM64EC
 
         template <class _Traits>
-        const void* __stdcall __4_8_impl(const void* const _First1, const void* const _Last1, const void* const _First2,
+        const void* __stdcall _Impl_4_8(const void* const _First1, const void* const _Last1, const void* const _First2,
             const void* const _Last2) noexcept {
             using _Ty = _Traits::_Ty;
 #ifndef _M_ARM64EC
@@ -2366,12 +2366,12 @@ namespace {
                 } else if (_Needle_length_el == 1) {
                     _STL_UNREACHABLE; // This is expected to be forwarded to 'find' on an upper level
                 } else if (_Needle_length_el == 2) {
-                    return __shuffle_impl<_Traits, 2>(_First1, _Last1, _First2, _Needle_length_el);
+                    return _Shuffle_impl<_Traits, 2>(_First1, _Last1, _First2, _Needle_length_el);
                 } else if (_Needle_length_el <= 4) {
-                    return __shuffle_impl<_Traits, 4>(_First1, _Last1, _First2, _Needle_length_el);
+                    return _Shuffle_impl<_Traits, 4>(_First1, _Last1, _First2, _Needle_length_el);
                 } else if (_Needle_length_el <= 8) {
                     if constexpr (sizeof(_Ty) == 4) {
-                        return __shuffle_impl<_Traits, 8>(_First1, _Last1, _First2, _Needle_length_el);
+                        return _Shuffle_impl<_Traits, 8>(_First1, _Last1, _First2, _Needle_length_el);
                     }
                 }
 
@@ -2404,7 +2404,7 @@ namespace {
                 return _Last1;
             }
 #endif // !_M_ARM64EC
-            return __fallback<_Ty>(_First1, _Last1, _First2, _Last2);
+            return _Fallback<_Ty>(_First1, _Last1, _First2, _Last2);
         }
     } // namespace __std_find_first_of
 
@@ -2567,22 +2567,22 @@ __declspec(noalias) size_t
 
 const void* __stdcall __std_find_first_of_trivial_1(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
-    return __std_find_first_of::__pcmpestri_impl<uint8_t>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Impl_pcmpestri<uint8_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_2(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
-    return __std_find_first_of::__pcmpestri_impl<uint16_t>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Impl_pcmpestri<uint16_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_4(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
-    return __std_find_first_of::__4_8_impl<__std_find_first_of::_Traits_4>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Impl_4_8<__std_find_first_of::_Traits_4>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_8(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
-    return __std_find_first_of::__4_8_impl<__std_find_first_of::_Traits_8>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Impl_4_8<__std_find_first_of::_Traits_8>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) size_t
