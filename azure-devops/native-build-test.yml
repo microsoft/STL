@@ -34,8 +34,8 @@ jobs:
   - template: checkout-sources.yml
   - template: cmake-configure-build.yml
     parameters:
-      targetArch: ${{ parameters.targetArch }}
       hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
       asanBuild: ${{ parameters.asanBuild }}
   - template: run-tests.yml
