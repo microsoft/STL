@@ -2278,7 +2278,7 @@ namespace {
 
 #ifndef _M_ARM64EC
         template <class _Traits, size_t _Needle_length_el_magnitude>
-        const __m256i _Shuffle_step(const __m256i _Data1, const __m256i _Data2s0) noexcept {
+        __m256i _Shuffle_step(const __m256i _Data1, const __m256i _Data2s0) noexcept {
             __m256i _Eq = _Traits::_Cmp_avx(_Data1, _Data2s0);
             if constexpr (_Needle_length_el_magnitude >= 2) {
                 const __m256i _Data2s1 = _Traits::_Shuffle_avx<1>(_Data2s0);
