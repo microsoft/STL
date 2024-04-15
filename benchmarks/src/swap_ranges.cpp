@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <benchmark/benchmark.h>
+#include <cstddef>
+#include <cstdint>
 #include <vector>
 
 using namespace std;
