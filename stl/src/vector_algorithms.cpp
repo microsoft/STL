@@ -2215,7 +2215,7 @@ namespace {
 
                     return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 1, 0));
                 } else if constexpr (_Amount == 8) {
-                    if (_Needle_length_el < _Amount) {
+                    if (_Needle_length_el < 8) {
                         const __m256i _Mask = _Avx2_tail_mask_32(_Needle_length_el);
                         // zero unused elements in sequential permutation mask, so will be filled by 1st
                         const __m256i _Perm = _mm256_and_si256(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _Mask);
