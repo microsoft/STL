@@ -2387,7 +2387,7 @@ namespace {
                     for (auto _Ptr2 = _First2; _Ptr2 != _Stop2; _Advance_bytes(_Ptr2, 32)) {
                         const __m256i _Data2 = _mm256_loadu_si256(static_cast<const __m256i*>(_Ptr2));
                         const __m256i _Eq    = _Traits::_Cmp_avx(_Data1, _Data2);
-                        if (_mm256_testz_si256(_Eq, _Eq) == 0) {
+                        if (!_mm256_testz_si256(_Eq, _Eq)) {
                             return _Ptr1;
                         }
                     }
@@ -2395,7 +2395,7 @@ namespace {
                     if (_Needle_length_tail != 0) {
                         const __m256i _Data2 = _mm256_maskload_epi32(static_cast<const int*>(_Stop2), _Tail_mask);
                         const __m256i _Eq    = _Traits::_Cmp_avx(_Data1, _Data2);
-                        if (_mm256_testz_si256(_Eq, _Tail_mask) == 0) {
+                        if (!_mm256_testz_si256(_Eq, _Tail_mask)) {
                             return _Ptr1;
                         }
                     }
