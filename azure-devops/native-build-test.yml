@@ -4,7 +4,9 @@
 parameters:
 - name: targetPlatform
   type: string
-- name: vsDevCmdArch
+- name: hostArch
+  type: string
+- name: targetArch
   type: string
 - name: buildBenchmarks
   type: boolean
@@ -35,13 +37,13 @@ jobs:
   - template: cmake-configure-build.yml
     parameters:
       targetPlatform: ${{ parameters.targetPlatform }}
-      targetArch: ${{ parameters.vsDevCmdArch }}
-      hostArch: ${{ parameters.vsDevCmdArch }}
+      targetArch: ${{ parameters.targetArch }}
+      hostArch: ${{ parameters.hostArch }}
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
       asanBuild: ${{ parameters.asanBuild }}
   - template: run-tests.yml
     parameters:
-      hostArch: ${{ parameters.vsDevCmdArch }}
+      hostArch: ${{ parameters.hostArch }}
       targetPlatform: ${{ parameters.targetPlatform }}
-      targetArch: ${{ parameters.vsDevCmdArch }}
+      targetArch: ${{ parameters.targetArch }}
       testSelection: ${{ parameters.testSelection }}

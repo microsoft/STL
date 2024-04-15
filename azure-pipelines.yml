@@ -28,7 +28,8 @@ stages:
       - template: azure-devops/native-build-test.yml
         parameters:
           targetPlatform: x64
-          vsDevCmdArch: x64
+          hostArch: x64
+          targetArch: x64
 
   - stage: Build_And_Test_x86
     dependsOn: Build_And_Test_x64
@@ -40,7 +41,8 @@ stages:
       - template: azure-devops/native-build-test.yml
         parameters:
           targetPlatform: x86
-          vsDevCmdArch: x86
+          hostArch: x86
+          targetArch: x86
 
   - stage: Build_ARM
     dependsOn: Build_And_Test_x64
