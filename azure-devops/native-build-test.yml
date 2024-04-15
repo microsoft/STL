@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 parameters:
-- name: targetPlatform
-  type: string
 - name: hostArch
   type: string
 - name: targetArch
@@ -23,7 +21,7 @@ parameters:
   # Exclude "stlasan" test by default
   default: '-E stlasan'
 jobs:
-- job: '${{ parameters.targetPlatform }}'
+- job: '${{ parameters.targetArch }}'
   strategy:
     parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 30
@@ -36,7 +34,6 @@ jobs:
   - template: checkout-sources.yml
   - template: cmake-configure-build.yml
     parameters:
-      targetPlatform: ${{ parameters.targetPlatform }}
       targetArch: ${{ parameters.targetArch }}
       hostArch: ${{ parameters.hostArch }}
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
@@ -44,6 +41,5 @@ jobs:
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}
-      targetPlatform: ${{ parameters.targetPlatform }}
       targetArch: ${{ parameters.targetArch }}
       testSelection: ${{ parameters.testSelection }}

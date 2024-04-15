@@ -26,7 +26,6 @@ stages:
     jobs:
       - template: native-build-test.yml
         parameters:
-          targetPlatform: x64
           hostArch: x64
           targetArch: x64
           buildBenchmarks: false
@@ -42,7 +41,6 @@ stages:
     jobs:
       - template: native-build-test.yml
         parameters:
-          targetPlatform: x86
           hostArch: x86
           targetArch: x86
           buildBenchmarks: false

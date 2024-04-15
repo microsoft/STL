@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 parameters:
-- name: targetPlatform
-  type: string
 - name: hostArch
   type: string
 - name: targetArch
@@ -34,8 +32,8 @@ steps:
     searchFolder: $(buildOutputLocation)
     testResultsFormat: JUnit
     testResultsFiles: '**/test-results.xml'
-    testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'
+    testRunTitle: 'test-${{ parameters.targetArch }}-$(System.JobPositionInPhase)'
 - publish: $(buildOutputLocation)/test-results.xml
-  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
+  artifact: '${{ parameters.targetArch }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
   condition: failed()
   displayName: 'Publish XML Artifact'

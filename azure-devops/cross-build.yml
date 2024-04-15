@@ -4,8 +4,6 @@
 parameters:
 - name: hostArch
   type: string
-- name: targetPlatform
-  type: string
 - name: targetArch
   type: string
 - name: buildBenchmarks
@@ -15,7 +13,7 @@ parameters:
   type: number
   default: 8
 jobs:
-- job: '${{ parameters.targetPlatform }}'
+- job: '${{ parameters.targetArch }}'
   strategy:
     parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 30
@@ -28,7 +26,6 @@ jobs:
   - template: checkout-sources.yml
   - template: cmake-configure-build.yml
     parameters:
-      targetPlatform: ${{ parameters.targetPlatform }}
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
       cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
@@ -36,7 +33,6 @@ jobs:
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}
-      targetPlatform: ${{ parameters.targetPlatform }}
       targetArch: ${{ parameters.targetArch }}
       displayName: 'Build Tests'
       # Exclude "stlasan" test (we don't yet support ASAN on ARM or ARM64)
