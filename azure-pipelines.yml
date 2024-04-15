@@ -52,7 +52,7 @@ stages:
       - template: azure-devops/cross-build.yml
         parameters:
           targetPlatform: arm
-          vsDevCmdArch: arm
+          targetArch: arm
           buildBenchmarks: false
 
   - stage: Build_ARM64
@@ -65,4 +65,4 @@ stages:
       - template: azure-devops/cross-build.yml
         parameters:
           targetPlatform: arm64
-          vsDevCmdArch: arm64
+          targetArch: arm64

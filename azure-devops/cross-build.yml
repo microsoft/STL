@@ -7,7 +7,7 @@ parameters:
   default: x64
 - name: targetPlatform
   type: string
-- name: vsDevCmdArch
+- name: targetArch
   type: string
 - name: buildBenchmarks
   type: boolean
@@ -31,14 +31,14 @@ jobs:
     parameters:
       targetPlatform: ${{ parameters.targetPlatform }}
       hostArch: ${{ parameters.hostArch }}
-      targetArch: ${{ parameters.vsDevCmdArch }}
+      targetArch: ${{ parameters.targetArch }}
       cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetPlatform: ${{ parameters.targetPlatform }}
-      targetArch: ${{ parameters.vsDevCmdArch }}
+      targetArch: ${{ parameters.targetArch }}
       displayName: 'Build Tests'
       # Exclude "stlasan" test (we don't yet support ASAN on ARM or ARM64)
       testSelection: '-E stlasan'
