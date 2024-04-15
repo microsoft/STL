@@ -259,12 +259,7 @@ void test_construction() {
         vector<int, MyAllocator<int>> vals = {44, 2324, 635462, 7, 433, 5};
         flat_multimap fmmap(sorted_equivalent, keys, vals);
         assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
-        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
-            {
-                {0, 1, subrange_type::equal},
-                {2, 3, subrange_type::permutation},
-                {4, 5, subrange_type::equal},
-            }));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5})); // guaranteed by N4971 [flat.multimap.cons]/6
     }
     // FIXME, test more flat_map and flat_multimap constructors
     {
