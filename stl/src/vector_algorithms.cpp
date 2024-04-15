@@ -2201,7 +2201,7 @@ namespace {
 
         struct _Traits_4 : _Find_traits_4 {
             using _Ty = uint32_t;
-
+#ifndef _M_ARM64EC
             template <size_t _Amount>
             static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
                 if constexpr (_Amount == 1) {
@@ -2240,11 +2240,12 @@ namespace {
                     static_assert(false, "Unexpected amount");
                 }
             }
+#endif // !_M_ARM64EC
         };
 
         struct _Traits_8 : _Find_traits_8 {
             using _Ty = uint64_t;
-
+#ifndef _M_ARM64EC
             template <size_t _Amount>
             static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
                 if constexpr (_Amount == 1) {
@@ -2272,8 +2273,10 @@ namespace {
                     static_assert(false, "Unexpected amount");
                 }
             }
+#endif // !_M_ARM64EC
         };
 
+#ifndef _M_ARM64EC
         template <class _Traits, size_t _Needle_length_el_magnitude>
         const __m256i __shuffle_step(const __m256i _Data1, const __m256i _Data2s0) noexcept {
             __m256i _Eq = _Traits::_Cmp_avx(_Data1, _Data2s0);
@@ -2342,6 +2345,8 @@ namespace {
 
             return _First1;
         }
+
+#endif // !_M_ARM64EC
 
         template <class _Traits>
         const void* __stdcall __4_8_impl(const void* const _First1, const void* const _Last1, const void* const _First2,
