@@ -27,7 +27,7 @@ stages:
       - template: native-build-test.yml
         parameters:
           targetPlatform: x64
-          vsDevCmdArch: amd64
+          vsDevCmdArch: x64
           buildBenchmarks: false
           asanBuild: true
           testSelection: ${{ variables.testSelection }}
