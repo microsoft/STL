@@ -243,6 +243,7 @@ void test_construction() {
         assert(MyAllocator<int>::getActiveAllocationCount() > activeAllocations);
     }
     {
+        static_assert(is_constructible_v<flat_map<int, int>, sorted_unique_t, vector<int>, vector<int>>);
         vector<int> keys = {0, 1, 2, 3, 38, 242};
         vector<int> vals = {44, 2324, 635462, 433, 5, 7};
         flat_map fmap(sorted_unique, keys, vals);
@@ -251,7 +252,15 @@ void test_construction() {
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5, 7}));
         static_assert(!is_constructible_v<flat_multimap<int, int>, sorted_unique_t, vector<int>, vector<int>>);
     }
-    // FIXME, test flat_multimap construction from sorted_equivalent_t
+    {
+        static_assert(!is_constructible_v<flat_map<int, int>, sorted_equivalent_t, vector<int>, vector<int>>);
+        static_assert(is_constructible_v<flat_multimap<int, int>, sorted_equivalent_t, vector<int>, vector<int>>);
+        vector<int, MyAllocator<int>> keys = {0, 1, 2, 2, 3, 4};
+        vector<int, MyAllocator<int>> vals = {44, 2324, 635462, 7, 433, 5};
+        flat_multimap fmmap(sorted_equivalent, keys, vals);
+        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5})); // guaranteed by N4971 [flat.multimap.cons]/6
+    }
     // FIXME, test more flat_map and flat_multimap constructors
     {
         PackagedCompare<int> comp;
@@ -352,15 +361,21 @@ void test_construction() {
 
 void test_erase_if() {
     {
-        vector<int> keys = {0, 1, 2, 3, 4, 2};
-        vector<int> vals = {44, 2324, 635462, 433, 5, 7};
+        vector<int> keys      = {0, 1, 2, 3, 4, 2};
+        vector<int> vals      = {44, 2324, 635462, 433, 5, 7};
+        auto even_key_odd_val = [](pair<const int&, const int&> p) { return p.first % 2 == 0 && p.second % 2 != 0; };
         flat_map fmap(keys, vals);
-        const auto erased_num = erase_if(
-            fmap, [](pair<const int&, const int&> refpr) { return refpr.first % 2 == 0 && refpr.second % 2 != 0; });
+        const auto erased_num = erase_if(fmap, even_key_odd_val);
         assert(erased_num == 1);
         assert(fmap.size() == 4);
         assert(check_key_content(fmap, {0, 1, 2, 3}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433}));
+        flat_multimap fmmap(keys, vals);
+        const auto erased_num_m = erase_if(fmmap, even_key_odd_val);
+        assert(erased_num_m == 2);
+        assert(fmmap.size() == 4);
+        assert(check_key_content(fmmap, {0, 1, 2, 3}));
+        assert(check_value_content(fmmap, {44, 2324, 635462, 433}));
     }
 }
 
@@ -376,10 +391,12 @@ struct MyType {
 void test_pointer_to_incomplete_type() {
     struct Test {
         unique_ptr<flat_map<Test, Test>> ptr;
+        unique_ptr<flat_multimap<Test, Test>> ptr_m;
     };
 
     Test t;
     flat_map<MyType<Incomplete>, shared_ptr<MyType<Incomplete>>> fmap;
+    flat_multimap<MyType<Incomplete>, shared_ptr<MyType<Incomplete>>> fmmap;
 }
 
 void test_insert() {
