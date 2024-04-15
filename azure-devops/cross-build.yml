@@ -4,7 +4,6 @@
 parameters:
 - name: hostArch
   type: string
-  default: x64
 - name: targetPlatform
   type: string
 - name: targetArch
