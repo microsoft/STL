@@ -8,6 +8,8 @@ parameters:
   type: string
 - name: ctestOptions
   type: string
+- name: doTesting
+  type: boolean
 steps:
 - script: |
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
@@ -15,13 +17,13 @@ steps:
     ctest --verbose ${{ parameters.ctestOptions }}
   displayName: 'Build and Run Tests'
   timeoutInMinutes: 30
-  condition: succeeded()
+  condition: and(succeeded(), ${{ parameters.doTesting }})
   workingDirectory: $(buildOutputLocation)
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
   timeoutInMinutes: 5
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), ${{ parameters.doTesting }})
   inputs:
     searchFolder: $(buildOutputLocation)
     testResultsFormat: JUnit
@@ -29,5 +31,5 @@ steps:
     testRunTitle: 'test-${{ parameters.targetArch }}-$(System.JobPositionInPhase)'
 - publish: $(buildOutputLocation)/test-results.xml
   artifact: '${{ parameters.targetArch }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
-  condition: failed()
+  condition: and(failed(), ${{ parameters.doTesting }})
   displayName: 'Publish XML Artifact'

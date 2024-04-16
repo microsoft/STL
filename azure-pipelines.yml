@@ -31,6 +31,7 @@ stages:
           targetArch: x64
           analyzeBuild: true
           buildBenchmarks: true
+          doTesting: true
 
   - stage: Build_And_Test_x86
     dependsOn: Build_And_Test_x64
@@ -45,6 +46,7 @@ stages:
           targetArch: x86
           analyzeBuild: true
           buildBenchmarks: true
+          doTesting: true
 
   - stage: Build_ARM
     dependsOn: Build_And_Test_x64
@@ -59,6 +61,7 @@ stages:
           targetArch: arm
           analyzeBuild: true
           cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
+          doTesting: true
 
   - stage: Build_ARM64
     dependsOn: Build_And_Test_x64
@@ -74,3 +77,4 @@ stages:
           analyzeBuild: true
           buildBenchmarks: true
           cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
+          doTesting: true

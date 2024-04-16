@@ -21,6 +21,8 @@ parameters:
 - name: ctestOptions
   type: string
   default: '--exclude-regex stlasan'
+- name: doTesting
+  type: boolean
 - name: numShards
   type: number
   default: 8
@@ -36,6 +38,8 @@ jobs:
     displayName: 'Setup TMP Directory'
 
   - template: checkout-sources.yml
+    parameters:
+      doTesting: ${{ parameters.doTesting }}
   - template: cmake-configure-build.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}
@@ -49,3 +53,4 @@ jobs:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
       ctestOptions: ${{ parameters.ctestOptions }}
+      doTesting: ${{ parameters.doTesting }}

@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+parameters:
+- name: doTesting
+  type: boolean
 steps:
 - checkout: self
   clean: true
@@ -46,6 +49,7 @@ steps:
     git reset --quiet --hard FETCH_HEAD
     git clean --quiet -x -d -f -f
   displayName: "Checkout LLVM source"
+  condition: and(succeeded(), ${{ parameters.doTesting }})
 - script: |
     if not exist "boost-math" (
       mkdir boost-math
