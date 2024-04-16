@@ -59,6 +59,5 @@ static_assert(!std::movable<Immovable>);
 
 template <class T>
 struct Proxy {
-    Proxy() {}
     Proxy(const T&) {}
 };
