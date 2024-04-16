@@ -12,7 +12,6 @@ parameters:
   type: boolean
 - name: cmakeAdditionalFlags
   type: string
-  default: ''
 - name: litFlags
   type: object
   default:

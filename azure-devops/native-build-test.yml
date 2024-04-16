@@ -12,6 +12,9 @@ parameters:
 - name: asanBuild
   type: boolean
   default: false
+- name: cmakeAdditionalFlags
+  type: string
+  default: ''
 - name: numShards
   type: number
   default: 8
@@ -34,6 +37,7 @@ jobs:
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
+      cmakeAdditionalFlags: ${{ parameters.cmakeAdditionalFlags }}
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
       asanBuild: ${{ parameters.asanBuild }}
   - template: run-tests.yml
