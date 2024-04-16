@@ -6,9 +6,9 @@ parameters:
   type: string
 - name: targetArch
   type: string
-- name: buildBenchmarks
-  type: boolean
 - name: asanBuild
+  type: boolean
+- name: buildBenchmarks
   type: boolean
 - name: cmakeAdditionalFlags
   type: string

@@ -6,21 +6,21 @@ parameters:
   type: string
 - name: targetArch
   type: string
-- name: buildBenchmarks
-  type: boolean
-  default: true
 - name: asanBuild
   type: boolean
   default: false
+- name: buildBenchmarks
+  type: boolean
+  default: true
 - name: cmakeAdditionalFlags
   type: string
   default: ''
-- name: numShards
-  type: number
-  default: 8
 - name: ctestOptions
   type: string
   default: '--exclude-regex stlasan'
+- name: numShards
+  type: number
+  default: 8
 jobs:
 - job: '${{ parameters.targetArch }}'
   strategy:
@@ -37,9 +37,9 @@ jobs:
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
-      cmakeAdditionalFlags: ${{ parameters.cmakeAdditionalFlags }}
-      buildBenchmarks: ${{ parameters.buildBenchmarks }}
       asanBuild: ${{ parameters.asanBuild }}
+      buildBenchmarks: ${{ parameters.buildBenchmarks }}
+      cmakeAdditionalFlags: ${{ parameters.cmakeAdditionalFlags }}
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}
