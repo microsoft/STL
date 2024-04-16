@@ -18,7 +18,6 @@ jobs:
       clean: true
       submodules: false
     - script: |
-        cd $(Build.SourcesDirectory)
         git clean --quiet -x -d -f -f
       displayName: 'Clean after checkout'
     - script: |

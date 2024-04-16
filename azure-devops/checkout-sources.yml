@@ -6,7 +6,6 @@ steps:
   clean: true
   submodules: false
 - script: |
-    cd $(Build.SourcesDirectory)
     git clean --quiet -x -d -f -f
   displayName: 'Clean after checkout'
 - task: PowerShell@2
@@ -15,7 +14,6 @@ steps:
   inputs:
     targetType: inline
     script: |
-      cd $(Build.SourcesDirectory)
       $submoduleVarNames = [ordered]@{
         'llvm-project' = 'llvmSHAVar';
         'boost-math' = 'boostMathSHAVar';
@@ -28,7 +26,6 @@ steps:
         Write-Host "##vso[task.setvariable variable=$varName]$sha"
       }
 - script: |
-    cd $(Build.SourcesDirectory)
     if not exist "llvm-project" (
       mkdir llvm-project
     )
@@ -50,7 +47,6 @@ steps:
     git clean --quiet -x -d -f -f
   displayName: "Checkout LLVM source"
 - script: |
-    cd $(Build.SourcesDirectory)
     if not exist "boost-math" (
       mkdir boost-math
     )
@@ -71,7 +67,7 @@ steps:
     git clean --quiet -x -d -f -f
   displayName: "Checkout boost-math source"
 - script: |
-    cd $(Build.SourcesDirectory)/benchmarks
+    cd benchmarks
     if not exist "google-benchmark" (
       mkdir google-benchmark
     )
