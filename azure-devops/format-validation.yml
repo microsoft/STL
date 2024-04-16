@@ -43,7 +43,7 @@ jobs:
       displayName: 'Validate Files'
       timeoutInMinutes: 2
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-    - task: Powershell@2
+    - task: PowerShell@2
       displayName: 'Create Diff'
       inputs:
         filePath: azure-devops/create-prdiff.ps1
