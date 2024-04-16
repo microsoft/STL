@@ -19,7 +19,7 @@ parameters:
 - name: testSelection
   type: string
   # Exclude "stlasan" test by default
-  default: '-E stlasan'
+  default: '--exclude-regex stlasan'
 jobs:
 - job: '${{ parameters.targetArch }}'
   strategy:

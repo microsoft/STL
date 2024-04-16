@@ -19,7 +19,7 @@ steps:
     script: |
       call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
       -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-      ctest -V ${{ parameters.testSelection }}
+      ctest --verbose ${{ parameters.testSelection }}
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
