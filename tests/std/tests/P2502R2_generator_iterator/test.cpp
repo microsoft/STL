@@ -98,11 +98,11 @@ void test_one() {
         auto g = generate_one<Ref, V, Alloc>();
         auto i = g.begin();
 
-        [[maybe_unused]] same_as<gen_reference_t<Ref, V>> decltype(auto) r = *i;
+        same_as<gen_reference_t<Ref, V>> decltype(auto) r = *i;
 
-        using NoRef = remove_reference_t<Ref>;
-        if constexpr (default_initializable<NoRef> && equality_comparable<NoRef>) {
-            assert(r == NoRef{});
+        using ValueType = gen_value_t<Ref, V>;
+        if constexpr (default_initializable<ValueType> && equality_comparable<ValueType>) {
+            assert(r == ValueType{});
         }
     }
 

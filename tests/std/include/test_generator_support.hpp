@@ -58,6 +58,24 @@ struct Immovable {
 static_assert(!std::movable<Immovable>);
 
 template <class T>
-struct Proxy {
+class Proxy {
+public:
     Proxy(const T&) {}
+};
+
+template <std::equality_comparable T>
+class Proxy<T> {
+public:
+    Proxy(const T& _value_) : value(_value_) {}
+
+    bool operator==(const Proxy& other) const {
+        return value == other.value;
+    }
+
+    bool operator==(const T& x) const {
+        return value == x;
+    }
+
+private:
+    const T& value;
 };
