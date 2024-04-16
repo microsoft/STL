@@ -7,7 +7,7 @@ parameters:
 - name: targetArch
   type: string
   # Parameters to pass to ctest to select the test(s) to run
-- name: testSelection
+- name: ctestOptions
   type: string
 steps:
 - task: CmdLine@2
@@ -19,7 +19,7 @@ steps:
     script: |
       call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
       -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-      ctest --verbose ${{ parameters.testSelection }}
+      ctest --verbose ${{ parameters.ctestOptions }}
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'

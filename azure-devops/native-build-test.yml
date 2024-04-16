@@ -16,7 +16,7 @@ parameters:
   type: number
   default: 8
   # Parameters to pass to ctest to select the test(s) to run
-- name: testSelection
+- name: ctestOptions
   type: string
   # Exclude "stlasan" test by default
   default: '--exclude-regex stlasan'
@@ -42,4 +42,4 @@ jobs:
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
-      testSelection: ${{ parameters.testSelection }}
+      ctestOptions: ${{ parameters.ctestOptions }}
