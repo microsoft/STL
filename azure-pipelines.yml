@@ -112,9 +112,9 @@ stages:
           targetArch: x86
           doTesting: true
 
-  - stage: Build_ARM
+  - stage: Build_And_Test_ARM
     dependsOn: Build_And_Test_x64
-    displayName: 'Build ARM'
+    displayName: 'Build and Test ARM'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
@@ -126,9 +126,9 @@ stages:
           cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
           doTesting: true
 
-  - stage: Build_ARM64
+  - stage: Build_And_Test_ARM64
     dependsOn: Build_And_Test_x64
-    displayName: 'Build ARM64'
+    displayName: 'Build and Test ARM64'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
