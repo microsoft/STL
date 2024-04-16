@@ -12,6 +12,9 @@ parameters:
 - name: numShards
   type: number
   default: 8
+- name: ctestOptions
+  type: string
+  default: '--exclude-regex stlasan'
 jobs:
 - job: '${{ parameters.targetArch }}'
   strategy:
@@ -34,4 +37,4 @@ jobs:
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
-      ctestOptions: '--exclude-regex stlasan'
+      ctestOptions: ${{ parameters.ctestOptions }}
