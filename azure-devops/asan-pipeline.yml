@@ -5,8 +5,6 @@
 
 variables:
   - template: config.yml
-  - name: ctestOptions
-    value: '--tests-regex stlasan'
 
 trigger: none
 
@@ -30,7 +28,7 @@ stages:
           targetArch: x64
           buildBenchmarks: false
           asanBuild: true
-          ctestOptions: ${{ variables.ctestOptions }}
+          ctestOptions: '--tests-regex stlasan'
 
   - stage: Build_And_Test_x86
     displayName: 'Build and Test x86'
@@ -45,6 +43,6 @@ stages:
           targetArch: x86
           buildBenchmarks: false
           asanBuild: true
-          ctestOptions: ${{ variables.ctestOptions }}
+          ctestOptions: '--tests-regex stlasan'
 
   # no coverage for ARM and ARM64
