@@ -16,7 +16,6 @@ steps:
     targetType: inline
     script: |
       cd $(Build.SourcesDirectory)
-      $regexSubmoduleSHA = '^[ \-+]([0-9a-f]+) .*$'
       $submoduleVarNames = [ordered]@{
         'llvm-project' = 'llvmSHAVar';
         'boost-math' = 'boostMathSHAVar';
@@ -24,7 +23,8 @@ steps:
       }
       foreach ($submodule in $submoduleVarNames.Keys) {
         $varName = $submoduleVarNames[$submodule]
-        $sha = git submodule status --cached $submodule | %{$_ -replace $regexSubmoduleSHA, '$1'}
+        $rawStatus = git submodule status --cached $submodule
+        $sha = $rawStatus -replace '^[ \-+]([0-9a-f]+) .*$', '$1'
         Write-Host "##vso[task.setvariable variable=$varName]$sha"
       }
 - script: |
