@@ -8,7 +8,7 @@ parameters:
   type: string
 - name: analyzeBuild
   type: boolean
-  default: true
+  default: false
 - name: asanBuild
   type: boolean
   default: false
