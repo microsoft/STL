@@ -17,13 +17,16 @@ steps:
     script: |
       cd $(Build.SourcesDirectory)
       $regexSubmoduleSHA = '^[ \-+]([0-9a-f]+) .*$'
-      $llvmSHA = git submodule status --cached llvm-project | %{$_ -replace $regexSubmoduleSHA, '$1'}
-      Write-Host "##vso[task.setvariable variable=llvmSHAVar]$llvmSHA"
-      $boostMathSHA = git submodule status --cached boost-math | %{$_ -replace $regexSubmoduleSHA, '$1'}
-      Write-Host "##vso[task.setvariable variable=boostMathSHAVar]$boostMathSHA"
-      $googleBenchmarkSHA = git submodule status --cached benchmarks/google-benchmark `
-        | %{$_ -replace $regexSubmoduleSHA, '$1'}
-      Write-Host "##vso[task.setvariable variable=googleBenchmarkSHAVar]$googleBenchmarkSHA"
+      $submoduleVarNames = [ordered]@{
+        'llvm-project' = 'llvmSHAVar';
+        'boost-math' = 'boostMathSHAVar';
+        'benchmarks/google-benchmark' = 'googleBenchmarkSHAVar';
+      }
+      foreach ($submodule in $submoduleVarNames.Keys) {
+        $varName = $submoduleVarNames[$submodule]
+        $sha = git submodule status --cached $submodule | %{$_ -replace $regexSubmoduleSHA, '$1'}
+        Write-Host "##vso[task.setvariable variable=$varName]$sha"
+      }
 - script: |
     cd $(Build.SourcesDirectory)
     if not exist "llvm-project" (
