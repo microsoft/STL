@@ -10,7 +10,6 @@ parameters:
   type: boolean
 - name: asanBuild
   type: boolean
-  default: false
 - name: cmakeAdditionalFlags
   type: string
   default: ''
