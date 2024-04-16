@@ -13,9 +13,6 @@
 
 using namespace std;
 
-template <class>
-constexpr bool always_false = false;
-
 template <class Ref, class V, class Alloc>
 generator<Ref, V, Alloc> generate_zero() {
     co_return;
