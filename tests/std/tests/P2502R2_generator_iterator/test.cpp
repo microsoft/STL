@@ -18,17 +18,23 @@ generator<Ref, V, Alloc> generate_zero() {
     co_return;
 }
 
-template <class Ref, class V, class Alloc>
-    requires (is_reference_v<Ref> && default_initializable<_Gen_value_t<Ref, V>>) || default_initializable<Ref>
+template <class Ref, class V>
+using gen_value_t = conditional_t<is_void_v<V>, remove_cvref_t<Ref>, V>;
+
+template <class Ref, class V>
+using gen_reference_t = conditional_t<is_void_v<V>, Ref&&, Ref>;
+
+template <class Ref, class V, class Alloc, class ValueType = gen_value_t<Ref, V>>
+    requires (is_reference_v<Ref> && default_initializable<ValueType>) || default_initializable<Ref>
 generator<Ref, V, Alloc> generate_one() {
     if constexpr (!is_reference_v<Ref>) {
         co_yield Ref{};
     } else if constexpr (is_lvalue_reference_v<Ref>) {
-        _Gen_value_t<Ref, V> val{};
+        ValueType val{};
         remove_reference_t<Ref> ref{move(val)};
         co_yield ref;
     } else if constexpr (is_rvalue_reference_v<Ref>) {
-        _Gen_value_t<Ref, V> val{};
+        ValueType val{};
         co_yield move(val);
     }
 }
@@ -50,7 +56,7 @@ void test_one() {
     static_assert(sizeof(Iter) == sizeof(void*)); // NB: implementation defined
 
     // Test member types
-    static_assert(same_as<typename Iter::value_type, conditional_t<is_void_v<V>, remove_cvref_t<Ref>, V>>);
+    static_assert(same_as<typename Iter::value_type, gen_value_t<Ref, V>>);
     static_assert(same_as<typename Iter::difference_type, ptrdiff_t>);
 
     // Test copying functions
@@ -82,7 +88,7 @@ void test_one() {
         auto g = generate_one<Ref, V, Alloc>();
         auto i = g.begin();
 
-        [[maybe_unused]] same_as<_Gen_reference_t<Ref, V>> decltype(auto) r = *i;
+        [[maybe_unused]] same_as<gen_reference_t<Ref, V>> decltype(auto) r = *i;
 
         using NoRef = remove_reference_t<Ref>;
         if constexpr (default_initializable<NoRef> && equality_comparable<NoRef>) {
