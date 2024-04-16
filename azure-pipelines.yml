@@ -18,9 +18,9 @@ stages:
     jobs:
       - template: azure-devops/format-validation.yml
 
-  - stage: Build_And_Test_x64
-    dependsOn: Code_Format
-    displayName: 'Build and Test x64'
+  - stage: Early_Build_x64
+    dependsOn: []
+    displayName: 'Early Build x64'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
@@ -31,6 +31,72 @@ stages:
           targetArch: x64
           analyzeBuild: true
           buildBenchmarks: true
+          doTesting: false
+          numShards: 1
+
+  - stage: Early_Build_x86
+    dependsOn: []
+    displayName: 'Early Build x86'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: x86
+          targetArch: x86
+          analyzeBuild: true
+          buildBenchmarks: true
+          doTesting: false
+          numShards: 1
+
+  - stage: Early_Build_ARM
+    dependsOn: []
+    displayName: 'Early Build ARM'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: x64
+          targetArch: arm
+          analyzeBuild: true
+          doTesting: false
+          numShards: 1
+
+  - stage: Early_Build_ARM64
+    dependsOn: []
+    displayName: 'Early Build ARM64'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: x64
+          targetArch: arm64
+          analyzeBuild: true
+          buildBenchmarks: true
+          doTesting: false
+          numShards: 1
+
+  - stage: Build_And_Test_x64
+    dependsOn:
+      - Code_Format
+      - Early_Build_x64
+      - Early_Build_x86
+      - Early_Build_ARM
+      - Early_Build_ARM64
+    displayName: 'Build and Test x64'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: x64
+          targetArch: x64
           doTesting: true
 
   - stage: Build_And_Test_x86
@@ -44,8 +110,6 @@ stages:
         parameters:
           hostArch: x86
           targetArch: x86
-          analyzeBuild: true
-          buildBenchmarks: true
           doTesting: true
 
   - stage: Build_ARM
@@ -59,7 +123,6 @@ stages:
         parameters:
           hostArch: x64
           targetArch: arm
-          analyzeBuild: true
           cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
           doTesting: true
 
@@ -74,7 +137,5 @@ stages:
         parameters:
           hostArch: x64
           targetArch: arm64
-          analyzeBuild: true
-          buildBenchmarks: true
           cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
           doTesting: true
