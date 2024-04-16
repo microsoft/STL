@@ -34,5 +34,4 @@ jobs:
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
-      # Exclude "stlasan" test (we don't yet support ASAN on ARM or ARM64)
       ctestOptions: '--exclude-regex stlasan'

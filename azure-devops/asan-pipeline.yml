@@ -6,7 +6,7 @@
 variables:
   - template: config.yml
   - name: ctestOptions
-    value: '--tests-regex stlasan' # Restrict to "stlasan" test
+    value: '--tests-regex stlasan'
 
 trigger: none
 

@@ -15,10 +15,8 @@ parameters:
 - name: numShards
   type: number
   default: 8
-  # Parameters to pass to ctest to select the test(s) to run
 - name: ctestOptions
   type: string
-  # Exclude "stlasan" test by default
   default: '--exclude-regex stlasan'
 jobs:
 - job: '${{ parameters.targetArch }}'

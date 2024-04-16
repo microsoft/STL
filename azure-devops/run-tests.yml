@@ -6,7 +6,6 @@ parameters:
   type: string
 - name: targetArch
   type: string
-  # Parameters to pass to ctest to select the test(s) to run
 - name: ctestOptions
   type: string
 steps:
