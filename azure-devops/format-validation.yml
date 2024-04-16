@@ -47,6 +47,5 @@ jobs:
       displayName: 'Create Diff'
       inputs:
         filePath: azure-devops/create-prdiff.ps1
-        pwsh: false
       condition: succeededOrFailed()
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
