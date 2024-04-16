@@ -6,6 +6,9 @@ parameters:
   type: string
 - name: targetArch
   type: string
+- name: analyzeBuild
+  type: boolean
+  default: true
 - name: asanBuild
   type: boolean
   default: false
@@ -37,6 +40,7 @@ jobs:
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
+      analyzeBuild: ${{ parameters.analyzeBuild }}
       asanBuild: ${{ parameters.asanBuild }}
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
       cmakeAdditionalFlags: ${{ parameters.cmakeAdditionalFlags }}

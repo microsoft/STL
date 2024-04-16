@@ -6,6 +6,8 @@ parameters:
   type: string
 - name: targetArch
   type: string
+- name: analyzeBuild
+  type: boolean
 - name: asanBuild
   type: boolean
 - name: buildBenchmarks
@@ -31,7 +33,7 @@ steps:
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DLIT_FLAGS=${{ join(';', parameters.litFlags) }} ^
-    -DSTL_USE_ANALYZE=ON ^
+    -DSTL_USE_ANALYZE=${{ parameters.analyzeBuild }} ^
     -DSTL_ASAN_BUILD=${{ parameters.asanBuild }} ^
     -S $(Build.SourcesDirectory) -B "$(buildOutputLocation)"
   displayName: 'Configure the STL'
