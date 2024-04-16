@@ -6,15 +6,12 @@ parameters:
   type: string
 - name: targetArch
   type: string
-- name: displayName
-  type: string
-  default: 'Run Tests'
   # Parameters to pass to ctest to select the test(s) to run
 - name: testSelection
   type: string
 steps:
 - task: CmdLine@2
-  displayName: ${{ parameters.displayName }}
+  displayName: 'Build and Run Tests'
   timeoutInMinutes: 30
   condition: succeeded()
   inputs:
