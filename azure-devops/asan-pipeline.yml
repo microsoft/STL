@@ -22,7 +22,7 @@ stages:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
-      - template: native-build-test.yml
+      - template: build-and-test.yml
         parameters:
           hostArch: x64
           targetArch: x64
@@ -37,7 +37,7 @@ stages:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
-      - template: native-build-test.yml
+      - template: build-and-test.yml
         parameters:
           hostArch: x86
           targetArch: x86

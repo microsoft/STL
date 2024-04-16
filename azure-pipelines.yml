@@ -25,7 +25,7 @@ stages:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
-      - template: azure-devops/native-build-test.yml
+      - template: azure-devops/build-and-test.yml
         parameters:
           hostArch: x64
           targetArch: x64
@@ -37,7 +37,7 @@ stages:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
-      - template: azure-devops/native-build-test.yml
+      - template: azure-devops/build-and-test.yml
         parameters:
           hostArch: x86
           targetArch: x86
@@ -49,7 +49,7 @@ stages:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
-      - template: azure-devops/cross-build.yml
+      - template: azure-devops/build-and-test.yml
         parameters:
           hostArch: x64
           targetArch: arm
@@ -63,7 +63,7 @@ stages:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
-      - template: azure-devops/cross-build.yml
+      - template: azure-devops/build-and-test.yml
         parameters:
           hostArch: x64
           targetArch: arm64
