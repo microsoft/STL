@@ -25,17 +25,27 @@ template <class Ref, class V>
 using gen_reference_t = conditional_t<is_void_v<V>, Ref&&, Ref>;
 
 template <class Ref, class V, class Alloc, class ValueType = gen_value_t<Ref, V>>
-    requires (is_reference_v<Ref> && default_initializable<ValueType>) || default_initializable<Ref>
+    requires default_initializable<ValueType>
+          && (same_as<remove_cvref_t<Ref>, ValueType> || constructible_from<remove_cvref_t<Ref>, ValueType&>)
 generator<Ref, V, Alloc> generate_one() {
-    if constexpr (!is_reference_v<Ref>) {
-        co_yield Ref{};
-    } else if constexpr (is_lvalue_reference_v<Ref>) {
+    if constexpr (same_as<remove_cvref_t<Ref>, ValueType>) {
+        // non-proxy reference case
+        if constexpr (is_reference_v<Ref>) {
+            remove_reference_t<Ref> val{};
+            co_yield static_cast<Ref>(val);
+        } else {
+            co_yield ValueType{};
+        }
+    } else {
         ValueType val{};
-        remove_reference_t<Ref> ref{move(val)};
-        co_yield ref;
-    } else if constexpr (is_rvalue_reference_v<Ref>) {
-        ValueType val{};
-        co_yield move(val);
+        // proxy reference case
+        if constexpr (is_reference_v<Ref>) {
+            // yielding a non-prvalue proxy reference is super weird, but not forbidden
+            remove_reference_t<Ref> ref{val};
+            co_yield static_cast<Ref>(ref);
+        } else {
+            co_yield Ref{val};
+        }
     }
 }
 
