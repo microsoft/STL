@@ -1,16 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-parameters:
-- name: llvmSHAVar
-  type: string
-  default: llvmSHA
-- name: boostMathSHAVar
-  type: string
-  default: boostMathSHA
-- name: googleBenchmarkSHAVar
-  type: string
-  default: googleBenchmarkSHA
 steps:
 - checkout: self
   clean: true
@@ -28,12 +18,12 @@ steps:
       cd $(Build.SourcesDirectory)
       $regexSubmoduleSHA = '^[ \-+]([0-9a-f]+) .*$'
       $llvmSHA = git submodule status --cached llvm-project | %{$_ -replace $regexSubmoduleSHA, '$1'}
-      Write-Host "##vso[task.setvariable variable=${{ parameters.llvmSHAVar }};]$llvmSHA"
+      Write-Host "##vso[task.setvariable variable=llvmSHAVar;]$llvmSHA"
       $boostMathSHA = git submodule status --cached boost-math | %{$_ -replace $regexSubmoduleSHA, '$1'}
-      Write-Host "##vso[task.setvariable variable=${{ parameters.boostMathSHAVar }};]$boostMathSHA"
+      Write-Host "##vso[task.setvariable variable=boostMathSHAVar;]$boostMathSHA"
       $googleBenchmarkSHA = git submodule status --cached benchmarks/google-benchmark `
         | %{$_ -replace $regexSubmoduleSHA, '$1'}
-      Write-Host "##vso[task.setvariable variable=${{ parameters.googleBenchmarkSHAVar }};]$googleBenchmarkSHA"
+      Write-Host "##vso[task.setvariable variable=googleBenchmarkSHAVar;]$googleBenchmarkSHA"
 - script: |
     cd $(Build.SourcesDirectory)
     if not exist "llvm-project" (
@@ -51,7 +41,7 @@ steps:
       git remote add llvm https://github.com/llvm/llvm-project.git
     )
 
-    git fetch --filter=tree:0 --depth=1 llvm $(${{ parameters.llvmSHAVar }})
+    git fetch --filter=tree:0 --depth=1 llvm $(llvmSHAVar)
     git sparse-checkout set --cone --sparse-index libcxx/test libcxx/utils/libcxx llvm/utils/lit
     git reset --quiet --hard FETCH_HEAD
     git clean --quiet -x -d -f -f
@@ -73,7 +63,7 @@ steps:
       git remote add boostorg https://github.com/boostorg/math.git
     )
 
-    git fetch --filter=tree:0 --depth=1 boostorg $(${{ parameters.boostMathSHAVar }})
+    git fetch --filter=tree:0 --depth=1 boostorg $(boostMathSHAVar)
     git reset --quiet --hard FETCH_HEAD
     git clean --quiet -x -d -f -f
   displayName: "Checkout boost-math source"
@@ -94,7 +84,7 @@ steps:
       git remote add googlebenchmark https://github.com/google/benchmark.git
     )
 
-    git fetch --filter=tree:0 --depth=1 googlebenchmark $(${{ parameters.googleBenchmarkSHAVar }})
+    git fetch --filter=tree:0 --depth=1 googlebenchmark $(googleBenchmarkSHAVar)
     git reset --quiet --hard FETCH_HEAD
     git clean --quiet -x -d -f -f
   displayName: "Checkout google benchmark source"
