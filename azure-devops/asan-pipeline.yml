@@ -26,7 +26,6 @@ stages:
         parameters:
           hostArch: x64
           targetArch: x64
-          analyzeBuild: true
           asanBuild: true
           ctestOptions: '--tests-regex stlasan'
 
@@ -41,7 +40,6 @@ stages:
         parameters:
           hostArch: x86
           targetArch: x86
-          analyzeBuild: true
           asanBuild: true
           ctestOptions: '--tests-regex stlasan'
 
