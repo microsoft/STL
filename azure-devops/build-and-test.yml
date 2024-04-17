@@ -39,6 +39,7 @@ jobs:
 
   - template: checkout-sources.yml
     parameters:
+      buildBenchmarks: ${{ parameters.buildBenchmarks }}
       doTesting: ${{ parameters.doTesting }}
   - template: cmake-configure-build.yml
     parameters:

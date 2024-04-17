@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 parameters:
+- name: buildBenchmarks
+  type: boolean
 - name: doTesting
   type: boolean
 steps:
@@ -91,3 +93,4 @@ steps:
     git reset --quiet --hard FETCH_HEAD
     git clean --quiet -x -d -f -f
   displayName: "Checkout google benchmark source"
+  condition: and(succeeded(), ${{ parameters.buildBenchmarks }})
