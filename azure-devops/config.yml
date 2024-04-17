@@ -8,7 +8,7 @@ variables:
   value: 'StlBuild-2024-04-10T1048-Pool'
   readonly: true
 - name: poolDemands
-  value: 'EnableSpotVM -equals true'
+  value: 'EnableSpotVM -equals false'
   readonly: true
 - name: tmpDir
   value: 'D:\Temp'
