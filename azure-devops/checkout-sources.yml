@@ -47,7 +47,7 @@ steps:
     )
 
     git fetch --filter=tree:0 --depth=1 llvm $(llvmSHAVar)
-    git sparse-checkout set --cone --sparse-index libcxx/test libcxx/utils/libcxx llvm/utils/lit
+    git sparse-checkout set --sparse-index libcxx/test libcxx/utils/libcxx llvm/utils/lit
     git reset --quiet --hard FETCH_HEAD
     git clean --quiet -x -d -f -f
   displayName: "Checkout LLVM source"
