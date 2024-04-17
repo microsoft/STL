@@ -18,11 +18,12 @@ parameters:
 - name: ctestOptions
   type: string
   default: '--exclude-regex stlasan'
-- name: doTesting
-  type: boolean
 - name: numShards
   type: number
   default: 8
+- name: skipTesting
+  type: boolean
+  default: false
 - name: testsBuildOnly
   type: boolean
   default: false
@@ -35,7 +36,7 @@ jobs:
   - template: checkout-sources.yml
     parameters:
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
-      doTesting: ${{ parameters.doTesting }}
+      skipTesting: ${{ parameters.skipTesting }}
   - template: cmake-configure-build.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}
@@ -49,4 +50,4 @@ jobs:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
       ctestOptions: ${{ parameters.ctestOptions }}
-      doTesting: ${{ parameters.doTesting }}
+      skipTesting: ${{ parameters.skipTesting }}

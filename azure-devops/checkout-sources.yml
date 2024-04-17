@@ -4,7 +4,7 @@
 parameters:
 - name: buildBenchmarks
   type: boolean
-- name: doTesting
+- name: skipTesting
   type: boolean
 steps:
 - script: |
@@ -57,7 +57,7 @@ steps:
     git reset --quiet --hard FETCH_HEAD
     git clean --quiet -x -d -f -f
   displayName: "Checkout LLVM source"
-  condition: and(succeeded(), ${{ parameters.doTesting }})
+  condition: and(succeeded(), not(${{ parameters.skipTesting }}))
 - script: |
     if not exist "boost-math" (
       mkdir boost-math

@@ -8,7 +8,7 @@ parameters:
   type: string
 - name: ctestOptions
   type: string
-- name: doTesting
+- name: skipTesting
   type: boolean
 steps:
 - script: |
@@ -17,13 +17,13 @@ steps:
     ctest --verbose ${{ parameters.ctestOptions }}
   displayName: 'Build and Run Tests'
   timeoutInMinutes: 30
-  condition: and(succeeded(), ${{ parameters.doTesting }})
+  condition: and(succeeded(), not(${{ parameters.skipTesting }}))
   workingDirectory: $(buildOutputLocation)
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
   timeoutInMinutes: 5
-  condition: and(succeededOrFailed(), ${{ parameters.doTesting }})
+  condition: and(succeededOrFailed(), not(${{ parameters.skipTesting }}))
   inputs:
     searchFolder: $(buildOutputLocation)
     testResultsFormat: JUnit
@@ -31,5 +31,5 @@ steps:
     testRunTitle: 'test-${{ parameters.targetArch }}-$(System.JobPositionInPhase)'
 - publish: $(buildOutputLocation)/test-results.xml
   artifact: '${{ parameters.targetArch }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
-  condition: and(failed(), ${{ parameters.doTesting }})
+  condition: and(failed(), not(${{ parameters.skipTesting }}))
   displayName: 'Publish XML Artifact'

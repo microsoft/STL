@@ -31,8 +31,8 @@ stages:
           targetArch: x64
           analyzeBuild: true
           buildBenchmarks: true
-          doTesting: false
           numShards: 1
+          skipTesting: true
 
   - stage: Early_Build_x86
     dependsOn: []
@@ -47,8 +47,8 @@ stages:
           targetArch: x86
           analyzeBuild: true
           buildBenchmarks: true
-          doTesting: false
           numShards: 1
+          skipTesting: true
 
   - stage: Early_Build_ARM
     dependsOn: []
@@ -62,8 +62,8 @@ stages:
           hostArch: x64
           targetArch: arm
           analyzeBuild: true
-          doTesting: false
           numShards: 1
+          skipTesting: true
 
   - stage: Early_Build_ARM64
     dependsOn: []
@@ -78,8 +78,8 @@ stages:
           targetArch: arm64
           analyzeBuild: true
           buildBenchmarks: true
-          doTesting: false
           numShards: 1
+          skipTesting: true
 
   - stage: Build_And_Test_x64
     dependsOn:
@@ -97,7 +97,6 @@ stages:
         parameters:
           hostArch: x64
           targetArch: x64
-          doTesting: true
 
   - stage: Build_And_Test_x86
     dependsOn: Build_And_Test_x64
@@ -110,7 +109,6 @@ stages:
         parameters:
           hostArch: x86
           targetArch: x86
-          doTesting: true
 
   - stage: Build_And_Test_ARM
     dependsOn: Build_And_Test_x64
@@ -123,7 +121,6 @@ stages:
         parameters:
           hostArch: x64
           targetArch: arm
-          doTesting: true
           testsBuildOnly: true
 
   - stage: Build_And_Test_ARM64
@@ -137,5 +134,4 @@ stages:
         parameters:
           hostArch: x64
           targetArch: arm64
-          doTesting: true
           testsBuildOnly: true
