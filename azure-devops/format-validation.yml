@@ -9,9 +9,7 @@ jobs:
   displayName: 'Validation'
   steps:
     - script: |
-        if exist "$(tmpDir)" (
-          rmdir /S /Q $(tmpDir)
-        )
+        if exist "$(tmpDir)" (rmdir /S /Q $(tmpDir))
         mkdir $(tmpDir)
       displayName: 'Setup TMP Directory'
     - checkout: self

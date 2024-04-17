@@ -32,11 +32,6 @@ jobs:
     parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 30
   steps:
-  - script: |
-      if exist "$(tmpDir)" (rmdir /S /Q $(tmpDir))
-      mkdir $(tmpDir)
-    displayName: 'Setup TMP Directory'
-
   - template: checkout-sources.yml
     parameters:
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
