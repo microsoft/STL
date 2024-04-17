@@ -171,8 +171,7 @@ Display-ProgressBar -Status 'Creating prototype VM'
 $VM = New-AzVMConfig `
   -Name $ProtoVMName `
   -VMSize $VMSize `
-  -Priority 'Regular' `
-  -MaxPrice -1
+  -Priority 'Regular'
 
 $VM = Set-AzVMOperatingSystem `
   -VM $VM `
