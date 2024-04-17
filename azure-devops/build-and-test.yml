@@ -33,7 +33,8 @@ jobs:
     parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 30
   steps:
-  - template: checkout-sources.yml
+  - template: checkout-self.yml
+  - template: checkout-submodules.yml
     parameters:
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
       skipTesting: ${{ parameters.skipTesting }}
