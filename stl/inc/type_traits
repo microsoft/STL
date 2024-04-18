@@ -395,7 +395,7 @@ constexpr bool is_compound_v = !is_fundamental_v<_Ty>;
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // ^^^ __stdcall and __thiscall not supported ^^^
 
-#if ((defined(_M_IX86) && _M_IX86_FP >= 2) || defined(_M_X64)) && !defined(_M_CEE)
+#if ((defined(_M_IX86) && _M_IX86_FP >= 2) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE)
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__vectorcall, OPT1, OPT2, OPT3)
 #else // ^^^ __vectorcall supported / __vectorcall not supported vvv
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3)
