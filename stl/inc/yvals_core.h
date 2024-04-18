@@ -1266,30 +1266,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_DEPRECATE_U8PATH
 #endif // ^^^ warning disabled ^^^
 
-#if !defined(_SILENCE_STDEXT_HASH_LOWER_BOUND_DEPRECATION_WARNING)
-#define _DEPRECATE_STDEXT_HASH_LOWER_BOUND                                                                           \
-    [[deprecated(                                                                                                    \
-        "warning STL4022: "                                                                                          \
-        "The hash_meow and unordered_meow containers' non-Standard lower_bound() member was provided for interface " \
-        "compatibility with the ordered associative containers, and doesn't match the semantics of the "             \
-        "hash_meow or unordered_meow containers. Please use the find() member instead. You can define "              \
-        "_SILENCE_STDEXT_HASH_LOWER_BOUND_DEPRECATION_WARNING to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_STDEXT_HASH_LOWER_BOUND
-#endif // ^^^ warning disabled ^^^
-
-#if !defined(_SILENCE_STDEXT_HASH_UPPER_BOUND_DEPRECATION_WARNING)
-#define _DEPRECATE_STDEXT_HASH_UPPER_BOUND                                                                           \
-    [[deprecated(                                                                                                    \
-        "warning STL4023: "                                                                                          \
-        "The hash_meow and unordered_meow containers' non-Standard upper_bound() member was provided for interface " \
-        "compatibility with the ordered associative containers, and doesn't match the semantics of the "             \
-        "hash_meow or unordered_meow containers. Please use the second iterator returned by the "                    \
-        "equal_range() member instead. You can define "                                                              \
-        "_SILENCE_STDEXT_HASH_UPPER_BOUND_DEPRECATION_WARNING to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_STDEXT_HASH_UPPER_BOUND
-#endif // ^^^ warning disabled ^^^
+// STL4022 warned about "The hash_meow and unordered_meow containers' non-Standard lower_bound() member"
+// STL4023 warned about "The hash_meow and unordered_meow containers' non-Standard upper_bound() member"
 
 // P0966R1 [depr.string.capacity]
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_STRING_RESERVE_WITHOUT_ARGUMENT_DEPRECATION_WARNING) \
