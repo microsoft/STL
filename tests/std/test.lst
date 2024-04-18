@@ -688,7 +688,6 @@ tests\VSO_0000000_list_unique_self_reference
 tests\VSO_0000000_matching_npos_address
 tests\VSO_0000000_more_pair_tuple_sfinae
 tests\VSO_0000000_nullptr_stream_out
-tests\VSO_0000000_oss_workarounds
 tests\VSO_0000000_path_stream_parameter
 tests\VSO_0000000_regex_interface
 tests\VSO_0000000_regex_use
