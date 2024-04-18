@@ -1470,8 +1470,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX23_DEPRECATE_DENORM
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX17 && !defined(_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
+#if !defined(_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING) && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
 #define _DEPRECATE_STDEXT_ARR_ITERS                                                                               \
     [[deprecated(                                                                                                 \
         "warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory " \
@@ -1484,8 +1483,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4044 was "The contents of the stdext::cvt namespace are non-Standard extensions and will be removed"
 
-#if _HAS_CXX17 && !defined(_SILENCE_IO_PFX_SFX_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
+#if !defined(_SILENCE_IO_PFX_SFX_DEPRECATION_WARNING) && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
 #define _DEPRECATE_IO_PFX_SFX                                                                                          \
     [[deprecated(                                                                                                      \
         "warning STL4045: The ipfx(), isfx(), opfx(), and osfx() functions are removed before C++98 (see WG21-N0794) " \
@@ -1496,8 +1494,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_IO_PFX_SFX
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX17 && !defined(_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_TR1_RANDOM_DEPRECATION_WARNING) && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
+#if !defined(_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING) && !defined(_SILENCE_TR1_RANDOM_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
 #define _DEPRECATE_TR1_RANDOM                                                                                          \
     [[deprecated("warning STL4046: Non-Standard TR1 components in <random> are deprecated and will be REMOVED. You "   \
                  "can define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING, _SILENCE_TR1_RANDOM_DEPRECATION_WARNING, or " \
