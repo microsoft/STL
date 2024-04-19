@@ -17,7 +17,7 @@
 namespace ranges = std::ranges;
 
 template <class>
-constexpr bool always_false = false;
+constexpr bool always_false = false; // TRANSITION, VSO-2016422 (EDG)
 
 template <class T>
 constexpr T* nullptr_to = nullptr;
@@ -67,12 +67,12 @@ namespace test {
 
     template <class T>
     void operator&(T&&) {
-        static_assert(always_false<T>);
+        static_assert(false);
     }
 
     template <class T, class U>
     void operator,(T&&, U&&) {
-        static_assert(always_false<T>);
+        static_assert(false);
     }
 
     enum class CanDifference : bool { no, yes };
@@ -490,29 +490,29 @@ namespace test {
         }
 
         auto operator--() & {
-            static_assert(always_false<Category>);
+            static_assert(false);
         }
         auto operator--(int) & {
-            static_assert(always_false<Category>);
+            static_assert(false);
         }
 
         friend void iter_swap(iterator const&, iterator const&)
             requires std::is_same_v<Category, output>
         {
-            static_assert(always_false<Category>);
+            static_assert(false);
         }
 
         void operator<(iterator const&) const {
-            static_assert(always_false<Category>);
+            static_assert(false);
         }
         void operator>(iterator const&) const {
-            static_assert(always_false<Category>);
+            static_assert(false);
         }
         void operator<=(iterator const&) const {
-            static_assert(always_false<Category>);
+            static_assert(false);
         }
         void operator>=(iterator const&) const {
-            static_assert(always_false<Category>);
+            static_assert(false);
         }
 
         // input iterator operations:
@@ -926,11 +926,11 @@ namespace test {
         }
 
         void operator&() const {
-            static_assert(always_false<Category>);
+            static_assert(false);
         }
         template <class T>
         friend void operator,(range const&, T&&) {
-            static_assert(always_false<Category>);
+            static_assert(false);
         }
     };
 } // namespace test

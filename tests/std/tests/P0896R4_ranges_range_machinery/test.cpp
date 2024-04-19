@@ -1255,23 +1255,23 @@ namespace adl_block { // Validate some range concept corner cases
     struct prefer_member : members_only {};
     template <class T>
     int* begin(prefer_member<T>&) {
-        static_assert(always_false<T>);
+        static_assert(false);
     }
     template <class T>
     int* end(prefer_member<T>&) {
-        static_assert(always_false<T>);
+        static_assert(false);
     }
     template <class T>
     std::reverse_iterator<int*> rbegin(prefer_member<T>&) {
-        static_assert(always_false<T>);
+        static_assert(false);
     }
     template <class T>
     std::reverse_iterator<int*> rend(prefer_member<T>&) {
-        static_assert(always_false<T>);
+        static_assert(false);
     }
     template <class T>
     int* data(prefer_member<T>&) {
-        static_assert(always_false<T>);
+        static_assert(false);
     }
 
     constexpr bool test() {
@@ -1706,11 +1706,11 @@ struct badsized_range : Base { // size() launches the missiles.
     badsized_range& operator=(badsized_range&&) = default;
 
     [[noreturn]] int size() const {
-        static_assert(always_false<Base>);
+        static_assert(false);
     }
 
     [[noreturn]] friend int size(const badsized_range&) {
-        static_assert(always_false<Base>);
+        static_assert(false);
     }
 };
 

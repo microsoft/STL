@@ -28,8 +28,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 template <class>
-// TRANSITION, CWG-2518: false value attached to a dependent name (for static_assert)
-constexpr bool _Always_false = false;
+constexpr bool _Always_false = false; // TRANSITION, VSO-2016422 (EDG)
 
 template <bool _First_value, class _First, class... _Rest>
 struct _Conjunction { // handle false trait or last trait
@@ -129,7 +128,7 @@ using add_rvalue_reference_t = typename _Add_reference<_Ty>::_Rvalue;
 
 _EXPORT_STD template <class _Ty>
 add_rvalue_reference_t<_Ty> declval() noexcept {
-    static_assert(_Always_false<_Ty>, "Calling declval is ill-formed, see N4950 [declval]/2.");
+    static_assert(false, "Calling declval is ill-formed, see N4950 [declval]/2.");
 }
 
 _EXPORT_STD template <class _Ty>

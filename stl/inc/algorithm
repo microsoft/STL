@@ -93,7 +93,7 @@ __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void
     } else if constexpr (_Nx == 8) {
         ::__std_reverse_copy_trivially_copyable_8(_First, _Last, _Dest);
     } else {
-        static_assert(_Always_false<integral_constant<size_t, _Nx>>, "Unexpected size");
+        static_assert(false, "Unexpected size");
     }
 }
 
@@ -116,7 +116,7 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
     } else if constexpr (sizeof(_Ty) == 8) {
         _Res = ::__std_minmax_element_8(_First, _Last, _Signed);
     } else {
-        static_assert(_Always_false<_Ty>, "Unexpected size");
+        static_assert(false, "Unexpected size");
     }
 
     return {const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
@@ -162,7 +162,7 @@ auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_minmax_8u(_First, _Last);
         }
     } else {
-        static_assert(_Always_false<_Ty>, "Unexpected size");
+        static_assert(false, "Unexpected size");
     }
 }
 
@@ -189,7 +189,7 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
     } else {
-        static_assert(_Always_false<_Ty>, "Unexpected size");
+        static_assert(false, "Unexpected size");
     }
 }
 
@@ -203,7 +203,7 @@ _Ty1* _Find_first_of_vectorized(
         return const_cast<_Ty1*>(
             static_cast<const _Ty1*>(::__std_find_first_of_trivial_2(_First1, _Last1, _First2, _Last2)));
     } else {
-        static_assert(_Always_false<_Ty1>, "Unexpected size");
+        static_assert(false, "Unexpected size");
     }
 }
 
@@ -221,7 +221,7 @@ __declspec(noalias) void _Replace_vectorized(
     } else if constexpr (sizeof(_Ty) == 8) {
         ::__std_replace_8(_First, _Last, static_cast<uint64_t>(_Old_val), static_cast<uint64_t>(_New_val));
     } else {
-        static_assert(_Always_false<_Ty>, "Unexpected size");
+        static_assert(false, "Unexpected size");
     }
 }
 

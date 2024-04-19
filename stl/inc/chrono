@@ -3030,15 +3030,14 @@ namespace chrono {
                 clock_time_conversion<system_clock, utc_clock>{}(
                     clock_time_conversion<utc_clock, _SourceClock>{}(_Time)));
         } else if constexpr (_Strat == _Clock_cast_strategy::_Two_step_ambiguous) {
-            static_assert(_Always_false<_Duration>,
+            static_assert(false,
                 "A two-step clock time conversion is required to be unique, "
                 "either through utc_clock or system_clock, but not both (N4950 [time.clock.cast.fn]/2).");
         } else if constexpr (_Strat == _Clock_cast_strategy::_Three_step_ambiguous) {
-            static_assert(_Always_false<_Duration>,
-                "A three-step clock time conversion is required to be unique, "
-                "either utc-to-system or system-to-utc, but not both (N4950 [time.clock.cast.fn]/2).");
+            static_assert(false, "A three-step clock time conversion is required to be unique, "
+                                 "either utc-to-system or system-to-utc, but not both (N4950 [time.clock.cast.fn]/2).");
         } else {
-            static_assert(_Always_false<_Duration>, "should be unreachable");
+            static_assert(false, "should be unreachable");
         }
     }
 
@@ -5388,7 +5387,7 @@ namespace chrono {
             } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return _Type == 'z' || _Type == 'Z' || _Is_valid_type<decltype(_Ty::_Time)>(_Type);
             } else {
-                static_assert(_Always_false<_Ty>, "should be unreachable");
+                static_assert(false, "should be unreachable");
             }
         }
 

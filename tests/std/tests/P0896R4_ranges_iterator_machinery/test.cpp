@@ -1278,7 +1278,7 @@ namespace iterator_cust_swap_test {
         };
         template <class T, class U>
         void iter_swap(T&, U&) { // this function is unordered with the poison pill
-            static_assert(always_false<T>);
+            static_assert(false);
         }
 
         // clang-format off
@@ -1872,7 +1872,7 @@ namespace unreachable_sentinel_test {
 
             template <class T>
             auto operator-(T const&) const {
-                static_assert(always_false<T>, "Don't instantiate me!");
+                static_assert(false, "Don't instantiate me!");
             }
         };
 
