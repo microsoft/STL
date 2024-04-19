@@ -491,13 +491,25 @@ void test_stream_flush_console() {
         }
     }
 
+    println(console_file_stream);
+
+    {
+        const wstring extractedStr{temp_console.get_console_line(0)};
+
+        if constexpr (_Is_ordinary_literal_encoding_utf8()) {
+            assert(extractedStr == L"Hello,\n");
+        } else {
+            assert(extractedStr.empty());
+        }
+    }
+
     println(console_file_stream, " world!");
 
     {
         const wstring extractedStr{temp_console.get_console_line(0)};
 
         if constexpr (_Is_ordinary_literal_encoding_utf8()) {
-            assert(extractedStr == L"Hello, world!");
+            assert(extractedStr == L"Hello,\n world!");
         } else {
             assert(extractedStr.empty());
         }
@@ -507,7 +519,7 @@ void test_stream_flush_console() {
 
     {
         const wstring extractedStr{temp_console.get_console_line(0)};
-        assert(extractedStr == L"Hello, world!");
+        assert(extractedStr == L"Hello,\n world!");
     }
 }
 
@@ -519,7 +531,7 @@ void test_stream_flush_file() {
     {
         ofstream output_file_stream{temp_file_name_str};
 
-        print(output_file_stream, "Hello, ");
+        print(output_file_stream, "Hello,");
 
         {
             ifstream input_file_stream{temp_file_name_str};
@@ -530,7 +542,18 @@ void test_stream_flush_file() {
             assert(extracted_line_str.empty());
         }
 
-        println(output_file_stream, "world!");
+        println(output_file_stream);
+
+        {
+            ifstream input_file_stream{temp_file_name_str};
+
+            string extracted_line_str;
+            getline(input_file_stream, extracted_line_str);
+
+            assert(extracted_line_str.empty());
+        }
+
+        println(output_file_stream, " world!");
 
         {
             ifstream input_file_stream{temp_file_name_str};
@@ -549,7 +572,7 @@ void test_stream_flush_file() {
             string extracted_line_str;
             getline(input_file_stream, extracted_line_str);
 
-            assert(extracted_line_str == "Hello, world!");
+            assert(extracted_line_str == "Hello,\n world!");
         }
     }
 
@@ -567,6 +590,7 @@ void test_empty_strings_and_newlines() {
         print(output_file_stream, "-D\n");
         print(output_file_stream, "{{}} for {}!\n", "impact");
 
+        println(output_file_stream);
         println(output_file_stream, "I have {} cute {} kittens.", 1729, "fluffy");
         println(output_file_stream, "");
         println(output_file_stream, "What are an orthodontist's favorite characters? '{{' and '}}', of course!");
@@ -585,6 +609,7 @@ void test_empty_strings_and_newlines() {
         const vector<string> expected_lines{
             "NCC-1701-D",
             "{} for impact!",
+            "",
             "I have 1729 cute fluffy kittens.",
             "",
             "What are an orthodontist's favorite characters? '{' and '}', of course!",
