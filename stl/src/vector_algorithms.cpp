@@ -2202,6 +2202,8 @@ namespace {
         const auto _First2_ch = static_cast<const char*>(_First2);
 
         if (_Use_avx2()) {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
             const size_t _Count_bytes          = _Count * sizeof(_Ty);
             const size_t _Count_bytes_avx_full = _Count_bytes & ~size_t{0x1F};
 
@@ -2405,6 +2407,8 @@ __declspec(noalias) void __stdcall __std_replace_4(
             const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi32(_Comparand, _Data), _Tail_mask);
             _mm256_maskstore_epi32(reinterpret_cast<int*>(_First), _Mask, _Replacement);
         }
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     } else
 #endif // !defined(_M_ARM64EC)
     {
@@ -2446,6 +2450,8 @@ __declspec(noalias) void __stdcall __std_replace_8(
             const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi64(_Comparand, _Data), _Tail_mask);
             _mm256_maskstore_epi64(reinterpret_cast<long long*>(_First), _Mask, _Replacement);
         }
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     } else
 #endif // !defined(_M_ARM64EC)
     {
