@@ -21,13 +21,13 @@ using P = pair<int, int>;
 constexpr auto is_even = [](int i) { return i % 2 == 0; };
 
 // Validate that partition_copy_result aliases in_out_out_result
-STATIC_ASSERT(
+static_assert(
     same_as<ranges::partition_copy_result<int, double, void*>, ranges::in_out_out_result<int, double, void*>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::partition_copy(borrowed<false>{}, nullptr_to<int>, nullptr_to<long>, is_even)),
+static_assert(same_as<decltype(ranges::partition_copy(borrowed<false>{}, nullptr_to<int>, nullptr_to<long>, is_even)),
     ranges::partition_copy_result<ranges::dangling, int*, long*>>);
-STATIC_ASSERT(same_as<decltype(ranges::partition_copy(borrowed<true>{}, nullptr_to<int>, nullptr_to<long>, is_even)),
+static_assert(same_as<decltype(ranges::partition_copy(borrowed<true>{}, nullptr_to<int>, nullptr_to<long>, is_even)),
     ranges::partition_copy_result<int*, int*, long*>>);
 
 struct empty_test {
@@ -124,9 +124,9 @@ constexpr void run_tests() {
 }
 
 int main() {
-    STATIC_ASSERT((run_tests<empty_test, const P>(), true));
+    static_assert((run_tests<empty_test, const P>(), true));
     run_tests<empty_test, const P>();
 
-    STATIC_ASSERT((run_tests<partition_copy_test, const P>(), true));
+    static_assert((run_tests<partition_copy_test, const P>(), true));
     run_tests<partition_copy_test, const P>();
 }

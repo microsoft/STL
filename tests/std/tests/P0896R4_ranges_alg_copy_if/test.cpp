@@ -24,7 +24,7 @@ struct not_pair {
         if constexpr (I == 0) {
             return np.first;
         } else {
-            STATIC_ASSERT(I == 1);
+            static_assert(I == 1);
             return np.second;
         }
     }
@@ -33,7 +33,7 @@ struct not_pair {
         if constexpr (I == 0) {
             return np.first;
         } else {
-            STATIC_ASSERT(I == 1);
+            static_assert(I == 1);
             return np.second;
         }
     }
@@ -42,7 +42,7 @@ struct not_pair {
         if constexpr (I == 0) {
             return move(np).first;
         } else {
-            STATIC_ASSERT(I == 1);
+            static_assert(I == 1);
             return move(np).second;
         }
     }
@@ -51,7 +51,7 @@ struct not_pair {
         if constexpr (I == 0) {
             return move(np).first;
         } else {
-            STATIC_ASSERT(I == 1);
+            static_assert(I == 1);
             return move(np).second;
         }
     }
@@ -62,12 +62,12 @@ using P = not_pair<int, int>;
 constexpr auto is_odd = [](int const x) { return x % 2 != 0; };
 
 // Validate that copy_if_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::copy_if_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::copy_if_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::copy_if(borrowed<false>{}, nullptr_to<int>, is_odd)),
+static_assert(same_as<decltype(ranges::copy_if(borrowed<false>{}, nullptr_to<int>, is_odd)),
     ranges::copy_if_result<ranges::dangling, int*>>);
-STATIC_ASSERT(
+static_assert(
     same_as<decltype(ranges::copy_if(borrowed<true>{}, nullptr_to<int>, is_odd)), ranges::copy_if_result<int*, int*>>);
 
 struct instantiator {
@@ -82,7 +82,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = copy_if(wrapped_input, Write{output.data()}, is_odd, get_first);
-            STATIC_ASSERT(same_as<decltype(result), copy_if_result<iterator_t<Read>, Write>>);
+            static_assert(same_as<decltype(result), copy_if_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output.data() + 2);
             assert(ranges::equal(output, expected));
@@ -92,7 +92,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = copy_if(wrapped_input.begin(), wrapped_input.end(), Write{output.data()}, is_odd, get_first);
-            STATIC_ASSERT(same_as<decltype(result), copy_if_result<iterator_t<Read>, Write>>);
+            static_assert(same_as<decltype(result), copy_if_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output.data() + 2);
             assert(ranges::equal(output, expected));
@@ -102,7 +102,7 @@ struct instantiator {
 
 int main() {
 #ifndef _PREFAST_ // TRANSITION, GH-1030
-    STATIC_ASSERT((test_in_write<instantiator, P const, P>(), true));
+    static_assert((test_in_write<instantiator, P const, P>(), true));
 #endif // TRANSITION, GH-1030
     test_in_write<instantiator, P const, P>();
 }

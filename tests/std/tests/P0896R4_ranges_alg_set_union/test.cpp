@@ -14,19 +14,19 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate that set_union_result aliases in_in_out_result
-STATIC_ASSERT(same_as<ranges::set_union_result<int, void*, double>, ranges::in_in_out_result<int, void*, double>>);
+static_assert(same_as<ranges::set_union_result<int, void*, double>, ranges::in_in_out_result<int, void*, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::set_union(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>, ranges::less{},
+static_assert(same_as<decltype(ranges::set_union(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>, ranges::less{},
                           identity{}, identity{})),
     ranges::set_union_result<ranges::dangling, ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::set_union(borrowed<false>{}, borrowed<true>{}, nullptr_to<int>, ranges::less{},
+static_assert(same_as<decltype(ranges::set_union(borrowed<false>{}, borrowed<true>{}, nullptr_to<int>, ranges::less{},
                           identity{}, identity{})),
     ranges::set_union_result<ranges::dangling, int*, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::set_union(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>, ranges::less{},
+static_assert(same_as<decltype(ranges::set_union(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>, ranges::less{},
                           identity{}, identity{})),
     ranges::set_union_result<int*, ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::set_union(
+static_assert(same_as<decltype(ranges::set_union(
                           borrowed<true>{}, borrowed<true>{}, nullptr_to<int>, ranges::less{}, identity{}, identity{})),
     ranges::set_union_result<int*, int*, int*>>);
 
@@ -134,6 +134,6 @@ constexpr void run_tests() {
 }
 
 int main() {
-    STATIC_ASSERT((run_tests(), true));
+    static_assert((run_tests(), true));
     run_tests();
 }

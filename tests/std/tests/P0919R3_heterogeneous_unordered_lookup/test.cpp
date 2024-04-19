@@ -18,8 +18,6 @@
 
 using namespace std;
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 bool g_prohibit_allocations = false;
 
 class prohibit_allocations {
@@ -97,16 +95,16 @@ struct string_legacy_traits {
 
 using test_str = basic_string<char, char_traits<char>, test_allocator<char>>;
 
-STATIC_ASSERT(is_same_v<unordered_set<size_t, hash<size_t>, equal_to<size_t>>::key_equal, equal_to<size_t>>);
-STATIC_ASSERT(is_same_v<unordered_map<size_t, int, hash<size_t>, equal_to<size_t>>::key_equal, equal_to<size_t>>);
-STATIC_ASSERT(is_same_v<unordered_set<size_t, hash<size_t>, equal_to<>>::key_equal, equal_to<>>);
-STATIC_ASSERT(is_same_v<unordered_map<size_t, int, hash<size_t>, equal_to<>>::key_equal, equal_to<>>);
+static_assert(is_same_v<unordered_set<size_t, hash<size_t>, equal_to<size_t>>::key_equal, equal_to<size_t>>);
+static_assert(is_same_v<unordered_map<size_t, int, hash<size_t>, equal_to<size_t>>::key_equal, equal_to<size_t>>);
+static_assert(is_same_v<unordered_set<size_t, hash<size_t>, equal_to<>>::key_equal, equal_to<>>);
+static_assert(is_same_v<unordered_map<size_t, int, hash<size_t>, equal_to<>>::key_equal, equal_to<>>);
 
-STATIC_ASSERT(is_same_v<unordered_set<string, transparent_string_hasher>::key_equal, equal_to<string>>);
-STATIC_ASSERT(is_same_v<unordered_map<string, int, transparent_string_hasher>::key_equal, equal_to<string>>);
-STATIC_ASSERT(is_same_v<unordered_set<string, transparent_string_hasher, transparent_string_equal>::key_equal,
+static_assert(is_same_v<unordered_set<string, transparent_string_hasher>::key_equal, equal_to<string>>);
+static_assert(is_same_v<unordered_map<string, int, transparent_string_hasher>::key_equal, equal_to<string>>);
+static_assert(is_same_v<unordered_set<string, transparent_string_hasher, transparent_string_equal>::key_equal,
     transparent_string_equal>);
-STATIC_ASSERT(is_same_v<unordered_map<string, int, transparent_string_hasher, transparent_string_equal>::key_equal,
+static_assert(is_same_v<unordered_map<string, int, transparent_string_hasher, transparent_string_equal>::key_equal,
     transparent_string_equal>);
 
 constexpr string_view testStrings[] = {

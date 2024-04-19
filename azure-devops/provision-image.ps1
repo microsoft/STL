@@ -62,11 +62,11 @@ Function DownloadAndExtractZip {
   return $TempSubdirPath
 }
 
-if ($PSVersionTable.PSVersion -lt [Version]::new('7.4.1')) {
+if ($PSVersionTable.PSVersion -lt [Version]::new('7.4.2')) {
   Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 
   # https://github.com/PowerShell/PowerShell/releases/latest
-  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.1/PowerShell-7.4.1-win-x64.zip'
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.2/PowerShell-7.4.2-win-x64.zip'
   Write-Host "Downloading: $PowerShellZipUrl"
   $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
   $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'

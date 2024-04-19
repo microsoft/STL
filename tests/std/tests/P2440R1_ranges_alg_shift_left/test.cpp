@@ -24,8 +24,8 @@ struct int_wrapper {
 };
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::shift_left(borrowed<false>{}, 1)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::shift_left(borrowed<true>{}, 1)), ranges::subrange<int*>>);
+static_assert(same_as<decltype(ranges::shift_left(borrowed<false>{}, 1)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::shift_left(borrowed<true>{}, 1)), ranges::subrange<int*>>);
 
 struct instantiator {
     static constexpr int_wrapper expected_result[2] = {12345, 3333};
@@ -40,7 +40,7 @@ struct instantiator {
                 Rng range(io);
 
                 auto result = ranges::shift_left(range, 3);
-                STATIC_ASSERT(same_as<decltype(result), ranges::subrange<iterator_t<Rng>>>);
+                static_assert(same_as<decltype(result), ranges::subrange<iterator_t<Rng>>>);
                 assert(equal(result, expected_result));
                 assert(equal(io, expected_io));
             }
@@ -49,7 +49,7 @@ struct instantiator {
                 Rng range(io);
 
                 auto result = ranges::shift_left(begin(range), end(range), 3);
-                STATIC_ASSERT(same_as<decltype(result), ranges::subrange<iterator_t<Rng>>>);
+                static_assert(same_as<decltype(result), ranges::subrange<iterator_t<Rng>>>);
                 assert(equal(begin(result), end(result), begin(expected_result), end(expected_result)));
                 assert(equal(io, expected_io));
             }
@@ -58,6 +58,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_fwd<instantiator, int_wrapper>(), true));
+    static_assert((test_fwd<instantiator, int_wrapper>(), true));
     test_fwd<instantiator, int_wrapper>();
 }

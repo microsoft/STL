@@ -15,8 +15,8 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::stable_sort(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::stable_sort(borrowed<true>{})), int*>);
+static_assert(same_as<decltype(ranges::stable_sort(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::stable_sort(borrowed<true>{})), int*>);
 
 struct instantiator {
     static constexpr array input = {P{1, 0}, P{-1260655766, 1}, P{-1298559576, 2}, P{1, 3}, P{-2095681771, 4},

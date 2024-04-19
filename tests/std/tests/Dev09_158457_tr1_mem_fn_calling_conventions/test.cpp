@@ -64,7 +64,7 @@ struct Cat {
     }
 #endif
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE)
+#if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE)
     int __vectorcall g() {
         return 2;
     }
@@ -115,7 +115,7 @@ int y(int i) {
 }
 #endif
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE)
+#if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE)
 int __vectorcall z(int i) {
     return -4 * i;
 }

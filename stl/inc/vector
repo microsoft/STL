@@ -2077,7 +2077,7 @@ private:
             } else if constexpr (sizeof...(_Val) == 2) {
                 _My_data._Mylast = _STD _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
             } else {
-                static_assert(_Always_false<_Ty>, "Should be unreachable");
+                static_assert(false, "Should be unreachable");
             }
             _ASAN_VECTOR_CREATE;
             _Guard._Target = nullptr;

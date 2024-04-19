@@ -343,10 +343,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
 
         // Validate common_view::begin and common_view::end
-        STATIC_ASSERT(CanMemberBegin<R>);
-        STATIC_ASSERT(CanBegin<const R&> == range<const V>);
-        STATIC_ASSERT(CanMemberEnd<R>);
-        STATIC_ASSERT(CanEnd<const R&> == range<const V>);
+        static_assert(CanMemberBegin<R>);
+        static_assert(CanBegin<const R&> == range<const V>);
+        static_assert(CanMemberEnd<R>);
+        static_assert(CanEnd<const R&> == range<const V>);
         if (!is_constant_evaluated()) {
             non_literal_parts<V>(r, expected);
         }

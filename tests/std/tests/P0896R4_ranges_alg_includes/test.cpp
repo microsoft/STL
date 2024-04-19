@@ -63,7 +63,7 @@ struct instantiator {
 
 #ifdef TEST_EVERYTHING
 int main() {
-    STATIC_ASSERT((test_in_in<instantiator, const P, const int>(), true));
+    static_assert((test_in_in<instantiator, const P, const int>(), true));
     test_in_in<instantiator, const P, const int>();
 }
 #else // ^^^ test all permutations of range properties / test only interesting permutations vvv
@@ -99,7 +99,7 @@ constexpr void run_tests() {
 }
 
 int main() {
-    STATIC_ASSERT((run_tests(), true));
+    static_assert((run_tests(), true));
     run_tests();
 }
 #endif // TEST_EVERYTHING

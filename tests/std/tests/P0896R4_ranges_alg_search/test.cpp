@@ -17,8 +17,8 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::search(borrowed<false>{}, borrowed<true>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::search(borrowed<true>{}, borrowed<false>{})), ranges::subrange<int*>>);
+static_assert(same_as<decltype(ranges::search(borrowed<false>{}, borrowed<true>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::search(borrowed<true>{}, borrowed<false>{})), ranges::subrange<int*>>);
 
 struct instantiator {
     static constexpr array<P, 8> pairs = {
@@ -35,14 +35,14 @@ struct instantiator {
             // defaulted predicate and projections
             {
                 auto result = ranges::search(range1, range1);
-                STATIC_ASSERT(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
+                static_assert(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
                 assert(result.begin() == range1.begin());
                 assert(result.end() == range1.end());
             }
             {
                 auto result = ranges::search(
                     ranges::begin(range2), ranges::end(range2), ranges::begin(range2), ranges::end(range2));
-                STATIC_ASSERT(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd2>>>);
+                static_assert(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd2>>>);
                 assert(result.begin() == range2.begin());
                 assert(result.end() == range2.end());
             }
@@ -54,14 +54,14 @@ struct instantiator {
         // explicit predicate
         {
             auto result = ranges::search(range2, range2, ranges::equal_to{});
-            STATIC_ASSERT(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd2>>>);
+            static_assert(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd2>>>);
             assert(result.begin() == range2.begin());
             assert(result.end() == range2.end());
         }
         {
             auto result = ranges::search(ranges::begin(range1), ranges::end(range1), ranges::begin(range1),
                 ranges::end(range1), ranges::equal_to{});
-            STATIC_ASSERT(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
+            static_assert(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
             assert(result.begin() == range1.begin());
             assert(result.end() == range1.end());
         }
@@ -69,14 +69,14 @@ struct instantiator {
         // explicit predicate and one projection
         {
             auto result = ranges::search(range1, range2, pred, get_first);
-            STATIC_ASSERT(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
+            static_assert(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
             assert(result.begin() == ranges::next(range1.begin(), 2));
             assert(result.end() == ranges::next(range1.begin(), 5));
         }
         {
             auto result = ranges::search(ranges::begin(range1), ranges::end(range1), ranges::begin(range2),
                 ranges::end(range2), pred, get_first);
-            STATIC_ASSERT(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
+            static_assert(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
             assert(result.begin() == ranges::next(range1.begin(), 2));
             assert(result.end() == ranges::next(range1.begin(), 5));
         }
@@ -85,14 +85,14 @@ struct instantiator {
         constexpr auto minus1 = [](int x) { return x - 1; };
         {
             auto result = ranges::search(range1, range2, pred, get_first, minus1);
-            STATIC_ASSERT(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
+            static_assert(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
             assert(result.begin() == ranges::next(range1.begin(), 3));
             assert(result.end() == ranges::next(range1.begin(), 6));
         }
         {
             auto result = ranges::search(ranges::begin(range1), ranges::end(range1), ranges::begin(range2),
                 ranges::end(range2), pred, get_first, minus1);
-            STATIC_ASSERT(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
+            static_assert(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd1>>>);
             assert(result.begin() == ranges::next(range1.begin(), 3));
             assert(result.end() == ranges::next(range1.begin(), 6));
         }
@@ -100,13 +100,13 @@ struct instantiator {
         // negative case
         {
             auto result = ranges::search(range2, range1, pred, minus1, get_first);
-            STATIC_ASSERT(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd2>>>);
+            static_assert(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd2>>>);
             assert(result.empty());
         }
         {
             auto result = ranges::search(ranges::begin(range2), ranges::end(range2), ranges::begin(range1),
                 ranges::end(range1), pred, minus1, get_first);
-            STATIC_ASSERT(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd2>>>);
+            static_assert(same_as<decltype(result), ranges::subrange<ranges::iterator_t<Fwd2>>>);
             assert(result.empty());
         }
     }
@@ -161,7 +161,7 @@ constexpr bool run_tests() {
         const int haystack[] = {1, 2, 3, 1, 2, 3, 1, 2, 3};
         const int needle[] = {1, 2, 3};
         const auto result = ranges::search(span<const int>{haystack}, needle);
-        STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<span<const int>::iterator>>);
+        static_assert(same_as<decltype(result), const ranges::subrange<span<const int>::iterator>>);
         assert(to_address(result.begin()) == haystack + 0);
         assert(to_address(result.end()) == haystack + 3);
     }
@@ -187,10 +187,10 @@ constexpr void test_devcom_1559808() {
 }
 
 int main() {
-    STATIC_ASSERT(run_tests());
+    static_assert(run_tests());
     run_tests();
 
-    STATIC_ASSERT((test_devcom_1559808(), true));
+    static_assert((test_devcom_1559808(), true));
     test_devcom_1559808();
 }
 #endif // TEST_EVERYTHING
