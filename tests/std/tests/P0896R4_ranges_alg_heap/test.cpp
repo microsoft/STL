@@ -19,16 +19,16 @@ using namespace std;
 #define ASSERT(...) assert((__VA_ARGS__))
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::push_heap(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::push_heap(borrowed<true>{})), int*>);
-STATIC_ASSERT(same_as<decltype(ranges::pop_heap(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::pop_heap(borrowed<true>{})), int*>);
-STATIC_ASSERT(same_as<decltype(ranges::make_heap(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::make_heap(borrowed<true>{})), int*>);
-STATIC_ASSERT(same_as<decltype(ranges::sort_heap(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::sort_heap(borrowed<true>{})), int*>);
-STATIC_ASSERT(same_as<decltype(ranges::is_heap_until(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::is_heap_until(borrowed<true>{})), int*>);
+static_assert(same_as<decltype(ranges::push_heap(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::push_heap(borrowed<true>{})), int*>);
+static_assert(same_as<decltype(ranges::pop_heap(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::pop_heap(borrowed<true>{})), int*>);
+static_assert(same_as<decltype(ranges::make_heap(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::make_heap(borrowed<true>{})), int*>);
+static_assert(same_as<decltype(ranges::sort_heap(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::sort_heap(borrowed<true>{})), int*>);
+static_assert(same_as<decltype(ranges::is_heap_until(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::is_heap_until(borrowed<true>{})), int*>);
 
 using P = pair<int, int>;
 
@@ -144,7 +144,7 @@ struct push_and_pop_heap_test {
         P{-1298559576, 8},
         P{-1260655766, 9},
     };
-    STATIC_ASSERT(ranges::is_heap(initial_values, ranges::less{}, get_first));
+    static_assert(ranges::is_heap(initial_values, ranges::less{}, get_first));
 
     static constexpr array expectedPushed = {
         P{1668617627, 0},
@@ -158,7 +158,7 @@ struct push_and_pop_heap_test {
         P{-1298559576, 8},
         P{-1200257975, 4},
     };
-    STATIC_ASSERT(ranges::is_heap(expectedPushed, ranges::less{}, get_first));
+    static_assert(ranges::is_heap(expectedPushed, ranges::less{}, get_first));
 
     static constexpr array expectedPopped = {
         P{1429106719, 1},
@@ -172,7 +172,7 @@ struct push_and_pop_heap_test {
         P{-1298559576, 8},
         P{1668617627, 0},
     };
-    STATIC_ASSERT(ranges::is_heap(expectedPopped.begin(), expectedPopped.end() - 1, ranges::less{}, get_first));
+    static_assert(ranges::is_heap(expectedPopped.begin(), expectedPopped.end() - 1, ranges::less{}, get_first));
 
     template <ranges::random_access_range Range>
     static constexpr void call() {
@@ -206,15 +206,15 @@ struct push_and_pop_heap_test {
 };
 
 int main() {
-    STATIC_ASSERT((test_random<empty_ranges, P>(), true));
+    static_assert((test_random<empty_ranges, P>(), true));
     test_random<empty_ranges, P>();
 
-    STATIC_ASSERT((test_random<is_heap_test, P>(), true));
+    static_assert((test_random<is_heap_test, P>(), true));
     test_random<is_heap_test, P>();
 
-    STATIC_ASSERT((test_random<make_and_sort_heap_test, P>(), true));
+    static_assert((test_random<make_and_sort_heap_test, P>(), true));
     test_random<make_and_sort_heap_test, P>();
 
-    STATIC_ASSERT((test_random<push_and_pop_heap_test, P>(), true));
+    static_assert((test_random<push_and_pop_heap_test, P>(), true));
     test_random<push_and_pop_heap_test, P>();
 }

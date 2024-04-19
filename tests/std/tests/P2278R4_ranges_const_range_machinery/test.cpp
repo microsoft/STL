@@ -235,6 +235,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_in<instantiator, const int>(), true));
+    static_assert((test_in<instantiator, const int>(), true));
     test_in<instantiator, const int>();
 }

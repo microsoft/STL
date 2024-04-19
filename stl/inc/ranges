@@ -2030,7 +2030,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Own) {
                     return owning_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                    static_assert(false, "Should be unreachable");
                 }
             }
         };
@@ -2164,7 +2164,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_As_rvalue) {
                     return as_rvalue_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                    static_assert(false, "Should be unreachable");
                 }
             }
         };
@@ -3142,7 +3142,7 @@ namespace ranges {
                     } else if constexpr (_Strat == _St::_Reconstruct_subrange) {
                         return subrange(_First, _First + _Count);
                     } else {
-                        static_assert(_Always_false<_Rng>, "Should be unreachable");
+                        static_assert(false, "Should be unreachable");
                     }
                 }
             }
@@ -3548,7 +3548,7 @@ namespace ranges {
                     } else if constexpr (_Strat == _St::_Reconstruct_other) {
                         return remove_cvref_t<_Rng>(_RANGES begin(_Range) + _Count, _RANGES end(_Range));
                     } else {
-                        static_assert(_Always_false<_Rng>, "Should be unreachable");
+                        static_assert(false, "Should be unreachable");
                     }
                 }
             }
@@ -5389,7 +5389,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Common) {
                     return common_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                    static_assert(false, "Should be unreachable");
                 }
             }
         };
@@ -5548,7 +5548,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Reverse) {
                     return reverse_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                    static_assert(false, "Should be unreachable");
                 }
             }
         };
@@ -5692,7 +5692,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_As_const) {
                     return as_const_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                    static_assert(false, "Should be unreachable");
                 }
             }
         };
@@ -10369,7 +10369,7 @@ namespace ranges {
             };
             return _RANGES to<_Container>(views::transform(ref_view{_Range}, _Xform), _STD forward<_Types>(_Args)...);
         } else {
-            static_assert(_Always_false<_Container>, "the program is ill-formed per N4950 [range.utility.conv.to]/2.3");
+            static_assert(false, "the program is ill-formed per N4950 [range.utility.conv.to]/2.3");
         }
     }
 

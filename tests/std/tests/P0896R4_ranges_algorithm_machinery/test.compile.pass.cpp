@@ -15,8 +15,6 @@
 
 #pragma warning(disable : 4793) // function compiled as native: non-clrcall vcall thunks must be compiled as native
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 namespace ranges = std::ranges;
 
 template <bool>
@@ -48,8 +46,8 @@ struct simple_iter_archetype {
     // clang-format on
     friend void iter_swap(simple_iter_archetype const&, simple_iter_archetype const&) {}
 };
-STATIC_ASSERT(!std::indirectly_readable<simple_iter_archetype<0>>);
-STATIC_ASSERT(std::indirectly_readable<simple_iter_archetype<1>>);
+static_assert(!std::indirectly_readable<simple_iter_archetype<0>>);
+static_assert(std::indirectly_readable<simple_iter_archetype<1>>);
 
 template <class T, template <class> class TQuals, template <class> class UQuals>
 struct std::basic_common_reference<T, ::simple_reference<T>, TQuals, UQuals> {
@@ -97,18 +95,18 @@ namespace indirectly_unary_invocable_test {
     template <class F, class I>
     constexpr bool test() {
         constexpr bool result = std::indirectly_unary_invocable<F, I>;
-        STATIC_ASSERT(result == std::indirectly_regular_unary_invocable<F, I>);
+        static_assert(result == std::indirectly_regular_unary_invocable<F, I>);
         return result;
     }
-    STATIC_ASSERT(!test<Fn<0>, simple_iter_archetype<1>>());
-    STATIC_ASSERT(!test<Fn<1>, simple_iter_archetype<1>>());
-    STATIC_ASSERT(!test<Fn<2>, simple_iter_archetype<1>>());
-    STATIC_ASSERT(!test<Fn<3>, simple_iter_archetype<1>>());
-    STATIC_ASSERT(!test<Fn<4>, simple_iter_archetype<1>>());
-    STATIC_ASSERT(!test<Fn<5>, simple_iter_archetype<0>>());
-    STATIC_ASSERT(test<Fn<5>, simple_iter_archetype<1>>());
+    static_assert(!test<Fn<0>, simple_iter_archetype<1>>());
+    static_assert(!test<Fn<1>, simple_iter_archetype<1>>());
+    static_assert(!test<Fn<2>, simple_iter_archetype<1>>());
+    static_assert(!test<Fn<3>, simple_iter_archetype<1>>());
+    static_assert(!test<Fn<4>, simple_iter_archetype<1>>());
+    static_assert(!test<Fn<5>, simple_iter_archetype<0>>());
+    static_assert(test<Fn<5>, simple_iter_archetype<1>>());
 
-    STATIC_ASSERT(std::same_as<std::indirect_result_t<Fn<5>, simple_iter_archetype<1>>, int>);
+    static_assert(std::same_as<std::indirect_result_t<Fn<5>, simple_iter_archetype<1>>, int>);
 } // namespace indirectly_unary_invocable_test
 
 namespace indirect_unary_predicate_test {
@@ -141,15 +139,15 @@ namespace indirect_unary_predicate_test {
         // clang-format on
     };
 
-    STATIC_ASSERT(!indirect_unary_predicate<Fn<0>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_unary_predicate<Fn<1>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_unary_predicate<Fn<2>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_unary_predicate<Fn<3>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_unary_predicate<Fn<4>, simple_iter_archetype<1>>);
-    STATIC_ASSERT(!indirect_unary_predicate<Fn<5>, simple_iter_archetype<0>>);
-    STATIC_ASSERT(indirect_unary_predicate<Fn<5>, simple_iter_archetype<1>>);
+    static_assert(!indirect_unary_predicate<Fn<0>, simple_iter_archetype<1>>);
+    static_assert(!indirect_unary_predicate<Fn<1>, simple_iter_archetype<1>>);
+    static_assert(!indirect_unary_predicate<Fn<2>, simple_iter_archetype<1>>);
+    static_assert(!indirect_unary_predicate<Fn<3>, simple_iter_archetype<1>>);
+    static_assert(!indirect_unary_predicate<Fn<4>, simple_iter_archetype<1>>);
+    static_assert(!indirect_unary_predicate<Fn<5>, simple_iter_archetype<0>>);
+    static_assert(indirect_unary_predicate<Fn<5>, simple_iter_archetype<1>>);
 
-    STATIC_ASSERT(std::same_as<std::indirect_result_t<Fn<5>, simple_iter_archetype<1>>, int>);
+    static_assert(std::same_as<std::indirect_result_t<Fn<5>, simple_iter_archetype<1>>, int>);
 } // namespace indirect_unary_predicate_test
 
 namespace indirect_binary_predicate_test {
@@ -194,43 +192,43 @@ namespace indirect_binary_predicate_test {
         using I2 = simple_iter_archetype<IterSelector2>;
 
         constexpr bool result = indirect_binary_predicate<F, I1, I2>;
-        STATIC_ASSERT(indirect_equivalence_relation<F, I1, I2> == result);
-        STATIC_ASSERT(indirect_strict_weak_order<F, I1, I2> == result);
+        static_assert(indirect_equivalence_relation<F, I1, I2> == result);
+        static_assert(indirect_strict_weak_order<F, I1, I2> == result);
         return result;
     }
 
-    STATIC_ASSERT(!test<0, 1, 1>());
-    STATIC_ASSERT(!test<1, 1, 1>());
-    STATIC_ASSERT(!test<2, 1, 1>());
-    STATIC_ASSERT(!test<3, 1, 1>());
-    STATIC_ASSERT(!test<4, 1, 1>());
-    STATIC_ASSERT(!test<5, 1, 1>());
+    static_assert(!test<0, 1, 1>());
+    static_assert(!test<1, 1, 1>());
+    static_assert(!test<2, 1, 1>());
+    static_assert(!test<3, 1, 1>());
+    static_assert(!test<4, 1, 1>());
+    static_assert(!test<5, 1, 1>());
 
-    STATIC_ASSERT(!test<6, 0, 1>());
-    STATIC_ASSERT(!test<6, 1, 0>());
-    STATIC_ASSERT(test<6, 1, 1>());
+    static_assert(!test<6, 0, 1>());
+    static_assert(!test<6, 1, 0>());
+    static_assert(test<6, 1, 1>());
 
-    STATIC_ASSERT(std::same_as<std::indirect_result_t<Fn<6>, simple_iter_archetype<1>, simple_iter_archetype<1>>,
+    static_assert(std::same_as<std::indirect_result_t<Fn<6>, simple_iter_archetype<1>, simple_iter_archetype<1>>,
         std::true_type>);
 } // namespace indirect_binary_predicate_test
 
 namespace projected_test {
     template <class Iter, class Proj, class Value, class Reference>
     constexpr bool test() {
-        STATIC_ASSERT(std::indirectly_readable<Iter>);
+        static_assert(std::indirectly_readable<Iter>);
 
         using P = std::projected<Iter, Proj>;
-        STATIC_ASSERT(std::indirectly_readable<P>);
-        STATIC_ASSERT(std::same_as<std::iter_value_t<P>, Value>);
-        STATIC_ASSERT(std::same_as<std::iter_reference_t<P>, Reference>);
+        static_assert(std::indirectly_readable<P>);
+        static_assert(std::same_as<std::iter_value_t<P>, Value>);
+        static_assert(std::same_as<std::iter_reference_t<P>, Reference>);
         return true;
     }
-    STATIC_ASSERT(test<int*, std::identity, int, int&>());
-    STATIC_ASSERT(test<int const*, std::identity, int, int const&>());
+    static_assert(test<int*, std::identity, int, int&>());
+    static_assert(test<int const*, std::identity, int, int const&>());
 
     struct S {};
-    STATIC_ASSERT(test<S*, int(S::*), int, int&>());
-    STATIC_ASSERT(test<S const*, int(S::*), int, int const&>());
+    static_assert(test<S*, int(S::*), int, int&>());
+    static_assert(test<S const*, int(S::*), int, int const&>());
 
     struct iter {
         using value_type = int;
@@ -239,8 +237,8 @@ namespace projected_test {
         };
         reference operator*() const;
     };
-    STATIC_ASSERT(test<iter, std::identity, iter::reference, iter::reference&&>());
-    STATIC_ASSERT(test<iter, double (*)(int), double, double>());
+    static_assert(test<iter, std::identity, iter::reference, iter::reference&&>());
+    static_assert(test<iter, double (*)(int), double, double>());
 } // namespace projected_test
 
 namespace indirectly_movable_test { // also covers indirectly_movable_storable
@@ -264,18 +262,18 @@ namespace indirectly_movable_test { // also covers indirectly_movable_storable
         // clang-format on
     };
     // Ensure specializations of value_type have the intended properties
-    STATIC_ASSERT(!movable<value_type<0>>);
-    STATIC_ASSERT(constructible_from<value_type<0>, simple_reference<value_type<0>>>);
-    STATIC_ASSERT(assignable_from<value_type<0>&, simple_reference<value_type<0>>>);
-    STATIC_ASSERT(movable<value_type<1>>);
-    STATIC_ASSERT(!constructible_from<value_type<1>, simple_reference<value_type<1>>>);
-    STATIC_ASSERT(assignable_from<value_type<1>&, simple_reference<value_type<1>>>);
-    STATIC_ASSERT(movable<value_type<2>>);
-    STATIC_ASSERT(constructible_from<value_type<2>, simple_reference<value_type<2>>>);
-    STATIC_ASSERT(!assignable_from<value_type<2>&, simple_reference<value_type<2>>>);
-    STATIC_ASSERT(movable<value_type<3>>);
-    STATIC_ASSERT(constructible_from<value_type<3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(assignable_from<value_type<3>&, simple_reference<value_type<3>>>);
+    static_assert(!movable<value_type<0>>);
+    static_assert(constructible_from<value_type<0>, simple_reference<value_type<0>>>);
+    static_assert(assignable_from<value_type<0>&, simple_reference<value_type<0>>>);
+    static_assert(movable<value_type<1>>);
+    static_assert(!constructible_from<value_type<1>, simple_reference<value_type<1>>>);
+    static_assert(assignable_from<value_type<1>&, simple_reference<value_type<1>>>);
+    static_assert(movable<value_type<2>>);
+    static_assert(constructible_from<value_type<2>, simple_reference<value_type<2>>>);
+    static_assert(!assignable_from<value_type<2>&, simple_reference<value_type<2>>>);
+    static_assert(movable<value_type<3>>);
+    static_assert(constructible_from<value_type<3>, simple_reference<value_type<3>>>);
+    static_assert(assignable_from<value_type<3>&, simple_reference<value_type<3>>>);
 
     template <int I, int J>
     struct out_archetype {
@@ -290,25 +288,25 @@ namespace indirectly_movable_test { // also covers indirectly_movable_storable
         // clang-format on
     };
     // Ensure specializations of out_archetype have the intended properties
-    STATIC_ASSERT(!indirectly_writable<out_archetype<0, 3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<0, 3>, value_type<3>>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<1, 3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(!indirectly_writable<out_archetype<1, 3>, value_type<3>>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, value_type<3>>);
+    static_assert(!indirectly_writable<out_archetype<0, 3>, simple_reference<value_type<3>>>);
+    static_assert(indirectly_writable<out_archetype<0, 3>, value_type<3>>);
+    static_assert(indirectly_writable<out_archetype<1, 3>, simple_reference<value_type<3>>>);
+    static_assert(!indirectly_writable<out_archetype<1, 3>, value_type<3>>);
+    static_assert(indirectly_writable<out_archetype<2, 3>, simple_reference<value_type<3>>>);
+    static_assert(indirectly_writable<out_archetype<2, 3>, value_type<3>>);
 
     // Validate indirectly_movable
-    STATIC_ASSERT(!indirectly_movable<simple_iter_archetype<0, value_type<3>>, out_archetype<1, 3>>);
-    STATIC_ASSERT(!indirectly_movable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
-    STATIC_ASSERT(indirectly_movable<simple_iter_archetype<1, value_type<3>>, out_archetype<1, 3>>);
+    static_assert(!indirectly_movable<simple_iter_archetype<0, value_type<3>>, out_archetype<1, 3>>);
+    static_assert(!indirectly_movable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
+    static_assert(indirectly_movable<simple_iter_archetype<1, value_type<3>>, out_archetype<1, 3>>);
 
     // Validate indirectly_movable_storable
-    STATIC_ASSERT(!indirectly_movable_storable<simple_iter_archetype<0, value_type<3>>, out_archetype<2, 3>>);
-    STATIC_ASSERT(!indirectly_movable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
-    STATIC_ASSERT(!indirectly_movable_storable<simple_iter_archetype<1, value_type<0>>, out_archetype<2, 0>>);
-    STATIC_ASSERT(!indirectly_movable_storable<simple_iter_archetype<1, value_type<1>>, out_archetype<2, 1>>);
-    STATIC_ASSERT(!indirectly_movable_storable<simple_iter_archetype<1, value_type<2>>, out_archetype<2, 2>>);
-    STATIC_ASSERT(indirectly_movable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<2, 3>>);
+    static_assert(!indirectly_movable_storable<simple_iter_archetype<0, value_type<3>>, out_archetype<2, 3>>);
+    static_assert(!indirectly_movable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
+    static_assert(!indirectly_movable_storable<simple_iter_archetype<1, value_type<0>>, out_archetype<2, 0>>);
+    static_assert(!indirectly_movable_storable<simple_iter_archetype<1, value_type<1>>, out_archetype<2, 1>>);
+    static_assert(!indirectly_movable_storable<simple_iter_archetype<1, value_type<2>>, out_archetype<2, 2>>);
+    static_assert(indirectly_movable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<2, 3>>);
 } // namespace indirectly_movable_test
 
 namespace indirectly_copyable_test { // also covers indirectly_copyable_storable
@@ -332,18 +330,18 @@ namespace indirectly_copyable_test { // also covers indirectly_copyable_storable
         // clang-format on
     };
     // Ensure specializations of value_type have the intended properties
-    STATIC_ASSERT(!copyable<value_type<0>>);
-    STATIC_ASSERT(constructible_from<value_type<0>, simple_reference<value_type<0>>>);
-    STATIC_ASSERT(assignable_from<value_type<0>&, simple_reference<value_type<0>>>);
-    STATIC_ASSERT(copyable<value_type<1>>);
-    STATIC_ASSERT(!constructible_from<value_type<1>, simple_reference<value_type<1>>>);
-    STATIC_ASSERT(assignable_from<value_type<1>&, simple_reference<value_type<1>>>);
-    STATIC_ASSERT(copyable<value_type<2>>);
-    STATIC_ASSERT(constructible_from<value_type<2>, simple_reference<value_type<2>>>);
-    STATIC_ASSERT(!assignable_from<value_type<2>&, simple_reference<value_type<2>>>);
-    STATIC_ASSERT(copyable<value_type<3>>);
-    STATIC_ASSERT(constructible_from<value_type<3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(assignable_from<value_type<3>&, simple_reference<value_type<3>>>);
+    static_assert(!copyable<value_type<0>>);
+    static_assert(constructible_from<value_type<0>, simple_reference<value_type<0>>>);
+    static_assert(assignable_from<value_type<0>&, simple_reference<value_type<0>>>);
+    static_assert(copyable<value_type<1>>);
+    static_assert(!constructible_from<value_type<1>, simple_reference<value_type<1>>>);
+    static_assert(assignable_from<value_type<1>&, simple_reference<value_type<1>>>);
+    static_assert(copyable<value_type<2>>);
+    static_assert(constructible_from<value_type<2>, simple_reference<value_type<2>>>);
+    static_assert(!assignable_from<value_type<2>&, simple_reference<value_type<2>>>);
+    static_assert(copyable<value_type<3>>);
+    static_assert(constructible_from<value_type<3>, simple_reference<value_type<3>>>);
+    static_assert(assignable_from<value_type<3>&, simple_reference<value_type<3>>>);
 
     template <int I, int J>
     struct out_archetype {
@@ -367,58 +365,58 @@ namespace indirectly_copyable_test { // also covers indirectly_copyable_storable
         // clang-format on
     };
     // Ensure specializations of out_archetype have the intended properties
-    STATIC_ASSERT(!indirectly_writable<out_archetype<0, 3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<0, 3>, value_type<3>&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<0, 3>, value_type<3>&&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<0, 3>, const value_type<3>&&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<0, 3>, const value_type<3>&>);
+    static_assert(!indirectly_writable<out_archetype<0, 3>, simple_reference<value_type<3>>>);
+    static_assert(indirectly_writable<out_archetype<0, 3>, value_type<3>&>);
+    static_assert(indirectly_writable<out_archetype<0, 3>, value_type<3>&&>);
+    static_assert(indirectly_writable<out_archetype<0, 3>, const value_type<3>&&>);
+    static_assert(indirectly_writable<out_archetype<0, 3>, const value_type<3>&>);
 
-    STATIC_ASSERT(indirectly_writable<out_archetype<1, 3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(!indirectly_writable<out_archetype<1, 3>, value_type<3>&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<1, 3>, value_type<3>&&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<1, 3>, const value_type<3>&&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<1, 3>, const value_type<3>&>);
+    static_assert(indirectly_writable<out_archetype<1, 3>, simple_reference<value_type<3>>>);
+    static_assert(!indirectly_writable<out_archetype<1, 3>, value_type<3>&>);
+    static_assert(indirectly_writable<out_archetype<1, 3>, value_type<3>&&>);
+    static_assert(indirectly_writable<out_archetype<1, 3>, const value_type<3>&&>);
+    static_assert(indirectly_writable<out_archetype<1, 3>, const value_type<3>&>);
 
-    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, value_type<3>&>);
-    STATIC_ASSERT(!indirectly_writable<out_archetype<2, 3>, value_type<3>&&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, const value_type<3>&&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<2, 3>, const value_type<3>&>);
+    static_assert(indirectly_writable<out_archetype<2, 3>, simple_reference<value_type<3>>>);
+    static_assert(indirectly_writable<out_archetype<2, 3>, value_type<3>&>);
+    static_assert(!indirectly_writable<out_archetype<2, 3>, value_type<3>&&>);
+    static_assert(indirectly_writable<out_archetype<2, 3>, const value_type<3>&&>);
+    static_assert(indirectly_writable<out_archetype<2, 3>, const value_type<3>&>);
 
-    STATIC_ASSERT(indirectly_writable<out_archetype<3, 3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<3, 3>, value_type<3>&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<3, 3>, value_type<3>&&>);
-    STATIC_ASSERT(!indirectly_writable<out_archetype<3, 3>, const value_type<3>&&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<3, 3>, const value_type<3>&>);
+    static_assert(indirectly_writable<out_archetype<3, 3>, simple_reference<value_type<3>>>);
+    static_assert(indirectly_writable<out_archetype<3, 3>, value_type<3>&>);
+    static_assert(indirectly_writable<out_archetype<3, 3>, value_type<3>&&>);
+    static_assert(!indirectly_writable<out_archetype<3, 3>, const value_type<3>&&>);
+    static_assert(indirectly_writable<out_archetype<3, 3>, const value_type<3>&>);
 
-    STATIC_ASSERT(indirectly_writable<out_archetype<4, 3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<4, 3>, value_type<3>&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<4, 3>, value_type<3>&&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<4, 3>, const value_type<3>&&>);
-    STATIC_ASSERT(!indirectly_writable<out_archetype<4, 3>, const value_type<3>&>);
+    static_assert(indirectly_writable<out_archetype<4, 3>, simple_reference<value_type<3>>>);
+    static_assert(indirectly_writable<out_archetype<4, 3>, value_type<3>&>);
+    static_assert(indirectly_writable<out_archetype<4, 3>, value_type<3>&&>);
+    static_assert(indirectly_writable<out_archetype<4, 3>, const value_type<3>&&>);
+    static_assert(!indirectly_writable<out_archetype<4, 3>, const value_type<3>&>);
 
-    STATIC_ASSERT(indirectly_writable<out_archetype<5, 3>, simple_reference<value_type<3>>>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<5, 3>, value_type<3>&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<5, 3>, value_type<3>&&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<5, 3>, const value_type<3>&&>);
-    STATIC_ASSERT(indirectly_writable<out_archetype<5, 3>, const value_type<3>&>);
+    static_assert(indirectly_writable<out_archetype<5, 3>, simple_reference<value_type<3>>>);
+    static_assert(indirectly_writable<out_archetype<5, 3>, value_type<3>&>);
+    static_assert(indirectly_writable<out_archetype<5, 3>, value_type<3>&&>);
+    static_assert(indirectly_writable<out_archetype<5, 3>, const value_type<3>&&>);
+    static_assert(indirectly_writable<out_archetype<5, 3>, const value_type<3>&>);
 
     // Validate indirectly_copyable
-    STATIC_ASSERT(!indirectly_copyable<simple_iter_archetype<0, value_type<3>>, out_archetype<1, 3>>);
-    STATIC_ASSERT(!indirectly_copyable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
-    STATIC_ASSERT(indirectly_copyable<simple_iter_archetype<1, value_type<3>>, out_archetype<1, 3>>);
+    static_assert(!indirectly_copyable<simple_iter_archetype<0, value_type<3>>, out_archetype<1, 3>>);
+    static_assert(!indirectly_copyable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
+    static_assert(indirectly_copyable<simple_iter_archetype<1, value_type<3>>, out_archetype<1, 3>>);
 
     // Validate indirectly_copyable_storable
-    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<0, value_type<3>>, out_archetype<5, 3>>);
-    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
-    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<1, 3>>);
-    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<2, 3>>);
-    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<3, 3>>);
-    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<4, 3>>);
-    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<0>>, out_archetype<5, 0>>);
-    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<1>>, out_archetype<5, 1>>);
-    STATIC_ASSERT(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<2>>, out_archetype<5, 2>>);
-    STATIC_ASSERT(indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<5, 3>>);
+    static_assert(!indirectly_copyable_storable<simple_iter_archetype<0, value_type<3>>, out_archetype<5, 3>>);
+    static_assert(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<0, 3>>);
+    static_assert(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<1, 3>>);
+    static_assert(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<2, 3>>);
+    static_assert(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<3, 3>>);
+    static_assert(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<4, 3>>);
+    static_assert(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<0>>, out_archetype<5, 0>>);
+    static_assert(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<1>>, out_archetype<5, 1>>);
+    static_assert(!indirectly_copyable_storable<simple_iter_archetype<1, value_type<2>>, out_archetype<5, 2>>);
+    static_assert(indirectly_copyable_storable<simple_iter_archetype<1, value_type<3>>, out_archetype<5, 3>>);
 } // namespace indirectly_copyable_test
 
 namespace indirectly_swappable_test {
@@ -447,35 +445,35 @@ namespace indirectly_swappable_test {
     // active (i.e., in permissive mode).
     template <bool IsPermissive>
     constexpr bool compile_only() {
-        STATIC_ASSERT(!indirectly_readable<archetype<0>>); // <0> is not indirectly_readable
-        STATIC_ASSERT(indirectly_readable<archetype<1>>); // <1+> is indirectly_readable
-        STATIC_ASSERT(indirectly_readable<archetype<2>>);
-        STATIC_ASSERT(indirectly_readable<archetype<3>>);
-        STATIC_ASSERT(indirectly_readable<archetype<4>>);
+        static_assert(!indirectly_readable<archetype<0>>); // <0> is not indirectly_readable
+        static_assert(indirectly_readable<archetype<1>>); // <1+> is indirectly_readable
+        static_assert(indirectly_readable<archetype<2>>);
+        static_assert(indirectly_readable<archetype<3>>);
+        static_assert(indirectly_readable<archetype<4>>);
 
-        STATIC_ASSERT(!indirectly_swappable<archetype<0>, archetype<0>>); // <0> is (still) not indirectly_readable
+        static_assert(!indirectly_swappable<archetype<0>, archetype<0>>); // <0> is (still) not indirectly_readable
         if constexpr (!IsPermissive) {
-            STATIC_ASSERT(!indirectly_swappable<archetype<1>, archetype<1>>); // <1> is not self-indirectly_swappable
+            static_assert(!indirectly_swappable<archetype<1>, archetype<1>>); // <1> is not self-indirectly_swappable
         }
-        STATIC_ASSERT(indirectly_swappable<archetype<2>, archetype<2>>); // <2+> is self-indirectly_swappable
-        STATIC_ASSERT(indirectly_swappable<archetype<3>, archetype<3>>);
-        STATIC_ASSERT(indirectly_swappable<archetype<4>, archetype<4>>);
+        static_assert(indirectly_swappable<archetype<2>, archetype<2>>); // <2+> is self-indirectly_swappable
+        static_assert(indirectly_swappable<archetype<3>, archetype<3>>);
+        static_assert(indirectly_swappable<archetype<4>, archetype<4>>);
 
-        STATIC_ASSERT(!indirectly_swappable<archetype<0>, archetype<4>>); // <0> is not indirectly_readable
-        STATIC_ASSERT(!indirectly_swappable<archetype<4>, archetype<0>>); // <0> is not indirectly_readable
+        static_assert(!indirectly_swappable<archetype<0>, archetype<4>>); // <0> is not indirectly_readable
+        static_assert(!indirectly_swappable<archetype<4>, archetype<0>>); // <0> is not indirectly_readable
         if constexpr (!IsPermissive) {
-            STATIC_ASSERT(!indirectly_swappable<archetype<1>, archetype<4>>); // <1> is not self-indirectly_swappable
-            STATIC_ASSERT(!indirectly_swappable<archetype<4>, archetype<1>>); // <1> is not self-indirectly_swappable
+            static_assert(!indirectly_swappable<archetype<1>, archetype<4>>); // <1> is not self-indirectly_swappable
+            static_assert(!indirectly_swappable<archetype<4>, archetype<1>>); // <1> is not self-indirectly_swappable
         }
-        STATIC_ASSERT(!indirectly_swappable<archetype<2>, archetype<4>>); // <2> & <4> aren't cross-indirectly_swappable
-        STATIC_ASSERT(!indirectly_swappable<archetype<4>, archetype<2>>); // <2> & <4> aren't cross-indirectly_swappable
+        static_assert(!indirectly_swappable<archetype<2>, archetype<4>>); // <2> & <4> aren't cross-indirectly_swappable
+        static_assert(!indirectly_swappable<archetype<4>, archetype<2>>); // <2> & <4> aren't cross-indirectly_swappable
 
-        STATIC_ASSERT(indirectly_swappable<archetype<3>, archetype<4>>);
-        STATIC_ASSERT(indirectly_swappable<archetype<4>, archetype<3>>);
+        static_assert(indirectly_swappable<archetype<3>, archetype<4>>);
+        static_assert(indirectly_swappable<archetype<4>, archetype<3>>);
 
         return true;
     }
-    STATIC_ASSERT(compile_only<is_permissive>());
+    static_assert(compile_only<is_permissive>());
 } // namespace indirectly_swappable_test
 
 namespace indirectly_comparable_test {
@@ -503,16 +501,16 @@ namespace indirectly_comparable_test {
         // clang-format on
     };
 
-    STATIC_ASSERT(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<0>, Proj, Proj>);
-    STATIC_ASSERT(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<1>, Proj, Proj>);
-    STATIC_ASSERT(!indirectly_comparable<simple_iter_archetype<0>, simple_iter_archetype<1>, Fn<2>, Proj, Proj>);
-    STATIC_ASSERT(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<0>, Fn<2>, Proj, Proj>);
-    STATIC_ASSERT(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<2>, BadProj, Proj>);
-    STATIC_ASSERT(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<2>, Proj, BadProj>);
-    STATIC_ASSERT(indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<2>, Proj, Proj>);
+    static_assert(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<0>, Proj, Proj>);
+    static_assert(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<1>, Proj, Proj>);
+    static_assert(!indirectly_comparable<simple_iter_archetype<0>, simple_iter_archetype<1>, Fn<2>, Proj, Proj>);
+    static_assert(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<0>, Fn<2>, Proj, Proj>);
+    static_assert(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<2>, BadProj, Proj>);
+    static_assert(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<2>, Proj, BadProj>);
+    static_assert(indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<2>, Proj, Proj>);
 
     using Projected = std::projected<simple_iter_archetype<1>, Proj>;
-    STATIC_ASSERT(std::same_as<std::indirect_result_t<Fn<2>, Projected, Projected>, void*>);
+    static_assert(std::same_as<std::indirect_result_t<Fn<2>, Projected, Projected>, void*>);
 } // namespace indirectly_comparable_test
 
 namespace dangling_test {
@@ -520,24 +518,24 @@ namespace dangling_test {
     using ranges::dangling, ranges::borrowed_iterator_t, ranges::borrowed_subrange_t;
     using std::is_nothrow_constructible_v, std::same_as;
 
-    STATIC_ASSERT(std::is_class_v<dangling>);
-    STATIC_ASSERT(std::semiregular<dangling>);
-    STATIC_ASSERT(std::is_trivially_default_constructible_v<dangling>);
+    static_assert(std::is_class_v<dangling>);
+    static_assert(std::semiregular<dangling>);
+    static_assert(std::is_trivially_default_constructible_v<dangling>);
 
     // dangling is constructible from any sequence of arguments without throwing
-    STATIC_ASSERT(is_nothrow_constructible_v<dangling>);
-    STATIC_ASSERT(is_nothrow_constructible_v<dangling, int>);
-    STATIC_ASSERT(is_nothrow_constructible_v<dangling, int*>);
-    STATIC_ASSERT(is_nothrow_constructible_v<dangling, int[42]>);
-    STATIC_ASSERT(is_nothrow_constructible_v<dangling, int (*)()>);
-    STATIC_ASSERT(is_nothrow_constructible_v<dangling, const int (*)[42]>);
-    STATIC_ASSERT(is_nothrow_constructible_v<dangling, int, int*, int[42], int (*)(), const int (*)[42]>);
+    static_assert(is_nothrow_constructible_v<dangling>);
+    static_assert(is_nothrow_constructible_v<dangling, int>);
+    static_assert(is_nothrow_constructible_v<dangling, int*>);
+    static_assert(is_nothrow_constructible_v<dangling, int[42]>);
+    static_assert(is_nothrow_constructible_v<dangling, int (*)()>);
+    static_assert(is_nothrow_constructible_v<dangling, const int (*)[42]>);
+    static_assert(is_nothrow_constructible_v<dangling, int, int*, int[42], int (*)(), const int (*)[42]>);
 
-    STATIC_ASSERT(same_as<borrowed_iterator_t<borrowed<false>>, dangling>);
-    STATIC_ASSERT(same_as<borrowed_iterator_t<borrowed<true>>, int*>);
+    static_assert(same_as<borrowed_iterator_t<borrowed<false>>, dangling>);
+    static_assert(same_as<borrowed_iterator_t<borrowed<true>>, int*>);
 
-    STATIC_ASSERT(same_as<borrowed_subrange_t<borrowed<false>>, dangling>);
-    STATIC_ASSERT(same_as<borrowed_subrange_t<borrowed<true>>, ranges::subrange<int*>>);
+    static_assert(same_as<borrowed_subrange_t<borrowed<false>>, dangling>);
+    static_assert(same_as<borrowed_subrange_t<borrowed<true>>, ranges::subrange<int*>>);
 } // namespace dangling_test
 
 namespace result_test {
@@ -547,22 +545,22 @@ namespace result_test {
 
     // Validate the result types are:
     // * aggregates
-    STATIC_ASSERT(is_aggregate_v<in_found_result<int>>);
-    STATIC_ASSERT(is_aggregate_v<in_fun_result<int, int>>);
-    STATIC_ASSERT(is_aggregate_v<in_in_result<int, int>>);
-    STATIC_ASSERT(is_aggregate_v<in_out_result<int, int>>);
-    STATIC_ASSERT(is_aggregate_v<in_in_out_result<int, int, int>>);
-    STATIC_ASSERT(is_aggregate_v<in_out_out_result<int, int, int>>);
-    STATIC_ASSERT(is_aggregate_v<min_max_result<int>>);
+    static_assert(is_aggregate_v<in_found_result<int>>);
+    static_assert(is_aggregate_v<in_fun_result<int, int>>);
+    static_assert(is_aggregate_v<in_in_result<int, int>>);
+    static_assert(is_aggregate_v<in_out_result<int, int>>);
+    static_assert(is_aggregate_v<in_in_out_result<int, int, int>>);
+    static_assert(is_aggregate_v<in_out_out_result<int, int, int>>);
+    static_assert(is_aggregate_v<min_max_result<int>>);
 
     // * trivial when parameter types are trivial
-    STATIC_ASSERT(is_trivial_v<in_found_result<int>>);
-    STATIC_ASSERT(is_trivial_v<in_fun_result<int, int>>);
-    STATIC_ASSERT(is_trivial_v<in_in_result<int, int>>);
-    STATIC_ASSERT(is_trivial_v<in_out_result<int, int>>);
-    STATIC_ASSERT(is_trivial_v<in_in_out_result<int, int, int>>);
-    STATIC_ASSERT(is_trivial_v<in_out_out_result<int, int, int>>);
-    STATIC_ASSERT(is_trivial_v<min_max_result<int>>);
+    static_assert(is_trivial_v<in_found_result<int>>);
+    static_assert(is_trivial_v<in_fun_result<int, int>>);
+    static_assert(is_trivial_v<in_in_result<int, int>>);
+    static_assert(is_trivial_v<in_out_result<int, int>>);
+    static_assert(is_trivial_v<in_in_out_result<int, int, int>>);
+    static_assert(is_trivial_v<in_out_out_result<int, int, int>>);
+    static_assert(is_trivial_v<min_max_result<int>>);
 
     // * usable with structured bindings
     constexpr bool test_bindings_in_found_result() {
@@ -587,13 +585,13 @@ namespace result_test {
         return true;
     }
 
-    STATIC_ASSERT(test_bindings_in_found_result());
-    STATIC_ASSERT(test_bindings_2<in_fun_result<int, int>>());
-    STATIC_ASSERT(test_bindings_2<in_in_result<int, int>>());
-    STATIC_ASSERT(test_bindings_2<in_out_result<int, int>>());
-    STATIC_ASSERT(test_bindings_3<in_in_out_result<int, int, int>>());
-    STATIC_ASSERT(test_bindings_3<in_out_out_result<int, int, int>>());
-    STATIC_ASSERT(test_bindings_2<min_max_result<int>>());
+    static_assert(test_bindings_in_found_result());
+    static_assert(test_bindings_2<in_fun_result<int, int>>());
+    static_assert(test_bindings_2<in_in_result<int, int>>());
+    static_assert(test_bindings_2<in_out_result<int, int>>());
+    static_assert(test_bindings_3<in_in_out_result<int, int, int>>());
+    static_assert(test_bindings_3<in_out_out_result<int, int, int>>());
+    static_assert(test_bindings_2<min_max_result<int>>());
 
     // * appropriately lvalue and rvalue inter-specialization convertible
     template <class T>
@@ -604,8 +602,8 @@ namespace result_test {
     using CFI = convertible_from<int>;
 
     constexpr bool test_convertible_in_found_result() {
-        STATIC_ASSERT(!is_convertible_v<in_found_result<int> const&, in_found_result<CFI>>);
-        STATIC_ASSERT(is_convertible_v<in_found_result<int>, in_found_result<CFI>>);
+        static_assert(!is_convertible_v<in_found_result<int> const&, in_found_result<CFI>>);
+        static_assert(is_convertible_v<in_found_result<int>, in_found_result<CFI>>);
         in_found_result<int> a{42, true};
         {
             in_found_result<long> b = std::as_const(a);
@@ -621,10 +619,10 @@ namespace result_test {
         }
         return true;
     }
-    STATIC_ASSERT(test_convertible_in_found_result());
+    static_assert(test_convertible_in_found_result());
     constexpr bool test_convertible_min_max_result() {
-        STATIC_ASSERT(!is_convertible_v<min_max_result<int> const&, min_max_result<CFI>>);
-        STATIC_ASSERT(is_convertible_v<min_max_result<int>, min_max_result<CFI>>);
+        static_assert(!is_convertible_v<min_max_result<int> const&, min_max_result<CFI>>);
+        static_assert(is_convertible_v<min_max_result<int>, min_max_result<CFI>>);
         min_max_result<int> a{13, 42};
         {
             min_max_result<long> b = std::as_const(a);
@@ -640,12 +638,12 @@ namespace result_test {
         }
         return true;
     }
-    STATIC_ASSERT(test_convertible_min_max_result());
+    static_assert(test_convertible_min_max_result());
 
     template <template <class, class> class R>
     constexpr bool test_convertible_2() {
-        STATIC_ASSERT(!is_convertible_v<R<int, int> const&, R<CFI, CFI>>);
-        STATIC_ASSERT(is_convertible_v<R<int, int>, R<CFI, CFI>>);
+        static_assert(!is_convertible_v<R<int, int> const&, R<CFI, CFI>>);
+        static_assert(is_convertible_v<R<int, int>, R<CFI, CFI>>);
         R<int, int> a{13, 42};
         {
             R<long, long> b = std::as_const(a);
@@ -661,14 +659,14 @@ namespace result_test {
         }
         return true;
     }
-    STATIC_ASSERT(test_convertible_2<in_fun_result>());
-    STATIC_ASSERT(test_convertible_2<in_in_result>());
-    STATIC_ASSERT(test_convertible_2<in_out_result>());
+    static_assert(test_convertible_2<in_fun_result>());
+    static_assert(test_convertible_2<in_in_result>());
+    static_assert(test_convertible_2<in_out_result>());
 
     template <template <class, class, class> class R>
     constexpr bool test_convertible_3() {
-        STATIC_ASSERT(!is_convertible_v<R<int, int, int> const&, R<CFI, CFI, CFI>>);
-        STATIC_ASSERT(is_convertible_v<R<int, int, int>, R<CFI, CFI, CFI>>);
+        static_assert(!is_convertible_v<R<int, int, int> const&, R<CFI, CFI, CFI>>);
+        static_assert(is_convertible_v<R<int, int, int>, R<CFI, CFI, CFI>>);
         R<int, int, int> a{13, 42, 1729};
         {
             R<long, long, long> b = std::as_const(a);
@@ -686,8 +684,8 @@ namespace result_test {
         }
         return true;
     }
-    STATIC_ASSERT(test_convertible_3<in_in_out_result>());
-    STATIC_ASSERT(test_convertible_3<in_out_out_result>());
+    static_assert(test_convertible_3<in_in_out_result>());
+    static_assert(test_convertible_3<in_out_out_result>());
 } // namespace result_test
 
 namespace permutable_test {
@@ -731,22 +729,22 @@ namespace permutable_test {
         // [iterator.cust.swap]/4.3. permutable requires indirectly_swappable<T, T> only to forbid a user type from
         // defining an iter_swap overload that doesn't meet the semantic requirements.
     };
-    STATIC_ASSERT(input_iterator<archetype<0>>);
-    STATIC_ASSERT(!forward_iterator<archetype<0>>);
-    STATIC_ASSERT(indirectly_movable_storable<archetype<0>, archetype<0>>);
-    STATIC_ASSERT(indirectly_swappable<archetype<0>, archetype<0>>);
+    static_assert(input_iterator<archetype<0>>);
+    static_assert(!forward_iterator<archetype<0>>);
+    static_assert(indirectly_movable_storable<archetype<0>, archetype<0>>);
+    static_assert(indirectly_swappable<archetype<0>, archetype<0>>);
 
-    STATIC_ASSERT(forward_iterator<archetype<1>>);
-    STATIC_ASSERT(!indirectly_movable_storable<archetype<1>, archetype<1>>);
-    STATIC_ASSERT(indirectly_swappable<archetype<1>, archetype<1>>);
+    static_assert(forward_iterator<archetype<1>>);
+    static_assert(!indirectly_movable_storable<archetype<1>, archetype<1>>);
+    static_assert(indirectly_swappable<archetype<1>, archetype<1>>);
 
-    STATIC_ASSERT(forward_iterator<archetype<2>>);
-    STATIC_ASSERT(indirectly_movable_storable<archetype<2>, archetype<2>>);
-    STATIC_ASSERT(indirectly_swappable<archetype<2>, archetype<2>>);
+    static_assert(forward_iterator<archetype<2>>);
+    static_assert(indirectly_movable_storable<archetype<2>, archetype<2>>);
+    static_assert(indirectly_swappable<archetype<2>, archetype<2>>);
 
-    STATIC_ASSERT(!permutable<archetype<0>>);
-    STATIC_ASSERT(!permutable<archetype<1>>);
-    STATIC_ASSERT(permutable<archetype<2>>);
+    static_assert(!permutable<archetype<0>>);
+    static_assert(!permutable<archetype<1>>);
+    static_assert(permutable<archetype<2>>);
 } // namespace permutable_test
 
 namespace mergeable_test {
@@ -805,88 +803,88 @@ namespace mergeable_test {
         {
             using Bad_I1 = readable_archetype<int, readable_status::not_input_iter>;
 #ifndef _M_CEE // TRANSITION, VSO-1665670
-            STATIC_ASSERT(!input_iterator<Bad_I1>);
+            static_assert(!input_iterator<Bad_I1>);
 #endif // ^^^ no workaround ^^^
-            STATIC_ASSERT(input_iterator<I2>);
-            STATIC_ASSERT(weakly_incrementable<O>);
-            STATIC_ASSERT(indirectly_copyable<Bad_I1, O>);
-            STATIC_ASSERT(indirectly_copyable<I2, O>);
-            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<Bad_I1, Pj1>, projected<I2, Pj2>>);
+            static_assert(input_iterator<I2>);
+            static_assert(weakly_incrementable<O>);
+            static_assert(indirectly_copyable<Bad_I1, O>);
+            static_assert(indirectly_copyable<I2, O>);
+            static_assert(indirect_strict_weak_order<Pr, projected<Bad_I1, Pj1>, projected<I2, Pj2>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665670
-            STATIC_ASSERT(!mergeable<Bad_I1, I2, O, Pr, Pj1, Pj2>);
+            static_assert(!mergeable<Bad_I1, I2, O, Pr, Pj1, Pj2>);
 #endif // ^^^ no workaround ^^^
         }
 
         {
             using Bad_I2 = readable_archetype<long, readable_status::not_input_iter>;
-            STATIC_ASSERT(input_iterator<I1>);
+            static_assert(input_iterator<I1>);
 #ifndef _M_CEE // TRANSITION, VSO-1665670
-            STATIC_ASSERT(!input_iterator<Bad_I2>);
+            static_assert(!input_iterator<Bad_I2>);
 #endif // ^^^ no workaround ^^^
-            STATIC_ASSERT(weakly_incrementable<O>);
-            STATIC_ASSERT(indirectly_copyable<I1, O>);
-            STATIC_ASSERT(indirectly_copyable<Bad_I2, O>);
-            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<Bad_I2, Pj2>>);
+            static_assert(weakly_incrementable<O>);
+            static_assert(indirectly_copyable<I1, O>);
+            static_assert(indirectly_copyable<Bad_I2, O>);
+            static_assert(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<Bad_I2, Pj2>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665670
-            STATIC_ASSERT(!mergeable<I1, Bad_I2, O, Pr, Pj1, Pj2>);
+            static_assert(!mergeable<I1, Bad_I2, O, Pr, Pj1, Pj2>);
 #endif // ^^^ no workaround ^^^
         }
 
         {
             using Bad_O = writable_archetype<writable_status::not_weakly_incrementable>;
-            STATIC_ASSERT(input_iterator<I1>);
-            STATIC_ASSERT(input_iterator<I2>);
+            static_assert(input_iterator<I1>);
+            static_assert(input_iterator<I2>);
 #ifndef _M_CEE // TRANSITION, VSO-1665670
-            STATIC_ASSERT(!weakly_incrementable<Bad_O>);
+            static_assert(!weakly_incrementable<Bad_O>);
 #endif // ^^^ no workaround ^^^
-            STATIC_ASSERT(indirectly_copyable<I1, Bad_O>);
-            STATIC_ASSERT(indirectly_copyable<I2, Bad_O>);
-            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            static_assert(indirectly_copyable<I1, Bad_O>);
+            static_assert(indirectly_copyable<I2, Bad_O>);
+            static_assert(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
 #ifndef _M_CEE // TRANSITION, VSO-1665670
-            STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
+            static_assert(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
 #endif // ^^^ no workaround ^^^
         }
 
         {
             using Bad_O = writable_archetype<writable_status::not_ind_copy_int>;
-            STATIC_ASSERT(input_iterator<I1>);
-            STATIC_ASSERT(input_iterator<I2>);
-            STATIC_ASSERT(weakly_incrementable<Bad_O>);
-            STATIC_ASSERT(!indirectly_copyable<I1, Bad_O>);
-            STATIC_ASSERT(indirectly_copyable<I2, Bad_O>);
-            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
-            STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
+            static_assert(input_iterator<I1>);
+            static_assert(input_iterator<I2>);
+            static_assert(weakly_incrementable<Bad_O>);
+            static_assert(!indirectly_copyable<I1, Bad_O>);
+            static_assert(indirectly_copyable<I2, Bad_O>);
+            static_assert(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            static_assert(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
         }
 
         {
             using Bad_O = writable_archetype<writable_status::not_ind_copy_long>;
-            STATIC_ASSERT(input_iterator<I1>);
-            STATIC_ASSERT(input_iterator<I2>);
-            STATIC_ASSERT(weakly_incrementable<Bad_O>);
-            STATIC_ASSERT(indirectly_copyable<I1, Bad_O>);
-            STATIC_ASSERT(!indirectly_copyable<I2, Bad_O>);
-            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
-            STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
+            static_assert(input_iterator<I1>);
+            static_assert(input_iterator<I2>);
+            static_assert(weakly_incrementable<Bad_O>);
+            static_assert(indirectly_copyable<I1, Bad_O>);
+            static_assert(!indirectly_copyable<I2, Bad_O>);
+            static_assert(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            static_assert(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
         }
 
         {
             using Bad_Pr = int;
-            STATIC_ASSERT(input_iterator<I1>);
-            STATIC_ASSERT(input_iterator<I2>);
-            STATIC_ASSERT(weakly_incrementable<O>);
-            STATIC_ASSERT(indirectly_copyable<I1, O>);
-            STATIC_ASSERT(indirectly_copyable<I2, O>);
-            STATIC_ASSERT(!indirect_strict_weak_order<Bad_Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
-            STATIC_ASSERT(!mergeable<I1, I2, O, Bad_Pr, Pj1, Pj2>);
+            static_assert(input_iterator<I1>);
+            static_assert(input_iterator<I2>);
+            static_assert(weakly_incrementable<O>);
+            static_assert(indirectly_copyable<I1, O>);
+            static_assert(indirectly_copyable<I2, O>);
+            static_assert(!indirect_strict_weak_order<Bad_Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            static_assert(!mergeable<I1, I2, O, Bad_Pr, Pj1, Pj2>);
         }
 
-        STATIC_ASSERT(input_iterator<I1>);
-        STATIC_ASSERT(input_iterator<I2>);
-        STATIC_ASSERT(weakly_incrementable<O>);
-        STATIC_ASSERT(indirectly_copyable<I1, O>);
-        STATIC_ASSERT(indirectly_copyable<I2, O>);
-        STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
-        STATIC_ASSERT(mergeable<I1, I2, O, Pr, Pj1, Pj2>);
+        static_assert(input_iterator<I1>);
+        static_assert(input_iterator<I2>);
+        static_assert(weakly_incrementable<O>);
+        static_assert(indirectly_copyable<I1, O>);
+        static_assert(indirectly_copyable<I2, O>);
+        static_assert(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+        static_assert(mergeable<I1, I2, O, Pr, Pj1, Pj2>);
     }
 } // namespace mergeable_test
 
@@ -899,27 +897,27 @@ namespace sortable_test {
             using I = int const*; // not permutable
             using C = less;
             using P = identity;
-            STATIC_ASSERT(!permutable<I>);
-            STATIC_ASSERT(indirect_strict_weak_order<C, projected<I, P>>);
-            STATIC_ASSERT(!sortable<I, C, P>);
+            static_assert(!permutable<I>);
+            static_assert(indirect_strict_weak_order<C, projected<I, P>>);
+            static_assert(!sortable<I, C, P>);
         }
 
         {
             using I = int*;
             using C = void; // not an indirect_strict_weak_order
             using P = identity;
-            STATIC_ASSERT(permutable<I>);
-            STATIC_ASSERT(!indirect_strict_weak_order<C, projected<I, P>>);
-            STATIC_ASSERT(!sortable<I, C, P>);
+            static_assert(permutable<I>);
+            static_assert(!indirect_strict_weak_order<C, projected<I, P>>);
+            static_assert(!sortable<I, C, P>);
         }
 
         {
             using I = int*;
             using C = less;
             using P = identity;
-            STATIC_ASSERT(permutable<I>);
-            STATIC_ASSERT(indirect_strict_weak_order<C, projected<I, P>>);
-            STATIC_ASSERT(sortable<I, C, P>);
+            static_assert(permutable<I>);
+            static_assert(indirect_strict_weak_order<C, projected<I, P>>);
+            static_assert(sortable<I, C, P>);
         }
     }
 } // namespace sortable_test
@@ -950,7 +948,7 @@ namespace gh_1089 {
             };
 
 
-            STATIC_ASSERT(sizeof(&Derived1::purr) > sizeof(void*)); // NB: relies on non-portable platform properties
+            static_assert(sizeof(&Derived1::purr) > sizeof(void*)); // NB: relies on non-portable platform properties
 
             Derived1 a[2];
             MostDerived b[3];
@@ -963,13 +961,13 @@ namespace gh_1089 {
 
             using PMD_Cat = int Cat::*;
             // Quantum effects: we must observe the size before defining Cat or it will become smaller.
-            STATIC_ASSERT(sizeof(PMD_Cat) > sizeof(void*));
+            static_assert(sizeof(PMD_Cat) > sizeof(void*));
 
             struct Cat {
                 int x = 42;
             };
 
-            STATIC_ASSERT(sizeof(&Cat::x) > sizeof(void*)); // NB: relies on non-portable platform properties
+            static_assert(sizeof(&Cat::x) > sizeof(void*)); // NB: relies on non-portable platform properties
 
             Cat cats[42];
 
@@ -1007,36 +1005,36 @@ namespace special_memory_concepts {
         // clang-format on
     };
     // Verify iterator_archetype
-    STATIC_ASSERT(!input_iterator<iterator_archetype<iterator_status::not_input>>);
-    STATIC_ASSERT(input_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
-    STATIC_ASSERT(input_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
-    STATIC_ASSERT(input_iterator<iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(!forward_iterator<iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(forward_iterator<iterator_archetype<iterator_status::forward>>);
+    static_assert(!input_iterator<iterator_archetype<iterator_status::not_input>>);
+    static_assert(input_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    static_assert(input_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
+    static_assert(input_iterator<iterator_archetype<iterator_status::input>>);
+    static_assert(!forward_iterator<iterator_archetype<iterator_status::input>>);
+    static_assert(forward_iterator<iterator_archetype<iterator_status::forward>>);
 
     template <class I>
     constexpr bool has_lvalue_reference = std::is_lvalue_reference_v<std::iter_reference_t<I>>;
-    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::not_input>>);
-    STATIC_ASSERT(!has_lvalue_reference<iterator_archetype<iterator_status::not_lvalue_reference>>);
-    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::different_reference_and_value>>);
-    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::forward>>);
+    static_assert(has_lvalue_reference<iterator_archetype<iterator_status::not_input>>);
+    static_assert(!has_lvalue_reference<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    static_assert(has_lvalue_reference<iterator_archetype<iterator_status::different_reference_and_value>>);
+    static_assert(has_lvalue_reference<iterator_archetype<iterator_status::input>>);
+    static_assert(has_lvalue_reference<iterator_archetype<iterator_status::forward>>);
 
     template <class I>
     constexpr bool same_reference_value =
         std::same_as<std::remove_cvref_t<std::iter_reference_t<I>>, std::iter_value_t<I>>;
-    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::not_input>>);
-    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::not_lvalue_reference>>);
-    STATIC_ASSERT(!same_reference_value<iterator_archetype<iterator_status::different_reference_and_value>>);
-    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::forward>>);
+    static_assert(same_reference_value<iterator_archetype<iterator_status::not_input>>);
+    static_assert(same_reference_value<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    static_assert(!same_reference_value<iterator_archetype<iterator_status::different_reference_and_value>>);
+    static_assert(same_reference_value<iterator_archetype<iterator_status::input>>);
+    static_assert(same_reference_value<iterator_archetype<iterator_status::forward>>);
 
     // Validate _No_throw_input_iterator
-    STATIC_ASSERT(!_No_throw_input_iterator<iterator_archetype<iterator_status::not_input>>);
-    STATIC_ASSERT(!_No_throw_input_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
-    STATIC_ASSERT(!_No_throw_input_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
-    STATIC_ASSERT(_No_throw_input_iterator<iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(_No_throw_input_iterator<iterator_archetype<iterator_status::forward>>);
+    static_assert(!_No_throw_input_iterator<iterator_archetype<iterator_status::not_input>>);
+    static_assert(!_No_throw_input_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    static_assert(!_No_throw_input_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
+    static_assert(_No_throw_input_iterator<iterator_archetype<iterator_status::input>>);
+    static_assert(_No_throw_input_iterator<iterator_archetype<iterator_status::forward>>);
 
     enum class sentinel_status : int { no, yes };
 
@@ -1048,25 +1046,25 @@ namespace special_memory_concepts {
         // clang-format on
     };
     // Verify sentinel_archetype
-    STATIC_ASSERT(!sentinel_for<sentinel_archetype<sentinel_status::no>, iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(sentinel_for<sentinel_archetype<sentinel_status::yes>, iterator_archetype<iterator_status::input>>);
+    static_assert(!sentinel_for<sentinel_archetype<sentinel_status::no>, iterator_archetype<iterator_status::input>>);
+    static_assert(sentinel_for<sentinel_archetype<sentinel_status::yes>, iterator_archetype<iterator_status::input>>);
 
     // Validate _No_throw_sentinel_for
-    STATIC_ASSERT(
+    static_assert(
         !_No_throw_sentinel_for<sentinel_archetype<sentinel_status::no>, iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(
+    static_assert(
         _No_throw_sentinel_for<sentinel_archetype<sentinel_status::yes>, iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(!_No_throw_sentinel_for<iterator_archetype<iterator_status::input>,
+    static_assert(!_No_throw_sentinel_for<iterator_archetype<iterator_status::input>,
                   iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(_No_throw_sentinel_for<iterator_archetype<iterator_status::forward>,
+    static_assert(_No_throw_sentinel_for<iterator_archetype<iterator_status::forward>,
         iterator_archetype<iterator_status::forward>>);
 
     // Validate _No_throw_forward_iterator
-    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::not_input>>);
-    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
-    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
-    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(_No_throw_forward_iterator<iterator_archetype<iterator_status::forward>>);
+    static_assert(!_No_throw_forward_iterator<iterator_archetype<iterator_status::not_input>>);
+    static_assert(!_No_throw_forward_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    static_assert(!_No_throw_forward_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
+    static_assert(!_No_throw_forward_iterator<iterator_archetype<iterator_status::input>>);
+    static_assert(_No_throw_forward_iterator<iterator_archetype<iterator_status::forward>>);
 
     enum class range_status : int { not_range, not_input, input, forward };
 
@@ -1084,21 +1082,21 @@ namespace special_memory_concepts {
         Se end() const;
     };
     // Verify range_archetype
-    STATIC_ASSERT(!ranges::range<range_archetype<range_status::not_range>>);
-    STATIC_ASSERT(ranges::range<range_archetype<range_status::not_input>>);
-    STATIC_ASSERT(ranges::range<range_archetype<range_status::input>>);
-    STATIC_ASSERT(ranges::range<range_archetype<range_status::forward>>);
+    static_assert(!ranges::range<range_archetype<range_status::not_range>>);
+    static_assert(ranges::range<range_archetype<range_status::not_input>>);
+    static_assert(ranges::range<range_archetype<range_status::input>>);
+    static_assert(ranges::range<range_archetype<range_status::forward>>);
 
     // Validate _No_throw_input_range; note that the distinction between range<R> and
     // no-throw-sentinel-for<sentinel_t<R>, iterator_t<R>> is purely semantic, so we can't test them separately.
-    STATIC_ASSERT(!_No_throw_input_range<range_archetype<range_status::not_range>>);
-    STATIC_ASSERT(!_No_throw_input_range<range_archetype<range_status::not_input>>);
-    STATIC_ASSERT(_No_throw_input_range<range_archetype<range_status::input>>);
-    STATIC_ASSERT(_No_throw_input_range<range_archetype<range_status::forward>>);
+    static_assert(!_No_throw_input_range<range_archetype<range_status::not_range>>);
+    static_assert(!_No_throw_input_range<range_archetype<range_status::not_input>>);
+    static_assert(_No_throw_input_range<range_archetype<range_status::input>>);
+    static_assert(_No_throw_input_range<range_archetype<range_status::forward>>);
 
     // Validate _No_throw_forward_range
-    STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::not_range>>);
-    STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::not_input>>);
-    STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::input>>);
-    STATIC_ASSERT(_No_throw_forward_range<range_archetype<range_status::forward>>);
+    static_assert(!_No_throw_forward_range<range_archetype<range_status::not_range>>);
+    static_assert(!_No_throw_forward_range<range_archetype<range_status::not_input>>);
+    static_assert(!_No_throw_forward_range<range_archetype<range_status::input>>);
+    static_assert(_No_throw_forward_range<range_archetype<range_status::forward>>);
 } // namespace special_memory_concepts

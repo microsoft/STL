@@ -12,11 +12,11 @@
 using namespace std;
 
 // Validate that iota_result aliases out_value_result
-STATIC_ASSERT(same_as<ranges::iota_result<int*, long>, ranges::out_value_result<int*, long>>);
+static_assert(same_as<ranges::iota_result<int*, long>, ranges::out_value_result<int*, long>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::iota(borrowed<false>{}, 0L)), ranges::iota_result<ranges::dangling, long>>);
-STATIC_ASSERT(same_as<decltype(ranges::iota(borrowed<true>{}, 0L)), ranges::iota_result<int*, long>>);
+static_assert(same_as<decltype(ranges::iota(borrowed<false>{}, 0L)), ranges::iota_result<ranges::dangling, long>>);
+static_assert(same_as<decltype(ranges::iota(borrowed<true>{}, 0L)), ranges::iota_result<int*, long>>);
 
 struct instantiator {
     template <ranges::output_range<const int&> Out>
@@ -47,6 +47,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_out<instantiator, int>(), true));
+    static_assert((test_out<instantiator, int>(), true));
     test_out<instantiator, int>();
 }

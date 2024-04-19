@@ -1143,8 +1143,8 @@ _NODISCARD constexpr bool holds_alternative(const variant<_Types...>& _Var) noex
     if constexpr (_Idx != _Meta_npos) {
         return _Var.index() == _Idx;
     } else {
-        static_assert(_Always_false<_Ty>, "holds_alternative<T>(const variant<Types...>&) requires T to occur exactly "
-                                          "once in Types. (N4971 [variant.get]/1)");
+        static_assert(false, "holds_alternative<T>(const variant<Types...>&) requires T to occur exactly "
+                             "once in Types. (N4971 [variant.get]/1)");
     }
 }
 
@@ -1196,8 +1196,8 @@ _NODISCARD constexpr decltype(auto) get(variant<_Types...>& _Var) {
     if constexpr (_Idx < sizeof...(_Types)) {
         return _STD get<_Idx>(_Var);
     } else {
-        static_assert(_Always_false<_Ty>,
-            "get<T>(variant<Types...>&) requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
+        static_assert(
+            false, "get<T>(variant<Types...>&) requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
     }
 }
 _EXPORT_STD template <class _Ty, class... _Types>
@@ -1207,8 +1207,8 @@ _NODISCARD constexpr decltype(auto) get(variant<_Types...>&& _Var) {
     if constexpr (_Idx < sizeof...(_Types)) {
         return _STD get<_Idx>(_STD move(_Var));
     } else {
-        static_assert(_Always_false<_Ty>,
-            "get<T>(variant<Types...>&&) requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
+        static_assert(
+            false, "get<T>(variant<Types...>&&) requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
     }
 }
 _EXPORT_STD template <class _Ty, class... _Types>
@@ -1218,7 +1218,7 @@ _NODISCARD constexpr decltype(auto) get(const variant<_Types...>& _Var) {
     if constexpr (_Idx < sizeof...(_Types)) {
         return _STD get<_Idx>(_Var);
     } else {
-        static_assert(_Always_false<_Ty>,
+        static_assert(false,
             "get<T>(const variant<Types...>&) requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
     }
 }
@@ -1229,7 +1229,7 @@ _NODISCARD constexpr decltype(auto) get(const variant<_Types...>&& _Var) {
     if constexpr (_Idx < sizeof...(_Types)) {
         return _STD get<_Idx>(_STD move(_Var));
     } else {
-        static_assert(_Always_false<_Ty>,
+        static_assert(false,
             "get<T>(const variant<Types...>&&) requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
     }
 }
@@ -1254,7 +1254,7 @@ _NODISCARD constexpr add_pointer_t<_Ty> get_if(variant<_Types...>* _Ptr) noexcep
     if constexpr (_Idx != _Meta_npos) {
         return _STD get_if<_Idx>(_Ptr);
     } else {
-        static_assert(_Always_false<_Ty>,
+        static_assert(false,
             "get_if<T>(variant<Types...> *) requires T to occur exactly once in Types. (N4971 [variant.get]/12)");
     }
 }
@@ -1265,7 +1265,7 @@ _NODISCARD constexpr add_pointer_t<const _Ty> get_if(const variant<_Types...>* _
     if constexpr (_Idx != _Meta_npos) {
         return _STD get_if<_Idx>(_Ptr);
     } else {
-        static_assert(_Always_false<_Ty>,
+        static_assert(false,
             "get_if<T>(const variant<Types...> *) requires T to occur exactly once in Types. (N4971 [variant.get]/12)");
     }
 }

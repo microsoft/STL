@@ -18,12 +18,12 @@ using namespace std;
 #define ASSERT(...) assert((__VA_ARGS__))
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::lower_bound(borrowed<false>{}, 42)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::lower_bound(borrowed<true>{}, 42)), int*>);
-STATIC_ASSERT(same_as<decltype(ranges::upper_bound(borrowed<false>{}, 42)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::upper_bound(borrowed<true>{}, 42)), int*>);
-STATIC_ASSERT(same_as<decltype(ranges::equal_range(borrowed<false>{}, 42)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::equal_range(borrowed<true>{}, 42)), ranges::subrange<int*>>);
+static_assert(same_as<decltype(ranges::lower_bound(borrowed<false>{}, 42)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::lower_bound(borrowed<true>{}, 42)), int*>);
+static_assert(same_as<decltype(ranges::upper_bound(borrowed<false>{}, 42)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::upper_bound(borrowed<true>{}, 42)), int*>);
+static_assert(same_as<decltype(ranges::equal_range(borrowed<false>{}, 42)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::equal_range(borrowed<true>{}, 42)), ranges::subrange<int*>>);
 
 using P = pair<int, int>;
 
@@ -170,18 +170,18 @@ struct binary_search_instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_fwd<empty_ranges, const P>(), true));
+    static_assert((test_fwd<empty_ranges, const P>(), true));
     test_fwd<empty_ranges, const P>();
 
-    STATIC_ASSERT((test_fwd<lower_bound_instantiator, const P>(), true));
+    static_assert((test_fwd<lower_bound_instantiator, const P>(), true));
     test_fwd<lower_bound_instantiator, const P>();
 
-    STATIC_ASSERT((test_fwd<upper_bound_instantiator, const P>(), true));
+    static_assert((test_fwd<upper_bound_instantiator, const P>(), true));
     test_fwd<upper_bound_instantiator, const P>();
 
-    STATIC_ASSERT((test_fwd<equal_range_instantiator, const P>(), true));
+    static_assert((test_fwd<equal_range_instantiator, const P>(), true));
     test_fwd<equal_range_instantiator, const P>();
 
-    STATIC_ASSERT((test_fwd<binary_search_instantiator, const P>(), true));
+    static_assert((test_fwd<binary_search_instantiator, const P>(), true));
     test_fwd<binary_search_instantiator, const P>();
 }

@@ -15,16 +15,16 @@
 using namespace std;
 
 // Validate that uninitialized_move_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::uninitialized_move_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::uninitialized_move_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_move(borrowed<false>{}, borrowed<false>{})),
+static_assert(same_as<decltype(ranges::uninitialized_move(borrowed<false>{}, borrowed<false>{})),
     ranges::uninitialized_move_result<ranges::dangling, ranges::dangling>>);
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_move(borrowed<false>{}, borrowed<true>{})),
+static_assert(same_as<decltype(ranges::uninitialized_move(borrowed<false>{}, borrowed<true>{})),
     ranges::uninitialized_move_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_move(borrowed<true>{}, borrowed<false>{})),
+static_assert(same_as<decltype(ranges::uninitialized_move(borrowed<true>{}, borrowed<false>{})),
     ranges::uninitialized_move_result<int*, ranges::dangling>>);
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_move(borrowed<true>{}, borrowed<true>{})),
+static_assert(same_as<decltype(ranges::uninitialized_move(borrowed<true>{}, borrowed<true>{})),
     ranges::uninitialized_move_result<int*, int*>>);
 
 struct int_wrapper {
@@ -65,7 +65,7 @@ struct int_wrapper {
 
     auto operator<=>(const int_wrapper&) const = default;
 };
-STATIC_ASSERT(movable<int_wrapper> && !copyable<int_wrapper>);
+static_assert(movable<int_wrapper> && !copyable<int_wrapper>);
 
 #ifdef _M_CEE // TRANSITION, VSO-1664341
 constexpr auto get_int_wrapper_val = [](const int_wrapper& w) { return w.val; };

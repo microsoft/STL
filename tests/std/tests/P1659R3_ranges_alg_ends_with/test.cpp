@@ -103,12 +103,12 @@ struct instantiator {
     static void call() {
         if constexpr (testable_range<In1> && testable_range<In2>) {
             test_range<In1, In2>();
-            STATIC_ASSERT((test_range<In1, In2>(), true));
+            static_assert((test_range<In1, In2>(), true));
         }
 
         if constexpr (testable_sentinel<In1> && testable_sentinel<In2>) {
             test_iterator_sentinel<In1, In2>();
-            STATIC_ASSERT((test_iterator_sentinel<In1, In2>(), true));
+            static_assert((test_iterator_sentinel<In1, In2>(), true));
         }
     }
 };

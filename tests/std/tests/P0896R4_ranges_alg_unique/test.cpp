@@ -13,8 +13,8 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::unique(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::unique(borrowed<true>{})), ranges::subrange<int*>>);
+static_assert(same_as<decltype(ranges::unique(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::unique(borrowed<true>{})), ranges::subrange<int*>>);
 
 struct instantiator {
     static constexpr P expected[4] = {{0, 99}, {1, 47}, {3, 99}, {4, 47}};
@@ -38,7 +38,7 @@ struct instantiator {
             ReadWrite wrapped_input{input};
 
             auto result = unique(wrapped_input.begin(), wrapped_input.end(), countedEq, get_second);
-            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+            static_assert(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
             assert(result.begin() == next(wrapped_input.begin(), 4));
             assert(result.end() == wrapped_input.end());
             assert(equal(expected, span{input}.first<4>()));
@@ -50,7 +50,7 @@ struct instantiator {
             ReadWrite wrapped_input{input};
 
             auto result = unique(wrapped_input.begin(), wrapped_input.end(), countedEq, get_second);
-            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+            static_assert(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
             assert(result.empty());
         }
 
@@ -61,7 +61,7 @@ struct instantiator {
             ReadWrite wrapped_input{input};
 
             auto result = unique(wrapped_input, countedEq, get_second);
-            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+            static_assert(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
             assert(result.begin() == next(wrapped_input.begin(), 4));
             assert(result.end() == wrapped_input.end());
             assert(equal(expected, span{input}.first<4>()));
@@ -73,13 +73,13 @@ struct instantiator {
             ReadWrite wrapped_input{input};
 
             auto result = unique(wrapped_input, countedEq, get_second);
-            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+            static_assert(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
             assert(result.empty());
         }
     }
 };
 
 int main() {
-    STATIC_ASSERT((test_fwd<instantiator, P>(), true));
+    static_assert((test_fwd<instantiator, P>(), true));
     test_fwd<instantiator, P>();
 }

@@ -79,8 +79,6 @@ public:
 
 #include "test_macros.h"
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 namespace bad_variant_access {
 int run_test() {
   static_assert(std::is_base_of<std::exception, std::bad_variant_access>::value,
@@ -7112,21 +7110,21 @@ namespace msvc {
         };
         struct __declspec(empty_bases) many_bases : empty<0>, empty<1>, empty<2>, empty<3> {};
 
-        STATIC_ASSERT(check_size<bool>);
-        STATIC_ASSERT(check_size<char>);
-        STATIC_ASSERT(check_size<unsigned char>);
-        STATIC_ASSERT(check_size<int>);
-        STATIC_ASSERT(check_size<unsigned int>);
-        STATIC_ASSERT(check_size<long>);
-        STATIC_ASSERT(check_size<long long>);
-        STATIC_ASSERT(check_size<float>);
-        STATIC_ASSERT(check_size<double>);
-        STATIC_ASSERT(check_size<void*>);
-        STATIC_ASSERT(check_size<empty<0>>);
-        STATIC_ASSERT(check_size<not_empty>);
-        STATIC_ASSERT(check_size<many_bases>);
+        static_assert(check_size<bool>);
+        static_assert(check_size<char>);
+        static_assert(check_size<unsigned char>);
+        static_assert(check_size<int>);
+        static_assert(check_size<unsigned int>);
+        static_assert(check_size<long>);
+        static_assert(check_size<long long>);
+        static_assert(check_size<float>);
+        static_assert(check_size<double>);
+        static_assert(check_size<void*>);
+        static_assert(check_size<empty<0>>);
+        static_assert(check_size<not_empty>);
+        static_assert(check_size<many_bases>);
 
-        STATIC_ASSERT(check_size<bool, char, short, int, long, long long, float, double, long double, void*, empty<0>,
+        static_assert(check_size<bool, char, short, int, long, long long, float, double, long double, void*, empty<0>,
             empty<1>, not_empty, many_bases>);
     } // namespace size
 
@@ -7527,12 +7525,12 @@ namespace msvc {
             {
                 using V = std::variant<int>;
                 constexpr V v(42);
-                STATIC_ASSERT(std::visit<int>(obj, v) == 42);
+                static_assert(std::visit<int>(obj, v) == 42);
             }
             {
                 using V = std::variant<short, long, char>;
                 constexpr V v(42l);
-                STATIC_ASSERT(std::visit<long>(obj, v) == 42);
+                static_assert(std::visit<long>(obj, v) == 42);
             }
             {
                 using V1 = std::variant<int>;
@@ -7541,7 +7539,7 @@ namespace msvc {
                 constexpr V1 v1;
                 constexpr V2 v2(nullptr);
                 constexpr V3 v3;
-                STATIC_ASSERT(std::visit<double>(aobj, v1, v2, v3) == 3.0);
+                static_assert(std::visit<double>(aobj, v1, v2, v3) == 3.0);
             }
             {
                 using V1 = std::variant<int>;
@@ -7550,7 +7548,7 @@ namespace msvc {
                 constexpr V1 v1;
                 constexpr V2 v2(nullptr);
                 constexpr V3 v3;
-                STATIC_ASSERT(std::visit<long long>(aobj, v1, v2, v3) == 3LL);
+                static_assert(std::visit<long long>(aobj, v1, v2, v3) == 3LL);
             }
             {
                 using V = std::variant<simple_derived<0>, simple_derived<1>, simple_derived<2>>;
@@ -7763,7 +7761,7 @@ namespace msvc {
 
     // Verify that `_Meta_at_<_Meta_list<>, size_t(-1)>` has no member named `type`, and that instantiating it doesn't
     // consume the entire compiler heap.
-    STATIC_ASSERT(!has_type<std::_Meta_at_<std::_Meta_list<>, static_cast<std::size_t>(-1)>>);
+    static_assert(!has_type<std::_Meta_at_<std::_Meta_list<>, static_cast<std::size_t>(-1)>>);
 
     namespace vso468746 {
         // Defend against regression of VSO-468746
@@ -7802,9 +7800,9 @@ namespace msvc {
             static constexpr V v1(&intVar);
             static constexpr V v2(&doubleVar);
 
-            STATIC_ASSERT(v1.index() == 0);
+            static_assert(v1.index() == 0);
             assert(*std::get<0>(v1) == 42);
-            STATIC_ASSERT(v2.index() == 1);
+            static_assert(v2.index() == 1);
             assert(*std::get<1>(v2) == 3.14);
         }
     } // namespace vso492097
@@ -7894,9 +7892,9 @@ namespace msvc {
             {
                 std::variant<const int> oc{};
                 oc.emplace<0>(0);
-                STATIC_ASSERT(!std::is_copy_assignable_v<decltype(oc)>);
-                STATIC_ASSERT(!std::is_move_assignable_v<decltype(oc)>);
-                STATIC_ASSERT(!std::is_swappable_v<decltype(oc)>);
+                static_assert(!std::is_copy_assignable_v<decltype(oc)>);
+                static_assert(!std::is_move_assignable_v<decltype(oc)>);
+                static_assert(!std::is_swappable_v<decltype(oc)>);
 
                 std::variant<volatile int> ov{};
                 std::variant<volatile int> ov2{};
@@ -7907,9 +7905,9 @@ namespace msvc {
 
                 std::variant<const volatile int> ocv{};
                 ocv.emplace<0>(0);
-                STATIC_ASSERT(!std::is_copy_assignable_v<decltype(ocv)>);
-                STATIC_ASSERT(!std::is_move_assignable_v<decltype(ocv)>);
-                STATIC_ASSERT(!std::is_swappable_v<decltype(ocv)>);
+                static_assert(!std::is_copy_assignable_v<decltype(ocv)>);
+                static_assert(!std::is_move_assignable_v<decltype(ocv)>);
+                static_assert(!std::is_swappable_v<decltype(ocv)>);
             }
             {
                 std::variant<const CvAssignable> oc{};

@@ -13,8 +13,8 @@ using namespace std;
 constexpr auto iota_gen = [val = 0]() mutable { return val++; };
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::generate(borrowed<false>{}, iota_gen)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::generate(borrowed<true>{}, iota_gen)), int*>);
+static_assert(same_as<decltype(ranges::generate(borrowed<false>{}, iota_gen)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::generate(borrowed<true>{}, iota_gen)), int*>);
 
 struct instantiator {
     template <ranges::output_range<const int&> Out>
@@ -25,7 +25,7 @@ struct instantiator {
             int output[] = {13, 42, 1367};
             Out out_wrapper{output};
             auto result = generate(out_wrapper, iota_gen);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Out>>);
+            static_assert(same_as<decltype(result), iterator_t<Out>>);
             assert(result == out_wrapper.end());
             for (int i = 0; i < 3; ++i) {
                 assert(i == output[i]);
@@ -35,7 +35,7 @@ struct instantiator {
             int output[] = {13, 42, 1367};
             Out out_wrapper{output};
             auto result = generate(out_wrapper.begin(), out_wrapper.end(), iota_gen);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Out>>);
+            static_assert(same_as<decltype(result), iterator_t<Out>>);
             assert(result == out_wrapper.end());
             for (int i = 0; i < 3; ++i) {
                 assert(i == output[i]);
@@ -45,6 +45,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_out<instantiator, int>(), true));
+    static_assert((test_out<instantiator, int>(), true));
     test_out<instantiator, int>();
 }

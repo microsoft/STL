@@ -2,40 +2,34 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 parameters:
-- name: targetPlatform
-  type: string
 - name: hostArch
   type: string
 - name: targetArch
   type: string
-- name: displayName
+- name: ctestOptions
   type: string
-  default: 'Run Tests'
-  # Parameters to pass to ctest to select the test(s) to run
-- name: testSelection
-  type: string
+- name: skipTesting
+  type: boolean
 steps:
-- task: CmdLine@2
-  displayName: ${{ parameters.displayName }}
+- script: |
+    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    ctest --verbose ${{ parameters.ctestOptions }}
+  displayName: 'Build and Run Tests'
   timeoutInMinutes: 30
-  condition: succeeded()
-  inputs:
-    workingDirectory: $(buildOutputLocation)
-    script: |
-      call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
-      -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-      ctest -V ${{ parameters.testSelection }}
+  condition: and(succeeded(), not(${{ parameters.skipTesting }}))
+  workingDirectory: $(buildOutputLocation)
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
   timeoutInMinutes: 5
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), not(${{ parameters.skipTesting }}))
   inputs:
     searchFolder: $(buildOutputLocation)
     testResultsFormat: JUnit
     testResultsFiles: '**/test-results.xml'
-    testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'
+    testRunTitle: 'test-${{ parameters.targetArch }}-$(System.JobPositionInPhase)'
 - publish: $(buildOutputLocation)/test-results.xml
-  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
-  condition: failed()
+  artifact: '${{ parameters.targetArch }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
+  condition: and(failed(), not(${{ parameters.skipTesting }}))
   displayName: 'Publish XML Artifact'

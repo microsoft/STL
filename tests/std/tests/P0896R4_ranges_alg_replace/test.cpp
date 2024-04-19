@@ -12,8 +12,8 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::replace(borrowed<false>{}, 42, 5)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::replace(borrowed<true>{}, 42, 5)), int*>);
+static_assert(same_as<decltype(ranges::replace(borrowed<false>{}, 42, 5)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::replace(borrowed<true>{}, 42, 5)), int*>);
 
 struct instantiator {
     static constexpr P output[5] = {{0, 99}, {47, 1}, {2, 99}, {47, 1}, {4, 99}};
@@ -26,7 +26,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = replace(wrapped_input.begin(), wrapped_input.end(), 47, P{47, 1}, get_second);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Read>>);
+            static_assert(same_as<decltype(result), iterator_t<Read>>);
             assert(result == wrapped_input.end());
             assert(ranges::equal(output, input));
         }
@@ -35,7 +35,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = replace(wrapped_input, 47, P{47, 1}, get_second);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Read>>);
+            static_assert(same_as<decltype(result), iterator_t<Read>>);
             assert(result == wrapped_input.end());
             assert(ranges::equal(output, input));
         }
@@ -43,6 +43,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_in<instantiator, P>(), true));
+    static_assert((test_in<instantiator, P>(), true));
     test_in<instantiator, P>();
 }

@@ -48,27 +48,27 @@ struct string_instantiator {
 
         // insert into empty
         test_string(0, 0, 0, R{text}, text);
-        STATIC_ASSERT(test_string(0, 0, 0, R{text}, text));
+        static_assert(test_string(0, 0, 0, R{text}, text));
 
         // prepend
         test_string(5, 0, 0, R{text}, text);
-        STATIC_ASSERT(test_string(5, 0, 0, R{text}, text));
+        static_assert(test_string(5, 0, 0, R{text}, text));
 
         // expansion
         test_string(5, 2, 1, R{text}, text);
-        STATIC_ASSERT(test_string(5, 2, 1, R{text}, text));
+        static_assert(test_string(5, 2, 1, R{text}, text));
 
         // append
         test_string(5, 5, 0, R{text}, text);
-        STATIC_ASSERT(test_string(5, 5, 0, R{text}, text));
+        static_assert(test_string(5, 5, 0, R{text}, text));
 
         // insert into non-empty
         test_string(26, 5, 0, R{text}, text);
-        STATIC_ASSERT(test_string(26, 5, 0, R{text}, text));
+        static_assert(test_string(26, 5, 0, R{text}, text));
 
         // contraction
         test_string(26, 5, 20, R{text}, text);
-        STATIC_ASSERT(test_string(26, 5, 20, R{text}, text));
+        static_assert(test_string(26, 5, 20, R{text}, text));
     }
 };
 
@@ -126,15 +126,15 @@ void test_lvalue_forward_list() {
 int main() {
     // Validate views
     test_copyable_views();
-    STATIC_ASSERT(test_copyable_views());
+    static_assert(test_copyable_views());
     test_move_only_views();
-    STATIC_ASSERT(test_move_only_views());
+    static_assert(test_move_only_views());
 
     // Validate non-views
     test_c_array();
-    STATIC_ASSERT(test_c_array());
+    static_assert(test_c_array());
     test_lvalue_vector();
-    STATIC_ASSERT(test_lvalue_vector());
+    static_assert(test_lvalue_vector());
     test_lvalue_forward_list();
 
     test_in<string_instantiator, const char>();
