@@ -15,12 +15,12 @@ using P = pair<int, int>;
 constexpr auto incr = [](auto& y) { ++y; };
 
 // Validate that for_each_result aliases in_fun_result
-STATIC_ASSERT(same_as<ranges::for_each_result<int, double>, ranges::in_fun_result<int, double>>);
+static_assert(same_as<ranges::for_each_result<int, double>, ranges::in_fun_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::for_each(borrowed<false>{}, identity{})),
+static_assert(same_as<decltype(ranges::for_each(borrowed<false>{}, identity{})),
     ranges::for_each_result<ranges::dangling, identity>>);
-STATIC_ASSERT(
+static_assert(
     same_as<decltype(ranges::for_each(borrowed<true>{}, identity{})), ranges::for_each_result<int*, identity>>);
 
 struct instantiator {
@@ -35,7 +35,7 @@ struct instantiator {
             ReadWrite wrapped_input{input};
 
             auto result = for_each(wrapped_input.begin(), wrapped_input.end(), incr, get_first);
-            STATIC_ASSERT(
+            static_assert(
                 same_as<decltype(result), for_each_result<iterator_t<ReadWrite>, remove_const_t<decltype(incr)>>>);
             assert(result.in == wrapped_input.end());
             assert(ranges::equal(expected, input));
@@ -49,7 +49,7 @@ struct instantiator {
             ReadWrite wrapped_input{input};
 
             auto result = for_each(wrapped_input, incr, get_first);
-            STATIC_ASSERT(
+            static_assert(
                 same_as<decltype(result), for_each_result<iterator_t<ReadWrite>, remove_const_t<decltype(incr)>>>);
             assert(result.in == wrapped_input.end());
             assert(ranges::equal(expected, input));
@@ -62,6 +62,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_in<instantiator, P>(), true));
+    static_assert((test_in<instantiator, P>(), true));
     test_in<instantiator, P>();
 }

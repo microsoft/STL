@@ -26,16 +26,16 @@ struct instantiator {
         int input[3] = {0, 1, 2};
 
         { // traits
-            STATIC_ASSERT(ranges::input_range<R> || ranges::output_range<R, const int&>);
-            STATIC_ASSERT(ranges::enable_borrowed_range<ref_view<R>>);
+            static_assert(ranges::input_range<R> || ranges::output_range<R, const int&>);
+            static_assert(ranges::enable_borrowed_range<ref_view<R>>);
         }
 
         { // constructors and assignment operators
-            STATIC_ASSERT(!constructible_from<ref_view<R>, R>);
+            static_assert(!constructible_from<ref_view<R>, R>);
 
             R wrapped_input{input};
             ref_view<R> same_range{wrapped_input};
-            STATIC_ASSERT(is_nothrow_constructible_v<ref_view<R>, R&>);
+            static_assert(is_nothrow_constructible_v<ref_view<R>, R&>);
 
             auto copy_constructed = same_range;
             if constexpr (forward_range<R>) {
@@ -71,7 +71,7 @@ struct instantiator {
             same_as<R> auto& base_range = as_const(test_view).base();
             assert(addressof(base_range) == addressof(wrapped_input));
 
-            STATIC_ASSERT(noexcept(as_const(test_view).base()));
+            static_assert(noexcept(as_const(test_view).base()));
         }
 
         { // iterators
@@ -79,11 +79,11 @@ struct instantiator {
             ref_view<R> test_view{wrapped_input};
             const same_as<ranges::iterator_t<R>> auto first = as_const(test_view).begin();
             assert(first.peek() == input);
-            STATIC_ASSERT(noexcept(as_const(test_view).begin()) == noexcept(wrapped_input.begin()));
+            static_assert(noexcept(as_const(test_view).begin()) == noexcept(wrapped_input.begin()));
 
             const same_as<ranges::sentinel_t<R>> auto last = as_const(test_view).end();
             assert(last.peek() == end(input));
-            STATIC_ASSERT(noexcept(as_const(test_view).end()) == noexcept(wrapped_input.end()));
+            static_assert(noexcept(as_const(test_view).end()) == noexcept(wrapped_input.end()));
         }
 
 #if _HAS_CXX23
@@ -107,7 +107,7 @@ struct instantiator {
 #endif // _HAS_CXX23
 
         { // state
-            STATIC_ASSERT(can_size<ref_view<R>> == ranges::sized_range<R>);
+            static_assert(can_size<ref_view<R>> == ranges::sized_range<R>);
             if constexpr (ranges::sized_range<R>) {
                 R wrapped_input{input};
                 ref_view<R> test_view{wrapped_input};
@@ -115,10 +115,10 @@ struct instantiator {
                 const same_as<ranges::range_size_t<R>> auto ref_size = as_const(test_view).size();
                 assert(ref_size == size(wrapped_input));
 
-                STATIC_ASSERT(noexcept(as_const(test_view).size()) == noexcept(wrapped_input.size()));
+                static_assert(noexcept(as_const(test_view).size()) == noexcept(wrapped_input.size()));
             }
 
-            STATIC_ASSERT(can_data<ref_view<R>> == ranges::contiguous_range<R>);
+            static_assert(can_data<ref_view<R>> == ranges::contiguous_range<R>);
             if constexpr (ranges::contiguous_range<R>) {
                 R wrapped_input{input};
                 ref_view<R> test_view{wrapped_input};
@@ -126,10 +126,10 @@ struct instantiator {
                 const same_as<int*> auto ref_data = as_const(test_view).data();
                 assert(ref_data == input);
 
-                STATIC_ASSERT(noexcept(as_const(test_view).data()) == noexcept(wrapped_input.data()));
+                static_assert(noexcept(as_const(test_view).data()) == noexcept(wrapped_input.data()));
             }
 
-            STATIC_ASSERT(can_empty<ref_view<R>> == can_empty<R>);
+            static_assert(can_empty<ref_view<R>> == can_empty<R>);
             if constexpr (can_empty<R>) {
                 R wrapped_input{input};
                 ref_view<R> test_view{wrapped_input};
@@ -137,7 +137,7 @@ struct instantiator {
                 const same_as<bool> auto ref_empty = as_const(test_view).empty();
                 assert(!ref_empty);
 
-                STATIC_ASSERT(noexcept(as_const(test_view).empty()) == noexcept(ranges::empty(wrapped_input)));
+                static_assert(noexcept(as_const(test_view).empty()) == noexcept(ranges::empty(wrapped_input)));
 
                 R empty_range{span<int, 0>{}};
                 ref_view<R> empty_view{empty_range};
@@ -148,12 +148,12 @@ struct instantiator {
         { // CTAD
             span<const int, 3> spanInput{input};
             ref_view span_view{spanInput};
-            STATIC_ASSERT(same_as<decltype(span_view), ref_view<span<const int, 3>>>);
+            static_assert(same_as<decltype(span_view), ref_view<span<const int, 3>>>);
         }
     }
 };
 
 int main() {
-    STATIC_ASSERT((test_inout<instantiator, int>(), true));
+    static_assert((test_inout<instantiator, int>(), true));
     test_inout<instantiator, int>();
 }

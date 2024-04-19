@@ -14,20 +14,20 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate that set_intersection_result aliases in_in_out_result
-STATIC_ASSERT(
+static_assert(
     same_as<ranges::set_intersection_result<int, void*, double>, ranges::in_in_out_result<int, void*, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::set_intersection(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>,
+static_assert(same_as<decltype(ranges::set_intersection(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>,
                           ranges::less{}, identity{}, identity{})),
     ranges::set_intersection_result<ranges::dangling, ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::set_intersection(borrowed<false>{}, borrowed<true>{}, nullptr_to<int>,
+static_assert(same_as<decltype(ranges::set_intersection(borrowed<false>{}, borrowed<true>{}, nullptr_to<int>,
                           ranges::less{}, identity{}, identity{})),
     ranges::set_intersection_result<ranges::dangling, int*, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::set_intersection(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>,
+static_assert(same_as<decltype(ranges::set_intersection(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>,
                           ranges::less{}, identity{}, identity{})),
     ranges::set_intersection_result<int*, ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::set_intersection(
+static_assert(same_as<decltype(ranges::set_intersection(
                           borrowed<true>{}, borrowed<true>{}, nullptr_to<int>, ranges::less{}, identity{}, identity{})),
     ranges::set_intersection_result<int*, int*, int*>>);
 
@@ -141,6 +141,6 @@ constexpr void run_tests() {
 }
 
 int main() {
-    STATIC_ASSERT((run_tests(), true));
+    static_assert((run_tests(), true));
     run_tests();
 }

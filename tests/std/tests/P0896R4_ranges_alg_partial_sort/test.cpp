@@ -13,8 +13,8 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::partial_sort(borrowed<false>{}, nullptr_to<int>)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::partial_sort(borrowed<true>{}, nullptr_to<int>)), int*>);
+static_assert(same_as<decltype(ranges::partial_sort(borrowed<false>{}, nullptr_to<int>)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::partial_sort(borrowed<true>{}, nullptr_to<int>)), int*>);
 
 struct instantiator {
     static constexpr P sorted[] = {{0, 16}, {1, 12}, {2, 17}, {3, 13}, {4, 15}, {5, 11}, {6, 14}, {7, 10}};
@@ -49,6 +49,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_random<instantiator, P>(), true));
+    static_assert((test_random<instantiator, P>(), true));
     test_random<instantiator, P>();
 }

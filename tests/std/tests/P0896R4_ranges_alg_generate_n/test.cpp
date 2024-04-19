@@ -21,7 +21,7 @@ struct instantiator {
             int output[] = {13, 42, 1367};
             Out out_wrapper{output};
             auto result = generate_n(out_wrapper.begin(), ranges::distance(output), iota_gen);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Out>>);
+            static_assert(same_as<decltype(result), iterator_t<Out>>);
             assert(result == out_wrapper.end());
             for (int i = 0; i < 3; ++i) {
                 assert(i == output[i]);
@@ -33,14 +33,14 @@ struct instantiator {
         {
             Out out_wrapper{output};
             auto result = generate_n(out_wrapper.begin(), 0, iota_gen);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Out>>);
+            static_assert(same_as<decltype(result), iterator_t<Out>>);
             assert(result.peek() == output);
             assert(equal(output, expected_output));
         }
         {
             Out out_wrapper{output};
             auto result = generate_n(out_wrapper.begin(), -1, iota_gen);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Out>>);
+            static_assert(same_as<decltype(result), iterator_t<Out>>);
             assert(result.peek() == output);
             assert(equal(output, expected_output));
         }
@@ -48,6 +48,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_out<instantiator, int>(), true));
+    static_assert((test_out<instantiator, int>(), true));
     test_out<instantiator, int>();
 }

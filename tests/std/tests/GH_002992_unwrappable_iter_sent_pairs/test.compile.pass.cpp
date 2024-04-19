@@ -51,27 +51,27 @@ void test_unwrappable_range() {
     constexpr bool is_const_unwrappable = requires(const It& ci) { ci._Unwrapped(); };
 
     if constexpr (is_const_unwrappable) {
-        STATIC_ASSERT(same_as<decltype(declval<It>()._Unwrapped()), decltype(declval<const It&>()._Unwrapped())>);
+        static_assert(same_as<decltype(declval<It>()._Unwrapped()), decltype(declval<const It&>()._Unwrapped())>);
     }
 
-    STATIC_ASSERT(ranges::_Unwrappable_sentinel_for<Se, It>);
+    static_assert(ranges::_Unwrappable_sentinel_for<Se, It>);
 
-    STATIC_ASSERT(same_as<ranges::_Unwrap_iter_t<It, Se>, decltype(declval<It>()._Unwrapped())>);
+    static_assert(same_as<ranges::_Unwrap_iter_t<It, Se>, decltype(declval<It>()._Unwrapped())>);
     if constexpr (is_const_unwrappable) {
-        STATIC_ASSERT(same_as<ranges::_Unwrap_iter_t<const It&, Se>, decltype(declval<It>()._Unwrapped())>);
+        static_assert(same_as<ranges::_Unwrap_iter_t<const It&, Se>, decltype(declval<It>()._Unwrapped())>);
     }
 
-    STATIC_ASSERT(same_as<ranges::_Unwrap_sent_t<Se, It>, decltype(declval<Se>()._Unwrapped())>);
-    STATIC_ASSERT(same_as<ranges::_Unwrap_sent_t<const Se&, It>, decltype(declval<Se>()._Unwrapped())>);
+    static_assert(same_as<ranges::_Unwrap_sent_t<Se, It>, decltype(declval<Se>()._Unwrapped())>);
+    static_assert(same_as<ranges::_Unwrap_sent_t<const Se&, It>, decltype(declval<Se>()._Unwrapped())>);
 
-    STATIC_ASSERT(noexcept(ranges::_Unwrap_iter<Se>(declval<It>())) == noexcept(declval<It>()._Unwrapped()));
+    static_assert(noexcept(ranges::_Unwrap_iter<Se>(declval<It>())) == noexcept(declval<It>()._Unwrapped()));
     if constexpr (is_const_unwrappable) {
-        STATIC_ASSERT(
+        static_assert(
             noexcept(ranges::_Unwrap_iter<Se>(declval<const It&>())) == noexcept(declval<const It&>()._Unwrapped()));
     }
 
-    STATIC_ASSERT(noexcept(ranges::_Unwrap_sent<It>(declval<Se>())) == noexcept(declval<Se>()._Unwrapped()));
-    STATIC_ASSERT(
+    static_assert(noexcept(ranges::_Unwrap_sent<It>(declval<Se>())) == noexcept(declval<Se>()._Unwrapped()));
+    static_assert(
         noexcept(ranges::_Unwrap_sent<It>(declval<const Se&>())) == noexcept(declval<const Se&>()._Unwrapped()));
 
     // instantiate without calling
@@ -84,18 +84,18 @@ void test_not_unwrappable_range() {
     using It = ranges::iterator_t<Rng>;
     using Se = ranges::sentinel_t<Rng>;
 
-    STATIC_ASSERT(!ranges::_Unwrappable_sentinel_for<Se, It>);
-    STATIC_ASSERT(same_as<ranges::_Unwrap_iter_t<It, Se>, It>);
-    STATIC_ASSERT(same_as<ranges::_Unwrap_iter_t<const It&, Se>, It>);
+    static_assert(!ranges::_Unwrappable_sentinel_for<Se, It>);
+    static_assert(same_as<ranges::_Unwrap_iter_t<It, Se>, It>);
+    static_assert(same_as<ranges::_Unwrap_iter_t<const It&, Se>, It>);
 
-    STATIC_ASSERT(same_as<ranges::_Unwrap_sent_t<Se, It>, Se>);
-    STATIC_ASSERT(same_as<ranges::_Unwrap_sent_t<const Se&, It>, Se>);
+    static_assert(same_as<ranges::_Unwrap_sent_t<Se, It>, Se>);
+    static_assert(same_as<ranges::_Unwrap_sent_t<const Se&, It>, Se>);
 
-    STATIC_ASSERT(noexcept(ranges::_Unwrap_iter<Se>(declval<It>())));
-    STATIC_ASSERT(noexcept(ranges::_Unwrap_iter<Se>(declval<const It&>())));
+    static_assert(noexcept(ranges::_Unwrap_iter<Se>(declval<It>())));
+    static_assert(noexcept(ranges::_Unwrap_iter<Se>(declval<const It&>())));
 
-    STATIC_ASSERT(noexcept(ranges::_Unwrap_sent<It>(declval<Se>())));
-    STATIC_ASSERT(noexcept(ranges::_Unwrap_sent<It>(declval<const Se&>())));
+    static_assert(noexcept(ranges::_Unwrap_sent<It>(declval<Se>())));
+    static_assert(noexcept(ranges::_Unwrap_sent<It>(declval<const Se&>())));
 
     // instantiate without calling
     void (*p)(Rng&) = test_algorithms<Rng>;

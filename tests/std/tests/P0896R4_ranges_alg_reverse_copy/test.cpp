@@ -15,12 +15,12 @@
 using namespace std;
 
 // Validate that reverse_copy_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::reverse_copy_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::reverse_copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::reverse_copy(borrowed<false>{}, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::reverse_copy(borrowed<false>{}, nullptr_to<int>)),
     ranges::reverse_copy_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::reverse_copy(borrowed<true>{}, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::reverse_copy(borrowed<true>{}, nullptr_to<int>)),
     ranges::reverse_copy_result<int*, int*>>);
 
 struct nontrivial_int {
@@ -151,19 +151,19 @@ struct test_vector {
 // These tests take up a lot of memory,
 // so we split them up into multiple functions to make sure the compiler doesn't run out of heap.
 void test1() {
-    STATIC_ASSERT((test_bidi_write<instantiator, const nontrivial_int, nontrivial_int>(), true));
+    static_assert((test_bidi_write<instantiator, const nontrivial_int, nontrivial_int>(), true));
     test_bidi_write<instantiator, const nontrivial_int, nontrivial_int>();
 
-    STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<1>, bytes<1>>(), true));
-    STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<2>, bytes<2>>(), true));
+    static_assert((test_contiguous_write<test_vector, const bytes<1>, bytes<1>>(), true));
+    static_assert((test_contiguous_write<test_vector, const bytes<2>, bytes<2>>(), true));
     test_contiguous_write<test_vector, const bytes<1>, bytes<1>>();
     test_contiguous_write<test_vector, const bytes<2>, bytes<2>>();
 }
 
 void test2() {
-    STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<4>, bytes<4>>(), true));
-    STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<8>, bytes<8>>(), true));
-    STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<3>, bytes<3>>(), true));
+    static_assert((test_contiguous_write<test_vector, const bytes<4>, bytes<4>>(), true));
+    static_assert((test_contiguous_write<test_vector, const bytes<8>, bytes<8>>(), true));
+    static_assert((test_contiguous_write<test_vector, const bytes<3>, bytes<3>>(), true));
     test_contiguous_write<test_vector, const bytes<4>, bytes<4>>();
     test_contiguous_write<test_vector, const bytes<8>, bytes<8>>();
     test_contiguous_write<test_vector, const bytes<3>, bytes<3>>();

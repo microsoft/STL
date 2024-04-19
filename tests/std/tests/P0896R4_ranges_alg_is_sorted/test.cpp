@@ -15,8 +15,8 @@
 using namespace std;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::is_sorted_until(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::is_sorted_until(borrowed<true>{})), int*>);
+static_assert(same_as<decltype(ranges::is_sorted_until(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::is_sorted_until(borrowed<true>{})), int*>);
 
 using P = pair<int, int>;
 
@@ -70,9 +70,9 @@ struct iterator_overloads {
 };
 
 int main() {
-    STATIC_ASSERT((test_fwd<range_overloads, const P>(), true));
+    static_assert((test_fwd<range_overloads, const P>(), true));
     test_fwd<range_overloads, const P>();
 
-    STATIC_ASSERT((test_fwd<iterator_overloads, const P>(), true));
+    static_assert((test_fwd<iterator_overloads, const P>(), true));
     test_fwd<iterator_overloads, const P>();
 }

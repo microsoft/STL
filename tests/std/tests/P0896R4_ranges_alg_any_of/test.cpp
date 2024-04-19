@@ -27,7 +27,7 @@ struct instantiator {
             Read wrapped_input4{input};
 
             auto result = any_of(wrapped_input1.begin(), wrapped_input1.end(), is_even, get_first);
-            STATIC_ASSERT(same_as<decltype(result), bool>);
+            static_assert(same_as<decltype(result), bool>);
             assert(result);
             assert(!any_of(wrapped_input2.begin(), wrapped_input2.end(), is_even, get_second));
             assert(any_of(wrapped_input3.begin(), wrapped_input3.end(), is_odd, get_first));
@@ -40,7 +40,7 @@ struct instantiator {
             Read wrapped_input4{input};
 
             auto result = any_of(wrapped_input1, is_even, get_first);
-            STATIC_ASSERT(same_as<decltype(result), bool>);
+            static_assert(same_as<decltype(result), bool>);
             assert(result);
             assert(!any_of(wrapped_input2, is_even, get_second));
             assert(any_of(wrapped_input3, is_odd, get_first));
@@ -50,6 +50,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_in<instantiator, const P>(), true));
+    static_assert((test_in<instantiator, const P>(), true));
     test_in<instantiator, const P>();
 }

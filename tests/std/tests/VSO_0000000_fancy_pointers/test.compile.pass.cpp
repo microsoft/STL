@@ -24,9 +24,6 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-template <typename T>
-struct always_false : std::false_type {};
-
 template <typename Val>
 class fancy_pointer {
 public:
@@ -84,7 +81,7 @@ public:
     }
 
     fancy_pointer operator++(int) {
-        static_assert(always_false<Val>::value, "avoid postincrement");
+        static_assert(false, "avoid postincrement");
         fancy_pointer result = *this;
         ++rep;
         return result;
@@ -96,7 +93,7 @@ public:
     }
 
     fancy_pointer operator--(int) {
-        static_assert(always_false<Val>::value, "avoid postdecrement");
+        static_assert(false, "avoid postdecrement");
         fancy_pointer result = *this;
         --rep;
         return result;
@@ -334,7 +331,7 @@ struct fancy_allocator {
     template <typename C, typename... Args>
     void construct(const fancy_pointer<C>&, Args&&...) {
         // note: static_assert rather than =delete because we want allocator_traits to think we provide this
-        static_assert(always_false<C>::value, "construct takes unfancy pointer");
+        static_assert(false, "construct takes unfancy pointer");
     }
 
     template <typename C>
@@ -344,7 +341,7 @@ struct fancy_allocator {
 
     template <typename C>
     void destroy(const fancy_pointer<C>&) {
-        static_assert(always_false<C>::value, "destroy takes unfancy pointer");
+        static_assert(false, "destroy takes unfancy pointer");
     }
 
     // default select_on_container_copy_construction

@@ -28,7 +28,7 @@ struct vector_instantiator {
     template <ranges::input_range R>
     static void call() {
         test_vector(R{some_ints}, some_ints);
-        STATIC_ASSERT(test_vector(R{some_ints}, some_ints));
+        static_assert(test_vector(R{some_ints}, some_ints));
     }
 };
 
@@ -52,9 +52,9 @@ struct vector_boo_instantiator {
     template <ranges::input_range R>
     static void call() {
         test_vector_bool(R{other_ints}, other_ints);
-        STATIC_ASSERT(test_vector_bool(R{other_ints}, other_ints));
+        static_assert(test_vector_bool(R{other_ints}, other_ints));
         test_vector_bool(R{first64_ints}, first64_ints);
-        STATIC_ASSERT(test_vector_bool(R{first64_ints}, first64_ints));
+        static_assert(test_vector_bool(R{first64_ints}, first64_ints));
     }
 };
 
@@ -169,17 +169,17 @@ void test_LWG_3743() { // COMPILE-ONLY
 int main() {
     // Validate views
     test_copyable_views();
-    STATIC_ASSERT(test_copyable_views());
+    static_assert(test_copyable_views());
 
     test_move_only_views();
-    STATIC_ASSERT(test_move_only_views());
+    static_assert(test_move_only_views());
 
     // Validate non-views
     test_c_array();
-    STATIC_ASSERT(test_c_array());
+    static_assert(test_c_array());
 
     test_lvalue_vector();
-    STATIC_ASSERT(test_lvalue_vector());
+    static_assert(test_lvalue_vector());
 
     test_lvalue_forward_list();
 
