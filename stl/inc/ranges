@@ -10297,17 +10297,8 @@ namespace ranges {
         !input_range<_Container> || convertible_to<range_reference_t<_Rng>, range_value_t<_Container>>;
 
     template <class _Rng, class _Container, class... _Types>
-    concept _Converts_direct_constructible =
-        _Ref_converts<_Rng, _Container> && constructible_from<_Container, _Rng, _Types...>;
-
-    template <class _Rng, class _Container, class... _Types>
-    concept _Converts_tag_constructible = _Ref_converts<_Rng, _Container>
-                                       // per LWG issue unnumbered as of 2022-08-08
-                                       && constructible_from<_Container, const from_range_t&, _Rng, _Types...>;
-
-    template <class _Rng, class _Container, class... _Types>
-    concept _Converts_and_common_constructible =
-        _Ref_converts<_Rng, _Container> && common_range<_Rng> //
+    concept _Common_constructible =
+        common_range<_Rng> //
         && requires { typename iterator_traits<iterator_t<_Rng>>::iterator_category; }
         && derived_from<typename iterator_traits<iterator_t<_Rng>>::iterator_category, input_iterator_tag>
         && constructible_from<_Container, iterator_t<_Rng>, iterator_t<_Rng>, _Types...>;
@@ -10325,12 +10316,11 @@ namespace ranges {
     concept _Can_insert_end = requires(_Container& _Cont) { _Cont.insert(_Cont.end(), _STD declval<_Reference>()); };
 
     template <class _Rng, class _Container, class... _Types>
-    concept _Converts_constructible_appendable =
-        _Ref_converts<_Rng, _Container> && constructible_from<_Container, _Types...>
-        && (_Can_emplace_back<_Container, range_reference_t<_Rng>>
-            || _Can_push_back<_Container, range_reference_t<_Rng>>
-            || _Can_emplace_end<_Container, range_reference_t<_Rng>>
-            || _Can_insert_end<_Container, range_reference_t<_Rng>>);
+    concept _Constructible_appendable = constructible_from<_Container, _Types...>
+                                     && (_Can_emplace_back<_Container, range_reference_t<_Rng>>
+                                         || _Can_push_back<_Container, range_reference_t<_Rng>>
+                                         || _Can_emplace_end<_Container, range_reference_t<_Rng>>
+                                         || _Can_insert_end<_Container, range_reference_t<_Rng>>);
 
     _EXPORT_STD template <class _Container, input_range _Rng, class... _Types>
         requires (!view<_Container>)
@@ -10338,38 +10328,42 @@ namespace ranges {
         static_assert(!is_const_v<_Container>, "C must not be const. ([range.utility.conv.to])");
         static_assert(!is_volatile_v<_Container>, "C must not be volatile. ([range.utility.conv.to])");
         static_assert(is_class_v<_Container>, "C must be a class type. ([range.utility.conv.to])");
-        if constexpr (_Converts_direct_constructible<_Rng, _Container, _Types...>) {
-            return _Container(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
-        } else if constexpr (_Converts_tag_constructible<_Rng, _Container, _Types...>) {
-            return _Container(from_range, _STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
-        } else if constexpr (_Converts_and_common_constructible<_Rng, _Container, _Types...>) {
-            return _Container(_RANGES begin(_Range), _RANGES end(_Range), _STD forward<_Types>(_Args)...);
-        } else if constexpr (_Converts_constructible_appendable<_Rng, _Container, _Types...>) {
-            _Container _Cont(_STD forward<_Types>(_Args)...);
-            if constexpr (_Sized_and_reservable<_Rng, _Container>) {
-                _Cont.reserve(static_cast<range_size_t<_Container>>(_RANGES size(_Range)));
-            }
-            for (auto&& _Elem : _Range) {
-                using _ElemTy = decltype(_Elem);
-                if constexpr (_Can_emplace_back<_Container, _ElemTy>) {
-                    _Cont.emplace_back(_STD forward<_ElemTy>(_Elem));
-                } else if constexpr (_Can_push_back<_Container, _ElemTy>) {
-                    _Cont.push_back(_STD forward<_ElemTy>(_Elem));
-                } else if constexpr (_Can_emplace_end<_Container, _ElemTy>) {
-                    _Cont.emplace(_Cont.end(), _STD forward<_ElemTy>(_Elem));
-                } else {
-                    _STL_INTERNAL_STATIC_ASSERT(_Can_insert_end<_Container, _ElemTy>);
-                    _Cont.insert(_Cont.end(), _STD forward<_ElemTy>(_Elem));
+        if constexpr (_Ref_converts<_Rng, _Container>) {
+            if constexpr (constructible_from<_Container, _Rng, _Types...>) {
+                return _Container(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
+            } else if constexpr (constructible_from<_Container, const from_range_t&, _Rng, _Types...>) { // per LWG-3845
+                return _Container(from_range, _STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
+            } else if constexpr (_Common_constructible<_Rng, _Container, _Types...>) {
+                return _Container(_RANGES begin(_Range), _RANGES end(_Range), _STD forward<_Types>(_Args)...);
+            } else if constexpr (_Constructible_appendable<_Rng, _Container, _Types...>) {
+                _Container _Cont(_STD forward<_Types>(_Args)...);
+                if constexpr (_Sized_and_reservable<_Rng, _Container>) {
+                    _Cont.reserve(static_cast<range_size_t<_Container>>(_RANGES size(_Range)));
                 }
+                for (auto&& _Elem : _Range) {
+                    using _ElemTy = decltype(_Elem);
+                    if constexpr (_Can_emplace_back<_Container, _ElemTy>) {
+                        _Cont.emplace_back(_STD forward<_ElemTy>(_Elem));
+                    } else if constexpr (_Can_push_back<_Container, _ElemTy>) {
+                        _Cont.push_back(_STD forward<_ElemTy>(_Elem));
+                    } else if constexpr (_Can_emplace_end<_Container, _ElemTy>) {
+                        _Cont.emplace(_Cont.end(), _STD forward<_ElemTy>(_Elem));
+                    } else {
+                        _STL_INTERNAL_STATIC_ASSERT(_Can_insert_end<_Container, _ElemTy>);
+                        _Cont.insert(_Cont.end(), _STD forward<_ElemTy>(_Elem));
+                    }
+                }
+                return _Cont;
+            } else {
+                static_assert(false, "the program is ill-formed per N4981 [range.utility.conv.to]/2.1.5");
             }
-            return _Cont;
-        } else if constexpr (!_Ref_converts<_Rng, _Container> && input_range<range_reference_t<_Rng>>) {
+        } else if constexpr (input_range<range_reference_t<_Rng>>) {
             const auto _Xform = [](auto&& _Elem) _STATIC_CALL_OPERATOR {
                 return _RANGES to<range_value_t<_Container>>(_STD forward<decltype(_Elem)>(_Elem));
             };
             return _RANGES to<_Container>(views::transform(ref_view{_Range}, _Xform), _STD forward<_Types>(_Args)...);
         } else {
-            static_assert(false, "the program is ill-formed per N4950 [range.utility.conv.to]/2.3");
+            static_assert(false, "the program is ill-formed per N4981 [range.utility.conv.to]/2.3");
         }
     }
 
