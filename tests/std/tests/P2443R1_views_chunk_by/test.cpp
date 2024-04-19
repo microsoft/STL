@@ -30,62 +30,62 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     using V = views::all_t<Rng>;
     using R = chunk_by_view<V, Pred>;
-    STATIC_ASSERT(ranges::view<R>);
-    STATIC_ASSERT(ranges::forward_range<R>);
-    STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
-    STATIC_ASSERT(!ranges::random_access_range<R>);
+    static_assert(ranges::view<R>);
+    static_assert(ranges::forward_range<R>);
+    static_assert(bidirectional_range<R> == bidirectional_range<Rng>);
+    static_assert(!ranges::random_access_range<R>);
 
     // Validate range adaptor object and range adaptor closure
     constexpr auto closure = views::chunk_by(pred);
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewChunkBy<Rng&> == (!is_view || copy_constructible<V>) );
+    static_assert(CanViewChunkBy<Rng&> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewChunkBy<Rng&>) {
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::chunk_by(rng, pred)), R>);
-        STATIC_ASSERT(noexcept(views::chunk_by(rng, pred)) == is_noexcept);
+        static_assert(same_as<decltype(views::chunk_by(rng, pred)), R>);
+        static_assert(noexcept(views::chunk_by(rng, pred)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(rng | closure), R>);
-        STATIC_ASSERT(noexcept(rng | closure) == is_noexcept);
+        static_assert(same_as<decltype(rng | closure), R>);
+        static_assert(noexcept(rng | closure) == is_noexcept);
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(CanViewChunkBy<const remove_reference_t<Rng>&> == (!is_view || copy_constructible<V>) );
+    static_assert(CanViewChunkBy<const remove_reference_t<Rng>&> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewChunkBy<const remove_reference_t<Rng>&>) {
         using RC                   = chunk_by_view<views::all_t<const remove_reference_t<Rng>&>, Pred>;
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::chunk_by(as_const(rng), pred)), RC>);
-        STATIC_ASSERT(noexcept(views::chunk_by(as_const(rng), pred)) == is_noexcept);
+        static_assert(same_as<decltype(views::chunk_by(as_const(rng), pred)), RC>);
+        static_assert(noexcept(views::chunk_by(as_const(rng), pred)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(as_const(rng) | closure), RC>);
-        STATIC_ASSERT(noexcept(as_const(rng) | closure) == is_noexcept);
+        static_assert(same_as<decltype(as_const(rng) | closure), RC>);
+        static_assert(noexcept(as_const(rng) | closure) == is_noexcept);
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(CanViewChunkBy<remove_reference_t<Rng>> == (is_view || movable<remove_reference_t<Rng>>) );
+    static_assert(CanViewChunkBy<remove_reference_t<Rng>> == (is_view || movable<remove_reference_t<Rng>>) );
     if constexpr (CanViewChunkBy<remove_reference_t<Rng>>) {
         using RS                   = chunk_by_view<views::all_t<remove_reference_t<Rng>>, Pred>;
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::chunk_by(move(rng), pred)), RS>);
-        STATIC_ASSERT(noexcept(views::chunk_by(move(rng), pred)) == is_noexcept);
+        static_assert(same_as<decltype(views::chunk_by(move(rng), pred)), RS>);
+        static_assert(noexcept(views::chunk_by(move(rng), pred)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(rng) | closure), RS>);
-        STATIC_ASSERT(noexcept(move(rng) | closure) == is_noexcept);
+        static_assert(same_as<decltype(move(rng) | closure), RS>);
+        static_assert(noexcept(move(rng) | closure) == is_noexcept);
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(CanViewChunkBy<const remove_reference_t<Rng>> == (is_view && copy_constructible<V>) );
+    static_assert(CanViewChunkBy<const remove_reference_t<Rng>> == (is_view && copy_constructible<V>) );
     if constexpr (CanViewChunkBy<const remove_reference_t<Rng>>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::chunk_by(move(as_const(rng)), pred)), R>);
-        STATIC_ASSERT(noexcept(views::chunk_by(move(as_const(rng)), pred)) == is_noexcept);
+        static_assert(same_as<decltype(views::chunk_by(move(as_const(rng)), pred)), R>);
+        static_assert(noexcept(views::chunk_by(move(as_const(rng)), pred)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | closure), R>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | closure) == is_noexcept);
+        static_assert(same_as<decltype(move(as_const(rng)) | closure), R>);
+        static_assert(noexcept(move(as_const(rng)) | closure) == is_noexcept);
     }
 
     // Validate deduction guide
@@ -94,20 +94,20 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     { // Validate chunk_by_view::pred
         [[maybe_unused]] same_as<Pred> auto pred_copy = as_const(r).pred();
-        STATIC_ASSERT(noexcept(as_const(r).pred()));
+        static_assert(noexcept(as_const(r).pred()));
     }
 
     // Validate view_interface::empty and operator bool
     const bool is_empty = ranges::empty(expected);
-    STATIC_ASSERT(CanMemberEmpty<R>);
-    STATIC_ASSERT(CanBool<R>);
+    static_assert(CanMemberEmpty<R>);
+    static_assert(CanBool<R>);
     assert(r.empty() == is_empty);
     assert(static_cast<bool>(r) == !is_empty);
-    STATIC_ASSERT(!CanMemberEmpty<const R>);
-    STATIC_ASSERT(!CanBool<const R>);
+    static_assert(!CanMemberEmpty<const R>);
+    static_assert(!CanBool<const R>);
 
     // Validate chunk_by_view::begin
-    STATIC_ASSERT(CanMemberBegin<R>);
+    static_assert(CanMemberBegin<R>);
     const same_as<iterator_t<R>> auto i = r.begin();
     if (!is_empty) {
         assert(ranges::equal(*i, *begin(expected)));
@@ -121,21 +121,21 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(!CanBegin<const R>);
+    static_assert(!CanBegin<const R>);
 
     // Validate chunk_by_view::end
-    STATIC_ASSERT(CanMemberEnd<R>);
+    static_assert(CanMemberEnd<R>);
     same_as<sentinel_t<R>> auto s = r.end();
     assert((r.begin() == s) == is_empty);
     if constexpr (common_range<V>) {
-        STATIC_ASSERT(same_as<sentinel_t<R>, iterator_t<R>>);
+        static_assert(same_as<sentinel_t<R>, iterator_t<R>>);
         if constexpr (bidirectional_range<V>) {
             if (!is_empty) {
                 assert(ranges::equal(*prev(s), *prev(end(expected))));
             }
         }
     } else {
-        STATIC_ASSERT(same_as<sentinel_t<R>, default_sentinel_t>);
+        static_assert(same_as<sentinel_t<R>, default_sentinel_t>);
     }
 
     if constexpr (bidirectional_range<V> && common_range<V> && copy_constructible<V>) {
@@ -145,39 +145,39 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(!CanEnd<const R>);
+    static_assert(!CanEnd<const R>);
 
     // Validate view_interface::data
-    STATIC_ASSERT(!CanData<R>);
-    STATIC_ASSERT(!CanData<const R>);
+    static_assert(!CanData<R>);
+    static_assert(!CanData<const R>);
 
     // Validate view_interface::size
-    STATIC_ASSERT(!CanSize<R>);
-    STATIC_ASSERT(!CanSize<const R>);
+    static_assert(!CanSize<R>);
+    static_assert(!CanSize<const R>);
 
     // Validate view_interface::operator[]
-    STATIC_ASSERT(!CanIndex<R>);
-    STATIC_ASSERT(!CanIndex<const R>);
+    static_assert(!CanIndex<R>);
+    static_assert(!CanIndex<const R>);
 
     if (!is_empty) {
         // Validate view_interface::front and back
-        STATIC_ASSERT(CanMemberFront<R>);
+        static_assert(CanMemberFront<R>);
         assert(ranges::equal(r.front(), *begin(expected)));
 
-        STATIC_ASSERT(CanMemberBack<R> == (bidirectional_range<V> && common_range<V>) );
+        static_assert(CanMemberBack<R> == (bidirectional_range<V> && common_range<V>) );
         if constexpr (CanMemberBack<R>) {
             assert(ranges::equal(r.back(), *prev(end(expected))));
         }
 
-        STATIC_ASSERT(!CanMemberFront<const R>);
-        STATIC_ASSERT(!CanMemberBack<const R>);
+        static_assert(!CanMemberFront<const R>);
+        static_assert(!CanMemberBack<const R>);
     }
 
     // Validate chunk_by_view::base() const&
-    STATIC_ASSERT(CanMemberBase<const R&> == copy_constructible<V>);
+    static_assert(CanMemberBase<const R&> == copy_constructible<V>);
     if constexpr (copy_constructible<V>) {
         same_as<V> auto b1 = as_const(r).base();
-        STATIC_ASSERT(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>);
+        static_assert(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>);
         if (!is_empty) {
             assert(*b1.begin() == *begin(*begin(expected)));
         }
@@ -185,7 +185,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Validate chunk_by_view::base() && (NB: do this last since it leaves r moved-from)
     same_as<V> auto b2 = move(r).base();
-    STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
+    static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
     if (!is_empty) {
         assert(*b2.begin() == *begin(*begin(expected)));
     }
@@ -256,7 +256,7 @@ int main() {
     // Validate views
     { // ... copyable
         constexpr span<const char> s{some_chars};
-        STATIC_ASSERT(test_one(s, expected_output));
+        static_assert(test_one(s, expected_output));
         test_one(s, expected_output);
     }
     { // ... move-only
@@ -270,7 +270,7 @@ int main() {
 
     // Validate non-views
     {
-        STATIC_ASSERT(test_one(some_chars, expected_output));
+        static_assert(test_one(some_chars, expected_output));
         test_one(some_chars, expected_output);
     }
     {
@@ -289,21 +289,21 @@ int main() {
 
         auto r0  = some_chars | cbr_pipe;
         using R0 = decltype(r0);
-        STATIC_ASSERT(ranges::bidirectional_range<R0> && ranges::view<R0>);
+        static_assert(ranges::bidirectional_range<R0> && ranges::view<R0>);
         assert(ranges::equal(r0, views::reverse(expected_output), equal_ranges));
 
         auto r1  = some_chars | rcb_pipe;
         using R1 = decltype(r1);
-        STATIC_ASSERT(ranges::bidirectional_range<R1> && ranges::view<R1>);
+        static_assert(ranges::bidirectional_range<R1> && ranges::view<R1>);
         assert(ranges::equal(r1, expected_output_reverse, equal_ranges));
     }
 
     { // empty range
-        STATIC_ASSERT(test_one(span<const int, 0>{}, span<string_view, 0>{}));
+        static_assert(test_one(span<const int, 0>{}, span<string_view, 0>{}));
         test_one(span<const int, 0>{}, span<string_view, 0>{});
     }
 
-    STATIC_ASSERT((instantiation_test(), true));
+    static_assert((instantiation_test(), true));
     instantiation_test();
 
     { // Validate that predicates are moved into the range adaptor closure, and into the view object from an rvalue

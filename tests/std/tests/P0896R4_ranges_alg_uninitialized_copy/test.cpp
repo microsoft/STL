@@ -26,16 +26,16 @@ void unused_function() {
 using namespace std;
 
 // Validate that uninitialized_copy_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::uninitialized_copy_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::uninitialized_copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_copy(borrowed<false>{}, borrowed<false>{})),
+static_assert(same_as<decltype(ranges::uninitialized_copy(borrowed<false>{}, borrowed<false>{})),
     ranges::uninitialized_copy_result<ranges::dangling, ranges::dangling>>);
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_copy(borrowed<false>{}, borrowed<true>{})),
+static_assert(same_as<decltype(ranges::uninitialized_copy(borrowed<false>{}, borrowed<true>{})),
     ranges::uninitialized_copy_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_copy(borrowed<true>{}, borrowed<false>{})),
+static_assert(same_as<decltype(ranges::uninitialized_copy(borrowed<true>{}, borrowed<false>{})),
     ranges::uninitialized_copy_result<int*, ranges::dangling>>);
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_copy(borrowed<true>{}, borrowed<true>{})),
+static_assert(same_as<decltype(ranges::uninitialized_copy(borrowed<true>{}, borrowed<true>{})),
     ranges::uninitialized_copy_result<int*, int*>>);
 
 struct int_wrapper {

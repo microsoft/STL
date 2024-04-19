@@ -23,19 +23,19 @@ using namespace std;
 #define ASSERT(...) assert((__VA_ARGS__))
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::min_element(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::min_element(borrowed<true>{})), int*>);
+static_assert(same_as<decltype(ranges::min_element(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::min_element(borrowed<true>{})), int*>);
 
-STATIC_ASSERT(same_as<decltype(ranges::max_element(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::max_element(borrowed<true>{})), int*>);
+static_assert(same_as<decltype(ranges::max_element(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::max_element(borrowed<true>{})), int*>);
 
-STATIC_ASSERT(
+static_assert(
     same_as<decltype(ranges::minmax_element(borrowed<false>{})), ranges::minmax_element_result<ranges::dangling>>);
-STATIC_ASSERT(same_as<decltype(ranges::minmax_element(borrowed<true>{})), ranges::minmax_element_result<int*>>);
+static_assert(same_as<decltype(ranges::minmax_element(borrowed<true>{})), ranges::minmax_element_result<int*>>);
 
 // Validate that minmax_result and minmax_element_result alias min_max_result
-STATIC_ASSERT(same_as<ranges::minmax_result<int>, ranges::min_max_result<int>>);
-STATIC_ASSERT(same_as<ranges::minmax_element_result<int>, ranges::min_max_result<int>>);
+static_assert(same_as<ranges::minmax_result<int>, ranges::min_max_result<int>>);
+static_assert(same_as<ranges::minmax_element_result<int>, ranges::min_max_result<int>>);
 
 using P = pair<int, int>;
 
@@ -55,13 +55,13 @@ struct mm_element_empty {
 
         {
             auto result = ranges::minmax_element(range, ranges::less{}, get_first);
-            STATIC_ASSERT(same_as<decltype(result), ranges::minmax_element_result<ranges::iterator_t<Fwd>>>);
+            static_assert(same_as<decltype(result), ranges::minmax_element_result<ranges::iterator_t<Fwd>>>);
             ASSERT(result.min == ranges::end(range));
             ASSERT(result.max == ranges::end(range));
         }
         {
             auto result = ranges::minmax_element(ranges::begin(range), ranges::end(range), ranges::less{}, get_first);
-            STATIC_ASSERT(same_as<decltype(result), ranges::minmax_element_result<ranges::iterator_t<Fwd>>>);
+            static_assert(same_as<decltype(result), ranges::minmax_element_result<ranges::iterator_t<Fwd>>>);
             ASSERT(result.min == ranges::end(range));
             ASSERT(result.max == ranges::end(range));
         }
@@ -171,7 +171,7 @@ struct mm {
 
             {
                 auto result = ranges::minmax(In{elements}, ranges::less{}, get_first);
-                STATIC_ASSERT(same_as<decltype(result), ranges::minmax_result<P>>);
+                static_assert(same_as<decltype(result), ranges::minmax_result<P>>);
                 ASSERT(result.min == P{0, 42});
                 ASSERT(result.max == (i == 7 ? P{5, 6} : P{5, 7}));
             }
@@ -186,7 +186,7 @@ struct mm {
 
                 {
                     auto result = ranges::minmax(In{elements}, ranges::less{}, get_first);
-                    STATIC_ASSERT(same_as<decltype(result), ranges::minmax_result<P>>);
+                    static_assert(same_as<decltype(result), ranges::minmax_result<P>>);
                     ASSERT(result.min == P{0, 42});
                     ASSERT(result.max == (j == 7 ? (i == 6 ? P{5, 5} : P{5, 6}) : P{5, 7}));
                 }
@@ -292,7 +292,7 @@ constexpr void init_list_constexpr_tests() {
         == P{5, 0});
     auto result = ranges::minmax(
         {P{5, 0}, P{5, 1}, P{5, 2}, P{5, 3}, P{5, 4}, P{5, 5}, P{5, 6}, P{5, 7}}, ranges::less{}, get_first);
-    STATIC_ASSERT(same_as<decltype(result), ranges::minmax_result<P>>);
+    static_assert(same_as<decltype(result), ranges::minmax_result<P>>);
     ASSERT(result.min == P{5, 0});
     ASSERT(result.max == P{5, 7});
 }
@@ -422,19 +422,19 @@ void test_gh_2900() {
 }
 
 int main() {
-    STATIC_ASSERT((nonrange_tests(), true));
+    static_assert((nonrange_tests(), true));
     nonrange_tests();
 
-    STATIC_ASSERT((init_list_constexpr_tests(), true));
+    static_assert((init_list_constexpr_tests(), true));
     init_list_constexpr_tests();
 
-    STATIC_ASSERT((test_fwd<mm_element_empty, const P>(), true));
+    static_assert((test_fwd<mm_element_empty, const P>(), true));
     test_fwd<mm_element_empty, const P>();
 
-    STATIC_ASSERT((mm_element_constexpr_tests(), true));
+    static_assert((mm_element_constexpr_tests(), true));
     test_fwd<mm_element, const P>();
 
-    STATIC_ASSERT((mm_constexpr_tests(), true));
+    static_assert((mm_constexpr_tests(), true));
     test_in<mm, const P>();
 
     test_gh_1893();

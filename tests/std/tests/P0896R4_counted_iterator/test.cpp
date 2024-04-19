@@ -50,7 +50,7 @@ struct instantiator {
         int input[5] = {1, 2, 3, 4, 5};
         // [counted.iter.const]
         {
-            STATIC_ASSERT(default_initializable<counted_iterator<Iter>> == default_initializable<Iter>);
+            static_assert(default_initializable<counted_iterator<Iter>> == default_initializable<Iter>);
             if constexpr (default_initializable<Iter>) {
                 [[maybe_unused]] counted_iterator<Iter> defaultConstructed{};
             }
@@ -202,8 +202,8 @@ struct instantiator {
                 const same_as<iter_difference_t<Iter>> auto diff1 = counted_iterator<Iter>{} - counted_iterator<Iter>{};
                 assert(diff1 == 0);
             }
-            STATIC_ASSERT(CountedCompare<Iter, ConstIter> == common_with<Iter, ConstIter>);
-            STATIC_ASSERT(CountedCompare<ConstIter, Iter> == common_with<Iter, ConstIter>);
+            static_assert(CountedCompare<Iter, ConstIter> == common_with<Iter, ConstIter>);
+            static_assert(CountedCompare<ConstIter, Iter> == common_with<Iter, ConstIter>);
 
             if constexpr (common_with<Iter, ConstIter>) { // cross-type difference
                 counted_iterator<Iter> iter1{Iter{input + 1}, 2};
@@ -341,7 +341,7 @@ void test_P2259() {
 }
 
 int main() {
-    STATIC_ASSERT(with_writable_iterators<instantiator, int>::call());
+    static_assert(with_writable_iterators<instantiator, int>::call());
     with_writable_iterators<instantiator, int>::call();
 
     { // Validate unwrapping

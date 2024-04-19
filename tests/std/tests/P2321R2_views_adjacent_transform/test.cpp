@@ -35,9 +35,9 @@ struct repeated_tuple_impl<T, index_sequence<Indices...>> {
 template <class T, size_t N>
 using repeated_tuple = repeated_tuple_impl<T, make_index_sequence<N>>::type;
 
-STATIC_ASSERT(same_as<repeated_tuple<int, 0>, tuple<>>);
-STATIC_ASSERT(same_as<repeated_tuple<int, 3>, tuple<int, int, int>>);
-STATIC_ASSERT(same_as<repeated_tuple<int, 5>, tuple<int, int, int, int, int>>);
+static_assert(same_as<repeated_tuple<int, 0>, tuple<>>);
+static_assert(same_as<repeated_tuple<int, 3>, tuple<int, int, int>>);
+static_assert(same_as<repeated_tuple<int, 5>, tuple<int, int, int, int, int>>);
 
 template <class Fn, class Ty, class Indices>
 struct regular_invocable_with_repeated_type_impl;
@@ -85,125 +85,125 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     using V = views::all_t<Rng>;
     using R = adjacent_transform_view<V, decay_t<Fn>, N>;
 
-    STATIC_ASSERT(ranges::view<R>);
-    STATIC_ASSERT(ranges::input_range<R>);
-    STATIC_ASSERT(forward_range<R>);
-    STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
-    STATIC_ASSERT(random_access_range<R> == random_access_range<Rng>);
-    STATIC_ASSERT(!ranges::contiguous_range<R>);
+    static_assert(ranges::view<R>);
+    static_assert(ranges::input_range<R>);
+    static_assert(forward_range<R>);
+    static_assert(bidirectional_range<R> == bidirectional_range<Rng>);
+    static_assert(random_access_range<R> == random_access_range<Rng>);
+    static_assert(!ranges::contiguous_range<R>);
 
     // Check default-initializability
-    STATIC_ASSERT(default_initializable<R> == default_initializable<V>);
+    static_assert(default_initializable<R> == default_initializable<V>);
 
     // Check borrowed_range
-    STATIC_ASSERT(!ranges::borrowed_range<R>);
+    static_assert(!ranges::borrowed_range<R>);
 
     // Check range closure object
     const auto closure = views::adjacent_transform<N>(func);
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewAdjacentTransform<Rng&, Fn, N> == (!is_view || copy_constructible<V>) );
+    static_assert(CanViewAdjacentTransform<Rng&, Fn, N> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewAdjacentTransform<Rng&, Fn, N>) {
         constexpr bool is_noexcept =
             !is_view || (is_nothrow_copy_constructible_v<V> && is_nothrow_copy_constructible_v<Fn>);
 
-        STATIC_ASSERT(same_as<decltype(views::adjacent_transform<N>(rng, func)), R>);
-        STATIC_ASSERT(noexcept(views::adjacent_transform<N>(rng, func)) == is_noexcept);
+        static_assert(same_as<decltype(views::adjacent_transform<N>(rng, func)), R>);
+        static_assert(noexcept(views::adjacent_transform<N>(rng, func)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(closure(rng)), R>);
-        STATIC_ASSERT(noexcept(closure(rng)) == is_noexcept);
+        static_assert(same_as<decltype(closure(rng)), R>);
+        static_assert(noexcept(closure(rng)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(rng | closure), R>);
-        STATIC_ASSERT(noexcept(rng | closure) == is_noexcept);
+        static_assert(same_as<decltype(rng | closure), R>);
+        static_assert(noexcept(rng | closure) == is_noexcept);
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(
+    static_assert(
         CanViewAdjacentTransform<const remove_reference_t<Rng>&, Fn, N> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewAdjacentTransform<const remove_reference_t<Rng>&, Fn, N>) {
         using RC = adjacent_transform_view<views::all_t<const remove_reference_t<Rng>&>, Fn, N>;
         constexpr bool is_noexcept =
             !is_view || (is_nothrow_copy_constructible_v<V> && is_nothrow_copy_constructible_v<Fn>);
 
-        STATIC_ASSERT(same_as<decltype(views::adjacent_transform<N>(as_const(rng), func)), RC>);
-        STATIC_ASSERT(noexcept(views::adjacent_transform<N>(as_const(rng), func)) == is_noexcept);
+        static_assert(same_as<decltype(views::adjacent_transform<N>(as_const(rng), func)), RC>);
+        static_assert(noexcept(views::adjacent_transform<N>(as_const(rng), func)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(closure(as_const(rng))), RC>);
-        STATIC_ASSERT(noexcept(closure(as_const(rng))) == is_noexcept);
+        static_assert(same_as<decltype(closure(as_const(rng))), RC>);
+        static_assert(noexcept(closure(as_const(rng))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(as_const(rng) | closure), RC>);
-        STATIC_ASSERT(noexcept(as_const(rng) | closure) == is_noexcept);
+        static_assert(same_as<decltype(as_const(rng) | closure), RC>);
+        static_assert(noexcept(as_const(rng) | closure) == is_noexcept);
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(
+    static_assert(
         CanViewAdjacentTransform<remove_reference_t<Rng>, Fn, N> == (is_view || movable<remove_reference_t<Rng>>) );
     if constexpr (CanViewAdjacentTransform<remove_reference_t<Rng>, Fn, N>) {
         using RS                   = adjacent_transform_view<views::all_t<remove_reference_t<Rng>>, Fn, N>;
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V> && is_nothrow_copy_constructible_v<Fn>;
 
-        STATIC_ASSERT(same_as<decltype(views::adjacent_transform<N>(move(rng), func)), RS>);
-        STATIC_ASSERT(noexcept(views::adjacent_transform<N>(move(rng), func)) == is_noexcept);
+        static_assert(same_as<decltype(views::adjacent_transform<N>(move(rng), func)), RS>);
+        static_assert(noexcept(views::adjacent_transform<N>(move(rng), func)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(closure(move(rng))), RS>);
-        STATIC_ASSERT(noexcept(closure(move(rng))) == is_noexcept);
+        static_assert(same_as<decltype(closure(move(rng))), RS>);
+        static_assert(noexcept(closure(move(rng))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(rng) | closure), RS>);
-        STATIC_ASSERT(noexcept(move(rng) | closure) == is_noexcept);
+        static_assert(same_as<decltype(move(rng) | closure), RS>);
+        static_assert(noexcept(move(rng) | closure) == is_noexcept);
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(
+    static_assert(
         CanViewAdjacentTransform<const remove_reference_t<Rng>, Fn, N> == (is_view && copy_constructible<V>) );
     if constexpr (CanViewAdjacentTransform<const remove_reference_t<Rng>, Fn, N>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V> && is_nothrow_copy_constructible_v<Fn>;
 
-        STATIC_ASSERT(same_as<decltype(views::adjacent_transform<N>(move(as_const(rng)), func)), R>);
-        STATIC_ASSERT(noexcept(views::adjacent_transform<N>(move(as_const(rng)), func)) == is_noexcept);
+        static_assert(same_as<decltype(views::adjacent_transform<N>(move(as_const(rng)), func)), R>);
+        static_assert(noexcept(views::adjacent_transform<N>(move(as_const(rng)), func)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(closure(move(as_const(rng)))), R>);
-        STATIC_ASSERT(noexcept(closure(move(as_const(rng)))) == is_noexcept);
+        static_assert(same_as<decltype(closure(move(as_const(rng)))), R>);
+        static_assert(noexcept(closure(move(as_const(rng)))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | closure), R>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | closure) == is_noexcept);
+        static_assert(same_as<decltype(move(as_const(rng)) | closure), R>);
+        static_assert(noexcept(move(as_const(rng)) | closure) == is_noexcept);
     }
 
     // Check views::pairwise_transform
     if constexpr (N == 2) {
         using Pairwised  = decltype(views::pairwise_transform(forward<Rng>(rng), func));
         using Adjacented = decltype(views::adjacent_transform<2>(forward<Rng>(rng), func));
-        STATIC_ASSERT(same_as<Pairwised, Adjacented>);
+        static_assert(same_as<Pairwised, Adjacented>);
     }
 
     R r{forward<Rng>(rng), func};
 
     // Check adjacent_transform_view::size
-    STATIC_ASSERT(CanMemberSize<R> == sized_range<V>);
+    static_assert(CanMemberSize<R> == sized_range<V>);
     if constexpr (CanMemberSize<R>) {
         same_as<ranges::range_size_t<V>> auto s = r.size();
         assert(_To_unsigned_like(s) == ranges::size(expected_rng));
-        STATIC_ASSERT(noexcept(r.size()) == noexcept(ranges::size(rng))); // strengthened
+        static_assert(noexcept(r.size()) == noexcept(ranges::size(rng))); // strengthened
     }
 
     // Check adjacent_transform_view::size (const)
-    STATIC_ASSERT(CanMemberSize<const R> == sized_range<const V>);
+    static_assert(CanMemberSize<const R> == sized_range<const V>);
     if constexpr (CanMemberSize<const R>) {
         same_as<ranges::range_size_t<const V>> auto s = as_const(r).size();
         assert(_To_unsigned_like(s) == ranges::size(expected_rng));
-        STATIC_ASSERT(noexcept(as_const(r).size()) == noexcept(ranges::size(as_const(rng)))); // strengthened
+        static_assert(noexcept(as_const(r).size()) == noexcept(ranges::size(as_const(rng)))); // strengthened
     }
 
     const bool is_empty = ranges::empty(expected_rng);
 
     // Check view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R>);
-    STATIC_ASSERT(CanBool<R>);
+    static_assert(CanMemberEmpty<R>);
+    static_assert(CanBool<R>);
     assert(r.empty() == is_empty);
     assert(static_cast<bool>(r) == !is_empty);
 
     // Check view_interface::empty and operator bool (const)
-    STATIC_ASSERT(CanMemberEmpty<const R>);
-    STATIC_ASSERT(CanBool<const R>);
+    static_assert(CanMemberEmpty<const R>);
+    static_assert(CanBool<const R>);
     assert(as_const(r).empty() == is_empty);
     assert(static_cast<bool>(as_const(r)) == !is_empty);
 
@@ -211,7 +211,7 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     assert(ranges::equal(r, expected_rng));
 
     // Check adjacent_transform_view::begin
-    STATIC_ASSERT(CanMemberBegin<R>);
+    static_assert(CanMemberBegin<R>);
     {
         const same_as<iterator_t<R>> auto i = r.begin();
         if (!is_empty) {
@@ -228,7 +228,7 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     }
 
     // Check adjacent_transform_view::begin (const)
-    STATIC_ASSERT(
+    static_assert(
         CanMemberBegin<const R>
         == (ranges::range<const V> && regular_invocable_with_repeated_type<const Fn&, range_reference_t<const V>, N>) );
     if constexpr (CanMemberBegin<const R>) {
@@ -247,7 +247,7 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     }
 
     // Check adjacent_transform_view::end
-    STATIC_ASSERT(CanMemberEnd<R>);
+    static_assert(CanMemberEnd<R>);
     {
         const same_as<sentinel_t<R>> auto s = r.end();
         assert((r.begin() == s) == is_empty);
@@ -256,7 +256,7 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             assert((as_const(r).begin() == s) == is_empty);
         }
 
-        STATIC_ASSERT(common_range<R> == common_range<V>);
+        static_assert(common_range<R> == common_range<V>);
         if constexpr (common_range<V> && bidirectional_range<V>) {
             if (!is_empty) {
                 assert(*ranges::prev(s) == *ranges::prev(end(expected_rng)));
@@ -272,7 +272,7 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     }
 
     // Check adjacent_transform_view::end (const)
-    STATIC_ASSERT(
+    static_assert(
         CanMemberEnd<const R>
         == (ranges::range<const V> && regular_invocable_with_repeated_type<const Fn&, range_reference_t<const V>, N>) );
     if constexpr (CanMemberEnd<const R>) {
@@ -283,7 +283,7 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             assert((r.begin() == cs) == is_empty);
         }
 
-        STATIC_ASSERT(common_range<const R> == common_range<const V>);
+        static_assert(common_range<const R> == common_range<const V>);
         if constexpr (common_range<const V> && bidirectional_range<const V>) {
             if (!is_empty) {
                 assert(*ranges::prev(cs) == *ranges::prev(end(expected_rng)));
@@ -299,8 +299,8 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     }
 
     // Check view_interface::cbegin
-    STATIC_ASSERT(CanMemberCBegin<R>);
-    STATIC_ASSERT(
+    static_assert(CanMemberCBegin<R>);
+    static_assert(
         CanMemberCBegin<const R&>
         == (ranges::range<const V> && regular_invocable_with_repeated_type<const Fn&, range_reference_t<const V>, N>) );
     {
@@ -326,8 +326,8 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     }
 
     // Check view_interface::cend
-    STATIC_ASSERT(CanMemberCEnd<R>);
-    STATIC_ASSERT(
+    static_assert(CanMemberCEnd<R>);
+    static_assert(
         CanMemberCEnd<const R&>
         == (ranges::range<const V> && regular_invocable_with_repeated_type<const Fn&, range_reference_t<const V>, N>) );
     if (!is_empty) {
@@ -345,41 +345,41 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     }
 
     // Check view_interface::data
-    STATIC_ASSERT(!CanData<R>);
-    STATIC_ASSERT(!CanData<const R>);
+    static_assert(!CanData<R>);
+    static_assert(!CanData<const R>);
 
     if (is_empty) {
         return true;
     }
 
     // Check view_interface::operator[]
-    STATIC_ASSERT(CanIndex<R> == random_access_range<V>);
+    static_assert(CanIndex<R> == random_access_range<V>);
     if constexpr (CanIndex<R>) {
         assert(r[0] == expected_rng[0]);
     }
 
     // Check view_interface::operator[] (const)
-    STATIC_ASSERT(CanIndex<const R> == random_access_range<const V>);
+    static_assert(CanIndex<const R> == random_access_range<const V>);
     if constexpr (CanIndex<const R>) {
         assert(as_const(r)[0] == expected_rng[0]);
     }
 
     // Check view_interface::front
-    STATIC_ASSERT(CanMemberFront<R>);
+    static_assert(CanMemberFront<R>);
     assert(r.front() == *begin(expected_rng));
 
     // Check view_interface::front (const)
-    STATIC_ASSERT(CanMemberFront<const R>);
+    static_assert(CanMemberFront<const R>);
     assert(as_const(r).front() == *begin(expected_rng));
 
     // Check view_interface::back
-    STATIC_ASSERT(CanMemberBack<R> == (bidirectional_range<V> && common_range<V>) );
+    static_assert(CanMemberBack<R> == (bidirectional_range<V> && common_range<V>) );
     if constexpr (CanMemberBack<R>) {
         assert(r.back() == *prev(end(expected_rng)));
     }
 
     // Check view_interface::back (const)
-    STATIC_ASSERT(CanMemberBack<const R> == (bidirectional_range<const V> && common_range<const V>) );
+    static_assert(CanMemberBack<const R> == (bidirectional_range<const V> && common_range<const V>) );
     if constexpr (CanMemberBack<const R>) {
         assert(as_const(r).back() == *prev(end(expected_rng)));
     }
@@ -387,35 +387,35 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     { // Check adjacent_transform_view::iterator<not const>
         using BI = iterator_t<V>;
         using I  = iterator_t<R>;
-        STATIC_ASSERT(forward_iterator<I>);
+        static_assert(forward_iterator<I>);
 
         // Check iterator_category
         using IterCat = I::iterator_category;
         if constexpr (!is_reference_v<invoke_result_with_repeated_type<Fn, range_reference_t<V>, N>>) {
-            STATIC_ASSERT(same_as<IterCat, input_iterator_tag>);
+            static_assert(same_as<IterCat, input_iterator_tag>);
         } else {
             using BaseCat = iterator_traits<BI>::iterator_category;
             if constexpr (derived_from<BaseCat, random_access_iterator_tag>) {
-                STATIC_ASSERT(same_as<IterCat, random_access_iterator_tag>);
+                static_assert(same_as<IterCat, random_access_iterator_tag>);
             } else if constexpr (derived_from<BaseCat, bidirectional_iterator_tag>) {
-                STATIC_ASSERT(same_as<IterCat, bidirectional_iterator_tag>);
+                static_assert(same_as<IterCat, bidirectional_iterator_tag>);
             } else if constexpr (derived_from<BaseCat, forward_iterator_tag>) {
-                STATIC_ASSERT(same_as<IterCat, forward_iterator_tag>);
+                static_assert(same_as<IterCat, forward_iterator_tag>);
             } else {
-                STATIC_ASSERT(same_as<IterCat, input_iterator_tag>);
+                static_assert(same_as<IterCat, input_iterator_tag>);
             }
         }
 
         // Check iterator_concept
         using IterConcept = I::iterator_concept;
-        STATIC_ASSERT(same_as<IterConcept, typename iterator_t<adjacent_view<V, N>>::iterator_concept>);
+        static_assert(same_as<IterConcept, typename iterator_t<adjacent_view<V, N>>::iterator_concept>);
 
         // Check value_type
-        STATIC_ASSERT(same_as<typename I::value_type,
+        static_assert(same_as<typename I::value_type,
             remove_cvref_t<invoke_result_with_repeated_type<Fn&, range_reference_t<V>, N>>>);
 
         // Check default-initializability
-        STATIC_ASSERT(default_initializable<I>);
+        static_assert(default_initializable<I>);
 
         auto i = r.begin();
 
@@ -565,35 +565,35 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     if constexpr (CanMemberBegin<const R>) {
         using CBI = iterator_t<const V>;
         using CI  = iterator_t<const R>;
-        STATIC_ASSERT(forward_iterator<CI>);
+        static_assert(forward_iterator<CI>);
 
         // Check iterator_category
         using IterCat = CI::iterator_category;
         if constexpr (!is_reference_v<invoke_result_with_repeated_type<Fn, range_reference_t<const V>, N>>) {
-            STATIC_ASSERT(same_as<IterCat, input_iterator_tag>);
+            static_assert(same_as<IterCat, input_iterator_tag>);
         } else {
             using BaseCat = iterator_traits<CBI>::iterator_category;
             if constexpr (derived_from<BaseCat, random_access_iterator_tag>) {
-                STATIC_ASSERT(same_as<IterCat, random_access_iterator_tag>);
+                static_assert(same_as<IterCat, random_access_iterator_tag>);
             } else if constexpr (derived_from<BaseCat, bidirectional_iterator_tag>) {
-                STATIC_ASSERT(same_as<IterCat, bidirectional_iterator_tag>);
+                static_assert(same_as<IterCat, bidirectional_iterator_tag>);
             } else if constexpr (derived_from<BaseCat, forward_iterator_tag>) {
-                STATIC_ASSERT(same_as<IterCat, forward_iterator_tag>);
+                static_assert(same_as<IterCat, forward_iterator_tag>);
             } else {
-                STATIC_ASSERT(same_as<IterCat, input_iterator_tag>);
+                static_assert(same_as<IterCat, input_iterator_tag>);
             }
         }
 
         // Check iterator_concept
         using IterConcept = CI::iterator_concept;
-        STATIC_ASSERT(same_as<IterConcept, typename iterator_t<const adjacent_view<V, N>>::iterator_concept>);
+        static_assert(same_as<IterConcept, typename iterator_t<const adjacent_view<V, N>>::iterator_concept>);
 
         // Check value_type
-        STATIC_ASSERT(same_as<typename CI::value_type,
+        static_assert(same_as<typename CI::value_type,
             remove_cvref_t<invoke_result_with_repeated_type<const Fn&, range_reference_t<const V>, N>>>);
 
         // Check default-initializability
-        STATIC_ASSERT(default_initializable<CI>);
+        static_assert(default_initializable<CI>);
 
         iterator_t<R> i = r.begin();
 
@@ -777,15 +777,15 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     }
 
     // Check adjacent_transform_view::base() const&
-    STATIC_ASSERT(CanMemberBase<const R&> == copy_constructible<V>);
+    static_assert(CanMemberBase<const R&> == copy_constructible<V>);
     if constexpr (copy_constructible<V>) {
         [[maybe_unused]] same_as<V> auto b1 = as_const(r).base();
-        STATIC_ASSERT(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>); // strengthened
+        static_assert(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>); // strengthened
     }
 
     // Check adjacent_transform_view::base() &&
     [[maybe_unused]] same_as<V> auto b2 = move(r).base();
-    STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>); // strengthened
+    static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>); // strengthened
 
     return true;
 }
@@ -803,60 +803,60 @@ constexpr void test_adjacent0(Rng&& rng) {
     const auto closure     = views::adjacent_transform<0>(func);
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewAdjacentTransform<Rng&, Fn, 0> == (!is_view || copy_constructible<V>) );
+    static_assert(CanViewAdjacentTransform<Rng&, Fn, 0> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewAdjacentTransform<Rng&, Fn, 0>) {
-        STATIC_ASSERT(same_as<decltype(views::adjacent_transform<0>(rng, func)), E>);
-        STATIC_ASSERT(noexcept(views::adjacent_transform<0>(rng, func)) == is_nothrow_copy_constructible_v<Fn>);
+        static_assert(same_as<decltype(views::adjacent_transform<0>(rng, func)), E>);
+        static_assert(noexcept(views::adjacent_transform<0>(rng, func)) == is_nothrow_copy_constructible_v<Fn>);
 
-        STATIC_ASSERT(same_as<decltype(closure(rng)), E>);
-        STATIC_ASSERT(noexcept(closure(rng)) == is_nothrow_copy_constructible_v<Fn>);
+        static_assert(same_as<decltype(closure(rng)), E>);
+        static_assert(noexcept(closure(rng)) == is_nothrow_copy_constructible_v<Fn>);
 
-        STATIC_ASSERT(same_as<decltype(rng | closure), E>);
-        STATIC_ASSERT(noexcept(rng | closure) == is_nothrow_copy_constructible_v<Fn>);
+        static_assert(same_as<decltype(rng | closure), E>);
+        static_assert(noexcept(rng | closure) == is_nothrow_copy_constructible_v<Fn>);
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(
+    static_assert(
         CanViewAdjacentTransform<const remove_reference_t<Rng>&, Fn, 0> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewAdjacentTransform<const remove_reference_t<Rng>&, Fn, 0>) {
-        STATIC_ASSERT(same_as<decltype(views::adjacent_transform<0>(as_const(rng), func)), E>);
-        STATIC_ASSERT(
+        static_assert(same_as<decltype(views::adjacent_transform<0>(as_const(rng), func)), E>);
+        static_assert(
             noexcept(views::adjacent_transform<0>(as_const(rng), func)) == is_nothrow_copy_constructible_v<Fn>);
 
-        STATIC_ASSERT(same_as<decltype(closure(as_const(rng))), E>);
-        STATIC_ASSERT(noexcept(closure(as_const(rng))) == is_nothrow_copy_constructible_v<Fn>);
+        static_assert(same_as<decltype(closure(as_const(rng))), E>);
+        static_assert(noexcept(closure(as_const(rng))) == is_nothrow_copy_constructible_v<Fn>);
 
-        STATIC_ASSERT(same_as<decltype(as_const(rng) | closure), E>);
-        STATIC_ASSERT(noexcept(as_const(rng) | closure) == is_nothrow_copy_constructible_v<Fn>);
+        static_assert(same_as<decltype(as_const(rng) | closure), E>);
+        static_assert(noexcept(as_const(rng) | closure) == is_nothrow_copy_constructible_v<Fn>);
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(
+    static_assert(
         CanViewAdjacentTransform<remove_reference_t<Rng>, Fn, 0> == (is_view || movable<remove_reference_t<Rng>>) );
     if constexpr (CanViewAdjacentTransform<remove_reference_t<Rng>, Fn, 0>) {
-        STATIC_ASSERT(same_as<decltype(views::adjacent_transform<0>(move(rng), func)), E>);
-        STATIC_ASSERT(noexcept(views::adjacent_transform<0>(move(rng), func)) == is_nothrow_copy_constructible_v<Fn>);
+        static_assert(same_as<decltype(views::adjacent_transform<0>(move(rng), func)), E>);
+        static_assert(noexcept(views::adjacent_transform<0>(move(rng), func)) == is_nothrow_copy_constructible_v<Fn>);
 
-        STATIC_ASSERT(same_as<decltype(closure(move(rng))), E>);
-        STATIC_ASSERT(noexcept(closure(move(rng))) == is_nothrow_copy_constructible_v<Fn>);
+        static_assert(same_as<decltype(closure(move(rng))), E>);
+        static_assert(noexcept(closure(move(rng))) == is_nothrow_copy_constructible_v<Fn>);
 
-        STATIC_ASSERT(same_as<decltype(move(rng) | closure), E>);
-        STATIC_ASSERT(noexcept(move(rng) | closure) == is_nothrow_copy_constructible_v<Fn>);
+        static_assert(same_as<decltype(move(rng) | closure), E>);
+        static_assert(noexcept(move(rng) | closure) == is_nothrow_copy_constructible_v<Fn>);
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(
+    static_assert(
         CanViewAdjacentTransform<const remove_reference_t<Rng>, Fn, 0> == (is_view && copy_constructible<V>) );
     if constexpr (CanViewAdjacentTransform<const remove_reference_t<Rng>, Fn, 0>) {
-        STATIC_ASSERT(same_as<decltype(views::adjacent_transform<0>(move(as_const(rng)), func)), E>);
-        STATIC_ASSERT(
+        static_assert(same_as<decltype(views::adjacent_transform<0>(move(as_const(rng)), func)), E>);
+        static_assert(
             noexcept(views::adjacent_transform<0>(move(as_const(rng)), func)) == is_nothrow_copy_constructible_v<Fn>);
 
-        STATIC_ASSERT(same_as<decltype(closure(move(as_const(rng)))), E>);
-        STATIC_ASSERT(noexcept(closure(move(as_const(rng)))) == is_nothrow_copy_constructible_v<Fn>);
+        static_assert(same_as<decltype(closure(move(as_const(rng)))), E>);
+        static_assert(noexcept(closure(move(as_const(rng)))) == is_nothrow_copy_constructible_v<Fn>);
 
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | closure), E>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | closure) == is_nothrow_copy_constructible_v<Fn>);
+        static_assert(same_as<decltype(move(as_const(rng)) | closure), E>);
+        static_assert(noexcept(move(as_const(rng)) | closure) == is_nothrow_copy_constructible_v<Fn>);
     }
 }
 
@@ -935,7 +935,7 @@ int main() {
     { // Check views
         // ... copyable
         constexpr span<const int> s{some_ints};
-        STATIC_ASSERT(test_one<4>(s, adjacent4_fn, adjacent4_result));
+        static_assert(test_one<4>(s, adjacent4_fn, adjacent4_result));
         test_one<4>(s, adjacent4_fn, adjacent4_result);
     }
 
@@ -953,7 +953,7 @@ int main() {
     }
 
     { // Check non-views
-        STATIC_ASSERT(test_one<2>(some_ints, pairwise_fn, pairwise_result));
+        static_assert(test_one<2>(some_ints, pairwise_fn, pairwise_result));
         test_one<2>(some_ints, pairwise_fn, pairwise_result);
 
         auto vec = some_ints | ranges::to<vector>();
@@ -965,7 +965,7 @@ int main() {
 
     { // Check empty range
         constexpr auto to_float = [](int x, int y, int z) { return static_cast<float>(x + y + z); };
-        STATIC_ASSERT(test_one<3>(span<const int>{}, to_float, span<float>{}));
+        static_assert(test_one<3>(span<const int>{}, to_float, span<float>{}));
         test_one<3>(span<const int>{}, to_float, span<float>{});
     }
 
@@ -977,15 +977,15 @@ int main() {
 
             weird_span& operator=(const weird_span&) = default;
         };
-        STATIC_ASSERT(!copy_constructible<weird_span>);
+        static_assert(!copy_constructible<weird_span>);
 
         using weird_adjacent_transform_view = ranges::adjacent_transform_view<weird_span, ranges::equal_to, 2>;
-        STATIC_ASSERT(!CanMemberBase<weird_adjacent_transform_view&>);
-        STATIC_ASSERT(!CanMemberBase<const weird_adjacent_transform_view&>);
-        STATIC_ASSERT(!CanMemberBase<const weird_adjacent_transform_view>);
-        STATIC_ASSERT(CanMemberBase<weird_adjacent_transform_view>);
+        static_assert(!CanMemberBase<weird_adjacent_transform_view&>);
+        static_assert(!CanMemberBase<const weird_adjacent_transform_view&>);
+        static_assert(!CanMemberBase<const weird_adjacent_transform_view>);
+        static_assert(CanMemberBase<weird_adjacent_transform_view>);
     }
 
-    STATIC_ASSERT((instantiation_test(), true));
+    static_assert((instantiation_test(), true));
     instantiation_test();
 }

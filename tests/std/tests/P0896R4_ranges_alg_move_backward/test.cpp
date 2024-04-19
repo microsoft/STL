@@ -33,12 +33,12 @@ constexpr auto get_int_wrapper_val = &int_wrapper::val;
 #endif // ^^^ no workaround ^^^
 
 // Validate that move_backward_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::move_backward_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::move_backward_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::move_backward(borrowed<false>{}, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::move_backward(borrowed<false>{}, nullptr_to<int>)),
     ranges::move_backward_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::move_backward(borrowed<true>{}, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::move_backward(borrowed<true>{}, nullptr_to<int>)),
     ranges::move_backward_result<int*, int*>>);
 
 struct instantiator {
@@ -137,9 +137,9 @@ constexpr void test_memmove() {
 }
 
 int main() {
-    STATIC_ASSERT((test_bidi_bidi<instantiator, int_wrapper, int_wrapper>(), true));
+    static_assert((test_bidi_bidi<instantiator, int_wrapper, int_wrapper>(), true));
     test_bidi_bidi<instantiator, int_wrapper, int_wrapper>();
 
-    STATIC_ASSERT((test_memmove(), true));
+    static_assert((test_memmove(), true));
     test_memmove();
 }

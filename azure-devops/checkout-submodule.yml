@@ -1,0 +1,31 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: enabled
+  type: boolean
+- name: path
+  type: string
+- name: url
+  type: string
+steps:
+- task: PowerShell@2
+  displayName: 'Checkout ${{ parameters.path }} Submodule'
+  condition: and(succeeded(), ${{ parameters.enabled }})
+  inputs:
+    targetType: inline
+    script: |
+      $submodule = '${{ parameters.path }}'
+      $rawStatus = git submodule status --cached $submodule
+      $sha = $rawStatus -replace '^[ \-+]([0-9a-f]+) .*$', '$1'
+      cd $submodule
+      git init
+      if ((git remote) -eq $null) {
+        git remote add submodule-upstream ${{ parameters.url }}
+      }
+      git fetch --filter=tree:0 --depth=1 submodule-upstream $sha
+      if ($submodule -eq 'llvm-project') {
+        git sparse-checkout set --sparse-index libcxx/test libcxx/utils/libcxx llvm/utils/lit
+      }
+      git reset --quiet --hard FETCH_HEAD
+      git clean --quiet -x -d -f -f

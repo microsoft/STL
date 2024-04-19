@@ -16,8 +16,8 @@ using P = pair<int, int>;
 constexpr auto is_even = [](int i) { return i % 2 == 0; };
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::stable_partition(borrowed<false>{}, is_even)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::stable_partition(borrowed<true>{}, is_even)), ranges::subrange<int*>>);
+static_assert(same_as<decltype(ranges::stable_partition(borrowed<false>{}, is_even)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::stable_partition(borrowed<true>{}, is_even)), ranges::subrange<int*>>);
 
 struct instantiator {
     template <ranges::bidirectional_range Range>
