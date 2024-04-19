@@ -52,6 +52,21 @@ namespace chrono {
     };
 
 #if _HAS_CXX20
+    _EXPORT_STD template <class _Clock>
+    constexpr bool is_clock_v = requires {
+        typename _Clock::rep;
+        typename _Clock::period;
+        typename _Clock::duration;
+        typename _Clock::time_point;
+        _Clock::is_steady;
+        _Clock::now();
+    };
+    _EXPORT_STD template <class _Clock>
+    struct is_clock : bool_constant<is_clock_v<_Clock>> {};
+
+    template <class _Clock>
+    constexpr bool _Is_clock_v = is_clock_v<_Clock>;
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class _Clock, class = void>
     constexpr bool _Is_clock_v = false;
 
@@ -59,13 +74,8 @@ namespace chrono {
     constexpr bool
         _Is_clock_v<_Clock, void_t<typename _Clock::rep, typename _Clock::period, typename _Clock::duration,
                                 typename _Clock::time_point, decltype(_Clock::is_steady), decltype(_Clock::now())>> =
-            true; // TRANSITION, GH-602
-
-    _EXPORT_STD template <class _Clock>
-    struct is_clock : bool_constant<_Is_clock_v<_Clock>> {};
-    _EXPORT_STD template <class _Clock>
-    constexpr bool is_clock_v = _Is_clock_v<_Clock>;
-#endif // _HAS_CXX20
+            true;
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _EXPORT_STD template <class _Rep, class _Period = ratio<1>>
     class duration;
