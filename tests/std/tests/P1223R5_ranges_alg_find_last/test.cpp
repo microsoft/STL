@@ -12,8 +12,8 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::find_last(borrowed<false>{}, 42)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::find_last(borrowed<true>{}, 42)), ranges::subrange<int*>>);
+static_assert(same_as<decltype(ranges::find_last(borrowed<false>{}, 42)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::find_last(borrowed<true>{}, 42)), ranges::subrange<int*>>);
 
 template <class T, class U>
 constexpr void check_value(const T& found, const U& value) {
@@ -37,28 +37,28 @@ struct instantiator {
             { // Validate range overload [found case]
                 Read wrapped_input{haystack};
                 const auto result = find_last(wrapped_input, value, get_first);
-                STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<iterator_t<Read>>>);
+                static_assert(same_as<decltype(result), const ranges::subrange<iterator_t<Read>>>);
                 check_value(result.front(), value);
             }
             { // Validate iterator + sentinel overload [found case]
                 Read wrapped_input{haystack};
                 const auto result = find_last(wrapped_input.begin(), wrapped_input.end(), value, get_first);
-                STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<iterator_t<Read>>>);
+                static_assert(same_as<decltype(result), const ranges::subrange<iterator_t<Read>>>);
                 check_value(result.front(), value);
             }
         }
         { // Validate range overload [not found case]
             Read wrapped_input{haystack};
             auto result = find_last(wrapped_input, 42, get_first);
-            STATIC_ASSERT(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
-            STATIC_ASSERT(common_range<decltype(result)>);
+            static_assert(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
+            static_assert(common_range<decltype(result)>);
             assert(result.begin() == wrapped_input.end());
         }
         { // Validate iterator + sentinel overload [not found case]
             Read wrapped_input{haystack};
             auto result = find_last(wrapped_input.begin(), wrapped_input.end(), 42, get_first);
-            STATIC_ASSERT(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
-            STATIC_ASSERT(common_range<decltype(result)>);
+            static_assert(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
+            static_assert(common_range<decltype(result)>);
             assert(result.begin() == wrapped_input.end());
         }
         { // Validate empty range
@@ -72,6 +72,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_fwd<instantiator, const P>(), true));
+    static_assert((test_fwd<instantiator, const P>(), true));
     test_fwd<instantiator, const P>();
 }

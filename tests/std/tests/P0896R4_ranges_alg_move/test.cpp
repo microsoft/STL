@@ -24,12 +24,12 @@ struct int_wrapper {
 };
 
 // Validate that move_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::move_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::move_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(
+static_assert(
     same_as<decltype(ranges::move(borrowed<false>{}, nullptr_to<int>)), ranges::move_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::move(borrowed<true>{}, nullptr_to<int>)), ranges::move_result<int*, int*>>);
+static_assert(same_as<decltype(ranges::move(borrowed<true>{}, nullptr_to<int>)), ranges::move_result<int*, int*>>);
 
 struct instantiator {
     static constexpr int_wrapper expected_output[3] = {13, 55, 12345};
@@ -44,7 +44,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = move(wrapped_input, Write{output});
-            STATIC_ASSERT(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
+            static_assert(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 3);
             assert(equal(output, expected_output));
@@ -56,7 +56,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = move(wrapped_input.begin(), wrapped_input.end(), Write{output});
-            STATIC_ASSERT(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
+            static_assert(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 3);
             assert(equal(output, expected_output));
@@ -67,7 +67,7 @@ struct instantiator {
 
 int main() {
 #ifndef _PREFAST_ // TRANSITION, GH-1030
-    STATIC_ASSERT((test_in_write<instantiator, int_wrapper, int_wrapper>(), true));
+    static_assert((test_in_write<instantiator, int_wrapper, int_wrapper>(), true));
 #endif // TRANSITION, GH-1030
     test_in_write<instantiator, int_wrapper, int_wrapper>();
 }

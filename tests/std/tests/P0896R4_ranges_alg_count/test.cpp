@@ -22,20 +22,20 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = count(wrapped_input.begin(), wrapped_input.end(), 47, get_second);
-            STATIC_ASSERT(same_as<decltype(result), ranges::range_difference_t<Read>>);
+            static_assert(same_as<decltype(result), ranges::range_difference_t<Read>>);
             assert(result == 2);
         }
         { // Validate range overload
             Read wrapped_input{input};
 
             auto result = count(wrapped_input, 99, get_second);
-            STATIC_ASSERT(same_as<decltype(result), ranges::range_difference_t<Read>>);
+            static_assert(same_as<decltype(result), ranges::range_difference_t<Read>>);
             assert(result == 3);
         }
     }
 };
 
 int main() {
-    STATIC_ASSERT((test_in<instantiator, P const>(), true));
+    static_assert((test_in<instantiator, P const>(), true));
     test_in<instantiator, P const>();
 }

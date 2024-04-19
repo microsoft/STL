@@ -15,8 +15,8 @@ using P = pair<int, int>;
 constexpr auto matches = [](const int val) { return val == 47; };
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::remove_if(borrowed<false>{}, matches)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::remove_if(borrowed<true>{}, matches)), ranges::subrange<int*>>);
+static_assert(same_as<decltype(ranges::remove_if(borrowed<false>{}, matches)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::remove_if(borrowed<true>{}, matches)), ranges::subrange<int*>>);
 
 struct instantiator {
     static constexpr P expected[3] = {{0, 99}, {2, 99}, {4, 99}};
@@ -36,7 +36,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = remove_if(wrapped_input.begin(), wrapped_input.end(), matches, projection);
-            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
+            static_assert(same_as<decltype(result), subrange<iterator_t<Read>>>);
             assert(result.begin() == next(wrapped_input.begin(), 3));
             assert(result.end() == wrapped_input.end());
             assert(equal(expected, span{input}.first<3>()));
@@ -50,7 +50,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = remove_if(wrapped_input, matches, projection);
-            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<Read>>>);
+            static_assert(same_as<decltype(result), subrange<iterator_t<Read>>>);
             assert(result.begin() == next(wrapped_input.begin(), 3));
             assert(result.end() == wrapped_input.end());
             assert(equal(expected, span{input}.first<3>()));
@@ -60,6 +60,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_fwd<instantiator, P>(), true));
+    static_assert((test_fwd<instantiator, P>(), true));
     test_fwd<instantiator, P>();
 }

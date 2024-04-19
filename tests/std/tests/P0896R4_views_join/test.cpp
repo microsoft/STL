@@ -179,10 +179,10 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
         // Also validate that join_view iterators are default-constructible
         {
-            STATIC_ASSERT(is_default_constructible_v<iterator_t<R>>);
+            static_assert(is_default_constructible_v<iterator_t<R>>);
             [[maybe_unused]] iterator_t<R> i;
             if constexpr (CanMemberBegin<const R>) {
-                STATIC_ASSERT(is_default_constructible_v<iterator_t<const R>>);
+                static_assert(is_default_constructible_v<iterator_t<const R>>);
                 [[maybe_unused]] iterator_t<const R> ci;
             }
         }
@@ -672,8 +672,8 @@ void test_lwg3700() { // COMPILE-ONLY
     auto r  = views::iota(0, 5) | views::filter([](auto) { return true; });
     auto j  = views::single(r) | views::join;
     using J = decltype(j);
-    STATIC_ASSERT(!CanMemberBegin<const J>);
-    STATIC_ASSERT(!CanMemberEnd<const J>);
+    static_assert(!CanMemberBegin<const J>);
+    static_assert(!CanMemberEnd<const J>);
 }
 
 constexpr bool test_lwg3791() {
@@ -782,12 +782,12 @@ int main() {
         assert(ranges::equal(filtered_and_joined, result));
     }
 
-    STATIC_ASSERT(instantiation_test());
+    static_assert(instantiation_test());
     instantiation_test();
 
-    STATIC_ASSERT(test_lwg3698());
+    static_assert(test_lwg3698());
     assert(test_lwg3698());
 
-    STATIC_ASSERT(test_lwg3791());
+    static_assert(test_lwg3791());
     assert(test_lwg3791());
 }
