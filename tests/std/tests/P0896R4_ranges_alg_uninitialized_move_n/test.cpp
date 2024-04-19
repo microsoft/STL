@@ -16,7 +16,7 @@
 using namespace std;
 
 // Validate that uninitialized_move_n_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::uninitialized_move_n_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::uninitialized_move_n_result<int, double>, ranges::in_out_result<int, double>>);
 
 struct int_wrapper {
     inline static int constructions = 0;
@@ -56,7 +56,7 @@ struct int_wrapper {
 
     auto operator<=>(const int_wrapper&) const = default;
 };
-STATIC_ASSERT(movable<int_wrapper> && !copyable<int_wrapper>);
+static_assert(movable<int_wrapper> && !copyable<int_wrapper>);
 
 #ifdef _M_CEE // TRANSITION, VSO-1664341
 constexpr auto get_int_wrapper_val = [](const int_wrapper& w) { return w.val; };

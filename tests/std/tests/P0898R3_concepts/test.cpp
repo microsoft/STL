@@ -24,8 +24,6 @@
 
 #include <is_permissive.hpp>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 template <class, class = void>
 constexpr bool is_trait = false;
 template <class T>
@@ -39,7 +37,7 @@ union IncompleteUnion;
 
 template <class T>
 struct DoNotInstantiate {
-    STATIC_ASSERT(always_false<T>);
+    static_assert(always_false<T>);
 };
 
 struct Immobile {
@@ -230,57 +228,57 @@ namespace test_same_as {
 
     template <class T, class U>
     constexpr bool test() {
-        STATIC_ASSERT(same_as<T, U>);
-        STATIC_ASSERT(same_as<T const, U const>);
-        STATIC_ASSERT(same_as<T volatile, U volatile>);
-        STATIC_ASSERT(same_as<T const volatile, U const volatile>);
+        static_assert(same_as<T, U>);
+        static_assert(same_as<T const, U const>);
+        static_assert(same_as<T volatile, U volatile>);
+        static_assert(same_as<T const volatile, U const volatile>);
 
         constexpr bool is_ref = std::is_reference_v<T>;
 
-        STATIC_ASSERT(same_as<T const, U> == is_ref);
-        STATIC_ASSERT(same_as<T volatile, U> == is_ref);
-        STATIC_ASSERT(same_as<T const volatile, U> == is_ref);
-        STATIC_ASSERT(same_as<T, U const> == is_ref);
-        STATIC_ASSERT(same_as<T, U volatile> == is_ref);
-        STATIC_ASSERT(same_as<T, U const volatile> == is_ref);
+        static_assert(same_as<T const, U> == is_ref);
+        static_assert(same_as<T volatile, U> == is_ref);
+        static_assert(same_as<T const volatile, U> == is_ref);
+        static_assert(same_as<T, U const> == is_ref);
+        static_assert(same_as<T, U volatile> == is_ref);
+        static_assert(same_as<T, U const volatile> == is_ref);
 
         if constexpr (!std::is_void_v<T>) {
-            STATIC_ASSERT(same_as<T&, U&>);
-            STATIC_ASSERT(same_as<T const&, U&> == is_ref);
-            STATIC_ASSERT(same_as<T&&, U&&>);
-            STATIC_ASSERT(same_as<T const&&, U&&> == is_ref);
+            static_assert(same_as<T&, U&>);
+            static_assert(same_as<T const&, U&> == is_ref);
+            static_assert(same_as<T&&, U&&>);
+            static_assert(same_as<T const&&, U&&> == is_ref);
         }
 
         if constexpr (!is_ref) {
-            STATIC_ASSERT(same_as<T*, U*>);
-            STATIC_ASSERT(same_as<T**, U**>);
+            static_assert(same_as<T*, U*>);
+            static_assert(same_as<T**, U**>);
         }
 
         return true;
     }
 
-    STATIC_ASSERT(test<void, void>());
-    STATIC_ASSERT(test<int, int>());
-    STATIC_ASSERT(!same_as<int, void>);
-    STATIC_ASSERT(test<double, double>());
-    STATIC_ASSERT(!same_as<double, int>);
-    STATIC_ASSERT(!same_as<int, double>);
+    static_assert(test<void, void>());
+    static_assert(test<int, int>());
+    static_assert(!same_as<int, void>);
+    static_assert(test<double, double>());
+    static_assert(!same_as<double, int>);
+    static_assert(!same_as<int, double>);
 
-    STATIC_ASSERT(test<int[42], int[42]>());
-    STATIC_ASSERT(test<int[], int[]>());
+    static_assert(test<int[42], int[42]>());
+    static_assert(test<int[], int[]>());
 
-    STATIC_ASSERT(test<NonTriviallyDestructible, NonTriviallyDestructible>());
-    STATIC_ASSERT(!same_as<void, NonTriviallyDestructible>);
-    STATIC_ASSERT(!same_as<NonTriviallyDestructible, int*>);
+    static_assert(test<NonTriviallyDestructible, NonTriviallyDestructible>());
+    static_assert(!same_as<void, NonTriviallyDestructible>);
+    static_assert(!same_as<NonTriviallyDestructible, int*>);
 
-    STATIC_ASSERT(test<int&, int&>());
-    STATIC_ASSERT(!same_as<int*, int&>);
-    STATIC_ASSERT(!same_as<int&, int>);
-    STATIC_ASSERT(test<int (&)[42], int (&)[42]>());
-    STATIC_ASSERT(test<int (&)(), int (&)()>());
+    static_assert(test<int&, int&>());
+    static_assert(!same_as<int*, int&>);
+    static_assert(!same_as<int&, int>);
+    static_assert(test<int (&)[42], int (&)[42]>());
+    static_assert(test<int (&)(), int (&)()>());
 
-    STATIC_ASSERT(same_as<void() const, void() const>);
-    STATIC_ASSERT(same_as<void() &, void() &>);
+    static_assert(same_as<void() const, void() const>);
+    static_assert(same_as<void() &, void() &>);
 
     // Verify that `same_as<T, U>` subsumes `same_as<U, T>` (note reversed argument order)
     template <class T, class U>
@@ -295,64 +293,64 @@ namespace test_same_as {
         return true;
     }
 
-    STATIC_ASSERT(!f<int*, int*>());
-    STATIC_ASSERT(!f<void, void>());
+    static_assert(!f<int*, int*>());
+    static_assert(!f<void, void>());
 
-    STATIC_ASSERT(f<int, int>()); // ambiguous if second overload's requirements do not subsume the first's
-    STATIC_ASSERT(f<long, long>()); // Ditto
+    static_assert(f<int, int>()); // ambiguous if second overload's requirements do not subsume the first's
+    static_assert(f<long, long>()); // Ditto
 } // namespace test_same_as
 
 namespace test_derived_from {
     using std::derived_from;
 
-    STATIC_ASSERT(!derived_from<int, int>);
-    STATIC_ASSERT(!derived_from<void, void>);
-    STATIC_ASSERT(!derived_from<void(), void()>);
-    STATIC_ASSERT(!derived_from<void() const, void() const>);
-    STATIC_ASSERT(!derived_from<int[42], int[42]>);
-    STATIC_ASSERT(!derived_from<int&, int>);
-    STATIC_ASSERT(!derived_from<int, int&>);
-    STATIC_ASSERT(!derived_from<int&, int&>);
+    static_assert(!derived_from<int, int>);
+    static_assert(!derived_from<void, void>);
+    static_assert(!derived_from<void(), void()>);
+    static_assert(!derived_from<void() const, void() const>);
+    static_assert(!derived_from<int[42], int[42]>);
+    static_assert(!derived_from<int&, int>);
+    static_assert(!derived_from<int, int&>);
+    static_assert(!derived_from<int&, int&>);
 
     template <class Derived, class Base>
     constexpr bool test() {
-        STATIC_ASSERT(derived_from<Derived, Base>);
-        STATIC_ASSERT(derived_from<Derived const, Base>);
-        STATIC_ASSERT(derived_from<Derived volatile, Base>);
-        STATIC_ASSERT(derived_from<Derived const volatile, Base>);
-        STATIC_ASSERT(derived_from<Derived, Base const>);
-        STATIC_ASSERT(derived_from<Derived const, Base const>);
-        STATIC_ASSERT(derived_from<Derived volatile, Base const>);
-        STATIC_ASSERT(derived_from<Derived const volatile, Base const>);
-        STATIC_ASSERT(derived_from<Derived, Base volatile>);
-        STATIC_ASSERT(derived_from<Derived const, Base volatile>);
-        STATIC_ASSERT(derived_from<Derived volatile, Base volatile>);
-        STATIC_ASSERT(derived_from<Derived const volatile, Base volatile>);
-        STATIC_ASSERT(derived_from<Derived, Base const volatile>);
-        STATIC_ASSERT(derived_from<Derived const, Base const volatile>);
-        STATIC_ASSERT(derived_from<Derived volatile, Base const volatile>);
-        STATIC_ASSERT(derived_from<Derived const volatile, Base const volatile>);
+        static_assert(derived_from<Derived, Base>);
+        static_assert(derived_from<Derived const, Base>);
+        static_assert(derived_from<Derived volatile, Base>);
+        static_assert(derived_from<Derived const volatile, Base>);
+        static_assert(derived_from<Derived, Base const>);
+        static_assert(derived_from<Derived const, Base const>);
+        static_assert(derived_from<Derived volatile, Base const>);
+        static_assert(derived_from<Derived const volatile, Base const>);
+        static_assert(derived_from<Derived, Base volatile>);
+        static_assert(derived_from<Derived const, Base volatile>);
+        static_assert(derived_from<Derived volatile, Base volatile>);
+        static_assert(derived_from<Derived const volatile, Base volatile>);
+        static_assert(derived_from<Derived, Base const volatile>);
+        static_assert(derived_from<Derived const, Base const volatile>);
+        static_assert(derived_from<Derived volatile, Base const volatile>);
+        static_assert(derived_from<Derived const volatile, Base const volatile>);
         return true;
     }
 
-    STATIC_ASSERT(test<SimpleBase, SimpleBase>());
-    STATIC_ASSERT(!derived_from<SimpleBase&, SimpleBase&>);
+    static_assert(test<SimpleBase, SimpleBase>());
+    static_assert(!derived_from<SimpleBase&, SimpleBase&>);
 
     template <int>
     struct Middle : SimpleBase {};
 
-    STATIC_ASSERT(test<Middle<0>, SimpleBase>());
-    STATIC_ASSERT(!derived_from<SimpleBase, Middle<0>>);
-    STATIC_ASSERT(!derived_from<Middle<0>&, SimpleBase&>);
-    STATIC_ASSERT(!derived_from<Middle<0>*, SimpleBase*>);
-    STATIC_ASSERT(!derived_from<Middle<0>[42], SimpleBase[42]>);
+    static_assert(test<Middle<0>, SimpleBase>());
+    static_assert(!derived_from<SimpleBase, Middle<0>>);
+    static_assert(!derived_from<Middle<0>&, SimpleBase&>);
+    static_assert(!derived_from<Middle<0>*, SimpleBase*>);
+    static_assert(!derived_from<Middle<0>[42], SimpleBase[42]>);
 
-    STATIC_ASSERT(test<Middle<1>, SimpleBase>());
-    STATIC_ASSERT(!derived_from<SimpleBase, Middle<1>>);
+    static_assert(test<Middle<1>, SimpleBase>());
+    static_assert(!derived_from<SimpleBase, Middle<1>>);
 
-    STATIC_ASSERT(test<DerivesFrom<Middle<0>, Middle<1>>, Middle<0>>());
-    STATIC_ASSERT(test<DerivesFrom<Middle<0>, Middle<1>>, Middle<1>>());
-    STATIC_ASSERT(!derived_from<DerivesFrom<Middle<0>, Middle<1>>, SimpleBase>);
+    static_assert(test<DerivesFrom<Middle<0>, Middle<1>>, Middle<0>>());
+    static_assert(test<DerivesFrom<Middle<0>, Middle<1>>, Middle<1>>());
+    static_assert(!derived_from<DerivesFrom<Middle<0>, Middle<1>>, SimpleBase>);
 
     class PrivateDerived : private Middle<0>, private Middle<1> {
     public:
@@ -362,18 +360,18 @@ namespace test_derived_from {
     void PrivateDerived::f() {
         // Check these in a member to verify that access doesn't depend on context
 #ifndef __EDG__ // TRANSITION, VSO-1898937
-        STATIC_ASSERT(!derived_from<PrivateDerived, Middle<0>>);
-        STATIC_ASSERT(!derived_from<PrivateDerived, Middle<1>>);
+        static_assert(!derived_from<PrivateDerived, Middle<0>>);
+        static_assert(!derived_from<PrivateDerived, Middle<1>>);
 #endif // ^^^ no workaround ^^^
     }
 
-    STATIC_ASSERT(!derived_from<PrivateDerived, SimpleBase>);
+    static_assert(!derived_from<PrivateDerived, SimpleBase>);
 
-    STATIC_ASSERT(test<IncompleteClass, IncompleteClass>());
+    static_assert(test<IncompleteClass, IncompleteClass>());
 
-    STATIC_ASSERT(!derived_from<IncompleteUnion, IncompleteUnion>);
-    STATIC_ASSERT(!derived_from<IncompleteClass, IncompleteUnion>);
-    STATIC_ASSERT(!derived_from<IncompleteUnion, IncompleteClass>);
+    static_assert(!derived_from<IncompleteUnion, IncompleteUnion>);
+    static_assert(!derived_from<IncompleteClass, IncompleteUnion>);
+    static_assert(!derived_from<IncompleteUnion, IncompleteClass>);
 } // namespace test_derived_from
 
 namespace test_convertible_to {
@@ -388,216 +386,216 @@ namespace test_convertible_to {
     template <class From, class To>
     constexpr bool test() {
         constexpr bool result = convertible_to<From, To>;
-        STATIC_ASSERT(convertible_to<From const, To> == result);
-        STATIC_ASSERT(convertible_to<From, To const> == result);
-        STATIC_ASSERT(convertible_to<From const, To const> == result);
+        static_assert(convertible_to<From const, To> == result);
+        static_assert(convertible_to<From, To const> == result);
+        static_assert(convertible_to<From const, To const> == result);
         return result;
     }
 #pragma warning(pop)
 
     // void
-    STATIC_ASSERT(test<void, void>());
-    STATIC_ASSERT(!test<void, fn>());
-    STATIC_ASSERT(!test<void, fn&>());
-    STATIC_ASSERT(!test<void, fn*>());
-    STATIC_ASSERT(!test<void, char_array>());
-    STATIC_ASSERT(!test<void, char_array&>());
-    STATIC_ASSERT(!test<void, char>());
-    STATIC_ASSERT(!test<void, char&>());
-    STATIC_ASSERT(!test<void, char*>());
-    STATIC_ASSERT(!test<char, void>());
+    static_assert(test<void, void>());
+    static_assert(!test<void, fn>());
+    static_assert(!test<void, fn&>());
+    static_assert(!test<void, fn*>());
+    static_assert(!test<void, char_array>());
+    static_assert(!test<void, char_array&>());
+    static_assert(!test<void, char>());
+    static_assert(!test<void, char&>());
+    static_assert(!test<void, char*>());
+    static_assert(!test<char, void>());
 
     // fn
-    STATIC_ASSERT(!test<fn, void>());
-    STATIC_ASSERT(!test<fn, fn>());
-    STATIC_ASSERT(test<fn, fn&>());
-    STATIC_ASSERT(test<fn, fn*>());
-    STATIC_ASSERT(test<fn, fn* const>());
+    static_assert(!test<fn, void>());
+    static_assert(!test<fn, fn>());
+    static_assert(test<fn, fn&>());
+    static_assert(test<fn, fn*>());
+    static_assert(test<fn, fn* const>());
 
-    STATIC_ASSERT(convertible_to<fn, fn&&>);
+    static_assert(convertible_to<fn, fn&&>);
 
-    STATIC_ASSERT(!test<fn, char_array>());
-    STATIC_ASSERT(!test<fn, char_array&>());
-    STATIC_ASSERT(!test<fn, char>());
-    STATIC_ASSERT(!test<fn, char&>());
-    STATIC_ASSERT(!test<fn, char*>());
+    static_assert(!test<fn, char_array>());
+    static_assert(!test<fn, char_array&>());
+    static_assert(!test<fn, char>());
+    static_assert(!test<fn, char&>());
+    static_assert(!test<fn, char*>());
 
     // fn&
-    STATIC_ASSERT(!test<fn&, void>());
-    STATIC_ASSERT(!test<fn&, fn>());
-    STATIC_ASSERT(test<fn&, fn&>());
+    static_assert(!test<fn&, void>());
+    static_assert(!test<fn&, fn>());
+    static_assert(test<fn&, fn&>());
 
-    STATIC_ASSERT(test<fn&, fn*>());
-    STATIC_ASSERT(!test<fn&, char_array>());
-    STATIC_ASSERT(!test<fn&, char_array&>());
-    STATIC_ASSERT(!test<fn&, char>());
-    STATIC_ASSERT(!test<fn&, char&>());
-    STATIC_ASSERT(!test<fn&, char*>());
+    static_assert(test<fn&, fn*>());
+    static_assert(!test<fn&, char_array>());
+    static_assert(!test<fn&, char_array&>());
+    static_assert(!test<fn&, char>());
+    static_assert(!test<fn&, char&>());
+    static_assert(!test<fn&, char*>());
 
     // fn*
-    STATIC_ASSERT(!test<fn*, void>());
-    STATIC_ASSERT(!test<fn*, fn>());
-    STATIC_ASSERT(!test<fn*, fn&>());
-    STATIC_ASSERT(test<fn*, fn*>());
+    static_assert(!test<fn*, void>());
+    static_assert(!test<fn*, fn>());
+    static_assert(!test<fn*, fn&>());
+    static_assert(test<fn*, fn*>());
 
-    STATIC_ASSERT(!test<fn*, char_array>());
-    STATIC_ASSERT(!test<fn*, char_array&>());
-    STATIC_ASSERT(!test<fn*, char>());
-    STATIC_ASSERT(!test<fn*, char&>());
-    STATIC_ASSERT(!test<fn*, char*>());
+    static_assert(!test<fn*, char_array>());
+    static_assert(!test<fn*, char_array&>());
+    static_assert(!test<fn*, char>());
+    static_assert(!test<fn*, char&>());
+    static_assert(!test<fn*, char*>());
 
     // Abominable function
-    STATIC_ASSERT(!convertible_to<const_fn, fn>);
-    STATIC_ASSERT(!convertible_to<const_fn, fn*>);
-    STATIC_ASSERT(!convertible_to<const_fn, fn&>);
-    STATIC_ASSERT(!convertible_to<const_fn, fn&&>);
-    STATIC_ASSERT(!convertible_to<fn*, const_fn>);
-    STATIC_ASSERT(!convertible_to<fn&, const_fn>);
-    STATIC_ASSERT(!convertible_to<const_fn, const_fn>);
-    STATIC_ASSERT(!convertible_to<const_fn, void>);
+    static_assert(!convertible_to<const_fn, fn>);
+    static_assert(!convertible_to<const_fn, fn*>);
+    static_assert(!convertible_to<const_fn, fn&>);
+    static_assert(!convertible_to<const_fn, fn&&>);
+    static_assert(!convertible_to<fn*, const_fn>);
+    static_assert(!convertible_to<fn&, const_fn>);
+    static_assert(!convertible_to<const_fn, const_fn>);
+    static_assert(!convertible_to<const_fn, void>);
 
     // char_array
-    STATIC_ASSERT(!test<char_array, void>());
-    STATIC_ASSERT(!test<char_array, fn>());
-    STATIC_ASSERT(!test<char_array, fn&>());
-    STATIC_ASSERT(!test<char_array, fn*>());
-    STATIC_ASSERT(!test<char_array, char_array>());
+    static_assert(!test<char_array, void>());
+    static_assert(!test<char_array, fn>());
+    static_assert(!test<char_array, fn&>());
+    static_assert(!test<char_array, fn*>());
+    static_assert(!test<char_array, char_array>());
 
-    STATIC_ASSERT(!convertible_to<char_array, char_array&>);
-    STATIC_ASSERT(convertible_to<char_array, char_array const&>);
-    STATIC_ASSERT(!convertible_to<char_array, char_array const volatile&>);
+    static_assert(!convertible_to<char_array, char_array&>);
+    static_assert(convertible_to<char_array, char_array const&>);
+    static_assert(!convertible_to<char_array, char_array const volatile&>);
 
-    STATIC_ASSERT(!convertible_to<char_array const, char_array&>);
-    STATIC_ASSERT(convertible_to<char_array const, char_array const&>);
-    STATIC_ASSERT(!convertible_to<char_array, char_array volatile&>);
-    STATIC_ASSERT(!convertible_to<char_array, char_array const volatile&>);
+    static_assert(!convertible_to<char_array const, char_array&>);
+    static_assert(convertible_to<char_array const, char_array const&>);
+    static_assert(!convertible_to<char_array, char_array volatile&>);
+    static_assert(!convertible_to<char_array, char_array const volatile&>);
 
-    STATIC_ASSERT(convertible_to<char_array, char_array&&>);
-    STATIC_ASSERT(convertible_to<char_array, char_array const&&>);
-    STATIC_ASSERT(convertible_to<char_array, char_array volatile&&>);
-    STATIC_ASSERT(convertible_to<char_array, char_array const volatile&&>);
-    STATIC_ASSERT(convertible_to<char_array const, char_array const&&>);
-    STATIC_ASSERT(!convertible_to<char_array&, char_array&&>);
-    STATIC_ASSERT(!convertible_to<char_array&&, char_array&>);
+    static_assert(convertible_to<char_array, char_array&&>);
+    static_assert(convertible_to<char_array, char_array const&&>);
+    static_assert(convertible_to<char_array, char_array volatile&&>);
+    static_assert(convertible_to<char_array, char_array const volatile&&>);
+    static_assert(convertible_to<char_array const, char_array const&&>);
+    static_assert(!convertible_to<char_array&, char_array&&>);
+    static_assert(!convertible_to<char_array&&, char_array&>);
 
-    STATIC_ASSERT(!test<char_array, char>());
-    STATIC_ASSERT(!test<char_array, char&>());
+    static_assert(!test<char_array, char>());
+    static_assert(!test<char_array, char&>());
 
-    STATIC_ASSERT(convertible_to<char_array, char*>);
-    STATIC_ASSERT(convertible_to<char_array, char const*>);
-    STATIC_ASSERT(convertible_to<char_array, char* const>);
-    STATIC_ASSERT(convertible_to<char_array, char* const volatile>);
+    static_assert(convertible_to<char_array, char*>);
+    static_assert(convertible_to<char_array, char const*>);
+    static_assert(convertible_to<char_array, char* const>);
+    static_assert(convertible_to<char_array, char* const volatile>);
 
-    STATIC_ASSERT(!convertible_to<char_array const, char*>);
-    STATIC_ASSERT(convertible_to<char_array const, char const*>);
+    static_assert(!convertible_to<char_array const, char*>);
+    static_assert(convertible_to<char_array const, char const*>);
 
-    STATIC_ASSERT(!convertible_to<char[42][42], char*>);
-    STATIC_ASSERT(!convertible_to<char[][1], char*>);
+    static_assert(!convertible_to<char[42][42], char*>);
+    static_assert(!convertible_to<char[][1], char*>);
 
     // char_array&
-    STATIC_ASSERT(!test<char_array&, void>());
-    STATIC_ASSERT(!test<char_array&, fn>());
-    STATIC_ASSERT(!test<char_array&, fn&>());
-    STATIC_ASSERT(!test<char_array&, fn*>());
-    STATIC_ASSERT(!test<char_array&, char_array>());
+    static_assert(!test<char_array&, void>());
+    static_assert(!test<char_array&, fn>());
+    static_assert(!test<char_array&, fn&>());
+    static_assert(!test<char_array&, fn*>());
+    static_assert(!test<char_array&, char_array>());
 
-    STATIC_ASSERT(convertible_to<char_array&, char_array&>);
-    STATIC_ASSERT(convertible_to<char_array&, char_array const&>);
-    STATIC_ASSERT(!convertible_to<char_array const&, char_array&>);
-    STATIC_ASSERT(convertible_to<char_array const&, char_array const&>);
+    static_assert(convertible_to<char_array&, char_array&>);
+    static_assert(convertible_to<char_array&, char_array const&>);
+    static_assert(!convertible_to<char_array const&, char_array&>);
+    static_assert(convertible_to<char_array const&, char_array const&>);
 
-    STATIC_ASSERT(!test<char_array&, char>());
-    STATIC_ASSERT(!test<char_array&, char&>());
+    static_assert(!test<char_array&, char>());
+    static_assert(!test<char_array&, char&>());
 
-    STATIC_ASSERT(convertible_to<char_array&, char*>);
-    STATIC_ASSERT(convertible_to<char_array&, char const*>);
-    STATIC_ASSERT(!convertible_to<char_array const&, char*>);
-    STATIC_ASSERT(convertible_to<char_array const&, char const*>);
+    static_assert(convertible_to<char_array&, char*>);
+    static_assert(convertible_to<char_array&, char const*>);
+    static_assert(!convertible_to<char_array const&, char*>);
+    static_assert(convertible_to<char_array const&, char const*>);
 
-    STATIC_ASSERT(convertible_to<char_array, ConvertsFrom<char const*>>);
-    STATIC_ASSERT(convertible_to<char (&)[], ConvertsFrom<char const*>>);
+    static_assert(convertible_to<char_array, ConvertsFrom<char const*>>);
+    static_assert(convertible_to<char (&)[], ConvertsFrom<char const*>>);
 
     // volatile array glvalues
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
-    STATIC_ASSERT(convertible_to<int volatile (&)[42], int volatile (&)[42]>);
-    STATIC_ASSERT(convertible_to<int volatile (&)[42][13], int volatile (&)[42][13]>);
+    static_assert(convertible_to<int volatile (&)[42], int volatile (&)[42]>);
+    static_assert(convertible_to<int volatile (&)[42][13], int volatile (&)[42][13]>);
 #endif // ^^^ no workaround ^^^
-    STATIC_ASSERT(convertible_to<int volatile (&&)[42], int volatile (&&)[42]>);
-    STATIC_ASSERT(convertible_to<int volatile (&&)[42][13], int volatile (&&)[42][13]>);
+    static_assert(convertible_to<int volatile (&&)[42], int volatile (&&)[42]>);
+    static_assert(convertible_to<int volatile (&&)[42][13], int volatile (&&)[42][13]>);
 
 
     // char
-    STATIC_ASSERT(!test<char, void>());
-    STATIC_ASSERT(!test<char, fn>());
-    STATIC_ASSERT(!test<char, fn&>());
-    STATIC_ASSERT(!test<char, fn*>());
-    STATIC_ASSERT(!test<char, char_array>());
-    STATIC_ASSERT(!test<char, char_array&>());
+    static_assert(!test<char, void>());
+    static_assert(!test<char, fn>());
+    static_assert(!test<char, fn&>());
+    static_assert(!test<char, fn*>());
+    static_assert(!test<char, char_array>());
+    static_assert(!test<char, char_array&>());
 
-    STATIC_ASSERT(test<char, char>());
+    static_assert(test<char, char>());
 
-    STATIC_ASSERT(!convertible_to<char, char&>);
-    STATIC_ASSERT(convertible_to<char, char const&>);
-    STATIC_ASSERT(!convertible_to<char const, char&>);
-    STATIC_ASSERT(convertible_to<char const, char const&>);
+    static_assert(!convertible_to<char, char&>);
+    static_assert(convertible_to<char, char const&>);
+    static_assert(!convertible_to<char const, char&>);
+    static_assert(convertible_to<char const, char const&>);
 
-    STATIC_ASSERT(!test<char, char*>());
+    static_assert(!test<char, char*>());
 
     // char&
-    STATIC_ASSERT(!test<char&, void>());
-    STATIC_ASSERT(!test<char&, fn>());
-    STATIC_ASSERT(!test<char&, fn&>());
-    STATIC_ASSERT(!test<char&, fn*>());
-    STATIC_ASSERT(!test<char&, char_array>());
-    STATIC_ASSERT(!test<char&, char_array&>());
+    static_assert(!test<char&, void>());
+    static_assert(!test<char&, fn>());
+    static_assert(!test<char&, fn&>());
+    static_assert(!test<char&, fn*>());
+    static_assert(!test<char&, char_array>());
+    static_assert(!test<char&, char_array&>());
 
-    STATIC_ASSERT(test<char&, char>());
+    static_assert(test<char&, char>());
 
-    STATIC_ASSERT(convertible_to<char&, char&>);
-    STATIC_ASSERT(convertible_to<char&, char const&>);
-    STATIC_ASSERT(!convertible_to<char const&, char&>);
-    STATIC_ASSERT(convertible_to<char const&, char const&>);
+    static_assert(convertible_to<char&, char&>);
+    static_assert(convertible_to<char&, char const&>);
+    static_assert(!convertible_to<char const&, char&>);
+    static_assert(convertible_to<char const&, char const&>);
 
-    STATIC_ASSERT(!test<char&, char*>());
+    static_assert(!test<char&, char*>());
 
     // char*
-    STATIC_ASSERT(!test<char*, void>());
-    STATIC_ASSERT(!test<char*, fn>());
-    STATIC_ASSERT(!test<char*, fn&>());
-    STATIC_ASSERT(!test<char*, fn*>());
-    STATIC_ASSERT(!test<char*, char_array>());
-    STATIC_ASSERT(!test<char*, char_array&>());
+    static_assert(!test<char*, void>());
+    static_assert(!test<char*, fn>());
+    static_assert(!test<char*, fn&>());
+    static_assert(!test<char*, fn*>());
+    static_assert(!test<char*, char_array>());
+    static_assert(!test<char*, char_array&>());
 
-    STATIC_ASSERT(!test<char*, char>());
-    STATIC_ASSERT(!test<char*, char&>());
+    static_assert(!test<char*, char>());
+    static_assert(!test<char*, char&>());
 
-    STATIC_ASSERT(convertible_to<char*, char*>);
-    STATIC_ASSERT(convertible_to<char*, char const*>);
-    STATIC_ASSERT(!convertible_to<char const*, char*>);
-    STATIC_ASSERT(convertible_to<char const*, char const*>);
+    static_assert(convertible_to<char*, char*>);
+    static_assert(convertible_to<char*, char const*>);
+    static_assert(!convertible_to<char const*, char*>);
+    static_assert(convertible_to<char const*, char const*>);
 
-    STATIC_ASSERT(convertible_to<Immobile&, Immobile&>);
-    STATIC_ASSERT(convertible_to<Immobile&, Immobile const&>);
-    STATIC_ASSERT(convertible_to<Immobile&, Immobile const volatile&>);
-    STATIC_ASSERT(convertible_to<Immobile&, Immobile volatile&>);
-    STATIC_ASSERT(convertible_to<Immobile const&, Immobile const&>);
-    STATIC_ASSERT(convertible_to<Immobile const&, Immobile const volatile&>);
-    STATIC_ASSERT(convertible_to<Immobile volatile&, Immobile const volatile&>);
-    STATIC_ASSERT(convertible_to<Immobile const volatile&, Immobile const volatile&>);
-    STATIC_ASSERT(!convertible_to<Immobile const&, Immobile&>);
+    static_assert(convertible_to<Immobile&, Immobile&>);
+    static_assert(convertible_to<Immobile&, Immobile const&>);
+    static_assert(convertible_to<Immobile&, Immobile const volatile&>);
+    static_assert(convertible_to<Immobile&, Immobile volatile&>);
+    static_assert(convertible_to<Immobile const&, Immobile const&>);
+    static_assert(convertible_to<Immobile const&, Immobile const volatile&>);
+    static_assert(convertible_to<Immobile volatile&, Immobile const volatile&>);
+    static_assert(convertible_to<Immobile const volatile&, Immobile const volatile&>);
+    static_assert(!convertible_to<Immobile const&, Immobile&>);
 
-    STATIC_ASSERT(!test<Immobile&, Immobile>());
-    STATIC_ASSERT(!test<Immobile const&, Immobile>());
-    STATIC_ASSERT(!test<Immobile, Immobile>());
+    static_assert(!test<Immobile&, Immobile>());
+    static_assert(!test<Immobile const&, Immobile>());
+    static_assert(!test<Immobile, Immobile>());
 
     // Ensure that DoNotInstantiate is not instantiated by is_convertible when it is not needed.
     // (For example, DoNotInstantiate is instantiated by ADL lookup for arguments of type DoNotInstantiate*.)
-    STATIC_ASSERT(convertible_to<DoNotInstantiate<int>*, DoNotInstantiate<int>*>);
+    static_assert(convertible_to<DoNotInstantiate<int>*, DoNotInstantiate<int>*>);
 
-    STATIC_ASSERT(test<SimpleBase, SimpleBase>());
-    STATIC_ASSERT(test<SimpleDerived, SimpleDerived>());
-    STATIC_ASSERT(test<SimpleDerived, SimpleBase>());
-    STATIC_ASSERT(!test<SimpleBase, SimpleDerived>());
+    static_assert(test<SimpleBase, SimpleBase>());
+    static_assert(test<SimpleDerived, SimpleDerived>());
+    static_assert(test<SimpleDerived, SimpleBase>());
+    static_assert(!test<SimpleBase, SimpleDerived>());
 
     struct ImplicitConversionOnly;
     struct Target {
@@ -607,9 +605,9 @@ namespace test_convertible_to {
     struct ImplicitConversionOnly {
         operator Target() const;
     };
-    STATIC_ASSERT(test<ImplicitTo<Target>, Target>());
-    STATIC_ASSERT(!test<ExplicitTo<Target>, Target>());
-    STATIC_ASSERT(!test<ImplicitConversionOnly, Target>());
+    static_assert(test<ImplicitTo<Target>, Target>());
+    static_assert(!test<ExplicitTo<Target>, Target>());
+    static_assert(!test<ImplicitConversionOnly, Target>());
 
     namespace overloading { // a test of overload resolution moreso than the concept itself
         enum class result { exact, convertible, unrelated };
@@ -628,11 +626,11 @@ namespace test_convertible_to {
             return result::unrelated;
         }
 
-        STATIC_ASSERT(f(ConvertsFrom<int>{}) == result::exact); // the most specialized overload is chosen
+        static_assert(f(ConvertsFrom<int>{}) == result::exact); // the most specialized overload is chosen
         constexpr ConvertsFrom<int> cfi{};
-        STATIC_ASSERT(f(cfi) == result::exact); // Ditto with qualification conversion
-        STATIC_ASSERT(f(42) == result::convertible); // the more-constrained overload is chosen
-        STATIC_ASSERT(f("meow") == result::unrelated); // everything isn't completely broken
+        static_assert(f(cfi) == result::exact); // Ditto with qualification conversion
+        static_assert(f(42) == result::convertible); // the more-constrained overload is chosen
+        static_assert(f("meow") == result::unrelated); // everything isn't completely broken
     } // namespace overloading
 } // namespace test_convertible_to
 
@@ -642,71 +640,71 @@ namespace test_common_reference_with {
     template <class T, class U>
     constexpr bool test() {
         constexpr bool result = common_reference_with<T, U>;
-        STATIC_ASSERT(common_reference_with<U, T> == result);
+        static_assert(common_reference_with<U, T> == result);
         return result;
     }
 
-    STATIC_ASSERT(test<int, int>());
-    STATIC_ASSERT(test<int, double>());
-    STATIC_ASSERT(test<double, int>());
-    STATIC_ASSERT(test<double, double>());
-    STATIC_ASSERT(!test<void, int>());
-    STATIC_ASSERT(!test<int*, int>());
-    STATIC_ASSERT(test<void*, int*>());
-    STATIC_ASSERT(test<double, long long>());
-    STATIC_ASSERT(test<void, void>());
+    static_assert(test<int, int>());
+    static_assert(test<int, double>());
+    static_assert(test<double, int>());
+    static_assert(test<double, double>());
+    static_assert(!test<void, int>());
+    static_assert(!test<int*, int>());
+    static_assert(test<void*, int*>());
+    static_assert(test<double, long long>());
+    static_assert(test<void, void>());
 
     // common_reference_t<<ExplicitTo<EmptyClass>, EmptyClass> is EmptyClass, to which ExplicitTo<EmptyClass> is
     // not implicitly convertible
-    STATIC_ASSERT(!test<ExplicitTo<EmptyClass>, EmptyClass>());
+    static_assert(!test<ExplicitTo<EmptyClass>, EmptyClass>());
 
-    STATIC_ASSERT(test<Immobile&, DerivesFrom<Immobile>&>());
-    STATIC_ASSERT(test<Immobile&&, DerivesFrom<Immobile>&&>());
-    STATIC_ASSERT(!test<Immobile, DerivesFrom<Immobile>>());
+    static_assert(test<Immobile&, DerivesFrom<Immobile>&>());
+    static_assert(test<Immobile&&, DerivesFrom<Immobile>&&>());
+    static_assert(!test<Immobile, DerivesFrom<Immobile>>());
 
-    STATIC_ASSERT(test<SimpleBase&, SimpleDerived&>());
-    STATIC_ASSERT(test<SimpleBase&, SimpleDerived const&>());
-    STATIC_ASSERT(test<SimpleBase const&, SimpleDerived&>());
-    STATIC_ASSERT(test<SimpleBase const&, SimpleDerived const&>());
+    static_assert(test<SimpleBase&, SimpleDerived&>());
+    static_assert(test<SimpleBase&, SimpleDerived const&>());
+    static_assert(test<SimpleBase const&, SimpleDerived&>());
+    static_assert(test<SimpleBase const&, SimpleDerived const&>());
 
-    STATIC_ASSERT(test<SimpleBase&&, SimpleDerived&&>());
-    STATIC_ASSERT(test<SimpleBase&&, SimpleDerived const&&>());
-    STATIC_ASSERT(test<SimpleBase const&&, SimpleDerived&&>());
-    STATIC_ASSERT(test<SimpleBase const&&, SimpleDerived const&&>());
+    static_assert(test<SimpleBase&&, SimpleDerived&&>());
+    static_assert(test<SimpleBase&&, SimpleDerived const&&>());
+    static_assert(test<SimpleBase const&&, SimpleDerived&&>());
+    static_assert(test<SimpleBase const&&, SimpleDerived const&&>());
 
-    STATIC_ASSERT(test<SimpleBase&, SimpleDerived&&>());
-    STATIC_ASSERT(test<SimpleBase&, SimpleDerived const&&>());
-    STATIC_ASSERT(test<SimpleBase const&, SimpleDerived&&>());
-    STATIC_ASSERT(test<SimpleBase const&, SimpleDerived const&&>());
+    static_assert(test<SimpleBase&, SimpleDerived&&>());
+    static_assert(test<SimpleBase&, SimpleDerived const&&>());
+    static_assert(test<SimpleBase const&, SimpleDerived&&>());
+    static_assert(test<SimpleBase const&, SimpleDerived const&&>());
 
-    STATIC_ASSERT(test<SimpleBase&&, SimpleDerived&>());
-    STATIC_ASSERT(test<SimpleBase&&, SimpleDerived const&>());
-    STATIC_ASSERT(test<SimpleBase const&&, SimpleDerived&>());
-    STATIC_ASSERT(test<SimpleBase const&&, SimpleDerived const&>());
+    static_assert(test<SimpleBase&&, SimpleDerived&>());
+    static_assert(test<SimpleBase&&, SimpleDerived const&>());
+    static_assert(test<SimpleBase const&&, SimpleDerived&>());
+    static_assert(test<SimpleBase const&&, SimpleDerived const&>());
 
     // https://github.com/ericniebler/stl2/issues/338
-    STATIC_ASSERT(test<int&, ConvertsFrom<int&>>());
+    static_assert(test<int&, ConvertsFrom<int&>>());
 
-    STATIC_ASSERT(!test<MoveOnly const&, MoveOnly>());
-    STATIC_ASSERT(test<MoveOnly const&, MoveOnly&>());
-    STATIC_ASSERT(!test<DerivesFrom<MoveOnly> const&, MoveOnly>());
-    STATIC_ASSERT(test<DerivesFrom<MoveOnly> const&, MoveOnly&&>());
-    STATIC_ASSERT(!test<MoveOnly const&, DerivesFrom<MoveOnly>>());
-    STATIC_ASSERT(test<MoveOnly const&, DerivesFrom<MoveOnly> const&>());
+    static_assert(!test<MoveOnly const&, MoveOnly>());
+    static_assert(test<MoveOnly const&, MoveOnly&>());
+    static_assert(!test<DerivesFrom<MoveOnly> const&, MoveOnly>());
+    static_assert(test<DerivesFrom<MoveOnly> const&, MoveOnly&&>());
+    static_assert(!test<MoveOnly const&, DerivesFrom<MoveOnly>>());
+    static_assert(test<MoveOnly const&, DerivesFrom<MoveOnly> const&>());
 
-    STATIC_ASSERT(
+    static_assert(
         std::is_same_v<Interconvertible<2>, common_reference_t<Interconvertible<0>&, Interconvertible<1> const&>>);
-    STATIC_ASSERT(!test<Interconvertible<0>&, Interconvertible<1> const&>());
+    static_assert(!test<Interconvertible<0>&, Interconvertible<1> const&>());
 
-    STATIC_ASSERT(test<SimpleBase, ConvertsFrom<int, SimpleBase>>());
+    static_assert(test<SimpleBase, ConvertsFrom<int, SimpleBase>>());
 
-    STATIC_ASSERT(test<int volatile&, int volatile&>());
+    static_assert(test<int volatile&, int volatile&>());
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
-    STATIC_ASSERT(test<int volatile (&)[42], int volatile (&)[42]>());
-    STATIC_ASSERT(test<int volatile (&)[42][13], int volatile (&)[42][13]>());
+    static_assert(test<int volatile (&)[42], int volatile (&)[42]>());
+    static_assert(test<int volatile (&)[42][13], int volatile (&)[42][13]>());
 #endif // ^^^ no workaround ^^^
-    STATIC_ASSERT(test<int volatile (&&)[42], int volatile (&&)[42]>());
-    STATIC_ASSERT(test<int volatile (&&)[42][13], int volatile (&&)[42][13]>());
+    static_assert(test<int volatile (&&)[42], int volatile (&&)[42]>());
+    static_assert(test<int volatile (&&)[42][13], int volatile (&&)[42][13]>());
 } // namespace test_common_reference_with
 
 namespace test_common_with {
@@ -731,57 +729,57 @@ namespace test_common_with {
     template <class T, class U>
     constexpr bool test() {
         constexpr bool result = common_with<T, U>;
-        STATIC_ASSERT(common_with<U, T> == result);
+        static_assert(common_with<U, T> == result);
         return result;
     }
 
-    STATIC_ASSERT(test<int, double>());
-    STATIC_ASSERT(test<double, int>());
-    STATIC_ASSERT(test<double, double>());
-    STATIC_ASSERT(test<void*, int*>());
-    STATIC_ASSERT(test<double, long long>());
+    static_assert(test<int, double>());
+    static_assert(test<double, int>());
+    static_assert(test<double, double>());
+    static_assert(test<void*, int*>());
+    static_assert(test<double, long long>());
 
-    STATIC_ASSERT(test<int, int>());
-    STATIC_ASSERT(test<int, int const>());
-    STATIC_ASSERT(test<int const, int const>());
+    static_assert(test<int, int>());
+    static_assert(test<int, int const>());
+    static_assert(test<int const, int const>());
 
-    STATIC_ASSERT(test<long, int const>());
-    STATIC_ASSERT(test<long const, int>());
-    STATIC_ASSERT(test<long, int volatile>());
-    STATIC_ASSERT(test<long volatile, int>());
-    STATIC_ASSERT(test<long const, int const>());
+    static_assert(test<long, int const>());
+    static_assert(test<long const, int>());
+    static_assert(test<long, int volatile>());
+    static_assert(test<long volatile, int>());
+    static_assert(test<long const, int const>());
 
-    STATIC_ASSERT(test<double, char>());
-    STATIC_ASSERT(test<short, char>());
+    static_assert(test<double, char>());
+    static_assert(test<short, char>());
 
-    STATIC_ASSERT(test<void, void>());
-    STATIC_ASSERT(test<void, void const>());
-    STATIC_ASSERT(test<void const, void>());
-    STATIC_ASSERT(test<void, void volatile>());
-    STATIC_ASSERT(test<void volatile, void>());
-    STATIC_ASSERT(test<void const, void const>());
+    static_assert(test<void, void>());
+    static_assert(test<void, void const>());
+    static_assert(test<void const, void>());
+    static_assert(test<void, void volatile>());
+    static_assert(test<void volatile, void>());
+    static_assert(test<void const, void const>());
 
-    STATIC_ASSERT(!test<void, int>());
-    STATIC_ASSERT(!test<int*, int>());
+    static_assert(!test<void, int>());
+    static_assert(!test<int*, int>());
 
-    STATIC_ASSERT(test<std::reference_wrapper<int>, int>());
+    static_assert(test<std::reference_wrapper<int>, int>());
 
-    STATIC_ASSERT(test<ExplicitFromConstLvalue<int>, ExplicitFromConstLvalue<int>>());
-    STATIC_ASSERT(!test<int, ExplicitFromConstLvalue<int>>());
+    static_assert(test<ExplicitFromConstLvalue<int>, ExplicitFromConstLvalue<int>>());
+    static_assert(!test<int, ExplicitFromConstLvalue<int>>());
 
-    STATIC_ASSERT(test<void*, IncompleteClass*>());
-    STATIC_ASSERT(test<void*, DoNotInstantiate<int>*>());
+    static_assert(test<void*, IncompleteClass*>());
+    static_assert(test<void*, DoNotInstantiate<int>*>());
 
-    STATIC_ASSERT(is_same_v<common_type_t<ExplicitTo<EmptyClass>, EmptyClass>, EmptyClass>);
-    STATIC_ASSERT(is_same_v<common_type_t<EmptyClass, ExplicitTo<EmptyClass>>, EmptyClass>);
-    STATIC_ASSERT(!test<ExplicitTo<EmptyClass>, EmptyClass>());
+    static_assert(is_same_v<common_type_t<ExplicitTo<EmptyClass>, EmptyClass>, EmptyClass>);
+    static_assert(is_same_v<common_type_t<EmptyClass, ExplicitTo<EmptyClass>>, EmptyClass>);
+    static_assert(!test<ExplicitTo<EmptyClass>, EmptyClass>());
 
-    STATIC_ASSERT(test<SimpleBase, SimpleDerived>());
-    STATIC_ASSERT(test<SimpleBase, ConvertsFrom<SimpleBase, int>>());
+    static_assert(test<SimpleBase, SimpleDerived>());
+    static_assert(test<SimpleBase, ConvertsFrom<SimpleBase, int>>());
 
-    STATIC_ASSERT(is_same_v<common_type_t<Immobile, DerivesFrom<Immobile>>, Immobile>);
-    STATIC_ASSERT(is_same_v<common_type_t<DerivesFrom<Immobile>, Immobile>, Immobile>);
-    STATIC_ASSERT(!test<Immobile, DerivesFrom<Immobile>>());
+    static_assert(is_same_v<common_type_t<Immobile, DerivesFrom<Immobile>>, Immobile>);
+    static_assert(is_same_v<common_type_t<DerivesFrom<Immobile>, Immobile>, Immobile>);
+    static_assert(!test<Immobile, DerivesFrom<Immobile>>());
 } // namespace test_common_with
 
 namespace test_integral_concepts {
@@ -811,20 +809,20 @@ namespace test_integral_concepts {
         }
 
         constexpr bool test_subsumption() {
-            STATIC_ASSERT(f(0.0f) == is::not_integral);
-            STATIC_ASSERT(f(0.0) == is::not_integral);
-            STATIC_ASSERT(f(0) == is::signed_integral);
-            STATIC_ASSERT(f(0u) == is::unsigned_integral);
-            STATIC_ASSERT(f('a') == is::signed_integral || f('a') == is::unsigned_integral);
-            STATIC_ASSERT(f(nullptr) == is::not_integral);
-            STATIC_ASSERT(f(0ull) == is::ull);
-            STATIC_ASSERT(f(static_cast<int*>(nullptr)) == is::not_integral);
+            static_assert(f(0.0f) == is::not_integral);
+            static_assert(f(0.0) == is::not_integral);
+            static_assert(f(0) == is::signed_integral);
+            static_assert(f(0u) == is::unsigned_integral);
+            static_assert(f('a') == is::signed_integral || f('a') == is::unsigned_integral);
+            static_assert(f(nullptr) == is::not_integral);
+            static_assert(f(0ull) == is::ull);
+            static_assert(f(static_cast<int*>(nullptr)) == is::not_integral);
             struct A {};
-            STATIC_ASSERT(f(static_cast<int A::*>(nullptr)) == is::not_integral);
-            STATIC_ASSERT(f(static_cast<int (A::*)()>(nullptr)) == is::not_integral);
+            static_assert(f(static_cast<int A::*>(nullptr)) == is::not_integral);
+            static_assert(f(static_cast<int (A::*)()>(nullptr)) == is::not_integral);
             return true;
         }
-        STATIC_ASSERT(test_subsumption());
+        static_assert(test_subsumption());
     } // namespace subsumption
 
 #pragma warning(push)
@@ -834,83 +832,83 @@ namespace test_integral_concepts {
     template <class T, is_signed S>
     constexpr bool test_integral() {
         constexpr bool result = integral<T>;
-        STATIC_ASSERT(integral<T const> == result);
-        STATIC_ASSERT(integral<T volatile> == result);
-        STATIC_ASSERT(integral<T const volatile> == result);
+        static_assert(integral<T const> == result);
+        static_assert(integral<T volatile> == result);
+        static_assert(integral<T const volatile> == result);
         if constexpr (!result) {
-            STATIC_ASSERT(S == is_signed::NA);
-            STATIC_ASSERT(!signed_integral<T>);
-            STATIC_ASSERT(!signed_integral<T const>);
-            STATIC_ASSERT(!signed_integral<T volatile>);
-            STATIC_ASSERT(!signed_integral<T const volatile>);
-            STATIC_ASSERT(!unsigned_integral<T>);
-            STATIC_ASSERT(!unsigned_integral<T const>);
-            STATIC_ASSERT(!unsigned_integral<T volatile>);
-            STATIC_ASSERT(!unsigned_integral<T const volatile>);
+            static_assert(S == is_signed::NA);
+            static_assert(!signed_integral<T>);
+            static_assert(!signed_integral<T const>);
+            static_assert(!signed_integral<T volatile>);
+            static_assert(!signed_integral<T const volatile>);
+            static_assert(!unsigned_integral<T>);
+            static_assert(!unsigned_integral<T const>);
+            static_assert(!unsigned_integral<T volatile>);
+            static_assert(!unsigned_integral<T const volatile>);
         } else if constexpr (S == is_signed::yes) {
-            STATIC_ASSERT(signed_integral<T>);
-            STATIC_ASSERT(signed_integral<T const>);
-            STATIC_ASSERT(signed_integral<T volatile>);
-            STATIC_ASSERT(signed_integral<T const volatile>);
-            STATIC_ASSERT(!unsigned_integral<T>);
-            STATIC_ASSERT(!unsigned_integral<T const>);
-            STATIC_ASSERT(!unsigned_integral<T volatile>);
-            STATIC_ASSERT(!unsigned_integral<T const volatile>);
+            static_assert(signed_integral<T>);
+            static_assert(signed_integral<T const>);
+            static_assert(signed_integral<T volatile>);
+            static_assert(signed_integral<T const volatile>);
+            static_assert(!unsigned_integral<T>);
+            static_assert(!unsigned_integral<T const>);
+            static_assert(!unsigned_integral<T volatile>);
+            static_assert(!unsigned_integral<T const volatile>);
         } else {
-            STATIC_ASSERT(!signed_integral<T>);
-            STATIC_ASSERT(!signed_integral<T const>);
-            STATIC_ASSERT(!signed_integral<T volatile>);
-            STATIC_ASSERT(!signed_integral<T const volatile>);
-            STATIC_ASSERT(unsigned_integral<T>);
-            STATIC_ASSERT(unsigned_integral<T const>);
-            STATIC_ASSERT(unsigned_integral<T volatile>);
-            STATIC_ASSERT(unsigned_integral<T const volatile>);
+            static_assert(!signed_integral<T>);
+            static_assert(!signed_integral<T const>);
+            static_assert(!signed_integral<T volatile>);
+            static_assert(!signed_integral<T const volatile>);
+            static_assert(unsigned_integral<T>);
+            static_assert(unsigned_integral<T const>);
+            static_assert(unsigned_integral<T volatile>);
+            static_assert(unsigned_integral<T const volatile>);
         }
         return result;
     }
 #pragma warning(pop)
 
-    STATIC_ASSERT(test_integral<signed char, is_signed::yes>());
-    STATIC_ASSERT(test_integral<short, is_signed::yes>());
-    STATIC_ASSERT(test_integral<int, is_signed::yes>());
-    STATIC_ASSERT(test_integral<long, is_signed::yes>());
-    STATIC_ASSERT(test_integral<long long, is_signed::yes>());
+    static_assert(test_integral<signed char, is_signed::yes>());
+    static_assert(test_integral<short, is_signed::yes>());
+    static_assert(test_integral<int, is_signed::yes>());
+    static_assert(test_integral<long, is_signed::yes>());
+    static_assert(test_integral<long long, is_signed::yes>());
 
-    STATIC_ASSERT(test_integral<unsigned char, is_signed::no>());
-    STATIC_ASSERT(test_integral<unsigned short, is_signed::no>());
-    STATIC_ASSERT(test_integral<unsigned int, is_signed::no>());
-    STATIC_ASSERT(test_integral<unsigned long, is_signed::no>());
-    STATIC_ASSERT(test_integral<unsigned long long, is_signed::no>());
+    static_assert(test_integral<unsigned char, is_signed::no>());
+    static_assert(test_integral<unsigned short, is_signed::no>());
+    static_assert(test_integral<unsigned int, is_signed::no>());
+    static_assert(test_integral<unsigned long, is_signed::no>());
+    static_assert(test_integral<unsigned long long, is_signed::no>());
 
-    STATIC_ASSERT(test_integral<bool, is_signed::no>());
-    STATIC_ASSERT(test_integral<char, is_signed{std::is_signed_v<char>}>());
-    STATIC_ASSERT(test_integral<wchar_t, is_signed{std::is_signed_v<wchar_t>}>());
-    STATIC_ASSERT(test_integral<char16_t, is_signed::no>());
-    STATIC_ASSERT(test_integral<char32_t, is_signed::no>());
+    static_assert(test_integral<bool, is_signed::no>());
+    static_assert(test_integral<char, is_signed{std::is_signed_v<char>}>());
+    static_assert(test_integral<wchar_t, is_signed{std::is_signed_v<wchar_t>}>());
+    static_assert(test_integral<char16_t, is_signed::no>());
+    static_assert(test_integral<char32_t, is_signed::no>());
 
-    STATIC_ASSERT(!test_integral<float, is_signed::NA>());
-    STATIC_ASSERT(!test_integral<double, is_signed::NA>());
-    STATIC_ASSERT(!test_integral<long double, is_signed::NA>());
+    static_assert(!test_integral<float, is_signed::NA>());
+    static_assert(!test_integral<double, is_signed::NA>());
+    static_assert(!test_integral<long double, is_signed::NA>());
 
-    STATIC_ASSERT(!test_integral<void, is_signed::NA>());
-    STATIC_ASSERT(!test_integral<std::nullptr_t, is_signed::NA>());
+    static_assert(!test_integral<void, is_signed::NA>());
+    static_assert(!test_integral<std::nullptr_t, is_signed::NA>());
 
-    STATIC_ASSERT(!test_integral<int[42], is_signed::NA>());
-    STATIC_ASSERT(!test_integral<int (&)[42], is_signed::NA>());
-    STATIC_ASSERT(!test_integral<int(int), is_signed::NA>());
-    STATIC_ASSERT(!test_integral<int*, is_signed::NA>());
-    STATIC_ASSERT(!test_integral<int&, is_signed::NA>());
+    static_assert(!test_integral<int[42], is_signed::NA>());
+    static_assert(!test_integral<int (&)[42], is_signed::NA>());
+    static_assert(!test_integral<int(int), is_signed::NA>());
+    static_assert(!test_integral<int*, is_signed::NA>());
+    static_assert(!test_integral<int&, is_signed::NA>());
 
-    STATIC_ASSERT(!test_integral<IncompleteClass, is_signed::NA>());
-    STATIC_ASSERT(!test_integral<IncompleteUnion, is_signed::NA>());
-    STATIC_ASSERT(!test_integral<DoNotInstantiate<int>, is_signed::NA>());
-    STATIC_ASSERT(!test_integral<void (IncompleteClass::*)(), is_signed::NA>());
+    static_assert(!test_integral<IncompleteClass, is_signed::NA>());
+    static_assert(!test_integral<IncompleteUnion, is_signed::NA>());
+    static_assert(!test_integral<DoNotInstantiate<int>, is_signed::NA>());
+    static_assert(!test_integral<void (IncompleteClass::*)(), is_signed::NA>());
 
     enum int_enum : int {};
-    STATIC_ASSERT(!test_integral<int_enum, is_signed::NA>());
+    static_assert(!test_integral<int_enum, is_signed::NA>());
 
-    STATIC_ASSERT(test_integral<std::ptrdiff_t, is_signed::yes>());
-    STATIC_ASSERT(test_integral<std::size_t, is_signed::no>());
+    static_assert(test_integral<std::ptrdiff_t, is_signed::yes>());
+    static_assert(test_integral<std::size_t, is_signed::no>());
 } // namespace test_integral_concepts
 
 namespace test_floating_point {
@@ -921,160 +919,160 @@ namespace test_floating_point {
     template <class T>
     constexpr bool test_floating_point() {
         constexpr bool result = floating_point<T>;
-        STATIC_ASSERT(floating_point<T const> == result);
-        STATIC_ASSERT(floating_point<T volatile> == result);
-        STATIC_ASSERT(floating_point<T const volatile> == result);
+        static_assert(floating_point<T const> == result);
+        static_assert(floating_point<T volatile> == result);
+        static_assert(floating_point<T const volatile> == result);
         return result;
     }
 #pragma warning(pop)
 
-    STATIC_ASSERT(!test_floating_point<signed char>());
-    STATIC_ASSERT(!test_floating_point<short>());
-    STATIC_ASSERT(!test_floating_point<int>());
-    STATIC_ASSERT(!test_floating_point<long>());
-    STATIC_ASSERT(!test_floating_point<long long>());
+    static_assert(!test_floating_point<signed char>());
+    static_assert(!test_floating_point<short>());
+    static_assert(!test_floating_point<int>());
+    static_assert(!test_floating_point<long>());
+    static_assert(!test_floating_point<long long>());
 
-    STATIC_ASSERT(!test_floating_point<unsigned char>());
-    STATIC_ASSERT(!test_floating_point<unsigned short>());
-    STATIC_ASSERT(!test_floating_point<unsigned int>());
-    STATIC_ASSERT(!test_floating_point<unsigned long>());
-    STATIC_ASSERT(!test_floating_point<unsigned long long>());
+    static_assert(!test_floating_point<unsigned char>());
+    static_assert(!test_floating_point<unsigned short>());
+    static_assert(!test_floating_point<unsigned int>());
+    static_assert(!test_floating_point<unsigned long>());
+    static_assert(!test_floating_point<unsigned long long>());
 
-    STATIC_ASSERT(!test_floating_point<bool>());
-    STATIC_ASSERT(!test_floating_point<char>());
-    STATIC_ASSERT(!test_floating_point<wchar_t>());
-    STATIC_ASSERT(!test_floating_point<char16_t>());
-    STATIC_ASSERT(!test_floating_point<char32_t>());
+    static_assert(!test_floating_point<bool>());
+    static_assert(!test_floating_point<char>());
+    static_assert(!test_floating_point<wchar_t>());
+    static_assert(!test_floating_point<char16_t>());
+    static_assert(!test_floating_point<char32_t>());
 
-    STATIC_ASSERT(test_floating_point<float>());
-    STATIC_ASSERT(test_floating_point<double>());
-    STATIC_ASSERT(test_floating_point<long double>());
+    static_assert(test_floating_point<float>());
+    static_assert(test_floating_point<double>());
+    static_assert(test_floating_point<long double>());
 
-    STATIC_ASSERT(!test_floating_point<void>());
-    STATIC_ASSERT(!test_floating_point<std::nullptr_t>());
+    static_assert(!test_floating_point<void>());
+    static_assert(!test_floating_point<std::nullptr_t>());
 
-    STATIC_ASSERT(!test_floating_point<double[42]>());
-    STATIC_ASSERT(!test_floating_point<double (&)[42]>());
-    STATIC_ASSERT(!test_floating_point<double(double)>());
-    STATIC_ASSERT(!test_floating_point<double*>());
-    STATIC_ASSERT(!test_floating_point<double&>());
+    static_assert(!test_floating_point<double[42]>());
+    static_assert(!test_floating_point<double (&)[42]>());
+    static_assert(!test_floating_point<double(double)>());
+    static_assert(!test_floating_point<double*>());
+    static_assert(!test_floating_point<double&>());
 
-    STATIC_ASSERT(!test_floating_point<IncompleteClass>());
-    STATIC_ASSERT(!test_floating_point<IncompleteUnion>());
-    STATIC_ASSERT(!test_floating_point<DoNotInstantiate<int>>());
-    STATIC_ASSERT(!test_floating_point<void (IncompleteClass::*)()>());
+    static_assert(!test_floating_point<IncompleteClass>());
+    static_assert(!test_floating_point<IncompleteUnion>());
+    static_assert(!test_floating_point<DoNotInstantiate<int>>());
+    static_assert(!test_floating_point<void (IncompleteClass::*)()>());
 
     enum int_enum : int {};
-    STATIC_ASSERT(!test_floating_point<int_enum>());
+    static_assert(!test_floating_point<int_enum>());
 
-    STATIC_ASSERT(!test_floating_point<std::ptrdiff_t>());
-    STATIC_ASSERT(!test_floating_point<std::size_t>());
+    static_assert(!test_floating_point<std::ptrdiff_t>());
+    static_assert(!test_floating_point<std::size_t>());
 } // namespace test_floating_point
 
 namespace test_assignable_from {
     using std::assignable_from;
 
-    STATIC_ASSERT(!assignable_from<int, int>);
-    STATIC_ASSERT(!assignable_from<int, int&>);
-    STATIC_ASSERT(!assignable_from<int, int&&>);
-    STATIC_ASSERT(!assignable_from<int, int const>);
-    STATIC_ASSERT(!assignable_from<int, int const&>);
-    STATIC_ASSERT(!assignable_from<int, int const&&>);
+    static_assert(!assignable_from<int, int>);
+    static_assert(!assignable_from<int, int&>);
+    static_assert(!assignable_from<int, int&&>);
+    static_assert(!assignable_from<int, int const>);
+    static_assert(!assignable_from<int, int const&>);
+    static_assert(!assignable_from<int, int const&&>);
 
-    STATIC_ASSERT(assignable_from<int&, int>);
-    STATIC_ASSERT(assignable_from<int&, int&>);
-    STATIC_ASSERT(assignable_from<int&, int&&>);
-    STATIC_ASSERT(assignable_from<int&, int const>);
-    STATIC_ASSERT(assignable_from<int&, int const&>);
-    STATIC_ASSERT(assignable_from<int&, int const&&>);
+    static_assert(assignable_from<int&, int>);
+    static_assert(assignable_from<int&, int&>);
+    static_assert(assignable_from<int&, int&&>);
+    static_assert(assignable_from<int&, int const>);
+    static_assert(assignable_from<int&, int const&>);
+    static_assert(assignable_from<int&, int const&&>);
 
-    STATIC_ASSERT(!assignable_from<int&&, int>);
-    STATIC_ASSERT(!assignable_from<int&&, int&>);
-    STATIC_ASSERT(!assignable_from<int&&, int&&>);
-    STATIC_ASSERT(!assignable_from<int&&, int const>);
-    STATIC_ASSERT(!assignable_from<int&&, int const&>);
-    STATIC_ASSERT(!assignable_from<int&&, int const&&>);
+    static_assert(!assignable_from<int&&, int>);
+    static_assert(!assignable_from<int&&, int&>);
+    static_assert(!assignable_from<int&&, int&&>);
+    static_assert(!assignable_from<int&&, int const>);
+    static_assert(!assignable_from<int&&, int const&>);
+    static_assert(!assignable_from<int&&, int const&&>);
 
-    STATIC_ASSERT(assignable_from<int&, double>);
-    STATIC_ASSERT(assignable_from<void*&, void*>);
+    static_assert(assignable_from<int&, double>);
+    static_assert(assignable_from<void*&, void*>);
 
-    STATIC_ASSERT(!assignable_from<EmptyClass, EmptyClass>);
-    STATIC_ASSERT(!assignable_from<EmptyClass, EmptyClass&>);
-    STATIC_ASSERT(!assignable_from<EmptyClass, EmptyClass&&>);
-    STATIC_ASSERT(!assignable_from<EmptyClass, EmptyClass const>);
-    STATIC_ASSERT(!assignable_from<EmptyClass, EmptyClass const&>);
-    STATIC_ASSERT(!assignable_from<EmptyClass, EmptyClass const&&>);
+    static_assert(!assignable_from<EmptyClass, EmptyClass>);
+    static_assert(!assignable_from<EmptyClass, EmptyClass&>);
+    static_assert(!assignable_from<EmptyClass, EmptyClass&&>);
+    static_assert(!assignable_from<EmptyClass, EmptyClass const>);
+    static_assert(!assignable_from<EmptyClass, EmptyClass const&>);
+    static_assert(!assignable_from<EmptyClass, EmptyClass const&&>);
 
-    STATIC_ASSERT(assignable_from<EmptyClass&, EmptyClass>);
-    STATIC_ASSERT(assignable_from<EmptyClass&, EmptyClass&>);
-    STATIC_ASSERT(assignable_from<EmptyClass&, EmptyClass&&>);
-    STATIC_ASSERT(assignable_from<EmptyClass&, EmptyClass const>);
-    STATIC_ASSERT(assignable_from<EmptyClass&, EmptyClass const&>);
-    STATIC_ASSERT(assignable_from<EmptyClass&, EmptyClass const&&>);
+    static_assert(assignable_from<EmptyClass&, EmptyClass>);
+    static_assert(assignable_from<EmptyClass&, EmptyClass&>);
+    static_assert(assignable_from<EmptyClass&, EmptyClass&&>);
+    static_assert(assignable_from<EmptyClass&, EmptyClass const>);
+    static_assert(assignable_from<EmptyClass&, EmptyClass const&>);
+    static_assert(assignable_from<EmptyClass&, EmptyClass const&&>);
 
-    STATIC_ASSERT(!assignable_from<EmptyClass&&, EmptyClass>);
-    STATIC_ASSERT(!assignable_from<EmptyClass&&, EmptyClass&>);
-    STATIC_ASSERT(!assignable_from<EmptyClass&&, EmptyClass&&>);
-    STATIC_ASSERT(!assignable_from<EmptyClass&&, EmptyClass const>);
-    STATIC_ASSERT(!assignable_from<EmptyClass&&, EmptyClass const&>);
-    STATIC_ASSERT(!assignable_from<EmptyClass&&, EmptyClass const&&>);
+    static_assert(!assignable_from<EmptyClass&&, EmptyClass>);
+    static_assert(!assignable_from<EmptyClass&&, EmptyClass&>);
+    static_assert(!assignable_from<EmptyClass&&, EmptyClass&&>);
+    static_assert(!assignable_from<EmptyClass&&, EmptyClass const>);
+    static_assert(!assignable_from<EmptyClass&&, EmptyClass const&>);
+    static_assert(!assignable_from<EmptyClass&&, EmptyClass const&&>);
 
     // assignment operator exists, but no common_reference_with
     struct AssignButUncommon {
         AssignButUncommon& operator=(EmptyClass const&);
     };
-    STATIC_ASSERT(!assignable_from<AssignButUncommon, EmptyClass>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon, EmptyClass&>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon, EmptyClass&&>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon, EmptyClass const>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon, EmptyClass const&>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon, EmptyClass const&&>);
+    static_assert(!assignable_from<AssignButUncommon, EmptyClass>);
+    static_assert(!assignable_from<AssignButUncommon, EmptyClass&>);
+    static_assert(!assignable_from<AssignButUncommon, EmptyClass&&>);
+    static_assert(!assignable_from<AssignButUncommon, EmptyClass const>);
+    static_assert(!assignable_from<AssignButUncommon, EmptyClass const&>);
+    static_assert(!assignable_from<AssignButUncommon, EmptyClass const&&>);
 
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&, EmptyClass>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&, EmptyClass&>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&, EmptyClass&&>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&, EmptyClass const>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&, EmptyClass const&>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&, EmptyClass const&&>);
+    static_assert(!assignable_from<AssignButUncommon&, EmptyClass>);
+    static_assert(!assignable_from<AssignButUncommon&, EmptyClass&>);
+    static_assert(!assignable_from<AssignButUncommon&, EmptyClass&&>);
+    static_assert(!assignable_from<AssignButUncommon&, EmptyClass const>);
+    static_assert(!assignable_from<AssignButUncommon&, EmptyClass const&>);
+    static_assert(!assignable_from<AssignButUncommon&, EmptyClass const&&>);
 
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&&, EmptyClass>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&&, EmptyClass&>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&&, EmptyClass&&>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&&, EmptyClass const>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&&, EmptyClass const&>);
-    STATIC_ASSERT(!assignable_from<AssignButUncommon&&, EmptyClass const&&>);
+    static_assert(!assignable_from<AssignButUncommon&&, EmptyClass>);
+    static_assert(!assignable_from<AssignButUncommon&&, EmptyClass&>);
+    static_assert(!assignable_from<AssignButUncommon&&, EmptyClass&&>);
+    static_assert(!assignable_from<AssignButUncommon&&, EmptyClass const>);
+    static_assert(!assignable_from<AssignButUncommon&&, EmptyClass const&>);
+    static_assert(!assignable_from<AssignButUncommon&&, EmptyClass const&&>);
 
     // assignment operator exists, with common_reference_with
     struct AssignAndCommon {
         AssignAndCommon(EmptyClass const&);
         AssignAndCommon& operator=(EmptyClass const&) &;
     };
-    STATIC_ASSERT(!assignable_from<AssignAndCommon, EmptyClass>);
-    STATIC_ASSERT(!assignable_from<AssignAndCommon, EmptyClass&>);
-    STATIC_ASSERT(!assignable_from<AssignAndCommon, EmptyClass&&>);
-    STATIC_ASSERT(!assignable_from<AssignAndCommon, EmptyClass const>);
-    STATIC_ASSERT(!assignable_from<AssignAndCommon, EmptyClass const&>);
-    STATIC_ASSERT(!assignable_from<AssignAndCommon, EmptyClass const&&>);
+    static_assert(!assignable_from<AssignAndCommon, EmptyClass>);
+    static_assert(!assignable_from<AssignAndCommon, EmptyClass&>);
+    static_assert(!assignable_from<AssignAndCommon, EmptyClass&&>);
+    static_assert(!assignable_from<AssignAndCommon, EmptyClass const>);
+    static_assert(!assignable_from<AssignAndCommon, EmptyClass const&>);
+    static_assert(!assignable_from<AssignAndCommon, EmptyClass const&&>);
 
-    STATIC_ASSERT(assignable_from<AssignAndCommon&, EmptyClass>);
-    STATIC_ASSERT(assignable_from<AssignAndCommon&, EmptyClass&>);
-    STATIC_ASSERT(assignable_from<AssignAndCommon&, EmptyClass&&>);
-    STATIC_ASSERT(assignable_from<AssignAndCommon&, EmptyClass const>);
-    STATIC_ASSERT(assignable_from<AssignAndCommon&, EmptyClass const&>);
-    STATIC_ASSERT(assignable_from<AssignAndCommon&, EmptyClass const&&>);
+    static_assert(assignable_from<AssignAndCommon&, EmptyClass>);
+    static_assert(assignable_from<AssignAndCommon&, EmptyClass&>);
+    static_assert(assignable_from<AssignAndCommon&, EmptyClass&&>);
+    static_assert(assignable_from<AssignAndCommon&, EmptyClass const>);
+    static_assert(assignable_from<AssignAndCommon&, EmptyClass const&>);
+    static_assert(assignable_from<AssignAndCommon&, EmptyClass const&&>);
 
-    STATIC_ASSERT(!assignable_from<AssignAndCommon&&, EmptyClass>);
-    STATIC_ASSERT(!assignable_from<AssignAndCommon&&, EmptyClass&>);
-    STATIC_ASSERT(!assignable_from<AssignAndCommon&&, EmptyClass&&>);
-    STATIC_ASSERT(!assignable_from<AssignAndCommon&&, EmptyClass const>);
-    STATIC_ASSERT(!assignable_from<AssignAndCommon&&, EmptyClass const&>);
-    STATIC_ASSERT(!assignable_from<AssignAndCommon&&, EmptyClass const&&>);
+    static_assert(!assignable_from<AssignAndCommon&&, EmptyClass>);
+    static_assert(!assignable_from<AssignAndCommon&&, EmptyClass&>);
+    static_assert(!assignable_from<AssignAndCommon&&, EmptyClass&&>);
+    static_assert(!assignable_from<AssignAndCommon&&, EmptyClass const>);
+    static_assert(!assignable_from<AssignAndCommon&&, EmptyClass const&>);
+    static_assert(!assignable_from<AssignAndCommon&&, EmptyClass const&&>);
 
     struct VoidReturn {
         void operator=(EmptyClass);
     };
-    STATIC_ASSERT(!assignable_from<VoidReturn, EmptyClass>);
-    STATIC_ASSERT(!assignable_from<EmptyClass, VoidReturn>);
+    static_assert(!assignable_from<VoidReturn, EmptyClass>);
+    static_assert(!assignable_from<EmptyClass, VoidReturn>);
 
     struct EvilReturn {
         struct EvilCommaOverload {
@@ -1084,13 +1082,13 @@ namespace test_assignable_from {
 
         EvilCommaOverload operator=(int);
     };
-    STATIC_ASSERT(!assignable_from<EvilReturn, int>);
+    static_assert(!assignable_from<EvilReturn, int>);
 
-    STATIC_ASSERT(!assignable_from<void, void const>);
-    STATIC_ASSERT(!assignable_from<void const, void const>);
-    STATIC_ASSERT(!assignable_from<int(), int>);
+    static_assert(!assignable_from<void, void const>);
+    static_assert(!assignable_from<void const, void const>);
+    static_assert(!assignable_from<int(), int>);
 
-    STATIC_ASSERT(assignable_from<DoNotInstantiate<int>*&, DoNotInstantiate<int>*>);
+    static_assert(assignable_from<DoNotInstantiate<int>*&, DoNotInstantiate<int>*>);
 } // namespace test_assignable_from
 
 namespace test_destructible {
@@ -1150,70 +1148,70 @@ namespace test_destructible {
     template <class T>
     constexpr bool test() {
         constexpr bool result = destructible<T>;
-        STATIC_ASSERT(destructible<T const> == result);
-        STATIC_ASSERT(destructible<T volatile> == result);
-        STATIC_ASSERT(destructible<T const volatile> == result);
+        static_assert(destructible<T const> == result);
+        static_assert(destructible<T volatile> == result);
+        static_assert(destructible<T const volatile> == result);
         return result;
     }
 #pragma warning(pop)
 
-    STATIC_ASSERT(test<int>());
-    STATIC_ASSERT(test<int const>());
-    STATIC_ASSERT(test<int&>());
-    STATIC_ASSERT(test<void (*)()>());
-    STATIC_ASSERT(test<void (&)()>());
-    STATIC_ASSERT(test<int[2]>());
-    STATIC_ASSERT(test<int (*)[2]>());
-    STATIC_ASSERT(test<int (&)[2]>());
-    STATIC_ASSERT(test<CopyableType>());
-    STATIC_ASSERT(test<MoveOnly>());
-    STATIC_ASSERT(test<CopyOnlyAbomination>());
-    STATIC_ASSERT(test<Immobile>());
+    static_assert(test<int>());
+    static_assert(test<int const>());
+    static_assert(test<int&>());
+    static_assert(test<void (*)()>());
+    static_assert(test<void (&)()>());
+    static_assert(test<int[2]>());
+    static_assert(test<int (*)[2]>());
+    static_assert(test<int (&)[2]>());
+    static_assert(test<CopyableType>());
+    static_assert(test<MoveOnly>());
+    static_assert(test<CopyOnlyAbomination>());
+    static_assert(test<Immobile>());
 
-    STATIC_ASSERT(!test<void()>());
-    STATIC_ASSERT(!test<int[]>());
-    STATIC_ASSERT(!test<Indestructible>());
-    STATIC_ASSERT(!test<ThrowingDestructor>());
-    STATIC_ASSERT(!test<void>());
+    static_assert(!test<void()>());
+    static_assert(!test<int[]>());
+    static_assert(!test<Indestructible>());
+    static_assert(!test<ThrowingDestructor>());
+    static_assert(!test<void>());
 
-    STATIC_ASSERT(test<NonTriviallyDestructible>());
-    STATIC_ASSERT(test<int&>());
-    STATIC_ASSERT(test<EmptyUnion>());
-    STATIC_ASSERT(test<EmptyClass>());
-    STATIC_ASSERT(test<int>());
-    STATIC_ASSERT(test<double>());
-    STATIC_ASSERT(test<int*>());
-    STATIC_ASSERT(test<int const*>());
-    STATIC_ASSERT(test<char[3]>());
-    STATIC_ASSERT(test<BitZero>());
-    STATIC_ASSERT(test<int[3]>());
+    static_assert(test<NonTriviallyDestructible>());
+    static_assert(test<int&>());
+    static_assert(test<EmptyUnion>());
+    static_assert(test<EmptyClass>());
+    static_assert(test<int>());
+    static_assert(test<double>());
+    static_assert(test<int*>());
+    static_assert(test<int const*>());
+    static_assert(test<char[3]>());
+    static_assert(test<BitZero>());
+    static_assert(test<int[3]>());
 
-    STATIC_ASSERT(test<ProtectedAbstract>());
-    STATIC_ASSERT(test<PublicAbstract>());
-    STATIC_ASSERT(test<PrivateAbstract>());
-    STATIC_ASSERT(test<PublicDestructor>());
-    STATIC_ASSERT(test<VirtualPublicDestructor>());
-    STATIC_ASSERT(test<PurePublicDestructor>());
+    static_assert(test<ProtectedAbstract>());
+    static_assert(test<PublicAbstract>());
+    static_assert(test<PrivateAbstract>());
+    static_assert(test<PublicDestructor>());
+    static_assert(test<VirtualPublicDestructor>());
+    static_assert(test<PurePublicDestructor>());
 
-    STATIC_ASSERT(!test<int[]>());
-    STATIC_ASSERT(!test<void>());
-    STATIC_ASSERT(!test<void_function>());
+    static_assert(!test<int[]>());
+    static_assert(!test<void>());
+    static_assert(!test<void_function>());
 
     // Test inaccessible destructors
-    STATIC_ASSERT(!test<ProtectedDestructor>());
-    STATIC_ASSERT(!test<PrivateDestructor>());
-    STATIC_ASSERT(!test<VirtualProtectedDestructor>());
-    STATIC_ASSERT(!test<VirtualPrivateDestructor>());
-    STATIC_ASSERT(!test<PureProtectedDestructor>());
-    STATIC_ASSERT(!test<PurePrivateDestructor>());
+    static_assert(!test<ProtectedDestructor>());
+    static_assert(!test<PrivateDestructor>());
+    static_assert(!test<VirtualProtectedDestructor>());
+    static_assert(!test<VirtualPrivateDestructor>());
+    static_assert(!test<PureProtectedDestructor>());
+    static_assert(!test<PurePrivateDestructor>());
 
     // Test deleted constructors
-    STATIC_ASSERT(!test<DeletedPublicDestructor>());
-    STATIC_ASSERT(!test<DeletedProtectedDestructor>());
-    STATIC_ASSERT(!test<DeletedPrivateDestructor>());
-    STATIC_ASSERT(!test<DeletedVirtualPublicDestructor>());
-    STATIC_ASSERT(!test<DeletedVirtualProtectedDestructor>());
-    STATIC_ASSERT(!test<DeletedVirtualPrivateDestructor>());
+    static_assert(!test<DeletedPublicDestructor>());
+    static_assert(!test<DeletedProtectedDestructor>());
+    static_assert(!test<DeletedPrivateDestructor>());
+    static_assert(!test<DeletedVirtualPublicDestructor>());
+    static_assert(!test<DeletedVirtualProtectedDestructor>());
+    static_assert(!test<DeletedVirtualPrivateDestructor>());
 } // namespace test_destructible
 
 namespace test_constructible_from {
@@ -1224,205 +1222,205 @@ namespace test_constructible_from {
     template <class T, class... Args>
     constexpr bool test() {
         constexpr bool result = constructible_from<T, Args...>;
-        STATIC_ASSERT(constructible_from<T const, Args...> == result);
-        STATIC_ASSERT(constructible_from<T volatile, Args...> == result);
-        STATIC_ASSERT(constructible_from<T const volatile, Args...> == result);
+        static_assert(constructible_from<T const, Args...> == result);
+        static_assert(constructible_from<T volatile, Args...> == result);
+        static_assert(constructible_from<T const volatile, Args...> == result);
         return result;
     }
 #pragma warning(pop)
 
-    STATIC_ASSERT(!test<void>());
-    STATIC_ASSERT(!test<void const>());
-    STATIC_ASSERT(!test<void volatile>());
-    STATIC_ASSERT(!test<void const volatile>());
+    static_assert(!test<void>());
+    static_assert(!test<void const>());
+    static_assert(!test<void volatile>());
+    static_assert(!test<void const volatile>());
 
-    STATIC_ASSERT(test<int>());
-    STATIC_ASSERT(test<int, int>());
-    STATIC_ASSERT(test<int, int&>());
-    STATIC_ASSERT(test<int, int&&>());
-    STATIC_ASSERT(test<int, int const>());
-    STATIC_ASSERT(test<int, int const&>());
-    STATIC_ASSERT(test<int, int const&&>());
-    STATIC_ASSERT(!test<int, int (&)[3]>());
-    STATIC_ASSERT(!test<int, void()>());
-    STATIC_ASSERT(!test<int, void (&)()>());
-    STATIC_ASSERT(!test<int, void() const>());
+    static_assert(test<int>());
+    static_assert(test<int, int>());
+    static_assert(test<int, int&>());
+    static_assert(test<int, int&&>());
+    static_assert(test<int, int const>());
+    static_assert(test<int, int const&>());
+    static_assert(test<int, int const&&>());
+    static_assert(!test<int, int (&)[3]>());
+    static_assert(!test<int, void()>());
+    static_assert(!test<int, void (&)()>());
+    static_assert(!test<int, void() const>());
 
-    STATIC_ASSERT(test<int*>());
-    STATIC_ASSERT(test<int*, int*>());
-    STATIC_ASSERT(test<int*, int* const>());
-    STATIC_ASSERT(test<int*, int*&>());
-    STATIC_ASSERT(test<int*, int* const&>());
-    STATIC_ASSERT(test<int*, int*&&>());
-    STATIC_ASSERT(test<int*, int* const&&>());
+    static_assert(test<int*>());
+    static_assert(test<int*, int*>());
+    static_assert(test<int*, int* const>());
+    static_assert(test<int*, int*&>());
+    static_assert(test<int*, int* const&>());
+    static_assert(test<int*, int*&&>());
+    static_assert(test<int*, int* const&&>());
 
-    STATIC_ASSERT(!test<int&>());
-    STATIC_ASSERT(!test<int&, int>());
-    STATIC_ASSERT(test<int&, int&>());
-    STATIC_ASSERT(!test<int&, int&&>());
-    STATIC_ASSERT(!test<int&, int const>());
-    STATIC_ASSERT(!test<int&, int const&>());
-    STATIC_ASSERT(!test<int&, int const&&>());
+    static_assert(!test<int&>());
+    static_assert(!test<int&, int>());
+    static_assert(test<int&, int&>());
+    static_assert(!test<int&, int&&>());
+    static_assert(!test<int&, int const>());
+    static_assert(!test<int&, int const&>());
+    static_assert(!test<int&, int const&&>());
 
-    STATIC_ASSERT(!test<int&, long&>()); // https://github.com/ericniebler/stl2/issues/301
-    STATIC_ASSERT(!test<int&, void>());
-    STATIC_ASSERT(!test<int&, void()>());
-    STATIC_ASSERT(!test<int&, void() const>());
-    STATIC_ASSERT(!test<int&, void (&)()>());
+    static_assert(!test<int&, long&>()); // https://github.com/ericniebler/stl2/issues/301
+    static_assert(!test<int&, void>());
+    static_assert(!test<int&, void()>());
+    static_assert(!test<int&, void() const>());
+    static_assert(!test<int&, void (&)()>());
 
-    STATIC_ASSERT(!test<int const&>());
-    STATIC_ASSERT(test<int const&, int>());
-    STATIC_ASSERT(test<int const&, int&>());
-    STATIC_ASSERT(test<int const&, int&&>());
-    STATIC_ASSERT(test<int const&, int const>());
-    STATIC_ASSERT(test<int const&, int const&>());
-    STATIC_ASSERT(test<int const&, int const&&>());
+    static_assert(!test<int const&>());
+    static_assert(test<int const&, int>());
+    static_assert(test<int const&, int&>());
+    static_assert(test<int const&, int&&>());
+    static_assert(test<int const&, int const>());
+    static_assert(test<int const&, int const&>());
+    static_assert(test<int const&, int const&&>());
 
-    STATIC_ASSERT(test<int&&, int>());
-    STATIC_ASSERT(!test<int&&, int&>());
-    STATIC_ASSERT(test<int&&, int&&>());
-    STATIC_ASSERT(!test<int&&, int const>());
-    STATIC_ASSERT(!test<int&&, int const&>());
-    STATIC_ASSERT(!test<int&&, int const&&>());
+    static_assert(test<int&&, int>());
+    static_assert(!test<int&&, int&>());
+    static_assert(test<int&&, int&&>());
+    static_assert(!test<int&&, int const>());
+    static_assert(!test<int&&, int const&>());
+    static_assert(!test<int&&, int const&&>());
 
-    STATIC_ASSERT(test<int const&&, int>());
-    STATIC_ASSERT(!test<int const&&, int&>());
-    STATIC_ASSERT(test<int const&&, int&&>());
-    STATIC_ASSERT(test<int const&&, int const>());
-    STATIC_ASSERT(!test<int const&&, int const&>());
-    STATIC_ASSERT(test<int const&&, int const&&>());
+    static_assert(test<int const&&, int>());
+    static_assert(!test<int const&&, int&>());
+    static_assert(test<int const&&, int&&>());
+    static_assert(test<int const&&, int const>());
+    static_assert(!test<int const&&, int const&>());
+    static_assert(test<int const&&, int const&&>());
 
-    STATIC_ASSERT(!test<int()>());
-    STATIC_ASSERT(!test<int (&)()>());
-    STATIC_ASSERT(!test<int[]>());
-    STATIC_ASSERT(test<int[5]>());
-    STATIC_ASSERT(test<int const (&)[5], int (&)[5]>());
+    static_assert(!test<int()>());
+    static_assert(!test<int (&)()>());
+    static_assert(!test<int[]>());
+    static_assert(test<int[5]>());
+    static_assert(test<int const (&)[5], int (&)[5]>());
 
-    STATIC_ASSERT(!test<void()>());
-    STATIC_ASSERT(!test<void() const>());
-    STATIC_ASSERT(!test<void() const, void*>());
-    STATIC_ASSERT(!test<void() const, void() const>());
-    STATIC_ASSERT(!test<void() volatile>());
-    STATIC_ASSERT(!test<void() &>());
-    STATIC_ASSERT(!test<void() &&>());
+    static_assert(!test<void()>());
+    static_assert(!test<void() const>());
+    static_assert(!test<void() const, void*>());
+    static_assert(!test<void() const, void() const>());
+    static_assert(!test<void() volatile>());
+    static_assert(!test<void() &>());
+    static_assert(!test<void() &&>());
 
-    STATIC_ASSERT(test<void (&)(), void()>());
-    STATIC_ASSERT(test<void (&)(), void (&)()>());
-    STATIC_ASSERT(test<void (&)(), void (&&)()>());
-    STATIC_ASSERT(test<void (&&)(), void()>());
-    STATIC_ASSERT(test<void (&&)(), void (&)()>());
-    STATIC_ASSERT(test<void (&&)(), void (&&)()>());
+    static_assert(test<void (&)(), void()>());
+    static_assert(test<void (&)(), void (&)()>());
+    static_assert(test<void (&)(), void (&&)()>());
+    static_assert(test<void (&&)(), void()>());
+    static_assert(test<void (&&)(), void (&)()>());
+    static_assert(test<void (&&)(), void (&&)()>());
 
-    STATIC_ASSERT(test<int&&, double&>());
+    static_assert(test<int&&, double&>());
 
-    STATIC_ASSERT(test<initializer_list<int>>());
+    static_assert(test<initializer_list<int>>());
 
-    STATIC_ASSERT(!test<CopyableType>());
-    STATIC_ASSERT(test<CopyableType, CopyableType>());
-    STATIC_ASSERT(test<CopyableType, CopyableType&>());
-    STATIC_ASSERT(test<CopyableType, CopyableType&&>());
-    STATIC_ASSERT(test<CopyableType, CopyableType const>());
-    STATIC_ASSERT(test<CopyableType, CopyableType const&>());
-    STATIC_ASSERT(test<CopyableType, CopyableType const&&>());
+    static_assert(!test<CopyableType>());
+    static_assert(test<CopyableType, CopyableType>());
+    static_assert(test<CopyableType, CopyableType&>());
+    static_assert(test<CopyableType, CopyableType&&>());
+    static_assert(test<CopyableType, CopyableType const>());
+    static_assert(test<CopyableType, CopyableType const&>());
+    static_assert(test<CopyableType, CopyableType const&&>());
 
-    STATIC_ASSERT(test<MoveOnly>());
-    STATIC_ASSERT(test<MoveOnly, MoveOnly>());
-    STATIC_ASSERT(!test<MoveOnly, MoveOnly&>());
-    STATIC_ASSERT(test<MoveOnly, MoveOnly&&>());
-    STATIC_ASSERT(!test<MoveOnly, MoveOnly const>());
-    STATIC_ASSERT(!test<MoveOnly, MoveOnly const&>());
-    STATIC_ASSERT(!test<MoveOnly, MoveOnly const&&>());
+    static_assert(test<MoveOnly>());
+    static_assert(test<MoveOnly, MoveOnly>());
+    static_assert(!test<MoveOnly, MoveOnly&>());
+    static_assert(test<MoveOnly, MoveOnly&&>());
+    static_assert(!test<MoveOnly, MoveOnly const>());
+    static_assert(!test<MoveOnly, MoveOnly const&>());
+    static_assert(!test<MoveOnly, MoveOnly const&&>());
 
-    STATIC_ASSERT(test<CopyOnlyAbomination>());
-    STATIC_ASSERT(!test<CopyOnlyAbomination, CopyOnlyAbomination>());
-    STATIC_ASSERT(test<CopyOnlyAbomination, CopyOnlyAbomination&>());
-    STATIC_ASSERT(!test<CopyOnlyAbomination, CopyOnlyAbomination&&>());
-    STATIC_ASSERT(test<CopyOnlyAbomination, CopyOnlyAbomination const>());
-    STATIC_ASSERT(test<CopyOnlyAbomination, CopyOnlyAbomination const&>());
-    STATIC_ASSERT(test<CopyOnlyAbomination, CopyOnlyAbomination const&&>());
+    static_assert(test<CopyOnlyAbomination>());
+    static_assert(!test<CopyOnlyAbomination, CopyOnlyAbomination>());
+    static_assert(test<CopyOnlyAbomination, CopyOnlyAbomination&>());
+    static_assert(!test<CopyOnlyAbomination, CopyOnlyAbomination&&>());
+    static_assert(test<CopyOnlyAbomination, CopyOnlyAbomination const>());
+    static_assert(test<CopyOnlyAbomination, CopyOnlyAbomination const&>());
+    static_assert(test<CopyOnlyAbomination, CopyOnlyAbomination const&&>());
 
-    STATIC_ASSERT(test<Immobile>());
-    STATIC_ASSERT(!test<Immobile, Immobile>());
-    STATIC_ASSERT(!test<Immobile, Immobile&>());
-    STATIC_ASSERT(!test<Immobile, Immobile&&>());
-    STATIC_ASSERT(!test<Immobile, Immobile const>());
-    STATIC_ASSERT(!test<Immobile, Immobile const&>());
-    STATIC_ASSERT(!test<Immobile, Immobile const&&>());
+    static_assert(test<Immobile>());
+    static_assert(!test<Immobile, Immobile>());
+    static_assert(!test<Immobile, Immobile&>());
+    static_assert(!test<Immobile, Immobile&&>());
+    static_assert(!test<Immobile, Immobile const>());
+    static_assert(!test<Immobile, Immobile const&>());
+    static_assert(!test<Immobile, Immobile const&&>());
 
-    STATIC_ASSERT(!test<NotDefaultConstructible>());
-    STATIC_ASSERT(test<NotDefaultConstructible, NotDefaultConstructible>());
-    STATIC_ASSERT(test<NotDefaultConstructible, NotDefaultConstructible&>());
-    STATIC_ASSERT(test<NotDefaultConstructible, NotDefaultConstructible&&>());
-    STATIC_ASSERT(test<NotDefaultConstructible, NotDefaultConstructible const>());
-    STATIC_ASSERT(test<NotDefaultConstructible, NotDefaultConstructible const&>());
-    STATIC_ASSERT(test<NotDefaultConstructible, NotDefaultConstructible const&&>());
+    static_assert(!test<NotDefaultConstructible>());
+    static_assert(test<NotDefaultConstructible, NotDefaultConstructible>());
+    static_assert(test<NotDefaultConstructible, NotDefaultConstructible&>());
+    static_assert(test<NotDefaultConstructible, NotDefaultConstructible&&>());
+    static_assert(test<NotDefaultConstructible, NotDefaultConstructible const>());
+    static_assert(test<NotDefaultConstructible, NotDefaultConstructible const&>());
+    static_assert(test<NotDefaultConstructible, NotDefaultConstructible const&&>());
 
-    STATIC_ASSERT(!test<Indestructible>());
-    STATIC_ASSERT(!test<Indestructible, Indestructible>());
-    STATIC_ASSERT(!test<Indestructible, Indestructible&>());
-    STATIC_ASSERT(!test<Indestructible, Indestructible&&>());
-    STATIC_ASSERT(!test<Indestructible, Indestructible const>());
-    STATIC_ASSERT(!test<Indestructible, Indestructible const&>());
-    STATIC_ASSERT(!test<Indestructible, Indestructible const&&>());
+    static_assert(!test<Indestructible>());
+    static_assert(!test<Indestructible, Indestructible>());
+    static_assert(!test<Indestructible, Indestructible&>());
+    static_assert(!test<Indestructible, Indestructible&&>());
+    static_assert(!test<Indestructible, Indestructible const>());
+    static_assert(!test<Indestructible, Indestructible const&>());
+    static_assert(!test<Indestructible, Indestructible const&&>());
 
-    STATIC_ASSERT(!test<ThrowingDestructor>());
-    STATIC_ASSERT(!test<ThrowingDestructor, ThrowingDestructor>());
-    STATIC_ASSERT(!test<ThrowingDestructor, ThrowingDestructor&>());
-    STATIC_ASSERT(!test<ThrowingDestructor, ThrowingDestructor&&>());
-    STATIC_ASSERT(!test<ThrowingDestructor, ThrowingDestructor const>());
-    STATIC_ASSERT(!test<ThrowingDestructor, ThrowingDestructor const&>());
-    STATIC_ASSERT(!test<ThrowingDestructor, ThrowingDestructor const&&>());
+    static_assert(!test<ThrowingDestructor>());
+    static_assert(!test<ThrowingDestructor, ThrowingDestructor>());
+    static_assert(!test<ThrowingDestructor, ThrowingDestructor&>());
+    static_assert(!test<ThrowingDestructor, ThrowingDestructor&&>());
+    static_assert(!test<ThrowingDestructor, ThrowingDestructor const>());
+    static_assert(!test<ThrowingDestructor, ThrowingDestructor const&>());
+    static_assert(!test<ThrowingDestructor, ThrowingDestructor const&&>());
 
     // Indestructible types are not constructible
-    STATIC_ASSERT(test<PrivateDestructor&, PrivateDestructor&>());
-    STATIC_ASSERT(!test<PrivateDestructor, int>());
-    STATIC_ASSERT(!test<PurePrivateDestructor>());
+    static_assert(test<PrivateDestructor&, PrivateDestructor&>());
+    static_assert(!test<PrivateDestructor, int>());
+    static_assert(!test<PurePrivateDestructor>());
 
-    STATIC_ASSERT(test<ExplicitDefault>());
-    STATIC_ASSERT(test<ExplicitDefault, ExplicitDefault>());
-    STATIC_ASSERT(test<ExplicitDefault, ExplicitDefault&>());
-    STATIC_ASSERT(test<ExplicitDefault, ExplicitDefault&&>());
-    STATIC_ASSERT(test<ExplicitDefault, ExplicitDefault const>());
-    STATIC_ASSERT(test<ExplicitDefault, ExplicitDefault const&>());
-    STATIC_ASSERT(test<ExplicitDefault, ExplicitDefault const&&>());
+    static_assert(test<ExplicitDefault>());
+    static_assert(test<ExplicitDefault, ExplicitDefault>());
+    static_assert(test<ExplicitDefault, ExplicitDefault&>());
+    static_assert(test<ExplicitDefault, ExplicitDefault&&>());
+    static_assert(test<ExplicitDefault, ExplicitDefault const>());
+    static_assert(test<ExplicitDefault, ExplicitDefault const&>());
+    static_assert(test<ExplicitDefault, ExplicitDefault const&&>());
 
-    STATIC_ASSERT(!test<DeletedDefault>());
-    STATIC_ASSERT(test<DeletedDefault, DeletedDefault>());
-    STATIC_ASSERT(test<DeletedDefault, DeletedDefault&>());
-    STATIC_ASSERT(test<DeletedDefault, DeletedDefault&&>());
-    STATIC_ASSERT(test<DeletedDefault, DeletedDefault const>());
-    STATIC_ASSERT(test<DeletedDefault, DeletedDefault const&>());
-    STATIC_ASSERT(test<DeletedDefault, DeletedDefault const&&>());
+    static_assert(!test<DeletedDefault>());
+    static_assert(test<DeletedDefault, DeletedDefault>());
+    static_assert(test<DeletedDefault, DeletedDefault&>());
+    static_assert(test<DeletedDefault, DeletedDefault&&>());
+    static_assert(test<DeletedDefault, DeletedDefault const>());
+    static_assert(test<DeletedDefault, DeletedDefault const&>());
+    static_assert(test<DeletedDefault, DeletedDefault const&&>());
 
-    STATIC_ASSERT(test<SimpleBase, SimpleDerived>());
-    STATIC_ASSERT(test<SimpleBase&, SimpleDerived&>());
-    STATIC_ASSERT(!test<SimpleDerived&, SimpleBase&>());
-    STATIC_ASSERT(test<SimpleBase const&, SimpleDerived const&>());
-    STATIC_ASSERT(!test<SimpleDerived const&, SimpleBase const&>());
-    STATIC_ASSERT(!test<SimpleDerived const&, SimpleBase>());
+    static_assert(test<SimpleBase, SimpleDerived>());
+    static_assert(test<SimpleBase&, SimpleDerived&>());
+    static_assert(!test<SimpleDerived&, SimpleBase&>());
+    static_assert(test<SimpleBase const&, SimpleDerived const&>());
+    static_assert(!test<SimpleDerived const&, SimpleBase const&>());
+    static_assert(!test<SimpleDerived const&, SimpleBase>());
 
-    STATIC_ASSERT(test<SimpleBase&&, SimpleDerived>());
-    STATIC_ASSERT(test<SimpleBase&&, SimpleDerived&&>());
-    STATIC_ASSERT(!test<SimpleDerived&&, SimpleBase&&>());
-    STATIC_ASSERT(!test<SimpleDerived&&, SimpleBase>());
-    STATIC_ASSERT(!test<SimpleBase&&, SimpleBase&>());
-    STATIC_ASSERT(!test<SimpleBase&&, SimpleDerived&>());
+    static_assert(test<SimpleBase&&, SimpleDerived>());
+    static_assert(test<SimpleBase&&, SimpleDerived&&>());
+    static_assert(!test<SimpleDerived&&, SimpleBase&&>());
+    static_assert(!test<SimpleDerived&&, SimpleBase>());
+    static_assert(!test<SimpleBase&&, SimpleBase&>());
+    static_assert(!test<SimpleBase&&, SimpleDerived&>());
 
-    STATIC_ASSERT(!test<PrivateAbstract>());
+    static_assert(!test<PrivateAbstract>());
 
-    STATIC_ASSERT(test<int&, ImplicitTo<int&>>());
-    STATIC_ASSERT(test<int const&, ImplicitTo<int&&>>());
-    STATIC_ASSERT(test<int&&, ImplicitTo<int&&>>());
-    STATIC_ASSERT(test<int const&, ImplicitTo<int>>());
-    STATIC_ASSERT(test<int const&, ImplicitTo<int&>>());
-    STATIC_ASSERT(test<int const&, ImplicitTo<int&>&>());
+    static_assert(test<int&, ImplicitTo<int&>>());
+    static_assert(test<int const&, ImplicitTo<int&&>>());
+    static_assert(test<int&&, ImplicitTo<int&&>>());
+    static_assert(test<int const&, ImplicitTo<int>>());
+    static_assert(test<int const&, ImplicitTo<int&>>());
+    static_assert(test<int const&, ImplicitTo<int&>&>());
 
-    STATIC_ASSERT(test<SimpleBase&&, ImplicitTo<SimpleDerived&&>>());
-    STATIC_ASSERT(test<SimpleBase&&, ImplicitTo<SimpleDerived&&>&>());
+    static_assert(test<SimpleBase&&, ImplicitTo<SimpleDerived&&>>());
+    static_assert(test<SimpleBase&&, ImplicitTo<SimpleDerived&&>&>());
 
-    STATIC_ASSERT(test<int&, ExplicitTo<int&>>());
-    STATIC_ASSERT(test<int const&, ExplicitTo<int&>>());
-    STATIC_ASSERT(test<int const&, ExplicitTo<int&>&>());
+    static_assert(test<int&, ExplicitTo<int&>>());
+    static_assert(test<int const&, ExplicitTo<int&>>());
+    static_assert(test<int const&, ExplicitTo<int&>&>());
 
     struct Multiparameter {
         explicit Multiparameter(int);
@@ -1430,185 +1428,185 @@ namespace test_constructible_from {
         Multiparameter(int, long, double);
         Multiparameter(char) = delete;
     };
-    STATIC_ASSERT(!test<Multiparameter>());
-    STATIC_ASSERT(test<Multiparameter, int>());
+    static_assert(!test<Multiparameter>());
+    static_assert(test<Multiparameter, int>());
 #ifndef __EDG__ // TRANSITION, VSO-1898939
-    STATIC_ASSERT(test<Multiparameter, long>() == is_permissive);
+    static_assert(test<Multiparameter, long>() == is_permissive);
 #endif // ^^^ no workaround ^^^
-    STATIC_ASSERT(!test<Multiparameter, double>());
-    STATIC_ASSERT(!test<Multiparameter, char>());
-    STATIC_ASSERT(!test<Multiparameter, void>());
-    STATIC_ASSERT(test<Multiparameter, int, double>());
-    STATIC_ASSERT(test<Multiparameter, char, float>());
-    STATIC_ASSERT(test<Multiparameter, int, long, double>());
-    STATIC_ASSERT(test<Multiparameter, double, double, int>());
+    static_assert(!test<Multiparameter, double>());
+    static_assert(!test<Multiparameter, char>());
+    static_assert(!test<Multiparameter, void>());
+    static_assert(test<Multiparameter, int, double>());
+    static_assert(test<Multiparameter, char, float>());
+    static_assert(test<Multiparameter, int, long, double>());
+    static_assert(test<Multiparameter, double, double, int>());
 
     struct ExplicitToDeduced {
         template <class T>
         explicit operator T() const;
     };
-    STATIC_ASSERT(test<int, ExplicitToDeduced>());
-    STATIC_ASSERT(!test<void, ExplicitToDeduced>());
-    STATIC_ASSERT(!test<int&, ExplicitToDeduced>());
+    static_assert(test<int, ExplicitToDeduced>());
+    static_assert(!test<void, ExplicitToDeduced>());
+    static_assert(!test<int&, ExplicitToDeduced>());
 
     // Binding through reference-compatible type is required to perform
     // direct-initialization as described in N4849 [over.match.ref]/1.1:
-    STATIC_ASSERT(test<int&, ExplicitTo<int&>>());
-    STATIC_ASSERT(test<int&&, ExplicitTo<int&&>>());
+    static_assert(test<int&, ExplicitTo<int&>>());
+    static_assert(test<int&&, ExplicitTo<int&&>>());
 
     // Binding through temporary behaves like copy-initialization,
     // see N4849 [dcl.init.ref]/5.4:
 #ifndef __clang__ // TRANSITION, LLVM-44688
-    STATIC_ASSERT(!test<int const&, ExplicitTo<int>>());
-    STATIC_ASSERT(!test<int&&, ExplicitTo<int>>());
+    static_assert(!test<int const&, ExplicitTo<int>>());
+    static_assert(!test<int&&, ExplicitTo<int>>());
 #endif // ^^^ no workaround ^^^
-    STATIC_ASSERT(!test<int const&, ExplicitTo<double&&>>());
-    STATIC_ASSERT(!test<int&&, ExplicitTo<double&&>>());
+    static_assert(!test<int const&, ExplicitTo<double&&>>());
+    static_assert(!test<int&&, ExplicitTo<double&&>>());
 
     struct ImmobileExplicitFromInt {
         ImmobileExplicitFromInt()                          = default;
         ImmobileExplicitFromInt(ImmobileExplicitFromInt&&) = delete;
         explicit ImmobileExplicitFromInt(int);
     };
-    STATIC_ASSERT(test<ImmobileExplicitFromInt>());
-    STATIC_ASSERT(test<ImmobileExplicitFromInt, int>());
-    STATIC_ASSERT(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt>());
-    STATIC_ASSERT(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt&>());
-    STATIC_ASSERT(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt&&>());
-    STATIC_ASSERT(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt const>());
-    STATIC_ASSERT(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt const&>());
-    STATIC_ASSERT(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt const&&>());
+    static_assert(test<ImmobileExplicitFromInt>());
+    static_assert(test<ImmobileExplicitFromInt, int>());
+    static_assert(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt>());
+    static_assert(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt&>());
+    static_assert(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt&&>());
+    static_assert(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt const>());
+    static_assert(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt const&>());
+    static_assert(!test<ImmobileExplicitFromInt, ImmobileExplicitFromInt const&&>());
 } // namespace test_constructible_from
 
 namespace test_default_initializable {
     using std::default_initializable, std::initializer_list;
 
-    STATIC_ASSERT(default_initializable<int>);
+    static_assert(default_initializable<int>);
 #ifndef __EDG__ // TRANSITION, VSO-1898941
-    STATIC_ASSERT(!default_initializable<int const>);
+    static_assert(!default_initializable<int const>);
 #endif // ^^^ no workaround ^^^
-    STATIC_ASSERT(default_initializable<int volatile>);
+    static_assert(default_initializable<int volatile>);
 #ifndef __EDG__ // TRANSITION, VSO-1898941
-    STATIC_ASSERT(!default_initializable<int const volatile>);
+    static_assert(!default_initializable<int const volatile>);
 #endif // ^^^ no workaround ^^^
-    STATIC_ASSERT(default_initializable<double>);
-    STATIC_ASSERT(!default_initializable<void>);
+    static_assert(default_initializable<double>);
+    static_assert(!default_initializable<void>);
 
-    STATIC_ASSERT(default_initializable<int*>);
-    STATIC_ASSERT(default_initializable<int const*>);
+    static_assert(default_initializable<int*>);
+    static_assert(default_initializable<int const*>);
 
-    STATIC_ASSERT(default_initializable<int[2]>);
-    STATIC_ASSERT(default_initializable<char[3]>);
-    STATIC_ASSERT(default_initializable<char[5][3]>);
-    STATIC_ASSERT(!default_initializable<int[]>);
-    STATIC_ASSERT(!default_initializable<char[]>);
-    STATIC_ASSERT(!default_initializable<char[][3]>);
+    static_assert(default_initializable<int[2]>);
+    static_assert(default_initializable<char[3]>);
+    static_assert(default_initializable<char[5][3]>);
+    static_assert(!default_initializable<int[]>);
+    static_assert(!default_initializable<char[]>);
+    static_assert(!default_initializable<char[][3]>);
 #ifndef __EDG__ // TRANSITION, VSO-1898941
-    STATIC_ASSERT(!default_initializable<int const[2]>);
+    static_assert(!default_initializable<int const[2]>);
 #endif // ^^^ no workaround ^^^
 
-    STATIC_ASSERT(!default_initializable<int&>);
-    STATIC_ASSERT(!default_initializable<int const&>);
-    STATIC_ASSERT(!default_initializable<int&&>);
+    static_assert(!default_initializable<int&>);
+    static_assert(!default_initializable<int const&>);
+    static_assert(!default_initializable<int&&>);
 
-    STATIC_ASSERT(!default_initializable<int()>);
-    STATIC_ASSERT(!default_initializable<int (&)()>);
+    static_assert(!default_initializable<int()>);
+    static_assert(!default_initializable<int (&)()>);
 
-    STATIC_ASSERT(!default_initializable<void()>);
-    STATIC_ASSERT(!default_initializable<void() const>);
-    STATIC_ASSERT(!default_initializable<void() volatile>);
-    STATIC_ASSERT(!default_initializable<void() &>);
-    STATIC_ASSERT(!default_initializable<void() &&>);
+    static_assert(!default_initializable<void()>);
+    static_assert(!default_initializable<void() const>);
+    static_assert(!default_initializable<void() volatile>);
+    static_assert(!default_initializable<void() &>);
+    static_assert(!default_initializable<void() &&>);
 
-    STATIC_ASSERT(default_initializable<EmptyClass>);
-    STATIC_ASSERT(default_initializable<EmptyClass const>);
-    STATIC_ASSERT(default_initializable<EmptyUnion>);
-    STATIC_ASSERT(default_initializable<EmptyUnion const>);
+    static_assert(default_initializable<EmptyClass>);
+    static_assert(default_initializable<EmptyClass const>);
+    static_assert(default_initializable<EmptyUnion>);
+    static_assert(default_initializable<EmptyUnion const>);
 
-    STATIC_ASSERT(default_initializable<std::initializer_list<int>>);
+    static_assert(default_initializable<std::initializer_list<int>>);
 
-    STATIC_ASSERT(default_initializable<NotEmpty>);
-    STATIC_ASSERT(default_initializable<BitZero>);
+    static_assert(default_initializable<NotEmpty>);
+    static_assert(default_initializable<BitZero>);
 
-    STATIC_ASSERT(default_initializable<ExplicitDefault>);
-    STATIC_ASSERT(default_initializable<ExplicitMoveAbomination>);
-    STATIC_ASSERT(default_initializable<ExplicitCopyAbomination>);
+    static_assert(default_initializable<ExplicitDefault>);
+    static_assert(default_initializable<ExplicitMoveAbomination>);
+    static_assert(default_initializable<ExplicitCopyAbomination>);
 
-    STATIC_ASSERT(!default_initializable<NotDefaultConstructible>);
-    STATIC_ASSERT(!default_initializable<DeletedDefault>);
+    static_assert(!default_initializable<NotDefaultConstructible>);
+    static_assert(!default_initializable<DeletedDefault>);
 
-    STATIC_ASSERT(!default_initializable<PurePublicDestructor>);
-    STATIC_ASSERT(!default_initializable<NotDefaultConstructible>);
+    static_assert(!default_initializable<PurePublicDestructor>);
+    static_assert(!default_initializable<NotDefaultConstructible>);
 
     class PrivateDefault {
         PrivateDefault();
     };
-    STATIC_ASSERT(!default_initializable<PrivateDefault>);
+    static_assert(!default_initializable<PrivateDefault>);
 
     struct S {
         int x;
     };
-    STATIC_ASSERT(default_initializable<S>);
+    static_assert(default_initializable<S>);
 #ifndef __EDG__ // TRANSITION, VSO-1898941
-    STATIC_ASSERT(!default_initializable<S const>);
+    static_assert(!default_initializable<S const>);
 #endif // ^^^ no workaround ^^^
 
     // Also test GH-1603 "default_initializable accepts types that are not default-initializable"
 #if defined(__clang__) // TRANSITION, DevCom-1326684 (MSVC) and VSO-1898945 (EDG)
-    STATIC_ASSERT(!default_initializable<AggregatesExplicitDefault>);
+    static_assert(!default_initializable<AggregatesExplicitDefault>);
 #endif // ^^^ no workaround ^^^
 } // namespace test_default_initializable
 
 namespace test_move_constructible {
     using std::move_constructible;
 
-    STATIC_ASSERT(move_constructible<int>);
-    STATIC_ASSERT(move_constructible<int const>);
-    STATIC_ASSERT(move_constructible<double>);
-    STATIC_ASSERT(!move_constructible<void>);
+    static_assert(move_constructible<int>);
+    static_assert(move_constructible<int const>);
+    static_assert(move_constructible<double>);
+    static_assert(!move_constructible<void>);
 
-    STATIC_ASSERT(move_constructible<int*>);
-    STATIC_ASSERT(move_constructible<int const*>);
+    static_assert(move_constructible<int*>);
+    static_assert(move_constructible<int const*>);
 
-    STATIC_ASSERT(!move_constructible<int[4]>);
-    STATIC_ASSERT(!move_constructible<char[3]>);
-    STATIC_ASSERT(!move_constructible<char[]>);
+    static_assert(!move_constructible<int[4]>);
+    static_assert(!move_constructible<char[3]>);
+    static_assert(!move_constructible<char[]>);
 
-    STATIC_ASSERT(move_constructible<int&>);
-    STATIC_ASSERT(move_constructible<int&&>);
-    STATIC_ASSERT(move_constructible<int const&>);
-    STATIC_ASSERT(move_constructible<int const&&>);
+    static_assert(move_constructible<int&>);
+    static_assert(move_constructible<int&&>);
+    static_assert(move_constructible<int const&>);
+    static_assert(move_constructible<int const&&>);
 
-    STATIC_ASSERT(!move_constructible<void()>);
+    static_assert(!move_constructible<void()>);
 
-    STATIC_ASSERT(move_constructible<EmptyClass>);
-    STATIC_ASSERT(move_constructible<EmptyUnion>);
-    STATIC_ASSERT(move_constructible<NotEmpty>);
-    STATIC_ASSERT(move_constructible<CopyableType>);
-    STATIC_ASSERT(move_constructible<MoveOnly>);
-    STATIC_ASSERT(!move_constructible<CopyOnlyAbomination>);
-    STATIC_ASSERT(!move_constructible<Immobile>);
-    STATIC_ASSERT(!move_constructible<ExplicitMoveAbomination>);
-    STATIC_ASSERT(move_constructible<ExplicitCopyAbomination>);
-    STATIC_ASSERT(move_constructible<BitZero>);
+    static_assert(move_constructible<EmptyClass>);
+    static_assert(move_constructible<EmptyUnion>);
+    static_assert(move_constructible<NotEmpty>);
+    static_assert(move_constructible<CopyableType>);
+    static_assert(move_constructible<MoveOnly>);
+    static_assert(!move_constructible<CopyOnlyAbomination>);
+    static_assert(!move_constructible<Immobile>);
+    static_assert(!move_constructible<ExplicitMoveAbomination>);
+    static_assert(move_constructible<ExplicitCopyAbomination>);
+    static_assert(move_constructible<BitZero>);
 
-    STATIC_ASSERT(move_constructible<NotDefaultConstructible>);
-    STATIC_ASSERT(!move_constructible<Indestructible>);
-    STATIC_ASSERT(!move_constructible<ThrowingDestructor>);
-    STATIC_ASSERT(move_constructible<ExplicitDefault>);
-    STATIC_ASSERT(move_constructible<DeletedDefault>);
+    static_assert(move_constructible<NotDefaultConstructible>);
+    static_assert(!move_constructible<Indestructible>);
+    static_assert(!move_constructible<ThrowingDestructor>);
+    static_assert(move_constructible<ExplicitDefault>);
+    static_assert(move_constructible<DeletedDefault>);
 
-    STATIC_ASSERT(move_constructible<Immobile&>);
-    STATIC_ASSERT(move_constructible<Immobile&&>);
-    STATIC_ASSERT(move_constructible<Immobile const&>);
-    STATIC_ASSERT(move_constructible<Immobile const&&>);
+    static_assert(move_constructible<Immobile&>);
+    static_assert(move_constructible<Immobile&&>);
+    static_assert(move_constructible<Immobile const&>);
+    static_assert(move_constructible<Immobile const&&>);
 
-    STATIC_ASSERT(!move_constructible<PurePublicDestructor>);
+    static_assert(!move_constructible<PurePublicDestructor>);
 
     struct ImplicitlyDeletedMove {
         ImplicitlyDeletedMove(ImplicitlyDeletedMove const&);
     };
-    STATIC_ASSERT(move_constructible<ImplicitlyDeletedMove>);
+    static_assert(move_constructible<ImplicitlyDeletedMove>);
 } // namespace test_move_constructible
 
 namespace test_ranges_swap {
@@ -1626,43 +1624,43 @@ namespace test_ranges_swap {
         requires can_swap<T, U>
     constexpr bool can_nothrow_swap<T, U> = noexcept(ranges::swap(std::declval<T>(), std::declval<U>()));
 
-    STATIC_ASSERT(!can_swap<void>);
-    STATIC_ASSERT(!can_swap<void const>);
-    STATIC_ASSERT(!can_swap<void volatile>);
-    STATIC_ASSERT(!can_swap<void const volatile>);
+    static_assert(!can_swap<void>);
+    static_assert(!can_swap<void const>);
+    static_assert(!can_swap<void volatile>);
+    static_assert(!can_swap<void const volatile>);
 
-    STATIC_ASSERT(can_nothrow_swap<int&>);
-    STATIC_ASSERT(!can_swap<int const&>);
-    STATIC_ASSERT(can_nothrow_swap<int volatile&>);
-    STATIC_ASSERT(!can_swap<int const volatile&>);
+    static_assert(can_nothrow_swap<int&>);
+    static_assert(!can_swap<int const&>);
+    static_assert(can_nothrow_swap<int volatile&>);
+    static_assert(!can_swap<int const volatile&>);
 
-    STATIC_ASSERT(!can_swap<int&&>);
-    STATIC_ASSERT(!can_swap<int const&&>);
-    STATIC_ASSERT(!can_swap<int volatile&&>);
-    STATIC_ASSERT(!can_swap<int const volatile&&>);
+    static_assert(!can_swap<int&&>);
+    static_assert(!can_swap<int const&&>);
+    static_assert(!can_swap<int volatile&&>);
+    static_assert(!can_swap<int const volatile&&>);
 
-    STATIC_ASSERT(!can_swap<int()>);
-    STATIC_ASSERT(!can_swap<int() const>);
-    STATIC_ASSERT(!can_swap<int (&)()>);
-    STATIC_ASSERT(!can_swap<int (&&)()>);
+    static_assert(!can_swap<int()>);
+    static_assert(!can_swap<int() const>);
+    static_assert(!can_swap<int (&)()>);
+    static_assert(!can_swap<int (&&)()>);
 
-    STATIC_ASSERT(!can_swap<int (&)[]>);
-    STATIC_ASSERT(!can_swap<int (&&)[]>);
+    static_assert(!can_swap<int (&)[]>);
+    static_assert(!can_swap<int (&&)[]>);
 
-    STATIC_ASSERT(can_nothrow_swap<int (&)[42]>);
-    STATIC_ASSERT(can_nothrow_swap<int (&)[42][13]>);
-    STATIC_ASSERT(!can_swap<int (&)[42][13], int (&)[13][42]>);
-    STATIC_ASSERT(!can_swap<int const (&)[42]>);
-    STATIC_ASSERT(can_nothrow_swap<int volatile (&)[42]>);
-    STATIC_ASSERT(!can_swap<int const volatile (&)[42]>);
-    STATIC_ASSERT(!can_swap<int const (&)[42][13]>);
-    STATIC_ASSERT(can_nothrow_swap<int volatile (&)[42][13]>);
-    STATIC_ASSERT(!can_swap<int const volatile (&)[42][13]>);
+    static_assert(can_nothrow_swap<int (&)[42]>);
+    static_assert(can_nothrow_swap<int (&)[42][13]>);
+    static_assert(!can_swap<int (&)[42][13], int (&)[13][42]>);
+    static_assert(!can_swap<int const (&)[42]>);
+    static_assert(can_nothrow_swap<int volatile (&)[42]>);
+    static_assert(!can_swap<int const volatile (&)[42]>);
+    static_assert(!can_swap<int const (&)[42][13]>);
+    static_assert(can_nothrow_swap<int volatile (&)[42][13]>);
+    static_assert(!can_swap<int const volatile (&)[42][13]>);
 
-    STATIC_ASSERT(!can_swap<int (&&)[42]>);
-    STATIC_ASSERT(!can_swap<int (&&)[42][13]>);
+    static_assert(!can_swap<int (&&)[42]>);
+    static_assert(!can_swap<int (&&)[42][13]>);
 
-    STATIC_ASSERT(!can_swap<int (&&)[42][13], int (&&)[13][42]>);
+    static_assert(!can_swap<int (&&)[42][13], int (&&)[13][42]>);
 
     struct SemithrowCopyOnly {
         SemithrowCopyOnly()                                  = default;
@@ -1672,43 +1670,43 @@ namespace test_ranges_swap {
             return *this;
         }
     };
-    STATIC_ASSERT(can_swap<SemithrowCopyOnly&>);
-    STATIC_ASSERT(!can_nothrow_swap<SemithrowCopyOnly&>);
-    STATIC_ASSERT(can_swap<SemithrowCopyOnly (&)[42]>);
-    STATIC_ASSERT(!can_nothrow_swap<SemithrowCopyOnly (&)[42]>);
+    static_assert(can_swap<SemithrowCopyOnly&>);
+    static_assert(!can_nothrow_swap<SemithrowCopyOnly&>);
+    static_assert(can_swap<SemithrowCopyOnly (&)[42]>);
+    static_assert(!can_nothrow_swap<SemithrowCopyOnly (&)[42]>);
 
     struct SemithrowMoveOnly {
         SemithrowMoveOnly() = default;
         SemithrowMoveOnly(SemithrowMoveOnly&&) noexcept(false) {}
         SemithrowMoveOnly& operator=(SemithrowMoveOnly&&) noexcept = default;
     };
-    STATIC_ASSERT(can_swap<SemithrowMoveOnly&>);
-    STATIC_ASSERT(!can_nothrow_swap<SemithrowMoveOnly&>);
-    STATIC_ASSERT(can_swap<SemithrowMoveOnly (&)[42]>);
-    STATIC_ASSERT(!can_nothrow_swap<SemithrowMoveOnly (&)[42]>);
+    static_assert(can_swap<SemithrowMoveOnly&>);
+    static_assert(!can_nothrow_swap<SemithrowMoveOnly&>);
+    static_assert(can_swap<SemithrowMoveOnly (&)[42]>);
+    static_assert(!can_nothrow_swap<SemithrowMoveOnly (&)[42]>);
 
     struct NothrowMoveOnly {
         NothrowMoveOnly()                                      = default;
         NothrowMoveOnly(NothrowMoveOnly&&) noexcept            = default;
         NothrowMoveOnly& operator=(NothrowMoveOnly&&) noexcept = default;
     };
-    STATIC_ASSERT(can_nothrow_swap<NothrowMoveOnly&>);
-    STATIC_ASSERT(can_nothrow_swap<NothrowMoveOnly (&)[42]>);
+    static_assert(can_nothrow_swap<NothrowMoveOnly&>);
+    static_assert(can_nothrow_swap<NothrowMoveOnly (&)[42]>);
 
     struct NotMoveConstructible {
         NotMoveConstructible()                                  = default;
         NotMoveConstructible(NotMoveConstructible&&)            = delete;
         NotMoveConstructible& operator=(NotMoveConstructible&&) = default;
     };
-    STATIC_ASSERT(!can_swap<NotMoveConstructible&>);
-    STATIC_ASSERT(!can_swap<NotMoveConstructible (&)[42]>);
+    static_assert(!can_swap<NotMoveConstructible&>);
+    static_assert(!can_swap<NotMoveConstructible (&)[42]>);
 
     struct NotMoveAssignable {
         NotMoveAssignable(NotMoveAssignable&&)            = default;
         NotMoveAssignable& operator=(NotMoveAssignable&&) = delete;
     };
-    STATIC_ASSERT(!can_swap<NotMoveAssignable&>);
-    STATIC_ASSERT(!can_swap<NotMoveAssignable (&)[42]>);
+    static_assert(!can_swap<NotMoveAssignable&>);
+    static_assert(!can_swap<NotMoveAssignable (&)[42]>);
 
     struct ImmobileNothrowSwap {
         ImmobileNothrowSwap()                                 = default;
@@ -1716,16 +1714,16 @@ namespace test_ranges_swap {
         ImmobileNothrowSwap& operator=(ImmobileNothrowSwap&&) = delete;
         friend void swap(ImmobileNothrowSwap&, ImmobileNothrowSwap&) noexcept {}
     };
-    STATIC_ASSERT(can_nothrow_swap<ImmobileNothrowSwap&>);
-    STATIC_ASSERT(can_nothrow_swap<ImmobileNothrowSwap (&)[42]>);
+    static_assert(can_nothrow_swap<ImmobileNothrowSwap&>);
+    static_assert(can_nothrow_swap<ImmobileNothrowSwap (&)[42]>);
 
     struct HasThrowingSwap {
         friend void swap(HasThrowingSwap&, HasThrowingSwap&) {}
     };
-    STATIC_ASSERT(can_swap<HasThrowingSwap&>);
-    STATIC_ASSERT(!can_nothrow_swap<HasThrowingSwap&>);
-    STATIC_ASSERT(can_swap<HasThrowingSwap (&)[42]>);
-    STATIC_ASSERT(!can_nothrow_swap<HasThrowingSwap (&)[42]>);
+    static_assert(can_swap<HasThrowingSwap&>);
+    static_assert(!can_nothrow_swap<HasThrowingSwap&>);
+    static_assert(can_swap<HasThrowingSwap (&)[42]>);
+    static_assert(!can_nothrow_swap<HasThrowingSwap (&)[42]>);
 
     // Derives from type in std with overloaded swap to validate the poison pill
     struct Unswappable : std::pair<int, int> {
@@ -1733,15 +1731,15 @@ namespace test_ranges_swap {
         Unswappable(Unswappable const&) = delete;
         Unswappable(Unswappable&&)      = delete;
     };
-    STATIC_ASSERT(!can_swap<Unswappable&>);
+    static_assert(!can_swap<Unswappable&>);
 
-    STATIC_ASSERT(!can_swap<Unswappable (&)[42]>);
-    STATIC_ASSERT(!can_swap<Unswappable (&)[42][13]>);
-    STATIC_ASSERT(!can_swap<Unswappable (&)[42][13], Unswappable (&)[13][42]>);
+    static_assert(!can_swap<Unswappable (&)[42]>);
+    static_assert(!can_swap<Unswappable (&)[42][13]>);
+    static_assert(!can_swap<Unswappable (&)[42][13], Unswappable (&)[13][42]>);
 
-    STATIC_ASSERT(!can_swap<Unswappable (&&)[42]>);
-    STATIC_ASSERT(!can_swap<Unswappable (&&)[42][13]>);
-    STATIC_ASSERT(!can_swap<Unswappable (&&)[42][13], Unswappable (&&)[13][42]>);
+    static_assert(!can_swap<Unswappable (&&)[42]>);
+    static_assert(!can_swap<Unswappable (&&)[42][13]>);
+    static_assert(!can_swap<Unswappable (&&)[42][13], Unswappable (&&)[13][42]>);
 
     // The wording allows customization of swap for unions as well
     union U {
@@ -1750,7 +1748,7 @@ namespace test_ranges_swap {
 
         friend void swap(U&, U&) {}
     };
-    STATIC_ASSERT(can_swap<U&>);
+    static_assert(can_swap<U&>);
 
     namespace adl_barrier {
         struct ConstrainedSwappable {
@@ -1762,18 +1760,18 @@ namespace test_ranges_swap {
         template <std::same_as<ConstrainedSwappable> T>
         void swap(T&, T&) {}
     } // namespace adl_barrier
-    STATIC_ASSERT(can_swap<adl_barrier::ConstrainedSwappable&>);
-    STATIC_ASSERT(!can_swap<adl_barrier::ConstrainedSwappable const volatile&>);
+    static_assert(can_swap<adl_barrier::ConstrainedSwappable&>);
+    static_assert(!can_swap<adl_barrier::ConstrainedSwappable const volatile&>);
 
     struct MyInt {
         int i = 42;
     };
-    STATIC_ASSERT(can_nothrow_swap<MyInt&>);
+    static_assert(can_nothrow_swap<MyInt&>);
 
     struct YourInt {
         int i = 13;
     };
-    STATIC_ASSERT(can_nothrow_swap<YourInt&>);
+    static_assert(can_nothrow_swap<YourInt&>);
 
     constexpr void swap(MyInt& x, YourInt& y) noexcept {
         ranges::swap(x.i, y.i);
@@ -1781,8 +1779,8 @@ namespace test_ranges_swap {
     constexpr void swap(YourInt& x, MyInt& y) noexcept {
         ranges::swap(x.i, y.i);
     }
-    STATIC_ASSERT(can_nothrow_swap<MyInt&, YourInt&>);
-    STATIC_ASSERT(can_nothrow_swap<YourInt&, MyInt&>);
+    static_assert(can_nothrow_swap<MyInt&, YourInt&>);
+    static_assert(can_nothrow_swap<YourInt&, MyInt&>);
 
     struct DoNotUseFallback {
         DoNotUseFallback() = default;
@@ -1817,7 +1815,7 @@ namespace test_ranges_swap {
             int i = 1;
             int j = 2;
             swap(i, j);
-            STATIC_ASSERT(noexcept(swap(i, j)));
+            static_assert(noexcept(swap(i, j)));
             assert(i == 2);
             assert(j == 1);
         }
@@ -1826,7 +1824,7 @@ namespace test_ranges_swap {
             int a[3] = {1, 2, 3};
             int b[3] = {4, 5, 6};
             swap(a, b);
-            STATIC_ASSERT(noexcept(swap(a, b)));
+            static_assert(noexcept(swap(a, b)));
             assert(a[0] == 4);
             assert(a[1] == 5);
             assert(a[2] == 6);
@@ -1845,7 +1843,7 @@ namespace test_ranges_swap {
                 {{18, 19}, {20, 21}, {22, 23}},
             };
             swap(a, b);
-            STATIC_ASSERT(noexcept(swap(a, b)));
+            static_assert(noexcept(swap(a, b)));
             int counter = 0;
             auto check  = [&counter](int const& i) {
                 assert(i == counter);
@@ -1865,7 +1863,7 @@ namespace test_ranges_swap {
                 {{{18}, {19}}, {{20}, {21}}, {{22}, {23}}},
             };
             swap(a, b);
-            STATIC_ASSERT(noexcept(swap(a, b)));
+            static_assert(noexcept(swap(a, b)));
             int counter = 0;
             auto check  = [&counter](auto const& e) {
                 assert(e.i == counter);
@@ -1876,7 +1874,7 @@ namespace test_ranges_swap {
         }
         return true;
     }
-    STATIC_ASSERT(compile_time_tests());
+    static_assert(compile_time_tests());
 
     void runtime_tests() {
         using ranges::swap;
@@ -1887,7 +1885,7 @@ namespace test_ranges_swap {
             auto i = std::make_unique<int>(1);
             auto j = std::make_unique<int>(2);
             swap(i, j);
-            STATIC_ASSERT(noexcept(swap(i, j)));
+            static_assert(noexcept(swap(i, j)));
             assert(*i == 2);
             assert(*j == 1);
         }
@@ -1902,7 +1900,7 @@ namespace test_ranges_swap {
                 b[i] = std::make_unique<int>(i + 4);
             }
             swap(a, b);
-            STATIC_ASSERT(noexcept(swap(a, b)));
+            static_assert(noexcept(swap(a, b)));
             assert(*a[0] == 4);
             assert(*a[1] == 5);
             assert(*a[2] == 6);
@@ -1925,7 +1923,7 @@ namespace test_ranges_swap {
             for_each_232(a, init);
             for_each_232(b, init);
             swap(a, b);
-            STATIC_ASSERT(noexcept(swap(a, b)));
+            static_assert(noexcept(swap(a, b)));
             counter = 0;
             for_each_232(b, check);
             for_each_232(a, check);
@@ -1936,53 +1934,53 @@ namespace test_ranges_swap {
 namespace test_swappable {
     using std::swappable;
 
-    STATIC_ASSERT(swappable<int>);
-    STATIC_ASSERT(swappable<int[4]>);
-    STATIC_ASSERT(!swappable<int[]>);
-    STATIC_ASSERT(!swappable<int[][4]>);
-    STATIC_ASSERT(swappable<int[3][1][4][1][5][9]>);
+    static_assert(swappable<int>);
+    static_assert(swappable<int[4]>);
+    static_assert(!swappable<int[]>);
+    static_assert(!swappable<int[][4]>);
+    static_assert(swappable<int[3][1][4][1][5][9]>);
 
-    STATIC_ASSERT(swappable<EmptyClass>);
-    STATIC_ASSERT(swappable<EmptyUnion>);
+    static_assert(swappable<EmptyClass>);
+    static_assert(swappable<EmptyUnion>);
 
-    STATIC_ASSERT(!swappable<Immobile>);
-    STATIC_ASSERT(!swappable<Immobile&>);
-    STATIC_ASSERT(!swappable<Immobile&&>);
+    static_assert(!swappable<Immobile>);
+    static_assert(!swappable<Immobile&>);
+    static_assert(!swappable<Immobile&&>);
 
-    STATIC_ASSERT(swappable<MovableFriendSwap>);
+    static_assert(swappable<MovableFriendSwap>);
     // It may not be a great idea that swappable admits reference types and treats them as lvalues, but that's what
     // is_swappable does, so:
-    STATIC_ASSERT(swappable<MovableFriendSwap&>);
-    STATIC_ASSERT(swappable<MovableFriendSwap&&>);
+    static_assert(swappable<MovableFriendSwap&>);
+    static_assert(swappable<MovableFriendSwap&&>);
 
-    STATIC_ASSERT(swappable<ImmobileFriendSwap>);
-    STATIC_ASSERT(swappable<ImmobileFriendSwap&>);
-    STATIC_ASSERT(swappable<ImmobileFriendSwap&&>);
+    static_assert(swappable<ImmobileFriendSwap>);
+    static_assert(swappable<ImmobileFriendSwap&>);
+    static_assert(swappable<ImmobileFriendSwap&&>);
 
     // test non-referenceable types
-    STATIC_ASSERT(!swappable<void>);
-    STATIC_ASSERT(!swappable<int() const>);
-    STATIC_ASSERT(!swappable<int() &>);
+    static_assert(!swappable<void>);
+    static_assert(!swappable<int() const>);
+    static_assert(!swappable<int() &>);
 
-    STATIC_ASSERT(swappable<ImmobileNonMemberSwap>);
-    STATIC_ASSERT(swappable<ImmobileNonMemberSwap&>);
-    STATIC_ASSERT(swappable<ImmobileNonMemberSwap&&>);
+    static_assert(swappable<ImmobileNonMemberSwap>);
+    static_assert(swappable<ImmobileNonMemberSwap&>);
+    static_assert(swappable<ImmobileNonMemberSwap&&>);
 
     namespace non_member {
         struct OnlyRvalueSwappable : Immobile {};
         void swap(OnlyRvalueSwappable&&, OnlyRvalueSwappable&&) {}
         // swappable only cares about lvalue swaps
-        STATIC_ASSERT(!swappable<OnlyRvalueSwappable>);
-        STATIC_ASSERT(!swappable<OnlyRvalueSwappable&>);
-        STATIC_ASSERT(!swappable<OnlyRvalueSwappable&&>);
+        static_assert(!swappable<OnlyRvalueSwappable>);
+        static_assert(!swappable<OnlyRvalueSwappable&>);
+        static_assert(!swappable<OnlyRvalueSwappable&&>);
 
         struct DeletedSwap {
             friend void swap(DeletedSwap&, DeletedSwap&) = delete;
         };
         // a deleted swap overload is correctly ignored
-        STATIC_ASSERT(swappable<DeletedSwap>);
-        STATIC_ASSERT(swappable<DeletedSwap&>);
-        STATIC_ASSERT(swappable<DeletedSwap&&>);
+        static_assert(swappable<DeletedSwap>);
+        static_assert(swappable<DeletedSwap&>);
+        static_assert(swappable<DeletedSwap&&>);
     } // namespace non_member
 
     namespace underconstrained {
@@ -1992,9 +1990,9 @@ namespace test_swappable {
         void swap(T&, T&);
 
         // a swap overload that isn't more specialized or constrained than the poison pill is ignored
-        STATIC_ASSERT(swappable<AmbiguousSwap>);
-        STATIC_ASSERT(swappable<AmbiguousSwap&>);
-        STATIC_ASSERT(swappable<AmbiguousSwap&&>);
+        static_assert(swappable<AmbiguousSwap>);
+        static_assert(swappable<AmbiguousSwap&>);
+        static_assert(swappable<AmbiguousSwap&&>);
     } // namespace underconstrained
 } // namespace test_swappable
 
@@ -2003,52 +2001,52 @@ namespace test_swappable_with {
 
     template <class T, class U>
     constexpr bool test() {
-        STATIC_ASSERT(swappable_with<T, U> == swappable_with<U, T>);
+        static_assert(swappable_with<T, U> == swappable_with<U, T>);
         return swappable_with<T, U>;
     }
 
-    STATIC_ASSERT(!test<void, int>());
-    STATIC_ASSERT(!test<int, void>());
-    STATIC_ASSERT(!test<void const, void const volatile>());
+    static_assert(!test<void, int>());
+    static_assert(!test<int, void>());
+    static_assert(!test<void const, void const volatile>());
 
-    STATIC_ASSERT(!test<int, int>());
-    STATIC_ASSERT(test<int&, int&>());
-    STATIC_ASSERT(!test<int&&, int&&>());
+    static_assert(!test<int, int>());
+    static_assert(test<int&, int&>());
+    static_assert(!test<int&&, int&&>());
 
-    STATIC_ASSERT(test<int (&)[4], int (&)[4]>());
-    STATIC_ASSERT(!test<int, int>());
-    STATIC_ASSERT(!test<int&&, int&&>());
-    STATIC_ASSERT(!test<int&, double&>());
-    STATIC_ASSERT(!test<int (&)[4], bool (&)[4]>());
+    static_assert(test<int (&)[4], int (&)[4]>());
+    static_assert(!test<int, int>());
+    static_assert(!test<int&&, int&&>());
+    static_assert(!test<int&, double&>());
+    static_assert(!test<int (&)[4], bool (&)[4]>());
 
-    STATIC_ASSERT(test<int (&)[3][4], int (&)[3][4]>());
-    STATIC_ASSERT(test<int (&)[3][4][1][2], int (&)[3][4][1][2]>());
-    STATIC_ASSERT(!test<int (&)[3][4][1][2], int (&)[4][4][1][2]>());
+    static_assert(test<int (&)[3][4], int (&)[3][4]>());
+    static_assert(test<int (&)[3][4][1][2], int (&)[3][4][1][2]>());
+    static_assert(!test<int (&)[3][4][1][2], int (&)[4][4][1][2]>());
 
-    STATIC_ASSERT(test<int (&)[2][2], int (&)[2][2]>());
+    static_assert(test<int (&)[2][2], int (&)[2][2]>());
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
-    STATIC_ASSERT(test<int volatile (&)[4], int volatile (&)[4]>());
-    STATIC_ASSERT(test<int volatile (&)[3][4], int volatile (&)[3][4]>());
+    static_assert(test<int volatile (&)[4], int volatile (&)[4]>());
+    static_assert(test<int volatile (&)[3][4], int volatile (&)[3][4]>());
 #endif // ^^^ no workaround ^^^
 
-    STATIC_ASSERT(test<MovableFriendSwap, MovableFriendSwap>() == is_permissive);
-    STATIC_ASSERT(test<MovableFriendSwap&, MovableFriendSwap&>());
-    STATIC_ASSERT(test<MovableFriendSwap&&, MovableFriendSwap&&>() == is_permissive);
+    static_assert(test<MovableFriendSwap, MovableFriendSwap>() == is_permissive);
+    static_assert(test<MovableFriendSwap&, MovableFriendSwap&>());
+    static_assert(test<MovableFriendSwap&&, MovableFriendSwap&&>() == is_permissive);
 
-    STATIC_ASSERT(!test<ImmobileFriendSwap, ImmobileFriendSwap>());
-    STATIC_ASSERT(test<ImmobileFriendSwap&, ImmobileFriendSwap&>());
-    STATIC_ASSERT(test<ImmobileFriendSwap&&, ImmobileFriendSwap&&>() == is_permissive);
+    static_assert(!test<ImmobileFriendSwap, ImmobileFriendSwap>());
+    static_assert(test<ImmobileFriendSwap&, ImmobileFriendSwap&>());
+    static_assert(test<ImmobileFriendSwap&&, ImmobileFriendSwap&&>() == is_permissive);
 
-    STATIC_ASSERT(!test<ImmobileNonMemberSwap, ImmobileNonMemberSwap>());
-    STATIC_ASSERT(test<ImmobileNonMemberSwap&, ImmobileNonMemberSwap&>());
-    STATIC_ASSERT(test<ImmobileNonMemberSwap&&, ImmobileNonMemberSwap&&>() == is_permissive);
+    static_assert(!test<ImmobileNonMemberSwap, ImmobileNonMemberSwap>());
+    static_assert(test<ImmobileNonMemberSwap&, ImmobileNonMemberSwap&>());
+    static_assert(test<ImmobileNonMemberSwap&&, ImmobileNonMemberSwap&&>() == is_permissive);
 
     struct LvalueAndRvalueSwappable {};
     void swap(LvalueAndRvalueSwappable&&, LvalueAndRvalueSwappable&&) {}
-    STATIC_ASSERT(test<LvalueAndRvalueSwappable, LvalueAndRvalueSwappable>());
-    STATIC_ASSERT(test<LvalueAndRvalueSwappable&, LvalueAndRvalueSwappable&>());
-    STATIC_ASSERT(test<LvalueAndRvalueSwappable&&, LvalueAndRvalueSwappable&&>());
+    static_assert(test<LvalueAndRvalueSwappable, LvalueAndRvalueSwappable>());
+    static_assert(test<LvalueAndRvalueSwappable&, LvalueAndRvalueSwappable&>());
+    static_assert(test<LvalueAndRvalueSwappable&&, LvalueAndRvalueSwappable&&>());
 
     template <int>
     struct ImmobileAndSwappable : Immobile {
@@ -2093,13 +2091,13 @@ struct std::common_type<test_swappable_with::ImmobileAndSwappable<I>, test_swapp
 
 namespace test_swappable_with {
     // Not swappable_with: a constituent type is not swappable
-    STATIC_ASSERT(!test<ImmobileNonMemberSwap&, ImmobileAndNotSwappable&>());
+    static_assert(!test<ImmobileNonMemberSwap&, ImmobileAndNotSwappable&>());
     // Not swappable_with: common_reference_with requirement is not satisfied
-    STATIC_ASSERT(!test<ImmobileNonMemberSwap&, CanSwapButUncommon&>());
+    static_assert(!test<ImmobileNonMemberSwap&, CanSwapButUncommon&>());
     // Not swappable_with: asymmetric
-    STATIC_ASSERT(!test<AsymmetricallySwappable<0>&, AsymmetricallySwappable<1>&>());
+    static_assert(!test<AsymmetricallySwappable<0>&, AsymmetricallySwappable<1>&>());
     // swappable_with: all requirements met
-    STATIC_ASSERT(test<ImmobileAndSwappable<0>&, ImmobileAndSwappable<1>&>());
+    static_assert(test<ImmobileAndSwappable<0>&, ImmobileAndSwappable<1>&>());
 
     namespace example {
         // The example from [concept.swappable] with changes per the proposed resolution of LWG-3175:
@@ -2142,8 +2140,8 @@ namespace test_swappable_with {
             assert(a1.m == -5 && a2.m == 5);
 
             // additional test cases not from [concept.swappable] for completeness:
-            STATIC_ASSERT(std::is_same_v<std::common_reference_t<N::Proxy, N::A&>, N::Proxy>);
-            STATIC_ASSERT(swappable_with<N::A&, N::Proxy>);
+            static_assert(std::is_same_v<std::common_reference_t<N::Proxy, N::A&>, N::Proxy>);
+            static_assert(swappable_with<N::A&, N::Proxy>);
 
             value_swap(proxy(a1), a2);
             assert(a1.m == 5 && a2.m == -5);
@@ -2166,62 +2164,62 @@ namespace test_copy_constructible {
     template <class T>
     constexpr bool test() {
         constexpr bool result = copy_constructible<T>;
-        STATIC_ASSERT(copy_constructible<T const> == result);
+        static_assert(copy_constructible<T const> == result);
         if constexpr (std::is_scalar_v<T> || std::is_reference_v<T>) {
-            STATIC_ASSERT(copy_constructible<T volatile> == result);
-            STATIC_ASSERT(copy_constructible<T const volatile> == result);
+            static_assert(copy_constructible<T volatile> == result);
+            static_assert(copy_constructible<T const volatile> == result);
         } else {
-            STATIC_ASSERT(!copy_constructible<T volatile>);
-            STATIC_ASSERT(!copy_constructible<T const volatile>);
+            static_assert(!copy_constructible<T volatile>);
+            static_assert(!copy_constructible<T const volatile>);
         }
         return result;
     }
 #pragma warning(pop)
 
-    STATIC_ASSERT(!test<void>());
+    static_assert(!test<void>());
 
-    STATIC_ASSERT(test<int>());
-    STATIC_ASSERT(test<int const>());
-    STATIC_ASSERT(test<double>());
+    static_assert(test<int>());
+    static_assert(test<int const>());
+    static_assert(test<double>());
 
-    STATIC_ASSERT(test<int*>());
-    STATIC_ASSERT(test<int const*>());
+    static_assert(test<int*>());
+    static_assert(test<int const*>());
 
-    STATIC_ASSERT(!test<int[4]>());
-    STATIC_ASSERT(!test<int[]>());
+    static_assert(!test<int[4]>());
+    static_assert(!test<int[]>());
 
-    STATIC_ASSERT(test<int&>());
-    STATIC_ASSERT(!test<int&&>());
-    STATIC_ASSERT(test<int const&>());
-    STATIC_ASSERT(!test<int const&&>());
+    static_assert(test<int&>());
+    static_assert(!test<int&&>());
+    static_assert(test<int const&>());
+    static_assert(!test<int const&&>());
 
-    STATIC_ASSERT(!test<void()>());
+    static_assert(!test<void()>());
 
-    STATIC_ASSERT(test<EmptyUnion>());
-    STATIC_ASSERT(test<EmptyClass>());
-    STATIC_ASSERT(test<NotEmpty>());
-    STATIC_ASSERT(test<BitZero>());
+    static_assert(test<EmptyUnion>());
+    static_assert(test<EmptyClass>());
+    static_assert(test<NotEmpty>());
+    static_assert(test<BitZero>());
 
-    STATIC_ASSERT(test<CopyableType>());
-    STATIC_ASSERT(!test<MoveOnly>());
-    STATIC_ASSERT(!copy_constructible<CopyOnlyAbomination>);
-    STATIC_ASSERT(copy_constructible<CopyOnlyAbomination const>);
-    STATIC_ASSERT(!test<Immobile>());
-    STATIC_ASSERT(!test<ExplicitMoveAbomination>());
-    STATIC_ASSERT(!test<ExplicitCopyAbomination>());
+    static_assert(test<CopyableType>());
+    static_assert(!test<MoveOnly>());
+    static_assert(!copy_constructible<CopyOnlyAbomination>);
+    static_assert(copy_constructible<CopyOnlyAbomination const>);
+    static_assert(!test<Immobile>());
+    static_assert(!test<ExplicitMoveAbomination>());
+    static_assert(!test<ExplicitCopyAbomination>());
 
-    STATIC_ASSERT(!test<PurePublicDestructor>());
-    STATIC_ASSERT(!test<Indestructible>());
-    STATIC_ASSERT(!test<ThrowingDestructor>());
+    static_assert(!test<PurePublicDestructor>());
+    static_assert(!test<Indestructible>());
+    static_assert(!test<ThrowingDestructor>());
 
-    STATIC_ASSERT(test<NotDefaultConstructible>());
-    STATIC_ASSERT(test<ExplicitDefault>());
-    STATIC_ASSERT(test<DeletedDefault>());
+    static_assert(test<NotDefaultConstructible>());
+    static_assert(test<ExplicitDefault>());
+    static_assert(test<DeletedDefault>());
 
-    STATIC_ASSERT(test<Immobile&>());
-    STATIC_ASSERT(!test<Immobile&&>());
-    STATIC_ASSERT(test<Immobile const&>());
-    STATIC_ASSERT(!test<Immobile const&&>());
+    static_assert(test<Immobile&>());
+    static_assert(!test<Immobile&&>());
+    static_assert(test<Immobile const&>());
+    static_assert(!test<Immobile const&&>());
 
     // https://github.com/ericniebler/stl2/issues/301
     struct NotMutableRef {
@@ -2237,25 +2235,25 @@ namespace test_copy_constructible {
         NotConstRefRef(NotConstRefRef const&&) = delete;
     };
 
-    STATIC_ASSERT(!copy_constructible<NotMutableRef>);
-    STATIC_ASSERT(!copy_constructible<NotConstRefRef>);
+    static_assert(!copy_constructible<NotMutableRef>);
+    static_assert(!copy_constructible<NotConstRefRef>);
 
     struct UserProvidedCopy {
         UserProvidedCopy(UserProvidedCopy const&);
     };
-    STATIC_ASSERT(test<UserProvidedCopy>());
+    static_assert(test<UserProvidedCopy>());
 
     class PrivateCopy {
     private:
         PrivateCopy(PrivateCopy const&);
     };
-    STATIC_ASSERT(!test<PrivateCopy>());
+    static_assert(!test<PrivateCopy>());
 
     struct MutatingCopyAbomination {
         MutatingCopyAbomination(MutatingCopyAbomination&); // NB: not const&
         void operator=(MutatingCopyAbomination&); // NB: not const&
     };
-    STATIC_ASSERT(!test<MutatingCopyAbomination>());
+    static_assert(!test<MutatingCopyAbomination>());
 } // namespace test_copy_constructible
 
 namespace test_object_concepts {
@@ -2266,106 +2264,106 @@ namespace test_object_concepts {
     template <class T>
     constexpr bool test_movable() {
         constexpr bool result = movable<T>;
-        STATIC_ASSERT(!movable<T const>);
-        STATIC_ASSERT(movable<T volatile> == std::is_scalar_v<T>);
-        STATIC_ASSERT(!movable<T const volatile>);
+        static_assert(!movable<T const>);
+        static_assert(movable<T volatile> == std::is_scalar_v<T>);
+        static_assert(!movable<T const volatile>);
         return result;
     }
 
     template <class T>
     constexpr bool test_copyable() {
         constexpr bool result = copyable<T>;
-        STATIC_ASSERT(!copyable<T const>);
-        STATIC_ASSERT(copyable<T volatile> == std::is_scalar_v<T>);
-        STATIC_ASSERT(!copyable<T const volatile>);
+        static_assert(!copyable<T const>);
+        static_assert(copyable<T volatile> == std::is_scalar_v<T>);
+        static_assert(!copyable<T const volatile>);
         return result;
     }
 
     template <class T>
     constexpr bool test_semiregular() {
         constexpr bool result = semiregular<T>;
-        STATIC_ASSERT(!semiregular<T const>);
-        STATIC_ASSERT(semiregular<T volatile> == std::is_scalar_v<T>);
-        STATIC_ASSERT(!semiregular<T const volatile>);
+        static_assert(!semiregular<T const>);
+        static_assert(semiregular<T volatile> == std::is_scalar_v<T>);
+        static_assert(!semiregular<T const volatile>);
         return result;
     }
 
     template <class T>
     constexpr bool test_regular() {
         constexpr bool result = regular<T>;
-        STATIC_ASSERT(!regular<T const>);
-        STATIC_ASSERT(regular<T volatile> == std::is_scalar_v<T>);
-        STATIC_ASSERT(!regular<T const volatile>);
+        static_assert(!regular<T const>);
+        static_assert(regular<T volatile> == std::is_scalar_v<T>);
+        static_assert(!regular<T const volatile>);
         return result;
     }
 #pragma warning(pop)
 
-    STATIC_ASSERT(!test_movable<void>());
+    static_assert(!test_movable<void>());
 
-    STATIC_ASSERT(test_movable<int>());
-    STATIC_ASSERT(test_movable<double>());
+    static_assert(test_movable<int>());
+    static_assert(test_movable<double>());
 
-    STATIC_ASSERT(!test_movable<int&>());
-    STATIC_ASSERT(!test_movable<int&&>()); // https://github.com/ericniebler/stl2/issues/310
+    static_assert(!test_movable<int&>());
+    static_assert(!test_movable<int&&>()); // https://github.com/ericniebler/stl2/issues/310
 
-    STATIC_ASSERT(!test_movable<int[42]>());
-    STATIC_ASSERT(!test_movable<int[]>());
+    static_assert(!test_movable<int[42]>());
+    static_assert(!test_movable<int[]>());
 
-    STATIC_ASSERT(!test_movable<int(int)>());
+    static_assert(!test_movable<int(int)>());
 
-    STATIC_ASSERT(test_movable<CopyableType>());
-    STATIC_ASSERT(test_movable<MoveOnly>());
-    STATIC_ASSERT(!test_movable<CopyOnlyAbomination>());
-    STATIC_ASSERT(!test_movable<Immobile>());
+    static_assert(test_movable<CopyableType>());
+    static_assert(test_movable<MoveOnly>());
+    static_assert(!test_movable<CopyOnlyAbomination>());
+    static_assert(!test_movable<Immobile>());
 
-    STATIC_ASSERT(!test_copyable<void>());
+    static_assert(!test_copyable<void>());
 
-    STATIC_ASSERT(test_copyable<int>());
-    STATIC_ASSERT(test_copyable<double>());
+    static_assert(test_copyable<int>());
+    static_assert(test_copyable<double>());
 
-    STATIC_ASSERT(!test_copyable<int[42]>());
-    STATIC_ASSERT(!test_copyable<int[]>());
+    static_assert(!test_copyable<int[42]>());
+    static_assert(!test_copyable<int[]>());
 
-    STATIC_ASSERT(!test_copyable<int&>());
-    STATIC_ASSERT(!test_copyable<int&&>());
+    static_assert(!test_copyable<int&>());
+    static_assert(!test_copyable<int&&>());
 
-    STATIC_ASSERT(!test_copyable<int(int)>());
+    static_assert(!test_copyable<int(int)>());
 
-    STATIC_ASSERT(test_copyable<CopyableType>());
-    STATIC_ASSERT(!test_copyable<MoveOnly>());
-    STATIC_ASSERT(!test_copyable<CopyOnlyAbomination>());
-    STATIC_ASSERT(!test_copyable<Immobile>());
+    static_assert(test_copyable<CopyableType>());
+    static_assert(!test_copyable<MoveOnly>());
+    static_assert(!test_copyable<CopyOnlyAbomination>());
+    static_assert(!test_copyable<Immobile>());
 
-    STATIC_ASSERT(!test_semiregular<void>());
+    static_assert(!test_semiregular<void>());
 
-    STATIC_ASSERT(test_semiregular<int>());
-    STATIC_ASSERT(test_semiregular<double>());
+    static_assert(test_semiregular<int>());
+    static_assert(test_semiregular<double>());
 
-    STATIC_ASSERT(!test_semiregular<int&>());
+    static_assert(!test_semiregular<int&>());
 
-    STATIC_ASSERT(!test_semiregular<MoveOnly>());
-    STATIC_ASSERT(!test_semiregular<Immobile>());
-    STATIC_ASSERT(!test_semiregular<ExplicitMoveAbomination>());
-    STATIC_ASSERT(!test_semiregular<ExplicitCopyAbomination>());
-    STATIC_ASSERT(!test_semiregular<CopyOnlyAbomination>());
-    STATIC_ASSERT(test_semiregular<SemiregularType>());
-    STATIC_ASSERT(test_semiregular<RegularType>());
+    static_assert(!test_semiregular<MoveOnly>());
+    static_assert(!test_semiregular<Immobile>());
+    static_assert(!test_semiregular<ExplicitMoveAbomination>());
+    static_assert(!test_semiregular<ExplicitCopyAbomination>());
+    static_assert(!test_semiregular<CopyOnlyAbomination>());
+    static_assert(test_semiregular<SemiregularType>());
+    static_assert(test_semiregular<RegularType>());
 
-    STATIC_ASSERT(!test_regular<void>());
+    static_assert(!test_regular<void>());
 
-    STATIC_ASSERT(test_regular<int>());
-    STATIC_ASSERT(test_regular<double>());
+    static_assert(test_regular<int>());
+    static_assert(test_regular<double>());
 
-    STATIC_ASSERT(!test_regular<int&>());
+    static_assert(!test_regular<int&>());
 
-    STATIC_ASSERT(!test_regular<MoveOnly>());
-    STATIC_ASSERT(!test_regular<Immobile>());
-    STATIC_ASSERT(!test_regular<ExplicitMoveAbomination>());
-    STATIC_ASSERT(!test_regular<ExplicitCopyAbomination>());
-    STATIC_ASSERT(!test_regular<CopyOnlyAbomination>());
-    STATIC_ASSERT(!test_regular<CopyableType>());
-    STATIC_ASSERT(!test_regular<SemiregularType>());
-    STATIC_ASSERT(test_regular<RegularType>());
+    static_assert(!test_regular<MoveOnly>());
+    static_assert(!test_regular<Immobile>());
+    static_assert(!test_regular<ExplicitMoveAbomination>());
+    static_assert(!test_regular<ExplicitCopyAbomination>());
+    static_assert(!test_regular<CopyOnlyAbomination>());
+    static_assert(!test_regular<CopyableType>());
+    static_assert(!test_regular<SemiregularType>());
+    static_assert(test_regular<RegularType>());
 } // namespace test_object_concepts
 
 namespace test_boolean_testable {
@@ -2373,31 +2371,31 @@ namespace test_boolean_testable {
     using std::_Boolean_testable;
 
     // Better have these four, since we use them as examples in the Standard.
-    STATIC_ASSERT(_Boolean_testable<bool>);
-    STATIC_ASSERT(_Boolean_testable<std::true_type>);
-    STATIC_ASSERT(_Boolean_testable<int*>);
-    STATIC_ASSERT(_Boolean_testable<std::bitset<42>::reference>);
+    static_assert(_Boolean_testable<bool>);
+    static_assert(_Boolean_testable<std::true_type>);
+    static_assert(_Boolean_testable<int*>);
+    static_assert(_Boolean_testable<std::bitset<42>::reference>);
 
-    STATIC_ASSERT(_Boolean_testable<std::false_type>);
+    static_assert(_Boolean_testable<std::false_type>);
 
-    STATIC_ASSERT(_Boolean_testable<int>);
-    STATIC_ASSERT(_Boolean_testable<void*>);
+    static_assert(_Boolean_testable<int>);
+    static_assert(_Boolean_testable<void*>);
 
     enum unscoped_boolish : bool { No, Yes };
-    STATIC_ASSERT(_Boolean_testable<unscoped_boolish>);
+    static_assert(_Boolean_testable<unscoped_boolish>);
 
     enum class scoped_boolish : bool { No, Yes };
-    STATIC_ASSERT(!_Boolean_testable<scoped_boolish>);
+    static_assert(!_Boolean_testable<scoped_boolish>);
 
-    STATIC_ASSERT(!_Boolean_testable<EmptyClass>);
+    static_assert(!_Boolean_testable<EmptyClass>);
 
-    STATIC_ASSERT(_Boolean_testable<ImplicitTo<bool>>);
-    STATIC_ASSERT(!_Boolean_testable<ExplicitTo<bool>>);
+    static_assert(_Boolean_testable<ImplicitTo<bool>>);
+    static_assert(!_Boolean_testable<ExplicitTo<bool>>);
 
     struct MutatingBoolConversion {
         operator bool();
     };
-    STATIC_ASSERT(_Boolean_testable<MutatingBoolConversion>);
+    static_assert(_Boolean_testable<MutatingBoolConversion>);
 
     template <unsigned int Select> // values in [0, Archetype_max) select a requirement to violate
     struct Archetype {
@@ -2409,10 +2407,10 @@ namespace test_boolean_testable {
             requires (Select == 2); // !Archetype<2> does not model _Boolean_testable_impl
     };
 
-    STATIC_ASSERT(!_Boolean_testable<Archetype<0>>);
-    STATIC_ASSERT(!_Boolean_testable<Archetype<1>>);
-    STATIC_ASSERT(!_Boolean_testable<Archetype<2>>);
-    STATIC_ASSERT(_Boolean_testable<Archetype<3>>);
+    static_assert(!_Boolean_testable<Archetype<0>>);
+    static_assert(!_Boolean_testable<Archetype<1>>);
+    static_assert(!_Boolean_testable<Archetype<2>>);
+    static_assert(_Boolean_testable<Archetype<3>>);
 } // namespace test_boolean_testable
 
 namespace test_equality_comparable {
@@ -2423,26 +2421,26 @@ namespace test_equality_comparable {
     template <class T>
     constexpr bool test() {
         constexpr bool result = equality_comparable<T>;
-        STATIC_ASSERT(equality_comparable<T const> == result);
+        static_assert(equality_comparable<T const> == result);
         if constexpr (!std::is_same_v<T, std::add_lvalue_reference_t<T>>) {
-            STATIC_ASSERT(equality_comparable<T&> == result);
-            STATIC_ASSERT(equality_comparable<T const&> == result);
-            STATIC_ASSERT(equality_comparable<T&&> == result);
-            STATIC_ASSERT(equality_comparable<T const&&> == result);
+            static_assert(equality_comparable<T&> == result);
+            static_assert(equality_comparable<T const&> == result);
+            static_assert(equality_comparable<T&&> == result);
+            static_assert(equality_comparable<T const&&> == result);
         }
         return result;
     }
 #pragma warning(pop)
 
-    STATIC_ASSERT(!test<void>());
+    static_assert(!test<void>());
 
-    STATIC_ASSERT(test<int>());
-    STATIC_ASSERT(test<double>());
-    STATIC_ASSERT(test<std::nullptr_t>());
-    STATIC_ASSERT(test<int[42]>());
-    STATIC_ASSERT(test<int(int)>());
+    static_assert(test<int>());
+    static_assert(test<double>());
+    static_assert(test<std::nullptr_t>());
+    static_assert(test<int[42]>());
+    static_assert(test<int(int)>());
 
-    STATIC_ASSERT(!test<EmptyClass>());
+    static_assert(!test<EmptyClass>());
 
     template <unsigned int> // selects one requirement to violate
     struct Archetype {};
@@ -2455,9 +2453,9 @@ namespace test_equality_comparable {
     bool operator!=(Archetype<Select> const&, Archetype<Select> const&);
     void operator!=(Archetype<1> const&, Archetype<1> const&); // Archetype<1> != Archetype<1> is not _Boolean_testable
 
-    STATIC_ASSERT(!test<Archetype<0>>());
-    STATIC_ASSERT(!test<Archetype<1>>());
-    STATIC_ASSERT(test<Archetype<2>>());
+    static_assert(!test<Archetype<0>>());
+    static_assert(!test<Archetype<1>>());
+    static_assert(test<Archetype<2>>());
 } // namespace test_equality_comparable
 
 namespace test_equality_comparable_with {
@@ -2470,65 +2468,65 @@ namespace test_equality_comparable_with {
         using std::is_same_v, std::add_lvalue_reference_t;
 
         constexpr bool result = equality_comparable_with<T, U>;
-        STATIC_ASSERT(equality_comparable_with<U, T> == result);
+        static_assert(equality_comparable_with<U, T> == result);
 
         if constexpr (!is_same_v<T, add_lvalue_reference_t<T>>) {
-            STATIC_ASSERT(equality_comparable_with<T&, U> == result);
-            STATIC_ASSERT(equality_comparable_with<T const&, U> == result);
-            STATIC_ASSERT(equality_comparable_with<T&&, U> == result);
-            STATIC_ASSERT(equality_comparable_with<T const&&, U> == result);
+            static_assert(equality_comparable_with<T&, U> == result);
+            static_assert(equality_comparable_with<T const&, U> == result);
+            static_assert(equality_comparable_with<T&&, U> == result);
+            static_assert(equality_comparable_with<T const&&, U> == result);
         }
 
         if constexpr (!is_same_v<U, add_lvalue_reference_t<U>>) {
-            STATIC_ASSERT(equality_comparable_with<T, U&> == result);
-            STATIC_ASSERT(equality_comparable_with<T, U const&> == result);
-            STATIC_ASSERT(equality_comparable_with<T, U&&> == result);
-            STATIC_ASSERT(equality_comparable_with<T, U const&&> == result);
+            static_assert(equality_comparable_with<T, U&> == result);
+            static_assert(equality_comparable_with<T, U const&> == result);
+            static_assert(equality_comparable_with<T, U&&> == result);
+            static_assert(equality_comparable_with<T, U const&&> == result);
         }
 
         if constexpr (!is_same_v<T, add_lvalue_reference_t<T>> && !is_same_v<U, add_lvalue_reference_t<U>>) {
-            STATIC_ASSERT(equality_comparable_with<T&, U&> == result);
-            STATIC_ASSERT(equality_comparable_with<T const&, U&> == result);
-            STATIC_ASSERT(equality_comparable_with<T&&, U&> == result);
-            STATIC_ASSERT(equality_comparable_with<T const&&, U&> == result);
+            static_assert(equality_comparable_with<T&, U&> == result);
+            static_assert(equality_comparable_with<T const&, U&> == result);
+            static_assert(equality_comparable_with<T&&, U&> == result);
+            static_assert(equality_comparable_with<T const&&, U&> == result);
 
-            STATIC_ASSERT(equality_comparable_with<T&, U const&> == result);
-            STATIC_ASSERT(equality_comparable_with<T const&, U const&> == result);
-            STATIC_ASSERT(equality_comparable_with<T&&, U const&> == result);
-            STATIC_ASSERT(equality_comparable_with<T const&&, U const&> == result);
+            static_assert(equality_comparable_with<T&, U const&> == result);
+            static_assert(equality_comparable_with<T const&, U const&> == result);
+            static_assert(equality_comparable_with<T&&, U const&> == result);
+            static_assert(equality_comparable_with<T const&&, U const&> == result);
 
-            STATIC_ASSERT(equality_comparable_with<T&, U&&> == result);
-            STATIC_ASSERT(equality_comparable_with<T const&, U&&> == result);
-            STATIC_ASSERT(equality_comparable_with<T&&, U&&> == result);
-            STATIC_ASSERT(equality_comparable_with<T const&&, U&&> == result);
+            static_assert(equality_comparable_with<T&, U&&> == result);
+            static_assert(equality_comparable_with<T const&, U&&> == result);
+            static_assert(equality_comparable_with<T&&, U&&> == result);
+            static_assert(equality_comparable_with<T const&&, U&&> == result);
 
-            STATIC_ASSERT(equality_comparable_with<T&, U const&&> == result);
-            STATIC_ASSERT(equality_comparable_with<T const&, U const&&> == result);
-            STATIC_ASSERT(equality_comparable_with<T&&, U const&&> == result);
-            STATIC_ASSERT(equality_comparable_with<T const&&, U const&&> == result);
+            static_assert(equality_comparable_with<T&, U const&&> == result);
+            static_assert(equality_comparable_with<T const&, U const&&> == result);
+            static_assert(equality_comparable_with<T&&, U const&&> == result);
+            static_assert(equality_comparable_with<T const&&, U const&&> == result);
         }
 
         return result;
     }
 #pragma warning(pop)
 
-    STATIC_ASSERT(!test<void>());
-    STATIC_ASSERT(!test<int, void>());
+    static_assert(!test<void>());
+    static_assert(!test<int, void>());
 
-    STATIC_ASSERT(test<int>());
-    STATIC_ASSERT(test<double>());
-    STATIC_ASSERT(test<int, double>());
-    STATIC_ASSERT(test<std::nullptr_t>());
-    STATIC_ASSERT(test<int*, void*>());
-    STATIC_ASSERT(test<int[42]>());
-    STATIC_ASSERT(test<int(int)>());
+    static_assert(test<int>());
+    static_assert(test<double>());
+    static_assert(test<int, double>());
+    static_assert(test<std::nullptr_t>());
+    static_assert(test<int*, void*>());
+    static_assert(test<int[42]>());
+    static_assert(test<int(int)>());
 
     template <int>
     struct CrossSpecializationComparable {
         bool operator==(CrossSpecializationComparable const&) const;
         bool operator!=(CrossSpecializationComparable const&) const;
     };
-    STATIC_ASSERT(test<CrossSpecializationComparable<0>, CrossSpecializationComparable<0>>());
+    static_assert(test<CrossSpecializationComparable<0>, CrossSpecializationComparable<0>>());
 
     template <int I, int J>
     bool operator==(CrossSpecializationComparable<I> const&, CrossSpecializationComparable<J> const&);
@@ -2546,10 +2544,10 @@ namespace test_equality_comparable_with {
             return false;
         }
     };
-    STATIC_ASSERT(test<Common, Common>());
-    STATIC_ASSERT(!test<CrossSpecializationComparable<0>, Common>());
-    STATIC_ASSERT(test<CrossSpecializationComparable<1>, Common>());
-    STATIC_ASSERT(test<CrossSpecializationComparable<2>, Common>());
+    static_assert(test<Common, Common>());
+    static_assert(!test<CrossSpecializationComparable<0>, Common>());
+    static_assert(test<CrossSpecializationComparable<1>, Common>());
+    static_assert(test<CrossSpecializationComparable<2>, Common>());
 } // namespace test_equality_comparable_with
 
 template <>
@@ -2565,9 +2563,9 @@ struct std::common_type<test_equality_comparable_with::CrossSpecializationCompar
 
 namespace test_equality_comparable_with {
     // CrossSpecializationComparable<0> / <1> have all the necessary operators, but fail common_reference_with.
-    STATIC_ASSERT(!test<CrossSpecializationComparable<0>, CrossSpecializationComparable<1>>());
+    static_assert(!test<CrossSpecializationComparable<0>, CrossSpecializationComparable<1>>());
     // CrossSpecializationComparable<1> / <2> *do* satisfy common_reference_with.
-    STATIC_ASSERT(test<CrossSpecializationComparable<1>, CrossSpecializationComparable<2>>());
+    static_assert(test<CrossSpecializationComparable<1>, CrossSpecializationComparable<2>>());
 } // namespace test_equality_comparable_with
 
 namespace test_totally_ordered {
@@ -2578,30 +2576,30 @@ namespace test_totally_ordered {
     template <class T>
     constexpr bool test() {
         constexpr bool result = totally_ordered<T>;
-        STATIC_ASSERT(totally_ordered<T const> == result);
+        static_assert(totally_ordered<T const> == result);
         if constexpr (!std::is_same_v<T, std::add_lvalue_reference_t<T>>) {
-            STATIC_ASSERT(totally_ordered<T&> == result);
-            STATIC_ASSERT(totally_ordered<T const&> == result);
-            STATIC_ASSERT(totally_ordered<T&&> == result);
-            STATIC_ASSERT(totally_ordered<T const&&> == result);
+            static_assert(totally_ordered<T&> == result);
+            static_assert(totally_ordered<T const&> == result);
+            static_assert(totally_ordered<T&&> == result);
+            static_assert(totally_ordered<T const&&> == result);
         }
         return result;
     }
 #pragma warning(pop)
 
-    STATIC_ASSERT(!test<void>());
+    static_assert(!test<void>());
 
-    STATIC_ASSERT(test<int>());
-    STATIC_ASSERT(test<double>());
-    STATIC_ASSERT(test<void*>());
-    STATIC_ASSERT(test<int*>());
-    STATIC_ASSERT(test<int[42]>());
-    STATIC_ASSERT(test<int(int)>());
+    static_assert(test<int>());
+    static_assert(test<double>());
+    static_assert(test<void*>());
+    static_assert(test<int*>());
+    static_assert(test<int[42]>());
+    static_assert(test<int(int)>());
 
 #ifndef __EDG__ // TRANSITION, VSO-1898947
-    STATIC_ASSERT(!test<std::nullptr_t>());
+    static_assert(!test<std::nullptr_t>());
 #endif // ^^^ no workaround ^^^
-    STATIC_ASSERT(!test<EmptyClass>());
+    static_assert(!test<EmptyClass>());
 
     constexpr unsigned int Archetype_max = 6;
     template <unsigned int> // values in [0, Archetype_max) select a requirement to violate
@@ -2633,17 +2631,17 @@ namespace test_totally_ordered {
 
     template <std::size_t I>
     constexpr void test_archetype_single() {
-        STATIC_ASSERT(!test<Archetype<I>>());
+        static_assert(!test<Archetype<I>>());
     }
 
     template <std::size_t... Is>
     constexpr bool test_Archetype(std::index_sequence<Is...>) {
-        STATIC_ASSERT(std::is_same_v<std::index_sequence<Is...>, std::make_index_sequence<Archetype_max>>);
+        static_assert(std::is_same_v<std::index_sequence<Is...>, std::make_index_sequence<Archetype_max>>);
         (test_archetype_single<Is>(), ...);
-        STATIC_ASSERT(test<Archetype<Archetype_max>>());
+        static_assert(test<Archetype<Archetype_max>>());
         return true;
     }
-    STATIC_ASSERT(test_Archetype(std::make_index_sequence<Archetype_max>{}));
+    static_assert(test_Archetype(std::make_index_sequence<Archetype_max>{}));
 } // namespace test_totally_ordered
 
 namespace test_totally_ordered_with {
@@ -2654,65 +2652,65 @@ namespace test_totally_ordered_with {
     template <class T, class U = T>
     constexpr bool test() {
         constexpr bool result = totally_ordered_with<T, U>;
-        STATIC_ASSERT(totally_ordered_with<U, T> == result);
+        static_assert(totally_ordered_with<U, T> == result);
         if constexpr (!std::is_same_v<T, std::add_lvalue_reference_t<T>>) {
-            STATIC_ASSERT(totally_ordered_with<T&, U> == result);
-            STATIC_ASSERT(totally_ordered_with<T const&, U> == result);
-            STATIC_ASSERT(totally_ordered_with<T&&, U> == result);
-            STATIC_ASSERT(totally_ordered_with<T const&&, U> == result);
+            static_assert(totally_ordered_with<T&, U> == result);
+            static_assert(totally_ordered_with<T const&, U> == result);
+            static_assert(totally_ordered_with<T&&, U> == result);
+            static_assert(totally_ordered_with<T const&&, U> == result);
         }
 
         if constexpr (!std::is_same_v<U, std::add_lvalue_reference_t<U>>) {
-            STATIC_ASSERT(totally_ordered_with<T, U&> == result);
-            STATIC_ASSERT(totally_ordered_with<T, U const&> == result);
-            STATIC_ASSERT(totally_ordered_with<T, U&&> == result);
-            STATIC_ASSERT(totally_ordered_with<T, U const&&> == result);
+            static_assert(totally_ordered_with<T, U&> == result);
+            static_assert(totally_ordered_with<T, U const&> == result);
+            static_assert(totally_ordered_with<T, U&&> == result);
+            static_assert(totally_ordered_with<T, U const&&> == result);
         }
 
         if constexpr (!std::is_same_v<T, std::add_lvalue_reference_t<T>>
                       && !std::is_same_v<U, std::add_lvalue_reference_t<U>>) {
-            STATIC_ASSERT(totally_ordered_with<T&, U&> == result);
-            STATIC_ASSERT(totally_ordered_with<T const&, U&> == result);
-            STATIC_ASSERT(totally_ordered_with<T&&, U&> == result);
-            STATIC_ASSERT(totally_ordered_with<T const&&, U&> == result);
+            static_assert(totally_ordered_with<T&, U&> == result);
+            static_assert(totally_ordered_with<T const&, U&> == result);
+            static_assert(totally_ordered_with<T&&, U&> == result);
+            static_assert(totally_ordered_with<T const&&, U&> == result);
 
-            STATIC_ASSERT(totally_ordered_with<T&, U const&> == result);
-            STATIC_ASSERT(totally_ordered_with<T const&, U const&> == result);
-            STATIC_ASSERT(totally_ordered_with<T&&, U const&> == result);
-            STATIC_ASSERT(totally_ordered_with<T const&&, U const&> == result);
+            static_assert(totally_ordered_with<T&, U const&> == result);
+            static_assert(totally_ordered_with<T const&, U const&> == result);
+            static_assert(totally_ordered_with<T&&, U const&> == result);
+            static_assert(totally_ordered_with<T const&&, U const&> == result);
 
-            STATIC_ASSERT(totally_ordered_with<T&, U&&> == result);
-            STATIC_ASSERT(totally_ordered_with<T const&, U&&> == result);
-            STATIC_ASSERT(totally_ordered_with<T&&, U&&> == result);
-            STATIC_ASSERT(totally_ordered_with<T const&&, U&&> == result);
+            static_assert(totally_ordered_with<T&, U&&> == result);
+            static_assert(totally_ordered_with<T const&, U&&> == result);
+            static_assert(totally_ordered_with<T&&, U&&> == result);
+            static_assert(totally_ordered_with<T const&&, U&&> == result);
 
-            STATIC_ASSERT(totally_ordered_with<T&, U const&&> == result);
-            STATIC_ASSERT(totally_ordered_with<T const&, U const&&> == result);
-            STATIC_ASSERT(totally_ordered_with<T&&, U const&&> == result);
-            STATIC_ASSERT(totally_ordered_with<T const&&, U const&&> == result);
+            static_assert(totally_ordered_with<T&, U const&&> == result);
+            static_assert(totally_ordered_with<T const&, U const&&> == result);
+            static_assert(totally_ordered_with<T&&, U const&&> == result);
+            static_assert(totally_ordered_with<T const&&, U const&&> == result);
         }
 
         return result;
     }
 #pragma warning(pop)
 
-    STATIC_ASSERT(!test<void>());
-    STATIC_ASSERT(!test<int, void>());
+    static_assert(!test<void>());
+    static_assert(!test<int, void>());
 
-    STATIC_ASSERT(test<int>());
-    STATIC_ASSERT(test<double>());
-    STATIC_ASSERT(test<int, double>());
+    static_assert(test<int>());
+    static_assert(test<double>());
+    static_assert(test<int, double>());
 #ifndef __EDG__ // TRANSITION, VSO-1898947
-    STATIC_ASSERT(!test<std::nullptr_t>());
+    static_assert(!test<std::nullptr_t>());
 #endif // ^^^ no workaround ^^^
 
-    STATIC_ASSERT(test<void*>());
-    STATIC_ASSERT(test<int*>());
-    STATIC_ASSERT(test<int*, void*>());
+    static_assert(test<void*>());
+    static_assert(test<int*>());
+    static_assert(test<int*, void*>());
 
-    STATIC_ASSERT(test<int[42]>());
+    static_assert(test<int[42]>());
 
-    STATIC_ASSERT(test<int(int)>());
+    static_assert(test<int(int)>());
 
     template <int>
     struct Ordered {
@@ -2723,9 +2721,9 @@ namespace test_totally_ordered_with {
         bool operator<=(Ordered const&) const;
         bool operator>=(Ordered const&) const;
     };
-    STATIC_ASSERT(test<Ordered<0>, Ordered<0>>());
-    STATIC_ASSERT(test<Ordered<1>, Ordered<1>>());
-    STATIC_ASSERT(test<Ordered<2>, Ordered<2>>());
+    static_assert(test<Ordered<0>, Ordered<0>>());
+    static_assert(test<Ordered<1>, Ordered<1>>());
+    static_assert(test<Ordered<2>, Ordered<2>>());
 
     template <int I, int J>
     bool operator==(Ordered<I> const&, Ordered<J> const&);
@@ -2750,7 +2748,7 @@ namespace test_totally_ordered_with {
         friend bool operator<=(Common const&, Common const&);
         friend bool operator>=(Common const&, Common const&);
     };
-    STATIC_ASSERT(test<Common, Common>());
+    static_assert(test<Common, Common>());
 } // namespace test_totally_ordered_with
 
 template <>
@@ -2764,12 +2762,12 @@ struct std::common_type<test_totally_ordered_with::Ordered<2>, test_totally_orde
 
 namespace test_totally_ordered_with {
     // Ordered<0> / <1> have all the necessary operators, but fail common_reference_with
-    STATIC_ASSERT(!test<Ordered<0>, Ordered<1>>());
+    static_assert(!test<Ordered<0>, Ordered<1>>());
     // Common is the common type of (Ordered<1>, Common) and (Ordered<2>, Common)
-    STATIC_ASSERT(test<Ordered<1>, Common>());
-    STATIC_ASSERT(test<Ordered<2>, Common>());
+    static_assert(test<Ordered<1>, Common>());
+    static_assert(test<Ordered<2>, Common>());
     // Ordered<1> / <2> have all the necessary operators, and model common_reference_with
-    STATIC_ASSERT(test<Ordered<1>, Ordered<2>>());
+    static_assert(test<Ordered<1>, Ordered<2>>());
 } // namespace test_totally_ordered_with
 
 namespace test_invocable_concepts {
@@ -2780,7 +2778,7 @@ namespace test_invocable_concepts {
     template <class F, class... Args>
     constexpr bool test() {
         constexpr bool result = invocable<F, Args...>;
-        STATIC_ASSERT(regular_invocable<F, Args...> == result);
+        static_assert(regular_invocable<F, Args...> == result);
         return result;
     }
 
@@ -2791,14 +2789,14 @@ namespace test_invocable_concepts {
         // PMD tests, which don't depend on calling conventions
         {
             using Fn = int tag::*;
-            STATIC_ASSERT(!test<Fn>());
+            static_assert(!test<Fn>());
             {
                 // N4849 [func.require]/1.4: "... N == 1 and f is a pointer to data member of a class T and
                 // is_base_of_v<T, remove_reference_t<decltype(t_1)>> is true"
-                STATIC_ASSERT(test<Fn, tag&>());
-                STATIC_ASSERT(test<Fn, DerivesFrom<tag>&>());
-                STATIC_ASSERT(test<Fn, tag&&>());
-                STATIC_ASSERT(test<Fn, tag const&>());
+                static_assert(test<Fn, tag&>());
+                static_assert(test<Fn, DerivesFrom<tag>&>());
+                static_assert(test<Fn, tag&&>());
+                static_assert(test<Fn, tag const&>());
             }
             {
                 // N4849 [func.require]/1.5: "... N == 1 and f is a pointer to data member of a class T and
@@ -2806,11 +2804,11 @@ namespace test_invocable_concepts {
                 using T  = std::reference_wrapper<tag>;
                 using DT = std::reference_wrapper<DerivesFrom<tag>>;
                 using CT = std::reference_wrapper<tag const>;
-                STATIC_ASSERT(test<Fn, T&>());
-                STATIC_ASSERT(test<Fn, DT&>());
-                STATIC_ASSERT(test<Fn, T const&>());
-                STATIC_ASSERT(test<Fn, T&&>());
-                STATIC_ASSERT(test<Fn, CT&>());
+                static_assert(test<Fn, T&>());
+                static_assert(test<Fn, DT&>());
+                static_assert(test<Fn, T const&>());
+                static_assert(test<Fn, T&&>());
+                static_assert(test<Fn, CT&>());
             }
             {
                 // N4849 [func.require]/1.6: "... N == 1 and f is a pointer to data member of a class T and t_1 does not
@@ -2819,35 +2817,35 @@ namespace test_invocable_concepts {
                 using DT = DerivesFrom<tag>*;
                 using CT = tag const*;
                 using ST = std::unique_ptr<tag>;
-                STATIC_ASSERT(test<Fn, T&>());
-                STATIC_ASSERT(test<Fn, DT&>());
-                STATIC_ASSERT(test<Fn, T const&>());
-                STATIC_ASSERT(test<Fn, T&&>());
-                STATIC_ASSERT(test<Fn, ST>());
-                STATIC_ASSERT(test<Fn, CT&>());
+                static_assert(test<Fn, T&>());
+                static_assert(test<Fn, DT&>());
+                static_assert(test<Fn, T const&>());
+                static_assert(test<Fn, T&&>());
+                static_assert(test<Fn, ST>());
+                static_assert(test<Fn, CT&>());
             }
         }
         { // pointer to member data
             struct S {};
             using PMD = char S::*;
-            STATIC_ASSERT(test<PMD, S&>());
-            STATIC_ASSERT(test<PMD, S*>());
-            STATIC_ASSERT(test<PMD, S* const>());
-            STATIC_ASSERT(test<PMD, S const&>());
-            STATIC_ASSERT(test<PMD, S const*>());
-            STATIC_ASSERT(test<PMD, S volatile&>());
-            STATIC_ASSERT(test<PMD, S volatile*>());
-            STATIC_ASSERT(test<PMD, S const volatile&>());
-            STATIC_ASSERT(test<PMD, S const volatile*>());
-            STATIC_ASSERT(test<PMD, DerivesFrom<S>&>());
-            STATIC_ASSERT(test<PMD, DerivesFrom<S> const&>());
-            STATIC_ASSERT(test<PMD, DerivesFrom<S>*>());
-            STATIC_ASSERT(test<PMD, DerivesFrom<S> const*>());
-            STATIC_ASSERT(test<PMD, std::unique_ptr<S>>());
-            STATIC_ASSERT(test<PMD, std::unique_ptr<S const>>());
-            STATIC_ASSERT(test<PMD, std::reference_wrapper<S>>());
-            STATIC_ASSERT(test<PMD, std::reference_wrapper<S const>>());
-            STATIC_ASSERT(!test<PMD, NotDerived&>());
+            static_assert(test<PMD, S&>());
+            static_assert(test<PMD, S*>());
+            static_assert(test<PMD, S* const>());
+            static_assert(test<PMD, S const&>());
+            static_assert(test<PMD, S const*>());
+            static_assert(test<PMD, S volatile&>());
+            static_assert(test<PMD, S volatile*>());
+            static_assert(test<PMD, S const volatile&>());
+            static_assert(test<PMD, S const volatile*>());
+            static_assert(test<PMD, DerivesFrom<S>&>());
+            static_assert(test<PMD, DerivesFrom<S> const&>());
+            static_assert(test<PMD, DerivesFrom<S>*>());
+            static_assert(test<PMD, DerivesFrom<S> const*>());
+            static_assert(test<PMD, std::unique_ptr<S>>());
+            static_assert(test<PMD, std::unique_ptr<S const>>());
+            static_assert(test<PMD, std::reference_wrapper<S>>());
+            static_assert(test<PMD, std::reference_wrapper<S const>>());
+            static_assert(!test<PMD, NotDerived&>());
         }
     }
 
@@ -2921,12 +2919,12 @@ namespace test_predicate {
             {
                 // N4849 [func.require]/1.1: "... f is a pointer to member function of a class T and
                 // is_base_of_v<T, remove_reference_t<decltype(t_1)>> is true"
-                STATIC_ASSERT(predicate<Fn, tag&, int>);
-                STATIC_ASSERT(predicate<Fn, DerivesFrom<tag>&, int>);
-                STATIC_ASSERT(predicate<RFn, tag&&, int>);
-                STATIC_ASSERT(!predicate<RFn, tag&, int>);
-                STATIC_ASSERT(!predicate<Fn, tag&>);
-                STATIC_ASSERT(!predicate<Fn, tag const&, int>);
+                static_assert(predicate<Fn, tag&, int>);
+                static_assert(predicate<Fn, DerivesFrom<tag>&, int>);
+                static_assert(predicate<RFn, tag&&, int>);
+                static_assert(!predicate<RFn, tag&, int>);
+                static_assert(!predicate<Fn, tag&>);
+                static_assert(!predicate<Fn, tag const&, int>);
             }
             {
                 // N4849 [func.require]/1.2: "... f is a pointer to a member function of a class T and
@@ -2934,12 +2932,12 @@ namespace test_predicate {
                 using T  = std::reference_wrapper<tag>;
                 using DT = std::reference_wrapper<DerivesFrom<tag>>;
                 using CT = std::reference_wrapper<tag const>;
-                STATIC_ASSERT(predicate<Fn, T&, int>);
-                STATIC_ASSERT(predicate<Fn, DT&, int>);
-                STATIC_ASSERT(predicate<Fn, T const&, int>);
-                STATIC_ASSERT(predicate<Fn, T&&, int>);
-                STATIC_ASSERT(!predicate<Fn, CT&, int>);
-                STATIC_ASSERT(!predicate<RFn, T, int>);
+                static_assert(predicate<Fn, T&, int>);
+                static_assert(predicate<Fn, DT&, int>);
+                static_assert(predicate<Fn, T const&, int>);
+                static_assert(predicate<Fn, T&&, int>);
+                static_assert(!predicate<Fn, CT&, int>);
+                static_assert(!predicate<RFn, T, int>);
             }
             {
                 // N4849 [func.require]/1.3: "... f is a pointer to a member function of a class T and t_1 does not
@@ -2948,25 +2946,25 @@ namespace test_predicate {
                 using DT = DerivesFrom<tag>*;
                 using CT = tag const*;
                 using ST = std::unique_ptr<tag>;
-                STATIC_ASSERT(predicate<Fn, T&, int>);
-                STATIC_ASSERT(predicate<Fn, DT&, int>);
-                STATIC_ASSERT(predicate<Fn, T const&, int>);
-                STATIC_ASSERT(predicate<Fn, T&&, int>);
-                STATIC_ASSERT(predicate<Fn, ST, int>);
-                STATIC_ASSERT(!predicate<Fn, CT&, int>);
-                STATIC_ASSERT(!predicate<RFn, T, int>);
+                static_assert(predicate<Fn, T&, int>);
+                static_assert(predicate<Fn, DT&, int>);
+                static_assert(predicate<Fn, T const&, int>);
+                static_assert(predicate<Fn, T&&, int>);
+                static_assert(predicate<Fn, ST, int>);
+                static_assert(!predicate<Fn, CT&, int>);
+                static_assert(!predicate<RFn, T, int>);
             }
         }
         {
             using Fn = Bool(tag::*);
-            STATIC_ASSERT(!predicate<Fn>);
+            static_assert(!predicate<Fn>);
             {
                 // N4849 [func.require]/1.4: "... N == 1 and f is a pointer to data member of a class T and
                 // is_base_of_v<T, remove_reference_t<decltype(t_1)>> is true"
-                STATIC_ASSERT(predicate<Fn, tag&>);
-                STATIC_ASSERT(predicate<Fn, DerivesFrom<tag>&>);
-                STATIC_ASSERT(predicate<Fn, tag&&>);
-                STATIC_ASSERT(predicate<Fn, tag const&>);
+                static_assert(predicate<Fn, tag&>);
+                static_assert(predicate<Fn, DerivesFrom<tag>&>);
+                static_assert(predicate<Fn, tag&&>);
+                static_assert(predicate<Fn, tag const&>);
             }
             {
                 // N4849 [func.require]/1.5: "... N == 1 and f is a pointer to data member of a class T and
@@ -2974,11 +2972,11 @@ namespace test_predicate {
                 using T  = std::reference_wrapper<tag>;
                 using DT = std::reference_wrapper<DerivesFrom<tag>>;
                 using CT = std::reference_wrapper<tag const>;
-                STATIC_ASSERT(predicate<Fn, T&>);
-                STATIC_ASSERT(predicate<Fn, DT&>);
-                STATIC_ASSERT(predicate<Fn, T const&>);
-                STATIC_ASSERT(predicate<Fn, T&&>);
-                STATIC_ASSERT(predicate<Fn, CT&>);
+                static_assert(predicate<Fn, T&>);
+                static_assert(predicate<Fn, DT&>);
+                static_assert(predicate<Fn, T const&>);
+                static_assert(predicate<Fn, T&&>);
+                static_assert(predicate<Fn, CT&>);
             }
             {
                 // N4849 [func.require]/1.6: "... N == 1 and f is a pointer to data member of a class T and t_1 does not
@@ -2987,58 +2985,58 @@ namespace test_predicate {
                 using DT = DerivesFrom<tag>*;
                 using CT = tag const*;
                 using ST = std::unique_ptr<tag>;
-                STATIC_ASSERT(predicate<Fn, T&>);
-                STATIC_ASSERT(predicate<Fn, DT&>);
-                STATIC_ASSERT(predicate<Fn, T const&>);
-                STATIC_ASSERT(predicate<Fn, T&&>);
-                STATIC_ASSERT(predicate<Fn, ST>);
-                STATIC_ASSERT(predicate<Fn, CT&>);
+                static_assert(predicate<Fn, T&>);
+                static_assert(predicate<Fn, DT&>);
+                static_assert(predicate<Fn, T const&>);
+                static_assert(predicate<Fn, T&&>);
+                static_assert(predicate<Fn, ST>);
+                static_assert(predicate<Fn, CT&>);
             }
         }
         { // N4849 [func.require]/1.7: "f(t_1, t_2, ..., t_N) in all other cases"
             { // function pointer
                 using Fp = Bool (*)(tag&, int);
-                STATIC_ASSERT(predicate<Fp, tag&, int>);
-                STATIC_ASSERT(predicate<Fp, DerivesFrom<tag>&, int>);
-                STATIC_ASSERT(!predicate<Fp, tag const&, int>);
-                STATIC_ASSERT(!predicate<Fp>);
-                STATIC_ASSERT(!predicate<Fp, tag&>);
+                static_assert(predicate<Fp, tag&, int>);
+                static_assert(predicate<Fp, DerivesFrom<tag>&, int>);
+                static_assert(!predicate<Fp, tag const&, int>);
+                static_assert(!predicate<Fp>);
+                static_assert(!predicate<Fp, tag&>);
             }
             { // function reference
                 using Fp = Bool (&)(tag&, int);
-                STATIC_ASSERT(predicate<Fp, tag&, int>);
-                STATIC_ASSERT(predicate<Fp, DerivesFrom<tag>&, int>);
-                STATIC_ASSERT(!predicate<Fp, tag const&, int>);
-                STATIC_ASSERT(!predicate<Fp>);
-                STATIC_ASSERT(!predicate<Fp, tag&>);
+                static_assert(predicate<Fp, tag&, int>);
+                static_assert(predicate<Fp, DerivesFrom<tag>&, int>);
+                static_assert(!predicate<Fp, tag const&, int>);
+                static_assert(!predicate<Fp>);
+                static_assert(!predicate<Fp, tag&>);
             }
             { // function object
                 using Fn = NotCallableWithInt;
-                STATIC_ASSERT(predicate<Fn, tag>);
-                STATIC_ASSERT(!predicate<Fn, int>);
+                static_assert(predicate<Fn, tag>);
+                static_assert(!predicate<Fn, int>);
             }
         }
 
         { // function object
-            STATIC_ASSERT(predicate<S, int>);
-            STATIC_ASSERT(predicate<S&, unsigned char, int&>);
-            STATIC_ASSERT(predicate<S const&, unsigned char, int&>);
-            STATIC_ASSERT(!predicate<S volatile&, unsigned char, int&>);
-            STATIC_ASSERT(!predicate<S const volatile&, unsigned char, int&>);
+            static_assert(predicate<S, int>);
+            static_assert(predicate<S&, unsigned char, int&>);
+            static_assert(predicate<S const&, unsigned char, int&>);
+            static_assert(!predicate<S volatile&, unsigned char, int&>);
+            static_assert(!predicate<S const volatile&, unsigned char, int&>);
 
-            STATIC_ASSERT(predicate<ImplicitTo<bool (*)(long)>, int>);
-            STATIC_ASSERT(predicate<ImplicitTo<bool (*)(long)>, char>);
-            STATIC_ASSERT(predicate<ImplicitTo<bool (*)(long)>, float>);
-            STATIC_ASSERT(!predicate<ImplicitTo<bool (*)(long)>, char const*>);
-            STATIC_ASSERT(!predicate<ImplicitTo<bool (*)(long)>, S const&>);
+            static_assert(predicate<ImplicitTo<bool (*)(long)>, int>);
+            static_assert(predicate<ImplicitTo<bool (*)(long)>, char>);
+            static_assert(predicate<ImplicitTo<bool (*)(long)>, float>);
+            static_assert(!predicate<ImplicitTo<bool (*)(long)>, char const*>);
+            static_assert(!predicate<ImplicitTo<bool (*)(long)>, S const&>);
 
             auto omega_mu = [x = 42](int i, double) { return x == i; };
-            STATIC_ASSERT(predicate<decltype((omega_mu)), int, double>);
-            STATIC_ASSERT(predicate<decltype((omega_mu)), double, int>);
-            STATIC_ASSERT(predicate<decltype((omega_mu)), char, char>);
-            STATIC_ASSERT(!predicate<decltype((omega_mu))>);
-            STATIC_ASSERT(!predicate<decltype((omega_mu)), char const*, double>);
-            STATIC_ASSERT(!predicate<decltype((omega_mu)), double, char const*>);
+            static_assert(predicate<decltype((omega_mu)), int, double>);
+            static_assert(predicate<decltype((omega_mu)), double, int>);
+            static_assert(predicate<decltype((omega_mu)), char, char>);
+            static_assert(!predicate<decltype((omega_mu))>);
+            static_assert(!predicate<decltype((omega_mu)), char const*, double>);
+            static_assert(!predicate<decltype((omega_mu)), double, char const*>);
         }
 
         { // pointer to function
@@ -3057,21 +3055,21 @@ namespace test_predicate {
             using RPF2 = bool& (*&) (int, int);
             using RPF3 = bool const& (*&) (int, int, int);
             using RPF4 = bool (*&)(int, ...);
-            STATIC_ASSERT(predicate<RF0>);
-            STATIC_ASSERT(predicate<RF1, int>);
-            STATIC_ASSERT(predicate<RF2, int, long>);
-            STATIC_ASSERT(predicate<RF3, int, long, int>);
-            STATIC_ASSERT(predicate<RF4, int, float, void*>);
-            STATIC_ASSERT(predicate<PF0>);
-            STATIC_ASSERT(predicate<PF1, int>);
-            STATIC_ASSERT(predicate<PF2, int, long>);
-            STATIC_ASSERT(predicate<PF3, int, long, int>);
-            STATIC_ASSERT(predicate<PF4, int, float, void*>);
-            STATIC_ASSERT(predicate<RPF0>);
-            STATIC_ASSERT(predicate<RPF1, int>);
-            STATIC_ASSERT(predicate<RPF2, int, long>);
-            STATIC_ASSERT(predicate<RPF3, int, long, int>);
-            STATIC_ASSERT(predicate<RPF4, int, float, void*>);
+            static_assert(predicate<RF0>);
+            static_assert(predicate<RF1, int>);
+            static_assert(predicate<RF2, int, long>);
+            static_assert(predicate<RF3, int, long, int>);
+            static_assert(predicate<RF4, int, float, void*>);
+            static_assert(predicate<PF0>);
+            static_assert(predicate<PF1, int>);
+            static_assert(predicate<PF2, int, long>);
+            static_assert(predicate<PF3, int, long, int>);
+            static_assert(predicate<PF4, int, float, void*>);
+            static_assert(predicate<RPF0>);
+            static_assert(predicate<RPF1, int>);
+            static_assert(predicate<RPF2, int, long>);
+            static_assert(predicate<RPF3, int, long, int>);
+            static_assert(predicate<RPF4, int, float, void*>);
         }
 
         { // pointer to member function
@@ -3079,230 +3077,230 @@ namespace test_predicate {
             using PMF1  = Bool (S::*)(long);
             using PMF2  = Bool& (S::*) (long, int);
             using PMF1P = Bool const& (S::*) (int, ...);
-            STATIC_ASSERT(predicate<PMF0, S>);
-            STATIC_ASSERT(predicate<PMF0, S&>);
-            STATIC_ASSERT(predicate<PMF0, S*>);
-            STATIC_ASSERT(predicate<PMF0, S*&>);
-            STATIC_ASSERT(predicate<PMF0, std::reference_wrapper<S>>);
-            STATIC_ASSERT(predicate<PMF0, std::reference_wrapper<S> const&>);
-            STATIC_ASSERT(predicate<PMF0, std::reference_wrapper<DerivesFrom<S>>>);
-            STATIC_ASSERT(predicate<PMF0, std::reference_wrapper<DerivesFrom<S>> const&>);
-            STATIC_ASSERT(predicate<PMF0, std::unique_ptr<S>>);
-            STATIC_ASSERT(predicate<PMF0, std::unique_ptr<DerivesFrom<S>>>);
-            STATIC_ASSERT(!predicate<PMF0, S const&>);
-            STATIC_ASSERT(!predicate<PMF0, S volatile&>);
-            STATIC_ASSERT(!predicate<PMF0, S const volatile&>);
-            STATIC_ASSERT(!predicate<PMF0, NotDerived&>);
-            STATIC_ASSERT(!predicate<PMF0, NotDerived const&>);
-            STATIC_ASSERT(!predicate<PMF0, std::unique_ptr<S const>>);
-            STATIC_ASSERT(!predicate<PMF0, std::reference_wrapper<S const>>);
-            STATIC_ASSERT(!predicate<PMF0, std::reference_wrapper<NotDerived>>);
-            STATIC_ASSERT(!predicate<PMF0, std::unique_ptr<NotDerived>>);
+            static_assert(predicate<PMF0, S>);
+            static_assert(predicate<PMF0, S&>);
+            static_assert(predicate<PMF0, S*>);
+            static_assert(predicate<PMF0, S*&>);
+            static_assert(predicate<PMF0, std::reference_wrapper<S>>);
+            static_assert(predicate<PMF0, std::reference_wrapper<S> const&>);
+            static_assert(predicate<PMF0, std::reference_wrapper<DerivesFrom<S>>>);
+            static_assert(predicate<PMF0, std::reference_wrapper<DerivesFrom<S>> const&>);
+            static_assert(predicate<PMF0, std::unique_ptr<S>>);
+            static_assert(predicate<PMF0, std::unique_ptr<DerivesFrom<S>>>);
+            static_assert(!predicate<PMF0, S const&>);
+            static_assert(!predicate<PMF0, S volatile&>);
+            static_assert(!predicate<PMF0, S const volatile&>);
+            static_assert(!predicate<PMF0, NotDerived&>);
+            static_assert(!predicate<PMF0, NotDerived const&>);
+            static_assert(!predicate<PMF0, std::unique_ptr<S const>>);
+            static_assert(!predicate<PMF0, std::reference_wrapper<S const>>);
+            static_assert(!predicate<PMF0, std::reference_wrapper<NotDerived>>);
+            static_assert(!predicate<PMF0, std::unique_ptr<NotDerived>>);
 
-            STATIC_ASSERT(predicate<PMF1, S, int>);
-            STATIC_ASSERT(predicate<PMF1, S&, int>);
-            STATIC_ASSERT(predicate<PMF1, S*, int>);
-            STATIC_ASSERT(predicate<PMF1, S*&, int>);
-            STATIC_ASSERT(predicate<PMF1, std::unique_ptr<S>, int>);
-            STATIC_ASSERT(predicate<PMF1, std::unique_ptr<DerivesFrom<S>>, int>);
-            STATIC_ASSERT(predicate<PMF1, std::reference_wrapper<S>, int>);
-            STATIC_ASSERT(predicate<PMF1, std::reference_wrapper<S> const&, int>);
-            STATIC_ASSERT(predicate<PMF1, std::reference_wrapper<DerivesFrom<S>>, int>);
-            STATIC_ASSERT(predicate<PMF1, std::reference_wrapper<DerivesFrom<S>> const&, int>);
-            STATIC_ASSERT(!predicate<PMF1, S const&, int>);
-            STATIC_ASSERT(!predicate<PMF1, S volatile&, int>);
-            STATIC_ASSERT(!predicate<PMF1, S const volatile&, int>);
-            STATIC_ASSERT(!predicate<PMF1, NotDerived&, int>);
-            STATIC_ASSERT(!predicate<PMF1, NotDerived const&, int>);
-            STATIC_ASSERT(!predicate<PMF1, std::unique_ptr<S const>, int>);
-            STATIC_ASSERT(!predicate<PMF1, std::reference_wrapper<S const>, int>);
-            STATIC_ASSERT(!predicate<PMF1, std::reference_wrapper<NotDerived>, int>);
-            STATIC_ASSERT(!predicate<PMF1, std::unique_ptr<NotDerived>, int>);
+            static_assert(predicate<PMF1, S, int>);
+            static_assert(predicate<PMF1, S&, int>);
+            static_assert(predicate<PMF1, S*, int>);
+            static_assert(predicate<PMF1, S*&, int>);
+            static_assert(predicate<PMF1, std::unique_ptr<S>, int>);
+            static_assert(predicate<PMF1, std::unique_ptr<DerivesFrom<S>>, int>);
+            static_assert(predicate<PMF1, std::reference_wrapper<S>, int>);
+            static_assert(predicate<PMF1, std::reference_wrapper<S> const&, int>);
+            static_assert(predicate<PMF1, std::reference_wrapper<DerivesFrom<S>>, int>);
+            static_assert(predicate<PMF1, std::reference_wrapper<DerivesFrom<S>> const&, int>);
+            static_assert(!predicate<PMF1, S const&, int>);
+            static_assert(!predicate<PMF1, S volatile&, int>);
+            static_assert(!predicate<PMF1, S const volatile&, int>);
+            static_assert(!predicate<PMF1, NotDerived&, int>);
+            static_assert(!predicate<PMF1, NotDerived const&, int>);
+            static_assert(!predicate<PMF1, std::unique_ptr<S const>, int>);
+            static_assert(!predicate<PMF1, std::reference_wrapper<S const>, int>);
+            static_assert(!predicate<PMF1, std::reference_wrapper<NotDerived>, int>);
+            static_assert(!predicate<PMF1, std::unique_ptr<NotDerived>, int>);
 
-            STATIC_ASSERT(predicate<PMF2, S, int, int>);
-            STATIC_ASSERT(predicate<PMF2, S&, int, int>);
-            STATIC_ASSERT(predicate<PMF2, S*, int, int>);
-            STATIC_ASSERT(predicate<PMF2, S*&, int, int>);
-            STATIC_ASSERT(predicate<PMF2, std::unique_ptr<S>, int, int>);
-            STATIC_ASSERT(predicate<PMF2, std::unique_ptr<DerivesFrom<S>>, int, int>);
-            STATIC_ASSERT(predicate<PMF2, std::reference_wrapper<S>, int, int>);
-            STATIC_ASSERT(predicate<PMF2, std::reference_wrapper<S> const&, int, int>);
-            STATIC_ASSERT(predicate<PMF2, std::reference_wrapper<DerivesFrom<S>>, int, int>);
-            STATIC_ASSERT(predicate<PMF2, std::reference_wrapper<DerivesFrom<S>> const&, int, int>);
-            STATIC_ASSERT(!predicate<PMF2, S const&, int, int>);
-            STATIC_ASSERT(!predicate<PMF2, S volatile&, int, int>);
-            STATIC_ASSERT(!predicate<PMF2, S const volatile&, int, int>);
-            STATIC_ASSERT(!predicate<PMF2, std::unique_ptr<S const>, int, int>);
-            STATIC_ASSERT(!predicate<PMF2, std::reference_wrapper<S const>, int, int>);
-            STATIC_ASSERT(!predicate<PMF2, NotDerived const&, int, int>);
-            STATIC_ASSERT(!predicate<PMF2, std::reference_wrapper<NotDerived>, int, int>);
-            STATIC_ASSERT(!predicate<PMF2, std::unique_ptr<NotDerived>, int, int>);
+            static_assert(predicate<PMF2, S, int, int>);
+            static_assert(predicate<PMF2, S&, int, int>);
+            static_assert(predicate<PMF2, S*, int, int>);
+            static_assert(predicate<PMF2, S*&, int, int>);
+            static_assert(predicate<PMF2, std::unique_ptr<S>, int, int>);
+            static_assert(predicate<PMF2, std::unique_ptr<DerivesFrom<S>>, int, int>);
+            static_assert(predicate<PMF2, std::reference_wrapper<S>, int, int>);
+            static_assert(predicate<PMF2, std::reference_wrapper<S> const&, int, int>);
+            static_assert(predicate<PMF2, std::reference_wrapper<DerivesFrom<S>>, int, int>);
+            static_assert(predicate<PMF2, std::reference_wrapper<DerivesFrom<S>> const&, int, int>);
+            static_assert(!predicate<PMF2, S const&, int, int>);
+            static_assert(!predicate<PMF2, S volatile&, int, int>);
+            static_assert(!predicate<PMF2, S const volatile&, int, int>);
+            static_assert(!predicate<PMF2, std::unique_ptr<S const>, int, int>);
+            static_assert(!predicate<PMF2, std::reference_wrapper<S const>, int, int>);
+            static_assert(!predicate<PMF2, NotDerived const&, int, int>);
+            static_assert(!predicate<PMF2, std::reference_wrapper<NotDerived>, int, int>);
+            static_assert(!predicate<PMF2, std::unique_ptr<NotDerived>, int, int>);
 
-            STATIC_ASSERT(predicate<PMF1P, S&, int>);
-            STATIC_ASSERT(predicate<PMF1P, S&, int, long>);
+            static_assert(predicate<PMF1P, S&, int>);
+            static_assert(predicate<PMF1P, S&, int, long>);
 
             using PMF0C  = bool (S::*)() const;
             using PMF1C  = bool (S::*)(long) const;
             using PMF2C  = bool (S::*)(long, int) const;
             using PMF1PC = bool const& (S::*) (int, ...) const;
-            STATIC_ASSERT(predicate<PMF0C, S>);
-            STATIC_ASSERT(predicate<PMF0C, S&>);
-            STATIC_ASSERT(predicate<PMF0C, S const&>);
-            STATIC_ASSERT(predicate<PMF0C, S*>);
-            STATIC_ASSERT(predicate<PMF0C, S const*>);
-            STATIC_ASSERT(predicate<PMF0C, S*&>);
-            STATIC_ASSERT(predicate<PMF0C, S const*&>);
-            STATIC_ASSERT(predicate<PMF0C, std::unique_ptr<S>>);
-            STATIC_ASSERT(predicate<PMF0C, std::unique_ptr<DerivesFrom<S>>>);
-            STATIC_ASSERT(predicate<PMF0C, std::reference_wrapper<S>>);
-            STATIC_ASSERT(predicate<PMF0C, std::reference_wrapper<S const>>);
-            STATIC_ASSERT(predicate<PMF0C, std::reference_wrapper<S> const&>);
-            STATIC_ASSERT(predicate<PMF0C, std::reference_wrapper<S const> const&>);
-            STATIC_ASSERT(predicate<PMF0C, std::reference_wrapper<DerivesFrom<S>>>);
-            STATIC_ASSERT(predicate<PMF0C, std::reference_wrapper<DerivesFrom<S> const>>);
-            STATIC_ASSERT(predicate<PMF0C, std::reference_wrapper<DerivesFrom<S>> const&>);
-            STATIC_ASSERT(predicate<PMF0C, std::reference_wrapper<DerivesFrom<S> const> const&>);
-            STATIC_ASSERT(!predicate<PMF0C, S volatile&>);
-            STATIC_ASSERT(!predicate<PMF0C, S const volatile&>);
+            static_assert(predicate<PMF0C, S>);
+            static_assert(predicate<PMF0C, S&>);
+            static_assert(predicate<PMF0C, S const&>);
+            static_assert(predicate<PMF0C, S*>);
+            static_assert(predicate<PMF0C, S const*>);
+            static_assert(predicate<PMF0C, S*&>);
+            static_assert(predicate<PMF0C, S const*&>);
+            static_assert(predicate<PMF0C, std::unique_ptr<S>>);
+            static_assert(predicate<PMF0C, std::unique_ptr<DerivesFrom<S>>>);
+            static_assert(predicate<PMF0C, std::reference_wrapper<S>>);
+            static_assert(predicate<PMF0C, std::reference_wrapper<S const>>);
+            static_assert(predicate<PMF0C, std::reference_wrapper<S> const&>);
+            static_assert(predicate<PMF0C, std::reference_wrapper<S const> const&>);
+            static_assert(predicate<PMF0C, std::reference_wrapper<DerivesFrom<S>>>);
+            static_assert(predicate<PMF0C, std::reference_wrapper<DerivesFrom<S> const>>);
+            static_assert(predicate<PMF0C, std::reference_wrapper<DerivesFrom<S>> const&>);
+            static_assert(predicate<PMF0C, std::reference_wrapper<DerivesFrom<S> const> const&>);
+            static_assert(!predicate<PMF0C, S volatile&>);
+            static_assert(!predicate<PMF0C, S const volatile&>);
 
-            STATIC_ASSERT(predicate<PMF1C, S, int>);
-            STATIC_ASSERT(predicate<PMF1C, S&, int>);
-            STATIC_ASSERT(predicate<PMF1C, S const&, int>);
-            STATIC_ASSERT(predicate<PMF1C, S*, int>);
-            STATIC_ASSERT(predicate<PMF1C, S const*, int>);
-            STATIC_ASSERT(predicate<PMF1C, S*&, int>);
-            STATIC_ASSERT(predicate<PMF1C, S const*&, int>);
-            STATIC_ASSERT(predicate<PMF1C, std::unique_ptr<S>, int>);
-            STATIC_ASSERT(!predicate<PMF1C, S volatile&, int>);
-            STATIC_ASSERT(!predicate<PMF1C, S const volatile&, int>);
+            static_assert(predicate<PMF1C, S, int>);
+            static_assert(predicate<PMF1C, S&, int>);
+            static_assert(predicate<PMF1C, S const&, int>);
+            static_assert(predicate<PMF1C, S*, int>);
+            static_assert(predicate<PMF1C, S const*, int>);
+            static_assert(predicate<PMF1C, S*&, int>);
+            static_assert(predicate<PMF1C, S const*&, int>);
+            static_assert(predicate<PMF1C, std::unique_ptr<S>, int>);
+            static_assert(!predicate<PMF1C, S volatile&, int>);
+            static_assert(!predicate<PMF1C, S const volatile&, int>);
 
-            STATIC_ASSERT(predicate<PMF2C, S, int, int>);
-            STATIC_ASSERT(predicate<PMF2C, S&, int, int>);
-            STATIC_ASSERT(predicate<PMF2C, S const&, int, int>);
-            STATIC_ASSERT(predicate<PMF2C, S*, int, int>);
-            STATIC_ASSERT(predicate<PMF2C, S const*, int, int>);
-            STATIC_ASSERT(predicate<PMF2C, S*&, int, int>);
-            STATIC_ASSERT(predicate<PMF2C, S const*&, int, int>);
-            STATIC_ASSERT(predicate<PMF2C, std::unique_ptr<S>, int, int>);
-            STATIC_ASSERT(!predicate<PMF2C, S volatile&, int, int>);
-            STATIC_ASSERT(!predicate<PMF2C, S const volatile&, int, int>);
+            static_assert(predicate<PMF2C, S, int, int>);
+            static_assert(predicate<PMF2C, S&, int, int>);
+            static_assert(predicate<PMF2C, S const&, int, int>);
+            static_assert(predicate<PMF2C, S*, int, int>);
+            static_assert(predicate<PMF2C, S const*, int, int>);
+            static_assert(predicate<PMF2C, S*&, int, int>);
+            static_assert(predicate<PMF2C, S const*&, int, int>);
+            static_assert(predicate<PMF2C, std::unique_ptr<S>, int, int>);
+            static_assert(!predicate<PMF2C, S volatile&, int, int>);
+            static_assert(!predicate<PMF2C, S const volatile&, int, int>);
 
-            STATIC_ASSERT(predicate<PMF1PC, S&, int>);
-            STATIC_ASSERT(predicate<PMF1PC, S&, int, long>);
+            static_assert(predicate<PMF1PC, S&, int>);
+            static_assert(predicate<PMF1PC, S&, int, long>);
 
             using PMF0V  = bool (S::*)() volatile;
             using PMF1V  = bool (S::*)(long) volatile;
             using PMF2V  = bool (S::*)(long, int) volatile;
             using PMF1PV = bool const& (S::*) (int, ...) volatile;
-            STATIC_ASSERT(predicate<PMF0V, S>);
-            STATIC_ASSERT(predicate<PMF0V, S&>);
-            STATIC_ASSERT(predicate<PMF0V, S volatile&>);
-            STATIC_ASSERT(predicate<PMF0V, S*>);
-            STATIC_ASSERT(predicate<PMF0V, S volatile*>);
-            STATIC_ASSERT(predicate<PMF0V, S*&>);
-            STATIC_ASSERT(predicate<PMF0V, S volatile*&>);
-            STATIC_ASSERT(predicate<PMF0V, std::unique_ptr<S>>);
-            STATIC_ASSERT(!predicate<PMF0V, S const&>);
-            STATIC_ASSERT(!predicate<PMF0V, S const volatile&>);
+            static_assert(predicate<PMF0V, S>);
+            static_assert(predicate<PMF0V, S&>);
+            static_assert(predicate<PMF0V, S volatile&>);
+            static_assert(predicate<PMF0V, S*>);
+            static_assert(predicate<PMF0V, S volatile*>);
+            static_assert(predicate<PMF0V, S*&>);
+            static_assert(predicate<PMF0V, S volatile*&>);
+            static_assert(predicate<PMF0V, std::unique_ptr<S>>);
+            static_assert(!predicate<PMF0V, S const&>);
+            static_assert(!predicate<PMF0V, S const volatile&>);
 
-            STATIC_ASSERT(predicate<PMF1V, S, int>);
-            STATIC_ASSERT(predicate<PMF1V, S&, int>);
-            STATIC_ASSERT(predicate<PMF1V, S volatile&, int>);
-            STATIC_ASSERT(predicate<PMF1V, S*, int>);
-            STATIC_ASSERT(predicate<PMF1V, S volatile*, int>);
-            STATIC_ASSERT(predicate<PMF1V, S*&, int>);
-            STATIC_ASSERT(predicate<PMF1V, S volatile*&, int>);
-            STATIC_ASSERT(predicate<PMF1V, std::unique_ptr<S>, int>);
-            STATIC_ASSERT(!predicate<PMF1V, S const&, int>);
-            STATIC_ASSERT(!predicate<PMF1V, S const volatile&, int>);
+            static_assert(predicate<PMF1V, S, int>);
+            static_assert(predicate<PMF1V, S&, int>);
+            static_assert(predicate<PMF1V, S volatile&, int>);
+            static_assert(predicate<PMF1V, S*, int>);
+            static_assert(predicate<PMF1V, S volatile*, int>);
+            static_assert(predicate<PMF1V, S*&, int>);
+            static_assert(predicate<PMF1V, S volatile*&, int>);
+            static_assert(predicate<PMF1V, std::unique_ptr<S>, int>);
+            static_assert(!predicate<PMF1V, S const&, int>);
+            static_assert(!predicate<PMF1V, S const volatile&, int>);
 
-            STATIC_ASSERT(predicate<PMF2V, S, int, int>);
-            STATIC_ASSERT(predicate<PMF2V, S&, int, int>);
-            STATIC_ASSERT(predicate<PMF2V, S volatile&, int, int>);
-            STATIC_ASSERT(predicate<PMF2V, S*, int, int>);
-            STATIC_ASSERT(predicate<PMF2V, S volatile*, int, int>);
-            STATIC_ASSERT(predicate<PMF2V, S*&, int, int>);
-            STATIC_ASSERT(predicate<PMF2V, S volatile*&, int, int>);
-            STATIC_ASSERT(predicate<PMF2V, std::unique_ptr<S>, int, int>);
-            STATIC_ASSERT(!predicate<PMF2V, S const&, int, int>);
-            STATIC_ASSERT(!predicate<PMF2V, S const volatile&, int, int>);
+            static_assert(predicate<PMF2V, S, int, int>);
+            static_assert(predicate<PMF2V, S&, int, int>);
+            static_assert(predicate<PMF2V, S volatile&, int, int>);
+            static_assert(predicate<PMF2V, S*, int, int>);
+            static_assert(predicate<PMF2V, S volatile*, int, int>);
+            static_assert(predicate<PMF2V, S*&, int, int>);
+            static_assert(predicate<PMF2V, S volatile*&, int, int>);
+            static_assert(predicate<PMF2V, std::unique_ptr<S>, int, int>);
+            static_assert(!predicate<PMF2V, S const&, int, int>);
+            static_assert(!predicate<PMF2V, S const volatile&, int, int>);
 
-            STATIC_ASSERT(predicate<PMF1PV, S&, int>);
-            STATIC_ASSERT(predicate<PMF1PV, S&, int, long>);
+            static_assert(predicate<PMF1PV, S&, int>);
+            static_assert(predicate<PMF1PV, S&, int, long>);
 
             using PMF0CV  = Bool (S::*)() const volatile;
             using PMF1CV  = Bool (S::*)(long) const volatile;
             using PMF2CV  = Bool (S::*)(long, int) const volatile;
             using PMF1PCV = Bool const& (S::*) (int, ...) const volatile;
-            STATIC_ASSERT(predicate<PMF0CV, S>);
-            STATIC_ASSERT(predicate<PMF0CV, S&>);
-            STATIC_ASSERT(predicate<PMF0CV, S const&>);
-            STATIC_ASSERT(predicate<PMF0CV, S volatile&>);
-            STATIC_ASSERT(predicate<PMF0CV, S const volatile&>);
-            STATIC_ASSERT(predicate<PMF0CV, S*>);
-            STATIC_ASSERT(predicate<PMF0CV, S const*>);
-            STATIC_ASSERT(predicate<PMF0CV, S volatile*>);
-            STATIC_ASSERT(predicate<PMF0CV, S const volatile*>);
-            STATIC_ASSERT(predicate<PMF0CV, S*&>);
-            STATIC_ASSERT(predicate<PMF0CV, S const*&>);
-            STATIC_ASSERT(predicate<PMF0CV, S volatile*&>);
-            STATIC_ASSERT(predicate<PMF0CV, S const volatile*&>);
-            STATIC_ASSERT(predicate<PMF0CV, std::unique_ptr<S>>);
+            static_assert(predicate<PMF0CV, S>);
+            static_assert(predicate<PMF0CV, S&>);
+            static_assert(predicate<PMF0CV, S const&>);
+            static_assert(predicate<PMF0CV, S volatile&>);
+            static_assert(predicate<PMF0CV, S const volatile&>);
+            static_assert(predicate<PMF0CV, S*>);
+            static_assert(predicate<PMF0CV, S const*>);
+            static_assert(predicate<PMF0CV, S volatile*>);
+            static_assert(predicate<PMF0CV, S const volatile*>);
+            static_assert(predicate<PMF0CV, S*&>);
+            static_assert(predicate<PMF0CV, S const*&>);
+            static_assert(predicate<PMF0CV, S volatile*&>);
+            static_assert(predicate<PMF0CV, S const volatile*&>);
+            static_assert(predicate<PMF0CV, std::unique_ptr<S>>);
 
-            STATIC_ASSERT(predicate<PMF1CV, S, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S&, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S const&, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S volatile&, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S const volatile&, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S*, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S const*, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S volatile*, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S const volatile*, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S*&, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S const*&, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S volatile*&, int>);
-            STATIC_ASSERT(predicate<PMF1CV, S const volatile*&, int>);
-            STATIC_ASSERT(predicate<PMF1CV, std::unique_ptr<S>, int>);
+            static_assert(predicate<PMF1CV, S, int>);
+            static_assert(predicate<PMF1CV, S&, int>);
+            static_assert(predicate<PMF1CV, S const&, int>);
+            static_assert(predicate<PMF1CV, S volatile&, int>);
+            static_assert(predicate<PMF1CV, S const volatile&, int>);
+            static_assert(predicate<PMF1CV, S*, int>);
+            static_assert(predicate<PMF1CV, S const*, int>);
+            static_assert(predicate<PMF1CV, S volatile*, int>);
+            static_assert(predicate<PMF1CV, S const volatile*, int>);
+            static_assert(predicate<PMF1CV, S*&, int>);
+            static_assert(predicate<PMF1CV, S const*&, int>);
+            static_assert(predicate<PMF1CV, S volatile*&, int>);
+            static_assert(predicate<PMF1CV, S const volatile*&, int>);
+            static_assert(predicate<PMF1CV, std::unique_ptr<S>, int>);
 
-            STATIC_ASSERT(predicate<PMF2CV, S, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S&, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S const&, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S volatile&, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S const volatile&, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S*, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S const*, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S volatile*, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S const volatile*, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S*&, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S const*&, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S volatile*&, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, S const volatile*&, int, int>);
-            STATIC_ASSERT(predicate<PMF2CV, std::unique_ptr<S>, int, int>);
+            static_assert(predicate<PMF2CV, S, int, int>);
+            static_assert(predicate<PMF2CV, S&, int, int>);
+            static_assert(predicate<PMF2CV, S const&, int, int>);
+            static_assert(predicate<PMF2CV, S volatile&, int, int>);
+            static_assert(predicate<PMF2CV, S const volatile&, int, int>);
+            static_assert(predicate<PMF2CV, S*, int, int>);
+            static_assert(predicate<PMF2CV, S const*, int, int>);
+            static_assert(predicate<PMF2CV, S volatile*, int, int>);
+            static_assert(predicate<PMF2CV, S const volatile*, int, int>);
+            static_assert(predicate<PMF2CV, S*&, int, int>);
+            static_assert(predicate<PMF2CV, S const*&, int, int>);
+            static_assert(predicate<PMF2CV, S volatile*&, int, int>);
+            static_assert(predicate<PMF2CV, S const volatile*&, int, int>);
+            static_assert(predicate<PMF2CV, std::unique_ptr<S>, int, int>);
 
-            STATIC_ASSERT(predicate<PMF1PCV, S&, int>);
-            STATIC_ASSERT(predicate<PMF1PCV, S&, int, long>);
+            static_assert(predicate<PMF1PCV, S&, int>);
+            static_assert(predicate<PMF1PCV, S&, int, long>);
         }
 
         { // pointer to member data
             using PMD = bool S::*;
-            STATIC_ASSERT(predicate<PMD, S&>);
-            STATIC_ASSERT(predicate<PMD, S*>);
-            STATIC_ASSERT(predicate<PMD, S* const>);
-            STATIC_ASSERT(predicate<PMD, S const&>);
-            STATIC_ASSERT(predicate<PMD, S const*>);
-            STATIC_ASSERT(predicate<PMD, S volatile&>);
-            STATIC_ASSERT(predicate<PMD, S volatile*>);
-            STATIC_ASSERT(predicate<PMD, S const volatile&>);
-            STATIC_ASSERT(predicate<PMD, S const volatile*>);
-            STATIC_ASSERT(predicate<PMD, DerivesFrom<S>&>);
-            STATIC_ASSERT(predicate<PMD, DerivesFrom<S> const&>);
-            STATIC_ASSERT(predicate<PMD, DerivesFrom<S>*>);
-            STATIC_ASSERT(predicate<PMD, DerivesFrom<S> const*>);
-            STATIC_ASSERT(predicate<PMD, std::unique_ptr<S>>);
-            STATIC_ASSERT(predicate<PMD, std::unique_ptr<S const>>);
-            STATIC_ASSERT(predicate<PMD, std::reference_wrapper<S>>);
-            STATIC_ASSERT(predicate<PMD, std::reference_wrapper<S const>>);
-            STATIC_ASSERT(!predicate<PMD, NotDerived&>);
+            static_assert(predicate<PMD, S&>);
+            static_assert(predicate<PMD, S*>);
+            static_assert(predicate<PMD, S* const>);
+            static_assert(predicate<PMD, S const&>);
+            static_assert(predicate<PMD, S const*>);
+            static_assert(predicate<PMD, S volatile&>);
+            static_assert(predicate<PMD, S volatile*>);
+            static_assert(predicate<PMD, S const volatile&>);
+            static_assert(predicate<PMD, S const volatile*>);
+            static_assert(predicate<PMD, DerivesFrom<S>&>);
+            static_assert(predicate<PMD, DerivesFrom<S> const&>);
+            static_assert(predicate<PMD, DerivesFrom<S>*>);
+            static_assert(predicate<PMD, DerivesFrom<S> const*>);
+            static_assert(predicate<PMD, std::unique_ptr<S>>);
+            static_assert(predicate<PMD, std::unique_ptr<S const>>);
+            static_assert(predicate<PMD, std::reference_wrapper<S>>);
+            static_assert(predicate<PMD, std::reference_wrapper<S const>>);
+            static_assert(!predicate<PMD, NotDerived&>);
         }
     }
 } // namespace test_predicate
@@ -3315,16 +3313,16 @@ namespace test_relation {
     template <class F, class T, class U = T>
     constexpr bool test() {
         constexpr bool result = relation<F, T, U>;
-        STATIC_ASSERT(relation<F, U, T> == result);
-        STATIC_ASSERT(equivalence_relation<F, T, U> == result);
-        STATIC_ASSERT(equivalence_relation<F, U, T> == result);
-        STATIC_ASSERT(strict_weak_order<F, T, U> == result);
-        STATIC_ASSERT(strict_weak_order<F, U, T> == result);
+        static_assert(relation<F, U, T> == result);
+        static_assert(equivalence_relation<F, T, U> == result);
+        static_assert(equivalence_relation<F, U, T> == result);
+        static_assert(strict_weak_order<F, T, U> == result);
+        static_assert(strict_weak_order<F, U, T> == result);
         return result;
     }
 
-    STATIC_ASSERT(test<std::equal_to<>, int, long>());
-    STATIC_ASSERT(test<std::less<>, int*, void*>());
+    static_assert(test<std::equal_to<>, int, long>());
+    static_assert(test<std::less<>, int*, void*>());
 
     struct Equivalent {
         template <class T, class U>
@@ -3334,7 +3332,7 @@ namespace test_relation {
             return static_cast<T&&>(t) == static_cast<U&&>(u);
         }
     };
-    STATIC_ASSERT(test<Equivalent, int, long>());
+    static_assert(test<Equivalent, int, long>());
 
     struct Bool {
         operator bool() const;
@@ -3345,16 +3343,16 @@ namespace test_relation {
     template <unsigned int U>
         requires (0 < U)
     Bool operator==(A<U>, A<U>); // A<0> == A<0> is invalid
-    STATIC_ASSERT(!test<Equivalent, A<0>>());
-    STATIC_ASSERT(test<Equivalent, A<1>>());
+    static_assert(!test<Equivalent, A<0>>());
+    static_assert(test<Equivalent, A<1>>());
 
     template <unsigned int>
     struct B {};
     void operator==(B<1>, B<1>); // B<1> == B<1> does not model _Boolean_testable
     template <unsigned int U>
     bool operator==(B<U>, B<U>);
-    STATIC_ASSERT(test<Equivalent, B<0>>());
-    STATIC_ASSERT(!test<Equivalent, B<1>>());
+    static_assert(test<Equivalent, B<0>>());
+    static_assert(!test<Equivalent, B<1>>());
 
     template <unsigned int I>
         requires (2 != I)
@@ -3363,11 +3361,11 @@ namespace test_relation {
         requires (3 != I)
     bool operator==(B<I>, A<I>); // B<3> == A<3> rewrites to A<3> == B<3>
 
-    STATIC_ASSERT(!test<Equivalent, A<0>, B<0>>());
-    STATIC_ASSERT(!test<Equivalent, A<1>, B<1>>());
-    STATIC_ASSERT(test<Equivalent, A<2>, B<2>>());
-    STATIC_ASSERT(test<Equivalent, A<3>, B<3>>());
-    STATIC_ASSERT(test<Equivalent, A<4>, B<4>>());
+    static_assert(!test<Equivalent, A<0>, B<0>>());
+    static_assert(!test<Equivalent, A<1>, B<1>>());
+    static_assert(test<Equivalent, A<2>, B<2>>());
+    static_assert(test<Equivalent, A<3>, B<3>>());
+    static_assert(test<Equivalent, A<4>, B<4>>());
 
     template <unsigned int I>
     struct C {};
@@ -3377,24 +3375,24 @@ namespace test_relation {
         requires (0 != I)
     E operator==(C<I>, C<I>);
 
-    STATIC_ASSERT(!test<Equivalent, const C<0>>());
-    STATIC_ASSERT(test<Equivalent, const C<1>>());
+    static_assert(!test<Equivalent, const C<0>>());
+    static_assert(test<Equivalent, const C<1>>());
 } // namespace test_relation
 
 namespace test_uniform_random_bit_generator {
     using std::uniform_random_bit_generator;
 
-    STATIC_ASSERT(uniform_random_bit_generator<std::minstd_rand0>);
-    STATIC_ASSERT(uniform_random_bit_generator<std::minstd_rand>);
-    STATIC_ASSERT(uniform_random_bit_generator<std::mt19937>);
-    STATIC_ASSERT(uniform_random_bit_generator<std::mt19937_64>);
-    STATIC_ASSERT(uniform_random_bit_generator<std::ranlux24_base>);
-    STATIC_ASSERT(uniform_random_bit_generator<std::ranlux48_base>);
-    STATIC_ASSERT(uniform_random_bit_generator<std::ranlux24>);
-    STATIC_ASSERT(uniform_random_bit_generator<std::ranlux48>);
-    STATIC_ASSERT(uniform_random_bit_generator<std::knuth_b>);
-    STATIC_ASSERT(uniform_random_bit_generator<std::default_random_engine>);
-    STATIC_ASSERT(uniform_random_bit_generator<std::random_device>);
+    static_assert(uniform_random_bit_generator<std::minstd_rand0>);
+    static_assert(uniform_random_bit_generator<std::minstd_rand>);
+    static_assert(uniform_random_bit_generator<std::mt19937>);
+    static_assert(uniform_random_bit_generator<std::mt19937_64>);
+    static_assert(uniform_random_bit_generator<std::ranlux24_base>);
+    static_assert(uniform_random_bit_generator<std::ranlux48_base>);
+    static_assert(uniform_random_bit_generator<std::ranlux24>);
+    static_assert(uniform_random_bit_generator<std::ranlux48>);
+    static_assert(uniform_random_bit_generator<std::knuth_b>);
+    static_assert(uniform_random_bit_generator<std::default_random_engine>);
+    static_assert(uniform_random_bit_generator<std::random_device>);
 
     struct NoCall {
         static constexpr unsigned int min() {
@@ -3404,7 +3402,7 @@ namespace test_uniform_random_bit_generator {
             return 42;
         }
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<NoCall>);
+    static_assert(!uniform_random_bit_generator<NoCall>);
 
     struct NoLvalueCall {
         static constexpr unsigned int min() {
@@ -3415,7 +3413,7 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()() &&;
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<NoLvalueCall>);
+    static_assert(!uniform_random_bit_generator<NoLvalueCall>);
 
     struct SignedValue {
         static constexpr int min() {
@@ -3426,7 +3424,7 @@ namespace test_uniform_random_bit_generator {
         }
         int operator()();
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<SignedValue>);
+    static_assert(!uniform_random_bit_generator<SignedValue>);
 
     struct NoMin {
         static constexpr unsigned int max() {
@@ -3434,7 +3432,7 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()();
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<NoMin>);
+    static_assert(!uniform_random_bit_generator<NoMin>);
 
     struct NonConstexprMin {
         static unsigned int min() {
@@ -3445,7 +3443,7 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()();
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<NonConstexprMin>);
+    static_assert(!uniform_random_bit_generator<NonConstexprMin>);
 
     struct BadMin {
         static constexpr int min() {
@@ -3456,7 +3454,7 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()();
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<BadMin>);
+    static_assert(!uniform_random_bit_generator<BadMin>);
 
     struct NoMax {
         static constexpr unsigned int min() {
@@ -3464,7 +3462,7 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()();
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<NoMax>);
+    static_assert(!uniform_random_bit_generator<NoMax>);
 
     struct NonConstexprMax {
         static constexpr unsigned int min() {
@@ -3475,7 +3473,7 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()();
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<NonConstexprMax>);
+    static_assert(!uniform_random_bit_generator<NonConstexprMax>);
 
     struct BadMax {
         static constexpr unsigned int min() {
@@ -3486,7 +3484,7 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()();
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<BadMax>);
+    static_assert(!uniform_random_bit_generator<BadMax>);
 
     struct EmptyRange {
         static constexpr unsigned int min() {
@@ -3497,7 +3495,7 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()();
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<EmptyRange>);
+    static_assert(!uniform_random_bit_generator<EmptyRange>);
 
     struct ReversedRange {
         static constexpr unsigned int min() {
@@ -3508,7 +3506,7 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()();
     };
-    STATIC_ASSERT(!uniform_random_bit_generator<ReversedRange>);
+    static_assert(!uniform_random_bit_generator<ReversedRange>);
 
     struct URBG {
         static constexpr unsigned int min() {
@@ -3519,8 +3517,8 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()();
     };
-    STATIC_ASSERT(uniform_random_bit_generator<URBG>);
-    STATIC_ASSERT(!uniform_random_bit_generator<const URBG>);
+    static_assert(uniform_random_bit_generator<URBG>);
+    static_assert(!uniform_random_bit_generator<const URBG>);
 
     struct ConstURBG {
         static constexpr unsigned int min() {
@@ -3531,8 +3529,8 @@ namespace test_uniform_random_bit_generator {
         }
         unsigned int operator()() const;
     };
-    STATIC_ASSERT(uniform_random_bit_generator<ConstURBG>);
-    STATIC_ASSERT(uniform_random_bit_generator<const ConstURBG>);
+    static_assert(uniform_random_bit_generator<ConstURBG>);
+    static_assert(uniform_random_bit_generator<const ConstURBG>);
 } // namespace test_uniform_random_bit_generator
 
 int main() {

@@ -41,7 +41,7 @@ struct string_instantiator {
     template <ranges::input_range R>
     static constexpr void call() {
         test_string<R>(some_chars);
-        STATIC_ASSERT(test_string<R>(some_chars));
+        static_assert(test_string<R>(some_chars));
     }
 };
 
@@ -51,7 +51,7 @@ struct wstring_instantiator {
     template <ranges::input_range R>
     static constexpr void call() {
         test_string<R>(some_wchars);
-        STATIC_ASSERT(test_string<R>(some_wchars));
+        static_assert(test_string<R>(some_wchars));
     }
 };
 
@@ -110,15 +110,15 @@ void test_lvalue_forward_list() {
 int main() {
     // Validate views
     test_copyable_view();
-    STATIC_ASSERT(test_copyable_view());
+    static_assert(test_copyable_view());
     test_move_only_view();
-    STATIC_ASSERT(test_move_only_view());
+    static_assert(test_move_only_view());
 
     // Validate non-views
     test_c_array();
-    STATIC_ASSERT(test_c_array());
+    static_assert(test_c_array());
     test_lvalue_vector();
-    STATIC_ASSERT(test_lvalue_vector());
+    static_assert(test_lvalue_vector());
     test_lvalue_forward_list();
 
     test_in<string_instantiator, const char>();

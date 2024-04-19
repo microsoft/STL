@@ -11,11 +11,9 @@
 
 using namespace std;
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 template <class T, class E, size_t N>
 constexpr void assert_equal(T&& actual, const array<E, N>& expected) {
-    STATIC_ASSERT(is_same_v<T, array<E, N>>);
+    static_assert(is_same_v<T, array<E, N>>);
     assert(actual == expected);
 }
 

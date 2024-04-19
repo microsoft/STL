@@ -14,8 +14,6 @@
 
 #include <is_permissive.hpp>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 namespace ranges = std::ranges;
 
 template <class>
@@ -47,7 +45,7 @@ struct boolish {
 
 template <class T, std::size_t N>
 struct holder {
-    STATIC_ASSERT(N < ~std::size_t{0} / sizeof(T));
+    static_assert(N < ~std::size_t{0} / sizeof(T));
 
     alignas(T) unsigned char space[N * sizeof(T)];
 
@@ -69,12 +67,12 @@ namespace test {
 
     template <class T>
     void operator&(T&&) {
-        STATIC_ASSERT(false);
+        static_assert(false);
     }
 
     template <class T, class U>
     void operator,(T&&, U&&) {
-        STATIC_ASSERT(false);
+        static_assert(false);
     }
 
     enum class CanDifference : bool { no, yes };
@@ -103,7 +101,7 @@ namespace test {
 
     template <class T>
     [[nodiscard]] constexpr bool to_bool(T const t) noexcept {
-        STATIC_ASSERT(std::is_enum_v<T> && std::same_as<std::underlying_type_t<T>, bool>);
+        static_assert(std::is_enum_v<T> && std::same_as<std::underlying_type_t<T>, bool>);
         return static_cast<bool>(t);
     }
 
@@ -492,29 +490,29 @@ namespace test {
         }
 
         auto operator--() & {
-            STATIC_ASSERT(false);
+            static_assert(false);
         }
         auto operator--(int) & {
-            STATIC_ASSERT(false);
+            static_assert(false);
         }
 
         friend void iter_swap(iterator const&, iterator const&)
             requires std::is_same_v<Category, output>
         {
-            STATIC_ASSERT(false);
+            static_assert(false);
         }
 
         void operator<(iterator const&) const {
-            STATIC_ASSERT(false);
+            static_assert(false);
         }
         void operator>(iterator const&) const {
-            STATIC_ASSERT(false);
+            static_assert(false);
         }
         void operator<=(iterator const&) const {
-            STATIC_ASSERT(false);
+            static_assert(false);
         }
         void operator>=(iterator const&) const {
-            STATIC_ASSERT(false);
+            static_assert(false);
         }
 
         // input iterator operations:
@@ -928,11 +926,11 @@ namespace test {
         }
 
         void operator&() const {
-            STATIC_ASSERT(false);
+            static_assert(false);
         }
         template <class T>
         friend void operator,(range const&, T&&) {
-            STATIC_ASSERT(false);
+            static_assert(false);
         }
     };
 } // namespace test

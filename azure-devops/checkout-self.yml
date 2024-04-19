@@ -1,0 +1,16 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+steps:
+- script: |
+    if exist "$(tmpDir)" (rmdir /S /Q $(tmpDir))
+    mkdir $(tmpDir)
+  displayName: 'Setup TMP Directory'
+- checkout: self
+  clean: true
+  submodules: false
+  fetchDepth: 1
+  fetchTags: false
+- script: |
+    git clean --quiet -x -d -f -f
+  displayName: 'Clean after checkout'

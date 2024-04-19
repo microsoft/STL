@@ -21,21 +21,21 @@ constexpr void smoke_test() {
     std::array<std::pair<long, long>, 3> const y = {{{13, 0}, {13, 2}, {13, 5}}};
 
     // Validate that mismatch_result aliases in_in_result
-    STATIC_ASSERT(same_as<mismatch_result<int, double>, ranges::in_in_result<int, double>>);
+    static_assert(same_as<mismatch_result<int, double>, ranges::in_in_result<int, double>>);
 
     // Validate dangling story
-    STATIC_ASSERT(
+    static_assert(
         same_as<decltype(mismatch(borrowed<false>{}, borrowed<false>{})), mismatch_result<dangling, dangling>>);
-    STATIC_ASSERT(same_as<decltype(mismatch(borrowed<false>{}, borrowed<true>{})), mismatch_result<dangling, int*>>);
-    STATIC_ASSERT(same_as<decltype(mismatch(borrowed<true>{}, borrowed<false>{})), mismatch_result<int*, dangling>>);
-    STATIC_ASSERT(same_as<decltype(mismatch(borrowed<true>{}, borrowed<true>{})), mismatch_result<int*, int*>>);
+    static_assert(same_as<decltype(mismatch(borrowed<false>{}, borrowed<true>{})), mismatch_result<dangling, int*>>);
+    static_assert(same_as<decltype(mismatch(borrowed<true>{}, borrowed<false>{})), mismatch_result<int*, dangling>>);
+    static_assert(same_as<decltype(mismatch(borrowed<true>{}, borrowed<true>{})), mismatch_result<int*, int*>>);
 
     {
         // Validate sized ranges
         auto result = mismatch(x, y, equal_to{}, get_first, get_second);
         using I1    = iterator_t<R const>;
         using I2    = std::array<std::pair<long, long>, 3>::const_iterator;
-        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I1, I2>>);
+        static_assert(same_as<decltype(result), mismatch_result<I1, I2>>);
         assert((*result.in1 == P{4, 42}));
         assert((*result.in2 == std::pair<long, long>{13, 5}));
     }
@@ -44,7 +44,7 @@ constexpr void smoke_test() {
         auto result = mismatch(basic_borrowed_range{x}, basic_borrowed_range{y}, equal_to{}, get_first, get_second);
         using I1    = iterator_t<basic_borrowed_range<P const>>;
         using I2    = iterator_t<basic_borrowed_range<std::pair<long, long> const>>;
-        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I1, I2>>);
+        static_assert(same_as<decltype(result), mismatch_result<I1, I2>>);
         assert((*result.in1 == P{4, 42}));
         assert((*result.in2 == std::pair<long, long>{13, 5}));
     }
@@ -53,7 +53,7 @@ constexpr void smoke_test() {
         auto result = mismatch(x.begin(), x.end(), y.begin(), y.end(), equal_to{}, get_first, get_second);
         using I1    = iterator_t<R const>;
         using I2    = std::array<std::pair<long, long>, 3>::const_iterator;
-        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I1, I2>>);
+        static_assert(same_as<decltype(result), mismatch_result<I1, I2>>);
         assert((*result.in1 == P{4, 42}));
         assert((*result.in2 == std::pair<long, long>{13, 5}));
     }
@@ -65,14 +65,14 @@ constexpr void smoke_test() {
             wrapped_x.begin(), wrapped_x.end(), wrapped_y.begin(), wrapped_y.end(), equal_to{}, get_first, get_second);
         using I1 = iterator_t<decltype(wrapped_x)>;
         using I2 = iterator_t<decltype(wrapped_y)>;
-        STATIC_ASSERT(same_as<decltype(result), mismatch_result<I1, I2>>);
+        static_assert(same_as<decltype(result), mismatch_result<I1, I2>>);
         assert((*result.in1 == P{4, 42}));
         assert((*result.in2 == std::pair<long, long>{13, 5}));
     }
 }
 
 int main() {
-    STATIC_ASSERT((smoke_test(), true));
+    static_assert((smoke_test(), true));
     smoke_test();
 }
 

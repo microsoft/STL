@@ -31,7 +31,7 @@ struct instantiator {
                 Read wrapped_input{reservoir};
 
                 auto result1 = sample(wrapped_input.begin(), wrapped_input.end(), Write{output1}, 3, gen);
-                STATIC_ASSERT(same_as<decltype(result1), Write>);
+                static_assert(same_as<decltype(result1), Write>);
                 assert(result1.peek() == end(output1));
 
                 // check repeatability
@@ -55,7 +55,7 @@ struct instantiator {
                 Read wrapped_input{reservoir};
 
                 auto result1 = sample(wrapped_input, Write{output1}, 3, gen);
-                STATIC_ASSERT(same_as<decltype(result1), Write>);
+                static_assert(same_as<decltype(result1), Write>);
                 assert(result1.peek() == end(output1));
 
                 // check repeatability

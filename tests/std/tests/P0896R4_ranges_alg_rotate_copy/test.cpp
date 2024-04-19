@@ -10,12 +10,12 @@
 using namespace std;
 
 // Validate that rotate_copy_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::rotate_copy_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::rotate_copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::rotate_copy(borrowed<false>{}, nullptr_to<int>, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::rotate_copy(borrowed<false>{}, nullptr_to<int>, nullptr_to<int>)),
     ranges::rotate_copy_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::rotate_copy(borrowed<true>{}, nullptr_to<int>, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::rotate_copy(borrowed<true>{}, nullptr_to<int>, nullptr_to<int>)),
     ranges::rotate_copy_result<int*, int*>>);
 
 struct instantiator {
@@ -31,7 +31,7 @@ struct instantiator {
             iterator_t<Read> mid = next(wrapped_input.begin(), 3);
 
             auto result = rotate_copy(wrapped_input.begin(), mid, wrapped_input.end(), Write{output});
-            STATIC_ASSERT(same_as<decltype(result), rotate_copy_result<iterator_t<Read>, Write>>);
+            static_assert(same_as<decltype(result), rotate_copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == end(output));
             assert(equal(expected, output));
@@ -42,7 +42,7 @@ struct instantiator {
             iterator_t<Read> mid = next(wrapped_input.begin(), 3);
 
             auto result = rotate_copy(wrapped_input, mid, Write{output});
-            STATIC_ASSERT(same_as<decltype(result), rotate_copy_result<iterator_t<Read>, Write>>);
+            static_assert(same_as<decltype(result), rotate_copy_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == end(output));
             assert(equal(expected, output));
@@ -51,6 +51,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_fwd_write<instantiator, const int, int>(), true));
+    static_assert((test_fwd_write<instantiator, const int, int>(), true));
     test_fwd_write<instantiator, const int, int>();
 }

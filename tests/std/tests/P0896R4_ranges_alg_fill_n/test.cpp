@@ -55,6 +55,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_out<instantiator, int>(), true));
+    static_assert((test_out<instantiator, int>(), true));
     test_out<instantiator, int>();
 }

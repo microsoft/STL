@@ -13,8 +13,8 @@
 using namespace std;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::nth_element(borrowed<false>{}, nullptr_to<int>)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::nth_element(borrowed<true>{}, nullptr_to<int>)), int*>);
+static_assert(same_as<decltype(ranges::nth_element(borrowed<false>{}, nullptr_to<int>)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::nth_element(borrowed<true>{}, nullptr_to<int>)), int*>);
 
 using P = pair<int, int>;
 
@@ -72,6 +72,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_random<instantiator, P>(), true));
+    static_assert((test_random<instantiator, P>(), true));
     test_random<instantiator, P>();
 }

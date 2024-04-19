@@ -5,8 +5,6 @@
 
 variables:
   - template: config.yml
-  - name: testSelection
-    value: '-R stlasan' # Restrict to "stlasan" test
 
 trigger: none
 
@@ -24,13 +22,12 @@ stages:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
-      - template: native-build-test.yml
+      - template: build-and-test.yml
         parameters:
-          targetPlatform: x64
-          vsDevCmdArch: amd64
-          buildBenchmarks: false
+          hostArch: x64
+          targetArch: x64
           asanBuild: true
-          testSelection: ${{ variables.testSelection }}
+          ctestOptions: '--tests-regex stlasan'
 
   - stage: Build_And_Test_x86
     displayName: 'Build and Test x86'
@@ -39,12 +36,11 @@ stages:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
-      - template: native-build-test.yml
+      - template: build-and-test.yml
         parameters:
-          targetPlatform: x86
-          vsDevCmdArch: x86
-          buildBenchmarks: false
+          hostArch: x86
+          targetArch: x86
           asanBuild: true
-          testSelection: ${{ variables.testSelection }}
+          ctestOptions: '--tests-regex stlasan'
 
   # no coverage for ARM and ARM64
