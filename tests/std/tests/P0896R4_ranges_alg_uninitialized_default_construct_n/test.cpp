@@ -37,7 +37,7 @@ struct int_wrapper {
 
     auto operator<=>(const int_wrapper&) const = default;
 };
-STATIC_ASSERT(default_initializable<int_wrapper>);
+static_assert(default_initializable<int_wrapper>);
 
 struct instantiator {
     template <ranges::forward_range Write>

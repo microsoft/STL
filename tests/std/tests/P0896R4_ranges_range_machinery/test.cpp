@@ -30,7 +30,7 @@
 #include <range_algorithm_support.hpp>
 
 // Note that many tests herein assume:
-STATIC_ASSERT(std::same_as<std::make_unsigned_t<std::ptrdiff_t>, std::size_t>);
+static_assert(std::same_as<std::make_unsigned_t<std::ptrdiff_t>, std::size_t>);
 
 // GH-2358: <filesystem>: path's comparison operators are IF-NDR
 static_assert(ranges::range<std::filesystem::path>);
@@ -50,21 +50,21 @@ constexpr bool is_valid = !std::same_as<T, invalid_type>;
 // Validate properties common to all Customization Point Objects (CPOs)
 template <class T>
 constexpr bool test_cpo(T const& obj) {
-    STATIC_ASSERT(std::semiregular<T>);
+    static_assert(std::semiregular<T>);
 
     // Not required, but likely portable nonetheless:
-    STATIC_ASSERT(std::is_empty_v<T>);
-    STATIC_ASSERT(std::is_trivial_v<T>);
-    STATIC_ASSERT(std::is_nothrow_destructible_v<T>);
-    STATIC_ASSERT(std::is_nothrow_default_constructible_v<T>);
-    STATIC_ASSERT(std::is_nothrow_copy_constructible_v<T>);
-    STATIC_ASSERT(std::is_trivially_copy_constructible_v<T>);
-    STATIC_ASSERT(std::is_nothrow_move_constructible_v<T>);
-    STATIC_ASSERT(std::is_trivially_move_constructible_v<T>);
-    STATIC_ASSERT(std::is_nothrow_copy_assignable_v<T>);
-    STATIC_ASSERT(std::is_trivially_copy_assignable_v<T>);
-    STATIC_ASSERT(std::is_nothrow_move_assignable_v<T>);
-    STATIC_ASSERT(std::is_trivially_move_assignable_v<T>);
+    static_assert(std::is_empty_v<T>);
+    static_assert(std::is_trivial_v<T>);
+    static_assert(std::is_nothrow_destructible_v<T>);
+    static_assert(std::is_nothrow_default_constructible_v<T>);
+    static_assert(std::is_nothrow_copy_constructible_v<T>);
+    static_assert(std::is_trivially_copy_constructible_v<T>);
+    static_assert(std::is_nothrow_move_constructible_v<T>);
+    static_assert(std::is_trivially_move_constructible_v<T>);
+    static_assert(std::is_nothrow_copy_assignable_v<T>);
+    static_assert(std::is_trivially_copy_assignable_v<T>);
+    static_assert(std::is_nothrow_move_assignable_v<T>);
+    static_assert(std::is_trivially_move_assignable_v<T>);
 
     // Not required to be constant expressions, but likely portable nonetheless:
     [[maybe_unused]] T value_initialized{};
@@ -76,68 +76,68 @@ constexpr bool test_cpo(T const& obj) {
     return true;
 }
 
-STATIC_ASSERT(test_cpo(std::strong_order));
-STATIC_ASSERT(test_cpo(std::weak_order));
-STATIC_ASSERT(test_cpo(std::partial_order));
-STATIC_ASSERT(test_cpo(std::compare_strong_order_fallback));
-STATIC_ASSERT(test_cpo(std::compare_weak_order_fallback));
-STATIC_ASSERT(test_cpo(std::compare_partial_order_fallback));
+static_assert(test_cpo(std::strong_order));
+static_assert(test_cpo(std::weak_order));
+static_assert(test_cpo(std::partial_order));
+static_assert(test_cpo(std::compare_strong_order_fallback));
+static_assert(test_cpo(std::compare_weak_order_fallback));
+static_assert(test_cpo(std::compare_partial_order_fallback));
 
-STATIC_ASSERT(test_cpo(ranges::swap));
-STATIC_ASSERT(test_cpo(ranges::iter_swap));
-STATIC_ASSERT(test_cpo(ranges::iter_move));
-STATIC_ASSERT(test_cpo(ranges::begin));
-STATIC_ASSERT(test_cpo(ranges::end));
-STATIC_ASSERT(test_cpo(ranges::cbegin));
-STATIC_ASSERT(test_cpo(ranges::cend));
-STATIC_ASSERT(test_cpo(ranges::rbegin));
-STATIC_ASSERT(test_cpo(ranges::rend));
-STATIC_ASSERT(test_cpo(ranges::crbegin));
-STATIC_ASSERT(test_cpo(ranges::crend));
-STATIC_ASSERT(test_cpo(ranges::size));
-STATIC_ASSERT(test_cpo(ranges::ssize));
-STATIC_ASSERT(test_cpo(ranges::empty));
-STATIC_ASSERT(test_cpo(ranges::data));
-STATIC_ASSERT(test_cpo(ranges::cdata));
+static_assert(test_cpo(ranges::swap));
+static_assert(test_cpo(ranges::iter_swap));
+static_assert(test_cpo(ranges::iter_move));
+static_assert(test_cpo(ranges::begin));
+static_assert(test_cpo(ranges::end));
+static_assert(test_cpo(ranges::cbegin));
+static_assert(test_cpo(ranges::cend));
+static_assert(test_cpo(ranges::rbegin));
+static_assert(test_cpo(ranges::rend));
+static_assert(test_cpo(ranges::crbegin));
+static_assert(test_cpo(ranges::crend));
+static_assert(test_cpo(ranges::size));
+static_assert(test_cpo(ranges::ssize));
+static_assert(test_cpo(ranges::empty));
+static_assert(test_cpo(ranges::data));
+static_assert(test_cpo(ranges::cdata));
 
-STATIC_ASSERT(test_cpo(ranges::views::all));
-STATIC_ASSERT(test_cpo(ranges::views::common));
-STATIC_ASSERT(test_cpo(ranges::views::counted));
-STATIC_ASSERT(test_cpo(ranges::views::drop));
-STATIC_ASSERT(test_cpo(ranges::views::drop_while));
-STATIC_ASSERT(test_cpo(ranges::views::elements<42>));
-STATIC_ASSERT(test_cpo(ranges::views::filter));
-STATIC_ASSERT(test_cpo(ranges::views::iota));
-STATIC_ASSERT(test_cpo(ranges::views::istream<int>));
-STATIC_ASSERT(test_cpo(ranges::views::istream<double>));
-STATIC_ASSERT(test_cpo(ranges::views::join));
-STATIC_ASSERT(test_cpo(ranges::views::keys));
-STATIC_ASSERT(test_cpo(ranges::views::lazy_split));
-STATIC_ASSERT(test_cpo(ranges::views::reverse));
-STATIC_ASSERT(test_cpo(ranges::views::single));
-STATIC_ASSERT(test_cpo(ranges::views::split));
-STATIC_ASSERT(test_cpo(ranges::views::take));
-STATIC_ASSERT(test_cpo(ranges::views::take_while));
-STATIC_ASSERT(test_cpo(ranges::views::transform));
-STATIC_ASSERT(test_cpo(ranges::views::values));
+static_assert(test_cpo(ranges::views::all));
+static_assert(test_cpo(ranges::views::common));
+static_assert(test_cpo(ranges::views::counted));
+static_assert(test_cpo(ranges::views::drop));
+static_assert(test_cpo(ranges::views::drop_while));
+static_assert(test_cpo(ranges::views::elements<42>));
+static_assert(test_cpo(ranges::views::filter));
+static_assert(test_cpo(ranges::views::iota));
+static_assert(test_cpo(ranges::views::istream<int>));
+static_assert(test_cpo(ranges::views::istream<double>));
+static_assert(test_cpo(ranges::views::join));
+static_assert(test_cpo(ranges::views::keys));
+static_assert(test_cpo(ranges::views::lazy_split));
+static_assert(test_cpo(ranges::views::reverse));
+static_assert(test_cpo(ranges::views::single));
+static_assert(test_cpo(ranges::views::split));
+static_assert(test_cpo(ranges::views::take));
+static_assert(test_cpo(ranges::views::take_while));
+static_assert(test_cpo(ranges::views::transform));
+static_assert(test_cpo(ranges::views::values));
 
 #if _HAS_CXX23
-STATIC_ASSERT(test_cpo(ranges::views::adjacent<3>));
-STATIC_ASSERT(test_cpo(ranges::views::adjacent_transform<3>));
-STATIC_ASSERT(test_cpo(ranges::views::as_const));
-STATIC_ASSERT(test_cpo(ranges::views::as_rvalue));
-STATIC_ASSERT(test_cpo(ranges::views::cartesian_product));
-STATIC_ASSERT(test_cpo(ranges::views::chunk));
-STATIC_ASSERT(test_cpo(ranges::views::chunk_by));
-STATIC_ASSERT(test_cpo(ranges::views::enumerate));
-STATIC_ASSERT(test_cpo(ranges::views::join_with));
-STATIC_ASSERT(test_cpo(ranges::views::pairwise));
-STATIC_ASSERT(test_cpo(ranges::views::pairwise_transform));
-STATIC_ASSERT(test_cpo(ranges::views::repeat));
-STATIC_ASSERT(test_cpo(ranges::views::slide));
-STATIC_ASSERT(test_cpo(ranges::views::stride));
-STATIC_ASSERT(test_cpo(ranges::views::zip));
-STATIC_ASSERT(test_cpo(ranges::views::zip_transform));
+static_assert(test_cpo(ranges::views::adjacent<3>));
+static_assert(test_cpo(ranges::views::adjacent_transform<3>));
+static_assert(test_cpo(ranges::views::as_const));
+static_assert(test_cpo(ranges::views::as_rvalue));
+static_assert(test_cpo(ranges::views::cartesian_product));
+static_assert(test_cpo(ranges::views::chunk));
+static_assert(test_cpo(ranges::views::chunk_by));
+static_assert(test_cpo(ranges::views::enumerate));
+static_assert(test_cpo(ranges::views::join_with));
+static_assert(test_cpo(ranges::views::pairwise));
+static_assert(test_cpo(ranges::views::pairwise_transform));
+static_assert(test_cpo(ranges::views::repeat));
+static_assert(test_cpo(ranges::views::slide));
+static_assert(test_cpo(ranges::views::stride));
+static_assert(test_cpo(ranges::views::zip));
+static_assert(test_cpo(ranges::views::zip_transform));
 #endif // _HAS_CXX23
 
 void test_cpo_ambiguity() {
@@ -165,17 +165,17 @@ void test_cpo_ambiguity() {
 template <class Range, class Iterator = invalid_type>
 constexpr bool test_begin() {
     // Validate ranges::begin(std::declval<Range>()) and ranges::iterator_t<Range>
-    STATIC_ASSERT(Decayed<Iterator>);
-    STATIC_ASSERT(!is_valid<Iterator> || std::input_or_output_iterator<Iterator>);
+    static_assert(Decayed<Iterator>);
+    static_assert(!is_valid<Iterator> || std::input_or_output_iterator<Iterator>);
 
-    STATIC_ASSERT(CanBegin<Range> == is_valid<Iterator>);
+    static_assert(CanBegin<Range> == is_valid<Iterator>);
     if constexpr (is_valid<Iterator>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::begin(std::declval<Range>())), Iterator>);
-        STATIC_ASSERT(std::same_as<ranges::iterator_t<Range>, Iterator>);
-        STATIC_ASSERT(std::same_as<ranges::iterator_t<Range&>, Iterator>);
-        STATIC_ASSERT(std::same_as<ranges::iterator_t<Range&&>, Iterator>);
+        static_assert(std::same_as<decltype(ranges::begin(std::declval<Range>())), Iterator>);
+        static_assert(std::same_as<ranges::iterator_t<Range>, Iterator>);
+        static_assert(std::same_as<ranges::iterator_t<Range&>, Iterator>);
+        static_assert(std::same_as<ranges::iterator_t<Range&&>, Iterator>);
     } else {
-        STATIC_ASSERT(!CanCBegin<Range>);
+        static_assert(!CanCBegin<Range>);
     }
 
     return true;
@@ -184,14 +184,14 @@ constexpr bool test_begin() {
 template <class Range, class Iterator = invalid_type>
 constexpr bool test_cbegin() {
     // Validate ranges::cbegin
-    STATIC_ASSERT(Decayed<Iterator>);
-    STATIC_ASSERT(!is_valid<Iterator> || std::input_or_output_iterator<Iterator>);
+    static_assert(Decayed<Iterator>);
+    static_assert(!is_valid<Iterator> || std::input_or_output_iterator<Iterator>);
 
-    STATIC_ASSERT(CanCBegin<Range> == is_valid<Iterator>);
+    static_assert(CanCBegin<Range> == is_valid<Iterator>);
     if constexpr (is_valid<Iterator>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::cbegin(std::declval<Range>())), Iterator>);
+        static_assert(std::same_as<decltype(ranges::cbegin(std::declval<Range>())), Iterator>);
 
-        STATIC_ASSERT(CanBegin<Range>);
+        static_assert(CanBegin<Range>);
     }
 
     return true;
@@ -200,14 +200,14 @@ constexpr bool test_cbegin() {
 template <class Range, class Iterator = invalid_type>
 constexpr bool test_rbegin() {
     // Validate ranges::rbegin
-    STATIC_ASSERT(Decayed<Iterator>);
-    STATIC_ASSERT(!is_valid<Iterator> || std::input_or_output_iterator<Iterator>);
+    static_assert(Decayed<Iterator>);
+    static_assert(!is_valid<Iterator> || std::input_or_output_iterator<Iterator>);
 
-    STATIC_ASSERT(CanRBegin<Range> == is_valid<Iterator>);
+    static_assert(CanRBegin<Range> == is_valid<Iterator>);
     if constexpr (is_valid<Iterator>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::rbegin(std::declval<Range>())), Iterator>);
+        static_assert(std::same_as<decltype(ranges::rbegin(std::declval<Range>())), Iterator>);
     } else {
-        STATIC_ASSERT(!CanCRBegin<Range>);
+        static_assert(!CanCRBegin<Range>);
     }
 
     return true;
@@ -216,14 +216,14 @@ constexpr bool test_rbegin() {
 template <class Range, class Iterator = invalid_type>
 constexpr bool test_crbegin() {
     // Validate ranges::crbegin
-    STATIC_ASSERT(Decayed<Iterator>);
-    STATIC_ASSERT(!is_valid<Iterator> || std::input_or_output_iterator<Iterator>);
+    static_assert(Decayed<Iterator>);
+    static_assert(!is_valid<Iterator> || std::input_or_output_iterator<Iterator>);
 
-    STATIC_ASSERT(CanCRBegin<Range> == is_valid<Iterator>);
+    static_assert(CanCRBegin<Range> == is_valid<Iterator>);
     if constexpr (is_valid<Iterator>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::crbegin(std::declval<Range>())), Iterator>);
+        static_assert(std::same_as<decltype(ranges::crbegin(std::declval<Range>())), Iterator>);
 
-        STATIC_ASSERT(CanRBegin<Range>);
+        static_assert(CanRBegin<Range>);
     }
 
     return true;
@@ -232,35 +232,35 @@ constexpr bool test_crbegin() {
 template <class Range, class Sentinel = invalid_type>
 constexpr bool test_end() {
     // Validate ranges::end and ranges::sentinel_t
-    STATIC_ASSERT(Decayed<Sentinel>);
-    STATIC_ASSERT(std::semiregular<Sentinel>);
+    static_assert(Decayed<Sentinel>);
+    static_assert(std::semiregular<Sentinel>);
 
-    STATIC_ASSERT(CanEnd<Range> == is_valid<Sentinel>);
+    static_assert(CanEnd<Range> == is_valid<Sentinel>);
     if constexpr (is_valid<Sentinel>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::end(std::declval<Range>())), Sentinel>);
-        STATIC_ASSERT(std::same_as<ranges::sentinel_t<Range>, Sentinel>);
-        STATIC_ASSERT(std::same_as<ranges::sentinel_t<Range&>, Sentinel>);
-        STATIC_ASSERT(std::same_as<ranges::sentinel_t<Range&&>, Sentinel>);
+        static_assert(std::same_as<decltype(ranges::end(std::declval<Range>())), Sentinel>);
+        static_assert(std::same_as<ranges::sentinel_t<Range>, Sentinel>);
+        static_assert(std::same_as<ranges::sentinel_t<Range&>, Sentinel>);
+        static_assert(std::same_as<ranges::sentinel_t<Range&&>, Sentinel>);
 
         using Iterator = decltype(ranges::begin(std::declval<Range>()));
-        STATIC_ASSERT(std::sentinel_for<Sentinel, Iterator>);
+        static_assert(std::sentinel_for<Sentinel, Iterator>);
 
         // Validate ranges::range and ranges::common_range
-        STATIC_ASSERT(ranges::range<Range>);
-        STATIC_ASSERT(ranges::common_range<Range> == std::same_as<Iterator, Sentinel>);
+        static_assert(ranges::range<Range>);
+        static_assert(ranges::common_range<Range> == std::same_as<Iterator, Sentinel>);
 
         // Validate ranges::range_difference_t and ranges::range_reference_t
         using Difference = std::iter_difference_t<Iterator>;
-        STATIC_ASSERT(std::same_as<ranges::range_difference_t<Range>, Difference>);
-        STATIC_ASSERT(std::same_as<ranges::range_difference_t<Range&>, Difference>);
-        STATIC_ASSERT(std::same_as<ranges::range_difference_t<Range&&>, Difference>);
+        static_assert(std::same_as<ranges::range_difference_t<Range>, Difference>);
+        static_assert(std::same_as<ranges::range_difference_t<Range&>, Difference>);
+        static_assert(std::same_as<ranges::range_difference_t<Range&&>, Difference>);
 
         using Reference = std::iter_reference_t<Iterator>;
-        STATIC_ASSERT(std::same_as<ranges::range_reference_t<Range>, Reference>);
-        STATIC_ASSERT(std::same_as<ranges::range_reference_t<Range&>, Reference>);
-        STATIC_ASSERT(std::same_as<ranges::range_reference_t<Range&&>, Reference>);
+        static_assert(std::same_as<ranges::range_reference_t<Range>, Reference>);
+        static_assert(std::same_as<ranges::range_reference_t<Range&>, Reference>);
+        static_assert(std::same_as<ranges::range_reference_t<Range&&>, Reference>);
     } else {
-        STATIC_ASSERT(!CanCEnd<Range>);
+        static_assert(!CanCEnd<Range>);
     }
 
     return true;
@@ -269,17 +269,17 @@ constexpr bool test_end() {
 template <class Range, class Sentinel = invalid_type>
 constexpr bool test_cend() {
     // Validate ranges::cend
-    STATIC_ASSERT(Decayed<Sentinel>);
-    STATIC_ASSERT(std::semiregular<Sentinel>);
+    static_assert(Decayed<Sentinel>);
+    static_assert(std::semiregular<Sentinel>);
 
-    STATIC_ASSERT(CanCEnd<Range> == is_valid<Sentinel>);
+    static_assert(CanCEnd<Range> == is_valid<Sentinel>);
     if constexpr (is_valid<Sentinel>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::cend(std::declval<Range>())), Sentinel>);
+        static_assert(std::same_as<decltype(ranges::cend(std::declval<Range>())), Sentinel>);
 
         using Iterator = decltype(ranges::cbegin(std::declval<Range>()));
-        STATIC_ASSERT(std::sentinel_for<Sentinel, Iterator>);
+        static_assert(std::sentinel_for<Sentinel, Iterator>);
 
-        STATIC_ASSERT(CanEnd<Range>);
+        static_assert(CanEnd<Range>);
     }
 
     return true;
@@ -288,17 +288,17 @@ constexpr bool test_cend() {
 template <class Range, class Sentinel = invalid_type>
 constexpr bool test_rend() {
     // Validate ranges::rend
-    STATIC_ASSERT(Decayed<Sentinel>);
-    STATIC_ASSERT(std::semiregular<Sentinel>);
+    static_assert(Decayed<Sentinel>);
+    static_assert(std::semiregular<Sentinel>);
 
-    STATIC_ASSERT(CanREnd<Range> == is_valid<Sentinel>);
+    static_assert(CanREnd<Range> == is_valid<Sentinel>);
     if constexpr (is_valid<Sentinel>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::rend(std::declval<Range>())), Sentinel>);
+        static_assert(std::same_as<decltype(ranges::rend(std::declval<Range>())), Sentinel>);
 
         using Iterator = decltype(ranges::rbegin(std::declval<Range>()));
-        STATIC_ASSERT(std::sentinel_for<Sentinel, Iterator>);
+        static_assert(std::sentinel_for<Sentinel, Iterator>);
     } else {
-        STATIC_ASSERT(!CanCREnd<Range>);
+        static_assert(!CanCREnd<Range>);
     }
 
     return true;
@@ -307,17 +307,17 @@ constexpr bool test_rend() {
 template <class Range, class Sentinel = invalid_type>
 constexpr bool test_crend() {
     // Validate ranges::crend
-    STATIC_ASSERT(Decayed<Sentinel>);
-    STATIC_ASSERT(std::semiregular<Sentinel>);
+    static_assert(Decayed<Sentinel>);
+    static_assert(std::semiregular<Sentinel>);
 
-    STATIC_ASSERT(CanCREnd<Range> == is_valid<Sentinel>);
+    static_assert(CanCREnd<Range> == is_valid<Sentinel>);
     if constexpr (is_valid<Sentinel>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::crend(std::declval<Range>())), Sentinel>);
+        static_assert(std::same_as<decltype(ranges::crend(std::declval<Range>())), Sentinel>);
 
         using Iterator = decltype(ranges::crbegin(std::declval<Range>()));
-        STATIC_ASSERT(std::sentinel_for<Sentinel, Iterator>);
+        static_assert(std::sentinel_for<Sentinel, Iterator>);
 
-        STATIC_ASSERT(CanREnd<Range>);
+        static_assert(CanREnd<Range>);
     }
 
     return true;
@@ -326,9 +326,9 @@ constexpr bool test_crend() {
 template <class Range, bool Emptyable>
 constexpr bool test_empty() {
     // Validate ranges::empty
-    STATIC_ASSERT(CanEmpty<Range> == Emptyable);
+    static_assert(CanEmpty<Range> == Emptyable);
     if constexpr (Emptyable) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::empty(std::declval<Range>())), bool>);
+        static_assert(std::same_as<decltype(ranges::empty(std::declval<Range>())), bool>);
     }
 
     return true;
@@ -337,20 +337,20 @@ constexpr bool test_empty() {
 template <class Range, class Size = invalid_type>
 constexpr bool test_size() {
     // Validate ranges::size, ranges::sized_range, and ranges::ssize
-    STATIC_ASSERT(!is_valid<Size> || std::integral<Size>);
+    static_assert(!is_valid<Size> || std::integral<Size>);
 
-    STATIC_ASSERT(CanSize<Range> == is_valid<Size>);
-    STATIC_ASSERT(CanSSize<Range> == is_valid<Size>);
-    STATIC_ASSERT(CanSizeType<Range> == is_valid<Size>);
-    STATIC_ASSERT(ranges::sized_range<Range> == is_valid<Size>);
+    static_assert(CanSize<Range> == is_valid<Size>);
+    static_assert(CanSSize<Range> == is_valid<Size>);
+    static_assert(CanSizeType<Range> == is_valid<Size>);
+    static_assert(ranges::sized_range<Range> == is_valid<Size>);
     if constexpr (is_valid<Size>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Range>())), Size>);
-        STATIC_ASSERT(std::same_as<ranges::range_size_t<Range>, Size>);
+        static_assert(std::same_as<decltype(ranges::size(std::declval<Range>())), Size>);
+        static_assert(std::same_as<ranges::range_size_t<Range>, Size>);
 
         using SignedSize = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
-        STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Range>())), SignedSize>);
+        static_assert(std::same_as<decltype(ranges::ssize(std::declval<Range>())), SignedSize>);
 
-        STATIC_ASSERT(CanEmpty<Range>);
+        static_assert(CanEmpty<Range>);
     }
 
     return true;
@@ -359,14 +359,14 @@ constexpr bool test_size() {
 template <class Range, class Pointer = invalid_type>
 constexpr bool test_data() {
     // Validate ranges::data
-    STATIC_ASSERT(!is_valid<Pointer> || std::is_pointer_v<Pointer>);
+    static_assert(!is_valid<Pointer> || std::is_pointer_v<Pointer>);
 
-    STATIC_ASSERT(CanData<Range> == is_valid<Pointer>);
+    static_assert(CanData<Range> == is_valid<Pointer>);
     if constexpr (is_valid<Pointer>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::data(std::declval<Range>())), Pointer>);
-        STATIC_ASSERT(std::same_as<ranges::range_value_t<Range>, std::remove_cv_t<std::remove_pointer_t<Pointer>>>);
+        static_assert(std::same_as<decltype(ranges::data(std::declval<Range>())), Pointer>);
+        static_assert(std::same_as<ranges::range_value_t<Range>, std::remove_cv_t<std::remove_pointer_t<Pointer>>>);
     } else {
-        STATIC_ASSERT(!CanCData<Range>);
+        static_assert(!CanCData<Range>);
     }
 
     return true;
@@ -375,14 +375,14 @@ constexpr bool test_data() {
 template <class Range, class Pointer = invalid_type>
 constexpr bool test_cdata() {
     // Validate ranges::cdata
-    STATIC_ASSERT(!is_valid<Pointer> || std::is_pointer_v<Pointer>);
+    static_assert(!is_valid<Pointer> || std::is_pointer_v<Pointer>);
 
-    STATIC_ASSERT(CanCData<Range> == is_valid<Pointer>);
+    static_assert(CanCData<Range> == is_valid<Pointer>);
     if constexpr (is_valid<Pointer>) {
-        STATIC_ASSERT(std::same_as<decltype(ranges::cdata(std::declval<Range>())), Pointer>);
-        STATIC_ASSERT(std::same_as<ranges::range_value_t<Range>, std::remove_cv_t<std::remove_pointer_t<Pointer>>>);
+        static_assert(std::same_as<decltype(ranges::cdata(std::declval<Range>())), Pointer>);
+        static_assert(std::same_as<ranges::range_value_t<Range>, std::remove_cv_t<std::remove_pointer_t<Pointer>>>);
 
-        STATIC_ASSERT(CanData<Range>);
+        static_assert(CanData<Range>);
     }
 
     return true;
@@ -391,38 +391,38 @@ constexpr bool test_cdata() {
 template <class NonRange>
 constexpr bool test_non_range() {
     // Validate ranges::range, ranges::sized_range, and ranges::view
-    STATIC_ASSERT(!ranges::range<NonRange>);
-    STATIC_ASSERT(!CanEnd<NonRange>);
-    STATIC_ASSERT(!CanCEnd<NonRange>);
-    STATIC_ASSERT(!ranges::sized_range<NonRange>);
-    STATIC_ASSERT(!ranges::view<NonRange>);
+    static_assert(!ranges::range<NonRange>);
+    static_assert(!CanEnd<NonRange>);
+    static_assert(!CanCEnd<NonRange>);
+    static_assert(!ranges::sized_range<NonRange>);
+    static_assert(!ranges::view<NonRange>);
     return true;
 }
 
 template <class Range>
 constexpr bool test_input_range() {
     // Validate ranges::range and ranges::input_range
-    STATIC_ASSERT(ranges::range<Range>);
+    static_assert(ranges::range<Range>);
     using Iterator = ranges::iterator_t<Range>;
-    STATIC_ASSERT(std::input_iterator<Iterator>);
-    STATIC_ASSERT(ranges::input_range<Range>);
+    static_assert(std::input_iterator<Iterator>);
+    static_assert(ranges::input_range<Range>);
 
     // Validate ranges::range_value_t and ranges::range_rvalue_reference_t
     using Value = std::iter_value_t<Iterator>;
-    STATIC_ASSERT(std::same_as<ranges::range_value_t<Range>, Value>);
-    STATIC_ASSERT(std::same_as<ranges::range_value_t<Range&>, Value>);
-    STATIC_ASSERT(std::same_as<ranges::range_value_t<Range&&>, Value>);
+    static_assert(std::same_as<ranges::range_value_t<Range>, Value>);
+    static_assert(std::same_as<ranges::range_value_t<Range&>, Value>);
+    static_assert(std::same_as<ranges::range_value_t<Range&&>, Value>);
 
     using RvalueReference = std::iter_rvalue_reference_t<Iterator>;
-    STATIC_ASSERT(std::same_as<ranges::range_rvalue_reference_t<Range>, RvalueReference>);
-    STATIC_ASSERT(std::same_as<ranges::range_rvalue_reference_t<Range&>, RvalueReference>);
-    STATIC_ASSERT(std::same_as<ranges::range_rvalue_reference_t<Range&&>, RvalueReference>);
+    static_assert(std::same_as<ranges::range_rvalue_reference_t<Range>, RvalueReference>);
+    static_assert(std::same_as<ranges::range_rvalue_reference_t<Range&>, RvalueReference>);
+    static_assert(std::same_as<ranges::range_rvalue_reference_t<Range&&>, RvalueReference>);
 
     // LWG-3860, validate ranges::range_common_reference_t
     using CommonReference = std::iter_common_reference_t<Iterator>;
-    STATIC_ASSERT(std::same_as<ranges::range_common_reference_t<Range>, CommonReference>);
-    STATIC_ASSERT(std::same_as<ranges::range_common_reference_t<Range&>, CommonReference>);
-    STATIC_ASSERT(std::same_as<ranges::range_common_reference_t<Range&&>, CommonReference>);
+    static_assert(std::same_as<ranges::range_common_reference_t<Range>, CommonReference>);
+    static_assert(std::same_as<ranges::range_common_reference_t<Range&>, CommonReference>);
+    static_assert(std::same_as<ranges::range_common_reference_t<Range&&>, CommonReference>);
 
     return true;
 }
@@ -430,10 +430,10 @@ constexpr bool test_input_range() {
 template <class Range>
 constexpr bool test_forward_range() {
     // Validate ranges::forward_range
-    STATIC_ASSERT(test_input_range<Range>());
-    STATIC_ASSERT(std::forward_iterator<ranges::iterator_t<Range>>);
-    STATIC_ASSERT(ranges::forward_range<Range>);
-    STATIC_ASSERT(CanEmpty<Range>);
+    static_assert(test_input_range<Range>());
+    static_assert(std::forward_iterator<ranges::iterator_t<Range>>);
+    static_assert(ranges::forward_range<Range>);
+    static_assert(CanEmpty<Range>);
 
     return true;
 }
@@ -441,12 +441,12 @@ constexpr bool test_forward_range() {
 template <class Range>
 constexpr bool test_bidirectional_range() {
     // Validate ranges::bidirectional_range
-    STATIC_ASSERT(test_forward_range<Range>());
-    STATIC_ASSERT(std::bidirectional_iterator<ranges::iterator_t<Range>>);
-    STATIC_ASSERT(ranges::bidirectional_range<Range>);
+    static_assert(test_forward_range<Range>());
+    static_assert(std::bidirectional_iterator<ranges::iterator_t<Range>>);
+    static_assert(ranges::bidirectional_range<Range>);
     if constexpr (ranges::common_range<Range>) {
-        STATIC_ASSERT(CanRBegin<Range&>);
-        STATIC_ASSERT(CanREnd<Range&>);
+        static_assert(CanRBegin<Range&>);
+        static_assert(CanREnd<Range&>);
     }
 
     return true;
@@ -455,10 +455,10 @@ constexpr bool test_bidirectional_range() {
 template <class Range>
 constexpr bool test_random_access_range() {
     // Validate ranges::random_access_range
-    STATIC_ASSERT(test_bidirectional_range<Range>());
-    STATIC_ASSERT(std::random_access_iterator<ranges::iterator_t<Range>>);
-    STATIC_ASSERT(ranges::random_access_range<Range>);
-    STATIC_ASSERT(ranges::sized_range<Range> || !ranges::common_range<Range>);
+    static_assert(test_bidirectional_range<Range>());
+    static_assert(std::random_access_iterator<ranges::iterator_t<Range>>);
+    static_assert(ranges::random_access_range<Range>);
+    static_assert(ranges::sized_range<Range> || !ranges::common_range<Range>);
 
     return true;
 }
@@ -466,10 +466,10 @@ constexpr bool test_random_access_range() {
 template <class Range>
 constexpr bool test_contiguous_range() {
     // Validate ranges::contiguous_range
-    STATIC_ASSERT(test_random_access_range<Range>());
-    STATIC_ASSERT(std::contiguous_iterator<ranges::iterator_t<Range>>);
-    STATIC_ASSERT(ranges::contiguous_range<Range>);
-    STATIC_ASSERT(CanData<Range&>);
+    static_assert(test_random_access_range<Range>());
+    static_assert(std::contiguous_iterator<ranges::iterator_t<Range>>);
+    static_assert(ranges::contiguous_range<Range>);
+    static_assert(CanData<Range&>);
 
     return true;
 }
@@ -477,205 +477,205 @@ constexpr bool test_contiguous_range() {
 // Validate types that are unequivocally not ranges
 template <class Nope>
 constexpr bool totally_not_a_range() {
-    STATIC_ASSERT(test_begin<Nope>());
-    STATIC_ASSERT(test_end<Nope>());
-    STATIC_ASSERT(test_cbegin<Nope>());
-    STATIC_ASSERT(test_cend<Nope>());
-    STATIC_ASSERT(test_rbegin<Nope>());
-    STATIC_ASSERT(test_rend<Nope>());
-    STATIC_ASSERT(test_crbegin<Nope>());
-    STATIC_ASSERT(test_crend<Nope>());
-    STATIC_ASSERT(test_empty<Nope, false>());
-    STATIC_ASSERT(test_size<Nope>());
-    STATIC_ASSERT(test_data<Nope>());
-    STATIC_ASSERT(test_cdata<Nope>());
-    STATIC_ASSERT(test_non_range<Nope>());
+    static_assert(test_begin<Nope>());
+    static_assert(test_end<Nope>());
+    static_assert(test_cbegin<Nope>());
+    static_assert(test_cend<Nope>());
+    static_assert(test_rbegin<Nope>());
+    static_assert(test_rend<Nope>());
+    static_assert(test_crbegin<Nope>());
+    static_assert(test_crend<Nope>());
+    static_assert(test_empty<Nope, false>());
+    static_assert(test_size<Nope>());
+    static_assert(test_data<Nope>());
+    static_assert(test_cdata<Nope>());
+    static_assert(test_non_range<Nope>());
     return true;
 }
-STATIC_ASSERT(totally_not_a_range<void>());
-STATIC_ASSERT(totally_not_a_range<int>());
-STATIC_ASSERT(totally_not_a_range<int&>());
+static_assert(totally_not_a_range<void>());
+static_assert(totally_not_a_range<int>());
+static_assert(totally_not_a_range<int&>());
 
 #pragma warning(push)
 #pragma warning(disable : 4180) // qualifier applied to function type has no meaning; ignored
-STATIC_ASSERT(totally_not_a_range<void()>());
-STATIC_ASSERT(totally_not_a_range<void (*)()>());
-STATIC_ASSERT(totally_not_a_range<void (&)()>());
-STATIC_ASSERT(totally_not_a_range<void() const>());
+static_assert(totally_not_a_range<void()>());
+static_assert(totally_not_a_range<void (*)()>());
+static_assert(totally_not_a_range<void (&)()>());
+static_assert(totally_not_a_range<void() const>());
 #pragma warning(pop)
 
 // Validate C arrays, which have special-case range behaviors
-STATIC_ASSERT(test_begin<int[42]>());
-STATIC_ASSERT(test_end<int[42]>());
-STATIC_ASSERT(test_cbegin<int[42]>());
-STATIC_ASSERT(test_cend<int[42]>());
-STATIC_ASSERT(test_rbegin<int[42]>());
-STATIC_ASSERT(test_rend<int[42]>());
-STATIC_ASSERT(test_crbegin<int[42]>());
-STATIC_ASSERT(test_crend<int[42]>());
-STATIC_ASSERT(test_size<int[42], std::size_t>());
-STATIC_ASSERT(test_empty<int[42], true>());
-STATIC_ASSERT(test_data<int[42]>());
-STATIC_ASSERT(test_cdata<int[42]>());
-STATIC_ASSERT(test_contiguous_range<int[42]>());
-STATIC_ASSERT(!ranges::view<int[42]>);
+static_assert(test_begin<int[42]>());
+static_assert(test_end<int[42]>());
+static_assert(test_cbegin<int[42]>());
+static_assert(test_cend<int[42]>());
+static_assert(test_rbegin<int[42]>());
+static_assert(test_rend<int[42]>());
+static_assert(test_crbegin<int[42]>());
+static_assert(test_crend<int[42]>());
+static_assert(test_size<int[42], std::size_t>());
+static_assert(test_empty<int[42], true>());
+static_assert(test_data<int[42]>());
+static_assert(test_cdata<int[42]>());
+static_assert(test_contiguous_range<int[42]>());
+static_assert(!ranges::view<int[42]>);
 
-STATIC_ASSERT(test_begin<int const[42]>());
-STATIC_ASSERT(test_end<int const[42]>());
-STATIC_ASSERT(test_cbegin<int const[42]>());
-STATIC_ASSERT(test_cend<int const[42]>());
-STATIC_ASSERT(test_rbegin<int const[42]>());
-STATIC_ASSERT(test_rend<int const[42]>());
-STATIC_ASSERT(test_crbegin<int const[42]>());
-STATIC_ASSERT(test_crend<int const[42]>());
-STATIC_ASSERT(test_size<int const[42], std::size_t>());
-STATIC_ASSERT(test_empty<int const[42], true>());
-STATIC_ASSERT(test_data<int const[42]>());
-STATIC_ASSERT(test_cdata<int const[42]>());
-STATIC_ASSERT(test_contiguous_range<int const[42]>());
-STATIC_ASSERT(!ranges::view<int const[42]>);
+static_assert(test_begin<int const[42]>());
+static_assert(test_end<int const[42]>());
+static_assert(test_cbegin<int const[42]>());
+static_assert(test_cend<int const[42]>());
+static_assert(test_rbegin<int const[42]>());
+static_assert(test_rend<int const[42]>());
+static_assert(test_crbegin<int const[42]>());
+static_assert(test_crend<int const[42]>());
+static_assert(test_size<int const[42], std::size_t>());
+static_assert(test_empty<int const[42], true>());
+static_assert(test_data<int const[42]>());
+static_assert(test_cdata<int const[42]>());
+static_assert(test_contiguous_range<int const[42]>());
+static_assert(!ranges::view<int const[42]>);
 
-STATIC_ASSERT(test_begin<int (&)[42], int*>());
-STATIC_ASSERT(test_end<int (&)[42], int*>());
-STATIC_ASSERT(test_cbegin<int (&)[42], int const*>());
-STATIC_ASSERT(test_cend<int (&)[42], int const*>());
-STATIC_ASSERT(test_rbegin<int (&)[42], std::reverse_iterator<int*>>());
-STATIC_ASSERT(test_rend<int (&)[42], std::reverse_iterator<int*>>());
-STATIC_ASSERT(test_crbegin<int (&)[42], std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_crend<int (&)[42], std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_size<int (&)[42], std::size_t>());
-STATIC_ASSERT(test_empty<int (&)[42], true>());
-STATIC_ASSERT(test_data<int (&)[42], int*>());
-STATIC_ASSERT(test_cdata<int (&)[42], int const*>());
-STATIC_ASSERT(test_contiguous_range<int (&)[42]>());
-STATIC_ASSERT(!ranges::view<int (&)[42]>);
+static_assert(test_begin<int (&)[42], int*>());
+static_assert(test_end<int (&)[42], int*>());
+static_assert(test_cbegin<int (&)[42], int const*>());
+static_assert(test_cend<int (&)[42], int const*>());
+static_assert(test_rbegin<int (&)[42], std::reverse_iterator<int*>>());
+static_assert(test_rend<int (&)[42], std::reverse_iterator<int*>>());
+static_assert(test_crbegin<int (&)[42], std::reverse_iterator<int const*>>());
+static_assert(test_crend<int (&)[42], std::reverse_iterator<int const*>>());
+static_assert(test_size<int (&)[42], std::size_t>());
+static_assert(test_empty<int (&)[42], true>());
+static_assert(test_data<int (&)[42], int*>());
+static_assert(test_cdata<int (&)[42], int const*>());
+static_assert(test_contiguous_range<int (&)[42]>());
+static_assert(!ranges::view<int (&)[42]>);
 
-STATIC_ASSERT(test_begin<int const (&)[42], int const*>());
-STATIC_ASSERT(test_end<int const (&)[42], int const*>());
-STATIC_ASSERT(test_cbegin<int const (&)[42], int const*>());
-STATIC_ASSERT(test_cend<int const (&)[42], int const*>());
-STATIC_ASSERT(test_rbegin<int const (&)[42], std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_rend<int const (&)[42], std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_crbegin<int const (&)[42], std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_crend<int const (&)[42], std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_size<int const (&)[42], std::size_t>());
-STATIC_ASSERT(test_empty<int const (&)[42], true>());
-STATIC_ASSERT(test_data<int const (&)[42], int const*>());
-STATIC_ASSERT(test_cdata<int const (&)[42], int const*>());
-STATIC_ASSERT(test_contiguous_range<int const (&)[42]>());
-STATIC_ASSERT(!ranges::view<int const (&)[42]>);
+static_assert(test_begin<int const (&)[42], int const*>());
+static_assert(test_end<int const (&)[42], int const*>());
+static_assert(test_cbegin<int const (&)[42], int const*>());
+static_assert(test_cend<int const (&)[42], int const*>());
+static_assert(test_rbegin<int const (&)[42], std::reverse_iterator<int const*>>());
+static_assert(test_rend<int const (&)[42], std::reverse_iterator<int const*>>());
+static_assert(test_crbegin<int const (&)[42], std::reverse_iterator<int const*>>());
+static_assert(test_crend<int const (&)[42], std::reverse_iterator<int const*>>());
+static_assert(test_size<int const (&)[42], std::size_t>());
+static_assert(test_empty<int const (&)[42], true>());
+static_assert(test_data<int const (&)[42], int const*>());
+static_assert(test_cdata<int const (&)[42], int const*>());
+static_assert(test_contiguous_range<int const (&)[42]>());
+static_assert(!ranges::view<int const (&)[42]>);
 
 // Validate arrays of unknown bound
-STATIC_ASSERT(test_begin<int[]>());
-STATIC_ASSERT(test_end<int[]>());
-STATIC_ASSERT(test_cbegin<int[]>());
-STATIC_ASSERT(test_cend<int[]>());
-STATIC_ASSERT(test_rbegin<int[]>());
-STATIC_ASSERT(test_rend<int[]>());
-STATIC_ASSERT(test_crbegin<int[]>());
-STATIC_ASSERT(test_crend<int[]>());
-STATIC_ASSERT(test_size<int[]>());
-STATIC_ASSERT(test_empty<int[], false>());
-STATIC_ASSERT(test_data<int[]>());
-STATIC_ASSERT(test_cdata<int[]>());
-STATIC_ASSERT(!ranges::range<int[]>);
-STATIC_ASSERT(!ranges::view<int[]>);
+static_assert(test_begin<int[]>());
+static_assert(test_end<int[]>());
+static_assert(test_cbegin<int[]>());
+static_assert(test_cend<int[]>());
+static_assert(test_rbegin<int[]>());
+static_assert(test_rend<int[]>());
+static_assert(test_crbegin<int[]>());
+static_assert(test_crend<int[]>());
+static_assert(test_size<int[]>());
+static_assert(test_empty<int[], false>());
+static_assert(test_data<int[]>());
+static_assert(test_cdata<int[]>());
+static_assert(!ranges::range<int[]>);
+static_assert(!ranges::view<int[]>);
 
-STATIC_ASSERT(test_begin<int const[]>());
-STATIC_ASSERT(test_end<int const[]>());
-STATIC_ASSERT(test_cbegin<int const[]>());
-STATIC_ASSERT(test_cend<int const[]>());
-STATIC_ASSERT(test_rbegin<int const[]>());
-STATIC_ASSERT(test_rend<int const[]>());
-STATIC_ASSERT(test_crbegin<int const[]>());
-STATIC_ASSERT(test_crend<int const[]>());
-STATIC_ASSERT(test_size<int const[]>());
-STATIC_ASSERT(test_empty<int const[], false>());
-STATIC_ASSERT(test_data<int const[]>());
-STATIC_ASSERT(test_cdata<int const[]>());
-STATIC_ASSERT(!ranges::range<int const[]>);
-STATIC_ASSERT(!ranges::view<int const[]>);
+static_assert(test_begin<int const[]>());
+static_assert(test_end<int const[]>());
+static_assert(test_cbegin<int const[]>());
+static_assert(test_cend<int const[]>());
+static_assert(test_rbegin<int const[]>());
+static_assert(test_rend<int const[]>());
+static_assert(test_crbegin<int const[]>());
+static_assert(test_crend<int const[]>());
+static_assert(test_size<int const[]>());
+static_assert(test_empty<int const[], false>());
+static_assert(test_data<int const[]>());
+static_assert(test_cdata<int const[]>());
+static_assert(!ranges::range<int const[]>);
+static_assert(!ranges::view<int const[]>);
 
-STATIC_ASSERT(test_begin<int (&)[], int*>());
-STATIC_ASSERT(test_end<int (&)[]>());
-STATIC_ASSERT(test_cend<int (&)[]>());
-STATIC_ASSERT(test_rbegin<int (&)[]>());
-STATIC_ASSERT(test_rend<int (&)[]>());
-STATIC_ASSERT(test_crbegin<int (&)[]>());
-STATIC_ASSERT(test_crend<int (&)[]>());
-STATIC_ASSERT(test_size<int (&)[]>());
-STATIC_ASSERT(test_empty<int (&)[], false>());
+static_assert(test_begin<int (&)[], int*>());
+static_assert(test_end<int (&)[]>());
+static_assert(test_cend<int (&)[]>());
+static_assert(test_rbegin<int (&)[]>());
+static_assert(test_rend<int (&)[]>());
+static_assert(test_crbegin<int (&)[]>());
+static_assert(test_crend<int (&)[]>());
+static_assert(test_size<int (&)[]>());
+static_assert(test_empty<int (&)[], false>());
 // Can't use test_data here because it uses range_value_t and this isn't a range
-STATIC_ASSERT(std::same_as<decltype(ranges::data(std::declval<int (&)[]>())), int*>);
-STATIC_ASSERT(!ranges::range<int (&)[]>);
-STATIC_ASSERT(!ranges::view<int (&)[]>);
+static_assert(std::same_as<decltype(ranges::data(std::declval<int (&)[]>())), int*>);
+static_assert(!ranges::range<int (&)[]>);
+static_assert(!ranges::view<int (&)[]>);
 
 #if _HAS_CXX23 // ranges::cbegin and ranges::cdata behavior differs in C++20 and C++23 modes
-STATIC_ASSERT(test_cbegin<int (&)[]>());
-STATIC_ASSERT(test_cdata<int (&)[]>());
+static_assert(test_cbegin<int (&)[]>());
+static_assert(test_cdata<int (&)[]>());
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-STATIC_ASSERT(test_cbegin<int (&)[], int const*>());
+static_assert(test_cbegin<int (&)[], int const*>());
 // Can't use test_cdata here because it uses range_value_t and this isn't a range
-STATIC_ASSERT(std::same_as<decltype(ranges::cdata(std::declval<int (&)[]>())), int const*>);
+static_assert(std::same_as<decltype(ranges::cdata(std::declval<int (&)[]>())), int const*>);
 #endif // ^^^ !_HAS_CXX23 ^^^
 
-STATIC_ASSERT(test_begin<int const (&)[], int const*>());
-STATIC_ASSERT(test_end<int const (&)[]>());
-STATIC_ASSERT(test_cend<int const (&)[]>());
-STATIC_ASSERT(test_rbegin<int const (&)[]>());
-STATIC_ASSERT(test_rend<int const (&)[]>());
-STATIC_ASSERT(test_crbegin<int const (&)[]>());
-STATIC_ASSERT(test_crend<int const (&)[]>());
-STATIC_ASSERT(test_size<int const (&)[]>());
-STATIC_ASSERT(test_empty<int const (&)[], false>());
+static_assert(test_begin<int const (&)[], int const*>());
+static_assert(test_end<int const (&)[]>());
+static_assert(test_cend<int const (&)[]>());
+static_assert(test_rbegin<int const (&)[]>());
+static_assert(test_rend<int const (&)[]>());
+static_assert(test_crbegin<int const (&)[]>());
+static_assert(test_crend<int const (&)[]>());
+static_assert(test_size<int const (&)[]>());
+static_assert(test_empty<int const (&)[], false>());
 // Can't use test_data here because it uses range_value_t and this isn't a range
-STATIC_ASSERT(std::same_as<decltype(ranges::data(std::declval<int const (&)[]>())), int const*>);
-STATIC_ASSERT(!ranges::range<int const (&)[]>);
-STATIC_ASSERT(!ranges::view<int const (&)[]>);
+static_assert(std::same_as<decltype(ranges::data(std::declval<int const (&)[]>())), int const*>);
+static_assert(!ranges::range<int const (&)[]>);
+static_assert(!ranges::view<int const (&)[]>);
 
 #if _HAS_CXX23 // ranges::cbegin and ranges::cdata behavior differs in C++20 and C++23 modes
-STATIC_ASSERT(test_cbegin<int const (&)[]>());
-STATIC_ASSERT(test_cdata<int const (&)[]>());
+static_assert(test_cbegin<int const (&)[]>());
+static_assert(test_cdata<int const (&)[]>());
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-STATIC_ASSERT(test_cbegin<int const (&)[], int const*>());
+static_assert(test_cbegin<int const (&)[], int const*>());
 // Can't use test_cdata here because it uses range_value_t and this isn't a range
-STATIC_ASSERT(std::same_as<decltype(ranges::cdata(std::declval<int const (&)[]>())), int const*>);
+static_assert(std::same_as<decltype(ranges::cdata(std::declval<int const (&)[]>())), int const*>);
 #endif // ^^^ !_HAS_CXX23 ^^^
 
 // Validate behavior before/after completing the bound of an array
 extern int initially_unbounded[];
-STATIC_ASSERT(ranges::begin(initially_unbounded) == initially_unbounded);
-STATIC_ASSERT(!CanEnd<decltype((initially_unbounded))>);
-STATIC_ASSERT(!CanCEnd<decltype((initially_unbounded))>);
-STATIC_ASSERT(!CanRBegin<decltype((initially_unbounded))>);
-STATIC_ASSERT(!CanREnd<decltype((initially_unbounded))>);
-STATIC_ASSERT(!CanCRBegin<decltype((initially_unbounded))>);
-STATIC_ASSERT(!CanCREnd<decltype((initially_unbounded))>);
-STATIC_ASSERT(!CanSize<decltype((initially_unbounded))>);
-STATIC_ASSERT(!CanEmpty<decltype((initially_unbounded))>);
-STATIC_ASSERT(ranges::data(initially_unbounded) == initially_unbounded);
+static_assert(ranges::begin(initially_unbounded) == initially_unbounded);
+static_assert(!CanEnd<decltype((initially_unbounded))>);
+static_assert(!CanCEnd<decltype((initially_unbounded))>);
+static_assert(!CanRBegin<decltype((initially_unbounded))>);
+static_assert(!CanREnd<decltype((initially_unbounded))>);
+static_assert(!CanCRBegin<decltype((initially_unbounded))>);
+static_assert(!CanCREnd<decltype((initially_unbounded))>);
+static_assert(!CanSize<decltype((initially_unbounded))>);
+static_assert(!CanEmpty<decltype((initially_unbounded))>);
+static_assert(ranges::data(initially_unbounded) == initially_unbounded);
 
 #if _HAS_CXX23 // ranges::cbegin and ranges::cdata behavior differs in C++20 and C++23 modes
-STATIC_ASSERT(!CanCBegin<decltype((initially_unbounded))>);
-STATIC_ASSERT(!CanCData<decltype((initially_unbounded))>);
+static_assert(!CanCBegin<decltype((initially_unbounded))>);
+static_assert(!CanCData<decltype((initially_unbounded))>);
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-STATIC_ASSERT(ranges::cbegin(initially_unbounded) == initially_unbounded);
-STATIC_ASSERT(ranges::cdata(initially_unbounded) == initially_unbounded);
+static_assert(ranges::cbegin(initially_unbounded) == initially_unbounded);
+static_assert(ranges::cdata(initially_unbounded) == initially_unbounded);
 #endif // ^^^ !_HAS_CXX23 ^^^
 
 int initially_unbounded[42];
-STATIC_ASSERT(ranges::begin(initially_unbounded) == initially_unbounded);
-STATIC_ASSERT(ranges::end(initially_unbounded) == initially_unbounded + ranges::size(initially_unbounded));
-STATIC_ASSERT(ranges::cbegin(initially_unbounded) == initially_unbounded);
-STATIC_ASSERT(ranges::cend(initially_unbounded) == initially_unbounded + ranges::size(initially_unbounded));
-STATIC_ASSERT(ranges::rbegin(initially_unbounded).base() == initially_unbounded + ranges::size(initially_unbounded));
-STATIC_ASSERT(ranges::rend(initially_unbounded).base() == initially_unbounded);
-STATIC_ASSERT(ranges::crbegin(initially_unbounded).base() == initially_unbounded + ranges::size(initially_unbounded));
-STATIC_ASSERT(ranges::crend(initially_unbounded).base() == initially_unbounded);
-STATIC_ASSERT(ranges::size(initially_unbounded) == std::size(initially_unbounded));
-STATIC_ASSERT(!ranges::empty(initially_unbounded));
-STATIC_ASSERT(ranges::data(initially_unbounded) == initially_unbounded);
-STATIC_ASSERT(ranges::cdata(initially_unbounded) == initially_unbounded);
+static_assert(ranges::begin(initially_unbounded) == initially_unbounded);
+static_assert(ranges::end(initially_unbounded) == initially_unbounded + ranges::size(initially_unbounded));
+static_assert(ranges::cbegin(initially_unbounded) == initially_unbounded);
+static_assert(ranges::cend(initially_unbounded) == initially_unbounded + ranges::size(initially_unbounded));
+static_assert(ranges::rbegin(initially_unbounded).base() == initially_unbounded + ranges::size(initially_unbounded));
+static_assert(ranges::rend(initially_unbounded).base() == initially_unbounded);
+static_assert(ranges::crbegin(initially_unbounded).base() == initially_unbounded + ranges::size(initially_unbounded));
+static_assert(ranges::crend(initially_unbounded).base() == initially_unbounded);
+static_assert(ranges::size(initially_unbounded) == std::size(initially_unbounded));
+static_assert(!ranges::empty(initially_unbounded));
+static_assert(ranges::data(initially_unbounded) == initially_unbounded);
+static_assert(ranges::cdata(initially_unbounded) == initially_unbounded);
 
 
 // Validate the few behaviors that we can for arrays of incomplete element type. begin, end, rbegin, rend, and data
@@ -683,86 +683,86 @@ STATIC_ASSERT(ranges::cdata(initially_unbounded) == initially_unbounded);
 // to size and empty.
 struct initially_incomplete;
 extern initially_incomplete array_of_incomplete[42];
-STATIC_ASSERT(ranges::size(array_of_incomplete) == 42);
-STATIC_ASSERT(!ranges::empty(array_of_incomplete));
+static_assert(ranges::size(array_of_incomplete) == 42);
+static_assert(!ranges::empty(array_of_incomplete));
 
 // begin, end, rbegin, rend, and data (and their c variations) should reject rvalues of array of incomplete elements
 // with substitution failures
-STATIC_ASSERT(!CanBegin<initially_incomplete (&&)[42]>);
-STATIC_ASSERT(!CanCBegin<initially_incomplete (&&)[42]>);
-STATIC_ASSERT(!CanEnd<initially_incomplete (&&)[42]>);
-STATIC_ASSERT(!CanCEnd<initially_incomplete (&&)[42]>);
-STATIC_ASSERT(!CanRBegin<initially_incomplete (&&)[42]>);
-STATIC_ASSERT(!CanCRBegin<initially_incomplete (&&)[42]>);
-STATIC_ASSERT(!CanREnd<initially_incomplete (&&)[42]>);
-STATIC_ASSERT(!CanCREnd<initially_incomplete (&&)[42]>);
-STATIC_ASSERT(!CanData<initially_incomplete (&&)[42]>);
-STATIC_ASSERT(!CanCData<initially_incomplete (&&)[42]>);
+static_assert(!CanBegin<initially_incomplete (&&)[42]>);
+static_assert(!CanCBegin<initially_incomplete (&&)[42]>);
+static_assert(!CanEnd<initially_incomplete (&&)[42]>);
+static_assert(!CanCEnd<initially_incomplete (&&)[42]>);
+static_assert(!CanRBegin<initially_incomplete (&&)[42]>);
+static_assert(!CanCRBegin<initially_incomplete (&&)[42]>);
+static_assert(!CanREnd<initially_incomplete (&&)[42]>);
+static_assert(!CanCREnd<initially_incomplete (&&)[42]>);
+static_assert(!CanData<initially_incomplete (&&)[42]>);
+static_assert(!CanCData<initially_incomplete (&&)[42]>);
 
 struct initially_incomplete {};
 initially_incomplete array_of_incomplete[42];
 
 
 // Validate initializer_lists, which have special-case range behaviors
-STATIC_ASSERT(test_begin<std::initializer_list<int>>());
-STATIC_ASSERT(test_end<std::initializer_list<int>>());
-STATIC_ASSERT(test_cbegin<std::initializer_list<int>>());
-STATIC_ASSERT(test_cend<std::initializer_list<int>>());
-STATIC_ASSERT(test_rbegin<std::initializer_list<int>>());
-STATIC_ASSERT(test_rend<std::initializer_list<int>>());
-STATIC_ASSERT(test_crbegin<std::initializer_list<int>>());
-STATIC_ASSERT(test_crend<std::initializer_list<int>>());
-STATIC_ASSERT(test_size<std::initializer_list<int>, std::size_t>());
-STATIC_ASSERT(test_empty<std::initializer_list<int>, true>());
-STATIC_ASSERT(test_data<std::initializer_list<int>>());
-STATIC_ASSERT(test_cdata<std::initializer_list<int>>());
-STATIC_ASSERT(test_contiguous_range<std::initializer_list<int>>());
-STATIC_ASSERT(!ranges::view<std::initializer_list<int>>);
+static_assert(test_begin<std::initializer_list<int>>());
+static_assert(test_end<std::initializer_list<int>>());
+static_assert(test_cbegin<std::initializer_list<int>>());
+static_assert(test_cend<std::initializer_list<int>>());
+static_assert(test_rbegin<std::initializer_list<int>>());
+static_assert(test_rend<std::initializer_list<int>>());
+static_assert(test_crbegin<std::initializer_list<int>>());
+static_assert(test_crend<std::initializer_list<int>>());
+static_assert(test_size<std::initializer_list<int>, std::size_t>());
+static_assert(test_empty<std::initializer_list<int>, true>());
+static_assert(test_data<std::initializer_list<int>>());
+static_assert(test_cdata<std::initializer_list<int>>());
+static_assert(test_contiguous_range<std::initializer_list<int>>());
+static_assert(!ranges::view<std::initializer_list<int>>);
 
-STATIC_ASSERT(test_begin<std::initializer_list<int> const>());
-STATIC_ASSERT(test_end<std::initializer_list<int> const>());
-STATIC_ASSERT(test_cbegin<std::initializer_list<int> const>());
-STATIC_ASSERT(test_cend<std::initializer_list<int> const>());
-STATIC_ASSERT(test_rbegin<std::initializer_list<int> const>());
-STATIC_ASSERT(test_rend<std::initializer_list<int> const>());
-STATIC_ASSERT(test_crbegin<std::initializer_list<int> const>());
-STATIC_ASSERT(test_crend<std::initializer_list<int> const>());
-STATIC_ASSERT(test_size<std::initializer_list<int> const, std::size_t>());
-STATIC_ASSERT(test_empty<std::initializer_list<int> const, true>());
-STATIC_ASSERT(test_data<std::initializer_list<int> const>());
-STATIC_ASSERT(test_cdata<std::initializer_list<int> const>());
-STATIC_ASSERT(test_contiguous_range<std::initializer_list<int> const>());
-STATIC_ASSERT(!ranges::view<std::initializer_list<int> const>);
+static_assert(test_begin<std::initializer_list<int> const>());
+static_assert(test_end<std::initializer_list<int> const>());
+static_assert(test_cbegin<std::initializer_list<int> const>());
+static_assert(test_cend<std::initializer_list<int> const>());
+static_assert(test_rbegin<std::initializer_list<int> const>());
+static_assert(test_rend<std::initializer_list<int> const>());
+static_assert(test_crbegin<std::initializer_list<int> const>());
+static_assert(test_crend<std::initializer_list<int> const>());
+static_assert(test_size<std::initializer_list<int> const, std::size_t>());
+static_assert(test_empty<std::initializer_list<int> const, true>());
+static_assert(test_data<std::initializer_list<int> const>());
+static_assert(test_cdata<std::initializer_list<int> const>());
+static_assert(test_contiguous_range<std::initializer_list<int> const>());
+static_assert(!ranges::view<std::initializer_list<int> const>);
 
-STATIC_ASSERT(test_begin<std::initializer_list<int>&, int const*>());
-STATIC_ASSERT(test_end<std::initializer_list<int>&, int const*>());
-STATIC_ASSERT(test_cbegin<std::initializer_list<int>&, int const*>());
-STATIC_ASSERT(test_cend<std::initializer_list<int>&, int const*>());
-STATIC_ASSERT(test_rbegin<std::initializer_list<int>&, std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_rend<std::initializer_list<int>&, std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_crbegin<std::initializer_list<int>&, std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_crend<std::initializer_list<int>&, std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_size<std::initializer_list<int>&, std::size_t>());
-STATIC_ASSERT(test_empty<std::initializer_list<int>&, true>());
-STATIC_ASSERT(test_data<std::initializer_list<int>&, int const*>());
-STATIC_ASSERT(test_cdata<std::initializer_list<int>&, int const*>());
-STATIC_ASSERT(test_contiguous_range<std::initializer_list<int>&>());
-STATIC_ASSERT(!ranges::view<std::initializer_list<int>&>);
+static_assert(test_begin<std::initializer_list<int>&, int const*>());
+static_assert(test_end<std::initializer_list<int>&, int const*>());
+static_assert(test_cbegin<std::initializer_list<int>&, int const*>());
+static_assert(test_cend<std::initializer_list<int>&, int const*>());
+static_assert(test_rbegin<std::initializer_list<int>&, std::reverse_iterator<int const*>>());
+static_assert(test_rend<std::initializer_list<int>&, std::reverse_iterator<int const*>>());
+static_assert(test_crbegin<std::initializer_list<int>&, std::reverse_iterator<int const*>>());
+static_assert(test_crend<std::initializer_list<int>&, std::reverse_iterator<int const*>>());
+static_assert(test_size<std::initializer_list<int>&, std::size_t>());
+static_assert(test_empty<std::initializer_list<int>&, true>());
+static_assert(test_data<std::initializer_list<int>&, int const*>());
+static_assert(test_cdata<std::initializer_list<int>&, int const*>());
+static_assert(test_contiguous_range<std::initializer_list<int>&>());
+static_assert(!ranges::view<std::initializer_list<int>&>);
 
-STATIC_ASSERT(test_begin<std::initializer_list<int> const&, int const*>());
-STATIC_ASSERT(test_end<std::initializer_list<int> const&, int const*>());
-STATIC_ASSERT(test_cbegin<std::initializer_list<int> const&, int const*>());
-STATIC_ASSERT(test_cend<std::initializer_list<int> const&, int const*>());
-STATIC_ASSERT(test_rbegin<std::initializer_list<int> const&, std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_rend<std::initializer_list<int> const&, std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_crbegin<std::initializer_list<int> const&, std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_crend<std::initializer_list<int> const&, std::reverse_iterator<int const*>>());
-STATIC_ASSERT(test_size<std::initializer_list<int> const&, std::size_t>());
-STATIC_ASSERT(test_empty<std::initializer_list<int> const&, true>());
-STATIC_ASSERT(test_data<std::initializer_list<int> const&, int const*>());
-STATIC_ASSERT(test_cdata<std::initializer_list<int> const&, int const*>());
-STATIC_ASSERT(test_contiguous_range<std::initializer_list<int> const&>());
-STATIC_ASSERT(!ranges::view<std::initializer_list<int> const&>);
+static_assert(test_begin<std::initializer_list<int> const&, int const*>());
+static_assert(test_end<std::initializer_list<int> const&, int const*>());
+static_assert(test_cbegin<std::initializer_list<int> const&, int const*>());
+static_assert(test_cend<std::initializer_list<int> const&, int const*>());
+static_assert(test_rbegin<std::initializer_list<int> const&, std::reverse_iterator<int const*>>());
+static_assert(test_rend<std::initializer_list<int> const&, std::reverse_iterator<int const*>>());
+static_assert(test_crbegin<std::initializer_list<int> const&, std::reverse_iterator<int const*>>());
+static_assert(test_crend<std::initializer_list<int> const&, std::reverse_iterator<int const*>>());
+static_assert(test_size<std::initializer_list<int> const&, std::size_t>());
+static_assert(test_empty<std::initializer_list<int> const&, true>());
+static_assert(test_data<std::initializer_list<int> const&, int const*>());
+static_assert(test_cdata<std::initializer_list<int> const&, int const*>());
+static_assert(test_contiguous_range<std::initializer_list<int> const&>());
+static_assert(!ranges::view<std::initializer_list<int> const&>);
 
 
 // Validate containers
@@ -776,135 +776,135 @@ constexpr bool test_std_container() {
     using I  = T::iterator;
     using D  = std::iter_difference_t<I>;
     using CI = T::const_iterator;
-    STATIC_ASSERT(std::same_as<std::iter_difference_t<CI>, D>);
+    static_assert(std::same_as<std::iter_difference_t<CI>, D>);
 
     using Category = std::iterator_traits<I>::iterator_category;
-    STATIC_ASSERT(std::derived_from<IterConcept, Category>);
+    static_assert(std::derived_from<IterConcept, Category>);
 
     using RI  = std::conditional_t<std::bidirectional_iterator<I>, std::reverse_iterator<I>, invalid_type>;
     using RCI = std::conditional_t<std::bidirectional_iterator<I>, std::reverse_iterator<CI>, invalid_type>;
 
     using V = T::value_type;
 
-    STATIC_ASSERT(test_begin<T>());
-    STATIC_ASSERT(test_end<T>());
-    STATIC_ASSERT(test_cbegin<T>());
-    STATIC_ASSERT(test_cend<T>());
-    STATIC_ASSERT(test_rbegin<T>());
-    STATIC_ASSERT(test_rend<T>());
-    STATIC_ASSERT(test_crbegin<T>());
-    STATIC_ASSERT(test_crend<T>());
+    static_assert(test_begin<T>());
+    static_assert(test_end<T>());
+    static_assert(test_cbegin<T>());
+    static_assert(test_cend<T>());
+    static_assert(test_rbegin<T>());
+    static_assert(test_rend<T>());
+    static_assert(test_crbegin<T>());
+    static_assert(test_crend<T>());
     if constexpr (!is_forward_list<T>) {
-        STATIC_ASSERT(test_size<T, std::make_unsigned_t<D>>());
+        static_assert(test_size<T, std::make_unsigned_t<D>>());
     }
-    STATIC_ASSERT(test_empty<T, true>());
+    static_assert(test_empty<T, true>());
     if constexpr (std::contiguous_iterator<I>) {
-        STATIC_ASSERT(test_data<T>());
-        STATIC_ASSERT(test_cdata<T>());
+        static_assert(test_data<T>());
+        static_assert(test_cdata<T>());
     }
-    STATIC_ASSERT(!ranges::view<T>);
+    static_assert(!ranges::view<T>);
 
-    STATIC_ASSERT(test_begin<T const>());
-    STATIC_ASSERT(test_end<T const>());
-    STATIC_ASSERT(test_cbegin<T const>());
-    STATIC_ASSERT(test_cend<T const>());
-    STATIC_ASSERT(test_rbegin<T const>());
-    STATIC_ASSERT(test_rend<T const>());
-    STATIC_ASSERT(test_crbegin<T const>());
-    STATIC_ASSERT(test_crend<T const>());
+    static_assert(test_begin<T const>());
+    static_assert(test_end<T const>());
+    static_assert(test_cbegin<T const>());
+    static_assert(test_cend<T const>());
+    static_assert(test_rbegin<T const>());
+    static_assert(test_rend<T const>());
+    static_assert(test_crbegin<T const>());
+    static_assert(test_crend<T const>());
     if constexpr (!is_forward_list<T>) {
-        STATIC_ASSERT(test_size<T const, std::make_unsigned_t<D>>());
+        static_assert(test_size<T const, std::make_unsigned_t<D>>());
     }
-    STATIC_ASSERT(test_empty<T const, true>());
+    static_assert(test_empty<T const, true>());
     if constexpr (std::contiguous_iterator<I>) {
-        STATIC_ASSERT(test_data<T const>());
-        STATIC_ASSERT(test_cdata<T const>());
+        static_assert(test_data<T const>());
+        static_assert(test_cdata<T const>());
     }
-    STATIC_ASSERT(!ranges::view<T const>);
+    static_assert(!ranges::view<T const>);
 
-    STATIC_ASSERT(test_begin<T&, I>());
-    STATIC_ASSERT(test_end<T&, I>());
-    STATIC_ASSERT(test_cbegin<T&, CI>());
-    STATIC_ASSERT(test_cend<T&, CI>());
-    STATIC_ASSERT(test_rbegin<T&, RI>());
-    STATIC_ASSERT(test_rend<T&, RI>());
-    STATIC_ASSERT(test_crbegin<T&, RCI>());
-    STATIC_ASSERT(test_crend<T&, RCI>());
+    static_assert(test_begin<T&, I>());
+    static_assert(test_end<T&, I>());
+    static_assert(test_cbegin<T&, CI>());
+    static_assert(test_cend<T&, CI>());
+    static_assert(test_rbegin<T&, RI>());
+    static_assert(test_rend<T&, RI>());
+    static_assert(test_crbegin<T&, RCI>());
+    static_assert(test_crend<T&, RCI>());
     if constexpr (!is_forward_list<T>) {
-        STATIC_ASSERT(test_size<T&, std::make_unsigned_t<D>>());
+        static_assert(test_size<T&, std::make_unsigned_t<D>>());
     }
-    STATIC_ASSERT(test_empty<T&, true>());
+    static_assert(test_empty<T&, true>());
     if constexpr (std::contiguous_iterator<I>) {
-        STATIC_ASSERT(test_data<T&, V*>());
-        STATIC_ASSERT(test_cdata<T&, V const*>());
+        static_assert(test_data<T&, V*>());
+        static_assert(test_cdata<T&, V const*>());
     }
-    STATIC_ASSERT(!ranges::view<T&>);
+    static_assert(!ranges::view<T&>);
 
-    STATIC_ASSERT(test_begin<T const&, CI>());
-    STATIC_ASSERT(test_end<T const&, CI>());
-    STATIC_ASSERT(test_cbegin<T const&, CI>());
-    STATIC_ASSERT(test_cend<T const&, CI>());
-    STATIC_ASSERT(test_rbegin<T const&, RCI>());
-    STATIC_ASSERT(test_rend<T const&, RCI>());
-    STATIC_ASSERT(test_crbegin<T const&, RCI>());
-    STATIC_ASSERT(test_crend<T const&, RCI>());
+    static_assert(test_begin<T const&, CI>());
+    static_assert(test_end<T const&, CI>());
+    static_assert(test_cbegin<T const&, CI>());
+    static_assert(test_cend<T const&, CI>());
+    static_assert(test_rbegin<T const&, RCI>());
+    static_assert(test_rend<T const&, RCI>());
+    static_assert(test_crbegin<T const&, RCI>());
+    static_assert(test_crend<T const&, RCI>());
     if constexpr (!is_forward_list<T>) {
-        STATIC_ASSERT(test_size<T const&, std::make_unsigned_t<D>>());
+        static_assert(test_size<T const&, std::make_unsigned_t<D>>());
     }
-    STATIC_ASSERT(test_empty<T const&, true>());
+    static_assert(test_empty<T const&, true>());
     if constexpr (std::contiguous_iterator<I>) {
-        STATIC_ASSERT(test_data<T const&, V const*>());
-        STATIC_ASSERT(test_cdata<T const&, V const*>());
+        static_assert(test_data<T const&, V const*>());
+        static_assert(test_cdata<T const&, V const*>());
     }
-    STATIC_ASSERT(!ranges::view<T const&>);
+    static_assert(!ranges::view<T const&>);
 
-    STATIC_ASSERT(std::contiguous_iterator<I> == std::derived_from<IterConcept, std::contiguous_iterator_tag>);
-    STATIC_ASSERT(std::random_access_iterator<I> == std::derived_from<IterConcept, std::random_access_iterator_tag>);
-    STATIC_ASSERT(std::bidirectional_iterator<I> == std::derived_from<IterConcept, std::bidirectional_iterator_tag>);
-    STATIC_ASSERT(std::forward_iterator<I>);
-    STATIC_ASSERT(std::derived_from<IterConcept, std::forward_iterator_tag>);
+    static_assert(std::contiguous_iterator<I> == std::derived_from<IterConcept, std::contiguous_iterator_tag>);
+    static_assert(std::random_access_iterator<I> == std::derived_from<IterConcept, std::random_access_iterator_tag>);
+    static_assert(std::bidirectional_iterator<I> == std::derived_from<IterConcept, std::bidirectional_iterator_tag>);
+    static_assert(std::forward_iterator<I>);
+    static_assert(std::derived_from<IterConcept, std::forward_iterator_tag>);
 
     if constexpr (std::contiguous_iterator<I>) {
-        STATIC_ASSERT(test_contiguous_range<T>());
-        STATIC_ASSERT(test_contiguous_range<T const>());
-        STATIC_ASSERT(test_contiguous_range<T&>());
-        STATIC_ASSERT(test_contiguous_range<T const&>());
+        static_assert(test_contiguous_range<T>());
+        static_assert(test_contiguous_range<T const>());
+        static_assert(test_contiguous_range<T&>());
+        static_assert(test_contiguous_range<T const&>());
     } else if constexpr (std::random_access_iterator<I>) {
-        STATIC_ASSERT(test_random_access_range<T>());
-        STATIC_ASSERT(test_random_access_range<T const>());
-        STATIC_ASSERT(test_random_access_range<T&>());
-        STATIC_ASSERT(test_random_access_range<T const&>());
+        static_assert(test_random_access_range<T>());
+        static_assert(test_random_access_range<T const>());
+        static_assert(test_random_access_range<T&>());
+        static_assert(test_random_access_range<T const&>());
     } else if constexpr (std::bidirectional_iterator<I>) {
-        STATIC_ASSERT(test_bidirectional_range<T>());
-        STATIC_ASSERT(test_bidirectional_range<T const>());
-        STATIC_ASSERT(test_bidirectional_range<T&>());
-        STATIC_ASSERT(test_bidirectional_range<T const&>());
+        static_assert(test_bidirectional_range<T>());
+        static_assert(test_bidirectional_range<T const>());
+        static_assert(test_bidirectional_range<T&>());
+        static_assert(test_bidirectional_range<T const&>());
     } else {
-        STATIC_ASSERT(test_forward_range<T>());
-        STATIC_ASSERT(test_forward_range<T const>());
-        STATIC_ASSERT(test_forward_range<T&>());
-        STATIC_ASSERT(test_forward_range<T const&>());
+        static_assert(test_forward_range<T>());
+        static_assert(test_forward_range<T const>());
+        static_assert(test_forward_range<T&>());
+        static_assert(test_forward_range<T const&>());
     }
 
     return true;
 }
 
-STATIC_ASSERT(test_std_container<std::array<int, 42>, std::contiguous_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::deque<int>, std::random_access_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::forward_list<int>, std::forward_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::list<int>, std::bidirectional_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::map<int, int>, std::bidirectional_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::multimap<int, int>, std::bidirectional_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::multiset<int>, std::bidirectional_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::set<int>, std::bidirectional_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::string, std::contiguous_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::unordered_map<int, int>, std::bidirectional_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::unordered_multimap<int, int>, std::bidirectional_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::unordered_multiset<int>, std::bidirectional_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::unordered_set<int>, std::bidirectional_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::vector<int>, std::contiguous_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::vector<bool>, std::random_access_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::wstring, std::contiguous_iterator_tag>());
+static_assert(test_std_container<std::array<int, 42>, std::contiguous_iterator_tag>());
+static_assert(test_std_container<std::deque<int>, std::random_access_iterator_tag>());
+static_assert(test_std_container<std::forward_list<int>, std::forward_iterator_tag>());
+static_assert(test_std_container<std::list<int>, std::bidirectional_iterator_tag>());
+static_assert(test_std_container<std::map<int, int>, std::bidirectional_iterator_tag>());
+static_assert(test_std_container<std::multimap<int, int>, std::bidirectional_iterator_tag>());
+static_assert(test_std_container<std::multiset<int>, std::bidirectional_iterator_tag>());
+static_assert(test_std_container<std::set<int>, std::bidirectional_iterator_tag>());
+static_assert(test_std_container<std::string, std::contiguous_iterator_tag>());
+static_assert(test_std_container<std::unordered_map<int, int>, std::bidirectional_iterator_tag>());
+static_assert(test_std_container<std::unordered_multimap<int, int>, std::bidirectional_iterator_tag>());
+static_assert(test_std_container<std::unordered_multiset<int>, std::bidirectional_iterator_tag>());
+static_assert(test_std_container<std::unordered_set<int>, std::bidirectional_iterator_tag>());
+static_assert(test_std_container<std::vector<int>, std::contiguous_iterator_tag>());
+static_assert(test_std_container<std::vector<bool>, std::random_access_iterator_tag>());
+static_assert(test_std_container<std::wstring, std::contiguous_iterator_tag>());
 
 // Validate that "old" fancy pointers that fail to model contiguous_iterator don't break contiguity of containers.
 template <class T>
@@ -944,8 +944,8 @@ struct fancy_pointer {
 
     static fancy_pointer pointer_to(element_type&);
 };
-STATIC_ASSERT(std::random_access_iterator<fancy_pointer<int>>);
-STATIC_ASSERT(!std::contiguous_iterator<fancy_pointer<int>>);
+static_assert(std::random_access_iterator<fancy_pointer<int>>);
+static_assert(!std::contiguous_iterator<fancy_pointer<int>>);
 
 template <class T>
 struct fancy_allocator {
@@ -965,228 +965,228 @@ struct fancy_allocator {
     }
 };
 
-STATIC_ASSERT(test_std_container<std::basic_string<char, std::char_traits<char>, fancy_allocator<char>>,
+static_assert(test_std_container<std::basic_string<char, std::char_traits<char>, fancy_allocator<char>>,
     std::contiguous_iterator_tag>());
-STATIC_ASSERT(test_std_container<std::vector<int, fancy_allocator<int>>, std::contiguous_iterator_tag>());
+static_assert(test_std_container<std::vector<int, fancy_allocator<int>>, std::contiguous_iterator_tag>());
 
 // Validate some non-containers
-STATIC_ASSERT(test_begin<std::string_view, std::string_view::iterator>());
-STATIC_ASSERT(test_end<std::string_view, std::string_view::iterator>());
-STATIC_ASSERT(test_cbegin<std::string_view, std::string_view::iterator>());
-STATIC_ASSERT(test_cend<std::string_view, std::string_view::iterator>());
-STATIC_ASSERT(test_rbegin<std::string_view, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_rend<std::string_view, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_crbegin<std::string_view, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_crend<std::string_view, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_size<std::string_view, std::size_t>());
-STATIC_ASSERT(test_empty<std::string_view, true>());
-STATIC_ASSERT(test_data<std::string_view, char const*>());
-STATIC_ASSERT(test_cdata<std::string_view, char const*>());
-STATIC_ASSERT(test_contiguous_range<std::string_view>());
-STATIC_ASSERT(ranges::view<std::string_view>);
+static_assert(test_begin<std::string_view, std::string_view::iterator>());
+static_assert(test_end<std::string_view, std::string_view::iterator>());
+static_assert(test_cbegin<std::string_view, std::string_view::iterator>());
+static_assert(test_cend<std::string_view, std::string_view::iterator>());
+static_assert(test_rbegin<std::string_view, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_rend<std::string_view, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_crbegin<std::string_view, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_crend<std::string_view, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_size<std::string_view, std::size_t>());
+static_assert(test_empty<std::string_view, true>());
+static_assert(test_data<std::string_view, char const*>());
+static_assert(test_cdata<std::string_view, char const*>());
+static_assert(test_contiguous_range<std::string_view>());
+static_assert(ranges::view<std::string_view>);
 
-STATIC_ASSERT(test_begin<std::string_view const, std::string_view::iterator>());
-STATIC_ASSERT(test_end<std::string_view const, std::string_view::iterator>());
-STATIC_ASSERT(test_cbegin<std::string_view const, std::string_view::iterator>());
-STATIC_ASSERT(test_cend<std::string_view const, std::string_view::iterator>());
-STATIC_ASSERT(test_rbegin<std::string_view const, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_rend<std::string_view const, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_crbegin<std::string_view const, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_crend<std::string_view const, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_size<std::string_view const, std::size_t>());
-STATIC_ASSERT(test_empty<std::string_view const, true>());
-STATIC_ASSERT(test_data<std::string_view const, char const*>());
-STATIC_ASSERT(test_cdata<std::string_view const, char const*>());
-STATIC_ASSERT(test_contiguous_range<std::string_view const>());
-STATIC_ASSERT(!ranges::view<std::string_view const>);
+static_assert(test_begin<std::string_view const, std::string_view::iterator>());
+static_assert(test_end<std::string_view const, std::string_view::iterator>());
+static_assert(test_cbegin<std::string_view const, std::string_view::iterator>());
+static_assert(test_cend<std::string_view const, std::string_view::iterator>());
+static_assert(test_rbegin<std::string_view const, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_rend<std::string_view const, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_crbegin<std::string_view const, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_crend<std::string_view const, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_size<std::string_view const, std::size_t>());
+static_assert(test_empty<std::string_view const, true>());
+static_assert(test_data<std::string_view const, char const*>());
+static_assert(test_cdata<std::string_view const, char const*>());
+static_assert(test_contiguous_range<std::string_view const>());
+static_assert(!ranges::view<std::string_view const>);
 
-STATIC_ASSERT(test_begin<std::string_view&, std::string_view::iterator>());
-STATIC_ASSERT(test_end<std::string_view&, std::string_view::iterator>());
-STATIC_ASSERT(test_cbegin<std::string_view&, std::string_view::iterator>());
-STATIC_ASSERT(test_cend<std::string_view&, std::string_view::iterator>());
-STATIC_ASSERT(test_rbegin<std::string_view&, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_rend<std::string_view&, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_crbegin<std::string_view&, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_crend<std::string_view&, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_size<std::string_view&, std::size_t>());
-STATIC_ASSERT(test_empty<std::string_view&, true>());
-STATIC_ASSERT(test_data<std::string_view&, char const*>());
-STATIC_ASSERT(test_cdata<std::string_view&, char const*>());
-STATIC_ASSERT(test_contiguous_range<std::string_view&>());
-STATIC_ASSERT(!ranges::view<std::string_view&>);
+static_assert(test_begin<std::string_view&, std::string_view::iterator>());
+static_assert(test_end<std::string_view&, std::string_view::iterator>());
+static_assert(test_cbegin<std::string_view&, std::string_view::iterator>());
+static_assert(test_cend<std::string_view&, std::string_view::iterator>());
+static_assert(test_rbegin<std::string_view&, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_rend<std::string_view&, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_crbegin<std::string_view&, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_crend<std::string_view&, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_size<std::string_view&, std::size_t>());
+static_assert(test_empty<std::string_view&, true>());
+static_assert(test_data<std::string_view&, char const*>());
+static_assert(test_cdata<std::string_view&, char const*>());
+static_assert(test_contiguous_range<std::string_view&>());
+static_assert(!ranges::view<std::string_view&>);
 
-STATIC_ASSERT(test_begin<std::string_view const&, std::string_view::iterator>());
-STATIC_ASSERT(test_end<std::string_view const&, std::string_view::iterator>());
-STATIC_ASSERT(test_cbegin<std::string_view const&, std::string_view::iterator>());
-STATIC_ASSERT(test_cend<std::string_view const&, std::string_view::iterator>());
-STATIC_ASSERT(test_rbegin<std::string_view const&, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_rend<std::string_view const&, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_crbegin<std::string_view const&, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_crend<std::string_view const&, std::reverse_iterator<std::string_view::iterator>>());
-STATIC_ASSERT(test_size<std::string_view const&, std::size_t>());
-STATIC_ASSERT(test_empty<std::string_view const&, true>());
-STATIC_ASSERT(test_data<std::string_view const&, char const*>());
-STATIC_ASSERT(test_cdata<std::string_view const&, char const*>());
-STATIC_ASSERT(test_contiguous_range<std::string_view const&>());
-STATIC_ASSERT(!ranges::view<std::string_view const&>);
+static_assert(test_begin<std::string_view const&, std::string_view::iterator>());
+static_assert(test_end<std::string_view const&, std::string_view::iterator>());
+static_assert(test_cbegin<std::string_view const&, std::string_view::iterator>());
+static_assert(test_cend<std::string_view const&, std::string_view::iterator>());
+static_assert(test_rbegin<std::string_view const&, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_rend<std::string_view const&, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_crbegin<std::string_view const&, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_crend<std::string_view const&, std::reverse_iterator<std::string_view::iterator>>());
+static_assert(test_size<std::string_view const&, std::size_t>());
+static_assert(test_empty<std::string_view const&, true>());
+static_assert(test_data<std::string_view const&, char const*>());
+static_assert(test_cdata<std::string_view const&, char const*>());
+static_assert(test_contiguous_range<std::string_view const&>());
+static_assert(!ranges::view<std::string_view const&>);
 
-STATIC_ASSERT(test_begin<std::span<int>, std::span<int>::iterator>());
-STATIC_ASSERT(test_end<std::span<int>, std::span<int>::iterator>());
-STATIC_ASSERT(test_rbegin<std::span<int>, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_rend<std::span<int>, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_size<std::span<int>, std::size_t>());
-STATIC_ASSERT(test_empty<std::span<int>, true>());
-STATIC_ASSERT(test_data<std::span<int>, int*>());
-STATIC_ASSERT(test_contiguous_range<std::span<int>>());
-STATIC_ASSERT(ranges::view<std::span<int>>);
+static_assert(test_begin<std::span<int>, std::span<int>::iterator>());
+static_assert(test_end<std::span<int>, std::span<int>::iterator>());
+static_assert(test_rbegin<std::span<int>, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_rend<std::span<int>, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_size<std::span<int>, std::size_t>());
+static_assert(test_empty<std::span<int>, true>());
+static_assert(test_data<std::span<int>, int*>());
+static_assert(test_contiguous_range<std::span<int>>());
+static_assert(ranges::view<std::span<int>>);
 
 #if _HAS_CXX23 // behavior of span members differs in C++20 and C++23 modes
-STATIC_ASSERT(test_cbegin<std::span<int>, std::span<int>::const_iterator>());
-STATIC_ASSERT(test_cend<std::span<int>, std::span<int>::const_iterator>());
-STATIC_ASSERT(test_crbegin<std::span<int>, std::span<int>::const_reverse_iterator>());
-STATIC_ASSERT(test_crend<std::span<int>, std::span<int>::const_reverse_iterator>());
-STATIC_ASSERT(test_cdata<std::span<int>, const int*>());
+static_assert(test_cbegin<std::span<int>, std::span<int>::const_iterator>());
+static_assert(test_cend<std::span<int>, std::span<int>::const_iterator>());
+static_assert(test_crbegin<std::span<int>, std::span<int>::const_reverse_iterator>());
+static_assert(test_crend<std::span<int>, std::span<int>::const_reverse_iterator>());
+static_assert(test_cdata<std::span<int>, const int*>());
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-STATIC_ASSERT(test_cbegin<std::span<int>, std::span<int>::iterator>());
-STATIC_ASSERT(test_cend<std::span<int>, std::span<int>::iterator>());
-STATIC_ASSERT(test_crbegin<std::span<int>, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_crend<std::span<int>, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_cdata<std::span<int>, int*>());
+static_assert(test_cbegin<std::span<int>, std::span<int>::iterator>());
+static_assert(test_cend<std::span<int>, std::span<int>::iterator>());
+static_assert(test_crbegin<std::span<int>, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_crend<std::span<int>, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_cdata<std::span<int>, int*>());
 #endif // ^^^ !_HAS_CXX23 ^^^
 
-STATIC_ASSERT(test_begin<std::span<int> const, std::span<int>::iterator>());
-STATIC_ASSERT(test_end<std::span<int> const, std::span<int>::iterator>());
-STATIC_ASSERT(test_rbegin<std::span<int> const, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_rend<std::span<int> const, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_size<std::span<int> const, std::size_t>());
-STATIC_ASSERT(test_empty<std::span<int> const, true>());
-STATIC_ASSERT(test_data<std::span<int> const, int*>());
-STATIC_ASSERT(test_contiguous_range<std::span<int> const>());
-STATIC_ASSERT(!ranges::view<std::span<int> const>);
+static_assert(test_begin<std::span<int> const, std::span<int>::iterator>());
+static_assert(test_end<std::span<int> const, std::span<int>::iterator>());
+static_assert(test_rbegin<std::span<int> const, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_rend<std::span<int> const, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_size<std::span<int> const, std::size_t>());
+static_assert(test_empty<std::span<int> const, true>());
+static_assert(test_data<std::span<int> const, int*>());
+static_assert(test_contiguous_range<std::span<int> const>());
+static_assert(!ranges::view<std::span<int> const>);
 
 #if _HAS_CXX23 // behavior of const span members differs in C++20 and C++23 modes
-STATIC_ASSERT(test_cbegin<std::span<int> const, std::span<int>::const_iterator>());
-STATIC_ASSERT(test_cend<std::span<int> const, std::span<int>::const_iterator>());
-STATIC_ASSERT(test_crbegin<std::span<int> const, std::span<int>::const_reverse_iterator>());
-STATIC_ASSERT(test_crend<std::span<int> const, std::span<int>::const_reverse_iterator>());
-STATIC_ASSERT(test_cdata<std::span<int> const, const int*>());
+static_assert(test_cbegin<std::span<int> const, std::span<int>::const_iterator>());
+static_assert(test_cend<std::span<int> const, std::span<int>::const_iterator>());
+static_assert(test_crbegin<std::span<int> const, std::span<int>::const_reverse_iterator>());
+static_assert(test_crend<std::span<int> const, std::span<int>::const_reverse_iterator>());
+static_assert(test_cdata<std::span<int> const, const int*>());
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-STATIC_ASSERT(test_cbegin<std::span<int> const, std::span<int>::iterator>());
-STATIC_ASSERT(test_cend<std::span<int> const, std::span<int>::iterator>());
-STATIC_ASSERT(test_crbegin<std::span<int> const, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_crend<std::span<int> const, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_cdata<std::span<int> const, int*>());
+static_assert(test_cbegin<std::span<int> const, std::span<int>::iterator>());
+static_assert(test_cend<std::span<int> const, std::span<int>::iterator>());
+static_assert(test_crbegin<std::span<int> const, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_crend<std::span<int> const, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_cdata<std::span<int> const, int*>());
 #endif // ^^^ !_HAS_CXX23 ^^^
 
-STATIC_ASSERT(test_begin<std::span<int>&, std::span<int>::iterator>());
-STATIC_ASSERT(test_end<std::span<int>&, std::span<int>::iterator>());
-STATIC_ASSERT(test_rbegin<std::span<int>&, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_rend<std::span<int>&, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_size<std::span<int>&, std::size_t>());
-STATIC_ASSERT(test_empty<std::span<int>&, true>());
-STATIC_ASSERT(test_data<std::span<int>&, int*>());
-STATIC_ASSERT(test_contiguous_range<std::span<int>&>());
-STATIC_ASSERT(!ranges::view<std::span<int>&>);
+static_assert(test_begin<std::span<int>&, std::span<int>::iterator>());
+static_assert(test_end<std::span<int>&, std::span<int>::iterator>());
+static_assert(test_rbegin<std::span<int>&, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_rend<std::span<int>&, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_size<std::span<int>&, std::size_t>());
+static_assert(test_empty<std::span<int>&, true>());
+static_assert(test_data<std::span<int>&, int*>());
+static_assert(test_contiguous_range<std::span<int>&>());
+static_assert(!ranges::view<std::span<int>&>);
 
 #if _HAS_CXX23 // behavior of span& members differs in C++20 and C++23 modes
-STATIC_ASSERT(test_cbegin<std::span<int>&, std::span<int>::const_iterator>());
-STATIC_ASSERT(test_cend<std::span<int>&, std::span<int>::const_iterator>());
-STATIC_ASSERT(test_crbegin<std::span<int>&, std::span<int>::const_reverse_iterator>());
-STATIC_ASSERT(test_crend<std::span<int>&, std::span<int>::const_reverse_iterator>());
-STATIC_ASSERT(test_cdata<std::span<int>&, const int*>());
+static_assert(test_cbegin<std::span<int>&, std::span<int>::const_iterator>());
+static_assert(test_cend<std::span<int>&, std::span<int>::const_iterator>());
+static_assert(test_crbegin<std::span<int>&, std::span<int>::const_reverse_iterator>());
+static_assert(test_crend<std::span<int>&, std::span<int>::const_reverse_iterator>());
+static_assert(test_cdata<std::span<int>&, const int*>());
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-STATIC_ASSERT(test_cbegin<std::span<int>&, std::span<int>::iterator>());
-STATIC_ASSERT(test_cend<std::span<int>&, std::span<int>::iterator>());
-STATIC_ASSERT(test_crbegin<std::span<int>&, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_crend<std::span<int>&, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_cdata<std::span<int>&, int*>());
+static_assert(test_cbegin<std::span<int>&, std::span<int>::iterator>());
+static_assert(test_cend<std::span<int>&, std::span<int>::iterator>());
+static_assert(test_crbegin<std::span<int>&, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_crend<std::span<int>&, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_cdata<std::span<int>&, int*>());
 #endif // ^^^ !_HAS_CXX23 ^^^
 
-STATIC_ASSERT(test_begin<std::span<int> const&, std::span<int>::iterator>());
-STATIC_ASSERT(test_end<std::span<int> const&, std::span<int>::iterator>());
-STATIC_ASSERT(test_rbegin<std::span<int> const&, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_rend<std::span<int> const&, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_size<std::span<int> const&, std::size_t>());
-STATIC_ASSERT(test_empty<std::span<int> const&, true>());
-STATIC_ASSERT(test_data<std::span<int> const&, int*>());
-STATIC_ASSERT(test_contiguous_range<std::span<int> const&>());
-STATIC_ASSERT(!ranges::view<std::span<int> const&>);
+static_assert(test_begin<std::span<int> const&, std::span<int>::iterator>());
+static_assert(test_end<std::span<int> const&, std::span<int>::iterator>());
+static_assert(test_rbegin<std::span<int> const&, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_rend<std::span<int> const&, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_size<std::span<int> const&, std::size_t>());
+static_assert(test_empty<std::span<int> const&, true>());
+static_assert(test_data<std::span<int> const&, int*>());
+static_assert(test_contiguous_range<std::span<int> const&>());
+static_assert(!ranges::view<std::span<int> const&>);
 
 #if _HAS_CXX23 // behavior of const span& members differs in C++20 and C++23 modes
-STATIC_ASSERT(test_cbegin<std::span<int> const&, std::span<int>::const_iterator>());
-STATIC_ASSERT(test_cend<std::span<int> const&, std::span<int>::const_iterator>());
-STATIC_ASSERT(test_crbegin<std::span<int> const&, std::span<int>::const_reverse_iterator>());
-STATIC_ASSERT(test_crend<std::span<int> const&, std::span<int>::const_reverse_iterator>());
-STATIC_ASSERT(test_cdata<std::span<int> const&, const int*>());
+static_assert(test_cbegin<std::span<int> const&, std::span<int>::const_iterator>());
+static_assert(test_cend<std::span<int> const&, std::span<int>::const_iterator>());
+static_assert(test_crbegin<std::span<int> const&, std::span<int>::const_reverse_iterator>());
+static_assert(test_crend<std::span<int> const&, std::span<int>::const_reverse_iterator>());
+static_assert(test_cdata<std::span<int> const&, const int*>());
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-STATIC_ASSERT(test_cbegin<std::span<int> const&, std::span<int>::iterator>());
-STATIC_ASSERT(test_cend<std::span<int> const&, std::span<int>::iterator>());
-STATIC_ASSERT(test_crbegin<std::span<int> const&, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_crend<std::span<int> const&, std::reverse_iterator<std::span<int>::iterator>>());
-STATIC_ASSERT(test_cdata<std::span<int> const&, int*>());
+static_assert(test_cbegin<std::span<int> const&, std::span<int>::iterator>());
+static_assert(test_cend<std::span<int> const&, std::span<int>::iterator>());
+static_assert(test_crbegin<std::span<int> const&, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_crend<std::span<int> const&, std::reverse_iterator<std::span<int>::iterator>>());
+static_assert(test_cdata<std::span<int> const&, int*>());
 #endif // ^^^ !_HAS_CXX23 ^^^
 
 using valarray_int_iterator       = decltype(std::begin(std::declval<std::valarray<int>&>()));
 using const_valarray_int_iterator = decltype(std::begin(std::declval<const std::valarray<int>&>()));
-STATIC_ASSERT(test_begin<std::valarray<int>>());
-STATIC_ASSERT(test_end<std::valarray<int>>());
-STATIC_ASSERT(test_cbegin<std::valarray<int>>());
-STATIC_ASSERT(test_cend<std::valarray<int>>());
-STATIC_ASSERT(test_rbegin<std::valarray<int>>());
-STATIC_ASSERT(test_rend<std::valarray<int>>());
-STATIC_ASSERT(test_crbegin<std::valarray<int>>());
-STATIC_ASSERT(test_crend<std::valarray<int>>());
-STATIC_ASSERT(test_size<std::valarray<int>, std::size_t>());
-STATIC_ASSERT(test_empty<std::valarray<int>, true>());
-STATIC_ASSERT(test_data<std::valarray<int>>());
-STATIC_ASSERT(test_cdata<std::valarray<int>>());
-STATIC_ASSERT(test_contiguous_range<std::valarray<int>>());
-STATIC_ASSERT(!ranges::view<std::valarray<int>>);
+static_assert(test_begin<std::valarray<int>>());
+static_assert(test_end<std::valarray<int>>());
+static_assert(test_cbegin<std::valarray<int>>());
+static_assert(test_cend<std::valarray<int>>());
+static_assert(test_rbegin<std::valarray<int>>());
+static_assert(test_rend<std::valarray<int>>());
+static_assert(test_crbegin<std::valarray<int>>());
+static_assert(test_crend<std::valarray<int>>());
+static_assert(test_size<std::valarray<int>, std::size_t>());
+static_assert(test_empty<std::valarray<int>, true>());
+static_assert(test_data<std::valarray<int>>());
+static_assert(test_cdata<std::valarray<int>>());
+static_assert(test_contiguous_range<std::valarray<int>>());
+static_assert(!ranges::view<std::valarray<int>>);
 
-STATIC_ASSERT(test_begin<std::valarray<int> const>());
-STATIC_ASSERT(test_end<std::valarray<int> const>());
-STATIC_ASSERT(test_cbegin<std::valarray<int> const>());
-STATIC_ASSERT(test_cend<std::valarray<int> const>());
-STATIC_ASSERT(test_rbegin<std::valarray<int> const>());
-STATIC_ASSERT(test_rend<std::valarray<int> const>());
-STATIC_ASSERT(test_crbegin<std::valarray<int> const>());
-STATIC_ASSERT(test_crend<std::valarray<int> const>());
-STATIC_ASSERT(test_size<std::valarray<int> const, std::size_t>());
-STATIC_ASSERT(test_empty<std::valarray<int> const, true>());
-STATIC_ASSERT(test_data<std::valarray<int> const>());
-STATIC_ASSERT(test_cdata<std::valarray<int> const>());
-STATIC_ASSERT(test_contiguous_range<std::valarray<int> const>());
-STATIC_ASSERT(!ranges::view<std::valarray<int> const>);
+static_assert(test_begin<std::valarray<int> const>());
+static_assert(test_end<std::valarray<int> const>());
+static_assert(test_cbegin<std::valarray<int> const>());
+static_assert(test_cend<std::valarray<int> const>());
+static_assert(test_rbegin<std::valarray<int> const>());
+static_assert(test_rend<std::valarray<int> const>());
+static_assert(test_crbegin<std::valarray<int> const>());
+static_assert(test_crend<std::valarray<int> const>());
+static_assert(test_size<std::valarray<int> const, std::size_t>());
+static_assert(test_empty<std::valarray<int> const, true>());
+static_assert(test_data<std::valarray<int> const>());
+static_assert(test_cdata<std::valarray<int> const>());
+static_assert(test_contiguous_range<std::valarray<int> const>());
+static_assert(!ranges::view<std::valarray<int> const>);
 
-STATIC_ASSERT(test_begin<std::valarray<int>&, valarray_int_iterator>());
-STATIC_ASSERT(test_end<std::valarray<int>&, valarray_int_iterator>());
-STATIC_ASSERT(test_cbegin<std::valarray<int>&, const_valarray_int_iterator>());
-STATIC_ASSERT(test_cend<std::valarray<int>&, const_valarray_int_iterator>());
-STATIC_ASSERT(test_rbegin<std::valarray<int>&, std::reverse_iterator<valarray_int_iterator>>());
-STATIC_ASSERT(test_rend<std::valarray<int>&, std::reverse_iterator<valarray_int_iterator>>());
-STATIC_ASSERT(test_crbegin<std::valarray<int>&, std::reverse_iterator<const_valarray_int_iterator>>());
-STATIC_ASSERT(test_crend<std::valarray<int>&, std::reverse_iterator<const_valarray_int_iterator>>());
-STATIC_ASSERT(test_size<std::valarray<int>&, std::size_t>());
-STATIC_ASSERT(test_empty<std::valarray<int>&, true>());
-STATIC_ASSERT(test_data<std::valarray<int>&, int*>());
-STATIC_ASSERT(test_cdata<std::valarray<int>&, int const*>());
-STATIC_ASSERT(test_contiguous_range<std::valarray<int>&>());
-STATIC_ASSERT(!ranges::view<std::valarray<int>&>);
+static_assert(test_begin<std::valarray<int>&, valarray_int_iterator>());
+static_assert(test_end<std::valarray<int>&, valarray_int_iterator>());
+static_assert(test_cbegin<std::valarray<int>&, const_valarray_int_iterator>());
+static_assert(test_cend<std::valarray<int>&, const_valarray_int_iterator>());
+static_assert(test_rbegin<std::valarray<int>&, std::reverse_iterator<valarray_int_iterator>>());
+static_assert(test_rend<std::valarray<int>&, std::reverse_iterator<valarray_int_iterator>>());
+static_assert(test_crbegin<std::valarray<int>&, std::reverse_iterator<const_valarray_int_iterator>>());
+static_assert(test_crend<std::valarray<int>&, std::reverse_iterator<const_valarray_int_iterator>>());
+static_assert(test_size<std::valarray<int>&, std::size_t>());
+static_assert(test_empty<std::valarray<int>&, true>());
+static_assert(test_data<std::valarray<int>&, int*>());
+static_assert(test_cdata<std::valarray<int>&, int const*>());
+static_assert(test_contiguous_range<std::valarray<int>&>());
+static_assert(!ranges::view<std::valarray<int>&>);
 
-STATIC_ASSERT(test_begin<std::valarray<int> const&, const_valarray_int_iterator>());
-STATIC_ASSERT(test_end<std::valarray<int> const&, const_valarray_int_iterator>());
-STATIC_ASSERT(test_cbegin<std::valarray<int> const&, const_valarray_int_iterator>());
-STATIC_ASSERT(test_cend<std::valarray<int> const&, const_valarray_int_iterator>());
-STATIC_ASSERT(test_rbegin<std::valarray<int> const&, std::reverse_iterator<const_valarray_int_iterator>>());
-STATIC_ASSERT(test_rend<std::valarray<int> const&, std::reverse_iterator<const_valarray_int_iterator>>());
-STATIC_ASSERT(test_crbegin<std::valarray<int> const&, std::reverse_iterator<const_valarray_int_iterator>>());
-STATIC_ASSERT(test_crend<std::valarray<int> const&, std::reverse_iterator<const_valarray_int_iterator>>());
-STATIC_ASSERT(test_size<std::valarray<int> const&, std::size_t>());
-STATIC_ASSERT(test_empty<std::valarray<int> const&, true>());
-STATIC_ASSERT(test_data<std::valarray<int> const&, int const*>());
-STATIC_ASSERT(test_cdata<std::valarray<int> const&, int const*>());
-STATIC_ASSERT(test_contiguous_range<std::valarray<int> const&>());
-STATIC_ASSERT(!ranges::view<std::valarray<int> const&>);
+static_assert(test_begin<std::valarray<int> const&, const_valarray_int_iterator>());
+static_assert(test_end<std::valarray<int> const&, const_valarray_int_iterator>());
+static_assert(test_cbegin<std::valarray<int> const&, const_valarray_int_iterator>());
+static_assert(test_cend<std::valarray<int> const&, const_valarray_int_iterator>());
+static_assert(test_rbegin<std::valarray<int> const&, std::reverse_iterator<const_valarray_int_iterator>>());
+static_assert(test_rend<std::valarray<int> const&, std::reverse_iterator<const_valarray_int_iterator>>());
+static_assert(test_crbegin<std::valarray<int> const&, std::reverse_iterator<const_valarray_int_iterator>>());
+static_assert(test_crend<std::valarray<int> const&, std::reverse_iterator<const_valarray_int_iterator>>());
+static_assert(test_size<std::valarray<int> const&, std::size_t>());
+static_assert(test_empty<std::valarray<int> const&, true>());
+static_assert(test_data<std::valarray<int> const&, int const*>());
+static_assert(test_cdata<std::valarray<int> const&, int const*>());
+static_assert(test_contiguous_range<std::valarray<int> const&>());
+static_assert(!ranges::view<std::valarray<int> const&>);
 
 namespace adl_block { // Validate some range concept corner cases
     struct members_only { // baseline
@@ -1215,19 +1215,19 @@ namespace adl_block { // Validate some range concept corner cases
             return std::reverse_iterator<int const*>{};
         }
     };
-    STATIC_ASSERT(test_begin<members_only&, int*>());
-    STATIC_ASSERT(test_end<members_only&, int*>());
-    STATIC_ASSERT(test_cbegin<members_only&, int const*>());
-    STATIC_ASSERT(test_cend<members_only&, int const*>());
-    STATIC_ASSERT(test_rbegin<members_only&, std::reverse_iterator<int*>>());
-    STATIC_ASSERT(test_rend<members_only&, std::reverse_iterator<int*>>());
-    STATIC_ASSERT(test_crbegin<members_only&, std::reverse_iterator<int const*>>());
-    STATIC_ASSERT(test_crend<members_only&, std::reverse_iterator<int const*>>());
-    STATIC_ASSERT(test_size<members_only&, std::size_t>());
-    STATIC_ASSERT(test_empty<members_only&, true>());
-    STATIC_ASSERT(test_data<members_only&, int*>());
-    STATIC_ASSERT(test_cdata<members_only&, int const*>());
-    STATIC_ASSERT(test_contiguous_range<members_only&>());
+    static_assert(test_begin<members_only&, int*>());
+    static_assert(test_end<members_only&, int*>());
+    static_assert(test_cbegin<members_only&, int const*>());
+    static_assert(test_cend<members_only&, int const*>());
+    static_assert(test_rbegin<members_only&, std::reverse_iterator<int*>>());
+    static_assert(test_rend<members_only&, std::reverse_iterator<int*>>());
+    static_assert(test_crbegin<members_only&, std::reverse_iterator<int const*>>());
+    static_assert(test_crend<members_only&, std::reverse_iterator<int const*>>());
+    static_assert(test_size<members_only&, std::size_t>());
+    static_assert(test_empty<members_only&, true>());
+    static_assert(test_data<members_only&, int*>());
+    static_assert(test_cdata<members_only&, int const*>());
+    static_assert(test_contiguous_range<members_only&>());
 
     // Verify that non-members with unacceptable return types are correctly ignored
     struct bogus_non_member : members_only {};
@@ -1236,58 +1236,58 @@ namespace adl_block { // Validate some range concept corner cases
     auto rbegin(bogus_non_member) -> void (*)(); // returns non-input_or_output_iterator
     auto rend(bogus_non_member) -> int members_only::*; // return type doesn't model sentinel_for
     char* data(bogus_non_member); // doesn't return pointer to cv-qualified-value_type
-    STATIC_ASSERT(test_begin<bogus_non_member&, int*>());
-    STATIC_ASSERT(test_end<bogus_non_member&, int*>());
-    STATIC_ASSERT(test_cbegin<bogus_non_member&, int const*>());
-    STATIC_ASSERT(test_cend<bogus_non_member&, int const*>());
-    STATIC_ASSERT(test_rbegin<bogus_non_member&, std::reverse_iterator<int*>>());
-    STATIC_ASSERT(test_rend<bogus_non_member&, std::reverse_iterator<int*>>());
-    STATIC_ASSERT(test_crbegin<bogus_non_member&, std::reverse_iterator<int const*>>());
-    STATIC_ASSERT(test_crend<bogus_non_member&, std::reverse_iterator<int const*>>());
-    STATIC_ASSERT(test_size<bogus_non_member&, std::size_t>());
-    STATIC_ASSERT(test_empty<bogus_non_member&, true>());
-    STATIC_ASSERT(test_data<bogus_non_member&, int*>());
-    STATIC_ASSERT(test_cdata<bogus_non_member&, int const*>());
-    STATIC_ASSERT(test_contiguous_range<bogus_non_member&>());
+    static_assert(test_begin<bogus_non_member&, int*>());
+    static_assert(test_end<bogus_non_member&, int*>());
+    static_assert(test_cbegin<bogus_non_member&, int const*>());
+    static_assert(test_cend<bogus_non_member&, int const*>());
+    static_assert(test_rbegin<bogus_non_member&, std::reverse_iterator<int*>>());
+    static_assert(test_rend<bogus_non_member&, std::reverse_iterator<int*>>());
+    static_assert(test_crbegin<bogus_non_member&, std::reverse_iterator<int const*>>());
+    static_assert(test_crend<bogus_non_member&, std::reverse_iterator<int const*>>());
+    static_assert(test_size<bogus_non_member&, std::size_t>());
+    static_assert(test_empty<bogus_non_member&, true>());
+    static_assert(test_data<bogus_non_member&, int*>());
+    static_assert(test_cdata<bogus_non_member&, int const*>());
+    static_assert(test_contiguous_range<bogus_non_member&>());
 
     // Verify that members are preferred to perfectly reasonable non-members
     template <class>
     struct prefer_member : members_only {};
     template <class T>
     int* begin(prefer_member<T>&) {
-        STATIC_ASSERT(always_false<T>);
+        static_assert(false);
     }
     template <class T>
     int* end(prefer_member<T>&) {
-        STATIC_ASSERT(always_false<T>);
+        static_assert(false);
     }
     template <class T>
     std::reverse_iterator<int*> rbegin(prefer_member<T>&) {
-        STATIC_ASSERT(always_false<T>);
+        static_assert(false);
     }
     template <class T>
     std::reverse_iterator<int*> rend(prefer_member<T>&) {
-        STATIC_ASSERT(always_false<T>);
+        static_assert(false);
     }
     template <class T>
     int* data(prefer_member<T>&) {
-        STATIC_ASSERT(always_false<T>);
+        static_assert(false);
     }
 
     constexpr bool test() {
-        STATIC_ASSERT(test_begin<prefer_member<void>&, int*>());
-        STATIC_ASSERT(test_end<prefer_member<void>&, int*>());
-        STATIC_ASSERT(test_cbegin<prefer_member<void>&, int const*>());
-        STATIC_ASSERT(test_cend<prefer_member<void>&, int const*>());
-        STATIC_ASSERT(test_rbegin<prefer_member<void>&, std::reverse_iterator<int*>>());
-        STATIC_ASSERT(test_rend<prefer_member<void>&, std::reverse_iterator<int*>>());
-        STATIC_ASSERT(test_crbegin<prefer_member<void>&, std::reverse_iterator<int const*>>());
-        STATIC_ASSERT(test_crend<prefer_member<void>&, std::reverse_iterator<int const*>>());
-        STATIC_ASSERT(test_size<prefer_member<void>&, std::size_t>());
-        STATIC_ASSERT(test_empty<prefer_member<void>&, true>());
-        STATIC_ASSERT(test_data<prefer_member<void>&, int*>());
-        STATIC_ASSERT(test_cdata<prefer_member<void>&, int const*>());
-        STATIC_ASSERT(test_contiguous_range<prefer_member<void>&>());
+        static_assert(test_begin<prefer_member<void>&, int*>());
+        static_assert(test_end<prefer_member<void>&, int*>());
+        static_assert(test_cbegin<prefer_member<void>&, int const*>());
+        static_assert(test_cend<prefer_member<void>&, int const*>());
+        static_assert(test_rbegin<prefer_member<void>&, std::reverse_iterator<int*>>());
+        static_assert(test_rend<prefer_member<void>&, std::reverse_iterator<int*>>());
+        static_assert(test_crbegin<prefer_member<void>&, std::reverse_iterator<int const*>>());
+        static_assert(test_crend<prefer_member<void>&, std::reverse_iterator<int const*>>());
+        static_assert(test_size<prefer_member<void>&, std::size_t>());
+        static_assert(test_empty<prefer_member<void>&, true>());
+        static_assert(test_data<prefer_member<void>&, int*>());
+        static_assert(test_cdata<prefer_member<void>&, int const*>());
+        static_assert(test_contiguous_range<prefer_member<void>&>());
 
         prefer_member<void> r;
 
@@ -1306,25 +1306,25 @@ namespace adl_block { // Validate some range concept corner cases
 
         return true;
     }
-    STATIC_ASSERT(test());
+    static_assert(test());
 
     // Verify that ranges::c?r?end reject non-ranges
     struct no_begin {
         int* end() const;
     };
-    STATIC_ASSERT(test_begin<no_begin&>());
-    STATIC_ASSERT(test_end<no_begin&>());
-    STATIC_ASSERT(test_cbegin<no_begin&>());
-    STATIC_ASSERT(test_cend<no_begin&>());
-    STATIC_ASSERT(test_rbegin<no_begin&>());
-    STATIC_ASSERT(test_rend<no_begin&>());
-    STATIC_ASSERT(test_crbegin<no_begin&>());
-    STATIC_ASSERT(test_crend<no_begin&>());
-    STATIC_ASSERT(test_size<no_begin&>());
-    STATIC_ASSERT(test_empty<no_begin&, false>());
-    STATIC_ASSERT(test_data<no_begin&>());
-    STATIC_ASSERT(test_cdata<no_begin&>());
-    STATIC_ASSERT(test_non_range<no_begin&>());
+    static_assert(test_begin<no_begin&>());
+    static_assert(test_end<no_begin&>());
+    static_assert(test_cbegin<no_begin&>());
+    static_assert(test_cend<no_begin&>());
+    static_assert(test_rbegin<no_begin&>());
+    static_assert(test_rend<no_begin&>());
+    static_assert(test_crbegin<no_begin&>());
+    static_assert(test_crend<no_begin&>());
+    static_assert(test_size<no_begin&>());
+    static_assert(test_empty<no_begin&, false>());
+    static_assert(test_data<no_begin&>());
+    static_assert(test_cdata<no_begin&>());
+    static_assert(test_non_range<no_begin&>());
 } // namespace adl_block
 
 namespace disable_sized_range_testing {
@@ -1342,9 +1342,9 @@ template <>
 constexpr bool ranges::disable_sized_range<disable_sized_range_testing::weird_range> = true;
 
 // Overriding disable_sized_range for an array type has no effect:
-STATIC_ASSERT(ranges::sized_range<disable_sized_range_testing::program_defined_type (&)[42]>);
+static_assert(ranges::sized_range<disable_sized_range_testing::program_defined_type (&)[42]>);
 // Overriding disable_sized_range for a range whose sentinel and iterator model sized_sentinel_for has no effect:
-STATIC_ASSERT(ranges::sized_range<disable_sized_range_testing::weird_range>);
+static_assert(ranges::sized_range<disable_sized_range_testing::weird_range>);
 
 template <class T>
 constexpr bool test_array_ish() { // An actual runtime test!
@@ -1519,34 +1519,34 @@ namespace nothrow_testing {
     constexpr bool test() {
         T t = {{0, 1, 2}};
 
-        STATIC_ASSERT(noexcept(ranges::begin(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::end(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::cbegin(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::cend(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::rbegin(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::rend(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::crbegin(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::crend(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::empty(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::size(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::ssize(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::data(t)) == Nothrow);
-        STATIC_ASSERT(noexcept(ranges::cdata(t)) == Nothrow);
+        static_assert(noexcept(ranges::begin(t)) == Nothrow);
+        static_assert(noexcept(ranges::end(t)) == Nothrow);
+        static_assert(noexcept(ranges::cbegin(t)) == Nothrow);
+        static_assert(noexcept(ranges::cend(t)) == Nothrow);
+        static_assert(noexcept(ranges::rbegin(t)) == Nothrow);
+        static_assert(noexcept(ranges::rend(t)) == Nothrow);
+        static_assert(noexcept(ranges::crbegin(t)) == Nothrow);
+        static_assert(noexcept(ranges::crend(t)) == Nothrow);
+        static_assert(noexcept(ranges::empty(t)) == Nothrow);
+        static_assert(noexcept(ranges::size(t)) == Nothrow);
+        static_assert(noexcept(ranges::ssize(t)) == Nothrow);
+        static_assert(noexcept(ranges::data(t)) == Nothrow);
+        static_assert(noexcept(ranges::cdata(t)) == Nothrow);
 
         return true;
     }
 
     // Validate conditional noexcept
-    STATIC_ASSERT(nothrow_testing::test<range<0, true>, true>());
-    STATIC_ASSERT(nothrow_testing::test<range<1, true>, true>());
-    STATIC_ASSERT(nothrow_testing::test<range<2, true>, true>());
-    STATIC_ASSERT(nothrow_testing::test<range<3, true>, true>());
-    STATIC_ASSERT(nothrow_testing::test<range<4, true>, true>());
-    STATIC_ASSERT(nothrow_testing::test<range<0, false>, false>());
-    STATIC_ASSERT(nothrow_testing::test<range<1, false>, false>());
-    STATIC_ASSERT(nothrow_testing::test<range<2, false>, false>());
-    STATIC_ASSERT(nothrow_testing::test<range<3, false>, false>());
-    STATIC_ASSERT(nothrow_testing::test<range<4, false>, false>());
+    static_assert(nothrow_testing::test<range<0, true>, true>());
+    static_assert(nothrow_testing::test<range<1, true>, true>());
+    static_assert(nothrow_testing::test<range<2, true>, true>());
+    static_assert(nothrow_testing::test<range<3, true>, true>());
+    static_assert(nothrow_testing::test<range<4, true>, true>());
+    static_assert(nothrow_testing::test<range<0, false>, false>());
+    static_assert(nothrow_testing::test<range<1, false>, false>());
+    static_assert(nothrow_testing::test<range<2, false>, false>());
+    static_assert(nothrow_testing::test<range<3, false>, false>());
+    static_assert(nothrow_testing::test<range<4, false>, false>());
 } // namespace nothrow_testing
 
 namespace subsumption_testing {
@@ -1594,11 +1594,11 @@ namespace subsumption_testing {
         static sentinel end();
     };
 
-    STATIC_ASSERT(f<simple_input_range>() == exactly_input_range);
-    STATIC_ASSERT(f<std::forward_list<int>>() == exactly_forward_range);
-    STATIC_ASSERT(f<std::list<int>>() == exactly_bidirectional_range);
-    STATIC_ASSERT(f<std::deque<int>>() == exactly_random_access_range);
-    STATIC_ASSERT(f<int (&)[42]>() == exactly_contiguous_range);
+    static_assert(f<simple_input_range>() == exactly_input_range);
+    static_assert(f<std::forward_list<int>>() == exactly_forward_range);
+    static_assert(f<std::list<int>>() == exactly_bidirectional_range);
+    static_assert(f<std::deque<int>>() == exactly_random_access_range);
+    static_assert(f<int (&)[42]>() == exactly_contiguous_range);
 } // namespace subsumption_testing
 
 namespace borrowed_range_testing {
@@ -1606,42 +1606,42 @@ namespace borrowed_range_testing {
         class RSentinel = RIterator>
     constexpr bool test_borrowed_range() {
         // Validate that rvalue/lvalue const/non-const Rng models borrowed_range
-        STATIC_ASSERT(Decayed<Rng>);
+        static_assert(Decayed<Rng>);
 
-        STATIC_ASSERT(test_begin<Rng, Iterator>());
-        STATIC_ASSERT(test_end<Rng, Sentinel>());
-        STATIC_ASSERT(test_rbegin<Rng, RIterator>());
-        STATIC_ASSERT(test_rend<Rng, RSentinel>());
-        STATIC_ASSERT(ranges::borrowed_range<Rng>);
+        static_assert(test_begin<Rng, Iterator>());
+        static_assert(test_end<Rng, Sentinel>());
+        static_assert(test_rbegin<Rng, RIterator>());
+        static_assert(test_rend<Rng, RSentinel>());
+        static_assert(ranges::borrowed_range<Rng>);
 
-        STATIC_ASSERT(test_begin<Rng&, Iterator>());
-        STATIC_ASSERT(test_end<Rng&, Sentinel>());
-        STATIC_ASSERT(test_rbegin<Rng&, RIterator>());
-        STATIC_ASSERT(test_rend<Rng&, RSentinel>());
-        STATIC_ASSERT(ranges::borrowed_range<Rng&>);
+        static_assert(test_begin<Rng&, Iterator>());
+        static_assert(test_end<Rng&, Sentinel>());
+        static_assert(test_rbegin<Rng&, RIterator>());
+        static_assert(test_rend<Rng&, RSentinel>());
+        static_assert(ranges::borrowed_range<Rng&>);
 
-        STATIC_ASSERT(test_begin<Rng const, Iterator>());
-        STATIC_ASSERT(test_end<Rng const, Sentinel>());
-        STATIC_ASSERT(test_rbegin<Rng const, RIterator>());
-        STATIC_ASSERT(test_rend<Rng const, RSentinel>());
-        STATIC_ASSERT(ranges::borrowed_range<Rng const>);
+        static_assert(test_begin<Rng const, Iterator>());
+        static_assert(test_end<Rng const, Sentinel>());
+        static_assert(test_rbegin<Rng const, RIterator>());
+        static_assert(test_rend<Rng const, RSentinel>());
+        static_assert(ranges::borrowed_range<Rng const>);
 
-        STATIC_ASSERT(test_begin<Rng const&, Iterator>());
-        STATIC_ASSERT(test_end<Rng const&, Sentinel>());
-        STATIC_ASSERT(test_rbegin<Rng const&, RIterator>());
-        STATIC_ASSERT(test_rend<Rng const&, RSentinel>());
-        STATIC_ASSERT(ranges::borrowed_range<Rng const&>);
+        static_assert(test_begin<Rng const&, Iterator>());
+        static_assert(test_end<Rng const&, Sentinel>());
+        static_assert(test_rbegin<Rng const&, RIterator>());
+        static_assert(test_rend<Rng const&, RSentinel>());
+        static_assert(ranges::borrowed_range<Rng const&>);
 
         return true;
     }
 
-    STATIC_ASSERT(test_borrowed_range<std::string_view, std::string_view::iterator>());
-    STATIC_ASSERT(test_borrowed_range<std::wstring_view, std::wstring_view::iterator>());
-    STATIC_ASSERT(test_borrowed_range<std::span<int>, std::span<int>::iterator>());
-    STATIC_ASSERT(test_borrowed_range<std::span<int, 42>, std::span<int, 42>::iterator>());
-    STATIC_ASSERT(test_borrowed_range<ranges::subrange<int*, int*>, int*>());
-    STATIC_ASSERT(test_borrowed_range<ranges::ref_view<int[42]>, int*>());
-    STATIC_ASSERT(test_borrowed_range<ranges::iota_view<int, int>, ranges::iterator_t<ranges::iota_view<int, int>>>());
+    static_assert(test_borrowed_range<std::string_view, std::string_view::iterator>());
+    static_assert(test_borrowed_range<std::wstring_view, std::wstring_view::iterator>());
+    static_assert(test_borrowed_range<std::span<int>, std::span<int>::iterator>());
+    static_assert(test_borrowed_range<std::span<int, 42>, std::span<int, 42>::iterator>());
+    static_assert(test_borrowed_range<ranges::subrange<int*, int*>, int*>());
+    static_assert(test_borrowed_range<ranges::ref_view<int[42]>, int*>());
+    static_assert(test_borrowed_range<ranges::iota_view<int, int>, ranges::iterator_t<ranges::iota_view<int, int>>>());
 
     struct simple_borrowed_range {
         int* begin() const {
@@ -1668,8 +1668,8 @@ template <>
 inline constexpr bool std::ranges::enable_borrowed_range<borrowed_range_testing::less_simple_borrowed_range> = true;
 
 namespace borrowed_range_testing {
-    STATIC_ASSERT(test_borrowed_range<simple_borrowed_range, int*>());
-    STATIC_ASSERT(test_borrowed_range<less_simple_borrowed_range, int*>());
+    static_assert(test_borrowed_range<simple_borrowed_range, int*>());
+    static_assert(test_borrowed_range<less_simple_borrowed_range, int*>());
 } // namespace borrowed_range_testing
 
 template <bool AllowNonConst, bool AllowConst, bool AllowSize>
@@ -1706,11 +1706,11 @@ struct badsized_range : Base { // size() launches the missiles.
     badsized_range& operator=(badsized_range&&) = default;
 
     [[noreturn]] int size() const {
-        static_assert(always_false<Base>);
+        static_assert(false);
     }
 
     [[noreturn]] friend int size(const badsized_range&) {
-        static_assert(always_false<Base>);
+        static_assert(false);
     }
 };
 
@@ -1742,15 +1742,15 @@ struct strange_view5 : strange_view4, ranges::view_interface<strange_view5> {
 };
 
 // Verify that specializations of view_interface do not inherit from view_base
-STATIC_ASSERT(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<strange_view4>>);
-STATIC_ASSERT(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<strange_view5>>);
+static_assert(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<strange_view4>>);
+static_assert(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<strange_view5>>);
 
 // Verify that enable_view<T&> or enable_view<T&&> is never true
-STATIC_ASSERT(ranges::enable_view<strange_view4>);
-STATIC_ASSERT(!ranges::enable_view<strange_view4&>);
-STATIC_ASSERT(!ranges::enable_view<const strange_view4&>);
-STATIC_ASSERT(!ranges::enable_view<strange_view4&&>);
-STATIC_ASSERT(!ranges::enable_view<const strange_view4&&>);
+static_assert(ranges::enable_view<strange_view4>);
+static_assert(!ranges::enable_view<strange_view4&>);
+static_assert(!ranges::enable_view<const strange_view4&>);
+static_assert(!ranges::enable_view<strange_view4&&>);
+static_assert(!ranges::enable_view<const strange_view4&&>);
 
 // Verify that the derived-from-view_interface mechanism can handle uses of incomplete types whenever possible
 struct incomplet;
@@ -1760,7 +1760,7 @@ struct value_holder {
     T t;
 };
 
-STATIC_ASSERT(!ranges::enable_view<value_holder<incomplet>*>);
+static_assert(!ranges::enable_view<value_holder<incomplet>*>);
 
 template <>
 inline constexpr bool ranges::enable_view<strange_view> = true;
@@ -1770,20 +1770,20 @@ inline constexpr bool ranges::enable_view<strange_view3> = false;
 namespace exhaustive_size_and_view_test {
     template <class Rng, bool IsView = false, class Iterator = invalid_type, class Size = invalid_type>
     constexpr bool test() {
-        STATIC_ASSERT(ranges::range<Rng> == is_valid<Iterator>);
+        static_assert(ranges::range<Rng> == is_valid<Iterator>);
         if constexpr (is_valid<Iterator>) {
-            STATIC_ASSERT(std::same_as<ranges::iterator_t<Rng>, Iterator>);
+            static_assert(std::same_as<ranges::iterator_t<Rng>, Iterator>);
         }
 
-        STATIC_ASSERT(ranges::sized_range<Rng> == is_valid<Size>);
+        static_assert(ranges::sized_range<Rng> == is_valid<Size>);
         if constexpr (is_valid<Size>) {
-            STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Rng>())), Size>);
+            static_assert(std::same_as<decltype(ranges::size(std::declval<Rng>())), Size>);
 
             using SignedSize = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
-            STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Rng>())), SignedSize>);
+            static_assert(std::same_as<decltype(ranges::ssize(std::declval<Rng>())), SignedSize>);
         }
 
-        STATIC_ASSERT(ranges::view<Rng> == IsView);
+        static_assert(ranges::view<Rng> == IsView);
         return true;
     }
 
@@ -1792,99 +1792,99 @@ namespace exhaustive_size_and_view_test {
     using S  = std::size_t;
     using UC = unsigned char;
 
-    STATIC_ASSERT(test<mutable_unsized_range, false, I, S>());
-    STATIC_ASSERT(test<mutable_unsized_range&, false, I, S>());
-    STATIC_ASSERT(test<mutable_unsized_range const, false, CI, S>());
-    STATIC_ASSERT(test<mutable_unsized_range const&, false, CI, S>());
+    static_assert(test<mutable_unsized_range, false, I, S>());
+    static_assert(test<mutable_unsized_range&, false, I, S>());
+    static_assert(test<mutable_unsized_range const, false, CI, S>());
+    static_assert(test<mutable_unsized_range const&, false, CI, S>());
 
-    STATIC_ASSERT(test<mutable_only_no_size_range, false, I, S>());
-    STATIC_ASSERT(test<mutable_only_no_size_range&, false, I, S>());
-    STATIC_ASSERT(test<mutable_only_no_size_range const>());
-    STATIC_ASSERT(test<mutable_only_no_size_range const&>());
+    static_assert(test<mutable_only_no_size_range, false, I, S>());
+    static_assert(test<mutable_only_no_size_range&, false, I, S>());
+    static_assert(test<mutable_only_no_size_range const>());
+    static_assert(test<mutable_only_no_size_range const&>());
 
-    STATIC_ASSERT(test<immutable_unsized_range, false, CI, S>());
-    STATIC_ASSERT(test<immutable_unsized_range&, false, CI, S>());
-    STATIC_ASSERT(test<immutable_unsized_range const, false, CI, S>());
-    STATIC_ASSERT(test<immutable_unsized_range const&, false, CI, S>());
+    static_assert(test<immutable_unsized_range, false, CI, S>());
+    static_assert(test<immutable_unsized_range&, false, CI, S>());
+    static_assert(test<immutable_unsized_range const, false, CI, S>());
+    static_assert(test<immutable_unsized_range const&, false, CI, S>());
 
-    STATIC_ASSERT(test<mutable_sized_range, false, I, UC>());
-    STATIC_ASSERT(test<mutable_sized_range&, false, I, UC>());
-    STATIC_ASSERT(test<mutable_sized_range const, false, CI, UC>());
-    STATIC_ASSERT(test<mutable_sized_range const&, false, CI, UC>());
+    static_assert(test<mutable_sized_range, false, I, UC>());
+    static_assert(test<mutable_sized_range&, false, I, UC>());
+    static_assert(test<mutable_sized_range const, false, CI, UC>());
+    static_assert(test<mutable_sized_range const&, false, CI, UC>());
 
-    STATIC_ASSERT(test<mutable_only_sized_range, false, I, UC>());
-    STATIC_ASSERT(test<mutable_only_sized_range&, false, I, UC>());
-    STATIC_ASSERT(test<mutable_only_sized_range const>());
-    STATIC_ASSERT(test<mutable_only_sized_range const&>());
+    static_assert(test<mutable_only_sized_range, false, I, UC>());
+    static_assert(test<mutable_only_sized_range&, false, I, UC>());
+    static_assert(test<mutable_only_sized_range const>());
+    static_assert(test<mutable_only_sized_range const&>());
 
-    STATIC_ASSERT(test<immutable_sized_range, false, CI, UC>());
-    STATIC_ASSERT(test<immutable_sized_range&, false, CI, UC>());
-    STATIC_ASSERT(test<immutable_sized_range const, false, CI, UC>());
-    STATIC_ASSERT(test<immutable_sized_range const&, false, CI, UC>());
+    static_assert(test<immutable_sized_range, false, CI, UC>());
+    static_assert(test<immutable_sized_range&, false, CI, UC>());
+    static_assert(test<immutable_sized_range const, false, CI, UC>());
+    static_assert(test<immutable_sized_range const&, false, CI, UC>());
 
-    STATIC_ASSERT(test<mutable_badsized_range, false, I, S>());
-    STATIC_ASSERT(test<mutable_badsized_range&, false, I, S>());
-    STATIC_ASSERT(test<mutable_badsized_range const, false, CI, S>());
-    STATIC_ASSERT(test<mutable_badsized_range const&, false, CI, S>());
+    static_assert(test<mutable_badsized_range, false, I, S>());
+    static_assert(test<mutable_badsized_range&, false, I, S>());
+    static_assert(test<mutable_badsized_range const, false, CI, S>());
+    static_assert(test<mutable_badsized_range const&, false, CI, S>());
 
-    STATIC_ASSERT(test<mutable_only_badsized_range, false, I, S>());
-    STATIC_ASSERT(test<mutable_only_badsized_range&, false, I, S>());
-    STATIC_ASSERT(test<mutable_only_badsized_range const>());
-    STATIC_ASSERT(test<mutable_only_badsized_range const&>());
+    static_assert(test<mutable_only_badsized_range, false, I, S>());
+    static_assert(test<mutable_only_badsized_range&, false, I, S>());
+    static_assert(test<mutable_only_badsized_range const>());
+    static_assert(test<mutable_only_badsized_range const&>());
 
-    STATIC_ASSERT(test<immutable_badsized_range, false, CI, S>());
-    STATIC_ASSERT(test<immutable_badsized_range&, false, CI, S>());
-    STATIC_ASSERT(test<immutable_badsized_range const, false, CI, S>());
-    STATIC_ASSERT(test<immutable_badsized_range const&, false, CI, S>());
+    static_assert(test<immutable_badsized_range, false, CI, S>());
+    static_assert(test<immutable_badsized_range&, false, CI, S>());
+    static_assert(test<immutable_badsized_range const, false, CI, S>());
+    static_assert(test<immutable_badsized_range const&, false, CI, S>());
 
-    STATIC_ASSERT(test<strange_view, true, I, S>());
-    STATIC_ASSERT(test<strange_view&, false, I, S>());
-    STATIC_ASSERT(test<strange_view const, false, CI, S>());
-    STATIC_ASSERT(test<strange_view const&, false, CI, S>());
+    static_assert(test<strange_view, true, I, S>());
+    static_assert(test<strange_view&, false, I, S>());
+    static_assert(test<strange_view const, false, CI, S>());
+    static_assert(test<strange_view const&, false, CI, S>());
 
-    STATIC_ASSERT(test<strange_view2, true, I, S>());
-    STATIC_ASSERT(test<strange_view2&, false, I, S>());
-    STATIC_ASSERT(test<strange_view2 const, false, CI, S>());
-    STATIC_ASSERT(test<strange_view2 const&, false, CI, S>());
+    static_assert(test<strange_view2, true, I, S>());
+    static_assert(test<strange_view2&, false, I, S>());
+    static_assert(test<strange_view2 const, false, CI, S>());
+    static_assert(test<strange_view2 const&, false, CI, S>());
 
-    STATIC_ASSERT(test<strange_view3, false, I, S>());
-    STATIC_ASSERT(test<strange_view3&, false, I, S>());
-    STATIC_ASSERT(test<strange_view3 const, false, CI, S>());
-    STATIC_ASSERT(test<strange_view3 const&, false, CI, S>());
+    static_assert(test<strange_view3, false, I, S>());
+    static_assert(test<strange_view3&, false, I, S>());
+    static_assert(test<strange_view3 const, false, CI, S>());
+    static_assert(test<strange_view3 const&, false, CI, S>());
 
-    STATIC_ASSERT(test<strange_view4, true, I, S>());
-    STATIC_ASSERT(test<strange_view4&, false, I, S>());
-    STATIC_ASSERT(test<strange_view4 const, false, CI, S>());
-    STATIC_ASSERT(test<strange_view4 const&, false, CI, S>());
+    static_assert(test<strange_view4, true, I, S>());
+    static_assert(test<strange_view4&, false, I, S>());
+    static_assert(test<strange_view4 const, false, CI, S>());
+    static_assert(test<strange_view4 const&, false, CI, S>());
 
     template <class = void>
     constexpr bool strict_test_case() {
         if constexpr (!is_permissive) {
-            STATIC_ASSERT(test<strange_view5, false, I, S>());
+            static_assert(test<strange_view5, false, I, S>());
         }
         return true;
     }
-    STATIC_ASSERT(strict_test_case());
-    STATIC_ASSERT(test<strange_view5&, false, I, S>());
-    STATIC_ASSERT(test<strange_view5 const, false, CI, S>());
-    STATIC_ASSERT(test<strange_view5 const&, false, CI, S>());
+    static_assert(strict_test_case());
+    static_assert(test<strange_view5&, false, I, S>());
+    static_assert(test<strange_view5 const, false, CI, S>());
+    static_assert(test<strange_view5 const&, false, CI, S>());
 } // namespace exhaustive_size_and_view_test
 
 // Validate output_range
-STATIC_ASSERT(ranges::output_range<int[42], int>);
-STATIC_ASSERT(ranges::output_range<int[42], int&>);
-STATIC_ASSERT(ranges::output_range<int[42], int const>);
-STATIC_ASSERT(ranges::output_range<int[42], int const&>);
+static_assert(ranges::output_range<int[42], int>);
+static_assert(ranges::output_range<int[42], int&>);
+static_assert(ranges::output_range<int[42], int const>);
+static_assert(ranges::output_range<int[42], int const&>);
 
-STATIC_ASSERT(ranges::output_range<int[42], short>);
-STATIC_ASSERT(ranges::output_range<int[42], short&>);
-STATIC_ASSERT(ranges::output_range<int[42], short const>);
-STATIC_ASSERT(ranges::output_range<int[42], short const&>);
+static_assert(ranges::output_range<int[42], short>);
+static_assert(ranges::output_range<int[42], short&>);
+static_assert(ranges::output_range<int[42], short const>);
+static_assert(ranges::output_range<int[42], short const&>);
 
-STATIC_ASSERT(!ranges::output_range<int[42], char*>);
-STATIC_ASSERT(!ranges::output_range<int[42], char*&>);
-STATIC_ASSERT(!ranges::output_range<int[42], char* const>);
-STATIC_ASSERT(!ranges::output_range<int[42], char* const&>);
+static_assert(!ranges::output_range<int[42], char*>);
+static_assert(!ranges::output_range<int[42], char*&>);
+static_assert(!ranges::output_range<int[42], char* const>);
+static_assert(!ranges::output_range<int[42], char* const&>);
 
 template <std::input_or_output_iterator I, std::sentinel_for<I> S>
 constexpr I complicated_algorithm(I i, S const s) {
@@ -1923,7 +1923,7 @@ constexpr bool complicated_algorithm_test() {
     int const some_ints[] = {2, 3, 5, 7};
     assert(complicated_algorithm(some_ints) == ranges::end(some_ints));
     assert(complicated_algorithm(array_view{some_ints}) == ranges::end(some_ints));
-    STATIC_ASSERT(ranges::view<decltype(array_view{some_ints})>);
+    static_assert(ranges::view<decltype(array_view{some_ints})>);
     return true;
 }
 
@@ -1940,27 +1940,27 @@ struct bad_string_view {
 static_assert(!CanBegin<bad_string_view<char>>);
 
 // Validate viewable_range
-STATIC_ASSERT(!ranges::viewable_range<void>);
-STATIC_ASSERT(!ranges::viewable_range<int>);
-STATIC_ASSERT(!ranges::viewable_range<int&>);
-STATIC_ASSERT(!ranges::viewable_range<int*>);
-STATIC_ASSERT(!ranges::viewable_range<int()>);
-STATIC_ASSERT(!ranges::viewable_range<int (&)()>);
-STATIC_ASSERT(!ranges::viewable_range<int (*)()>);
-STATIC_ASSERT(!ranges::viewable_range<int() const>);
+static_assert(!ranges::viewable_range<void>);
+static_assert(!ranges::viewable_range<int>);
+static_assert(!ranges::viewable_range<int&>);
+static_assert(!ranges::viewable_range<int*>);
+static_assert(!ranges::viewable_range<int()>);
+static_assert(!ranges::viewable_range<int (&)()>);
+static_assert(!ranges::viewable_range<int (*)()>);
+static_assert(!ranges::viewable_range<int() const>);
 
-STATIC_ASSERT(ranges::viewable_range<std::vector<int>&>);
-STATIC_ASSERT(ranges::viewable_range<std::vector<int> const&>);
-STATIC_ASSERT(ranges::viewable_range<std::vector<int>>);
-STATIC_ASSERT(!ranges::viewable_range<std::vector<int> const>);
-STATIC_ASSERT(ranges::viewable_range<std::string_view&>);
-STATIC_ASSERT(ranges::viewable_range<std::string_view const&>);
-STATIC_ASSERT(ranges::viewable_range<std::string_view>);
-STATIC_ASSERT(ranges::viewable_range<std::string_view const>);
-STATIC_ASSERT(ranges::viewable_range<std::span<int>&>);
-STATIC_ASSERT(ranges::viewable_range<std::span<int> const&>);
-STATIC_ASSERT(ranges::viewable_range<std::span<int>>);
-STATIC_ASSERT(ranges::viewable_range<std::span<int> const>);
+static_assert(ranges::viewable_range<std::vector<int>&>);
+static_assert(ranges::viewable_range<std::vector<int> const&>);
+static_assert(ranges::viewable_range<std::vector<int>>);
+static_assert(!ranges::viewable_range<std::vector<int> const>);
+static_assert(ranges::viewable_range<std::string_view&>);
+static_assert(ranges::viewable_range<std::string_view const&>);
+static_assert(ranges::viewable_range<std::string_view>);
+static_assert(ranges::viewable_range<std::string_view const>);
+static_assert(ranges::viewable_range<std::span<int>&>);
+static_assert(ranges::viewable_range<std::span<int> const&>);
+static_assert(ranges::viewable_range<std::span<int>>);
+static_assert(ranges::viewable_range<std::span<int> const>);
 
 namespace poison_pill_test {
     template <class T>
@@ -1989,16 +1989,16 @@ namespace poison_pill_test {
     // The above underconstrained templates were blocked by the poison pills for the ranges CPOs
     // until P2602R2 removed them.
 
-    STATIC_ASSERT(CanBegin<some_type&>);
-    STATIC_ASSERT(CanBegin<some_type const&>);
-    STATIC_ASSERT(CanEnd<some_type&>);
-    STATIC_ASSERT(CanEnd<some_type const&>);
-    STATIC_ASSERT(CanRBegin<some_type&>);
-    STATIC_ASSERT(CanRBegin<some_type const&>);
-    STATIC_ASSERT(CanREnd<some_type&>);
-    STATIC_ASSERT(CanREnd<some_type const&>);
-    STATIC_ASSERT(CanSize<some_type&>);
-    STATIC_ASSERT(CanSize<some_type const&>);
+    static_assert(CanBegin<some_type&>);
+    static_assert(CanBegin<some_type const&>);
+    static_assert(CanEnd<some_type&>);
+    static_assert(CanEnd<some_type const&>);
+    static_assert(CanRBegin<some_type&>);
+    static_assert(CanRBegin<some_type const&>);
+    static_assert(CanREnd<some_type&>);
+    static_assert(CanREnd<some_type const&>);
+    static_assert(CanSize<some_type&>);
+    static_assert(CanSize<some_type const&>);
 } // namespace poison_pill_test
 
 #ifndef _M_CEE // TRANSITION, VSO-1659496
@@ -2044,30 +2044,30 @@ namespace adl_proof_test {
         }
     };
 
-    STATIC_ASSERT(CanBegin<validating_member_range&>);
-    STATIC_ASSERT(CanBegin<const validating_member_range&>);
-    STATIC_ASSERT(CanCBegin<validating_member_range&>);
-    STATIC_ASSERT(CanCBegin<const validating_member_range&>);
+    static_assert(CanBegin<validating_member_range&>);
+    static_assert(CanBegin<const validating_member_range&>);
+    static_assert(CanCBegin<validating_member_range&>);
+    static_assert(CanCBegin<const validating_member_range&>);
 
-    STATIC_ASSERT(CanEnd<validating_member_range&>);
-    STATIC_ASSERT(CanEnd<const validating_member_range&>);
-    STATIC_ASSERT(CanCEnd<validating_member_range&>);
-    STATIC_ASSERT(CanCEnd<const validating_member_range&>);
+    static_assert(CanEnd<validating_member_range&>);
+    static_assert(CanEnd<const validating_member_range&>);
+    static_assert(CanCEnd<validating_member_range&>);
+    static_assert(CanCEnd<const validating_member_range&>);
 
-    STATIC_ASSERT(CanRBegin<validating_member_range&>);
-    STATIC_ASSERT(CanRBegin<const validating_member_range&>);
-    STATIC_ASSERT(CanCRBegin<validating_member_range&>);
-    STATIC_ASSERT(CanCRBegin<const validating_member_range&>);
+    static_assert(CanRBegin<validating_member_range&>);
+    static_assert(CanRBegin<const validating_member_range&>);
+    static_assert(CanCRBegin<validating_member_range&>);
+    static_assert(CanCRBegin<const validating_member_range&>);
 
-    STATIC_ASSERT(CanREnd<validating_member_range&>);
-    STATIC_ASSERT(CanREnd<const validating_member_range&>);
-    STATIC_ASSERT(CanCREnd<validating_member_range&>);
-    STATIC_ASSERT(CanCREnd<const validating_member_range&>);
+    static_assert(CanREnd<validating_member_range&>);
+    static_assert(CanREnd<const validating_member_range&>);
+    static_assert(CanCREnd<validating_member_range&>);
+    static_assert(CanCREnd<const validating_member_range&>);
 
-    STATIC_ASSERT(CanData<validating_member_range&>);
-    STATIC_ASSERT(CanData<const validating_member_range&>);
-    STATIC_ASSERT(CanCData<validating_member_range&>);
-    STATIC_ASSERT(CanCData<const validating_member_range&>);
+    static_assert(CanData<validating_member_range&>);
+    static_assert(CanData<const validating_member_range&>);
+    static_assert(CanCData<validating_member_range&>);
+    static_assert(CanCData<const validating_member_range&>);
 
     struct validating_nonmember_range {
         value_holder<incomplet>* elems_[1];
@@ -2101,25 +2101,25 @@ namespace adl_proof_test {
         }
     };
 
-    STATIC_ASSERT(CanBegin<validating_nonmember_range&>);
-    STATIC_ASSERT(CanBegin<const validating_nonmember_range&>);
-    STATIC_ASSERT(CanCBegin<validating_nonmember_range&>);
-    STATIC_ASSERT(CanCBegin<const validating_nonmember_range&>);
+    static_assert(CanBegin<validating_nonmember_range&>);
+    static_assert(CanBegin<const validating_nonmember_range&>);
+    static_assert(CanCBegin<validating_nonmember_range&>);
+    static_assert(CanCBegin<const validating_nonmember_range&>);
 
-    STATIC_ASSERT(CanEnd<validating_nonmember_range&>);
-    STATIC_ASSERT(CanEnd<const validating_nonmember_range&>);
-    STATIC_ASSERT(CanCEnd<validating_nonmember_range&>);
-    STATIC_ASSERT(CanCEnd<const validating_nonmember_range&>);
+    static_assert(CanEnd<validating_nonmember_range&>);
+    static_assert(CanEnd<const validating_nonmember_range&>);
+    static_assert(CanCEnd<validating_nonmember_range&>);
+    static_assert(CanCEnd<const validating_nonmember_range&>);
 
-    STATIC_ASSERT(CanRBegin<validating_nonmember_range&>);
-    STATIC_ASSERT(CanRBegin<const validating_nonmember_range&>);
-    STATIC_ASSERT(CanCRBegin<validating_nonmember_range&>);
-    STATIC_ASSERT(CanCRBegin<const validating_nonmember_range&>);
+    static_assert(CanRBegin<validating_nonmember_range&>);
+    static_assert(CanRBegin<const validating_nonmember_range&>);
+    static_assert(CanCRBegin<validating_nonmember_range&>);
+    static_assert(CanCRBegin<const validating_nonmember_range&>);
 
-    STATIC_ASSERT(CanREnd<validating_nonmember_range&>);
-    STATIC_ASSERT(CanREnd<const validating_nonmember_range&>);
-    STATIC_ASSERT(CanCREnd<validating_nonmember_range&>);
-    STATIC_ASSERT(CanCREnd<const validating_nonmember_range&>);
+    static_assert(CanREnd<validating_nonmember_range&>);
+    static_assert(CanREnd<const validating_nonmember_range&>);
+    static_assert(CanCREnd<validating_nonmember_range&>);
+    static_assert(CanCREnd<const validating_nonmember_range&>);
 
     struct nonsizable_type {
         constexpr value_holder<incomplet>* size() const noexcept {
@@ -2131,9 +2131,9 @@ namespace adl_proof_test {
         }
     };
 
-    STATIC_ASSERT(CanSize<validating_member_range>);
-    STATIC_ASSERT(CanSize<validating_nonmember_range>);
-    STATIC_ASSERT(!CanSize<nonsizable_type>);
+    static_assert(CanSize<validating_member_range>);
+    static_assert(CanSize<validating_nonmember_range>);
+    static_assert(!CanSize<nonsizable_type>);
 } // namespace adl_proof_test
 #endif // ^^^ no workaround ^^^
 
@@ -2169,24 +2169,24 @@ namespace unwrapped_begin_end {
         using std::same_as, ranges::_Ubegin, ranges::_Uend;
 
         range<WrappedState::unwrapped> unwrapped;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(unwrapped)), range<WrappedState::unwrapped>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(unwrapped)), range<WrappedState::unwrapped>::S>);
+        static_assert(same_as<decltype(_Ubegin(unwrapped)), range<WrappedState::unwrapped>::I>);
+        static_assert(same_as<decltype(_Uend(unwrapped)), range<WrappedState::unwrapped>::S>);
 
         range<WrappedState::wrapped> wrapped;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(wrapped)), range<WrappedState::unwrapped>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(wrapped)), range<WrappedState::unwrapped>::S>);
+        static_assert(same_as<decltype(_Ubegin(wrapped)), range<WrappedState::unwrapped>::I>);
+        static_assert(same_as<decltype(_Uend(wrapped)), range<WrappedState::unwrapped>::S>);
 
         range<WrappedState::wrapped, WrappedState::ignorant> it_wrapped_se_ignorant;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(it_wrapped_se_ignorant)), range<WrappedState::wrapped>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(it_wrapped_se_ignorant)), range<WrappedState::ignorant>::S>);
+        static_assert(same_as<decltype(_Ubegin(it_wrapped_se_ignorant)), range<WrappedState::wrapped>::I>);
+        static_assert(same_as<decltype(_Uend(it_wrapped_se_ignorant)), range<WrappedState::ignorant>::S>);
 
         range<WrappedState::ignorant, WrappedState::wrapped> it_ignorant_se_wrapped;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(it_ignorant_se_wrapped)), range<WrappedState::ignorant>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(it_ignorant_se_wrapped)), range<WrappedState::wrapped>::S>);
+        static_assert(same_as<decltype(_Ubegin(it_ignorant_se_wrapped)), range<WrappedState::ignorant>::I>);
+        static_assert(same_as<decltype(_Uend(it_ignorant_se_wrapped)), range<WrappedState::wrapped>::S>);
 
         with_unchecked uncheckable;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(uncheckable)), range<WrappedState::unwrapped>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(uncheckable)), range<WrappedState::unwrapped>::S>);
+        static_assert(same_as<decltype(_Ubegin(uncheckable)), range<WrappedState::unwrapped>::I>);
+        static_assert(same_as<decltype(_Uend(uncheckable)), range<WrappedState::unwrapped>::S>);
         (void) _Ubegin(uncheckable);
         assert(uncheckable.begin_called_);
         (void) _Uend(uncheckable);
@@ -2240,20 +2240,20 @@ namespace closure {
 
 int main() {
     // Validate conditional constexpr
-    STATIC_ASSERT(test_array_ish<std::initializer_list<int>>());
-    STATIC_ASSERT(test_array_ish<std::initializer_list<int const>>());
-    STATIC_ASSERT(test_array_ish<int[3]>());
-    STATIC_ASSERT(test_array_ish<int const[3]>());
+    static_assert(test_array_ish<std::initializer_list<int>>());
+    static_assert(test_array_ish<std::initializer_list<int const>>());
+    static_assert(test_array_ish<int[3]>());
+    static_assert(test_array_ish<int const[3]>());
 
     test_array_ish<std::initializer_list<int>>();
     test_array_ish<std::initializer_list<int const>>();
     test_array_ish<int[3]>();
     test_array_ish<int const[3]>();
 
-    STATIC_ASSERT(complicated_algorithm_test());
+    static_assert(complicated_algorithm_test());
     complicated_algorithm_test();
 
-    STATIC_ASSERT(unwrapped_begin_end::test());
+    static_assert(unwrapped_begin_end::test());
     unwrapped_begin_end::test();
 
     closure::test();

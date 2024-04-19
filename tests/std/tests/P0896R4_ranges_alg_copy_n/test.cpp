@@ -12,7 +12,7 @@
 using namespace std;
 
 // Validate that copy_n_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::copy_n_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::copy_n_result<int, double>, ranges::in_out_result<int, double>>);
 
 struct instantiator {
     static constexpr int input[3] = {13, 42, 1729};
@@ -24,7 +24,7 @@ struct instantiator {
         Read wrapped_input{input};
 
         auto result = copy_n(wrapped_input.begin(), 3, Write{output});
-        STATIC_ASSERT(same_as<decltype(result), copy_n_result<iterator_t<Read>, Write>>);
+        static_assert(same_as<decltype(result), copy_n_result<iterator_t<Read>, Write>>);
         assert(result.in == wrapped_input.end());
         assert(result.out.peek() == output + 3);
         assert(ranges::equal(output, input));
@@ -32,6 +32,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_in_write<instantiator, const int, int>(), true));
+    static_assert((test_in_write<instantiator, const int, int>(), true));
     test_in_write<instantiator, const int, int>();
 }

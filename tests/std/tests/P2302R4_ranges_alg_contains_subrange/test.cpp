@@ -63,7 +63,7 @@ struct instantiator {
 
 #ifdef TEST_EVERYTHING
 int main() {
-    STATIC_ASSERT((test_fwd_fwd<instantiator, Elem1, Elem2>(), true));
+    static_assert((test_fwd_fwd<instantiator, Elem1, Elem2>(), true));
     test_fwd_fwd<instantiator, Elem1, Elem2>();
 }
 #else // ^^^ test all range combinations / test only interesting range combos vvv
@@ -106,7 +106,7 @@ constexpr bool run_tests() {
 }
 
 int main() {
-    STATIC_ASSERT(run_tests());
+    static_assert(run_tests());
     run_tests();
 }
 #endif // TEST_EVERYTHING

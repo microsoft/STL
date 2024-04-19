@@ -14,8 +14,8 @@ using P = pair<int, int>;
 constexpr auto pred = [](const int x, const int y) { return x == y + 1; };
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::find_first_of(borrowed<false>{}, borrowed<true>{}, pred)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::find_first_of(borrowed<true>{}, borrowed<true>{}, pred)), int*>);
+static_assert(same_as<decltype(ranges::find_first_of(borrowed<false>{}, borrowed<true>{}, pred)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::find_first_of(borrowed<true>{}, borrowed<true>{}, pred)), int*>);
 
 struct instantiator {
     static constexpr P haystack[7]      = {{0, 42}, {1, 42}, {2, 42}, {3, 42}, {4, 42}, {5, 42}, {6, 42}};
@@ -31,7 +31,7 @@ struct instantiator {
             Read2 wrapped_needle{good_needle};
 
             auto result = find_first_of(wrapped_haystack, wrapped_needle, pred, get_first);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Read1>>);
+            static_assert(same_as<decltype(result), iterator_t<Read1>>);
             assert(result.peek() == begin(haystack) + 2);
         }
         { // Validate iterator + sentinel overload [found case]
@@ -40,7 +40,7 @@ struct instantiator {
 
             auto result = find_first_of(wrapped_haystack.begin(), wrapped_haystack.end(), wrapped_needle.begin(),
                 wrapped_needle.end(), pred, get_first);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Read1>>);
+            static_assert(same_as<decltype(result), iterator_t<Read1>>);
             assert(result.peek() == begin(haystack) + 2);
         }
 
@@ -49,7 +49,7 @@ struct instantiator {
             Read2 wrapped_needle{bad_needle};
 
             auto result = find_first_of(wrapped_haystack, wrapped_needle, pred, get_first);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Read1>>);
+            static_assert(same_as<decltype(result), iterator_t<Read1>>);
             assert(result == wrapped_haystack.end());
         }
         {
@@ -59,7 +59,7 @@ struct instantiator {
 
             auto result = find_first_of(wrapped_haystack.begin(), wrapped_haystack.end(), wrapped_needle.begin(),
                 wrapped_needle.end(), pred, get_first);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<Read1>>);
+            static_assert(same_as<decltype(result), iterator_t<Read1>>);
             assert(result == wrapped_haystack.end());
         }
     }
@@ -67,7 +67,7 @@ struct instantiator {
 
 #ifdef TEST_EVERYTHING
 int main() {
-    STATIC_ASSERT((test_in_fwd<instantiator, const P, const int>(), true));
+    static_assert((test_in_fwd<instantiator, const P, const int>(), true));
     test_in_fwd<instantiator, const P, const int>();
 }
 #else // ^^^ test all range combinations / test only interesting range combos vvv
@@ -83,7 +83,7 @@ constexpr bool run_tests() {
 }
 
 int main() {
-    STATIC_ASSERT(run_tests());
+    static_assert(run_tests());
     run_tests();
 }
 #endif // TEST_EVERYTHING

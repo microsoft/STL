@@ -197,7 +197,7 @@ constexpr bool run_tests() {
 }
 
 int main() {
-    STATIC_ASSERT(run_tests());
+    static_assert(run_tests());
     run_tests();
 }
 #endif // TEST_EVERYTHING

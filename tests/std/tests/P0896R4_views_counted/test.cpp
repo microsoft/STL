@@ -39,16 +39,16 @@ struct instantiator {
             ranges::subrange;
         int input[] = {13, 42, 1729, -1, -1};
 
-        STATIC_ASSERT(Countable<Iter>);
-        STATIC_ASSERT(Countable<const Iter&> == copy_constructible<Iter>);
+        static_assert(Countable<Iter>);
+        static_assert(Countable<const Iter&> == copy_constructible<Iter>);
 
         auto result = ranges::views::counted(Iter{input}, convertible_difference<Iter>{3});
         if constexpr (contiguous_iterator<Iter>) {
-            STATIC_ASSERT(same_as<decltype(result), span<remove_reference_t<iter_reference_t<Iter>>, dynamic_extent>>);
+            static_assert(same_as<decltype(result), span<remove_reference_t<iter_reference_t<Iter>>, dynamic_extent>>);
         } else if constexpr (random_access_iterator<Iter>) {
-            STATIC_ASSERT(same_as<decltype(result), subrange<Iter, Iter>>);
+            static_assert(same_as<decltype(result), subrange<Iter, Iter>>);
         } else {
-            STATIC_ASSERT(same_as<decltype(result), subrange<counted_iterator<Iter>, default_sentinel_t>>);
+            static_assert(same_as<decltype(result), subrange<counted_iterator<Iter>, default_sentinel_t>>);
         }
         assert(size(result) == 3);
         if constexpr (input_iterator<Iter>) {
@@ -58,6 +58,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT(with_writable_iterators<instantiator, int>::call());
+    static_assert(with_writable_iterators<instantiator, int>::call());
     with_writable_iterators<instantiator, int>::call();
 }

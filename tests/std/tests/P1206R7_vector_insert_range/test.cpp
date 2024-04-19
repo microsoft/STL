@@ -35,11 +35,11 @@ struct vector_instantiator {
     template <ranges::input_range R>
     static void call() {
         test_vector(0, R{some_ints}, some_ints);
-        STATIC_ASSERT(test_vector(0, R{some_ints}, some_ints));
+        static_assert(test_vector(0, R{some_ints}, some_ints));
         test_vector(5, R{some_ints}, short_result);
-        STATIC_ASSERT(test_vector(5, R{some_ints}, short_result));
+        static_assert(test_vector(5, R{some_ints}, short_result));
         test_vector(11, R{some_ints}, long_result);
-        STATIC_ASSERT(test_vector(11, R{some_ints}, long_result));
+        static_assert(test_vector(11, R{some_ints}, long_result));
     }
 };
 
@@ -69,11 +69,11 @@ struct vector_boo_instantiator {
     template <ranges::input_range R>
     static void call() {
         test_vector_bool(0, R{some_ints}, some_ints);
-        STATIC_ASSERT(test_vector_bool(0, R{some_ints}, some_ints));
+        static_assert(test_vector_bool(0, R{some_ints}, some_ints));
         test_vector_bool(5, R{some_ints}, other_short_result);
-        STATIC_ASSERT(test_vector_bool(5, R{some_ints}, other_short_result));
+        static_assert(test_vector_bool(5, R{some_ints}, other_short_result));
         test_vector_bool(11, R{some_ints}, other_long_result);
-        STATIC_ASSERT(test_vector_bool(11, R{some_ints}, other_long_result));
+        static_assert(test_vector_bool(11, R{some_ints}, other_long_result));
     }
 };
 
@@ -150,15 +150,15 @@ void test_lvalue_forward_list() {
 int main() {
     // Validate views
     test_copyable_views();
-    STATIC_ASSERT(test_copyable_views());
+    static_assert(test_copyable_views());
     test_move_only_views();
-    STATIC_ASSERT(test_move_only_views());
+    static_assert(test_move_only_views());
 
     // Validate non-views
     test_c_array();
-    STATIC_ASSERT(test_c_array());
+    static_assert(test_c_array());
     test_lvalue_vector();
-    STATIC_ASSERT(test_lvalue_vector());
+    static_assert(test_lvalue_vector());
     test_lvalue_forward_list();
 
     test_in<vector_instantiator, const int>();

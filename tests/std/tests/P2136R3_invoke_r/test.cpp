@@ -8,8 +8,6 @@
 
 #include <is_permissive.hpp>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 using namespace std;
 
 constexpr int square(int n) {
@@ -45,16 +43,16 @@ struct RefQualified {
 constexpr bool test_invoke_r() {
     auto v1 = invoke_r<long>(square, 3);
     assert(v1 == 9L);
-    STATIC_ASSERT(is_same_v<decltype(v1), long>);
+    static_assert(is_same_v<decltype(v1), long>);
 
     auto v2 = invoke_r<double>([]() -> int { return 5; });
     assert(v2 == 5);
-    STATIC_ASSERT(is_same_v<decltype(v2), double>);
-    STATIC_ASSERT(is_void_v<decltype(invoke_r<void>(square, 1))>);
+    static_assert(is_same_v<decltype(v2), double>);
+    static_assert(is_void_v<decltype(invoke_r<void>(square, 1))>);
 
     // TRANSITION, DevCom-1457457
-    STATIC_ASSERT(noexcept(invoke_r<int>(square, 3)) == is_permissive);
-    STATIC_ASSERT(noexcept(invoke(square, 3)) == is_permissive);
+    static_assert(noexcept(invoke_r<int>(square, 3)) == is_permissive);
+    static_assert(noexcept(invoke(square, 3)) == is_permissive);
 
     constexpr bool has_noexcept_in_type =
 #ifdef __cpp_noexcept_function_type
@@ -62,15 +60,15 @@ constexpr bool test_invoke_r() {
 #else
         false;
 #endif
-    STATIC_ASSERT(noexcept(invoke(square_noexcept, 3)) == has_noexcept_in_type);
-    STATIC_ASSERT(noexcept(invoke_r<int>(square_noexcept, 3)) == has_noexcept_in_type);
-    STATIC_ASSERT(noexcept(invoke(cstring)) == has_noexcept_in_type);
-    STATIC_ASSERT(!noexcept(invoke_r<string>(cstring)));
+    static_assert(noexcept(invoke(square_noexcept, 3)) == has_noexcept_in_type);
+    static_assert(noexcept(invoke_r<int>(square_noexcept, 3)) == has_noexcept_in_type);
+    static_assert(noexcept(invoke(cstring)) == has_noexcept_in_type);
+    static_assert(!noexcept(invoke_r<string>(cstring)));
 
     Thing thing;
     invoke_r<void>(&Thing::n, thing); // no nodiscard warning
-    STATIC_ASSERT(is_same_v<decltype(invoke(&Thing::moo, thing)), int&>);
-    STATIC_ASSERT(is_same_v<decltype(invoke_r<int>(&Thing::moo, thing)), int>);
+    static_assert(is_same_v<decltype(invoke(&Thing::moo, thing)), int&>);
+    static_assert(is_same_v<decltype(invoke_r<int>(&Thing::moo, thing)), int>);
 
     auto lambda = [counter = 0]() mutable { return ++counter; };
     assert(lambda() == 1);
@@ -110,5 +108,5 @@ static_assert(is_invocable_v<void (Union::*)() const, const Union&>);
 
 int main() {
     test_invoke_r();
-    STATIC_ASSERT(test_invoke_r());
+    static_assert(test_invoke_r());
 }

@@ -45,23 +45,23 @@ struct instantiator {
             {
                 using iconcept = iterator_traits<Cit>::iterator_concept;
                 if constexpr (forward_iterator<Iter>) {
-                    STATIC_ASSERT(same_as<iconcept, forward_iterator_tag>);
+                    static_assert(same_as<iconcept, forward_iterator_tag>);
                 } else {
-                    STATIC_ASSERT(same_as<typename iterator_traits<Cit>::iterator_concept, input_iterator_tag>);
+                    static_assert(same_as<typename iterator_traits<Cit>::iterator_concept, input_iterator_tag>);
                 }
 
                 using icat = iterator_traits<Cit>::iterator_category;
                 if constexpr (derived_from<icat, forward_iterator_tag>) {
-                    STATIC_ASSERT(same_as<icat, forward_iterator_tag>);
+                    static_assert(same_as<icat, forward_iterator_tag>);
                 } else {
-                    STATIC_ASSERT(same_as<icat, input_iterator_tag>);
+                    static_assert(same_as<icat, input_iterator_tag>);
                 }
 
                 using ipointer = iterator_traits<Cit>::pointer;
                 if constexpr (CanArrow<Cit>) {
-                    STATIC_ASSERT(same_as<ipointer, decltype(declval<const Cit&>().operator->())>);
+                    static_assert(same_as<ipointer, decltype(declval<const Cit&>().operator->())>);
                 } else {
-                    STATIC_ASSERT(same_as<ipointer, void>);
+                    static_assert(same_as<ipointer, void>);
                 }
             }
 
@@ -225,11 +225,11 @@ struct input_copy_but_no_eq {
 
     bool operator==(default_sentinel_t) const;
 };
-STATIC_ASSERT(input_iterator<input_copy_but_no_eq>);
-STATIC_ASSERT(no_iterator_traits<input_copy_but_no_eq>);
-STATIC_ASSERT(sentinel_for<default_sentinel_t, input_copy_but_no_eq>);
+static_assert(input_iterator<input_copy_but_no_eq>);
+static_assert(no_iterator_traits<input_copy_but_no_eq>);
+static_assert(sentinel_for<default_sentinel_t, input_copy_but_no_eq>);
 using ICID = iterator_traits<common_iterator<input_copy_but_no_eq, default_sentinel_t>>;
-STATIC_ASSERT(same_as<typename ICID::iterator_category, input_iterator_tag>);
+static_assert(same_as<typename ICID::iterator_category, input_iterator_tag>);
 
 struct poor_sentinel {
     poor_sentinel() = default;
