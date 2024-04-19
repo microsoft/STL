@@ -10355,7 +10355,9 @@ namespace ranges {
                 }
                 return _Cont;
             } else {
-                static_assert(false, "the program is ill-formed per N4981 [range.utility.conv.to]/2.1.5");
+                static_assert(false, "ranges::to requires the result to be constructible from the source range, either "
+                                     "by using a suitable constructor, or by inserting each element of the range into "
+                                     "the default-constructed object. (N4981 [range.utility.conv.to]/2.1.5)");
             }
         } else if constexpr (input_range<range_reference_t<_Rng>>) {
             const auto _Xform = [](auto&& _Elem) _STATIC_CALL_OPERATOR {
@@ -10363,7 +10365,10 @@ namespace ranges {
             };
             return _RANGES to<_Container>(views::transform(ref_view{_Range}, _Xform), _STD forward<_Types>(_Args)...);
         } else {
-            static_assert(false, "the program is ill-formed per N4981 [range.utility.conv.to]/2.3");
+            static_assert(false,
+                "ranges::to requires the elements of the source range to be either implicitly convertible to the "
+                "elements of the destination container, or be ranges themselves for ranges::to to be applied "
+                "recursively. (N4981 [range.utility.conv.to]/2.3)");
         }
     }
 
