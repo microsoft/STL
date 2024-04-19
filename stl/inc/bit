@@ -72,7 +72,7 @@ _NODISCARD constexpr _Ty byteswap(const _Ty _Val) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return static_cast<_Ty>(_Byteswap_uint64(static_cast<unsigned long long>(_Val)));
     } else {
-        static_assert(_Always_false<_Ty>, "Unexpected integer size");
+        static_assert(false, "Unexpected integer size");
     }
 }
 #endif // _HAS_CXX23

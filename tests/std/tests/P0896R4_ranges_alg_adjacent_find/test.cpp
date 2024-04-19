@@ -16,8 +16,8 @@ constexpr void smoke_test() {
     using P = std::pair<int, int>;
 
     // Validate dangling story
-    STATIC_ASSERT(same_as<decltype(adjacent_find(borrowed<false>{}, ranges::equal_to{})), ranges::dangling>);
-    STATIC_ASSERT(same_as<decltype(adjacent_find(borrowed<true>{}, ranges::equal_to{})), int*>);
+    static_assert(same_as<decltype(adjacent_find(borrowed<false>{}, ranges::equal_to{})), ranges::dangling>);
+    static_assert(same_as<decltype(adjacent_find(borrowed<true>{}, ranges::equal_to{})), int*>);
 
     const std::array pairs = {P{0, 42}, P{1, 42}, P{2, 42}, P{4, 42}, P{5, 42}};
     const auto pred        = [](const int x, const int y) { return y - x > 1; };
@@ -25,31 +25,31 @@ constexpr void smoke_test() {
     {
         // Validate range overload [found case]
         const auto result = adjacent_find(pairs, pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
+        static_assert(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
         assert(result == pairs.begin() + 2);
     }
     {
         // Validate iterator + sentinel overload [found case]
         const auto result = adjacent_find(pairs.begin(), pairs.end(), pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
+        static_assert(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
         assert(result == pairs.begin() + 2);
     }
     {
         // Validate range overload [not found case]
         const auto result = adjacent_find(pairs, ranges::equal_to{}, get_first);
-        STATIC_ASSERT(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
+        static_assert(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
         assert(result == pairs.end());
     }
     {
         // Validate iterator + sentinel overload [not found case]
         const auto result = adjacent_find(pairs.begin(), pairs.end(), ranges::equal_to{}, get_first);
-        STATIC_ASSERT(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
+        static_assert(same_as<decltype(result), const iterator_t<decltype(pairs)>>);
         assert(result == pairs.end());
     }
 }
 
 int main() {
-    STATIC_ASSERT((smoke_test(), true));
+    static_assert((smoke_test(), true));
     smoke_test();
 }
 

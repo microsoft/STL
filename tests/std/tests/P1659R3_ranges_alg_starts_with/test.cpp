@@ -64,7 +64,7 @@ struct instantiator {
     template <ranges::input_range In1, ranges::input_range In2>
     static void call() {
         test<In1, In2>();
-        STATIC_ASSERT((test<In1, In2>(), true));
+        static_assert((test<In1, In2>(), true));
     }
 };
 

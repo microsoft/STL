@@ -61,13 +61,13 @@ constexpr bool validate_iterators_sentinels(
     {
         // Validate iterator_category
         if constexpr (ranges::forward_range<BaseType>) {
-            STATIC_ASSERT(HasIteratorCategory<LocalZipTransformType>);
+            static_assert(HasIteratorCategory<LocalZipTransformType>);
 
             using Cat                = ranges::iterator_t<LocalZipTransformType>::iterator_category;
             using transform_result_t = TransformResultType<is_const, TransformType, RangeTypes...>;
 
             if constexpr (!is_reference_v<transform_result_t>) {
-                STATIC_ASSERT(same_as<Cat, input_iterator_tag>);
+                static_assert(same_as<Cat, input_iterator_tag>);
             } else {
                 constexpr auto check_iterator_tags_closure = []<class TagType>() {
                     return (derived_from<typename iterator_traits<
@@ -77,40 +77,40 @@ constexpr bool validate_iterators_sentinels(
                 };
 
                 if constexpr (check_iterator_tags_closure.template operator()<random_access_iterator_tag>()) {
-                    STATIC_ASSERT(same_as<Cat, random_access_iterator_tag>);
+                    static_assert(same_as<Cat, random_access_iterator_tag>);
                 } else if constexpr (check_iterator_tags_closure.template operator()<bidirectional_iterator_tag>()) {
-                    STATIC_ASSERT(same_as<Cat, bidirectional_iterator_tag>);
+                    static_assert(same_as<Cat, bidirectional_iterator_tag>);
                 } else if constexpr (check_iterator_tags_closure.template operator()<forward_iterator_tag>()) {
-                    STATIC_ASSERT(same_as<Cat, forward_iterator_tag>);
+                    static_assert(same_as<Cat, forward_iterator_tag>);
                 } else {
-                    STATIC_ASSERT(same_as<Cat, input_iterator_tag>);
+                    static_assert(same_as<Cat, input_iterator_tag>);
                 }
             }
         } else {
-            STATIC_ASSERT(!HasIteratorCategory<LocalZipTransformType>);
+            static_assert(!HasIteratorCategory<LocalZipTransformType>);
         }
 
         // Validate iterator_concept
-        STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_concept,
+        static_assert(same_as<typename ranges::iterator_t<LocalZipTransformType>::iterator_concept,
             typename ranges::iterator_t<BaseType>::iterator_concept>);
 
         // Validate value_type
-        STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::value_type,
+        static_assert(same_as<typename ranges::iterator_t<LocalZipTransformType>::value_type,
             remove_cvref_t<TransformResultType<is_const, TransformType, RangeTypes...>>>);
 
         // Validate difference_type
-        STATIC_ASSERT(same_as<typename ranges::iterator_t<LocalZipTransformType>::difference_type,
+        static_assert(same_as<typename ranges::iterator_t<LocalZipTransformType>::difference_type,
             ranges::range_difference_t<BaseType>>);
     }
 
     // Validate iterator constructors
-    STATIC_ASSERT(is_default_constructible_v<ranges::iterator_t<LocalZipTransformType>>
+    static_assert(is_default_constructible_v<ranges::iterator_t<LocalZipTransformType>>
                   == is_default_constructible_v<ranges::iterator_t<BaseType>>);
-    STATIC_ASSERT(is_nothrow_default_constructible_v<ranges::iterator_t<LocalZipTransformType>>
+    static_assert(is_nothrow_default_constructible_v<ranges::iterator_t<LocalZipTransformType>>
                   == is_nothrow_default_constructible_v<ranges::iterator_t<BaseType>>);
 
     if constexpr (is_const && convertible_to<ranges::iterator_t<InnerView>, ranges::iterator_t<const InnerView>>) {
-        STATIC_ASSERT(noexcept(ranges::iterator_t<LocalZipTransformType>{
+        static_assert(noexcept(ranges::iterator_t<LocalZipTransformType>{
                           declval<ranges::iterator_t<remove_const_t<LocalZipTransformType>>>()})
                       == is_nothrow_convertible_v<ranges::iterator_t<InnerView>, ranges::iterator_t<const InnerView>>);
     }
@@ -129,42 +129,42 @@ constexpr bool validate_iterators_sentinels(
         //
         // Notably, parent_t is a pointer and inner_.current_ is a tuple, and operator->() on a pointer and
         // std::get(std::tuple<...>) are both noexcept. We thus simplify the noexcept check as follows:
-        STATIC_ASSERT(noexcept(*itr)
+        static_assert(noexcept(*itr)
                       == noexcept(invoke(*declval<const ranges::_Movable_box<TransformType>&>(),
                           *declval<const ranges::iterator_t<maybe_const<is_const, AllView<RangeTypes>>>&>()...)));
     }
 
-    STATIC_ASSERT(noexcept(++itr) == noexcept(++declval<ranges::iterator_t<BaseType>&>()));
+    static_assert(noexcept(++itr) == noexcept(++declval<ranges::iterator_t<BaseType>&>()));
 
     if constexpr (ranges::forward_range<BaseType>) {
         same_as<ranges::iterator_t<LocalZipTransformType>> auto duplicate_itr = itr++;
         assert(*duplicate_itr == *ranges::begin(transformed_elements));
-        STATIC_ASSERT(noexcept(itr++)
+        static_assert(noexcept(itr++)
                       == is_nothrow_copy_constructible_v<ranges::iterator_t<LocalZipTransformType>>&& noexcept(++itr));
     } else {
         itr++;
-        STATIC_ASSERT(noexcept(itr++) == noexcept(++itr));
+        static_assert(noexcept(itr++) == noexcept(++itr));
     }
 
     assert(*++itr == transformed_elements[2]);
 
     if constexpr (ranges::bidirectional_range<BaseType>) {
         assert(*itr-- == transformed_elements[2]);
-        STATIC_ASSERT(noexcept(itr--)
+        static_assert(noexcept(itr--)
                       == is_nothrow_copy_constructible_v<ranges::iterator_t<LocalZipTransformType>>&& noexcept(--itr));
 
         assert(*--itr == transformed_elements[0]);
-        STATIC_ASSERT(noexcept(--itr) == noexcept(--declval<ranges::iterator_t<BaseType>&>()));
+        static_assert(noexcept(--itr) == noexcept(--declval<ranges::iterator_t<BaseType>&>()));
     }
 
     if constexpr (ranges::random_access_range<BaseType>) {
         itr += 2;
         assert(*itr == transformed_elements[2]);
-        STATIC_ASSERT(noexcept(itr += 2) == noexcept(declval<ranges::iterator_t<BaseType>&>() += 2));
+        static_assert(noexcept(itr += 2) == noexcept(declval<ranges::iterator_t<BaseType>&>() += 2));
 
         itr -= 2;
         assert(*itr == transformed_elements[0]);
-        STATIC_ASSERT(noexcept(itr -= 2) == noexcept(declval<ranges::iterator_t<BaseType>&>() -= 2));
+        static_assert(noexcept(itr -= 2) == noexcept(declval<ranges::iterator_t<BaseType>&>() -= 2));
 
         assert(itr[2] == transformed_elements[2]);
         {
@@ -173,22 +173,22 @@ constexpr bool validate_iterators_sentinels(
                                    noexcept(invoke(*declval<const ranges::_Movable_box<TransformType>&>(),
                                        itrs[static_cast<iter_difference_t<IteratorTypes>>(2)]...))) { return true; },
                     declval<const ZipIteratorTupleType&>()));
-            STATIC_ASSERT(noexcept(itr[2]) == is_random_access_noexcept);
+            static_assert(noexcept(itr[2]) == is_random_access_noexcept);
         }
 
         const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr2 = itr + 2;
         assert(*itr2 == transformed_elements[2]);
-        STATIC_ASSERT(noexcept(itr + 2) == noexcept(declval<const ranges::iterator_t<BaseType>&>() + 2)
+        static_assert(noexcept(itr + 2) == noexcept(declval<const ranges::iterator_t<BaseType>&>() + 2)
                       && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
 
         const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr3 = 2 + itr;
         assert(*itr3 == transformed_elements[2]);
-        STATIC_ASSERT(noexcept(2 + itr) == noexcept(declval<const ranges::iterator_t<BaseType>&>() + 2)
+        static_assert(noexcept(2 + itr) == noexcept(declval<const ranges::iterator_t<BaseType>&>() + 2)
                       && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
 
         const same_as<ranges::iterator_t<LocalZipTransformType>> auto itr4 = itr3 - 2;
         assert(*itr4 == transformed_elements[0]);
-        STATIC_ASSERT(noexcept(itr3 - 2) == noexcept(declval<const ranges::iterator_t<BaseType>&>() - 2)
+        static_assert(noexcept(itr3 - 2) == noexcept(declval<const ranges::iterator_t<BaseType>&>() - 2)
                       && is_nothrow_move_constructible_v<ranges::iterator_t<BaseType>>);
 
         using three_way_ordering_category = decltype(itr <=> itr2);
@@ -197,7 +197,7 @@ constexpr bool validate_iterators_sentinels(
         assert(itr <=> itr2 == three_way_ordering_category::less);
         assert(itr2 <=> itr == three_way_ordering_category::greater);
 
-        STATIC_ASSERT(noexcept(itr <=> itr2)
+        static_assert(noexcept(itr <=> itr2)
                       == noexcept(declval<const ranges::iterator_t<BaseType>&>()
                                   <=> declval<const ranges::iterator_t<BaseType>&>()));
     }
@@ -210,7 +210,7 @@ constexpr bool validate_iterators_sentinels(
         ranges::advance(advanced_itr2, 2);
 
         assert(advanced_itr1 == advanced_itr2);
-        STATIC_ASSERT(noexcept(advanced_itr1 == advanced_itr2)
+        static_assert(noexcept(advanced_itr1 == advanced_itr2)
                       == noexcept(declval<const ranges::iterator_t<BaseType>&>()
                                   == declval<const ranges::iterator_t<BaseType>&>()));
 
@@ -219,13 +219,13 @@ constexpr bool validate_iterators_sentinels(
 
     if constexpr (!ranges::common_range<LocalZipTransformType>) {
         // Validate sentinel constructors
-        STATIC_ASSERT(is_default_constructible_v<ranges::sentinel_t<LocalZipTransformType>>
+        static_assert(is_default_constructible_v<ranges::sentinel_t<LocalZipTransformType>>
                       == is_default_constructible_v<ranges::sentinel_t<BaseType>>);
-        STATIC_ASSERT(is_nothrow_default_constructible_v<ranges::sentinel_t<LocalZipTransformType>>
+        static_assert(is_nothrow_default_constructible_v<ranges::sentinel_t<LocalZipTransformType>>
                       == is_nothrow_default_constructible_v<ranges::sentinel_t<BaseType>>);
 
         if constexpr (is_const && convertible_to<ranges::sentinel_t<InnerView>, ranges::sentinel_t<const InnerView>>) {
-            STATIC_ASSERT(noexcept(ranges::sentinel_t<LocalZipTransformType>{
+            static_assert(noexcept(ranges::sentinel_t<LocalZipTransformType>{
                               declval<ranges::sentinel_t<remove_const_t<LocalZipTransformType>>>()})
                           == is_nothrow_move_constructible_v<ranges::sentinel_t<BaseType>>);
         }
@@ -243,7 +243,7 @@ constexpr bool validate_iterators_sentinels(
                     ranges::advance(end_iterator, ranges::size(transformed_elements));
 
                     assert(end_iterator == sentinel);
-                    STATIC_ASSERT(noexcept(end_iterator == sentinel)
+                    static_assert(noexcept(end_iterator == sentinel)
                                   == noexcept(declval<const comparison_iterator_t&>()
                                               == declval<const comparison_sentinel_t&>()));
 
@@ -267,13 +267,13 @@ constexpr bool validate_iterators_sentinels(
 
                     const same_as<difference_type> auto diff1 = sentinel - comparison_itr;
                     assert(diff1 == static_cast<difference_type>(ranges::size(transformed_elements)));
-                    STATIC_ASSERT(
+                    static_assert(
                         noexcept(sentinel - comparison_itr)
                         == noexcept(declval<const comparison_sentinel_t&>() - declval<const comparison_iterator_t&>()));
 
                     const same_as<difference_type> auto diff2 = comparison_itr - sentinel;
                     assert(diff2 == -static_cast<difference_type>(ranges::size(transformed_elements)));
-                    STATIC_ASSERT(
+                    static_assert(
                         noexcept(comparison_itr - sentinel)
                         == noexcept(declval<const comparison_iterator_t&>() - declval<const comparison_sentinel_t&>()));
                 }
@@ -303,24 +303,24 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
 
         constexpr bool are_views = (ranges::view<remove_cvref_t<RangeTypes>> && ...) && (sizeof...(RangeTypes) > 0);
 
-        STATIC_ASSERT(ranges::view<ZipTransformType>);
+        static_assert(ranges::view<ZipTransformType>);
 
         // Validate commonality
-        STATIC_ASSERT(ranges::common_range<ZipTransformType> == ranges::common_range<InnerView>);
+        static_assert(ranges::common_range<ZipTransformType> == ranges::common_range<InnerView>);
 
         constexpr bool has_const_begin_end =
             ranges::range<const InnerView>
             && regular_invocable<const TransformType&, ranges::range_reference_t<const RangeTypes>...>;
 
         if constexpr (has_const_begin_end) {
-            STATIC_ASSERT(ranges::common_range<const ZipTransformType> == ranges::common_range<const InnerView>);
+            static_assert(ranges::common_range<const ZipTransformType> == ranges::common_range<const InnerView>);
         }
 
         // Validate conditional default-initializability
-        STATIC_ASSERT(is_default_constructible_v<ZipTransformType>
+        static_assert(is_default_constructible_v<ZipTransformType>
                       == (is_default_constructible_v<ranges::_Movable_box<TransformType>>
                           && is_default_constructible_v<InnerView>) );
-        STATIC_ASSERT(is_nothrow_default_constructible_v<ZipTransformType>
+        static_assert(is_nothrow_default_constructible_v<ZipTransformType>
                       == (is_nothrow_default_constructible_v<ranges::_Movable_box<TransformType>>
                           && is_nothrow_default_constructible_v<InnerView>) );
 
@@ -330,22 +330,22 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             constexpr bool can_move_ranges           = are_views || (movable<remove_reference_t<RangeTypes>> && ...);
 
             // ... with lvalue arguments
-            STATIC_ASSERT(CanZipTransform<TransformType, RangeTypes&...>
+            static_assert(CanZipTransform<TransformType, RangeTypes&...>
                           == (can_copy_construct_ranges && move_constructible<TransformType>) );
             if constexpr (CanZipTransform<TransformType, RangeTypes&...>) {
                 using ExpectedZipTransformType = ZipTransformType;
                 constexpr bool is_noexcept     = is_nothrow_move_constructible_v<ranges::_Movable_box<TransformType>>
                                           && is_nothrow_constructible_v<InnerView, AllView<RangeTypes>&&...>;
 
-                STATIC_ASSERT(
+                static_assert(
                     same_as<decltype(views::zip_transform(std::forward<TransformType_>(transformer), test_ranges...)),
                         ExpectedZipTransformType>);
-                STATIC_ASSERT(noexcept(views::zip_transform(std::forward<TransformType_>(transformer), test_ranges...))
+                static_assert(noexcept(views::zip_transform(std::forward<TransformType_>(transformer), test_ranges...))
                               == is_noexcept);
             }
 
             // ... with const lvalue arguments
-            STATIC_ASSERT(CanZipTransform<TransformType, const remove_reference_t<RangeTypes>&...>
+            static_assert(CanZipTransform<TransformType, const remove_reference_t<RangeTypes>&...>
                           == (can_copy_construct_ranges && move_constructible<TransformType>) );
             if constexpr (CanZipTransform<TransformType, const remove_reference_t<RangeTypes>&...>) {
                 using ExpectedZipTransformType =
@@ -353,16 +353,16 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
                 constexpr bool is_noexcept = is_nothrow_move_constructible_v<ranges::_Movable_box<TransformType>>
                                           && is_nothrow_constructible_v<InnerView, const AllView<RangeTypes>&&...>;
 
-                STATIC_ASSERT(same_as<decltype(views::zip_transform(
+                static_assert(same_as<decltype(views::zip_transform(
                                           std::forward<TransformType_>(transformer), as_const(test_ranges)...)),
                     ExpectedZipTransformType>);
-                STATIC_ASSERT(
+                static_assert(
                     noexcept(views::zip_transform(std::forward<TransformType_>(transformer), as_const(test_ranges)...))
                     == is_noexcept);
             }
 
             // ... with rvalue arguments
-            STATIC_ASSERT(CanZipTransform<TransformType, remove_reference_t<RangeTypes>...>
+            static_assert(CanZipTransform<TransformType, remove_reference_t<RangeTypes>...>
                           == (can_move_ranges && move_constructible<TransformType>) );
             if constexpr (CanZipTransform<TransformType, remove_reference_t<RangeTypes>...>) {
                 using ExpectedZipTransformType =
@@ -370,16 +370,16 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
                 constexpr bool is_noexcept = is_nothrow_move_constructible_v<ranges::_Movable_box<TransformType>>
                                           && is_nothrow_constructible_v<InnerView, AllView<RangeTypes>&&...>;
 
-                STATIC_ASSERT(same_as<decltype(views::zip_transform(
+                static_assert(same_as<decltype(views::zip_transform(
                                           std::forward<TransformType_>(transformer), std::move(test_ranges)...)),
                     ExpectedZipTransformType>);
-                STATIC_ASSERT(
+                static_assert(
                     noexcept(views::zip_transform(std::forward<TransformType_>(transformer), std::move(test_ranges)...))
                     == is_noexcept);
             }
 
             // ... with const rvalue arguments
-            STATIC_ASSERT(CanZipTransform<TransformType, const remove_reference_t<RangeTypes>...>
+            static_assert(CanZipTransform<TransformType, const remove_reference_t<RangeTypes>...>
                           == (are_views && (copy_constructible<AllView<RangeTypes>> && ...)
                               && move_constructible<TransformType>) );
             if constexpr (CanZipTransform<TransformType, const remove_reference_t<RangeTypes>...>) {
@@ -388,10 +388,10 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
                 constexpr bool is_noexcept = is_nothrow_move_constructible_v<ranges::_Movable_box<TransformType>>
                                           && is_nothrow_constructible_v<InnerView, const AllView<RangeTypes>&&...>;
 
-                STATIC_ASSERT(same_as<decltype(views::zip_transform(std::forward<TransformType_>(transformer),
+                static_assert(same_as<decltype(views::zip_transform(std::forward<TransformType_>(transformer),
                                           std::move(as_const(test_ranges))...)),
                     ExpectedZipTransformType>);
-                STATIC_ASSERT(noexcept(views::zip_transform(
+                static_assert(noexcept(views::zip_transform(
                                   std::forward<TransformType_>(transformer), std::move(as_const(test_ranges))...))
                               == is_noexcept);
             }
@@ -403,22 +403,22 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
                 std::forward<TransformType_>(transformer), std::forward<RangeTypes>(test_ranges)...};
 
             // Validate zip_transform_view::size()
-            STATIC_ASSERT(CanMemberSize<ZipTransformType> == ranges::sized_range<InnerView>);
+            static_assert(CanMemberSize<ZipTransformType> == ranges::sized_range<InnerView>);
             if constexpr (CanMemberSize<ZipTransformType>) {
                 using expected_size_type                            = decltype(declval<InnerView&>().size());
                 same_as<expected_size_type> auto zip_transform_size = zipped_transformed_range.size();
 
                 assert(zip_transform_size == ranges::size(transformed_elements));
-                STATIC_ASSERT(noexcept(zipped_transformed_range.size()) == noexcept(declval<InnerView&>().size()));
+                static_assert(noexcept(zipped_transformed_range.size()) == noexcept(declval<InnerView&>().size()));
             }
 
-            STATIC_ASSERT(CanMemberSize<const ZipTransformType> == ranges::sized_range<const InnerView>);
+            static_assert(CanMemberSize<const ZipTransformType> == ranges::sized_range<const InnerView>);
             if constexpr (CanMemberSize<const ZipTransformType>) {
                 using expected_size_type                            = decltype(declval<const InnerView&>().size());
                 same_as<expected_size_type> auto zip_transform_size = as_const(zipped_transformed_range).size();
 
                 assert(zip_transform_size == ranges::size(transformed_elements));
-                STATIC_ASSERT(noexcept(as_const(zipped_transformed_range).size())
+                static_assert(noexcept(as_const(zipped_transformed_range).size())
                               == noexcept(declval<const InnerView&>().size()));
             }
 
@@ -431,36 +431,36 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             //
             // From here on out, we'll be reusing concepts which we already verified to reduce
             // redundancy.
-            STATIC_ASSERT(CanMemberEmpty<ZipTransformType>
+            static_assert(CanMemberEmpty<ZipTransformType>
                           == (ranges::sized_range<ZipTransformType> || ranges::forward_range<ZipTransformType>) );
             if constexpr (CanMemberEmpty<ZipTransformType>) {
                 assert(zipped_transformed_range.empty() == is_empty);
             }
 
-            STATIC_ASSERT(
+            static_assert(
                 CanMemberEmpty<const ZipTransformType>
                 == (ranges::sized_range<const ZipTransformType> || ranges::forward_range<const ZipTransformType>) );
             if constexpr (CanMemberEmpty<const ZipTransformType>) {
                 assert(as_const(zipped_transformed_range).empty() == is_empty);
             }
 
-            STATIC_ASSERT(CanBool<ZipTransformType> == CanMemberEmpty<ZipTransformType>);
+            static_assert(CanBool<ZipTransformType> == CanMemberEmpty<ZipTransformType>);
             if constexpr (CanBool<ZipTransformType>) {
                 assert(static_cast<bool>(zipped_transformed_range) != is_empty);
             }
 
-            STATIC_ASSERT(CanBool<const ZipTransformType> == CanMemberEmpty<const ZipTransformType>);
+            static_assert(CanBool<const ZipTransformType> == CanMemberEmpty<const ZipTransformType>);
             if constexpr (CanBool<const ZipTransformType>) {
                 assert(static_cast<bool>(as_const(zipped_transformed_range)) != is_empty);
             }
 
             // Validate view_interface::cbegin() and view_interface::cend()
-            STATIC_ASSERT(CanMemberCBegin<ZipTransformType>);
-            STATIC_ASSERT(CanMemberCEnd<ZipTransformType>);
+            static_assert(CanMemberCBegin<ZipTransformType>);
+            static_assert(CanMemberCEnd<ZipTransformType>);
             {
-                STATIC_ASSERT(
+                static_assert(
                     is_same_v<decltype(zipped_transformed_range.cbegin()), ranges::const_iterator_t<ZipTransformType>>);
-                STATIC_ASSERT(
+                static_assert(
                     is_same_v<decltype(zipped_transformed_range.cend()), ranges::const_sentinel_t<ZipTransformType>>);
 
                 if constexpr ((derived_from<remove_cvref_t<RangeTypes>, forward_iterator_tag> && ...)) {
@@ -474,12 +474,12 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
                 }
             }
 
-            STATIC_ASSERT(CanMemberCBegin<const ZipTransformType> == has_const_begin_end);
-            STATIC_ASSERT(CanMemberCEnd<const ZipTransformType> == has_const_begin_end);
+            static_assert(CanMemberCBegin<const ZipTransformType> == has_const_begin_end);
+            static_assert(CanMemberCEnd<const ZipTransformType> == has_const_begin_end);
             if constexpr (has_const_begin_end) {
-                STATIC_ASSERT(is_same_v<decltype(as_const(zipped_transformed_range).cbegin()),
+                static_assert(is_same_v<decltype(as_const(zipped_transformed_range).cbegin()),
                     ranges::const_iterator_t<const ZipTransformType>>);
-                STATIC_ASSERT(is_same_v<decltype(as_const(zipped_transformed_range).cend()),
+                static_assert(is_same_v<decltype(as_const(zipped_transformed_range).cend()),
                     ranges::const_sentinel_t<const ZipTransformType>>);
 
                 if constexpr ((derived_from<remove_cvref_t<RangeTypes>, forward_iterator_tag> && ...)) {
@@ -510,15 +510,15 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             //
             // This should never exist because zip_transform_view does not model
             // std::contiguous_range.
-            STATIC_ASSERT(!ranges::contiguous_range<ZipTransformType>);
-            STATIC_ASSERT(!CanMemberData<ZipTransformType>);
-            STATIC_ASSERT(!ranges::contiguous_range<const ZipTransformType>);
-            STATIC_ASSERT(!CanMemberData<const ZipTransformType>);
+            static_assert(!ranges::contiguous_range<ZipTransformType>);
+            static_assert(!CanMemberData<ZipTransformType>);
+            static_assert(!ranges::contiguous_range<const ZipTransformType>);
+            static_assert(!CanMemberData<const ZipTransformType>);
 
             // Validate view_interface::front()
             {
                 const auto validate_front_closure = [&]<bool IsConst>() {
-                    STATIC_ASSERT(CanMemberFront<maybe_const<IsConst, ZipTransformType>>
+                    static_assert(CanMemberFront<maybe_const<IsConst, ZipTransformType>>
                                   == ranges::forward_range<maybe_const<IsConst, ZipTransformType>>);
                     if constexpr (CanMemberFront<maybe_const<IsConst, ZipTransformType>>) {
                         using transform_result_t = TransformResultType<IsConst, TransformType, RangeTypes...>;
@@ -536,7 +536,7 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             // Validate view_interface::back()
             {
                 const auto validate_back_closure = [&]<bool IsConst>() {
-                    STATIC_ASSERT(CanMemberBack<maybe_const<IsConst, ZipTransformType>>
+                    static_assert(CanMemberBack<maybe_const<IsConst, ZipTransformType>>
                                   == (ranges::bidirectional_range<maybe_const<IsConst, ZipTransformType>>
                                       && ranges::common_range<maybe_const<IsConst, ZipTransformType>>) );
                     if constexpr (CanMemberBack<maybe_const<IsConst, ZipTransformType>>) {
@@ -555,7 +555,7 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             // Validate view_interface::operator[]
             {
                 const auto validate_random_access_closure = [&]<bool IsConst>() {
-                    STATIC_ASSERT(CanIndex<maybe_const<IsConst, ZipTransformType>>
+                    static_assert(CanIndex<maybe_const<IsConst, ZipTransformType>>
                                   == ranges::random_access_range<maybe_const<IsConst, ZipTransformType>>);
                     if constexpr (CanIndex<maybe_const<IsConst, ZipTransformType>>) {
                         using transform_result_t = TransformResultType<IsConst, TransformType, RangeTypes...>;
@@ -571,8 +571,8 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             }
 
             // Validate zip_transform_view::begin() and zip_transform_view::end()
-            STATIC_ASSERT(CanMemberBegin<ZipTransformType>);
-            STATIC_ASSERT(CanMemberEnd<ZipTransformType>);
+            static_assert(CanMemberBegin<ZipTransformType>);
+            static_assert(CanMemberEnd<ZipTransformType>);
             {
                 const same_as<ranges::iterator_t<ZipTransformType>> auto begin_itr = zipped_transformed_range.begin();
                 [[maybe_unused]] const same_as<ranges::sentinel_t<ZipTransformType>> auto end_sentinel =
@@ -583,14 +583,14 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
                            ranges::distance(zipped_transformed_range.begin(), zipped_transformed_range.end()))
                        == ranges::size(transformed_elements));
 
-                STATIC_ASSERT(noexcept(zipped_transformed_range.begin()) == noexcept(declval<InnerView&>().begin())
+                static_assert(noexcept(zipped_transformed_range.begin()) == noexcept(declval<InnerView&>().begin())
                               && is_nothrow_move_constructible_v<ranges::iterator_t<InnerView>>);
-                STATIC_ASSERT(noexcept(zipped_transformed_range.end()) == noexcept(declval<InnerView&>().end())
+                static_assert(noexcept(zipped_transformed_range.end()) == noexcept(declval<InnerView&>().end())
                               && is_nothrow_move_constructible_v<ranges::sentinel_t<InnerView>>);
             }
 
-            STATIC_ASSERT(CanMemberBegin<const ZipTransformType> == has_const_begin_end);
-            STATIC_ASSERT(CanMemberEnd<const ZipTransformType> == has_const_begin_end);
+            static_assert(CanMemberBegin<const ZipTransformType> == has_const_begin_end);
+            static_assert(CanMemberEnd<const ZipTransformType> == has_const_begin_end);
             if constexpr (has_const_begin_end) {
                 const same_as<ranges::iterator_t<const ZipTransformType>> auto begin_itr =
                     as_const(zipped_transformed_range).begin();
@@ -601,10 +601,10 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
                 assert(static_cast<decltype(ranges::size(transformed_elements))>(ranges::distance(
                            as_const(zipped_transformed_range).begin(), as_const(zipped_transformed_range).end()))
                        == ranges::size(transformed_elements));
-                STATIC_ASSERT(noexcept(as_const(zipped_transformed_range).begin())
+                static_assert(noexcept(as_const(zipped_transformed_range).begin())
                                   == noexcept(declval<const InnerView&>().begin())
                               && is_nothrow_move_constructible_v<ranges::iterator_t<const InnerView>>);
-                STATIC_ASSERT(
+                static_assert(
                     noexcept(as_const(zipped_transformed_range).end()) == noexcept(declval<const InnerView&>().end())
                     && is_nothrow_move_constructible_v<ranges::sentinel_t<const InnerView>>);
             }
@@ -799,9 +799,9 @@ constexpr bool validate_empty_ranges() {
 
     // When no ranges are used with the std::views::zip_transform CPO, the decayed return type of
     // the provided function must not be void.
-    STATIC_ASSERT(
+    static_assert(
         CanZipTransform<decltype([]() noexcept -> const auto& { return single_range_transform_results_array; })>);
-    STATIC_ASSERT(!CanZipTransform<decltype([]() noexcept -> void {})>);
+    static_assert(!CanZipTransform<decltype([]() noexcept -> void {})>);
 
     return true;
 }
@@ -813,8 +813,8 @@ constexpr bool test_gh_4414() {
         views::iota(0, 10) | views::filter([](int i) { return i % 2 != 0; }));
 
     using ZippedTransformed = decltype(evens_and_odds);
-    STATIC_ASSERT(ranges::range<ZippedTransformed>);
-    STATIC_ASSERT(!ranges::range<const ZippedTransformed>);
+    static_assert(ranges::range<ZippedTransformed>);
+    static_assert(!ranges::range<const ZippedTransformed>);
 
     constexpr int expected_results[]{1, 5, 9, 13, 17};
     return ranges::equal(expected_results, evens_and_odds);
@@ -823,7 +823,7 @@ constexpr bool test_gh_4414() {
 int main() {
     // Empty RangeTypes... parameter pack
     {
-        STATIC_ASSERT(validate_empty_ranges());
+        static_assert(validate_empty_ranges());
         validate_empty_ranges();
     }
 
@@ -832,7 +832,7 @@ int main() {
         // ... copyable, single view
         constexpr span<const int> int_span{test_element_array_one};
 
-        STATIC_ASSERT(test_one(one_element_transform_closure, single_range_transform_results_array, int_span));
+        static_assert(test_one(one_element_transform_closure, single_range_transform_results_array, int_span));
         test_one(one_element_transform_closure, single_range_transform_results_array, int_span);
     }
 
@@ -842,7 +842,7 @@ int main() {
         constexpr span<const int> second_span{test_element_array_two};
         constexpr span<const int> third_span{test_element_array_three};
 
-        STATIC_ASSERT(test_one(
+        static_assert(test_one(
             three_element_transform_closure, three_range_transform_results_array, first_span, second_span, third_span));
         test_one(
             three_element_transform_closure, three_range_transform_results_array, first_span, second_span, third_span);
@@ -850,30 +850,30 @@ int main() {
 
     {
         // ... move-only, single and multiple views
-        STATIC_ASSERT(instantiation_test<move_only_view_instantiator>());
+        static_assert(instantiation_test<move_only_view_instantiator>());
         instantiation_test<move_only_view_instantiator>();
     }
 
     {
         // ... immobile, single and multiple views
-        STATIC_ASSERT(instantiation_test<instantiator>());
+        static_assert(instantiation_test<instantiator>());
         instantiation_test<instantiator>();
     }
 
     // Validate non-views
     {
-        STATIC_ASSERT(
+        static_assert(
             test_one(one_element_transform_closure, single_range_transform_results_array, test_element_array_one));
         test_one(one_element_transform_closure, single_range_transform_results_array, test_element_array_one);
     }
     {
-        STATIC_ASSERT(test_one(three_element_transform_closure, three_range_transform_results_array,
+        static_assert(test_one(three_element_transform_closure, three_range_transform_results_array,
             test_element_array_one, test_element_array_two, test_element_array_three));
         test_one(three_element_transform_closure, three_range_transform_results_array, test_element_array_one,
             test_element_array_two, test_element_array_three);
     }
     {
-        STATIC_ASSERT(test_gh_4414());
+        static_assert(test_gh_4414());
         assert(test_gh_4414());
     }
 

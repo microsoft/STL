@@ -32,9 +32,6 @@ using namespace std;
 // underlying sequence. However, value-initialized iterators may be compared and
 // shall compare equal to other value-initialized iterators of the same type."
 
-template <typename Depend>
-struct always_false : false_type {};
-
 // Note we take the iterators under test by const& to avoid invoking copy constructors
 // which may invalidate the "placement new on top of garbage" test case.
 template <typename FwdIt>

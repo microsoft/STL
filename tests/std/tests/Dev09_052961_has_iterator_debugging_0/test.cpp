@@ -56,8 +56,6 @@
 
 using namespace std;
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 #pragma warning(push)
 #pragma warning(disable : 4582) // 'uninit_vector::storage': constructor is not implicitly called
 #pragma warning(disable : 4583) // 'uninit_vector::storage': destructor is not implicitly called

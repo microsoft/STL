@@ -46,13 +46,13 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
     using R  = join_with_view<V, DV>;
 
     // Validate type properties
-    STATIC_ASSERT(ranges::view<R>);
-    STATIC_ASSERT(input_range<R>);
-    STATIC_ASSERT(forward_range<R> == (deref_is_glvalue && forward_range<Outer> && forward_range<Inner>) );
-    STATIC_ASSERT(bidirectional_range<R>
+    static_assert(ranges::view<R>);
+    static_assert(input_range<R>);
+    static_assert(forward_range<R> == (deref_is_glvalue && forward_range<Outer> && forward_range<Inner>) );
+    static_assert(bidirectional_range<R>
                   == (deref_is_glvalue && bidirectional_range<Outer> && bidirectional_range<Inner>
                       && common_range<Inner> && bidirectional_range<DV> && common_range<DV>) );
-    STATIC_ASSERT(!ranges::random_access_range<R>);
+    static_assert(!ranges::random_access_range<R>);
 
     // Validate iterator_category
     if constexpr (forward_range<R>) {
@@ -64,18 +64,18 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
         using PatternCat  = iterator_traits<PatternIter>::iterator_category;
 
         if constexpr (!is_reference_v<common_reference_t<iter_reference_t<InnerIter>, iter_reference_t<PatternIter>>>) {
-            STATIC_ASSERT(same_as<typename iterator_t<R>::iterator_category, input_iterator_tag>);
+            static_assert(same_as<typename iterator_t<R>::iterator_category, input_iterator_tag>);
         } else if constexpr (derived_from<OuterCat, bidirectional_iterator_tag>
                              && derived_from<InnerCat, bidirectional_iterator_tag>
                              && derived_from<PatternCat, bidirectional_iterator_tag>
                              && common_range<range_reference_t<Outer>> && common_range<DV>) {
-            STATIC_ASSERT(same_as<typename iterator_t<R>::iterator_category, bidirectional_iterator_tag>);
+            static_assert(same_as<typename iterator_t<R>::iterator_category, bidirectional_iterator_tag>);
         } else if constexpr (derived_from<OuterCat, forward_iterator_tag>
                              && derived_from<InnerCat, forward_iterator_tag>
                              && derived_from<PatternCat, forward_iterator_tag>) {
-            STATIC_ASSERT(same_as<typename iterator_t<R>::iterator_category, forward_iterator_tag>);
+            static_assert(same_as<typename iterator_t<R>::iterator_category, forward_iterator_tag>);
         } else {
-            STATIC_ASSERT(same_as<typename iterator_t<R>::iterator_category, input_iterator_tag>);
+            static_assert(same_as<typename iterator_t<R>::iterator_category, input_iterator_tag>);
         }
     }
 
@@ -88,18 +88,18 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
         using PatternCat  = iterator_traits<PatternIter>::iterator_category;
 
         if constexpr (!is_reference_v<common_reference_t<iter_reference_t<InnerIter>, iter_reference_t<PatternIter>>>) {
-            STATIC_ASSERT(same_as<typename iterator_t<const R>::iterator_category, input_iterator_tag>);
+            static_assert(same_as<typename iterator_t<const R>::iterator_category, input_iterator_tag>);
         } else if constexpr (derived_from<OuterCat, bidirectional_iterator_tag>
                              && derived_from<InnerCat, bidirectional_iterator_tag>
                              && derived_from<PatternCat, bidirectional_iterator_tag>
                              && common_range<range_reference_t<const Outer>> && common_range<const DV>) {
-            STATIC_ASSERT(same_as<typename iterator_t<const R>::iterator_category, bidirectional_iterator_tag>);
+            static_assert(same_as<typename iterator_t<const R>::iterator_category, bidirectional_iterator_tag>);
         } else if constexpr (derived_from<OuterCat, forward_iterator_tag>
                              && derived_from<InnerCat, forward_iterator_tag>
                              && derived_from<PatternCat, forward_iterator_tag>) {
-            STATIC_ASSERT(same_as<typename iterator_t<const R>::iterator_category, forward_iterator_tag>);
+            static_assert(same_as<typename iterator_t<const R>::iterator_category, forward_iterator_tag>);
         } else {
-            STATIC_ASSERT(same_as<typename iterator_t<const R>::iterator_category, input_iterator_tag>);
+            static_assert(same_as<typename iterator_t<const R>::iterator_category, input_iterator_tag>);
         }
     }
 
@@ -108,57 +108,57 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
     const auto closure     = views::join_with(delimiter);
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewJoinWith<Outer&, Delimiter&> == (!is_view || copy_constructible<V>) );
+    static_assert(CanViewJoinWith<Outer&, Delimiter&> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewJoinWith<Outer&, Delimiter&>) {
         constexpr bool is_noexcept =
             (!is_view || is_nothrow_copy_constructible_v<V>) &&is_nothrow_copy_constructible_v<DV>;
 
-        STATIC_ASSERT(same_as<decltype(views::join_with(rng, delimiter)), R>);
-        STATIC_ASSERT(noexcept(views::join_with(rng, delimiter)) == is_noexcept);
+        static_assert(same_as<decltype(views::join_with(rng, delimiter)), R>);
+        static_assert(noexcept(views::join_with(rng, delimiter)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(rng | closure), R>);
-        STATIC_ASSERT(noexcept(rng | closure) == is_noexcept);
+        static_assert(same_as<decltype(rng | closure), R>);
+        static_assert(noexcept(rng | closure) == is_noexcept);
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(
+    static_assert(
         CanViewJoinWith<const remove_reference_t<Outer>&, Delimiter&> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewJoinWith<const remove_reference_t<Outer>&, Delimiter&>) {
         using RC = join_with_view<views::all_t<const remove_reference_t<Outer>&>, DV>;
         constexpr bool is_noexcept =
             (!is_view || is_nothrow_copy_constructible_v<V>) &&is_nothrow_copy_constructible_v<DV>;
 
-        STATIC_ASSERT(same_as<decltype(views::join_with(as_const(rng), delimiter)), RC>);
-        STATIC_ASSERT(noexcept(views::join_with(as_const(rng), delimiter)) == is_noexcept);
+        static_assert(same_as<decltype(views::join_with(as_const(rng), delimiter)), RC>);
+        static_assert(noexcept(views::join_with(as_const(rng), delimiter)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(as_const(rng) | closure), RC>);
-        STATIC_ASSERT(noexcept(as_const(rng) | closure) == is_noexcept);
+        static_assert(same_as<decltype(as_const(rng) | closure), RC>);
+        static_assert(noexcept(as_const(rng) | closure) == is_noexcept);
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(
+    static_assert(
         CanViewJoinWith<remove_reference_t<Outer>, Delimiter&> == (is_view || movable<remove_reference<Outer>>) );
     if constexpr (CanViewJoinWith<remove_reference_t<Outer>, Delimiter&>) {
         using RS                   = join_with_view<views::all_t<remove_reference_t<Outer>>, DV>;
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V> && is_nothrow_copy_constructible_v<DV>;
 
-        STATIC_ASSERT(same_as<decltype(views::join_with(move(rng), delimiter)), RS>);
-        STATIC_ASSERT(noexcept(views::join_with(move(rng), delimiter)) == is_noexcept);
+        static_assert(same_as<decltype(views::join_with(move(rng), delimiter)), RS>);
+        static_assert(noexcept(views::join_with(move(rng), delimiter)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(rng) | closure), RS>);
-        STATIC_ASSERT(noexcept(move(rng) | closure) == is_noexcept);
+        static_assert(same_as<decltype(move(rng) | closure), RS>);
+        static_assert(noexcept(move(rng) | closure) == is_noexcept);
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(CanViewJoinWith<const remove_reference_t<Outer>, Delimiter&> == (is_view && copy_constructible<V>) );
+    static_assert(CanViewJoinWith<const remove_reference_t<Outer>, Delimiter&> == (is_view && copy_constructible<V>) );
     if constexpr (CanViewJoinWith<const remove_reference_t<Outer>, Delimiter&>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V> && is_nothrow_copy_constructible_v<DV>;
 
-        STATIC_ASSERT(same_as<decltype(views::join_with(move(as_const(rng)), delimiter)), R>);
-        STATIC_ASSERT(noexcept(views::join_with(move(as_const(rng)), delimiter)) == is_noexcept);
+        static_assert(same_as<decltype(views::join_with(move(as_const(rng)), delimiter)), R>);
+        static_assert(noexcept(views::join_with(move(as_const(rng)), delimiter)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | closure), R>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | closure) == is_noexcept);
+        static_assert(same_as<decltype(move(as_const(rng)) | closure), R>);
+        static_assert(noexcept(move(as_const(rng)) | closure) == is_noexcept);
     }
 
     // Validate deduction guide
@@ -167,16 +167,16 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
 
     // Validate view_interface::empty and operator bool
     const bool is_empty = ranges::empty(expected);
-    STATIC_ASSERT(CanEmpty<R> == forward_range<R>);
-    STATIC_ASSERT(CanMemberEmpty<R> == CanEmpty<R>);
-    STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
+    static_assert(CanEmpty<R> == forward_range<R>);
+    static_assert(CanMemberEmpty<R> == CanEmpty<R>);
+    static_assert(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
         assert(static_cast<bool>(r) == !is_empty);
 
-        STATIC_ASSERT(CanEmpty<const R> == forward_range<const R>);
-        STATIC_ASSERT(CanMemberEmpty<const R> == CanEmpty<const R>);
-        STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
+        static_assert(CanEmpty<const R> == forward_range<const R>);
+        static_assert(CanMemberEmpty<const R> == CanEmpty<const R>);
+        static_assert(CanBool<const R> == CanEmpty<const R>);
         if constexpr (CanMemberEmpty<const R>) {
             assert(as_const(r).empty() == is_empty);
             assert(static_cast<bool>(as_const(r)) == !is_empty);
@@ -184,8 +184,8 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
     }
 
     // Validate join_with_view::begin
-    STATIC_ASSERT(CanMemberBegin<R>);
-    STATIC_ASSERT(CanMemberBegin<const R&>
+    static_assert(CanMemberBegin<R>);
+    static_assert(CanMemberBegin<const R&>
                   == (forward_range<const V> && forward_range<const DV> && is_reference_v<range_reference_t<const V>>
                       && input_range<range_reference_t<const V>>) );
     if (forward_range<R>) { // intentionally not if constexpr
@@ -221,10 +221,10 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
 
     // Also validate that join_with_view iterators are default-constructible
     {
-        STATIC_ASSERT(is_default_constructible_v<iterator_t<R>>);
+        static_assert(is_default_constructible_v<iterator_t<R>>);
         [[maybe_unused]] iterator_t<R> i;
         if constexpr (CanMemberBegin<const R>) {
-            STATIC_ASSERT(is_default_constructible_v<iterator_t<const R>>);
+            static_assert(is_default_constructible_v<iterator_t<const R>>);
             [[maybe_unused]] iterator_t<const R> ci;
         }
     }
@@ -268,16 +268,16 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
     }
 
     // Validate view_interface::data
-    STATIC_ASSERT(!CanData<R>);
-    STATIC_ASSERT(!CanData<const R>);
+    static_assert(!CanData<R>);
+    static_assert(!CanData<const R>);
 
     // Validate view_interface::size
-    STATIC_ASSERT(!CanSize<R>);
-    STATIC_ASSERT(!CanSize<const R>);
+    static_assert(!CanSize<R>);
+    static_assert(!CanSize<const R>);
 
     // Validate view_interface::operator[]
-    STATIC_ASSERT(!CanIndex<R>);
-    STATIC_ASSERT(!CanIndex<const R>);
+    static_assert(!CanIndex<R>);
+    static_assert(!CanIndex<const R>);
 
     // Validate view_interface::front and back
     static_assert(CanMemberFront<R> == forward_range<R>);
@@ -670,8 +670,8 @@ void test_lwg3700() { // COMPILE-ONLY
     auto r  = views::iota(0, 5) | views::filter([](auto) { return true; });
     auto j  = views::single(r) | views::join_with(-1);
     using J = decltype(j);
-    STATIC_ASSERT(!CanMemberBegin<const J>);
-    STATIC_ASSERT(!CanMemberEnd<const J>);
+    static_assert(!CanMemberBegin<const J>);
+    static_assert(!CanMemberEnd<const J>);
 }
 
 int main() {
@@ -681,11 +681,11 @@ int main() {
         assert(ranges::empty(filtered_and_joined));
     }
 
-    STATIC_ASSERT(instantiation_test());
+    static_assert(instantiation_test());
     instantiation_test();
 
     test_valueless_iterator();
 
-    STATIC_ASSERT(test_lwg3698());
+    static_assert(test_lwg3698());
     assert(test_lwg3698());
 }

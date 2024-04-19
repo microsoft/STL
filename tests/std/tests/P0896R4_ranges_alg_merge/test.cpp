@@ -14,16 +14,16 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate that merge_result aliases in_in_out_result
-STATIC_ASSERT(same_as<ranges::merge_result<int, void*, double>, ranges::in_in_out_result<int, void*, double>>);
+static_assert(same_as<ranges::merge_result<int, void*, double>, ranges::in_in_out_result<int, void*, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::merge(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::merge(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>)),
     ranges::merge_result<ranges::dangling, ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::merge(borrowed<false>{}, borrowed<true>{}, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::merge(borrowed<false>{}, borrowed<true>{}, nullptr_to<int>)),
     ranges::merge_result<ranges::dangling, int*, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::merge(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::merge(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>)),
     ranges::merge_result<int*, ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::merge(borrowed<true>{}, borrowed<true>{}, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::merge(borrowed<true>{}, borrowed<true>{}, nullptr_to<int>)),
     ranges::merge_result<int*, int*, int*>>);
 
 struct instantiator {
@@ -150,6 +150,6 @@ constexpr void run_tests() {
 }
 
 int main() {
-    STATIC_ASSERT((run_tests(), true));
+    static_assert((run_tests(), true));
     run_tests();
 }

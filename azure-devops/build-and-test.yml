@@ -1,0 +1,65 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: hostArch
+  type: string
+- name: targetArch
+  type: string
+- name: analyzeBuild
+  type: boolean
+  default: false
+- name: asanBuild
+  type: boolean
+  default: false
+- name: buildBenchmarks
+  type: boolean
+  default: false
+- name: ctestOptions
+  type: string
+  default: '--exclude-regex stlasan'
+- name: numShards
+  type: number
+  default: 8
+- name: skipTesting
+  type: boolean
+  default: false
+- name: testsBuildOnly
+  type: boolean
+  default: false
+jobs:
+- job: '${{ parameters.targetArch }}'
+  strategy:
+    parallel: ${{ parameters.numShards }}
+  timeoutInMinutes: 30
+  steps:
+  - template: checkout-self.yml
+  - template: checkout-submodule.yml
+    parameters:
+      enabled: ${{ not(parameters.skipTesting) }}
+      path: 'llvm-project'
+      url: 'https://github.com/llvm/llvm-project.git'
+  - template: checkout-submodule.yml
+    parameters:
+      enabled: true
+      path: 'boost-math'
+      url: 'https://github.com/boostorg/math.git'
+  - template: checkout-submodule.yml
+    parameters:
+      enabled: ${{ parameters.buildBenchmarks }}
+      path: 'benchmarks/google-benchmark'
+      url: 'https://github.com/google/benchmark.git'
+  - template: cmake-configure-build.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
+      analyzeBuild: ${{ parameters.analyzeBuild }}
+      asanBuild: ${{ parameters.asanBuild }}
+      buildBenchmarks: ${{ parameters.buildBenchmarks }}
+      testsBuildOnly: ${{ parameters.testsBuildOnly }}
+  - template: run-tests.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
+      ctestOptions: ${{ parameters.ctestOptions }}
+      skipTesting: ${{ parameters.skipTesting }}

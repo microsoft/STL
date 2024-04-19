@@ -14,8 +14,8 @@
 using namespace std;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_fill(borrowed<true>{}, 42)), int*>);
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_fill(borrowed<false>{}, 42)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::uninitialized_fill(borrowed<true>{}, 42)), int*>);
+static_assert(same_as<decltype(ranges::uninitialized_fill(borrowed<false>{}, 42)), ranges::dangling>);
 
 struct int_wrapper {
     inline static int constructions = 0;
@@ -44,7 +44,7 @@ struct int_wrapper {
 
     auto operator<=>(const int_wrapper&) const = default;
 };
-STATIC_ASSERT(default_initializable<int_wrapper>);
+static_assert(default_initializable<int_wrapper>);
 
 #ifdef _M_CEE // TRANSITION, VSO-1664341
 constexpr auto get_int_wrapper_val = [](const int_wrapper& w) { return w.val; };

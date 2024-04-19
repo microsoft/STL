@@ -16,8 +16,8 @@ const unsigned int seed = random_device{}();
 mt19937 gen{seed};
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::shuffle(borrowed<false>{}, gen)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::shuffle(borrowed<true>{}, gen)), int*>);
+static_assert(same_as<decltype(ranges::shuffle(borrowed<false>{}, gen)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::shuffle(borrowed<true>{}, gen)), int*>);
 
 struct instantiator {
     static constexpr int expected[7] = {1, 2, 3, 4, 5, 6, 7};
@@ -31,7 +31,7 @@ struct instantiator {
             ReadWrite wrapped_input{input};
 
             auto result = shuffle(wrapped_input.begin(), wrapped_input.end(), gen);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<ReadWrite>>);
+            static_assert(same_as<decltype(result), iterator_t<ReadWrite>>);
             assert(result == wrapped_input.end());
 
             sort(begin(input), end(input));
@@ -42,7 +42,7 @@ struct instantiator {
             ReadWrite wrapped_input{input};
 
             auto result = shuffle(wrapped_input, gen);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<ReadWrite>>);
+            static_assert(same_as<decltype(result), iterator_t<ReadWrite>>);
             assert(result == wrapped_input.end());
 
             sort(begin(input), end(input));
@@ -64,7 +64,7 @@ void test_urbg() { // COMPILE-ONLY
         }
     };
 
-    STATIC_ASSERT(uniform_random_bit_generator<RandGen>);
+    static_assert(uniform_random_bit_generator<RandGen>);
 
     int arr[1] = {};
     ranges::shuffle(arr, RandGen{});

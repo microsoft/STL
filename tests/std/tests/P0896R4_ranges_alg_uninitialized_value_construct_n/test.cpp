@@ -37,7 +37,7 @@ struct int_wrapper {
 
     auto operator<=>(const int_wrapper&) const = default;
 };
-STATIC_ASSERT(default_initializable<int_wrapper>);
+static_assert(default_initializable<int_wrapper>);
 
 #ifdef _M_CEE // TRANSITION, VSO-1664341
 constexpr auto get_int_wrapper_val = [](const int_wrapper& w) { return w.val; };

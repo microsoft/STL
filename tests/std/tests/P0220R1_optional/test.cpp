@@ -39,8 +39,6 @@
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 #include <stdlib.h>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 // clang-format off
 // LLVM SOURCES BEGIN
 // -- BEGIN: test/std/utilities/utility/utility.inplace/inplace.pass.cpp
@@ -8116,19 +8114,19 @@ namespace msvc {
         template <class T>
         constexpr bool check_size = sizeof(std::optional<T>) == sizeof(T) + alignof(T);
 
-        STATIC_ASSERT(check_size<bool>);
-        STATIC_ASSERT(check_size<char>);
-        STATIC_ASSERT(check_size<unsigned char>);
-        STATIC_ASSERT(check_size<int>);
-        STATIC_ASSERT(check_size<unsigned int>);
-        STATIC_ASSERT(check_size<long>);
-        STATIC_ASSERT(check_size<long long>);
-        STATIC_ASSERT(check_size<float>);
-        STATIC_ASSERT(check_size<double>);
-        STATIC_ASSERT(check_size<void*>);
-        STATIC_ASSERT(check_size<empty<0>>);
-        STATIC_ASSERT(check_size<not_empty>);
-        STATIC_ASSERT(check_size<many_bases>);
+        static_assert(check_size<bool>);
+        static_assert(check_size<char>);
+        static_assert(check_size<unsigned char>);
+        static_assert(check_size<int>);
+        static_assert(check_size<unsigned int>);
+        static_assert(check_size<long>);
+        static_assert(check_size<long long>);
+        static_assert(check_size<float>);
+        static_assert(check_size<double>);
+        static_assert(check_size<void*>);
+        static_assert(check_size<empty<0>>);
+        static_assert(check_size<not_empty>);
+        static_assert(check_size<many_bases>);
     } // namespace size
 
     namespace lwg2842 {
@@ -8142,15 +8140,15 @@ namespace msvc {
         // ConvertibleFromInPlace is not default constructible, so these constructions do not match
         // optional(in_place_t, args...). They will match the converting constructor template if it does not properly
         // reject arguments that decay to std::in_place_t as required by LWG-2842.
-        STATIC_ASSERT(!is_constructible_v<O, in_place_t>);
-        STATIC_ASSERT(!is_constructible_v<O, in_place_t&>);
-        STATIC_ASSERT(!is_constructible_v<O, const in_place_t>);
-        STATIC_ASSERT(!is_constructible_v<O, const in_place_t&>);
+        static_assert(!is_constructible_v<O, in_place_t>);
+        static_assert(!is_constructible_v<O, in_place_t&>);
+        static_assert(!is_constructible_v<O, const in_place_t>);
+        static_assert(!is_constructible_v<O, const in_place_t&>);
     } // namespace lwg2842
 
     namespace lwg3836 {
-        STATIC_ASSERT(std::is_convertible_v<std::optional<int>, std::optional<bool>>);
-        STATIC_ASSERT(std::is_convertible_v<const std::optional<int>&, std::optional<bool>>);
+        static_assert(std::is_convertible_v<std::optional<int>, std::optional<bool>>);
+        static_assert(std::is_convertible_v<const std::optional<int>&, std::optional<bool>>);
 
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
@@ -8168,7 +8166,7 @@ namespace msvc {
 #undef CONSTEXPR20
 
 #if _HAS_CXX20
-        STATIC_ASSERT(run_test());
+        static_assert(run_test());
 #endif // _HAS_CXX20
     } // namespace lwg3836
 
@@ -8194,8 +8192,8 @@ namespace msvc {
         // Defend against regression of VSO-508126
         void run_test() {
             struct S {};
-            STATIC_ASSERT(!std::is_copy_constructible_v<volatile S>);
-            STATIC_ASSERT(!std::is_copy_constructible_v<std::optional<volatile S>>);
+            static_assert(!std::is_copy_constructible_v<volatile S>);
+            static_assert(!std::is_copy_constructible_v<std::optional<volatile S>>);
         }
     } // namespace vso508126
 
@@ -8306,9 +8304,9 @@ namespace msvc {
             {
                 std::optional<const int> oc{};
                 oc.emplace(0);
-                STATIC_ASSERT(!std::is_copy_assignable_v<decltype(oc)>);
-                STATIC_ASSERT(!std::is_move_assignable_v<decltype(oc)>);
-                STATIC_ASSERT(!std::is_swappable_v<decltype(oc)>);
+                static_assert(!std::is_copy_assignable_v<decltype(oc)>);
+                static_assert(!std::is_move_assignable_v<decltype(oc)>);
+                static_assert(!std::is_swappable_v<decltype(oc)>);
 
                 std::optional<volatile int> ov{};
                 std::optional<volatile int> ov2{};
@@ -8319,9 +8317,9 @@ namespace msvc {
 
                 std::optional<const volatile int> ocv{};
                 ocv.emplace(0);
-                STATIC_ASSERT(!std::is_copy_assignable_v<decltype(ocv)>);
-                STATIC_ASSERT(!std::is_move_assignable_v<decltype(ocv)>);
-                STATIC_ASSERT(!std::is_swappable_v<decltype(ocv)>);
+                static_assert(!std::is_copy_assignable_v<decltype(ocv)>);
+                static_assert(!std::is_move_assignable_v<decltype(ocv)>);
+                static_assert(!std::is_swappable_v<decltype(ocv)>);
             }
             {
                 std::optional<const CvAssignable> oc{};

@@ -15,8 +15,8 @@ constexpr auto not_matches = [](const int val) { return val != 42; };
 constexpr auto not_equals  = [](auto x) { return [x](auto&& y) { return y != x; }; };
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::find_last_if_not(borrowed<false>{}, not_matches)), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::find_last_if_not(borrowed<true>{}, not_matches)), ranges::subrange<int*>>);
+static_assert(same_as<decltype(ranges::find_last_if_not(borrowed<false>{}, not_matches)), ranges::dangling>);
+static_assert(same_as<decltype(ranges::find_last_if_not(borrowed<true>{}, not_matches)), ranges::subrange<int*>>);
 
 template <class T, class U>
 constexpr void check_value(const T& found, const U& value) {
@@ -40,27 +40,27 @@ struct instantiator {
             { // Validate range overload [found case]
                 Read wrapped_input{haystack};
                 const auto result = find_last_if_not(wrapped_input, not_equals(value), get_first);
-                STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<iterator_t<Read>>>);
+                static_assert(same_as<decltype(result), const ranges::subrange<iterator_t<Read>>>);
                 check_value(result.front(), value);
             }
             { // Validate iterator + sentinel overload [found case]
                 Read wrapped_input{haystack};
                 const auto result =
                     find_last_if_not(wrapped_input.begin(), wrapped_input.end(), not_equals(value), get_first);
-                STATIC_ASSERT(same_as<decltype(result), const ranges::subrange<iterator_t<Read>>>);
+                static_assert(same_as<decltype(result), const ranges::subrange<iterator_t<Read>>>);
                 check_value(result.front(), value);
             }
         }
         { // Validate range overload [not found case]
             Read wrapped_input{haystack};
             auto result = find_last_if_not(wrapped_input, not_equals(42), get_first);
-            STATIC_ASSERT(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
+            static_assert(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
             assert(result.begin() == wrapped_input.end());
         }
         { // Validate iterator + sentinel overload [not found case]
             Read wrapped_input{haystack};
             auto result = find_last_if_not(wrapped_input.begin(), wrapped_input.end(), not_equals(42), get_first);
-            STATIC_ASSERT(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
+            static_assert(same_as<iterator_t<decltype(result)>, iterator_t<Read>>);
             assert(result.begin() == wrapped_input.end());
         }
         { // Validate empty range
@@ -74,6 +74,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((test_fwd<instantiator, const P>(), true));
+    static_assert((test_fwd<instantiator, const P>(), true));
     test_fwd<instantiator, const P>();
 }

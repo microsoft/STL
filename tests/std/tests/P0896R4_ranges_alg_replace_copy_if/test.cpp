@@ -14,12 +14,12 @@ using P = pair<int, int>;
 constexpr auto matches = [](int const val) { return val == 47; };
 
 // Validate that replace_copy_if_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::replace_copy_if_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::replace_copy_if_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::replace_copy_if(borrowed<false>{}, nullptr_to<int>, matches, 5)),
+static_assert(same_as<decltype(ranges::replace_copy_if(borrowed<false>{}, nullptr_to<int>, matches, 5)),
     ranges::replace_copy_if_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::replace_copy_if(borrowed<true>{}, nullptr_to<int>, matches, 5)),
+static_assert(same_as<decltype(ranges::replace_copy_if(borrowed<true>{}, nullptr_to<int>, matches, 5)),
     ranges::replace_copy_if_result<int*, int*>>);
 
 struct instantiator {
@@ -35,7 +35,7 @@ struct instantiator {
 
             auto result = replace_copy_if(
                 wrapped_input.begin(), wrapped_input.end(), Write{output}, matches, P{47, 1}, get_second);
-            STATIC_ASSERT(same_as<decltype(result), replace_copy_if_result<iterator_t<Read>, Write>>);
+            static_assert(same_as<decltype(result), replace_copy_if_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 5);
             assert(equal(output, expected));
@@ -45,7 +45,7 @@ struct instantiator {
             Read wrapped_input{input};
 
             auto result = replace_copy_if(wrapped_input, Write{output}, matches, P{47, 1}, get_second);
-            STATIC_ASSERT(same_as<decltype(result), replace_copy_if_result<iterator_t<Read>, Write>>);
+            static_assert(same_as<decltype(result), replace_copy_if_result<iterator_t<Read>, Write>>);
             assert(result.in == wrapped_input.end());
             assert(result.out.peek() == output + 5);
             assert(equal(output, expected));
@@ -55,7 +55,7 @@ struct instantiator {
 
 int main() {
 #ifndef _PREFAST_ // TRANSITION, GH-1030
-    STATIC_ASSERT((input_range_output_iterator_permutations<instantiator, P const, P>(), true));
+    static_assert((input_range_output_iterator_permutations<instantiator, P const, P>(), true));
 #endif // TRANSITION, GH-1030
     input_range_output_iterator_permutations<instantiator, P const, P>();
 }
