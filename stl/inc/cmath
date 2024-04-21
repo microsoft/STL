@@ -1460,8 +1460,13 @@ _NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, cons
         auto _Abs_smaller = _Float_abs(_Smaller);
         auto _Abs_larger  = _Float_abs(_Larger);
         if (_Abs_larger < _Abs_smaller) {
-            _STD swap(_Smaller, _Larger);
-            _STD swap(_Abs_smaller, _Abs_larger);
+            _Ty _Tmp = _Smaller;
+            _Smaller = _Larger;
+            _Larger  = _Tmp;
+
+            _Tmp         = _Abs_smaller;
+            _Abs_smaller = _Abs_larger;
+            _Abs_larger  = _Tmp;
         }
 
         if (_Abs_smaller > 1) {
