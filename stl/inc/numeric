@@ -13,10 +13,6 @@
 #include <__msvc_bit_utils.hpp>
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-#include <cfloat>
-#endif // _HAS_CXX20
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -646,22 +642,12 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> lcm(const _Mt _Mx, const _Nt _Nx) n
 
 #if _HAS_CXX20
 template <class _Flt>
-constexpr _Flt _Floating_max{};
-template <>
-inline constexpr float _Floating_max<float> = FLT_MAX;
-template <>
-inline constexpr double _Floating_max<double> = DBL_MAX;
-template <>
-inline constexpr long double _Floating_max<long double> = LDBL_MAX;
+constexpr _Flt _Floating_max = _STD _Bit_cast<_Flt>(
+    static_cast<_Floating_type_traits<_Flt>::_Uint_type>(_Floating_type_traits<_Flt>::_Shifted_exponent_mask - 1));
 
 template <class _Flt>
-constexpr _Flt _Floating_min{};
-template <>
-inline constexpr float _Floating_min<float> = FLT_MIN;
-template <>
-inline constexpr double _Floating_min<double> = DBL_MIN;
-template <>
-inline constexpr long double _Floating_min<long double> = LDBL_MIN;
+constexpr _Flt _Floating_min = _STD _Bit_cast<_Flt>(
+    static_cast<_Floating_type_traits<_Flt>::_Uint_type>(_Floating_type_traits<_Flt>::_Denormal_mantissa_mask + 1));
 
 _EXPORT_STD template <class _Ty, enable_if_t<is_arithmetic_v<_Ty> && !is_same_v<remove_cv_t<_Ty>, bool>, int> = 0>
 _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {

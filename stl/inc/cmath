@@ -23,7 +23,7 @@
 #endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20
-#include <xutility>
+#include <type_traits>
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
