@@ -208,9 +208,9 @@ CONSTEXPR23 void test_floating_overloads() {
 
     // test overloads in the global namespace
 
-#if _HAS_CXX23 // TRANSITION, UCRT should implement P0533R9 "constexpr For <cmath> And <cstdlib>"
+#if _HAS_CXX23 && !defined(__clang__) // TRANSITION, UCRT should implement P0533R9 "constexpr For <cmath> And <cstdlib>"
     if (!std::is_constant_evaluated())
-#endif // ^^^ _HAS_CXX23 ^^^
+#endif // ^^^ _HAS_CXX23 && !defined(__clang__) ^^^
     {
         assert(::isfinite(zero));
         assert(!::isfinite(inf));
