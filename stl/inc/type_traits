@@ -2443,6 +2443,9 @@ struct _Floating_type_traits<float> {
     static constexpr uint32_t _Special_nan_mantissa_mask = 0x00400000u; // 1u << (_Mantissa_bits - 2)
     static constexpr uint32_t _Shifted_sign_mask         = 0x80000000u; // 1u << _Sign_shift
     static constexpr uint32_t _Shifted_exponent_mask     = 0x7F800000u; // _Exponent_mask << _Exponent_shift
+
+    static constexpr float _Minimum_value = 0x1.000000p-126f; // FLT_MIN
+    static constexpr float _Maximum_value = 0x1.FFFFFEp+127f; // FLT_MAX
 };
 
 template <>
@@ -2463,6 +2466,9 @@ struct _Floating_type_traits<double> {
     static constexpr uint64_t _Special_nan_mantissa_mask = 0x0008000000000000u; // 1ULL << (_Mantissa_bits - 2)
     static constexpr uint64_t _Shifted_sign_mask         = 0x8000000000000000u; // 1ULL << _Sign_shift
     static constexpr uint64_t _Shifted_exponent_mask     = 0x7FF0000000000000u; // _Exponent_mask << _Exponent_shift
+
+    static constexpr double _Minimum_value = 0x1.0000000000000p-1022; // DBL_MIN
+    static constexpr double _Maximum_value = 0x1.FFFFFFFFFFFFFp+1023; // DBL_MAX
 };
 
 template <>
