@@ -2108,12 +2108,12 @@ namespace {
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     break;
                 } else {
-                    _Result += _Traits::_Reduce_avx(_Count_vector);
-                    _Count_vector = _mm256_setzero_si256();
-
                     if (_Avx_size == 0) {
                         break;
                     }
+
+                    _Result += _Traits::_Reduce_avx(_Count_vector);
+                    _Count_vector = _mm256_setzero_si256();
                 }
             }
 
@@ -2157,12 +2157,12 @@ namespace {
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     break;
                 } else {
-                    _Result += _Traits::_Reduce_sse(_Count_vector);
-                    _Count_vector = _mm_setzero_si128();
-
                     if (_Sse_size == 0) {
                         break;
                     }
+
+                    _Result += _Traits::_Reduce_sse(_Count_vector);
+                    _Count_vector = _mm_setzero_si128();
                 }
             }
 
