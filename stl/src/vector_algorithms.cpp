@@ -1734,8 +1734,6 @@ __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* const _First
 
 namespace {
     struct _Find_traits_1 {
-        static constexpr size_t _Shift = 0;
-
 #ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint8_t _Val) noexcept {
             return _mm256_set1_epi8(_Val);
@@ -1752,12 +1750,41 @@ namespace {
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi8(_Lhs, _Rhs);
         }
+
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi8(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi8(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m256i _Hi8 = _mm256_unpackhi_epi8(_Val, _mm256_setzero_si256());
+            const __m256i _Lo8 = _mm256_unpacklo_epi8(_Val, _mm256_setzero_si256());
+            const __m256i _Rx1 = _mm256_hadd_epi16(_Lo8, _Hi8); //                   (0+1),..,(15+16) per lane
+            const __m256i _Rx2 = _mm256_hadd_epi16(_Rx1, _mm256_setzero_si256()); // (0+1+2+3),..,(13+14+15+16),0,0,0,0
+            const __m256i _Rx3 = _mm256_unpacklo_epi16(_Rx2, _mm256_setzero_si256()); // zero extend
+            const __m256i _Rx4 = _mm256_hadd_epi32(_Rx3, _mm256_setzero_si256()); // (0+...+7),(8+...+15),0,0
+            const __m256i _Rx5 = _mm256_hadd_epi32(_Rx4, _mm256_setzero_si256()); // (0+...+15),0,0,0
+            return _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 0))
+                 + _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 1));
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Hi8 = _mm_unpackhi_epi8(_Val, _mm_setzero_si128());
+            const __m128i _Lo8 = _mm_unpacklo_epi8(_Val, _mm_setzero_si128());
+            const __m128i _Rx1 = _mm_hadd_epi16(_Lo8, _Hi8); //                (0+1),..,(15+16)
+            const __m128i _Rx2 = _mm_hadd_epi16(_Rx1, _mm_setzero_si128()); // (0+1+2+3),..,(13+14+15+16),0,0,0,0
+            const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128()); // zero extend
+            const __m128i _Rx4 = _mm_hadd_epi32(_Rx3, _mm_setzero_si128()); // (0+...+7),(8+...+15),0,0
+            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+...+15),0,0,0
+            return _mm_cvtsi128_si32(_Rx5);
+        }
 #endif // !_M_ARM64EC
     };
 
     struct _Find_traits_2 {
-        static constexpr size_t _Shift = 1;
-
 #ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint16_t _Val) noexcept {
             return _mm256_set1_epi16(_Val);
@@ -1774,12 +1801,35 @@ namespace {
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi16(_Lhs, _Rhs);
         }
+
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi16(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi16(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m256i _Rx2 = _mm256_hadd_epi16(_Val, _mm256_setzero_si256()); // (0+1),..,(6+7),0,0,0,0 per lane
+            const __m256i _Rx3 = _mm256_unpacklo_epi16(_Rx2, _mm256_setzero_si256()); // zero extend
+            const __m256i _Rx4 = _mm256_hadd_epi32(_Rx3, _mm256_setzero_si256()); // (0+...+3),(4+...+7),0,0
+            const __m256i _Rx5 = _mm256_hadd_epi32(_Rx4, _mm256_setzero_si256()); // (0+...+7),0,0,0
+            return _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 0))
+                 + _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 1));
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Rx2 = _mm_hadd_epi16(_Val, _mm_setzero_si128()); // (0+1),..,(6+7),0,0,0,0
+            const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128()); // zero extend
+            const __m128i _Rx4 = _mm_hadd_epi32(_Rx3, _mm_setzero_si128()); // (0+...+3),(4+...+7),0,0
+            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+...+7),0,0,0
+            return _mm_cvtsi128_si32(_Rx5);
+        }
 #endif // !_M_ARM64EC
     };
 
     struct _Find_traits_4 {
-        static constexpr size_t _Shift = 2;
-
 #ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint32_t _Val) noexcept {
             return _mm256_set1_epi32(_Val);
@@ -1796,12 +1846,31 @@ namespace {
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi32(_Lhs, _Rhs);
         }
+
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi32(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi32(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m256i _Rx4 = _mm256_hadd_epi32(_Val, _mm256_setzero_si256()); // (0+1),(2+3),0,0 per lane
+            const __m256i _Rx5 = _mm256_hadd_epi32(_Rx4, _mm256_setzero_si256()); // (0+3),0,0,0
+            return _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 0))
+                 + _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 1));
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Rx4 = _mm_hadd_epi32(_Val, _mm_setzero_si128()); // (0+1),(2+3),0,0
+            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+3),0,0,0
+            return _mm_cvtsi128_si32(_Rx5);
+        }
 #endif // !_M_ARM64EC
     };
 
     struct _Find_traits_8 {
-        static constexpr size_t _Shift = 3;
-
 #ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint64_t _Val) noexcept {
             return _mm256_set1_epi64x(_Val);
@@ -1817,6 +1886,34 @@ namespace {
 
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi64(_Lhs, _Rhs);
+        }
+
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi64(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi64(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m128i _Rx6 = _mm256_extracti128_si256(_Val, 0);
+            const __m128i _Rx7 = _mm256_extracti128_si256(_Val, 1);
+#ifdef _M_IX86
+            return _mm_cvtsi128_si32(_Rx6) + _mm_extract_epi32(_Rx6, 2) //
+                 + _mm_cvtsi128_si32(_Rx7) + _mm_extract_epi32(_Rx7, 2);
+#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
+            return _mm_cvtsi128_si64(_Rx6) + _mm_extract_epi64(_Rx6, 1) //
+                 + _mm_cvtsi128_si64(_Rx7) + _mm_extract_epi64(_Rx7, 1);
+#endif // ^^^ defined(_M_X64) ^^^
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+#ifdef _M_IX86
+            return _mm_cvtsi128_si32(_Val) + _mm_extract_epi32(_Val, 2);
+#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
+            return _mm_cvtsi128_si64(_Val) + _mm_extract_epi64(_Val, 1);
+#endif // ^^^ defined(_M_X64) ^^^
         }
 #endif // !_M_ARM64EC
     };
@@ -1986,47 +2083,90 @@ namespace {
 #ifndef _M_ARM64EC
         const size_t _Size_bytes = _Byte_length(_First, _Last);
 
-        if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
+        if (size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
             const void* _Stop_at     = _First;
-            _Advance_bytes(_Stop_at, _Avx_size);
+            __m256i _Count_vector    = _mm256_setzero_si256();
 
-            do {
-                const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-                const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
-                _Result += __popcnt(_Bingo); // Assume available with SSE4.2
-                _Advance_bytes(_First, 32);
-            } while (_First != _Stop_at);
+            for (;;) {
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    _Advance_bytes(_Stop_at, _Avx_size);
+                } else {
+                    constexpr size_t _Max_portion_size = (size_t{1} << ((sizeof(_Ty) * 8) - 1)) * 32 / sizeof(_Ty);
+                    const size_t _Portion_size         = _Avx_size < _Max_portion_size ? _Avx_size : _Max_portion_size;
+                    _Advance_bytes(_Stop_at, _Portion_size);
+                    _Avx_size -= _Portion_size;
+                }
+
+                do {
+                    const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+                    const __m256i _Mask = _Traits::_Cmp_avx(_Data, _Comparand);
+                    _Count_vector       = _Traits::_Sub_avx(_Count_vector, _Mask);
+                    _Advance_bytes(_First, 32);
+                } while (_First != _Stop_at);
+
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    break;
+                } else {
+                    _Result += _Traits::_Reduce_avx(_Count_vector);
+                    _Count_vector = _mm256_setzero_si256();
+
+                    if (_Avx_size == 0) {
+                        break;
+                    }
+                }
+            }
 
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
                 const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
-                const int _Bingo =
-                    _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
-                _Result += __popcnt(_Bingo); // Assume available with SSE4.2
+                const __m256i _Mask      = _Traits::_Cmp_avx(_Data, _Comparand);
+                _Count_vector            = _Traits::_Sub_avx(_Count_vector, _mm256_and_si256(_Mask, _Tail_mask));
                 _Advance_bytes(_First, _Avx_tail_size);
             }
 
-            _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+            _Result += _Traits::_Reduce_avx(_Count_vector);
 
-            _Result >>= _Traits::_Shift;
+            _mm256_zeroupper(); // TRANSITION, DevCom-10331414
 
             if constexpr (sizeof(_Ty) >= 4) {
                 return _Result;
             }
-        } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
+        } else if (size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _First;
-            _Advance_bytes(_Stop_at, _Sse_size);
+            __m128i _Count_vector    = _mm_setzero_si128();
 
-            do {
-                const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-                const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
-                _Result += __popcnt(_Bingo); // Assume available with SSE4.2
-                _Advance_bytes(_First, 16);
-            } while (_First != _Stop_at);
+            for (;;) {
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    _Advance_bytes(_Stop_at, _Sse_size);
+                } else {
+                    constexpr size_t _Max_portion_size = (size_t{1} << ((sizeof(_Ty) * 8) - 1)) * 16 / sizeof(_Ty);
+                    const size_t _Portion_size         = _Sse_size < _Max_portion_size ? _Sse_size : _Max_portion_size;
+                    _Advance_bytes(_Stop_at, _Portion_size);
+                    _Sse_size -= _Portion_size;
+                }
 
-            _Result >>= _Traits::_Shift;
+                do {
+                    const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+                    const __m128i _Mask = _Traits::_Cmp_sse(_Data, _Comparand);
+                    _Count_vector       = _Traits::_Sub_sse(_Count_vector, _Mask);
+                    _Advance_bytes(_First, 16);
+                } while (_First != _Stop_at);
+
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    break;
+                } else {
+                    _Result += _Traits::_Reduce_sse(_Count_vector);
+                    _Count_vector = _mm_setzero_si128();
+
+                    if (_Sse_size == 0) {
+                        break;
+                    }
+                }
+            }
+
+            _Result += _Traits::_Reduce_sse(_Count_vector);
         }
 #endif // !_M_ARM64EC
 
