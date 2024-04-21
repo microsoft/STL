@@ -2154,6 +2154,8 @@ namespace {
                     _Advance_bytes(_First, 16);
                 } while (_First != _Stop_at);
 
+                _Result += _Traits::_Reduce_sse(_Count_vector);
+
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     break;
                 } else {
@@ -2161,12 +2163,9 @@ namespace {
                         break;
                     }
 
-                    _Result += _Traits::_Reduce_sse(_Count_vector);
                     _Count_vector = _mm_setzero_si128();
                 }
             }
-
-            _Result += _Traits::_Reduce_sse(_Count_vector);
         }
 #endif // !_M_ARM64EC
 
