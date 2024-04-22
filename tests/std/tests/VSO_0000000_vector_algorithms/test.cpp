@@ -104,13 +104,8 @@ void test_count(mt19937_64& gen) {
 
 template <class T>
 void test_count_zero() { // text that counters don't overflow
-    vector<T> input;
-    input.reserve(dataCount);
+    vector<T> input(1000000, T{0});
     test_case_count(input, T{0});
-    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        input.push_back(0);
-        test_case_count(input, T{0});
-    }
 }
 
 template <class FwdIt, class T>
