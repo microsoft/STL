@@ -1981,14 +1981,13 @@ namespace {
         }
 
         static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m128i _Rx6 = _mm256_extracti128_si256(_Val, 0);
-            const __m128i _Rx7 = _mm256_extracti128_si256(_Val, 1);
+            const __m128i _Lo64 = _mm256_extracti128_si256(_Val, 0);
+            const __m128i _Hi64 = _mm256_extracti128_si256(_Val, 1);
+            const __m128i _Rx8  = _mm_add_epi64(_Lo64, _Hi64);
 #ifdef _M_IX86
-            return _mm_cvtsi128_si32(_Rx6) + _mm_extract_epi32(_Rx6, 2) //
-                 + _mm_cvtsi128_si32(_Rx7) + _mm_extract_epi32(_Rx7, 2);
+            return _mm_cvtsi128_si32(_Rx8) + _mm_extract_epi32(_Rx8, 2);
 #else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
-            return _mm_cvtsi128_si64(_Rx6) + _mm_extract_epi64(_Rx6, 1) //
-                 + _mm_cvtsi128_si64(_Rx7) + _mm_extract_epi64(_Rx7, 1);
+            return _mm_cvtsi128_si64(_Rx8) + _mm_extract_epi64(_Rx8, 1);
 #endif // ^^^ defined(_M_X64) ^^^
         }
 
@@ -2015,10 +2014,12 @@ namespace {
         }
 
         static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m256i _Rx4 = _mm256_hadd_epi32(_Val, _mm256_setzero_si256()); // (0+1),(2+3),0,0 per lane
-            const __m256i _Rx5 = _mm256_hadd_epi32(_Rx4, _mm256_setzero_si256()); // (0+3),0,0,0
-            return _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 0))
-                 + _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 1));
+            constexpr auto _Shuf = _MM_SHUFFLE(3, 1, 2, 0); // Cross lane, to reduce further on low lane
+            const __m256i _Rx4   = _mm256_hadd_epi32(_Val, _mm256_setzero_si256()); // (0+1),(2+3),0,0 per lane
+            const __m256i _Rx5   = _mm256_permute4x64_epi64(_Rx4, _Shuf); // low lane  (0+1),(2+3),(4+5),(6+7)
+            const __m256i _Rx6   = _mm256_hadd_epi32(_Rx5, _mm256_setzero_si256()); // (0+3),(4+7),0,0
+            const __m256i _Rx7   = _mm256_hadd_epi32(_Rx6, _mm256_setzero_si256()); // (0+7),0,0,0
+            return _mm_cvtsi128_si32(_mm256_castsi256_si128(_Rx7));
         }
 
         static size_t _Reduce_sse(const __m128i _Val) noexcept {
