@@ -2100,7 +2100,7 @@ namespace {
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     _Advance_bytes(_Stop_at, _Avx_size);
                 } else {
-                    constexpr size_t _Max_portion_size = (_Traits::_Max_count - 1) * (32 / sizeof(_Ty));
+                    constexpr size_t _Max_portion_size = (_Traits::_Max_count - 1) * 32;
                     const size_t _Portion_size         = _Avx_size < _Max_portion_size ? _Avx_size : _Max_portion_size;
                     _Advance_bytes(_Stop_at, _Portion_size);
                     _Avx_size -= _Portion_size;
@@ -2149,7 +2149,7 @@ namespace {
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     _Advance_bytes(_Stop_at, _Sse_size);
                 } else {
-                    constexpr size_t _Max_portion_size = _Traits::_Max_count * (16 / sizeof(_Ty));
+                    constexpr size_t _Max_portion_size = _Traits::_Max_count * 16;
                     const size_t _Portion_size         = _Sse_size < _Max_portion_size ? _Sse_size : _Max_portion_size;
                     _Advance_bytes(_Stop_at, _Portion_size);
                     _Sse_size -= _Portion_size;
