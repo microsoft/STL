@@ -1750,37 +1750,6 @@ namespace {
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi8(_Lhs, _Rhs);
         }
-
-        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-            return _mm256_sub_epi8(_Lhs, _Rhs);
-        }
-
-        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-            return _mm_sub_epi8(_Lhs, _Rhs);
-        }
-
-        static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m256i _Hi8 = _mm256_unpackhi_epi8(_Val, _mm256_setzero_si256());
-            const __m256i _Lo8 = _mm256_unpacklo_epi8(_Val, _mm256_setzero_si256());
-            const __m256i _Rx1 = _mm256_hadd_epi16(_Lo8, _Hi8); //                   (0+1),..,(15+16) per lane
-            const __m256i _Rx2 = _mm256_hadd_epi16(_Rx1, _mm256_setzero_si256()); // (0+1+2+3),..,(13+14+15+16),0,0,0,0
-            const __m256i _Rx3 = _mm256_unpacklo_epi16(_Rx2, _mm256_setzero_si256()); // zero extend
-            const __m256i _Rx4 = _mm256_hadd_epi32(_Rx3, _mm256_setzero_si256()); // (0+...+7),(8+...+15),0,0
-            const __m256i _Rx5 = _mm256_hadd_epi32(_Rx4, _mm256_setzero_si256()); // (0+...+15),0,0,0
-            return _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 0))
-                 + _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 1));
-        }
-
-        static size_t _Reduce_sse(const __m128i _Val) noexcept {
-            const __m128i _Hi8 = _mm_unpackhi_epi8(_Val, _mm_setzero_si128());
-            const __m128i _Lo8 = _mm_unpacklo_epi8(_Val, _mm_setzero_si128());
-            const __m128i _Rx1 = _mm_hadd_epi16(_Lo8, _Hi8); //                (0+1),..,(15+16)
-            const __m128i _Rx2 = _mm_hadd_epi16(_Rx1, _mm_setzero_si128()); // (0+1+2+3),..,(13+14+15+16),0,0,0,0
-            const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128()); // zero extend
-            const __m128i _Rx4 = _mm_hadd_epi32(_Rx3, _mm_setzero_si128()); // (0+...+7),(8+...+15),0,0
-            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+...+15),0,0,0
-            return _mm_cvtsi128_si32(_Rx5);
-        }
 #endif // !_M_ARM64EC
     };
 
@@ -1800,31 +1769,6 @@ namespace {
 
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi16(_Lhs, _Rhs);
-        }
-
-        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-            return _mm256_sub_epi16(_Lhs, _Rhs);
-        }
-
-        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-            return _mm_sub_epi16(_Lhs, _Rhs);
-        }
-
-        static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m256i _Rx2 = _mm256_hadd_epi16(_Val, _mm256_setzero_si256()); // (0+1),..,(6+7),0,0,0,0 per lane
-            const __m256i _Rx3 = _mm256_unpacklo_epi16(_Rx2, _mm256_setzero_si256()); // zero extend
-            const __m256i _Rx4 = _mm256_hadd_epi32(_Rx3, _mm256_setzero_si256()); // (0+...+3),(4+...+7),0,0
-            const __m256i _Rx5 = _mm256_hadd_epi32(_Rx4, _mm256_setzero_si256()); // (0+...+7),0,0,0
-            return _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 0))
-                 + _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 1));
-        }
-
-        static size_t _Reduce_sse(const __m128i _Val) noexcept {
-            const __m128i _Rx2 = _mm_hadd_epi16(_Val, _mm_setzero_si128()); // (0+1),..,(6+7),0,0,0,0
-            const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128()); // zero extend
-            const __m128i _Rx4 = _mm_hadd_epi32(_Rx3, _mm_setzero_si128()); // (0+...+3),(4+...+7),0,0
-            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+...+7),0,0,0
-            return _mm_cvtsi128_si32(_Rx5);
         }
 #endif // !_M_ARM64EC
     };
@@ -1846,27 +1790,6 @@ namespace {
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi32(_Lhs, _Rhs);
         }
-
-        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-            return _mm256_sub_epi32(_Lhs, _Rhs);
-        }
-
-        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-            return _mm_sub_epi32(_Lhs, _Rhs);
-        }
-
-        static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m256i _Rx4 = _mm256_hadd_epi32(_Val, _mm256_setzero_si256()); // (0+1),(2+3),0,0 per lane
-            const __m256i _Rx5 = _mm256_hadd_epi32(_Rx4, _mm256_setzero_si256()); // (0+3),0,0,0
-            return _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 0))
-                 + _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 1));
-        }
-
-        static size_t _Reduce_sse(const __m128i _Val) noexcept {
-            const __m128i _Rx4 = _mm_hadd_epi32(_Val, _mm_setzero_si128()); // (0+1),(2+3),0,0
-            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+3),0,0,0
-            return _mm_cvtsi128_si32(_Rx5);
-        }
 #endif // !_M_ARM64EC
     };
 
@@ -1886,34 +1809,6 @@ namespace {
 
         static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
             return _mm_cmpeq_epi64(_Lhs, _Rhs);
-        }
-
-        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-            return _mm256_sub_epi64(_Lhs, _Rhs);
-        }
-
-        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-            return _mm_sub_epi64(_Lhs, _Rhs);
-        }
-
-        static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m128i _Rx6 = _mm256_extracti128_si256(_Val, 0);
-            const __m128i _Rx7 = _mm256_extracti128_si256(_Val, 1);
-#ifdef _M_IX86
-            return _mm_cvtsi128_si32(_Rx6) + _mm_extract_epi32(_Rx6, 2) //
-                 + _mm_cvtsi128_si32(_Rx7) + _mm_extract_epi32(_Rx7, 2);
-#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
-            return _mm_cvtsi128_si64(_Rx6) + _mm_extract_epi64(_Rx6, 1) //
-                 + _mm_cvtsi128_si64(_Rx7) + _mm_extract_epi64(_Rx7, 1);
-#endif // ^^^ defined(_M_X64) ^^^
-        }
-
-        static size_t _Reduce_sse(const __m128i _Val) noexcept {
-#ifdef _M_IX86
-            return _mm_cvtsi128_si32(_Val) + _mm_extract_epi32(_Val, 2);
-#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
-            return _mm_cvtsi128_si64(_Val) + _mm_extract_epi64(_Val, 1);
-#endif // ^^^ defined(_M_X64) ^^^
         }
 #endif // !_M_ARM64EC
     };
@@ -2074,6 +1969,113 @@ namespace {
             }
         }
     }
+
+        struct _Count_traits_8 : _Find_traits_8 {
+#ifndef _M_ARM64EC
+         static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi64(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi64(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m128i _Rx6 = _mm256_extracti128_si256(_Val, 0);
+            const __m128i _Rx7 = _mm256_extracti128_si256(_Val, 1);
+#ifdef _M_IX86
+            return _mm_cvtsi128_si32(_Rx6) + _mm_extract_epi32(_Rx6, 2) //
+                 + _mm_cvtsi128_si32(_Rx7) + _mm_extract_epi32(_Rx7, 2);
+#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
+            return _mm_cvtsi128_si64(_Rx6) + _mm_extract_epi64(_Rx6, 1) //
+                 + _mm_cvtsi128_si64(_Rx7) + _mm_extract_epi64(_Rx7, 1);
+#endif // ^^^ defined(_M_X64) ^^^
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+#ifdef _M_IX86
+            return _mm_cvtsi128_si32(_Val) + _mm_extract_epi32(_Val, 2);
+#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
+            return _mm_cvtsi128_si64(_Val) + _mm_extract_epi64(_Val, 1);
+#endif // ^^^ defined(_M_X64) ^^^
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Count_traits_4 : _Find_traits_4 {
+#ifndef _M_ARM64EC
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi32(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi32(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m256i _Rx4 = _mm256_hadd_epi32(_Val, _mm256_setzero_si256()); // (0+1),(2+3),0,0 per lane
+            const __m256i _Rx5 = _mm256_hadd_epi32(_Rx4, _mm256_setzero_si256()); // (0+3),0,0,0
+            return _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 0))
+                 + _mm_cvtsi128_si32(_mm256_extracti128_si256(_Rx5, 1));
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Rx4 = _mm_hadd_epi32(_Val, _mm_setzero_si128()); // (0+1),(2+3),0,0
+            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+3),0,0,0
+            return _mm_cvtsi128_si32(_Rx5);
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Count_traits_2 : _Find_traits_2 {
+#ifndef _M_ARM64EC
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi16(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi16(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m256i _Rx2 = _mm256_hadd_epi16(_Val, _mm256_setzero_si256()); // (0+1),..,(6+7),0,0,0,0 per lane
+            const __m256i _Rx3 = _mm256_unpacklo_epi16(_Rx2, _mm256_setzero_si256()); // zero extend
+            return _Count_traits_4::_Reduce_avx(_Rx3);
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Rx2 = _mm_hadd_epi16(_Val, _mm_setzero_si128()); // (0+1),..,(6+7),0,0,0,0
+            const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128()); // zero extend
+            return _Count_traits_4::_Reduce_sse(_Rx3);
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Count_traits_1 : _Find_traits_1 {
+#ifndef _M_ARM64EC
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi8(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi8(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m256i _Hi8 = _mm256_unpackhi_epi8(_Val, _mm256_setzero_si256());
+            const __m256i _Lo8 = _mm256_unpacklo_epi8(_Val, _mm256_setzero_si256());
+            const __m256i _Rx1 = _mm256_hadd_epi16(_Lo8, _Hi8); //                   (0+1),..,(15+16) per lane
+            return _Count_traits_2::_Reduce_avx(_Rx1);
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Hi8 = _mm_unpackhi_epi8(_Val, _mm_setzero_si128());
+            const __m128i _Lo8 = _mm_unpacklo_epi8(_Val, _mm_setzero_si128());
+            const __m128i _Rx1 = _mm_hadd_epi16(_Lo8, _Hi8); //                (0+1),..,(15+16)
+            return _Count_traits_2::_Reduce_sse(_Rx1);
+        }
+#endif // !_M_ARM64EC
+    };
 
     template <class _Traits, class _Ty>
     __declspec(noalias) size_t
@@ -2688,22 +2690,22 @@ const void* __stdcall __std_find_last_trivial_8(
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_1(const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_count_trivial_impl<_Find_traits_1>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Count_traits_1>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_2(const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_count_trivial_impl<_Find_traits_2>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Count_traits_2>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_4(const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_count_trivial_impl<_Find_traits_4>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Count_traits_4>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_8(const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_count_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_first_of_trivial_1(
