@@ -102,6 +102,17 @@ void test_count(mt19937_64& gen) {
     }
 }
 
+template <class T>
+void test_count_zero() { // text that counters don't overflow
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_count(input, T{0});
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(0);
+        test_case_count(input, T{0});
+    }
+}
+
 template <class FwdIt, class T>
 auto last_known_good_find(FwdIt first, FwdIt last, T v) {
     for (; first != last; ++first) {
@@ -741,6 +752,16 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_count<unsigned int>(gen);
     test_count<long long>(gen);
     test_count<unsigned long long>(gen);
+
+    test_count_zero<char>();
+    test_count_zero<signed char>();
+    test_count_zero<unsigned char>();
+    test_count_zero<short>();
+    test_count_zero<unsigned short>();
+    test_count_zero<int>();
+    test_count_zero<unsigned int>();
+    test_count_zero<long long>();
+    test_count_zero<unsigned long long>();
 
     test_find<char>(gen);
     test_find<signed char>(gen);
