@@ -2004,6 +2004,8 @@ namespace {
 
     struct _Count_traits_4 : _Find_traits_4 {
 #ifndef _M_ARM64EC
+        static constexpr size_t _Max_count = 0x1FFF'FFFF;
+
         static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
             return _mm256_sub_epi32(_Lhs, _Rhs);
         }
@@ -2029,6 +2031,8 @@ namespace {
 
     struct _Count_traits_2 : _Find_traits_2 {
 #ifndef _M_ARM64EC
+        static constexpr size_t _Max_count = 0x7FFF;
+
         static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
             return _mm256_sub_epi16(_Lhs, _Rhs);
         }
@@ -2053,6 +2057,8 @@ namespace {
 
     struct _Count_traits_1 : _Find_traits_1 {
 #ifndef _M_ARM64EC
+        static constexpr size_t _Max_count = 0xFF;
+
         static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
             return _mm256_sub_epi8(_Lhs, _Rhs);
         }
@@ -2064,14 +2070,14 @@ namespace {
         static size_t _Reduce_avx(const __m256i _Val) noexcept {
             const __m256i _Hi8 = _mm256_unpackhi_epi8(_Val, _mm256_setzero_si256());
             const __m256i _Lo8 = _mm256_unpacklo_epi8(_Val, _mm256_setzero_si256());
-            const __m256i _Rx1 = _mm256_hadd_epi16(_Lo8, _Hi8); //                   (0+1),..,(15+16) per lane
+            const __m256i _Rx1 = _mm256_hadd_epi16(_Lo8, _Hi8); // (0+1),..,(15+16) per lane
             return _Count_traits_2::_Reduce_avx(_Rx1);
         }
 
         static size_t _Reduce_sse(const __m128i _Val) noexcept {
             const __m128i _Hi8 = _mm_unpackhi_epi8(_Val, _mm_setzero_si128());
             const __m128i _Lo8 = _mm_unpacklo_epi8(_Val, _mm_setzero_si128());
-            const __m128i _Rx1 = _mm_hadd_epi16(_Lo8, _Hi8); //                (0+1),..,(15+16)
+            const __m128i _Rx1 = _mm_hadd_epi16(_Lo8, _Hi8); // (0+1),..,(15+16)
             return _Count_traits_2::_Reduce_sse(_Rx1);
         }
 #endif // !_M_ARM64EC
@@ -2094,7 +2100,7 @@ namespace {
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     _Advance_bytes(_Stop_at, _Avx_size);
                 } else {
-                    constexpr size_t _Max_portion_size = ((size_t{1} << (sizeof(_Ty) * 8)) - 2) * 32 / sizeof(_Ty);
+                    constexpr size_t _Max_portion_size = (_Traits::_Max_count - 1) * (32 / sizeof(_Ty));
                     const size_t _Portion_size         = _Avx_size < _Max_portion_size ? _Avx_size : _Max_portion_size;
                     _Advance_bytes(_Stop_at, _Portion_size);
                     _Avx_size -= _Portion_size;
@@ -2143,7 +2149,7 @@ namespace {
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     _Advance_bytes(_Stop_at, _Sse_size);
                 } else {
-                    constexpr size_t _Max_portion_size = ((size_t{1} << (sizeof(_Ty) * 8)) - 1) * 16 / sizeof(_Ty);
+                    constexpr size_t _Max_portion_size = _Traits::_Max_count * (16 / sizeof(_Ty));
                     const size_t _Portion_size         = _Sse_size < _Max_portion_size ? _Sse_size : _Max_portion_size;
                     _Advance_bytes(_Stop_at, _Portion_size);
                     _Sse_size -= _Portion_size;
