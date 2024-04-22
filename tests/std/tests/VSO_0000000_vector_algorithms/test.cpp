@@ -83,6 +83,10 @@ void test_case_count(const vector<T>& input, T v) {
     auto expected = last_known_good_count(input.begin(), input.end(), v);
     auto actual   = count(input.begin(), input.end(), v);
     assert(expected == actual);
+#if _HAS_CXX20
+    auto actual_r = ranges::count(input, v);
+    assert(actual_r == actual);
+#endif // _HAS_CXX20
 }
 
 template <class T>
