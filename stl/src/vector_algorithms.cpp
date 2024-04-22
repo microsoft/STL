@@ -2017,14 +2017,14 @@ namespace {
             constexpr auto _Shuf = _MM_SHUFFLE(3, 1, 2, 0); // Cross lane, to reduce further on low lane
             const __m256i _Rx4   = _mm256_hadd_epi32(_Val, _mm256_setzero_si256()); // (0+1),(2+3),0,0 per lane
             const __m256i _Rx5   = _mm256_permute4x64_epi64(_Rx4, _Shuf); // low lane  (0+1),(2+3),(4+5),(6+7)
-            const __m256i _Rx6   = _mm256_hadd_epi32(_Rx5, _mm256_setzero_si256()); // (0+3),(4+7),0,0
-            const __m256i _Rx7   = _mm256_hadd_epi32(_Rx6, _mm256_setzero_si256()); // (0+7),0,0,0
+            const __m256i _Rx6   = _mm256_hadd_epi32(_Rx5, _mm256_setzero_si256()); // (0+..+3),(4+...+7),0,0
+            const __m256i _Rx7   = _mm256_hadd_epi32(_Rx6, _mm256_setzero_si256()); // (0+...+7),0,0,0
             return _mm_cvtsi128_si32(_mm256_castsi256_si128(_Rx7));
         }
 
         static size_t _Reduce_sse(const __m128i _Val) noexcept {
             const __m128i _Rx4 = _mm_hadd_epi32(_Val, _mm_setzero_si128()); // (0+1),(2+3),0,0
-            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+3),0,0,0
+            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+...+3),0,0,0
             return _mm_cvtsi128_si32(_Rx5);
         }
 #endif // !_M_ARM64EC
@@ -2043,14 +2043,14 @@ namespace {
         }
 
         static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m256i _Rx2 = _mm256_hadd_epi16(_Val, _mm256_setzero_si256()); // (0+1),..,(6+7),0,0,0,0 per lane
-            const __m256i _Rx3 = _mm256_unpacklo_epi16(_Rx2, _mm256_setzero_si256()); // zero extend
+            const __m256i _Rx2 = _mm256_hadd_epi16(_Val, _mm256_setzero_si256());
+            const __m256i _Rx3 = _mm256_unpacklo_epi16(_Rx2, _mm256_setzero_si256());
             return _Count_traits_4::_Reduce_avx(_Rx3);
         }
 
         static size_t _Reduce_sse(const __m128i _Val) noexcept {
-            const __m128i _Rx2 = _mm_hadd_epi16(_Val, _mm_setzero_si128()); // (0+1),..,(6+7),0,0,0,0
-            const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128()); // zero extend
+            const __m128i _Rx2 = _mm_hadd_epi16(_Val, _mm_setzero_si128());
+            const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128());
             return _Count_traits_4::_Reduce_sse(_Rx3);
         }
 #endif // !_M_ARM64EC
@@ -2071,14 +2071,14 @@ namespace {
         static size_t _Reduce_avx(const __m256i _Val) noexcept {
             const __m256i _Hi8 = _mm256_unpackhi_epi8(_Val, _mm256_setzero_si256());
             const __m256i _Lo8 = _mm256_unpacklo_epi8(_Val, _mm256_setzero_si256());
-            const __m256i _Rx1 = _mm256_hadd_epi16(_Lo8, _Hi8); // (0+1),..,(15+16) per lane
+            const __m256i _Rx1 = _mm256_hadd_epi16(_Lo8, _Hi8);
             return _Count_traits_2::_Reduce_avx(_Rx1);
         }
 
         static size_t _Reduce_sse(const __m128i _Val) noexcept {
             const __m128i _Hi8 = _mm_unpackhi_epi8(_Val, _mm_setzero_si128());
             const __m128i _Lo8 = _mm_unpacklo_epi8(_Val, _mm_setzero_si128());
-            const __m128i _Rx1 = _mm_hadd_epi16(_Lo8, _Hi8); // (0+1),..,(15+16)
+            const __m128i _Rx1 = _mm_hadd_epi16(_Lo8, _Hi8);
             return _Count_traits_2::_Reduce_sse(_Rx1);
         }
 #endif // !_M_ARM64EC
