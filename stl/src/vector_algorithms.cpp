@@ -2069,17 +2069,13 @@ namespace {
         }
 
         static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m256i _Hi8 = _mm256_unpackhi_epi8(_Val, _mm256_setzero_si256());
-            const __m256i _Lo8 = _mm256_unpacklo_epi8(_Val, _mm256_setzero_si256());
-            const __m256i _Rx1 = _mm256_hadd_epi16(_Lo8, _Hi8);
-            return _Count_traits_2::_Reduce_avx(_Rx1);
+            const __m256i _Rx1 = _mm256_sad_epu8(_Val, _mm256_setzero_si256());
+            return _Count_traits_8::_Reduce_avx(_Rx1);
         }
 
         static size_t _Reduce_sse(const __m128i _Val) noexcept {
-            const __m128i _Hi8 = _mm_unpackhi_epi8(_Val, _mm_setzero_si128());
-            const __m128i _Lo8 = _mm_unpacklo_epi8(_Val, _mm_setzero_si128());
-            const __m128i _Rx1 = _mm_hadd_epi16(_Lo8, _Hi8);
-            return _Count_traits_2::_Reduce_sse(_Rx1);
+            const __m128i _Rx1 = _mm_sad_epu8(_Val, _mm_setzero_si128());
+            return _Count_traits_8::_Reduce_sse(_Rx1);
         }
 #endif // !_M_ARM64EC
     };
