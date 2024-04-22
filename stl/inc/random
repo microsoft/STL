@@ -3508,7 +3508,7 @@ private:
             const _Ty _Fx{_STD sqrt(_Ty{-2} * _LogSx / _Sx)};
             _Xx2   = _Fx * _Vx2;
             _Valid = true;
-            _Res = _Fx * _Vx1;
+            _Res   = _Fx * _Vx1;
         }
         return _Res * _Par0._Sigma + _Par0._Mean;
     }
