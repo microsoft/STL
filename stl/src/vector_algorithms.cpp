@@ -2092,7 +2092,7 @@ namespace {
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     _Advance_bytes(_Stop_at, _Avx_size);
                 } else {
-                    constexpr size_t _Max_portion_size = (size_t{1} << ((sizeof(_Ty) * 8) - 1)) * 32 / sizeof(_Ty);
+                    constexpr size_t _Max_portion_size = ((size_t{1} << (sizeof(_Ty) * 8)) - 2) * 32 / sizeof(_Ty);
                     const size_t _Portion_size         = _Avx_size < _Max_portion_size ? _Avx_size : _Max_portion_size;
                     _Advance_bytes(_Stop_at, _Portion_size);
                     _Avx_size -= _Portion_size;
@@ -2141,7 +2141,7 @@ namespace {
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     _Advance_bytes(_Stop_at, _Sse_size);
                 } else {
-                    constexpr size_t _Max_portion_size = (size_t{1} << ((sizeof(_Ty) * 8) - 1)) * 16 / sizeof(_Ty);
+                    constexpr size_t _Max_portion_size = ((size_t{1} << (sizeof(_Ty) * 8)) - 1) * 16 / sizeof(_Ty);
                     const size_t _Portion_size         = _Sse_size < _Max_portion_size ? _Sse_size : _Max_portion_size;
                     _Advance_bytes(_Stop_at, _Portion_size);
                     _Sse_size -= _Portion_size;
