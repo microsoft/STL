@@ -85,7 +85,7 @@ void test_case_count(const vector<T>& input, T v) {
     assert(expected == actual);
 #if _HAS_CXX20
     auto actual_r = ranges::count(input, v);
-    assert(actual_r == actual);
+    assert(actual_r == expected);
 #endif // _HAS_CXX20
 }
 
