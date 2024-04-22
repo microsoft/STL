@@ -1970,9 +1970,9 @@ namespace {
         }
     }
 
-        struct _Count_traits_8 : _Find_traits_8 {
+    struct _Count_traits_8 : _Find_traits_8 {
 #ifndef _M_ARM64EC
-         static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
             return _mm256_sub_epi64(_Lhs, _Rhs);
         }
 
