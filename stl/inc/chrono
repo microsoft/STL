@@ -5387,7 +5387,7 @@ namespace chrono {
             } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return _Type == 'z' || _Type == 'Z' || _Is_valid_type<decltype(_Ty::_Time)>(_Type);
             } else {
-                static_assert(false, "should be unreachable");
+                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected type
             }
         }
 
