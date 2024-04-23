@@ -8,9 +8,12 @@
 #include <cstdlib>
 #include <forward_list>
 #include <generator>
+#include <memory>
+#include <new>
 #include <random>
 #include <ranges>
 #include <sstream>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
