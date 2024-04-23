@@ -22,6 +22,16 @@
 
 using namespace std;
 
+#pragma warning(disable : 28251) // Inconsistent annotation for 'new[]': this instance has no annotations.
+
+void* operator new[](size_t) {
+    unreachable();
+}
+
+void operator delete[](void*) noexcept {
+    unreachable();
+}
+
 template <class Promise, class... Args>
 concept HasOperatorNew = requires(Args&&... args) {
     { Promise::operator new(forward<Args>(args)...) } -> same_as<void*>;
