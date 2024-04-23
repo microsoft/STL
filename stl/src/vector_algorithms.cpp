@@ -2381,12 +2381,10 @@ namespace {
             } else if (_Last2_length_el <= 8) {
                 if constexpr (sizeof(_Traits::_Ty) == 4) {
                     return _Shuffle_impl<_Traits, _Large, 8>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
-                } else {
-                    _STL_UNREACHABLE;
                 }
-            } else {
-                _STL_UNREACHABLE;
             }
+
+            _STL_UNREACHABLE;
         }
 
 #endif // !_M_ARM64EC
