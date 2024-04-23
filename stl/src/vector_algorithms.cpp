@@ -2269,9 +2269,7 @@ namespace {
 
             template <size_t _Amount>
             static __m256i _Shuffle_avx(const __m256i _Val) noexcept {
-                if constexpr (_Amount == 0) {
-                    return _mm256_undefined_si256();
-                } else if constexpr (_Amount == 1) {
+                if constexpr (_Amount == 1) {
                     return _mm256_shuffle_epi32(_Val, _MM_SHUFFLE(1, 0, 3, 2));
                 } else if constexpr (_Amount == 2) {
                     return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 3, 2));
