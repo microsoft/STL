@@ -84,24 +84,6 @@ namespace ranges {
     template <class _Ty, size_t _Extent>
         requires (_Extent != dynamic_extent)
     constexpr auto _Compile_time_max_size<const span<_Ty, _Extent>> = _Extent;
-
-#if defined(__cpp_lib_byte)
-    _EXPORT_STD template <range _Rng, class _Alloc = allocator<byte>>
-#else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
-    _EXPORT_STD template <range _Rng, class _Alloc>
-#endif // ^^^ !defined(__cpp_lib_byte) ^^^
-    struct elements_of {
-        /* [[no_unique_address]] */ _Rng range;
-        /* [[no_unique_address]] */ _Alloc allocator{};
-    };
-
-#if defined(__cpp_lib_byte)
-    template <class _Rng, class _Alloc = allocator<byte>>
-    elements_of(_Rng&&, _Alloc = {}) -> elements_of<_Rng&&, _Alloc>;
-#else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
-    template <class _Rng, class _Alloc>
-    elements_of(_Rng&&, _Alloc) -> elements_of<_Rng&&, _Alloc>;
-#endif // ^^^ !defined(__cpp_lib_byte) ^^^
 #endif // _HAS_CXX23
 
     // clang-format off
