@@ -43,20 +43,17 @@ static_assert(static_checks<std::generator<int&&>, int, int&&, int&&>());
 static_assert(static_checks<std::generator<int&>, int, int&, int&&>());
 static_assert(static_checks<std::generator<int, int>, int, int, int>());
 
-// From the proposal:
-std::generator<int> iota(int start = 0) {
+// [coroutine.generator.overview] Example 1:
+std::generator<int> ints(int start = 0) {
     while (true) {
-        co_yield start;
-        ++start;
+        co_yield start++;
     }
 }
 
 void f(std::ostream& os) {
-    os << '"';
-    for (auto i : iota() | std::views::take(3)) {
-        os << i << ' '; // prints "0 1 2 "
+    for (auto i : ints() | std::views::take(3)) {
+        os << i << ' ';
     }
-    os << "\"\n";
 }
 
 template <ranges::input_range Rng1, ranges::input_range Rng2>
@@ -322,7 +319,7 @@ int main() {
     {
         std::stringstream ss;
         f(ss);
-        assert(ss.str() == "\"0 1 2 \"\n");
+        assert(ss.str() == "0 1 2 ");
     }
     assert(ranges::equal(meow(6), ranges::views::iota(0, 6)));
 
