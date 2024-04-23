@@ -9,9 +9,9 @@ struct FakeGenerator {
 private:
     std::mt19937 m_underlying_gen;
     size_t m_operator_calls = 0;
-    
+
 public:
-    using GenType = std::mt19937;
+    using GenType     = std::mt19937;
     using result_type = GenType::result_type;
 
     static constexpr result_type min() {
@@ -20,13 +20,15 @@ public:
     static constexpr result_type max() {
         return GenType::max();
     }
-    
+
     result_type operator()() {
         ++m_operator_calls;
         return m_underlying_gen();
     }
-    
-    size_t calls() const { return m_operator_calls; }
+
+    size_t calls() const {
+        return m_operator_calls;
+    }
 };
 
 int main() {
@@ -34,9 +36,9 @@ int main() {
     std::normal_distribution<> dist(0., 1.);
     using dist_params = std::normal_distribution<>::param_type;
     dist_params params(50., 0.5);
-    (void)dist(rng);
+    (void) dist(rng);
     const auto calls_before = rng.calls();
-    (void)dist(rng);
+    (void) dist(rng);
     const auto calls_after = rng.calls();
     assert(calls_before == calls_after);
 }
