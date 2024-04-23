@@ -453,7 +453,7 @@ namespace _Strong_order {
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<strong_ordering>(compare_three_way{}(_Left, _Right));
             } else {
-                static_assert(false, "should be unreachable");
+                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
             }
         }
     };
@@ -579,7 +579,7 @@ namespace _Weak_order {
                 return static_cast<weak_ordering>(
                     static_cast<strong_ordering>(strong_order(_Left, _Right))); // intentional ADL
             } else {
-                static_assert(false, "should be unreachable");
+                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
             }
         }
     };
@@ -664,7 +664,7 @@ namespace _Partial_order {
                 return static_cast<partial_ordering>(
                     static_cast<strong_ordering>(strong_order(_Left, _Right))); // intentional ADL
             } else {
-                static_assert(false, "should be unreachable");
+                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
             }
         }
     };
@@ -720,7 +720,7 @@ namespace _Compare_strong_order_fallback {
                      : _Left < _Right  ? strong_ordering::less
                                        : strong_ordering::greater;
             } else {
-                static_assert(false, "should be unreachable");
+                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
             }
         }
     };
@@ -770,7 +770,7 @@ namespace _Compare_weak_order_fallback {
                      : _Left < _Right  ? weak_ordering::less
                                        : weak_ordering::greater;
             } else {
-                static_assert(false, "should be unreachable");
+                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
             }
         }
     };
@@ -829,7 +829,7 @@ namespace _Compare_partial_order_fallback {
                      : _Right < _Left  ? partial_ordering::greater
                                        : partial_ordering::unordered;
             } else {
-                static_assert(false, "should be unreachable");
+                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
             }
         }
     };
