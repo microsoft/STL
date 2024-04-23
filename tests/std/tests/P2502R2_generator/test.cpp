@@ -77,21 +77,6 @@ std::generator<Reference, int> meow(const int hi) {
     }
 }
 
-template <ranges::input_range R>
-void dump(std::ostream& os, R&& r) {
-    os << '{';
-    bool first = true;
-    for (auto&& e : r) {
-        if (first) {
-            first = false;
-        } else {
-            os << ", ";
-        }
-        os << e;
-    }
-    os << "}\n";
-}
-
 template <class T>
 struct stateless_alloc {
     using value_type = T;
