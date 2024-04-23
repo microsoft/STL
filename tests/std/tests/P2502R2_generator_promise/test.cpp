@@ -5,6 +5,7 @@
 #include <coroutine>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <forward_list>
 #include <generator>
 #include <list>
@@ -25,11 +26,11 @@ using namespace std;
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new[]': this instance has no annotations.
 
 void* operator new[](size_t) {
-    unreachable();
+    abort();
 }
 
 void operator delete[](void*) noexcept {
-    unreachable();
+    abort();
 }
 
 template <class Promise, class... Args>
