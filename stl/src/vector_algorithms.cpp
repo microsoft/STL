@@ -2368,7 +2368,7 @@ namespace {
         }
 
         template <class _Traits, bool _Large>
-        const void* _Shuffle_impl_dispatch_magnitude(const void* _First1, const void* const _Last1,
+        const void* _Shuffle_impl_dispatch_magnitude(const void* const _First1, const void* const _Last1,
             const void* const _First2, const void* const _Stop2, const size_t _Last2_length_el) noexcept {
             if (_Last2_length_el == 0) {
                 return _Shuffle_impl<_Traits, _Large, 0>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
@@ -2401,7 +2401,7 @@ namespace {
                 const size_t _Last_needle_length    = _Needle_length & 0x1F;
                 const size_t _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
-                if (size_t _Needle_length_large = _Needle_length & ~size_t{0x1F}; _Needle_length_large != 0) {
+                if (const size_t _Needle_length_large = _Needle_length & ~size_t{0x1F}; _Needle_length_large != 0) {
                     const void* _Stop2 = _First2;
                     _Advance_bytes(_Stop2, _Needle_length & ~size_t{0x1F});
                     return _Shuffle_impl_dispatch_magnitude<_Traits, true>(
