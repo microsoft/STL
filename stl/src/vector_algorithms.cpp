@@ -1984,11 +1984,7 @@ namespace {
             const __m128i _Lo64 = _mm256_extracti128_si256(_Val, 0);
             const __m128i _Hi64 = _mm256_extracti128_si256(_Val, 1);
             const __m128i _Rx8  = _mm_add_epi64(_Lo64, _Hi64);
-#ifdef _M_IX86
-            return _mm_cvtsi128_si32(_Rx8) + _mm_extract_epi32(_Rx8, 2);
-#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
-            return _mm_cvtsi128_si64(_Rx8) + _mm_extract_epi64(_Rx8, 1);
-#endif // ^^^ defined(_M_X64) ^^^
+            return _Reduce_sse(_Rx8);
         }
 
         static size_t _Reduce_sse(const __m128i _Val) noexcept {
