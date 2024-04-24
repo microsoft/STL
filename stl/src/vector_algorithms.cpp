@@ -2403,7 +2403,7 @@ namespace {
 
                 if (const size_t _Needle_length_large = _Needle_length & ~size_t{0x1F}; _Needle_length_large != 0) {
                     const void* _Stop2 = _First2;
-                    _Advance_bytes(_Stop2, _Needle_length & ~size_t{0x1F});
+                    _Advance_bytes(_Stop2, _Needle_length_large);
                     return _Shuffle_impl_dispatch_magnitude<_Traits, true>(
                         _First1, _Last1, _First2, _Stop2, _Last_needle_length_el);
                 } else {
