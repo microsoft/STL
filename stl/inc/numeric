@@ -518,7 +518,7 @@ constexpr bool _Iota_optimization_can_overflow(const size_t _Size) {
         if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
             return false; // any size fits type
         } else {
-            return _Size > (numeric_limits<_Ty>::max)();
+            return _Size > ~_Ty{0};
         }
     } else {
         return false; // Signed _Ty overflow is UB, size should fit _Ty range
