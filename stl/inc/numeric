@@ -511,12 +511,42 @@ _FwdIt2 adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _
 }
 #endif // _HAS_CXX17
 
+template <class _Ty>
+constexpr bool _Iota_optimization_can_overflow(const size_t _Size) {
+    if constexpr (is_unsigned_v<_Ty>) {
+        // _Ty overflow is defined, _Size might not fit _Ty
+        if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+            return false; // any size fits type
+        } else {
+            return _Size > (numeric_limits<_Ty>::max)();
+        }
+    } else {
+        return false; // Signed _Ty overflow is UB, size should fit _Ty range
+    }
+}
+
 _EXPORT_STD template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
     // compute increasing sequence into [_First, _Last)
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
+
+    if constexpr (_Iterator_is_contiguous<decltype(_UFirst)> && is_integral_v<_Ty> && sizeof(_Ty) >= 4) {
+        // TRANSITION, DevCom-10593477: help the compiler vectorize
+        const auto _Ptr  = _To_address(_UFirst);
+        const auto _Size = static_cast<size_t>(_ULast - _UFirst);
+
+        if (!_Iota_optimization_can_overflow<_Ty>(_Size)) {
+            const auto _Size_typed = static_cast<_Ty>(_Size);
+            for (_Ty _Ix = 0; _Ix != _Size_typed; ++_Ix) {
+                _Ptr[_Ix] = _Val + _Ix;
+            }
+
+            return;
+        }
+    }
+
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_Val) {
         *_UFirst = _Val;
     }
