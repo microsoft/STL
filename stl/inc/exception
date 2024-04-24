@@ -30,7 +30,6 @@ _STD_END
 
 #if _HAS_EXCEPTIONS
 
-#include <malloc.h>
 #include <vcruntime_exception.h>
 
 _STD_BEGIN
