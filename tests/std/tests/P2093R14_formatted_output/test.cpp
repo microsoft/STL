@@ -567,6 +567,7 @@ void test_empty_strings_and_newlines() {
         print(output_file_stream, "-D\n");
         print(output_file_stream, "{{}} for {}!\n", "impact");
 
+        println(output_file_stream);
         println(output_file_stream, "I have {} cute {} kittens.", 1729, "fluffy");
         println(output_file_stream, "");
         println(output_file_stream, "What are an orthodontist's favorite characters? '{{' and '}}', of course!");
@@ -585,6 +586,7 @@ void test_empty_strings_and_newlines() {
         const vector<string> expected_lines{
             "NCC-1701-D",
             "{} for impact!",
+            "",
             "I have 1729 cute fluffy kittens.",
             "",
             "What are an orthodontist's favorite characters? '{' and '}', of course!",
