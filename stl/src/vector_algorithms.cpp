@@ -1999,12 +1999,11 @@ namespace {
 
     struct _Count_traits_4 : _Find_traits_4 {
 #ifndef _M_ARM64EC
-        // For AVX2, we reduce using hadd_epi32 3 times, therefore to avoid oveflow _Max_count is 0x1FFF'FFFF,
-        // which is multiplied by two 3 times 0xFFFF'FFF8, a greater limit would overflow
+        // For AVX2, we use hadd_epi32 three times to combine pairs of 32-bit counters into 32-bit results.
+        // Therefore, _Max_count is 0x1FFF'FFFF, which is 0xFFFF'FFF8 when doubled three times; any more would overflow.
 
-        // For SSE2, we reduce using hadd_epi32 2 times, therefore to avoid oveflow _Max_count is 0x3FFF'FFFF,
-        // which is multiplied by two 2 times 0xFFFF'FFFC, a greater limit would overflow
-        // but it's simpler to use the smaller bound for both codepaths.
+        // For SSE4.2, we use hadd_epi32 twice. This would allow a larger limit,
+        // but it's simpler to use the smaller limit for both codepaths.
 
         static constexpr size_t _Max_count = 0x1FFF'FFFF;
 
@@ -2035,9 +2034,8 @@ namespace {
 
     struct _Count_traits_2 : _Find_traits_2 {
 #ifndef _M_ARM64EC
-        // For both AVX2 and SSE2 we need to fit elements after hadd_epi16 to 16 bits,
-        // therefore _Max_count is 0x7FFF, which is when added to itself is 0xFFFE,
-        // a greater limit would overflow.
+        // For both AVX2 and SSE4.2, we use hadd_epi16 once to combine pairs of 16-bit counters into 16-bit results.
+        // Therefore, _Max_count is 0x7FFF, which is 0xFFFE when doubled; any more would overflow.
 
         static constexpr size_t _Max_count = 0x7FFF;
 
@@ -2066,12 +2064,13 @@ namespace {
     struct _Count_traits_1 : _Find_traits_1 {
 #ifndef _M_ARM64EC
         // For AVX2, _Max_portion_size below is _Max_count * 32 bytes, and we have 1-byte elements.
-        // _mm256_sad_epu8 processes packed unsigned 8-bit integers, and 32 of those fit in 256 bits.
+        // We're using packed 8-bit counters, and 32 of those fit in 256 bits.
 
         // For SSE4.2, _Max_portion_size below is _Max_count * 16 bytes, and we have 1-byte elements.
-        // _mm_sad_epu8 processes packed unsigned 8-bit integers, and 16 of those fit in 128 bits.
+        // We're using packed 8-bit counters, and 16 of those fit in 128 bits.
 
         // For both codepaths, this is why _Max_count is the maximum unsigned 8-bit integer.
+        // (The reduction steps aren't the limiting factor here.)
 
         static constexpr size_t _Max_count = 0xFF;
 
