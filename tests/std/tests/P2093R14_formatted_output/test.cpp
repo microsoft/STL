@@ -578,6 +578,20 @@ void test_empty_strings_and_newlines() {
     }
 
     {
+        FILE* temp_file_stream = checked_fopen_s(temp_file_name_str, "a");
+
+        print(temp_file_stream, "space");
+        print(temp_file_stream, "");
+        print(temp_file_stream, "time\n");
+
+        println(temp_file_stream, "general");
+        println(temp_file_stream);
+        println(temp_file_stream, "relativity");
+
+        fclose(temp_file_stream);
+    }
+
+    {
         ifstream input_file_stream{temp_file_name_str};
 
         vector<string> lines;
@@ -596,6 +610,10 @@ void test_empty_strings_and_newlines() {
             "TWO",
             "",
             "THREE",
+            "spacetime",
+            "general",
+            "",
+            "relativity",
         };
 
         assert(lines == expected_lines);
