@@ -8,17 +8,16 @@
 #include <random>
 #include <vector>
 
+constexpr std::size_t N = 1000000;
 
-static const size_t N = 1000000;
-
-void check_results(std::vector<double> const& generated, double expected_mean, double expected_variance) {
+void check_results(const std::vector<double>& generated, const double expected_mean, const double expected_variance) {
     const double actual_mean = std::accumulate(generated.begin(), generated.end(), 0.0) / generated.size();
     assert(std::abs((actual_mean - expected_mean) / expected_mean) < 0.01);
 
     double actual_variance = 0;
     double actual_skew     = 0;
-    for (auto value : generated) {
-        auto deviation = value - actual_mean;
+    for (const auto& value : generated) {
+        const auto deviation = value - actual_mean;
         actual_variance += deviation * deviation;
         actual_skew += deviation * deviation * deviation;
     }
@@ -35,9 +34,9 @@ int main() {
     // overload of operator(). The generated values are then checked for
     // their expected statistical properties.
     std::mt19937 rng;
-    std::normal_distribution<> dist(5., 4.);
+    std::normal_distribution<> dist(5.0, 4.0);
     using dist_params = std::normal_distribution<>::param_type;
-    dist_params params(50., 0.5);
+    const dist_params params(50.0, 0.5);
     std::vector<double> dist_results;
     dist_results.reserve(N);
     std::vector<double> param_results;
@@ -45,7 +44,7 @@ int main() {
 
     // Make sure that we get some first and some second values for both
     // generated distributions
-    for (size_t i = 0; i < N; i += 2) {
+    for (std::size_t i = 0; i < N; i += 2) {
         dist_results.push_back(dist(rng));
         param_results.push_back(dist(rng, params));
         param_results.push_back(dist(rng, params));

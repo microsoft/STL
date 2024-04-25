@@ -5,10 +5,10 @@
 #include <cstddef>
 #include <random>
 
-struct FakeGenerator {
+class FakeGenerator {
 private:
     std::mt19937 m_underlying_gen;
-    size_t m_operator_calls = 0;
+    std::size_t m_operator_calls = 0;
 
 public:
     using GenType     = std::mt19937;
@@ -26,16 +26,16 @@ public:
         return m_underlying_gen();
     }
 
-    size_t calls() const {
+    std::size_t calls() const {
         return m_operator_calls;
     }
 };
 
 int main() {
     FakeGenerator rng;
-    std::normal_distribution<> dist(0., 1.);
+    std::normal_distribution<> dist(0.0, 1.0);
     using dist_params = std::normal_distribution<>::param_type;
-    dist_params params(50., 0.5);
+    dist_params params(50.0, 0.5);
     (void) dist(rng);
     const auto calls_before = rng.calls();
     (void) dist(rng);
