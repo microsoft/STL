@@ -2113,17 +2113,18 @@ namespace {
         if (size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
             const void* _Stop_at     = _First;
-            __m256i _Count_vector    = _mm256_setzero_si256();
 
             for (;;) {
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     _Advance_bytes(_Stop_at, _Avx_size);
                 } else {
-                    constexpr size_t _Max_portion_size = (_Traits::_Max_count - 1) * 32;
+                    constexpr size_t _Max_portion_size = _Traits::_Max_count * 32;
                     const size_t _Portion_size         = _Avx_size < _Max_portion_size ? _Avx_size : _Max_portion_size;
                     _Advance_bytes(_Stop_at, _Portion_size);
                     _Avx_size -= _Portion_size;
                 }
+
+                __m256i _Count_vector = _mm256_setzero_si256();
 
                 do {
                     const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
@@ -2132,27 +2133,26 @@ namespace {
                     _Advance_bytes(_First, 32);
                 } while (_First != _Stop_at);
 
+                _Result += _Traits::_Reduce_avx(_Count_vector);
+
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
                     break;
                 } else {
                     if (_Avx_size == 0) {
                         break;
                     }
-
-                    _Result += _Traits::_Reduce_avx(_Count_vector);
-                    _Count_vector = _mm256_setzero_si256();
                 }
             }
 
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
+                __m256i _Count_vector    = _mm256_setzero_si256();
                 const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
                 const __m256i _Mask      = _Traits::_Cmp_avx(_Data, _Comparand);
                 _Count_vector            = _Traits::_Sub_avx(_Count_vector, _mm256_and_si256(_Mask, _Tail_mask));
                 _Advance_bytes(_First, _Avx_tail_size);
+                _Result += _Traits::_Reduce_avx(_Count_vector);
             }
-
-            _Result += _Traits::_Reduce_avx(_Count_vector);
 
             _mm256_zeroupper(); // TRANSITION, DevCom-10331414
 
