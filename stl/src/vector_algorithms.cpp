@@ -2145,13 +2145,12 @@ namespace {
             }
 
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
-                __m256i _Count_vector    = _mm256_setzero_si256();
                 const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
-                const __m256i _Mask      = _Traits::_Cmp_avx(_Data, _Comparand);
-                _Count_vector            = _Traits::_Sub_avx(_Count_vector, _mm256_and_si256(_Mask, _Tail_mask));
+                const __m256i _Mask      = _mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask);
+                const size_t _Tail_count = __popcnt(_mm256_movemask_epi8(_Mask)) / sizeof(_Ty);
                 _Advance_bytes(_First, _Avx_tail_size);
-                _Result += _Traits::_Reduce_avx(_Count_vector);
+                _Result += _Tail_count;
             }
 
             _mm256_zeroupper(); // TRANSITION, DevCom-10331414
