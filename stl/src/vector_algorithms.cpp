@@ -2002,7 +2002,7 @@ namespace {
         // For AVX2, we reduce using hadd_epi32 3 times, therefore to avoid oveflow _Max_count is 0x1FFF'FFFF,
         // which is multiplied by two 3 times 0xFFFF'FFF8, a greater limit would overflow
 
-        // For AVX2, we reduce using hadd_epi32 2 times, therefore to avoid oveflow _Max_count is 0x3FFF'FFFF,
+        // For SSE2, we reduce using hadd_epi32 2 times, therefore to avoid oveflow _Max_count is 0x3FFF'FFFF,
         // which is multiplied by two 2 times 0xFFFF'FFFC, a greater limit would overflow
         // but it's simpler to use the smaller bound for both codepaths.
 
@@ -2020,7 +2020,7 @@ namespace {
             constexpr auto _Shuf = _MM_SHUFFLE(3, 1, 2, 0); // Cross lane, to reduce further on low lane
             const __m256i _Rx4   = _mm256_hadd_epi32(_Val, _mm256_setzero_si256()); // (0+1),(2+3),0,0 per lane
             const __m256i _Rx5   = _mm256_permute4x64_epi64(_Rx4, _Shuf); // low lane  (0+1),(2+3),(4+5),(6+7)
-            const __m256i _Rx6   = _mm256_hadd_epi32(_Rx5, _mm256_setzero_si256()); // (0+..+3),(4+...+7),0,0
+            const __m256i _Rx6   = _mm256_hadd_epi32(_Rx5, _mm256_setzero_si256()); // (0+...+3),(4+...+7),0,0
             const __m256i _Rx7   = _mm256_hadd_epi32(_Rx6, _mm256_setzero_si256()); // (0+...+7),0,0,0
             return static_cast<uint32_t>(_mm_cvtsi128_si32(_mm256_castsi256_si128(_Rx7)));
         }
