@@ -511,6 +511,38 @@ void test_stream_flush_console() {
         const wstring extractedStr{temp_console.get_console_line(0)};
         assert(extractedStr == L"Hello, world!");
     }
+
+    print(console_file_stream, "kitty");
+    println(console_file_stream);
+    println(console_file_stream, "cat");
+
+    {
+        const wstring line0{temp_console.get_console_line(0)};
+        const wstring line1{temp_console.get_console_line(1)};
+        const wstring line2{temp_console.get_console_line(2)};
+
+        assert(line0 == L"Hello, world!");
+
+        if constexpr (_Is_ordinary_literal_encoding_utf8()) {
+            assert(line1 == L"kitty");
+            assert(line2 == L"cat");
+        } else {
+            assert(line1.empty());
+            assert(line2.empty());
+        }
+    }
+
+    maybe_flush_console_file_stream(temp_console);
+
+    {
+        const wstring line0{temp_console.get_console_line(0)};
+        const wstring line1{temp_console.get_console_line(1)};
+        const wstring line2{temp_console.get_console_line(2)};
+
+        assert(line0 == L"Hello, world!");
+        assert(line1 == L"kitty");
+        assert(line2 == L"cat");
+    }
 }
 
 void test_stream_flush_file() {
