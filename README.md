@@ -267,8 +267,8 @@ control over what category of tests you would like to run. The following will ru
   + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test\std\containers\associative\map`
 * You can also use `--filter` option to include tests using a regular expression. The following command will run
 tests containing "atomic_wait" in name in both std and llvm test suites.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test ..\..\tests\std --filter=.*atomic_wait.*`
-  + there's also filter out, `--filter=.*iota.* --filter-out=.*view.*` would run tests containing "iota" in its name
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test ..\..\tests\std --filter=atomic_wait`
+  + there's also filter out, `--filter=iota --filter-out=view` would run tests containing "iota" in its name
 and not containing "view"
 
 ## Interpreting The Results Of Tests
