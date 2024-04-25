@@ -103,7 +103,7 @@ void test_count(mt19937_64& gen) {
 }
 
 template <class T>
-void test_count_zero() { // text that counters don't overflow
+void test_count_zero() { // test that counters don't overflow
     vector<T> input(1000000, T{0});
     test_case_count(input, T{0});
 }
