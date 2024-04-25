@@ -9,7 +9,7 @@
 
 template <class T>
 void bm(benchmark::State& state) {
-    const size_t size = static_cast<size_t>(state.range(0));
+    const auto size = static_cast<std::size_t>(state.range(0));
 
     std::vector<T> a(size);
 
