@@ -90,6 +90,17 @@ void test_case_count(const vector<T>& input, T v) {
 }
 
 template <class T>
+void test_count_zero(const vector<T>& input, const ptrdiff_t n) {
+    const auto first = input.begin();
+    const auto last  = first + n;
+
+    assert(count(first, last, T{0}) == n);
+#if _HAS_CXX20
+    assert(ranges::count(first, last, T{0}) == n);
+#endif // _HAS_CXX20
+}
+
+template <class T>
 void test_count(mt19937_64& gen) {
     using TD = conditional_t<sizeof(T) == 1, int, T>;
     binomial_distribution<TD> dis(10);
@@ -100,12 +111,27 @@ void test_count(mt19937_64& gen) {
         input.push_back(static_cast<T>(dis(gen)));
         test_case_count(input, static_cast<T>(dis(gen)));
     }
-}
 
-template <class T>
-void test_count_zero() { // test that counters don't overflow
-    vector<T> input(1000000, T{0});
-    test_case_count(input, T{0});
+    {
+        input.assign(1'000'000, T{0});
+
+        // test that counters don't overflow
+        test_count_zero(input, 1'000'000);
+
+        // Test the AVX2 maximum portion followed by all possible tail lengths, for 1-byte and 2-byte elements.
+        // It's okay to test these lengths for other elements, or other instruction sets.
+        for (ptrdiff_t i = 8'160; i < 8'192; ++i) {
+            test_count_zero(input, i);
+        }
+
+        for (ptrdiff_t i = 524'272; i < 524'288; ++i) {
+            test_count_zero(input, i);
+        }
+
+        // Test a random length.
+        uniform_int_distribution<ptrdiff_t> len(0, 999'999);
+        test_count_zero(input, len(gen));
+    }
 }
 
 template <class FwdIt, class T>
@@ -747,16 +773,6 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_count<unsigned int>(gen);
     test_count<long long>(gen);
     test_count<unsigned long long>(gen);
-
-    test_count_zero<char>();
-    test_count_zero<signed char>();
-    test_count_zero<unsigned char>();
-    test_count_zero<short>();
-    test_count_zero<unsigned short>();
-    test_count_zero<int>();
-    test_count_zero<unsigned int>();
-    test_count_zero<long long>();
-    test_count_zero<unsigned long long>();
 
     test_find<char>(gen);
     test_find<signed char>(gen);
