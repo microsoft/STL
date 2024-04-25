@@ -138,7 +138,7 @@ void println(FILE* _Stream) {
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void println() {
-    println(stdout);
+    _STD println(stdout);
 }
 
 _EXPORT_STD template <class... _Types>
