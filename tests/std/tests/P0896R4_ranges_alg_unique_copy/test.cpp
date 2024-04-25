@@ -13,12 +13,12 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate that unique_copy_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::unique_copy_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::unique_copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::unique_copy(borrowed<false>{}, nullptr_to<int>)),
+static_assert(same_as<decltype(ranges::unique_copy(borrowed<false>{}, nullptr_to<int>)),
     ranges::unique_copy_result<ranges::dangling, int*>>);
-STATIC_ASSERT(
+static_assert(
     same_as<decltype(ranges::unique_copy(borrowed<true>{}, nullptr_to<int>)), ranges::unique_copy_result<int*, int*>>);
 
 constexpr P expectedInputRead[6]  = {{0, 99}, {1, 47}, {1, 47}, {1, 99}, {1, 47}, {1, 47}};
@@ -107,8 +107,8 @@ struct test_range_overload {
 #ifdef TEST_EVERYTHING
 int main() {
 #ifndef _PREFAST_ // TRANSITION, GH-1030
-    STATIC_ASSERT((test_in_write<test_iterator_overload, P, P>(), true));
-    STATIC_ASSERT((test_in_write<test_range_overload, P, P>(), true));
+    static_assert((test_in_write<test_iterator_overload, P, P>(), true));
+    static_assert((test_in_write<test_range_overload, P, P>(), true));
 #endif // TRANSITION, GH-1030
     test_in_write<test_iterator_overload, P, P>();
     test_in_write<test_range_overload, P, P>();
@@ -154,7 +154,7 @@ void test_gh_1932() {
 }
 
 int main() {
-    STATIC_ASSERT(run_tests());
+    static_assert(run_tests());
     run_tests();
 
     test_gh_1932();

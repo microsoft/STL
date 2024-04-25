@@ -1621,12 +1621,10 @@ public:
 
 template <class... _Signature>
 class _Move_only_function_call {
-    static_assert((_Always_false<_Signature> || ...),
+    static_assert(_Always_false<integral_constant<size_t, sizeof...(_Signature)>>,
         "std::move_only_function only accepts function types as template arguments, "
-        "with possibly const/ref/noexcept qualifiers.");
-
-    static_assert(sizeof...(_Signature) > 0,
-        "Unlike std::function, std::move_only_function does not define class template argument deduction guides.");
+        "with possibly const/ref/noexcept qualifiers. Also, unlike std::function, "
+        "std::move_only_function does not define class template argument deduction guides.");
 };
 
 // A script to generate the specializations is at
@@ -2607,7 +2605,7 @@ public:
             } else if constexpr (_Del == _Deletion_kind::_Normal_array) {
                 delete[] _Ptr;
             } else {
-                static_assert(_Always_false<_Ty>, "Unknown _Deletion_kind.");
+                static_assert(false, "Unknown _Deletion_kind.");
             }
         }
     }

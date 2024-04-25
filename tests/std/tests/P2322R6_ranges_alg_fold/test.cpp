@@ -251,8 +251,8 @@ struct instantiator {
 
 constexpr bool test_in_value_result() {
     using ranges::in_value_result;
-    STATIC_ASSERT(is_aggregate_v<in_value_result<int, int>>);
-    STATIC_ASSERT(is_trivial_v<in_value_result<int, int>>);
+    static_assert(is_aggregate_v<in_value_result<int, int>>);
+    static_assert(is_trivial_v<in_value_result<int, int>>);
 
     in_value_result<int*, int> res = {nullptr, 6};
     { // Validate binding
@@ -277,17 +277,17 @@ constexpr bool test_in_value_result() {
 }
 
 int main() {
-    STATIC_ASSERT((test_in<instantiator, const double>(), true));
+    static_assert((test_in<instantiator, const double>(), true));
     test_in<instantiator, const double>();
 
-    STATIC_ASSERT((test_bidi<instantiator, const double>(), true));
+    static_assert((test_bidi<instantiator, const double>(), true));
     test_bidi<instantiator, const double>();
 
 #if !(defined(_DEBUG) && defined(__EDG__)) // TRANSITION, VSO-1949414, see also GH-1566
-    STATIC_ASSERT(instantiator::non_dependent());
+    static_assert(instantiator::non_dependent());
 #endif // ^^^ no workaround ^^^
     instantiator::non_dependent();
 
-    STATIC_ASSERT(test_in_value_result());
+    static_assert(test_in_value_result());
     assert(test_in_value_result());
 }

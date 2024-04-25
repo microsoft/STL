@@ -79,8 +79,7 @@ namespace experimental {
 
             template <class _Uty>
             _Uty&& await_transform(_Uty&& _Whatever) {
-                static_assert(_Always_false<_Uty>,
-                    "co_await is not supported in coroutines of type std::experimental::generator");
+                static_assert(false, "co_await is not supported in coroutines of type std::experimental::generator");
                 return _STD forward<_Uty>(_Whatever);
             }
 

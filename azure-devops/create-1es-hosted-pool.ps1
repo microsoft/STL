@@ -14,7 +14,7 @@ $ErrorActionPreference = 'Stop'
 $CurrentDate = Get-Date
 
 $Location = 'eastus'
-$VMSize = 'Standard_D32ds_v5'
+$VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
@@ -167,11 +167,11 @@ $Nic = New-AzNetworkInterface `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating prototype VM'
 
+# Previously: -Priority 'Spot'
 $VM = New-AzVMConfig `
   -Name $ProtoVMName `
   -VMSize $VMSize `
-  -Priority 'Spot' `
-  -MaxPrice -1
+  -Priority 'Regular'
 
 $VM = Set-AzVMOperatingSystem `
   -VM $VM `
@@ -342,7 +342,7 @@ $PoolName = $ResourceGroupName + '-Pool'
 $PoolProperties = @{
   'organization' = 'https://dev.azure.com/vclibs'
   'projects' = @('STL')
-  'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; 'enableSpot' = $true; }
+  'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; 'enableSpot' = $false; }
   'images' = @(@{ 'imageName' = $ImageName; 'poolBufferPercentage' = '100'; })
   'maxPoolSize' = 64
   'agentProfile' = @{ 'type' = 'Stateless'; }

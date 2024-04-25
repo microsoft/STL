@@ -14,13 +14,13 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate that set_difference_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::set_difference_result<int, double>, ranges::in_out_result<int, double>>);
+static_assert(same_as<ranges::set_difference_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::set_difference(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>,
+static_assert(same_as<decltype(ranges::set_difference(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>,
                           ranges::less{}, identity{}, identity{})),
     ranges::set_difference_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::set_difference(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>,
+static_assert(same_as<decltype(ranges::set_difference(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>,
                           ranges::less{}, identity{}, identity{})),
     ranges::set_difference_result<int*, int*>>);
 
@@ -123,6 +123,6 @@ constexpr void run_tests() {
 }
 
 int main() {
-    STATIC_ASSERT((run_tests(), true));
+    static_assert((run_tests(), true));
     run_tests();
 }

@@ -95,17 +95,17 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     constexpr bool is_common              = CartesianProductIsCommon<VFirst, all_t<Rest>...>;
     constexpr bool is_const_common        = CartesianProductIsCommon<const VFirst, const all_t<Rest>...>;
 
-    STATIC_ASSERT(view<R>);
-    STATIC_ASSERT(input_range<R>);
-    STATIC_ASSERT(forward_range<R> == forward_range<First>);
-    STATIC_ASSERT(bidirectional_range<R> == is_bidirectional);
-    STATIC_ASSERT(random_access_range<R> == is_random_access);
-    STATIC_ASSERT(!ranges::contiguous_range<R>);
-    STATIC_ASSERT(sized_range<R> == is_sized);
-    STATIC_ASSERT(common_range<R> == is_common);
+    static_assert(view<R>);
+    static_assert(input_range<R>);
+    static_assert(forward_range<R> == forward_range<First>);
+    static_assert(bidirectional_range<R> == is_bidirectional);
+    static_assert(random_access_range<R> == is_random_access);
+    static_assert(!ranges::contiguous_range<R>);
+    static_assert(sized_range<R> == is_sized);
+    static_assert(common_range<R> == is_common);
 
     // Check non-default-initializability
-    STATIC_ASSERT(is_default_constructible_v<R>
+    static_assert(is_default_constructible_v<R>
                   == (is_default_constructible_v<VFirst> && ... && is_default_constructible_v<all_t<Rest>>) );
 
     // Check borrowed_range
@@ -115,19 +115,19 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     constexpr auto closure = views::cartesian_product;
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewCartesianProduct<First&, Rest&...>
+    static_assert(CanViewCartesianProduct<First&, Rest&...>
                   == (!is_view || (copy_constructible<VFirst> && ... && copy_constructible<all_t<Rest>>) ));
     if constexpr (CanViewCartesianProduct<First&, Rest&...>) {
         constexpr bool is_noexcept =
             !is_view
             || (is_nothrow_copy_constructible_v<VFirst> && ... && is_nothrow_copy_constructible_v<all_t<Rest>>);
 
-        STATIC_ASSERT(same_as<decltype(closure(first, rest...)), R>);
-        STATIC_ASSERT(noexcept(closure(first, rest...)) == is_noexcept);
+        static_assert(same_as<decltype(closure(first, rest...)), R>);
+        static_assert(noexcept(closure(first, rest...)) == is_noexcept);
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(CanViewCartesianProduct<const remove_reference_t<First>&, const remove_reference_t<Rest>&...>
+    static_assert(CanViewCartesianProduct<const remove_reference_t<First>&, const remove_reference_t<Rest>&...>
                   == (!is_view || (copy_constructible<VFirst> && ... && copy_constructible<all_t<Rest>>) ));
     if constexpr (CanViewCartesianProduct<const remove_reference_t<First>&, const remove_reference_t<Rest>&...>) {
         using RC =
@@ -136,45 +136,45 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             !is_view
             || (is_nothrow_copy_constructible_v<VFirst> && ... && is_nothrow_copy_constructible_v<all_t<Rest>>);
 
-        STATIC_ASSERT(same_as<decltype(closure(as_const(first), as_const(rest)...)), RC>);
-        STATIC_ASSERT(noexcept(closure(as_const(first), as_const(rest)...)) == is_noexcept);
+        static_assert(same_as<decltype(closure(as_const(first), as_const(rest)...)), RC>);
+        static_assert(noexcept(closure(as_const(first), as_const(rest)...)) == is_noexcept);
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(CanViewCartesianProduct<remove_reference_t<First>, remove_reference_t<Rest>...>
+    static_assert(CanViewCartesianProduct<remove_reference_t<First>, remove_reference_t<Rest>...>
                   == (is_view || (movable<remove_reference_t<First>> && ... && movable<remove_reference_t<Rest>>) ));
     if constexpr (CanViewCartesianProduct<remove_reference_t<First>, remove_reference_t<Rest>...>) {
         using RS = cartesian_product_view<all_t<remove_reference_t<First>>, all_t<remove_reference_t<Rest>>...>;
         constexpr bool is_noexcept =
             (is_nothrow_move_constructible_v<VFirst> && ... && is_nothrow_move_constructible_v<all_t<Rest>>);
 
-        STATIC_ASSERT(same_as<decltype(closure(move(first), move(rest)...)), RS>);
-        STATIC_ASSERT(noexcept(closure(move(first), move(rest)...)) == is_noexcept);
+        static_assert(same_as<decltype(closure(move(first), move(rest)...)), RS>);
+        static_assert(noexcept(closure(move(first), move(rest)...)) == is_noexcept);
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(CanViewCartesianProduct<const remove_reference_t<First>, const remove_reference_t<Rest>...>
+    static_assert(CanViewCartesianProduct<const remove_reference_t<First>, const remove_reference_t<Rest>...>
                   == (is_view && (copy_constructible<VFirst> && ... && copy_constructible<all_t<Rest>>) ));
     if constexpr (CanViewCartesianProduct<const remove_reference_t<First>, const remove_reference_t<Rest>...>) {
         constexpr bool is_noexcept =
             (is_nothrow_copy_constructible_v<VFirst> && ... && is_nothrow_copy_constructible_v<all_t<Rest>>);
 
-        STATIC_ASSERT(same_as<decltype(closure(move(as_const(first)), move(as_const(rest))...)), R>);
-        STATIC_ASSERT(noexcept(closure(move(as_const(first)), move(as_const(rest))...)) == is_noexcept);
+        static_assert(same_as<decltype(closure(move(as_const(first)), move(as_const(rest))...)), R>);
+        static_assert(noexcept(closure(move(as_const(first)), move(as_const(rest))...)) == is_noexcept);
     }
 
     // Check deduction guide
     same_as<R> auto r = cartesian_product_view{forward<First>(first), forward<Rest>(rest)...};
 
     // Check cartesian_product_view::size
-    STATIC_ASSERT(CanMemberSize<R> == is_sized);
+    static_assert(CanMemberSize<R> == is_sized);
     if constexpr (CanMemberSize<R>) {
         UnsignedIntegerLike auto s = r.size();
         assert(s == ranges::size(expected_range));
     }
 
     // Check cartesian_product_view::size (const)
-    STATIC_ASSERT(CanMemberSize<const R> == is_const_sized);
+    static_assert(CanMemberSize<const R> == is_const_sized);
     if constexpr (CanMemberSize<const R>) {
         UnsignedIntegerLike auto s = as_const(r).size();
         assert(s == ranges::size(expected_range));
@@ -183,16 +183,16 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     const bool is_empty = ranges::empty(expected_range);
 
     // Check view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == (forward_range<VFirst> || is_sized));
-    STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
+    static_assert(CanMemberEmpty<R> == (forward_range<VFirst> || is_sized));
+    static_assert(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
         assert(static_cast<bool>(r) == !is_empty);
     }
 
     // Check view_interface::empty and operator bool (const)
-    STATIC_ASSERT(CanMemberEmpty<const R> == (forward_range<const VFirst> || is_const_sized));
-    STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
+    static_assert(CanMemberEmpty<const R> == (forward_range<const VFirst> || is_const_sized));
+    static_assert(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
         assert(static_cast<bool>(as_const(r)) == !is_empty);
@@ -204,7 +204,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     }
 
     // Check cartesian_product_view::begin
-    STATIC_ASSERT(CanMemberBegin<R>);
+    static_assert(CanMemberBegin<R>);
     {
         const same_as<iterator_t<R>> auto i = r.begin();
         if (!is_empty) {
@@ -221,7 +221,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     }
 
     // Check cartesian_product_view::begin (const)
-    STATIC_ASSERT(CanMemberBegin<const R> == (range<const VFirst> && ... && range<const all_t<Rest>>) );
+    static_assert(CanMemberBegin<const R> == (range<const VFirst> && ... && range<const all_t<Rest>>) );
     if constexpr (CanMemberBegin<const R>) {
         const same_as<iterator_t<const R>> auto ci = as_const(r).begin();
         if (!is_empty) {
@@ -238,15 +238,15 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     }
 
     // Check cartesian_product_view::end
-    STATIC_ASSERT(CanMemberEnd<R>);
+    static_assert(CanMemberEnd<R>);
     {
         const same_as<sentinel_t<R>> auto s = r.end();
         assert((r.begin() == s) == is_empty);
-        STATIC_ASSERT(common_range<R> == is_common);
+        static_assert(common_range<R> == is_common);
 
         if constexpr (same_as<sentinel_t<R>, default_sentinel_t>) {
-            STATIC_ASSERT(!is_common);
-            STATIC_ASSERT(noexcept(r.end()));
+            static_assert(!is_common);
+            static_assert(noexcept(r.end()));
         } else if constexpr (common_range<R> && is_bidirectional) {
             if (!is_empty) {
                 assert(*prev(s) == *prev(end(expected_range)));
@@ -262,15 +262,15 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     }
 
     // Check cartesian_product_view::end (const)
-    STATIC_ASSERT(CanMemberEnd<const R>);
+    static_assert(CanMemberEnd<const R>);
     if constexpr (CanMemberEnd<const R>) {
         const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
         assert((r.begin() == cs) == is_empty);
-        STATIC_ASSERT(common_range<const R> == is_const_common);
+        static_assert(common_range<const R> == is_const_common);
 
         if constexpr (same_as<sentinel_t<const R>, default_sentinel_t>) {
-            STATIC_ASSERT(!is_const_common);
-            STATIC_ASSERT(noexcept(as_const(r).end()));
+            static_assert(!is_const_common);
+            static_assert(noexcept(as_const(r).end()));
         } else if constexpr (common_range<const R> && is_const_bidirectional) {
             if (!is_empty) {
                 assert(*prev(cs) == *prev(end(expected_range)));
@@ -286,8 +286,8 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     }
 
     // Check view_interface::cbegin
-    STATIC_ASSERT(CanMemberCBegin<R>);
-    STATIC_ASSERT(CanMemberCBegin<const R&> == (range<const VFirst> && ... && range<const all_t<Rest>>) );
+    static_assert(CanMemberCBegin<R>);
+    static_assert(CanMemberCBegin<const R&> == (range<const VFirst> && ... && range<const all_t<Rest>>) );
     {
         const same_as<const_iterator_t<R>> auto i = r.cbegin();
         if (!is_empty) {
@@ -311,8 +311,8 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     }
 
     // Check view_interface::cend
-    STATIC_ASSERT(CanMemberCEnd<R>);
-    STATIC_ASSERT(CanMemberCEnd<const R&>);
+    static_assert(CanMemberCEnd<R>);
+    static_assert(CanMemberCEnd<const R&>);
     if (!is_empty) {
         same_as<const_sentinel_t<R>> auto i = r.cend();
         if constexpr (common_range<R> && is_bidirectional) {
@@ -332,63 +332,63 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     }
 
     // Check view_interface::data
-    STATIC_ASSERT(!CanData<R>);
-    STATIC_ASSERT(!CanData<const R>);
+    static_assert(!CanData<R>);
+    static_assert(!CanData<const R>);
 
     // Check view_interface::operator[]
-    STATIC_ASSERT(CanIndex<R> == is_random_access);
+    static_assert(CanIndex<R> == is_random_access);
     if constexpr (CanIndex<R>) {
         assert(r[0] == expected_range[0]);
     }
 
     // Check view_interface::operator[] (const)
-    STATIC_ASSERT(CanIndex<const R> == is_const_random_access);
+    static_assert(CanIndex<const R> == is_const_random_access);
     if constexpr (CanIndex<const R>) {
         assert(as_const(r)[0] == expected_range[0]);
     }
 
     // Check view_interface::front
-    STATIC_ASSERT(CanMemberFront<R> == forward_range<VFirst>);
+    static_assert(CanMemberFront<R> == forward_range<VFirst>);
     if constexpr (CanMemberFront<R>) {
         assert(r.front() == *begin(expected_range));
     }
 
     // Check view_interface::front (const)
-    STATIC_ASSERT(CanMemberFront<const R> == forward_range<const VFirst>);
+    static_assert(CanMemberFront<const R> == forward_range<const VFirst>);
     if constexpr (CanMemberFront<const R>) {
         assert(as_const(r).front() == *begin(expected_range));
     }
 
     // Check view_interface::back
-    STATIC_ASSERT(CanMemberBack<R> == (is_bidirectional && is_common));
+    static_assert(CanMemberBack<R> == (is_bidirectional && is_common));
     if constexpr (CanMemberBack<R>) {
         assert(r.back() == *prev(end(expected_range)));
     }
 
     // Check view_interface::back (const)
-    STATIC_ASSERT(CanMemberBack<const R> == (is_const_bidirectional && is_const_common));
+    static_assert(CanMemberBack<const R> == (is_const_bidirectional && is_const_common));
     if constexpr (CanMemberBack<const R>) {
         assert(as_const(r).back() == *prev(end(expected_range)));
     }
 
     { // Check cartesian_product_view::iterator<not const>
         using I = iterator_t<R>;
-        STATIC_ASSERT(input_iterator<I>);
+        static_assert(input_iterator<I>);
 
         // Check iterator_category
-        STATIC_ASSERT(same_as<typename I::iterator_category, input_iterator_tag>);
+        static_assert(same_as<typename I::iterator_category, input_iterator_tag>);
 
         // Check iterator_concept
         using IterConcept = I::iterator_concept;
-        STATIC_ASSERT(is_random_access == same_as<IterConcept, random_access_iterator_tag>);
-        STATIC_ASSERT((is_bidirectional && !is_random_access) == same_as<IterConcept, bidirectional_iterator_tag>);
-        STATIC_ASSERT((forward_range<VFirst> && !is_bidirectional) == same_as<IterConcept, forward_iterator_tag>);
+        static_assert(is_random_access == same_as<IterConcept, random_access_iterator_tag>);
+        static_assert((is_bidirectional && !is_random_access) == same_as<IterConcept, bidirectional_iterator_tag>);
+        static_assert((forward_range<VFirst> && !is_bidirectional) == same_as<IterConcept, forward_iterator_tag>);
 
         // Check value_type
-        STATIC_ASSERT(same_as<typename I::value_type, tuple<range_value_t<First>, range_value_t<Rest>...>>);
+        static_assert(same_as<typename I::value_type, tuple<range_value_t<First>, range_value_t<Rest>...>>);
 
         // Check default-initializability
-        STATIC_ASSERT(default_initializable<I> == default_initializable<iterator_t<VFirst>>);
+        static_assert(default_initializable<I> == default_initializable<iterator_t<VFirst>>);
 
         auto i = r.begin();
 
@@ -414,7 +414,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             }
             i = r.begin();
         } else {
-            STATIC_ASSERT(is_void_v<decltype(i++)>);
+            static_assert(is_void_v<decltype(i++)>);
         }
 
         if constexpr (is_bidirectional) {
@@ -517,7 +517,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             assert(ranges::next(i) - i == 1);
         }
 
-        STATIC_ASSERT(sized_sentinel_for<default_sentinel_t, I>
+        static_assert(sized_sentinel_for<default_sentinel_t, I>
                       == CartesianIsSizedSentinel<false, sentinel_t, VFirst, all_t<Rest>...>);
         if constexpr (sized_sentinel_for<default_sentinel_t, I>) { // Check differencing with default_sentinel
             const auto expected_size              = ranges::ssize(expected_range);
@@ -545,17 +545,17 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
     // Check cartesian_product_view::iterator<const>
     if constexpr (CanMemberBegin<const R>) {
         using CI = iterator_t<const R>;
-        STATIC_ASSERT(input_iterator<CI>);
+        static_assert(input_iterator<CI>);
 
         // Check iterator_category
-        STATIC_ASSERT(same_as<typename CI::iterator_category, input_iterator_tag>);
+        static_assert(same_as<typename CI::iterator_category, input_iterator_tag>);
 
         // Check iterator_concept
         using IterConcept = CI::iterator_concept;
-        STATIC_ASSERT(is_const_random_access == same_as<IterConcept, random_access_iterator_tag>);
-        STATIC_ASSERT(
+        static_assert(is_const_random_access == same_as<IterConcept, random_access_iterator_tag>);
+        static_assert(
             (is_const_bidirectional && !is_const_random_access) == same_as<IterConcept, bidirectional_iterator_tag>);
-        STATIC_ASSERT(
+        static_assert(
             (forward_range<const VFirst> && !is_const_bidirectional) == same_as<IterConcept, forward_iterator_tag>);
 
         // Check value_type
@@ -563,7 +563,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             same_as<typename CI::value_type, tuple<range_value_t<const First>, range_value_t<const Rest>...>>);
 
         // Check default-initializability
-        STATIC_ASSERT(default_initializable<CI> == default_initializable<iterator_t<const VFirst>>);
+        static_assert(default_initializable<CI> == default_initializable<iterator_t<const VFirst>>);
 
         // Check conversion from non-const iterator
         if constexpr ((convertible_to<iterator_t<VFirst>, iterator_t<const VFirst>> && ...
@@ -598,7 +598,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             }
             ci = as_const(r).begin();
         } else {
-            STATIC_ASSERT(is_void_v<decltype(ci++)>);
+            static_assert(is_void_v<decltype(ci++)>);
         }
 
         if constexpr (is_const_bidirectional) {
@@ -734,7 +734,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             assert(ranges::next(ci) - ci == 1);
         }
 
-        STATIC_ASSERT(sized_sentinel_for<default_sentinel_t, CI>
+        static_assert(sized_sentinel_for<default_sentinel_t, CI>
                       == CartesianIsSizedSentinel<false, sentinel_t, const VFirst, const all_t<Rest>...>);
         if constexpr (sized_sentinel_for<default_sentinel_t, CI>) { // Check differencing with default_sentinel
             const auto expected_size              = ranges::ssize(expected_range);
@@ -763,7 +763,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
 }
 
 // Check calling views::cartesian_product without arguments
-STATIC_ASSERT(same_as<decltype(views::cartesian_product()), decltype(views::single(tuple{}))>);
+static_assert(same_as<decltype(views::cartesian_product()), decltype(views::single(tuple{}))>);
 
 template <ranges::input_range... Rngs>
     requires (indirectly_swappable<iterator_t<Rngs>> && ...)
@@ -953,7 +953,7 @@ int main() {
 #ifndef __EDG__ // TRANSITION, VSO-1900293
     { // ... copyable
         constexpr span<const int> s{get<0>(some_ranges)};
-        STATIC_ASSERT(test_one(expected_result_0, s));
+        static_assert(test_one(expected_result_0, s));
         test_one(expected_result_0, s);
     }
 
@@ -990,7 +990,7 @@ int main() {
     {
         constexpr auto& r0 = get<0>(some_ranges);
 #ifndef __EDG__ // TRANSITION, VSO-1900293
-        STATIC_ASSERT(test_one(expected_result_0, r0));
+        static_assert(test_one(expected_result_0, r0));
         test_one(expected_result_0, r0);
 #endif // ^^^ no workaround ^^^
 
@@ -1005,13 +1005,13 @@ int main() {
     }
 
 #ifndef _PREFAST_ // TRANSITION, GH-1030
-    STATIC_ASSERT((instantiation_test(), true));
+    static_assert((instantiation_test(), true));
 #endif // TRANSITION, GH-1030
     instantiation_test();
 
-    STATIC_ASSERT((test_gh_3733(), true));
+    static_assert((test_gh_3733(), true));
     test_gh_3733();
 
-    STATIC_ASSERT((test_gh_4425(), true));
+    static_assert((test_gh_4425(), true));
     test_gh_4425();
 }

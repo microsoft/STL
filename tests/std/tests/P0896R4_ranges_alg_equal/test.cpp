@@ -23,21 +23,21 @@ constexpr void smoke_test() {
     {
         // Validate sized ranges
         auto result = equal(x, y, cmp, get_first, get_second);
-        STATIC_ASSERT(same_as<decltype(result), bool>);
+        static_assert(same_as<decltype(result), bool>);
         assert(result);
         assert(!equal(x, y, cmp, get_first, get_first));
     }
     {
         // Validate non-sized ranges
         auto result = equal(basic_borrowed_range{x}, basic_borrowed_range{y}, cmp, get_first, get_second);
-        STATIC_ASSERT(same_as<decltype(result), bool>);
+        static_assert(same_as<decltype(result), bool>);
         assert(result);
         assert(!equal(basic_borrowed_range{x}, basic_borrowed_range{y}, cmp, get_first, get_first));
     }
     {
         // Validate sized iterator + sentinel pairs
         auto result = equal(x.begin(), x.end(), y.begin(), y.end(), cmp, get_first, get_second);
-        STATIC_ASSERT(same_as<decltype(result), bool>);
+        static_assert(same_as<decltype(result), bool>);
         assert(result);
         assert(!equal(x.begin(), x.end(), y.begin(), y.end(), cmp, get_first, get_first));
     }
@@ -47,7 +47,7 @@ constexpr void smoke_test() {
         basic_borrowed_range wrapped_y{y};
         auto result =
             equal(wrapped_x.begin(), wrapped_x.end(), wrapped_y.begin(), wrapped_y.end(), cmp, get_first, get_second);
-        STATIC_ASSERT(same_as<decltype(result), bool>);
+        static_assert(same_as<decltype(result), bool>);
         assert(result);
     }
     {
@@ -87,7 +87,7 @@ constexpr void smoke_test() {
 }
 
 int main() {
-    STATIC_ASSERT((smoke_test(), true));
+    static_assert((smoke_test(), true));
     smoke_test();
 }
 

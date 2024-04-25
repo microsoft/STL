@@ -15,8 +15,8 @@
 using namespace std;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::reverse(borrowed<false>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::reverse(borrowed<true>{})), int*>);
+static_assert(same_as<decltype(ranges::reverse(borrowed<false>{})), ranges::dangling>);
+static_assert(same_as<decltype(ranges::reverse(borrowed<true>{})), int*>);
 
 struct nontrivial_int {
     int val;
@@ -43,7 +43,7 @@ struct instantiator {
             nontrivial_int input[] = {13, 42, 1367};
             R wrapped_input{input};
             auto result = reverse(wrapped_input.begin(), wrapped_input.end());
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
             assert(equal(input, expected_odd));
         }
@@ -51,7 +51,7 @@ struct instantiator {
             nontrivial_int input[] = {13, 42, 1367};
             R wrapped_input{input};
             auto result = reverse(wrapped_input);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
             assert(equal(input, expected_odd));
         }
@@ -59,7 +59,7 @@ struct instantiator {
             nontrivial_int input[] = {13, 42, 1367, 1729};
             R wrapped_input{input};
             auto result = reverse(wrapped_input.begin(), wrapped_input.end());
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
             assert(equal(input, expected_even));
         }
@@ -67,20 +67,20 @@ struct instantiator {
             nontrivial_int input[] = {13, 42, 1367, 1729};
             R wrapped_input{input};
             auto result = reverse(wrapped_input);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
             assert(equal(input, expected_even));
         }
         { // Validate iterator + sentinel overload, empty range
             R wrapped_input{span<nontrivial_int, 0>{}};
             auto result = reverse(wrapped_input.begin(), wrapped_input.end());
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
         }
         { // Validate range overload, empty range
             R wrapped_input{span<nontrivial_int, 0>{}};
             auto result = reverse(wrapped_input);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
         }
     }
@@ -106,7 +106,7 @@ struct test_vector {
             ranges::range_value_t<R> input[]{0x10, 0x20, 0x30};
             R wrapped_input{input};
             auto result = reverse(wrapped_input.begin(), wrapped_input.end());
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
             assert(equal(input, initializer_list<ranges::range_value_t<R>>{0x30, 0x20, 0x10}));
         }
@@ -114,7 +114,7 @@ struct test_vector {
             ranges::range_value_t<R> input[]{0x10, 0x20, 0x30};
             R wrapped_input{input};
             auto result = reverse(wrapped_input);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
             assert(equal(input, initializer_list<ranges::range_value_t<R>>{0x30, 0x20, 0x10}));
         }
@@ -123,7 +123,7 @@ struct test_vector {
             ranges::range_value_t<R> input[]{0x10, 0x20, 0x30, 0x40};
             R wrapped_input{input};
             auto result = reverse(wrapped_input.begin(), wrapped_input.end());
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
             assert(equal(input, initializer_list<ranges::range_value_t<R>>{0x40, 0x30, 0x20, 0x10}));
         }
@@ -131,7 +131,7 @@ struct test_vector {
             ranges::range_value_t<R> input[]{0x10, 0x20, 0x30, 0x40};
             R wrapped_input{input};
             auto result = reverse(wrapped_input);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
             assert(equal(input, initializer_list<ranges::range_value_t<R>>{0x40, 0x30, 0x20, 0x10}));
         }
@@ -139,34 +139,34 @@ struct test_vector {
         { // Validate iterator + sentinel overload, vectorizable empty
             R wrapped_input{span<ranges::range_value_t<R>, 0>{}};
             auto result = reverse(wrapped_input.begin(), wrapped_input.end());
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
         }
         { // Validate range overload, vectorizable empty
             R wrapped_input{span<ranges::range_value_t<R>, 0>{}};
             auto result = reverse(wrapped_input);
-            STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
+            static_assert(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
         }
     }
 };
 
 int main() {
-    STATIC_ASSERT((test_bidi<instantiator, nontrivial_int>(), true));
+    static_assert((test_bidi<instantiator, nontrivial_int>(), true));
     test_bidi<instantiator, nontrivial_int>();
 
-    STATIC_ASSERT((test_contiguous<test_vector, bytes<1>>(), true));
+    static_assert((test_contiguous<test_vector, bytes<1>>(), true));
     test_contiguous<test_vector, bytes<1>>();
 
-    STATIC_ASSERT((test_contiguous<test_vector, bytes<2>>(), true));
+    static_assert((test_contiguous<test_vector, bytes<2>>(), true));
     test_contiguous<test_vector, bytes<2>>();
 
-    STATIC_ASSERT((test_contiguous<test_vector, bytes<4>>(), true));
+    static_assert((test_contiguous<test_vector, bytes<4>>(), true));
     test_contiguous<test_vector, bytes<4>>();
 
-    STATIC_ASSERT((test_contiguous<test_vector, bytes<8>>(), true));
+    static_assert((test_contiguous<test_vector, bytes<8>>(), true));
     test_contiguous<test_vector, bytes<8>>();
 
-    STATIC_ASSERT((test_contiguous<test_vector, bytes<3>>(), true));
+    static_assert((test_contiguous<test_vector, bytes<3>>(), true));
     test_contiguous<test_vector, bytes<3>>();
 }

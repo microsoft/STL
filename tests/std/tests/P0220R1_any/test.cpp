@@ -2478,7 +2478,6 @@ int run_test() {
 #include <cassert>
 
 #include "test_macros.h"
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace nonmembers::swap_ {
 int run_test()
@@ -2713,52 +2712,52 @@ namespace msvc {
         constexpr bool IsBig = !(std::_Any_is_small<T> || std::_Any_is_trivial<T>);
 
         void run_test() {
-            STATIC_ASSERT(!IsBig<small>);
-            STATIC_ASSERT(!IsBig<void*>);
-            STATIC_ASSERT(IsBig<large>);
+            static_assert(!IsBig<small>);
+            static_assert(!IsBig<void*>);
+            static_assert(IsBig<large>);
             {
                 // Verify that a type that meets the size requirement *exactly* and has a lesser alignment requirement
                 // is considered small.
                 using T = SizeAndAlignType<BufferSize, 1>;
-                STATIC_ASSERT(sizeof(T) == BufferSize);
-                STATIC_ASSERT(alignof(T) < BufferAlignment);
-                STATIC_ASSERT(!IsBig<T>);
+                static_assert(sizeof(T) == BufferSize);
+                static_assert(alignof(T) < BufferAlignment);
+                static_assert(!IsBig<T>);
             }
             {
                 // Verify that a type that meets the alignment requirement *exactly* and has a lesser size is considered
                 // small.
                 using T = SizeAndAlignType<BufferAlignment, BufferAlignment>;
-                STATIC_ASSERT(sizeof(T) <= BufferSize);
-                STATIC_ASSERT(alignof(T) == BufferAlignment);
-                STATIC_ASSERT(!IsBig<T>);
+                static_assert(sizeof(T) <= BufferSize);
+                static_assert(alignof(T) == BufferAlignment);
+                static_assert(!IsBig<T>);
             }
             {
                 // Verify that a type that meets the size and alignment requirements *exactly* is considered small.
                 using T = SizeAndAlignType<align_to<BufferAlignment>(BufferSize), BufferAlignment>;
-                STATIC_ASSERT(sizeof(T) <= BufferSize);
-                STATIC_ASSERT(alignof(T) == BufferAlignment);
-                STATIC_ASSERT(!IsBig<T>);
+                static_assert(sizeof(T) <= BufferSize);
+                static_assert(alignof(T) == BufferAlignment);
+                static_assert(!IsBig<T>);
             }
             {
                 // Verify that a type that meets the alignment requirements but is over-sized is not considered small.
                 using T = SizeAndAlignType<BufferSize + 1, 1>;
-                STATIC_ASSERT(sizeof(T) > BufferSize);
-                STATIC_ASSERT(alignof(T) < BufferAlignment);
-                STATIC_ASSERT(IsBig<T>);
+                static_assert(sizeof(T) > BufferSize);
+                static_assert(alignof(T) < BufferAlignment);
+                static_assert(IsBig<T>);
             }
             {
                 // Verify that a type that meets the size requirements but is over-aligned is not considered small.
                 using T = SizeAndAlignType<BufferAlignment * 2, BufferAlignment * 2>;
-                STATIC_ASSERT(alignof(T) >= BufferSize || sizeof(T) < BufferSize);
-                STATIC_ASSERT(alignof(T) > BufferAlignment);
-                STATIC_ASSERT(IsBig<T>);
+                static_assert(alignof(T) >= BufferSize || sizeof(T) < BufferSize);
+                static_assert(alignof(T) > BufferAlignment);
+                static_assert(IsBig<T>);
             }
             {
                 // Verify that a type that exceeds both the size and alignment requirements is not considered small.
                 using T = SizeAndAlignType<BufferSize + 1, BufferAlignment * 2>;
-                STATIC_ASSERT(sizeof(T) > BufferSize);
-                STATIC_ASSERT(alignof(T) > BufferAlignment);
-                STATIC_ASSERT(IsBig<T>);
+                static_assert(sizeof(T) > BufferSize);
+                static_assert(alignof(T) > BufferAlignment);
+                static_assert(IsBig<T>);
             }
         }
     } // namespace small_type

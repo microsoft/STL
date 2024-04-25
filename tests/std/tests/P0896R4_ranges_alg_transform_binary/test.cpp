@@ -13,16 +13,16 @@ using namespace std;
 using P = pair<int, int>;
 
 // Validate that binary_transform_result aliases in_in_out_result
-STATIC_ASSERT(same_as<ranges::binary_transform_result<int, P, double>, ranges::in_in_out_result<int, P, double>>);
+static_assert(same_as<ranges::binary_transform_result<int, P, double>, ranges::in_in_out_result<int, P, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>, plus{})),
+static_assert(same_as<decltype(ranges::transform(borrowed<false>{}, borrowed<false>{}, nullptr_to<int>, plus{})),
     ranges::binary_transform_result<ranges::dangling, ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<false>{}, borrowed<true>{}, nullptr_to<int>, plus{})),
+static_assert(same_as<decltype(ranges::transform(borrowed<false>{}, borrowed<true>{}, nullptr_to<int>, plus{})),
     ranges::binary_transform_result<ranges::dangling, int*, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>, plus{})),
+static_assert(same_as<decltype(ranges::transform(borrowed<true>{}, borrowed<false>{}, nullptr_to<int>, plus{})),
     ranges::binary_transform_result<int*, ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::transform(borrowed<true>{}, borrowed<true>{}, nullptr_to<int>, plus{})),
+static_assert(same_as<decltype(ranges::transform(borrowed<true>{}, borrowed<true>{}, nullptr_to<int>, plus{})),
     ranges::binary_transform_result<int*, int*, int*>>);
 
 struct instantiator {
@@ -44,7 +44,7 @@ struct instantiator {
 
             auto result = transform(wrapped_in1.begin(), wrapped_in1.end(), wrapped_in2.begin(), wrapped_in2.end(),
                 Write{output}, plus{}, get_first, get_second);
-            STATIC_ASSERT(
+            static_assert(
                 same_as<decltype(result), binary_transform_result<iterator_t<Read1>, iterator_t<Read2>, Write>>);
             assert(result.in1 == wrapped_in1.end());
             assert(next(result.in2) == wrapped_in2.end());
@@ -58,7 +58,7 @@ struct instantiator {
 
             auto result = transform(wrapped_in1.begin(), wrapped_in1.end(), wrapped_in2.begin(), wrapped_in2.end(),
                 Write{output}, plus{}, get_first, get_second);
-            STATIC_ASSERT(
+            static_assert(
                 same_as<decltype(result), binary_transform_result<iterator_t<Read1>, iterator_t<Read2>, Write>>);
             assert(next(result.in1) == wrapped_in1.end());
             assert(result.in2 == wrapped_in2.end());
@@ -71,7 +71,7 @@ struct instantiator {
             Read2 wrapped_in2{input2};
 
             auto result = transform(wrapped_in1, wrapped_in2, Write{output}, plus{}, get_first, get_second);
-            STATIC_ASSERT(
+            static_assert(
                 same_as<decltype(result), binary_transform_result<iterator_t<Read1>, iterator_t<Read2>, Write>>);
             assert(result.in1 == wrapped_in1.end());
             assert(next(result.in2) == wrapped_in2.end());
@@ -84,7 +84,7 @@ struct instantiator {
             Read2 wrapped_in2{shortInput2};
 
             auto result = transform(wrapped_in1, wrapped_in2, Write{output}, plus{}, get_first, get_second);
-            STATIC_ASSERT(
+            static_assert(
                 same_as<decltype(result), binary_transform_result<iterator_t<Read1>, iterator_t<Read2>, Write>>);
             assert(next(result.in1) == wrapped_in1.end());
             assert(result.in2 == wrapped_in2.end());
@@ -122,7 +122,7 @@ constexpr bool run_tests() {
 }
 
 int main() {
-    STATIC_ASSERT(run_tests());
+    static_assert(run_tests());
     run_tests();
 }
 #endif // TEST_EVERYTHING
