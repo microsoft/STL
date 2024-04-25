@@ -2162,7 +2162,6 @@ namespace {
         } else if (size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _First;
-            __m128i _Count_vector    = _mm_setzero_si128();
 
             for (;;) {
                 if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
@@ -2173,6 +2172,8 @@ namespace {
                     _Advance_bytes(_Stop_at, _Portion_size);
                     _Sse_size -= _Portion_size;
                 }
+
+                __m128i _Count_vector = _mm_setzero_si128();
 
                 do {
                     const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
@@ -2189,8 +2190,6 @@ namespace {
                     if (_Sse_size == 0) {
                         break;
                     }
-
-                    _Count_vector = _mm_setzero_si128();
                 }
             }
         }
