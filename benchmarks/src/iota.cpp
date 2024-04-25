@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <benchmark/benchmark.h>
+#include <cstddef>
+#include <cstdint>
 #include <numeric>
 #include <vector>
 
