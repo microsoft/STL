@@ -1999,6 +1999,16 @@ namespace {
 
     struct _Count_traits_4 : _Find_traits_4 {
 #ifndef _M_ARM64EC
+        // For both AVX2 and SSE4.2, the reduced result is extracted by _mm_cvtsi128_si32
+        // as a signed 32-bit integer, so we can count at most 2^31 - 1 elements (0x7FFF'FFFF).
+
+        // For AVX2, _Max_portion_size below is _Max_count * 32 bytes, i.e. _Max_count * 8 elements.
+        // Therefore, _Max_count is 0x7FFF'FFFF / 8 which truncates to 0xFFF'FFFF.
+
+        // For SSE4.2, _Max_portion_size below is _Max_count * 16 bytes, i.e. _Max_count * 4 elements.
+        // Therefore, _Max_count could be 0x7FFF'FFFF / 4 which truncates to 0x1FFF'FFFF,
+        // but it's simpler to use the smaller bound for both codepaths.
+
         static constexpr size_t _Max_count = 0xFFF'FFFF;
 
         static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
@@ -2028,6 +2038,14 @@ namespace {
 
     struct _Count_traits_2 : _Find_traits_2 {
 #ifndef _M_ARM64EC
+        // For AVX2, _Max_portion_size below is _Max_count * 32 bytes, i.e. _Max_count * 16 elements.
+        // _mm256_hadd_epi16 processes signed 16-bit integers, and 16 of those fit in 256 bits.
+
+        // For SSE4.2, _Max_portion_size below is _Max_count * 16 bytes, i.e. _Max_count * 8 elements.
+        // _mm_hadd_epi16 processes signed 16-bit integers, and 8 of those fit in 128 bits.
+
+        // For both codepaths, this is why _Max_count is the maximum signed 16-bit integer.
+
         static constexpr size_t _Max_count = 0x7FFF;
 
         static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
@@ -2054,6 +2072,14 @@ namespace {
 
     struct _Count_traits_1 : _Find_traits_1 {
 #ifndef _M_ARM64EC
+        // For AVX2, _Max_portion_size below is _Max_count * 32 bytes, and we have 1-byte elements.
+        // _mm256_sad_epu8 processes packed unsigned 8-bit integers, and 32 of those fit in 256 bits.
+
+        // For SSE4.2, _Max_portion_size below is _Max_count * 16 bytes, and we have 1-byte elements.
+        // _mm_sad_epu8 processes packed unsigned 8-bit integers, and 16 of those fit in 128 bits.
+
+        // For both codepaths, this is why _Max_count is the maximum unsigned 8-bit integer.
+
         static constexpr size_t _Max_count = 0xFF;
 
         static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
