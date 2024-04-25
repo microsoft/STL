@@ -3506,7 +3506,7 @@ private:
             }
 
             const _Ty _Fx{_STD sqrt(_Ty{-2} * _LogSx / _Sx)};
-            _Xx2   = _Fx * _Vx2;
+            _Xx2   = _Fx * _Vx2; // save second value for next call
             _Valid = true;
             _Res   = _Fx * _Vx1;
         }
