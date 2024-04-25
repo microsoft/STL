@@ -403,17 +403,19 @@ void test_invalid_code_points_console() {
     test_invalid_sequence_closure("\xF0\x28\x8C\x25");
 }
 
+FILE* checked_fopen_s(const string& filename, const char* const mode) {
+    FILE* ret;
+    const errno_t fopen_result = fopen_s(&ret, filename.c_str(), mode);
+    assert(fopen_result == 0);
+    return ret;
+}
+
 void test_invalid_code_points_file() {
     // Unlike for the console API when the ordinary literal encoding is UTF-8, invalid code points shouldn't
     // be replaced when writing to a file.
     const string temp_file_name_str = temp_file_name();
 
-    FILE* temp_file_stream;
-
-    {
-        const errno_t fopen_result = fopen_s(&temp_file_stream, temp_file_name_str.c_str(), "w+b");
-        assert(fopen_result == 0);
-    }
+    FILE* temp_file_stream = checked_fopen_s(temp_file_name_str, "w+b");
 
     using printed_string_type = format_string<>;
 
