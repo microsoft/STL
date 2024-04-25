@@ -1999,7 +1999,7 @@ namespace {
 
     struct _Count_traits_4 : _Find_traits_4 {
 #ifndef _M_ARM64EC
-        static constexpr size_t _Max_count = 0x1FFF'FFFF;
+        static constexpr size_t _Max_count = 0xFFF'FFFF;
 
         static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
             return _mm256_sub_epi32(_Lhs, _Rhs);
