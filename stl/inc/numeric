@@ -511,25 +511,6 @@ _FwdIt2 adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _
 }
 #endif // _HAS_CXX17
 
-template <class _Ty>
-constexpr bool _Iota_optimization_can_overflow(const size_t _Size) {
-    if constexpr (is_unsigned_v<_Ty>) {
-        if constexpr (sizeof(size_t) > sizeof(_Ty)) {
-            return _Size > ~_Ty{0}; // _Size might not fit _Ty
-        } else {
-            return false; // any size fits type
-        }
-    } else {
-        // _Ty overflow is undefined, but it may start from a negative value,
-        // so _Size may oveflow when _Ty still doesn't
-        if constexpr (sizeof(size_t) >= sizeof(_Ty)) {
-            return _Size > ~make_unsigned_t<_Ty>{0} >> 1;
-        } else {
-            return false; // any size fits type
-        }
-    }
-}
-
 _EXPORT_STD template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
     // compute increasing sequence into [_First, _Last)
@@ -542,7 +523,7 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
         const auto _Ptr  = _To_address(_UFirst);
         const auto _Size = static_cast<size_t>(_ULast - _UFirst);
 
-        if (!_STD _Iota_optimization_can_overflow<_Ty>(_Size)) {
+        if (_STD _In_range<_Ty>(_Size)) {
             const auto _Size_typed = static_cast<_Ty>(_Size);
             for (_Ty _Ix = 0; _Ix != _Size_typed; ++_Ix) {
                 _Ptr[_Ix] = _Val + _Ix;
