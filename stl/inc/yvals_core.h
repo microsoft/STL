@@ -1221,20 +1221,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4018 was "The non-Standard std::tr2::sys namespace is deprecated and will be REMOVED."
 
-#ifdef _SILENCE_FPOS_SEEKPOS_DEPRECATION_WARNING
-#define _DEPRECATE_FPOS_SEEKPOS
-#else // ^^^ warning disabled / warning enabled vvv
-#define _DEPRECATE_FPOS_SEEKPOS                                                                                        \
-    [[deprecated("warning STL4019: "                                                                                   \
-                 "The member std::fpos::seekpos() is non-Standard, and is preserved only for compatibility with "      \
-                 "workarounds for old versions of Visual C++. It will be removed in a future release, and in this "    \
-                 "release always returns 0. Please use standards-conforming mechanisms to manipulate fpos, such as "   \
-                 "conversions to and from streamoff, or an integral type, instead. If you are receiving this message " \
-                 "while compiling Boost.IOStreams, a fix has been submitted upstream to make Boost use "               \
-                 "standards-conforming mechanisms, as it does for other compilers. You can define "                    \
-                 "_SILENCE_FPOS_SEEKPOS_DEPRECATION_WARNING to suppress this warning, "                                \
-                 "or define _REMOVE_FPOS_SEEKPOS to remove std::fpos::seekpos entirely.")]]
-#endif // ^^^ warning enabled ^^^
+// STL4019 was "The member std::fpos::seekpos() is non-Standard, and [...] will be removed"
 
 // P0482R6 Library Support For char8_t
 // Other C++20 deprecation warnings
