@@ -537,7 +537,7 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
         const auto _Ptr  = _To_address(_UFirst);
         const auto _Size = static_cast<size_t>(_ULast - _UFirst);
 
-        if (!_Iota_optimization_can_overflow<_Ty>(_Size)) {
+        if (!_STD _Iota_optimization_can_overflow<_Ty>(_Size)) {
             const auto _Size_typed = static_cast<_Ty>(_Size);
             for (_Ty _Ix = 0; _Ix != _Size_typed; ++_Ix) {
                 _Ptr[_Ix] = _Val + _Ix;
