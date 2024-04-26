@@ -788,7 +788,6 @@ _EXPORT_STD template <size_t _Idx>
 constexpr in_place_index_t<_Idx> in_place_index{};
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
 template <class _Ty>
 constexpr bool _Is_standard_integer = is_integral_v<_Ty>
                                    && !_Is_any_of_v<remove_cv_t<_Ty>, bool, char,
@@ -800,8 +799,8 @@ constexpr bool _Is_standard_integer = is_integral_v<_Ty>
 #endif // defined(__cpp_char8_t)
                                        char16_t, char32_t>;
 
-_EXPORT_STD template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool _Cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
         "The integer comparison functions only accept standard and extended integer types.");
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
@@ -813,13 +812,13 @@ _NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcep
     }
 }
 
-_EXPORT_STD template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    return !_STD cmp_equal(_Left, _Right);
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool _Cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return !_STD _Cmp_equal(_Left, _Right);
 }
 
-_EXPORT_STD template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool _Cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
         "The integer comparison functions only accept standard and extended integer types.");
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
@@ -831,19 +830,19 @@ _NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept
     }
 }
 
-_EXPORT_STD template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    return _STD cmp_less(_Right, _Left);
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool _Cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return _STD _Cmp_less(_Right, _Left);
 }
 
-_EXPORT_STD template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    return !_STD cmp_less(_Right, _Left);
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool _Cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return !_STD _Cmp_less(_Right, _Left);
 }
 
-_EXPORT_STD template <class _Ty1, class _Ty2>
-_NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    return !_STD cmp_less(_Left, _Right);
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool _Cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return !_STD _Cmp_less(_Left, _Right);
 }
 
 template <class _Ty>
@@ -868,15 +867,15 @@ _NODISCARD constexpr _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>
     }
 }
 
-_EXPORT_STD template <class _Rx, class _Ty>
-_NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
+template <class _Rx, class _Ty>
+_NODISCARD constexpr bool _In_range(const _Ty _Value) noexcept {
     static_assert(_Is_standard_integer<_Rx> && _Is_standard_integer<_Ty>,
         "The integer comparison functions only accept standard and extended integer types.");
 
     constexpr auto _Ty_min = _Min_limit<_Ty>();
     constexpr auto _Rx_min = _Min_limit<_Rx>();
 
-    if constexpr (_STD cmp_less(_Ty_min, _Rx_min)) {
+    if constexpr (_STD _Cmp_less(_Ty_min, _Rx_min)) {
         if (_Value < _Ty{_Rx_min}) {
             return false;
         }
@@ -885,13 +884,49 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
     constexpr auto _Ty_max = _Max_limit<_Ty>();
     constexpr auto _Rx_max = _Max_limit<_Rx>();
 
-    if constexpr (_STD cmp_greater(_Ty_max, _Rx_max)) {
+    if constexpr (_STD _Cmp_greater(_Ty_max, _Rx_max)) {
         if (_Value > _Ty{_Rx_max}) {
             return false;
         }
     }
 
     return true;
+}
+
+#if _HAS_CXX20
+_EXPORT_STD template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return _STD _Cmp_equal(_Left, _Right);
+}
+
+_EXPORT_STD template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return _STD _Cmp_not_equal(_Left, _Right);
+}
+
+_EXPORT_STD template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return _STD _Cmp_less(_Left, _Right);
+}
+
+_EXPORT_STD template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return _STD _Cmp_greater(_Left, _Right);
+}
+
+_EXPORT_STD template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return _STD _Cmp_less_equal(_Left, _Right);
+}
+
+_EXPORT_STD template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    return _STD _Cmp_greater_equal(_Left, _Right);
+}
+
+_EXPORT_STD template <class _Rx, class _Ty>
+_NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
+    return _STD _In_range<_Rx>(_Value);
 }
 #endif // _HAS_CXX20
 
