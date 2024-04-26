@@ -736,10 +736,7 @@ void test_blank_line() {
                 lines.push_back(str);
             }
 
-            const vector<string> expected_lines{
-                "",
-                ""
-            };
+            const vector<string> expected_lines{"", ""};
 
             assert(lines == expected_lines);
         }
