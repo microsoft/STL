@@ -161,31 +161,15 @@ struct _Char_traits { // properties of a string or stream element
     static _CONSTEXPR20 _Elem* assign(
         _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
-                _STD construct_at(_Next, _Ch);
-            }
-        } else
-#endif // _HAS_CXX20
-        {
-            for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
-                *_Next = _Ch;
-            }
+        for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
+            *_Next = _Ch;
         }
 
         return _First;
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _STD construct_at(_STD addressof(_Left), _Right);
-        } else
-#endif // _HAS_CXX20
-        {
-            _Left = _Right;
-        }
+        _Left = _Right;
     }
 
     _NODISCARD static constexpr bool eq(const _Elem _Left, const _Elem _Right) noexcept {
