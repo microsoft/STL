@@ -143,7 +143,7 @@ __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept
     } else if constexpr (_Nx == 8) {
         ::__std_reverse_trivially_swappable_8(_First, _Last);
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -164,7 +164,7 @@ __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last
     } else if constexpr (sizeof(_Ty) == 8) {
         return ::__std_count_trivial_8(_First, _Last, static_cast<uint64_t>(_Val));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -191,7 +191,7 @@ _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noe
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -212,7 +212,7 @@ _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -233,7 +233,7 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -276,7 +276,7 @@ auto _Min_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_min_8u(_First, _Last);
         }
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -319,7 +319,7 @@ auto _Max_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_max_8u(_First, _Last);
         }
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -335,7 +335,7 @@ inline size_t // TRANSITION, GH-4496
     } else if constexpr (_Element_size == 8) {
         return __std_mismatch_8(_First1, _First2, _Count);
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 _STD_END
@@ -802,7 +802,7 @@ namespace ranges {
                         return *static_cast<_Ty&&>(_Val);
                     }
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -1142,7 +1142,7 @@ namespace ranges {
                     *static_cast<_Ty1&&>(_Val1) =
                         _Iter_swap::_Iter_exchange_move(static_cast<_Ty2&&>(_Val2), static_cast<_Ty1&&>(_Val1));
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -2536,7 +2536,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Non_member) {
                     return begin(_Val); // intentional ADL
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -2613,7 +2613,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Non_member) {
                     return end(_Val); // intentional ADL
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -2749,7 +2749,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Unwrap) {
                     return _RANGES _Unwrap_range_iter<_Ty>(_RANGES begin(_Val));
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -2800,7 +2800,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Unwrap) {
                     return _RANGES _Unwrap_range_sent<_Ty>(_RANGES end(_Val));
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -2966,7 +2966,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES end(_Val));
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -3037,7 +3037,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES begin(_Val));
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -3182,7 +3182,7 @@ namespace ranges {
                     const auto _Delta = _RANGES end(_Val) - _RANGES begin(_Val);
                     return static_cast<_Make_unsigned_like_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -3244,7 +3244,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Compare) {
                     return static_cast<bool>(_RANGES begin(_Val) == _RANGES end(_Val));
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -3299,7 +3299,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Address) {
                     return _STD to_address(_RANGES begin(_Val));
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };

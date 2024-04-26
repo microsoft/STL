@@ -2605,7 +2605,7 @@ public:
             } else if constexpr (_Del == _Deletion_kind::_Normal_array) {
                 delete[] _Ptr;
             } else {
-                static_assert(false, "Unknown _Deletion_kind.");
+                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
             }
         }
     }
