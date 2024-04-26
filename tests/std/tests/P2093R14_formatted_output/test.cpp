@@ -600,6 +600,100 @@ void test_empty_strings_and_newlines() {
     filesystem::remove(temp_file_name_str);
 }
 
+void test_blank_line() {
+    // Flush console
+    {
+        // If the ordinary literal encoding is UTF-8, then the FILE stream associated with
+        // a console should always be flushed before writing output during a call to std::println()
+        // and std::println(). Otherwise, the stream should *NOT* be flushed.
+        test::win_console temp_console{};
+        FILE* const console_file_stream = temp_console.get_file_stream();
+
+        println(console_file_stream);
+
+        {
+            const wstring extractedStr{temp_console.get_console_line(0)};
+
+            if constexpr (_Is_ordinary_literal_encoding_utf8()) {
+                assert(extractedStr == L"");
+            } else {
+                assert(extractedStr.empty());
+            }
+        }
+
+        maybe_flush_console_file_stream(temp_console);
+
+        {
+            const wstring extractedStr{temp_console.get_console_line(0)};
+            assert(extractedStr == L"");
+        }
+    }
+
+    // Flush file
+    {
+        // Regardless of the ordinary literal encoding, std::println()should flush file streams
+        // which do not refer to consoles.
+        const string temp_file_name_str = temp_file_name();
+
+        {
+            ofstream output_file_stream{temp_file_name_str};
+
+            println(output_file_stream);
+
+            {
+                ifstream input_file_stream{temp_file_name_str};
+
+                string extracted_line_str;
+                getline(input_file_stream, extracted_line_str);
+
+                assert(extracted_line_str.empty());
+            }
+
+            output_file_stream.flush();
+
+            {
+                ifstream input_file_stream{temp_file_name_str};
+
+                string extracted_line_str;
+                getline(input_file_stream, extracted_line_str);
+
+                assert(extracted_line_str == "");
+            }
+        }
+
+        filesystem::remove(temp_file_name_str);
+    }
+
+    {
+        const string temp_file_name_str = temp_file_name();
+
+        {
+            ofstream output_file_stream{temp_file_name_str};
+
+            println(output_file_stream);
+            println(output_file_stream);
+        }
+
+        {
+            ifstream input_file_stream{temp_file_name_str};
+
+            vector<string> lines;
+            for (string str; getline(input_file_stream, str);) {
+                lines.push_back(str);
+            }
+
+            const vector<string> expected_lines{
+                "",
+                ""
+            };
+
+            assert(lines == expected_lines);
+        }
+
+        filesystem::remove(temp_file_name_str);
+    }
+}
+
 void all_tests() {
     test_print_optimizations();
 
@@ -610,6 +704,8 @@ void all_tests() {
     test_stream_flush_file();
 
     test_empty_strings_and_newlines();
+
+    test_blank_line();
 }
 
 int main(int argc, char* argv[]) {
