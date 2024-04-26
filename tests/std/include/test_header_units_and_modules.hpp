@@ -545,9 +545,11 @@ void test_print() {
     using namespace std;
     puts("Testing <print>.");
     println("Hello, world!");
+    println();
 
 #ifdef _CPPRTTI
     println(cout, "The answer to life, the universe, and everything: {}", 42);
+    println(cout);
 #endif // _CPPRTTI
 }
 #endif // TEST_STANDARD >= 23
