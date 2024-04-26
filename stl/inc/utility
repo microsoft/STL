@@ -789,15 +789,8 @@ constexpr in_place_index_t<_Idx> in_place_index{};
 #endif // _HAS_CXX17
 
 template <class _Ty>
-constexpr bool _Is_standard_integer = is_integral_v<_Ty>
-                                   && !_Is_any_of_v<remove_cv_t<_Ty>, bool, char,
-#ifdef _NATIVE_WCHAR_T_DEFINED
-                                       wchar_t,
-#endif // _NATIVE_WCHAR_T_DEFINED
-#ifdef __cpp_char8_t
-                                       char8_t,
-#endif // defined(__cpp_char8_t)
-                                       char16_t, char32_t>;
+constexpr bool _Is_standard_integer = _Is_any_of_v<remove_cv_t<_Ty>, signed char, short, int, long, long long,
+    unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
 
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool _Cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
