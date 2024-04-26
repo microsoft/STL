@@ -514,14 +514,19 @@ _FwdIt2 adjacent_difference(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _
 template <class _Ty>
 constexpr bool _Iota_optimization_can_overflow(const size_t _Size) {
     if constexpr (is_unsigned_v<_Ty>) {
-        // _Ty overflow is defined, _Size might not fit _Ty
         if constexpr (sizeof(size_t) > sizeof(_Ty)) {
-            return _Size > ~_Ty{0};
+            return _Size > ~_Ty{0}; // _Size might not fit _Ty
         } else {
             return false; // any size fits type
         }
     } else {
-        return false; // Signed _Ty overflow is UB, size should fit _Ty range
+        // _Ty overflow is undefined, but it may start from a negative value,
+        // so _Size may oveflow when _Ty still doesn't
+        if constexpr (sizeof(size_t) >= sizeof(_Ty)) {
+            return _Size > ~make_unsigned_t<_Ty>{0} >> 1;
+        } else {
+            return false; // any size fits type
+        }
     }
 }
 
