@@ -265,6 +265,11 @@ will run the single test found under VSO_0000000_any_calling_conventions.
 * You can invoke `stl-lit` with any arbitrary subdirectory of a test suite. In libcxx this allows you to have finer
 control over what category of tests you would like to run. The following will run all the libcxx map tests.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test\std\containers\associative\map`
+* You can also use the `--filter` option to include tests whose names match a regular expression. The following
+  command will run tests with "atomic_wait" in their names in both the std and libcxx test suites.
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test ..\..\tests\std --filter=atomic_wait`
+* There's also a `--filter-out` option to exclude tests matching a regular expression;
+  `--filter=iota --filter-out=view` would run tests with names matching "iota" but not "view".
 
 ## Interpreting The Results Of Tests
 
