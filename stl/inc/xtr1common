@@ -244,6 +244,16 @@ struct remove_cvref {
 };
 #endif // _HAS_CXX20
 
+template <class _Ty>
+_NODISCARD constexpr _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>::max)(), less throughput cost
+    _STL_INTERNAL_STATIC_ASSERT(is_integral_v<_Ty>); // doesn't attempt to handle all types
+    if constexpr (static_cast<_Ty>(-1) < _Ty{0}) {
+        return ~_Ty{-128 * (_Ty{1} << ((sizeof(_Ty) - 1) * 8))}; // Signed type, form 0x80..0 then bitwise negate
+    } else {
+        return static_cast<_Ty>(-1); // Unsigned tpye
+    }
+}
+
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens

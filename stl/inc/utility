@@ -849,17 +849,6 @@ _NODISCARD constexpr _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>
     }
 }
 
-template <class _Ty>
-_NODISCARD constexpr _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>::max)(), less throughput cost
-    _STL_INTERNAL_STATIC_ASSERT(is_integral_v<_Ty>); // doesn't attempt to handle all types
-    if constexpr (is_signed_v<_Ty>) {
-        constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);
-        return static_cast<_Ty>(_Unsigned_max >> 1);
-    } else {
-        return static_cast<_Ty>(-1);
-    }
-}
-
 template <class _Rx, class _Ty>
 _NODISCARD constexpr bool _In_range(const _Ty _Value) noexcept {
     static_assert(_Is_standard_integer<_Rx> && _Is_standard_integer<_Ty>,
