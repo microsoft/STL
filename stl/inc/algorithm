@@ -8852,7 +8852,7 @@ namespace ranges {
                 return;
             }
 
-            _Optimistic_temporary_buffer<_Iter_value_t<_It>> _Temp_buf{_Count - _Count / 2};
+            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{_Count - _Count / 2};
             _Stable_sort_common_buffered(
                 _STD move(_First), _STD move(_Last), _Count, _Temp_buf._Data, _Temp_buf._Capacity, _Pred, _Proj);
         }
