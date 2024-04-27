@@ -657,7 +657,8 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> lcm(const _Mt _Mx, const _Nt _Nx) n
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
-_EXPORT_STD template <class _Ty, enable_if_t<is_arithmetic_v<_Ty> && !is_same_v<remove_cv_t<_Ty>, bool>, int> = 0>
+_EXPORT_STD template <class _Ty>
+    requires is_arithmetic_v<_Ty> && (!is_same_v<remove_cv_t<_Ty>, bool>)
 _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
     if constexpr (is_floating_point_v<_Ty>) {
         if (_STD is_constant_evaluated()) {
@@ -722,7 +723,8 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
     }
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<is_object_v<_Ty>, int> = 0>
+_EXPORT_STD template <class _Ty>
+    requires is_object_v<_Ty>
 _NODISCARD constexpr _Ty* midpoint(_Ty* const _Val1, _Ty* const _Val2) noexcept /* strengthened */ {
     if (_Val1 > _Val2) {
         return _Val1 - ((_Val1 - _Val2) >> 1); // shift for codegen

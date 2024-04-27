@@ -1866,7 +1866,8 @@ public:
 
     move_only_function(move_only_function&&) noexcept = default;
 
-    template <class _Fn, enable_if_t<_Enable_one_arg_constructor<_Fn>, int> = 0>
+    template <class _Fn>
+        requires _Enable_one_arg_constructor<_Fn>
     move_only_function(_Fn&& _Callable) {
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
@@ -1883,7 +1884,8 @@ public:
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
     }
 
-    template <class _Fn, class... _CTypes, enable_if_t<_Enable_in_place_constructor<_Fn, _CTypes...>, int> = 0>
+    template <class _Fn, class... _CTypes>
+        requires _Enable_in_place_constructor<_Fn, _CTypes...>
     explicit move_only_function(in_place_type_t<_Fn>, _CTypes&&... _Args) {
         using _Vt = decay_t<_Fn>;
         static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4950 [func.wrap.move.ctor]/12)");
@@ -1892,8 +1894,8 @@ public:
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_CTypes>(_Args)...);
     }
 
-    template <class _Fn, class _Ux, class... _CTypes,
-        enable_if_t<_Enable_in_place_list_constructor<_Fn, _Ux, _CTypes...>, int> = 0>
+    template <class _Fn, class _Ux, class... _CTypes>
+        requires _Enable_in_place_list_constructor<_Fn, _Ux, _CTypes...>
     explicit move_only_function(in_place_type_t<_Fn>, initializer_list<_Ux> _Li, _CTypes&&... _Args) {
         using _Vt = decay_t<_Fn>;
         static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4950 [func.wrap.move.ctor]/18)");
@@ -1923,7 +1925,8 @@ public:
         return *this;
     }
 
-    template <class _Fn, enable_if_t<is_constructible_v<move_only_function, _Fn>, int> = 0>
+    template <class _Fn>
+        requires is_constructible_v<move_only_function, _Fn>
     move_only_function& operator=(_Fn&& _Callable) {
         this->_Move_assign(move_only_function{_STD forward<_Fn>(_Callable)});
         return *this;
@@ -2243,8 +2246,8 @@ private:
     _STL_INTERNAL_STATIC_ASSERT((is_same_v<_Types, decay_t<_Types>> && ...));
 
 public:
-    template <class _FxInit, class... _TypesInit,
-        enable_if_t<sizeof...(_TypesInit) != 0 || !is_same_v<remove_cvref_t<_FxInit>, _Front_binder>, int> = 0>
+    template <class _FxInit, class... _TypesInit>
+        requires (sizeof...(_TypesInit) != 0 || !is_same_v<remove_cvref_t<_FxInit>, _Front_binder>)
     constexpr explicit _Front_binder(_FxInit&& _Func, _TypesInit&&... _Args)
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_FxInit>(_Func), _STD forward<_TypesInit>(_Args)...) {}
 
@@ -2336,8 +2339,8 @@ private:
     _STL_INTERNAL_STATIC_ASSERT((is_same_v<_Types, decay_t<_Types>> && ...));
 
 public:
-    template <class _FxInit, class... _TypesInit,
-        enable_if_t<sizeof...(_TypesInit) != 0 || !is_same_v<remove_cvref_t<_FxInit>, _Back_binder>, int> = 0>
+    template <class _FxInit, class... _TypesInit>
+        requires (sizeof...(_TypesInit) != 0 || !is_same_v<remove_cvref_t<_FxInit>, _Back_binder>)
     constexpr explicit _Back_binder(_FxInit&& _Func, _TypesInit&&... _Args)
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_FxInit>(_Func), _STD forward<_TypesInit>(_Args)...) {}
 
