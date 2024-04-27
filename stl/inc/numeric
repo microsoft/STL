@@ -513,6 +513,22 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
+
+    if constexpr (_Iterator_is_contiguous<decltype(_UFirst)> && is_integral_v<_Ty> && sizeof(_Ty) >= 4) {
+        // TRANSITION, DevCom-10593477: help the compiler vectorize
+        const auto _Ptr  = _To_address(_UFirst);
+        const auto _Size = static_cast<size_t>(_ULast - _UFirst);
+
+        if (_STD _In_range<_Ty>(_Size)) {
+            const auto _Size_typed = static_cast<_Ty>(_Size);
+            for (_Ty _Ix = 0; _Ix != _Size_typed; ++_Ix) {
+                _Ptr[_Ix] = _Val + _Ix;
+            }
+
+            return;
+        }
+    }
+
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_Val) {
         *_UFirst = _Val;
     }
