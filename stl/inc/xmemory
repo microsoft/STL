@@ -9,8 +9,8 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstdint>
 #include <cstdlib>
-#include <limits>
 #include <new>
+#include <utility>
 #include <xatomic.h>
 #include <xutility>
 
@@ -606,7 +606,7 @@ struct _Normal_allocator_traits { // defines traits for allocators
         if constexpr (_Has_max_size<_Alloc>::value) {
             return _Al.max_size();
         } else {
-            return (numeric_limits<size_type>::max)() / sizeof(value_type);
+            return _STD _Max_limit<size_type>() / sizeof(value_type);
         }
     }
 
@@ -1086,10 +1086,8 @@ _NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len) noexcep
     _STL_INTERNAL_STATIC_ASSERT(_Unsigned_type(-1) > 0);
     _STL_INTERNAL_STATIC_ASSERT(_Size_type(-1) > 0);
 
-    if constexpr (sizeof(_Unsigned_type) > sizeof(_Size_type)) {
-        if (_Len > (numeric_limits<_Size_type>::max)()) {
-            _Xlength_error("size is too long for _Size_type");
-        }
+    if (!_STD _In_range<_Size_type>(_Len)) {
+        _Xlength_error("size is too long for _Size_type");
     }
 
     return static_cast<_Size_type>(_Len);
