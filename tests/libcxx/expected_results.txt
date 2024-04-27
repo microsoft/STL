@@ -38,6 +38,12 @@ std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.id/parse.pass.cpp FAIL
 std/utilities/format/format.tuple/parse.pass.cpp FAIL
 
+# LLVM-90345: libcxx assumes numeric_limits is dragged in without an explicit include
+std/utilities/format/format.arguments/format.arg/visit_format_arg.pass.cpp FAIL
+std/utilities/format/format.arguments/format.args/get.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp FAIL
+std/strings/string.conversions/stoi.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -589,12 +595,6 @@ std/depr/depr.c.headers/stddef_h.compile.pass.cpp:1 FAIL
 
 
 # *** LIKELY BOGUS TESTS ***
-
-# libcxx assumes numeric_limits is dragged in without an explicit include
-std/utilities/format/format.arguments/format.arg/visit_format_arg.pass.cpp FAIL
-std/utilities/format/format.arguments/format.args/get.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp FAIL
-std/strings/string.conversions/stoi.pass.cpp FAIL
 
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp FAIL
