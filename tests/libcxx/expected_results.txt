@@ -593,6 +593,7 @@ std/depr/depr.c.headers/stddef_h.compile.pass.cpp:1 FAIL
 # libcxx assumes numeric_limits is dragged in without an explicit include
 std/utilities/format/format.arguments/format.arg/visit_format_arg.pass.cpp FAIL
 std/utilities/format/format.arguments/format.args/get.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp FAIL
 
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp FAIL
