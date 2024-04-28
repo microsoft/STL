@@ -13,6 +13,7 @@ steps:
   displayName: 'Checkout ${{ parameters.path }} Submodule'
   condition: and(succeeded(), ${{ parameters.enabled }})
   inputs:
+    pwsh: true
     targetType: inline
     script: |
       $submodule = '${{ parameters.path }}'

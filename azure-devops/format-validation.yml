@@ -34,6 +34,7 @@ jobs:
     - task: PowerShell@2
       displayName: 'Create Diff'
       inputs:
+        pwsh: true
         filePath: azure-devops/create-prdiff.ps1
       condition: succeededOrFailed()
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
