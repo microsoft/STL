@@ -234,7 +234,9 @@ if ($ProvisionImageResult.value.Message -cnotmatch 'PROVISION_IMAGE_SUCCEEDED') 
 ####################################################################################################
 Display-ProgressBar -Status 'Restarting VM'
 
-Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName | Out-Null
+Restart-AzVM `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $ProtoVMName | Out-Null
 
 ####################################################################################################
 Display-ProgressBar -Status 'Sleeping after restart'
