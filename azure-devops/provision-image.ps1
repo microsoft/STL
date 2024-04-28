@@ -15,76 +15,6 @@ for setting up new VMs in the scale set.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-<#
-.SYNOPSIS
-Gets a random file path in the temp directory.
-
-.DESCRIPTION
-Get-TempFilePath takes an extension, and returns a path with a random
-filename component in the temporary directory with that extension.
-
-.PARAMETER Extension
-The extension to use for the path.
-#>
-Function Get-TempFilePath {
-  [CmdletBinding(PositionalBinding=$false)]
-  Param(
-    [Parameter(Mandatory)][String]$Extension
-  )
-
-  $tempPath = [System.IO.Path]::GetTempPath()
-  $tempName = [System.IO.Path]::GetRandomFileName() + '.' + $Extension
-  return Join-Path $tempPath $tempName
-}
-
-<#
-.SYNOPSIS
-Downloads and extracts a ZIP file to a newly created temporary subdirectory.
-
-.DESCRIPTION
-DownloadAndExtractZip returns a path containing the extracted contents.
-
-.PARAMETER Url
-The URL of the ZIP file to download.
-#>
-Function DownloadAndExtractZip {
-  [CmdletBinding(PositionalBinding=$false)]
-  Param(
-    [Parameter(Mandatory)][String]$Url
-  )
-
-  $ZipPath = Get-TempFilePath -Extension 'zip'
-  curl.exe -L -o $ZipPath -s -S $Url
-  $TempSubdirPath = Get-TempFilePath -Extension 'dir'
-  Expand-Archive -Path $ZipPath -DestinationPath $TempSubdirPath -Force
-  Remove-Item -Path $ZipPath
-
-  return $TempSubdirPath
-}
-
-if ($PSVersionTable.PSVersion -lt [Version]::new('7.4.2')) {
-  Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
-
-  # https://github.com/PowerShell/PowerShell/releases/latest
-  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.2/PowerShell-7.4.2-win-x64.zip'
-  Write-Host "Downloading: $PowerShellZipUrl"
-  $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
-  $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
-
-  $PwshArgs = @(
-    '-ExecutionPolicy',
-    'Unrestricted',
-    '-File',
-    $PSCommandPath
-  )
-  Write-Host "Executing: $PwshPath $PwshArgs"
-  & $PwshPath $PwshArgs
-
-  Write-Host 'Cleaning up...'
-  Remove-Item -Recurse -Path $ExtractedPowerShellPath
-  exit
-}
-
 $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.ASAN',
   'Microsoft.VisualStudio.Component.VC.CLI.Support',
@@ -104,6 +34,10 @@ foreach ($workload in $VisualStudioWorkloads) {
   $VisualStudioArgs += '--add'
   $VisualStudioArgs += $workload
 }
+
+# https://github.com/PowerShell/PowerShell/releases/latest
+$PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.2/PowerShell-7.4.2-win-x64.msi'
+$PowerShellArgs = @('/quiet', '/norestart')
 
 $PythonUrl = 'https://www.python.org/ftp/python/3.12.3/python-3.12.3-amd64.exe'
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
@@ -137,7 +71,9 @@ Function DownloadAndInstall {
 
   try {
     Write-Host "Downloading $Name..."
-    [string]$installerPath = Get-TempFilePath -Extension 'exe'
+    $tempPath = [System.IO.Path]::GetTempPath()
+    $fileName = [uri]::new($Url).Segments[-1]
+    $installerPath = Join-Path $tempPath $fileName
     curl.exe -L -o $installerPath -s -S $Url
 
     Write-Host "Installing $Name..."
@@ -158,9 +94,12 @@ Function DownloadAndInstall {
   }
 }
 
+Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
+
 # Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
 cmd /c ver
 
+DownloadAndInstall -Name 'PowerShell'    -Url $PowerShellUrl   -Args $PowerShellArgs
 DownloadAndInstall -Name 'Python'        -Url $PythonUrl       -Args $PythonArgs
 DownloadAndInstall -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStudioArgs
 DownloadAndInstall -Name 'CUDA'          -Url $CudaUrl         -Args $CudaArgs
