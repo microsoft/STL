@@ -5799,7 +5799,8 @@ constexpr _FwdIt shift_left(
     return _First;
 }
 
-_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt>
+    requires requires { typename _Enable_if_execution_policy_t<_ExPo>; }
 _FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last,
     typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) left by _Pos_to_shift positions
@@ -5883,7 +5884,8 @@ constexpr _FwdIt shift_right(
     }
 }
 
-_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt>
+    requires requires { typename _Enable_if_execution_policy_t<_ExPo>; }
 _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last,
     typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) right by _Pos_to_shift positions
