@@ -189,8 +189,7 @@ $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
 Display-ProgressBar -Status 'Running provision-image.ps1 in VM'
 
 $ProvisionImageResult = Invoke-AzVMRunCommand `
-  -ResourceGroupName $ResourceGroupName `
-  -VMName $ProtoVMName `
+  -ResourceId $VM.ID `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\provision-image.ps1"
 
@@ -200,8 +199,7 @@ if ($ProvisionImageResult.value.Message -cnotmatch 'PROVISION_IMAGE_SUCCEEDED') 
   Write-Host 'provision-image.ps1 failed, stopping VM...'
 
   Stop-AzVM `
-    -ResourceGroupName $ResourceGroupName `
-    -Name $ProtoVMName `
+    -Id $VM.ID `
     -Force | Out-Null
 
   Write-Error "VM stopped. Remember to delete unusable resource group: $ResourceGroupName"
@@ -211,8 +209,7 @@ if ($ProvisionImageResult.value.Message -cnotmatch 'PROVISION_IMAGE_SUCCEEDED') 
 Display-ProgressBar -Status 'Restarting VM'
 
 Restart-AzVM `
-  -ResourceGroupName $ResourceGroupName `
-  -Name $ProtoVMName | Out-Null
+  -Id $VM.ID | Out-Null
 
 ####################################################################################################
 Display-ProgressBar -Status 'Sleeping after restart'
@@ -225,8 +222,7 @@ Start-Sleep -Seconds 60
 Display-ProgressBar -Status 'Running sysprep.ps1 in VM'
 
 Invoke-AzVMRunCommand `
-  -ResourceGroupName $ResourceGroupName `
-  -VMName $ProtoVMName `
+  -ResourceId $VM.ID `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\sysprep.ps1" | Out-Null
 
@@ -241,16 +237,14 @@ while ('PowerState/stopped' -notin (Get-AzVM -ResourceId $VM.ID -Status).Statuse
 Display-ProgressBar -Status 'Stopping VM'
 
 Stop-AzVM `
-  -ResourceGroupName $ResourceGroupName `
-  -Name $ProtoVMName `
+  -Id $VM.ID `
   -Force | Out-Null
 
 ####################################################################################################
 Display-ProgressBar -Status 'Generalizing VM'
 
 Set-AzVM `
-  -ResourceGroupName $ResourceGroupName `
-  -Name $ProtoVMName `
+  -Id $VM.ID `
   -Generalized | Out-Null
 
 ####################################################################################################
