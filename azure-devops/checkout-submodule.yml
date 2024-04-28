@@ -16,6 +16,7 @@ steps:
     pwsh: true
     targetType: inline
     script: |
+      $PSNativeCommandUseErrorActionPreference = $true
       $submodule = '${{ parameters.path }}'
       $rawStatus = git submodule status --cached $submodule
       $sha = $rawStatus -replace '^[ \-+]([0-9a-f]+) .*$', '$1'
