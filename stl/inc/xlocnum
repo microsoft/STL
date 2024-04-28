@@ -7,10 +7,10 @@
 #define _XLOCNUM_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <cfloat>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <float.h>
 #include <iterator>
 #include <streambuf>
 
