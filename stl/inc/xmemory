@@ -10,8 +10,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <new>
+#include <utility>
 #include <xatomic.h>
-#include <xtr1common>
 #include <xutility>
 
 #if _HAS_CXX20
