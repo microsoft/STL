@@ -38,6 +38,10 @@ std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.id/parse.pass.cpp FAIL
 std/utilities/format/format.tuple/parse.pass.cpp FAIL
 
+# We should provide 'test_format_context_create' function in 'libcxx/test/support/test_format_context.h' file to enable those tests.
+std/utilities/format/format.range/format.range.formatter/set_brackets.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/set_separator.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -287,10 +291,6 @@ std/utilities/format/format.range/format.range.formatter/format.functions.format
 std/utilities/format/format.range/format.range.formatter/format.functions.vformat.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/parse.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/set_brackets.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/set_separator.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/underlying.pass.cpp FAIL
-std/utilities/format/types.compile.pass.cpp FAIL
 
 # P2363R5 Extending Associative Containers With The Remaining Heterogeneous Overloads
 std/language.support/support.limits/support.limits.general/map.version.compile.pass.cpp FAIL
