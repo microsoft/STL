@@ -70,36 +70,6 @@ function New-Password {
   return $result
 }
 
-<#
-.SYNOPSIS
-Waits for the shutdown of the specified resource.
-
-.DESCRIPTION
-Wait-Shutdown takes a VM, and checks if there's a 'PowerState/stopped'
-code; if there is, it returns. If there isn't, it waits 10 seconds and
-tries again.
-
-.PARAMETER ResourceGroupName
-The name of the resource group to look up the VM in.
-
-.PARAMETER Name
-The name of the virtual machine to wait on.
-#>
-function Wait-Shutdown {
-  [CmdletBinding(PositionalBinding=$false)]
-  Param(
-    [Parameter(Mandatory)][string]$ResourceGroupName,
-    [Parameter(Mandatory)][string]$Name
-  )
-
-  Write-Host "Waiting for $Name to stop..."
-  $StoppedCode = 'PowerState/stopped'
-  while ($StoppedCode -notin (Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status).Statuses.Code) {
-    Write-Host '... not stopped yet, sleeping for 10 seconds'
-    Start-Sleep -Seconds 10
-  }
-}
-
 ####################################################################################################
 Display-ProgressBar -Status 'Silencing breaking change warnings'
 
@@ -263,7 +233,9 @@ Invoke-AzVMRunCommand `
 ####################################################################################################
 Display-ProgressBar -Status 'Waiting for VM to shut down'
 
-Wait-Shutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+while ('PowerState/stopped' -notin (Get-AzVM -ResourceId $VM.ID -Status).Statuses.Code) {
+  Start-Sleep -Seconds 10
+}
 
 ####################################################################################################
 Display-ProgressBar -Status 'Stopping VM'
