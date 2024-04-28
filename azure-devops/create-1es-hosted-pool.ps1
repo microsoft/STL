@@ -209,6 +209,12 @@ New-AzVm `
   -Location $Location `
   -VM $VM | Out-Null
 
+$VM = Get-AzVM `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $ProtoVMName
+
+$PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
+
 ####################################################################################################
 Display-ProgressBar -Status 'Running provision-image.ps1 in VM'
 
@@ -274,12 +280,6 @@ Set-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
   -Generalized | Out-Null
-
-$VM = Get-AzVM `
-  -ResourceGroupName $ResourceGroupName `
-  -Name $ProtoVMName
-
-$PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating gallery'
