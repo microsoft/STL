@@ -12,6 +12,7 @@ steps:
 - task: PowerShell@2
   displayName: 'Checkout ${{ parameters.path }} Submodule'
   condition: and(succeeded(), ${{ parameters.enabled }})
+  retryCountOnTaskFailure: 4
   inputs:
     pwsh: true
     targetType: inline
