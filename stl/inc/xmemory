@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <cstdlib>
 #include <new>
-#include <utility>
 #include <xatomic.h>
 #include <xutility>
 
