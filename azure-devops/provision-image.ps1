@@ -170,6 +170,7 @@ Write-Host 'Setting environment variables...'
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
 [Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
 
-Write-Host 'Done!'
+# Tell create-1es-hosted-pool.ps1 that we succeeded.
+Write-Host 'PROVISION_IMAGE_SUCCEEDED'
 
 exit

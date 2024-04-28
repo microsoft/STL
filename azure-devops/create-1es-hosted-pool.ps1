@@ -220,6 +220,17 @@ $ProvisionImageResult = Invoke-AzVMRunCommand `
 
 Write-Host $ProvisionImageResult.value.Message
 
+if ($ProvisionImageResult.value.Message -cnotmatch 'PROVISION_IMAGE_SUCCEEDED') {
+  Write-Host 'provision-image.ps1 failed, stopping VM...'
+
+  Stop-AzVM `
+    -ResourceGroupName $ResourceGroupName `
+    -Name $ProtoVMName `
+    -Force | Out-Null
+
+  Write-Error "VM stopped. Remember to delete unusable resource group: $ResourceGroupName"
+}
+
 ####################################################################################################
 Display-ProgressBar -Status 'Restarting VM'
 
