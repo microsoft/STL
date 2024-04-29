@@ -19,6 +19,9 @@ variables:
 - name: benchmarkBuildOutputLocation
   value: 'D:\benchmark'
   readonly: true
+- name: validationBuildOutputLocation
+  value: 'D:\validation'
+  readonly: true
 - name: Codeql.SkipTaskAutoInjection
   value: true
   readonly: true

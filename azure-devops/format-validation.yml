@@ -10,24 +10,27 @@ jobs:
   steps:
     - template: checkout-self.yml
     - script: |
+        if exist "$(validationBuildOutputLocation)" (
+          rmdir /S /Q "$(validationBuildOutputLocation)"
+        )
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
           -host_arch=x64 -arch=x64 -no_logo
-        cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B $(tmpDir)/format-validate-build
-        cmake --build $(tmpDir)/format-validate-build
+        cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B "$(validationBuildOutputLocation)"
+        cmake --build "$(validationBuildOutputLocation)"
       displayName: 'Build format and validation'
       timeoutInMinutes: 5
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - script: |
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
           -host_arch=x64 -arch=x64 -no_logo
-        cmake --build $(tmpDir)/format-validate-build --target run-format
+        cmake --build "$(validationBuildOutputLocation)" --target run-format
       displayName: 'clang-format Files'
       timeoutInMinutes: 5
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - script: |
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
           -host_arch=x64 -arch=x64 -no_logo
-        cmake --build $(tmpDir)/format-validate-build --target run-validate
+        cmake --build "$(validationBuildOutputLocation)" --target run-validate
       displayName: 'Validate Files'
       timeoutInMinutes: 2
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
