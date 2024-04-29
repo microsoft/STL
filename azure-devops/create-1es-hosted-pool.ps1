@@ -165,15 +165,6 @@ $VM = Set-AzVMBootDiagnostic `
   -VM $VM `
   -Disable
 
-$VM = Set-AzVMSecurityProfile `
-  -VM $VM `
-  -SecurityType 'TrustedLaunch'
-
-$VM = Set-AzVMUefi `
-  -VM $VM `
-  -EnableVtpm $true `
-  -EnableSecureBoot $true
-
 New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
