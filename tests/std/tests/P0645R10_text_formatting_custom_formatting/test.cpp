@@ -58,10 +58,10 @@ struct not_const_formattable_type {
 template <>
 struct std::formatter<basic_custom_formattable_type, char> {
     constexpr basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
-        if (parse_ctx.begin() != parse_ctx.end()) {
+        if (parse_ctx.begin() != parse_ctx.end() && *parse_ctx.begin() != '}') {
             throw format_error{"only empty specs please"};
         }
-        return parse_ctx.end();
+        return parse_ctx.begin();
     }
     format_context::iterator format(const basic_custom_formattable_type& val, format_context& ctx) const {
         ctx.advance_to(copy(val.string_content.begin(), val.string_content.end(), ctx.out()));
@@ -72,10 +72,10 @@ struct std::formatter<basic_custom_formattable_type, char> {
 template <>
 struct std::formatter<not_const_formattable_type, char> {
     constexpr basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
-        if (parse_ctx.begin() != parse_ctx.end()) {
+        if (parse_ctx.begin() != parse_ctx.end() && *parse_ctx.begin() != '}') {
             throw format_error{"only empty specs please"};
         }
-        return parse_ctx.end();
+        return parse_ctx.begin();
     }
     format_context::iterator format(not_const_formattable_type& val, format_context& ctx) const {
         ctx.advance_to(copy(val.string_content.begin(), val.string_content.end(), ctx.out()));
@@ -287,7 +287,7 @@ public:
     constexpr auto parse(ParseContext& ctx) {
         auto it = ctx.begin();
         if (it != ctx.end() && *it != '}') {
-            throw std::format_error{"Expected empty spec"};
+            throw format_error{"Expected empty spec"};
         }
 
         arg_id = ctx.next_arg_id();
@@ -296,7 +296,7 @@ public:
 
     template <class FormatContext>
     auto format(FormatNextArg, FormatContext& ctx) const {
-        return std::format_to(ctx.out(), TYPED_LITERAL(CharT, "arg-id: {}"), arg_id);
+        return format_to(ctx.out(), TYPED_LITERAL(CharT, "arg-id: {}"), arg_id);
     }
 
 private:
