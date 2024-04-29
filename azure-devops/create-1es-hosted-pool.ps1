@@ -215,16 +215,16 @@ Restart-AzVM `
 Display-ProgressBar -Status 'Sleeping after restart'
 
 # The VM appears to be busy immediately after restarting.
-# This workaround waits for a minute before attempting to run sysprep.ps1.
+# This workaround waits for a minute before attempting to run sysprep.
 Start-Sleep -Seconds 60
 
 ####################################################################################################
-Display-ProgressBar -Status 'Running sysprep.ps1 in VM'
+Display-ProgressBar -Status 'Running sysprep in VM'
 
 Invoke-AzVMRunCommand `
   -ResourceId $VM.ID `
   -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\sysprep.ps1" | Out-Null
+  -ScriptString 'C:\Windows\system32\sysprep\sysprep.exe /oobe /generalize /mode:vm /shutdown' | Out-Null
 
 ####################################################################################################
 Display-ProgressBar -Status 'Waiting for VM to shut down'
