@@ -71,7 +71,8 @@ Function DownloadAndInstall {
 
   try {
     Write-Host "Downloading $Name..."
-    $tempPath = [System.IO.Path]::GetTempPath()
+    $tempPath = 'D:\installerTemp'
+    mkdir $tempPath -Force | Out-Null
     $fileName = [uri]::new($Url).Segments[-1]
     $installerPath = Join-Path $tempPath $fileName
     curl.exe -L -o $installerPath -s -S $Url
