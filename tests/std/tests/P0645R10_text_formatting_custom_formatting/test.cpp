@@ -276,6 +276,65 @@ void test_basic_format_context_construction() {
     static_assert(!is_constructible_with_trailing_empty_brace_impl<context, OutIt, const basic_format_args<context>&>);
 }
 
+// Test GH-4636 "<format>: Call to next_arg_id may result in unexpected error (regression)"
+
+struct FormatNextArg {};
+
+template <class CharT>
+struct std::formatter<FormatNextArg, CharT> {
+public:
+    template <class ParseContext>
+    constexpr auto parse(ParseContext& ctx) {
+        auto it = ctx.begin();
+        if (it != ctx.end() && *it != '}') {
+            throw std::format_error{"Expected empty spec"};
+        }
+
+        arg_id = ctx.next_arg_id();
+        return it;
+    }
+
+    template <class FormatContext>
+    auto format(FormatNextArg, FormatContext& ctx) const {
+        return std::format_to(ctx.out(), TYPED_LITERAL(CharT, "arg-id: {}"), arg_id);
+    }
+
+private:
+    size_t arg_id;
+};
+
+template <class CharT>
+void test_parsing_with_next_id() {
+    assert(format(TYPED_LITERAL(CharT, "{}, {}"), FormatNextArg{}, 0, FormatNextArg{}, TYPED_LITERAL(CharT, "1"))
+           == TYPED_LITERAL(CharT, "arg-id: 1, arg-id: 3"));
+    assert(format(TYPED_LITERAL(CharT, "{:}, {:}"), FormatNextArg{}, 2, FormatNextArg{}, TYPED_LITERAL(CharT, "3"))
+           == TYPED_LITERAL(CharT, "arg-id: 1, arg-id: 3"));
+}
+
+struct NeedMagicWord {};
+
+template <class CharT>
+struct std::formatter<NeedMagicWord, CharT> {
+    constexpr auto parse(basic_format_parse_context<CharT> const& ctx) {
+        constexpr basic_string_view<CharT> magic_word{TYPED_LITERAL(CharT, "narf")};
+        auto [i, j] = ranges::mismatch(ctx, magic_word);
+        if (j != magic_word.end()) {
+            throw runtime_error{"you didn't say the magic word!"};
+        }
+        return i;
+    }
+
+    template <class OutIt>
+    auto format(NeedMagicWord, basic_format_context<OutIt, CharT>& ctx) const {
+        return ctx.out();
+    }
+};
+
+template <class CharT>
+void test_parsing_needing_magic_word() {
+    assert(format(TYPED_LITERAL(CharT, "{:narf}"), NeedMagicWord{}).empty());
+}
+
 int main() {
     test_format_family_overloads<basic_custom_formattable_type>();
     test_format_family_overloads<not_const_formattable_type>();
@@ -297,5 +356,9 @@ int main() {
     test_basic_format_context_construction<wchar_t*, wchar_t>();
     test_basic_format_context_construction<wstring::iterator, wchar_t>();
     test_basic_format_context_construction<back_insert_iterator<wstring>, wchar_t>();
-    return 0;
+
+    test_parsing_with_next_id<char>();
+    test_parsing_with_next_id<wchar_t>();
+    test_parsing_needing_magic_word<char>();
+    test_parsing_needing_magic_word<wchar_t>();
 }

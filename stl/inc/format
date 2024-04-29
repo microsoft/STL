@@ -3537,6 +3537,7 @@ struct _Default_arg_formatter {
     _OutputIt _Out;
     basic_format_args<_Context> _Args;
     _Lazy_locale _Loc;
+    basic_format_parse_context<_CharT>& _Parse_ctx;
 
     template <class _Ty>
     _OutputIt operator()(_Ty _Val) && {
@@ -3544,7 +3545,6 @@ struct _Default_arg_formatter {
     }
 
     _OutputIt operator()(basic_format_arg<_Context>::handle _Handle) && {
-        basic_format_parse_context<_CharT> _Parse_ctx({});
         auto _Format_ctx = _Context::_Make_from(_STD move(_Out), _Args, _Loc);
         _Handle.format(_Parse_ctx, _Format_ctx);
         return _Format_ctx.out();
@@ -3606,9 +3606,9 @@ struct _Format_checker {
         : _Parse_context(_Fmt, _Num_args, _Arg_type),
           _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _ParseContext>...} {}
     constexpr void _On_text(const _CharT*, const _CharT*) const noexcept {}
-    constexpr void _On_replacement_field(const size_t _Id, const _CharT*) const {
-        _ParseContext _Parse_ctx({});
-        (void) _Parse_funcs[_Id](_Parse_ctx);
+    constexpr void _On_replacement_field(const size_t _Id, const _CharT*) {
+        _Parse_context.advance_to(_Parse_context.end());
+        (void) _Parse_funcs[_Id](_Parse_context);
     }
     constexpr const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT*) {
         _Parse_context.advance_to(_Parse_context.begin() + (_First - _Parse_context.begin()._Unwrapped()));
@@ -3643,8 +3643,12 @@ struct _Format_handler {
 
     void _On_replacement_field(const size_t _Id, const _CharT*) {
         auto _Arg = _Get_arg(_Ctx, _Id);
-        _Ctx.advance_to(_STD visit_format_arg(
-            _Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx._Get_args(), _Ctx._Get_lazy_locale()}, _Arg));
+        if (_Arg._Active_state == _Basic_format_arg_type::_Custom_type) {
+            _Parse_context.advance_to(_Parse_context.end());
+        }
+        _Ctx.advance_to(_STD visit_format_arg(_Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx._Get_args(),
+                                                  _Ctx._Get_lazy_locale(), _Parse_context},
+            _Arg));
     }
 
     const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT* _Last) {
