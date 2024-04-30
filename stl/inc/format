@@ -4592,7 +4592,7 @@ private:
         if constexpr (_RANGES contiguous_range<_Range>) {
             using _String_view = basic_string_view<_CharT>;
             const auto _Size   = _STD _To_unsigned_like(_RANGES distance(_Rng));
-            if (_Size >= (numeric_limits<typename _String_view::size_type>::max)()) [[unlikely]] {
+            if (_Size >= (numeric_limits<size_t>::max)()) [[unlikely]] {
                 _Throw_format_error("Formatted range is too long.");
             }
 
@@ -4601,7 +4601,7 @@ private:
                 _String_formatter.set_debug_format();
             }
 
-            const _String_view _Str(_STD to_address(_RANGES begin(_Rng)), static_cast<_String_view::size_type>(_Size));
+            const _String_view _Str(_STD to_address(_RANGES begin(_Rng)), static_cast<size_t>(_Size));
             _String_formatter.format(_Str, _Ctx);
         } else {
             using _String = basic_string<_CharT>;
