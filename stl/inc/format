@@ -4590,18 +4590,17 @@ private:
     template <_RANGES input_range _Range, class _FormatContext>
     void _Format_as_string(_Range&& _Rng, _FormatContext& _Ctx, bool _Debug) const {
         if constexpr (_RANGES contiguous_range<_Range>) {
-            using _String_view = basic_string_view<_CharT>;
-            const auto _Size   = _STD _To_unsigned_like(_RANGES distance(_Rng));
+            const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rng));
             if (_Size >= (numeric_limits<size_t>::max)()) [[unlikely]] {
                 _Throw_format_error("Formatted range is too long.");
             }
 
-            formatter<_String_view, _CharT> _String_formatter;
+            formatter<basic_string_view<_CharT>, _CharT> _String_formatter;
             if (_Debug) {
                 _String_formatter.set_debug_format();
             }
 
-            const _String_view _Str(_STD to_address(_RANGES begin(_Rng)), static_cast<size_t>(_Size));
+            const basic_string_view<_CharT> _Str(_STD to_address(_RANGES begin(_Rng)), static_cast<size_t>(_Size));
             _String_formatter.format(_Str, _Ctx);
         } else {
             using _String = basic_string<_CharT>;
