@@ -319,7 +319,10 @@ struct std::formatter<NeedMagicWord, CharT> {
         constexpr basic_string_view<CharT> magic_word{TYPED_LITERAL(CharT, "narf")};
         auto [i, j] = ranges::mismatch(ctx, magic_word);
         if (j != magic_word.end()) {
-            throw runtime_error{"you didn't say the magic word!"};
+            throw format_error{"you didn't say the magic word!"};
+        }
+        if (i != ctx.end() && *i != '}') {
+            throw format_error{"the whole spec must be the magic word!"};
         }
         return i;
     }
