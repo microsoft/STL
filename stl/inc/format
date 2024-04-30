@@ -4594,7 +4594,7 @@ private:
 
             if constexpr (const auto _Size_t_max = (numeric_limits<size_t>::max)();
                           (numeric_limits<decltype(_Size)>::max)() > _Size_t_max) {
-                if (_Size >= _Size_t_max) [[unlikely]] {
+                if (_Size > _Size_t_max) [[unlikely]] {
                     _Throw_format_error("Formatted range is too long.");
                 }
             }
