@@ -4438,10 +4438,6 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
     return _Begin;
 }
 
-template <class _Ty>
-concept _Pair_like_with_formatter =
-    _Is_specialization_v<_Ty, pair> || (_Is_specialization_v<_Ty, tuple> && tuple_size_v<_Ty> == 2);
-
 template <class _Ty, class _CharT = char>
     requires same_as<remove_cvref_t<_Ty>, _Ty> && formattable<_Ty, _CharT>
 class range_formatter {
@@ -4484,7 +4480,7 @@ public:
 
         switch (_Specs._Type) {
         case 'm':
-            if constexpr (!_Pair_like_with_formatter<_Ty>) {
+            if constexpr (!_Is_two_tuple<_Ty>) {
                 _Throw_format_error("Range-type 'm' requires type T to be specialization of pair or tuple such that "
                                     "tuple_size_v<T> is 2.");
 
