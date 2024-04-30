@@ -4595,13 +4595,13 @@ private:
                 _Throw_format_error("Formatted range is too long.");
             }
 
-            formatter<basic_string_view<_CharT>, _CharT> _String_formatter;
+            formatter<basic_string_view<_CharT>, _CharT> _String_view_formatter;
             if (_Debug) {
-                _String_formatter.set_debug_format();
+                _String_view_formatter.set_debug_format();
             }
 
             const basic_string_view<_CharT> _Str(_STD to_address(_RANGES begin(_Rng)), static_cast<size_t>(_Size));
-            _String_formatter.format(_Str, _Ctx);
+            _String_view_formatter.format(_Str, _Ctx);
         } else {
             using _String = basic_string<_CharT>;
             formatter<_String, _CharT> _String_formatter;
