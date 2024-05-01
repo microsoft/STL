@@ -8,6 +8,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <__msvc_minmax.hpp>
+#include <limits>
 #include <xmemory>
 
 #if _HAS_CXX23
