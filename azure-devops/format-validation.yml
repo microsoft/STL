@@ -40,7 +40,9 @@ jobs:
         pwsh: true
         targetType: inline
         script: |
-          $DiffFile = [System.IO.Path]::GetTempFileName()
+          $TempSubDir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+          mkdir $TempSubDir -Force | Out-Null
+          $DiffFile = Join-Path $TempSubDir 'format.diff'
           git diff --ignore-submodules > $DiffFile
           if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
             $message = @(
