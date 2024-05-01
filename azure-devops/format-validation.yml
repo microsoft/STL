@@ -62,11 +62,12 @@ jobs:
               '##[section]You can also download this as format.diff and apply it with `git apply`:'
               '  1. Click the failed Validation job (upper left, marked with a red X)'
               '  2. Click "1 artifact produced"'
-              '  3. Hover over format.diff'
-              '  4. Click the three dots that appear on the right'
-              '  5. Click "Download artifacts"'
+              '  3. Click the ">" chevron to the left of "format-artifact"'
+              '  4. Hover over "format.diff"'
+              '  5. Click the three dots that appear on the right'
+              '  6. Click "Download artifacts"'
               ''
-              "##vso[artifact.upload artifactname=format.diff]$DiffFile"
+              "##vso[artifact.upload artifactname=format-artifact]$DiffFile"
               '##vso[task.complete result=Failed]'
             )
             Write-Host ($message -join "`n")
