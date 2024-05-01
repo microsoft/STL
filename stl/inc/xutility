@@ -7386,7 +7386,8 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 #endif // defined(__clang__)
     {
         if constexpr (!_Signed_integer_like<_Int>) {
-            constexpr auto _UInt_max = _Max_limit<_Int>();
+            // use instead of numeric_limits::max; avoid <limits> dependency
+            constexpr auto _UInt_max = static_cast<_Int>(-1);
             const bool _Overflow     = _Left != 0 && _Right > _UInt_max / _Left;
             if (!_Overflow) {
                 _Out = static_cast<_Int>(_Left * _Right);
@@ -7415,7 +7416,8 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
                 return false;
             }
 
-            constexpr auto _Int_max = _Max_limit<_Int>();
+            // use instead of numeric_limits::max; avoid <limits> dependency
+            constexpr auto _Int_max = static_cast<_UInt>(static_cast<_UInt>(-1) / 2);
             if (_Negative) {
                 return _ULeft > (_Int_max + _UInt{1}) / _URight;
             } else {
