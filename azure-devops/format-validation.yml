@@ -41,9 +41,7 @@ jobs:
         targetType: inline
         script: |
           $DiffFile = [System.IO.Path]::GetTempFileName()
-          Start-Process -FilePath 'git' -ArgumentList 'diff', '--ignore-submodules' `
-            -NoNewWindow -Wait `
-            -RedirectStandardOutput $DiffFile
+          git diff --ignore-submodules > $DiffFile
           if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
             $message = @(
               '##vso[task.logissue type=error]The formatting of the files in the repo was not what we expected.'
