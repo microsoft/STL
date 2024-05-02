@@ -13,10 +13,6 @@
 #include <__msvc_bit_utils.hpp>
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-#include <cfloat>
-#endif // _HAS_CXX20
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -517,6 +513,22 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
+
+    if constexpr (_Iterator_is_contiguous<decltype(_UFirst)> && is_integral_v<_Ty> && sizeof(_Ty) >= 4) {
+        // TRANSITION, DevCom-10593477: help the compiler vectorize
+        const auto _Ptr  = _To_address(_UFirst);
+        const auto _Size = static_cast<size_t>(_ULast - _UFirst);
+
+        if (_STD _In_range<_Ty>(_Size)) {
+            const auto _Size_typed = static_cast<_Ty>(_Size);
+            for (_Ty _Ix = 0; _Ix != _Size_typed; ++_Ix) {
+                _Ptr[_Ix] = _Val + _Ix;
+            }
+
+            return;
+        }
+    }
+
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_Val) {
         *_UFirst = _Val;
     }
@@ -645,24 +657,6 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> lcm(const _Mt _Mx, const _Nt _Nx) n
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
-template <class _Flt>
-constexpr _Flt _Floating_max{};
-template <>
-inline constexpr float _Floating_max<float> = FLT_MAX;
-template <>
-inline constexpr double _Floating_max<double> = DBL_MAX;
-template <>
-inline constexpr long double _Floating_max<long double> = LDBL_MAX;
-
-template <class _Flt>
-constexpr _Flt _Floating_min{};
-template <>
-inline constexpr float _Floating_min<float> = FLT_MIN;
-template <>
-inline constexpr double _Floating_min<double> = DBL_MIN;
-template <>
-inline constexpr long double _Floating_min<long double> = LDBL_MIN;
-
 _EXPORT_STD template <class _Ty, enable_if_t<is_arithmetic_v<_Ty> && !is_same_v<remove_cv_t<_Ty>, bool>, int> = 0>
 _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
     if constexpr (is_floating_point_v<_Ty>) {
@@ -681,7 +675,7 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
             }
         }
 
-        constexpr _Ty _High_limit = _Floating_max<remove_cv_t<_Ty>> / 2;
+        constexpr _Ty _High_limit = _Floating_type_traits<remove_cv_t<_Ty>>::_Maximum_value / 2;
         const auto _Val1_a        = _Float_abs(_Val1);
         const auto _Val2_a        = _Float_abs(_Val2);
         if (_Val1_a <= _High_limit && _Val2_a <= _High_limit) {
@@ -705,7 +699,7 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
 
         // In the default rounding mode this less than one ULP difference will always be rounded away, so under
         // /fp:fast we could avoid these tests if we had some means of detecting it in the caller.
-        constexpr _Ty _Low_limit = _Floating_min<remove_cv_t<_Ty>> * 2;
+        constexpr _Ty _Low_limit = _Floating_type_traits<remove_cv_t<_Ty>>::_Minimum_value * 2;
         if (_Val1_a < _Low_limit) {
             return _Val1 + _Val2 / 2;
         }

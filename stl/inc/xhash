@@ -1247,36 +1247,6 @@ public:
         }
     }
 
-    _DEPRECATE_STDEXT_HASH_LOWER_BOUND _NODISCARD iterator lower_bound(const key_type& _Keyval) {
-        return _List._Make_iter(_Find(_Keyval, _Traitsobj(_Keyval)));
-    }
-
-    _DEPRECATE_STDEXT_HASH_LOWER_BOUND _NODISCARD const_iterator lower_bound(const key_type& _Keyval) const {
-        return _List._Make_const_iter(_Find(_Keyval, _Traitsobj(_Keyval)));
-    }
-
-    _DEPRECATE_STDEXT_HASH_UPPER_BOUND _NODISCARD iterator upper_bound(const key_type& _Keyval) {
-        auto _Target = _Find_last(_Keyval, _Traitsobj(_Keyval))._Duplicate;
-        if (_Target) {
-            _Target = _Target->_Next;
-        } else {
-            _Target = _List._Mypair._Myval2._Myhead;
-        }
-
-        return _List._Make_iter(_Target);
-    }
-
-    _DEPRECATE_STDEXT_HASH_UPPER_BOUND _NODISCARD const_iterator upper_bound(const key_type& _Keyval) const {
-        auto _Target = _Find_last(_Keyval, _Traitsobj(_Keyval))._Duplicate;
-        if (_Target) {
-            _Target = _Target->_Next;
-        } else {
-            _Target = _List._Mypair._Myval2._Myhead;
-        }
-
-        return _List._Make_const_iter(_Target);
-    }
-
 private:
     struct _Equal_range_result {
         _Unchecked_const_iterator _First;

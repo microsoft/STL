@@ -1734,8 +1734,6 @@ __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* const _First
 
 namespace {
     struct _Find_traits_1 {
-        static constexpr size_t _Shift = 0;
-
 #ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint8_t _Val) noexcept {
             return _mm256_set1_epi8(_Val);
@@ -1756,8 +1754,6 @@ namespace {
     };
 
     struct _Find_traits_2 {
-        static constexpr size_t _Shift = 1;
-
 #ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint16_t _Val) noexcept {
             return _mm256_set1_epi16(_Val);
@@ -1778,8 +1774,6 @@ namespace {
     };
 
     struct _Find_traits_4 {
-        static constexpr size_t _Shift = 2;
-
 #ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint32_t _Val) noexcept {
             return _mm256_set1_epi32(_Val);
@@ -1800,8 +1794,6 @@ namespace {
     };
 
     struct _Find_traits_8 {
-        static constexpr size_t _Shift = 3;
-
 #ifndef _M_ARM64EC
         static __m256i _Set_avx(const uint64_t _Val) noexcept {
             return _mm256_set1_epi64x(_Val);
@@ -1978,6 +1970,130 @@ namespace {
         }
     }
 
+    struct _Count_traits_8 : _Find_traits_8 {
+#ifndef _M_ARM64EC
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi64(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi64(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m128i _Lo64 = _mm256_extracti128_si256(_Val, 0);
+            const __m128i _Hi64 = _mm256_extracti128_si256(_Val, 1);
+            const __m128i _Rx8  = _mm_add_epi64(_Lo64, _Hi64);
+            return _Reduce_sse(_Rx8);
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+#ifdef _M_IX86
+            return static_cast<uint32_t>(_mm_cvtsi128_si32(_Val)) + static_cast<uint32_t>(_mm_extract_epi32(_Val, 2));
+#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
+            return _mm_cvtsi128_si64(_Val) + _mm_extract_epi64(_Val, 1);
+#endif // ^^^ defined(_M_X64) ^^^
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Count_traits_4 : _Find_traits_4 {
+#ifndef _M_ARM64EC
+        // For AVX2, we use hadd_epi32 three times to combine pairs of 32-bit counters into 32-bit results.
+        // Therefore, _Max_count is 0x1FFF'FFFF, which is 0xFFFF'FFF8 when doubled three times; any more would overflow.
+
+        // For SSE4.2, we use hadd_epi32 twice. This would allow a larger limit,
+        // but it's simpler to use the smaller limit for both codepaths.
+
+        static constexpr size_t _Max_count = 0x1FFF'FFFF;
+
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi32(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi32(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            constexpr auto _Shuf = _MM_SHUFFLE(3, 1, 2, 0); // Cross lane, to reduce further on low lane
+            const __m256i _Rx4   = _mm256_hadd_epi32(_Val, _mm256_setzero_si256()); // (0+1),(2+3),0,0 per lane
+            const __m256i _Rx5   = _mm256_permute4x64_epi64(_Rx4, _Shuf); // low lane  (0+1),(2+3),(4+5),(6+7)
+            const __m256i _Rx6   = _mm256_hadd_epi32(_Rx5, _mm256_setzero_si256()); // (0+...+3),(4+...+7),0,0
+            const __m256i _Rx7   = _mm256_hadd_epi32(_Rx6, _mm256_setzero_si256()); // (0+...+7),0,0,0
+            return static_cast<uint32_t>(_mm_cvtsi128_si32(_mm256_castsi256_si128(_Rx7)));
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Rx4 = _mm_hadd_epi32(_Val, _mm_setzero_si128()); // (0+1),(2+3),0,0
+            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+...+3),0,0,0
+            return static_cast<uint32_t>(_mm_cvtsi128_si32(_Rx5));
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Count_traits_2 : _Find_traits_2 {
+#ifndef _M_ARM64EC
+        // For both AVX2 and SSE4.2, we use hadd_epi16 once to combine pairs of 16-bit counters into 16-bit results.
+        // Therefore, _Max_count is 0x7FFF, which is 0xFFFE when doubled; any more would overflow.
+
+        static constexpr size_t _Max_count = 0x7FFF;
+
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi16(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi16(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m256i _Rx2 = _mm256_hadd_epi16(_Val, _mm256_setzero_si256());
+            const __m256i _Rx3 = _mm256_unpacklo_epi16(_Rx2, _mm256_setzero_si256());
+            return _Count_traits_4::_Reduce_avx(_Rx3);
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Rx2 = _mm_hadd_epi16(_Val, _mm_setzero_si128());
+            const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128());
+            return _Count_traits_4::_Reduce_sse(_Rx3);
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Count_traits_1 : _Find_traits_1 {
+#ifndef _M_ARM64EC
+        // For AVX2, _Max_portion_size below is _Max_count * 32 bytes, and we have 1-byte elements.
+        // We're using packed 8-bit counters, and 32 of those fit in 256 bits.
+
+        // For SSE4.2, _Max_portion_size below is _Max_count * 16 bytes, and we have 1-byte elements.
+        // We're using packed 8-bit counters, and 16 of those fit in 128 bits.
+
+        // For both codepaths, this is why _Max_count is the maximum unsigned 8-bit integer.
+        // (The reduction steps aren't the limiting factor here.)
+
+        static constexpr size_t _Max_count = 0xFF;
+
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi8(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi8(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m256i _Rx1 = _mm256_sad_epu8(_Val, _mm256_setzero_si256());
+            return _Count_traits_8::_Reduce_avx(_Rx1);
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Rx1 = _mm_sad_epu8(_Val, _mm_setzero_si128());
+            return _Count_traits_8::_Reduce_sse(_Rx1);
+        }
+#endif // !_M_ARM64EC
+    };
+
     template <class _Traits, class _Ty>
     __declspec(noalias) size_t
         __stdcall __std_count_trivial_impl(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
@@ -1986,47 +2102,88 @@ namespace {
 #ifndef _M_ARM64EC
         const size_t _Size_bytes = _Byte_length(_First, _Last);
 
-        if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
+        if (size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
             const void* _Stop_at     = _First;
-            _Advance_bytes(_Stop_at, _Avx_size);
 
-            do {
-                const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-                const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
-                _Result += __popcnt(_Bingo); // Assume available with SSE4.2
-                _Advance_bytes(_First, 32);
-            } while (_First != _Stop_at);
+            for (;;) {
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    _Advance_bytes(_Stop_at, _Avx_size);
+                } else {
+                    constexpr size_t _Max_portion_size = _Traits::_Max_count * 32;
+                    const size_t _Portion_size         = _Avx_size < _Max_portion_size ? _Avx_size : _Max_portion_size;
+                    _Advance_bytes(_Stop_at, _Portion_size);
+                    _Avx_size -= _Portion_size;
+                }
+
+                __m256i _Count_vector = _mm256_setzero_si256();
+
+                do {
+                    const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+                    const __m256i _Mask = _Traits::_Cmp_avx(_Data, _Comparand);
+                    _Count_vector       = _Traits::_Sub_avx(_Count_vector, _Mask);
+                    _Advance_bytes(_First, 32);
+                } while (_First != _Stop_at);
+
+                _Result += _Traits::_Reduce_avx(_Count_vector);
+
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    break;
+                } else {
+                    if (_Avx_size == 0) {
+                        break;
+                    }
+                }
+            }
 
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
                 const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
-                const int _Bingo =
-                    _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
-                _Result += __popcnt(_Bingo); // Assume available with SSE4.2
+                const __m256i _Mask      = _mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask);
+                const int _Bingo         = _mm256_movemask_epi8(_Mask);
+                const size_t _Tail_count = __popcnt(_Bingo); // Assume available with SSE4.2
+                _Result += _Tail_count / sizeof(_Ty);
                 _Advance_bytes(_First, _Avx_tail_size);
             }
 
             _mm256_zeroupper(); // TRANSITION, DevCom-10331414
 
-            _Result >>= _Traits::_Shift;
-
             if constexpr (sizeof(_Ty) >= 4) {
                 return _Result;
             }
-        } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
+        } else if (size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
             const __m128i _Comparand = _Traits::_Set_sse(_Val);
             const void* _Stop_at     = _First;
-            _Advance_bytes(_Stop_at, _Sse_size);
 
-            do {
-                const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-                const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
-                _Result += __popcnt(_Bingo); // Assume available with SSE4.2
-                _Advance_bytes(_First, 16);
-            } while (_First != _Stop_at);
+            for (;;) {
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    _Advance_bytes(_Stop_at, _Sse_size);
+                } else {
+                    constexpr size_t _Max_portion_size = _Traits::_Max_count * 16;
+                    const size_t _Portion_size         = _Sse_size < _Max_portion_size ? _Sse_size : _Max_portion_size;
+                    _Advance_bytes(_Stop_at, _Portion_size);
+                    _Sse_size -= _Portion_size;
+                }
 
-            _Result >>= _Traits::_Shift;
+                __m128i _Count_vector = _mm_setzero_si128();
+
+                do {
+                    const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+                    const __m128i _Mask = _Traits::_Cmp_sse(_Data, _Comparand);
+                    _Count_vector       = _Traits::_Sub_sse(_Count_vector, _Mask);
+                    _Advance_bytes(_First, 16);
+                } while (_First != _Stop_at);
+
+                _Result += _Traits::_Reduce_sse(_Count_vector);
+
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    break;
+                } else {
+                    if (_Sse_size == 0) {
+                        break;
+                    }
+                }
+            }
         }
 #endif // !_M_ARM64EC
 
@@ -2204,7 +2361,9 @@ namespace {
 #ifndef _M_ARM64EC
             template <size_t _Amount>
             static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
-                if constexpr (_Amount == 1) {
+                if constexpr (_Amount == 0) {
+                    return _mm256_undefined_si256();
+                } else if constexpr (_Amount == 1) {
                     return _mm256_broadcastd_epi32(_mm256_castsi256_si128(_Val));
                 } else if constexpr (_Amount == 2) {
                     return _mm256_broadcastq_epi64(_mm256_castsi256_si128(_Val));
@@ -2248,7 +2407,9 @@ namespace {
 #ifndef _M_ARM64EC
             template <size_t _Amount>
             static __m256i _Spread_avx(const __m256i _Val, const size_t _Needle_length_el) noexcept {
-                if constexpr (_Amount == 1) {
+                if constexpr (_Amount == 0) {
+                    return _mm256_undefined_si256();
+                } else if constexpr (_Amount == 1) {
                     return _mm256_broadcastq_epi64(_mm256_castsi256_si128(_Val));
                 } else if constexpr (_Amount == 2) {
                     return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 1, 0));
@@ -2279,37 +2440,42 @@ namespace {
 #ifndef _M_ARM64EC
         template <class _Traits, size_t _Needle_length_el_magnitude>
         __m256i _Shuffle_step(const __m256i _Data1, const __m256i _Data2s0) noexcept {
-            __m256i _Eq = _Traits::_Cmp_avx(_Data1, _Data2s0);
-            if constexpr (_Needle_length_el_magnitude >= 2) {
-                const __m256i _Data2s1 = _Traits::_Shuffle_avx<1>(_Data2s0);
-                _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s1));
-                if constexpr (_Needle_length_el_magnitude >= 4) {
-                    const __m256i _Data2s2 = _Traits::_Shuffle_avx<2>(_Data2s0);
-                    _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s2));
-                    const __m256i _Data2s3 = _Traits::_Shuffle_avx<1>(_Data2s2);
-                    _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s3));
-                    if constexpr (_Needle_length_el_magnitude >= 8) {
-                        const __m256i _Data2s4 = _Traits::_Shuffle_avx<4>(_Data2s0);
-                        _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s4));
-                        const __m256i _Data2s5 = _Traits::_Shuffle_avx<1>(_Data2s4);
-                        _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s5));
-                        const __m256i _Data2s6 = _Traits::_Shuffle_avx<2>(_Data2s4);
-                        _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s6));
-                        const __m256i _Data2s7 = _Traits::_Shuffle_avx<1>(_Data2s6);
-                        _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s7));
+            __m256i _Eq = _mm256_setzero_si256();
+            if constexpr (_Needle_length_el_magnitude >= 1) {
+                _Eq = _Traits::_Cmp_avx(_Data1, _Data2s0);
+                if constexpr (_Needle_length_el_magnitude >= 2) {
+                    const __m256i _Data2s1 = _Traits::_Shuffle_avx<1>(_Data2s0);
+                    _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s1));
+                    if constexpr (_Needle_length_el_magnitude >= 4) {
+                        const __m256i _Data2s2 = _Traits::_Shuffle_avx<2>(_Data2s0);
+                        _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s2));
+                        const __m256i _Data2s3 = _Traits::_Shuffle_avx<1>(_Data2s2);
+                        _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s3));
+                        if constexpr (_Needle_length_el_magnitude >= 8) {
+                            const __m256i _Data2s4 = _Traits::_Shuffle_avx<4>(_Data2s0);
+                            _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s4));
+                            const __m256i _Data2s5 = _Traits::_Shuffle_avx<1>(_Data2s4);
+                            _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s5));
+                            const __m256i _Data2s6 = _Traits::_Shuffle_avx<2>(_Data2s4);
+                            _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s6));
+                            const __m256i _Data2s7 = _Traits::_Shuffle_avx<1>(_Data2s6);
+                            _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s7));
+                        }
                     }
                 }
             }
             return _Eq;
         }
 
-        template <class _Traits, size_t _Needle_length_el_magnitude>
+        template <class _Traits, bool _Large, size_t _Last2_length_el_magnitude>
         const void* _Shuffle_impl(const void* _First1, const void* const _Last1, const void* const _First2,
-            const size_t _Needle_length_el) noexcept {
-            using _Ty            = _Traits::_Ty;
-            const __m256i _Data2 = _mm256_maskload_epi32(
-                reinterpret_cast<const int*>(_First2), _Avx2_tail_mask_32(_Needle_length_el * (sizeof(_Ty) / 4)));
-            const __m256i _Data2s0 = _Traits::_Spread_avx<_Needle_length_el_magnitude>(_Data2, _Needle_length_el);
+            const void* const _Stop2, const size_t _Last2_length_el) noexcept {
+            using _Ty                   = _Traits::_Ty;
+            constexpr size_t _Length_el = 32 / sizeof(_Ty);
+
+            const __m256i _Last2val = _mm256_maskload_epi32(
+                reinterpret_cast<const int*>(_Stop2), _Avx2_tail_mask_32(_Last2_length_el * (sizeof(_Ty) / 4)));
+            const __m256i _Last2s0 = _Traits::_Spread_avx<_Last2_length_el_magnitude>(_Last2val, _Last2_length_el);
 
             const size_t _Haystack_length = _Byte_length(_First1, _Last1);
 
@@ -2318,10 +2484,16 @@ namespace {
 
             for (; _First1 != _Stop1; _Advance_bytes(_First1, 32)) {
                 const __m256i _Data1 = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
-                const __m256i _Eq    = _Shuffle_step<_Traits, _Needle_length_el_magnitude>(_Data1, _Data2s0);
-                const int _Bingo     = _mm256_movemask_epi8(_Eq);
+                __m256i _Eq          = _Shuffle_step<_Traits, _Last2_length_el_magnitude>(_Data1, _Last2s0);
 
-                if (_Bingo != 0) {
+                if constexpr (_Large) {
+                    for (const void* _Ptr2 = _First2; _Ptr2 != _Stop2; _Advance_bytes(_Ptr2, 32)) {
+                        const __m256i _Data2s0 = _mm256_loadu_si256(static_cast<const __m256i*>(_Ptr2));
+                        _Eq = _mm256_or_si256(_Eq, _Shuffle_step<_Traits, _Length_el>(_Data1, _Data2s0));
+                    }
+                }
+
+                if (const int _Bingo = _mm256_movemask_epi8(_Eq); _Bingo != 0) {
                     const unsigned long _Offset = _tzcnt_u32(_Bingo);
                     _Advance_bytes(_First1, _Offset);
                     return _First1;
@@ -2331,10 +2503,16 @@ namespace {
             if (const size_t _Haystack_tail_length = _Haystack_length & 0x1C; _Haystack_tail_length != 0) {
                 const __m256i _Tail_mask = _Avx2_tail_mask_32(_Haystack_tail_length >> 2);
                 const __m256i _Data1     = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
-                const __m256i _Eq        = _Shuffle_step<_Traits, _Needle_length_el_magnitude>(_Data1, _Data2s0);
-                const int _Bingo         = _mm256_movemask_epi8(_mm256_and_si256(_Eq, _Tail_mask));
+                __m256i _Eq              = _Shuffle_step<_Traits, _Last2_length_el_magnitude>(_Data1, _Last2s0);
 
-                if (_Bingo != 0) {
+                if constexpr (_Large) {
+                    for (const void* _Ptr2 = _First2; _Ptr2 != _Stop2; _Advance_bytes(_Ptr2, 32)) {
+                        const __m256i _Data2s0 = _mm256_loadu_si256(static_cast<const __m256i*>(_Ptr2));
+                        _Eq = _mm256_or_si256(_Eq, _Shuffle_step<_Traits, _Length_el>(_Data1, _Data2s0));
+                    }
+                }
+
+                if (const int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Eq, _Tail_mask)); _Bingo != 0) {
                     const unsigned long _Offset = _tzcnt_u32(_Bingo);
                     _Advance_bytes(_First1, _Offset);
                     return _First1;
@@ -2344,6 +2522,26 @@ namespace {
             }
 
             return _First1;
+        }
+
+        template <class _Traits, bool _Large>
+        const void* _Shuffle_impl_dispatch_magnitude(const void* const _First1, const void* const _Last1,
+            const void* const _First2, const void* const _Stop2, const size_t _Last2_length_el) noexcept {
+            if (_Last2_length_el == 0) {
+                return _Shuffle_impl<_Traits, _Large, 0>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
+            } else if (_Last2_length_el == 1) {
+                return _Shuffle_impl<_Traits, _Large, 1>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
+            } else if (_Last2_length_el == 2) {
+                return _Shuffle_impl<_Traits, _Large, 2>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
+            } else if (_Last2_length_el <= 4) {
+                return _Shuffle_impl<_Traits, _Large, 4>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
+            } else if (_Last2_length_el <= 8) {
+                if constexpr (sizeof(_Traits::_Ty) == 4) {
+                    return _Shuffle_impl<_Traits, _Large, 8>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
+                }
+            }
+
+            _STL_UNREACHABLE;
         }
 
 #endif // !_M_ARM64EC
@@ -2356,52 +2554,19 @@ namespace {
             if (_Use_avx2()) {
                 _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
-                const size_t _Needle_length = _Byte_length(_First2, _Last2);
-                const int _Needle_length_el = static_cast<int>(_Needle_length / sizeof(_Ty));
+                const size_t _Needle_length         = _Byte_length(_First2, _Last2);
+                const size_t _Last_needle_length    = _Needle_length & 0x1F;
+                const size_t _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
-                // Special handling of small needle
-                // The generic approach could also handle it but with worse performance
-                if (_Needle_length_el == 0) {
-                    return _Last1;
-                } else if (_Needle_length_el == 1) {
-                    _STL_UNREACHABLE; // This is expected to be forwarded to 'find' on an upper level
-                } else if (_Needle_length_el == 2) {
-                    return _Shuffle_impl<_Traits, 2>(_First1, _Last1, _First2, _Needle_length_el);
-                } else if (_Needle_length_el <= 4) {
-                    return _Shuffle_impl<_Traits, 4>(_First1, _Last1, _First2, _Needle_length_el);
-                } else if (_Needle_length_el <= 8) {
-                    if constexpr (sizeof(_Ty) == 4) {
-                        return _Shuffle_impl<_Traits, 8>(_First1, _Last1, _First2, _Needle_length_el);
-                    }
+                if (const size_t _Needle_length_large = _Needle_length & ~size_t{0x1F}; _Needle_length_large != 0) {
+                    const void* _Stop2 = _First2;
+                    _Advance_bytes(_Stop2, _Needle_length_large);
+                    return _Shuffle_impl_dispatch_magnitude<_Traits, true>(
+                        _First1, _Last1, _First2, _Stop2, _Last_needle_length_el);
+                } else {
+                    return _Shuffle_impl_dispatch_magnitude<_Traits, false>(
+                        _First1, _Last1, _First2, _First2, _Last_needle_length_el);
                 }
-
-                // Generic approach
-                const size_t _Needle_length_tail = _Needle_length & 0x1C;
-                const __m256i _Tail_mask         = _Avx2_tail_mask_32(_Needle_length_tail >> 2);
-
-                const void* _Stop2 = _First2;
-                _Advance_bytes(_Stop2, _Needle_length & ~size_t{0x1F});
-
-                for (auto _Ptr1 = static_cast<const _Ty*>(_First1); _Ptr1 != _Last1; ++_Ptr1) {
-                    const auto _Data1 = _Traits::_Set_avx(*_Ptr1);
-                    for (auto _Ptr2 = _First2; _Ptr2 != _Stop2; _Advance_bytes(_Ptr2, 32)) {
-                        const __m256i _Data2 = _mm256_loadu_si256(static_cast<const __m256i*>(_Ptr2));
-                        const __m256i _Eq    = _Traits::_Cmp_avx(_Data1, _Data2);
-                        if (!_mm256_testz_si256(_Eq, _Eq)) {
-                            return _Ptr1;
-                        }
-                    }
-
-                    if (_Needle_length_tail != 0) {
-                        const __m256i _Data2 = _mm256_maskload_epi32(static_cast<const int*>(_Stop2), _Tail_mask);
-                        const __m256i _Eq    = _Traits::_Cmp_avx(_Data1, _Data2);
-                        if (!_mm256_testz_si256(_Eq, _Tail_mask)) {
-                            return _Ptr1;
-                        }
-                    }
-                }
-
-                return _Last1;
             }
 #endif // !_M_ARM64EC
             return _Fallback<_Ty>(_First1, _Last1, _First2, _Last2);
@@ -2549,22 +2714,22 @@ const void* __stdcall __std_find_last_trivial_8(
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_1(const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_count_trivial_impl<_Find_traits_1>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Count_traits_1>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_2(const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_count_trivial_impl<_Find_traits_2>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Count_traits_2>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_4(const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_count_trivial_impl<_Find_traits_4>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Count_traits_4>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_8(const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_count_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
+    return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_first_of_trivial_1(

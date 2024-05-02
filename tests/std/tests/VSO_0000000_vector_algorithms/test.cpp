@@ -83,6 +83,21 @@ void test_case_count(const vector<T>& input, T v) {
     auto expected = last_known_good_count(input.begin(), input.end(), v);
     auto actual   = count(input.begin(), input.end(), v);
     assert(expected == actual);
+#if _HAS_CXX20
+    auto actual_r = ranges::count(input, v);
+    assert(actual_r == expected);
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_count_zero(const vector<T>& input, const ptrdiff_t n) {
+    const auto first = input.begin();
+    const auto last  = first + n;
+
+    assert(count(first, last, T{0}) == n);
+#if _HAS_CXX20
+    assert(ranges::count(first, last, T{0}) == n);
+#endif // _HAS_CXX20
 }
 
 template <class T>
@@ -95,6 +110,27 @@ void test_count(mt19937_64& gen) {
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         input.push_back(static_cast<T>(dis(gen)));
         test_case_count(input, static_cast<T>(dis(gen)));
+    }
+
+    {
+        input.assign(1'000'000, T{0});
+
+        // test that counters don't overflow
+        test_count_zero(input, 1'000'000);
+
+        // Test the AVX2 maximum portion followed by all possible tail lengths, for 1-byte and 2-byte elements.
+        // It's okay to test these lengths for other elements, or other instruction sets.
+        for (ptrdiff_t i = 8'160; i < 8'192; ++i) {
+            test_count_zero(input, i);
+        }
+
+        for (ptrdiff_t i = 524'272; i < 524'288; ++i) {
+            test_count_zero(input, i);
+        }
+
+        // Test a random length.
+        uniform_int_distribution<ptrdiff_t> len(0, 999'999);
+        test_count_zero(input, len(gen));
     }
 }
 
