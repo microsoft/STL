@@ -4359,8 +4359,8 @@ private:
 
 template <class _CharT>
 struct _Range_specs : _Fill_align_and_width_specs<_CharT> {
-    bool _No_brackets         = false;
-    char _Type                = '\0';
+    bool _No_brackets = false;
+    char _Type        = '\0';
 };
 
 template <class _CharT>
@@ -4457,7 +4457,7 @@ public:
         _Ctx.advance_to(_Ctx.begin() + (_It - _Ctx._Unchecked_begin()));
         bool _Has_underlying_spec = false;
         if (_It != _Ctx._Unchecked_end()) {
-            if(*_It == ':') {
+            if (*_It == ':') {
                 _Has_underlying_spec = true;
                 _Ctx.advance_to(_Ctx.begin() + 1);
             } else if (*_It != '}') {
