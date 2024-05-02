@@ -697,13 +697,13 @@ _CLANG_BUILTIN2_TEMPLATED(isunordered)
 #undef _CLANG_BUILTIN2_TEMPLATED
 #endif // ^^^ defined(__clang__) ^^^
 
-// TRANSITION, GH-519, should be provided by UCRT
+// TRANSITION, DevCom-10294165, should be provided by UCRT
 template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
 _NODISCARD _Check_return_ _CONSTEXPR23 int fpclassify(_In_ const _Ty _Ix) noexcept /* strengthened */ {
     return _Ix == 0 ? FP_ZERO : FP_NORMAL;
 }
 
-// TRANSITION, GH-519, should be provided by UCRT
+// TRANSITION, DevCom-10294165, should be provided by UCRT
 template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
 _NODISCARD _Check_return_ _CONSTEXPR23 bool signbit(_In_ const _Ty _Ix) noexcept /* strengthened */ {
     if constexpr (static_cast<_Ty>(-1) < _Ty{}) {
@@ -713,7 +713,7 @@ _NODISCARD _Check_return_ _CONSTEXPR23 bool signbit(_In_ const _Ty _Ix) noexcept
     }
 }
 
-// TRANSITION, GH-519, additional overloads are not templated to avoid ambiguity with the major overload in UCRT
+// TRANSITION, DevCom-10294165, additional overloads are not templated to avoid ambiguity with the overload in UCRT
 #define _GENERIC_MATH_ISNORMAL(TYPE)                                                                        \
     _NODISCARD _Check_return_ _CONSTEXPR23 bool isnormal(_In_ const TYPE _Ix) noexcept /* strengthened */ { \
         return _Ix != 0;                                                                                    \
@@ -787,7 +787,7 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
-// TRANSITION, GH-519, additional overloads are not templated to avoid ambiguity with the major overload in UCRT
+// TRANSITION, DevCom-10294165, additional overloads are not templated to avoid ambiguity with the overload in UCRT
 #define _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, TYPE)                                \
     _NODISCARD _Check_return_ _CONSTEXPR23 bool FUN(_In_ TYPE) noexcept /* strengthened */ { \
         return RETV;                                                                         \
