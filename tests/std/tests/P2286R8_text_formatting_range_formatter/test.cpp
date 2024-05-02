@@ -188,6 +188,7 @@ void check_range_formatter() {
     assert(fmt(STR("{:*<10}"), Range(array{5, 6})) == STR("[5, 6]****"));
     assert(fmt(STR("{0:=^{1}}"), Range(array{7, 8, 9}), 20) == STR("=====[7, 8, 9]======"));
     assert(fmt(STR("{:_>{}}"), Range(array{10, 11, 12}), 30) == STR("__________________[10, 11, 12]"));
+    assert(fmt(STR("{::^20}"), Range(array{13})) == STR("[         13         ]"));
 
     // Check 'n' option.
     assert(fmt(STR("{:20n}"), Range(array{0})) == STR("0                   "));
@@ -197,6 +198,7 @@ void check_range_formatter() {
     assert(fmt(STR("{:*<10n}"), Range(array{5, 6})) == STR("5, 6******"));
     assert(fmt(STR("{:=^{}n}"), Range(array{7, 8, 9}), 20) == STR("======7, 8, 9======="));
     assert(fmt(STR("{0:_>{1}n}"), Range(array{10, 11, 12}), 30) == STR("____________________10, 11, 12"));
+    assert(fmt(STR("{:>20n}"), Range(array{13})) == STR("                  13"));
 
     if constexpr (Range::proxy_ref != test::ProxyRef::yes) { // Check 'm' type.
         using Pair      = pair<int, char>;
@@ -328,10 +330,10 @@ void check_incorrect_use_of_range_formatter() {
         fmt(STR("{:n?s}"), Range(vals));
         fmt(STR("{:m}"), Range(vals));
         fmt(STR("{:s:x}"), Range(vals));
+        fmt(STR("{:sz}"), Range(vals));
         fmt(STR("{:?s:x}"), Range(vals));
         fmt(STR("{:?}"), Range(vals));
         fmt(STR("{:?z}"), Range(vals));
-        fmt(STR("{::^20}"), Range(vals));
         fmt(STR("{:mn}"), Range(vals));
     }
 

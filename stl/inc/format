@@ -4361,7 +4361,6 @@ template <class _CharT>
 struct _Range_specs : _Fill_align_and_width_specs<_CharT> {
     bool _No_brackets         = false;
     char _Type                = '\0';
-    bool _Has_underlying_spec = false;
 };
 
 template <class _CharT>
@@ -4371,14 +4370,6 @@ public:
         _Range_specs<_CharT>& _Specs_, basic_format_parse_context<_CharT>& _Parse_ctx_)
         : _Fill_align_and_width_specs_setter<_CharT>(_Specs_, _Parse_ctx_) {}
 
-    constexpr void _On_fill(const basic_string_view<_CharT> _Sv) {
-        if (_Sv == _STATICALLY_WIDEN(_CharT, ":")) {
-            _Throw_format_error("Invalid fill ':' for ranges.");
-        }
-
-        _Fill_align_and_width_specs_setter<_CharT>::_On_fill(_Sv);
-    }
-
     constexpr void _On_no_brackets() {
         static_cast<_Range_specs<_CharT>&>(this->_Specs)._No_brackets = true;
     }
@@ -4387,16 +4378,12 @@ public:
         _STL_INTERNAL_CHECK(_Type == 'm' || _Type == 's' || _Type == '?');
         static_cast<_Range_specs<_CharT>&>(this->_Specs)._Type = static_cast<char>(_Type);
     }
-
-    constexpr void _On_underlying_spec() {
-        static_cast<_Range_specs<_CharT>&>(this->_Specs)._Has_underlying_spec = true;
-    }
 };
 
 template <class _CharT, class _CallbacksType>
 _NODISCARD constexpr const _CharT* _Parse_range_specs(
     const _CharT* _Begin, const _CharT* _End, _CallbacksType&& _Callbacks) {
-    if (_Begin == _End || *_Begin == '}') {
+    if (_Begin == _End || *_Begin == '}' || *_Begin == ':') {
         return _Begin;
     }
 
@@ -4429,10 +4416,6 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
         if (++_Begin == _End) {
             return _Begin;
         }
-    }
-
-    if (*_Begin == ':') {
-        _Callbacks._On_underlying_spec();
     }
 
     return _Begin;
@@ -4472,10 +4455,14 @@ public:
         auto _It = _STD _Parse_range_specs(_Ctx._Unchecked_begin(), _Ctx._Unchecked_end(), _Callback);
 
         _Ctx.advance_to(_Ctx.begin() + (_It - _Ctx._Unchecked_begin()));
-        if (_Specs._Has_underlying_spec) {
-            _Ctx.advance_to(_Ctx.begin() + 1); // NB: skips ':'
-        } else if (_It != _Ctx._Unchecked_end() && *_It != '}') {
-            _Throw_format_error("Invalid range-format-spec.");
+        bool _Has_underlying_spec = false;
+        if (_It != _Ctx._Unchecked_end()) {
+            if(*_It == ':') {
+                _Has_underlying_spec = true;
+                _Ctx.advance_to(_Ctx.begin() + 1);
+            } else if (*_It != '}') {
+                _Throw_format_error("Invalid range-format-spec.");
+            }
         }
 
         switch (_Specs._Type) {
@@ -4494,7 +4481,7 @@ public:
 
         case '\0':
             if constexpr (requires { _Underlying.set_debug_format(); }) {
-                if (!_Specs._Has_underlying_spec) {
+                if (!_Has_underlying_spec) {
                     _Underlying.set_debug_format();
                 }
             }
@@ -4506,7 +4493,7 @@ public:
                 _Throw_format_error("Range-types 's' and '?s' requires type T to be charT.");
             }
 
-            if (_Specs._No_brackets || _Specs._Has_underlying_spec) {
+            if (_Specs._No_brackets || _Has_underlying_spec) {
                 _Throw_format_error(
                     "Range-types 's' and '?s' cannot be combined with 'n' option and range-underlying-spec.");
             }
