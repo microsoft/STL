@@ -567,6 +567,22 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Ty>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_writable<_It, const _Ty&>);
 
+            if constexpr (_Iterator_is_contiguous<_It> && sized_sentinel_for<_Se, _It> && is_integral_v<_Ty>
+                          && sizeof(_Ty) >= 4) {
+                // TRANSITION, DevCom-10593477: help the compiler vectorize
+                const auto _Ptr  = _To_address(_First);
+                const auto _Size = static_cast<size_t>(_Last - _First);
+
+                if (_STD _In_range<_Ty>(_Size)) {
+                    const auto _Size_typed = static_cast<_Ty>(_Size);
+                    for (_Ty _Ix = 0; _Ix != _Size_typed; ++_Ix) {
+                        _Ptr[_Ix] = _Val + _Ix;
+                    }
+
+                    return _First + _Size;
+                }
+            }
+
             const _Ty& _Const_val = _Val;
             for (; _First != _Last; ++_First, (void) ++_Val) {
                 *_First = _Const_val;

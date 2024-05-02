@@ -14,7 +14,7 @@ void bm(benchmark::State& state) {
     std::vector<T> a(size);
 
     for (auto _ : state) {
-        std::iota(a.begin(), a.end(), T{22});
+        std::ranges::iota(a, T{22});
         benchmark::DoNotOptimize(a);
     }
 }
