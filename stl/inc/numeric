@@ -580,6 +580,7 @@ namespace ranges {
                         _Ptr[_Ix]            = _Const_val;
                     }
 
+                    _Val += _Size_typed;
                     return _First + _Size;
                 }
             }
