@@ -38,6 +38,10 @@ std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.id/parse.pass.cpp FAIL
 std/utilities/format/format.tuple/parse.pass.cpp FAIL
 
+# LLVM-90345: libcxx assumes numeric_limits is dragged in without an explicit include
+std/strings/string.conversions/stoi.pass.cpp FAIL
+std/utilities/format/format.arguments/format.args/get.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
