@@ -576,7 +576,8 @@ namespace ranges {
                 if (_STD _In_range<_Ty>(_Size)) {
                     const auto _Size_typed = static_cast<_Ty>(_Size);
                     for (_Ty _Ix = 0; _Ix != _Size_typed; ++_Ix) {
-                        _Ptr[_Ix] = _Val + _Ix;
+                        const _Ty _Const_val = _Val + _Ix;
+                        _Ptr[_Ix]            = _Const_val;
                     }
 
                     return _First + _Size;
