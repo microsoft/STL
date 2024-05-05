@@ -5,6 +5,7 @@
 #include <benchmark/benchmark.h>
 #include <cstdint>
 #include <cstring>
+#include <functional>
 #include <vector>
 
 const char src_haystack[] =
@@ -40,7 +41,7 @@ const char src_haystack[] =
 
 const char src_needle[] = "aliquet";
 
-void bm_strstr(benchmark::State& state) {
+void c_strstr(benchmark::State& state) {
     const std::string haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::string needle(std::begin(src_needle), std::end(src_needle));
 
@@ -53,7 +54,7 @@ void bm_strstr(benchmark::State& state) {
 }
 
 template <class T>
-void bm(benchmark::State& state) {
+void ranges_search(benchmark::State& state) {
     const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
 
@@ -65,10 +66,30 @@ void bm(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bm_strstr);
-BENCHMARK(bm<std::uint8_t>);
-BENCHMARK(bm<std::uint16_t>);
-BENCHMARK(bm<std::uint32_t>);
-BENCHMARK(bm<std::uint64_t>);
+template <class T>
+void search_default_searcher(benchmark::State& state) {
+    const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
+    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
+
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = std::search(haystack.begin(), haystack.end(), std::default_searcher{needle.begin(), needle.end()});
+        benchmark::DoNotOptimize(res);
+    }
+}
+
+BENCHMARK(c_strstr);
+
+BENCHMARK(ranges_search<std::uint8_t>);
+BENCHMARK(ranges_search<std::uint16_t>);
+BENCHMARK(ranges_search<std::uint32_t>);
+BENCHMARK(ranges_search<std::uint64_t>);
+
+BENCHMARK(search_default_searcher<std::uint8_t>);
+BENCHMARK(search_default_searcher<std::uint16_t>);
+BENCHMARK(search_default_searcher<std::uint32_t>);
+BENCHMARK(search_default_searcher<std::uint64_t>);
+
 
 BENCHMARK_MAIN();

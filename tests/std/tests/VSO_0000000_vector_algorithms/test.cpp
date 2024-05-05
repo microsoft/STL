@@ -339,6 +339,11 @@ void test_case_search(const vector<T>& input_haystack, const vector<T>& input_ne
         last_known_good_search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
     auto actual = search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
     assert(expected == actual);
+#if _HAS_CXX17
+    auto searcher_actual = search(
+        input_haystack.begin(), input_haystack.end(), default_searcher{input_needle.begin(), input_needle.end()});
+    assert(expected == searcher_actual);
+#endif // _HAS_CXX17
 #if _HAS_CXX20
     auto ranges_actual = ranges::search(input_haystack, input_needle);
     assert(expected == begin(ranges_actual));
