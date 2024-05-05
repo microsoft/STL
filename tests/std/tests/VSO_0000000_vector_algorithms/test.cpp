@@ -295,12 +295,13 @@ void test_case_find_first_of(const vector<T>& input_haystack, const vector<T>& i
 
 template <class T>
 void test_find_first_of(mt19937_64& gen) {
-    constexpr size_t needleDataCount = 50;
-    using TD                         = conditional_t<sizeof(T) == 1, int, T>;
+    constexpr size_t haystackDataCount = 200;
+    constexpr size_t needleDataCount   = 35;
+    using TD                           = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('a', 'z');
     vector<T> input_haystack;
     vector<T> input_needle;
-    input_haystack.reserve(dataCount);
+    input_haystack.reserve(haystackDataCount);
     input_needle.reserve(needleDataCount);
 
     for (;;) {
@@ -312,7 +313,7 @@ void test_find_first_of(mt19937_64& gen) {
             test_case_find_first_of(input_haystack, input_needle);
         }
 
-        if (input_haystack.size() == dataCount) {
+        if (input_haystack.size() == haystackDataCount) {
             break;
         }
 
@@ -351,12 +352,13 @@ void test_case_search(const vector<T>& input_haystack, const vector<T>& input_ne
 
 template <class T>
 void test_search(mt19937_64& gen) {
-    constexpr size_t needleDataCount = 50;
-    using TD                         = conditional_t<sizeof(T) == 1, int, T>;
+    constexpr size_t haystackDataCount = 200;
+    constexpr size_t needleDataCount   = 35;
+    using TD                           = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('0', '9');
     vector<T> input_haystack;
     vector<T> input_needle;
-    input_haystack.reserve(dataCount);
+    input_haystack.reserve(haystackDataCount);
     input_needle.reserve(needleDataCount);
 
     for (;;) {
@@ -368,7 +370,7 @@ void test_search(mt19937_64& gen) {
             test_case_search(input_haystack, input_needle);
         }
 
-        if (input_haystack.size() == dataCount) {
+        if (input_haystack.size() == haystackDataCount) {
             break;
         }
 
