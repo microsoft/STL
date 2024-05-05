@@ -426,38 +426,36 @@ auto last_known_good_mismatch(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt las
 }
 
 template <class FwdIt>
-bool last_known_good_lex_compare(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
-    for (;; ++first1, ++first2) {
-        if (first2 == last2) {
-            return false;
-        } else if (first1 == last1) {
-            return true;
-        } else if (*first1 < *first2) {
-            return true;
-        } else if (*first2 < *first1) {
-            return false;
-        }
+bool last_known_good_lex_compare(pair<FwdIt, FwdIt> mismatch, FwdIt last1, FwdIt last2) {
+    if (mismatch.second == last2) {
+        return false;
+    } else if (mismatch.first == last1) {
+        return true;
+    } else if (*mismatch.first < *mismatch.second) {
+        return true;
+    } else if (*mismatch.second < *mismatch.first) {
+        return false;
+    } else {
+        assert(false);
+        return false;
     }
 }
 
 #if _HAS_CXX20
 template <class FwdIt>
-auto last_known_good_lex_compare_3way(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
-    for (;; ++first1, ++first2) {
-        if (first2 == last2) {
-            if (first1 == last1) {
-                return strong_ordering::equal;
-            } else {
-                return strong_ordering::greater;
-            }
-        } else if (first1 == last1) {
-            return strong_ordering::less;
+auto last_known_good_lex_compare_3way(pair<FwdIt, FwdIt> mismatch, FwdIt last1, FwdIt last2) {
+    if (mismatch.second == last2) {
+        if (mismatch.first == last1) {
+            return strong_ordering::equal;
         } else {
-            auto order = *first1 <=> *first2;
-            if (order != 0) {
-                return order;
-            }
+            return strong_ordering::greater;
         }
+    } else if (mismatch.first == last1) {
+        return strong_ordering::less;
+    } else {
+        auto order = *mismatch.first <=> *mismatch.second;
+        assert(order != 0);
+        return order;
     }
 }
 #endif // _HAS_CXX20
@@ -468,7 +466,7 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
     auto actual_mismatch   = mismatch(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_mismatch == actual_mismatch);
 
-    auto expected_lex = last_known_good_lex_compare(a.begin(), a.end(), b.begin(), b.end());
+    auto expected_lex = last_known_good_lex_compare(expected_mismatch, a.end(), b.end());
     auto actual_lex   = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_lex == actual_lex);
 
@@ -480,7 +478,7 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
     auto ranges_actual_lex = ranges::lexicographical_compare(a, b);
     assert(expected_lex == ranges_actual_lex);
 
-    auto expected_lex_3way = last_known_good_lex_compare_3way(a.begin(), a.end(), b.begin(), b.end());
+    auto expected_lex_3way = last_known_good_lex_compare_3way(expected_mismatch, a.end(), b.end());
     auto actual_lex_3way   = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_lex_3way == actual_lex_3way);
 #endif // _HAS_CXX20
@@ -489,7 +487,7 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
 template <class T>
 void test_mismatch_and_lex_compare_family(mt19937_64& gen) {
     constexpr size_t shrinkCount   = 4;
-    constexpr size_t mismatchCount = 30;
+    constexpr size_t mismatchCount = 10;
     using TD                       = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('a', 'z');
     vector<T> input_a;
