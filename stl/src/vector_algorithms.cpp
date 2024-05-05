@@ -2693,6 +2693,8 @@ namespace {
                 if (*static_cast<const _Ty*>(_First1) != *static_cast<const _Ty*>(_First2)) {
                     return false;
                 }
+                _Advance_bytes(_First1, sizeof(_Ty));
+                _Advance_bytes(_First2, sizeof(_Ty));
             }
         }
 
