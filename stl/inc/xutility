@@ -6794,7 +6794,7 @@ namespace ranges {
                         _Ptr_last2 = _Ptr2 + _Count2;
                     }
 
-                    const auto _Ptr_res1 = _Search_vectorized(_Ptr1, _Ptr_last1, _Ptr2, _Ptr_last2);
+                    const auto _Ptr_res1 = _STD _Search_vectorized(_Ptr1, _Ptr_last1, _Ptr2, _Ptr_last2);
 
                     if constexpr (is_pointer_v<_It1>) {
                         if (_Ptr_res1 != _Ptr_last1) {
