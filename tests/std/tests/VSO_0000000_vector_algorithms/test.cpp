@@ -170,6 +170,26 @@ auto last_known_good_find_first_of(FwdItH h_first, FwdItH h_last, FwdItN n_first
     return h_first;
 }
 
+template <class RanItH, class RanItN>
+auto last_known_good_search(RanItH h_first, RanItH h_last, RanItN n_first, RanItN n_last) {
+    const auto n_len = n_last - n_first;
+    const auto h_len = h_last - h_first;
+
+    if (n_len > h_len) {
+        return h_last;
+    }
+
+    const auto h_last_start = h_last - n_len;
+
+    for (; h_first <= h_last_start; ++h_first) {
+        if (equal(h_first, h_first + n_len, n_first, n_first + n_len)) {
+            return h_first;
+        }
+    }
+
+    return h_last;
+}
+
 template <class T>
 void test_case_find(const vector<T>& input, T v) {
     auto expected = last_known_good_find(input.begin(), input.end(), v);
@@ -310,6 +330,50 @@ void test_find_first_of_containers() {
     const auto ranges_result = ranges::find_first_of(haystack, needle);
     assert(ranges_result == haystack.begin() + 6);
 #endif // _HAS_CXX20
+}
+
+template <class T>
+void test_case_search(const vector<T>& input_haystack, const vector<T>& input_needle) {
+    auto expected =
+        last_known_good_search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    auto actual = search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    assert(expected == actual);
+#if _HAS_CXX20
+    auto ranges_actual = ranges::search(input_haystack, input_needle);
+    assert(expected == begin(ranges_actual));
+    if (expected != input_haystack.end()) {
+        assert(expected + static_cast<ptrdiff_t>(input_needle.size()) == end(ranges_actual));
+    } else {
+        assert(expected == end(ranges_actual));
+    }
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_search(mt19937_64& gen) {
+    constexpr size_t needleDataCount = 50;
+    using TD                         = conditional_t<sizeof(T) == 1, int, T>;
+    uniform_int_distribution<TD> dis('0', '9');
+    vector<T> input_haystack;
+    vector<T> input_needle;
+    input_haystack.reserve(dataCount);
+    input_needle.reserve(needleDataCount);
+
+    for (;;) {
+        input_needle.clear();
+
+        test_case_search(input_haystack, input_needle);
+        for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
+            input_needle.push_back(static_cast<T>(dis(gen)));
+            test_case_search(input_haystack, input_needle);
+        }
+
+        if (input_haystack.size() == dataCount) {
+            break;
+        }
+
+        input_haystack.push_back(static_cast<T>(dis(gen)));
+    }
 }
 
 template <class T>
@@ -820,6 +884,16 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_find_first_of_containers<vector<char>, const vector<char>>();
     test_find_first_of_containers<const vector<wchar_t>, vector<wchar_t>>();
     test_find_first_of_containers<vector<char>, vector<int>>();
+
+    test_search<char>(gen);
+    test_search<signed char>(gen);
+    test_search<unsigned char>(gen);
+    test_search<short>(gen);
+    test_search<unsigned short>(gen);
+    test_search<int>(gen);
+    test_search<unsigned int>(gen);
+    test_search<long long>(gen);
+    test_search<unsigned long long>(gen);
 
     test_min_max_element<char>(gen);
     test_min_max_element<signed char>(gen);
