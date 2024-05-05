@@ -39,6 +39,18 @@ const char src_haystack[] =
 
 const char src_needle[] = "aliquet";
 
+void bm_strstr(benchmark::State& state) {
+    const std::string haystack(std::begin(src_haystack), std::end(src_haystack));
+    const std::string needle(std::begin(src_needle), std::end(src_needle));
+
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = strstr(haystack.c_str(), needle.c_str());
+        benchmark::DoNotOptimize(res);
+    }
+}
+
 template <class T>
 void bm(benchmark::State& state) {
     const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
@@ -52,6 +64,7 @@ void bm(benchmark::State& state) {
     }
 }
 
+BENCHMARK(bm_strstr);
 BENCHMARK(bm<std::uint8_t>);
 BENCHMARK(bm<std::uint16_t>);
 BENCHMARK(bm<std::uint32_t>);
