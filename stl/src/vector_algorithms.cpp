@@ -2786,17 +2786,30 @@ namespace {
 
             return _Last1;
         } else {
-            const void* _Stop1 = _First1;
+            auto _Ptr1           = static_cast<const _Ty*>(_First1);
+            const auto _Ptr2     = static_cast<const _Ty*>(_First2);
+            const size_t _Count2 = _Size_bytes_2 / sizeof(_Ty);
+            const void* _Stop1   = _Ptr1;
             _Advance_bytes(_Stop1, _Max_pos);
 
-            while (_First1 != _Stop1) {
-                if (memcmp(_First1, _First2, _Size_bytes_2) == 0) {
-                    return _First1;
+            for (; _Ptr1 != _Stop1; ++_Ptr1) {
+                if (*_Ptr1 != *_Ptr2) {
+                    continue;
                 }
 
-                _Advance_bytes(_First1, sizeof(_Ty));
-            }
+                bool _Equal = true;
 
+                for (size_t i = 1; i != _Count2; ++i) {
+                    if (_Ptr1[i] != _Ptr2[i]) {
+                        _Equal = false;
+                        break;
+                    }
+                }
+
+                if (_Equal) {
+                    return _Ptr1;
+                }
+            }
             return _Last1;
         }
     }
