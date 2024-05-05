@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <benchmark/benchmark.h>
 #include <cstdint>
+#include <cstring>
 #include <vector>
 
 const char src_haystack[] =
@@ -46,7 +47,7 @@ void bm_strstr(benchmark::State& state) {
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
         benchmark::DoNotOptimize(needle);
-        auto res = strstr(haystack.c_str(), needle.c_str());
+        auto res = std::strstr(haystack.c_str(), needle.c_str());
         benchmark::DoNotOptimize(res);
     }
 }
