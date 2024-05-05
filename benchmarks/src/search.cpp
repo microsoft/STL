@@ -39,7 +39,6 @@ const char src_haystack[] =
 
 const char src_needle[] = "aliquet";
 
-
 template <class T>
 void bm(benchmark::State& state) {
     const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
