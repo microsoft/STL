@@ -2685,7 +2685,7 @@ namespace {
             _Advance_bytes(_First2, _Avx_tail_size);
         }
 
-        if constexpr (sizeof(_Ty) <= 1) {
+        if constexpr (sizeof(_Ty) <= 2) {
             const void* _Stop1_final_tail = _First1;
             _Advance_bytes(_Stop1_final_tail, _Size & 0x3);
 
@@ -2798,7 +2798,6 @@ namespace {
             return _Last1;
         }
     }
-
 } // unnamed namespace
 
 extern "C" {
