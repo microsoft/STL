@@ -10,7 +10,7 @@ const char src[] =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mollis imperdiet massa, at dapibus elit interdum "
     "ac. In eget sollicitudin mi. Nam at tellus at sapien tincidunt sollicitudin vel non eros. Pellentesque nunc nunc, "
     "ullamcorper eu accumsan at, pulvinar non turpis. Quisque vel mauris pulvinar, pretium purus vel, ultricies erat. "
-    "Curabitur a magna in ligula tristique ornare. Quisque commodo, massa viverra laoreet luctus, sem nisi aliquet "
+    "Curabitur a magna in ligula tristique ornare. Quisque commodo, massa viverra laoreet luctus, sem nisi aliquam "
     "velit, fermentum pulvinar velit leo eget justo. Suspendisse vel erat efficitur, pulvinar eros volutpat, vulputate "
     "ex. Phasellus non purus vel velit tristique tristique id at ligula. Quisque mollis sodales magna. Mauris et quam "
     "eu quam viverra tempus. Nullam tempus maximus porta. Nunc mattis eleifend fermentum. Nullam aliquam libero "
@@ -34,7 +34,7 @@ const char src[] =
     "montes, nascetur ridiculus mus. Mauris varius dui sit amet tortor facilisis vestibulum. Curabitur condimentum "
     "justo nec orci mattis auctor. Quisque aliquet condimentum arcu ac sollicitudin. Maecenas elit elit, condimentum "
     "vitae auctor a, cursus et sem. Cras vehicula ante in consequat fermentum. Praesent at massa nisi. Mauris pretium "
-    "euismod eros, ut posuere ligula ullamcorper id. Nullam aliquam malesuada est at dignissim. Pellentesque finibus "
+    "euismod eros, ut posuere ligula ullamcorper id. Nullam aliquet malesuada est at dignissim. Pellentesque finibus "
     "sagittis libero nec bibendum. Phasellus dolor ipsum, finibus quis turpis quis, mollis interdum felis.";
 
 template <class T>
