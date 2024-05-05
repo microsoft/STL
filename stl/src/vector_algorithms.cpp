@@ -2647,6 +2647,158 @@ namespace {
 
         return _Result;
     }
+
+    template <class _Ty>
+    bool _Equal_avx2(const void* _First1, const void* _First2, size_t _Size) noexcept {
+        // no need for DevCom-10331414 workaround; this funtion is called only on AVX2 path
+
+        // preconditions: non-zero length needle, first is already equal
+        _Advance_bytes(_First1, sizeof(_Ty));
+        _Advance_bytes(_First2, sizeof(_Ty));
+        _Size -= sizeof(_Ty);
+
+        const void* _Stop1 = _First1;
+        _Advance_bytes(_Stop1, _Size & ~size_t{0x1F});
+
+        while (_First1 != _Stop1) {
+            const __m256i _Data1 = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
+            const __m256i _Data2 = _mm256_loadu_si256(static_cast<const __m256i*>(_First2));
+            const __m256i _Eq    = _mm256_xor_si256(_Data1, _Data2);
+            if (!_mm256_testz_si256(_Eq, _Eq)) {
+                return false;
+            }
+
+            _Advance_bytes(_First1, 32);
+            _Advance_bytes(_First2, 32);
+        }
+
+        if (const size_t _Avx_tail_size = _Size & 0x1C; _Avx_tail_size != 0) {
+            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+            const __m256i _Data1     = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
+            const __m256i _Data2     = _mm256_maskload_epi32(static_cast<const int*>(_First2), _Tail_mask);
+            const __m256i _Eq        = _mm256_xor_si256(_Data1, _Data2);
+            if (!_mm256_testz_si256(_Eq, _Eq)) {
+                return false;
+            }
+
+            _Advance_bytes(_First1, _Avx_tail_size);
+            _Advance_bytes(_First2, _Avx_tail_size);
+        }
+
+        if constexpr (sizeof(_Ty) <= 1) {
+            const void* _Stop1_final_tail = _First1;
+            _Advance_bytes(_Stop1_final_tail, _Size & 0x3);
+
+            while (_First1 != _Stop1_final_tail) {
+                if (*static_cast<const _Ty*>(_First1) != *static_cast<const _Ty*>(_First2)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    template <class _Traits, class _Ty>
+    const void* __stdcall __std_search_impl(
+        const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+        const size_t _Size_bytes_2 = _Byte_length(_First2, _Last2);
+
+        if (_Size_bytes_2 == 0) {
+            return _First1;
+        }
+
+        if (_Size_bytes_2 == sizeof(_Ty)) {
+            return __std_find_trivial_impl<_Traits, _Ty>(_First1, _Last1, *static_cast<const _Ty*>(_First2));
+        }
+
+        const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
+        if (_Size_bytes_1 < _Size_bytes_2) {
+            return _Last1;
+        }
+
+        const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
+
+        if (_Use_avx2()) {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+            const __m256i _Comparand = _Traits::_Set_avx(*static_cast<const _Ty*>(_First2));
+            const void* _Stop1       = _First1;
+            _Advance_bytes(_Stop1, _Max_pos & ~size_t{0x1F});
+
+            while (_First1 != _Stop1) {
+                const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
+                long _Bingo         = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+
+                while (_Bingo != 0) {
+                    const unsigned long _Offset = _tzcnt_u32(_Bingo);
+
+                    const void* _Match1 = _First1;
+                    _Advance_bytes(_Match1, _Offset);
+
+                    if (_Equal_avx2<_Ty>(_Match1, _First2, _Size_bytes_2)) {
+                        return _Match1;
+                    }
+
+                    _bittestandreset(&_Bingo, _Offset);
+                }
+
+                _Advance_bytes(_First1, 32);
+            };
+
+            if (const size_t _Avx_tail_size = _Max_pos & 0x1C; _Avx_tail_size != 0) {
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
+                long _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+
+                while (_Bingo != 0) {
+                    const unsigned long _Offset = _tzcnt_u32(_Bingo);
+
+                    const void* _Match1 = _First1;
+                    _Advance_bytes(_Match1, _Offset);
+
+                    if (_Equal_avx2<_Ty>(_Match1, _First2, _Size_bytes_2)) {
+                        return _Match1;
+                    }
+
+                    _bittestandreset(&_Bingo, _Offset);
+                }
+
+                _Advance_bytes(_First1, _Avx_tail_size);
+            }
+
+            if constexpr (sizeof(_Ty) <= 2) {
+                const void* _Stop1_final_tail = _First1;
+                _Advance_bytes(_Stop1_final_tail, _Max_pos & 0x3);
+
+                while (_First1 != _Stop1_final_tail) {
+                    if (*static_cast<const _Ty*>(_First1) == *static_cast<const _Ty*>(_First2)) {
+                        if (_Equal_avx2<_Ty>(_First1, _First2, _Size_bytes_2)) {
+                            return _First1;
+                        }
+                    }
+
+                    _Advance_bytes(_First1, sizeof(_Ty));
+                }
+            }
+
+            return _Last1;
+        } else {
+            const void* _Stop1 = _First1;
+            _Advance_bytes(_Stop1, _Max_pos);
+
+            while (_First1 != _Stop1) {
+                if (memcmp(_First1, _First2, _Size_bytes_2) == 0) {
+                    return _First1;
+                }
+
+                _Advance_bytes(_First1, sizeof(_Ty));
+            }
+
+            return _Last1;
+        }
+    }
+
 } // unnamed namespace
 
 extern "C" {
@@ -2750,6 +2902,26 @@ const void* __stdcall __std_find_first_of_trivial_4(
 const void* __stdcall __std_find_first_of_trivial_8(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
     return __std_find_first_of::_Impl_4_8<__std_find_first_of::_Traits_8>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_search_1(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return __std_search_impl<_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_search_2(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return __std_search_impl<_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_search_4(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return __std_search_impl<_Find_traits_4, uint32_t>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_search_8(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return __std_search_impl<_Find_traits_8, uint64_t>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) size_t
