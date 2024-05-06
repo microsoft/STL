@@ -44,7 +44,7 @@ jobs:
           mkdir $TempSubDir -Force | Out-Null
           $DiffFile = Join-Path $TempSubDir 'format.diff'
           git diff --ignore-submodules > $DiffFile
-          if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
+          if ((Get-Item -LiteralPath $DiffFile).Length -ne 0) {
             $message = @(
               '##vso[task.logissue type=error]The files in the repo need to be properly formatted.'
               ''
