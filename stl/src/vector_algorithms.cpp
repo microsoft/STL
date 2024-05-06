@@ -546,6 +546,46 @@ namespace {
 
     struct _Minmax_traits_sse_base {
         static constexpr bool _Vectorized = true;
+        static constexpr size_t _Vec_size = 16;
+        static constexpr size_t _Vec_mask = 0xF;
+
+        static __m128i _Zero() noexcept {
+            return _mm_setzero_si128();
+        }
+
+        static __m128i _All_ones() noexcept {
+            return _mm_set1_epi8(static_cast<char>(0xFF));
+        }
+
+        static __m128i _Blend(const __m128i _Px1, const __m128i _Px2, const __m128i _Msk) noexcept {
+            return _mm_blendv_epi8(_Px1, _Px2, _Msk);
+        }
+
+        static unsigned long _Mask(const __m128i _Val) noexcept {
+            return _mm_movemask_epi8(_Val);
+        }
+    };
+
+    struct _Minmax_traits_avx_base {
+        static constexpr bool _Vectorized = true;
+        static constexpr size_t _Vec_size = 32;
+        static constexpr size_t _Vec_mask = 0x1F;
+
+        static __m256i _Zero() noexcept {
+            return _mm256_setzero_si256();
+        }
+
+        static __m256i _All_ones() noexcept {
+            return _mm256_set1_epi8(static_cast<char>(0xFF));
+        }
+
+        static __m256i _Blend(const __m256i _Px1, const __m256i _Px2, const __m256i _Msk) noexcept {
+            return _mm256_blendv_epi8(_Px1, _Px2, _Msk);
+        }
+
+        static unsigned long _Mask(const __m256i _Val) noexcept {
+            return _mm256_movemask_epi8(_Val);
+        }
     };
 
     struct _Minmax_traits_1_base {
@@ -1255,11 +1295,11 @@ namespace {
             static_assert(false, "No vectorization for _M_ARM64EC yet");
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
             auto _Base                = static_cast<const char*>(_First);
-            size_t _Portion_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
+            size_t _Portion_byte_size = _Byte_length(_First, _Last) & ~_Traits::_Vec_mask;
 
             if constexpr (_Traits::_Has_portion_max) {
                 // vector of indices will wrap around at exactly this size
-                constexpr size_t _Max_portion_byte_size = _Traits::_Portion_max * 16;
+                constexpr size_t _Max_portion_byte_size = _Traits::_Portion_max * _Traits::_Vec_size;
                 if (_Portion_byte_size > _Max_portion_byte_size) {
                     _Portion_byte_size = _Max_portion_byte_size;
                 }
@@ -1271,13 +1311,13 @@ namespace {
             // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
             auto _Cur_vals     = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
             auto _Cur_vals_min = _Cur_vals; // vector of vertical minimum values
-            auto _Cur_idx_min  = _mm_setzero_si128(); // vector of vertical minimum indices
+            auto _Cur_idx_min  = _Traits::_Zero(); // vector of vertical minimum indices
             auto _Cur_vals_max = _Cur_vals; // vector of vertical maximum values
-            auto _Cur_idx_max  = _mm_setzero_si128(); // vector of vertical maximum indices
-            auto _Cur_idx      = _mm_setzero_si128(); // current vector of indices
+            auto _Cur_idx_max  = _Traits::_Zero(); // vector of vertical maximum indices
+            auto _Cur_idx      = _Traits::_Zero(); // current vector of indices
 
             for (;;) {
-                _Advance_bytes(_First, 16);
+                _Advance_bytes(_First, _Traits::_Vec_size);
 
                 // Increment vertical indices. Will stop at exactly wrap around, if not reach the end before
                 _Cur_idx = _Traits::_Inc(_Cur_idx);
@@ -1291,7 +1331,7 @@ namespace {
                     if constexpr ((_Mode & _Mode_min) != 0) {
                         // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
                         const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
-                        _Cur_idx_min        = _mm_blendv_epi8(
+                        _Cur_idx_min        = _Traits::_Blend(
                             _Cur_idx_min, _Cur_idx, _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
                         _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
                     }
@@ -1300,7 +1340,7 @@ namespace {
                         // Looking for the first occurrence of maximum, don't overwrite with newly found occurrences
                         const auto _Is_greater =
                             _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
-                        _Cur_idx_max = _mm_blendv_epi8(_Cur_idx_max, _Cur_idx,
+                        _Cur_idx_max = _Traits::_Blend(_Cur_idx_max, _Cur_idx,
                             _Traits::_Mask_cast(_Is_greater)); // Remember their vertical indices
                         _Cur_vals_max =
                             _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
@@ -1308,7 +1348,7 @@ namespace {
                         // Looking for the last occurrence of maximum, do overwrite with newly found occurrences
                         const auto _Is_less =
                             _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
-                        _Cur_idx_max  = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max,
+                        _Cur_idx_max  = _Traits::_Blend(_Cur_idx, _Cur_idx_max,
                              _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
                         _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
                     }
@@ -1324,22 +1364,22 @@ namespace {
                             _Cur_min_val = _H_min_val; // update min
                             const auto _Eq_mask =
                                 _Traits::_Cmp_eq(_H_min, _Cur_vals_min); // Mask of all elems eq to min
-                            int _Mask = _mm_movemask_epi8(_Traits::_Mask_cast(_Eq_mask));
+                            unsigned long _Mask = _Traits::_Mask(_Traits::_Mask_cast(_Eq_mask));
                             // Indices of minimum elements or the greatest index if none
-                            const auto _All_max = _mm_set1_epi8(static_cast<char>(0xFF));
+                            const auto _All_max = _Traits::_All_ones();
                             const auto _Idx_min_val =
-                                _mm_blendv_epi8(_All_max, _Cur_idx_min, _Traits::_Mask_cast(_Eq_mask));
+                                _Traits::_Blend(_All_max, _Cur_idx_min, _Traits::_Mask_cast(_Eq_mask));
                             auto _Idx_min = _Traits::_H_min_u(_Idx_min_val); // The smallest indices
                             // Select the smallest vertical indices from the smallest element mask
-                            _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq_idx(_Idx_min, _Idx_min_val));
+                            _Mask &= _Traits::_Mask(_Traits::_Cmp_eq_idx(_Idx_min, _Idx_min_val));
                             unsigned long _H_pos;
 
                             // Find the smallest horizontal index
                             _BitScanForward(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
 
                             const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_min, _H_pos); // Extract its vertical index
-                            _Res._Min =
-                                _Base + static_cast<size_t>(_V_pos) * 16 + _H_pos; // Finally, compute the pointer
+                            // Finally, compute the pointer
+                            _Res._Min = _Base + static_cast<size_t>(_V_pos) * _Traits::_Vec_size + _H_pos;
                         }
                     }
 
@@ -1354,17 +1394,17 @@ namespace {
                             _Cur_max_val = _H_max_val;
                             const auto _Eq_mask =
                                 _Traits::_Cmp_eq(_H_max, _Cur_vals_max); // Mask of all elems eq to max
-                            int _Mask = _mm_movemask_epi8(_Traits::_Mask_cast(_Eq_mask));
+                            int _Mask = _Traits::_Mask(_Traits::_Mask_cast(_Eq_mask));
 
                             unsigned long _H_pos;
                             if constexpr (_Mode == _Mode_both) {
                                 // Looking for the last occurrence of maximum
                                 // Indices of maximum elements or zero if none
                                 const auto _Idx_max_val =
-                                    _mm_blendv_epi8(_mm_setzero_si128(), _Cur_idx_max, _Traits::_Mask_cast(_Eq_mask));
+                                    _Traits::_Blend(_Traits::_Zero(), _Cur_idx_max, _Traits::_Mask_cast(_Eq_mask));
                                 const auto _Idx_max = _Traits::_H_max_u(_Idx_max_val); // The greatest indices
                                 // Select the greatest vertical indices from the largest element mask
-                                _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq_idx(_Idx_max, _Idx_max_val));
+                                _Mask &= _Traits::_Mask(_Traits::_Cmp_eq_idx(_Idx_max, _Idx_max_val));
 
                                 // Find the largest horizontal index
                                 _BitScanReverse(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
@@ -1373,32 +1413,32 @@ namespace {
                             } else {
                                 // Looking for the first occurrence of maximum
                                 // Indices of maximum elements or the greatest index if none
-                                const auto _All_max = _mm_set1_epi8(static_cast<char>(0xFF));
+                                const auto _All_max = _Traits::_All_ones();
                                 const auto _Idx_max_val =
-                                    _mm_blendv_epi8(_All_max, _Cur_idx_max, _Traits::_Mask_cast(_Eq_mask));
+                                    _Traits::_Blend(_All_max, _Cur_idx_max, _Traits::_Mask_cast(_Eq_mask));
                                 const auto _Idx_max = _Traits::_H_min_u(_Idx_max_val); // The smallest indices
                                 // Select the smallest vertical indices from the largest element mask
-                                _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq_idx(_Idx_max, _Idx_max_val));
+                                _Mask &= _Traits::_Mask(_Traits::_Cmp_eq_idx(_Idx_max, _Idx_max_val));
 
                                 // Find the smallest horizontal index
                                 _BitScanForward(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
                             }
 
                             const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_max, _H_pos); // Extract its vertical index
-                            _Res._Max =
-                                _Base + static_cast<size_t>(_V_pos) * 16 + _H_pos; // Finally, compute the pointer
+                            // Finally, compute the pointer
+                            _Res._Max = _Base + static_cast<size_t>(_V_pos) * _Traits::_Vec_size + _H_pos;
                         }
                     }
                     // Horizontal part done, results are saved, now need to see if there is another portion to process
 
                     if constexpr (_Traits::_Has_portion_max) {
                         // Either the last portion or wrapping point reached, need to determine
-                        _Portion_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
+                        _Portion_byte_size = _Byte_length(_First, _Last) & ~_Traits::_Vec_mask;
                         if (_Portion_byte_size == 0) {
                             break; // That was the last portion
                         }
                         // Start next portion to handle the wrapping indices. Assume _Cur_idx is zero
-                        constexpr size_t _Max_portion_byte_size = _Traits::_Portion_max * 16;
+                        constexpr size_t _Max_portion_byte_size = _Traits::_Portion_max * _Traits::_Vec_size;
                         if (_Portion_byte_size > _Max_portion_byte_size) {
                             _Portion_byte_size = _Max_portion_byte_size;
                         }
@@ -1411,12 +1451,12 @@ namespace {
 
                         if constexpr ((_Mode & _Mode_min) != 0) {
                             _Cur_vals_min = _Cur_vals;
-                            _Cur_idx_min  = _mm_setzero_si128();
+                            _Cur_idx_min  = _Traits::_Zero();
                         }
 
                         if constexpr ((_Mode & _Mode_max) != 0) {
                             _Cur_vals_max = _Cur_vals;
-                            _Cur_idx_max  = _mm_setzero_si128();
+                            _Cur_idx_max  = _Traits::_Zero();
                         }
                     } else {
                         break; // No wrapping, so it was the only portion
@@ -1488,7 +1528,7 @@ namespace {
 #ifdef _M_ARM64EC
             static_assert(false, "No vectorization for _M_ARM64EC yet");
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-            const size_t _Sse_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
+            const size_t _Sse_byte_size = _Byte_length(_First, _Last) & ~_Traits::_Vec_mask;
 
             const void* _Stop_at = _First;
             _Advance_bytes(_Stop_at, _Sse_byte_size);
@@ -1506,7 +1546,7 @@ namespace {
             auto _Cur_vals_max = _Cur_vals; // vector of vertical maximum values
 
             for (;;) {
-                _Advance_bytes(_First, 16);
+                _Advance_bytes(_First, _Traits::_Vec_size);
 
                 if (_First != _Stop_at) {
                     // This is the main part, finding vertical minimum/maximum
