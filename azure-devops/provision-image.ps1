@@ -15,6 +15,10 @@ for setting up new VMs in the scale set.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
+if ($Env:COMPUTERNAME -cne 'PROTOTYPE') {
+  Write-Error 'You should not run provision-image.ps1 on your local machine.'
+}
+
 $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.ASAN',
   'Microsoft.VisualStudio.Component.VC.CLI.Support',
