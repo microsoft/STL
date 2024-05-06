@@ -102,7 +102,8 @@ Function DownloadAndInstall {
 Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 
 # Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
-cmd /c ver
+# Skip a blank line to improve the output.
+(cmd /c ver)[1]
 
 DownloadAndInstall -Name 'PowerShell'    -Url $PowerShellUrl   -Args $PowerShellArgs
 DownloadAndInstall -Name 'Python'        -Url $PythonUrl       -Args $PythonArgs
