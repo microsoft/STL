@@ -540,6 +540,14 @@ namespace {
         _Mode_both = _Mode_min | _Mode_max,
     };
 
+    struct _Minmax_traits_scalar_base {
+        static constexpr bool _Vectorized = false;
+    };
+
+    struct _Minmax_traits_sse_base {
+        static constexpr bool _Vectorized = true;
+    };
+
     struct _Minmax_traits_1_base {
         static constexpr bool _Is_floating = false;
 
@@ -558,8 +566,10 @@ namespace {
 #endif //_M_ARM64EC
     };
 
+    struct _Minmax_traits_1_scalar : _Minmax_traits_1_base, _Minmax_traits_scalar_base {};
+
 #ifndef _M_ARM64EC
-    struct _Minmax_traits_1_sse : _Minmax_traits_1_base {
+    struct _Minmax_traits_1_sse : _Minmax_traits_1_base, _Minmax_traits_sse_base {
         static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
@@ -663,8 +673,10 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
+    struct _Minmax_traits_2_scalar : _Minmax_traits_2_base, _Minmax_traits_scalar_base {};
+
 #ifndef _M_ARM64EC
-    struct _Minmax_traits_2_sse : _Minmax_traits_2_base {
+    struct _Minmax_traits_2_sse : _Minmax_traits_2_base, _Minmax_traits_sse_base {
         static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
@@ -773,8 +785,10 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
+    struct _Minmax_traits_4_scalar : _Minmax_traits_4_base, _Minmax_traits_scalar_base {};
+
 #ifndef _M_ARM64EC
-    struct _Minmax_traits_4_sse : _Minmax_traits_4_base {
+    struct _Minmax_traits_4_sse : _Minmax_traits_4_base, _Minmax_traits_sse_base {
         static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
@@ -874,8 +888,10 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
+    struct _Minmax_traits_8_scalar : _Minmax_traits_8_base, _Minmax_traits_scalar_base {};
+
 #ifndef _M_ARM64EC
-    struct _Minmax_traits_8_sse : _Minmax_traits_8_base {
+    struct _Minmax_traits_8_sse : _Minmax_traits_8_base, _Minmax_traits_sse_base {
         static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
@@ -988,8 +1004,10 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
+    struct _Minmax_traits_f_scalar : _Minmax_traits_f_base, _Minmax_traits_scalar_base {};
+
 #ifndef _M_ARM64EC
-    struct _Minmax_traits_f_sse : _Minmax_traits_f_base {
+    struct _Minmax_traits_f_sse : _Minmax_traits_f_base, _Minmax_traits_sse_base {
         static __m128 _Load(const void* _Src) noexcept {
             return _mm_loadu_ps(reinterpret_cast<const float*>(_Src));
         }
@@ -1087,8 +1105,10 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
+    struct _Minmax_traits_d_scalar : _Minmax_traits_d_base, _Minmax_traits_scalar_base {};
+
 #ifndef _M_ARM64EC
-    struct _Minmax_traits_d_sse : _Minmax_traits_d_base {
+    struct _Minmax_traits_d_sse : _Minmax_traits_d_base, _Minmax_traits_sse_base {
         static __m128d _Load(const void* _Src) noexcept {
             return _mm_loadu_pd(reinterpret_cast<const double*>(_Src));
         }
@@ -1179,42 +1199,42 @@ namespace {
 #endif // !_M_ARM64EC
 
     struct _Minmax_traits_1 {
-        using _Base = _Minmax_traits_1_base;
+        using _Scalar = _Minmax_traits_1_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_1_sse;
 #endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_2 {
-        using _Base = _Minmax_traits_2_base;
+        using _Scalar = _Minmax_traits_2_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_2_sse;
 #endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_4 {
-        using _Base = _Minmax_traits_4_base;
+        using _Scalar = _Minmax_traits_4_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_4_sse;
 #endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_8 {
-        using _Base = _Minmax_traits_8_base;
+        using _Scalar = _Minmax_traits_8_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_8_sse;
 #endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_f {
-        using _Base = _Minmax_traits_f_base;
+        using _Scalar = _Minmax_traits_f_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_f_sse;
 #endif // !_M_ARM64EC
     };
 
     struct _Minmax_traits_d {
-        using _Base = _Minmax_traits_d_base;
+        using _Scalar = _Minmax_traits_d_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_d_sse;
 #endif // !_M_ARM64EC
@@ -1230,10 +1250,11 @@ namespace {
         auto _Cur_min_val       = _Traits::_Init_min_val;
         auto _Cur_max_val       = _Traits::_Init_max_val;
 
-#ifndef _M_ARM64EC
-        auto _Base = static_cast<const char*>(_First);
-
-        if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
+        if constexpr (_Traits::_Vectorized) {
+#ifdef _M_ARM64EC
+            static_assert(false, "No vectorization for _M_ARM64EC yet");
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+            auto _Base                = static_cast<const char*>(_First);
             size_t _Portion_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
 
             if constexpr (_Traits::_Has_portion_max) {
@@ -1402,8 +1423,8 @@ namespace {
                     }
                 }
             }
-        }
 #endif // !_M_ARM64EC
+        }
 
         if constexpr (_Traits::_Is_floating) {
             if constexpr (_Mode == _Mode_min) {
@@ -1445,12 +1466,12 @@ namespace {
 
     template <_Min_max_mode _Mode, class _Traits>
     auto __std_minmax_element_disp(const void* _First, const void* const _Last, const bool _Sign) noexcept {
-#ifdef _M_ARM64EC
-        using _Inner_traits = _Traits::_Base;
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-        using _Inner_traits = _Traits::_Sse;
+#ifndef _M_ARM64EC
+        if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
+            return __std_minmax_element_impl<_Mode, typename _Traits::_Sse>(_First, _Last, _Sign);
+        }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-        return __std_minmax_element_impl<_Mode, _Inner_traits>(_First, _Last, _Sign);
+        return __std_minmax_element_impl<_Mode, typename _Traits::_Scalar>(_First, _Last, _Sign);
     }
 
     // __std_minmax_impl and __std_minmax_disp have  exactly the same signature as the extern "C" functions
@@ -1463,17 +1484,19 @@ namespace {
         _Ty _Cur_min_val; // initialized in both of the branches below
         _Ty _Cur_max_val; // initialized in both of the branches below
 
-#ifndef _M_ARM64EC
-        // We don't have unsigned 64-bit stuff, so we'll use sign correction just for that case
-        constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Sign;
-
-        if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
+        if constexpr (_Traits::_Vectorized) {
+#ifdef _M_ARM64EC
+            static_assert(false, "No vectorization for _M_ARM64EC yet");
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
             const size_t _Sse_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
 
             const void* _Stop_at = _First;
             _Advance_bytes(_Stop_at, _Sse_byte_size);
 
             auto _Cur_vals = _Traits::_Load(_First);
+
+            // We don't have unsigned 64-bit stuff, so we'll use sign correction just for that case
+            constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Sign;
 
             if constexpr (_Sign_correction) {
                 _Cur_vals = _Traits::_Sign_correction(_Cur_vals, false);
@@ -1551,9 +1574,8 @@ namespace {
                     break;
                 }
             }
-        } else
 #endif // !_M_ARM64EC
-        {
+        } else {
             _Cur_min_val = *reinterpret_cast<const _Ty*>(_First);
             _Cur_max_val = *reinterpret_cast<const _Ty*>(_First);
 
@@ -1591,12 +1613,12 @@ namespace {
 
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __stdcall __std_minmax_disp(const void* _First, const void* const _Last) noexcept {
-#ifdef _M_ARM64EC
-        using _Inner_traits = _Traits::_Base;
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-        using _Inner_traits = _Traits::_Sse;
+#ifndef _M_ARM64EC
+        if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
+            return __std_minmax_impl<_Mode, typename _Traits::_Sse, _Sign>(_First, _Last);
+        }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-        return __std_minmax_impl<_Mode, _Inner_traits, _Sign>(_First, _Last);
+        return __std_minmax_impl<_Mode, typename _Traits::_Scalar, _Sign>(_First, _Last);
     }
 
 } // unnamed namespace
