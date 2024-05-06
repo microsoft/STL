@@ -3,13 +3,13 @@
 
 <#
 .SYNOPSIS
-Sets up a machine to be an image for a scale set.
+Sets up a virtual machine to be an image for a hosted pool.
 
 .DESCRIPTION
-provision-image.ps1 runs on an existing, freshly provisioned virtual machine,
-and sets up that virtual machine as a build machine. After this is done,
-(outside of this script), we take that machine and make it an image to be copied
-for setting up new VMs in the scale set.
+create-1es-hosted-pool.ps1 (running on an STL maintainer's machine) creates a "prototype" virtual machine in Azure,
+then runs provision-image.ps1 on that VM. This gives us full control over what we install for building and testing
+the STL. After provision-image.ps1 is done, create-1es-hosted-pool.ps1 makes an image of the prototype VM,
+creates a 1ES Hosted Pool that will spin up copies of the image as worker VMs, and finally deletes the prototype VM.
 #>
 
 $ErrorActionPreference = 'Stop'
