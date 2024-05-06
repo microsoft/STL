@@ -540,7 +540,7 @@ namespace {
         _Mode_both = _Mode_min | _Mode_max,
     };
 
-    struct _Minmax_traits_1 {
+    struct _Minmax_traits_1_base {
         static constexpr bool _Is_floating = false;
 
         using _Signed_t   = int8_t;
@@ -555,7 +555,11 @@ namespace {
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 256;
+#endif //_M_ARM64EC
+    };
 
+#ifndef _M_ARM64EC
+    struct _Minmax_traits_1_sse : _Minmax_traits_1_base {
         static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
@@ -638,10 +642,10 @@ namespace {
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
             return _Mask;
         }
-#endif // !_M_ARM64EC
     };
+#endif // !_M_ARM64EC
 
-    struct _Minmax_traits_2 {
+    struct _Minmax_traits_2_base {
         static constexpr bool _Is_floating = false;
 
         using _Signed_t   = int16_t;
@@ -656,7 +660,11 @@ namespace {
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 65536;
+#endif // !_M_ARM64EC
+    };
 
+#ifndef _M_ARM64EC
+    struct _Minmax_traits_2_sse : _Minmax_traits_2_base {
         static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
@@ -740,10 +748,10 @@ namespace {
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
             return _Mask;
         }
-#endif // !_M_ARM64EC
     };
+#endif // !_M_ARM64EC
 
-    struct _Minmax_traits_4 {
+    struct _Minmax_traits_4_base {
         static constexpr bool _Is_floating = false;
 
         using _Signed_t   = int32_t;
@@ -762,7 +770,11 @@ namespace {
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
+#endif // !_M_ARM64EC
+    };
 
+#ifndef _M_ARM64EC
+    struct _Minmax_traits_4_sse : _Minmax_traits_4_base {
         static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
@@ -842,10 +854,10 @@ namespace {
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
             return _Mask;
         }
-#endif // !_M_ARM64EC
     };
+#endif // !_M_ARM64EC
 
-    struct _Minmax_traits_8 {
+    struct _Minmax_traits_8_base {
         static constexpr bool _Is_floating = false;
 
         using _Signed_t   = int64_t;
@@ -859,7 +871,11 @@ namespace {
 
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
+#endif // !_M_ARM64EC
+    };
 
+#ifndef _M_ARM64EC
+    struct _Minmax_traits_8_sse : _Minmax_traits_8_base {
         static __m128i _Load(const void* _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
@@ -947,10 +963,10 @@ namespace {
         static __m128i _Mask_cast(__m128i _Mask) noexcept {
             return _Mask;
         }
-#endif // !_M_ARM64EC
     };
+#endif // !_M_ARM64EC
 
-    struct _Minmax_traits_f {
+    struct _Minmax_traits_f_base {
         static constexpr bool _Is_floating = true;
 
         using _Signed_t   = float;
@@ -969,7 +985,11 @@ namespace {
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
+#endif // !_M_ARM64EC
+    };
 
+#ifndef _M_ARM64EC
+    struct _Minmax_traits_f_sse : _Minmax_traits_f_base {
         static __m128 _Load(const void* _Src) noexcept {
             return _mm_loadu_ps(reinterpret_cast<const float*>(_Src));
         }
@@ -1047,10 +1067,10 @@ namespace {
         static __m128i _Mask_cast(__m128 _Mask) noexcept {
             return _mm_castps_si128(_Mask);
         }
-#endif // !_M_ARM64EC
     };
+#endif // !_M_ARM64EC
 
-    struct _Minmax_traits_d {
+    struct _Minmax_traits_d_base {
         static constexpr bool _Is_floating = true;
 
         using _Signed_t   = double;
@@ -1064,7 +1084,11 @@ namespace {
 
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
+#endif // !_M_ARM64EC
+    };
 
+#ifndef _M_ARM64EC
+    struct _Minmax_traits_d_sse : _Minmax_traits_d_base {
         static __m128d _Load(const void* _Src) noexcept {
             return _mm_loadu_pd(reinterpret_cast<const double*>(_Src));
         }
@@ -1151,15 +1175,57 @@ namespace {
         static __m128i _Mask_cast(__m128d _Mask) noexcept {
             return _mm_castpd_si128(_Mask);
         }
+    };
+#endif // !_M_ARM64EC
+
+    struct _Minmax_traits_1 {
+        using _Base = _Minmax_traits_1_base;
+#ifndef _M_ARM64EC
+        using _Sse = _Minmax_traits_1_sse;
 #endif // !_M_ARM64EC
     };
 
-    // __std_minmax_element_impl has exactly the same signature as the extern "C" functions
-    // (__std_min_element_N, __std_max_element_N, __std_minmax_element_N), up to calling convention.
-    // This makes sure the template specialization is fused with the extern "C" function.
-    // In optimized builds it avoids an extra call, as this function is too large to inline.
+    struct _Minmax_traits_2 {
+        using _Base = _Minmax_traits_2_base;
+#ifndef _M_ARM64EC
+        using _Sse = _Minmax_traits_2_sse;
+#endif // !_M_ARM64EC
+    };
+
+    struct _Minmax_traits_4 {
+        using _Base = _Minmax_traits_4_base;
+#ifndef _M_ARM64EC
+        using _Sse = _Minmax_traits_4_sse;
+#endif // !_M_ARM64EC
+    };
+
+    struct _Minmax_traits_8 {
+        using _Base = _Minmax_traits_8_base;
+#ifndef _M_ARM64EC
+        using _Sse = _Minmax_traits_8_sse;
+#endif // !_M_ARM64EC
+    };
+
+    struct _Minmax_traits_f {
+        using _Base = _Minmax_traits_f_base;
+#ifndef _M_ARM64EC
+        using _Sse = _Minmax_traits_f_sse;
+#endif // !_M_ARM64EC
+    };
+
+    struct _Minmax_traits_d {
+        using _Base = _Minmax_traits_d_base;
+#ifndef _M_ARM64EC
+        using _Sse = _Minmax_traits_d_sse;
+#endif // !_M_ARM64EC
+    };
+
+    // __std_minmax_element_impl and __std_minmax_element_disp have exactly the same signature
+    // as the extern "C" functions (__std_min_element_N, __std_max_element_N, __std_minmax_element_N),
+    // up to calling convention.
+    // This makes sure the template specialization can be tail called without filling in the params.
     template <_Min_max_mode _Mode, class _Traits>
-    auto __stdcall __std_minmax_element_impl(const void* _First, const void* const _Last, const bool _Sign) noexcept {
+    auto __std_minmax_element_impl(const void* _First, const void* const _Last, const bool _Sign) noexcept {
         _Min_max_element_t _Res = {_First, _First};
         auto _Cur_min_val       = _Traits::_Init_min_val;
         auto _Cur_max_val       = _Traits::_Init_max_val;
@@ -1377,10 +1443,19 @@ namespace {
         }
     }
 
-    // __std_minmax_impl has exactly the same signature as the extern "C" functions
+    template <_Min_max_mode _Mode, class _Traits>
+    auto __std_minmax_element_disp(const void* _First, const void* const _Last, const bool _Sign) noexcept {
+#ifdef _M_ARM64EC
+        using _Inner_traits = _Traits::_Base;
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+        using _Inner_traits = _Traits::_Sse;
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+        return __std_minmax_element_impl<_Mode, _Inner_traits>(_First, _Last, _Sign);
+    }
+
+    // __std_minmax_impl and __std_minmax_disp have  exactly the same signature as the extern "C" functions
     // (__std_min_Nn, __std_max_Nn, __std_minmax_Nn), up to calling convention.
-    // This makes sure the template specialization is fused with the extern "C" function.
-    // In optimized builds it avoids an extra call, as this function is too large to inline.
+    // This makes sure the template specialization can be tail called without filling in the params.
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __stdcall __std_minmax_impl(const void* _First, const void* const _Last) noexcept {
         using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
@@ -1514,220 +1589,230 @@ namespace {
         }
     }
 
+    template <_Min_max_mode _Mode, class _Traits, bool _Sign>
+    auto __stdcall __std_minmax_disp(const void* _First, const void* const _Last) noexcept {
+#ifdef _M_ARM64EC
+        using _Inner_traits = _Traits::_Base;
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+        using _Inner_traits = _Traits::_Sse;
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+        return __std_minmax_impl<_Mode, _Inner_traits, _Sign>(_First, _Last);
+    }
+
 } // unnamed namespace
 
 extern "C" {
 
 const void* __stdcall __std_min_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_1>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_min, _Minmax_traits_1>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_min_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_2>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_min, _Minmax_traits_2>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_min_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_4>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_min, _Minmax_traits_4>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_min_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_8>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_min, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-const void* __stdcall __std_min_element_f( // __std_minmax_element_impl's "signature" comment explains `bool _Unused`
+const void* __stdcall __std_min_element_f( // __std_minmax_element_disp's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_f>(_First, _Last, _Unused);
+    return __std_minmax_element_disp<_Mode_min, _Minmax_traits_f>(_First, _Last, _Unused);
 }
 
-const void* __stdcall __std_min_element_d( // __std_minmax_element_impl's "signature" comment explains `bool _Unused`
+const void* __stdcall __std_min_element_d( // __std_minmax_element_disp's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_impl<_Mode_min, _Minmax_traits_d>(_First, _Last, _Unused);
+    return __std_minmax_element_disp<_Mode_min, _Minmax_traits_d>(_First, _Last, _Unused);
 }
 
 const void* __stdcall __std_max_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_1>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_max, _Minmax_traits_1>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_max_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_2>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_max, _Minmax_traits_2>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_max_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_4>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_max, _Minmax_traits_4>(_First, _Last, _Signed);
 }
 
 const void* __stdcall __std_max_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_8>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_max, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-const void* __stdcall __std_max_element_f( // __std_minmax_element_impl's "signature" comment explains `bool _Unused`
+const void* __stdcall __std_max_element_f( // __std_minmax_element_disp's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_f>(_First, _Last, _Unused);
+    return __std_minmax_element_disp<_Mode_max, _Minmax_traits_f>(_First, _Last, _Unused);
 }
 
-const void* __stdcall __std_max_element_d( // __std_minmax_element_impl's "signature" comment explains `bool _Unused`
+const void* __stdcall __std_max_element_d( // __std_minmax_element_disp's "signature" comment explains `bool _Unused`
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_impl<_Mode_max, _Minmax_traits_d>(_First, _Last, _Unused);
+    return __std_minmax_element_disp<_Mode_max, _Minmax_traits_d>(_First, _Last, _Unused);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_1>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_both, _Minmax_traits_1>(_First, _Last, _Signed);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_2>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_both, _Minmax_traits_2>(_First, _Last, _Signed);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_4>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_both, _Minmax_traits_4>(_First, _Last, _Signed);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_8>(_First, _Last, _Signed);
+    return __std_minmax_element_disp<_Mode_both, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-// __std_minmax_element_impl's "signature" comment explains `bool _Unused`
+// __std_minmax_element_disp's "signature" comment explains `bool _Unused`
 _Min_max_element_t __stdcall __std_minmax_element_f(
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_f>(_First, _Last, _Unused);
+    return __std_minmax_element_disp<_Mode_both, _Minmax_traits_f>(_First, _Last, _Unused);
 }
 
-// __std_minmax_element_impl's "signature" comment explains `bool _Unused`
+// __std_minmax_element_disp's "signature" comment explains `bool _Unused`
 _Min_max_element_t __stdcall __std_minmax_element_d(
     const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_impl<_Mode_both, _Minmax_traits_d>(_First, _Last, _Unused);
+    return __std_minmax_element_disp<_Mode_both, _Minmax_traits_d>(_First, _Last, _Unused);
 }
 
 __declspec(noalias) int8_t __stdcall __std_min_1i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_min, _Minmax_traits_1, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_1, true>(_First, _Last);
 }
 
 __declspec(noalias) uint8_t __stdcall __std_min_1u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_min, _Minmax_traits_1, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_1, false>(_First, _Last);
 }
 
 __declspec(noalias) int16_t __stdcall __std_min_2i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_min, _Minmax_traits_2, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_2, true>(_First, _Last);
 }
 
 __declspec(noalias) uint16_t __stdcall __std_min_2u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_min, _Minmax_traits_2, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_2, false>(_First, _Last);
 }
 
 __declspec(noalias) int32_t __stdcall __std_min_4i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_min, _Minmax_traits_4, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_4, true>(_First, _Last);
 }
 
 __declspec(noalias) uint32_t __stdcall __std_min_4u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_min, _Minmax_traits_4, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_4, false>(_First, _Last);
 }
 
 __declspec(noalias) int64_t __stdcall __std_min_8i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_min, _Minmax_traits_8, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_8, true>(_First, _Last);
 }
 
 __declspec(noalias) uint64_t __stdcall __std_min_8u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_min, _Minmax_traits_8, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_8, false>(_First, _Last);
 }
 
 __declspec(noalias) float __stdcall __std_min_f(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_min, _Minmax_traits_f, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_f, true>(_First, _Last);
 }
 
 __declspec(noalias) double __stdcall __std_min_d(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_min, _Minmax_traits_d, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_d, true>(_First, _Last);
 }
 
 __declspec(noalias) int8_t __stdcall __std_max_1i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_max, _Minmax_traits_1, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_1, true>(_First, _Last);
 }
 
 __declspec(noalias) uint8_t __stdcall __std_max_1u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_max, _Minmax_traits_1, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_1, false>(_First, _Last);
 }
 
 __declspec(noalias) int16_t __stdcall __std_max_2i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_max, _Minmax_traits_2, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_2, true>(_First, _Last);
 }
 
 __declspec(noalias) uint16_t __stdcall __std_max_2u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_max, _Minmax_traits_2, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_2, false>(_First, _Last);
 }
 
 __declspec(noalias) int32_t __stdcall __std_max_4i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_max, _Minmax_traits_4, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_4, true>(_First, _Last);
 }
 
 __declspec(noalias) uint32_t __stdcall __std_max_4u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_max, _Minmax_traits_4, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_4, false>(_First, _Last);
 }
 
 __declspec(noalias) int64_t __stdcall __std_max_8i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_max, _Minmax_traits_8, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_8, true>(_First, _Last);
 }
 
 __declspec(noalias) uint64_t __stdcall __std_max_8u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_max, _Minmax_traits_8, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_8, false>(_First, _Last);
 }
 
 __declspec(noalias) float __stdcall __std_max_f(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_max, _Minmax_traits_f, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_f, true>(_First, _Last);
 }
 
 __declspec(noalias) double __stdcall __std_max_d(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_max, _Minmax_traits_d, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_d, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_both, _Minmax_traits_1, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_1, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_both, _Minmax_traits_1, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_1, false>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_2i __stdcall __std_minmax_2i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_both, _Minmax_traits_2, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_2, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_2u __stdcall __std_minmax_2u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_both, _Minmax_traits_2, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_2, false>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_4i __stdcall __std_minmax_4i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_both, _Minmax_traits_4, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_4, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_4u __stdcall __std_minmax_4u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_both, _Minmax_traits_4, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_4, false>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_8i __stdcall __std_minmax_8i(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_both, _Minmax_traits_8, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_8, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_8u __stdcall __std_minmax_8u(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_both, _Minmax_traits_8, false>(_First, _Last);
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_8, false>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_both, _Minmax_traits_f, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_f, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_impl<_Mode_both, _Minmax_traits_d, true>(_First, _Last);
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_d, true>(_First, _Last);
 }
 
 } // extern "C"
