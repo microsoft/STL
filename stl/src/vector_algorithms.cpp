@@ -1432,14 +1432,6 @@ namespace {
             return _H_min_val;
         }
 
-        template <class _Fn>
-        static __m128i _H_func_u(const __m128i _Cur, _Fn _Funct) noexcept {
-            __m128i _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
-            return _H_min_val;
-        }
-
         static __m128 _H_min(const __m128 _Cur) noexcept {
             return _H_func(_Cur, [](__m128 _Val1, __m128 _Val2) { return _mm_min_ps(_Val1, _Val2); });
         }
@@ -1449,11 +1441,11 @@ namespace {
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); });
+            return _Minmax_traits_4_sse::_H_min_u(_Cur);
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func_u(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); });
+            return _Minmax_traits_4_sse::_H_max_u(_Cur);
         }
 
         static float _Get_any(const __m128 _Cur) noexcept {
@@ -1461,9 +1453,7 @@ namespace {
         }
 
         static uint32_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-            uint32_t _Array[4];
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
-            return _Array[_H_pos >> 2];
+            return _Minmax_traits_4_sse::_Get_v_pos(_Idx, _H_pos);
         }
 
         static __m128 _Cmp_eq(const __m128 _First, const __m128 _Second) noexcept {
@@ -1513,15 +1503,6 @@ namespace {
             return _H_min_val;
         }
 
-        template <class _Fn>
-        static __m256i _H_func_u(const __m256i _Cur, _Fn _Funct) noexcept {
-            __m256i _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm256_permutex_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
-            return _H_min_val;
-        }
-
         static __m256 _H_min(const __m256 _Cur) noexcept {
             return _H_func(_Cur, [](__m256 _Val1, __m256 _Val2) { return _mm256_min_ps(_Val1, _Val2); });
         }
@@ -1531,11 +1512,11 @@ namespace {
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
-            return _H_func_u(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epu32(_Val1, _Val2); });
+            return _Minmax_traits_4_avx::_H_min_u(_Cur);
         }
 
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
-            return _H_func_u(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epu32(_Val1, _Val2); });
+            return _Minmax_traits_4_avx::_H_max_u(_Cur);
         }
 
         static float _Get_any(const __m256 _Cur) noexcept {
@@ -1543,8 +1524,7 @@ namespace {
         }
 
         static uint32_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
-            return _mm256_cvtsi256_si32(
-                _mm256_permutevar8x32_epi32(_Idx, _mm256_castsi128_si256(_mm_cvtsi32_si128(_H_pos >> 2))));
+            return _Minmax_traits_4_avx::_Get_v_pos(_Idx, _H_pos);
         }
 
         static __m256 _Cmp_eq(const __m256 _First, const __m256 _Second) noexcept {
@@ -1613,16 +1593,6 @@ namespace {
             return _H_min_val;
         }
 
-        template <class _Fn>
-        static __m128i _H_func_u(const __m128i _Cur, _Fn _Funct) noexcept {
-            uint64_t _H_min_a = _Get_any_u(_Cur);
-            uint64_t _H_min_b = _Get_any_u(_mm_bsrli_si128(_Cur, 8));
-            if (_Funct(_H_min_b, _H_min_a)) {
-                _H_min_a = _H_min_b;
-            }
-            return _mm_set1_epi64x(_H_min_a);
-        }
-
         static __m128d _H_min(const __m128d _Cur) noexcept {
             return _H_func(_Cur, [](__m128d _Val1, __m128d _Val2) { return _mm_min_pd(_Val1, _Val2); });
         }
@@ -1632,29 +1602,18 @@ namespace {
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func_u(_Cur, [](uint64_t _Lhs, uint64_t _Rhs) { return _Lhs < _Rhs; });
+            return _Minmax_traits_8_sse::_H_min_u(_Cur);
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func_u(_Cur, [](uint64_t _Lhs, uint64_t _Rhs) { return _Lhs > _Rhs; });
+            return _Minmax_traits_8_sse::_H_max_u(_Cur);
         }
         static double _Get_any(const __m128d _Cur) noexcept {
             return _mm_cvtsd_f64(_Cur);
         }
 
-        static uint64_t _Get_any_u(const __m128i _Cur) noexcept {
-#ifdef _M_IX86
-            return (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
-                 | static_cast<uint64_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur)));
-#else // ^^^ x86 / x64 vvv
-            return static_cast<uint64_t>(_mm_cvtsi128_si64(_Cur));
-#endif // ^^^ x64 ^^^
-        }
-
         static uint64_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-            uint64_t _Array[2];
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
-            return _Array[_H_pos >> 3];
+            return _Minmax_traits_8_sse::_Get_v_pos(_Idx, _H_pos);
         }
 
         static __m128d _Cmp_eq(const __m128d _First, const __m128d _Second) noexcept {
@@ -1703,26 +1662,6 @@ namespace {
             return _H_min_val;
         }
 
-        template <class _Fn>
-        static __m256i _H_func_u(const __m256i _Cur, _Fn _Funct) noexcept {
-            alignas(32) uint64_t _Array[4];
-            _mm256_store_si256(reinterpret_cast<__m256i*>(_Array), _Cur);
-
-            uint64_t _H_min_v = _Array[0];
-
-            if (_Funct(_Array[1], _H_min_v)) {
-                _H_min_v = _Array[1];
-            }
-            if (_Funct(_Array[2], _H_min_v)) {
-                _H_min_v = _Array[2];
-            }
-            if (_Funct(_Array[3], _H_min_v)) {
-                _H_min_v = _Array[3];
-            }
-
-            return _mm256_set1_epi64x(_H_min_v);
-        }
-
         static __m256d _H_min(const __m256d _Cur) noexcept {
             return _H_func(_Cur, [](__m256d _Val1, __m256d _Val2) { return _mm256_min_pd(_Val1, _Val2); });
         }
@@ -1732,31 +1671,18 @@ namespace {
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
-            return _H_func_u(_Cur, [](uint64_t _Lhs, uint64_t _Rhs) { return _Lhs < _Rhs; });
+            return _Minmax_traits_8_avx::_H_min_u(_Cur);
         }
 
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
-            return _H_func_u(_Cur, [](uint64_t _Lhs, uint64_t _Rhs) { return _Lhs > _Rhs; });
+            return _Minmax_traits_8_avx::_H_max_u(_Cur);
         }
         static double _Get_any(const __m256d _Cur) noexcept {
             return _mm256_cvtsd_f64(_Cur);
         }
 
-        static uint64_t _Get_any_u(const __m256i _Cur) noexcept {
-            __m128i _Cur0 = _mm256_castsi256_si128(_Cur);
-#ifdef _M_IX86
-            return static_cast<uint64_t>(
-                (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur0, 1))) << 32)
-                | static_cast<uint64_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur0))));
-#else // ^^^ x86 / x64 vvv
-            return static_cast<uint64_t>(_mm_cvtsi128_si64(_Cur0));
-#endif // ^^^ x64 ^^^
-        }
-
         static uint64_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
-            uint64_t _Array[4];
-            _mm256_storeu_si256(reinterpret_cast<__m256i*>(&_Array), _Idx);
-            return _Array[_H_pos >> 3];
+            return _Minmax_traits_8_avx::_Get_v_pos(_Idx, _H_pos);
         }
 
         static __m256d _Cmp_eq(const __m256d _First, const __m256d _Second) noexcept {
