@@ -620,7 +620,7 @@ namespace {
             return _mm_sub_epi8(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
         }
 
-        static __m128i _Inc(__m128i _Idx) noexcept {
+        static __m128i _Inc(const __m128i _Idx) noexcept {
             return _mm_add_epi8(_Idx, _mm_set1_epi8(1));
         }
 
@@ -689,7 +689,97 @@ namespace {
             return _mm_max_epu8(_First, _Second);
         }
 
-        static __m128i _Mask_cast(__m128i _Mask) noexcept {
+        static __m128i _Mask_cast(const __m128i _Mask) noexcept {
+            return _Mask;
+        }
+    };
+
+    struct _Minmax_traits_1_avx : _Minmax_traits_1_base, _Minmax_traits_avx_base {
+        static __m256i _Load(const void* _Src) noexcept {
+            return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
+        }
+
+        static __m256i _Sign_correction(const __m256i _Val, const bool _Sign) noexcept {
+            alignas(32) static constexpr _Unsigned_t _Sign_corrections[2][32] = {
+                {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
+                    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+                {}};
+            return _mm256_sub_epi8(_Val, _mm256_load_si256(reinterpret_cast<const __m256i*>(_Sign_corrections[_Sign])));
+        }
+
+        static __m256i _Inc(const __m256i _Idx) noexcept {
+            return _mm256_add_epi8(_Idx, _mm256_set1_epi8(1));
+        }
+
+        template <class _Fn>
+        static __m256i _H_func(const __m256i _Cur, _Fn _Funct) noexcept {
+            const __m128i _Shuf_bytes = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
+            const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
+
+            __m256i _H_min_val = _Cur;
+            _H_min_val         = _Funct(_H_min_val, _mm256_permutex_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            _H_min_val = _Funct(_H_min_val, _mm256_shuffle_epi8(_H_min_val, _mm256_broadcastsi128_si256(_Shuf_words)));
+            _H_min_val = _Funct(_H_min_val, _mm256_shuffle_epi8(_H_min_val, _mm256_broadcastsi128_si256(_Shuf_bytes)));
+            return _H_min_val;
+        }
+
+        static __m256i _H_min(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epi8(_Val1, _Val2); });
+        }
+
+        static __m256i _H_max(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epi8(_Val1, _Val2); });
+        }
+
+        static __m256i _H_min_u(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epu8(_Val1, _Val2); });
+        }
+
+        static __m256i _H_max_u(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epu8(_Val1, _Val2); });
+        }
+
+        static _Signed_t _Get_any(const __m256i _Cur) noexcept {
+            return static_cast<_Signed_t>(_mm256_cvtsi256_si32(_Cur));
+        }
+
+        static _Unsigned_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
+            const uint32_t _Part = _mm256_cvtsi256_si32(
+                _mm256_permutevar8x32_epi32(_Idx, _mm256_castsi128_si256(_mm_cvtsi32_si128(_H_pos >> 2))));
+            return static_cast<_Unsigned_t>(_Part >> ((_H_pos & 0x3) << 3));
+        }
+
+        static __m256i _Cmp_eq(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpeq_epi8(_First, _Second);
+        }
+
+        static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpgt_epi8(_First, _Second);
+        }
+
+        static __m256i _Cmp_eq_idx(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpeq_epi8(_First, _Second);
+        }
+
+        static __m256i _Min(const __m256i _First, const __m256i _Second, __m256i = _mm256_undefined_si256()) noexcept {
+            return _mm256_min_epi8(_First, _Second);
+        }
+
+        static __m256i _Max(const __m256i _First, const __m256i _Second, __m256i = _mm256_undefined_si256()) noexcept {
+            return _mm256_max_epi8(_First, _Second);
+        }
+
+        static __m256i _Min_u(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_min_epu8(_First, _Second);
+        }
+
+        static __m256i _Max_u(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_max_epu8(_First, _Second);
+        }
+
+        static __m256i _Mask_cast(const __m256i _Mask) noexcept {
             return _Mask;
         }
     };
@@ -727,7 +817,7 @@ namespace {
             return _mm_sub_epi16(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
         }
 
-        static __m128i _Inc(__m128i _Idx) noexcept {
+        static __m128i _Inc(const __m128i _Idx) noexcept {
             return _mm_add_epi16(_Idx, _mm_set1_epi16(1));
         }
 
@@ -797,7 +887,96 @@ namespace {
             return _mm_max_epu16(_First, _Second);
         }
 
-        static __m128i _Mask_cast(__m128i _Mask) noexcept {
+        static __m128i _Mask_cast(const __m128i _Mask) noexcept {
+            return _Mask;
+        }
+    };
+
+    struct _Minmax_traits_2_avx : _Minmax_traits_2_base, _Minmax_traits_avx_base {
+        static __m256i _Load(const void* _Src) noexcept {
+            return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
+        }
+
+        static __m256i _Sign_correction(const __m256i _Val, const bool _Sign) noexcept {
+            alignas(32) static constexpr _Unsigned_t _Sign_corrections[2][16] = {0x8000, 0x8000, 0x8000, 0x8000, 0x8000,
+                0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, {}};
+            return _mm256_sub_epi16(
+                _Val, _mm256_load_si256(reinterpret_cast<const __m256i*>(_Sign_corrections[_Sign])));
+        }
+
+        static __m256i _Inc(const __m256i _Idx) noexcept {
+            return _mm256_add_epi16(_Idx, _mm256_set1_epi16(1));
+        }
+
+        template <class _Fn>
+        static __m256i _H_func(const __m256i _Cur, _Fn _Funct) noexcept {
+            const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
+
+            __m256i _H_min_val = _Cur;
+            _H_min_val         = _Funct(_H_min_val, _mm256_permutex_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            _H_min_val = _Funct(_H_min_val, _mm256_shuffle_epi8(_H_min_val, _mm256_broadcastsi128_si256(_Shuf_words)));
+            return _H_min_val;
+        }
+
+        static __m256i _H_min(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epi16(_Val1, _Val2); });
+        }
+
+        static __m256i _H_max(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epi16(_Val1, _Val2); });
+        }
+
+        static __m256i _H_min_u(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epu16(_Val1, _Val2); });
+        }
+
+        static __m256i _H_max_u(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epu16(_Val1, _Val2); });
+        }
+
+        static _Signed_t _Get_any(const __m256i _Cur) noexcept {
+            return static_cast<_Signed_t>(_mm256_cvtsi256_si32(_Cur));
+        }
+
+        static _Unsigned_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
+            static constexpr _Unsigned_t _Shuf[] = {0x0100, 0x0302, 0x0504, 0x0706, 0x0908, 0x0B0A, 0x0D0C, 0x0F0E};
+
+            const uint32_t _Part = _mm256_cvtsi256_si32(
+                _mm256_permutevar8x32_epi32(_Idx, _mm256_castsi128_si256(_mm_cvtsi32_si128(_H_pos >> 2))));
+            return static_cast<_Unsigned_t>(_Part >> ((_H_pos & 0x2) << 3));
+        }
+
+        static __m256i _Cmp_eq(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpeq_epi16(_First, _Second);
+        }
+
+        static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpgt_epi16(_First, _Second);
+        }
+
+        static __m256i _Cmp_eq_idx(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpeq_epi16(_First, _Second);
+        }
+
+        static __m256i _Min(const __m256i _First, const __m256i _Second, __m256i = _mm256_undefined_si256()) noexcept {
+            return _mm256_min_epi16(_First, _Second);
+        }
+
+        static __m256i _Max(const __m256i _First, const __m256i _Second, __m256i = _mm256_undefined_si256()) noexcept {
+            return _mm256_max_epi16(_First, _Second);
+        }
+
+        static __m256i _Min_u(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_min_epu16(_First, _Second);
+        }
+
+        static __m256i _Max_u(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_max_epu16(_First, _Second);
+        }
+
+        static __m256i _Mask_cast(const __m256i _Mask) noexcept {
             return _Mask;
         }
     };
@@ -839,7 +1018,7 @@ namespace {
             return _mm_sub_epi32(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
         }
 
-        static __m128i _Inc(__m128i _Idx) noexcept {
+        static __m128i _Inc(const __m128i _Idx) noexcept {
             return _mm_add_epi32(_Idx, _mm_set1_epi32(1));
         }
 
@@ -905,7 +1084,90 @@ namespace {
             return _mm_max_epu32(_First, _Second);
         }
 
-        static __m128i _Mask_cast(__m128i _Mask) noexcept {
+        static __m128i _Mask_cast(const __m128i _Mask) noexcept {
+            return _Mask;
+        }
+    };
+
+    struct _Minmax_traits_4_avx : _Minmax_traits_4_base, _Minmax_traits_avx_base {
+        static __m256i _Load(const void* _Src) noexcept {
+            return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
+        }
+
+        static __m256i _Sign_correction(const __m256i _Val, const bool _Sign) noexcept {
+            alignas(32) static constexpr _Unsigned_t _Sign_corrections[2][8] = {0x8000'0000UL, 0x8000'0000UL,
+                0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, {}};
+            return _mm256_sub_epi32(
+                _Val, _mm256_load_si256(reinterpret_cast<const __m256i*>(_Sign_corrections[_Sign])));
+        }
+
+        static __m256i _Inc(const __m256i _Idx) noexcept {
+            return _mm256_add_epi32(_Idx, _mm256_set1_epi32(1));
+        }
+
+        template <class _Fn>
+        static __m256i _H_func(const __m256i _Cur, _Fn _Funct) noexcept {
+            __m256i _H_min_val = _Cur;
+            _H_min_val         = _Funct(_H_min_val, _mm256_permutex_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            return _H_min_val;
+        }
+
+        static __m256i _H_min(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epi32(_Val1, _Val2); });
+        }
+
+        static __m256i _H_max(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epi32(_Val1, _Val2); });
+        }
+
+        static __m256i _H_min_u(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epu32(_Val1, _Val2); });
+        }
+
+        static __m256i _H_max_u(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epu32(_Val1, _Val2); });
+        }
+
+        static _Signed_t _Get_any(const __m256i _Cur) noexcept {
+            return static_cast<_Signed_t>(_mm256_cvtsi256_si32(_Cur));
+        }
+
+        static _Unsigned_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
+            return _mm256_cvtsi256_si32(
+                _mm256_permutevar8x32_epi32(_Idx, _mm256_castsi128_si256(_mm_cvtsi32_si128(_H_pos >> 2))));
+        }
+
+        static __m256i _Cmp_eq(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpeq_epi32(_First, _Second);
+        }
+
+        static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpgt_epi32(_First, _Second);
+        }
+
+        static __m256i _Cmp_eq_idx(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpeq_epi32(_First, _Second);
+        }
+
+        static __m256i _Min(const __m256i _First, const __m256i _Second, __m256i = _mm256_undefined_si256()) noexcept {
+            return _mm256_min_epi32(_First, _Second);
+        }
+
+        static __m256i _Max(const __m256i _First, const __m256i _Second, __m256i = _mm256_undefined_si256()) noexcept {
+            return _mm256_max_epi32(_First, _Second);
+        }
+
+        static __m256i _Min_u(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_min_epu32(_First, _Second);
+        }
+
+        static __m256i _Max_u(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_max_epu32(_First, _Second);
+        }
+
+        static __m256i _Mask_cast(const __m256i _Mask) noexcept {
             return _Mask;
         }
     };
@@ -942,7 +1204,7 @@ namespace {
             return _mm_sub_epi64(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
         }
 
-        static __m128i _Inc(__m128i _Idx) noexcept {
+        static __m128i _Inc(const __m128i _Idx) noexcept {
             return _mm_add_epi64(_Idx, _mm_set1_epi64x(1));
         }
 
@@ -1016,7 +1278,109 @@ namespace {
             return _mm_blendv_epi8(_First, _Second, _Cmp_gt(_Second, _First));
         }
 
-        static __m128i _Mask_cast(__m128i _Mask) noexcept {
+        static __m128i _Mask_cast(const __m128i _Mask) noexcept {
+            return _Mask;
+        }
+    };
+
+    struct _Minmax_traits_8_avx : _Minmax_traits_8_base, _Minmax_traits_avx_base {
+        static __m256i _Load(const void* _Src) noexcept {
+            return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
+        }
+
+        static __m256i _Sign_correction(const __m256i _Val, const bool _Sign) noexcept {
+            alignas(32) static constexpr _Unsigned_t _Sign_corrections[2][4] = {0x8000'0000'0000'0000ULL,
+                0x8000'0000'0000'0000ULL, 0x8000'0000'0000'0000ULL, 0x8000'0000'0000'0000ULL, {}};
+            return _mm256_sub_epi64(
+                _Val, _mm256_load_si256(reinterpret_cast<const __m256i*>(_Sign_corrections[_Sign])));
+        }
+
+        static __m256i _Inc(const __m256i _Idx) noexcept {
+            return _mm256_add_epi64(_Idx, _mm256_set1_epi64x(1));
+        }
+
+        template <class _Fn>
+        static __m256i _H_func(const __m256i _Cur, _Fn _Funct) noexcept {
+            alignas(32) _Signed_t _Array[4];
+            _mm256_store_si256(reinterpret_cast<__m256i*>(_Array), _Cur);
+
+            _Signed_t _H_min_v = _Array[0];
+
+            if (_Funct(_Array[1], _H_min_v)) {
+                _H_min_v = _Array[1];
+            }
+            if (_Funct(_Array[2], _H_min_v)) {
+                _H_min_v = _Array[2];
+            }
+            if (_Funct(_Array[3], _H_min_v)) {
+                _H_min_v = _Array[3];
+            }
+
+            return _mm256_set1_epi64x(_H_min_v);
+        }
+
+        static __m256i _H_min(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](_Signed_t _Lhs, _Signed_t _Rhs) { return _Lhs < _Rhs; });
+        }
+
+        static __m256i _H_max(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](_Signed_t _Lhs, _Signed_t _Rhs) { return _Lhs > _Rhs; });
+        }
+
+        static __m256i _H_min_u(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](_Unsigned_t _Lhs, _Unsigned_t _Rhs) { return _Lhs < _Rhs; });
+        }
+
+        static __m256i _H_max_u(const __m256i _Cur) noexcept {
+            return _H_func(_Cur, [](_Unsigned_t _Lhs, _Unsigned_t _Rhs) { return _Lhs > _Rhs; });
+        }
+
+        static _Signed_t _Get_any(const __m256i _Cur) noexcept {
+            __m128i _Cur0 = _mm256_castsi256_si128(_Cur);
+#ifdef _M_IX86
+            return static_cast<_Signed_t>(
+                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur0, 1))) << 32)
+                | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur0))));
+#else // ^^^ x86 / x64 vvv
+            return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur0));
+#endif // ^^^ x64 ^^^
+        }
+
+        static _Unsigned_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
+            _Unsigned_t _Array[4];
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(&_Array), _Idx);
+            return _Array[_H_pos >> 3];
+        }
+
+        static __m256i _Cmp_eq(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpeq_epi64(_First, _Second);
+        }
+
+        static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpgt_epi64(_First, _Second);
+        }
+
+        static __m256i _Cmp_eq_idx(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpeq_epi64(_First, _Second);
+        }
+
+        static __m256i _Min(const __m256i _First, const __m256i _Second, const __m256i _Mask) noexcept {
+            return _mm256_blendv_epi8(_First, _Second, _Mask);
+        }
+
+        static __m256i _Max(const __m256i _First, const __m256i _Second, const __m256i _Mask) noexcept {
+            return _mm256_blendv_epi8(_First, _Second, _Mask);
+        }
+
+        static __m256i _Min(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_blendv_epi8(_First, _Second, _Cmp_gt(_First, _Second));
+        }
+
+        static __m256i _Max(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_blendv_epi8(_First, _Second, _Cmp_gt(_Second, _First));
+        }
+
+        static __m256i _Mask_cast(const __m256i _Mask) noexcept {
             return _Mask;
         }
     };
@@ -1056,7 +1420,7 @@ namespace {
             return _Val;
         }
 
-        static __m128i _Inc(__m128i _Idx) noexcept {
+        static __m128i _Inc(const __m128i _Idx) noexcept {
             return _mm_add_epi32(_Idx, _mm_set1_epi32(1));
         }
 
@@ -1122,8 +1486,89 @@ namespace {
             return _mm_max_ps(_First, _Second);
         }
 
-        static __m128i _Mask_cast(__m128 _Mask) noexcept {
+        static __m128i _Mask_cast(const __m128 _Mask) noexcept {
             return _mm_castps_si128(_Mask);
+        }
+    };
+
+    struct _Minmax_traits_f_avx : _Minmax_traits_f_base, _Minmax_traits_avx_base {
+        static __m256 _Load(const void* _Src) noexcept {
+            return _mm256_loadu_ps(reinterpret_cast<const float*>(_Src));
+        }
+
+        static __m256 _Sign_correction(const __m256 _Val, bool) noexcept {
+            return _Val;
+        }
+
+        static __m256i _Inc(const __m256i _Idx) noexcept {
+            return _mm256_add_epi32(_Idx, _mm256_set1_epi32(1));
+        }
+
+        template <class _Fn>
+        static __m256 _H_func(const __m256 _Cur, _Fn _Funct) noexcept {
+            __m256 _H_min_val = _Cur;
+            _H_min_val        = _Funct(_H_min_val, _mm256_permute2f128_ps(_H_min_val, _H_min_val, _MM_SHUFFLE2(0, 1)));
+            _H_min_val        = _Funct(_H_min_val, _mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val        = _Funct(_H_min_val, _mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            return _H_min_val;
+        }
+
+        template <class _Fn>
+        static __m256i _H_func_u(const __m256i _Cur, _Fn _Funct) noexcept {
+            __m256i _H_min_val = _Cur;
+            _H_min_val         = _Funct(_H_min_val, _mm256_permutex_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            return _H_min_val;
+        }
+
+        static __m256 _H_min(const __m256 _Cur) noexcept {
+            return _H_func(_Cur, [](__m256 _Val1, __m256 _Val2) { return _mm256_min_ps(_Val1, _Val2); });
+        }
+
+        static __m256 _H_max(const __m256 _Cur) noexcept {
+            return _H_func(_Cur, [](__m256 _Val1, __m256 _Val2) { return _mm256_max_ps(_Val1, _Val2); });
+        }
+
+        static __m256i _H_min_u(const __m256i _Cur) noexcept {
+            return _H_func_u(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epu32(_Val1, _Val2); });
+        }
+
+        static __m256i _H_max_u(const __m256i _Cur) noexcept {
+            return _H_func_u(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epu32(_Val1, _Val2); });
+        }
+
+        static float _Get_any(const __m256 _Cur) noexcept {
+            return _mm256_cvtss_f32(_Cur);
+        }
+
+        static uint32_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
+            return _mm256_cvtsi256_si32(
+                _mm256_permutevar8x32_epi32(_Idx, _mm256_castsi128_si256(_mm_cvtsi32_si128(_H_pos >> 2))));
+        }
+
+        static __m256 _Cmp_eq(const __m256 _First, const __m256 _Second) noexcept {
+            return _mm256_cmp_ps(_First, _Second, _CMP_EQ_OQ);
+        }
+
+        static __m256 _Cmp_gt(const __m256 _First, const __m256 _Second) noexcept {
+            return _mm256_cmp_ps(_First, _Second, _CMP_GT_OQ);
+        }
+
+        static __m256i _Cmp_eq_idx(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpeq_epi32(_First, _Second);
+        }
+
+        static __m256 _Min(const __m256 _First, const __m256 _Second, __m256 = _mm256_undefined_ps()) noexcept {
+            return _mm256_min_ps(_First, _Second);
+        }
+
+        static __m256 _Max(const __m256 _First, const __m256 _Second, __m256 = _mm256_undefined_ps()) noexcept {
+            return _mm256_max_ps(_First, _Second);
+        }
+
+        static __m256i _Mask_cast(const __m256 _Mask) noexcept {
+            return _mm256_castps_si256(_Mask);
         }
     };
 #endif // !_M_ARM64EC
@@ -1157,7 +1602,7 @@ namespace {
             return _Val;
         }
 
-        static __m128i _Inc(__m128i _Idx) noexcept {
+        static __m128i _Inc(const __m128i _Idx) noexcept {
             return _mm_add_epi64(_Idx, _mm_set1_epi64x(1));
         }
 
@@ -1232,8 +1677,110 @@ namespace {
             return _mm_max_pd(_First, _Second);
         }
 
-        static __m128i _Mask_cast(__m128d _Mask) noexcept {
+        static __m128i _Mask_cast(const __m128d _Mask) noexcept {
             return _mm_castpd_si128(_Mask);
+        }
+    };
+
+    struct _Minmax_traits_d_avx : _Minmax_traits_d_base, _Minmax_traits_avx_base {
+        static __m256d _Load(const void* _Src) noexcept {
+            return _mm256_loadu_pd(reinterpret_cast<const double*>(_Src));
+        }
+
+        static __m256d _Sign_correction(const __m256d _Val, bool) noexcept {
+            return _Val;
+        }
+
+        static __m256i _Inc(const __m256i _Idx) noexcept {
+            return _mm256_add_epi64(_Idx, _mm256_set1_epi64x(1));
+        }
+
+        template <class _Fn>
+        static __m256d _H_func(const __m256d _Cur, _Fn _Funct) noexcept {
+            __m256d _H_min_val = _Cur;
+            _H_min_val         = _Funct(_H_min_val, _mm256_permute4x64_pd(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_pd(_H_min_val, _H_min_val, 0b0101));
+            return _H_min_val;
+        }
+
+        template <class _Fn>
+        static __m256i _H_func_u(const __m256i _Cur, _Fn _Funct) noexcept {
+            alignas(32) uint64_t _Array[4];
+            _mm256_store_si256(reinterpret_cast<__m256i*>(_Array), _Cur);
+
+            uint64_t _H_min_v = _Array[0];
+
+            if (_Funct(_Array[1], _H_min_v)) {
+                _H_min_v = _Array[1];
+            }
+            if (_Funct(_Array[2], _H_min_v)) {
+                _H_min_v = _Array[2];
+            }
+            if (_Funct(_Array[3], _H_min_v)) {
+                _H_min_v = _Array[3];
+            }
+
+            return _mm256_set1_epi64x(_H_min_v);
+        }
+
+        static __m256d _H_min(const __m256d _Cur) noexcept {
+            return _H_func(_Cur, [](__m256d _Val1, __m256d _Val2) { return _mm256_min_pd(_Val1, _Val2); });
+        }
+
+        static __m256d _H_max(const __m256d _Cur) noexcept {
+            return _H_func(_Cur, [](__m256d _Val1, __m256d _Val2) { return _mm256_max_pd(_Val1, _Val2); });
+        }
+
+        static __m256i _H_min_u(const __m256i _Cur) noexcept {
+            return _H_func_u(_Cur, [](uint64_t _Lhs, uint64_t _Rhs) { return _Lhs < _Rhs; });
+        }
+
+        static __m256i _H_max_u(const __m256i _Cur) noexcept {
+            return _H_func_u(_Cur, [](uint64_t _Lhs, uint64_t _Rhs) { return _Lhs > _Rhs; });
+        }
+        static double _Get_any(const __m256d _Cur) noexcept {
+            return _mm256_cvtsd_f64(_Cur);
+        }
+
+        static uint64_t _Get_any_u(const __m256i _Cur) noexcept {
+            __m128i _Cur0 = _mm256_castsi256_si128(_Cur);
+#ifdef _M_IX86
+            return static_cast<uint64_t>(
+                (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur0, 1))) << 32)
+                | static_cast<uint64_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur0))));
+#else // ^^^ x86 / x64 vvv
+            return static_cast<uint64_t>(_mm_cvtsi128_si64(_Cur0));
+#endif // ^^^ x64 ^^^
+        }
+
+        static uint64_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
+            uint64_t _Array[4];
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(&_Array), _Idx);
+            return _Array[_H_pos >> 3];
+        }
+
+        static __m256d _Cmp_eq(const __m256d _First, const __m256d _Second) noexcept {
+            return _mm256_cmp_pd(_First, _Second, _CMP_EQ_OQ);
+        }
+
+        static __m256d _Cmp_gt(const __m256d _First, const __m256d _Second) noexcept {
+            return _mm256_cmp_pd(_First, _Second, _CMP_GT_OQ);
+        }
+
+        static __m256i _Cmp_eq_idx(const __m256i _First, const __m256i _Second) noexcept {
+            return _mm256_cmpeq_epi64(_First, _Second);
+        }
+
+        static __m256d _Min(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
+            return _mm256_min_pd(_First, _Second);
+        }
+
+        static __m256d _Max(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
+            return _mm256_max_pd(_First, _Second);
+        }
+
+        static __m256i _Mask_cast(const __m256d _Mask) noexcept {
+            return _mm256_castpd_si256(_Mask);
         }
     };
 #endif // !_M_ARM64EC
@@ -1242,6 +1789,7 @@ namespace {
         using _Scalar = _Minmax_traits_1_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_1_sse;
+        using _Avx = _Minmax_traits_1_avx;
 #endif // !_M_ARM64EC
     };
 
@@ -1249,6 +1797,7 @@ namespace {
         using _Scalar = _Minmax_traits_2_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_2_sse;
+        using _Avx = _Minmax_traits_2_avx;
 #endif // !_M_ARM64EC
     };
 
@@ -1256,6 +1805,8 @@ namespace {
         using _Scalar = _Minmax_traits_4_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_4_sse;
+        using _Avx = _Minmax_traits_4_avx;
+
 #endif // !_M_ARM64EC
     };
 
@@ -1263,6 +1814,7 @@ namespace {
         using _Scalar = _Minmax_traits_8_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_8_sse;
+        using _Avx = _Minmax_traits_8_avx;
 #endif // !_M_ARM64EC
     };
 
@@ -1270,6 +1822,7 @@ namespace {
         using _Scalar = _Minmax_traits_f_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_f_sse;
+        using _Avx = _Minmax_traits_f_avx;
 #endif // !_M_ARM64EC
     };
 
@@ -1277,6 +1830,7 @@ namespace {
         using _Scalar = _Minmax_traits_d_scalar;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_d_sse;
+        using _Avx = _Minmax_traits_d_avx;
 #endif // !_M_ARM64EC
     };
 
@@ -1507,6 +2061,9 @@ namespace {
     template <_Min_max_mode _Mode, class _Traits>
     auto __std_minmax_element_disp(const void* _First, const void* const _Last, const bool _Sign) noexcept {
 #ifndef _M_ARM64EC
+        if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
+            return __std_minmax_element_impl<_Mode, typename _Traits::_Avx>(_First, _Last, _Sign);
+        }
         if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
             return __std_minmax_element_impl<_Mode, typename _Traits::_Sse>(_First, _Last, _Sign);
         }
@@ -1654,6 +2211,9 @@ namespace {
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __stdcall __std_minmax_disp(const void* _First, const void* const _Last) noexcept {
 #ifndef _M_ARM64EC
+        if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
+            return __std_minmax_impl<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
+        }
         if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
             return __std_minmax_impl<_Mode, typename _Traits::_Sse, _Sign>(_First, _Last);
         }
