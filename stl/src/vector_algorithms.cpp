@@ -1749,10 +1749,6 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
-    // __std_minmax_element_impl and __std_minmax_element_disp have exactly the same signature
-    // as the extern "C" functions (__std_min_element_N, __std_max_element_N, __std_minmax_element_N),
-    // up to calling convention.
-    // This makes sure the template specialization can be tail called without filling in the params.
     template <_Min_max_mode _Mode, class _Traits>
     auto __std_minmax_element_impl(const void* _First, const void* const _Last, const bool _Sign) noexcept {
         _Min_max_element_t _Res = {_First, _First};
@@ -1986,11 +1982,8 @@ namespace {
         return __std_minmax_element_impl<_Mode, typename _Traits::_Scalar>(_First, _Last, _Sign);
     }
 
-    // __std_minmax_impl and __std_minmax_disp have  exactly the same signature as the extern "C" functions
-    // (__std_min_Nn, __std_max_Nn, __std_minmax_Nn), up to calling convention.
-    // This makes sure the template specialization can be tail called without filling in the params.
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
-    auto __stdcall __std_minmax_impl(const void* _First, const void* const _Last) noexcept {
+    auto __std_minmax_impl(const void* _First, const void* const _Last) noexcept {
         using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
         _Ty _Cur_min_val; // initialized in both of the branches below
@@ -2124,7 +2117,7 @@ namespace {
     }
 
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
-    auto __stdcall __std_minmax_disp(const void* _First, const void* const _Last) noexcept {
+    auto __std_minmax_disp(const void* _First, const void* const _Last) noexcept {
 #ifndef _M_ARM64EC
         if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
             return __std_minmax_impl<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
@@ -2160,14 +2153,14 @@ const void* __stdcall __std_min_element_8(
     return __std_minmax_element_disp<_Mode_min, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-const void* __stdcall __std_min_element_f( // __std_minmax_element_disp's "signature" comment explains `bool _Unused`
-    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_disp<_Mode_min, _Minmax_traits_f>(_First, _Last, _Unused);
+// TRANSITION, ABI: remove unused `bool`
+const void* __stdcall __std_min_element_f(const void* const _First, const void* const _Last, const bool) noexcept {
+    return __std_minmax_element_disp<_Mode_min, _Minmax_traits_f>(_First, _Last, false);
 }
 
-const void* __stdcall __std_min_element_d( // __std_minmax_element_disp's "signature" comment explains `bool _Unused`
-    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_disp<_Mode_min, _Minmax_traits_d>(_First, _Last, _Unused);
+// TRANSITION, ABI: remove unused `bool`
+const void* __stdcall __std_min_element_d(const void* const _First, const void* const _Last, const bool) noexcept {
+    return __std_minmax_element_disp<_Mode_min, _Minmax_traits_d>(_First, _Last, false);
 }
 
 const void* __stdcall __std_max_element_1(
@@ -2190,14 +2183,14 @@ const void* __stdcall __std_max_element_8(
     return __std_minmax_element_disp<_Mode_max, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-const void* __stdcall __std_max_element_f( // __std_minmax_element_disp's "signature" comment explains `bool _Unused`
-    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_disp<_Mode_max, _Minmax_traits_f>(_First, _Last, _Unused);
+// TRANSITION, ABI: remove unused `bool`
+const void* __stdcall __std_max_element_f(const void* const _First, const void* const _Last, bool) noexcept {
+    return __std_minmax_element_disp<_Mode_max, _Minmax_traits_f>(_First, _Last, false);
 }
 
-const void* __stdcall __std_max_element_d( // __std_minmax_element_disp's "signature" comment explains `bool _Unused`
-    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_disp<_Mode_max, _Minmax_traits_d>(_First, _Last, _Unused);
+// TRANSITION, ABI: remove unused `bool`
+const void* __stdcall __std_max_element_d(const void* const _First, const void* const _Last, bool) noexcept {
+    return __std_minmax_element_disp<_Mode_max, _Minmax_traits_d>(_First, _Last, false);
 }
 
 _Min_max_element_t __stdcall __std_minmax_element_1(
@@ -2220,16 +2213,14 @@ _Min_max_element_t __stdcall __std_minmax_element_8(
     return __std_minmax_element_disp<_Mode_both, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-// __std_minmax_element_disp's "signature" comment explains `bool _Unused`
-_Min_max_element_t __stdcall __std_minmax_element_f(
-    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_disp<_Mode_both, _Minmax_traits_f>(_First, _Last, _Unused);
+// TRANSITION, ABI: remove unused `bool`
+_Min_max_element_t __stdcall __std_minmax_element_f(const void* const _First, const void* const _Last, bool) noexcept {
+    return __std_minmax_element_disp<_Mode_both, _Minmax_traits_f>(_First, _Last, false);
 }
 
-// __std_minmax_element_disp's "signature" comment explains `bool _Unused`
-_Min_max_element_t __stdcall __std_minmax_element_d(
-    const void* const _First, const void* const _Last, const bool _Unused) noexcept {
-    return __std_minmax_element_disp<_Mode_both, _Minmax_traits_d>(_First, _Last, _Unused);
+// TRANSITION, ABI: remove unused `bool`
+_Min_max_element_t __stdcall __std_minmax_element_d(const void* const _First, const void* const _Last, bool) noexcept {
+    return __std_minmax_element_disp<_Mode_both, _Minmax_traits_d>(_First, _Last, false);
 }
 
 __declspec(noalias) int8_t __stdcall __std_min_1i(const void* const _First, const void* const _Last) noexcept {
