@@ -1329,14 +1329,7 @@ namespace {
         }
 
         static _Signed_t _Get_any(const __m256i _Cur) noexcept {
-            __m128i _Cur0 = _mm256_castsi256_si128(_Cur);
-#ifdef _M_IX86
-            return static_cast<_Signed_t>(
-                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur0, 1))) << 32)
-                | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur0))));
-#else // ^^^ x86 / x64 vvv
-            return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur0));
-#endif // ^^^ x64 ^^^
+            return _Minmax_traits_8_sse::_Get_any(_mm256_castsi256_si128(_Cur));
         }
 
         static _Unsigned_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
