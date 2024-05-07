@@ -540,7 +540,8 @@ namespace {
         _Mode_both = _Mode_min | _Mode_max,
     };
 
-    struct _Minmax_traits_scalar_base {
+    template <class _Base>
+    struct _Minmax_traits_scalar : _Base {
         static constexpr bool _Vectorized = false;
     };
 
@@ -605,8 +606,6 @@ namespace {
         static constexpr size_t _Portion_max   = 256;
 #endif //_M_ARM64EC
     };
-
-    struct _Minmax_traits_1_scalar : _Minmax_traits_1_base, _Minmax_traits_scalar_base {};
 
 #ifndef _M_ARM64EC
     struct _Minmax_traits_1_sse : _Minmax_traits_1_base, _Minmax_traits_sse_base {
@@ -802,8 +801,6 @@ namespace {
         static constexpr size_t _Portion_max   = 65536;
 #endif // !_M_ARM64EC
     };
-
-    struct _Minmax_traits_2_scalar : _Minmax_traits_2_base, _Minmax_traits_scalar_base {};
 
 #ifndef _M_ARM64EC
     struct _Minmax_traits_2_sse : _Minmax_traits_2_base, _Minmax_traits_sse_base {
@@ -1004,8 +1001,6 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
-    struct _Minmax_traits_4_scalar : _Minmax_traits_4_base, _Minmax_traits_scalar_base {};
-
 #ifndef _M_ARM64EC
     struct _Minmax_traits_4_sse : _Minmax_traits_4_base, _Minmax_traits_sse_base {
         static __m128i _Load(const void* _Src) noexcept {
@@ -1189,8 +1184,6 @@ namespace {
         static constexpr bool _Has_portion_max = false;
 #endif // !_M_ARM64EC
     };
-
-    struct _Minmax_traits_8_scalar : _Minmax_traits_8_base, _Minmax_traits_scalar_base {};
 
 #ifndef _M_ARM64EC
     struct _Minmax_traits_8_sse : _Minmax_traits_8_base, _Minmax_traits_sse_base {
@@ -1408,8 +1401,6 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
-    struct _Minmax_traits_f_scalar : _Minmax_traits_f_base, _Minmax_traits_scalar_base {};
-
 #ifndef _M_ARM64EC
     struct _Minmax_traits_f_sse : _Minmax_traits_f_base, _Minmax_traits_sse_base {
         static __m128 _Load(const void* _Src) noexcept {
@@ -1570,8 +1561,6 @@ namespace {
 #endif // !_M_ARM64EC
     };
 
-    struct _Minmax_traits_d_scalar : _Minmax_traits_d_base, _Minmax_traits_scalar_base {};
-
 #ifndef _M_ARM64EC
     struct _Minmax_traits_d_sse : _Minmax_traits_d_base, _Minmax_traits_sse_base {
         static __m128d _Load(const void* _Src) noexcept {
@@ -1712,7 +1701,7 @@ namespace {
 #endif // !_M_ARM64EC
 
     struct _Minmax_traits_1 {
-        using _Scalar = _Minmax_traits_1_scalar;
+        using _Scalar = _Minmax_traits_scalar<_Minmax_traits_1_base>;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_1_sse;
         using _Avx = _Minmax_traits_1_avx;
@@ -1720,7 +1709,7 @@ namespace {
     };
 
     struct _Minmax_traits_2 {
-        using _Scalar = _Minmax_traits_2_scalar;
+        using _Scalar = _Minmax_traits_scalar<_Minmax_traits_2_base>;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_2_sse;
         using _Avx = _Minmax_traits_2_avx;
@@ -1728,7 +1717,7 @@ namespace {
     };
 
     struct _Minmax_traits_4 {
-        using _Scalar = _Minmax_traits_4_scalar;
+        using _Scalar = _Minmax_traits_scalar<_Minmax_traits_4_base>;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_4_sse;
         using _Avx = _Minmax_traits_4_avx;
@@ -1737,7 +1726,7 @@ namespace {
     };
 
     struct _Minmax_traits_8 {
-        using _Scalar = _Minmax_traits_8_scalar;
+        using _Scalar = _Minmax_traits_scalar<_Minmax_traits_8_base>;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_8_sse;
         using _Avx = _Minmax_traits_8_avx;
@@ -1745,7 +1734,7 @@ namespace {
     };
 
     struct _Minmax_traits_f {
-        using _Scalar = _Minmax_traits_f_scalar;
+        using _Scalar = _Minmax_traits_scalar<_Minmax_traits_f_base>;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_f_sse;
         using _Avx = _Minmax_traits_f_avx;
@@ -1753,7 +1742,7 @@ namespace {
     };
 
     struct _Minmax_traits_d {
-        using _Scalar = _Minmax_traits_d_scalar;
+        using _Scalar = _Minmax_traits_scalar<_Minmax_traits_d_base>;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_d_sse;
         using _Avx = _Minmax_traits_d_avx;
