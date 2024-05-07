@@ -565,6 +565,8 @@ namespace {
         static unsigned long _Mask(const __m128i _Val) noexcept {
             return _mm_movemask_epi8(_Val);
         }
+
+        static void _Exit_vectorized() noexcept {}
     };
 
     struct _Minmax_traits_avx_base {
@@ -586,6 +588,10 @@ namespace {
 
         static unsigned long _Mask(const __m256i _Val) noexcept {
             return _mm256_movemask_epi8(_Val);
+        }
+
+        static void _Exit_vectorized() noexcept {
+            _mm256_zeroupper();
         }
     };
 
@@ -1921,6 +1927,8 @@ namespace {
                     }
                 }
             }
+
+            _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
 #endif // !_M_ARM64EC
         }
 
@@ -2072,6 +2080,8 @@ namespace {
                     break;
                 }
             }
+
+            _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
 #endif // !_M_ARM64EC
         } else {
             _Cur_min_val = *reinterpret_cast<const _Ty*>(_First);
