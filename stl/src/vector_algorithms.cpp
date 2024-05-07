@@ -2128,7 +2128,6 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
         return __std_minmax_impl<_Mode, typename _Traits::_Scalar, _Sign>(_First, _Last);
     }
-
 } // unnamed namespace
 
 extern "C" {
