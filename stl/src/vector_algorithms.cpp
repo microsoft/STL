@@ -2153,12 +2153,12 @@ const void* __stdcall __std_min_element_8(
 }
 
 // TRANSITION, ABI: remove unused `bool`
-const void* __stdcall __std_min_element_f(const void* const _First, const void* const _Last, const bool) noexcept {
+const void* __stdcall __std_min_element_f(const void* const _First, const void* const _Last, bool) noexcept {
     return __std_minmax_element_disp<_Mode_min, _Minmax_traits_f>(_First, _Last, false);
 }
 
 // TRANSITION, ABI: remove unused `bool`
-const void* __stdcall __std_min_element_d(const void* const _First, const void* const _Last, const bool) noexcept {
+const void* __stdcall __std_min_element_d(const void* const _First, const void* const _Last, bool) noexcept {
     return __std_minmax_element_disp<_Mode_min, _Minmax_traits_d>(_First, _Last, false);
 }
 
