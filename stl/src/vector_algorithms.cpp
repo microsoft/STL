@@ -545,6 +545,7 @@ namespace {
         static constexpr bool _Vectorized = false;
     };
 
+#ifndef _M_ARM64EC
     struct _Minmax_traits_sse_base {
         static constexpr bool _Vectorized = true;
         static constexpr size_t _Vec_size = 16;
@@ -594,6 +595,7 @@ namespace {
             _mm256_zeroupper();
         }
     };
+#endif // !defined(_M_ARM64EC)
 
     struct _Minmax_traits_1_base {
         static constexpr bool _Is_floating = false;
