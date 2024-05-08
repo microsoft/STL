@@ -612,7 +612,7 @@ namespace {
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 256;
-#endif //_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
 #ifndef _M_ARM64EC
@@ -790,7 +790,7 @@ namespace {
             return _Mask;
         }
     };
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
 
     struct _Minmax_traits_2_base {
         static constexpr bool _Is_floating = false;
@@ -807,7 +807,7 @@ namespace {
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 65536;
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
 #ifndef _M_ARM64EC
@@ -985,7 +985,7 @@ namespace {
             return _Mask;
         }
     };
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
 
     struct _Minmax_traits_4_base {
         static constexpr bool _Is_floating = false;
@@ -1006,7 +1006,7 @@ namespace {
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
 #ifndef _M_ARM64EC
@@ -1174,7 +1174,7 @@ namespace {
             return _Mask;
         }
     };
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
 
     struct _Minmax_traits_8_base {
         static constexpr bool _Is_floating = false;
@@ -1190,7 +1190,7 @@ namespace {
 
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
 #ifndef _M_ARM64EC
@@ -1378,7 +1378,7 @@ namespace {
             return _Mask;
         }
     };
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
 
     struct _Minmax_traits_f_base {
         static constexpr bool _Is_floating = true;
@@ -1399,7 +1399,7 @@ namespace {
         static constexpr bool _Has_portion_max = true;
         static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
 #ifndef _M_ARM64EC
@@ -1543,7 +1543,7 @@ namespace {
             return _mm256_castps_si256(_Mask);
         }
     };
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
 
     struct _Minmax_traits_d_base {
         static constexpr bool _Is_floating = true;
@@ -1559,7 +1559,7 @@ namespace {
 
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
 #ifndef _M_ARM64EC
@@ -1699,14 +1699,14 @@ namespace {
             return _mm256_castpd_si256(_Mask);
         }
     };
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
 
     struct _Minmax_traits_1 {
         using _Scalar = _Minmax_traits_scalar<_Minmax_traits_1_base>;
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_1_sse;
         using _Avx = _Minmax_traits_1_avx;
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
     struct _Minmax_traits_2 {
@@ -1714,7 +1714,7 @@ namespace {
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_2_sse;
         using _Avx = _Minmax_traits_2_avx;
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
     struct _Minmax_traits_4 {
@@ -1723,7 +1723,7 @@ namespace {
         using _Sse = _Minmax_traits_4_sse;
         using _Avx = _Minmax_traits_4_avx;
 
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
     struct _Minmax_traits_8 {
@@ -1731,7 +1731,7 @@ namespace {
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_8_sse;
         using _Avx = _Minmax_traits_8_avx;
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
     struct _Minmax_traits_f {
@@ -1739,7 +1739,7 @@ namespace {
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_f_sse;
         using _Avx = _Minmax_traits_f_avx;
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
     struct _Minmax_traits_d {
@@ -1747,7 +1747,7 @@ namespace {
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_d_sse;
         using _Avx = _Minmax_traits_d_avx;
-#endif // !_M_ARM64EC
+#endif // !defined(_M_ARM64EC)
     };
 
     template <_Min_max_mode _Mode, class _Traits>
@@ -1931,7 +1931,7 @@ namespace {
             }
 
             _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         }
 
         if constexpr (_Traits::_Is_floating) {
@@ -2084,7 +2084,7 @@ namespace {
             }
 
             _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         } else {
             _Cur_min_val = *reinterpret_cast<const _Ty*>(_First);
             _Cur_max_val = *reinterpret_cast<const _Ty*>(_First);
