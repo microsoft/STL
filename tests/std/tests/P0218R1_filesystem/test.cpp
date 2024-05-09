@@ -56,7 +56,7 @@ template <typename Elem, typename Traits>
 struct test_temp_directory {
     error_code ec;
     path directoryPath;
-    explicit test_temp_directory(const string_view testName) : directoryPath(get_new_test_directory(testName)) {
+    explicit test_temp_directory(const string_view testName) : directoryPath(get_test_directory(testName)) {
         remove_all(directoryPath, ec);
         if (ec) {
             wcerr << L"Warning, couldn't clean up " << directoryPath << L" before test.\n";

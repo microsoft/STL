@@ -81,7 +81,7 @@ int main() {
 
 #if _HAS_CXX17
     {
-        const auto testDir = get_new_test_directory("path_stream_parameter");
+        const auto testDir = get_test_directory("path_stream_parameter");
         fs::create_directories(testDir.native(), ec);
         assert(!ec);
 

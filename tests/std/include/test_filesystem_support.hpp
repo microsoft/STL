@@ -31,7 +31,7 @@ inline std::experimental::filesystem::path get_experimental_test_directory(const
 #if _HAS_CXX17
 #include <string_view>
 
-inline std::filesystem::path get_new_test_directory(std::string_view testName) {
+inline std::filesystem::path get_test_directory(std::string_view testName) {
     return std::filesystem::temp_directory_path() / get_test_directory_subname(testName.data(), testName.size());
 }
 #endif // _HAS_CXX17
