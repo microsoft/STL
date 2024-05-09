@@ -87,7 +87,7 @@ public:
     }
 
     friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(is_nothrow_swappable_v<_Err>)
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10652420
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, /permissive
         requires is_swappable_v<_Err>
 #else // ^^^ no workaround / workaround vvv
         requires is_swappable<_Err>::value
@@ -605,7 +605,7 @@ public:
     friend constexpr void swap(expected& _Lhs, expected& _Rhs) noexcept(
         is_nothrow_move_constructible_v<_Ty> && is_nothrow_swappable_v<_Ty> && is_nothrow_move_constructible_v<_Err>
         && is_nothrow_swappable_v<_Err>)
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10652420
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, /permissive
         requires is_swappable_v<_Ty> && is_swappable_v<_Err>
 #else // ^^^ no workaround / workaround vvv
         requires is_swappable<_Ty>::value && is_swappable<_Err>::value
@@ -1437,7 +1437,7 @@ public:
 
     friend constexpr void swap(expected& _Left, expected& _Right) noexcept(
         is_nothrow_move_constructible_v<_Err> && is_nothrow_swappable_v<_Err>)
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10652420
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, /permissive
         requires is_swappable_v<_Err>
 #else // ^^^ no workaround / workaround vvv
         requires is_swappable<_Err>::value

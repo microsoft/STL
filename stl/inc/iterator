@@ -498,7 +498,7 @@ _NODISCARD bool operator!=(
 }
 #endif // !_HAS_CXX20
 
-#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10652420, avoid checking constraints
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, /permissive, avoid checking constraints
 template <class _Elem, class _Traits>
 constexpr bool _Iterator_is_contiguous<istreambuf_iterator<_Elem, _Traits>> = false;
 #endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
@@ -553,7 +553,7 @@ private:
     streambuf_type* _Strbuf;
 };
 
-#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10652420, avoid checking constraints
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, /permissive, avoid checking constraints
 template <class _Elem, class _Traits>
 constexpr bool _Iterator_is_contiguous<ostreambuf_iterator<_Elem, _Traits>> = false;
 #endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
