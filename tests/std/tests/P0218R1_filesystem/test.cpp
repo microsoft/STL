@@ -1424,7 +1424,7 @@ void test_recursive_directory_iterator() {
     test_directory_iterator_common_parts<recursive_directory_iterator>("recursive_directory_iterator"sv);
 
     {
-        const test_temp_directory tempDir("recursive_directory_iterator specific"sv);
+        const test_temp_directory tempDir("recursive_directory_iterator-specific"sv);
         create_file_containing(tempDir.directoryPath / L"a.txt"sv, L"hello");
 
         // _NODISCARD directory_options  options() const;
@@ -1485,7 +1485,7 @@ void test_recursive_directory_iterator() {
 
     // Also test VSO-649431 <filesystem> follow_directory_symlinks with a broken symlink causes iteration to break
     {
-        const test_temp_directory tempDir("recursive_directory_iterator_VSO-649431"sv);
+        const test_temp_directory tempDir("recursive_directory_iterator-VSO-649431"sv);
         const path aaa = tempDir.directoryPath / L"aaa"sv;
         const path bbb = tempDir.directoryPath / L"bbb"sv;
         const path ccc = tempDir.directoryPath / L"ccc"sv;
@@ -2887,7 +2887,7 @@ void test_invalid_conversions() {
 }
 
 void test_status() {
-    const test_temp_directory tempDir("test_status"sv);
+    const test_temp_directory tempDir("status"sv);
     const path& testDir = tempDir.directoryPath;
     const path testFile(testDir / L"test_file"sv);
     const path testLink(testDir / L"test_link"sv);
@@ -3647,7 +3647,7 @@ void test_create_directory() {
 }
 
 void test_create_dirs_and_remove_all() {
-    const test_temp_directory tempDir("create_dirs_and_remove_all"sv);
+    const test_temp_directory tempDir("create_directories-and-remove_all"sv);
     const path& r = tempDir.directoryPath;
 
     // test long path support
