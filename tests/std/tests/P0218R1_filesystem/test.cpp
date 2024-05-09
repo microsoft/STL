@@ -3353,7 +3353,9 @@ void test_rename() {
     EXPECT(read_file_contents(fileB) == L"hello");
 
     // Standard rename where target doesn't exist
-    rename(fileB, fileA);
+    rename(fileB, fileA, ec);
+    EXPECT(good(ec));
+    EXPECT(!exists(fileB));
     EXPECT(read_file_contents(fileA) == L"hello");
 
     // Bad cases
