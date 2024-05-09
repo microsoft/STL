@@ -1424,8 +1424,8 @@ void test_recursive_directory_iterator() {
     test_directory_iterator_common_parts<recursive_directory_iterator>("recursive_directory_iterator"sv);
 
     {
-        const test_temp_directory recursiveTests("recursive_directory_iterator specific"sv);
-        create_file_containing(recursiveTests.directoryPath / L"a.txt"sv, L"hello");
+        const test_temp_directory tempDir("recursive_directory_iterator specific"sv);
+        create_file_containing(tempDir.directoryPath / L"a.txt"sv, L"hello");
 
         // _NODISCARD directory_options  options() const;
         // _NODISCARD int                depth() const;
@@ -1434,7 +1434,7 @@ void test_recursive_directory_iterator() {
         // void disable_recursion_pending();
         {
             error_code ec;
-            recursive_directory_iterator good_dir(recursiveTests.directoryPath, directory_options::none, ec);
+            recursive_directory_iterator good_dir(tempDir.directoryPath, directory_options::none, ec);
             if (!EXPECT(good(ec))) {
                 return;
             }
@@ -1442,11 +1442,11 @@ void test_recursive_directory_iterator() {
             EXPECT(good_dir.options() == directory_options::none);
 
             recursive_directory_iterator good_dir2(
-                recursiveTests.directoryPath, directory_options::skip_permission_denied, ec);
+                tempDir.directoryPath, directory_options::skip_permission_denied, ec);
             EXPECT(good_dir2.options() == directory_options::skip_permission_denied);
 
             recursive_directory_iterator good_dir3(
-                recursiveTests.directoryPath, directory_options::follow_directory_symlink, ec);
+                tempDir.directoryPath, directory_options::follow_directory_symlink, ec);
             EXPECT(good_dir3.options() == directory_options::follow_directory_symlink);
 
             EXPECT(good_dir.depth() == 0);
@@ -1465,7 +1465,7 @@ void test_recursive_directory_iterator() {
 
         // void pop();
         {
-            recursive_directory_iterator good_dir(recursiveTests.directoryPath, directory_options::none);
+            recursive_directory_iterator good_dir(tempDir.directoryPath, directory_options::none);
             good_dir.pop();
             EXPECT(good_dir == recursive_directory_iterator{});
         }
