@@ -53,7 +53,7 @@ template <typename Elem, typename Traits>
     return str.size() >= prefix.size() && Traits::compare(str.data(), prefix.data(), prefix.size()) == 0;
 }
 
-struct test_temp_directory {
+struct [[nodiscard]] test_temp_directory {
     error_code ec;
     path directoryPath;
     explicit test_temp_directory(const string_view testName) : directoryPath(get_test_directory(testName)) {
@@ -67,6 +67,9 @@ struct test_temp_directory {
             }
         }
     }
+
+    test_temp_directory(const test_temp_directory&)            = delete;
+    test_temp_directory& operator=(const test_temp_directory&) = delete;
 
     ~test_temp_directory() noexcept {
         remove_all(directoryPath, ec);
