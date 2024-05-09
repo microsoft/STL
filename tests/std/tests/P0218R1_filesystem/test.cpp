@@ -1485,10 +1485,10 @@ void test_recursive_directory_iterator() {
 
     // Also test VSO-649431 <filesystem> follow_directory_symlinks with a broken symlink causes iteration to break
     {
-        const test_temp_directory followSymlinkTests("recursive_directory_iterator_VSO-649431"sv);
-        const path aaa = followSymlinkTests.directoryPath / L"aaa"sv;
-        const path bbb = followSymlinkTests.directoryPath / L"bbb"sv;
-        const path ccc = followSymlinkTests.directoryPath / L"ccc"sv;
+        const test_temp_directory tempDir("recursive_directory_iterator_VSO-649431"sv);
+        const path aaa = tempDir.directoryPath / L"aaa"sv;
+        const path bbb = tempDir.directoryPath / L"bbb"sv;
+        const path ccc = tempDir.directoryPath / L"ccc"sv;
         error_code ec;
         create_directory_symlink(nonexistentPaths[0], bbb, ec);
         if (ec) {
@@ -1500,7 +1500,7 @@ void test_recursive_directory_iterator() {
                 directory_options::follow_directory_symlink, directory_options::skip_permission_denied,
                 directory_options::follow_directory_symlink | directory_options::skip_permission_denied};
             for (const auto& option : options) {
-                recursive_directory_iterator first(followSymlinkTests.directoryPath, option);
+                recursive_directory_iterator first(tempDir.directoryPath, option);
                 assert(first != recursive_directory_iterator{});
                 EXPECT(first->is_directory());
                 EXPECT(!first->is_symlink());
