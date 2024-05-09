@@ -3332,9 +3332,9 @@ void test_rename() {
     const path fileA(tempDir.directoryPath / L"filea.txt"sv);
     const path fileB(tempDir.directoryPath / L"fileb.txt"sv);
 
-    create_directories(dir.native(), ec);
+    create_directories(dir, ec);
     EXPECT(good(ec));
-    create_directory(otherDir.native(), ec);
+    create_directory(otherDir, ec);
     EXPECT(good(ec));
     create_file_containing(fileA, L"hello");
     create_file_containing(fileB, L"world");
@@ -3349,7 +3349,7 @@ void test_rename() {
     // If new_p resolves to an existing non-directory file, new_p is removed
     rename(fileA, fileB, ec);
     EXPECT(good(ec));
-    EXPECT(!exists(fileA.native()));
+    EXPECT(!exists(fileA));
     EXPECT(read_file_contents(fileB) == L"hello");
 
     // Standard rename where target doesn't exist
@@ -3368,7 +3368,7 @@ void test_space() {
     const path file(dir / L"test_space_file.txt"sv);
 
     error_code ec;
-    create_directory(dir.native(), ec);
+    create_directory(dir, ec);
     EXPECT(good(ec));
     create_file_containing(file, L"hello");
 
