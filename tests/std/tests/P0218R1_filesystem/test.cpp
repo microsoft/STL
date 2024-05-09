@@ -54,9 +54,9 @@ template <typename Elem, typename Traits>
 }
 
 struct [[nodiscard]] test_temp_directory {
-    error_code ec;
     path directoryPath;
     explicit test_temp_directory(const string_view testName) : directoryPath(get_test_directory(testName)) {
+        error_code ec;
         remove_all(directoryPath, ec);
         if (ec) {
             wcerr << L"Warning, couldn't clean up " << directoryPath << L" before test.\n";
@@ -72,6 +72,7 @@ struct [[nodiscard]] test_temp_directory {
     test_temp_directory& operator=(const test_temp_directory&) = delete;
 
     ~test_temp_directory() noexcept {
+        error_code ec;
         remove_all(directoryPath, ec);
         if (ec) {
             wcerr << L"Warning, couldn't clean up " << directoryPath << L" after test.\n";
