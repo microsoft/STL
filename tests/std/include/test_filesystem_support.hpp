@@ -19,7 +19,7 @@ inline std::string get_test_directory_subname(const char* const testName, const 
     uniform_int_distribution<> dist(0, 15);
     string subName(testName, testNameLength);
     subName.push_back('_');
-    generate_n(back_inserter(subName), 16, [&] { return "0123456789ABCDEF"[dist(rd)]; });
+    generate_n(back_inserter(subName), 32, [&] { return "0123456789ABCDEF"[dist(rd)]; });
     return subName;
 }
 
