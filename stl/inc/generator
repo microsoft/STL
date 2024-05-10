@@ -266,7 +266,7 @@ public:
     void return_void() const noexcept {}
 
     void unhandled_exception() {
-        if (_Info) {
+        if (const auto _Info = _Try_get_nest_info()) {
             _Info->_Except = _STD current_exception();
         } else {
             _RERAISE;
@@ -311,15 +311,13 @@ private:
             _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
 
-            _Base& _Current = _Handle.promise();
-            if (!_Current._Info) {
-                return _STD noop_coroutine();
+            if (const auto _Info = _Handle.promise()._Try_get_nest_info()) {
+                coroutine_handle<_Base> _Cont = _Info->_Parent;
+                _Info->_Root.promise()._Set_top(_Cont);
+                return _Cont;
             }
 
-            coroutine_handle<_Base> _Cont        = _Current._Info->_Parent;
-            _Current._Info->_Root.promise()._Top = _Cont;
-            _Current._Info                       = nullptr;
-            return _Cont;
+            return _STD noop_coroutine();
         }
 
         void await_resume() noexcept {}
@@ -344,16 +342,15 @@ private:
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
                 _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
-                auto _Target           = coroutine_handle<_Base>::from_address(_Gen._Coro.address());
-                _Nested._Parent        = coroutine_handle<_Base>::from_address(_Current.address());
-                _Base& _Parent_promise = _Nested._Parent.promise();
-                if (_Parent_promise._Info) {
-                    _Nested._Root = _Parent_promise._Info->_Root;
+                auto _Target    = coroutine_handle<_Base>::from_address(_Gen._Coro.address());
+                _Nested._Parent = coroutine_handle<_Base>::from_address(_Current.address());
+                if (const auto _Parent_nest_info = _Nested._Parent.promise()._Try_get_nest_info()) {
+                    _Nested._Root = _Parent_nest_info->_Root;
                 } else {
                     _Nested._Root = _Nested._Parent;
                 }
-                _Nested._Root.promise()._Top = _Target;
-                _Target.promise()._Info      = _STD addressof(_Nested);
+                _Nested._Root.promise()._Set_top(_Target);
+                _Target.promise()._Set_nest_info(_STD addressof(_Nested));
                 return _Target;
             }
 
@@ -365,13 +362,35 @@ private:
         };
     };
 
+    _NODISCARD _Nest_info* _Try_get_nest_info() const noexcept {
+        if ((_Data & 1U) != 0) {
+            return reinterpret_cast<_Nest_info*>(_Data ^ 1U);
+        }
+
+        return nullptr;
+    }
+
+    _NODISCARD coroutine_handle<_Base> _Get_top() const noexcept {
+        _STL_INTERNAL_CHECK((_Data & 1U) == 0);
+        return coroutine_handle<_Base>::from_address(reinterpret_cast<void*>(_Data));
+    }
+
+    void _Set_nest_info(_Nest_info* _Info) noexcept {
+        _Data = reinterpret_cast<uintptr_t>(_Info) | 1U;
+    }
+
+    void _Set_top(coroutine_handle<_Base> _Top) noexcept {
+        _Data = reinterpret_cast<uintptr_t>(_Top.address());
+    }
+
     template <class, class>
     friend struct _Gen_iter_provider;
 
-    // _Top and _Info are mutually exclusive, and could potentially be merged.
-    coroutine_handle<_Base> _Top = coroutine_handle<_Base>::from_promise(*this);
+    // Least significant bit of `_Data` indicates stored information:
+    // LSB 0: `_Data` is a top coroutine handle,
+    // LSB 1: `_Data ^ 1U` is a pointer to an object of type `_Nest_info`.
+    uintptr_t _Data              = reinterpret_cast<uintptr_t>(coroutine_handle<_Base>::from_promise(*this).address());
     add_pointer_t<_Yielded> _Ptr = nullptr;
-    _Nest_info* _Info            = nullptr;
 };
 
 template <class _Yielded>
@@ -392,14 +411,15 @@ public:
         return *this;
     }
 
-    _NODISCARD _Ref operator*() const noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Top.promise()._Ptr))) {
+    _NODISCARD _Ref operator*() const
+        noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr))) {
         _STL_ASSERT(!_Coro.done(), "Can't dereference generator end iterator");
-        return static_cast<_Ref>(*_Coro.promise()._Top.promise()._Ptr);
+        return static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr);
     }
 
     _Iterator& operator++() {
         _STL_ASSERT(!_Coro.done(), "Can't increment generator end iterator");
-        _Coro.promise()._Top.resume();
+        _Coro.promise()._Get_top().resume();
         return *this;
     }
 

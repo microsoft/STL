@@ -32,7 +32,7 @@ constexpr bool static_checks() {
 
     // Non-portable size checks
     static_assert(sizeof(G) == sizeof(void*));
-    static_assert(sizeof(typename G::promise_type) == 3 * sizeof(void*));
+    static_assert(sizeof(typename G::promise_type) == 2 * sizeof(void*));
 
     return true;
 }
