@@ -364,7 +364,7 @@ private:
     };
 
     _NODISCARD _Nest_info* _Try_get_nest_info() const noexcept {
-        if (_Data & 1U) {
+        if ((_Data & 1U) != 0) {
             return reinterpret_cast<_Nest_info*>(_Data ^ 1U);
         }
 
