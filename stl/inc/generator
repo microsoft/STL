@@ -266,7 +266,7 @@ public:
     void return_void() const noexcept {}
 
     void unhandled_exception() {
-        if (auto _Info = _Try_get_nest_info()) {
+        if (const auto _Info = _Try_get_nest_info()) {
             _Info->_Except = _STD current_exception();
         } else {
             _RERAISE;
@@ -311,7 +311,7 @@ private:
             _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
 
-            if (_Nest_info* _Info = _Handle.promise()._Try_get_nest_info()) {
+            if (const auto _Info = _Handle.promise()._Try_get_nest_info()) {
                 coroutine_handle<_Base> _Cont = _Info->_Parent;
                 _Info->_Root.promise()._Set_top(_Cont);
                 return _Cont;
@@ -344,7 +344,7 @@ private:
 #endif // ^^^ no workaround ^^^
                 auto _Target    = coroutine_handle<_Base>::from_address(_Gen._Coro.address());
                 _Nested._Parent = coroutine_handle<_Base>::from_address(_Current.address());
-                if (_Nest_info* _Parent_nest_info = _Nested._Parent.promise()._Try_get_nest_info()) {
+                if (const auto _Parent_nest_info = _Nested._Parent.promise()._Try_get_nest_info()) {
                     _Nested._Root = _Parent_nest_info->_Root;
                 } else {
                     _Nested._Root = _Nested._Parent;
