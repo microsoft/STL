@@ -311,14 +311,13 @@ private:
             _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
 
-            _Nest_info* _Info = _Handle.promise()._Try_get_nest_info();
-            if (!_Info) {
-                return _STD noop_coroutine();
+            if (_Nest_info* _Info = _Handle.promise()._Try_get_nest_info()) {
+                coroutine_handle<_Base> _Cont = _Info->_Parent;
+                _Info->_Root.promise()._Set_top(_Cont);
+                return _Cont;
             }
 
-            coroutine_handle<_Base> _Cont = _Info->_Parent;
-            _Info->_Root.promise()._Set_top(_Cont);
-            return _Cont;
+            return _STD noop_coroutine();
         }
 
         void await_resume() noexcept {}
