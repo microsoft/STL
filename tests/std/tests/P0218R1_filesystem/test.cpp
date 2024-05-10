@@ -3346,6 +3346,14 @@ void test_rename() {
     EXPECT(good(ec));
     EXPECT(read_file_contents(fileA) == L"hello");
 
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, skip this for all MSVC-internal test runs.
+    // As of 2024-05-09, these rename() tests sporadically fail in MSVC-internal private test runs with
+    // "Access is denied" error codes. We've never observed such failures in MSVC-internal PR/CI checks,
+    // MSVC-internal local test runs, GitHub PR/CI checks, or GitHub local test runs. There's no significant
+    // compiler interaction here, so we can live with GitHub-only test coverage. Although we don't know the
+    // root cause, we suspect that this is related to the physical machines that are used for MSVC-internal
+    // private test runs, so we should check whether they've been replaced in a year or two.
+
     // If new_p resolves to an existing non-directory file, new_p is removed
     rename(fileA, fileB, ec);
     EXPECT(good(ec));
@@ -3357,6 +3365,7 @@ void test_rename() {
     EXPECT(good(ec));
     EXPECT(!exists(fileB));
     EXPECT(read_file_contents(fileA) == L"hello");
+#endif // ^^^ no workaround ^^^
 
     // Bad cases
     EXPECT(throws_filesystem_error([&] { rename(dir, otherDir); }, "rename", dir, otherDir));
