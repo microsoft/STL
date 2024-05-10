@@ -5,6 +5,7 @@
 #include <coroutine>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <forward_list>
 #include <generator>
 #include <list>
@@ -21,6 +22,16 @@
 #include "test_generator_support.hpp"
 
 using namespace std;
+
+#pragma warning(disable : 28251) // Inconsistent annotation for 'new[]': this instance has no annotations.
+
+void* operator new[](size_t) {
+    abort();
+}
+
+void operator delete[](void*) noexcept {
+    abort();
+}
 
 template <class Promise, class... Args>
 concept HasOperatorNew = requires(Args&&... args) {
