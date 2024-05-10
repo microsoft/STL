@@ -387,7 +387,7 @@ private:
     template <class, class>
     friend struct _Gen_iter_provider;
 
-    // First bit of `_Data` indicates stored information:
+    // Least significant bit of `_Data` indicates stored information:
     // 0 - `_Data` is a top coroutine handle,
     // 1 - `_Data ^ 1U` is a pointer to an object of type `_Nest_info`.
     uintptr_t _Data              = reinterpret_cast<uintptr_t>(coroutine_handle<_Base>::from_promise(*this).address());
