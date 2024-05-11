@@ -230,9 +230,11 @@ struct _Pairing_iterator_provider {
             if constexpr (_Range_verifiable_v<_KeyIter>) {
                 _Verify_range(_First._Key_it, _Last._Key_it); // intentional ADL
             }
+
             if constexpr (_Range_verifiable_v<_MappedIter>) {
                 _Verify_range(_First._Mapped_it, _Last._Mapped_it); // intentional ADL
             }
+
             _STL_VERIFY(_Last._Key_it - _First._Key_it == _Last._Mapped_it - _First._Mapped_it,
                 "iterators from inconsistent ranges");
         }
@@ -243,6 +245,7 @@ struct _Pairing_iterator_provider {
             } else {
                 _STL_VERIFY(_Off == 0 || _Key_it != _KeyIter(), "cannot seek value-initialized iterator");
             }
+
             if constexpr (_Offset_verifiable_v<_MappedIter>) {
                 _Mapped_it._Verify_offset(_Off);
             } else {
