@@ -546,6 +546,80 @@ void test_insert_or_assign() {
     assert(check_value_content(direct_fm, {direct_init_only(direct_init_only::src_type{42u})}));
 }
 
+void test_comparison() {
+    {
+        flat_map<int, char> fm1{{1, '1'}, {2, '7'}, {3, '2'}, {4, '9'}};
+
+        assert(fm1 == fm1);
+        assert(!(fm1 != fm1));
+        assert(!(fm1 < fm1));
+        assert(!(fm1 > fm1));
+        assert(fm1 <= fm1);
+        assert(fm1 >= fm1);
+        assert(fm1 <=> fm1 == strong_ordering::equal);
+
+        flat_map<int, char> fm2{{1, '1'}, {7, '2'}, {2, '3'}, {9, '4'}};
+
+        assert(!(fm1 == fm2));
+        assert(fm1 != fm2);
+        assert(!(fm1 < fm2));
+        assert(fm1 > fm2);
+        assert(!(fm1 <= fm2));
+        assert(fm1 >= fm2);
+        assert(fm1 <=> fm2 == strong_ordering::greater);
+    }
+
+    {
+        flat_map<int, char, greater<int>> fm3{{1, '1'}, {2, '7'}, {3, '2'}, {4, '9'}};
+        flat_map<int, char, greater<int>> fm4{{1, '1'}, {7, '2'}, {2, '3'}, {9, '4'}};
+
+        assert(!(fm3 == fm4));
+        assert(fm3 != fm4);
+        assert(fm3 < fm4);
+        assert(!(fm3 > fm4));
+        assert(fm3 <= fm4);
+        assert(!(fm3 >= fm4));
+        assert(fm3 <=> fm4 == strong_ordering::less);
+    }
+    {
+        flat_multimap<int, char> fmm1{
+            {3, '2'}, {1, '7'}, {4, '1'}, {1, '8'}, {5, '2'}, {9, '8'}, {2, '1'}, {6, '8'}, {5, '2'}};
+
+        assert(fmm1 == fmm1);
+        assert(!(fmm1 != fmm1));
+        assert(!(fmm1 < fmm1));
+        assert(!(fmm1 > fmm1));
+        assert(fmm1 <= fmm1);
+        assert(fmm1 >= fmm1);
+        assert(fmm1 <=> fmm1 == strong_ordering::equal);
+
+        flat_multimap<int, char> fmm2{
+            {2, '3'}, {7, '1'}, {1, '4'}, {8, '1'}, {2, '5'}, {8, '9'}, {1, '2'}, {8, '6'}, {2, '5'}};
+
+        assert(!(fmm1 == fmm2));
+        assert(fmm1 != fmm2);
+        assert(!(fmm1 < fmm2));
+        assert(fmm1 > fmm2);
+        assert(!(fmm1 <= fmm2));
+        assert(fmm1 >= fmm2);
+        assert(fmm1 <=> fmm2 == strong_ordering::greater);
+    }
+    {
+        flat_multimap<int, char, greater<int>> fmm3{
+            {3, '2'}, {1, '7'}, {4, '1'}, {1, '8'}, {5, '2'}, {9, '8'}, {2, '1'}, {6, '8'}, {5, '2'}};
+        flat_multimap<int, char, greater<int>> fmm4{
+            {2, '3'}, {7, '1'}, {1, '4'}, {8, '1'}, {2, '5'}, {8, '9'}, {1, '2'}, {8, '6'}, {2, '5'}};
+
+        assert(!(fmm3 == fmm4));
+        assert(fmm3 != fmm4);
+        assert(!(fmm3 < fmm4));
+        assert(fmm3 > fmm4);
+        assert(!(fmm3 <= fmm4));
+        assert(fmm3 >= fmm4);
+        assert(fmm3 <=> fmm4 == strong_ordering::greater);
+    }
+}
+
 // Test MSVC STL-specific SCARY-ness
 
 template <bool>
@@ -628,4 +702,5 @@ int main() {
     test_insert();
     test_gh_4344();
     test_insert_or_assign();
+    test_comparison();
 }

@@ -87,6 +87,17 @@ template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyC
 class _Flat_map_base;
 
 template <class _KeyIter, class _MappedIter, class _MappedConvIter>
+struct _Pairing_iterator_provider;
+
+template <class _KeyIter, class _MappedIter, class _MappedConvIter>
+concept _Can_unwrap_pairing_iterator =
+    !conjunction_v<is_same<_Unwrapped_t<_KeyIter>, _KeyIter>, is_same<_Unwrapped_t<_MappedIter>, _MappedIter>>;
+
+template <class _KeyIter, class _MappedIter, class _MappedConvIter>
+using _Unwrapped_pairing_iterator = _Pairing_iterator_provider<_Unwrapped_t<_KeyIter>, _Unwrapped_t<_MappedIter>,
+    _Unwrapped_t<_MappedConvIter>>::_Iterator;
+
+template <class _KeyIter, class _MappedIter, class _MappedConvIter>
 struct _Pairing_iterator_provider {
     class _Iterator {
     public:
@@ -95,7 +106,9 @@ struct _Pairing_iterator_provider {
         friend class _Flat_map_base;
 
         _Iterator() = default;
-        _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter) : _Key_it(_Key_iter), _Mapped_it(_Mapped_iter) {}
+        _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter) noexcept(
+            is_nothrow_move_constructible_v<_KeyIter> && is_nothrow_move_constructible_v<_MappedIter>)
+            : _Key_it(_STD move(_Key_iter)), _Mapped_it(_STD move(_Mapped_iter)) {}
 
         using iterator_category = input_iterator_tag;
         using iterator_concept  = random_access_iterator_tag;
@@ -201,6 +214,57 @@ struct _Pairing_iterator_provider {
             requires (!is_same_v<_MappedIter, _MappedConvIter>)
         {
             return _Const_iterator{_Key_it, _Mapped_it};
+        }
+
+        const _KeyIter& _Key_iterator() const noexcept {
+            return _Key_it;
+        }
+
+        const _MappedIter& _Mapped_iterator() const noexcept {
+            return _Mapped_it;
+        }
+
+        using _Prevent_inheriting_unwrap = _Iterator;
+
+        friend void _Verify_range(const _Iterator& _First, const _Iterator& _Last) noexcept {
+            if constexpr (_Range_verifiable_v<_KeyIter>) {
+                _Verify_range(_First._Key_it, _Last._Key_it); // intentional ADL
+            }
+
+            if constexpr (_Range_verifiable_v<_MappedIter>) {
+                _Verify_range(_First._Mapped_it, _Last._Mapped_it); // intentional ADL
+            }
+
+            _STL_VERIFY(_Last._Key_it - _First._Key_it == _Last._Mapped_it - _First._Mapped_it,
+                "iterators from inconsistent ranges");
+        }
+
+        void _Verify_offset(const difference_type _Off) const noexcept {
+            if constexpr (_Offset_verifiable_v<_KeyIter>) {
+                _Key_it._Verify_offset(_Off);
+            } else {
+                _STL_VERIFY(_Off == 0 || _Key_it != _KeyIter(), "cannot seek value-initialized iterator");
+            }
+
+            if constexpr (_Offset_verifiable_v<_MappedIter>) {
+                _Mapped_it._Verify_offset(_Off);
+            } else {
+                _STL_VERIFY(_Off == 0 || _Mapped_it != _MappedIter(), "cannot seek value-initialized iterator");
+            }
+        }
+
+        _NODISCARD auto _Unwrapped() const
+            requires _Can_unwrap_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>
+        {
+            using _Unwrapped_iterator = _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>;
+            return _Unwrapped_iterator{_STD _Get_unwrapped(_Key_it), _STD _Get_unwrapped(_Mapped_it)};
+        }
+
+        void _Seek_to(const _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>& _Dst)
+            requires _Can_unwrap_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>
+        {
+            _STD _Seek_wrapped(_Key_it, _Dst._Key_iterator());
+            _STD _Seek_wrapped(_Mapped_it, _Dst._Mapped_iterator());
         }
 
     private:
@@ -717,8 +781,10 @@ public:
     }
 
     _NODISCARD_FRIEND bool operator==(const _Derived& _Left, const _Derived& _Right) {
-        return _RANGES equal(_Left._Data.keys, _Right._Data.keys)
-            && _RANGES equal(_Left._Data.values, _Right._Data.values);
+        auto& _Left_base  = static_cast<const _Flat_map_base&>(_Left);
+        auto& _Right_base = static_cast<const _Flat_map_base&>(_Right);
+        return _RANGES equal(_Left_base._Data.keys, _Right_base._Data.keys)
+            && _RANGES equal(_Left_base._Data.values, _Right_base._Data.values);
     }
 
     _NODISCARD_FRIEND auto operator<=>(const _Derived& _Left, const _Derived& _Right) {
@@ -863,15 +929,9 @@ private:
     void _Insert_range(_InputIterator _First, _InputIterator _Last) {
         _Clear_flat_map_scope_guard _Guard{this};
 
+        const auto _Old_distance = static_cast<difference_type>(size());
+
         // Insert the new elements at the end
-        const size_type _Old_size = size();
-        if constexpr (_Is_cpp17_fwd_iter_v<_InputIterator>) {
-            const auto _New_size = static_cast<size_type>(_STD distance(_First, _Last));
-
-            _Data.keys.reserve(_Data.keys.size() + _New_size);
-            _Data.values.reserve(_Data.values.size() + _New_size);
-        }
-
         for (; _First != _Last; ++_First) {
             value_type _Val = *_First;
             _Data.keys.emplace_back(_STD move(_Val.first));
@@ -882,12 +942,12 @@ private:
         auto _Sorted_view = _View_to_mutate();
         if constexpr (_NeedSorting) {
             auto _Sorted_new_elements = _Sorted_view;
-            _Sorted_new_elements.advance(_Old_size);
+            _Sorted_new_elements.advance(_Old_distance);
             _RANGES sort(_Sorted_new_elements, value_compare(_Key_compare));
         }
 
         // Merge the newly inserted elements with the existing elements
-        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_size, value_compare(_Key_compare));
+        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_distance, value_compare(_Key_compare));
 
         if constexpr (_NeedDeduping) {
             _Dedup();
@@ -1285,8 +1345,7 @@ flat_map(from_range_t, _Rng&&, _Compare = _Compare(), _Allocator = _Allocator())
 #else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
 template <_RANGES input_range _Rng, class _Compare = less<_Range_key_type<_Rng>>>
 flat_map(from_range_t, _Rng&&, _Compare = _Compare()) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
-    _Compare, vector<_Range_key_type<_Rng>, allocator<_Range_key_type<_Rng>>>,
-    vector<_Range_mapped_type<_Rng>, allocator<_Range_mapped_type<_Rng>>>>;
+    _Compare, vector<_Range_key_type<_Rng>>, vector<_Range_mapped_type<_Rng>>>;
 
 template <_RANGES input_range _Rng, class _Compare, class _Allocator>
 flat_map(from_range_t, _Rng&&, _Compare, _Allocator) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
@@ -1423,8 +1482,7 @@ flat_multimap(from_range_t, _Rng&&, _Compare = _Compare(), _Allocator = _Allocat
 #else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
 template <_RANGES input_range _Rng, class _Compare = less<_Range_key_type<_Rng>>>
 flat_multimap(from_range_t, _Rng&&, _Compare = _Compare()) -> flat_multimap<_Range_key_type<_Rng>,
-    _Range_mapped_type<_Rng>, _Compare, vector<_Range_key_type<_Rng>, allocator<_Range_key_type<_Rng>>>,
-    vector<_Range_mapped_type<_Rng>, allocator<_Range_mapped_type<_Rng>>>>;
+    _Range_mapped_type<_Rng>, _Compare, vector<_Range_key_type<_Rng>>, vector<_Range_mapped_type<_Rng>>>;
 
 template <_RANGES input_range _Rng, class _Compare, class _Allocator>
 flat_multimap(from_range_t, _Rng&&, _Compare, _Allocator)
