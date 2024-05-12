@@ -903,9 +903,7 @@ namespace {
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
             // With optimizations enabled, compiles into register movement, rather than an actual stack spill.
             // Works around the absence of _mm_cvtsi128_si64 on 32-bit.
-            uint64_t _Tmp[2];
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Cur);
-            return _Tmp[0];
+            return static_cast<_Signed_t>(_Get_v_pos(_Cur, 0));
         }
 
         static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
