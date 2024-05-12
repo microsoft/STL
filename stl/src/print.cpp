@@ -266,4 +266,22 @@ extern "C" {
     }
 }
 
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_print_newline_only_to_unicode_console(
+        _In_ const __std_unicode_console_handle _Console_handle) noexcept {
+    if (_Console_handle == __std_unicode_console_handle::_Invalid) [[unlikely]] {
+        return __std_win_error::_Invalid_parameter;
+    }
+
+    const auto _Actual_console_handle = reinterpret_cast<HANDLE>(_Console_handle);
+
+    const BOOL _Write_result = WriteConsoleW(_Actual_console_handle, L"\n", static_cast<DWORD>(1), nullptr, nullptr);
+
+    if (!_Write_result) [[unlikely]] {
+        return static_cast<__std_win_error>(GetLastError());
+    }
+
+    return __std_win_error::_Success;
+}
+
 } // extern "C"
