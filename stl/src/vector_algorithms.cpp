@@ -901,8 +901,8 @@ namespace {
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
-            // With optimizations enabled, compiles into registers movement, rather than actual stack spill.
-            // Works around _mm_cvtsi128_si64 absence on 32-bit
+            // With optimizations enabled, compiles into register movement, rather than an actual stack spill.
+            // Works around the absence of _mm_cvtsi128_si64 on 32-bit.
             uint64_t _Tmp[2];
             _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Cur);
             return _Tmp[0];
