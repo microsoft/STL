@@ -1114,9 +1114,7 @@ namespace {
         }
 
         static uint64_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-            uint64_t _Array[2];
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
-            return _Array[_H_pos >> 3];
+            return _Minmax_traits_8::_Get_v_pos(_Idx, _H_pos);
         }
 
         static __m128d _Cmp_eq(const __m128d _First, const __m128d _Second) noexcept {
