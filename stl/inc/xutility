@@ -5975,6 +5975,22 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
     }
 }
 
+template <class _Ty>
+using _Auto_vectorize_counter = //
+    conditional_t<sizeof(_Ty) == 8, unsigned long long, //
+        conditional_t<sizeof(_Ty) == 4, unsigned int, //
+            conditional_t<sizeof(_Ty) == 2, unsigned short, //
+                conditional_t<sizeof(_Ty) == 1, unsigned char, void>>>>;
+
+
+// Can we attempt auto vectorization for count?
+template <class _Iter>
+constexpr bool _Can_try_auto_vectorize_count =
+    _Iterator_is_contiguous<_Iter> // The iterator must be contiguous
+    && !_Iterator_is_volatile<_Iter> // volatile iterators do ono auto vectorize
+    && is_fundamental_v<_Iter_value_t<_Iter>> // MSVC only auto vectorizes counting of fundametal types
+    && !is_same_v<_Auto_vectorize_counter<_Iter_value_t<_Iter>>, void>; // Vector element size matches
+
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first matching _Val; choose optimization
@@ -6170,16 +6186,56 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
             }
         }
 #endif // _USE_STD_VECTOR_ALGORITHMS
+        using _Result_type = _Iter_diff_t<_InIt>;
 
-        _Iter_diff_t<_InIt> _Count = 0;
+        if constexpr (_Can_try_auto_vectorize_count<decltype(_UFirst)>) {
+            using _Counter_type = _Auto_vectorize_counter<_Iter_value_t<decltype(_UFirst)>>;
 
-        for (; _UFirst != _ULast; ++_UFirst) {
-            if (*_UFirst == _Val) {
-                ++_Count;
+            if constexpr (sizeof(_Counter_type) >= sizeof(_Result_type)) {
+                _Counter_type _Count = 0;
+
+                for (; _UFirst != _ULast; ++_UFirst) {
+                    if (*_UFirst == _Val) {
+                        ++_Count;
+                    }
+                }
+
+                return static_cast<_Result_type>(_Count);
+            } else {
+                _Result_type _Outer_count                 = 0;
+                constexpr _Counter_type _Max_portion_size = _Max_limit<_Counter_type>();
+
+                while (_UFirst != _ULast) {
+                    _Counter_type _Inner_count = 0;
+                    _Result_type _Portion_size = static_cast<_Result_type>(_ULast - _UFirst);
+                    if (_Portion_size > _Max_portion_size) {
+                        _Portion_size = _Max_portion_size;
+                    }
+
+                    const auto _UStop = _UFirst + _Portion_size;
+
+                    for (; _UFirst != _UStop; ++_UFirst) {
+                        if (*_UFirst == _Val) {
+                            ++_Inner_count;
+                        }
+                    }
+
+                    _Outer_count += _Inner_count;
+                }
+
+                return _Outer_count;
             }
-        }
+        } else {
+            _Result_type _Count = 0;
 
-        return _Count;
+            for (; _UFirst != _ULast; ++_UFirst) {
+                if (*_UFirst == _Val) {
+                    ++_Count;
+                }
+            }
+
+            return _Count;
+        }
     }
 }
 

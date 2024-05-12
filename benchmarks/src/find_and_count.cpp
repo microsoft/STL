@@ -33,12 +33,14 @@ void bm(benchmark::State& state) {
     }
 
     for (auto _ : state) {
+        benchmark::DoNotOptimize(a);
+
         if constexpr (Operation == Op::FindSized) {
             benchmark::DoNotOptimize(ranges::find(a.begin(), a.end(), T{'1'}));
         } else if constexpr (Operation == Op::FindUnsized) {
             benchmark::DoNotOptimize(ranges::find(a.begin(), unreachable_sentinel, T{'1'}));
         } else if constexpr (Operation == Op::Count) {
-            benchmark::DoNotOptimize(ranges::count(a.begin(), a.end(), T{'1'}));
+            benchmark::DoNotOptimize(count(a.begin(), a.end(), T{'1'}));
         }
     }
 }
