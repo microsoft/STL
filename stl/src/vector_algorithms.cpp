@@ -1110,7 +1110,7 @@ namespace {
         }
 
         static uint64_t _Get_any_u(const __m128i _Cur) noexcept {
-            return _Minmax_traits_8::_Get_any(_Cur);
+            return _Minmax_traits_8::_Get_v_pos(_Cur, 0);
         }
 
         static uint64_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
