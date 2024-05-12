@@ -6203,7 +6203,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
                 return static_cast<_Result_type>(_Count);
             } else {
                 _Result_type _Outer_count                 = 0;
-                constexpr _Counter_type _Max_portion_size = _Max_limit<_Counter_type>();
+                constexpr _Counter_type _Max_portion_size = _Counter_type{1} << (sizeof(_Counter_type) * 8 - 1);
 
                 while (_UFirst != _ULast) {
                     _Counter_type _Inner_count = 0;
