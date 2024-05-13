@@ -1832,9 +1832,8 @@ namespace {
                                 _Traits::_Cmp_eq(_H_min, _Cur_vals_min); // Mask of all elems eq to min
                             unsigned long _Mask = _Traits::_Mask(_Traits::_Mask_cast(_Eq_mask));
                             // Indices of minimum elements or the greatest index if none
-                            const auto _All_max = _Traits::_All_ones();
                             const auto _Idx_min_val =
-                                _Traits::_Blend(_All_max, _Cur_idx_min, _Traits::_Mask_cast(_Eq_mask));
+                                _Traits::_Blend(_Traits::_All_ones(), _Cur_idx_min, _Traits::_Mask_cast(_Eq_mask));
                             auto _Idx_min = _Traits::_H_min_u(_Idx_min_val); // The smallest indices
                             // Select the smallest vertical indices from the smallest element mask
                             _Mask &= _Traits::_Mask(_Traits::_Cmp_eq_idx(_Idx_min, _Idx_min_val));
@@ -1879,9 +1878,8 @@ namespace {
                             } else {
                                 // Looking for the first occurrence of maximum
                                 // Indices of maximum elements or the greatest index if none
-                                const auto _All_max = _Traits::_All_ones();
                                 const auto _Idx_max_val =
-                                    _Traits::_Blend(_All_max, _Cur_idx_max, _Traits::_Mask_cast(_Eq_mask));
+                                    _Traits::_Blend(_All_max, _Traits::_All_ones(), _Traits::_Mask_cast(_Eq_mask));
                                 const auto _Idx_max = _Traits::_H_min_u(_Idx_max_val); // The smallest indices
                                 // Select the smallest vertical indices from the largest element mask
                                 _Mask &= _Traits::_Mask(_Traits::_Cmp_eq_idx(_Idx_max, _Idx_max_val));
