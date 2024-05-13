@@ -4,17 +4,11 @@
 #include <cassert>
 #include <utility>
 
-#if _HAS_CXX20
-#define TEST_CONSTEXPR20 constexpr
-#else
-#define TEST_CONSTEXPR20 inline
-#endif
-
 // Test GH-4597 "<utility>: Side effects in self-swaps of pair are skipped"
 struct swap_counter {
     unsigned int* pcnt_ = nullptr;
 
-    friend TEST_CONSTEXPR20 void swap(swap_counter& lhs, swap_counter& rhs) noexcept {
+    friend _CONSTEXPR20 void swap(swap_counter& lhs, swap_counter& rhs) noexcept {
         std::swap(lhs.pcnt_, rhs.pcnt_);
         if (lhs.pcnt_ != nullptr) {
             ++(*lhs.pcnt_);
@@ -24,13 +18,13 @@ struct swap_counter {
         }
     }
 
-    TEST_CONSTEXPR20 bool operator==(unsigned int x) const {
+    _CONSTEXPR20 bool operator==(unsigned int x) const {
         return *pcnt_ == x;
     }
 };
 
 
-TEST_CONSTEXPR20 bool test_gh_4595() {
+_CONSTEXPR20 bool test_gh_4595() {
     auto res1 = [] {
         unsigned int cnt{};
         std::pair<swap_counter, int> pr{swap_counter{&cnt}, 0};
