@@ -51,7 +51,24 @@ _CONSTEXPR20 bool test_gh_4595() {
         return (c1 == 1u) && (c2 == 3u) && (p1.first == 3u) && (p1.second == 3) && (p2.first == 1u) && (p2.second == 1);
     }();
 
-    return res1 && res2 && res3;
+    auto res4 = true;
+
+#if _HAS_CXX23
+    res4 = [] {
+        unsigned int c1{};
+        unsigned int c2{2};
+        int i1  = 1;
+        int i2  = 3;
+        auto s1 = swap_counter{&c1};
+        auto s2 = swap_counter{&c2};
+        const std::pair<swap_counter&, int&> p1{s1, i1};
+        const std::pair<swap_counter&, int&> p2{s2, i2};
+        p1.swap(p2);
+        return (c1 == 1u) && (c2 == 3u) && (p1.first == 3u) && (p1.second == 3) && (p2.first == 1u) && (p2.second == 1);
+    }();
+
+#endif
+    return res1 && res2 && res3 && res4;
 }
 
 int main() {
