@@ -4,7 +4,6 @@
 #include <cassert>
 #include <utility>
 
-// Test GH-4597 "<utility>: Side effects in self-swaps of pair are skipped"
 struct swap_counter {
     unsigned int* pcnt_ = nullptr;
 
@@ -66,15 +65,13 @@ _CONSTEXPR20 bool test_gh_4595() {
         p1.swap(p2);
         return (c1 == 1u) && (c2 == 3u) && (p1.first == 3u) && (p1.second == 3) && (p2.first == 1u) && (p2.second == 1);
     }();
-
-#endif
+#endif // _HAS_CXX23
     return res1 && res2 && res3 && res4;
 }
 
 int main() {
 #if _HAS_CXX20
     static_assert(test_gh_4595());
-#else
+#endif // _HAS_CXX20
     assert(test_gh_4595());
-#endif
 }
