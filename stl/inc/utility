@@ -442,7 +442,7 @@ struct pair { // store a pair of values
         _Is_nothrow_swappable<_Ty1>::value && _Is_nothrow_swappable<_Ty2>::value) {
         using _STD swap;
         swap(first, _Right.first); // intentional ADL
-        swap(second, _Right.second); // intentional ADL   
+        swap(second, _Right.second); // intentional ADL
     }
 
 #if _HAS_CXX23

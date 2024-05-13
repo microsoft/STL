@@ -9,10 +9,12 @@ struct swap_counter {
 
     friend constexpr void swap(swap_counter& lhs, swap_counter& rhs) noexcept {
         std::swap(lhs.pcnt_, rhs.pcnt_);
-        if (lhs.pcnt_ != nullptr)
+        if (lhs.pcnt_ != nullptr) {
             ++(*lhs.pcnt_);
-        if (rhs.pcnt_ != nullptr)
+        }
+        if (rhs.pcnt_ != nullptr) {
             ++(*rhs.pcnt_);
+        }
     }
 
     constexpr bool operator==(unsigned int x) const {
@@ -48,7 +50,8 @@ void test_gh_4595() {
             std::pair<swap_counter, int> p1{swap_counter{&c1}, 1};
             std::pair<swap_counter, int> p2{swap_counter{&c2}, 3};
             p1.swap(p2);
-            return (c1 == 1u) && (c2==3u) && (p1.first == 3u) && (p1.second == 3) && (p2.first == 1u) && (p2.second == 1);
+            return (c1 == 1u) && (c2 == 3u) && (p1.first == 3u) && (p1.second == 3) && (p2.first == 1u)
+                && (p2.second == 1);
         }());
     }
 }
