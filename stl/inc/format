@@ -4520,7 +4520,9 @@ public:
 
 private:
     template <_RANGES input_range _Range, class _FormatContext>
-    _FormatContext::iterator _Format(_Range&&, _FormatContext&) const; // not defined
+    _FormatContext::iterator _Format(_Range&&, _FormatContext&) const {
+        _Throw_format_error("Unsupported 'basic_format_context'.");
+    }
 
     template <_RANGES input_range _Range, class _FormatContext>
         requires _Is_specialization_v<typename _FormatContext::iterator, back_insert_iterator>

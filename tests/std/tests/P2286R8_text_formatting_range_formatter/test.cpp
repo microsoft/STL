@@ -402,6 +402,19 @@ constexpr bool check_other_functions() {
     return true;
 }
 
+template <class CharT>
+void check_range_formatter_with_arbitrary_context( // COMPILE-ONLY
+    basic_format_parse_context<CharT>& parse_ctx, basic_format_context<CharT*, CharT>& format_ctx) {
+    range_formatter<int, CharT> fmt;
+    fmt.parse(parse_ctx);
+    fmt.format(array{0}, format_ctx);
+}
+
+template void check_range_formatter_with_arbitrary_context<char>(
+    format_parse_context&, basic_format_context<char*, char>&);
+template void check_range_formatter_with_arbitrary_context<wchar_t>(
+    wformat_parse_context&, basic_format_context<wchar_t*, wchar_t>&);
+
 template <class T, class CharT>
 concept CanInstantiateRangeFormatter = requires { typename range_formatter<T, CharT>; };
 
