@@ -55,8 +55,8 @@ so we can determine whether the license is compatible and whether any other step
 # Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for more information.
 
 [label:"good first issue"]:
    https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
