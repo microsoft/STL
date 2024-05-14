@@ -379,7 +379,7 @@ struct range_formatter_check_instantiator {
 };
 
 template <class CharT>
-constexpr bool check_setters() {
+constexpr bool check_other_functions() {
     using Sv = basic_string_view<CharT>;
     range_formatter<int, CharT> fmt;
 
@@ -423,10 +423,10 @@ consteval bool check_constraints() {
 int main() {
     test_in<range_formatter_check_instantiator, const int>();
 
-    static_assert(check_setters<char>());
-    static_assert(check_setters<wchar_t>());
-    check_setters<char>();
-    check_setters<wchar_t>();
+    static_assert(check_other_functions<char>());
+    static_assert(check_other_functions<wchar_t>());
+    check_other_functions<char>();
+    check_other_functions<wchar_t>();
 
     static_assert(check_constraints<char>());
     static_assert(check_constraints<wchar_t>());
