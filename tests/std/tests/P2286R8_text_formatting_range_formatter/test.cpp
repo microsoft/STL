@@ -326,6 +326,7 @@ void check_incorrect_use_of_range_formatter() {
         fmt(STR("{:nn}"), Range(vals));
         fmt(STR("{:x:}"), Range(vals));
         fmt(STR("{:x}"), Range(vals));
+        fmt(STR("{:mx}"), Range(vals));
         fmt(STR("{:ns}"), Range(vals));
         fmt(STR("{:n?s}"), Range(vals));
         fmt(STR("{:m}"), Range(vals));

@@ -4413,9 +4413,7 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
     case 'm':
     case 's':
         _Callbacks._On_type(_Maybe_type);
-        if (++_Begin == _End) {
-            return _Begin;
-        }
+        ++_Begin;
     }
 
     return _Begin;
