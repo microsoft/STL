@@ -426,14 +426,14 @@ auto last_known_good_mismatch(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt las
 }
 
 template <class FwdIt>
-bool last_known_good_lex_compare(pair<FwdIt, FwdIt> mismatch, FwdIt last1, FwdIt last2) {
-    if (mismatch.second == last2) {
+bool last_known_good_lex_compare(pair<FwdIt, FwdIt> expected_mismatch, FwdIt last1, FwdIt last2) {
+    if (expected_mismatch.second == last2) {
         return false;
-    } else if (mismatch.first == last1) {
+    } else if (expected_mismatch.first == last1) {
         return true;
-    } else if (*mismatch.first < *mismatch.second) {
+    } else if (*expected_mismatch.first < *expected_mismatch.second) {
         return true;
-    } else if (*mismatch.second < *mismatch.first) {
+    } else if (*expected_mismatch.second < *expected_mismatch.first) {
         return false;
     } else {
         assert(false);
@@ -443,17 +443,17 @@ bool last_known_good_lex_compare(pair<FwdIt, FwdIt> mismatch, FwdIt last1, FwdIt
 
 #if _HAS_CXX20
 template <class FwdIt>
-auto last_known_good_lex_compare_3way(pair<FwdIt, FwdIt> mismatch, FwdIt last1, FwdIt last2) {
-    if (mismatch.second == last2) {
-        if (mismatch.first == last1) {
+auto last_known_good_lex_compare_3way(pair<FwdIt, FwdIt> expected_mismatch, FwdIt last1, FwdIt last2) {
+    if (expected_mismatch.second == last2) {
+        if (expected_mismatch.first == last1) {
             return strong_ordering::equal;
         } else {
             return strong_ordering::greater;
         }
-    } else if (mismatch.first == last1) {
+    } else if (expected_mismatch.first == last1) {
         return strong_ordering::less;
     } else {
-        auto order = *mismatch.first <=> *mismatch.second;
+        auto order = *expected_mismatch.first <=> *expected_mismatch.second;
         assert(order != 0);
         return order;
     }
