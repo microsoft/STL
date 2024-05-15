@@ -4470,10 +4470,9 @@ public:
                                     "tuple_size_v<T> is 2.");
 
             } else {
-                set_separator(_STATICALLY_WIDEN(_CharT, ", "));
                 set_brackets(_STATICALLY_WIDEN(_CharT, "{"), _STATICALLY_WIDEN(_CharT, "}"));
-                _Underlying.set_separator(_STATICALLY_WIDEN(_CharT, ": "));
                 _Underlying.set_brackets({}, {});
+                _Underlying.set_separator(_STATICALLY_WIDEN(_CharT, ": "));
             }
             [[fallthrough]];
 
