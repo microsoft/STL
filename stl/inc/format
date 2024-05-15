@@ -4463,6 +4463,11 @@ public:
             }
         }
 
+        _It = _Underlying.parse(_Ctx)._Unwrapped();
+        if (_It != _Ctx._Unchecked_end() && *_It != '}') {
+            _Throw_format_error("Missing '}' in format string.");
+        }
+
         switch (_Specs._Type) {
         case 'm':
             if constexpr (!_Is_two_tuple<_Ty>) {
@@ -4494,11 +4499,6 @@ public:
                 _Throw_format_error(
                     "Range-types 's' and '?s' cannot be combined with 'n' option and range-underlying-spec.");
             }
-        }
-
-        _It = _Underlying.parse(_Ctx)._Unwrapped();
-        if (_It != _Ctx._Unchecked_end() && *_It != '}') {
-            _Throw_format_error("Missing '}' in format string.");
         }
 
         if (_Specs._No_brackets) {

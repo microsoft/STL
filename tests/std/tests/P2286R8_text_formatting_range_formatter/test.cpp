@@ -128,13 +128,18 @@ struct Debugable {};
 template <class CharT>
 struct std::formatter<Debugable, CharT> {
 public:
-    constexpr void set_debug_format() noexcept {
+    constexpr void set_debug_format() {
+        if (!parse_called) {
+            throw format_error{"Incorrect call to 'set_debug_format'; did you call 'parse' first?"};
+        }
+
         debug = true;
     }
 
     template <class ParseContext>
     constexpr auto parse(ParseContext& ctx) {
-        auto it = ctx.begin();
+        parse_called = true;
+        auto it      = ctx.begin();
         if (it == ctx.end() || *it == '}') {
             return it;
         }
@@ -157,7 +162,8 @@ public:
     }
 
 private:
-    bool debug = false;
+    bool debug        = false;
+    bool parse_called = false;
 };
 
 template <template <class> class FmtFn, class CharT, class Range>
