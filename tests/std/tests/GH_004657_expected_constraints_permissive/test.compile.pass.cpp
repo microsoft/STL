@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <expected>
+// <locale> provides several explicit template instantiation definitions that might break constraints checking
+// and hence cause errors in /permissive modes.
+#include <locale>
 #include <string>
 #include <utility>
 
