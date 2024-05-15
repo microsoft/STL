@@ -433,10 +433,8 @@ bool last_known_good_lex_compare(pair<FwdIt, FwdIt> expected_mismatch, FwdIt las
         return true;
     } else if (*expected_mismatch.first < *expected_mismatch.second) {
         return true;
-    } else if (*expected_mismatch.second < *expected_mismatch.first) {
-        return false;
     } else {
-        assert(false);
+        assert(*expected_mismatch.second < *expected_mismatch.first);
         return false;
     }
 }
