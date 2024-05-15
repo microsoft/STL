@@ -91,7 +91,7 @@ public:
         requires is_swappable_v<_Err>
 #else // ^^^ no workaround / workaround vvv
         requires is_swappable<_Err>::value
-#endif // ^^ workaround ^^^
+#endif // ^^^ workaround ^^^
     {
         _Left.swap(_Right);
     }
