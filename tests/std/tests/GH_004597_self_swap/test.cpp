@@ -8,17 +8,15 @@ struct swap_counter {
     unsigned int* pcnt_ = nullptr;
 
     friend _CONSTEXPR20 void swap(swap_counter& lhs, swap_counter& rhs) noexcept {
+        assert(lhs.pcnt_ != nullptr);
+        assert(rhs.pcnt_ != nullptr);
         std::swap(lhs.pcnt_, rhs.pcnt_);
-        if (lhs.pcnt_ != nullptr) {
-            ++*lhs.pcnt_;
-        }
-
-        if (rhs.pcnt_ != nullptr) {
-            ++*rhs.pcnt_;
-        }
+        ++*lhs.pcnt_;
+        ++*rhs.pcnt_;
     }
 
     _CONSTEXPR20 bool operator==(unsigned int x) const {
+        assert(pcnt_ != nullptr);
         return *pcnt_ == x;
     }
 };
