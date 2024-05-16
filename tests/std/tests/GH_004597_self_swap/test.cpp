@@ -26,36 +26,43 @@ struct swap_counter {
 
 // Test GH-4597 "<utility>: Side effects in self-swaps of pair are skipped"
 _CONSTEXPR20 bool test_gh_4597() {
-    auto res1 = [] {
+    {
         unsigned int cnt{};
         std::pair<swap_counter, int> pr{swap_counter{&cnt}, 0};
         pr.swap(pr);
-        return cnt == 2u && pr.first == 2u && pr.second == 0;
-    }();
+        assert(cnt == 2u);
+        assert(pr.first == 2u);
+        assert(pr.second == 0);
+    }
 
-
-    auto res2 = [] {
+    {
         unsigned int cnt{};
         std::pair<swap_counter, int> p1{swap_counter{&cnt}, 0};
         std::pair<swap_counter, int> p2{swap_counter{&cnt}, 1};
         p1.swap(p2);
-        return cnt == 2u && p1.first == 2u && p1.second == 1 && p2.first == 2u && p2.second == 0;
-    }();
+        assert(cnt == 2u);
+        assert(p1.first == 2u);
+        assert(p1.second == 1);
+        assert(p2.first == 2u);
+        assert(p2.second == 0);
+    }
 
-
-    auto res3 = [] {
+    {
         unsigned int c1{};
         unsigned int c2{2};
         std::pair<swap_counter, int> p1{swap_counter{&c1}, 1};
         std::pair<swap_counter, int> p2{swap_counter{&c2}, 3};
         p1.swap(p2);
-        return c1 == 1u && c2 == 3u && p1.first == 3u && p1.second == 3 && p2.first == 1u && p2.second == 1;
-    }();
-
-    auto res4 = true;
+        assert(c1 == 1u);
+        assert(c2 == 3u);
+        assert(p1.first == 3u);
+        assert(p1.second == 3);
+        assert(p2.first == 1u);
+        assert(p2.second == 1);
+    }
 
 #if _HAS_CXX23
-    res4 = [] {
+    {
         unsigned int c1{};
         unsigned int c2{2};
         int i1 = 1;
@@ -65,10 +72,16 @@ _CONSTEXPR20 bool test_gh_4597() {
         const std::pair<swap_counter&, int&> p1{s1, i1};
         const std::pair<swap_counter&, int&> p2{s2, i2};
         p1.swap(p2);
-        return c1 == 1u && c2 == 3u && p1.first == 3u && p1.second == 3 && p2.first == 1u && p2.second == 1;
-    }();
+        assert(c1 == 1u);
+        assert(c2 == 3u);
+        assert(p1.first == 3u);
+        assert(p1.second == 3);
+        assert(p2.first == 1u);
+        assert(p2.second == 1);
+    }
 #endif // _HAS_CXX23
-    return res1 && res2 && res3 && res4;
+
+    return true;
 }
 
 int main() {
