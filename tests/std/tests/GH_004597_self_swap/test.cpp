@@ -58,10 +58,10 @@ _CONSTEXPR20 bool test_gh_4597() {
     res4 = [] {
         unsigned int c1{};
         unsigned int c2{2};
-        int i1  = 1;
-        int i2  = 3;
-        auto s1 = swap_counter{&c1};
-        auto s2 = swap_counter{&c2};
+        int i1 = 1;
+        int i2 = 3;
+        swap_counter s1{&c1};
+        swap_counter s2{&c2};
         const std::pair<swap_counter&, int&> p1{s1, i1};
         const std::pair<swap_counter&, int&> p2{s2, i2};
         p1.swap(p2);
