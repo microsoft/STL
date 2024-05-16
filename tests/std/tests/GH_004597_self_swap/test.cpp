@@ -10,10 +10,10 @@ struct swap_counter {
     friend _CONSTEXPR20 void swap(swap_counter& lhs, swap_counter& rhs) noexcept {
         std::swap(lhs.pcnt_, rhs.pcnt_);
         if (lhs.pcnt_ != nullptr) {
-            ++(*lhs.pcnt_);
+            ++*lhs.pcnt_;
         }
         if (rhs.pcnt_ != nullptr) {
-            ++(*rhs.pcnt_);
+            ++*rhs.pcnt_;
         }
     }
 
@@ -28,7 +28,7 @@ _CONSTEXPR20 bool test_gh_4595() {
         unsigned int cnt{};
         std::pair<swap_counter, int> pr{swap_counter{&cnt}, 0};
         pr.swap(pr);
-        return (cnt == 2u) && (pr.first == 2u) && (pr.second == 0);
+        return cnt == 2u && pr.first == 2u && pr.second == 0;
     }();
 
 
@@ -37,7 +37,7 @@ _CONSTEXPR20 bool test_gh_4595() {
         std::pair<swap_counter, int> p1{swap_counter{&cnt}, 0};
         std::pair<swap_counter, int> p2{swap_counter{&cnt}, 1};
         p1.swap(p2);
-        return (cnt == 2u) && (p1.first == 2u) && (p1.second == 1) && (p2.first == 2u) && (p2.second == 0);
+        return cnt == 2u && p1.first == 2u && p1.second == 1 && p2.first == 2u && p2.second == 0;
     }();
 
 
@@ -47,7 +47,7 @@ _CONSTEXPR20 bool test_gh_4595() {
         std::pair<swap_counter, int> p1{swap_counter{&c1}, 1};
         std::pair<swap_counter, int> p2{swap_counter{&c2}, 3};
         p1.swap(p2);
-        return (c1 == 1u) && (c2 == 3u) && (p1.first == 3u) && (p1.second == 3) && (p2.first == 1u) && (p2.second == 1);
+        return c1 == 1u && c2 == 3u && p1.first == 3u && p1.second == 3 && p2.first == 1u && p2.second == 1;
     }();
 
     auto res4 = true;
@@ -63,7 +63,7 @@ _CONSTEXPR20 bool test_gh_4595() {
         const std::pair<swap_counter&, int&> p1{s1, i1};
         const std::pair<swap_counter&, int&> p2{s2, i2};
         p1.swap(p2);
-        return (c1 == 1u) && (c2 == 3u) && (p1.first == 3u) && (p1.second == 3) && (p2.first == 1u) && (p2.second == 1);
+        return c1 == 1u && c2 == 3u && p1.first == 3u && p1.second == 3 && p2.first == 1u && p2.second == 1;
     }();
 #endif // _HAS_CXX23
     return res1 && res2 && res3 && res4;
