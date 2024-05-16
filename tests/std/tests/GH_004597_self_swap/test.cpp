@@ -12,6 +12,7 @@ struct swap_counter {
         if (lhs.pcnt_ != nullptr) {
             ++*lhs.pcnt_;
         }
+
         if (rhs.pcnt_ != nullptr) {
             ++*rhs.pcnt_;
         }
