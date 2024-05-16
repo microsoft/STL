@@ -24,7 +24,8 @@ struct swap_counter {
 };
 
 
-_CONSTEXPR20 bool test_gh_4595() {
+// Test GH-4597 "<utility>: Side effects in self-swaps of pair are skipped"
+_CONSTEXPR20 bool test_gh_4597() {
     auto res1 = [] {
         unsigned int cnt{};
         std::pair<swap_counter, int> pr{swap_counter{&cnt}, 0};
@@ -72,7 +73,7 @@ _CONSTEXPR20 bool test_gh_4595() {
 
 int main() {
 #if _HAS_CXX20
-    static_assert(test_gh_4595());
+    static_assert(test_gh_4597());
 #endif // _HAS_CXX20
-    assert(test_gh_4595());
+    assert(test_gh_4597());
 }
