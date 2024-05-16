@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <format>
 #include <iterator>
 #include <limits>
@@ -315,12 +316,13 @@ struct NeedMagicWord {};
 
 template <class CharT>
 struct std::formatter<NeedMagicWord, CharT> {
-    constexpr auto parse(basic_format_parse_context<CharT> const& ctx) {
+    constexpr auto parse(const basic_format_parse_context<CharT>& ctx) {
         constexpr basic_string_view<CharT> magic_word{TYPED_LITERAL(CharT, "narf")};
         auto [i, j] = ranges::mismatch(ctx, magic_word);
         if (j != magic_word.end()) {
             throw format_error{"you didn't say the magic word!"};
         }
+
         if (i != ctx.end() && *i != '}') {
             throw format_error{"the whole spec must be the magic word!"};
         }
