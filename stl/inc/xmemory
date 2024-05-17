@@ -17,6 +17,10 @@
 #include <tuple>
 #endif // _HAS_CXX20
 
+#ifdef _LEGACY_CODE_ASSUMES_XMEMORY_INCLUDES_LIMITS
+#include <limits>
+#endif
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
