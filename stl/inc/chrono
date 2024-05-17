@@ -4790,7 +4790,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (!_STD _In_range<int>(_Idx)) {
+        if (!_STD in_range<int>(_Idx)) {
             _Throw_format_error("Dynamic width or precision index too large.");
         }
 

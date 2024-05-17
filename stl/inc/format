@@ -1659,7 +1659,7 @@ template <class _Handler, class _FormatArg>
 _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler{}, _Arg);
-    if (!_STD _In_range<int>(_Val)) {
+    if (!_STD in_range<int>(_Val)) {
         _Throw_format_error("Number is too big.");
     }
 
@@ -1739,7 +1739,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (!_STD _In_range<int>(_Idx)) {
+        if (!_STD in_range<int>(_Idx)) {
             _Throw_format_error("Dynamic width or precision index too large.");
         }
 
