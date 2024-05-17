@@ -9,7 +9,6 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <__msvc_bit_utils.hpp>
 #include <__msvc_sanitizer_annotate_container.hpp>
-#include <limits>
 #include <xmemory>
 
 #if _HAS_CXX17
