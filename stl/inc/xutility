@@ -5955,7 +5955,7 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
                 }
             }
         } else {
-            constexpr _Elem _Max = static_cast<_Elem>(~_Elem{0});
+            constexpr _Elem _Max = _STD _Max_limit<_Elem>();
 
             if constexpr (is_unsigned_v<_Ty>) {
                 // unsigned _Elem, unsigned _Ty
