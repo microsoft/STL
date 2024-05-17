@@ -1416,6 +1416,19 @@ struct common_type<_Unsigned128, _Signed128> {
 };
 
 template <class _Ty>
+_NODISCARD constexpr _Ty _Min_limit() noexcept;
+
+template <>
+_NODISCARD constexpr _Unsigned128 _Min_limit<_Unsigned128>() noexcept {
+    return 0;
+}
+
+template <>
+_NODISCARD constexpr _Signed128 _Min_limit<_Signed128>() noexcept {
+    return _Signed128{0ull, 1ull << 63};
+}
+
+template <class _Ty>
 _NODISCARD constexpr _Ty _Max_limit() noexcept;
 
 template <>
