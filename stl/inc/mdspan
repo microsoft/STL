@@ -212,7 +212,7 @@ public:
         requires (sizeof...(_OtherExtents) == rank())
               && ((_OtherExtents == dynamic_extent || _Extents == dynamic_extent || _OtherExtents == _Extents) && ...)
     constexpr explicit(((_Extents != dynamic_extent && _OtherExtents == dynamic_extent) || ...)
-                       || _Max_limit<index_type>() < _Max_limit<_OtherIndexType>())
+                       || _STD _Max_limit<index_type>() < _STD _Max_limit<_OtherIndexType>())
         extents(const extents<_OtherIndexType, _OtherExtents...>& _Other) noexcept
         : extents(_Other, make_index_sequence<rank_dynamic()>{}) {}
 
