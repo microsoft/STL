@@ -9,6 +9,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstdint>
 #include <cstdlib>
+#include <limits> // TRANSITION, see GH-4634: Lots of user code assumes that <xmemory> drags in <limits>
 #include <new>
 #include <xatomic.h>
 #include <xutility>
@@ -16,10 +17,6 @@
 #if _HAS_CXX20
 #include <tuple>
 #endif // _HAS_CXX20
-
-#ifdef _LEGACY_CODE_ASSUMES_XMEMORY_INCLUDES_LIMITS
-#include <limits>
-#endif
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
