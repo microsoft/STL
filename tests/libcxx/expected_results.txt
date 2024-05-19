@@ -98,9 +98,6 @@ std/utilities/function.objects/range.cmp/not_equal_to.pass.cpp FAIL
 # libc++ doesn't implement P2588R3 barrier's Phase Completion Guarantees
 std/language.support/support.limits/support.limits.general/barrier.version.compile.pass.cpp FAIL
 
-# libc++ doesn't implement P2602R2 "Poison Pills Are Too Toxic"
-std/ranges/range.access/size.pass.cpp FAIL
-
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
 
