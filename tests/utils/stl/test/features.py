@@ -24,6 +24,7 @@ def hasLocale(loc):
 def getDefaultFeatures(config, litConfig):
     DEFAULT_FEATURES = [
         Feature(name='has-64-bit-atomics'),
+        Feature(name='has-1024-bit-atomics'),
         Feature(name='msvc'),
         Feature(name='windows'),
     ]

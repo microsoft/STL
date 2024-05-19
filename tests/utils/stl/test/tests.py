@@ -322,9 +322,6 @@ class STLTest(Test):
             self._addCustomFeature('MT')
             self._addCustomFeature('static_CRT')
 
-        self._addCustomFeature('non-lockfree-atomics') # we always support non-lockfree-atomics
-        self._addCustomFeature('is-lockfree-runtime-function') # Ditto
-
         # clang doesn't know how to link in the VS version of the asan runtime automatically
         if 'asan' in self.config.available_features and 'clang' in self.config.available_features:
             self.linkFlags.append("/INFERASANLIBS")
