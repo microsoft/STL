@@ -30,9 +30,6 @@ std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:2 FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.copy/uninitialized_copy.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_move.pass.cpp FAIL
 
-# LLVM-79783: [libc++][test] array/size_and_alignment.compile.pass.cpp includes non-Standard <__type_traits/datasizeof.h>
-std/containers/sequences/array/size_and_alignment.compile.pass.cpp FAIL
-
 # LLVM-83734: [libc++][test] Don't include test_format_context.h in parse.pass.cpp
 std/containers/sequences/vector.bool/vector.bool.fmt/parse.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.id/parse.pass.cpp FAIL
