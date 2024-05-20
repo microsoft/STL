@@ -3961,6 +3961,13 @@ _NODISCARD size_t formatted_size(const locale& _Loc, const wformat_string<_Types
 _FMT_P2286_END
 
 #if _HAS_CXX23
+template <class _CharT>
+_NODISCARD int _Measure_display_width(const basic_string_view<_CharT> _Value) {
+    int _Width = -1;
+    (void) _Measure_string_prefix(_Value, _Width);
+    return _Width;
+}
+
 enum class _Fmt_tuple_type : uint8_t { _None, _Key_value, _No_brackets };
 
 template <class _CharT>
@@ -4127,8 +4134,9 @@ protected:
         }(index_sequence_for<_ArgTypes...>{});
         _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Tmp_ctx.out());
 
-        return _STD _Write_aligned(_Fmt_ctx.out(), static_cast<int>(_Tmp_buf.size()), _Format_specs, _Fmt_align::_Left,
-            [&](typename _FormatContext::iterator _Out) {
+        const int _Width = _Measure_display_width<_CharT>(_Tmp_buf);
+        return _STD _Write_aligned(
+            _Fmt_ctx.out(), _Width, _Format_specs, _Fmt_align::_Left, [&](typename _FormatContext::iterator _Out) {
                 return _STD _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Tmp_buf});
             });
     }
