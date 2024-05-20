@@ -50,7 +50,6 @@ _EMIT_STL_WARNING(STL4038, "The contents of <format> are available only with C++
 #include <concepts>
 #include <cstdint>
 #include <iterator>
-#include <limits>
 #include <locale>
 #include <stdexcept>
 #include <xcall_once.h>
@@ -936,7 +935,7 @@ _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
     const _CharT* _First, const _CharT* _Last, unsigned int& _Value) {
     _STL_INTERNAL_CHECK(_First != _Last && '0' <= *_First && *_First <= '9');
 
-    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
+    constexpr auto _Max_int = static_cast<unsigned int>(_STD _Max_limit<int>());
     constexpr auto _Big_int = _Max_int / 10u;
 
     _Value = 0;
@@ -1660,7 +1659,7 @@ template <class _Handler, class _FormatArg>
 _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler{}, _Arg);
-    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max)())) {
+    if (!_STD in_range<int>(_Val)) {
         _Throw_format_error("Number is too big.");
     }
 
@@ -1740,7 +1739,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+        if (!_STD in_range<int>(_Idx)) {
             _Throw_format_error("Dynamic width or precision index too large.");
         }
 
@@ -1823,7 +1822,7 @@ public:
 
     template <class _CharT>
     constexpr void _On_type(_CharT _Type) {
-        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+        if (_Type < 0 || _Type > _STD _Max_limit<signed char>()) {
             _Throw_format_error("Invalid type specification.");
         }
         const char _Narrow_type = static_cast<char>(_Type);
@@ -3350,7 +3349,7 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     _Measure_string_prefix_iterator<_CharT> _Pfx_iter(_First, _Last);
     int _Estimated_width = 0; // the estimated width of [_First, _Pfx_iter)
 
-    constexpr auto _Max_int = (numeric_limits<int>::max)();
+    constexpr auto _Max_int = _STD _Max_limit<int>();
 
     while (_Pfx_iter != default_sentinel) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {

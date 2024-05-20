@@ -7,6 +7,7 @@
 #define _XLOCNUM_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <cfloat>
 #include <climits>
 #include <cmath>
 #include <cstdio>

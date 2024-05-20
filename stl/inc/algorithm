@@ -2219,7 +2219,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
         return _First;
     }
 
-    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>((numeric_limits<_Iter_diff_t<_FwdIt>>::max)())) {
+    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>(_STD _Max_limit<_Iter_diff_t<_FwdIt>>())) {
         // if the number of _Vals searched for is larger than the longest possible sequence, we can't find it
         return _Last;
     }

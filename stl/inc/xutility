@@ -5938,9 +5938,8 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
         if constexpr (is_same_v<_Elem, bool>) {
             return _Val == true || _Val == false;
         } else if constexpr (is_signed_v<_Elem>) {
-            // use instead of numeric_limits::min/max; avoid <limits> dependency
-            constexpr _Elem _Min = static_cast<_Elem>(_Elem{1} << (sizeof(_Elem) * CHAR_BIT - 1));
-            constexpr _Elem _Max = static_cast<_Elem>(~_Min);
+            constexpr _Elem _Min = _STD _Min_limit<_Elem>();
+            constexpr _Elem _Max = _STD _Max_limit<_Elem>();
 
             if constexpr (is_signed_v<_Ty>) {
                 // signed _Elem, signed _Ty
@@ -5956,7 +5955,7 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
                 }
             }
         } else {
-            constexpr _Elem _Max = static_cast<_Elem>(~_Elem{0});
+            constexpr _Elem _Max = _STD _Max_limit<_Elem>();
 
             if constexpr (is_unsigned_v<_Ty>) {
                 // unsigned _Elem, unsigned _Ty
@@ -7387,8 +7386,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 #endif // defined(__clang__)
     {
         if constexpr (!_Signed_integer_like<_Int>) {
-            // use instead of numeric_limits::max; avoid <limits> dependency
-            constexpr auto _UInt_max = static_cast<_Int>(-1);
+            constexpr auto _UInt_max = _STD _Max_limit<_Int>();
             const bool _Overflow     = _Left != 0 && _Right > _UInt_max / _Left;
             if (!_Overflow) {
                 _Out = static_cast<_Int>(_Left * _Right);
@@ -7417,8 +7415,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
                 return false;
             }
 
-            // use instead of numeric_limits::max; avoid <limits> dependency
-            constexpr auto _Int_max = static_cast<_UInt>(static_cast<_UInt>(-1) / 2);
+            constexpr auto _Int_max = static_cast<_UInt>(_STD _Max_limit<_Int>());
             if (_Negative) {
                 return _ULeft > (_Int_max + _UInt{1}) / _URight;
             } else {
