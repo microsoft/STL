@@ -1189,6 +1189,57 @@ std/input.output/iostream.format/output.streams/ostream.formatted/ostream.format
 std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_nonunicode.pass.cpp FAIL
 std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_unicode.pass.cpp FAIL
 
+# Not analyzed. test_chrono_leap_second.h wants us to provide a vendor-specific version of
+# test_leap_second_create(), but it's unclear how to adapt their parameters to our implementation.
+std/time/time.zone/time.zone.leap/assign.copy.pass.cpp FAIL
+std/time/time.zone/time.zone.leap/cons.copy.pass.cpp FAIL
+std/time/time.zone/time.zone.leap/members/date.pass.cpp FAIL
+std/time/time.zone/time.zone.leap/members/value.pass.cpp FAIL
+std/time/time.zone/time.zone.leap/nonmembers/comparison.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: tzdb.leap_seconds.size() >= leap_seconds.size()
+std/time/time.zone/time.zone.db/leap_seconds.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: tz->name() == zone
+std/time/time.zone/time.zone.db/time.zone.db.access/current_zone.pass.cpp FAIL
+std/time/time.zone/time.zone.db/time.zone.db.tzdb/current_zone.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: buffer.pubsetbuf(b, 10) == &buffer
+std/input.output/file.streams/fstreams/filebuf.virtuals/setbuf.pass.cpp FAIL
+
+# Not analyzed. constexpr evaluation fails in assert(it.stride_count() == expected_counts.stride_count).
+std/iterators/iterator.primitives/range.iter.ops/range.iter.ops.advance/iterator_count_sentinel.pass.cpp FAIL
+
+# Not analyzed. Says "no exception is thrown while an exception of type std::format_error was expected".
+std/time/time.syn/formatter.local_info.pass.cpp FAIL
+
+# Not analyzed. <atomic> Assertion failed: atomic_ref underlying object is not aligned as required_alignment
+# SKIPPED because failures are sporadic and/or architecture-dependent.
+std/atomics/atomics.ref/assign.pass.cpp SKIPPED
+std/atomics/atomics.ref/bitwise_and_assign.pass.cpp SKIPPED
+std/atomics/atomics.ref/bitwise_or_assign.pass.cpp SKIPPED
+std/atomics/atomics.ref/bitwise_xor_assign.pass.cpp SKIPPED
+std/atomics/atomics.ref/compare_exchange_strong.pass.cpp SKIPPED
+std/atomics/atomics.ref/compare_exchange_weak.pass.cpp SKIPPED
+std/atomics/atomics.ref/convert.pass.cpp SKIPPED
+std/atomics/atomics.ref/ctor.pass.cpp SKIPPED
+std/atomics/atomics.ref/deduction.pass.cpp SKIPPED
+std/atomics/atomics.ref/exchange.pass.cpp SKIPPED
+std/atomics/atomics.ref/fetch_add.pass.cpp SKIPPED
+std/atomics/atomics.ref/fetch_and.pass.cpp SKIPPED
+std/atomics/atomics.ref/fetch_or.pass.cpp SKIPPED
+std/atomics/atomics.ref/fetch_sub.pass.cpp SKIPPED
+std/atomics/atomics.ref/fetch_xor.pass.cpp SKIPPED
+std/atomics/atomics.ref/increment_decrement.pass.cpp SKIPPED
+std/atomics/atomics.ref/is_always_lock_free.pass.cpp SKIPPED
+std/atomics/atomics.ref/load.pass.cpp SKIPPED
+std/atomics/atomics.ref/notify_all.pass.cpp SKIPPED
+std/atomics/atomics.ref/notify_one.pass.cpp SKIPPED
+std/atomics/atomics.ref/operator_minus_equals.pass.cpp SKIPPED
+std/atomics/atomics.ref/operator_plus_equals.pass.cpp SKIPPED
+std/atomics/atomics.ref/store.pass.cpp SKIPPED
+std/atomics/atomics.ref/wait.pass.cpp SKIPPED
+
 
 # *** XFAILs WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
