@@ -512,8 +512,9 @@ See [CONTRIBUTING.md][] for more information.
 
 # Code Of Conduct
 
-This project has adopted the [Microsoft Open Source Code of Conduct][]. For more information see the
-[Code of Conduct FAQ][] or contact [opencode@microsoft.com][] with any additional questions or comments.
+This project has adopted the [Microsoft Open Source Code of Conduct][].
+
+See [CODE_OF_CONDUCT.md][] for more information.
 
 # License
 
@@ -524,7 +525,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [Changelog]: https://github.com/microsoft/STL/wiki/Changelog
 [clang-format]: https://clang.llvm.org/docs/ClangFormat.html
 [CMake]: https://cmake.org/download
-[Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
+[CODE_OF_CONDUCT.md]: CODE_OF_CONDUCT.md
 [Compiler Explorer]: https://godbolt.org
 [CONTRIBUTING.md]: CONTRIBUTING.md
 [Developer Community]: https://aka.ms/feedback/report?space=62
@@ -555,6 +556,5 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [libcxx]: https://libcxx.llvm.org
 [lit]: https://llvm.org/docs/CommandGuide/lit.html
 [lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
-[opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist
 [natvis documentation]: https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects

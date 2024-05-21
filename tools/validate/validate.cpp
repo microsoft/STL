@@ -212,6 +212,12 @@ int main() {
         L".obj"sv,
     };
 
+    // CODE_OF_CONDUCT.md and SECURITY.md are copied exactly from https://github.com/microsoft/repo-templates
+    static constexpr array skipped_relative_paths{
+        LR"(.\CODE_OF_CONDUCT.md)"sv,
+        LR"(.\SECURITY.md)"sv,
+    };
+
     // make sure someone doesn't accidentally include a diff in the tree
     static constexpr array bad_extensions{
         L".diff"sv,
@@ -228,6 +234,7 @@ int main() {
 
     static_assert(ranges::is_sorted(skipped_directories));
     static_assert(ranges::is_sorted(skipped_extensions));
+    static_assert(ranges::is_sorted(skipped_relative_paths));
     static_assert(ranges::is_sorted(bad_extensions));
     static_assert(ranges::is_sorted(tabby_filenames));
     static_assert(ranges::is_sorted(tabby_extensions));
@@ -251,6 +258,10 @@ int main() {
         }
 
         const wstring& relative_path = filepath.native();
+
+        if (ranges::binary_search(skipped_relative_paths, relative_path)) {
+            continue;
+        }
 
         constexpr size_t maximum_relative_path_length = 120;
         if (relative_path.size() > maximum_relative_path_length) {
