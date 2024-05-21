@@ -435,10 +435,32 @@ auto test_vformat_exception = []<class CharT, class... Args>([[maybe_unused]] st
     }
 };
 
+// Also test that functions taking non-constructible basic_format_context specializations can be well-formed,
+// despite that they can't be actually called.
+
+template <class CharT>
+void test_unconstructible_format_context_for_raw_ptr(basic_format_context<CharT*, CharT>& ctx) { // COMPILE-ONLY
+    formatter<tuple<basic_string<CharT>>, CharT> formatter;
+    formatter.format(make_tuple(basic_string<CharT>(STR("42"))), ctx);
+}
+
+template <class CharT>
+void test_unconstructible_format_context_for_back_inserter(
+    basic_format_context<back_insert_iterator<basic_string<CharT>>, CharT>& ctx) { // COMPILE-ONLY
+    formatter<tuple<basic_string<CharT>>, CharT> formatter;
+    formatter.format(make_tuple(basic_string<CharT>(STR("42"))), ctx);
+}
+
 int main() {
     run_tests<char>(test_format, test_format_exception);
     run_tests<char>(test_vformat, test_vformat_exception);
 
     run_tests<wchar_t>(test_format, test_format_exception);
     run_tests<wchar_t>(test_vformat, test_vformat_exception);
+
+    (void) &test_unconstructible_format_context_for_raw_ptr<char>;
+    (void) &test_unconstructible_format_context_for_raw_ptr<wchar_t>;
+
+    (void) &test_unconstructible_format_context_for_back_inserter<char>;
+    (void) &test_unconstructible_format_context_for_back_inserter<wchar_t>;
 }

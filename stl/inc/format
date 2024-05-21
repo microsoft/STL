@@ -2447,11 +2447,17 @@ public:
     }
 };
 
-using _Fmt_it  = back_insert_iterator<_Fmt_buffer<char>>;
-using _Fmt_wit = back_insert_iterator<_Fmt_buffer<wchar_t>>;
+template <class _CharT>
+using _Basic_fmt_it = back_insert_iterator<_Fmt_buffer<_CharT>>;
 
-_EXPORT_STD using format_context  = basic_format_context<_Fmt_it, char>;
-_EXPORT_STD using wformat_context = basic_format_context<_Fmt_wit, wchar_t>;
+using _Fmt_it  = _Basic_fmt_it<char>;
+using _Fmt_wit = _Basic_fmt_it<wchar_t>;
+
+template <class _CharT>
+using _Default_format_context = basic_format_context<_Basic_fmt_it<_CharT>, _CharT>;
+
+_EXPORT_STD using format_context  = _Default_format_context<char>;
+_EXPORT_STD using wformat_context = _Default_format_context<wchar_t>;
 
 #if _HAS_CXX23
 _EXPORT_STD enum class range_format { disabled, map, set, sequence, string, debug_string };
@@ -4107,6 +4113,21 @@ private:
 
     _Fill_align_and_width_specs<_CharT> _Specs;
 
+    template <class _FormatContext, class... _ArgTypes>
+    void _Format_to_context(_FormatContext& _Fmt_ctx, _ArgTypes&... _Args) const {
+        _STD _Copy_unchecked(_Opening_bracket._Unchecked_begin(), _Opening_bracket._Unchecked_end(), _Fmt_ctx.out());
+        [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+            auto _Single_writer = [&]<size_t _Idx>(auto& _Arg) {
+                if constexpr (_Idx != 0) {
+                    _STD _Copy_unchecked(_Separator._Unchecked_begin(), _Separator._Unchecked_end(), _Fmt_ctx.out());
+                }
+                _STD get<_Idx>(_Underlying).format(_Arg, _Fmt_ctx);
+            };
+            (_Single_writer.template operator()<_Indices>(_Args), ...);
+        }(index_sequence_for<_ArgTypes...>{});
+        _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Fmt_ctx.out());
+    }
+
 protected:
     static constexpr bool _Is_const_formattable = (formattable<const _Types, _CharT> && ...);
 
@@ -4121,26 +4142,26 @@ protected:
                 _STD _Get_dynamic_specs<_Width_checker>(_Fmt_ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
         }
 
-        basic_string<_CharT> _Tmp_buf;
-        auto _Tmp_ctx = basic_format_context<back_insert_iterator<basic_string<_CharT>>, _CharT>::_Make_from(
-            _STD back_inserter(_Tmp_buf), {}, _Fmt_ctx._Get_lazy_locale());
+        if (_Format_specs._Width <= 0) {
+            _Format_to_context(_Fmt_ctx, _Args...);
+            return _Fmt_ctx.out();
+        }
 
-        _STD _Copy_unchecked(_Opening_bracket._Unchecked_begin(), _Opening_bracket._Unchecked_end(), _Tmp_ctx.out());
-        [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-            auto _Single_writer = [&]<size_t _Idx>(auto& _Arg) {
-                if constexpr (_Idx != 0) {
-                    _STD _Copy_unchecked(_Separator._Unchecked_begin(), _Separator._Unchecked_end(), _Tmp_ctx.out());
-                }
-                _STD get<_Idx>(_Underlying).format(_Arg, _Tmp_ctx);
-            };
-            (_Single_writer.template operator()<_Indices>(_Args), ...);
-        }(index_sequence_for<_ArgTypes...>{});
-        _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Tmp_ctx.out());
+        basic_string<_CharT> _Tmp_str;
+        if constexpr (is_same_v<_FormatContext, _Default_format_context<_CharT>>) {
+            _Fmt_iterator_buffer<back_insert_iterator<basic_string<_CharT>>, _CharT> _Tmp_buf{
+                _STD back_inserter(_Tmp_str)};
+            auto _Tmp_ctx = _FormatContext::_Make_from(
+                _Basic_fmt_it<_CharT>{_Tmp_buf}, _Fmt_ctx._Get_args(), _Fmt_ctx._Get_lazy_locale());
+            _Format_to_context(_Tmp_ctx, _Args...);
+        } else {
+            _CSTD abort(); // no basic_format_context object other than _Default_format_context can be created
+        }
 
-        const int _Width = _Measure_display_width<_CharT>(_Tmp_buf);
+        const int _Width = _Measure_display_width<_CharT>(_Tmp_str);
         return _STD _Write_aligned(
             _Fmt_ctx.out(), _Width, _Format_specs, _Fmt_align::_Left, [&](typename _FormatContext::iterator _Out) {
-                return _STD _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Tmp_buf});
+                return _STD _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Tmp_str});
             });
     }
 
