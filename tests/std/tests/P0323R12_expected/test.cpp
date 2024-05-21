@@ -2319,6 +2319,30 @@ void test_lwg_3843() {
 static_assert(copyable<expected<any, int>>);
 static_assert(copyable<expected<void, any>>);
 
+// Test workaround for DevCom-10655311: Class derived from std::expected can't be constructed with bool value type
+template <class T, class E>
+class DerivedFromExpected : private expected<T, E> {
+public:
+    using expected<T, E>::expected;
+    using expected<T, E>::value;
+};
+
+static_assert(is_constructible_v<DerivedFromExpected<bool, int>, bool>);
+static_assert(is_constructible_v<DerivedFromExpected<bool, int>, const bool&>);
+
+constexpr bool test_inherited_constructors() {
+    DerivedFromExpected<bool, int> wrapped_false_val(false);
+    assert(!wrapped_false_val.value());
+
+    constexpr bool true_val = true;
+    DerivedFromExpected<bool, int> wrapped_true_val(true_val);
+    assert(wrapped_true_val.value());
+
+    return true;
+}
+
+static_assert(test_inherited_constructors());
+
 int main() {
     test_unexpected::test_all();
     static_assert(test_unexpected::test_all());
@@ -2335,4 +2359,5 @@ int main() {
 
     test_reinit_regression();
     test_lwg_3843();
+    test_inherited_constructors();
 }
