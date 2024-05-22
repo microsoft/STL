@@ -362,12 +362,12 @@ constexpr bool test() {
 
     // GH-4507: LWG-4053 Unary call to std::views::repeat does not decay the argument
     {
-        using RPV = std::ranges::repeat_view<const char*>;
+        using RPV = ranges::repeat_view<const char*>;
 
-        static_assert(std::same_as<decltype(std::views::repeat("foo", std::unreachable_sentinel)), RPV>);
-        static_assert(std::same_as<decltype(std::views::repeat(+"foo", std::unreachable_sentinel)), RPV>);
-        static_assert(std::same_as<decltype(std::views::repeat("foo")), RPV>);
-        static_assert(std::same_as<decltype(std::views::repeat(+"foo")), RPV>);
+        static_assert(same_as<decltype(views::repeat("foo", unreachable_sentinel)), RPV>);
+        static_assert(same_as<decltype(views::repeat(+"foo", unreachable_sentinel)), RPV>);
+        static_assert(same_as<decltype(views::repeat("foo")), RPV>);
+        static_assert(same_as<decltype(views::repeat(+"foo")), RPV>);
     }
 
     return true;
