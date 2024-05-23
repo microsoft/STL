@@ -40,7 +40,7 @@ namespace filesystem {
         wstring _Output;
 
         if (!_Input.empty()) {
-            if (_Input.size() > static_cast<size_t>(INT_MAX)) {
+            if (!_STD _In_range<int>(_Input.size())) {
                 _Throw_system_error(errc::invalid_argument);
             }
 
@@ -64,7 +64,7 @@ namespace filesystem {
         basic_string<typename _Traits::char_type, _Traits, _Alloc> _Output(_Al);
 
         if (!_Input.empty()) {
-            if (_Input.size() > static_cast<size_t>(INT_MAX)) {
+            if (!_STD _In_range<int>(_Input.size())) {
                 _Throw_system_error(errc::invalid_argument);
             }
 

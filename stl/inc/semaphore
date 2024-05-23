@@ -43,8 +43,8 @@ _NODISCARD unsigned long _Semaphore_remaining_timeout(const chrono::time_point<_
     }
 
     const auto _Rel_time = chrono::ceil<chrono::milliseconds>(_Abs_time - _Now);
-    static constexpr chrono::milliseconds _Ten_days{chrono::hours{24 * 10}};
-    static_assert(_Ten_days.count() < ULONG_MAX, "Bad sizing assumption");
+    constexpr chrono::milliseconds _Ten_days{chrono::hours{24 * 10}};
+    _STL_INTERNAL_STATIC_ASSERT(_STD in_range<unsigned long>(_Ten_days.count()));
     if (_Rel_time >= _Ten_days) {
         return static_cast<unsigned long>(_Ten_days.count());
     }

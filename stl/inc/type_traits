@@ -1295,13 +1295,23 @@ template <class _Ty1, class _Ty2>
 using _Conditional_type = decltype(false ? _STD declval<_Ty1>() : _STD declval<_Ty2>());
 
 #if _HAS_CXX20
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10648215
+template <class _Ty1, class _Ty2>
+#else // ^^^ no workaround / workaround vvv
 template <class _Ty1, class _Ty2, class = void>
-struct _Const_lvalue_cond_oper {};
+#endif // ^^^ workaround ^^^
+struct _Const_lvalue_cond_oper {
+};
 
 // N4950 [meta.trans.other]/3.3.4 (per the proposed resolution of LWG-3205): "Otherwise, if remove_cvref_t</**/> denotes
 // a type..."
 template <class _Ty1, class _Ty2>
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10648215
+    requires requires { typename _Conditional_type<const _Ty1&, const _Ty2&>; }
+struct _Const_lvalue_cond_oper<_Ty1, _Ty2> {
+#else // ^^^ no workaround / workaround vvv
 struct _Const_lvalue_cond_oper<_Ty1, _Ty2, void_t<_Conditional_type<const _Ty1&, const _Ty2&>>> {
+#endif // ^^^ workaround ^^^
     using type = remove_cvref_t<_Conditional_type<const _Ty1&, const _Ty2&>>;
 };
 
@@ -1419,12 +1429,13 @@ struct common_reference<_Ty> {
 
 // N4950 [meta.trans.other]/5.3.4: "if common_type_t<T1, T2> is well-formed..."
 // N4950 [meta.trans.other]/5.3.5: "Otherwise, there shall be no member type."
-template <class _Ty1, class _Ty2, class = void>
+template <class _Ty1, class _Ty2>
 struct _Common_reference2C : common_type<_Ty1, _Ty2> {};
 
 // N4950 [meta.trans.other]/5.3.3: "if COND_RES(T1, T2) is well-formed..."
 template <class _Ty1, class _Ty2>
-struct _Common_reference2C<_Ty1, _Ty2, void_t<_Cond_res<_Ty1, _Ty2>>> {
+    requires requires { typename _Cond_res<_Ty1, _Ty2>; }
+struct _Common_reference2C<_Ty1, _Ty2> {
     using type = _Cond_res<_Ty1, _Ty2>;
 };
 
@@ -1433,39 +1444,43 @@ template <class _Ty1, class _Ty2>
 using _Basic_specialization = basic_common_reference<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>,
     _Add_qualifiers<_Ty1>::template _Apply, _Add_qualifiers<_Ty2>::template _Apply>::type;
 
-template <class _Ty1, class _Ty2, class = void>
+template <class _Ty1, class _Ty2>
 struct _Common_reference2B : _Common_reference2C<_Ty1, _Ty2> {};
 
 template <class _Ty1, class _Ty2>
-struct _Common_reference2B<_Ty1, _Ty2, void_t<_Basic_specialization<_Ty1, _Ty2>>> {
+    requires requires { typename _Basic_specialization<_Ty1, _Ty2>; }
+struct _Common_reference2B<_Ty1, _Ty2> {
     using type = _Basic_specialization<_Ty1, _Ty2>;
 };
 
 // N4950 [meta.trans.other]/5.3.1: "Let R be COMMON-REF(T1, T2). If T1 and T2 are reference types, R is well-formed, and
 // is_convertible_v<add_pointer_t<T1>, add_pointer_t<R>> && is_convertible_v<add_pointer_t<T2>, add_pointer_t<R>> is
 // true, then the member typedef type denotes R."
-template <class _Ty1, class _Ty2, class = void>
+template <class _Ty1, class _Ty2>
 struct _Common_reference2A : _Common_reference2B<_Ty1, _Ty2> {};
 
-template <class _Ty1, class _Ty2, class _Result = _Cond_res<_Copy_cv<_Ty1, _Ty2>&, _Copy_cv<_Ty2, _Ty1>&>,
-    enable_if_t<is_lvalue_reference_v<_Result>, int> = 0>
-using _LL_common_ref = _Result;
+template <class _Ty1, class _Ty2>
+    requires is_lvalue_reference_v<_Cond_res<_Copy_cv<_Ty1, _Ty2>&, _Copy_cv<_Ty2, _Ty1>&>>
+using _LL_common_ref = _Cond_res<_Copy_cv<_Ty1, _Ty2>&, _Copy_cv<_Ty2, _Ty1>&>;
 
-template <class _Ty1, class _Ty2, class = void>
+template <class _Ty1, class _Ty2>
 struct _Common_reference2AX {};
 
 template <class _Ty1, class _Ty2>
-struct _Common_reference2AX<_Ty1&, _Ty2&, void_t<_LL_common_ref<_Ty1, _Ty2>>> {
+    requires requires { typename _LL_common_ref<_Ty1, _Ty2>; }
+struct _Common_reference2AX<_Ty1&, _Ty2&> {
     using type = _LL_common_ref<_Ty1, _Ty2>; // "both lvalues" case from N4950 [meta.trans.other]/2.5
 };
 
 template <class _Ty1, class _Ty2>
-struct _Common_reference2AX<_Ty1&&, _Ty2&, enable_if_t<is_convertible_v<_Ty1&&, _LL_common_ref<const _Ty1, _Ty2>>>> {
+    requires is_convertible_v<_Ty1&&, _LL_common_ref<const _Ty1, _Ty2>>
+struct _Common_reference2AX<_Ty1&&, _Ty2&> {
     using type = _LL_common_ref<const _Ty1, _Ty2>; // "rvalue and lvalue" case from N4950 [meta.trans.other]/2.7
 };
 
 template <class _Ty1, class _Ty2>
-struct _Common_reference2AX<_Ty1&, _Ty2&&, enable_if_t<is_convertible_v<_Ty2&&, _LL_common_ref<const _Ty2, _Ty1>>>> {
+    requires is_convertible_v<_Ty2&&, _LL_common_ref<const _Ty2, _Ty1>>
+struct _Common_reference2AX<_Ty1&, _Ty2&&> {
     using type = _LL_common_ref<const _Ty2, _Ty1>; // "lvalue and rvalue" case from N4950 [meta.trans.other]/2.8
 };
 
@@ -1473,9 +1488,9 @@ template <class _Ty1, class _Ty2>
 using _RR_common_ref = remove_reference_t<_LL_common_ref<_Ty1, _Ty2>>&&;
 
 template <class _Ty1, class _Ty2>
-struct _Common_reference2AX<_Ty1&&, _Ty2&&,
-    enable_if_t<is_convertible_v<_Ty1&&, _RR_common_ref<_Ty1, _Ty2>>
-                && is_convertible_v<_Ty2&&, _RR_common_ref<_Ty1, _Ty2>>>> {
+    requires is_convertible_v<_Ty1&&, _RR_common_ref<_Ty1, _Ty2>>
+          && is_convertible_v<_Ty2&&, _RR_common_ref<_Ty1, _Ty2>>
+struct _Common_reference2AX<_Ty1&&, _Ty2&&> {
     using type = _RR_common_ref<_Ty1, _Ty2>; // "both rvalues" case from N4950 [meta.trans.other]/2.6
 };
 
@@ -1483,9 +1498,9 @@ template <class _Ty1, class _Ty2>
 using _Common_ref_2AX_t = _Common_reference2AX<_Ty1, _Ty2>::type;
 
 template <class _Ty1, class _Ty2>
-struct _Common_reference2A<_Ty1, _Ty2,
-    enable_if_t<is_convertible_v<add_pointer_t<_Ty1>, add_pointer_t<_Common_ref_2AX_t<_Ty1, _Ty2>>>
-                && is_convertible_v<add_pointer_t<_Ty2>, add_pointer_t<_Common_ref_2AX_t<_Ty1, _Ty2>>>>> {
+    requires is_convertible_v<add_pointer_t<_Ty1>, add_pointer_t<_Common_ref_2AX_t<_Ty1, _Ty2>>>
+          && is_convertible_v<add_pointer_t<_Ty2>, add_pointer_t<_Common_ref_2AX_t<_Ty1, _Ty2>>>
+struct _Common_reference2A<_Ty1, _Ty2> {
     using type = _Common_ref_2AX_t<_Ty1, _Ty2>;
 };
 
@@ -1493,14 +1508,12 @@ template <class _Ty1, class _Ty2>
 struct common_reference<_Ty1, _Ty2> : _Common_reference2A<_Ty1, _Ty2> {};
 
 // N4950 [meta.trans.other]/5.4: "if sizeof...(T) is greater than two..."
-template <class _Void, class _Ty1, class _Ty2, class... _Types>
-struct _Fold_common_reference {};
-template <class _Ty1, class _Ty2, class... _Types>
-struct _Fold_common_reference<void_t<common_reference_t<_Ty1, _Ty2>>, _Ty1, _Ty2, _Types...>
-    : common_reference<common_reference_t<_Ty1, _Ty2>, _Types...> {};
-
 template <class _Ty1, class _Ty2, class _Ty3, class... _Rest>
-struct common_reference<_Ty1, _Ty2, _Ty3, _Rest...> : _Fold_common_reference<void, _Ty1, _Ty2, _Ty3, _Rest...> {};
+struct common_reference<_Ty1, _Ty2, _Ty3, _Rest...> {};
+template <class _Ty1, class _Ty2, class _Ty3, class... _Rest>
+    requires requires { typename common_reference_t<_Ty1, _Ty2>; }
+struct common_reference<_Ty1, _Ty2, _Ty3, _Rest...> : common_reference<common_reference_t<_Ty1, _Ty2>, _Ty3, _Rest...> {
+};
 
 _EXPORT_STD template <class _Ty>
 struct type_identity {
@@ -2443,6 +2456,9 @@ struct _Floating_type_traits<float> {
     static constexpr uint32_t _Special_nan_mantissa_mask = 0x00400000u; // 1u << (_Mantissa_bits - 2)
     static constexpr uint32_t _Shifted_sign_mask         = 0x80000000u; // 1u << _Sign_shift
     static constexpr uint32_t _Shifted_exponent_mask     = 0x7F800000u; // _Exponent_mask << _Exponent_shift
+
+    static constexpr float _Minimum_value = 0x1.000000p-126f; // FLT_MIN
+    static constexpr float _Maximum_value = 0x1.FFFFFEp+127f; // FLT_MAX
 };
 
 template <>
@@ -2463,6 +2479,9 @@ struct _Floating_type_traits<double> {
     static constexpr uint64_t _Special_nan_mantissa_mask = 0x0008000000000000u; // 1ULL << (_Mantissa_bits - 2)
     static constexpr uint64_t _Shifted_sign_mask         = 0x8000000000000000u; // 1ULL << _Sign_shift
     static constexpr uint64_t _Shifted_exponent_mask     = 0x7FF0000000000000u; // _Exponent_mask << _Exponent_shift
+
+    static constexpr double _Minimum_value = 0x1.0000000000000p-1022; // DBL_MIN
+    static constexpr double _Maximum_value = 0x1.FFFFFFFFFFFFFp+1023; // DBL_MAX
 };
 
 template <>
@@ -2476,6 +2495,31 @@ template <class _To, class _From,
         int> = 0>
 _NODISCARD constexpr _To _Bit_cast(const _From& _Val) noexcept {
     return __builtin_bit_cast(_To, _Val);
+}
+
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD constexpr auto _Float_abs_bits(const _Ty& _Xx) noexcept {
+    using _Traits    = _Floating_type_traits<_Ty>;
+    using _Uint_type = typename _Traits::_Uint_type;
+    const auto _Bits = _Bit_cast<_Uint_type>(_Xx);
+    return _Bits & ~_Traits::_Shifted_sign_mask;
+}
+
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD constexpr _Ty _Float_abs(const _Ty _Xx) noexcept { // constexpr floating-point abs()
+    return _Bit_cast<_Ty>(_Float_abs_bits(_Xx));
+}
+
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD constexpr bool _Is_nan(const _Ty _Xx) noexcept { // constexpr isnan()
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) > _Traits::_Shifted_exponent_mask;
+}
+
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD constexpr bool _Is_finite(const _Ty _Xx) noexcept { // constexpr isfinite()
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
 }
 
 template <bool _IsConst, class _Ty>

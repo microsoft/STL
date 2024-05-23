@@ -3427,8 +3427,7 @@ public:
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
-        reset();
-        return _Eval(_Eng, _Par0, false);
+        return _Eval(_Eng, _Par0);
     }
 
     _NODISCARD_FRIEND bool operator==(const normal_distribution& _Left, const normal_distribution& _Right) noexcept
@@ -3470,11 +3469,11 @@ public:
 
 private:
     template <class _Engine>
-    result_type _Eval(_Engine& _Eng, const param_type& _Par0,
-        bool _Keep = true) { // compute next value
-                             // Knuth, vol. 2, p. 122, alg. P
+    result_type _Eval(_Engine& _Eng, const param_type& _Par0) {
+        // compute next value
+        // Knuth, vol. 2, p. 122, alg. P
         _Ty _Res;
-        if (_Keep && _Valid) {
+        if (_Valid) {
             _Res   = _Xx2;
             _Valid = false;
         } else { // generate two values, store one, return one
@@ -3507,11 +3506,9 @@ private:
             }
 
             const _Ty _Fx{_STD sqrt(_Ty{-2} * _LogSx / _Sx)};
-            if (_Keep) { // save second value for next call
-                _Xx2   = _Fx * _Vx2;
-                _Valid = true;
-            }
-            _Res = _Fx * _Vx1;
+            _Xx2   = _Fx * _Vx2; // save second value for next call
+            _Valid = true;
+            _Res   = _Fx * _Vx1;
         }
         return _Res * _Par0._Sigma + _Par0._Mean;
     }

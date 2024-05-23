@@ -31,6 +31,9 @@ module;
 #include <wchar.h>
 #include <wctype.h>
 
+// <intrin.h> defines some types outside of `extern "C"` or `extern "C++"`.
+#include <intrin.h>
+
 export module std;
 
 #pragma warning(push)

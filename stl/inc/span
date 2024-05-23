@@ -549,7 +549,8 @@ _NODISCARD auto as_bytes(span<_Ty, _Extent> _Sp) noexcept {
     return _ReturnType{reinterpret_cast<const byte*>(_Sp.data()), _Sp.size_bytes()};
 }
 
-_EXPORT_STD template <class _Ty, size_t _Extent, enable_if_t<!is_const_v<_Ty>, int> = 0>
+_EXPORT_STD template <class _Ty, size_t _Extent>
+    requires (!is_const_v<_Ty>)
 _NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept {
     using _ReturnType = span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
     return _ReturnType{reinterpret_cast<byte*>(_Sp.data()), _Sp.size_bytes()};

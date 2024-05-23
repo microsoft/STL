@@ -5,10 +5,11 @@
 #define TEST_NAME "<fstream>, part 1"
 
 #include "tdefs.h"
-#include "temp_file_name.h"
 #include <assert.h>
 #include <fstream>
 #include <string>
+
+#include <temp_file_name.hpp>
 
 void test_main() { // test basic workings of char fstream definitions
     STD string tn_str = temp_file_name();
