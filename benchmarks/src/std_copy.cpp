@@ -86,38 +86,38 @@ namespace {
     }
 } // namespace
 
-BENCHMARK_TEMPLATE(handwritten_loop, char)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(handwritten_loop_n, char)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(memcpy_call, char)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(std_copy_call, char)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(std_copy_n_call, char)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop<char>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop_n<char>)->Range(0, 1 << 18);
+BENCHMARK(memcpy_call<char>)->Range(0, 1 << 18);
+BENCHMARK(std_copy_call<char>)->Range(0, 1 << 18);
+BENCHMARK(std_copy_n_call<char>)->Range(0, 1 << 18);
 
-BENCHMARK_TEMPLATE(handwritten_loop, aggregate<char>)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(handwritten_loop_n, aggregate<char>)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(memcpy_call, aggregate<char>)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(std_copy_call, aggregate<char>)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(std_copy_n_call, aggregate<char>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop<aggregate<char>>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop_n<aggregate<char>>)->Range(0, 1 << 18);
+BENCHMARK(memcpy_call<aggregate<char>>)->Range(0, 1 << 18);
+BENCHMARK(std_copy_call<aggregate<char>>)->Range(0, 1 << 18);
+BENCHMARK(std_copy_n_call<aggregate<char>>)->Range(0, 1 << 18);
 
-BENCHMARK_TEMPLATE(handwritten_loop, non_trivial<char>)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(handwritten_loop_n, non_trivial<char>)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(std_copy_call, non_trivial<char>)->Range(0, 1 << 18);
-BENCHMARK_TEMPLATE(std_copy_n_call, non_trivial<char>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop<non_trivial<char>>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop_n<non_trivial<char>>)->Range(0, 1 << 18);
+BENCHMARK(std_copy_call<non_trivial<char>>)->Range(0, 1 << 18);
+BENCHMARK(std_copy_n_call<non_trivial<char>>)->Range(0, 1 << 18);
 
-BENCHMARK_TEMPLATE(handwritten_loop, int)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(handwritten_loop_n, int)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(memcpy_call, int)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(std_copy_call, int)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(std_copy_n_call, int)->Range(0, 1 << 15);
+BENCHMARK(handwritten_loop<int>)->Range(0, 1 << 15);
+BENCHMARK(handwritten_loop_n<int>)->Range(0, 1 << 15);
+BENCHMARK(memcpy_call<int>)->Range(0, 1 << 15);
+BENCHMARK(std_copy_call<int>)->Range(0, 1 << 15);
+BENCHMARK(std_copy_n_call<int>)->Range(0, 1 << 15);
 
-BENCHMARK_TEMPLATE(handwritten_loop, aggregate<int>)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(handwritten_loop_n, aggregate<int>)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(memcpy_call, aggregate<int>)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(std_copy_call, aggregate<int>)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(std_copy_n_call, aggregate<int>)->Range(0, 1 << 15);
+BENCHMARK(handwritten_loop<aggregate<int>>)->Range(0, 1 << 15);
+BENCHMARK(handwritten_loop_n<aggregate<int>>)->Range(0, 1 << 15);
+BENCHMARK(memcpy_call<aggregate<int>>)->Range(0, 1 << 15);
+BENCHMARK(std_copy_call<aggregate<int>>)->Range(0, 1 << 15);
+BENCHMARK(std_copy_n_call<aggregate<int>>)->Range(0, 1 << 15);
 
-BENCHMARK_TEMPLATE(handwritten_loop, non_trivial<int>)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(handwritten_loop_n, non_trivial<int>)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(std_copy_call, non_trivial<int>)->Range(0, 1 << 15);
-BENCHMARK_TEMPLATE(std_copy_n_call, non_trivial<int>)->Range(0, 1 << 15);
+BENCHMARK(handwritten_loop<non_trivial<int>>)->Range(0, 1 << 15);
+BENCHMARK(handwritten_loop_n<non_trivial<int>>)->Range(0, 1 << 15);
+BENCHMARK(std_copy_call<non_trivial<int>>)->Range(0, 1 << 15);
+BENCHMARK(std_copy_n_call<non_trivial<int>>)->Range(0, 1 << 15);
 
 BENCHMARK_MAIN();

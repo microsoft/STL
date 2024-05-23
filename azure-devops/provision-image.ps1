@@ -3,86 +3,20 @@
 
 <#
 .SYNOPSIS
-Sets up a machine to be an image for a scale set.
+Sets up a virtual machine to be an image for a hosted pool.
 
 .DESCRIPTION
-provision-image.ps1 runs on an existing, freshly provisioned virtual machine,
-and sets up that virtual machine as a build machine. After this is done,
-(outside of this script), we take that machine and make it an image to be copied
-for setting up new VMs in the scale set.
+create-1es-hosted-pool.ps1 (running on an STL maintainer's machine) creates a "prototype" virtual machine in Azure,
+then runs provision-image.ps1 on that VM. This gives us full control over what we install for building and testing
+the STL. After provision-image.ps1 is done, create-1es-hosted-pool.ps1 makes an image of the prototype VM,
+creates a 1ES Hosted Pool that will spin up copies of the image as worker VMs, and finally deletes the prototype VM.
 #>
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-<#
-.SYNOPSIS
-Gets a random file path in the temp directory.
-
-.DESCRIPTION
-Get-TempFilePath takes an extension, and returns a path with a random
-filename component in the temporary directory with that extension.
-
-.PARAMETER Extension
-The extension to use for the path.
-#>
-Function Get-TempFilePath {
-  [CmdletBinding(PositionalBinding=$false)]
-  Param(
-    [Parameter(Mandatory)][String]$Extension
-  )
-
-  $tempPath = [System.IO.Path]::GetTempPath()
-  $tempName = [System.IO.Path]::GetRandomFileName() + '.' + $Extension
-  return Join-Path $tempPath $tempName
-}
-
-<#
-.SYNOPSIS
-Downloads and extracts a ZIP file to a newly created temporary subdirectory.
-
-.DESCRIPTION
-DownloadAndExtractZip returns a path containing the extracted contents.
-
-.PARAMETER Url
-The URL of the ZIP file to download.
-#>
-Function DownloadAndExtractZip {
-  [CmdletBinding(PositionalBinding=$false)]
-  Param(
-    [Parameter(Mandatory)][String]$Url
-  )
-
-  $ZipPath = Get-TempFilePath -Extension 'zip'
-  curl.exe -L -o $ZipPath -s -S $Url
-  $TempSubdirPath = Get-TempFilePath -Extension 'dir'
-  Expand-Archive -Path $ZipPath -DestinationPath $TempSubdirPath -Force
-  Remove-Item -Path $ZipPath
-
-  return $TempSubdirPath
-}
-
-if ($PSVersionTable.PSVersion -lt [Version]::new('7.4.2')) {
-  Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
-
-  # https://github.com/PowerShell/PowerShell/releases/latest
-  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.2/PowerShell-7.4.2-win-x64.zip'
-  Write-Host "Downloading: $PowerShellZipUrl"
-  $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
-  $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
-
-  $PwshArgs = @(
-    '-ExecutionPolicy',
-    'Unrestricted',
-    '-File',
-    $PSCommandPath
-  )
-  Write-Host "Executing: $PwshPath $PwshArgs"
-  & $PwshPath $PwshArgs
-
-  Write-Host 'Cleaning up...'
-  Remove-Item -Recurse -Path $ExtractedPowerShellPath
-  exit
+if ($Env:COMPUTERNAME -cne 'PROTOTYPE') {
+  Write-Error 'You should not run provision-image.ps1 on your local machine.'
 }
 
 $VisualStudioWorkloads = @(
@@ -104,6 +38,10 @@ foreach ($workload in $VisualStudioWorkloads) {
   $VisualStudioArgs += '--add'
   $VisualStudioArgs += $workload
 }
+
+# https://github.com/PowerShell/PowerShell/releases/latest
+$PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.2/PowerShell-7.4.2-win-x64.msi'
+$PowerShellArgs = @('/quiet', '/norestart')
 
 $PythonUrl = 'https://www.python.org/ftp/python/3.12.3/python-3.12.3-amd64.exe'
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
@@ -137,7 +75,10 @@ Function DownloadAndInstall {
 
   try {
     Write-Host "Downloading $Name..."
-    [string]$installerPath = Get-TempFilePath -Extension 'exe'
+    $tempPath = 'D:\installerTemp'
+    mkdir $tempPath -Force | Out-Null
+    $fileName = [uri]::new($Url).Segments[-1]
+    $installerPath = Join-Path $tempPath $fileName
     curl.exe -L -o $installerPath -s -S $Url
 
     Write-Host "Installing $Name..."
@@ -158,9 +99,13 @@ Function DownloadAndInstall {
   }
 }
 
-# Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
-cmd /c ver
+Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 
+# Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
+# Skip a blank line to improve the output.
+(cmd /c ver)[1]
+
+DownloadAndInstall -Name 'PowerShell'    -Url $PowerShellUrl   -Args $PowerShellArgs
 DownloadAndInstall -Name 'Python'        -Url $PythonUrl       -Args $PythonArgs
 DownloadAndInstall -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStudioArgs
 DownloadAndInstall -Name 'CUDA'          -Url $CudaUrl         -Args $CudaArgs
@@ -170,6 +115,7 @@ Write-Host 'Setting environment variables...'
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
 [Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
 
-Write-Host 'Done!'
+# Tell create-1es-hosted-pool.ps1 that we succeeded.
+Write-Host 'PROVISION_IMAGE_SUCCEEDED'
 
 exit

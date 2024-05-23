@@ -13,6 +13,8 @@
 // * std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp
 // * std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_double.pass.cpp
 
+#ifndef __EDG__ // TRANSITION, VSO-2064546
+
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -616,3 +618,5 @@ int main() {
     test_double_from_char_cases<long double>();
 #endif // _HAS_CXX17
 }
+
+#endif // ^^^ no workaround ^^^

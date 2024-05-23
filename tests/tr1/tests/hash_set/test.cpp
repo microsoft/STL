@@ -5,8 +5,6 @@
 #define TEST_NAME "<hash_set>"
 
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
-#define _SILENCE_STDEXT_HASH_LOWER_BOUND_DEPRECATION_WARNING
-#define _SILENCE_STDEXT_HASH_UPPER_BOUND_DEPRECATION_WARNING
 
 #include "tdefs.h"
 #include <functional>
@@ -164,8 +162,6 @@ void test_hash_set() { // test hash_set
     CHECK_INT(*v4.find('a'), 'a');
     CHECK_INT(v4.count('x'), 0);
     CHECK_INT(v4.count('a'), 1);
-    CHECK_INT(*v4.lower_bound('a'), 'a');
-    CHECK_INT(*--v4.upper_bound('a'), 'a'); // differs from set
     STD pair<Mycont::const_iterator, Mycont::const_iterator> pcc = v4.equal_range('a');
     CHECK_INT(*pcc.first, 'a');
     CHECK_INT(*--pcc.second, 'a'); // differs from set
@@ -462,8 +458,6 @@ void test_hash_multiset() { // test hash_multiset
     CHECK_INT(*v4.find('a'), 'a');
     CHECK_INT(v4.count('x'), 0);
     CHECK_INT(v4.count('a'), 1);
-    CHECK_INT(*v4.lower_bound('a'), 'a');
-    CHECK_INT(*--v4.upper_bound('a'), 'a'); // differs from multiset
     STD pair<Mycont::const_iterator, Mycont::const_iterator> pcc = v4.equal_range('a');
     CHECK_INT(*pcc.first, 'a');
     CHECK_INT(*--pcc.second, 'a'); // differs from multiset

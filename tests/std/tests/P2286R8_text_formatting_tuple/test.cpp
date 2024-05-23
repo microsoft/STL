@@ -157,9 +157,16 @@ void test_escaping(TestFunction check, TupleOrPair&& input) {
     check(SV(R"(('\u{0}', ""))"), SV("{}"), input);
 
     // String
-    get<0>(input) = CharT('*');
-    get<1>(input) = SV("hell\u00d6");
-    check(SV("('*', \"hell\u00d6\")"), SV("{}"), input);
+    if constexpr (is_same_v<CharT, wchar_t>) {
+        get<0>(input) = L'*';
+        get<1>(input) = L"hell\u00d6"; // U+00D6 LATIN CAPITAL LETTER O WITH DIAERESIS
+        check(L"('*', \"hell\u00d6\")"sv, L"{}"sv, input);
+        check(L"#('*', \"hell\u00d6\")#"sv, L"{:#^16}"sv, input);
+
+        get<1>(input) = L"hell\uff2f"; // U+FF2F FULLWIDTH LATIN CAPITAL LETTER O
+        check(L"('*', \"hell\uff2f\")"sv, L"{}"sv, input);
+        check(L"('*', \"hell\uff2f\")#"sv, L"{:#^16}"sv, input);
+    }
 }
 
 //

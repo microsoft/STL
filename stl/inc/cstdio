@@ -26,9 +26,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef putc
 #undef putchar
 
-// TRANSITION: Boost nonconformingly uses this macro
-#define _FPOSOFF(fp) (static_cast<long long>(fp))
-
 _STD_BEGIN
 #pragma warning(push)
 #pragma warning(disable : 4995) // name was marked as #pragma deprecated
