@@ -26,10 +26,8 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-_EXPORT_STD template <class _To, class _From,
-    enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
-                    is_trivially_copyable<_From>>,
-        int> = 0>
+_EXPORT_STD template <class _To, class _From>
+    requires (sizeof(_To) == sizeof(_From)) && is_trivially_copyable_v<_To> && is_trivially_copyable_v<_From>
 _NODISCARD constexpr _To bit_cast(const _From& _Val) noexcept {
     return __builtin_bit_cast(_To, _Val);
 }
@@ -61,7 +59,8 @@ _NODISCARD constexpr unsigned long long _Byteswap_uint64(const unsigned long lon
     }
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<is_integral_v<_Ty>, int> = 0>
+_EXPORT_STD template <class _Ty>
+    requires is_integral_v<_Ty>
 _NODISCARD constexpr _Ty byteswap(const _Ty _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
         return _Val;
@@ -72,22 +71,25 @@ _NODISCARD constexpr _Ty byteswap(const _Ty _Val) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return static_cast<_Ty>(_Byteswap_uint64(static_cast<unsigned long long>(_Val)));
     } else {
-        static_assert(false, "Unexpected integer size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 #endif // _HAS_CXX23
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+template <class _Ty>
+concept _Standard_unsigned_integral = _Is_standard_unsigned_integer<_Ty>;
+
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr int countl_zero(_Ty _Val) noexcept;
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr bool has_single_bit(const _Ty _Val) noexcept {
     return _Val != 0 && (_Val & (_Val - 1)) == 0;
 }
 
 inline void _Precondition_violation_in_bit_ceil() noexcept {}
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
     if (_Val <= 1u) {
         return _Ty{1};
@@ -115,7 +117,7 @@ _NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
     return static_cast<_Ty>(_Ty{1} << _Num);
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr _Ty bit_floor(const _Ty _Val) noexcept {
     if (_Val == 0) {
         return 0;
@@ -124,15 +126,15 @@ _NODISCARD constexpr _Ty bit_floor(const _Ty _Val) noexcept {
     return static_cast<_Ty>(_Ty{1} << (_Unsigned_integer_digits<_Ty> - 1 - _STD countl_zero(_Val)));
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr int bit_width(const _Ty _Val) noexcept {
     return _Unsigned_integer_digits<_Ty> - _STD countl_zero(_Val);
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr _Ty rotr(_Ty _Val, int _Rotation) noexcept;
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr _Ty rotl(const _Ty _Val, const int _Rotation) noexcept {
     constexpr auto _Digits = _Unsigned_integer_digits<_Ty>;
 
@@ -160,7 +162,7 @@ _NODISCARD constexpr _Ty rotl(const _Ty _Val, const int _Rotation) noexcept {
     }
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> /* = 0 */>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
     constexpr auto _Digits = _Unsigned_integer_digits<_Ty>;
 
@@ -188,7 +190,7 @@ _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
     }
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> /* = 0 */>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
 #if _HAS_COUNTL_ZERO_INTRINSICS
 #if (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))
@@ -205,22 +207,22 @@ _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
     return _Countl_zero_fallback(_Val);
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr int countl_one(const _Ty _Val) noexcept {
     return _STD countl_zero(static_cast<_Ty>(~_Val));
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr int countr_zero(const _Ty _Val) noexcept {
     return _Countr_zero(_Val);
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr int countr_one(const _Ty _Val) noexcept {
     return _Countr_zero(static_cast<_Ty>(~_Val));
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+_EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
     return _Popcount(_Val);
 }

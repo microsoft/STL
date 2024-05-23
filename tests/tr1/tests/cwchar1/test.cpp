@@ -5,12 +5,13 @@
 #define TEST_NAMEX "<cwchar>, part 1"
 
 #include "tdefs.h"
-#include "temp_file_name.h"
 #include <assert.h>
 #include <cwchar>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <temp_file_name.hpp>
 
 #pragma warning(disable : 4793) // function compiled as native
 

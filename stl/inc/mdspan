@@ -11,7 +11,6 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <mdspan> are available only with C++23 or later.");
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 #include <array>
-#include <limits>
 #include <span>
 #include <tuple>
 #include <type_traits>
@@ -213,7 +212,7 @@ public:
         requires (sizeof...(_OtherExtents) == rank())
               && ((_OtherExtents == dynamic_extent || _Extents == dynamic_extent || _OtherExtents == _Extents) && ...)
     constexpr explicit(((_Extents != dynamic_extent && _OtherExtents == dynamic_extent) || ...)
-                       || (numeric_limits<index_type>::max)() < (numeric_limits<_OtherIndexType>::max)())
+                       || _STD _Max_limit<index_type>() < _STD _Max_limit<_OtherIndexType>())
         extents(const extents<_OtherIndexType, _OtherExtents...>& _Other) noexcept
         : extents(_Other, make_index_sequence<rank_dynamic()>{}) {}
 

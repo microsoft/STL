@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#ifndef __EDG__ // TRANSITION, VSO-2064546
+
 // test <locale>, part 3
 #define TEST_NAME "<locale>, part 3"
 
@@ -553,3 +555,5 @@ void test_main() { // test basic workings of locale definitions
     test_time_get();
     test_time_put();
 }
+
+#endif // ^^^ no workaround ^^^

@@ -1273,6 +1273,11 @@ void println(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _A
 }
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void println(ostream& _Ostr) {
+    _STD print(_Ostr, "\n");
+}
+
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void vprint_unicode(ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
     _STD _Vprint_unicode_impl(_Add_newline::_Nope, _Ostr, _Fmt_str, _Fmt_args);
 }
