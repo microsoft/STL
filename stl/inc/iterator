@@ -498,6 +498,11 @@ _NODISCARD bool operator!=(
 }
 #endif // !_HAS_CXX20
 
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, /permissive, avoid checking constraints
+template <class _Elem, class _Traits>
+constexpr bool _Iterator_is_contiguous<istreambuf_iterator<_Elem, _Traits>> = false;
+#endif // ^^^ workaround ^^^
+
 _EXPORT_STD template <class _Elem, class _Traits>
 class ostreambuf_iterator {
 public:
@@ -547,6 +552,11 @@ private:
     bool _Failed = false; // true if any stores have failed
     streambuf_type* _Strbuf;
 };
+
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, /permissive, avoid checking constraints
+template <class _Elem, class _Traits>
+constexpr bool _Iterator_is_contiguous<ostreambuf_iterator<_Elem, _Traits>> = false;
+#endif // ^^^ workaround ^^^
 
 #if _HAS_CXX20
 enum class _Variantish_state : unsigned char { _Nothing, _Holds_first, _Holds_second };

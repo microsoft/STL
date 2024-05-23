@@ -97,7 +97,7 @@ __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void
     } else if constexpr (_Nx == 8) {
         ::__std_reverse_copy_trivially_copyable_8(_First, _Last, _Dest);
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -120,7 +120,7 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
     } else if constexpr (sizeof(_Ty) == 8) {
         _Res = ::__std_minmax_element_8(_First, _Last, _Signed);
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 
     return {const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
@@ -166,7 +166,7 @@ auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_minmax_8u(_First, _Last);
         }
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -193,7 +193,7 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -213,7 +213,7 @@ _Ty1* _Find_first_of_vectorized(
         return const_cast<_Ty1*>(
             static_cast<const _Ty1*>(::__std_find_first_of_trivial_8(_First1, _Last1, _First2, _Last2)));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -231,7 +231,7 @@ __declspec(noalias) void _Replace_vectorized(
     } else if constexpr (sizeof(_Ty) == 8) {
         ::__std_replace_8(_First, _Last, static_cast<uint64_t>(_Old_val), static_cast<uint64_t>(_New_val));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -2219,7 +2219,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
         return _First;
     }
 
-    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>((numeric_limits<_Iter_diff_t<_FwdIt>>::max)())) {
+    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>(_STD _Max_limit<_Iter_diff_t<_FwdIt>>())) {
         // if the number of _Vals searched for is larger than the longest possible sequence, we can't find it
         return _Last;
     }
@@ -5799,7 +5799,8 @@ constexpr _FwdIt shift_left(
     return _First;
 }
 
-_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt>
+    requires requires { typename _Enable_if_execution_policy_t<_ExPo>; }
 _FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last,
     typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) left by _Pos_to_shift positions
@@ -5883,7 +5884,8 @@ constexpr _FwdIt shift_right(
     }
 }
 
-_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt>
+    requires requires { typename _Enable_if_execution_policy_t<_ExPo>; }
 _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last,
     typename iterator_traits<_FwdIt>::difference_type _Pos_to_shift) noexcept /* terminates */ {
     // shift [_First, _Last) right by _Pos_to_shift positions
@@ -8852,7 +8854,7 @@ namespace ranges {
                 return;
             }
 
-            _Optimistic_temporary_buffer<_Iter_value_t<_It>> _Temp_buf{_Count - _Count / 2};
+            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{_Count - _Count / 2};
             _Stable_sort_common_buffered(
                 _STD move(_First), _STD move(_Last), _Count, _Temp_buf._Data, _Temp_buf._Capacity, _Pred, _Proj);
         }

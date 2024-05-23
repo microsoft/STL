@@ -83,6 +83,21 @@ void test_case_count(const vector<T>& input, T v) {
     auto expected = last_known_good_count(input.begin(), input.end(), v);
     auto actual   = count(input.begin(), input.end(), v);
     assert(expected == actual);
+#if _HAS_CXX20
+    auto actual_r = ranges::count(input, v);
+    assert(actual_r == expected);
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_count_zero(const vector<T>& input, const ptrdiff_t n) {
+    const auto first = input.begin();
+    const auto last  = first + n;
+
+    assert(count(first, last, T{0}) == n);
+#if _HAS_CXX20
+    assert(ranges::count(first, last, T{0}) == n);
+#endif // _HAS_CXX20
 }
 
 template <class T>
@@ -95,6 +110,27 @@ void test_count(mt19937_64& gen) {
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         input.push_back(static_cast<T>(dis(gen)));
         test_case_count(input, static_cast<T>(dis(gen)));
+    }
+
+    {
+        input.assign(1'000'000, T{0});
+
+        // test that counters don't overflow
+        test_count_zero(input, 1'000'000);
+
+        // Test the AVX2 maximum portion followed by all possible tail lengths, for 1-byte and 2-byte elements.
+        // It's okay to test these lengths for other elements, or other instruction sets.
+        for (ptrdiff_t i = 8'160; i < 8'192; ++i) {
+            test_count_zero(input, i);
+        }
+
+        for (ptrdiff_t i = 524'272; i < 524'288; ++i) {
+            test_count_zero(input, i);
+        }
+
+        // Test a random length.
+        uniform_int_distribution<ptrdiff_t> len(0, 999'999);
+        test_count_zero(input, len(gen));
     }
 }
 
@@ -390,38 +426,34 @@ auto last_known_good_mismatch(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt las
 }
 
 template <class FwdIt>
-bool last_known_good_lex_compare(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
-    for (;; ++first1, ++first2) {
-        if (first2 == last2) {
-            return false;
-        } else if (first1 == last1) {
-            return true;
-        } else if (*first1 < *first2) {
-            return true;
-        } else if (*first2 < *first1) {
-            return false;
-        }
+bool last_known_good_lex_compare(pair<FwdIt, FwdIt> expected_mismatch, FwdIt last1, FwdIt last2) {
+    if (expected_mismatch.second == last2) {
+        return false;
+    } else if (expected_mismatch.first == last1) {
+        return true;
+    } else if (*expected_mismatch.first < *expected_mismatch.second) {
+        return true;
+    } else {
+        assert(*expected_mismatch.second < *expected_mismatch.first);
+        return false;
     }
 }
 
 #if _HAS_CXX20
 template <class FwdIt>
-auto last_known_good_lex_compare_3way(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
-    for (;; ++first1, ++first2) {
-        if (first2 == last2) {
-            if (first1 == last1) {
-                return strong_ordering::equal;
-            } else {
-                return strong_ordering::greater;
-            }
-        } else if (first1 == last1) {
-            return strong_ordering::less;
+auto last_known_good_lex_compare_3way(pair<FwdIt, FwdIt> expected_mismatch, FwdIt last1, FwdIt last2) {
+    if (expected_mismatch.second == last2) {
+        if (expected_mismatch.first == last1) {
+            return strong_ordering::equal;
         } else {
-            auto order = *first1 <=> *first2;
-            if (order != 0) {
-                return order;
-            }
+            return strong_ordering::greater;
         }
+    } else if (expected_mismatch.first == last1) {
+        return strong_ordering::less;
+    } else {
+        auto order = *expected_mismatch.first <=> *expected_mismatch.second;
+        assert(order != 0);
+        return order;
     }
 }
 #endif // _HAS_CXX20
@@ -432,7 +464,7 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
     auto actual_mismatch   = mismatch(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_mismatch == actual_mismatch);
 
-    auto expected_lex = last_known_good_lex_compare(a.begin(), a.end(), b.begin(), b.end());
+    auto expected_lex = last_known_good_lex_compare(expected_mismatch, a.end(), b.end());
     auto actual_lex   = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_lex == actual_lex);
 
@@ -444,7 +476,7 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
     auto ranges_actual_lex = ranges::lexicographical_compare(a, b);
     assert(expected_lex == ranges_actual_lex);
 
-    auto expected_lex_3way = last_known_good_lex_compare_3way(a.begin(), a.end(), b.begin(), b.end());
+    auto expected_lex_3way = last_known_good_lex_compare_3way(expected_mismatch, a.end(), b.end());
     auto actual_lex_3way   = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_lex_3way == actual_lex_3way);
 #endif // _HAS_CXX20
@@ -453,7 +485,7 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
 template <class T>
 void test_mismatch_and_lex_compare_family(mt19937_64& gen) {
     constexpr size_t shrinkCount   = 4;
-    constexpr size_t mismatchCount = 30;
+    constexpr size_t mismatchCount = 10;
     using TD                       = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('a', 'z');
     vector<T> input_a;

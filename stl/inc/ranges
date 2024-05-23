@@ -1381,24 +1381,35 @@ namespace ranges {
         constexpr explicit iota_view(_Wi _Value_) noexcept(
             is_nothrow_move_constructible_v<_Wi> && is_nothrow_default_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)) {
+#if _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
-                _STL_ASSERT(_Value_ <= _Bound, "Per N4950 [range.iota.view]/6, the first argument must not exceed the "
+                _STL_VERIFY(_Value_ <= _Bound, "Per N4981 [range.iota.view]/6, the first argument must not exceed the "
                                                "value-initialized bound when their types are totally ordered.");
             }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
         constexpr explicit iota_view(type_identity_t<_Wi> _Value_, type_identity_t<_Bo> _Bound_) noexcept(
             is_nothrow_move_constructible_v<_Wi> && is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)), _Bound(_STD move(_Bound_)) {
+#if _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
-                _STL_ASSERT(_Value_ <= _Bound_, "Per N4950 [range.iota.view]/8, the first argument must not exceed the "
+                _STL_VERIFY(_Value_ <= _Bound_, "Per N4981 [range.iota.view]/8, the first argument must not exceed the "
                                                 "second when their types are totally ordered.");
             }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
         constexpr explicit iota_view(_It _First, _Se _Last) noexcept(
             is_nothrow_move_constructible_v<_Wi> && is_nothrow_move_constructible_v<_Bo>) // strengthened
-            : _Value(_STD move(_First._Current)), _Bound(_STD move(_Bound_from(_Last))) {}
+            : _Value(_STD move(_First._Current)), _Bound(_STD move(_Bound_from(_Last))) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            if constexpr (totally_ordered_with<_Wi, _Bo>) {
+                _STL_VERIFY(_Value <= _Bound, "Per N4981 [range.iota.view]/8 and /10, the iterator must not exceed the "
+                                              "sentinel when their types are totally ordered.");
+            }
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        }
 
         _NODISCARD constexpr _It begin() const noexcept(is_nothrow_copy_constructible_v<_Wi>) /* strengthened */ {
             return _It{_Value};
@@ -1524,7 +1535,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 _STL_VERIFY(_Current < (numeric_limits<_Index_type>::max)(),
                     "cannot increment repeat_view iterator past end (integer overflow)");
-#endif
+#endif // _CONTAINER_DEBUG_LEVEL > 0
                 ++_Current;
                 return *this;
             }
@@ -1655,7 +1666,7 @@ namespace ranges {
             if constexpr (_Signed_integer_like<_Bo>) {
                 _STL_VERIFY(_Bound >= 0, "Bound must be >= 0");
             }
-#endif
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         }
         _NODISCARD_CTOR constexpr explicit repeat_view(_Ty&& _Value_, _Bo _Bound_ = _Bo{}) noexcept(
             is_nothrow_move_constructible_v<_Ty>) // strengthened
@@ -1664,7 +1675,7 @@ namespace ranges {
             if constexpr (_Signed_integer_like<_Bo>) {
                 _STL_VERIFY(_Bound >= 0, "Bound must be >= 0");
             }
-#endif
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         }
         template <class... _TArgs, class... _BArgs>
             requires constructible_from<_Ty, _TArgs...> && constructible_from<_Bo, _BArgs...>
@@ -1676,7 +1687,7 @@ namespace ranges {
             if constexpr (_Signed_integer_like<_Bo>) {
                 _STL_VERIFY(_Bound >= 0, "Bound must be >= 0");
             }
-#endif
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
         _NODISCARD constexpr _Iterator begin() const noexcept /* strengthened */ {
@@ -1697,8 +1708,8 @@ namespace ranges {
         }
     };
 
-    template <class _Ty, class _Bo>
-    repeat_view(_Ty, _Bo) -> repeat_view<_Ty, _Bo>;
+    template <class _Ty, class _Bo = unreachable_sentinel_t>
+    repeat_view(_Ty, _Bo = _Bo()) -> repeat_view<_Ty, _Bo>;
 
     namespace views {
         struct _Repeat_fn {
@@ -2030,7 +2041,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Own) {
                     return owning_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -2164,7 +2175,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_As_rvalue) {
                     return as_rvalue_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -3142,7 +3153,7 @@ namespace ranges {
                     } else if constexpr (_Strat == _St::_Reconstruct_subrange) {
                         return subrange(_First, _First + _Count);
                     } else {
-                        static_assert(false, "Should be unreachable");
+                        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                     }
                 }
             }
@@ -3548,7 +3559,7 @@ namespace ranges {
                     } else if constexpr (_Strat == _St::_Reconstruct_other) {
                         return remove_cvref_t<_Rng>(_RANGES begin(_Range) + _Count, _RANGES end(_Range));
                     } else {
-                        static_assert(false, "Should be unreachable");
+                        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                     }
                 }
             }
@@ -5251,7 +5262,9 @@ namespace ranges {
                 requires (input_or_output_iterator<decay_t<_It>> && _Choice<_It>._Strategy != _St::_None)
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_It&& _First,
                 const iter_difference_t<decay_t<_It>> _Count) _CONST_CALL_OPERATOR noexcept(_Choice<_It>._No_throw) {
-                _STL_ASSERT(_Count >= 0, "The size passed to views::counted must be non-negative");
+#if _CONTAINER_DEBUG_LEVEL > 0
+                _STL_VERIFY(_Count >= 0, "The size passed to views::counted must be non-negative");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
                 constexpr _St _Strat = _Choice<_It>._Strategy;
 
                 if constexpr (_Strat == _St::_Span) {
@@ -5389,7 +5402,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Common) {
                     return common_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -5548,7 +5561,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Reverse) {
                     return reverse_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -5692,7 +5705,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_As_const) {
                     return as_const_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -10297,17 +10310,8 @@ namespace ranges {
         !input_range<_Container> || convertible_to<range_reference_t<_Rng>, range_value_t<_Container>>;
 
     template <class _Rng, class _Container, class... _Types>
-    concept _Converts_direct_constructible =
-        _Ref_converts<_Rng, _Container> && constructible_from<_Container, _Rng, _Types...>;
-
-    template <class _Rng, class _Container, class... _Types>
-    concept _Converts_tag_constructible = _Ref_converts<_Rng, _Container>
-                                       // per LWG issue unnumbered as of 2022-08-08
-                                       && constructible_from<_Container, const from_range_t&, _Rng, _Types...>;
-
-    template <class _Rng, class _Container, class... _Types>
-    concept _Converts_and_common_constructible =
-        _Ref_converts<_Rng, _Container> && common_range<_Rng> //
+    concept _Common_constructible =
+        common_range<_Rng> //
         && requires { typename iterator_traits<iterator_t<_Rng>>::iterator_category; }
         && derived_from<typename iterator_traits<iterator_t<_Rng>>::iterator_category, input_iterator_tag>
         && constructible_from<_Container, iterator_t<_Rng>, iterator_t<_Rng>, _Types...>;
@@ -10325,12 +10329,11 @@ namespace ranges {
     concept _Can_insert_end = requires(_Container& _Cont) { _Cont.insert(_Cont.end(), _STD declval<_Reference>()); };
 
     template <class _Rng, class _Container, class... _Types>
-    concept _Converts_constructible_appendable =
-        _Ref_converts<_Rng, _Container> && constructible_from<_Container, _Types...>
-        && (_Can_emplace_back<_Container, range_reference_t<_Rng>>
-            || _Can_push_back<_Container, range_reference_t<_Rng>>
-            || _Can_emplace_end<_Container, range_reference_t<_Rng>>
-            || _Can_insert_end<_Container, range_reference_t<_Rng>>);
+    concept _Constructible_appendable = constructible_from<_Container, _Types...>
+                                     && (_Can_emplace_back<_Container, range_reference_t<_Rng>>
+                                         || _Can_push_back<_Container, range_reference_t<_Rng>>
+                                         || _Can_emplace_end<_Container, range_reference_t<_Rng>>
+                                         || _Can_insert_end<_Container, range_reference_t<_Rng>>);
 
     _EXPORT_STD template <class _Container, input_range _Rng, class... _Types>
         requires (!view<_Container>)
@@ -10338,38 +10341,47 @@ namespace ranges {
         static_assert(!is_const_v<_Container>, "C must not be const. ([range.utility.conv.to])");
         static_assert(!is_volatile_v<_Container>, "C must not be volatile. ([range.utility.conv.to])");
         static_assert(is_class_v<_Container>, "C must be a class type. ([range.utility.conv.to])");
-        if constexpr (_Converts_direct_constructible<_Rng, _Container, _Types...>) {
-            return _Container(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
-        } else if constexpr (_Converts_tag_constructible<_Rng, _Container, _Types...>) {
-            return _Container(from_range, _STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
-        } else if constexpr (_Converts_and_common_constructible<_Rng, _Container, _Types...>) {
-            return _Container(_RANGES begin(_Range), _RANGES end(_Range), _STD forward<_Types>(_Args)...);
-        } else if constexpr (_Converts_constructible_appendable<_Rng, _Container, _Types...>) {
-            _Container _Cont(_STD forward<_Types>(_Args)...);
-            if constexpr (_Sized_and_reservable<_Rng, _Container>) {
-                _Cont.reserve(static_cast<range_size_t<_Container>>(_RANGES size(_Range)));
-            }
-            for (auto&& _Elem : _Range) {
-                using _ElemTy = decltype(_Elem);
-                if constexpr (_Can_emplace_back<_Container, _ElemTy>) {
-                    _Cont.emplace_back(_STD forward<_ElemTy>(_Elem));
-                } else if constexpr (_Can_push_back<_Container, _ElemTy>) {
-                    _Cont.push_back(_STD forward<_ElemTy>(_Elem));
-                } else if constexpr (_Can_emplace_end<_Container, _ElemTy>) {
-                    _Cont.emplace(_Cont.end(), _STD forward<_ElemTy>(_Elem));
-                } else {
-                    _STL_INTERNAL_STATIC_ASSERT(_Can_insert_end<_Container, _ElemTy>);
-                    _Cont.insert(_Cont.end(), _STD forward<_ElemTy>(_Elem));
+        if constexpr (_Ref_converts<_Rng, _Container>) {
+            if constexpr (constructible_from<_Container, _Rng, _Types...>) {
+                return _Container(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
+            } else if constexpr (constructible_from<_Container, const from_range_t&, _Rng, _Types...>) { // per LWG-3845
+                return _Container(from_range, _STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
+            } else if constexpr (_Common_constructible<_Rng, _Container, _Types...>) {
+                return _Container(_RANGES begin(_Range), _RANGES end(_Range), _STD forward<_Types>(_Args)...);
+            } else if constexpr (_Constructible_appendable<_Rng, _Container, _Types...>) {
+                _Container _Cont(_STD forward<_Types>(_Args)...);
+                if constexpr (_Sized_and_reservable<_Rng, _Container>) {
+                    _Cont.reserve(static_cast<range_size_t<_Container>>(_RANGES size(_Range)));
                 }
+                for (auto&& _Elem : _Range) {
+                    using _ElemTy = decltype(_Elem);
+                    if constexpr (_Can_emplace_back<_Container, _ElemTy>) {
+                        _Cont.emplace_back(_STD forward<_ElemTy>(_Elem));
+                    } else if constexpr (_Can_push_back<_Container, _ElemTy>) {
+                        _Cont.push_back(_STD forward<_ElemTy>(_Elem));
+                    } else if constexpr (_Can_emplace_end<_Container, _ElemTy>) {
+                        _Cont.emplace(_Cont.end(), _STD forward<_ElemTy>(_Elem));
+                    } else {
+                        _STL_INTERNAL_STATIC_ASSERT(_Can_insert_end<_Container, _ElemTy>);
+                        _Cont.insert(_Cont.end(), _STD forward<_ElemTy>(_Elem));
+                    }
+                }
+                return _Cont;
+            } else {
+                static_assert(false, "ranges::to requires the result to be constructible from the source range, either "
+                                     "by using a suitable constructor, or by inserting each element of the range into "
+                                     "the default-constructed object. (N4981 [range.utility.conv.to]/2.1.5)");
             }
-            return _Cont;
-        } else if constexpr (!_Ref_converts<_Rng, _Container> && input_range<range_reference_t<_Rng>>) {
+        } else if constexpr (input_range<range_reference_t<_Rng>>) {
             const auto _Xform = [](auto&& _Elem) _STATIC_CALL_OPERATOR {
                 return _RANGES to<range_value_t<_Container>>(_STD forward<decltype(_Elem)>(_Elem));
             };
             return _RANGES to<_Container>(views::transform(ref_view{_Range}, _Xform), _STD forward<_Types>(_Args)...);
         } else {
-            static_assert(false, "the program is ill-formed per N4950 [range.utility.conv.to]/2.3");
+            static_assert(false,
+                "ranges::to requires the elements of the source range to be either implicitly convertible to the "
+                "elements of the destination container, or be ranges themselves for ranges::to to be applied "
+                "recursively. (N4981 [range.utility.conv.to]/2.3)");
         }
     }
 

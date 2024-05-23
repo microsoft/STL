@@ -5,8 +5,6 @@
 #define TEST_NAME "<hash_map>"
 
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
-#define _SILENCE_STDEXT_HASH_LOWER_BOUND_DEPRECATION_WARNING
-#define _SILENCE_STDEXT_HASH_UPPER_BOUND_DEPRECATION_WARNING
 
 #include "tdefs.h"
 #include <functional>
@@ -181,8 +179,6 @@ void test_hash_map() { // test hash_map
     CHECK_INT((*v4.find('a')).first, 'a');
     CHECK_INT(v4.count('x'), 0);
     CHECK_INT(v4.count('a'), 1);
-    CHECK_INT((*v4.lower_bound('a')).first, 'a');
-    CHECK_INT((*--v4.upper_bound('a')).first, 'a'); // differs from map
 
     STD pair<Mycont::const_iterator, Mycont::const_iterator> pcc = v4.equal_range('a');
     CHECK_INT((*pcc.first).first, 'a');
@@ -475,8 +471,6 @@ void test_hash_multimap() { // test hash_multimap
     CHECK_INT((*v4.find('a')).first, 'a');
     CHECK_INT(v4.count('x'), 0);
     CHECK_INT(v4.count('a'), 1);
-    CHECK_INT((*v4.lower_bound('a')).first, 'a');
-    CHECK_INT((*--v4.upper_bound('a')).first, 'a'); // differs from multimap
 
     STD pair<Mycont::const_iterator, Mycont::const_iterator> pcc = v4.equal_range('a');
     CHECK_INT((*pcc.first).first, 'a');

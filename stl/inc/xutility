@@ -143,7 +143,7 @@ __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept
     } else if constexpr (_Nx == 8) {
         ::__std_reverse_trivially_swappable_8(_First, _Last);
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -164,7 +164,7 @@ __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last
     } else if constexpr (sizeof(_Ty) == 8) {
         return ::__std_count_trivial_8(_First, _Last, static_cast<uint64_t>(_Val));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -191,7 +191,7 @@ _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noe
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -212,7 +212,7 @@ _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -233,7 +233,7 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -276,7 +276,7 @@ auto _Min_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_min_8u(_First, _Last);
         }
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -319,7 +319,7 @@ auto _Max_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_max_8u(_First, _Last);
         }
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 
@@ -335,7 +335,7 @@ inline size_t // TRANSITION, GH-4496
     } else if constexpr (_Element_size == 8) {
         return __std_mismatch_8(_First1, _First2, _Count);
     } else {
-        static_assert(false, "Unexpected size");
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
 _STD_END
@@ -381,15 +381,10 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
 };
 
 #if _HAS_CXX20
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1691516
-// per LWG-3888
-_EXPORT_STD template <class _Ty, class... _Types,
-    class = void_t<decltype(::new(static_cast<void*>(_STD declval<_Ty*>())) _Ty(_STD declval<_Types>()...))>>
-#else // ^^^ no workaround / workaround vvv
-// per LWG-3888
-_EXPORT_STD template <class _Ty, class... _Types,
-    void_t<decltype(::new(static_cast<void*>(_STD declval<_Ty*>())) _Ty(_STD declval<_Types>()...))>* = nullptr>
-#endif // ^^^ workaround ^^^
+_EXPORT_STD template <class _Ty, class... _Types>
+    requires requires(_Ty* _Location, _Types&&... _Args) {
+        ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...); // per LWG-3888
+    }
 constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
     noexcept(::new(static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
     _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
@@ -711,8 +706,8 @@ _NODISCARD constexpr auto _Pass_fn(_Fn& _Func) noexcept {
 }
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Result_type, class _Callable, class... _Types,
-    enable_if_t<is_invocable_r_v<_Result_type, _Callable, _Types...>, int> = 0>
+_EXPORT_STD template <class _Result_type, class _Callable, class... _Types>
+    requires is_invocable_r_v<_Result_type, _Callable, _Types...>
 _NODISCARD constexpr _Result_type invoke_r(_Callable&& _Obj, _Types&&... _Args) noexcept(
     is_nothrow_invocable_r_v<_Result_type, _Callable, _Types...>) {
     if constexpr (is_void_v<_Result_type>) {
@@ -802,7 +797,7 @@ namespace ranges {
                         return *static_cast<_Ty&&>(_Val);
                     }
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -1142,7 +1137,7 @@ namespace ranges {
                     *static_cast<_Ty1&&>(_Val1) =
                         _Iter_swap::_Iter_exchange_move(static_cast<_Ty2&&>(_Val2), static_cast<_Ty1&&>(_Val1));
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -1513,24 +1508,28 @@ using _Unwrap_enum_t = typename _Unwrap_enum<_Elem>::type;
 #define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred) \
     _STD _Debug_order_set_unchecked<otherIter>(first, last, pred)
 
-template <class _Pr, class _Ty1, class _Ty2,
-    enable_if_t<is_same_v<_Remove_cvref_t<_Ty1>, _Remove_cvref_t<_Ty2>>, int> = 0>
-constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept(
-    noexcept(_Pred(_Left, _Right)) && noexcept(_Pred(_Right, _Left))) {
-    // test if _Pred(_Left, _Right) and _Pred is strict weak ordering, when the arguments are the cv-same-type
+template <class _Pr, class _Ty1, class _Ty2>
+constexpr bool _Enable_debug_lt_pred_order_check = is_same_v<_Remove_cvref_t<_Ty1>, _Remove_cvref_t<_Ty2>>;
+
+template <class _Pr, class _Ty1, class _Ty2, bool _Order_check = _Enable_debug_lt_pred_order_check<_Pr, _Ty1, _Ty2>>
+constexpr bool _Debug_lt_pred_order_check_noexcept =
+    noexcept(_STD declval<_Pr&>()(_STD declval<_Ty2&>(), _STD declval<_Ty1&>()));
+
+template <class _Pr, class _Ty1, class _Ty2>
+constexpr bool _Debug_lt_pred_order_check_noexcept<_Pr, _Ty1, _Ty2, false> = true;
+
+template <class _Pr, class _Ty1, class _Ty2>
+_NODISCARD constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept(
+    noexcept(_Pred(_Left, _Right)) && _Debug_lt_pred_order_check_noexcept<_Pr, _Ty1, _Ty2>) {
     const auto _Result = static_cast<bool>(_Pred(_Left, _Right));
-    if (_Result) {
-        _STL_VERIFY(!_Pred(_Right, _Left), "invalid comparator");
+
+    if constexpr (_Enable_debug_lt_pred_order_check<_Pr, _Ty1, _Ty2>) {
+        if (_Result) {
+            _STL_VERIFY(!_Pred(_Right, _Left), "invalid comparator");
+        }
     }
 
     return _Result;
-}
-
-template <class _Pr, class _Ty1, class _Ty2,
-    enable_if_t<!is_same_v<_Remove_cvref_t<_Ty1>, _Remove_cvref_t<_Ty2>>, int> = 0>
-constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept(noexcept(_Pred(_Left, _Right))) {
-    // test if _Pred(_Left, _Right); no debug checks as the types differ
-    return static_cast<bool>(_Pred(_Left, _Right));
 }
 
 template <class _InIt, class _Sentinel, class _Pr>
@@ -2532,7 +2531,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Non_member) {
                     return begin(_Val); // intentional ADL
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -2609,7 +2608,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Non_member) {
                     return end(_Val); // intentional ADL
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -2745,7 +2744,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Unwrap) {
                     return _RANGES _Unwrap_range_iter<_Ty>(_RANGES begin(_Val));
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -2796,7 +2795,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Unwrap) {
                     return _RANGES _Unwrap_range_sent<_Ty>(_RANGES end(_Val));
                 } else {
-                    static_assert(false, "Should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -2962,7 +2961,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES end(_Val));
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -3033,7 +3032,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES begin(_Val));
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -3178,7 +3177,7 @@ namespace ranges {
                     const auto _Delta = _RANGES end(_Val) - _RANGES begin(_Val);
                     return static_cast<_Make_unsigned_like_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -3240,7 +3239,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Compare) {
                     return static_cast<bool>(_RANGES begin(_Val) == _RANGES end(_Val));
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -3295,7 +3294,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Address) {
                     return _STD to_address(_RANGES begin(_Val));
                 } else {
-                    static_assert(false, "should be unreachable");
+                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
             }
         };
@@ -4326,7 +4325,8 @@ public:
         _Verify_range(_First._Current, _Last._Get_current());
     }
 #if _HAS_CXX20
-    template <sentinel_for<_Iter> _Sent, enable_if_t<_Range_verifiable_v<_Iter, _Sent>, int> = 0>
+    template <sentinel_for<_Iter> _Sent>
+        requires _Range_verifiable_v<_Iter, _Sent>
     friend constexpr void _Verify_range(const move_iterator& _First, const move_sentinel<_Sent>& _Last) noexcept {
         _Verify_range(_First._Current, _Last._Get_last());
     }
@@ -5934,9 +5934,8 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
         if constexpr (is_same_v<_Elem, bool>) {
             return _Val == true || _Val == false;
         } else if constexpr (is_signed_v<_Elem>) {
-            // use instead of numeric_limits::min/max; avoid <limits> dependency
-            constexpr _Elem _Min = static_cast<_Elem>(_Elem{1} << (sizeof(_Elem) * CHAR_BIT - 1));
-            constexpr _Elem _Max = static_cast<_Elem>(~_Min);
+            constexpr _Elem _Min = _STD _Min_limit<_Elem>();
+            constexpr _Elem _Max = _STD _Max_limit<_Elem>();
 
             if constexpr (is_signed_v<_Ty>) {
                 // signed _Elem, signed _Ty
@@ -5952,7 +5951,7 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
                 }
             }
         } else {
-            constexpr _Elem _Max = static_cast<_Elem>(~_Elem{0});
+            constexpr _Elem _Max = _STD _Max_limit<_Elem>();
 
             if constexpr (is_unsigned_v<_Ty>) {
                 // unsigned _Elem, unsigned _Ty
@@ -7350,56 +7349,6 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using reference         = _Reference;
 };
 
-template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr auto _Float_abs_bits(const _Ty& _Xx) noexcept {
-    using _Traits    = _Floating_type_traits<_Ty>;
-    using _Uint_type = typename _Traits::_Uint_type;
-    const auto _Bits = _Bit_cast<_Uint_type>(_Xx);
-    return _Bits & ~_Traits::_Shifted_sign_mask;
-}
-
-template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty _Float_abs(const _Ty _Xx) noexcept { // constexpr floating-point abs()
-    return _Bit_cast<_Ty>(_Float_abs_bits(_Xx));
-}
-
-template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty _Float_copysign(const _Ty _Magnitude, const _Ty _Sign) { // constexpr copysign()
-    using _Traits       = _Floating_type_traits<_Ty>;
-    using _Uint_type    = typename _Traits::_Uint_type;
-    const auto _Signbit = _Bit_cast<_Uint_type>(_Sign) & _Traits::_Shifted_sign_mask;
-    return _Bit_cast<_Ty>(_Float_abs_bits(_Magnitude) | _Signbit);
-}
-
-template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr bool _Is_nan(const _Ty _Xx) noexcept { // constexpr isnan()
-    using _Traits = _Floating_type_traits<_Ty>;
-    return _Float_abs_bits(_Xx) > _Traits::_Shifted_exponent_mask;
-}
-
-// TRANSITION, workaround x86 ABI
-// On x86 ABI, floating-point by-value arguments and return values are passed in 80-bit x87 registers.
-// When the value is a 32-bit or 64-bit signaling NaN, the conversion to/from 80-bit raises FE_INVALID
-// and turns it into a quiet NaN. This behavior is undesirable if we want to test for signaling NaNs.
-template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr bool _Is_signaling_nan(const _Ty& _Xx) noexcept { // returns true if input is a signaling NaN
-    using _Traits        = _Floating_type_traits<_Ty>;
-    const auto _Abs_bits = _Float_abs_bits(_Xx);
-    return _Abs_bits > _Traits::_Shifted_exponent_mask && ((_Abs_bits & _Traits::_Special_nan_mantissa_mask) == 0);
-}
-
-template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr bool _Is_inf(const _Ty _Xx) noexcept { // constexpr isinf()
-    using _Traits = _Floating_type_traits<_Ty>;
-    return _Float_abs_bits(_Xx) == _Traits::_Shifted_exponent_mask;
-}
-
-template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD constexpr bool _Is_finite(const _Ty _Xx) noexcept { // constexpr isfinite()
-    using _Traits = _Floating_type_traits<_Ty>;
-    return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
-}
-
 #if _HAS_CXX17
 _EXPORT_STD struct monostate {};
 #endif // _HAS_CXX17
@@ -7433,8 +7382,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 #endif // defined(__clang__)
     {
         if constexpr (!_Signed_integer_like<_Int>) {
-            // use instead of numeric_limits::max; avoid <limits> dependency
-            constexpr auto _UInt_max = static_cast<_Int>(-1);
+            constexpr auto _UInt_max = _STD _Max_limit<_Int>();
             const bool _Overflow     = _Left != 0 && _Right > _UInt_max / _Left;
             if (!_Overflow) {
                 _Out = static_cast<_Int>(_Left * _Right);
@@ -7463,8 +7411,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
                 return false;
             }
 
-            // use instead of numeric_limits::max; avoid <limits> dependency
-            constexpr auto _Int_max = static_cast<_UInt>(static_cast<_UInt>(-1) / 2);
+            constexpr auto _Int_max = static_cast<_UInt>(_STD _Max_limit<_Int>());
             if (_Negative) {
                 return _ULeft > (_Int_max + _UInt{1}) / _URight;
             } else {
