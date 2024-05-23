@@ -5,10 +5,11 @@
 #define TEST_NAME "<fstream>, part 2"
 
 #include "tdefs.h"
-#include "temp_file_name.h"
 #include <assert.h>
 #include <fstream>
 #include <wchar.h>
+
+#include <temp_file_name.hpp>
 
 void test_main() { // test basic workings of wide fstream definitions
     const auto temp_name = temp_file_name();

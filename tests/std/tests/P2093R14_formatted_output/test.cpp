@@ -403,17 +403,19 @@ void test_invalid_code_points_console() {
     test_invalid_sequence_closure("\xF0\x28\x8C\x25");
 }
 
+FILE* checked_fopen_s(const string& filename, const char* const mode) {
+    FILE* ret;
+    const errno_t fopen_result = fopen_s(&ret, filename.c_str(), mode);
+    assert(fopen_result == 0);
+    return ret;
+}
+
 void test_invalid_code_points_file() {
     // Unlike for the console API when the ordinary literal encoding is UTF-8, invalid code points shouldn't
     // be replaced when writing to a file.
     const string temp_file_name_str = temp_file_name();
 
-    FILE* temp_file_stream;
-
-    {
-        const errno_t fopen_result = fopen_s(&temp_file_stream, temp_file_name_str.c_str(), "w+b");
-        assert(fopen_result == 0);
-    }
+    FILE* temp_file_stream = checked_fopen_s(temp_file_name_str, "w+b");
 
     using printed_string_type = format_string<>;
 
@@ -509,6 +511,38 @@ void test_stream_flush_console() {
         const wstring extractedStr{temp_console.get_console_line(0)};
         assert(extractedStr == L"Hello, world!");
     }
+
+    print(console_file_stream, "kitty");
+    println(console_file_stream);
+    println(console_file_stream, "cat");
+
+    {
+        const wstring line0{temp_console.get_console_line(0)};
+        const wstring line1{temp_console.get_console_line(1)};
+        const wstring line2{temp_console.get_console_line(2)};
+
+        assert(line0 == L"Hello, world!");
+
+        if constexpr (_Is_ordinary_literal_encoding_utf8()) {
+            assert(line1 == L"kitty");
+            assert(line2 == L"cat");
+        } else {
+            assert(line1.empty());
+            assert(line2.empty());
+        }
+    }
+
+    maybe_flush_console_file_stream(temp_console);
+
+    {
+        const wstring line0{temp_console.get_console_line(0)};
+        const wstring line1{temp_console.get_console_line(1)};
+        const wstring line2{temp_console.get_console_line(2)};
+
+        assert(line0 == L"Hello, world!");
+        assert(line1 == L"kitty");
+        assert(line2 == L"cat");
+    }
 }
 
 void test_stream_flush_file() {
@@ -567,11 +601,26 @@ void test_empty_strings_and_newlines() {
         print(output_file_stream, "-D\n");
         print(output_file_stream, "{{}} for {}!\n", "impact");
 
+        println(output_file_stream);
         println(output_file_stream, "I have {} cute {} kittens.", 1729, "fluffy");
         println(output_file_stream, "");
         println(output_file_stream, "What are an orthodontist's favorite characters? '{{' and '}}', of course!");
         println(output_file_stream, "ONE\nTWO\n");
         println(output_file_stream, "THREE");
+    }
+
+    {
+        FILE* temp_file_stream = checked_fopen_s(temp_file_name_str, "a");
+
+        print(temp_file_stream, "space");
+        print(temp_file_stream, "");
+        print(temp_file_stream, "time\n");
+
+        println(temp_file_stream, "general");
+        println(temp_file_stream);
+        println(temp_file_stream, "relativity");
+
+        fclose(temp_file_stream);
     }
 
     {
@@ -585,6 +634,7 @@ void test_empty_strings_and_newlines() {
         const vector<string> expected_lines{
             "NCC-1701-D",
             "{} for impact!",
+            "",
             "I have 1729 cute fluffy kittens.",
             "",
             "What are an orthodontist's favorite characters? '{' and '}', of course!",
@@ -592,6 +642,10 @@ void test_empty_strings_and_newlines() {
             "TWO",
             "",
             "THREE",
+            "spacetime",
+            "general",
+            "",
+            "relativity",
         };
 
         assert(lines == expected_lines);

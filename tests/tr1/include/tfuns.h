@@ -35,8 +35,6 @@ typedef int (*tf8)(const volatile funobj, int, int, int, int, int, int, int);
 typedef int (*tf9)(const volatile funobj, int, int, int, int, int, int, int, int);
 typedef int (*tf10)(const volatile funobj, int, int, int, int, int, int, int, int, int);
 
-#pragma warning(push)
-#pragma warning(disable : 4521) // multiple copy constructors specified
 struct funobj { // general purpose function object
     typedef int result_type;
 
@@ -226,7 +224,6 @@ struct funobj { // general purpose function object
     }
     int i0;
 };
-#pragma warning(pop)
 
 typedef int (funobj::*mf1)();
 typedef int (funobj::*mf2)(int);

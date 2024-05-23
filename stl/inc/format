@@ -50,7 +50,6 @@ _EMIT_STL_WARNING(STL4038, "The contents of <format> are available only with C++
 #include <concepts>
 #include <cstdint>
 #include <iterator>
-#include <limits>
 #include <locale>
 #include <stdexcept>
 #include <xcall_once.h>
@@ -936,7 +935,7 @@ _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
     const _CharT* _First, const _CharT* _Last, unsigned int& _Value) {
     _STL_INTERNAL_CHECK(_First != _Last && '0' <= *_First && *_First <= '9');
 
-    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
+    constexpr auto _Max_int = static_cast<unsigned int>(_STD _Max_limit<int>());
     constexpr auto _Big_int = _Max_int / 10u;
 
     _Value = 0;
@@ -1660,7 +1659,7 @@ template <class _Handler, class _FormatArg>
 _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler{}, _Arg);
-    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max)())) {
+    if (!_STD in_range<int>(_Val)) {
         _Throw_format_error("Number is too big.");
     }
 
@@ -1740,7 +1739,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+        if (!_STD in_range<int>(_Idx)) {
             _Throw_format_error("Dynamic width or precision index too large.");
         }
 
@@ -1823,7 +1822,7 @@ public:
 
     template <class _CharT>
     constexpr void _On_type(_CharT _Type) {
-        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+        if (_Type < 0 || _Type > _STD _Max_limit<signed char>()) {
             _Throw_format_error("Invalid type specification.");
         }
         const char _Narrow_type = static_cast<char>(_Type);
@@ -3350,7 +3349,7 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     _Measure_string_prefix_iterator<_CharT> _Pfx_iter(_First, _Last);
     int _Estimated_width = 0; // the estimated width of [_First, _Pfx_iter)
 
-    constexpr auto _Max_int = (numeric_limits<int>::max)();
+    constexpr auto _Max_int = _STD _Max_limit<int>();
 
     while (_Pfx_iter != default_sentinel) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {
@@ -3537,6 +3536,7 @@ struct _Default_arg_formatter {
     _OutputIt _Out;
     basic_format_args<_Context> _Args;
     _Lazy_locale _Loc;
+    basic_format_parse_context<_CharT>& _Parse_ctx;
 
     template <class _Ty>
     _OutputIt operator()(_Ty _Val) && {
@@ -3544,7 +3544,6 @@ struct _Default_arg_formatter {
     }
 
     _OutputIt operator()(basic_format_arg<_Context>::handle _Handle) && {
-        basic_format_parse_context<_CharT> _Parse_ctx({});
         auto _Format_ctx = _Context::_Make_from(_STD move(_Out), _Args, _Loc);
         _Handle.format(_Parse_ctx, _Format_ctx);
         return _Format_ctx.out();
@@ -3606,9 +3605,9 @@ struct _Format_checker {
         : _Parse_context(_Fmt, _Num_args, _Arg_type),
           _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _ParseContext>...} {}
     constexpr void _On_text(const _CharT*, const _CharT*) const noexcept {}
-    constexpr void _On_replacement_field(const size_t _Id, const _CharT*) const {
-        _ParseContext _Parse_ctx({});
-        (void) _Parse_funcs[_Id](_Parse_ctx);
+    constexpr void _On_replacement_field(const size_t _Id, const _CharT* _Last) {
+        _Parse_context.advance_to(_Parse_context.begin() + (_Last - _Parse_context.begin()._Unwrapped()));
+        (void) _Parse_funcs[_Id](_Parse_context);
     }
     constexpr const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT*) {
         _Parse_context.advance_to(_Parse_context.begin() + (_First - _Parse_context.begin()._Unwrapped()));
@@ -3641,14 +3640,18 @@ struct _Format_handler {
         _Ctx.advance_to(_RANGES _Copy_unchecked(_First, _Last, _Ctx.out()).out);
     }
 
-    void _On_replacement_field(const size_t _Id, const _CharT*) {
+    void _On_replacement_field(const size_t _Id, const _CharT* _Last) {
         auto _Arg = _Get_arg(_Ctx, _Id);
-        _Ctx.advance_to(_STD visit_format_arg(
-            _Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx._Get_args(), _Ctx._Get_lazy_locale()}, _Arg));
+        if (_Arg._Active_state == _Basic_format_arg_type::_Custom_type) {
+            _Parse_context.advance_to(_Parse_context.begin() + (_Last - _Parse_context.begin()._Unwrapped()));
+        }
+        _Ctx.advance_to(_STD visit_format_arg(_Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx._Get_args(),
+                                                  _Ctx._Get_lazy_locale(), _Parse_context},
+            _Arg));
     }
 
     const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT* _Last) {
-        _Parse_context.advance_to(_Parse_context.begin() + (_First - &*_Parse_context.begin()));
+        _Parse_context.advance_to(_Parse_context.begin() + (_First - _Parse_context.begin()._Unwrapped()));
         auto _Arg = _Get_arg(_Ctx, _Id);
         if (_Arg._Active_state == _Basic_format_arg_type::_Custom_type) {
             _Arg._Custom_state.format(_Parse_context, _Ctx);
@@ -3961,6 +3964,13 @@ _NODISCARD size_t formatted_size(const locale& _Loc, const wformat_string<_Types
 _FMT_P2286_END
 
 #if _HAS_CXX23
+template <class _CharT>
+_NODISCARD int _Measure_display_width(const basic_string_view<_CharT> _Value) {
+    int _Width = -1;
+    (void) _Measure_string_prefix(_Value, _Width);
+    return _Width;
+}
+
 enum class _Fmt_tuple_type : uint8_t { _None, _Key_value, _No_brackets };
 
 template <class _CharT>
@@ -4127,8 +4137,9 @@ protected:
         }(index_sequence_for<_ArgTypes...>{});
         _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Tmp_ctx.out());
 
-        return _STD _Write_aligned(_Fmt_ctx.out(), static_cast<int>(_Tmp_buf.size()), _Format_specs, _Fmt_align::_Left,
-            [&](typename _FormatContext::iterator _Out) {
+        const int _Width = _Measure_display_width<_CharT>(_Tmp_buf);
+        return _STD _Write_aligned(
+            _Fmt_ctx.out(), _Width, _Format_specs, _Fmt_align::_Left, [&](typename _FormatContext::iterator _Out) {
                 return _STD _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Tmp_buf});
             });
     }

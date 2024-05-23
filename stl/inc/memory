@@ -1542,6 +1542,20 @@ struct _Temporary_owner_del {
     }
 };
 
+#if _HAS_CXX20
+template <class _Ty>
+concept _Not_builtin_array = !is_array_v<_Ty>;
+
+template <class _Ty>
+concept _Bounded_builtin_array = is_bounded_array_v<_Ty>;
+
+template <class _Ty>
+concept _Unbounded_builtin_array = is_unbounded_array_v<_Ty>;
+
+template <class _Ty>
+concept _Not_unbounded_builtin_array = !is_unbounded_array_v<_Ty>;
+#endif // _HAS_CXX20
+
 _EXPORT_STD template <class _Ty>
 class shared_ptr : public _Ptr_base<_Ty> { // class for reference counted resource management
 private:
@@ -1794,31 +1808,29 @@ private:
     }
 
 #if _HAS_CXX20
-    template <class _Ty0, class... _Types>
-    friend enable_if_t<!is_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(_Types&&... _Args);
+    template <_Not_builtin_array _Ty0, class... _Types>
+    friend shared_ptr<_Ty0> make_shared(_Types&&... _Args);
 
-    template <class _Ty0, class _Alloc, class... _Types>
-    friend enable_if_t<!is_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
+    template <_Not_builtin_array _Ty0, class _Alloc, class... _Types>
+    friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
 
-    template <class _Ty0>
-    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared();
+    template <_Bounded_builtin_array _Ty0>
+    friend shared_ptr<_Ty0> make_shared();
 
-    template <class _Ty0, class _Alloc>
-    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg);
+    template <_Bounded_builtin_array _Ty0, class _Alloc>
+    friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg);
 
-    template <class _Ty0>
-    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(const remove_extent_t<_Ty0>& _Val);
+    template <_Bounded_builtin_array _Ty0>
+    friend shared_ptr<_Ty0> make_shared(const remove_extent_t<_Ty0>& _Val);
 
-    template <class _Ty0, class _Alloc>
-    friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
-        const _Alloc& _Al_arg, const remove_extent_t<_Ty0>& _Val);
+    template <_Bounded_builtin_array _Ty0, class _Alloc>
+    friend shared_ptr<_Ty0> allocate_shared(const _Alloc& _Al_arg, const remove_extent_t<_Ty0>& _Val);
 
-    template <class _Ty0>
-    friend enable_if_t<!is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared_for_overwrite();
+    template <_Not_unbounded_builtin_array _Ty0>
+    friend shared_ptr<_Ty0> make_shared_for_overwrite();
 
-    template <class _Ty0, class _Alloc>
-    friend enable_if_t<!is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared_for_overwrite(
-        const _Alloc& _Al_arg);
+    template <_Not_unbounded_builtin_array _Ty0, class _Alloc>
+    friend shared_ptr<_Ty0> allocate_shared_for_overwrite(const _Alloc& _Al_arg);
 
     template <class _Ty0, class... _ArgTypes>
     friend shared_ptr<_Ty0> _Make_shared_unbounded_array(size_t _Count, const _ArgTypes&... _Args);
@@ -2885,14 +2897,12 @@ private:
 };
 #endif // _HAS_CXX20
 
-_EXPORT_STD template <class _Ty, class... _Types>
-_NODISCARD_SMART_PTR_ALLOC
 #if _HAS_CXX20
-    enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
-#else
-    shared_ptr<_Ty>
-#endif
-    make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
+_EXPORT_STD template <_Not_builtin_array _Ty, class... _Types>
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Ty, class... _Types>
+#endif // ^^^ !_HAS_CXX20 ^^^
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
     const auto _Rx = new _Ref_count_obj2<_Ty>(_STD forward<_Types>(_Args)...);
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_STD addressof(_Rx->_Storage._Value), _Rx);
@@ -2928,19 +2938,18 @@ _NODISCARD shared_ptr<_Ty> _Make_shared_unbounded_array(const size_t _Count, con
     return _Ret;
 }
 
-_EXPORT_STD template <class _Ty>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
+_EXPORT_STD template <_Unbounded_builtin_array _Ty>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> make_shared(const size_t _Count) {
     return _STD _Make_shared_unbounded_array<_Ty>(_Count);
 }
 
-_EXPORT_STD template <class _Ty>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
-    const size_t _Count, const remove_extent_t<_Ty>& _Val) {
+_EXPORT_STD template <_Unbounded_builtin_array _Ty>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> make_shared(const size_t _Count, const remove_extent_t<_Ty>& _Val) {
     return _STD _Make_shared_unbounded_array<_Ty>(_Count, _Val);
 }
 
-_EXPORT_STD template <class _Ty>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
+_EXPORT_STD template <_Bounded_builtin_array _Ty>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> make_shared() {
     // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>();
     shared_ptr<_Ty> _Ret;
@@ -2948,9 +2957,8 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>>
     return _Ret;
 }
 
-_EXPORT_STD template <class _Ty>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
-    const remove_extent_t<_Ty>& _Val) {
+_EXPORT_STD template <_Bounded_builtin_array _Ty>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> make_shared(const remove_extent_t<_Ty>& _Val) {
     // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>(_Val);
     shared_ptr<_Ty> _Ret;
@@ -2958,8 +2966,8 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>>
     return _Ret;
 }
 
-_EXPORT_STD template <class _Ty>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite() {
+_EXPORT_STD template <_Not_unbounded_builtin_array _Ty>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> make_shared_for_overwrite() {
     shared_ptr<_Ty> _Ret;
     if constexpr (is_array_v<_Ty>) {
         // make a shared_ptr to a bounded array
@@ -2973,21 +2981,19 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_T
     return _Ret;
 }
 
-_EXPORT_STD template <class _Ty>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite(
-    const size_t _Count) {
+_EXPORT_STD template <_Unbounded_builtin_array _Ty>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> make_shared_for_overwrite(const size_t _Count) {
     return _STD _Make_shared_unbounded_array<_Ty>(_Count, _For_overwrite_tag{});
 }
 #endif // _HAS_CXX20
 
-_EXPORT_STD template <class _Ty, class _Alloc, class... _Types>
-_NODISCARD_SMART_PTR_ALLOC
 #if _HAS_CXX20
-    enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
-#else
-    shared_ptr<_Ty>
-#endif
-    allocate_shared(const _Alloc& _Al, _Types&&... _Args) { // make a shared_ptr to non-array object
+_EXPORT_STD template <_Not_builtin_array _Ty, class _Alloc, class... _Types>
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Ty, class _Alloc, class... _Types>
+#endif // ^^^ !_HAS_CXX20 ^^^
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> allocate_shared(const _Alloc& _Al, _Types&&... _Args) {
+    // make a shared_ptr to non-array object
     // Note: As of 2019-05-28, this implements the proposed resolution of LWG-3210 (which controls whether
     // allocator::construct sees T or const T when _Ty is const qualified)
     using _Refoa   = _Ref_count_obj_alloc3<remove_cv_t<_Ty>, _Alloc>;
@@ -3044,20 +3050,19 @@ _NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
     return _Ret;
 }
 
-_EXPORT_STD template <class _Ty, class _Alloc>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
-    const _Alloc& _Al, const size_t _Count) {
+_EXPORT_STD template <_Unbounded_builtin_array _Ty, class _Alloc>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> allocate_shared(const _Alloc& _Al, const size_t _Count) {
     return _STD _Allocate_shared_unbounded_array<false, _Ty>(_Al, _Count);
 }
 
-_EXPORT_STD template <class _Ty, class _Alloc>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+_EXPORT_STD template <_Unbounded_builtin_array _Ty, class _Alloc>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> allocate_shared(
     const _Alloc& _Al, const size_t _Count, const remove_extent_t<_Ty>& _Val) {
     return _STD _Allocate_shared_unbounded_array<false, _Ty>(_Al, _Count, _Val);
 }
 
-_EXPORT_STD template <class _Ty, class _Alloc>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(const _Alloc& _Al) {
+_EXPORT_STD template <_Bounded_builtin_array _Ty, class _Alloc>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> allocate_shared(const _Alloc& _Al) {
     // make a shared_ptr to a bounded array
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
@@ -3071,9 +3076,8 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>>
     return _Ret;
 }
 
-_EXPORT_STD template <class _Ty, class _Alloc>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
-    const _Alloc& _Al, const remove_extent_t<_Ty>& _Val) {
+_EXPORT_STD template <_Bounded_builtin_array _Ty, class _Alloc>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> allocate_shared(const _Alloc& _Al, const remove_extent_t<_Ty>& _Val) {
     // make a shared_ptr to a bounded array
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
@@ -3087,9 +3091,8 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>>
     return _Ret;
 }
 
-_EXPORT_STD template <class _Ty, class _Alloc>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(
-    const _Alloc& _Al) {
+_EXPORT_STD template <_Not_unbounded_builtin_array _Ty, class _Alloc>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> allocate_shared_for_overwrite(const _Alloc& _Al) {
     shared_ptr<_Ty> _Ret;
     if constexpr (is_array_v<_Ty>) {
         // make a shared_ptr to a bounded array
@@ -3116,9 +3119,8 @@ _NODISCARD_SMART_PTR_ALLOC enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_T
     return _Ret;
 }
 
-_EXPORT_STD template <class _Ty, class _Alloc>
-_NODISCARD_SMART_PTR_ALLOC enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(
-    const _Alloc& _Al, const size_t _Count) {
+_EXPORT_STD template <_Unbounded_builtin_array _Ty, class _Alloc>
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> allocate_shared_for_overwrite(const _Alloc& _Al, const size_t _Count) {
     return _STD _Allocate_shared_unbounded_array<true, _Ty>(_Al, _Count);
 }
 #endif // _HAS_CXX20
@@ -3605,20 +3607,20 @@ _EXPORT_STD template <class _Ty, class... _Types, enable_if_t<extent_v<_Ty> != 0
 void make_unique(_Types&&...) = delete;
 
 #if _HAS_CXX20
-_EXPORT_STD template <class _Ty, enable_if_t<!is_array_v<_Ty>, int> = 0>
+_EXPORT_STD template <_Not_builtin_array _Ty>
 _NODISCARD_SMART_PTR_ALLOC _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite() {
     // make a unique_ptr with default initialization
     return unique_ptr<_Ty>(new _Ty);
 }
 
-_EXPORT_STD template <class _Ty, enable_if_t<is_unbounded_array_v<_Ty>, int> = 0>
+_EXPORT_STD template <_Unbounded_builtin_array _Ty>
 _NODISCARD_SMART_PTR_ALLOC _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite(const size_t _Size) {
     // make a unique_ptr with default initialization
     using _Elem = remove_extent_t<_Ty>;
     return unique_ptr<_Ty>(new _Elem[_Size]);
 }
 
-_EXPORT_STD template <class _Ty, class... _Types, enable_if_t<is_bounded_array_v<_Ty>, int> = 0>
+_EXPORT_STD template <_Bounded_builtin_array _Ty, class... _Types>
 void make_unique_for_overwrite(_Types&&...) = delete;
 #endif // _HAS_CXX20
 

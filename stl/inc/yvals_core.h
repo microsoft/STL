@@ -385,6 +385,7 @@
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
 // P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
+// P3142R0 Printing Blank Lines With println()
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -880,7 +881,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202404L
+#define _MSVC_STL_UPDATE  202405L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1222,20 +1223,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4018 was "The non-Standard std::tr2::sys namespace is deprecated and will be REMOVED."
 
-#ifdef _SILENCE_FPOS_SEEKPOS_DEPRECATION_WARNING
-#define _DEPRECATE_FPOS_SEEKPOS
-#else // ^^^ warning disabled / warning enabled vvv
-#define _DEPRECATE_FPOS_SEEKPOS                                                                                        \
-    [[deprecated("warning STL4019: "                                                                                   \
-                 "The member std::fpos::seekpos() is non-Standard, and is preserved only for compatibility with "      \
-                 "workarounds for old versions of Visual C++. It will be removed in a future release, and in this "    \
-                 "release always returns 0. Please use standards-conforming mechanisms to manipulate fpos, such as "   \
-                 "conversions to and from streamoff, or an integral type, instead. If you are receiving this message " \
-                 "while compiling Boost.IOStreams, a fix has been submitted upstream to make Boost use "               \
-                 "standards-conforming mechanisms, as it does for other compilers. You can define "                    \
-                 "_SILENCE_FPOS_SEEKPOS_DEPRECATION_WARNING to suppress this warning, "                                \
-                 "or define _REMOVE_FPOS_SEEKPOS to remove std::fpos::seekpos entirely.")]]
-#endif // ^^^ warning enabled ^^^
+// STL4019 was "The member std::fpos::seekpos() is non-Standard, and [...] will be removed"
 
 // P0482R6 Library Support For char8_t
 // Other C++20 deprecation warnings
@@ -1267,30 +1255,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_DEPRECATE_U8PATH
 #endif // ^^^ warning disabled ^^^
 
-#if !defined(_SILENCE_STDEXT_HASH_LOWER_BOUND_DEPRECATION_WARNING)
-#define _DEPRECATE_STDEXT_HASH_LOWER_BOUND                                                                           \
-    [[deprecated(                                                                                                    \
-        "warning STL4022: "                                                                                          \
-        "The hash_meow and unordered_meow containers' non-Standard lower_bound() member was provided for interface " \
-        "compatibility with the ordered associative containers, and doesn't match the semantics of the "             \
-        "hash_meow or unordered_meow containers. Please use the find() member instead. You can define "              \
-        "_SILENCE_STDEXT_HASH_LOWER_BOUND_DEPRECATION_WARNING to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_STDEXT_HASH_LOWER_BOUND
-#endif // ^^^ warning disabled ^^^
-
-#if !defined(_SILENCE_STDEXT_HASH_UPPER_BOUND_DEPRECATION_WARNING)
-#define _DEPRECATE_STDEXT_HASH_UPPER_BOUND                                                                           \
-    [[deprecated(                                                                                                    \
-        "warning STL4023: "                                                                                          \
-        "The hash_meow and unordered_meow containers' non-Standard upper_bound() member was provided for interface " \
-        "compatibility with the ordered associative containers, and doesn't match the semantics of the "             \
-        "hash_meow or unordered_meow containers. Please use the second iterator returned by the "                    \
-        "equal_range() member instead. You can define "                                                              \
-        "_SILENCE_STDEXT_HASH_UPPER_BOUND_DEPRECATION_WARNING to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_STDEXT_HASH_UPPER_BOUND
-#endif // ^^^ warning disabled ^^^
+// STL4022 warned about "The hash_meow and unordered_meow containers' non-Standard lower_bound() member"
+// STL4023 warned about "The hash_meow and unordered_meow containers' non-Standard upper_bound() member"
 
 // P0966R1 [depr.string.capacity]
 #if _HAS_CXX20 && !defined(_SILENCE_CXX20_STRING_RESERVE_WITHOUT_ARGUMENT_DEPRECATION_WARNING) \
@@ -1471,8 +1437,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX23_DEPRECATE_DENORM
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX17 && !defined(_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
+#if !defined(_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING) && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
 #define _DEPRECATE_STDEXT_ARR_ITERS                                                                               \
     [[deprecated(                                                                                                 \
         "warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory " \
@@ -1485,8 +1450,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4044 was "The contents of the stdext::cvt namespace are non-Standard extensions and will be removed"
 
-#if _HAS_CXX17 && !defined(_SILENCE_IO_PFX_SFX_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
+#if !defined(_SILENCE_IO_PFX_SFX_DEPRECATION_WARNING) && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
 #define _DEPRECATE_IO_PFX_SFX                                                                                          \
     [[deprecated(                                                                                                      \
         "warning STL4045: The ipfx(), isfx(), opfx(), and osfx() functions are removed before C++98 (see WG21-N0794) " \
@@ -1497,8 +1461,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_IO_PFX_SFX
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX17 && !defined(_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_TR1_RANDOM_DEPRECATION_WARNING) && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
+#if !defined(_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING) && !defined(_SILENCE_TR1_RANDOM_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
 #define _DEPRECATE_TR1_RANDOM                                                                                          \
     [[deprecated("warning STL4046: Non-Standard TR1 components in <random> are deprecated and will be REMOVED. You "   \
                  "can define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING, _SILENCE_TR1_RANDOM_DEPRECATION_WARNING, or " \
