@@ -946,6 +946,7 @@ std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp FAIL
 std/containers/sequences/vector.bool/append_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/assign_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/insert_range.pass.cpp FAIL
+std/containers/sequences/vector/vector.modifiers/destroy_elements.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/insert_range.pass.cpp FAIL
 std/strings/basic.string/string.modifiers/string_replace/replace_with_range.pass.cpp FAIL
 std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
