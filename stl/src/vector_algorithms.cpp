@@ -1236,13 +1236,9 @@ namespace {
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
-#ifdef _M_IX86
-            return static_cast<_Signed_t>(
-                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
-                | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
-#else // ^^^ x86 / x64 vvv
-            return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
-#endif // ^^^ x64 ^^^
+            // With optimizations enabled, compiles into register movement, rather than an actual stack spill.
+            // Works around the absence of _mm_cvtsi128_si64 on 32-bit.
+            return static_cast<_Signed_t>(_Get_v_pos(_Cur, 0));
         }
 
         static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
