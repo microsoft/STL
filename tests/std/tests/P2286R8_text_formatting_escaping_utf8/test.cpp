@@ -21,15 +21,32 @@ void test_escaped_string() {
     assert(format("{:?}", "a\u0300") == "\"a\u0300\"");
 }
 
-int main() {
+template <class TupleOrPair>
+void test_tuple_or_pair_escaping(TupleOrPair&& input) {
+    get<1>(input) = "hell\u00d6"; // U+00D6 LATIN CAPITAL LETTER O WITH DIAERESIS
+    assert(format("{}", input) == "('*', \"hell\u00d6\")");
+    assert(format("{:#^16}", input) == "#('*', \"hell\u00d6\")#");
+
+    get<1>(input) = "hell\uff2f"; // U+FF2F FULLWIDTH LATIN CAPITAL LETTER O
+    assert(format("{}", input) == "('*', \"hell\uff2f\")");
+    assert(format("{:#^16}", input) == "('*', \"hell\uff2f\")#");
+}
+
+void run_test() {
     test_escaped_string();
+    test_tuple_or_pair_escaping(make_pair('*', ""));
+    test_tuple_or_pair_escaping(make_tuple('*', ""));
+}
+
+int main() {
+    run_test();
 
     assert(setlocale(LC_ALL, ".1252") != nullptr);
-    test_escaped_string();
+    run_test();
 
     assert(setlocale(LC_ALL, ".932") != nullptr);
-    test_escaped_string();
+    run_test();
 
     assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
-    test_escaped_string();
+    run_test();
 }

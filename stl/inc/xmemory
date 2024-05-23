@@ -9,7 +9,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstdint>
 #include <cstdlib>
-#include <limits>
+#include <limits> // TRANSITION, see GH-4634: Lots of user code assumes that <xmemory> drags in <limits>
 #include <new>
 #include <xatomic.h>
 #include <xutility>
@@ -606,7 +606,7 @@ struct _Normal_allocator_traits { // defines traits for allocators
         if constexpr (_Has_max_size<_Alloc>::value) {
             return _Al.max_size();
         } else {
-            return (numeric_limits<size_type>::max)() / sizeof(value_type);
+            return _STD _Max_limit<size_type>() / sizeof(value_type);
         }
     }
 
@@ -1087,7 +1087,7 @@ _NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len) noexcep
     _STL_INTERNAL_STATIC_ASSERT(_Size_type(-1) > 0);
 
     if constexpr (sizeof(_Unsigned_type) > sizeof(_Size_type)) {
-        if (_Len > (numeric_limits<_Size_type>::max)()) {
+        if (_Len > _STD _Max_limit<_Size_type>()) {
             _Xlength_error("size is too long for _Size_type");
         }
     }
@@ -2156,10 +2156,8 @@ _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _R
 }
 
 #if _HAS_CXX23
-template <class _Ty, class = void>
-constexpr bool _Has_member_from_primary = false;
 template <class _Ty>
-constexpr bool _Has_member_from_primary<_Ty, void_t<typename _Ty::_From_primary>> = true;
+constexpr bool _Has_member_from_primary = requires { typename _Ty::_From_primary; };
 
 // Avoid using allocate_at_least when the allocator publicly derives from std::allocator:
 // "old" allocators might hide allocate and deallocate but fail to hide allocate_at_least.
@@ -2293,11 +2291,23 @@ template <class _Ty, class _Uty>
 constexpr bool _Is_normally_bindable<_Ty, _Uty, void_t<_Normally_bound_ref<_Ty, _Uty>>> = true;
 
 #if _HAS_CXX20
-_EXPORT_STD template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_cv_pair<_Ty>, int> = 0>
+template <class _Ty>
+concept _Cv_std_pair = _Is_cv_pair<_Ty>;
+
+template <class _Ty>
+concept _Usable_for_pair_like_overload =
+#if _HAS_CXX23
+    _Pair_like<_Ty> ||
+#endif // _HAS_CXX23
+    !_Is_deducible_as_pair<_Ty&>;
+
+_EXPORT_STD template <class _Ty, class _Alloc, class... _Types>
+    requires (!_Is_cv_pair<_Ty>)
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _Args) noexcept {
     if constexpr (!uses_allocator_v<remove_cv_t<_Ty>, _Alloc>) {
         static_assert(is_constructible_v<_Ty, _Types...>,
-            "If uses_allocator_v<remove_cv_t<T>, Alloc> does not hold, T must be constructible from Types...");
+            "If uses_allocator_v<remove_cv_t<T>, Alloc> is false, "
+            "T must be constructible from (Types...). (N4981 [allocator.uses.construction]/5)");
         (void) _Al;
         return _STD forward_as_tuple(_STD forward<_Types>(_Args)...);
     } else if constexpr (is_constructible_v<_Ty, allocator_arg_t, const _Alloc&, _Types...>) {
@@ -2306,44 +2316,39 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _T
     } else if constexpr (is_constructible_v<_Ty, _Types..., const _Alloc&>) {
         return _STD forward_as_tuple(_STD forward<_Types>(_Args)..., _Al);
     } else {
-        static_assert(false, "T must be constructible from either (allocator_arg_t, const Alloc&, Types...) "
-                             "or (Types..., const Alloc&) if uses_allocator_v<remove_cv_t<T>, Alloc> is true");
+        static_assert(false, "If uses_allocator_v<remove_cv_t<T>, Alloc> is true, "
+                             "T must be constructible from either (allocator_arg_t, const Alloc&, Types...) "
+                             "or (Types..., const Alloc&). (N4981 [allocator.uses.construction]/5)");
     }
 }
 
-_EXPORT_STD template <class _Ty, class _Alloc, enable_if_t<_Is_cv_pair<_Ty>, int> = 0>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept;
 
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_cv_pair<_Ty>, int> = 0>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Uty1, class _Uty2>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept;
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_cv_pair<_Ty>, int> = 0>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Uty1, class _Uty2>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>& _Pair) noexcept;
 #endif // _HAS_CXX23
 
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_cv_pair<_Ty>, int> = 0>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Uty1, class _Uty2>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept;
 
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_cv_pair<_Ty>, int> = 0>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Uty1, class _Uty2>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept;
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_cv_pair<_Ty>, int> = 0>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Uty1, class _Uty2>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>&& _Pair) noexcept;
 #endif // _HAS_CXX23
 
-#if _HAS_CXX23
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
-    requires _Is_cv_pair<_Ty> && (_Pair_like<_Uty> || !_Is_deducible_as_pair<_Uty&>)
-#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
-    enable_if_t<_Is_cv_pair<_Ty> && !_Is_deducible_as_pair<_Uty&>, int> = 0>
-#endif // ^^^ !_HAS_CXX23 ^^^
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, _Usable_for_pair_like_overload _Uty>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept;
 
-_EXPORT_STD template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_cv_pair<_Ty>, int> = 0>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Tuple1, class _Tuple2>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, piecewise_construct_t, _Tuple1&& _Tup1, _Tuple2&& _Tup2) noexcept {
     return _STD make_tuple(piecewise_construct,
@@ -2361,7 +2366,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
             _STD forward<_Tuple2>(_Tup2)));
 }
 
-_EXPORT_STD template <class _Ty, class _Alloc, enable_if_t<_Is_cv_pair<_Ty>, int> /* = 0 */>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct, tuple<>{}, tuple<>{});
@@ -2369,7 +2374,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) no
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al));
 }
 
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_cv_pair<_Ty>, int> /* = 0 */>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Uty1, class _Uty2>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2380,7 +2385,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
 }
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_cv_pair<_Ty>, int> /* = 0 */>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Uty1, class _Uty2>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>& _Pair) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2391,7 +2396,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pa
 }
 #endif // _HAS_CXX23
 
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_cv_pair<_Ty>, int> /* = 0 */>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Uty1, class _Uty2>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept {
     // equivalent to
@@ -2402,7 +2407,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _Pair.second));
 }
 
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_cv_pair<_Ty>, int> /* = 0 */>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Uty1, class _Uty2>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2413,7 +2418,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pa
 }
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_cv_pair<_Ty>, int> /* = 0 */>
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, class _Uty1, class _Uty2>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
@@ -2425,13 +2430,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
 }
 #endif // _HAS_CXX23
 
-#if _HAS_CXX23
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
-    requires _Is_cv_pair<_Ty> && (_Pair_like<_Uty> || !_Is_deducible_as_pair<_Uty&>)
-#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-_EXPORT_STD template <class _Ty, class _Alloc, class _Uty,
-    enable_if_t<_Is_cv_pair<_Ty> && !_Is_deducible_as_pair<_Uty&>, int> /* = 0 */>
-#endif // ^^^ !_HAS_CXX23 ^^^
+_EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, _Usable_for_pair_like_overload _Uty>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
 #if _HAS_CXX23
     if constexpr (_Pair_like<_Uty> && !_Is_subrange_v<remove_cvref_t<_Uty>>) {

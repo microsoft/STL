@@ -131,6 +131,16 @@ void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&.
     _STD _Print_impl(_Add_newline::_Yes, _Stream, _Fmt, _STD forward<_Types>(_Args)...);
 }
 
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void println(FILE* _Stream) {
+    _STD print(_Stream, "\n");
+}
+
+_EXPORT_STD template <int = 0> // improves throughput, see GH-2329
+void println() {
+    _STD println(stdout);
+}
+
 _EXPORT_STD template <class... _Types>
 void println(const format_string<_Types...> _Fmt, _Types&&... _Args) {
     _STD println(stdout, _Fmt, _STD forward<_Types>(_Args)...);

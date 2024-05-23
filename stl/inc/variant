@@ -1196,8 +1196,8 @@ _NODISCARD constexpr decltype(auto) get(variant<_Types...>& _Var) {
     if constexpr (_Idx < sizeof...(_Types)) {
         return _STD get<_Idx>(_Var);
     } else {
-        static_assert(
-            false, "get<T>(variant<Types...>&) requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
+        static_assert(false, "get<T>(variant<Types...>&) "
+                             "requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
     }
 }
 _EXPORT_STD template <class _Ty, class... _Types>
@@ -1207,8 +1207,8 @@ _NODISCARD constexpr decltype(auto) get(variant<_Types...>&& _Var) {
     if constexpr (_Idx < sizeof...(_Types)) {
         return _STD get<_Idx>(_STD move(_Var));
     } else {
-        static_assert(
-            false, "get<T>(variant<Types...>&&) requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
+        static_assert(false, "get<T>(variant<Types...>&&) "
+                             "requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
     }
 }
 _EXPORT_STD template <class _Ty, class... _Types>
@@ -1218,8 +1218,8 @@ _NODISCARD constexpr decltype(auto) get(const variant<_Types...>& _Var) {
     if constexpr (_Idx < sizeof...(_Types)) {
         return _STD get<_Idx>(_Var);
     } else {
-        static_assert(false,
-            "get<T>(const variant<Types...>&) requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
+        static_assert(false, "get<T>(const variant<Types...>&) "
+                             "requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
     }
 }
 _EXPORT_STD template <class _Ty, class... _Types>
@@ -1229,8 +1229,8 @@ _NODISCARD constexpr decltype(auto) get(const variant<_Types...>&& _Var) {
     if constexpr (_Idx < sizeof...(_Types)) {
         return _STD get<_Idx>(_STD move(_Var));
     } else {
-        static_assert(false,
-            "get<T>(const variant<Types...>&&) requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
+        static_assert(false, "get<T>(const variant<Types...>&&) "
+                             "requires T to occur exactly once in Types. (N4971 [variant.get]/8)");
     }
 }
 

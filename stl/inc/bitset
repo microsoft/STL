@@ -325,7 +325,7 @@ public:
                 }
             }
 
-            if (_Array[0] > ULONG_MAX) {
+            if (!_STD _In_range<unsigned long>(_Array[0])) {
                 _Xoflo();
             }
 

@@ -5,12 +5,13 @@
 #define TEST_NAMEX "<cstdio>"
 
 #include "tdefs.h"
-#include "temp_file_name.h"
 #include <assert.h>
 #include <cstdio>
 #include <errno.h>
 #include <stdarg.h>
 #include <string.h>
+
+#include <temp_file_name.hpp>
 
 #undef clearerr // tested in stdio2.c
 #undef feof
