@@ -746,7 +746,7 @@ _NODISCARD inline bool _Multiply_by_power_of_ten(_Big_integer_flt& _Xval, const 
 // Computes the number of zeroes higher than the most significant set bit in _Ux
 _NODISCARD inline uint32_t _Count_sequential_high_zeroes(const uint32_t _Ux) noexcept {
     unsigned long _Index; // Intentionally uninitialized for better codegen
-    return _BitScanReverse(&_Index, _Ux) ? 31 - _Index : 32;
+    return _BitScanReverse(&_Index, _Ux) ? 31 ^ _Index : 32;
 }
 
 // This high-precision integer division implementation was translated from the implementation of

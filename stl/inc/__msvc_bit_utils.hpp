@@ -107,7 +107,7 @@ _NODISCARD int _Countl_zero_bsr(const _Ty _Val) noexcept {
 #ifdef _M_IX86
         const unsigned int _High = _Val >> 32;
         if (_BitScanReverse(&_Result, _High)) {
-            return static_cast<int>(31 - _Result);
+            return static_cast<int>(31 ^ _Result);
         }
 
         const auto _Low = static_cast<unsigned int>(_Val);
