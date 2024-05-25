@@ -345,7 +345,7 @@ int main() {
     error_code ec;
     const auto previousCd = fs::current_path(ec);
     assert_success(ec);
-    const auto testDir = get_test_directory("filesystem_rename_noop");
+    const auto testDir = get_experimental_test_directory("filesystem_rename_noop");
     printf("changing directory to \"%ls\"\n", testDir.native().c_str());
     fs::create_directory(testDir, ec);
     assert_success(ec);

@@ -53,10 +53,10 @@ template <typename Elem, typename Traits>
     return str.size() >= prefix.size() && Traits::compare(str.data(), prefix.data(), prefix.size()) == 0;
 }
 
-struct test_temp_directory {
-    error_code ec;
+struct [[nodiscard]] test_temp_directory {
     path directoryPath;
-    explicit test_temp_directory(const string_view testName) : directoryPath(get_new_test_directory(testName)) {
+    explicit test_temp_directory(const string_view testName) : directoryPath(get_test_directory(testName)) {
+        error_code ec;
         remove_all(directoryPath, ec);
         if (ec) {
             wcerr << L"Warning, couldn't clean up " << directoryPath << L" before test.\n";
@@ -68,7 +68,11 @@ struct test_temp_directory {
         }
     }
 
+    test_temp_directory(const test_temp_directory&)            = delete;
+    test_temp_directory& operator=(const test_temp_directory&) = delete;
+
     ~test_temp_directory() noexcept {
+        error_code ec;
         remove_all(directoryPath, ec);
         if (ec) {
             wcerr << L"Warning, couldn't clean up " << directoryPath << L" after test.\n";
@@ -1420,8 +1424,8 @@ void test_recursive_directory_iterator() {
     test_directory_iterator_common_parts<recursive_directory_iterator>("recursive_directory_iterator"sv);
 
     {
-        const test_temp_directory recursiveTests("recursive_directory_iterator specific"sv);
-        create_file_containing(recursiveTests.directoryPath / L"a.txt"sv, L"hello");
+        const test_temp_directory tempDir("recursive_directory_iterator-specific"sv);
+        create_file_containing(tempDir.directoryPath / L"a.txt"sv, L"hello");
 
         // _NODISCARD directory_options  options() const;
         // _NODISCARD int                depth() const;
@@ -1430,7 +1434,7 @@ void test_recursive_directory_iterator() {
         // void disable_recursion_pending();
         {
             error_code ec;
-            recursive_directory_iterator good_dir(recursiveTests.directoryPath, directory_options::none, ec);
+            recursive_directory_iterator good_dir(tempDir.directoryPath, directory_options::none, ec);
             if (!EXPECT(good(ec))) {
                 return;
             }
@@ -1438,11 +1442,11 @@ void test_recursive_directory_iterator() {
             EXPECT(good_dir.options() == directory_options::none);
 
             recursive_directory_iterator good_dir2(
-                recursiveTests.directoryPath, directory_options::skip_permission_denied, ec);
+                tempDir.directoryPath, directory_options::skip_permission_denied, ec);
             EXPECT(good_dir2.options() == directory_options::skip_permission_denied);
 
             recursive_directory_iterator good_dir3(
-                recursiveTests.directoryPath, directory_options::follow_directory_symlink, ec);
+                tempDir.directoryPath, directory_options::follow_directory_symlink, ec);
             EXPECT(good_dir3.options() == directory_options::follow_directory_symlink);
 
             EXPECT(good_dir.depth() == 0);
@@ -1461,7 +1465,7 @@ void test_recursive_directory_iterator() {
 
         // void pop();
         {
-            recursive_directory_iterator good_dir(recursiveTests.directoryPath, directory_options::none);
+            recursive_directory_iterator good_dir(tempDir.directoryPath, directory_options::none);
             good_dir.pop();
             EXPECT(good_dir == recursive_directory_iterator{});
         }
@@ -1481,10 +1485,10 @@ void test_recursive_directory_iterator() {
 
     // Also test VSO-649431 <filesystem> follow_directory_symlinks with a broken symlink causes iteration to break
     {
-        const test_temp_directory followSymlinkTests("recursive_directory_iterator_VSO-649431"sv);
-        const path aaa = followSymlinkTests.directoryPath / L"aaa"sv;
-        const path bbb = followSymlinkTests.directoryPath / L"bbb"sv;
-        const path ccc = followSymlinkTests.directoryPath / L"ccc"sv;
+        const test_temp_directory tempDir("recursive_directory_iterator-VSO-649431"sv);
+        const path aaa = tempDir.directoryPath / L"aaa"sv;
+        const path bbb = tempDir.directoryPath / L"bbb"sv;
+        const path ccc = tempDir.directoryPath / L"ccc"sv;
         error_code ec;
         create_directory_symlink(nonexistentPaths[0], bbb, ec);
         if (ec) {
@@ -1496,7 +1500,7 @@ void test_recursive_directory_iterator() {
                 directory_options::follow_directory_symlink, directory_options::skip_permission_denied,
                 directory_options::follow_directory_symlink | directory_options::skip_permission_denied};
             for (const auto& option : options) {
-                recursive_directory_iterator first(followSymlinkTests.directoryPath, option);
+                recursive_directory_iterator first(tempDir.directoryPath, option);
                 assert(first != recursive_directory_iterator{});
                 EXPECT(first->is_directory());
                 EXPECT(!first->is_symlink());
@@ -2883,7 +2887,7 @@ void test_invalid_conversions() {
 }
 
 void test_status() {
-    const test_temp_directory tempDir("test_status"sv);
+    const test_temp_directory tempDir("status"sv);
     const path& testDir = tempDir.directoryPath;
     const path testFile(testDir / L"test_file"sv);
     const path testLink(testDir / L"test_link"sv);
@@ -3328,9 +3332,9 @@ void test_rename() {
     const path fileA(tempDir.directoryPath / L"filea.txt"sv);
     const path fileB(tempDir.directoryPath / L"fileb.txt"sv);
 
-    create_directories(dir.native(), ec);
+    create_directories(dir, ec);
     EXPECT(good(ec));
-    create_directory(otherDir.native(), ec);
+    create_directory(otherDir, ec);
     EXPECT(good(ec));
     create_file_containing(fileA, L"hello");
     create_file_containing(fileB, L"world");
@@ -3342,15 +3346,26 @@ void test_rename() {
     EXPECT(good(ec));
     EXPECT(read_file_contents(fileA) == L"hello");
 
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, skip this for all MSVC-internal test runs.
+    // As of 2024-05-09, these rename() tests sporadically fail in MSVC-internal private test runs with
+    // "Access is denied" error codes. We've never observed such failures in MSVC-internal PR/CI checks,
+    // MSVC-internal local test runs, GitHub PR/CI checks, or GitHub local test runs. There's no significant
+    // compiler interaction here, so we can live with GitHub-only test coverage. Although we don't know the
+    // root cause, we suspect that this is related to the physical machines that are used for MSVC-internal
+    // private test runs, so we should check whether they've been replaced in a year or two.
+
     // If new_p resolves to an existing non-directory file, new_p is removed
     rename(fileA, fileB, ec);
     EXPECT(good(ec));
-    EXPECT(!exists(fileA.native()));
+    EXPECT(!exists(fileA));
     EXPECT(read_file_contents(fileB) == L"hello");
 
     // Standard rename where target doesn't exist
-    rename(fileB, fileA);
+    rename(fileB, fileA, ec);
+    EXPECT(good(ec));
+    EXPECT(!exists(fileB));
     EXPECT(read_file_contents(fileA) == L"hello");
+#endif // ^^^ no workaround ^^^
 
     // Bad cases
     EXPECT(throws_filesystem_error([&] { rename(dir, otherDir); }, "rename", dir, otherDir));
@@ -3364,7 +3379,7 @@ void test_space() {
     const path file(dir / L"test_space_file.txt"sv);
 
     error_code ec;
-    create_directory(dir.native(), ec);
+    create_directory(dir, ec);
     EXPECT(good(ec));
     create_file_containing(file, L"hello");
 
@@ -3643,7 +3658,7 @@ void test_create_directory() {
 }
 
 void test_create_dirs_and_remove_all() {
-    const test_temp_directory tempDir("create_dirs_and_remove_all"sv);
+    const test_temp_directory tempDir("create_directories-and-remove_all"sv);
     const path& r = tempDir.directoryPath;
 
     // test long path support
