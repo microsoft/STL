@@ -297,11 +297,10 @@ void check_range_formatter() {
     { // Check formatting range of 'FormatNextArg's.
         using TestRange = Range::template RebindElement<const FormatNextArg>;
 
-        // TRANSITION, GH-4636 (':' is unnecessary)
-        assert(fmt(STR("{:}"), TestRange(array<FormatNextArg, 1>{}), 0) == STR("[0]"));
-        assert(fmt(STR("{:}"), TestRange(array<FormatNextArg, 1>{}), STR("mmm")) == STR("[mmm]"));
-        assert(fmt(STR("{:}"), TestRange(array<FormatNextArg, 1>{}), FormatAsX{}) == STR("[handle: X]"));
-        assert(fmt(STR("{:}"), TestRange(array<FormatNextArg, 2>{}), FormatAsX{}) == STR("[handle: X, handle: X]"));
+        assert(fmt(STR("{}"), TestRange(array<FormatNextArg, 1>{}), 0) == STR("[0]"));
+        assert(fmt(STR("{}"), TestRange(array<FormatNextArg, 1>{}), STR("mmm")) == STR("[mmm]"));
+        assert(fmt(STR("{}"), TestRange(array<FormatNextArg, 1>{}), FormatAsX{}) == STR("[handle: X]"));
+        assert(fmt(STR("{}"), TestRange(array<FormatNextArg, 2>{}), FormatAsX{}) == STR("[handle: X, handle: X]"));
     }
 
     { // Check formatting range of custom type with 'set_debug_format'.
