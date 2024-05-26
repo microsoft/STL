@@ -4561,7 +4561,7 @@ private:
             }
         }
 
-        const int _Width = static_cast<int>(_Buffer.size()); // TRANSITION, GH-4631
+        const int _Width = _Measure_display_width<_CharT>(_Buffer);
         return _STD _Write_aligned(
             _Ctx.out(), _Width, _Format_specs, _Fmt_align::_Left, [&](_FormatContext::iterator _Out) {
                 return _STD _Fmt_write(_STD move(_Out), basic_string_view{_Buffer});
