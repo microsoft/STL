@@ -4430,7 +4430,7 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
     return _Begin;
 }
 
-template <class _Ty, class _CharT = char>
+_EXPORT_STD template <class _Ty, class _CharT = char>
     requires same_as<remove_cvref_t<_Ty>, _Ty> && formattable<_Ty, _CharT>
 class range_formatter {
 private:
