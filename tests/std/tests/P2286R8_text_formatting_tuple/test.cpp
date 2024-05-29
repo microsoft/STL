@@ -18,6 +18,7 @@
 #include <concepts>
 #include <cstddef>
 #include <format>
+#include <iterator>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -436,19 +437,19 @@ auto test_vformat_exception = []<class CharT, class... Args>([[maybe_unused]] st
 };
 
 // Also test that functions taking non-constructible basic_format_context specializations can be well-formed,
-// despite that they can't be actually called.
+// despite the fact that they can't actually be called.
 
 template <class CharT>
 void test_unconstructible_format_context_for_raw_ptr(basic_format_context<CharT*, CharT>& ctx) { // COMPILE-ONLY
-    formatter<tuple<basic_string<CharT>>, CharT> formatter;
-    formatter.format(make_tuple(basic_string<CharT>(STR("42"))), ctx);
+    formatter<tuple<basic_string<CharT>>, CharT> tuple_formatter;
+    tuple_formatter.format(make_tuple(basic_string<CharT>(STR("42"))), ctx);
 }
 
 template <class CharT>
 void test_unconstructible_format_context_for_back_inserter(
     basic_format_context<back_insert_iterator<basic_string<CharT>>, CharT>& ctx) { // COMPILE-ONLY
-    formatter<tuple<basic_string<CharT>>, CharT> formatter;
-    formatter.format(make_tuple(basic_string<CharT>(STR("42"))), ctx);
+    formatter<tuple<basic_string<CharT>>, CharT> tuple_formatter;
+    tuple_formatter.format(make_tuple(basic_string<CharT>(STR("42"))), ctx);
 }
 
 int main() {

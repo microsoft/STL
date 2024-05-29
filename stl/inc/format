@@ -4150,7 +4150,7 @@ protected:
         basic_string<_CharT> _Tmp_str;
         if constexpr (is_same_v<_FormatContext, _Default_format_context<_CharT>>) {
             _Fmt_iterator_buffer<back_insert_iterator<basic_string<_CharT>>, _CharT> _Tmp_buf{
-                _STD back_inserter(_Tmp_str)};
+                back_insert_iterator{_Tmp_str}};
             auto _Tmp_ctx = _FormatContext::_Make_from(
                 _Basic_fmt_it<_CharT>{_Tmp_buf}, _Fmt_ctx._Get_args(), _Fmt_ctx._Get_lazy_locale());
             _Format_to_context(_Tmp_ctx, _Args...);
