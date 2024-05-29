@@ -4393,7 +4393,7 @@ public:
 
 template <class _CharT, class _CallbacksType>
 _NODISCARD constexpr const _CharT* _Parse_range_specs(
-    const _CharT* _Begin, const _CharT* _End, _CallbacksType&& _Callbacks) {
+    const _CharT* _Begin, const _CharT* const _End, _CallbacksType&& _Callbacks) {
     if (_Begin == _End || *_Begin == '}' || *_Begin == ':') {
         return _Begin;
     }
@@ -4415,7 +4415,7 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
         }
     }
 
-    switch (_CharT _Maybe_type = *_Begin) {
+    switch (const _CharT _Maybe_type = *_Begin) {
     case '?':
         if (++_Begin == _End || *_Begin != 's') {
             _Throw_format_error("Invalid range-type '?'; did you mean '?s'?");
@@ -4588,7 +4588,7 @@ private:
     }
 
     template <_RANGES input_range _Range, class _FormatContext>
-    void _Format_as_string(_Range&& _Rng, _FormatContext& _Ctx, bool _Debug) const {
+    void _Format_as_string(_Range&& _Rng, _FormatContext& _Ctx, const bool _Debug) const {
         if constexpr (_RANGES contiguous_range<_Range>) {
             const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rng));
 
