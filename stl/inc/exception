@@ -30,6 +30,7 @@ _STD_END
 
 #if _HAS_EXCEPTIONS
 
+#include <malloc.h> // TRANSITION, VSO-2048380: This is unnecessary, but many projects assume it as of 2024-04-29
 #include <vcruntime_exception.h>
 
 _STD_BEGIN

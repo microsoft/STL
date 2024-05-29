@@ -10,30 +10,67 @@ jobs:
   steps:
     - template: checkout-self.yml
     - script: |
+        if exist "$(validationBuildOutputLocation)" (
+          rmdir /S /Q "$(validationBuildOutputLocation)"
+        )
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
           -host_arch=x64 -arch=x64 -no_logo
-        cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B $(tmpDir)/format-validate-build
-        cmake --build $(tmpDir)/format-validate-build
+        cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B "$(validationBuildOutputLocation)"
+        cmake --build "$(validationBuildOutputLocation)"
       displayName: 'Build format and validation'
       timeoutInMinutes: 5
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - script: |
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
           -host_arch=x64 -arch=x64 -no_logo
-        cmake --build $(tmpDir)/format-validate-build --target run-format
+        cmake --build "$(validationBuildOutputLocation)" --target run-format
       displayName: 'clang-format Files'
       timeoutInMinutes: 5
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - script: |
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
           -host_arch=x64 -arch=x64 -no_logo
-        cmake --build $(tmpDir)/format-validate-build --target run-validate
+        cmake --build "$(validationBuildOutputLocation)" --target run-validate
       displayName: 'Validate Files'
       timeoutInMinutes: 2
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PowerShell@2
       displayName: 'Create Diff'
       inputs:
-        filePath: azure-devops/create-prdiff.ps1
+        pwsh: true
+        targetType: inline
+        script: |
+          $TempSubDir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+          mkdir $TempSubDir -Force | Out-Null
+          $DiffFile = Join-Path $TempSubDir 'format.diff'
+          git diff --ignore-submodules > $DiffFile
+          if ((Get-Item -LiteralPath $DiffFile).Length -ne 0) {
+            $message = @(
+              '##vso[task.logissue type=error]The files in the repo need to be properly formatted.'
+              ''
+              '##[section]To fix this, you can clang-format the entire repo with:'
+              '  cmake --preset x64'
+              '  cmake --build --preset x64 --target format'
+              ''
+              '##[section]Please avoid this in the future by configuring your editor to format-on-save.'
+              ''
+              '##[section]View expected formatting:'
+              '##[group]  >>>>> Click this line to expand the diff: <<<<<'
+              Get-Content -LiteralPath $DiffFile -Raw
+              '##[endgroup]'
+              ''
+              '##[section]You can also download this as format.diff and apply it with `git apply`:'
+              '  1. Click the failed Validation job (upper left, marked with a red X)'
+              '  2. Click "1 artifact produced"'
+              '  3. Click the ">" chevron to the left of "format-artifact"'
+              '  4. Hover over "format.diff"'
+              '  5. Click the three dots that appear on the right'
+              '  6. Click "Download artifacts"'
+              ''
+              "##vso[artifact.upload artifactname=format-artifact]$DiffFile"
+              '##vso[task.complete result=Failed]'
+            )
+            Write-Host ($message -join "`n")
+          }
       condition: succeededOrFailed()
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
