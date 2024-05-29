@@ -4391,9 +4391,9 @@ public:
     }
 };
 
-template <class _CharT, class _CallbacksType>
+template <class _CharT>
 _NODISCARD constexpr const _CharT* _Parse_range_specs(
-    const _CharT* _Begin, const _CharT* const _End, _CallbacksType&& _Callbacks) {
+    const _CharT* _Begin, const _CharT* const _End, _Range_specs_setter<_CharT>& _Callbacks) {
     if (_Begin == _End || *_Begin == '}' || *_Begin == ':') {
         return _Begin;
     }
