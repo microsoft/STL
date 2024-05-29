@@ -249,7 +249,9 @@ void check_range_formatter() {
         assert(fmt(STR("{:>{}?s}"), CharRange(STR("Hel\alo"sv)), 20) == STR(R"(        "Hel\u{7}lo")"));
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1318584
         assert(fmt(STR("{0:-^{1}?s}"), CharRange(STR("H\"ello"sv)), 20) == STR(R"(-----"H\"ello"------)"));
-#endif // defined(__clang__) || defined(__EDG__)
+#else // ^^^ no workaround / workaround vvv
+        assert(fmt(STR("{0:-^{1}?s}"), CharRange(STR("H\"ello"sv)), 20) == STR("-----\"H\\\"ello\"------"));
+#endif // ^^^ workaround ^^^
     }
 
     // Check formatting with range-underlying-spec.
