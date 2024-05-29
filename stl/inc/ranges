@@ -1708,8 +1708,8 @@ namespace ranges {
         }
     };
 
-    template <class _Ty, class _Bo>
-    repeat_view(_Ty, _Bo) -> repeat_view<_Ty, _Bo>;
+    template <class _Ty, class _Bo = unreachable_sentinel_t>
+    repeat_view(_Ty, _Bo = _Bo()) -> repeat_view<_Ty, _Bo>;
 
     namespace views {
         struct _Repeat_fn {

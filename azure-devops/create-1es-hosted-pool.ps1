@@ -70,36 +70,6 @@ function New-Password {
   return $result
 }
 
-<#
-.SYNOPSIS
-Waits for the shutdown of the specified resource.
-
-.DESCRIPTION
-Wait-Shutdown takes a VM, and checks if there's a 'PowerState/stopped'
-code; if there is, it returns. If there isn't, it waits 10 seconds and
-tries again.
-
-.PARAMETER ResourceGroupName
-The name of the resource group to look up the VM in.
-
-.PARAMETER Name
-The name of the virtual machine to wait on.
-#>
-function Wait-Shutdown {
-  [CmdletBinding(PositionalBinding=$false)]
-  Param(
-    [Parameter(Mandatory)][string]$ResourceGroupName,
-    [Parameter(Mandatory)][string]$Name
-  )
-
-  Write-Host "Waiting for $Name to stop..."
-  $StoppedCode = 'PowerState/stopped'
-  while ($StoppedCode -notin (Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status).Statuses.Code) {
-    Write-Host '... not stopped yet, sleeping for 10 seconds'
-    Start-Sleep -Seconds 10
-  }
-}
-
 ####################################################################################################
 Display-ProgressBar -Status 'Silencing breaking change warnings'
 
@@ -169,7 +139,7 @@ Display-ProgressBar -Status 'Creating prototype VM'
 
 # Previously: -Priority 'Spot'
 $VM = New-AzVMConfig `
-  -Name $ProtoVMName `
+  -VMName $ProtoVMName `
   -VMSize $VMSize `
   -Priority 'Regular'
 
@@ -195,78 +165,78 @@ $VM = Set-AzVMBootDiagnostic `
   -VM $VM `
   -Disable
 
-$VM = Set-AzVMSecurityProfile `
-  -VM $VM `
-  -SecurityType 'TrustedLaunch'
-
-$VM = Set-AzVMUefi `
-  -VM $VM `
-  -EnableVtpm $true `
-  -EnableSecureBoot $true
-
 New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
   -VM $VM | Out-Null
-
-####################################################################################################
-Display-ProgressBar -Status 'Running provision-image.ps1 in VM'
-
-$ProvisionImageResult = Invoke-AzVMRunCommand `
-  -ResourceGroupName $ResourceGroupName `
-  -VMName $ProtoVMName `
-  -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\provision-image.ps1"
-
-Write-Host $ProvisionImageResult.value.Message
-
-####################################################################################################
-Display-ProgressBar -Status 'Restarting VM'
-
-Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName | Out-Null
-
-####################################################################################################
-Display-ProgressBar -Status 'Sleeping after restart'
-
-# The VM appears to be busy immediately after restarting.
-# This workaround waits for a minute before attempting to run sysprep.ps1.
-Start-Sleep -Seconds 60
-
-####################################################################################################
-Display-ProgressBar -Status 'Running sysprep.ps1 in VM'
-
-Invoke-AzVMRunCommand `
-  -ResourceGroupName $ResourceGroupName `
-  -VMName $ProtoVMName `
-  -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\sysprep.ps1" | Out-Null
-
-####################################################################################################
-Display-ProgressBar -Status 'Waiting for VM to shut down'
-
-Wait-Shutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
-
-####################################################################################################
-Display-ProgressBar -Status 'Stopping VM'
-
-Stop-AzVM `
-  -ResourceGroupName $ResourceGroupName `
-  -Name $ProtoVMName `
-  -Force | Out-Null
-
-####################################################################################################
-Display-ProgressBar -Status 'Generalizing VM'
-
-Set-AzVM `
-  -ResourceGroupName $ResourceGroupName `
-  -Name $ProtoVMName `
-  -Generalized | Out-Null
 
 $VM = Get-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName
 
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
+
+####################################################################################################
+Display-ProgressBar -Status 'Running provision-image.ps1 in VM'
+
+$ProvisionImageResult = Invoke-AzVMRunCommand `
+  -ResourceId $VM.ID `
+  -CommandId 'RunPowerShellScript' `
+  -ScriptPath "$PSScriptRoot\provision-image.ps1"
+
+Write-Host $ProvisionImageResult.value.Message
+
+if ($ProvisionImageResult.value.Message -cnotmatch 'PROVISION_IMAGE_SUCCEEDED') {
+  Write-Host 'provision-image.ps1 failed, stopping VM...'
+
+  Stop-AzVM `
+    -Id $VM.ID `
+    -Force | Out-Null
+
+  Write-Error "VM stopped. Remember to delete unusable resource group: $ResourceGroupName"
+}
+
+####################################################################################################
+Display-ProgressBar -Status 'Restarting VM'
+
+Restart-AzVM `
+  -Id $VM.ID | Out-Null
+
+####################################################################################################
+Display-ProgressBar -Status 'Sleeping after restart'
+
+# The VM appears to be busy immediately after restarting.
+# This workaround waits for a minute before attempting to run sysprep.
+Start-Sleep -Seconds 60
+
+####################################################################################################
+Display-ProgressBar -Status 'Running sysprep in VM'
+
+Invoke-AzVMRunCommand `
+  -ResourceId $VM.ID `
+  -CommandId 'RunPowerShellScript' `
+  -ScriptString 'C:\Windows\system32\sysprep\sysprep.exe /oobe /generalize /mode:vm /shutdown' | Out-Null
+
+####################################################################################################
+Display-ProgressBar -Status 'Waiting for VM to shut down'
+
+while ('PowerState/stopped' -notin (Get-AzVM -ResourceId $VM.ID -Status).Statuses.Code) {
+  Start-Sleep -Seconds 10
+}
+
+####################################################################################################
+Display-ProgressBar -Status 'Stopping VM'
+
+Stop-AzVM `
+  -Id $VM.ID `
+  -Force | Out-Null
+
+####################################################################################################
+Display-ProgressBar -Status 'Generalizing VM'
+
+Set-AzVM `
+  -Id $VM.ID `
+  -Generalized | Out-Null
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating gallery'
