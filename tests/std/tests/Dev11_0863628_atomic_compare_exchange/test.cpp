@@ -586,7 +586,7 @@ STATIC_ASSERT(is_same_v<atomic<wchar_t>::difference_type, wchar_t>);
 STATIC_ASSERT(is_same_v<atomic<float>::difference_type, float>);
 STATIC_ASSERT(is_same_v<atomic<double>::difference_type, double>);
 STATIC_ASSERT(is_same_v<atomic<long double>::difference_type, long double>);
-#else // _HAS_CXX20 / !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 STATIC_ASSERT(!atomic_has_member_difference_type<float>);
 STATIC_ASSERT(!atomic_has_member_difference_type<double>);
 STATIC_ASSERT(!atomic_has_member_difference_type<long double>);
