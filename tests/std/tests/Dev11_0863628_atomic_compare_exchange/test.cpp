@@ -564,57 +564,44 @@ constexpr bool atomic_has_member_difference_type = false;
 template <class T>
 constexpr bool atomic_has_member_difference_type<T, void_t<typename atomic<T>::difference_type>> = true;
 
-STATIC_ASSERT(
-    atomic_has_member_difference_type<signed char>&& is_same_v<atomic<signed char>::difference_type, signed char>);
-STATIC_ASSERT(atomic_has_member_difference_type<short>&& is_same_v<atomic<short>::difference_type, short>);
-STATIC_ASSERT(atomic_has_member_difference_type<int>&& is_same_v<atomic<int>::difference_type, int>);
-STATIC_ASSERT(atomic_has_member_difference_type<long>&& is_same_v<atomic<long>::difference_type, long>);
-STATIC_ASSERT(atomic_has_member_difference_type<long long>&& is_same_v<atomic<long long>::difference_type, long long>);
-STATIC_ASSERT(atomic_has_member_difference_type<unsigned char>&&
-        is_same_v<atomic<unsigned char>::difference_type, unsigned char>);
-STATIC_ASSERT(atomic_has_member_difference_type<unsigned short>&&
-        is_same_v<atomic<unsigned short>::difference_type, unsigned short>);
-STATIC_ASSERT(
-    atomic_has_member_difference_type<unsigned int>&& is_same_v<atomic<unsigned int>::difference_type, unsigned int>);
-STATIC_ASSERT(atomic_has_member_difference_type<unsigned long>&&
-        is_same_v<atomic<unsigned long>::difference_type, unsigned long>);
-STATIC_ASSERT(atomic_has_member_difference_type<unsigned long long>&&
-        is_same_v<atomic<unsigned long long>::difference_type, unsigned long long>);
-STATIC_ASSERT(atomic_has_member_difference_type<char>&& is_same_v<atomic<char>::difference_type, char>);
+STATIC_ASSERT(is_same_v<atomic<signed char>::difference_type, signed char>);
+STATIC_ASSERT(is_same_v<atomic<short>::difference_type, short>);
+STATIC_ASSERT(is_same_v<atomic<int>::difference_type, int>);
+STATIC_ASSERT(is_same_v<atomic<long>::difference_type, long>);
+STATIC_ASSERT(is_same_v<atomic<long long>::difference_type, long long>);
+STATIC_ASSERT(is_same_v<atomic<unsigned char>::difference_type, unsigned char>);
+STATIC_ASSERT(is_same_v<atomic<unsigned short>::difference_type, unsigned short>);
+STATIC_ASSERT(is_same_v<atomic<unsigned int>::difference_type, unsigned int>);
+STATIC_ASSERT(is_same_v<atomic<unsigned long>::difference_type, unsigned long>);
+STATIC_ASSERT(is_same_v<atomic<unsigned long long>::difference_type, unsigned long long>);
+STATIC_ASSERT(is_same_v<atomic<char>::difference_type, char>);
 #ifdef __cpp_char8_t
-STATIC_ASSERT(atomic_has_member_difference_type<char8_t>&& is_same_v<atomic<char8_t>::difference_type, char8_t>);
+STATIC_ASSERT(is_same_v<atomic<char8_t>::difference_type, char8_t>);
 #endif // defined(__cpp_char8_t)
-STATIC_ASSERT(atomic_has_member_difference_type<char16_t>&& is_same_v<atomic<char16_t>::difference_type, char16_t>);
-STATIC_ASSERT(atomic_has_member_difference_type<char32_t>&& is_same_v<atomic<char32_t>::difference_type, char32_t>);
-STATIC_ASSERT(atomic_has_member_difference_type<wchar_t>&& is_same_v<atomic<wchar_t>::difference_type, wchar_t>);
+STATIC_ASSERT(is_same_v<atomic<char16_t>::difference_type, char16_t>);
+STATIC_ASSERT(is_same_v<atomic<char32_t>::difference_type, char32_t>);
+STATIC_ASSERT(is_same_v<atomic<wchar_t>::difference_type, wchar_t>);
 
 #if _HAS_CXX20 // P0020R6 Floating Point Atomic
-STATIC_ASSERT(atomic_has_member_difference_type<float>&& is_same_v<atomic<float>::difference_type, float>);
-STATIC_ASSERT(atomic_has_member_difference_type<double>&& is_same_v<atomic<double>::difference_type, double>);
-STATIC_ASSERT(
-    atomic_has_member_difference_type<long double>&& is_same_v<atomic<long double>::difference_type, long double>);
+STATIC_ASSERT(is_same_v<atomic<float>::difference_type, float>);
+STATIC_ASSERT(is_same_v<atomic<double>::difference_type, double>);
+STATIC_ASSERT(is_same_v<atomic<long double>::difference_type, long double>);
 #else // _HAS_CXX20 / !_HAS_CXX20
 STATIC_ASSERT(!atomic_has_member_difference_type<float>);
 STATIC_ASSERT(!atomic_has_member_difference_type<double>);
 STATIC_ASSERT(!atomic_has_member_difference_type<long double>);
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-STATIC_ASSERT(atomic_has_member_difference_type<int*>&& is_same_v<atomic<int*>::difference_type, ptrdiff_t>);
-STATIC_ASSERT(atomic_has_member_difference_type<bool*>&& is_same_v<atomic<bool*>::difference_type, ptrdiff_t>);
-STATIC_ASSERT(
-    atomic_has_member_difference_type<const int*>&& is_same_v<atomic<const int*>::difference_type, ptrdiff_t>);
-STATIC_ASSERT(
-    atomic_has_member_difference_type<volatile bool*>&& is_same_v<atomic<volatile bool*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<int*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<bool*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<const int*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<volatile bool*>::difference_type, ptrdiff_t>);
 
-STATIC_ASSERT(atomic_has_member_difference_type<void*>&& is_same_v<atomic<void*>::difference_type, ptrdiff_t>);
-STATIC_ASSERT(
-    atomic_has_member_difference_type<const void*>&& is_same_v<atomic<const void*>::difference_type, ptrdiff_t>);
-STATIC_ASSERT(
-    atomic_has_member_difference_type<volatile void*>&& is_same_v<atomic<volatile void*>::difference_type, ptrdiff_t>);
-STATIC_ASSERT(atomic_has_member_difference_type<const volatile void*>&&
-        is_same_v<atomic<const volatile void*>::difference_type, ptrdiff_t>);
-STATIC_ASSERT(
-    atomic_has_member_difference_type<void (*)()>&& is_same_v<atomic<void (*)()>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<void*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<const void*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<volatile void*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<const volatile void*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<void (*)()>::difference_type, ptrdiff_t>);
 
 STATIC_ASSERT(!atomic_has_member_difference_type<bool>);
 STATIC_ASSERT(!atomic_has_member_difference_type<nullptr_t>);
