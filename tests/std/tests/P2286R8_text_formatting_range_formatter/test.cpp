@@ -153,7 +153,7 @@ public:
         }
 
         if (it != ctx.end() && *it != '}') {
-            throw format_error("Incorrect format-spec.");
+            throw format_error{"Incorrect format-spec."};
         }
 
         return it;
