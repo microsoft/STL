@@ -247,7 +247,6 @@ void check_range_formatter() {
 
         assert(fmt(STR("{:^?s}"), CharRange(STR("Hell\no"sv))) == STR(R"("Hell\no")"));
         assert(fmt(STR("{:?s}"), CharRange(STR("Hel\tlo"sv))) == STR(R"("Hel\tlo")"));
-        assert(fmt(STR("{:?s}"), CharRange(STR("Hel\tlo"sv))) == STR(R"("Hel\tlo")"));
         assert(fmt(STR("{:10?s}"), CharRange(STR("Hel\nlo"sv))) == STR(R"("Hel\nlo" )"));
         assert(fmt(STR("{:>{}?s}"), CharRange(STR("Hel\alo"sv)), 20) == STR(R"(        "Hel\u{7}lo")"));
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1318584
