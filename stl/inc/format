@@ -4425,6 +4425,7 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
     case 's':
         _Callbacks._On_type(_Maybe_type);
         ++_Begin;
+        break;
     }
 
     return _Begin;
@@ -4510,6 +4511,8 @@ public:
                 _Throw_format_error(
                     "Range-types 's' and '?s' cannot be combined with 'n' option and range-underlying-spec.");
             }
+
+            break;
         }
 
         if (_Specs._No_brackets) {
