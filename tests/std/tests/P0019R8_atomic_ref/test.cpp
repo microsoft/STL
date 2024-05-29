@@ -81,7 +81,7 @@ static_assert(std::is_same_v<std::atomic_ref<void (*)()>::difference_type, std::
 static_assert(std::is_same_v<std::atomic_ref<bigint (*)(int128)>::difference_type, std::ptrdiff_t>);
 
 static_assert(!atomic_ref_has_member_difference_type<bool>);
-static_assert(!atomic_ref_has_member_difference_type<nullptr_t>);
+static_assert(!atomic_ref_has_member_difference_type<std::nullptr_t>);
 static_assert(!atomic_ref_has_member_difference_type<bigint>);
 static_assert(!atomic_ref_has_member_difference_type<int128>);
 
