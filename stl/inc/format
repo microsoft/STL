@@ -4484,6 +4484,7 @@ public:
         case 'm':
             if constexpr (_Is_two_tuple<_Ty>) {
                 set_brackets(_STATICALLY_WIDEN(_CharT, "{"), _STATICALLY_WIDEN(_CharT, "}"));
+                set_separator(_STATICALLY_WIDEN(_CharT, ", "));
                 _Underlying.set_brackets({}, {});
                 _Underlying.set_separator(_STATICALLY_WIDEN(_CharT, ": "));
             } else {

@@ -439,6 +439,49 @@ consteval bool check_constraints() {
     return true;
 }
 
+template <class T>
+struct WrappedVector : vector<T> {
+    using vector<T>::vector;
+};
+
+template <class T, class CharT>
+struct std::formatter<WrappedVector<T>, CharT> {
+public:
+    template <class ParseContext>
+    constexpr auto parse(ParseContext& ctx) {
+        underlying.set_brackets(STR("<"sv), STR(">"sv));
+        underlying.set_separator(STR("|"sv));
+        return underlying.parse(ctx);
+    }
+
+    template <class FormatContext>
+    auto format(const WrappedVector<T>& rng, FormatContext& ctx) const {
+        return underlying.format(rng, ctx);
+    }
+
+private:
+    range_formatter<T, CharT> underlying;
+};
+
+template <class CharT>
+void check_runtime_behavior_of_setters() {
+    {
+        const WrappedVector<int> v1{11, 22, 33, 44};
+        assert(format(STR("{}"), v1) == STR("<11|22|33|44>"));
+        assert(format(STR("{:}"), v1) == STR("<11|22|33|44>"));
+        assert(format(STR("{:n}"), v1) == STR("11|22|33|44"));
+    }
+
+    {
+        const WrappedVector<pair<int, char>> v2{{10, 'x'}, {20, 'y'}, {30, 'z'}};
+        assert(format(STR("{}"), v2) == STR("<(10, 'x')|(20, 'y')|(30, 'z')>"));
+        assert(format(STR("{:}"), v2) == STR("<(10, 'x')|(20, 'y')|(30, 'z')>"));
+        assert(format(STR("{:n}"), v2) == STR("(10, 'x')|(20, 'y')|(30, 'z')"));
+        assert(format(STR("{:m}"), v2) == STR("{10: 'x', 20: 'y', 30: 'z'}"));
+        assert(format(STR("{:nm}"), v2) == STR("10: 'x', 20: 'y', 30: 'z'"));
+    }
+}
+
 int main() {
     test_in<range_formatter_check_instantiator, const int>();
 
@@ -449,4 +492,7 @@ int main() {
 
     static_assert(check_constraints<char>());
     static_assert(check_constraints<wchar_t>());
+
+    check_runtime_behavior_of_setters<char>();
+    check_runtime_behavior_of_setters<wchar_t>();
 }
