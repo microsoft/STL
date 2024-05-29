@@ -4418,7 +4418,7 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
     switch (const _CharT _Maybe_type = *_Begin) {
     case '?':
         if (++_Begin == _End || *_Begin != 's') {
-            _Throw_format_error("Invalid range-type '?'; did you mean '?s'?");
+            _Throw_format_error("Invalid range-type '?'; was '?s' intended?");
         }
         [[fallthrough]];
     case 'm':
@@ -4482,14 +4482,12 @@ public:
 
         switch (_Specs._Type) {
         case 'm':
-            if constexpr (!_Is_two_tuple<_Ty>) {
-                _Throw_format_error("Range-type 'm' requires type T to be specialization of pair or tuple such that "
-                                    "tuple_size_v<T> is 2.");
-
-            } else {
+            if constexpr (_Is_two_tuple<_Ty>) {
                 set_brackets(_STATICALLY_WIDEN(_CharT, "{"), _STATICALLY_WIDEN(_CharT, "}"));
                 _Underlying.set_brackets({}, {});
                 _Underlying.set_separator(_STATICALLY_WIDEN(_CharT, ": "));
+            } else {
+                _Throw_format_error("Range-type 'm' requires type T to be a pair or a 2-element tuple.");
             }
             [[fallthrough]];
 
@@ -4504,12 +4502,13 @@ public:
         case 's':
         case '?':
             if constexpr (same_as<_Ty, _CharT>) {
-                if (_Specs._No_brackets || _Has_underlying_spec) {
-                    _Throw_format_error(
-                        "Range-types 's' and '?s' cannot be combined with 'n' option and range-underlying-spec.");
+                if (_Specs._No_brackets) {
+                    _Throw_format_error("Range-types 's' and '?s' cannot be combined with the 'n' option.");
+                } else if (_Has_underlying_spec) {
+                    _Throw_format_error("Range-types 's' and '?s' cannot be combined with a range-underlying-spec.");
                 }
             } else {
-                _Throw_format_error("Range-types 's' and '?s' requires type T to be charT.");
+                _Throw_format_error("Range-types 's' and '?s' require type T to be charT.");
             }
 
             break;
