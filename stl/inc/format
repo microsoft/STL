@@ -4503,13 +4503,13 @@ public:
 
         case 's':
         case '?':
-            if constexpr (!same_as<_Ty, _CharT>) {
+            if constexpr (same_as<_Ty, _CharT>) {
+                if (_Specs._No_brackets || _Has_underlying_spec) {
+                    _Throw_format_error(
+                        "Range-types 's' and '?s' cannot be combined with 'n' option and range-underlying-spec.");
+                }
+            } else {
                 _Throw_format_error("Range-types 's' and '?s' requires type T to be charT.");
-            }
-
-            if (_Specs._No_brackets || _Has_underlying_spec) {
-                _Throw_format_error(
-                    "Range-types 's' and '?s' cannot be combined with 'n' option and range-underlying-spec.");
             }
 
             break;
