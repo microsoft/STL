@@ -4451,11 +4451,11 @@ public:
         _Closing_bracket = _Closing;
     }
 
-    constexpr formatter<_Ty, _CharT>& underlying() noexcept {
+    _NODISCARD constexpr formatter<_Ty, _CharT>& underlying() noexcept {
         return _Underlying;
     }
 
-    constexpr const formatter<_Ty, _CharT>& underlying() const noexcept {
+    _NODISCARD constexpr const formatter<_Ty, _CharT>& underlying() const noexcept {
         return _Underlying;
     }
 
