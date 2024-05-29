@@ -4548,7 +4548,7 @@ private:
         basic_string<_CharT> _Buffer;
         {
             _Fmt_iterator_buffer<back_insert_iterator<basic_string<_CharT>>, _CharT> _Fmt_buf(
-                _STD back_inserter(_Buffer));
+                back_insert_iterator{_Buffer});
             using _Inserter      = back_insert_iterator<_Fmt_buffer<_CharT>>;
             auto _Nested_context = basic_format_context<_Inserter, _CharT>::_Make_from(
                 _Inserter{_Fmt_buf}, _Ctx._Get_args(), _Ctx._Get_lazy_locale());
