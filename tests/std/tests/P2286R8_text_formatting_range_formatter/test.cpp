@@ -9,7 +9,10 @@
 #include <ranges>
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 #include <utility>
+#include <variant>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 #include <test_format_support.hpp>
