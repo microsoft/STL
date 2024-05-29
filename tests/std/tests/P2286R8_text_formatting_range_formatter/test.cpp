@@ -380,8 +380,8 @@ struct range_formatter_check_instantiator {
         check_range_formatter<FormatFn, char, R>();
         check_range_formatter<FormatFn, wchar_t, R>();
 
-        check_range_formatter<VFormatFn, wchar_t, R>();
         check_range_formatter<VFormatFn, char, R>();
+        check_range_formatter<VFormatFn, wchar_t, R>();
 
         check_incorrect_use_of_range_formatter<char, R>();
         check_incorrect_use_of_range_formatter<wchar_t, R>();
