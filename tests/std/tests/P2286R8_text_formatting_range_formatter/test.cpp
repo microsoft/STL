@@ -123,10 +123,10 @@ private:
     size_t arg_id;
 };
 
-struct Debugable {};
+struct Debuggable {};
 
 template <class CharT>
-struct std::formatter<Debugable, CharT> {
+struct std::formatter<Debuggable, CharT> {
 public:
     constexpr void set_debug_format() {
         if (!parse_called) {
@@ -157,7 +157,7 @@ public:
     }
 
     template <class FormatContext>
-    auto format(Debugable, FormatContext& ctx) const {
+    auto format(Debuggable, FormatContext& ctx) const {
         return ranges::copy((debug ? STR("debug"sv) : STR("regular"sv)), ctx.out()).out;
     }
 
@@ -304,12 +304,12 @@ void check_range_formatter() {
     }
 
     { // Check formatting range of custom type with 'set_debug_format'.
-        using TestRange = Range::template RebindElement<const Debugable>;
+        using TestRange = Range::template RebindElement<const Debuggable>;
 
-        assert(fmt(STR("{}"), TestRange(array<Debugable, 1>{})) == STR("[debug]"));
-        assert(fmt(STR("{:}"), TestRange(array<Debugable, 2>{})) == STR("[debug, debug]"));
-        assert(fmt(STR("{::}"), TestRange(array<Debugable, 3>{})) == STR("[regular, regular, regular]"));
-        assert(fmt(STR("{::D}"), TestRange(array<Debugable, 4>{})) == STR("[debug, debug, debug, debug]"));
+        assert(fmt(STR("{}"), TestRange(array<Debuggable, 1>{})) == STR("[debug]"));
+        assert(fmt(STR("{:}"), TestRange(array<Debuggable, 2>{})) == STR("[debug, debug]"));
+        assert(fmt(STR("{::}"), TestRange(array<Debuggable, 3>{})) == STR("[regular, regular, regular]"));
+        assert(fmt(STR("{::D}"), TestRange(array<Debuggable, 4>{})) == STR("[debug, debug, debug, debug]"));
     }
 }
 
