@@ -388,6 +388,18 @@ struct range_formatter_check_instantiator {
     }
 };
 
+void instantiation_test() {
+#ifdef TEST_EVERYTHING
+    test_in<range_formatter_check_instantiator, const int>();
+#else // ^^^ test all input range permutations / test only "interesting" permutations vvv
+    range_formatter_check_instantiator::call<test::range<test::input, const int>>();
+    range_formatter_check_instantiator::call<test::range<test::fwd, const int>>();
+    range_formatter_check_instantiator::call<test::range<test::bidi, const int>>();
+    range_formatter_check_instantiator::call<test::range<test::random, const int>>();
+    range_formatter_check_instantiator::call<test::range<test::contiguous, const int>>();
+#endif // TEST_EVERYTHING
+}
+
 template <class CharT>
 constexpr bool check_other_functions() {
     using Sv = basic_string_view<CharT>;
@@ -483,7 +495,7 @@ void check_runtime_behavior_of_setters() {
 }
 
 int main() {
-    test_in<range_formatter_check_instantiator, const int>();
+    instantiation_test();
 
     static_assert(check_other_functions<char>());
     static_assert(check_other_functions<wchar_t>());
