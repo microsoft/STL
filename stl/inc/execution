@@ -4440,10 +4440,10 @@ struct _Static_partitioned_exclusive_scan2 {
         // Apply the predecessor overall sum to current overall sum and elements
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_exclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, begin(_Intermediate_result), _Last, _Reduce_op);
+                _Prev_chunk->_Sum._Ref(), _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
         } else {
             auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, begin(_Intermediate_result), _Last, _Reduce_op);
+            _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
         }
 
         return _Cancellation_status::_Running;
@@ -4797,10 +4797,10 @@ struct _Static_partitioned_transform_exclusive_scan2 {
         // Apply the predecessor overall sum to current overall sum and elements
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_exclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, begin(_Intermediate_result), _Last, _Reduce_op);
+                _Prev_chunk->_Sum._Ref(), _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
         } else {
             auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, begin(_Intermediate_result), _Last, _Reduce_op);
+            _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
         }
 
         return _Cancellation_status::_Running;
@@ -4960,10 +4960,10 @@ struct _Static_partitioned_transform_inclusive_scan2 {
         // Apply the predecessor overall sum to current overall sum and elements
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_inclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, begin(_Intermediate_result), _Last, _Reduce_op);
+                _Prev_chunk->_Sum._Ref(), _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
         } else {
             auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_inclusive_predecessor(_Tmp, _Dest, begin(_Intermediate_result), _Last, _Reduce_op);
+            _Chunk->_Apply_inclusive_predecessor(_Tmp, _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
         }
 
         return _Cancellation_status::_Running;
