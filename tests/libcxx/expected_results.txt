@@ -235,7 +235,6 @@ std/utilities/format/format.range/format.range.fmtstr/parse.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/format.functions.vformat.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/parse.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
