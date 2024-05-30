@@ -287,10 +287,6 @@ std/utilities/format/format.range/format.range.formatter/format.functions.format
 std/utilities/format/format.range/format.range.formatter/format.functions.vformat.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/parse.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/set_brackets.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/set_separator.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/underlying.pass.cpp FAIL
-std/utilities/format/types.compile.pass.cpp FAIL
 
 # P2363R5 Extending Associative Containers With The Remaining Heterogeneous Overloads
 std/language.support/support.limits/support.limits.general/map.version.compile.pass.cpp FAIL
@@ -1124,6 +1120,8 @@ std/utilities/format/format.formatter/format.formatter.spec/formatter.pointer.pa
 std/utilities/format/format.formatter/format.formatter.spec/formatter.signed_integral.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.string.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.unsigned_integral.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/set_brackets.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/set_separator.pass.cpp FAIL
 std/utilities/format/format.tuple/format.pass.cpp FAIL
 
 # Not analyzed. Apparent false positives from static analysis where it thinks that array indexing is out of bounds.
