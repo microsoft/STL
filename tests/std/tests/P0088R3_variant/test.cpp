@@ -21,8 +21,11 @@
 //    into a file.
 // 3. Replicate the namespace structure from here into that file, use its content to replace everything between the
 //    "LLVM SOURCES BEGIN"/"END" delimiters, and ensure that `main` properly calls each of the `run_test` functions.
-// 4. You'll need to fixup the specializations of std::hash in test/std/utilities/variant/variant.hash/hash.pass.cpp,
-//    and preserve the `// TRANSITION, P0608` conditionals if we still haven't implemented P0608.
+// 4. Fix the specializations of std::hash and std::get by closing/reopening namespaces and qualifying types.
+// 5. Restore the TRANSITION-commented workarounds.
+// 6. Restore the _HAS_CXX20 guards for relops::three_way and visit::return_type.
+// 7. Restore the guards for P2637R3 Member visit.
+// 8. Restore the is_permissive workarounds.
 //
 // Yes, this is an awkward hand process; notably the required headers can change without notice. We should investigate
 // running the libc++ tests directly in all of our configurations so we needn't replicate this subset of files.
