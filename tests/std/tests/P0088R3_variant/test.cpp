@@ -15,13 +15,9 @@
 //   the MSVC-specific test cases.
 //
 // The LLVM sources are updated manually:
-// 1. Navigate a bash prompt to `libcxx` in an LLVM monorepo.
-// 2. Redirect the output of the bash loop:
-//      for f in $(find test/std/utilities/variant -name '*.pass.cpp' -a -not -name '*nothing_to_do*');
-//        do echo "// -- BEGIN: $f";
-//        sed -e 's/int main(int, char\*\*)/int run_test()/; s/FIXME/TODO/g' < $f;
-//        echo -e "// -- END: $f\n";
-//      done
+// 1. Navigate a bash prompt to `llvm-project/libcxx`.
+// 2. Redirect the output of:
+//      ../../tools/scripts/transform_llvm.sh test/std/utilities/variant
 //    into a file.
 // 3. Replicate the namespace structure from here into that file, use its content to replace everything between the
 //    "LLVM SOURCES BEGIN"/"END" delimiters, and ensure that `main` properly calls each of the `run_test` functions.
