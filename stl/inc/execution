@@ -3634,6 +3634,19 @@ struct _Scan_decoupled_lookback {
         }
     }
 
+    template <class _FwdIt, class _BinOp>
+    void _Apply_exclusive_predecessor_origin(_Ty& _Preceding, _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce_op) {
+        // apply _Preceding to [_First, _Last) and _Sum._Ref(), using _Reduce_op
+        _STD _Implicitly_construct_in_place_by_binary_op(_Sum._Ref(), _Reduce_op, _Preceding, _Local._Ref());
+        _State.store(_Local_available | _Sum_available);
+        *_First = _Preceding;
+
+#pragma loop(ivdep)
+        while (++_First != _Last) {
+            *_First = _Reduce_op(_Preceding, _STD move(*_First));
+        }
+    }
+
     template <class _FwdIt, class _FwdIt2, class _BinOp>
     void _Apply_inclusive_predecessor(
         _Ty& _Preceding, _FwdIt _First, _FwdIt2 _First2, const _FwdIt _Last, _BinOp _Reduce_op) {
@@ -3649,6 +3662,18 @@ struct _Scan_decoupled_lookback {
                 *_First = _Reduce_op(_Preceding, _STD move(*_First2));
                 ++_First2;
             }
+        }
+    }
+
+    template <class _FwdIt, class _BinOp>
+    void _Apply_inclusive_predecessor_origin(_Ty& _Preceding, _FwdIt _First, const _FwdIt _Last, _BinOp _Reduce_op) {
+        // apply _Preceding to [_First, _Last) and _Sum._Ref(), using _Reduce_op
+        _STD _Implicitly_construct_in_place_by_binary_op(_Sum._Ref(), _Reduce_op, _Preceding, _Local._Ref());
+        _State.store(_Local_available | _Sum_available);
+
+#pragma loop(ivdep)
+        for (; _First != _Last; ++_First) {
+            *_First = _Reduce_op(_Preceding, _STD move(*_First));
         }
     }
 
@@ -4371,6 +4396,25 @@ _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
 }
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty>
+_FwdIt2 _Exclusive_scan_per_chunk_origin(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val) {
+    // local-sum for parallel exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and stores
+    // successor sum in _Val
+    // pre: _Val is *uninitialized* && _First != _Last
+    _STD _Construct_in_place(_Val, *_First);
+    for (;;) {
+        ++_First;
+        ++_Dest;
+        if (_First == _Last) {
+            return _Dest;
+        }
+
+        _Ty _Tmp = _Reduce_op(_Val, *_First); // temp to enable _First == _Dest
+        *_Dest   = _Val;
+        _Val     = _STD move(_Tmp);
+    }
+}
+
+template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty>
 void _Exclusive_scan_per_chunk_complete(
     _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val, _Ty& _Init) {
     // Sum for parallel exclusive_scan with predecessor available, into [_Dest, _Dest + (_Last - _First)) and stores
@@ -4430,20 +4474,36 @@ struct _Static_partitioned_exclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        _STD vector<_Ty> _Intermediate_result;
+        // If the intermediate type is same with output type, then we can direct store the bop result in the output
+        if constexpr (_STD is_same_v<_Ty, typename std::iterator_traits<_FwdIt2>::value_type>) {
+            // Calculate local sum and publish to other threads
+            const auto _Last = _STD _Exclusive_scan_per_chunk_origin(
+                _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Local._Ref());
+            _Chunk->_Store_available_state(_Local_available);
 
-        // Calculate local sum and publish to other threads
-        const auto _Last = _STD _Exclusive_scan_per_chunk(
-            _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Local._Ref(), _Intermediate_result);
-        _Chunk->_Store_available_state(_Local_available);
-
-        // Apply the predecessor overall sum to current overall sum and elements
-        if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
-            _Chunk->_Apply_exclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
+            // Apply the predecessor overall sum to current overall sum and elements
+            if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
+                _Chunk->_Apply_exclusive_predecessor_origin(_Prev_chunk->_Sum._Ref(), _Dest, _Last, _Reduce_op);
+            } else {
+                auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+                _Chunk->_Apply_exclusive_predecessor_origin(_Tmp, _Dest, _Last, _Reduce_op);
+            }
         } else {
-            auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
+            _STD vector<_Ty> _Intermediate_result;
+
+            // Calculate local sum and publish to other threads
+            const auto _Last = _STD _Exclusive_scan_per_chunk(
+                _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Local._Ref(), _Intermediate_result);
+            _Chunk->_Store_available_state(_Local_available);
+
+            // Apply the predecessor overall sum to current overall sum and elements
+            if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
+                _Chunk->_Apply_exclusive_predecessor(
+                    _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            } else {
+                auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+                _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            }
         }
 
         return _Cancellation_status::_Running;
@@ -4590,23 +4650,38 @@ struct _Static_partitioned_inclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        // Make a vector to avoid the type of *_Dest is different with _Ty
-        _STD vector<_Ty> _Intermediate_result;
+        // If the intermediate type is same with output type, then we can direct store the bop result in the output
+        if constexpr (_STD is_same_v<_Ty, typename std::iterator_traits<_FwdIt2>::value_type>) {
+            // Calculate local sum and publish to other threads
+            const auto _Last = _STD _Inclusive_scan_per_chunk_complete(
+                _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Local._Ref(), _No_init_tag{});
+            _Chunk->_Store_available_state(_Local_available);
 
-        // Calculate local sum and publish to other threads
-        const auto _Last = _STD _Inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
-            _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result);
-        _Chunk->_Store_available_state(_Local_available);
-
-        // Apply the predecessor overall sum to current overall sum and elements
-        if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
-            _Chunk->_Apply_inclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
+            // Apply the predecessor overall sum to current overall sum and elements
+            if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
+                _Chunk->_Apply_inclusive_predecessor_origin(_Prev_chunk->_Sum._Ref(), _Dest, _Last, _Reduce_op);
+            } else {
+                auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+                _Chunk->_Apply_inclusive_predecessor_origin(_Tmp, _Dest, _Last, _Reduce_op);
+            }
         } else {
-            auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_inclusive_predecessor(_Tmp, _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
-        }
+            // Make a vector to avoid the type of *_Dest is different with _Ty
+            _STD vector<_Ty> _Intermediate_result;
 
+            // Calculate local sum and publish to other threads
+            const auto _Last = _STD _Inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
+                _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result);
+            _Chunk->_Store_available_state(_Local_available);
+
+            // Apply the predecessor overall sum to current overall sum and elements
+            if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
+                _Chunk->_Apply_inclusive_predecessor(
+                    _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            } else {
+                auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+                _Chunk->_Apply_inclusive_predecessor(_Tmp, _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            }
+        }
         return _Cancellation_status::_Running;
     }
 
@@ -4725,6 +4800,25 @@ _FwdIt2 _Transform_exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
 }
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp, class _Ty>
+_FwdIt2 _Transform_exclusive_scan_per_chunk_origin(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _UnaryOp _Transform_op, _Ty& _Val) {
+    // Local-sum for parallel transform_exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and
+    // stores successor sum in _Val.
+    // pre: _Val is *uninitialized* && _First != _Last
+    _STD _Construct_in_place_by_transform_deref(_Val, _Transform_op, _First);
+    for (;;) {
+        ++_First;
+        ++_Dest;
+        if (_First == _Last) {
+            return _Dest;
+        }
+
+        _Ty _Tmp = _Reduce_op(_Val, _Transform_op(*_First)); // temp to enable _First == _Dest
+        *_Dest   = _Val;
+        _Val     = _STD move(_Tmp);
+    }
+}
+
+template <class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp, class _Ty>
 void _Transform_exclusive_scan_per_chunk_complete(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
     _UnaryOp _Transform_op, _Ty& _Val, _Ty& _Init) {
     // Sum for parallel transform_exclusive_scan with predecessor available, into [_Dest, _Dest + (_Last - _First)) and
@@ -4765,9 +4859,6 @@ struct _Static_partitioned_transform_exclusive_scan2 {
             return _Cancellation_status::_Canceled;
         }
 
-        // Make a vector to avoid the type of *_Dest is different with _Ty
-        _STD vector<_Ty> _Intermediate_result;
-
         const auto _Chunk_number = _Key._Chunk_number;
         const auto _In_range     = _Basis1._Get_chunk(_Key);
         const auto _Dest         = _Basis2._Get_first(_Chunk_number, _Team._Get_chunk_offset(_Chunk_number));
@@ -4789,20 +4880,38 @@ struct _Static_partitioned_transform_exclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        // Calculate local sum and publish to other threads
-        const auto _Last = _STD _Transform_exclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest,
-            _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _Intermediate_result);
-        _Chunk->_Store_available_state(_Local_available);
+        // If the intermediate type is same with output type, then we can direct store the bop result in the output
+        if constexpr (_STD is_same_v<_Ty, typename std::iterator_traits<_FwdIt2>::value_type>) {
+            // Calculate local sum and publish to other threads
+            const auto _Last = _STD _Transform_exclusive_scan_per_chunk_origin(
+                _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op, _Chunk->_Local._Ref());
+            _Chunk->_Store_available_state(_Local_available);
 
-        // Apply the predecessor overall sum to current overall sum and elements
-        if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
-            _Chunk->_Apply_exclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
+            // Apply the predecessor overall sum to current overall sum and elements
+            if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
+                _Chunk->_Apply_exclusive_predecessor_origin(_Prev_chunk->_Sum._Ref(), _Dest, _Last, _Reduce_op);
+            } else {
+                auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+                _Chunk->_Apply_exclusive_predecessor_origin(_Tmp, _Dest, _Last, _Reduce_op);
+            }
         } else {
-            auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
-        }
+            // Make a vector to avoid the type of *_Dest is different with _Ty
+            _STD vector<_Ty> _Intermediate_result;
 
+            // Calculate local sum and publish to other threads
+            const auto _Last = _STD _Transform_exclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest,
+                _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _Intermediate_result);
+            _Chunk->_Store_available_state(_Local_available);
+
+            // Apply the predecessor overall sum to current overall sum and elements
+            if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
+                _Chunk->_Apply_exclusive_predecessor(
+                    _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            } else {
+                auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+                _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            }
+        }
         return _Cancellation_status::_Running;
     }
 
@@ -4949,23 +5058,38 @@ struct _Static_partitioned_transform_inclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        // Make a vector to avoid the type of *_Dest is different with _Ty
-        _STD vector<_Ty> _Intermediate_result;
+        // If the intermediate type is same with output type, then we can direct store the bop result in the output
+        if constexpr (_STD is_same_v<_Ty, typename std::iterator_traits<_FwdIt2>::value_type>) {
+            // Calculate local sum and publish to other threads
+            const auto _Last = _STD _Transform_inclusive_scan_per_chunk_complete(_In_range._First, _In_range._Last, _Dest,
+                _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{});
+            _Chunk->_Store_available_state(_Local_available);
 
-        // Calculate local sum and publish to other threads
-        const auto _Last = _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest,
-            _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result);
-        _Chunk->_Store_available_state(_Local_available);
-
-        // Apply the predecessor overall sum to current overall sum and elements
-        if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
-            _Chunk->_Apply_inclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
+            // Apply the predecessor overall sum to current overall sum and elements
+            if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
+                _Chunk->_Apply_inclusive_predecessor_origin(_Prev_chunk->_Sum._Ref(), _Dest, _Last, _Reduce_op);
+            } else {
+                auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+                _Chunk->_Apply_inclusive_predecessor_origin(_Tmp, _Dest, _Last, _Reduce_op);
+            }
         } else {
-            auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_inclusive_predecessor(_Tmp, _Dest, _STD begin(_Intermediate_result), _Last, _Reduce_op);
-        }
+            // Make a vector to avoid the type of *_Dest is different with _Ty
+            _STD vector<_Ty> _Intermediate_result;
 
+            // Calculate local sum and publish to other threads
+            const auto _Last = _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest,
+                _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result);
+            _Chunk->_Store_available_state(_Local_available);
+
+            // Apply the predecessor overall sum to current overall sum and elements
+            if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
+                _Chunk->_Apply_inclusive_predecessor(
+                    _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            } else {
+                auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
+                _Chunk->_Apply_inclusive_predecessor(_Tmp, _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            }
+        }
         return _Cancellation_status::_Running;
     }
 
