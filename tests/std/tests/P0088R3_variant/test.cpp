@@ -780,18 +780,20 @@ void test_hash_variant_duplicate_elements() {
 
 struct A {};
 struct B {};
+} // namespace hash
 
 namespace std {
 
 template <>
-struct hash<B> {
-  std::size_t operator()(B const&) const {
+struct hash<::hash::B> {
+  std::size_t operator()(::hash::B const&) const {
     return 0;
   }
 };
 
 }
 
+namespace hash {
 void test_hash_variant_enabled() {
   {
     test_hash_enabled_for_type<std::variant<int> >();
@@ -6448,14 +6450,16 @@ void test_caller_accepts_nonconst() {
 }
 
 struct MyVariant : std::variant<short, long, float> {};
+} // namespace visit
 
 namespace std {
 template <std::size_t Index>
-void get(const MyVariant&) {
+void get(const ::visit::MyVariant&) {
   assert(false);
 }
 } // namespace std
 
+namespace visit {
 void test_derived_from_variant() {
   auto v1 = MyVariant{42};
   const auto cv1 = MyVariant{142};
@@ -7256,14 +7260,16 @@ void test_caller_accepts_nonconst() {
 }
 
 struct MyVariant : std::variant<short, long, float> {};
+} // namespace member_visit
 
 namespace std {
 template <std::size_t Index>
-void get(const MyVariant&) {
+void get(const ::member_visit::MyVariant&) {
   assert(false);
 }
 } // namespace std
 
+namespace member_visit {
 void test_derived_from_variant() {
   auto v1        = MyVariant{42};
   const auto cv1 = MyVariant{142};
