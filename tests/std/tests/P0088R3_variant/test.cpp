@@ -796,16 +796,20 @@ struct hash<::hash::B> {
 namespace hash {
 void test_hash_variant_enabled() {
   {
+#ifndef __EDG__ // TRANSITION, DevCom-10107834
     test_hash_enabled_for_type<std::variant<int> >();
     test_hash_enabled_for_type<std::variant<int*, long, double, const int> >();
+#endif // ^^^ no workaround ^^^
   }
   {
     test_hash_disabled_for_type<std::variant<int, A>>();
     test_hash_disabled_for_type<std::variant<const A, void*>>();
   }
   {
+#ifndef __EDG__ // TRANSITION, DevCom-10107834
     test_hash_enabled_for_type<std::variant<int, B>>();
     test_hash_enabled_for_type<std::variant<const B, int>>();
+#endif // ^^^ no workaround ^^^
   }
 }
 
@@ -3005,7 +3009,9 @@ constexpr void test_T_assignment_sfinae() {
     struct X {
       operator void*();
     };
+#ifndef __EDG__ // TRANSITION, VSO-1327220
     static_assert(!std::is_assignable<V, X>::value, "no boolean conversion in operator=");
+#endif // ^^^ no workaround ^^^
     static_assert(std::is_assignable<V, std::false_type>::value, "converted to bool in operator=");
   }
   {
@@ -4682,7 +4688,9 @@ void test_T_ctor_sfinae() {
     struct X {
       operator void*();
     };
+#ifndef __EDG__ // TRANSITION, VSO-1327220
     static_assert(!std::is_constructible<V, X>::value, "no boolean conversion in constructor");
+#endif // ^^^ no workaround ^^^
     static_assert(std::is_constructible<V, std::false_type>::value, "converted to bool in constructor");
   }
   {
@@ -6111,6 +6119,7 @@ template<class T> struct Holder { T t; };
 constexpr bool test(bool do_it)
 {
     if (do_it) {
+#ifndef _M_CEE // TRANSITION, VSO-1659496
         std::variant<Holder<Incomplete>*, int> v = nullptr;
         std::visit([](auto){}, v);
         std::visit([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
@@ -6118,6 +6127,7 @@ constexpr bool test(bool do_it)
         std::visit<void>([](auto){}, v);
         std::visit<void*>([](auto) -> Holder<Incomplete>* { return nullptr; }, v);
 #endif
+#endif // ^^^ no workaround ^^^
     }
     return true;
 }
