@@ -1448,6 +1448,9 @@ constexpr bool test_three_way() {
       constexpr V v2(std::in_place_type<int>, 2);
       assert(testOrder(v1, v2, std::partial_ordering::greater));
     }
+#if !defined(__clang__) // TRANSITION, DevCom-1626139 (MSVC), EDG says "floating-point values cannot be compared"
+    if (!std::is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     {
       constexpr V v1(std::in_place_type<double>, nan);
       constexpr V v2(std::in_place_type<double>, nan);
