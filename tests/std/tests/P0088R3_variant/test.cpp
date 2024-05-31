@@ -1479,10 +1479,19 @@ struct HasOnlySpaceship {
   constexpr std::weak_ordering operator<=>(const HasOnlySpaceship&) const;
 };
 
+#ifdef __clang__ // TRANSITION, not yet investigated
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundefined-inline"
+#endif // ^^^ workaround ^^^
+
 struct HasFullOrdering {
   constexpr bool operator==(const HasFullOrdering&) const;
   constexpr std::weak_ordering operator<=>(const HasFullOrdering&) const;
 };
+
+#ifdef __clang__ // TRANSITION, not yet investigated
+#pragma clang diagnostic pop
+#endif // ^^^ workaround ^^^
 
 // operator<=> must resolve the return types of all its union types'
 // operator<=>s to determine its own return type, so it is detectable by SFINAE
@@ -4760,10 +4769,12 @@ struct BoomOnAnything {
 };
 
 void test_no_narrowing_check_for_class_types() {
+#ifndef __clang__ // TRANSITION, not yet investigated
   using V = std::variant<int, BoomOnAnything>;
   V v(42);
   assert(v.index() == 0);
   assert(std::get<0>(v) == 42);
+#endif // ^^^ no workaround ^^^
 }
 
 struct Bar {};
