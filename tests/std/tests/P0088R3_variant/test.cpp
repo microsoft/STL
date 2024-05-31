@@ -72,6 +72,7 @@ public:
 
 #include "test_macros.h"
 
+namespace bad_variant_access {
 int run_test() {
   static_assert(std::is_base_of<std::exception, std::bad_variant_access>::value,
                 "");
@@ -82,6 +83,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace bad_variant_access
 // -- END: test/std/utilities/variant/variant.bad_variant_access/bad_variant_access.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.get/get_if_index.pass.cpp
@@ -110,6 +112,7 @@ int run_test() {
 #include <memory>
 #include <variant>
 
+namespace get::get_if_index {
 void test_const_get_if() {
   {
     using V = std::variant<int>;
@@ -162,6 +165,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace get::get_if_index
 // -- END: test/std/utilities/variant/variant.get/get_if_index.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.get/get_if_type.pass.cpp
@@ -188,6 +192,7 @@ int run_test() {
 #include <cassert>
 #include <variant>
 
+namespace get::get_if_type {
 void test_const_get_if() {
   {
     using V = std::variant<int>;
@@ -240,6 +245,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace get::get_if_type
 // -- END: test/std/utilities/variant/variant.get/get_if_type.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.get/get_index.pass.cpp
@@ -276,6 +282,7 @@ int run_test() {
 #include <utility>
 #include <variant>
 
+namespace get::get_index {
 void test_const_lvalue_get() {
   {
     using V = std::variant<int, const long>;
@@ -406,6 +413,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace get::get_index
 // -- END: test/std/utilities/variant/variant.get/get_index.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.get/get_type.pass.cpp
@@ -436,6 +444,7 @@ int run_test() {
 #include <utility>
 #include <variant>
 
+namespace get::get_type {
 void test_const_lvalue_get() {
   {
     using V = std::variant<int, const long>;
@@ -568,6 +577,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace get::get_type
 // -- END: test/std/utilities/variant/variant.get/get_type.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.get/holds_alternative.pass.cpp
@@ -589,6 +599,7 @@ int run_test() {
 #include "test_macros.h"
 #include <variant>
 
+namespace get::holds_alternative {
 int run_test() {
   {
     using V = std::variant<int>;
@@ -609,6 +620,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace get::holds_alternative
 // -- END: test/std/utilities/variant/variant.get/holds_alternative.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.hash/enabled_hash.pass.cpp
@@ -633,11 +645,13 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace hash::enabled_hash {
 int run_test() {
   test_library_hash_specializations_available();
 
   return 0;
 }
+} // namespace hash::enabled_hash
 // -- END: test/std/utilities/variant/variant.hash/enabled_hash.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.hash/hash.pass.cpp
@@ -675,6 +689,7 @@ template <> struct hash<::MakeEmptyT> {
 }
 #endif
 
+namespace hash {
 void test_hash_variant() {
   {
     using V = std::variant<int, long, int>;
@@ -800,6 +815,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace hash
 // -- END: test/std/utilities/variant/variant.hash/hash.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.helpers/variant_alternative.pass.cpp
@@ -832,6 +848,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace helpers::variant_alternative {
 template <class V, std::size_t I, class E> void test() {
   static_assert(
       std::is_same_v<typename std::variant_alternative<I, V>::type, E>, "");
@@ -870,6 +887,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace helpers::variant_alternative
 // -- END: test/std/utilities/variant/variant.helpers/variant_alternative.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.helpers/variant_size.pass.cpp
@@ -898,6 +916,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace helpers::variant_size {
 template <class V, std::size_t E> void test() {
   static_assert(std::variant_size<V>::value == E, "");
   static_assert(std::variant_size<const V>::value == E, "");
@@ -919,6 +938,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace helpers::variant_size
 // -- END: test/std/utilities/variant/variant.helpers/variant_size.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.monostate/monostate.pass.cpp
@@ -941,6 +961,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace monostate::properties {
 int run_test() {
   using M = std::monostate;
   static_assert(std::is_trivially_default_constructible<M>::value, "");
@@ -952,6 +973,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace monostate::properties
 // -- END: test/std/utilities/variant/variant.monostate/monostate.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.monostate.relops/relops.pass.cpp
@@ -981,6 +1003,7 @@ int run_test() {
 #include "test_comparisons.h"
 #include "test_macros.h"
 
+namespace monostate::relops {
 constexpr bool test() {
   using M = std::monostate;
   constexpr M m1{};
@@ -1002,6 +1025,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace monostate::relops
 // -- END: test/std/utilities/variant/variant.monostate.relops/relops.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.relops/relops.pass.cpp
@@ -1048,6 +1072,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace relops::relops {
 #ifndef TEST_HAS_NO_EXCEPTIONS
 struct MakeEmptyT {
   MakeEmptyT() = default;
@@ -1281,6 +1306,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace relops::relops
 // -- END: test/std/utilities/variant/variant.relops/relops.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.relops/three_way.pass.cpp
@@ -1312,6 +1338,7 @@ int run_test() {
 #include "test_macros.h"
 #include "test_comparisons.h"
 
+namespace relops::three_way {
 #ifndef TEST_HAS_NO_EXCEPTIONS
 // MakeEmptyT throws in operator=(&&), so we can move to it to create valueless-by-exception variants.
 struct MakeEmptyT {
@@ -1478,6 +1505,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace relops::three_way
 // -- END: test/std/utilities/variant/variant.relops/three_way.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.synopsis/variant_npos.pass.cpp
@@ -1499,11 +1527,13 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace npos {
 int run_test() {
   static_assert(std::variant_npos == static_cast<std::size_t>(-1), "");
 
   return 0;
 }
+} // namespace npos
 // -- END: test/std/utilities/variant/variant.synopsis/variant_npos.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/implicit_ctad.pass.cpp
@@ -1532,6 +1562,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace implicit_ctad {
 int run_test() {
   // This is the motivating example from P0739R0
   {
@@ -1548,6 +1579,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace implicit_ctad
 // -- END: test/std/utilities/variant/variant.variant/implicit_ctad.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp
@@ -1574,6 +1606,7 @@ int run_test() {
 
 #include "variant_test_helpers.h"
 
+namespace assign::conv {
 int run_test()
 {
   static_assert(!std::is_assignable<std::variant<int, int>, int>::value, "");
@@ -1593,6 +1626,7 @@ int run_test()
 
   return 0;
 }
+} // namespace assign::conv
 // -- END: test/std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.assign/copy.pass.cpp
@@ -1619,6 +1653,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace assign::copy {
 struct NoCopy {
   NoCopy(const NoCopy&)            = delete;
   NoCopy& operator=(const NoCopy&) = default;
@@ -2263,6 +2298,7 @@ int run_test() {
 #endif
   return 0;
 }
+} // namespace assign::copy
 // -- END: test/std/utilities/variant/variant.variant/variant.assign/copy.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.assign/move.pass.cpp
@@ -2291,6 +2327,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace assign::move {
 struct NoCopy {
   NoCopy(const NoCopy&)            = delete;
   NoCopy& operator=(const NoCopy&) = default;
@@ -2814,6 +2851,7 @@ int run_test() {
 #endif
   return 0;
 }
+} // namespace assign::move
 // -- END: test/std/utilities/variant/variant.variant/variant.assign/move.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.assign/T.pass.cpp
@@ -2844,6 +2882,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace assign::T {
 namespace MetaHelpers {
 
 struct Dummy {
@@ -3243,6 +3282,7 @@ int run_test() {
 #endif
   return 0;
 }
+} // namespace assign::T
 // -- END: test/std/utilities/variant/variant.variant/variant.assign/T.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp
@@ -3268,6 +3308,7 @@ int run_test() {
 
 #include "variant_test_helpers.h"
 
+namespace ctor::conv {
 int run_test()
 {
   static_assert(!std::is_constructible<std::variant<int, int>, int>::value, "");
@@ -3287,6 +3328,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::conv
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/copy.pass.cpp
@@ -3313,6 +3355,7 @@ int run_test()
 #include "test_macros.h"
 #include "test_workarounds.h"
 
+namespace ctor::copy {
 struct NonT {
   constexpr NonT(int v) : value(v) {}
   constexpr NonT(const NonT& o) : value(o.value) {}
@@ -3584,6 +3627,7 @@ int run_test() {
 #endif
   return 0;
 }
+} // namespace ctor::copy
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/copy.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/default.pass.cpp
@@ -3611,6 +3655,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace ctor::default_ {
 struct NonDefaultConstructible {
   constexpr NonDefaultConstructible(int) {}
 };
@@ -3718,6 +3763,7 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+} // namespace ctor::default_
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/default.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/in_place_index_args.pass.cpp
@@ -3746,6 +3792,7 @@ int run_test() {
 #include "test_convertible.h"
 #include "test_macros.h"
 
+namespace ctor::in_place_index_args {
 void test_ctor_sfinae() {
   {
     using V = std::variant<int>;
@@ -3824,6 +3871,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace ctor::in_place_index_args
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/in_place_index_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/in_place_index_init_list_args.pass.cpp
@@ -3853,6 +3901,7 @@ int run_test() {
 #include "test_convertible.h"
 #include "test_macros.h"
 
+namespace ctor::in_place_index_init_list_args {
 struct InitList {
   std::size_t size;
   constexpr InitList(std::initializer_list<int> il) : size(il.size()) {}
@@ -3936,6 +3985,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace ctor::in_place_index_init_list_args
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/in_place_index_init_list_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/in_place_type_args.pass.cpp
@@ -3963,6 +4013,7 @@ int run_test() {
 #include "test_convertible.h"
 #include "test_macros.h"
 
+namespace ctor::in_place_type_args {
 void test_ctor_sfinae() {
   {
     using V = std::variant<int>;
@@ -4052,6 +4103,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace ctor::in_place_type_args
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/in_place_type_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/in_place_type_init_list_args.pass.cpp
@@ -4081,6 +4133,7 @@ int run_test() {
 #include "test_convertible.h"
 #include "test_macros.h"
 
+namespace ctor::in_place_type_init_list_args {
 struct InitList {
   std::size_t size;
   constexpr InitList(std::initializer_list<int> il) : size(il.size()) {}
@@ -4165,6 +4218,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace ctor::in_place_type_init_list_args
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/in_place_type_init_list_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/move.pass.cpp
@@ -4192,6 +4246,7 @@ int run_test() {
 #include "test_macros.h"
 #include "test_workarounds.h"
 
+namespace ctor::move {
 struct ThrowsMove {
   ThrowsMove(ThrowsMove&&) noexcept(false) {}
 };
@@ -4536,6 +4591,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace ctor::move
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/move.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp
@@ -4565,6 +4621,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace ctor::T {
 struct Dummy {
   Dummy() = default;
 };
@@ -4723,6 +4780,7 @@ int run_test() {
   test_vector_bool();
   return 0;
 }
+} // namespace ctor::T
 // -- END: test/std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.dtor/dtor.pass.cpp
@@ -4748,6 +4806,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace dtor {
 struct NonTDtor {
   int* count;
   constexpr NonTDtor(int* a, int*) : count(a) {}
@@ -4822,6 +4881,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace dtor
 // -- END: test/std/utilities/variant/variant.variant/variant.dtor/dtor.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.mod/emplace_index_args.pass.cpp
@@ -4852,6 +4912,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace emplace::index_args {
 template <class Var, std::size_t I, class... Args>
 constexpr auto test_emplace_exists_imp(int)
     -> decltype(std::declval<Var>().template emplace<I>(std::declval<Args>()...), true) {
@@ -4939,6 +5000,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace emplace::index_args
 // -- END: test/std/utilities/variant/variant.variant/variant.mod/emplace_index_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.mod/emplace_index_init_list_args.pass.cpp
@@ -4968,6 +5030,7 @@ int run_test() {
 #include "test_convertible.h"
 #include "test_macros.h"
 
+namespace emplace::index_init_list_args {
 struct InitList {
   std::size_t size;
   constexpr InitList(std::initializer_list<int> il) : size(il.size()) {}
@@ -5046,6 +5109,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace emplace::index_init_list_args
 // -- END: test/std/utilities/variant/variant.variant/variant.mod/emplace_index_init_list_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.mod/emplace_type_args.pass.cpp
@@ -5075,6 +5139,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace emplace::type_args {
 template <class Var, class T, class... Args>
 constexpr auto test_emplace_exists_imp(int)
     -> decltype(std::declval<Var>().template emplace<T>(std::declval<Args>()...), true) {
@@ -5161,6 +5226,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace emplace::type_args
 // -- END: test/std/utilities/variant/variant.variant/variant.mod/emplace_type_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.mod/emplace_type_init_list_args.pass.cpp
@@ -5190,6 +5256,7 @@ int run_test() {
 #include "test_convertible.h"
 #include "test_macros.h"
 
+namespace emplace::type_init_list_args {
 struct InitList {
   std::size_t size;
   constexpr InitList(std::initializer_list<int> il) : size(il.size()) {}
@@ -5267,6 +5334,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace emplace::type_init_list_args
 // -- END: test/std/utilities/variant/variant.variant/variant.mod/emplace_type_init_list_args.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.status/index.pass.cpp
@@ -5296,6 +5364,7 @@ int run_test() {
 #include "variant_test_helpers.h"
 
 
+namespace status::index {
 int run_test() {
   {
     using V = std::variant<int, long>;
@@ -5331,6 +5400,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace status::index
 // -- END: test/std/utilities/variant/variant.variant/variant.status/index.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.status/valueless_by_exception.pass.cpp
@@ -5360,6 +5430,7 @@ int run_test() {
 #include "variant_test_helpers.h"
 
 
+namespace status::valueless_by_exception {
 int run_test() {
   {
     using V = std::variant<int, long>;
@@ -5388,6 +5459,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace status::valueless_by_exception
 // -- END: test/std/utilities/variant/variant.variant/variant.status/valueless_by_exception.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.variant/variant.swap/swap.pass.cpp
@@ -5417,6 +5489,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace member_swap {
 struct NotSwappable {};
 void swap(NotSwappable&, NotSwappable&) = delete;
 
@@ -6007,6 +6080,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace member_swap
 // -- END: test/std/utilities/variant/variant.variant/variant.swap/swap.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.visit/robust_against_adl.pass.cpp
@@ -6028,6 +6102,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace visit::robust_against_adl {
 struct Incomplete;
 template<class T> struct Holder { T t; };
 
@@ -6053,6 +6128,7 @@ int run_test()
 #endif
     return 0;
 }
+} // namespace visit::robust_against_adl
 // -- END: test/std/utilities/variant/variant.visit/robust_against_adl.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.visit/visit.pass.cpp
@@ -6081,6 +6157,7 @@ int run_test()
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace visit {
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
   Fn obj{};
@@ -6462,6 +6539,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace visit
 // -- END: test/std/utilities/variant/variant.visit/visit.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.visit/visit_return_type.pass.cpp
@@ -6490,6 +6568,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace visit::return_type {
 template <typename ReturnType>
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
@@ -6954,6 +7033,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace visit::return_type
 // -- END: test/std/utilities/variant/variant.visit/visit_return_type.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.visit.member/robust_against_adl.pass.cpp
@@ -6982,6 +7062,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace member_visit::robust_against_adl {
 struct Incomplete;
 template <class T>
 struct Holder {
@@ -7006,6 +7087,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace member_visit::robust_against_adl
 // -- END: test/std/utilities/variant/variant.visit.member/robust_against_adl.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.visit.member/visit.pass.cpp
@@ -7040,6 +7122,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace member_visit {
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
   Fn obj{};
@@ -7235,6 +7318,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace member_visit
 // -- END: test/std/utilities/variant/variant.visit.member/visit.pass.cpp
 
 // -- BEGIN: test/std/utilities/variant/variant.visit.member/visit_return_type.pass.cpp
@@ -7269,6 +7353,7 @@ int run_test() {
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+namespace member_visit::return_type {
 template <class... Ts>
 struct overloaded : Ts... {
   using Ts::operator()...;
@@ -7555,6 +7640,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace member_visit::return_type
 // -- END: test/std/utilities/variant/variant.visit.member/visit_return_type.pass.cpp
 // LLVM SOURCES END
 // clang-format on
@@ -8384,13 +8470,13 @@ namespace msvc {
 int main() {
     bad_variant_access::run_test();
 
-    get_if::index::run_test();
-    get_if::type::run_test();
-    get::index::run_test();
-    get::type::run_test();
-    holds_alternative::run_test();
+    get::get_if_index::run_test();
+    get::get_if_type::run_test();
+    get::get_index::run_test();
+    get::get_type::run_test();
+    get::holds_alternative::run_test();
 
-    enabled_hash::run_test();
+    hash::enabled_hash::run_test();
     hash::run_test();
 
     helpers::variant_alternative::run_test();
@@ -8399,9 +8485,12 @@ int main() {
     monostate::properties::run_test();
     monostate::relops::run_test();
 
-    relops::run_test();
+    relops::relops::run_test();
+    relops::three_way::run_test();
 
     npos::run_test();
+
+    implicit_ctad::run_test();
 
     assign::conv::run_test();
     assign::copy::run_test();
@@ -8412,15 +8501,15 @@ int main() {
     ctor::copy::run_test();
     ctor::default_::run_test();
     ctor::in_place_index_args::run_test();
-    ctor::in_place_type_args::run_test();
     ctor::in_place_index_init_list_args::run_test();
+    ctor::in_place_type_args::run_test();
     ctor::in_place_type_init_list_args::run_test();
     ctor::move::run_test();
     ctor::T::run_test();
 
     dtor::run_test();
 
-    emplace::index::run_test();
+    emplace::index_args::run_test();
     emplace::index_init_list_args::run_test();
     emplace::type_args::run_test();
     emplace::type_init_list_args::run_test();
@@ -8433,6 +8522,10 @@ int main() {
     visit::robust_against_adl::run_test();
     visit::run_test();
     visit::return_type::run_test();
+
+    member_visit::robust_against_adl::run_test();
+    member_visit::run_test();
+    member_visit::return_type::run_test();
 
     msvc::big_variant::run_test();
     msvc::derived_variant::run_test();
