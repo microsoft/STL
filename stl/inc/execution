@@ -4396,7 +4396,8 @@ _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
 }
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty>
-_FwdIt2 _Exclusive_scan_per_chunk_origin(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val) {
+_FwdIt2 _Exclusive_scan_per_chunk_origin(
+    _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val) {
     // local-sum for parallel exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and stores
     // successor sum in _Val
     // pre: _Val is *uninitialized* && _First != _Last
@@ -4800,7 +4801,8 @@ _FwdIt2 _Transform_exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
 }
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp, class _Ty>
-_FwdIt2 _Transform_exclusive_scan_per_chunk_origin(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _UnaryOp _Transform_op, _Ty& _Val) {
+_FwdIt2 _Transform_exclusive_scan_per_chunk_origin(
+    _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _UnaryOp _Transform_op, _Ty& _Val) {
     // Local-sum for parallel transform_exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and
     // stores successor sum in _Val.
     // pre: _Val is *uninitialized* && _First != _Last
@@ -5061,8 +5063,8 @@ struct _Static_partitioned_transform_inclusive_scan2 {
         // If the intermediate type is same with output type, then we can direct store the bop result in the output
         if constexpr (_STD is_same_v<_Ty, typename std::iterator_traits<_FwdIt2>::value_type>) {
             // Calculate local sum and publish to other threads
-            const auto _Last = _STD _Transform_inclusive_scan_per_chunk_complete(_In_range._First, _In_range._Last, _Dest,
-                _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{});
+            const auto _Last = _STD _Transform_inclusive_scan_per_chunk_complete(_In_range._First, _In_range._Last,
+                _Dest, _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{});
             _Chunk->_Store_available_state(_Local_available);
 
             // Apply the predecessor overall sum to current overall sum and elements
