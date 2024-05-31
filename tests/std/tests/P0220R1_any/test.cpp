@@ -4,7 +4,7 @@
 // Organization of this file:
 // * a short header (including this comment)
 // * `// LLVM SOURCES BEGIN`
-// * The contents of several libc++ `test/std/utilities/any` test files, each delimited by `// -- BEGIN/END: <filename>`
+// * The contents of several libc++ test files, each delimited by `// -- BEGIN/END: <filename>`
 //   comments. These contents have been modified to merge many tests into one by:
 //     (1) changing `int main(int, char**)` to `int run_test()`, and
 //     (2) wrapping everything other than comments and includes in a unique namespace per-file, using namespace nesting
