@@ -1345,6 +1345,7 @@ int run_test() {
 #include "test_comparisons.h"
 
 namespace relops::three_way {
+#if _HAS_CXX20
 #ifndef TEST_HAS_NO_EXCEPTIONS
 // MakeEmptyT throws in operator=(&&), so we can move to it to create valueless-by-exception variants.
 struct MakeEmptyT {
@@ -1523,6 +1524,11 @@ int run_test() {
 
   return 0;
 }
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+int run_test() {
+  return 0;
+}
+#endif // ^^^ !_HAS_CXX20 ^^^
 } // namespace relops::three_way
 // -- END: test/std/utilities/variant/variant.relops/three_way.pass.cpp
 
@@ -6597,6 +6603,7 @@ int run_test() {
 #include "variant_test_helpers.h"
 
 namespace visit::return_type {
+#if _HAS_CXX20
 template <typename ReturnType>
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
@@ -7061,6 +7068,11 @@ int run_test() {
 
   return 0;
 }
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+int run_test() {
+  return 0;
+}
+#endif // ^^^ !_HAS_CXX20 ^^^
 } // namespace visit::return_type
 // -- END: test/std/utilities/variant/variant.visit/visit_return_type.pass.cpp
 
