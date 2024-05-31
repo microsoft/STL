@@ -17,6 +17,15 @@ void test_escaped_string() {
     assert(format("{:?}", "\x81\x40\x40\x81") == "\"\\u{3000}\x40\\x{81}\"");
 }
 
+template <class TupleOrPair>
+void test_tuple_or_pair_escaping(TupleOrPair&& input) {
+    get<1>(input) = "hell\uff2f"; // U+FF2F FULLWIDTH LATIN CAPITAL LETTER O
+    assert(format("{}", input) == "('*', \"hell\uff2f\")");
+    assert(format("{:#^16}", input) == "('*', \"hell\uff2f\")#");
+}
+
 int main() {
     test_escaped_string();
+    test_tuple_or_pair_escaping(make_pair('*', ""));
+    test_tuple_or_pair_escaping(make_tuple('*', ""));
 }

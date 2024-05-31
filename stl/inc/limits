@@ -9,7 +9,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cfloat>
 #include <climits>
-#include <cwchar>
+#include <cwchar> // TRANSITION, see GH-3631: Lots of user code assumes that <limits> drags in <cwchar>
 #include <xtr1common>
 
 #include _STL_INTRIN_HEADER
@@ -452,11 +452,11 @@ template <>
 class numeric_limits<wchar_t> : public _Num_int_base {
 public:
     _NODISCARD static constexpr wchar_t(min)() noexcept {
-        return WCHAR_MIN;
+        return 0;
     }
 
     _NODISCARD static constexpr wchar_t(max)() noexcept {
-        return WCHAR_MAX;
+        return 0xffff;
     }
 
     _NODISCARD static constexpr wchar_t lowest() noexcept {

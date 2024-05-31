@@ -901,13 +901,9 @@ namespace {
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
-#ifdef _M_IX86
-            return static_cast<_Signed_t>(
-                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
-                | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
-#else // ^^^ x86 / x64 vvv
-            return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
-#endif // ^^^ x64 ^^^
+            // With optimizations enabled, compiles into register movement, rather than an actual stack spill.
+            // Works around the absence of _mm_cvtsi128_si64 on 32-bit.
+            return static_cast<_Signed_t>(_Get_v_pos(_Cur, 0));
         }
 
         static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
@@ -1114,18 +1110,11 @@ namespace {
         }
 
         static uint64_t _Get_any_u(const __m128i _Cur) noexcept {
-#ifdef _M_IX86
-            return (static_cast<uint64_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
-                 | static_cast<uint64_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur)));
-#else // ^^^ x86 / x64 vvv
-            return static_cast<uint64_t>(_mm_cvtsi128_si64(_Cur));
-#endif // ^^^ x64 ^^^
+            return _Minmax_traits_8::_Get_v_pos(_Cur, 0);
         }
 
         static uint64_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-            uint64_t _Array[2];
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
-            return _Array[_H_pos >> 3];
+            return _Minmax_traits_8::_Get_v_pos(_Idx, _H_pos);
         }
 
         static __m128d _Cmp_eq(const __m128d _First, const __m128d _Second) noexcept {
