@@ -1394,12 +1394,12 @@ int run_test()
   static_assert(!std::is_assignable<std::variant<int, int>, int>::value, "");
   static_assert(!std::is_assignable<std::variant<long, long long>, int>::value, "");
 #if _HAS_CXX20
-  static_assert(std::is_assignable<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_assignable<std::variant<char>, int>::value == false, "");
 
   static_assert(std::is_assignable<std::variant<std::string, float>, int>::value
-    == VariantAllowsNarrowingConversions, "");
+    == false, "");
   static_assert(std::is_assignable<std::variant<std::string, double>, int>::value
-    == VariantAllowsNarrowingConversions, "");
+    == false, "");
   static_assert(!std::is_assignable<std::variant<std::string, bool>, int>::value, "");
 
   static_assert(!std::is_assignable<std::variant<int, bool>, decltype("meow")>::value, "");
@@ -2676,7 +2676,7 @@ void test_T_assignment_sfinae() {
 #if _HAS_CXX20
   {
     using V = std::variant<std::string, float>;
-    static_assert(std::is_assignable<V, int>::value == VariantAllowsNarrowingConversions,
+    static_assert(std::is_assignable<V, int>::value == false,
     "no matching operator=");
   }
   {
@@ -2867,12 +2867,12 @@ int run_test()
   static_assert(!std::is_constructible<std::variant<int, int>, int>::value, "");
   static_assert(!std::is_constructible<std::variant<long, long long>, int>::value, "");
 #if _HAS_CXX20
-  static_assert(std::is_constructible<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_constructible<std::variant<char>, int>::value == false, "");
 
   static_assert(std::is_constructible<std::variant<std::string, float>, int>::value
-    == VariantAllowsNarrowingConversions, "");
+    == false, "");
   static_assert(std::is_constructible<std::variant<std::string, double>, int>::value
-    == VariantAllowsNarrowingConversions, "");
+    == false, "");
   static_assert(!std::is_constructible<std::variant<std::string, bool>, int>::value, "");
 
   static_assert(!std::is_constructible<std::variant<int, bool>, decltype("meow")>::value, "");
@@ -4159,7 +4159,7 @@ void test_T_ctor_sfinae() {
 #if _HAS_CXX20
   {
     using V = std::variant<std::string, float>;
-    static_assert(std::is_constructible<V, int>::value == VariantAllowsNarrowingConversions,
+    static_assert(std::is_constructible<V, int>::value == false,
                   "no matching constructor");
   }
   {
