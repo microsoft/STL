@@ -7103,6 +7103,7 @@ int run_test() {
 #include "test_macros.h"
 
 namespace member_visit::robust_against_adl {
+#if __cpp_lib_variant >= 202306L
 struct Incomplete;
 template <class T>
 struct Holder {
@@ -7127,6 +7128,11 @@ int run_test() {
 
   return 0;
 }
+#else // ^^^ P2637R3 available / P2637R3 unavailable vvv
+int run_test() {
+  return 0;
+}
+#endif // ^^^ P2637R3 unavailable ^^^
 } // namespace member_visit::robust_against_adl
 // -- END: test/std/utilities/variant/variant.visit.member/robust_against_adl.pass.cpp
 
@@ -7163,6 +7169,7 @@ int run_test() {
 #include "variant_test_helpers.h"
 
 namespace member_visit {
+#if __cpp_lib_variant >= 202306L
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
   Fn obj{};
@@ -7360,6 +7367,11 @@ int run_test() {
 
   return 0;
 }
+#else // ^^^ P2637R3 available / P2637R3 unavailable vvv
+int run_test() {
+  return 0;
+}
+#endif // ^^^ P2637R3 unavailable ^^^
 } // namespace member_visit
 // -- END: test/std/utilities/variant/variant.visit.member/visit.pass.cpp
 
@@ -7396,6 +7408,7 @@ int run_test() {
 #include "variant_test_helpers.h"
 
 namespace member_visit::return_type {
+#if __cpp_lib_variant >= 202306L
 template <class... Ts>
 struct overloaded : Ts... {
   using Ts::operator()...;
@@ -7682,6 +7695,11 @@ int run_test() {
 
   return 0;
 }
+#else // ^^^ P2637R3 available / P2637R3 unavailable vvv
+int run_test() {
+  return 0;
+}
+#endif // ^^^ P2637R3 unavailable ^^^
 } // namespace member_visit::return_type
 // -- END: test/std/utilities/variant/variant.visit.member/visit_return_type.pass.cpp
 // LLVM SOURCES END
