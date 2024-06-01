@@ -4376,7 +4376,7 @@ struct _No_init_tag {
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty>
 _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val,
-    _STD vector<_Ty>& _Intermediate_result) {
+    vector<_Ty>& _Intermediate_result) {
     // local-sum for parallel exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and stores
     // successor sum in _Val
     // pre: _Val is *uninitialized* && _First != _Last
@@ -4476,7 +4476,7 @@ struct _Static_partitioned_exclusive_scan2 {
         }
 
         // If the intermediate type is same with output type, then we can direct store the bop result in the output
-        if constexpr (_STD is_same_v<_Ty, typename std::iterator_traits<_FwdIt2>::value_type>) {
+        if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             // Calculate local sum and publish to other threads
             const auto _Last = _STD _Exclusive_scan_per_chunk_origin(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Local._Ref());
@@ -4490,7 +4490,7 @@ struct _Static_partitioned_exclusive_scan2 {
                 _Chunk->_Apply_exclusive_predecessor_origin(_Tmp, _Dest, _Last, _Reduce_op);
             }
         } else {
-            _STD vector<_Ty> _Intermediate_result;
+            vector<_Ty> _Intermediate_result;
 
             // Calculate local sum and publish to other threads
             const auto _Last = _STD _Exclusive_scan_per_chunk(
@@ -4560,7 +4560,7 @@ _FwdIt2 exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdI
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty, class _Ty_fwd>
 _FwdIt2 _Inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val,
-    _Ty_fwd&& _Predecessor, _STD vector<_Ty>& _Intermediate_result) {
+    _Ty_fwd&& _Predecessor, vector<_Ty>& _Intermediate_result) {
     // local-sum for parallel inclusive_scan; writes local inclusive prefix sums into _Dest and stores overall sum in
     // _Val.
     // pre: _Val is *uninitialized* && _First != _Last
@@ -4652,7 +4652,7 @@ struct _Static_partitioned_inclusive_scan2 {
         }
 
         // If the intermediate type is same with output type, then we can direct store the bop result in the output
-        if constexpr (_STD is_same_v<_Ty, typename std::iterator_traits<_FwdIt2>::value_type>) {
+        if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             // Calculate local sum and publish to other threads
             const auto _Last = _STD _Inclusive_scan_per_chunk_complete(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Local._Ref(), _No_init_tag{});
@@ -4667,7 +4667,7 @@ struct _Static_partitioned_inclusive_scan2 {
             }
         } else {
             // Make a vector to avoid the type of *_Dest is different with _Ty
-            _STD vector<_Ty> _Intermediate_result;
+            vector<_Ty> _Intermediate_result;
 
             // Calculate local sum and publish to other threads
             const auto _Last = _STD _Inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
@@ -4781,7 +4781,7 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp, class _Ty>
 _FwdIt2 _Transform_exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
-    _UnaryOp _Transform_op, _Ty& _Val, _STD vector<_Ty>& _Intermediate_result) {
+    _UnaryOp _Transform_op, _Ty& _Val, vector<_Ty>& _Intermediate_result) {
     // Local-sum for parallel transform_exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and
     // stores successor sum in _Val.
     // pre: _Val is *uninitialized* && _First != _Last
@@ -4883,7 +4883,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
         }
 
         // If the intermediate type is same with output type, then we can direct store the bop result in the output
-        if constexpr (_STD is_same_v<_Ty, typename std::iterator_traits<_FwdIt2>::value_type>) {
+        if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             // Calculate local sum and publish to other threads
             const auto _Last = _STD _Transform_exclusive_scan_per_chunk_origin(
                 _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op, _Chunk->_Local._Ref());
@@ -4898,7 +4898,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
             }
         } else {
             // Make a vector to avoid the type of *_Dest is different with _Ty
-            _STD vector<_Ty> _Intermediate_result;
+            vector<_Ty> _Intermediate_result;
 
             // Calculate local sum and publish to other threads
             const auto _Last = _STD _Transform_exclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest,
@@ -4967,7 +4967,7 @@ _FwdIt2 transform_exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp, class _Ty, class _Ty_fwd>
 _FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
-    _UnaryOp _Transform_op, _Ty& _Val, _Ty_fwd&& _Predecessor, _STD vector<_Ty>& _Intermediate_result) {
+    _UnaryOp _Transform_op, _Ty& _Val, _Ty_fwd&& _Predecessor, vector<_Ty>& _Intermediate_result) {
     // local-sum for parallel transform_inclusive_scan; writes local inclusive prefix sums into _Dest and stores overall
     // sum in _Val
     // pre: _Val is *uninitialized* && _First != _Last
@@ -5061,7 +5061,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
         }
 
         // If the intermediate type is same with output type, then we can direct store the bop result in the output
-        if constexpr (_STD is_same_v<_Ty, typename std::iterator_traits<_FwdIt2>::value_type>) {
+        if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             // Calculate local sum and publish to other threads
             const auto _Last = _STD _Transform_inclusive_scan_per_chunk_complete(_In_range._First, _In_range._Last,
                 _Dest, _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{});
@@ -5076,7 +5076,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
             }
         } else {
             // Make a vector to avoid the type of *_Dest is different with _Ty
-            _STD vector<_Ty> _Intermediate_result;
+            vector<_Ty> _Intermediate_result;
 
             // Calculate local sum and publish to other threads
             const auto _Last = _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest,
