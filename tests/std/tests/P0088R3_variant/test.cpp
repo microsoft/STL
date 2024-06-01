@@ -28,9 +28,6 @@
 // running the libc++ tests directly in all of our configurations so we needn't replicate this subset of files.
 
 #if !defined(_PREFAST_) || !defined(_M_IX86) // TRANSITION, VSO-1639191
-#ifdef CONSTEXPR_NOTHROW
-#define TEST_WORKAROUND_CONSTEXPR_IMPLIES_NOEXCEPT
-#endif // CONSTEXPR_NOTHROW
 
 #define _HAS_DEPRECATED_RESULT_OF 1
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
@@ -39,6 +36,8 @@
 #define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
+
+#include <is_permissive.hpp>
 
 // clang-format off
 // LLVM SOURCES BEGIN
@@ -287,7 +286,7 @@ void test_const_lvalue_get() {
   {
     using V = std::variant<int, const long>;
     constexpr V v(42);
-    ASSERT_NOT_NOEXCEPT(std::get<0>(v));
+    static_assert(noexcept(std::get<0>(v)) == is_permissive);
     ASSERT_SAME_TYPE(decltype(std::get<0>(v)), const int &);
     static_assert(std::get<0>(v) == 42, "");
   }
@@ -301,7 +300,7 @@ void test_const_lvalue_get() {
   {
     using V = std::variant<int, const long>;
     constexpr V v(42l);
-    ASSERT_NOT_NOEXCEPT(std::get<1>(v));
+    static_assert(noexcept(std::get<1>(v)) == is_permissive);
     ASSERT_SAME_TYPE(decltype(std::get<1>(v)), const long &);
     static_assert(std::get<1>(v) == 42, "");
   }
@@ -449,7 +448,7 @@ void test_const_lvalue_get() {
   {
     using V = std::variant<int, const long>;
     constexpr V v(42);
-    ASSERT_NOT_NOEXCEPT(std::get<int>(v));
+    static_assert(noexcept(std::get<int>(v)) == is_permissive);
     ASSERT_SAME_TYPE(decltype(std::get<int>(v)), const int &);
     static_assert(std::get<int>(v) == 42, "");
   }
@@ -463,7 +462,7 @@ void test_const_lvalue_get() {
   {
     using V = std::variant<int, const long>;
     constexpr V v(42l);
-    ASSERT_NOT_NOEXCEPT(std::get<const long>(v));
+    static_assert(noexcept(std::get<const long>(v)) == is_permissive);
     ASSERT_SAME_TYPE(decltype(std::get<const long>(v)), const long &);
     static_assert(std::get<const long>(v) == 42, "");
   }
@@ -1646,7 +1645,7 @@ int run_test()
 
   static_assert(std::is_assignable<std::variant<bool>, std::true_type>::value, "");
   static_assert(!std::is_assignable<std::variant<bool>, std::unique_ptr<char> >::value, "");
-  static_assert(!std::is_assignable<std::variant<bool>, decltype(nullptr)>::value, "");
+  static_assert(std::is_assignable<std::variant<bool>, decltype(nullptr)>::value == is_permissive, "");
 
   return 0;
 }
@@ -3078,8 +3077,13 @@ TEST_CONSTEXPR_CXX20 void test_T_assignment_basic() {
 void test_T_assignment_basic_no_constexpr() {
   std::variant<bool, std::unique_ptr<int>> v;
   v = nullptr;
-  assert(v.index() == 1);
-  assert(std::get<1>(v) == nullptr);
+  if constexpr (is_permissive) {
+    assert(v.index() == 0);
+    assert(std::get<0>(v) == false);
+  } else {
+    assert(v.index() == 1);
+    assert(std::get<1>(v) == nullptr);
+  }
 }
 
 struct TraceStat {
@@ -3350,7 +3354,7 @@ int run_test()
 
   static_assert(std::is_constructible<std::variant<bool>, std::true_type>::value, "");
   static_assert(!std::is_constructible<std::variant<bool>, std::unique_ptr<char> >::value, "");
-  static_assert(!std::is_constructible<std::variant<bool>, decltype(nullptr)>::value, "");
+  static_assert(std::is_constructible<std::variant<bool>, decltype(nullptr)>::value == is_permissive, "");
 
   return 0;
 }
@@ -4749,8 +4753,13 @@ void test_T_ctor_basic() {
   }
   {
     std::variant<bool, std::unique_ptr<int>> v = nullptr;
-    assert(v.index() == 1);
-    assert(std::get<1>(v) == nullptr);
+    if constexpr (is_permissive) {
+      assert(v.index() == 0);
+      assert(std::get<0>(v) == false);
+    } else {
+      assert(v.index() == 1);
+      assert(std::get<1>(v) == nullptr);
+    }
   }
   {
     std::variant<bool const, int> v = true;
@@ -6554,7 +6563,7 @@ void test_sfinae() {
   struct GoodVariant2 : GoodVariant {};
 
   static_assert(!has_visit<int>(0));
-  static_assert(!has_visit<BadVariant>(0));
+  static_assert(has_visit<BadVariant>(0) == is_permissive);
   static_assert(!has_visit<BadVariant2>(0));
   static_assert(has_visit<std::variant<int>>(0));
   static_assert(has_visit<GoodVariant>(0));
@@ -7046,7 +7055,7 @@ void test_sfinae() {
   struct BadVariant : std::variant<short>, std::variant<long, float> {};
 
   static_assert(has_visit<std::variant<int> >(int()));
-  static_assert(!has_visit<BadVariant>(int()));
+  static_assert(has_visit<BadVariant>(int()) == is_permissive);
 }
 
 int run_test() {
