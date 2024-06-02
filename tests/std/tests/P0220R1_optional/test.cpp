@@ -21,7 +21,9 @@
 //    into a file.
 // 3. Replicate the namespace structure from here into that file, use its content to replace everything between the
 //    "LLVM SOURCES BEGIN"/"END" delimiters, and ensure that `main` properly calls each of the `run_test` functions.
-// 4. You'll need to fixup the specialization of std::hash in test/std/utilities/optional/optional.hash/hash.pass.cpp.
+// 4. Fix the specialization of std::hash by closing/reopening namespaces and qualifying types.
+// 5. Restore the TRANSITION-commented workarounds.
+// 6. Restore the _HAS_CXX20 and _HAS_CXX23 guards.
 //
 // Yes, this is an awkward hand process; notably the required headers can change without notice. We should investigate
 // running the libc++ tests directly in all of our configurations so we needn't replicate this subset of files.
