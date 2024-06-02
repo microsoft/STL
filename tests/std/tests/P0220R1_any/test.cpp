@@ -49,7 +49,6 @@
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -64,7 +63,6 @@
 #include "count_new.h"
 #include "test_macros.h"
 
-namespace assign::copy {
 template <class LHS, class RHS>
 void test_copy_assign() {
     assert(LHS::count == 0);
@@ -238,7 +236,6 @@ int run_test() {
 
   return 0;
 }
-} // namespace assign::copy
 // -- END: test/std/utilities/any/any.class/any.assign/copy.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.assign/move.pass.cpp
@@ -251,7 +248,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -265,7 +261,6 @@ int run_test() {
 #include "any_helpers.h"
 #include "test_macros.h"
 
-namespace assign::move {
 template <class LHS, class RHS>
 void test_move_assign() {
     assert(LHS::count == 0);
@@ -347,7 +342,6 @@ int run_test() {
 
   return 0;
 }
-} // namespace assign::move
 // -- END: test/std/utilities/any/any.class/any.assign/move.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.assign/value.pass.cpp
@@ -360,7 +354,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -376,7 +369,6 @@ int run_test() {
 #include "count_new.h"
 #include "test_macros.h"
 
-namespace assign::value {
 template <class LHS, class RHS>
 void test_assign_value() {
     assert(LHS::count == 0);
@@ -560,7 +552,6 @@ int run_test() {
 
   return 0;
 }
-} // namespace assign::value
 // -- END: test/std/utilities/any/any.class/any.assign/value.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.cons/copy.pass.cpp
@@ -573,7 +564,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -586,7 +576,6 @@ int run_test() {
 #include "count_new.h"
 #include "test_macros.h"
 
-namespace ctor::copy {
 template <class Type>
 void test_copy_throws() {
 #if !defined(TEST_HAS_NO_EXCEPTIONS)
@@ -664,7 +653,6 @@ int run_test() {
 
   return 0;
 }
-} // namespace ctor::copy
 // -- END: test/std/utilities/any/any.class/any.cons/copy.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.cons/default.pass.cpp
@@ -675,6 +663,7 @@ int run_test() {
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
+
 
 
 // <any>
@@ -689,7 +678,6 @@ int run_test() {
 #include "any_helpers.h"
 #include "count_new.h"
 
-namespace ctor::default_ {
 int run_test()
 {
     {
@@ -702,10 +690,8 @@ int run_test()
         struct TestConstexpr : public std::any {
           constexpr TestConstexpr() : std::any() {}
         };
-#ifdef _LIBCPP_SAFE_STATIC
-        _LIBCPP_SAFE_STATIC static std::any a;
-        ((void)a);
-#endif
+        static TEST_CONSTINIT std::any a;
+        (void)a;
     }
     {
         DisableAllocationGuard g; ((void)g);
@@ -715,7 +701,6 @@ int run_test()
 
   return 0;
 }
-} // namespace ctor::default_
 // -- END: test/std/utilities/any/any.class/any.cons/default.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.cons/in_place_type.pass.cpp
@@ -728,7 +713,6 @@ int run_test()
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -751,7 +735,6 @@ int run_test()
 #include "test_macros.h"
 #include "test_convertible.h"
 
-namespace ctor::in_place {
 template <class Type>
 void test_in_place_type() {
     // constructing from a small type should perform no allocations.
@@ -913,7 +896,6 @@ int run_test() {
 
   return 0;
 }
-} // namespace ctor::in_place
 // -- END: test/std/utilities/any/any.class/any.cons/in_place_type.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.cons/move.pass.cpp
@@ -926,7 +908,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -941,7 +922,6 @@ int run_test() {
 #include "count_new.h"
 #include "test_macros.h"
 
-namespace ctor::move {
 // Moves are always noexcept. The throws_on_move object
 // must be stored dynamically so the pointer is moved and
 // not the stored object.
@@ -1017,7 +997,6 @@ int run_test()
 
   return 0;
 }
-} // namespace ctor::move
 // -- END: test/std/utilities/any/any.class/any.cons/move.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.cons/value.pass.cpp
@@ -1030,7 +1009,6 @@ int run_test()
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -1050,7 +1028,6 @@ int run_test()
 #include "count_new.h"
 #include "test_macros.h"
 
-namespace ctor::value {
 template <class Type>
 void test_copy_value_throws()
 {
@@ -1175,7 +1152,6 @@ int run_test() {
 
   return 0;
 }
-} // namespace ctor::value
 // -- END: test/std/utilities/any/any.class/any.cons/value.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.modifiers/emplace.pass.cpp
@@ -1188,7 +1164,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -1203,13 +1178,12 @@ int run_test() {
 #include "count_new.h"
 #include "test_macros.h"
 
-namespace modifiers::emplace {
 struct Tracked {
-  static int count;
-  Tracked()  {++count;}
-  Tracked(Tracked const&) noexcept {++count;}
-  Tracked& operator=(Tracked const&) = default;
-  ~Tracked() { --count; }
+    static int count;
+    Tracked() { ++count; }
+    Tracked(Tracked const&) noexcept { ++count; }
+    Tracked& operator=(Tracked const&) = default;
+    ~Tracked() { --count; }
 };
 int Tracked::count = 0;
 
@@ -1465,7 +1439,6 @@ int run_test() {
 
   return 0;
 }
-} // namespace modifiers::emplace
 // -- END: test/std/utilities/any/any.class/any.modifiers/emplace.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.modifiers/reset.pass.cpp
@@ -1478,7 +1451,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -1490,7 +1462,6 @@ int run_test() {
 #include "test_macros.h"
 #include "any_helpers.h"
 
-namespace modifiers::reset {
 int run_test()
 {
     // empty
@@ -1529,7 +1500,6 @@ int run_test()
 
   return 0;
 }
-} // namespace modifiers::reset
 // -- END: test/std/utilities/any/any.class/any.modifiers/reset.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.modifiers/swap.pass.cpp
@@ -1542,7 +1512,6 @@ int run_test()
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -1556,7 +1525,6 @@ int run_test()
 #include "test_macros.h"
 #include "any_helpers.h"
 
-namespace modifiers::swap_ {
 template <class LHS, class RHS>
 void test_swap() {
     assert(LHS::count == 0);
@@ -1664,7 +1632,6 @@ int run_test()
 
   return 0;
 }
-} // namespace modifiers::swap_
 // -- END: test/std/utilities/any/any.class/any.modifiers/swap.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.observers/has_value.pass.cpp
@@ -1677,6 +1644,7 @@ int run_test()
 //===----------------------------------------------------------------------===//
 
 
+
 // <any>
 
 // any::has_value() noexcept
@@ -1687,10 +1655,8 @@ int run_test()
 #include "test_macros.h"
 #include "any_helpers.h"
 
-namespace observers::has_value {
 int run_test()
 {
-    // noexcept test
     {
         std::any a;
         ASSERT_NOEXCEPT(a.has_value());
@@ -1731,7 +1697,6 @@ int run_test()
 
   return 0;
 }
-} // namespace observers::has_value
 // -- END: test/std/utilities/any/any.class/any.observers/has_value.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.observers/type.pass.cpp
@@ -1744,7 +1709,8 @@ int run_test()
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: libcpp-no-rtti
+
+
 
 // <any>
 
@@ -1756,7 +1722,6 @@ int run_test()
 #include "test_macros.h"
 #include "any_helpers.h"
 
-namespace observers::type {
 int run_test()
 {
     {
@@ -1780,36 +1745,7 @@ int run_test()
 
   return 0;
 }
-} // namespace observers::type
 // -- END: test/std/utilities/any/any.class/any.observers/type.pass.cpp
-
-// -- BEGIN: test/std/utilities/any/any.class/not_literal_type.pass.cpp
-//===----------------------------------------------------------------------===//
-//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===----------------------------------------------------------------------===//
-
-
-// <any>
-
-// [Note any is a not a literal type --end note]
-
-#include <any>
-#include <type_traits>
-
-#include "test_macros.h"
-
-namespace not_literal {
-int run_test() {
-    static_assert(!std::is_literal_type<std::any>::value, "");
-
-  return 0;
-}
-} // namespace not_literal
-// -- END: test/std/utilities/any/any.class/not_literal_type.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.nonmembers/any.cast/any_cast_pointer.pass.cpp
 //===----------------------------------------------------------------------===//
@@ -1821,7 +1757,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -1838,7 +1773,6 @@ int run_test() {
 #include "test_macros.h"
 #include "any_helpers.h"
 
-namespace nonmembers::cast::pointer {
 // Test that the operators are properly noexcept.
 void test_cast_is_noexcept() {
     std::any a;
@@ -1994,7 +1928,6 @@ int run_test() {
 
   return 0;
 }
-} // namespace nonmembers::cast::pointer
 // -- END: test/std/utilities/any/any.nonmembers/any.cast/any_cast_pointer.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.nonmembers/any.cast/any_cast_reference.pass.cpp
@@ -2007,7 +1940,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -2028,7 +1960,6 @@ int run_test() {
 #include "count_new.h"
 #include "test_macros.h"
 
-namespace nonmembers::cast::reference {
 // Test that the operators are NOT marked noexcept.
 void test_cast_is_not_noexcept() {
     std::any a;
@@ -2306,7 +2237,6 @@ int run_test() {
 
   return 0;
 }
-} // namespace nonmembers::cast::reference
 // -- END: test/std/utilities/any/any.nonmembers/any.cast/any_cast_reference.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.nonmembers/make_any.pass.cpp
@@ -2319,7 +2249,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -2334,7 +2263,6 @@ int run_test() {
 #include "count_new.h"
 #include "test_macros.h"
 
-namespace nonmembers::make_any {
 template <class Type>
 void test_make_any_type() {
     // constructing from a small type should perform no allocations.
@@ -2449,7 +2377,6 @@ int run_test() {
 
   return 0;
 }
-} // namespace nonmembers::make_any
 // -- END: test/std/utilities/any/any.nonmembers/make_any.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.nonmembers/swap.pass.cpp
@@ -2462,7 +2389,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -2475,7 +2401,6 @@ int run_test() {
 
 #include "test_macros.h"
 
-namespace nonmembers::swap_ {
 int run_test()
 {
 
@@ -2495,7 +2420,6 @@ int run_test()
 
   return 0;
 }
-} // namespace nonmembers::swap_
 // -- END: test/std/utilities/any/any.nonmembers/swap.pass.cpp
 // LLVM SOURCES END
 // clang-format on
