@@ -74,6 +74,7 @@
 #include <type_traits>
 #include <utility>
 
+namespace utility::in_place {
 template <class Tp, class Up>
 constexpr bool check_tag(Up) {
     return std::is_same<Tp, std::decay_t<Tp>>::value
@@ -111,6 +112,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace utility::in_place
 // -- END: test/std/utilities/utility/utility.inplace/inplace.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/iterator_concept_conformance.compile.pass.cpp
@@ -159,6 +161,7 @@ static_assert(!std::indirectly_copyable_storable<std::optional<int>, std::option
 
 #include "test_macros.h"
 
+namespace bad_optional_access::default_ {
 int run_test()
 {
     using std::bad_optional_access;
@@ -166,6 +169,7 @@ int run_test()
 
   return 0;
 }
+} // namespace bad_optional_access::default_
 // -- END: test/std/utilities/optional/optional.bad_optional_access/default.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.bad_optional_access/derive.pass.cpp
@@ -188,6 +192,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace bad_optional_access::derive {
 int run_test()
 {
     using std::bad_optional_access;
@@ -197,6 +202,7 @@ int run_test()
 
   return 0;
 }
+} // namespace bad_optional_access::derive
 // -- END: test/std/utilities/optional/optional.bad_optional_access/derive.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.comp_with_t/compare.three_way.pass.cpp
@@ -225,6 +231,7 @@ int run_test()
 
 #include "test_comparisons.h"
 
+namespace comp_with_t::three_way {
 struct SomeInt {
   int value_;
 
@@ -302,6 +309,7 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+} // namespace comp_with_t::three_way
 // -- END: test/std/utilities/optional/optional.comp_with_t/compare.three_way.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.comp_with_t/equal.pass.cpp
@@ -323,6 +331,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace comp_with_t::equal {
 using std::optional;
 
 struct X {
@@ -372,6 +381,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace comp_with_t::equal
 // -- END: test/std/utilities/optional/optional.comp_with_t/equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.comp_with_t/greater.pass.cpp
@@ -393,6 +403,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace comp_with_t::greater_than {
 using std::optional;
 
 struct X {
@@ -442,6 +453,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace comp_with_t::greater_than
 // -- END: test/std/utilities/optional/optional.comp_with_t/greater.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.comp_with_t/greater_equal.pass.cpp
@@ -463,6 +475,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace comp_with_t::greater_equal {
 using std::optional;
 
 struct X {
@@ -514,6 +527,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace comp_with_t::greater_equal
 // -- END: test/std/utilities/optional/optional.comp_with_t/greater_equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.comp_with_t/less_equal.pass.cpp
@@ -535,6 +549,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace comp_with_t::less_equal {
 using std::optional;
 
 struct X {
@@ -586,6 +601,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace comp_with_t::less_equal
 // -- END: test/std/utilities/optional/optional.comp_with_t/less_equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.comp_with_t/less_than.pass.cpp
@@ -607,6 +623,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace comp_with_t::less_than {
 using std::optional;
 
 struct X {
@@ -656,6 +673,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace comp_with_t::less_than
 // -- END: test/std/utilities/optional/optional.comp_with_t/less_than.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.comp_with_t/not_equal.pass.cpp
@@ -677,6 +695,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace comp_with_t::not_equal {
 using std::optional;
 
 struct X {
@@ -726,6 +745,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace comp_with_t::not_equal
 // -- END: test/std/utilities/optional/optional.comp_with_t/not_equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.hash/enabled_hash.pass.cpp
@@ -751,6 +771,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace hash::enabled_hash {
 int run_test() {
   test_library_hash_specializations_available();
   {
@@ -759,6 +780,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace hash::enabled_hash
 // -- END: test/std/utilities/optional/optional.hash/enabled_hash.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.hash/hash.pass.cpp
@@ -784,8 +806,10 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace hash {
 struct A {};
 struct B {};
+} // namespace hash
 
 namespace std {
 
@@ -796,6 +820,7 @@ struct hash<B> {
 
 }
 
+namespace hash {
 int run_test()
 {
     using std::optional;
@@ -845,6 +870,7 @@ int run_test()
 
   return 0;
 }
+} // namespace hash
 // -- END: test/std/utilities/optional/optional.hash/hash.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.monadic/and_then.pass.cpp
@@ -870,6 +896,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace monadic::and_then {
 struct LVal {
   constexpr std::optional<int> operator()(int&) { return 1; }
   std::optional<int> operator()(const int&) = delete;
@@ -1112,6 +1139,7 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+} // namespace monadic::and_then
 // -- END: test/std/utilities/optional/optional.monadic/and_then.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.monadic/or_else.pass.cpp
@@ -1134,6 +1162,7 @@ int run_test() {
 #include <cassert>
 #include <optional>
 
+namespace monadic::or_else {
 struct NonMovable {
   NonMovable() = default;
   NonMovable(NonMovable&&) = delete;
@@ -1188,6 +1217,7 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+} // namespace monadic::or_else
 // -- END: test/std/utilities/optional/optional.monadic/or_else.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.monadic/transform.pass.cpp
@@ -1213,6 +1243,7 @@ int run_test() {
 #include <optional>
 #include <type_traits>
 
+namespace monadic::transform {
 struct LVal {
   constexpr int operator()(int&) { return 1; }
   int operator()(const int&) = delete;
@@ -1398,6 +1429,7 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+} // namespace monadic::transform
 // -- END: test/std/utilities/optional/optional.monadic/transform.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.nullops/compare.three_way.pass.cpp
@@ -1424,6 +1456,7 @@ int run_test() {
 
 #include "test_comparisons.h"
 
+namespace nullops::three_way {
 constexpr bool test() {
   {
     std::optional<int> op;
@@ -1451,6 +1484,7 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+} // namespace nullops::three_way
 // -- END: test/std/utilities/optional/optional.nullops/compare.three_way.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.nullops/equal.pass.cpp
@@ -1472,6 +1506,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace nullops::equal {
 int run_test()
 {
     using std::optional;
@@ -1496,6 +1531,7 @@ int run_test()
 
   return 0;
 }
+} // namespace nullops::equal
 // -- END: test/std/utilities/optional/optional.nullops/equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.nullops/greater.pass.cpp
@@ -1517,6 +1553,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace nullops::greater_than {
 int run_test()
 {
     using std::optional;
@@ -1541,6 +1578,7 @@ int run_test()
 
   return 0;
 }
+} // namespace nullops::greater_than
 // -- END: test/std/utilities/optional/optional.nullops/greater.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.nullops/greater_equal.pass.cpp
@@ -1562,6 +1600,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace nullops::greater_equal {
 int run_test()
 {
     using std::optional;
@@ -1586,6 +1625,7 @@ int run_test()
 
   return 0;
 }
+} // namespace nullops::greater_equal
 // -- END: test/std/utilities/optional/optional.nullops/greater_equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.nullops/less_equal.pass.cpp
@@ -1608,6 +1648,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace nullops::less_equal {
 int run_test()
 {
     using std::optional;
@@ -1632,6 +1673,7 @@ int run_test()
 
   return 0;
 }
+} // namespace nullops::less_equal
 // -- END: test/std/utilities/optional/optional.nullops/less_equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.nullops/less_than.pass.cpp
@@ -1653,6 +1695,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace nullops::less_than {
 int run_test()
 {
     using std::optional;
@@ -1677,6 +1720,7 @@ int run_test()
 
   return 0;
 }
+} // namespace nullops::less_than
 // -- END: test/std/utilities/optional/optional.nullops/less_than.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.nullops/not_equal.pass.cpp
@@ -1698,6 +1742,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace nullops::not_equal {
 int run_test()
 {
     using std::optional;
@@ -1722,6 +1767,7 @@ int run_test()
 
   return 0;
 }
+} // namespace nullops::not_equal
 // -- END: test/std/utilities/optional/optional.nullops/not_equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.nullopt/nullopt_t.pass.cpp
@@ -1748,6 +1794,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace nullopt {
 using std::nullopt_t;
 using std::nullopt;
 
@@ -1768,6 +1815,7 @@ int run_test()
 
   return 0;
 }
+} // namespace nullopt
 // -- END: test/std/utilities/optional/optional.nullopt/nullopt_t.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.assign/assign_value.pass.cpp
@@ -1792,6 +1840,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace assign::value {
 using std::optional;
 
 struct ThrowAssign {
@@ -2056,6 +2105,7 @@ int run_test()
 
   return 0;
 }
+} // namespace assign::value
 // -- END: test/std/utilities/optional/optional.object/optional.object.assign/assign_value.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.assign/const_optional_U.pass.cpp
@@ -2081,6 +2131,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace assign::const_optional_U {
 using std::optional;
 
 struct X
@@ -2314,6 +2365,7 @@ int run_test()
 
   return 0;
 }
+} // namespace assign::const_optional_U
 // -- END: test/std/utilities/optional/optional.object/optional.object.assign/const_optional_U.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.assign/copy.pass.cpp
@@ -2337,6 +2389,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace assign::copy {
 using std::optional;
 
 struct X
@@ -2421,6 +2474,7 @@ int run_test()
 
   return 0;
 }
+} // namespace assign::copy
 // -- END: test/std/utilities/optional/optional.object/optional.object.assign/copy.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.assign/emplace.pass.cpp
@@ -2445,6 +2499,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace assign::emplace {
 using std::optional;
 
 class X
@@ -2720,6 +2775,7 @@ int run_test()
 
   return 0;
 }
+} // namespace assign::emplace
 // -- END: test/std/utilities/optional/optional.object/optional.object.assign/emplace.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.assign/emplace_initializer_list.pass.cpp
@@ -2744,6 +2800,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace assign::emplace_initializer_list {
 using std::optional;
 
 class X
@@ -2867,6 +2924,7 @@ int run_test()
 
   return 0;
 }
+} // namespace assign::emplace_initializer_list
 // -- END: test/std/utilities/optional/optional.object/optional.object.assign/emplace_initializer_list.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.assign/move.pass.cpp
@@ -2893,6 +2951,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace assign::move {
 using std::optional;
 
 struct X
@@ -3074,6 +3133,7 @@ int run_test()
     }
     return 0;
 }
+} // namespace assign::move
 // -- END: test/std/utilities/optional/optional.object/optional.object.assign/move.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.assign/nullopt_t.pass.cpp
@@ -3097,6 +3157,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace assign::nullopt {
 using std::optional;
 using std::nullopt_t;
 using std::nullopt;
@@ -3181,6 +3242,7 @@ int run_test()
 
   return 0;
 }
+} // namespace assign::nullopt
 // -- END: test/std/utilities/optional/optional.object/optional.object.assign/nullopt_t.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.assign/optional_U.pass.cpp
@@ -3209,6 +3271,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace assign::optional_U {
 using std::optional;
 
 struct X
@@ -3522,6 +3585,7 @@ int run_test()
 
   return 0;
 }
+} // namespace assign::optional_U
 // -- END: test/std/utilities/optional/optional.object/optional.object.assign/optional_U.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/const_optional_U.pass.cpp
@@ -3545,6 +3609,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace ctor::const_optional_U {
 using std::optional;
 
 template <class T, class U>
@@ -3645,6 +3710,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::const_optional_U
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/const_optional_U.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/const_T.pass.cpp
@@ -3669,6 +3735,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace ctor::const_T {
 using std::optional;
 
 int run_test()
@@ -3777,6 +3844,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::const_T
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/const_T.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/copy.pass.cpp
@@ -3800,6 +3868,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace ctor::copy {
 using std::optional;
 
 template <class T, class ...InitArgs>
@@ -3963,6 +4032,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::copy
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/copy.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/deduct.pass.cpp
@@ -3985,6 +4055,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace ctor::deduct {
 struct A {};
 
 int run_test()
@@ -4044,6 +4115,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::deduct
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/deduct.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/default.pass.cpp
@@ -4067,6 +4139,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace ctor::default_ {
 using std::optional;
 
 template <class Opt>
@@ -4129,6 +4202,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::default_
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/default.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/empty_in_place_t_does_not_clobber.pass.cpp
@@ -4156,6 +4230,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace ctor::clobber {
 using std::optional;
 
 struct Wrapped {
@@ -4173,6 +4248,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace ctor::clobber
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/empty_in_place_t_does_not_clobber.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/explicit_const_optional_U.pass.cpp
@@ -4196,6 +4272,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace ctor::explicit_const_optional_U {
 using std::optional;
 
 template <class T, class U>
@@ -4294,6 +4371,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::explicit_const_optional_U
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/explicit_const_optional_U.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/explicit_optional_U.pass.cpp
@@ -4317,6 +4395,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace ctor::explicit_optional_U {
 using std::optional;
 
 template <class T, class U>
@@ -4391,6 +4470,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::explicit_optional_U
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/explicit_optional_U.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/initializer_list.pass.cpp
@@ -4417,6 +4497,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace ctor::initializer_list {
 using std::optional;
 using std::in_place_t;
 using std::in_place;
@@ -4512,6 +4593,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::initializer_list
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/initializer_list.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/in_place_t.pass.cpp
@@ -4536,6 +4618,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace ctor::in_place {
 using std::optional;
 using std::in_place_t;
 using std::in_place;
@@ -4664,6 +4747,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::in_place
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/in_place_t.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/move.pass.cpp
@@ -4688,6 +4772,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace ctor::move {
 using std::optional;
 
 template <class T, class ...InitArgs>
@@ -4889,6 +4974,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::move
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/move.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/nullopt_t.pass.cpp
@@ -4913,6 +4999,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace ctor::nullopt {
 using std::optional;
 using std::nullopt_t;
 using std::nullopt;
@@ -4968,6 +5055,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::nullopt
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/nullopt_t.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/optional_U.pass.cpp
@@ -4993,6 +5081,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace ctor::optional_U {
 using std::optional;
 
 template <class T, class U>
@@ -5068,6 +5157,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::optional_U
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/optional_U.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/rvalue_T.pass.cpp
@@ -5093,6 +5183,7 @@ int run_test()
 #include "archetypes.h"
 
 
+namespace ctor::rvalue_T {
 using std::optional;
 
 
@@ -5220,6 +5311,7 @@ int run_test()
 
   return 0;
 }
+} // namespace ctor::rvalue_T
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/rvalue_T.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.ctor/U.pass.cpp
@@ -5247,6 +5339,7 @@ int run_test()
 #include "test_convertible.h"
 
 
+namespace ctor::U {
 using std::optional;
 
 struct ImplicitThrow
@@ -5376,6 +5469,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace ctor::U
 // -- END: test/std/utilities/optional/optional.object/optional.object.ctor/U.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.dtor/dtor.pass.cpp
@@ -5398,6 +5492,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace dtor {
 using std::optional;
 
 struct PODType {
@@ -5448,6 +5543,7 @@ int run_test()
 
   return 0;
 }
+} // namespace dtor
 // -- END: test/std/utilities/optional/optional.object/optional.object.dtor/dtor.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.mod/reset.pass.cpp
@@ -5471,6 +5567,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace modifiers::reset {
 using std::optional;
 
 struct X
@@ -5524,6 +5621,7 @@ int run_test()
 
   return 0;
 }
+} // namespace modifiers::reset
 // -- END: test/std/utilities/optional/optional.object/optional.object.mod/reset.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/bool.pass.cpp
@@ -5546,6 +5644,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::op_bool {
 int run_test()
 {
     using std::optional;
@@ -5565,6 +5664,7 @@ int run_test()
 
   return 0;
 }
+} // namespace observe::op_bool
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/bool.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/dereference.pass.cpp
@@ -5587,6 +5687,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::deref {
 using std::optional;
 
 struct X
@@ -5632,6 +5733,7 @@ int run_test()
 
     return 0;
 }
+} // namespace observe::deref
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/dereference.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/dereference_const.pass.cpp
@@ -5654,6 +5756,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::deref_const {
 using std::optional;
 
 struct X
@@ -5695,6 +5798,7 @@ int run_test()
 
     return 0;
 }
+} // namespace observe::deref_const
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/dereference_const.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/dereference_const_rvalue.pass.cpp
@@ -5717,6 +5821,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::deref_const_rvalue {
 using std::optional;
 
 struct X
@@ -5758,6 +5863,7 @@ int run_test()
 
     return 0;
 }
+} // namespace observe::deref_const_rvalue
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/dereference_const_rvalue.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/dereference_rvalue.pass.cpp
@@ -5780,6 +5886,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::deref_rvalue {
 using std::optional;
 
 struct X
@@ -5825,6 +5932,7 @@ int run_test()
 
     return 0;
 }
+} // namespace observe::deref_rvalue
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/dereference_rvalue.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/has_value.pass.cpp
@@ -5847,6 +5955,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::has_value {
 int run_test()
 {
     using std::optional;
@@ -5866,6 +5975,7 @@ int run_test()
 
   return 0;
 }
+} // namespace observe::has_value
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/has_value.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/op_arrow.pass.cpp
@@ -5888,6 +5998,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::op_arrow {
 using std::optional;
 
 struct X
@@ -5931,6 +6042,7 @@ int run_test()
 
     return 0;
 }
+} // namespace observe::op_arrow
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/op_arrow.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/op_arrow_const.pass.cpp
@@ -5953,6 +6065,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::op_arrow_const {
 using std::optional;
 
 struct X
@@ -6000,6 +6113,7 @@ int run_test()
 
     return 0;
 }
+} // namespace observe::op_arrow_const
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/op_arrow_const.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/value.pass.cpp
@@ -6023,6 +6137,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::value {
 using std::optional;
 using std::bad_optional_access;
 
@@ -6078,6 +6193,7 @@ int run_test()
 
   return 0;
 }
+} // namespace observe::value
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/value.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/value_const.pass.cpp
@@ -6101,6 +6217,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::value_const {
 using std::optional;
 using std::in_place_t;
 using std::in_place;
@@ -6147,6 +6264,7 @@ int run_test()
 
   return 0;
 }
+} // namespace observe::value_const
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/value_const.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/value_const_rvalue.pass.cpp
@@ -6170,6 +6288,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::value_const_rvalue {
 using std::optional;
 using std::in_place_t;
 using std::in_place;
@@ -6216,6 +6335,7 @@ int run_test()
 
   return 0;
 }
+} // namespace observe::value_const_rvalue
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/value_const_rvalue.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/value_or.pass.cpp
@@ -6238,6 +6358,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::value_or {
 using std::optional;
 using std::in_place_t;
 using std::in_place;
@@ -6294,6 +6415,7 @@ int run_test()
 
   return 0;
 }
+} // namespace observe::value_or
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/value_or.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/value_or_const.pass.cpp
@@ -6316,6 +6438,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::value_or_const {
 using std::optional;
 
 struct Y
@@ -6377,6 +6500,7 @@ int run_test()
 
   return 0;
 }
+} // namespace observe::value_or_const
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/value_or_const.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.observe/value_rvalue.pass.cpp
@@ -6399,6 +6523,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace observe::value_rvalue {
 using std::optional;
 using std::bad_optional_access;
 
@@ -6453,6 +6578,7 @@ int run_test()
 
   return 0;
 }
+} // namespace observe::value_rvalue
 // -- END: test/std/utilities/optional/optional.object/optional.object.observe/value_rvalue.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/optional.object.swap/swap.pass.cpp
@@ -6478,6 +6604,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace member_swap {
 using std::optional;
 
 class X
@@ -6784,6 +6911,7 @@ int run_test()
 
   return 0;
 }
+} // namespace member_swap
 // -- END: test/std/utilities/optional/optional.object/optional.object.swap/swap.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/special_members.pass.cpp
@@ -6810,6 +6938,7 @@ int run_test()
 #include "test_macros.h"
 
 
+namespace special_members {
 template <class T>
 struct SpecialMemberTest {
     using O = std::optional<T>;
@@ -6852,6 +6981,7 @@ int run_test() {
     );
     return 0;
 }
+} // namespace special_members
 // -- END: test/std/utilities/optional/optional.object/special_members.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/triviality.pass.cpp
@@ -6884,6 +7014,7 @@ int run_test() {
 #include "test_macros.h"
 
 
+namespace triviality {
 constexpr bool implies(bool p, bool q) {
     return !p || q;
 }
@@ -6954,6 +7085,7 @@ int run_test() {
     );
     return 0;
 }
+} // namespace triviality
 // -- END: test/std/utilities/optional/optional.object/triviality.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.object/types.pass.cpp
@@ -6980,6 +7112,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace types {
 using std::optional;
 
 template <class Opt, class T>
@@ -6998,6 +7131,7 @@ int run_test()
 
   return 0;
 }
+} // namespace types
 // -- END: test/std/utilities/optional/optional.object/types.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.relops/compare.three_way.pass.cpp
@@ -7025,6 +7159,7 @@ int run_test()
 
 #include "test_comparisons.h"
 
+namespace relops::three_way {
 constexpr bool test() {
   {
     std::optional<int> op1;
@@ -7070,6 +7205,7 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+} // namespace relops::three_way
 // -- END: test/std/utilities/optional/optional.relops/compare.three_way.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.relops/equal.pass.cpp
@@ -7092,6 +7228,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace relops::equal {
 using std::optional;
 
 struct X {
@@ -7162,6 +7299,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace relops::equal
 // -- END: test/std/utilities/optional/optional.relops/equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.relops/greater_equal.pass.cpp
@@ -7182,6 +7320,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace relops::greater_equal {
 using std::optional;
 
 struct X {
@@ -7251,6 +7390,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace relops::greater_equal
 // -- END: test/std/utilities/optional/optional.relops/greater_equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.relops/greater_than.pass.cpp
@@ -7271,6 +7411,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace relops::greater_than {
 using std::optional;
 
 struct X {
@@ -7338,6 +7479,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace relops::greater_than
 // -- END: test/std/utilities/optional/optional.relops/greater_than.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.relops/less_equal.pass.cpp
@@ -7358,6 +7500,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace relops::less_equal {
 using std::optional;
 
 struct X {
@@ -7427,6 +7570,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace relops::less_equal
 // -- END: test/std/utilities/optional/optional.relops/less_equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.relops/less_than.pass.cpp
@@ -7447,6 +7591,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace relops::less_than {
 using std::optional;
 
 struct X {
@@ -7514,6 +7659,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace relops::less_than
 // -- END: test/std/utilities/optional/optional.relops/less_than.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.relops/not_equal.pass.cpp
@@ -7536,6 +7682,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace relops::not_equal {
 using std::optional;
 
 struct X {
@@ -7606,6 +7753,7 @@ int run_test() {
 
   return 0;
 }
+} // namespace relops::not_equal
 // -- END: test/std/utilities/optional/optional.relops/not_equal.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.specalg/make_optional.pass.cpp
@@ -7631,6 +7779,7 @@ int run_test() {
 
 #include "test_macros.h"
 
+namespace nonmembers::make_optional {
 int run_test()
 {
     {
@@ -7665,6 +7814,7 @@ int run_test()
 
   return 0;
 }
+} // namespace nonmembers::make_optional
 // -- END: test/std/utilities/optional/optional.specalg/make_optional.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.specalg/make_optional_explicit.pass.cpp
@@ -7689,6 +7839,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace nonmembers::make_optional_explicit {
 int run_test()
 {
     {
@@ -7713,6 +7864,7 @@ int run_test()
 
   return 0;
 }
+} // namespace nonmembers::make_optional_explicit
 // -- END: test/std/utilities/optional/optional.specalg/make_optional_explicit.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.specalg/make_optional_explicit_initializer_list.pass.cpp
@@ -7737,6 +7889,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace nonmembers::make_optional_explicit_init_list {
 struct TestT {
   int x;
   int size;
@@ -7781,6 +7934,7 @@ int run_test()
   }
   return 0;
 }
+} // namespace nonmembers::make_optional_explicit_init_list
 // -- END: test/std/utilities/optional/optional.specalg/make_optional_explicit_initializer_list.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.specalg/swap.pass.cpp
@@ -7805,6 +7959,7 @@ int run_test()
 #include "test_macros.h"
 #include "archetypes.h"
 
+namespace nonmembers::swap_ {
 using std::optional;
 
 class X
@@ -8137,6 +8292,7 @@ int run_test()
 
   return 0;
 }
+} // namespace nonmembers::swap_
 // -- END: test/std/utilities/optional/optional.specalg/swap.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.syn/optional_includes_initializer_list.pass.cpp
@@ -8157,6 +8313,7 @@ int run_test()
 
 #include "test_macros.h"
 
+namespace optional_includes_initializer_list {
 int run_test()
 {
     using std::optional;
@@ -8166,6 +8323,7 @@ int run_test()
 
   return 0;
 }
+} // namespace optional_includes_initializer_list
 // -- END: test/std/utilities/optional/optional.syn/optional_includes_initializer_list.pass.cpp
 // LLVM SOURCES END
 // clang-format on
@@ -8429,51 +8587,54 @@ int main() {
     bad_optional_access::default_::run_test();
     bad_optional_access::derive::run_test();
 
+    comp_with_t::three_way::run_test();
     comp_with_t::equal::run_test();
-    comp_with_t::not_equal::run_test();
-    comp_with_t::less_than::run_test();
-    comp_with_t::less_equal::run_test();
     comp_with_t::greater_than::run_test();
     comp_with_t::greater_equal::run_test();
+    comp_with_t::less_equal::run_test();
+    comp_with_t::less_than::run_test();
+    comp_with_t::not_equal::run_test();
 
-    enabled_hash::run_test();
+    hash::enabled_hash::run_test();
     hash::run_test();
 
-    and_then::run_test();
-    or_else::run_test();
-    transform::run_test();
+    monadic::and_then::run_test();
+    monadic::or_else::run_test();
+    monadic::transform::run_test();
 
+    nullops::three_way::run_test();
     nullops::equal::run_test();
-    nullops::not_equal::run_test();
-    nullops::less_than::run_test();
-    nullops::less_equal::run_test();
     nullops::greater_than::run_test();
     nullops::greater_equal::run_test();
+    nullops::less_equal::run_test();
+    nullops::less_than::run_test();
+    nullops::not_equal::run_test();
 
     nullopt::run_test();
 
-    assign::nullopt::run_test();
-    assign::copy::run_test();
-    assign::move::run_test();
     assign::value::run_test();
-    assign::optional_U::run_test();
+    assign::const_optional_U::run_test();
+    assign::copy::run_test();
     assign::emplace::run_test();
     assign::emplace_initializer_list::run_test();
+    assign::move::run_test();
+    assign::nullopt::run_test();
+    assign::optional_U::run_test();
 
     ctor::const_optional_U::run_test();
     ctor::const_T::run_test();
+    ctor::copy::run_test();
     ctor::deduct::run_test();
     ctor::default_::run_test();
     ctor::clobber::run_test();
-    ctor::explicit_optional_U::run_test();
     ctor::explicit_const_optional_U::run_test();
-    ctor::nullopt::run_test();
-    ctor::copy::run_test();
-    ctor::move::run_test();
-    ctor::rvalue_T::run_test();
-    ctor::in_place::run_test();
+    ctor::explicit_optional_U::run_test();
     ctor::initializer_list::run_test();
+    ctor::in_place::run_test();
+    ctor::move::run_test();
+    ctor::nullopt::run_test();
     ctor::optional_U::run_test();
+    ctor::rvalue_T::run_test();
     ctor::U::run_test();
 
     dtor::run_test();
@@ -8481,22 +8642,19 @@ int main() {
     modifiers::reset::run_test();
 
     observe::op_bool::run_test();
-
     observe::deref::run_test();
     observe::deref_const::run_test();
     observe::deref_const_rvalue::run_test();
     observe::deref_rvalue::run_test();
-
     observe::has_value::run_test();
     observe::op_arrow::run_test();
     observe::op_arrow_const::run_test();
     observe::value::run_test();
-
     observe::value_const::run_test();
-    observe::value_rvalue::run_test();
     observe::value_const_rvalue::run_test();
     observe::value_or::run_test();
     observe::value_or_const::run_test();
+    observe::value_rvalue::run_test();
 
     member_swap::run_test();
 
@@ -8506,17 +8664,20 @@ int main() {
 
     types::run_test();
 
+    relops::three_way::run_test();
     relops::equal::run_test();
-    relops::not_equal::run_test();
-    relops::less_than::run_test();
+    relops::greater_equal::run_test();
     relops::greater_than::run_test();
     relops::less_equal::run_test();
-    relops::greater_equal::run_test();
+    relops::less_than::run_test();
+    relops::not_equal::run_test();
 
     nonmembers::make_optional::run_test();
     nonmembers::make_optional_explicit::run_test();
     nonmembers::make_optional_explicit_init_list::run_test();
     nonmembers::swap_::run_test();
+
+    optional_includes_initializer_list::run_test();
 
     msvc::lwg3836::run_test();
 
