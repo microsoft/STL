@@ -37,6 +37,9 @@
 #include "count_new.h"
 #pragma warning(pop)
 
+// Silence a warning emitted by test/std/utilities/any/any.class/any.cons/default.pass.cpp below.
+#pragma warning(disable : 4640) // construction of local static object is not thread-safe
+
 // clang-format off
 // LLVM SOURCES BEGIN
 // -- BEGIN: test/std/utilities/any/any.class/any.assign/copy.pass.cpp
