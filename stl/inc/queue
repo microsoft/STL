@@ -7,12 +7,13 @@
 #define _QUEUE_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <algorithm>
+#include <__msvc_heap_algorithms.hpp>
 #include <deque>
 #include <vector>
 
 #if _HAS_CXX23
-#include <ranges>
+#include <__msvc_transform_view_to.hpp>
+#include <iterator>
 #endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)

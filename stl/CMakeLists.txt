@@ -13,6 +13,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_filebuf.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_format_ucd_tables.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_formatter.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_heap_algorithms.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_int128.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_iter_core.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_minmax.hpp
@@ -21,6 +22,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_string_view.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_threads_core.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_transform_view_to.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_tzdb.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_xlocinfo_types.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/algorithm
