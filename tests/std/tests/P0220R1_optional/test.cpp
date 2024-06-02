@@ -814,8 +814,8 @@ struct B {};
 namespace std {
 
 template <>
-struct hash<B> {
-  std::size_t operator()(B const&) noexcept(false) { return 0; }
+struct hash<::hash::B> {
+  std::size_t operator()(::hash::B const&) noexcept(false) { return 0; }
 };
 
 }
