@@ -132,6 +132,7 @@ int run_test() {
 
 #include <iterator>
 
+#if _HAS_CXX20
 static_assert(!std::indirectly_readable<std::optional<int> >);
 static_assert(!std::indirectly_writable<std::optional<int>, int>);
 static_assert(!std::weakly_incrementable<std::optional<int> >);
@@ -139,6 +140,7 @@ static_assert(!std::indirectly_movable<std::optional<int>, std::optional<int>>);
 static_assert(!std::indirectly_movable_storable<std::optional<int>, std::optional<int>>);
 static_assert(!std::indirectly_copyable<std::optional<int>, std::optional<int>>);
 static_assert(!std::indirectly_copyable_storable<std::optional<int>, std::optional<int>>);
+#endif // ^^^ _HAS_CXX20 ^^^
 // -- END: test/std/utilities/optional/iterator_concept_conformance.compile.pass.cpp
 
 // -- BEGIN: test/std/utilities/optional/optional.bad_optional_access/default.pass.cpp
@@ -232,6 +234,7 @@ int run_test()
 #include "test_comparisons.h"
 
 namespace comp_with_t::three_way {
+#if _HAS_CXX20
 struct SomeInt {
   int value_;
 
@@ -309,6 +312,11 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+int run_test() {
+    return 0;
+}
+#endif // ^^^ !_HAS_CXX20 ^^^
 } // namespace comp_with_t::three_way
 // -- END: test/std/utilities/optional/optional.comp_with_t/compare.three_way.pass.cpp
 
@@ -901,6 +909,7 @@ int run_test()
 #include "test_macros.h"
 
 namespace monadic::and_then {
+#if _HAS_CXX23
 struct LVal {
   constexpr std::optional<int> operator()(int&) { return 1; }
   std::optional<int> operator()(const int&) = delete;
@@ -1143,6 +1152,11 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+int run_test() {
+    return 0;
+}
+#endif // ^^^ !_HAS_CXX23 ^^^
 } // namespace monadic::and_then
 // -- END: test/std/utilities/optional/optional.monadic/and_then.pass.cpp
 
@@ -1167,6 +1181,7 @@ int run_test() {
 #include <optional>
 
 namespace monadic::or_else {
+#if _HAS_CXX23
 struct NonMovable {
   NonMovable() = default;
   NonMovable(NonMovable&&) = delete;
@@ -1221,6 +1236,11 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+int run_test() {
+    return 0;
+}
+#endif // ^^^ !_HAS_CXX23 ^^^
 } // namespace monadic::or_else
 // -- END: test/std/utilities/optional/optional.monadic/or_else.pass.cpp
 
@@ -1248,6 +1268,7 @@ int run_test() {
 #include <type_traits>
 
 namespace monadic::transform {
+#if _HAS_CXX23
 struct LVal {
   constexpr int operator()(int&) { return 1; }
   int operator()(const int&) = delete;
@@ -1433,6 +1454,11 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+int run_test() {
+    return 0;
+}
+#endif // ^^^ !_HAS_CXX23 ^^^
 } // namespace monadic::transform
 // -- END: test/std/utilities/optional/optional.monadic/transform.pass.cpp
 
@@ -1461,6 +1487,7 @@ int run_test() {
 #include "test_comparisons.h"
 
 namespace nullops::three_way {
+#if _HAS_CXX20
 constexpr bool test() {
   {
     std::optional<int> op;
@@ -1488,6 +1515,11 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+int run_test() {
+    return 0;
+}
+#endif // ^^^ !_HAS_CXX20 ^^^
 } // namespace nullops::three_way
 // -- END: test/std/utilities/optional/optional.nullops/compare.three_way.pass.cpp
 
@@ -7164,6 +7196,7 @@ int run_test()
 #include "test_comparisons.h"
 
 namespace relops::three_way {
+#if _HAS_CXX20
 constexpr bool test() {
   {
     std::optional<int> op1;
@@ -7209,6 +7242,11 @@ int run_test() {
   static_assert(test());
   return 0;
 }
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+int run_test() {
+    return 0;
+}
+#endif // ^^^ !_HAS_CXX20 ^^^
 } // namespace relops::three_way
 // -- END: test/std/utilities/optional/optional.relops/compare.three_way.pass.cpp
 
