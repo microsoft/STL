@@ -33,7 +33,6 @@
 #if !defined(_PREFAST_) || !defined(_M_IX86) // TRANSITION, VSO-1639191
 
 #define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING
-#define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 

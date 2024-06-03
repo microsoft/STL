@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
+#define _LIBCXX_IN_DEVCRT
+#include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
+
+// Include Standard headers:
 #include <cassert>
 #include <cstddef>
 #include <functional>
