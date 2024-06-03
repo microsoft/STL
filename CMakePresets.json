@@ -19,6 +19,11 @@
       "architecture": {
         "strategy": "external",
         "value": "x86"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "$env{Platform}",
+        "rhs": "x86"
       }
     },
     {
@@ -28,6 +33,11 @@
       "architecture": {
         "strategy": "external",
         "value": "x64"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "$env{Platform}",
+        "rhs": "x64"
       }
     },
     {
@@ -37,6 +47,11 @@
       "architecture": {
         "strategy": "external",
         "value": "ARM"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "$env{Platform}",
+        "rhs": "ARM"
       },
       "cacheVariables": {
         "TESTS_BUILD_ONLY": true
@@ -50,6 +65,11 @@
         "strategy": "external",
         "value": "ARM64"
       },
+      "condition": {
+        "type": "equals",
+        "lhs": "$env{Platform}",
+        "rhs": "ARM64"
+      },
       "cacheVariables": {
         "TESTS_BUILD_ONLY": true
       }
@@ -61,6 +81,11 @@
       "architecture": {
         "strategy": "external",
         "value": "ARM64EC"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "$env{Platform}",
+        "rhs": "ARM64EC"
       },
       "cacheVariables": {
         "TESTS_BUILD_ONLY": true,
