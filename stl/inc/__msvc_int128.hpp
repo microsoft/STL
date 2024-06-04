@@ -444,8 +444,8 @@ struct
         return _Result;
     }
     _NODISCARD static constexpr _Base128 _Divide(const _Base128& _Num_arg, const _Base128& _Den_arg) noexcept {
-        _Base128 _Num{_Num_arg};
-        _Base128 _Den{_Den_arg};
+        _Base128 _Num{_Num_arg}; // Avoid warning C26437 by creating local (sliced) copies
+        _Base128 _Den{_Den_arg}; // instead of taking parameters by value.
 
         // establish _Den < _Num and _Num._Word[1] > 0
         if (_Den._Word[1] >= _Num._Word[1]) {
@@ -568,8 +568,8 @@ struct
         return _Rem;
     }
     _NODISCARD static constexpr _Base128 _Modulo(const _Base128& _Num_arg, const _Base128& _Den_arg) noexcept {
-        _Base128 _Num{_Num_arg};
-        _Base128 _Den{_Den_arg};
+        _Base128 _Num{_Num_arg}; // Avoid warning C26437 by creating local (sliced) copies
+        _Base128 _Den{_Den_arg}; // instead of taking parameters by value.
 
         // establish _Den < _Num and _Num._Word[1] > 0
         if (_Den._Word[1] >= _Num._Word[1]) {
