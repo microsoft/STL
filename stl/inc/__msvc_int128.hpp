@@ -443,7 +443,10 @@ struct
         _Result._Word[0] = _UDiv128(_Rem, _Num._Word[0], _Den, _Rem);
         return _Result;
     }
-    _NODISCARD static constexpr _Base128 _Divide(_Base128 _Num, _Base128 _Den) noexcept {
+    _NODISCARD static constexpr _Base128 _Divide(const _Base128& _Num_arg, const _Base128& _Den_arg) noexcept {
+        _Base128 _Num{_Num_arg};
+        _Base128 _Den{_Den_arg};
+
         // establish _Den < _Num and _Num._Word[1] > 0
         if (_Den._Word[1] >= _Num._Word[1]) {
             if (_Den._Word[1] > _Num._Word[1]) {
@@ -564,7 +567,10 @@ struct
         (void) _UDiv128(_Num._Word[1] % _Den, _Num._Word[0], _Den, _Rem);
         return _Rem;
     }
-    _NODISCARD static constexpr _Base128 _Modulo(_Base128 _Num, _Base128 _Den) noexcept {
+    _NODISCARD static constexpr _Base128 _Modulo(const _Base128& _Num_arg, const _Base128& _Den_arg) noexcept {
+        _Base128 _Num{_Num_arg};
+        _Base128 _Den{_Den_arg};
+
         // establish _Den < _Num and _Num._Word[1] > 0
         if (_Den._Word[1] >= _Num._Word[1]) {
             if (_Den._Word[1] > _Num._Word[1]) {
