@@ -21,6 +21,7 @@
 //    into a file.
 // 3. Replicate the namespace structure from here into that file, use its content to replace everything between the
 //    "LLVM SOURCES BEGIN"/"END" delimiters, and ensure that `main` properly calls each of the `run_test` functions.
+// 4. Restore the TRANSITION-commented workarounds.
 //
 // Yes, this is an awkward hand process; notably the required headers can change without notice. We should investigate
 // running the libc++ tests directly in all of our configurations so we needn't replicate this subset of files.
@@ -695,6 +696,7 @@ int run_test()
           , "Must be default constructible"
           );
     }
+#ifndef _M_CEE // TRANSITION, VSO-1664382
     {
         struct TestConstexpr : public std::any {
           constexpr TestConstexpr() : std::any() {}
@@ -702,6 +704,7 @@ int run_test()
         static TEST_CONSTINIT std::any a;
         (void)a;
     }
+#endif // ^^^ no workaround ^^^
     {
         DisableAllocationGuard g; ((void)g);
         const std::any a;
