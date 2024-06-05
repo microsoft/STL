@@ -21,9 +21,19 @@
         "value": "x86"
       },
       "condition": {
-        "type": "equals",
-        "lhs": "$env{Platform}",
-        "rhs": "x86"
+        "type": "anyOf",
+        "conditions": [
+            {
+              "type": "equals",
+              "lhs": "$env{Platform}",
+              "rhs": "x86"
+          },
+          {
+            "type": "equals",
+            "lhs": "$env{Platform}",
+            "rhs": ""
+          }
+        ]
       }
     },
     {
@@ -35,9 +45,19 @@
         "value": "x64"
       },
       "condition": {
-        "type": "equals",
-        "lhs": "$env{Platform}",
-        "rhs": "x64"
+        "type": "anyOf",
+        "conditions": [
+            {
+              "type": "equals",
+              "lhs": "$env{Platform}",
+              "rhs": "x64"
+          },
+          {
+            "type": "equals",
+            "lhs": "$env{Platform}",
+            "rhs": ""
+          }
+        ]
       }
     },
     {
@@ -49,9 +69,19 @@
         "value": "ARM"
       },
       "condition": {
-        "type": "equals",
-        "lhs": "$env{Platform}",
-        "rhs": "ARM"
+        "type": "anyOf",
+        "conditions": [
+            {
+              "type": "equals",
+              "lhs": "$env{Platform}",
+              "rhs": "ARM"
+          },
+          {
+            "type": "equals",
+            "lhs": "$env{Platform}",
+            "rhs": ""
+          }
+        ]
       },
       "cacheVariables": {
         "TESTS_BUILD_ONLY": true
@@ -66,9 +96,19 @@
         "value": "ARM64"
       },
       "condition": {
-        "type": "equals",
-        "lhs": "$env{Platform}",
-        "rhs": "ARM64"
+        "type": "anyOf",
+        "conditions": [
+            {
+              "type": "equals",
+              "lhs": "$env{Platform}",
+              "rhs": "ARM64"
+          },
+          {
+            "type": "equals",
+            "lhs": "$env{Platform}",
+            "rhs": ""
+          }
+        ]
       },
       "cacheVariables": {
         "TESTS_BUILD_ONLY": true
@@ -83,9 +123,19 @@
         "value": "ARM64EC"
       },
       "condition": {
-        "type": "equals",
-        "lhs": "$env{Platform}",
-        "rhs": "ARM64EC"
+        "type": "anyOf",
+        "conditions": [
+            {
+              "type": "equals",
+              "lhs": "$env{Platform}",
+              "rhs": "ARM64EC"
+          },
+          {
+            "type": "equals",
+            "lhs": "$env{Platform}",
+            "rhs": ""
+          }
+        ]
       },
       "cacheVariables": {
         "TESTS_BUILD_ONLY": true,
