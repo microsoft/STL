@@ -23,7 +23,7 @@
       "condition": {
         "type": "anyOf",
         "conditions": [
-            {
+          {
               "type": "equals",
               "lhs": "$env{Platform}",
               "rhs": "x86"
@@ -47,7 +47,7 @@
       "condition": {
         "type": "anyOf",
         "conditions": [
-            {
+          {
               "type": "equals",
               "lhs": "$env{Platform}",
               "rhs": "x64"
@@ -71,7 +71,7 @@
       "condition": {
         "type": "anyOf",
         "conditions": [
-            {
+          {
               "type": "equals",
               "lhs": "$env{Platform}",
               "rhs": "ARM"
@@ -98,7 +98,7 @@
       "condition": {
         "type": "anyOf",
         "conditions": [
-            {
+          {
               "type": "equals",
               "lhs": "$env{Platform}",
               "rhs": "ARM64"
@@ -125,7 +125,7 @@
       "condition": {
         "type": "anyOf",
         "conditions": [
-            {
+          {
               "type": "equals",
               "lhs": "$env{Platform}",
               "rhs": "ARM64EC"
