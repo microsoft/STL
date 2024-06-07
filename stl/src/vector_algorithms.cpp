@@ -1967,7 +1967,7 @@ namespace {
     }
 
     template <_Min_max_mode _Mode, class _Traits>
-    auto __std_minmax_element_disp(const void* _First, const void* const _Last, const bool _Sign) noexcept {
+    auto __std_minmax_element_disp(const void* const _First, const void* const _Last, const bool _Sign) noexcept {
 #ifndef _M_ARM64EC
         if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
             return __std_minmax_element_impl<_Mode, typename _Traits::_Avx>(_First, _Last, _Sign);
@@ -2116,7 +2116,7 @@ namespace {
     }
 
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
-    auto __std_minmax_disp(const void* _First, const void* const _Last) noexcept {
+    auto __std_minmax_disp(const void* const _First, const void* const _Last) noexcept {
 #ifndef _M_ARM64EC
         if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
             return __std_minmax_impl<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
