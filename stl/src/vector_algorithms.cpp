@@ -1972,6 +1972,7 @@ namespace {
         if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
             return __std_minmax_element_impl<_Mode, typename _Traits::_Avx>(_First, _Last, _Sign);
         }
+
         if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
             return __std_minmax_element_impl<_Mode, typename _Traits::_Sse>(_First, _Last, _Sign);
         }
@@ -2121,6 +2122,7 @@ namespace {
         if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
             return __std_minmax_impl<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
         }
+
         if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
             return __std_minmax_impl<_Mode, typename _Traits::_Sse, _Sign>(_First, _Last);
         }
