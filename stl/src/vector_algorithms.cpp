@@ -2648,9 +2648,10 @@ namespace {
         return _Result;
     }
 
+#ifndef _M_ARM64EC
     template <class _Ty>
     bool _Equal_avx2(const void* _First1, const void* _First2, size_t _Size) noexcept {
-        // no need for DevCom-10331414 workaround; this funtion is called only on AVX2 path
+        // no need for DevCom-10331414 workaround; this function is called only from AVX2 path
 
         // preconditions: non-zero length needle, first is already equal
         _Advance_bytes(_First1, sizeof(_Ty));
@@ -2700,6 +2701,7 @@ namespace {
 
         return true;
     }
+#endif // !defined(_M_ARM64EC)
 
     template <class _Traits, class _Ty>
     const void* __stdcall __std_search_impl(
@@ -2721,6 +2723,7 @@ namespace {
 
         const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
 
+#ifndef _M_ARM64EC
         if (_Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
@@ -2746,7 +2749,7 @@ namespace {
                 }
 
                 _Advance_bytes(_First1, 32);
-            };
+            }
 
             if (const size_t _Avx_tail_size = _Max_pos & 0x1C; _Avx_tail_size != 0) {
                 const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
@@ -2785,7 +2788,9 @@ namespace {
             }
 
             return _Last1;
-        } else {
+        } else
+#endif // !defined(_M_ARM64EC)
+        {
             auto _Ptr1           = static_cast<const _Ty*>(_First1);
             const auto _Ptr2     = static_cast<const _Ty*>(_First2);
             const size_t _Count2 = _Size_bytes_2 / sizeof(_Ty);
@@ -2799,8 +2804,8 @@ namespace {
 
                 bool _Equal = true;
 
-                for (size_t i = 1; i != _Count2; ++i) {
-                    if (_Ptr1[i] != _Ptr2[i]) {
+                for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
+                    if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
                         _Equal = false;
                         break;
                     }
