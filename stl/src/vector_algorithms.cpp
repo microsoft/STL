@@ -724,7 +724,7 @@ namespace {
             const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
 
             __m256i _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm256_permutex_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_permute4x64_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
             _H_min_val = _Funct(_H_min_val, _mm256_shuffle_epi8(_H_min_val, _mm256_broadcastsi128_si256(_Shuf_words)));
@@ -918,7 +918,7 @@ namespace {
             const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
 
             __m256i _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm256_permutex_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_permute4x64_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
             _H_min_val = _Funct(_H_min_val, _mm256_shuffle_epi8(_H_min_val, _mm256_broadcastsi128_si256(_Shuf_words)));
@@ -1111,7 +1111,7 @@ namespace {
         template <class _Fn>
         static __m256i _H_func(const __m256i _Cur, _Fn _Funct) noexcept {
             __m256i _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm256_permutex_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
+            _H_min_val         = _Funct(_H_min_val, _mm256_permute4x64_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
             return _H_min_val;
