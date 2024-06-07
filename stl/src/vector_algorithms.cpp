@@ -1718,7 +1718,6 @@ namespace {
 #ifndef _M_ARM64EC
         using _Sse = _Minmax_traits_4_sse;
         using _Avx = _Minmax_traits_4_avx;
-
 #endif // !defined(_M_ARM64EC)
     };
 
