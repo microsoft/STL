@@ -946,8 +946,6 @@ namespace {
         }
 
         static _Unsigned_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
-            static constexpr _Unsigned_t _Shuf[] = {0x0100, 0x0302, 0x0504, 0x0706, 0x0908, 0x0B0A, 0x0D0C, 0x0F0E};
-
             const uint32_t _Part = _mm256_cvtsi256_si32(
                 _mm256_permutevar8x32_epi32(_Idx, _mm256_castsi128_si256(_mm_cvtsi32_si128(_H_pos >> 2))));
             return static_cast<_Unsigned_t>(_Part >> ((_H_pos & 0x2) << 3));
