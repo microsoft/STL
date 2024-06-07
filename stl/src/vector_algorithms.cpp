@@ -1663,6 +1663,7 @@ namespace {
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
             return _Minmax_traits_8_avx::_H_max_u(_Cur);
         }
+
         static double _Get_any(const __m256d _Cur) noexcept {
             return _mm256_cvtsd_f64(_Cur);
         }
