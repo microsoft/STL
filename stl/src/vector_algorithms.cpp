@@ -1306,9 +1306,11 @@ namespace {
             if (_Funct(_Array[1], _H_min_v)) {
                 _H_min_v = _Array[1];
             }
+
             if (_Funct(_Array[2], _H_min_v)) {
                 _H_min_v = _Array[2];
             }
+
             if (_Funct(_Array[3], _H_min_v)) {
                 _H_min_v = _Array[3];
             }
