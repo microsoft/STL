@@ -4456,6 +4456,8 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
         _Callbacks._On_type(_Maybe_type);
         ++_Begin;
         break;
+    default:
+        break;
     }
 
     return _Begin;
@@ -4542,6 +4544,10 @@ public:
                 _Throw_format_error("Range-types 's' and '?s' require type T to be charT.");
             }
 
+            break;
+
+        default:
+            _STL_INTERNAL_CHECK(false); // can't happen, we've handled all possible outputs from _Parse_range_specs()
             break;
         }
 
