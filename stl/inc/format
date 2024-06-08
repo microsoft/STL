@@ -292,6 +292,9 @@ _NODISCARD constexpr _Decode_result<char> _Decode_utf(const char* _First, const 
     case 4:
         _Val &= 0b111u;
         break;
+    default:
+        _STL_INTERNAL_CHECK(false); // can't happen, see how the value of _Num_bytes is determined
+        break;
     }
 
     for (int _Idx = 1; _Idx < _Num_bytes; ++_Idx) {
