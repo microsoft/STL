@@ -5,6 +5,11 @@
 
 using namespace std;
 
+void instantiate_regex_machinery() {
+    const regex r{R"(.+meow.+)"};
+    assert(regex_match("homeowner", r));
+}
+
 #if _HAS_CXX20
 void instantiate_chrono_parse_machinery() {
     istringstream iss{"10:02:07"};
