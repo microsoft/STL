@@ -276,6 +276,8 @@ _NODISCARD constexpr _Decode_result<char> _Decode_utf(const char* _First, const 
             return {_First + 1, false};
         }
         break;
+    default:
+        break;
     }
 
     // mask out the "value bits" in the leading byte,
@@ -1260,6 +1262,8 @@ _NODISCARD constexpr const _CharT* _Parse_align(
             break;
         case '^':
             _Parsed_align = _Fmt_align::_Center;
+            break;
+        default:
             break;
         }
 
@@ -2851,6 +2855,8 @@ _NODISCARD _OutputIt _Write_integral(
         break;
     case 'o':
         _Base = 8;
+        break;
+    default:
         break;
     }
 
