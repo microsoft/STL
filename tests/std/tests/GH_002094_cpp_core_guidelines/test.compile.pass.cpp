@@ -5,6 +5,15 @@
 
 using namespace std;
 
+#if _HAS_CXX20
+void instantiate_chrono_parse_machinery() {
+    istringstream iss{"10:02:07"};
+    chrono::seconds s{};
+    iss >> chrono::parse("%H:%M:%S", s);
+    assert(s == 36127s);
+}
+#endif // ^^^ _HAS_CXX20 ^^^
+
 #if _HAS_CXX23
 template <class T>
 struct WrappedVector : vector<T> {
