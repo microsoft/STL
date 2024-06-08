@@ -567,7 +567,9 @@ private:
                     if (_Pattern.field[_Off] == money_base::space && !_Seen) {
                         _Bad = true; // fail if no space seen
                     }
-                } // parse optional space
+
+                    break;
+                }
             } // switch
         }
 
@@ -840,6 +842,7 @@ private:
                     _Dest      = _Rep(_Dest, _Fill, _Fillcount);
                     _Fillcount = 0;
                 }
+                break;
             }
         }
 
