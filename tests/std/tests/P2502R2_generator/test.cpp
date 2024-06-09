@@ -62,7 +62,7 @@ void f(ostream& os) {
 template <ranges::input_range Rng1, ranges::input_range Rng2>
 generator<tuple<ranges::range_reference_t<Rng1>, ranges::range_reference_t<Rng2>>,
     tuple<ranges::range_value_t<Rng1>, ranges::range_value_t<Rng2>>>
-    zip(Rng1 r1, Rng2 r2) {
+    co_zip(Rng1 r1, Rng2 r2) {
     auto it1        = ranges::begin(r1);
     auto it2        = ranges::begin(r2);
     const auto end1 = ranges::end(r1);
@@ -218,7 +218,7 @@ void dynamic_allocator_test() {
 
 void zip_example() {
     int length = 0;
-    for (auto x : zip(array{1, 2, 3}, vector{10, 20, 30, 40, 50})) {
+    for (auto x : co_zip(array{1, 2, 3}, vector{10, 20, 30, 40, 50})) {
         static_assert(same_as<decltype(x), tuple<int&, int&>>);
         assert(get<0>(x) * 10 == get<1>(x));
         ++length;
