@@ -531,9 +531,13 @@ _EXPORT_STD enum class cv_status { // names for wait returns
 
 _EXPORT_STD class condition_variable { // class for waiting for conditions
 public:
+#ifdef _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
     condition_variable() noexcept /* strengthened */ {
         _Cnd_init_in_situ(_Mycnd());
     }
+#else // ^^^ defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) / !defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) vvv
+    condition_variable() noexcept /* strengthened */ = default;
+#endif // ^^^ !defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) ^^^
 
     ~condition_variable() noexcept = default;
 

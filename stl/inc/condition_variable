@@ -52,7 +52,9 @@ private:
 _EXPORT_STD class condition_variable_any { // class for waiting for conditions with any kind of mutex
 public:
     condition_variable_any() : _Myptr{_STD make_shared<mutex>()} {
+#ifdef _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
         _Cnd_init_in_situ(_Mycnd());
+#endif // ^^^ defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) ^^^
     }
 
     ~condition_variable_any() noexcept = default;

@@ -59,7 +59,9 @@ void __cdecl _Smtx_unlock_shared(_Smtx_t*) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*) noexcept;
 _CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t) noexcept;
 #endif // _CRTBLD
+#ifdef _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t) noexcept;
+#endif // ^^^ defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) ^^^
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(_Cnd_t, _Mtx_t) noexcept; // TRANSITION, ABI: Always succeeds
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(_Cnd_t) noexcept; // TRANSITION, ABI: Always succeeds
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(_Cnd_t) noexcept; // TRANSITION, ABI: Always succeeds
