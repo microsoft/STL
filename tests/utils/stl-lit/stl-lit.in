@@ -34,7 +34,7 @@ def assert_target_arch_and_platform_equal():
     first_lit_cfg = next(iter(builtin_parameters['config_map'].values()))
     target_arch = ''
     platform = os.environ['Platform']
-    # Do nothing if "Platform" is not defined
+    # Do nothing if "Platform" is not defined.
     if platform != '':
         with open(first_lit_cfg, 'r') as file:
             for line in file:
@@ -42,7 +42,7 @@ def assert_target_arch_and_platform_equal():
                     words = line.split()
                     target_arch = words[-1].strip('\'')
                     break
-        # arm64ec doesn't have an own command prompt with Platformt
+        # arm64ec doesn't have its own command prompt with Platform.
         if target_arch == 'arm64ec':
             target_arch = 'arm64'
         if platform != target_arch:
