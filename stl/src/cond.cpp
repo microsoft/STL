@@ -54,9 +54,8 @@ _CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t mtx) noexcept { // set owner 
 }
 
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) noexcept { // wait until signaled
-    const auto cs = &mtx->_Critical_section;
     _Mtx_clear_owner(mtx);
-    _Primitive_wait(cond, cs);
+    _Primitive_wait(cond, mtx);
     _Mtx_reset_owner(mtx);
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
@@ -65,16 +64,15 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(
     const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const target) noexcept {
     _Thrd_result res = _Thrd_result::_Success;
-    const auto cs    = &mtx->_Critical_section;
     if (target == nullptr) { // no target time specified, wait on mutex
         _Mtx_clear_owner(mtx);
-        _Primitive_wait(cond, cs);
+        _Primitive_wait(cond, mtx);
         _Mtx_reset_owner(mtx);
     } else { // target time specified, wait for it
         _timespec64 now;
         _Timespec64_get_sys(&now);
         _Mtx_clear_owner(mtx);
-        if (!_Primitive_wait_for(cond, cs, _Xtime_diff_to_millis2(target, &now))) { // report timeout
+        if (!_Primitive_wait_for(cond, mtx, _Xtime_diff_to_millis2(target, &now))) { // report timeout
             _Timespec64_get_sys(&now);
             if (_Xtime_diff_to_millis2(target, &now) == 0) {
                 res = _Thrd_result::_Timedout;
