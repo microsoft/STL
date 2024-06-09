@@ -50,7 +50,7 @@ _Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, c
     mtx->_Thread_id = -1;
     --mtx->_Count;
 
-    if (!Concurrency::details::_Get_cond_var(cond)->wait_for(cs, target_ms)) { // report timeout
+    if (!_Primitive_wait_for(cond, cs, target_ms)) { // report timeout
         const auto end_ms = GetTickCount64();
         if (end_ms - start_ms >= target_ms) {
             res = _Thrd_result::_Timedout;
