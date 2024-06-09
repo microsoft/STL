@@ -10,6 +10,7 @@
 #include <generator>
 #include <memory>
 #include <new>
+#include <ostream>
 #include <random>
 #include <ranges>
 #include <sstream>
