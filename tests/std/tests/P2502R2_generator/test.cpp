@@ -272,8 +272,7 @@ int main() {
     }
     assert(ranges::equal(co_upto(6), views::iota(0, 6)));
 
-    {
-        // test with mutable lvalue reference type
+    { // Test with mutable lvalue reference type
         auto r   = co_upto<int&>(32);
         auto pos = r.begin();
         for (int i = 0; i < 16; ++i, ++*pos, ++pos) {
@@ -284,8 +283,7 @@ int main() {
     }
 
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
-    {
-        // test with mutable xvalue reference type
+    { // Test with mutable xvalue reference type
         auto woof = [](size_t size, size_t count) -> generator<vector<int>&&> {
             random_device rd{};
             uniform_int_distribution dist{0, 99};
@@ -295,7 +293,8 @@ int main() {
                 ranges::generate(vec, [&] { return dist(rd); });
                 co_yield move(vec);
             }
-            // test yielding lvalue
+
+            // Test yielding lvalue
             vec.resize(size);
             ranges::generate(vec, [&] { return dist(rd); });
             const auto tmp = vec;
