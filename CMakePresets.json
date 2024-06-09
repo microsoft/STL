@@ -74,7 +74,7 @@
           {
               "type": "equals",
               "lhs": "$env{Platform}",
-              "rhs": "ARM"
+              "rhs": "arm"
           },
           {
             "type": "equals",
@@ -101,7 +101,7 @@
           {
               "type": "equals",
               "lhs": "$env{Platform}",
-              "rhs": "ARM64"
+              "rhs": "arm64"
           },
           {
             "type": "equals",
@@ -128,7 +128,7 @@
           {
               "type": "equals",
               "lhs": "$env{Platform}",
-              "rhs": "ARM64EC"
+              "rhs": "arm64"
           },
           {
             "type": "equals",
