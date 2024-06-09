@@ -98,6 +98,11 @@ struct _Uhash_choose_transparency {
     // transparency selector for non-transparent hashed containers
     template <class>
     using _Deduce_key = const _Kty&;
+
+#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, DevCom-10678753
+    template <class, class>
+    static constexpr bool _Supports_transparency = false;
+#endif // _HAS_CXX20 && defined(__EDG__)
 };
 
 #if _HAS_CXX20
