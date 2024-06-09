@@ -74,7 +74,7 @@ generator<tuple<ranges::range_reference_t<Rng1>, ranges::range_reference_t<Rng2>
 
 // Not from the proposal:
 template <class Reference = const int&>
-generator<Reference, int> meow(const int hi) {
+generator<Reference, int> co_upto(const int hi) {
     for (int i = 0; i < hi; ++i) {
         co_yield i;
     }
@@ -232,7 +232,7 @@ generator<int> iota_repeater(const int hi, const int depth) {
         co_yield ranges::elements_of(iota_repeater(hi, depth - 1));
         co_yield ranges::elements_of(iota_repeater(hi, depth - 1));
     } else {
-        co_yield ranges::elements_of(meow<int>(hi));
+        co_yield ranges::elements_of(co_upto<int>(hi));
     }
 }
 
@@ -307,11 +307,11 @@ int main() {
         f(ss);
         assert(ss.str() == "0 1 2 ");
     }
-    assert(ranges::equal(meow(6), views::iota(0, 6)));
+    assert(ranges::equal(co_upto(6), views::iota(0, 6)));
 
     {
         // test with mutable lvalue reference type
-        auto r   = meow<int&>(32);
+        auto r   = co_upto<int&>(32);
         auto pos = r.begin();
         for (int i = 0; i < 16; ++i, ++*pos, ++pos) {
             assert(pos != r.end());
