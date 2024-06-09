@@ -3106,8 +3106,7 @@ basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Gui
     const _Alloc& = _Alloc()) -> basic_string<_Elem, _Traits, _Alloc>;
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
-    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
 basic_string(from_range_t, _Rng&&, _Alloc = _Alloc())
     -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23
