@@ -5,6 +5,7 @@
 
 #include <concepts>
 #include <cstddef>
+#include <cstdlib>
 #include <memory>
 #include <memory_resource>
 #include <new>
@@ -28,7 +29,7 @@ public:
         if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
             vp = ::_aligned_malloc(s * sizeof(T), alignof(T));
         } else {
-            vp = malloc(s * sizeof(T));
+            vp = std::malloc(s * sizeof(T));
         }
 
         if (vp) {
@@ -42,7 +43,7 @@ public:
         if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
             ::_aligned_free(p);
         } else {
-            free(p);
+            std::free(p);
         }
     }
 
