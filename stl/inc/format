@@ -4247,6 +4247,150 @@ private:
     }
 };
 
+template <class _Rng, class _CharT>
+concept _Const_formattable_range =
+    _RANGES input_range<const _Rng> && formattable<_RANGES range_reference_t<const _Rng>, _CharT>;
+
+template <class _Rng, class _CharT>
+using _Fmt_maybe_const = conditional_t<_Const_formattable_range<_Rng, _CharT>, const _Rng, _Rng>;
+
+template <range_format _Kind, class _Rng, class _CharT>
+struct _Range_default_formatter;
+
+template <_RANGES input_range _Rng, class _CharT>
+struct _Range_default_formatter<range_format::sequence, _Rng, _CharT> {
+private:
+    using _Range_type = _Fmt_maybe_const<_Rng, _CharT>;
+
+    range_formatter<remove_cvref_t<_RANGES range_reference_t<_Range_type>>, _CharT> _Underlying;
+
+public:
+    constexpr void set_separator(const basic_string_view<_CharT> _Sep) noexcept {
+        _Underlying.set_separator(_Sep);
+    }
+
+    constexpr void set_brackets(
+        const basic_string_view<_CharT> _Opening, const basic_string_view<_CharT> _Closing) noexcept {
+        _Underlying.set_brackets(_Opening, _Closing);
+    }
+
+    template <class _ParseContext>
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
+        return _Underlying.parse(_Ctx);
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(_Range_type& _Elems, _FormatContext& _Ctx) const {
+        return _Underlying.format(_Elems, _Ctx);
+    }
+};
+
+template <_RANGES input_range _Rng, class _CharT>
+struct _Range_default_formatter<range_format::map, _Rng, _CharT> {
+private:
+    using _Map_type     = _Fmt_maybe_const<_Rng, _CharT>;
+    using _Element_type = remove_cvref_t<_RANGES range_reference_t<_Map_type>>;
+
+    range_formatter<_Element_type, _CharT> _Underlying;
+
+public:
+    constexpr _Range_default_formatter() noexcept(
+        is_nothrow_default_constructible_v<range_formatter<_Element_type, _CharT>>) /* strengthened */ {
+        static_assert(_Is_two_tuple<_Element_type>, "the element type of the formatted range must be either pair<T, U> "
+                                                    "or tuple<T, U> (N4981 [format.range.fmtmap]/1)");
+
+        _Underlying.set_brackets(_STATICALLY_WIDEN(_CharT, "{"), _STATICALLY_WIDEN(_CharT, "}"));
+        _Underlying.underlying().set_brackets({}, {});
+        _Underlying.underlying().set_separator(_STATICALLY_WIDEN(_CharT, ": "));
+    }
+
+    template <class _ParseContext>
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
+        return _Underlying.parse(_Ctx);
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(_Map_type& _Rx, _FormatContext& _Ctx) const {
+        return _Underlying.format(_Rx, _Ctx);
+    }
+};
+
+template <_RANGES input_range _Rng, class _CharT>
+struct _Range_default_formatter<range_format::set, _Rng, _CharT> {
+private:
+    using _Set_type = _Fmt_maybe_const<_Rng, _CharT>; // exposition only
+    range_formatter<remove_cvref_t<_RANGES range_reference_t<_Set_type>>, _CharT> _Underlying;
+
+public:
+    constexpr _Range_default_formatter() noexcept(is_nothrow_default_constructible_v<
+        range_formatter<remove_cvref_t<_RANGES range_reference_t<_Set_type>>, _CharT>>) /* strengthened */ {
+        _Underlying.set_brackets(_STATICALLY_WIDEN(_CharT, "{"), _STATICALLY_WIDEN(_CharT, "}"));
+    }
+
+    template <class _ParseContext>
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
+        return _Underlying.parse(_Ctx);
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(_Set_type& _Rx, _FormatContext& _Ctx) const {
+        return _Underlying.format(_Rx, _Ctx);
+    }
+};
+
+template <range_format _Kind, _RANGES input_range _Rng, class _CharT>
+    requires (_Kind == range_format::string || _Kind == range_format::debug_string)
+struct _Range_default_formatter<_Kind, _Rng, _CharT> {
+private:
+    static_assert(is_same_v<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _CharT>,
+        "the element type of the formatted range must be the character type used in formatting "
+        "(N4981 [format.range.fmtstr]/1)");
+
+    using _Range_type = _Maybe_const<_RANGES input_range<const _Rng>, _Rng>;
+
+    formatter<basic_string_view<_CharT>, _CharT> _Underlying; // avoid copy the string if possible
+
+public:
+    template <class _ParseContext>
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
+        auto _Iter = _Underlying.parse(_Ctx);
+        if constexpr (_Kind == range_format::debug_string) {
+            _Underlying.set_debug_format();
+        }
+        return _Iter;
+    }
+
+    template <class _FormatContext>
+    _FormatContext::iterator format(_Range_type& _Rx, _FormatContext& _Ctx) const {
+        if constexpr (_RANGES contiguous_range<_Range_type>) {
+            const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rx));
+
+            if (!_STD in_range<size_t>(_Size)) [[unlikely]] {
+                _Throw_format_error("Formatted range is too long.");
+            }
+
+            const basic_string_view<_CharT> _Str(_STD to_address(_RANGES begin(_Rx)), static_cast<size_t>(_Size));
+            return _Underlying.format(_Str, _Ctx);
+        } else {
+            return _Underlying.format(basic_string<_CharT>{from_range, _Rx}, _Ctx);
+        }
+    }
+};
+
+// the deleted default constructor makes it "disabled" as per N4981 [format.formatter.spec]/5
+
+template <_RANGES input_range _Rng, _Format_supported_charT _CharT>
+    requires _Formatting_enabled_range<_Rng>
+struct formatter<_Rng, _CharT> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
+
+template <_RANGES input_range _Rng, _Format_supported_charT _CharT>
+    requires _Formatting_enabled_range<_Rng> && formattable<_RANGES range_reference_t<_Rng>, _CharT>
+struct formatter<_Rng, _CharT> : _Range_default_formatter<format_kind<_Rng>, _Rng, _CharT> {};
+
 enum class _Fmt_tuple_type : uint8_t { _None, _Key_value, _No_brackets };
 
 template <class _CharT, bool _IsTwoTuple>
@@ -4496,6 +4640,24 @@ public:
         return _STD apply([this, &_Ctx](auto&... _Args) { return this->_Format(_Ctx, _Args...); }, _Elems);
     }
 };
+
+// specializations for tuple-like types that are input ranges and not formattable as tuples
+
+template <_Format_supported_charT _CharT, class _Ty1, class _Ty2>
+    requires (!formattable<_Ty1, _CharT> || !formattable<_Ty2, _CharT>)
+          // TRANSITION, clang-format, () should be redundant
+          && (_RANGES input_range<pair<_Ty1, _Ty2>>) && _Formatting_enabled_range<pair<_Ty1, _Ty2>>
+          && formattable<_RANGES range_reference_t<pair<_Ty1, _Ty2>>, _CharT>
+struct _Tuple_formatter_base<pair<_Ty1, _Ty2>, _CharT>
+    : _Range_default_formatter<format_kind<pair<_Ty1, _Ty2>>, pair<_Ty1, _Ty2>, _CharT> {};
+
+template <_Format_supported_charT _CharT, class... _Types>
+    requires ((!formattable<_Types, _CharT>) || ...)
+          // TRANSITION, clang-format, () should be redundant
+          && (_RANGES input_range<tuple<_Types...>>) && _Formatting_enabled_range<tuple<_Types...>>
+          && formattable<_RANGES range_reference_t<tuple<_Types...>>, _CharT>
+struct _Tuple_formatter_base<tuple<_Types...>, _CharT>
+    : _Range_default_formatter<format_kind<tuple<_Types...>>, tuple<_Types...>, _CharT> {};
 
 // Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
 // constrained to character types supported by `format`.

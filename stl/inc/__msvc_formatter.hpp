@@ -47,6 +47,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+#if _HAS_CXX23
+#include <xutility>
+#endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -305,10 +308,18 @@ constexpr range_format format_kind<_Rng> = []() consteval {
     }
 }();
 
-// Specializations for pairs and tuples are forward-declared to avoid any risk of using the disabled primary template.
+// Specializations for pairs, tuples and ranges are forward-declared to avoid any risk of using the disabled primary
+// template.
 
 // Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
 // constrained to character types supported by `format`.
+
+template <class _Rng>
+concept _Formatting_enabled_range = format_kind<_Rng> != range_format::disabled;
+
+template <_RANGES input_range _Rng, _Format_supported_charT _CharT>
+    requires _Formatting_enabled_range<_Rng>
+struct formatter<_Rng, _CharT>;
 
 _EXPORT_STD template <class, class>
 struct pair;
