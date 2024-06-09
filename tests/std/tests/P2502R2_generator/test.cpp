@@ -18,6 +18,8 @@
 #include <utility>
 #include <vector>
 
+#include <test_generator_support.hpp>
+
 using namespace std;
 
 template <class G, class V, class R, class RR>
@@ -81,45 +83,6 @@ generator<Reference, int> co_upto(const int hi) {
 }
 
 template <class T>
-struct stateless_alloc {
-    using value_type = T;
-
-    stateless_alloc() = default;
-
-    template <class U>
-    constexpr stateless_alloc(const stateless_alloc<U>&) noexcept {}
-
-    T* allocate(const size_t n) {
-        void* vp;
-        if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-            vp = ::_aligned_malloc(n * sizeof(T), alignof(T));
-        } else {
-            vp = malloc(n * sizeof(T));
-        }
-
-        if (vp) {
-            return static_cast<T*>(vp);
-        }
-
-        throw bad_alloc{};
-    }
-
-    void deallocate(void* const vp, [[maybe_unused]] const size_t n) noexcept {
-        if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-            ::_aligned_free(vp);
-        } else {
-            free(vp);
-        }
-    }
-
-    template <class U>
-    constexpr bool operator==(const stateless_alloc<U>&) noexcept {
-        return true;
-    }
-};
-static_assert(default_initializable<stateless_alloc<int>>);
-
-template <class T>
 struct stateful_alloc {
     using value_type = T;
 
@@ -162,7 +125,7 @@ static_assert(!default_initializable<stateful_alloc<int>>);
 
 void static_allocator_test() {
     {
-        auto g = [](const int hi) -> generator<int, int, stateless_alloc<char>> {
+        auto g = [](const int hi) -> generator<int, int, StatelessAlloc<char>> {
             constexpr size_t n = 64;
             int some_ints[n];
             for (int i = 0; i < hi; ++i) {
@@ -174,7 +137,7 @@ void static_allocator_test() {
     }
 
     {
-        auto g = [](allocator_arg_t, stateless_alloc<int>, const int hi) -> generator<int, int, stateless_alloc<char>> {
+        auto g = [](allocator_arg_t, StatelessAlloc<int>, const int hi) -> generator<int, int, StatelessAlloc<char>> {
             constexpr size_t n = 64;
             int some_ints[n];
             for (int i = 0; i < hi; ++i) {
@@ -210,7 +173,7 @@ void dynamic_allocator_test() {
     };
 
     assert(ranges::equal(g(allocator_arg, allocator<float>{}, 1024), views::iota(0, 1024)));
-    assert(ranges::equal(g(allocator_arg, stateless_alloc<float>{}, 1024), views::iota(0, 1024)));
+    assert(ranges::equal(g(allocator_arg, StatelessAlloc<float>{}, 1024), views::iota(0, 1024)));
 #ifndef __EDG__ // TRANSITION, VSO-1951821
     assert(ranges::equal(g(allocator_arg, stateful_alloc<float>{1729}, 1024), views::iota(0, 1024)));
 #endif // ^^^ no workaround ^^^

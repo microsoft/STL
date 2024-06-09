@@ -11,32 +11,49 @@
 #include <type_traits>
 
 template <class T, class AlwaysEqual = std::true_type, std::signed_integral DifferenceType = std::ptrdiff_t>
-class TestAllocator : public std::allocator<T> {
+class StatelessAlloc : public std::allocator<T> {
 public:
     using value_type      = T;
     using is_always_equal = AlwaysEqual;
     using difference_type = DifferenceType;
     using size_type       = std::make_unsigned_t<difference_type>;
 
-    TestAllocator() = default;
+    StatelessAlloc() = default;
 
     template <class U>
-    TestAllocator(const TestAllocator<U, AlwaysEqual, DifferenceType>&) {}
+    StatelessAlloc(const StatelessAlloc<U, AlwaysEqual, DifferenceType>&) {}
 
     T* allocate(const size_type s) {
-        return static_cast<T*>(::operator new(static_cast<size_t>(s * sizeof(T)), std::align_val_t{alignof(T)}));
+        void* vp;
+        if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+            vp = ::_aligned_malloc(s * sizeof(T), alignof(T));
+        } else {
+            vp = malloc(s * sizeof(T));
+        }
+
+        if (vp) {
+            return static_cast<T*>(vp);
+        }
+
+        throw std::bad_alloc{};
     }
 
-    void deallocate(T* const p, size_type s) {
-        ::operator delete(p, s * sizeof(T), std::align_val_t{alignof(T)});
+    void deallocate(T* const p, size_type) {
+        if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+            ::_aligned_free(p);
+        } else {
+            free(p);
+        }
     }
 
     operator std::pmr::polymorphic_allocator<void>() const {
         return {};
     }
 
-    bool operator==(const TestAllocator&) const = default;
+    bool operator==(const StatelessAlloc&) const = default;
 };
+
+static_assert(std::default_initializable<StatelessAlloc<int>>);
 
 struct MoveOnly {
     MoveOnly()                           = default;
