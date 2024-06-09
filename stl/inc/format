@@ -4318,7 +4318,7 @@ public:
 template <_RANGES input_range _Rng, class _CharT>
 struct _Range_default_formatter<range_format::set, _Rng, _CharT> {
 private:
-    using _Set_type = _Fmt_maybe_const<_Rng, _CharT>; // exposition only
+    using _Set_type = _Fmt_maybe_const<_Rng, _CharT>;
     range_formatter<remove_cvref_t<_RANGES range_reference_t<_Set_type>>, _CharT> _Underlying;
 
 public:
