@@ -21,7 +21,7 @@
 using namespace std;
 
 template <class G, class V, class R, class RR>
-constexpr bool static_checks() {
+consteval bool static_checks() {
     static_assert(ranges::input_range<G>);
     static_assert(ranges::view<G>);
     static_assert(!ranges::forward_range<G>);
