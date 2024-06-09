@@ -170,7 +170,7 @@ void static_allocator_test() {
             }
         };
 
-        assert(ranges::equal(g(1024), ranges::views::iota(0, 1024)));
+        assert(ranges::equal(g(1024), views::iota(0, 1024)));
     }
 
     {
@@ -182,7 +182,7 @@ void static_allocator_test() {
             }
         };
 
-        assert(ranges::equal(g(allocator_arg, {}, 1024), ranges::views::iota(0, 1024)));
+        assert(ranges::equal(g(allocator_arg, {}, 1024), views::iota(0, 1024)));
     }
 
 #ifndef __EDG__ // TRANSITION, VSO-1951821
@@ -195,7 +195,7 @@ void static_allocator_test() {
             }
         };
 
-        assert(ranges::equal(g(allocator_arg, stateful_alloc<int>{42}, 1024), ranges::views::iota(0, 1024)));
+        assert(ranges::equal(g(allocator_arg, stateful_alloc<int>{42}, 1024), views::iota(0, 1024)));
     }
 #endif // ^^^ no workaround ^^^
 }
@@ -209,10 +209,10 @@ void dynamic_allocator_test() {
         }
     };
 
-    assert(ranges::equal(g(allocator_arg, allocator<float>{}, 1024), ranges::views::iota(0, 1024)));
-    assert(ranges::equal(g(allocator_arg, stateless_alloc<float>{}, 1024), ranges::views::iota(0, 1024)));
+    assert(ranges::equal(g(allocator_arg, allocator<float>{}, 1024), views::iota(0, 1024)));
+    assert(ranges::equal(g(allocator_arg, stateless_alloc<float>{}, 1024), views::iota(0, 1024)));
 #ifndef __EDG__ // TRANSITION, VSO-1951821
-    assert(ranges::equal(g(allocator_arg, stateful_alloc<float>{1729}, 1024), ranges::views::iota(0, 1024)));
+    assert(ranges::equal(g(allocator_arg, stateful_alloc<float>{1729}, 1024), views::iota(0, 1024)));
 #endif // ^^^ no workaround ^^^
 }
 
@@ -259,7 +259,7 @@ void recursive_test() {
 void arbitrary_range_test() {
     auto yield_arbitrary_ranges = []() -> generator<const int&> {
         co_yield ranges::elements_of(vector<int>{40, 30, 20, 10});
-        co_yield ranges::elements_of(ranges::views::iota(0, 4));
+        co_yield ranges::elements_of(views::iota(0, 4));
         forward_list<int> fl{500, 400, 300};
         co_yield ranges::elements_of(fl);
     };
@@ -279,7 +279,7 @@ void adl_proof_test() {
     using validator  = holder<incomplete>*;
     auto yield_range = []() -> generator<validator> {
         co_yield ranges::elements_of(
-            ranges::views::repeat(nullptr, 42) | ranges::views::transform([](nullptr_t) { return validator{}; }));
+            views::repeat(nullptr, 42) | views::transform([](nullptr_t) { return validator{}; }));
     };
 
     using R = decltype(yield_range());
@@ -307,7 +307,7 @@ int main() {
         f(ss);
         assert(ss.str() == "0 1 2 ");
     }
-    assert(ranges::equal(meow(6), ranges::views::iota(0, 6)));
+    assert(ranges::equal(meow(6), views::iota(0, 6)));
 
     {
         // test with mutable lvalue reference type
