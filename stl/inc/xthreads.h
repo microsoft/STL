@@ -55,10 +55,6 @@ void __cdecl _Smtx_unlock_exclusive(_Smtx_t*) noexcept;
 void __cdecl _Smtx_unlock_shared(_Smtx_t*) noexcept;
 
 // condition variables
-#ifdef _CRTBLD
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*) noexcept;
-_CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t) noexcept;
-#endif // _CRTBLD
 #ifdef _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t) noexcept;
 #endif // ^^^ defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) ^^^
