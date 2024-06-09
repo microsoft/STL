@@ -216,7 +216,7 @@ public:
 private:
     shared_ptr<mutex> _Myptr;
 
-    _Cnd_internal_imp_t _Cnd_storage;
+    _Cnd_internal_imp_t _Cnd_storage{};
 
     _NODISCARD _Cnd_t _Mycnd() noexcept {
         return &_Cnd_storage;

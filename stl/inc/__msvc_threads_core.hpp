@@ -52,6 +52,11 @@ struct _Mtx_internal_imp_t {
 
 using _Mtx_t = _Mtx_internal_imp_t*;
 
+struct _Stl_condition_variable {
+    void* _Unused = nullptr; // TRANSITION, ABI: was the vptr
+    void* _Win_cv = nullptr;
+};
+
 struct _Cnd_internal_imp_t {
 #if defined(_CRT_WINDOWS) // for Windows-internal code
     static constexpr size_t _Cnd_internal_imp_size = 2 * sizeof(void*);
@@ -61,7 +66,10 @@ struct _Cnd_internal_imp_t {
     static constexpr size_t _Cnd_internal_imp_size = 40;
 #endif // ^^^ ordinary 32-bit code ^^^
 
-    _STD _Aligned_storage_t<_Cnd_internal_imp_size, alignof(void*)> _Cv_storage;
+    union {
+        _Stl_condition_variable _Stl_cv{};
+        _STD _Aligned_storage_t<_Cnd_internal_imp_size, alignof(void*)> _Cv_storage;
+    };
 };
 
 using _Cnd_t = _Cnd_internal_imp_t*;
