@@ -10,8 +10,6 @@
 #include <xthreads.h>
 #include <xtimec.h>
 
-#include "primitives.hpp"
-
 extern "C" {
 
 // TRANSITION, ABI: exported only for ABI compat
