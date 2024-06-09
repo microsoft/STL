@@ -49,6 +49,7 @@ _CRTIMP2_PURE void __cdecl _Mtx_destroy_in_situ(_Mtx_t mtx) noexcept { // destro
     (void) mtx;
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t* mtx, int type) noexcept { // initialize mutex
     *mtx = nullptr;
 
