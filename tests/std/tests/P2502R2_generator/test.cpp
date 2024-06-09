@@ -13,6 +13,7 @@
 #include <random>
 #include <ranges>
 #include <sstream>
+#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -200,17 +201,16 @@ generator<int> iota_repeater(const int hi, const int depth) {
 }
 
 void recursive_test() {
-    struct some_error {};
-
     static constexpr auto might_throw = []() -> generator<int> {
         co_yield 0;
-        throw some_error{};
+        throw runtime_error{"error"};
     };
 
     static constexpr auto nested_ints = []() -> generator<int> {
         try {
             co_yield ranges::elements_of(might_throw());
-        } catch (const some_error&) {
+        } catch (const runtime_error& e) {
+            assert(e.what() == "error"sv);
         }
         co_yield 1;
     };
