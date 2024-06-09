@@ -35,7 +35,7 @@ _CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_enum) noexcep
     return reinterpret_cast<PSRWLOCK>(&mtx->_Critical_section._M_srw_lock);
 }
 
-// TRANSITION, only used when constexpr mutex constructor is not enabled
+// TRANSITION, ABI: preserved for binary compatibility (and _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 _CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t mtx, int type) noexcept { // initialize mutex in situ
     new (&mtx->_Critical_section) _Stl_critical_section;
     mtx->_Thread_id = -1;

@@ -35,7 +35,9 @@ enum { // mutex types
     _Mtx_recursive = 0x100
 };
 
+#if defined(_CRTBLD) || defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 _CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t, int) noexcept;
+#endif // ^^^ defined(_CRTBLD) || defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) ^^^
 _CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t) noexcept;
