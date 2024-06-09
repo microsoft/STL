@@ -55,9 +55,7 @@ public:
         _Cnd_init_in_situ(_Mycnd());
     }
 
-    ~condition_variable_any() noexcept {
-        _Cnd_destroy_in_situ(_Mycnd());
-    }
+    ~condition_variable_any() noexcept = default;
 
     condition_variable_any(const condition_variable_any&)            = delete;
     condition_variable_any& operator=(const condition_variable_any&) = delete;

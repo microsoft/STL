@@ -60,7 +60,6 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*) noexcept;
 _CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t) noexcept;
 #endif // _CRTBLD
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t) noexcept;
-_CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(_Cnd_t, _Mtx_t) noexcept; // TRANSITION, ABI: Always succeeds
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(_Cnd_t) noexcept; // TRANSITION, ABI: Always succeeds
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(_Cnd_t) noexcept; // TRANSITION, ABI: Always succeeds
