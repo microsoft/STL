@@ -14,7 +14,7 @@ extern "C" {
 
 // TRANSITION, ABI: preserved for binary compatibility (and _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(const _Cnd_t cond) noexcept { // initialize condition variable in situ
-    new (Concurrency::details::_Get_cond_var(cond)) Concurrency::details::stl_condition_variable_win7;
+    new (cond) _Cnd_internal_imp_t;
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
