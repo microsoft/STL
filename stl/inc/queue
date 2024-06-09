@@ -458,17 +458,17 @@ priority_queue(_Iter, _Iter, _Compare, _Container, _Alloc)
     -> priority_queue<typename _Container::value_type, _Container, _Compare>;
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>>
-    requires (!_Allocator_for_container<_Pr>)
+template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>,
+    enable_if_t<!_Is_allocator<_Pr>::value, int> = 0>
 priority_queue(from_range_t, _Rng&&, _Pr = _Pr())
     -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>>, _Pr>;
 
-template <_RANGES input_range _Rng, class _Pr, class _Alloc>
-    requires (!_Allocator_for_container<_Pr>) && _Allocator_for_container<_Alloc>
+template <_RANGES input_range _Rng, class _Pr, class _Alloc,
+    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
 priority_queue(from_range_t, _Rng&&, _Pr, _Alloc)
     -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>, _Pr>;
 
-template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 priority_queue(from_range_t, _Rng&&, _Alloc)
     -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>>;
 #endif // _HAS_CXX23
