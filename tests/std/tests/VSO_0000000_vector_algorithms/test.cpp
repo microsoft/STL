@@ -173,16 +173,9 @@ auto last_known_good_find_first_of(FwdItH h_first, FwdItH h_last, FwdItN n_first
 template <class RanItH, class RanItN>
 auto last_known_good_search(RanItH h_first, RanItH h_last, RanItN n_first, RanItN n_last) {
     const auto n_len = n_last - n_first;
-    const auto h_len = h_last - h_first;
 
-    if (n_len > h_len) {
-        return h_last;
-    }
-
-    const auto h_last_start = h_last - n_len;
-
-    for (; h_first <= h_last_start; ++h_first) {
-        if (equal(h_first, h_first + n_len, n_first, n_first + n_len)) {
+    for (; h_last - h_first >= n_len; ++h_first) {
+        if (equal(h_first, h_first + n_len, n_first, n_last)) {
             return h_first;
         }
     }
