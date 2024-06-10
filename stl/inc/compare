@@ -24,7 +24,8 @@ _STD_BEGIN
 void _Literal_zero_is_expected();
 
 struct _Literal_zero {
-    template <class _Ty, enable_if_t<is_same_v<_Ty, int>, int> = 0>
+    template <class _Ty>
+        requires is_same_v<_Ty, int>
     consteval _Literal_zero(_Ty _Zero) noexcept {
         // Can't use _STL_VERIFY because this is a core header
         if (_Zero != 0) {

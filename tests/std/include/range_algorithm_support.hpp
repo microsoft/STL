@@ -878,6 +878,11 @@ namespace test {
         using RebindAsMoveOnly =
             range<Category, Element, IsSized, Diff, IsCommon, Eq, Proxy, IsView, Copyability::move_only>;
 
+        template <class OtherElement>
+        using RebindElement = range<Category, OtherElement, IsSized, Diff, IsCommon, Eq, Proxy, IsView, Copy>;
+
+        static constexpr ProxyRef proxy_ref = Proxy;
+
         using detail::range_base<Element, Copy>::range_base;
 
         [[nodiscard]] constexpr I begin() const noexcept {

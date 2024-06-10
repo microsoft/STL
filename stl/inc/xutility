@@ -405,15 +405,10 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
 };
 
 #if _HAS_CXX20
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1691516
-// per LWG-3888
-_EXPORT_STD template <class _Ty, class... _Types,
-    class = void_t<decltype(::new(static_cast<void*>(_STD declval<_Ty*>())) _Ty(_STD declval<_Types>()...))>>
-#else // ^^^ no workaround / workaround vvv
-// per LWG-3888
-_EXPORT_STD template <class _Ty, class... _Types,
-    void_t<decltype(::new(static_cast<void*>(_STD declval<_Ty*>())) _Ty(_STD declval<_Types>()...))>* = nullptr>
-#endif // ^^^ workaround ^^^
+_EXPORT_STD template <class _Ty, class... _Types>
+    requires requires(_Ty* _Location, _Types&&... _Args) {
+        ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...); // per LWG-3888
+    }
 constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
     noexcept(::new(static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
     _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
@@ -735,8 +730,8 @@ _NODISCARD constexpr auto _Pass_fn(_Fn& _Func) noexcept {
 }
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Result_type, class _Callable, class... _Types,
-    enable_if_t<is_invocable_r_v<_Result_type, _Callable, _Types...>, int> = 0>
+_EXPORT_STD template <class _Result_type, class _Callable, class... _Types>
+    requires is_invocable_r_v<_Result_type, _Callable, _Types...>
 _NODISCARD constexpr _Result_type invoke_r(_Callable&& _Obj, _Types&&... _Args) noexcept(
     is_nothrow_invocable_r_v<_Result_type, _Callable, _Types...>) {
     if constexpr (is_void_v<_Result_type>) {
@@ -4354,7 +4349,8 @@ public:
         _Verify_range(_First._Current, _Last._Get_current());
     }
 #if _HAS_CXX20
-    template <sentinel_for<_Iter> _Sent, enable_if_t<_Range_verifiable_v<_Iter, _Sent>, int> = 0>
+    template <sentinel_for<_Iter> _Sent>
+        requires _Range_verifiable_v<_Iter, _Sent>
     friend constexpr void _Verify_range(const move_iterator& _First, const move_sentinel<_Sent>& _Last) noexcept {
         _Verify_range(_First._Current, _Last._Get_last());
     }
@@ -5962,9 +5958,8 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
         if constexpr (is_same_v<_Elem, bool>) {
             return _Val == true || _Val == false;
         } else if constexpr (is_signed_v<_Elem>) {
-            // use instead of numeric_limits::min/max; avoid <limits> dependency
-            constexpr _Elem _Min = static_cast<_Elem>(_Elem{1} << (sizeof(_Elem) * CHAR_BIT - 1));
-            constexpr _Elem _Max = static_cast<_Elem>(~_Min);
+            constexpr _Elem _Min = _STD _Min_limit<_Elem>();
+            constexpr _Elem _Max = _STD _Max_limit<_Elem>();
 
             if constexpr (is_signed_v<_Ty>) {
                 // signed _Elem, signed _Ty
@@ -5980,7 +5975,7 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
                 }
             }
         } else {
-            constexpr _Elem _Max = static_cast<_Elem>(~_Elem{0});
+            constexpr _Elem _Max = _STD _Max_limit<_Elem>();
 
             if constexpr (is_unsigned_v<_Ty>) {
                 // unsigned _Elem, unsigned _Ty
@@ -7451,8 +7446,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 #endif // defined(__clang__)
     {
         if constexpr (!_Signed_integer_like<_Int>) {
-            // use instead of numeric_limits::max; avoid <limits> dependency
-            constexpr auto _UInt_max = static_cast<_Int>(-1);
+            constexpr auto _UInt_max = _STD _Max_limit<_Int>();
             const bool _Overflow     = _Left != 0 && _Right > _UInt_max / _Left;
             if (!_Overflow) {
                 _Out = static_cast<_Int>(_Left * _Right);
@@ -7481,8 +7475,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
                 return false;
             }
 
-            // use instead of numeric_limits::max; avoid <limits> dependency
-            constexpr auto _Int_max = static_cast<_UInt>(static_cast<_UInt>(-1) / 2);
+            constexpr auto _Int_max = static_cast<_UInt>(_STD _Max_limit<_Int>());
             if (_Negative) {
                 return _ULeft > (_Int_max + _UInt{1}) / _URight;
             } else {

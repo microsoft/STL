@@ -18,6 +18,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_minmax.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_print.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_sanitizer_annotate_container.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_string_view.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_threads_core.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_tzdb.hpp
