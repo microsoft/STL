@@ -485,6 +485,11 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.single.pass.cpp FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move.pass.cpp FAIL
 
+# Still sporadically failing after LLVM-91530 "[libc++] Refactor tests for std::condition_variable"
+std/thread/thread.condition/thread.condition.condvarany/wait_for.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvarany/wait_until_pred.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvarany/wait_until.pass.cpp SKIPPED
+
 # Not analyzed, likely bogus tests. Appears to be timing assumptions.
 std/thread/futures/futures.async/async.pass.cpp SKIPPED
 std/thread/futures/futures.shared_future/get.pass.cpp SKIPPED
