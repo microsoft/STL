@@ -59,7 +59,7 @@ generator<int> ints(int start = 0) {
 
 void f(ostream& os) {
     for (auto i : ints() | views::take(3)) {
-        os << i << ' ';
+        os << i << ' '; // prints '0 1 2 '
     }
 }
 
