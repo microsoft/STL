@@ -6799,9 +6799,9 @@ namespace ranges {
                             return {_Ptr_last1, _Ptr_last1};
                         }
                     } else {
-                        _First1 = _RANGES next(_STD move(_First1), _Ptr_res1 - _Ptr1);
+                        _First1 += _Ptr_res1 - _Ptr1;
                         if (_First1 != _Last1) {
-                            return {_First1, _RANGES next(_First1, _Count2)};
+                            return {_First1, _First1 + _Count2};
                         } else {
                             return {_First1, _First1};
                         }
