@@ -2153,11 +2153,10 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
 #if _USE_STD_VECTOR_ALGORITHMS
             if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
                 if (!_STD _Is_constant_evaluated()) {
-                    const auto _Ptr1      = _STD _To_address(_UFirst1);
-                    const auto _Ptr_last1 = _STD _To_address(_ULast1);
+                    const auto _Ptr1 = _STD _To_address(_UFirst1);
 
                     const auto _Ptr_res1 = _STD _Search_vectorized(
-                        _Ptr1, _Ptr_last1, _STD _To_address(_UFirst2), _STD _To_address(_ULast2));
+                        _Ptr1, _STD _To_address(_ULast1), _STD _To_address(_UFirst2), _STD _To_address(_ULast2));
 
                     if constexpr (is_pointer_v<decltype(_UFirst1)>) {
                         _UFirst1 = _Ptr_res1;
