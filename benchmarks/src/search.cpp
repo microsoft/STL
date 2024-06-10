@@ -55,6 +55,19 @@ void c_strstr(benchmark::State& state) {
 }
 
 template <class T>
+void classic_search(benchmark::State& state) {
+    const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
+    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
+
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+        benchmark::DoNotOptimize(res);
+    }
+}
+
+template <class T>
 void ranges_search(benchmark::State& state) {
     const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
@@ -81,6 +94,11 @@ void search_default_searcher(benchmark::State& state) {
 }
 
 BENCHMARK(c_strstr);
+
+BENCHMARK(classic_search<std::uint8_t>);
+BENCHMARK(classic_search<std::uint16_t>);
+BENCHMARK(classic_search<std::uint32_t>);
+BENCHMARK(classic_search<std::uint64_t>);
 
 BENCHMARK(ranges_search<std::uint8_t>);
 BENCHMARK(ranges_search<std::uint16_t>);
