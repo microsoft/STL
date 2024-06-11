@@ -27,9 +27,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef known_semantics
 
 _STD_BEGIN
-template <class>
-constexpr bool _Always_false = false; // TRANSITION, VSO-2016422 (EDG)
-
 template <bool _First_value, class _First, class... _Rest>
 struct _Conjunction { // handle false trait or last trait
     using type = _First;
@@ -1150,7 +1147,7 @@ struct _Aligned<_Len, _Align, double, false> {
     };
 #else // ^^^ defined(_ENABLE_EXTENDED_ALIGNED_STORAGE) / !defined(_ENABLE_EXTENDED_ALIGNED_STORAGE) vvv
 #ifndef _DISABLE_EXTENDED_ALIGNED_STORAGE
-    static_assert(_Always_false<_Aligned>,
+    static_assert(false,
         "You've instantiated std::aligned_storage<Len, Align> with an extended alignment (in other "
         "words, Align > alignof(max_align_t)). Before VS 2017 15.8, the member \"type\" would "
         "non-conformingly have an alignment of only alignof(max_align_t). VS 2017 15.8 was fixed to "
@@ -1832,8 +1829,8 @@ using _Select_invoke_traits = conditional_t<sizeof...(_Args) == 0, _Invoke_trait
 #if _HAS_DEPRECATED_RESULT_OF
 _EXPORT_STD template <class _Fty>
 struct _CXX17_DEPRECATE_RESULT_OF result_of { // explain usage
-    static_assert(_Always_false<_Fty>, "result_of<CallableType> is invalid; use "
-                                       "result_of<CallableType(zero or more argument types)> instead.");
+    static_assert(false, "result_of<CallableType> is invalid; use "
+                         "result_of<CallableType(zero or more argument types)> instead.");
 };
 
 #define _RESULT_OF(CALL_OPT, X1, X2, X3)                                                                    \

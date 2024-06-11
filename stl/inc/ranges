@@ -203,7 +203,7 @@ namespace ranges {
 
     template <range _Rng, class _Derived>
     class _Cached_position : public view_interface<_Derived> {
-        static_assert(_Always_false<_Rng>, "A range must be at least forward for position caching to be worthwhile.");
+        static_assert(false, "A range must be at least forward for position caching to be worthwhile.");
     };
 
     template <forward_range _Rng, class _Derived>

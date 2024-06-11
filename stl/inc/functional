@@ -1047,7 +1047,7 @@ private:
 
 template <class _Tx>
 struct _Get_function_impl {
-    static_assert(_Always_false<_Tx>, "std::function only accepts function types as template arguments.");
+    static_assert(false, "std::function only accepts function types as template arguments.");
 };
 
 #define _GET_FUNCTION_IMPL(CALL_OPT, X1, X2, X3)                                                  \
@@ -1060,11 +1060,10 @@ _NON_MEMBER_CALL(_GET_FUNCTION_IMPL, X1, X2, X3)
 #undef _GET_FUNCTION_IMPL
 
 #ifdef __cpp_noexcept_function_type
-#define _GET_FUNCTION_IMPL_NOEXCEPT(CALL_OPT, X1, X2, X3)                                                         \
-    template <class _Ret, class... _Types>                                                                        \
-    struct _Get_function_impl<_Ret CALL_OPT(_Types...) noexcept> {                                                \
-        static_assert(                                                                                            \
-            _Always_false<_Ret>, "std::function does not accept noexcept function types as template arguments."); \
+#define _GET_FUNCTION_IMPL_NOEXCEPT(CALL_OPT, X1, X2, X3)                                                     \
+    template <class _Ret, class... _Types>                                                                    \
+    struct _Get_function_impl<_Ret CALL_OPT(_Types...) noexcept> {                                            \
+        static_assert(false, "std::function does not accept noexcept function types as template arguments."); \
     };
 _NON_MEMBER_CALL(_GET_FUNCTION_IMPL_NOEXCEPT, X1, X2, X3)
 #undef _GET_FUNCTION_IMPL_NOEXCEPT
@@ -1621,10 +1620,9 @@ public:
 
 template <class... _Signature>
 class _Move_only_function_call {
-    static_assert(_Always_false<integral_constant<size_t, sizeof...(_Signature)>>,
-        "std::move_only_function only accepts function types as template arguments, "
-        "with possibly const/ref/noexcept qualifiers. Also, unlike std::function, "
-        "std::move_only_function does not define class template argument deduction guides.");
+    static_assert(false, "std::move_only_function only accepts function types as template arguments, "
+                         "with possibly const/ref/noexcept qualifiers. Also, unlike std::function, "
+                         "std::move_only_function does not define class template argument deduction guides.");
 };
 
 // A script to generate the specializations is at
