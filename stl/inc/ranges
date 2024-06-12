@@ -9259,59 +9259,6 @@ namespace ranges {
 
         _EXPORT_STD inline constexpr _Cartesian_product_fn cartesian_product;
     } // namespace views
-
-    template <input_range _Rng>
-    struct _Phony_input_iterator {
-        using iterator_category = input_iterator_tag;
-        using value_type        = range_value_t<_Rng>;
-        using difference_type   = ptrdiff_t;
-        using pointer           = add_pointer_t<range_reference_t<_Rng>>;
-        using reference         = range_reference_t<_Rng>;
-
-        reference operator*() const;
-        pointer operator->() const;
-
-        _Phony_input_iterator& operator++();
-        _Phony_input_iterator operator++(int);
-
-        bool operator==(const _Phony_input_iterator&) const;
-    };
-
-    template <template <class...> class _Cnt, class _Rng, class... _Args>
-    auto _To_helper() {
-        if constexpr (requires { _Cnt(_STD declval<_Rng>(), _STD declval<_Args>()...); }) {
-            return static_cast<decltype(_Cnt(_STD declval<_Rng>(), _STD declval<_Args>()...))*>(nullptr);
-        } else if constexpr (requires { _Cnt(from_range, _STD declval<_Rng>(), _STD declval<_Args>()...); }) {
-            return static_cast<decltype(_Cnt(from_range, _STD declval<_Rng>(), _STD declval<_Args>()...))*>(nullptr);
-        } else if constexpr (requires {
-                                 _Cnt(_STD declval<_Phony_input_iterator<_Rng>>(),
-                                     _STD declval<_Phony_input_iterator<_Rng>>(), _STD declval<_Args>()...);
-                             }) {
-            return static_cast<decltype(_Cnt(_STD declval<_Phony_input_iterator<_Rng>>(),
-                _STD declval<_Phony_input_iterator<_Rng>>(), _STD declval<_Args>()...))*>(nullptr);
-        }
-    }
-
-    _EXPORT_STD template <template <class...> class _Container, input_range _Rng, class... _Types,
-        class _Deduced = remove_pointer_t<decltype(_To_helper<_Container, _Rng, _Types...>())>>
-    _NODISCARD constexpr _Deduced to(_Rng&& _Range, _Types&&... _Args) {
-        return _RANGES to<_Deduced>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
-    }
-
-    template <template <class...> class _Container>
-    struct _To_template_fn {
-        template <input_range _Rng, class... _Types,
-            class _Deduced = remove_pointer_t<decltype(_To_helper<_Container, _Rng, _Types...>())>>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-            _Rng&& _Range, _Types&&... _Args) _CONST_CALL_OPERATOR {
-            return _RANGES to<_Deduced>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
-        }
-    };
-
-    _EXPORT_STD template <template <class...> class _Container, class... _Types>
-    _NODISCARD constexpr auto to(_Types&&... _Args) {
-        return _Range_closure<_To_template_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
-    }
 #endif // _HAS_CXX23
 } // namespace ranges
 
