@@ -6639,11 +6639,7 @@ namespace ranges {
     };
 
     _EXPORT_STD inline constexpr _Stable_partition_fn stable_partition;
-} // namespace ranges
-#endif // _HAS_CXX20
 
-#if _HAS_CXX20
-namespace ranges {
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
               && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
@@ -6711,11 +6707,7 @@ namespace ranges {
     };
 
     _EXPORT_STD inline constexpr _Push_heap_fn push_heap;
-} // namespace ranges
-#endif // _HAS_CXX20
 
-#if _HAS_CXX20
-namespace ranges {
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
               && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
@@ -6810,11 +6802,7 @@ namespace ranges {
     };
 
     _EXPORT_STD inline constexpr _Pop_heap_fn pop_heap;
-} // namespace ranges
-#endif // _HAS_CXX20
 
-#if _HAS_CXX20
-namespace ranges {
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
     constexpr void _Make_heap_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
