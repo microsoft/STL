@@ -33,7 +33,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 namespace ranges {
-    // MUCH machinery defined in <xutility>
+    // MUCH machinery defined in <xutility>, some in <__msvc_ranges_to.hpp>
 
     template <auto> // _Require_constant<E> is a valid template-id iff E is a constant expression of structural type
     struct _Require_constant;
