@@ -1,10 +1,10 @@
-// __msvc_transform_view_to.hpp internal header
+// __msvc_ranges_to.hpp internal header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef __MSVC_TRANSFORM_VIEW_TO_HPP
-#define __MSVC_TRANSFORM_VIEW_TO_HPP
+#ifndef __MSVC_RANGES_TO_HPP
+#define __MSVC_RANGES_TO_HPP
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
@@ -1187,4 +1187,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 #endif // _STL_COMPILER_PREPROCESSOR
-#endif // __MSVC_TRANSFORM_VIEW_TO_HPP
+#endif // __MSVC_RANGES_TO_HPP
