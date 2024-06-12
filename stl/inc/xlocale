@@ -2449,7 +2449,7 @@ _EXPORT_STD extern "C++" template <class _Elem>
 class ctype : public ctype_base { // facet for classifying elements, converting cases
 public:
     // ctype<char>, ctype<wchar_t>, and ctype<unsigned short> are explicitly specialized below.
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS, _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Always_false<_Elem>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type = _Elem;
 
