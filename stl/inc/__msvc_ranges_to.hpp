@@ -3,6 +3,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// This header provides ranges::to (C++23) and supporting machinery (C++20).
+
 #ifndef __MSVC_RANGES_TO_HPP
 #define __MSVC_RANGES_TO_HPP
 #include <yvals_core.h>
