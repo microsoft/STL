@@ -1434,9 +1434,7 @@ namespace ranges {
 
     template <class _Rng>
     constexpr auto _Compile_time_max_size<const owning_view<_Rng>> = _Compile_time_max_size<const _Rng>;
-#endif // _HAS_CXX23
 
-#if _HAS_CXX23
     _EXPORT_STD template <input_range _Vw>
         requires view<_Vw>
     class as_rvalue_view : public view_interface<as_rvalue_view<_Vw>> {
