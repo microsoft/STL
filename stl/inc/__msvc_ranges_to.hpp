@@ -15,10 +15,11 @@
 #endif // !_HAS_CXX20
 
 #include <tuple>
+#include <xutility>
+
 #if _HAS_CXX23
 #include <xmemory>
 #endif // _HAS_CXX23
-#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
