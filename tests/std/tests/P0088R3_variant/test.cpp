@@ -140,30 +140,6 @@ void test_const_get_if() {
     static_assert(*std::get_if<1>(&v) == 42, "");
     static_assert(std::get_if<0>(&v) == nullptr, "");
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    const V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get_if<0>(&v)), int *);
-    assert(std::get_if<0>(&v) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get_if<0>(&v)), int *);
-    assert(std::get_if<0>(&v) == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get_if<0>(&v)), const int *);
-    assert(std::get_if<0>(&v) == &x);
-  }
-#endif
 }
 
 void test_get_if() {
@@ -187,37 +163,6 @@ void test_get_if() {
     assert(*std::get_if<1>(&v) == 42);
     assert(std::get_if<0>(&v) == nullptr);
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get_if<0>(&v)), int *);
-    assert(std::get_if<0>(&v) == &x);
-  }
-  {
-    using V = std::variant<const int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get_if<0>(&v)), const int *);
-    assert(std::get_if<0>(&v) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get_if<0>(&v)), int *);
-    assert(std::get_if<0>(&v) == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get_if<0>(&v)), const int *);
-    assert(std::get_if<0>(&v) == &x);
-  }
-#endif
 }
 
 int run_test() {
@@ -274,30 +219,6 @@ void test_const_get_if() {
     static_assert(*std::get_if<const long>(&v) == 42, "");
     static_assert(std::get_if<int>(&v) == nullptr, "");
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    const V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get_if<int &>(&v)), int *);
-    assert(std::get_if<int &>(&v) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get_if<int &&>(&v)), int *);
-    assert(std::get_if<int &&>(&v) == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get_if<const int &&>(&v)), const int *);
-    assert(std::get_if<const int &&>(&v) == &x);
-  }
-#endif
 }
 
 void test_get_if() {
@@ -321,37 +242,6 @@ void test_get_if() {
     assert(*std::get_if<const long>(&v) == 42);
     assert(std::get_if<int>(&v) == nullptr);
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get_if<int &>(&v)), int *);
-    assert(std::get_if<int &>(&v) == &x);
-  }
-  {
-    using V = std::variant<const int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get_if<const int &>(&v)), const int *);
-    assert(std::get_if<const int &>(&v) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get_if<int &&>(&v)), int *);
-    assert(std::get_if<int &&>(&v) == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get_if<const int &&>(&v)), const int *);
-    assert(std::get_if<const int &&>(&v) == &x);
-  }
-#endif
 }
 
 int run_test() {
@@ -436,30 +326,6 @@ void test_const_lvalue_get() {
     ASSERT_SAME_TYPE(decltype(std::get<1>(v)), const long &);
     assert(std::get<1>(v) == 42);
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    const V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<0>(v)), int &);
-    assert(&std::get<0>(v) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<0>(v)), int &);
-    assert(&std::get<0>(v) == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<0>(v)), const int &);
-    assert(&std::get<0>(v) == &x);
-  }
-#endif
 }
 
 void test_lvalue_get() {
@@ -476,37 +342,6 @@ void test_lvalue_get() {
     ASSERT_SAME_TYPE(decltype(std::get<1>(v)), const long &);
     assert(std::get<1>(v) == 42);
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<0>(v)), int &);
-    assert(&std::get<0>(v) == &x);
-  }
-  {
-    using V = std::variant<const int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<0>(v)), const int &);
-    assert(&std::get<0>(v) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<0>(v)), int &);
-    assert(&std::get<0>(v) == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<0>(v)), const int &);
-    assert(&std::get<0>(v) == &x);
-  }
-#endif
 }
 
 void test_rvalue_get() {
@@ -523,39 +358,6 @@ void test_rvalue_get() {
     ASSERT_SAME_TYPE(decltype(std::get<1>(std::move(v))), const long &&);
     assert(std::get<1>(std::move(v)) == 42);
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<0>(std::move(v))), int &);
-    assert(&std::get<0>(std::move(v)) == &x);
-  }
-  {
-    using V = std::variant<const int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<0>(std::move(v))), const int &);
-    assert(&std::get<0>(std::move(v)) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<0>(std::move(v))), int &&);
-    int &&xref = std::get<0>(std::move(v));
-    assert(&xref == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<0>(std::move(v))), const int &&);
-    const int &&xref = std::get<0>(std::move(v));
-    assert(&xref == &x);
-  }
-#endif
 }
 
 void test_const_rvalue_get() {
@@ -572,39 +374,6 @@ void test_const_rvalue_get() {
     ASSERT_SAME_TYPE(decltype(std::get<1>(std::move(v))), const long &&);
     assert(std::get<1>(std::move(v)) == 42);
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    const V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<0>(std::move(v))), int &);
-    assert(&std::get<0>(std::move(v)) == &x);
-  }
-  {
-    using V = std::variant<const int &>;
-    int x = 42;
-    const V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<0>(std::move(v))), const int &);
-    assert(&std::get<0>(std::move(v)) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<0>(std::move(v))), int &&);
-    int &&xref = std::get<0>(std::move(v));
-    assert(&xref == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<0>(std::move(v))), const int &&);
-    const int &&xref = std::get<0>(std::move(v));
-    assert(&xref == &x);
-  }
-#endif
 }
 
 template <std::size_t I> using Idx = std::integral_constant<size_t, I>;
@@ -728,30 +497,6 @@ void test_const_lvalue_get() {
     ASSERT_SAME_TYPE(decltype(std::get<const long>(v)), const long &);
     assert(std::get<const long>(v) == 42);
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    const V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<int &>(v)), int &);
-    assert(&std::get<int &>(v) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<int &&>(v)), int &);
-    assert(&std::get<int &&>(v) == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<const int &&>(v)), const int &);
-    assert(&std::get<const int &&>(v) == &x);
-  }
-#endif
 }
 
 void test_lvalue_get() {
@@ -768,37 +513,6 @@ void test_lvalue_get() {
     ASSERT_SAME_TYPE(decltype(std::get<const long>(v)), const long &);
     assert(std::get<const long>(v) == 42);
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<int &>(v)), int &);
-    assert(&std::get<int &>(v) == &x);
-  }
-  {
-    using V = std::variant<const int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<const int &>(v)), const int &);
-    assert(&std::get<const int &>(v) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<int &&>(v)), int &);
-    assert(&std::get<int &&>(v) == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<const int &&>(v)), const int &);
-    assert(&std::get<const int &&>(v) == &x);
-  }
-#endif
 }
 
 void test_rvalue_get() {
@@ -816,41 +530,6 @@ void test_rvalue_get() {
                      const long &&);
     assert(std::get<const long>(std::move(v)) == 42);
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<int &>(std::move(v))), int &);
-    assert(&std::get<int &>(std::move(v)) == &x);
-  }
-  {
-    using V = std::variant<const int &>;
-    int x = 42;
-    V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<const int &>(std::move(v))),
-                     const int &);
-    assert(&std::get<const int &>(std::move(v)) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<int &&>(std::move(v))), int &&);
-    int &&xref = std::get<int &&>(std::move(v));
-    assert(&xref == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<const int &&>(std::move(v))),
-                     const int &&);
-    const int &&xref = std::get<const int &&>(std::move(v));
-    assert(&xref == &x);
-  }
-#endif
 }
 
 void test_const_rvalue_get() {
@@ -868,41 +547,6 @@ void test_const_rvalue_get() {
                      const long &&);
     assert(std::get<const long>(std::move(v)) == 42);
   }
-// TODO: Remove these once reference support is reinstated
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &>;
-    int x = 42;
-    const V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<int &>(std::move(v))), int &);
-    assert(&std::get<int &>(std::move(v)) == &x);
-  }
-  {
-    using V = std::variant<const int &>;
-    int x = 42;
-    const V v(x);
-    ASSERT_SAME_TYPE(decltype(std::get<const int &>(std::move(v))),
-                     const int &);
-    assert(&std::get<const int &>(std::move(v)) == &x);
-  }
-  {
-    using V = std::variant<int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<int &&>(std::move(v))), int &&);
-    int &&xref = std::get<int &&>(std::move(v));
-    assert(&xref == &x);
-  }
-  {
-    using V = std::variant<const int &&>;
-    int x = 42;
-    const V v(std::move(x));
-    ASSERT_SAME_TYPE(decltype(std::get<const int &&>(std::move(v))),
-                     const int &&);
-    const int &&xref = std::get<const int &&>(std::move(v));
-    assert(&xref == &x);
-  }
-#endif
 }
 
 template <class Tp> struct identity { using type = Tp; };
@@ -1265,16 +909,6 @@ int run_test() {
     test<V, 2, const void *>();
     test<V, 3, long double>();
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int, int &, const int &, int &&, long double>;
-    test<V, 0, int>();
-    test<V, 1, int &>();
-    test<V, 2, const int &>();
-    test<V, 3, int &&>();
-    test<V, 4, long double>();
-  }
-#endif
 
   return 0;
 }
@@ -1760,12 +1394,12 @@ int run_test()
   static_assert(!std::is_assignable<std::variant<int, int>, int>::value, "");
   static_assert(!std::is_assignable<std::variant<long, long long>, int>::value, "");
 #if _HAS_CXX20
-  static_assert(std::is_assignable<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_assignable<std::variant<char>, int>::value == false, "");
 
   static_assert(std::is_assignable<std::variant<std::string, float>, int>::value
-    == VariantAllowsNarrowingConversions, "");
+    == false, "");
   static_assert(std::is_assignable<std::variant<std::string, double>, int>::value
-    == VariantAllowsNarrowingConversions, "");
+    == false, "");
   static_assert(!std::is_assignable<std::variant<std::string, bool>, int>::value, "");
 
   static_assert(!std::is_assignable<std::variant<int, bool>, decltype("meow")>::value, "");
@@ -3042,7 +2676,7 @@ void test_T_assignment_sfinae() {
 #if _HAS_CXX20
   {
     using V = std::variant<std::string, float>;
-    static_assert(std::is_assignable<V, int>::value == VariantAllowsNarrowingConversions,
+    static_assert(std::is_assignable<V, int>::value == false,
     "no matching operator=");
   }
   {
@@ -3070,16 +2704,6 @@ void test_T_assignment_sfinae() {
     static_assert(std::is_assignable<V, Y>::value,
                   "regression on user-defined conversions in operator=");
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int, int &&>;
-    static_assert(!std::is_assignable<V, int>::value, "ambiguous");
-  }
-  {
-    using V = std::variant<int, const int &>;
-    static_assert(!std::is_assignable<V, int>::value, "ambiguous");
-  }
-#endif // TEST_VARIANT_HAS_NO_REFERENCES
 }
 
 void test_T_assignment_basic() {
@@ -3135,25 +2759,6 @@ void test_T_assignment_basic() {
     assert(v.index() == 0);
     assert(std::get<0>(v));
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &, int &&, long>;
-    int x = 42;
-    V v(43l);
-    v = x;
-    assert(v.index() == 0);
-    assert(&std::get<0>(v) == &x);
-    v = std::move(x);
-    assert(v.index() == 1);
-    assert(&std::get<1>(v) == &x);
-    // 'long' is selected by FUN(const int &) since 'const int &' cannot bind
-    // to 'int&'.
-    const int &cx = x;
-    v = cx;
-    assert(v.index() == 2);
-    assert(std::get<2>(v) == 42);
-  }
-#endif // TEST_VARIANT_HAS_NO_REFERENCES
 }
 
 void test_T_assignment_performs_construction() {
@@ -3262,12 +2867,12 @@ int run_test()
   static_assert(!std::is_constructible<std::variant<int, int>, int>::value, "");
   static_assert(!std::is_constructible<std::variant<long, long long>, int>::value, "");
 #if _HAS_CXX20
-  static_assert(std::is_constructible<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_constructible<std::variant<char>, int>::value == false, "");
 
   static_assert(std::is_constructible<std::variant<std::string, float>, int>::value
-    == VariantAllowsNarrowingConversions, "");
+    == false, "");
   static_assert(std::is_constructible<std::variant<std::string, double>, int>::value
-    == VariantAllowsNarrowingConversions, "");
+    == false, "");
   static_assert(!std::is_constructible<std::variant<std::string, bool>, int>::value, "");
 
   static_assert(!std::is_constructible<std::variant<int, bool>, decltype("meow")>::value, "");
@@ -3612,12 +3217,6 @@ void test_default_ctor_sfinae() {
     using V = std::variant<NonDefaultConstructible, int>;
     static_assert(!std::is_default_constructible<V>::value, "");
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int &, int>;
-    static_assert(!std::is_default_constructible<V>::value, "");
-  }
-#endif
 }
 
 void test_default_ctor_noexcept() {
@@ -4560,7 +4159,7 @@ void test_T_ctor_sfinae() {
 #if _HAS_CXX20
   {
     using V = std::variant<std::string, float>;
-    static_assert(std::is_constructible<V, int>::value == VariantAllowsNarrowingConversions,
+    static_assert(std::is_constructible<V, int>::value == false,
                   "no matching constructor");
   }
   {
@@ -4599,16 +4198,6 @@ void test_T_ctor_sfinae() {
 
 
 
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int, int &&>;
-    static_assert(!std::is_constructible<V, int>::value, "ambiguous");
-  }
-  {
-    using V = std::variant<int, const int &>;
-    static_assert(!std::is_constructible<V, int>::value, "ambiguous");
-  }
-#endif
 }
 
 void test_T_ctor_basic() {
@@ -4656,24 +4245,6 @@ void test_T_ctor_basic() {
     std::variant<RValueConvertibleFrom<int>, AnyConstructible> v2 = x;
     assert(v2.index() == 1);
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<const int &, int &&, long>;
-    static_assert(std::is_convertible<int &, V>::value, "must be implicit");
-    int x = 42;
-    V v(x);
-    assert(v.index() == 0);
-    assert(&std::get<0>(v) == &x);
-  }
-  {
-    using V = std::variant<const int &, int &&, long>;
-    static_assert(std::is_convertible<int, V>::value, "must be implicit");
-    int x = 42;
-    V v(std::move(x));
-    assert(v.index() == 1);
-    assert(&std::get<1>(v) == &x);
-  }
-#endif
 }
 
 #if !_HAS_CXX20 // Narrowing check occurs with P0608R3
@@ -4853,29 +4424,6 @@ void test_emplace_sfinae() {
     static_assert(emplace_exists<V, 2, int *>(), "");
     static_assert(!emplace_exists<V, 3>(), "cannot construct");
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int, int &, const int &, int &&, TestTypes::NoCtors>;
-    static_assert(emplace_exists<V, 0>(), "");
-    static_assert(emplace_exists<V, 0, int>(), "");
-    static_assert(emplace_exists<V, 0, long long>(), "");
-    static_assert(!emplace_exists<V, 0, int, int>(), "too many args");
-    static_assert(emplace_exists<V, 1, int &>(), "");
-    static_assert(!emplace_exists<V, 1>(), "cannot default construct ref");
-    static_assert(!emplace_exists<V, 1, const int &>(), "cannot bind ref");
-    static_assert(!emplace_exists<V, 1, int &&>(), "cannot bind ref");
-    static_assert(emplace_exists<V, 2, int &>(), "");
-    static_assert(emplace_exists<V, 2, const int &>(), "");
-    static_assert(emplace_exists<V, 2, int &&>(), "");
-    static_assert(!emplace_exists<V, 2, void *>(),
-                  "not constructible from void*");
-    static_assert(emplace_exists<V, 3, int>(), "");
-    static_assert(!emplace_exists<V, 3, int &>(), "cannot bind ref");
-    static_assert(!emplace_exists<V, 3, const int &>(), "cannot bind ref");
-    static_assert(!emplace_exists<V, 3, const int &&>(), "cannot bind ref");
-    static_assert(!emplace_exists<V, 4>(), "no ctors");
-  }
-#endif
 }
 
 void test_basic() {
@@ -4911,41 +4459,6 @@ void test_basic() {
     assert(std::get<4>(v) == "aaa");
     assert(&ref3 == &std::get<4>(v));
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int, long, const int &, int &&, TestTypes::NoCtors,
-                           std::string>;
-    const int x = 100;
-    int y = 42;
-    int z = 43;
-    V v(std::in_place_index<0>, -1);
-    // default emplace a value
-    auto& ref1 = v.emplace<1>();
-    static_assert(std::is_same_v<long&, decltype(ref1)>, "");
-    assert(std::get<1>(v) == 0);
-    assert(&ref1 == &std::get<1>(v));
-    // emplace a reference
-    auto& ref2 = v.emplace<2>(x);
-    static_assert(std::is_same_v<&, decltype(ref)>, "");
-    assert(&std::get<2>(v) == &x);
-    assert(&ref2 == &std::get<2>(v));
-    // emplace an rvalue reference
-    auto& ref3 = v.emplace<3>(std::move(y));
-    static_assert(std::is_same_v<&, decltype(ref)>, "");
-    assert(&std::get<3>(v) == &y);
-    assert(&ref3 == &std::get<3>(v));
-    // re-emplace a new reference over the active member
-    auto& ref4 = v.emplace<3>(std::move(z));
-    static_assert(std::is_same_v<&, decltype(ref)>, "");
-    assert(&std::get<3>(v) == &z);
-    assert(&ref4 == &std::get<3>(v));
-    // emplace with multiple args
-    auto& ref5 = v.emplace<5>(3u, 'a');
-    static_assert(std::is_same_v<std::string&, decltype(ref5)>, "");
-    assert(std::get<5>(v) == "aaa");
-    assert(&ref5 == &std::get<5>(v));
-  }
-#endif
 }
 
 int run_test() {
@@ -5113,30 +4626,6 @@ void test_emplace_sfinae() {
     static_assert(emplace_exists<V, const void *, int *>(), "");
     static_assert(!emplace_exists<V, TestTypes::NoCtors>(), "cannot construct");
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  using V = std::variant<int, int &, const int &, int &&, long, long,
-                         TestTypes::NoCtors>;
-  static_assert(emplace_exists<V, int>(), "");
-  static_assert(emplace_exists<V, int, int>(), "");
-  static_assert(emplace_exists<V, int, long long>(), "");
-  static_assert(!emplace_exists<V, int, int, int>(), "too many args");
-  static_assert(emplace_exists<V, int &, int &>(), "");
-  static_assert(!emplace_exists<V, int &>(), "cannot default construct ref");
-  static_assert(!emplace_exists<V, int &, const int &>(), "cannot bind ref");
-  static_assert(!emplace_exists<V, int &, int &&>(), "cannot bind ref");
-  static_assert(emplace_exists<V, const int &, int &>(), "");
-  static_assert(emplace_exists<V, const int &, const int &>(), "");
-  static_assert(emplace_exists<V, const int &, int &&>(), "");
-  static_assert(!emplace_exists<V, const int &, void *>(),
-                "not constructible from void*");
-  static_assert(emplace_exists<V, int &&, int>(), "");
-  static_assert(!emplace_exists<V, int &&, int &>(), "cannot bind ref");
-  static_assert(!emplace_exists<V, int &&, const int &>(), "cannot bind ref");
-  static_assert(!emplace_exists<V, int &&, const int &&>(), "cannot bind ref");
-  static_assert(!emplace_exists<V, long, long>(), "ambiguous");
-  static_assert(!emplace_exists<V, TestTypes::NoCtors>(),
-                "cannot construct void");
-#endif
 }
 
 void test_basic() {
@@ -5172,41 +4661,6 @@ void test_basic() {
     assert(std::get<4>(v) == "aaa");
     assert(&ref3 == &std::get<4>(v));
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  {
-    using V = std::variant<int, long, const int &, int &&, TestTypes::NoCtors,
-                           std::string>;
-    const int x = 100;
-    int y = 42;
-    int z = 43;
-    V v(std::in_place_index<0>, -1);
-    // default emplace a value
-    auto& ref1 = v.emplace<long>();
-    static_assert(std::is_same_v<long&, decltype(ref1)>, "");
-    assert(std::get<long>(v) == 0);
-    assert(&ref1 == &std::get<long>(v));
-    // emplace a reference
-    auto& ref2 = v.emplace<const int &>(x);
-    static_assert(std::is_same_v<const int&, decltype(ref2)>, "");
-    assert(&std::get<const int &>(v) == &x);
-    assert(&ref2 == &std::get<const int &>(v));
-    // emplace an rvalue reference
-    auto& ref3 = v.emplace<int &&>(std::move(y));
-    static_assert(std::is_same_v<int &&, decltype(ref3)>, "");
-    assert(&std::get<int &&>(v) == &y);
-    assert(&ref3 == &std::get<int &&>(v));
-    // re-emplace a new reference over the active member
-    auto& ref4 = v.emplace<int &&>(std::move(z));
-    static_assert(std::is_same_v<int &, decltype(ref4)>, "");
-    assert(&std::get<int &&>(v) == &z);
-    assert(&ref4 == &std::get<int &&>(v));
-    // emplace with multiple args
-    auto& ref5 = v.emplace<std::string>(3u, 'a');
-    static_assert(std::is_same_v<std::string&, decltype(ref5)>, "");
-    assert(std::get<std::string>(v) == "aaa");
-    assert(&ref5 == &std::get<std::string>(v));
-  }
-#endif
 }
 
 int run_test() {
@@ -6208,36 +5662,6 @@ void test_argument_forwarding() {
     std::visit(obj, std::move(cv));
     assert(Fn::check_call<const int &&>(Val));
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  { // single argument - lvalue reference
-    using V = std::variant<int &>;
-    int x = 42;
-    V v(x);
-    const V &cv = v;
-    std::visit(obj, v);
-    assert(Fn::check_call<int &>(Val));
-    std::visit(obj, cv);
-    assert(Fn::check_call<int &>(Val));
-    std::visit(obj, std::move(v));
-    assert(Fn::check_call<int &>(Val));
-    std::visit(obj, std::move(cv));
-    assert(Fn::check_call<int &>(Val));
-  }
-  { // single argument - rvalue reference
-    using V = std::variant<int &&>;
-    int x = 42;
-    V v(std::move(x));
-    const V &cv = v;
-    std::visit(obj, v);
-    assert(Fn::check_call<int &>(Val));
-    std::visit(obj, cv);
-    assert(Fn::check_call<int &>(Val));
-    std::visit(obj, std::move(v));
-    assert(Fn::check_call<int &&>(Val));
-    std::visit(obj, std::move(cv));
-    assert(Fn::check_call<int &&>(Val));
-  }
-#endif
   { // multi argument - multi variant
     using V = std::variant<int, std::string, long>;
     V v1(42), v2("hello"), v3(43l);
@@ -6659,36 +6083,6 @@ void test_argument_forwarding() {
     std::visit<ReturnType>(obj, std::move(cv));
     assert(Fn::check_call<const int &&>(Val));
   }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-  { // single argument - lvalue reference
-    using V = std::variant<int &>;
-    int x = 42;
-    V v(x);
-    const V &cv = v;
-    std::visit<ReturnType>(obj, v);
-    assert(Fn::check_call<int &>(Val));
-    std::visit<ReturnType>(obj, cv);
-    assert(Fn::check_call<int &>(Val));
-    std::visit<ReturnType>(obj, std::move(v));
-    assert(Fn::check_call<int &>(Val));
-    std::visit<ReturnType>(obj, std::move(cv));
-    assert(Fn::check_call<int &>(Val));
-  }
-  { // single argument - rvalue reference
-    using V = std::variant<int &&>;
-    int x = 42;
-    V v(std::move(x));
-    const V &cv = v;
-    std::visit<ReturnType>(obj, v);
-    assert(Fn::check_call<int &>(Val));
-    std::visit<ReturnType>(obj, cv);
-    assert(Fn::check_call<int &>(Val));
-    std::visit<ReturnType>(obj, std::move(v));
-    assert(Fn::check_call<int &&>(Val));
-    std::visit<ReturnType>(obj, std::move(cv));
-    assert(Fn::check_call<int &&>(Val));
-  }
-#endif
   { // multi argument - multi variant
     using V = std::variant<int, std::string, long>;
     V v1(42), v2("hello"), v3(43l);
@@ -7446,52 +6840,6 @@ namespace msvc {
                 std::visit<R>(obj, std::move(cv));
                 assert(Fn::check_call<const int&&>(Val));
             }
-#if !defined(TEST_VARIANT_HAS_NO_REFERENCES)
-            { // single argument - lvalue reference
-                using V = std::variant<int&>;
-                int x   = 42;
-                V v(x);
-                const V& cv = v;
-                std::visit<R>(obj, v);
-                assert(Fn::check_call<int&>(Val));
-                std::visit<R>(obj, cv);
-                assert(Fn::check_call<int&>(Val));
-                std::visit<R>(obj, std::move(v));
-                assert(Fn::check_call<int&>(Val));
-                std::visit<R>(obj, std::move(cv));
-                assert(Fn::check_call<int&>(Val));
-            }
-            { // single argument - rvalue reference
-                using V = std::variant<int&&>;
-                int x   = 42;
-                V v(std::move(x));
-                const V& cv = v;
-                std::visit<R>(obj, v);
-                assert(Fn::check_call<int&>(Val));
-                std::visit<R>(obj, cv);
-                assert(Fn::check_call<int&>(Val));
-                std::visit<R>(obj, std::move(v));
-                assert(Fn::check_call<int&&>(Val));
-                std::visit<R>(obj, std::move(cv));
-                assert(Fn::check_call<int&&>(Val));
-            }
-            { // multi argument - multi variant
-                using S               = const std::string&;
-                using V               = std::variant<int, S, long&&>;
-                const std::string str = "hello";
-                long l                = 43;
-                V v1(42);
-                const V& cv1 = v1;
-                V v2(str);
-                const V& cv2 = v2;
-                V v3(std::move(l));
-                const V& cv3 = v3;
-                std::visit<R>(obj, v1, v2, v3);
-                assert((Fn::check_call<int&, S, long&>(Val)));
-                std::visit<R>(obj, cv1, cv2, std::move(v3));
-                assert((Fn::check_call<const int&, S, long&&>(Val)));
-            }
-#endif
         }
 
         struct ReturnFirst {

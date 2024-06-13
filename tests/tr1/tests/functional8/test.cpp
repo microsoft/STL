@@ -61,8 +61,6 @@ int f10(int, int, int, int, int, int, int, int, int, int) {
     return 10;
 }
 
-#pragma warning(push)
-#pragma warning(disable : 4521) // multiple copy constructors specified
 struct S {
     S() : di(1), df(2.0), cdd(3.0), vdd(4.0), cvdd(5.0) { // default constructor
     }
@@ -259,7 +257,6 @@ struct S {
         return 39;
     }
 };
-#pragma warning(pop)
 
 struct Fn0 {
     char operator()() const {

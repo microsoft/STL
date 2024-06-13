@@ -8,6 +8,7 @@
 
 #include <atomic>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -20,14 +21,18 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-// N3797 29.6.5 [atomics.types.operations.req]/21:
-// bool A::compare_exchange_weak(C & expected, C desired, memory_order order = memory_order_seq_cst) volatile noexcept;
-// bool A::compare_exchange_weak(C & expected, C desired, memory_order order = memory_order_seq_cst) noexcept;
-// bool A::compare_exchange_strong(C & expected, C desired, memory_order order = memory_order_seq_cst) volatile
-// noexcept; bool A::compare_exchange_strong(C & expected, C desired, memory_order order = memory_order_seq_cst)
-// noexcept; When only one memory_order argument is supplied, the value of success is order, and the value of failure is
-// order except that a value of memory_order_acq_rel shall be replaced by the value memory_order_acquire and a value of
-// memory_order_release shall be replaced by the value memory_order_relaxed.
+// N4981 [atomics.types.operations]/23:
+// bool compare_exchange_weak(T& expected, T desired,
+//                            memory_order order = memory_order::seq_cst) volatile noexcept;
+// bool compare_exchange_weak(T& expected, T desired,
+//                            memory_order order = memory_order::seq_cst) noexcept;
+// bool compare_exchange_strong(T& expected, T desired,
+//                              memory_order order = memory_order::seq_cst) volatile noexcept;
+// bool compare_exchange_strong(T& expected, T desired,
+//                              memory_order order = memory_order::seq_cst) noexcept;
+// When only one memory_order argument is supplied, the value of success is order, and the value of failure is order
+// except that a value of memory_order::acq_rel shall be replaced by the value memory_order::acquire and a value of
+// memory_order::release shall be replaced by the value memory_order::relaxed.
 
 template <typename T>
 void test(T t) {
@@ -552,6 +557,57 @@ void test_double_identical_results() {
     }
 #endif // _HAS_CXX20
 }
+
+// Also test GH-4688 "<atomic>: atomic_ref<void*> and atomic<void*> lack difference_type"
+template <class, class = void>
+constexpr bool atomic_has_member_difference_type = false;
+template <class T>
+constexpr bool atomic_has_member_difference_type<T, void_t<typename atomic<T>::difference_type>> = true;
+
+STATIC_ASSERT(is_same_v<atomic<signed char>::difference_type, signed char>);
+STATIC_ASSERT(is_same_v<atomic<short>::difference_type, short>);
+STATIC_ASSERT(is_same_v<atomic<int>::difference_type, int>);
+STATIC_ASSERT(is_same_v<atomic<long>::difference_type, long>);
+STATIC_ASSERT(is_same_v<atomic<long long>::difference_type, long long>);
+STATIC_ASSERT(is_same_v<atomic<unsigned char>::difference_type, unsigned char>);
+STATIC_ASSERT(is_same_v<atomic<unsigned short>::difference_type, unsigned short>);
+STATIC_ASSERT(is_same_v<atomic<unsigned int>::difference_type, unsigned int>);
+STATIC_ASSERT(is_same_v<atomic<unsigned long>::difference_type, unsigned long>);
+STATIC_ASSERT(is_same_v<atomic<unsigned long long>::difference_type, unsigned long long>);
+STATIC_ASSERT(is_same_v<atomic<char>::difference_type, char>);
+#ifdef __cpp_char8_t
+STATIC_ASSERT(is_same_v<atomic<char8_t>::difference_type, char8_t>);
+#endif // defined(__cpp_char8_t)
+STATIC_ASSERT(is_same_v<atomic<char16_t>::difference_type, char16_t>);
+STATIC_ASSERT(is_same_v<atomic<char32_t>::difference_type, char32_t>);
+STATIC_ASSERT(is_same_v<atomic<wchar_t>::difference_type, wchar_t>);
+
+#if _HAS_CXX20 // P0020R6 Floating Point Atomic
+STATIC_ASSERT(is_same_v<atomic<float>::difference_type, float>);
+STATIC_ASSERT(is_same_v<atomic<double>::difference_type, double>);
+STATIC_ASSERT(is_same_v<atomic<long double>::difference_type, long double>);
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+STATIC_ASSERT(!atomic_has_member_difference_type<float>);
+STATIC_ASSERT(!atomic_has_member_difference_type<double>);
+STATIC_ASSERT(!atomic_has_member_difference_type<long double>);
+#endif // ^^^ !_HAS_CXX20 ^^^
+
+STATIC_ASSERT(is_same_v<atomic<int*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<bool*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<const int*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<volatile bool*>::difference_type, ptrdiff_t>);
+
+STATIC_ASSERT(is_same_v<atomic<void*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<const void*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<volatile void*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<const volatile void*>::difference_type, ptrdiff_t>);
+STATIC_ASSERT(is_same_v<atomic<void (*)()>::difference_type, ptrdiff_t>);
+
+STATIC_ASSERT(!atomic_has_member_difference_type<bool>);
+STATIC_ASSERT(!atomic_has_member_difference_type<nullptr_t>);
+STATIC_ASSERT(!atomic_has_member_difference_type<Bytes<4>>);
+STATIC_ASSERT(!atomic_has_member_difference_type<Bytes<8>>);
+STATIC_ASSERT(!atomic_has_member_difference_type<Bytes<12>>);
 
 int main() {
     X x = {1729};
