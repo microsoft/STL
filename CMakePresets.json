@@ -21,18 +21,11 @@
         "value": "x86"
       },
       "condition": {
-        "type": "anyOf",
-        "conditions": [
-          {
-              "type": "equals",
-              "lhs": "$env{Platform}",
-              "rhs": "x86"
-          },
-          {
-            "type": "equals",
-            "lhs": "$env{Platform}",
-            "rhs": ""
-          }
+        "type": "inList",
+        "string": "$env{Platform}",
+        "list": [
+          "x86",
+          ""
         ]
       }
     },
@@ -45,18 +38,11 @@
         "value": "x64"
       },
       "condition": {
-        "type": "anyOf",
-        "conditions": [
-          {
-              "type": "equals",
-              "lhs": "$env{Platform}",
-              "rhs": "x64"
-          },
-          {
-            "type": "equals",
-            "lhs": "$env{Platform}",
-            "rhs": ""
-          }
+        "type": "inList",
+        "string": "$env{Platform}",
+        "list": [
+          "x64",
+          ""
         ]
       }
     },
@@ -69,18 +55,11 @@
         "value": "ARM"
       },
       "condition": {
-        "type": "anyOf",
-        "conditions": [
-          {
-              "type": "equals",
-              "lhs": "$env{Platform}",
-              "rhs": "arm"
-          },
-          {
-            "type": "equals",
-            "lhs": "$env{Platform}",
-            "rhs": ""
-          }
+        "type": "inList",
+        "string": "$env{Platform}",
+        "list": [
+          "arm",
+          ""
         ]
       },
       "cacheVariables": {
@@ -96,18 +75,11 @@
         "value": "ARM64"
       },
       "condition": {
-        "type": "anyOf",
-        "conditions": [
-          {
-              "type": "equals",
-              "lhs": "$env{Platform}",
-              "rhs": "arm64"
-          },
-          {
-            "type": "equals",
-            "lhs": "$env{Platform}",
-            "rhs": ""
-          }
+        "type": "inList",
+        "string": "$env{Platform}",
+        "list": [
+          "arm64",
+          ""
         ]
       },
       "cacheVariables": {
@@ -123,18 +95,11 @@
         "value": "ARM64EC"
       },
       "condition": {
-        "type": "anyOf",
-        "conditions": [
-          {
-              "type": "equals",
-              "lhs": "$env{Platform}",
-              "rhs": "arm64"
-          },
-          {
-            "type": "equals",
-            "lhs": "$env{Platform}",
-            "rhs": ""
-          }
+        "type": "inList",
+        "string": "$env{Platform}",
+        "list": [
+          "arm64",
+          ""
         ]
       },
       "cacheVariables": {
