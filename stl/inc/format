@@ -295,7 +295,7 @@ _NODISCARD constexpr _Decode_result<char> _Decode_utf(const char* _First, const 
         _Val &= 0b111u;
         break;
     default:
-        _STL_INTERNAL_CHECK(false); // can't happen, see how the value of _Num_bytes is determined
+        _STL_UNREACHABLE; // can't happen, see how the value of _Num_bytes is determined
         break;
     }
 
@@ -4547,7 +4547,7 @@ public:
             break;
 
         default:
-            _STL_INTERNAL_CHECK(false); // can't happen, we've handled all possible outputs from _Parse_range_specs()
+            _STL_UNREACHABLE; // can't happen, we've handled all possible outputs from _Parse_range_specs()
             break;
         }
 
