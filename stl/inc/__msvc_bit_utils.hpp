@@ -331,15 +331,15 @@ _NODISCARD int _Unchecked_popcount(const _Ty _Val) noexcept {
 
 template <class _Ty>
 _NODISCARD int _Checked_popcount(const _Ty _Val) noexcept {
-#ifndef _POPCNT_INTRINSICS_ALWAYS_AVAILABLE
+#if !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE
     const bool _Definitely_have_popcnt = __isa_available >= _Stl_isa_available_sse42;
     if (!_Definitely_have_popcnt) {
         return _Popcount_fallback(_Val);
     }
-#endif // !defined(_POPCNT_INTRINSICS_ALWAYS_AVAILABLE)
+#endif // ^^^ !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE ^^^
     return _Unchecked_popcount(_Val);
 }
-#endif // _HAS_POPCNT_INTRINSICS
+#endif // ^^^ _HAS_POPCNT_INTRINSICS ^^^
 
 template <class _Ty>
 constexpr bool _Is_standard_unsigned_integer =
@@ -388,7 +388,7 @@ _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
     {
         return _Checked_popcount(_Val);
     }
-#endif // ^^^ defined(_HAS_POPCNT_INTRINSICS) ^^^
+#endif // ^^^ _HAS_POPCNT_INTRINSICS ^^^
     return _Popcount_fallback(_Val);
 }
 
@@ -400,15 +400,15 @@ _CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
     if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
     {
-#ifndef _POPCNT_INTRINSICS_ALWAYS_AVAILABLE
+#if !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE
         const bool _Definitely_have_popcnt = __isa_available >= _Stl_isa_available_sse42;
         if (!_Definitely_have_popcnt) {
             return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Popcount_fallback(_Val); });
         }
-#endif // !defined(_POPCNT_INTRINSICS_ALWAYS_AVAILABLE)
+#endif // ^^^ !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE ^^^
         return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Unchecked_popcount(_Val); });
     }
-#endif // ^^^ defined(_HAS_POPCNT_INTRINSICS) ^^^
+#endif // ^^^ _HAS_POPCNT_INTRINSICS ^^^
     return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Popcount_fallback(_Val); });
 }
 
