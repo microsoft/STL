@@ -307,6 +307,7 @@ tests\P0053R7_cpp_synchronized_buffered_ostream
 tests\P0067R5_charconv
 tests\P0083R3_splicing_maps_and_sets
 tests\P0088R3_variant
+tests\P0088R3_variant_msvc
 tests\P0092R1_polishing_chrono
 tests\P0122R7_span
 tests\P0122R7_span_death
