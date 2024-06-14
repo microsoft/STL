@@ -449,6 +449,14 @@ std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
+# GH-4723: <condition_variable>: condition_variable_any::wait_for returns cv_status​::timeout when the elapsed time is shorter than requested
+std/thread/thread.condition/thread.condition.condvarany/notify_all.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvarany/notify_one.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvarany/wait_for_pred.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvarany/wait_for.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvarany/wait_until_pred.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvarany/wait_until.pass.cpp SKIPPED
+
 
 # *** VCRUNTIME BUGS ***
 # DevCom-10373274 VSO-1824997 "vcruntime nothrow array operator new falls back on the wrong function"
@@ -484,11 +492,6 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.runtime.pass.cpp FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.single.pass.cpp FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move.pass.cpp FAIL
-
-# Still sporadically failing after LLVM-91530 "[libc++] Refactor tests for std::condition_variable"
-std/thread/thread.condition/thread.condition.condvarany/wait_for.pass.cpp SKIPPED
-std/thread/thread.condition/thread.condition.condvarany/wait_until_pred.pass.cpp SKIPPED
-std/thread/thread.condition/thread.condition.condvarany/wait_until.pass.cpp SKIPPED
 
 # Not analyzed, likely bogus tests. Appears to be timing assumptions.
 std/thread/futures/futures.async/async.pass.cpp SKIPPED
