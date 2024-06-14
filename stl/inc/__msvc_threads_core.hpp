@@ -57,6 +57,8 @@ struct _Stl_condition_variable {
     void* _Win_cv = nullptr;
 };
 
+#pragma warning(push)
+#pragma warning(disable : 26495) // Variable 'meow' is uninitialized. Always initialize a member variable (type.6).
 struct _Cnd_internal_imp_t {
 #if defined(_CRT_WINDOWS) // for Windows-internal code
     static constexpr size_t _Cnd_internal_imp_size = 2 * sizeof(void*);
@@ -71,6 +73,7 @@ struct _Cnd_internal_imp_t {
         _STD _Aligned_storage_t<_Cnd_internal_imp_size, alignof(void*)> _Cv_storage;
     };
 };
+#pragma warning(pop)
 
 using _Cnd_t = _Cnd_internal_imp_t*;
 } // extern "C"
