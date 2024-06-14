@@ -178,11 +178,11 @@ void test_one() {
     // Test 'operator new(size_t, ARGS...)'
     test_operator_new<Gen, allocator<void>>(p);
     test_operator_new<Gen, pmr::polymorphic_allocator<void>>(p);
-    test_operator_new<Gen, TestAllocator<void, false_type, int>>(p);
+    test_operator_new<Gen, StatelessAlloc<void, false_type, int>>(p);
     if constexpr (same_as<Alloc, void>) {
-        test_operator_new<Gen, TestAllocator<void>>(p);
-        test_operator_new<Gen, TestAllocator<void, false_type>>(p);
-        test_operator_new<Gen, TestAllocator<void, true_type, int>>(p);
+        test_operator_new<Gen, StatelessAlloc<void>>(p);
+        test_operator_new<Gen, StatelessAlloc<void, false_type>>(p);
+        test_operator_new<Gen, StatelessAlloc<void, true_type, int>>(p);
     }
 }
 
@@ -191,10 +191,10 @@ void test_with_allocator() {
     test_one<Ref, V>();
     test_one<Ref, V, allocator<void>>();
     test_one<Ref, V, pmr::polymorphic_allocator<void>>();
-    test_one<Ref, V, TestAllocator<void>>();
-    test_one<Ref, V, TestAllocator<void, false_type>>();
-    test_one<Ref, V, TestAllocator<void, true_type, int>>();
-    test_one<Ref, V, TestAllocator<void, false_type, int>>();
+    test_one<Ref, V, StatelessAlloc<void>>();
+    test_one<Ref, V, StatelessAlloc<void, false_type>>();
+    test_one<Ref, V, StatelessAlloc<void, true_type, int>>();
+    test_one<Ref, V, StatelessAlloc<void, false_type, int>>();
 }
 
 template <class T>

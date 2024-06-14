@@ -151,7 +151,7 @@ void test_with_allocator() {
     test_one<Ref, V>();
     test_one<Ref, V, allocator<void>>();
     test_one<Ref, V, pmr::polymorphic_allocator<void>>();
-    test_one<Ref, V, TestAllocator<void>>();
+    test_one<Ref, V, StatelessAlloc<void>>();
 }
 
 template <class T>
