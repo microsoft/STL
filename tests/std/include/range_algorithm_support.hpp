@@ -16,9 +16,6 @@
 
 namespace ranges = std::ranges;
 
-template <class>
-constexpr bool always_false = false; // TRANSITION, VSO-2016422 (EDG)
-
 template <class T>
 constexpr T* nullptr_to = nullptr;
 
