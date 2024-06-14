@@ -449,7 +449,7 @@ std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
-# GH-4723: <condition_variable>: condition_variable_any::wait_for returns cv_status​::timeout when the elapsed time is shorter than requested
+# GH-4723: <condition_variable>: condition_variable_any::wait_for returns cv_status::timeout when the elapsed time is shorter than requested
 std/thread/thread.condition/thread.condition.condvarany/notify_all.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvarany/notify_one.pass.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvarany/wait_for_pred.pass.cpp SKIPPED
