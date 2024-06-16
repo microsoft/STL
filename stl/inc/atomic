@@ -2171,11 +2171,7 @@ public:
 #endif // _HAS_CXX17
 
     _NODISCARD bool is_lock_free() const volatile noexcept {
-#if 1 // TRANSITION, ABI
-        return sizeof(_Ty) <= 8 && (sizeof(_Ty) & (sizeof(_Ty) - 1)) == 0;
-#else // ^^^ don't break ABI / break ABI vvv
-        return sizeof(_Ty) <= 2 * sizeof(void*);
-#endif // ^^^ break ABI ^^^
+        return _Is_always_lock_free<sizeof(_Ty)>;
     }
 
     _NODISCARD bool is_lock_free() const noexcept {
