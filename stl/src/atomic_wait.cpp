@@ -10,6 +10,8 @@
 
 #include <Windows.h>
 
+#pragma comment(lib, "synchronization")
+
 namespace {
     constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 
@@ -88,8 +90,6 @@ namespace {
         }
 #endif // defined(_DEBUG)
     }
-
-#pragma comment(lib, "synchronization")
 
     [[nodiscard]] unsigned char __std_atomic_compare_exchange_128_fallback(
         _Inout_bytecount_(16) long long* _Destination, _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
