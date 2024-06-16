@@ -2341,7 +2341,7 @@ public:
 #if _ATOMIC_HAS_DCAS
         _Is_potentially_lock_free;
 #else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-        _Is_potentially_lock_free && sizeof(_Ty) <= sizeof(void*);
+        _Is_potentially_lock_free;
 #endif // ^^^ !_ATOMIC_HAS_DCAS ^^^
 
     static constexpr size_t required_alignment = _Is_potentially_lock_free ? sizeof(_Ty) : alignof(_Ty);
