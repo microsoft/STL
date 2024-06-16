@@ -2350,13 +2350,7 @@ public:
 #if _ATOMIC_HAS_DCAS
         return is_always_lock_free;
 #else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-        if constexpr (is_always_lock_free) {
-            return true;
-        } else if constexpr (_Is_potentially_lock_free) {
-            return true;
-        } else {
-            return false;
-        }
+        return _Is_potentially_lock_free;
 #endif // ^^^ !_ATOMIC_HAS_DCAS ^^^
     }
 
