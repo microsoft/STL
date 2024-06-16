@@ -232,6 +232,7 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 }
 #pragma warning(pop)
 
+// TRANSITION, ABI: preserved for binary compatibility
 [[nodiscard]] unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
     _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
