@@ -2323,7 +2323,7 @@ public:
     using value_type = _Ty;
 
     explicit atomic_ref(_Ty& _Value) noexcept /* strengthened */ : _Base(_Value) {
-        if constexpr (_Is_potentially_lock_free) {
+        if constexpr (is_always_lock_free) {
             _Check_alignment(_Value);
         } else {
             this->_Init_spinlock_for_ref();
@@ -2334,24 +2334,13 @@ public:
 
     atomic_ref& operator=(const atomic_ref&) = delete;
 
-    static constexpr bool _Is_potentially_lock_free =
+    static constexpr bool is_always_lock_free =
         sizeof(_Ty) <= 2 * sizeof(void*) && (sizeof(_Ty) & (sizeof(_Ty) - 1)) == 0;
 
-    static constexpr bool is_always_lock_free =
-#if _ATOMIC_HAS_DCAS
-        _Is_potentially_lock_free;
-#else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-        _Is_potentially_lock_free;
-#endif // ^^^ !_ATOMIC_HAS_DCAS ^^^
-
-    static constexpr size_t required_alignment = _Is_potentially_lock_free ? sizeof(_Ty) : alignof(_Ty);
+    static constexpr size_t required_alignment = is_always_lock_free ? sizeof(_Ty) : alignof(_Ty);
 
     _NODISCARD bool is_lock_free() const noexcept {
-#if _ATOMIC_HAS_DCAS
         return is_always_lock_free;
-#else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-        return _Is_potentially_lock_free;
-#endif // ^^^ !_ATOMIC_HAS_DCAS ^^^
     }
 
     void store(const _Ty _Value) const noexcept {
