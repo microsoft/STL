@@ -2371,7 +2371,7 @@ public:
         if constexpr (is_always_lock_free) {
             return true;
         } else {
-            return __std_atomic_has_cmpxchg16b() != 0;
+            return _Is_potentially_lock_free && __std_atomic_has_cmpxchg16b() != 0;
         }
 #endif // ^^^ !_ATOMIC_HAS_DCAS ^^^
     }
