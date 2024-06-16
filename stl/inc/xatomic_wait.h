@@ -23,8 +23,7 @@ inline constexpr unsigned long __std_atomic_wait_no_timeout = 0xFFFF'FFFF; // Pa
 
 // Support for atomic waits.
 // The "direct" functions are used when the underlying infrastructure can use WaitOnAddress directly; that is, _Size is
-// 1, 2, 4, or 8. The contract is the same as the WaitOnAddress function from the Windows SDK. If WaitOnAddress is not
-// available on the current platform, falls back to a similar solution based on SRWLOCK and CONDITION_VARIABLE.
+// 1, 2, 4, or 8. The contract is the same as the WaitOnAddress function from the Windows SDK.
 int __stdcall __std_atomic_wait_direct(
     const void* _Storage, void* _Comparand, size_t _Size, unsigned long _Remaining_timeout) noexcept;
 void __stdcall __std_atomic_notify_one_direct(const void* _Storage) noexcept;
