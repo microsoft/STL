@@ -2184,11 +2184,7 @@ public:
 #else // ^^^ don't break ABI / break ABI vvv
 
     _NODISCARD bool is_lock_free() const volatile noexcept {
-#if _ATOMIC_HAS_DCAS
         return sizeof(_Ty) <= 2 * sizeof(void*);
-#else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-        return sizeof(_Ty) <= sizeof(void*) || (sizeof(_Ty) <= 2 * sizeof(void*) && __std_atomic_has_cmpxchg16b());
-#endif // ^^^ !_ATOMIC_HAS_DCAS ^^^
     }
 #endif // ^^^ break ABI ^^^
 
