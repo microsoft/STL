@@ -252,17 +252,11 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 [[nodiscard]] unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
     _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
-#if !defined(_WIN64)
-    return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
+#ifdef _WIN64
     return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 / _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
-    if (__std_atomic_has_cmpxchg16b()) {
-        return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-    }
-
+#else
     return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 ^^^
+#endif
 }
 
 [[nodiscard]] char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
