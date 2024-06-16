@@ -47,6 +47,11 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _ATOMIC_HAS_DCAS 0
 #endif // ^^^ We only sometimes have DCAS ^^^
 
+// Allow _InterlockedCompareExchange128 to be used:
+#if defined(__clang__) && defined(_M_X64)
+#pragma clang attribute _STD_ATOMIC_HEADER.push([[gnu::target("cx16")]], apply_to = function)
+#endif // ^^^ defined(__clang__) && defined(_M_X64) ^^^
+
 // Controls whether ARM64 ldar/ldapr/stlr should be used
 #ifndef _STD_ATOMIC_USE_ARM64_LDAR_STLR
 #if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
@@ -3052,6 +3057,10 @@ _STD_END
 #undef _STD_ATOMIC_USE_ARM64_LDAR_STLR
 
 #undef _INVALID_MEMORY_ORDER
+
+#if defined(__clang__) && defined(_M_X64)
+#pragma clang attribute _STD_ATOMIC_HEADER.pop
+#endif // ^^^ defined(__clang__) && defined(_M_X64) ^^^
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
