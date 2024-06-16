@@ -5,6 +5,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <cstdlib>
 #include <new>
 #include <thread>
 
@@ -89,24 +90,6 @@ namespace {
             _CSTD abort();
         }
 #endif // defined(_DEBUG)
-    }
-
-    [[nodiscard]] unsigned char __std_atomic_compare_exchange_128_fallback(
-        _Inout_bytecount_(16) long long* _Destination, _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
-        _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
-        static SRWLOCK _Mtx = SRWLOCK_INIT;
-        _SrwLock_guard _Guard{_Mtx};
-        if (_Destination[0] == _ComparandResult[0] && _Destination[1] == _ComparandResult[1]) {
-            _ComparandResult[0] = _Destination[0];
-            _ComparandResult[1] = _Destination[1];
-            _Destination[0]     = _ExchangeLow;
-            _Destination[1]     = _ExchangeHigh;
-            return static_cast<unsigned char>(true);
-        } else {
-            _ComparandResult[0] = _Destination[0];
-            _ComparandResult[1] = _Destination[1];
-            return static_cast<unsigned char>(false);
-        }
     }
 } // unnamed namespace
 
@@ -255,7 +238,7 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 #ifdef _WIN64
     return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
 #else
-    return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
+    _CSTD abort();
 #endif
 }
 
@@ -263,7 +246,7 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 #ifdef _WIN64
     return true;
 #else
-    return false;
+    _CSTD abort();
 #endif
 }
 } // extern "C"
