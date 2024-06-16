@@ -223,8 +223,16 @@ unsigned long __stdcall __std_atomic_wait_get_remaining_timeout(unsigned long lo
     return static_cast<unsigned long>(_Remaining);
 }
 
-__std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level _Requested_api_level) noexcept {
-    (void) _Requested_api_level;
+// TRANSITION, ABI: preserved for binary compatibility
+enum class __std_atomic_api_level : unsigned long {
+    __not_set,
+    __detecting,
+    __has_srwlock,
+    __has_wait_on_address,
+};
+
+// TRANSITION, ABI: preserved for binary compatibility
+__std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level) noexcept {
     return __std_atomic_api_level::__has_wait_on_address;
 }
 
