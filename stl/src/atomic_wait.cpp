@@ -243,6 +243,7 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 #endif
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 [[nodiscard]] char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
 #ifdef _WIN64
     return true;
