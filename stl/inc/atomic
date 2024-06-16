@@ -1649,13 +1649,8 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
 template <size_t _TypeSize>
 constexpr bool _Is_always_lock_free = _TypeSize <= 8 && (_TypeSize & (_TypeSize - 1)) == 0;
 #else // ^^^ don't break ABI / break ABI vvv
-#if _ATOMIC_HAS_DCAS
 template <size_t _TypeSize>
 constexpr bool _Is_always_lock_free = _TypeSize <= 2 * sizeof(void*);
-#else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-template <size_t _TypeSize>
-constexpr bool _Is_always_lock_free = _TypeSize <= sizeof(void*);
-#endif // ^^^ !_ATOMIC_HAS_DCAS ^^^
 #endif // ^^^ break ABI ^^^
 
 template <class _Ty, bool _Is_lock_free = _Is_always_lock_free<sizeof(_Ty)>>
