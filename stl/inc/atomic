@@ -2175,18 +2175,13 @@ public:
     static constexpr bool is_always_lock_free = _Is_always_lock_free<sizeof(_Ty)>;
 #endif // _HAS_CXX17
 
+    _NODISCARD bool is_lock_free() const volatile noexcept {
 #if 1 // TRANSITION, ABI
-    _NODISCARD bool is_lock_free() const volatile noexcept {
-        constexpr bool _Result = sizeof(_Ty) <= 8 && (sizeof(_Ty) & (sizeof(_Ty) - 1)) == 0;
-        return _Result;
-    }
-
+        return sizeof(_Ty) <= 8 && (sizeof(_Ty) & (sizeof(_Ty) - 1)) == 0;
 #else // ^^^ don't break ABI / break ABI vvv
-
-    _NODISCARD bool is_lock_free() const volatile noexcept {
         return sizeof(_Ty) <= 2 * sizeof(void*);
-    }
 #endif // ^^^ break ABI ^^^
+    }
 
     _NODISCARD bool is_lock_free() const noexcept {
         return static_cast<const volatile atomic*>(this)->is_lock_free();
