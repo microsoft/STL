@@ -91,10 +91,6 @@ namespace {
 
 #pragma comment(lib, "synchronization")
 
-#define __crtWaitOnAddress       WaitOnAddress
-#define __crtWakeByAddressSingle WakeByAddressSingle
-#define __crtWakeByAddressAll    WakeByAddressAll
-
     [[nodiscard]] unsigned char __std_atomic_compare_exchange_128_fallback(
         _Inout_bytecount_(16) long long* _Destination, _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
         _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
@@ -117,8 +113,8 @@ namespace {
 extern "C" {
 int __stdcall __std_atomic_wait_direct(const void* const _Storage, void* const _Comparand, const size_t _Size,
     const unsigned long _Remaining_timeout) noexcept {
-    const auto _Result = __crtWaitOnAddress(
-        const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, _Remaining_timeout);
+    const auto _Result =
+        WaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, _Remaining_timeout);
 
     if (!_Result) {
         _Assume_timeout();
@@ -127,11 +123,11 @@ int __stdcall __std_atomic_wait_direct(const void* const _Storage, void* const _
 }
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
-    __crtWakeByAddressSingle(const_cast<void*>(_Storage));
+    WakeByAddressSingle(const_cast<void*>(_Storage));
 }
 
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
-    __crtWakeByAddressAll(const_cast<void*>(_Storage));
+    WakeByAddressAll(const_cast<void*>(_Storage));
 }
 
 void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
