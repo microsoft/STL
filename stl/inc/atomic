@@ -40,13 +40,6 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 ^^^
 #endif // defined(_WIN64)
 
-// Controls whether atomic::is_always_lock_free triggers for sizeof(void *) or 2 * sizeof(void *)
-#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
-#define _ATOMIC_HAS_DCAS 1
-#else // ^^^ We always have DCAS / We only sometimes have DCAS vvv
-#define _ATOMIC_HAS_DCAS 0
-#endif // ^^^ We only sometimes have DCAS ^^^
-
 // Allow _InterlockedCompareExchange128 to be used:
 #if defined(__clang__) && defined(_M_X64)
 #pragma clang attribute _STD_ATOMIC_HEADER.push([[gnu::target("cx16")]], apply_to = function)
@@ -3014,7 +3007,6 @@ _STD_END
 #undef _ATOMIC_STORE_32_SEQ_CST
 #undef _ATOMIC_STORE_64_SEQ_CST
 #undef _ATOMIC_STORE_64_SEQ_CST_IX86
-#undef _ATOMIC_HAS_DCAS
 #undef _ATOMIC_STORE_SEQ_CST_ARM64
 #undef __LOAD_ACQUIRE_ARM64
 #undef _ATOMIC_LOAD_ARM64
