@@ -25,10 +25,6 @@ namespace {
     DEFINEFUNCTIONPOINTER(GetCurrentPackageId);
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
-#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
-    DEFINEFUNCTIONPOINTER(GetSystemTimePreciseAsFileTime);
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
-
     DEFINEFUNCTIONPOINTER(GetTempPath2W);
 
 // Use this macro for caching a function pointer from a DLL
@@ -267,15 +263,9 @@ extern "C" _CRTIMP2 BOOL __cdecl __crtSetFileInformationByHandle(_In_ HANDLE con
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime) noexcept {
-    // use GetSystemTimePreciseAsFileTime if it is available (only on Windows 8+)...
-    IFDYNAMICGETCACHEDFUNCTION(GetSystemTimePreciseAsFileTime) {
-        pfGetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime);
-        return;
-    }
-
-    // ...otherwise use GetSystemTimeAsFileTime.
-    GetSystemTimeAsFileTime(lpSystemTimeAsFileTime);
+    GetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime);
 }
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
@@ -308,10 +298,6 @@ static int __cdecl initialize_pointers() noexcept {
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
     STOREFUNCTIONPOINTER(hKernel32, GetCurrentPackageId);
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-
-#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
-    STOREFUNCTIONPOINTER(hKernel32, GetSystemTimePreciseAsFileTime);
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
     // Note that GetTempPath2W is defined as of Windows 10 Build 20348 (a server release) or Windows 11,
     // but there is no "_WIN32_WINNT_WIN11" constant, so we will always dynamically load it
