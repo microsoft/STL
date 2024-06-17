@@ -1979,10 +1979,10 @@ concept _Hasher_for_container = !integral<_Hasher> && !_Allocator_for_container<
 
 template <class _Hasher>
 using _Is_hasher = bool_constant<_Hasher_for_container<_Hasher>>;
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
-#endif // ^^^ !_HAS_CXX20 ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 #endif // _HAS_CXX17
 
 template <class _Traits>
