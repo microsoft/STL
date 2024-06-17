@@ -61,7 +61,7 @@ namespace stdext {
 #if _HAS_CXX20 && defined(__EDG__) // TRANSITION, DevCom-10678753
         template <class, class>
         static constexpr bool _Supports_transparency = false;
-#endif // _HAS_CXX20 && defined(__EDG__)
+#endif // ^^^ workaround ^^^
 
         _Hmap_traits() = default;
 
