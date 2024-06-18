@@ -29,15 +29,12 @@ constexpr bool is_trait = false;
 template <class T>
 constexpr bool is_trait<T, std::void_t<typename T::type>> = true;
 
-template <class>
-constexpr bool always_false = false; // TRANSITION, VSO-2016422 (EDG)
-
 struct IncompleteClass;
 union IncompleteUnion;
 
 template <class T>
 struct DoNotInstantiate {
-    static_assert(always_false<T>);
+    static_assert(false);
 };
 
 struct Immobile {

@@ -567,7 +567,15 @@ private:
                     if (_Pattern.field[_Off] == money_base::space && !_Seen) {
                         _Bad = true; // fail if no space seen
                     }
-                } // parse optional space
+
+                    break;
+                }
+
+            default:
+                _STL_ASSERT(false, "Invalid money_base::pattern, see N4981 [locale.moneypunct.general]/1: "
+                                   "In the field member of a pattern object, each value symbol, sign, value, "
+                                   "and either space or none appears exactly once.");
+                break;
             } // switch
         }
 
@@ -787,6 +795,12 @@ private:
                 }
 
                 break;
+
+            default:
+                _STL_ASSERT(false, "Invalid money_base::pattern, see N4981 [locale.moneypunct.general]/1: "
+                                   "In the field member of a pattern object, each value symbol, sign, value, "
+                                   "and either space or none appears exactly once.");
+                break;
             }
         }
 
@@ -840,6 +854,13 @@ private:
                     _Dest      = _Rep(_Dest, _Fill, _Fillcount);
                     _Fillcount = 0;
                 }
+                break;
+
+            default:
+                _STL_ASSERT(false, "Invalid money_base::pattern, see N4981 [locale.moneypunct.general]/1: "
+                                   "In the field member of a pattern object, each value symbol, sign, value, "
+                                   "and either space or none appears exactly once.");
+                break;
             }
         }
 
