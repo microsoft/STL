@@ -2122,14 +2122,24 @@ struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
     }
 };
 
+template <class _Ty>
+struct _Atomic_nonobject_pointer : _Atomic_storage<_Ty> {
+    using _Base           = _Atomic_storage<_Ty>;
+    using difference_type = ptrdiff_t;
+
+    using _Base::_Base;
+};
+
 #define ATOMIC_VAR_INIT(_Value) \
     { _Value }
 
 template <class _TVal, class _Ty = _TVal>
 using _Choose_atomic_base2_t =
     typename _Select<is_integral_v<_TVal> && !is_same_v<bool, _TVal>>::template _Apply<_Atomic_integral_facade<_Ty>,
-        typename _Select<is_pointer_v<_TVal> && is_object_v<remove_pointer_t<_TVal>>>::template _Apply<
-            _Atomic_pointer<_Ty>, _Atomic_storage<_Ty>>>;
+        typename _Select<is_pointer_v<_TVal>>::template _Apply<
+            typename _Select<is_object_v<remove_pointer_t<_TVal>>>::template _Apply<_Atomic_pointer<_Ty>,
+                _Atomic_nonobject_pointer<_Ty>>,
+            _Atomic_storage<_Ty>>>;
 
 #if _HAS_CXX20
 template <class _TVal, class _Ty = _TVal>

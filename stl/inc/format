@@ -276,6 +276,8 @@ _NODISCARD constexpr _Decode_result<char> _Decode_utf(const char* _First, const 
             return {_First + 1, false};
         }
         break;
+    default:
+        break;
     }
 
     // mask out the "value bits" in the leading byte,
@@ -291,6 +293,9 @@ _NODISCARD constexpr _Decode_result<char> _Decode_utf(const char* _First, const 
         break;
     case 4:
         _Val &= 0b111u;
+        break;
+    default:
+        _STL_UNREACHABLE; // can't happen, see how the value of _Num_bytes is determined
         break;
     }
 
@@ -1257,6 +1262,8 @@ _NODISCARD constexpr const _CharT* _Parse_align(
             break;
         case '^':
             _Parsed_align = _Fmt_align::_Center;
+            break;
+        default:
             break;
         }
 
@@ -2447,11 +2454,17 @@ public:
     }
 };
 
-using _Fmt_it  = back_insert_iterator<_Fmt_buffer<char>>;
-using _Fmt_wit = back_insert_iterator<_Fmt_buffer<wchar_t>>;
+template <class _CharT>
+using _Basic_fmt_it = back_insert_iterator<_Fmt_buffer<_CharT>>;
 
-_EXPORT_STD using format_context  = basic_format_context<_Fmt_it, char>;
-_EXPORT_STD using wformat_context = basic_format_context<_Fmt_wit, wchar_t>;
+using _Fmt_it  = _Basic_fmt_it<char>;
+using _Fmt_wit = _Basic_fmt_it<wchar_t>;
+
+template <class _CharT>
+using _Default_format_context = basic_format_context<_Basic_fmt_it<_CharT>, _CharT>;
+
+_EXPORT_STD using format_context  = _Default_format_context<char>;
+_EXPORT_STD using wformat_context = _Default_format_context<wchar_t>;
 
 #if _HAS_CXX23
 _EXPORT_STD enum class range_format { disabled, map, set, sequence, string, debug_string };
@@ -2842,6 +2855,8 @@ _NODISCARD _OutputIt _Write_integral(
         break;
     case 'o':
         _Base = 8;
+        break;
+    default:
         break;
     }
 
@@ -3974,7 +3989,7 @@ _NODISCARD int _Measure_display_width(const basic_string_view<_CharT> _Value) {
 enum class _Fmt_tuple_type : uint8_t { _None, _Key_value, _No_brackets };
 
 template <class _CharT>
-struct _Fill_align_and_width_specs { // used by pair, tuple, thread::id, and stacktrace_entry formatters
+struct _Fill_align_and_width_specs {
     int _Width               = -1;
     int _Dynamic_width_index = -1;
     _Fmt_align _Alignment    = _Fmt_align::_None;
@@ -4107,6 +4122,21 @@ private:
 
     _Fill_align_and_width_specs<_CharT> _Specs;
 
+    template <class _FormatContext, class... _ArgTypes>
+    void _Format_to_context(_FormatContext& _Fmt_ctx, _ArgTypes&... _Args) const {
+        _STD _Copy_unchecked(_Opening_bracket._Unchecked_begin(), _Opening_bracket._Unchecked_end(), _Fmt_ctx.out());
+        [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+            auto _Single_writer = [&]<size_t _Idx>(auto& _Arg) {
+                if constexpr (_Idx != 0) {
+                    _STD _Copy_unchecked(_Separator._Unchecked_begin(), _Separator._Unchecked_end(), _Fmt_ctx.out());
+                }
+                _STD get<_Idx>(_Underlying).format(_Arg, _Fmt_ctx);
+            };
+            (_Single_writer.template operator()<_Indices>(_Args), ...);
+        }(index_sequence_for<_ArgTypes...>{});
+        _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Fmt_ctx.out());
+    }
+
 protected:
     static constexpr bool _Is_const_formattable = (formattable<const _Types, _CharT> && ...);
 
@@ -4121,26 +4151,26 @@ protected:
                 _STD _Get_dynamic_specs<_Width_checker>(_Fmt_ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
         }
 
-        basic_string<_CharT> _Tmp_buf;
-        auto _Tmp_ctx = basic_format_context<back_insert_iterator<basic_string<_CharT>>, _CharT>::_Make_from(
-            _STD back_inserter(_Tmp_buf), {}, _Fmt_ctx._Get_lazy_locale());
+        if (_Format_specs._Width <= 0) {
+            _Format_to_context(_Fmt_ctx, _Args...);
+            return _Fmt_ctx.out();
+        }
 
-        _STD _Copy_unchecked(_Opening_bracket._Unchecked_begin(), _Opening_bracket._Unchecked_end(), _Tmp_ctx.out());
-        [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-            auto _Single_writer = [&]<size_t _Idx>(auto& _Arg) {
-                if constexpr (_Idx != 0) {
-                    _STD _Copy_unchecked(_Separator._Unchecked_begin(), _Separator._Unchecked_end(), _Tmp_ctx.out());
-                }
-                _STD get<_Idx>(_Underlying).format(_Arg, _Tmp_ctx);
-            };
-            (_Single_writer.template operator()<_Indices>(_Args), ...);
-        }(index_sequence_for<_ArgTypes...>{});
-        _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Tmp_ctx.out());
+        basic_string<_CharT> _Tmp_str;
+        if constexpr (is_same_v<_FormatContext, _Default_format_context<_CharT>>) {
+            _Fmt_iterator_buffer<back_insert_iterator<basic_string<_CharT>>, _CharT> _Tmp_buf{
+                back_insert_iterator{_Tmp_str}};
+            auto _Tmp_ctx = _FormatContext::_Make_from(
+                _Basic_fmt_it<_CharT>{_Tmp_buf}, _Fmt_ctx._Get_args(), _Fmt_ctx._Get_lazy_locale());
+            _Format_to_context(_Tmp_ctx, _Args...);
+        } else {
+            _CSTD abort(); // no basic_format_context object other than _Default_format_context can be created
+        }
 
-        const int _Width = _Measure_display_width<_CharT>(_Tmp_buf);
+        const int _Width = _Measure_display_width<_CharT>(_Tmp_str);
         return _STD _Write_aligned(
             _Fmt_ctx.out(), _Width, _Format_specs, _Fmt_align::_Left, [&](typename _FormatContext::iterator _Out) {
-                return _STD _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Tmp_buf});
+                return _STD _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Tmp_str});
             });
     }
 
@@ -4308,8 +4338,10 @@ public:
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-private:
+protected:
     _Fill_align_and_width_specs<_CharT>& _Specs;
+
+private:
     basic_format_parse_context<_CharT>& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
@@ -4364,6 +4396,259 @@ public:
 
 private:
     _Fill_align_and_width_specs<_CharT> _Specs;
+};
+
+template <class _CharT>
+struct _Range_specs : _Fill_align_and_width_specs<_CharT> {
+    bool _No_brackets = false;
+    char _Type        = '\0';
+};
+
+template <class _CharT>
+class _Range_specs_setter : public _Fill_align_and_width_specs_setter<_CharT> {
+public:
+    constexpr explicit _Range_specs_setter(
+        _Range_specs<_CharT>& _Specs_, basic_format_parse_context<_CharT>& _Parse_ctx_)
+        : _Fill_align_and_width_specs_setter<_CharT>(_Specs_, _Parse_ctx_) {}
+
+    constexpr void _On_no_brackets() {
+        static_cast<_Range_specs<_CharT>&>(this->_Specs)._No_brackets = true;
+    }
+
+    constexpr void _On_type(const _CharT _Type) {
+        _STL_INTERNAL_CHECK(_Type == 'm' || _Type == 's' || _Type == '?');
+        static_cast<_Range_specs<_CharT>&>(this->_Specs)._Type = static_cast<char>(_Type);
+    }
+};
+
+template <class _CharT>
+_NODISCARD constexpr const _CharT* _Parse_range_specs(
+    const _CharT* _Begin, const _CharT* const _End, _Range_specs_setter<_CharT>& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}' || *_Begin == ':') {
+        return _Begin;
+    }
+
+    _Begin = _Parse_align(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    _Begin = _Parse_width(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    if (*_Begin == 'n') {
+        _Callbacks._On_no_brackets();
+        if (++_Begin == _End) {
+            return _Begin;
+        }
+    }
+
+    switch (const _CharT _Maybe_type = *_Begin) {
+    case '?':
+        if (++_Begin == _End || *_Begin != 's') {
+            _Throw_format_error("Invalid range-type '?'; was '?s' intended?");
+        }
+        [[fallthrough]];
+    case 'm':
+    case 's':
+        _Callbacks._On_type(_Maybe_type);
+        ++_Begin;
+        break;
+    default:
+        break;
+    }
+
+    return _Begin;
+}
+
+_EXPORT_STD template <class _Ty, class _CharT = char>
+    requires same_as<remove_cvref_t<_Ty>, _Ty> && formattable<_Ty, _CharT>
+class range_formatter {
+private:
+    formatter<_Ty, _CharT> _Underlying;
+    basic_string_view<_CharT> _Separator       = _STATICALLY_WIDEN(_CharT, ", ");
+    basic_string_view<_CharT> _Opening_bracket = _STATICALLY_WIDEN(_CharT, "[");
+    basic_string_view<_CharT> _Closing_bracket = _STATICALLY_WIDEN(_CharT, "]");
+    _Range_specs<_CharT> _Specs;
+
+public:
+    constexpr void set_separator(basic_string_view<_CharT> _Sep) noexcept {
+        _Separator = _Sep;
+    }
+
+    constexpr void set_brackets(basic_string_view<_CharT> _Opening, basic_string_view<_CharT> _Closing) noexcept {
+        _Opening_bracket = _Opening;
+        _Closing_bracket = _Closing;
+    }
+
+    _NODISCARD constexpr formatter<_Ty, _CharT>& underlying() noexcept {
+        return _Underlying;
+    }
+
+    _NODISCARD constexpr const formatter<_Ty, _CharT>& underlying() const noexcept {
+        return _Underlying;
+    }
+
+    template <class _ParseContext>
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
+        _Range_specs_setter<_CharT> _Callback{_Specs, _Ctx};
+        auto _It = _STD _Parse_range_specs(_Ctx._Unchecked_begin(), _Ctx._Unchecked_end(), _Callback);
+
+        _Ctx.advance_to(_Ctx.begin() + (_It - _Ctx._Unchecked_begin()));
+        bool _Has_underlying_spec = false;
+        if (_It != _Ctx._Unchecked_end()) {
+            if (*_It == ':') {
+                _Has_underlying_spec = true;
+                _Ctx.advance_to(_Ctx.begin() + 1);
+            } else if (*_It != '}') {
+                _Throw_format_error("Invalid range-format-spec.");
+            }
+        }
+
+        _It = _Underlying.parse(_Ctx)._Unwrapped();
+        if (_It != _Ctx._Unchecked_end() && *_It != '}') {
+            _Throw_format_error("Missing '}' in format string.");
+        }
+
+        switch (_Specs._Type) {
+        case 'm':
+            if constexpr (_Is_two_tuple<_Ty>) {
+                set_brackets(_STATICALLY_WIDEN(_CharT, "{"), _STATICALLY_WIDEN(_CharT, "}"));
+                set_separator(_STATICALLY_WIDEN(_CharT, ", "));
+                _Underlying.set_brackets({}, {});
+                _Underlying.set_separator(_STATICALLY_WIDEN(_CharT, ": "));
+            } else {
+                _Throw_format_error("Range-type 'm' requires type T to be a pair or a 2-element tuple.");
+            }
+            [[fallthrough]];
+
+        case '\0':
+            if constexpr (requires { _Underlying.set_debug_format(); }) {
+                if (!_Has_underlying_spec) {
+                    _Underlying.set_debug_format();
+                }
+            }
+            break;
+
+        case 's':
+        case '?':
+            if constexpr (same_as<_Ty, _CharT>) {
+                if (_Specs._No_brackets) {
+                    _Throw_format_error("Range-types 's' and '?s' cannot be combined with the 'n' option.");
+                } else if (_Has_underlying_spec) {
+                    _Throw_format_error("Range-types 's' and '?s' cannot be combined with a range-underlying-spec.");
+                }
+            } else {
+                _Throw_format_error("Range-types 's' and '?s' require type T to be charT.");
+            }
+
+            break;
+
+        default:
+            _STL_UNREACHABLE; // can't happen, we've handled all possible outputs from _Parse_range_specs()
+            break;
+        }
+
+        if (_Specs._No_brackets) {
+            set_brackets({}, {});
+        }
+
+        return _Ctx.begin() + (_It - _Ctx._Unchecked_begin());
+    }
+
+    template <_RANGES input_range _Range, class _FormatContext>
+        requires formattable<_RANGES range_reference_t<_Range>, _CharT>
+              && same_as<remove_cvref_t<_RANGES range_reference_t<_Range>>, _Ty>
+    _FormatContext::iterator format(_Range&& _Rng, _FormatContext& _Ctx) const {
+        return _Format(_STD forward<_Range>(_Rng), _Ctx);
+    }
+
+private:
+    template <_RANGES input_range _Range, class _FormatContext>
+    _FormatContext::iterator _Format(_Range&&, _FormatContext&) const {
+        _Throw_format_error("Unsupported 'basic_format_context'.");
+    }
+
+    template <_RANGES input_range _Range, class _FormatContext>
+        requires _Is_specialization_v<typename _FormatContext::iterator, back_insert_iterator>
+              && derived_from<typename _FormatContext::iterator::container_type, _Fmt_buffer<_CharT>>
+    _FormatContext::iterator _Format(_Range&& _Rng, _FormatContext& _Ctx) const {
+        auto _Format_specs = _Specs;
+        if (_Specs._Dynamic_width_index >= 0) {
+            _Format_specs._Width =
+                _STD _Get_dynamic_specs<_Width_checker>(_Ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
+        }
+
+        basic_string<_CharT> _Buffer;
+        {
+            _Fmt_iterator_buffer<back_insert_iterator<basic_string<_CharT>>, _CharT> _Fmt_buf(
+                back_insert_iterator{_Buffer});
+            using _Inserter      = back_insert_iterator<_Fmt_buffer<_CharT>>;
+            auto _Nested_context = basic_format_context<_Inserter, _CharT>::_Make_from(
+                _Inserter{_Fmt_buf}, _Ctx._Get_args(), _Ctx._Get_lazy_locale());
+
+            if constexpr (same_as<_Ty, _CharT>) {
+                if (_Specs._Type == 's' || _Specs._Type == '?') {
+                    _Format_as_string(_STD forward<_Range>(_Rng), _Nested_context, _Specs._Type == '?');
+                } else {
+                    _Format_as_sequence(_STD forward<_Range>(_Rng), _Nested_context);
+                }
+            } else {
+                _Format_as_sequence(_STD forward<_Range>(_Rng), _Nested_context);
+            }
+        }
+
+        const int _Width = _Measure_display_width<_CharT>(_Buffer);
+        return _STD _Write_aligned(
+            _Ctx.out(), _Width, _Format_specs, _Fmt_align::_Left, [&](_FormatContext::iterator _Out) {
+                return _STD _Fmt_write(_STD move(_Out), basic_string_view{_Buffer});
+            });
+    }
+
+    template <_RANGES input_range _Range, class _FormatContext>
+    void _Format_as_sequence(_Range&& _Rng, _FormatContext& _Ctx) const {
+        _Ctx.advance_to(_STD _Fmt_write(_Ctx.out(), _Opening_bracket));
+        bool _Separate = false;
+        for (auto&& _Elem : _Rng) {
+            if (_Separate) {
+                _Ctx.advance_to(_STD _Fmt_write(_Ctx.out(), _Separator));
+            }
+
+            _Separate = true;
+            _Ctx.advance_to(_Underlying.format(_Elem, _Ctx));
+        }
+
+        (void) _STD _Fmt_write(_Ctx.out(), _Closing_bracket);
+    }
+
+    template <_RANGES input_range _Range, class _FormatContext>
+    void _Format_as_string(_Range&& _Rng, _FormatContext& _Ctx, const bool _Debug) const {
+        if constexpr (_RANGES contiguous_range<_Range>) {
+            const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rng));
+
+            if (!_STD in_range<size_t>(_Size)) [[unlikely]] {
+                _Throw_format_error("Formatted range is too long.");
+            }
+
+            formatter<basic_string_view<_CharT>, _CharT> _String_view_formatter;
+            if (_Debug) {
+                _String_view_formatter.set_debug_format();
+            }
+
+            const basic_string_view<_CharT> _Str(_STD to_address(_RANGES begin(_Rng)), static_cast<size_t>(_Size));
+            _String_view_formatter.format(_Str, _Ctx);
+        } else {
+            using _String = basic_string<_CharT>;
+            formatter<_String, _CharT> _String_formatter;
+            if (_Debug) {
+                _String_formatter.set_debug_format();
+            }
+
+            _String_formatter.format(_String{from_range, _Rng}, _Ctx);
+        }
+    }
 };
 #endif // _HAS_CXX23
 _STD_END
