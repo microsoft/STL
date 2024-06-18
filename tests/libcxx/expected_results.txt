@@ -26,6 +26,11 @@ std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.copy/uninitialized_copy.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_move.pass.cpp FAIL
 
+# LLVM-94907: [libc++][test] Avoid -Wunused-variable warnings in mutex tests
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/default.pass.cpp:2 FAIL
+std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/default.pass.cpp:2 FAIL
+std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/default.pass.cpp:2 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
