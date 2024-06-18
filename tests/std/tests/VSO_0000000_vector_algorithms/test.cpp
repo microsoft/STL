@@ -392,7 +392,7 @@ void test_min_max_element(mt19937_64& gen) {
 }
 
 template <class T>
-void test_min_max_element_floating(mt19937_64& gen) {
+void test_min_max_element_floating_any(mt19937_64& gen) {
     normal_distribution<T> dis(-100000.0, 100000.0);
 
     constexpr auto input_of_input_size = dataCount / 2;
@@ -414,6 +414,27 @@ void test_min_max_element_floating(mt19937_64& gen) {
         input.push_back(input_of_input[idx_dis(gen)]);
         test_case_min_max_element(input);
     }
+}
+
+template <class T>
+void test_min_max_element_floating_zero(mt19937_64& gen) {
+    vector<T> input_of_input{-0.0, +0.0};
+
+    uniform_int_distribution<size_t> idx_dis(0, input_of_input.size() - 1);
+
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_min_max_element(input);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(input_of_input[idx_dis(gen)]);
+        test_case_min_max_element(input);
+    }
+}
+
+template <class T>
+void test_min_max_element_floating(mt19937_64& gen) {
+    test_min_max_element_floating_any<T>(gen);
+    test_min_max_element_floating_zero<T>(gen);
 }
 
 void test_min_max_element_pointers(mt19937_64& gen) {
