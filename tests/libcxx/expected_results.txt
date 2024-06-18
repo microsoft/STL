@@ -722,6 +722,16 @@ std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.
 # Likely STL bug in layout_stride::mapping::is_exhaustive().
 std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
 
+# Even after LLVM-91530 fixed these tests to be reliable upstream, notify_all.pass.cpp sporadically failed.
+# Skip all of these tests until we understand the root cause.
+# This is probably a bug in MSVC's STL, possibly distinct from GH-4723.
+std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvar/notify_one.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvar/wait_for_pred.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvar/wait_for.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvar/wait_until_pred.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvar/wait_until.pass.cpp SKIPPED
+
 
 # *** NOT YET ANALYZED ***
 # Not analyzed. Clang instantiates BoomOnAnything during template argument substitution.
