@@ -5,14 +5,19 @@
 #include <array>
 #include <cassert>
 #include <concepts>
+#include <cstddef>
 #include <execution>
 #include <ios>
 #include <locale>
 #include <ranges>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <thread>
+#include <tuple>
 #include <type_traits>
+#include <utility>
+#include <variant>
 
 #include "test_format_support.hpp"
 
@@ -254,11 +259,61 @@ void check_invalid_specs() {
     }
 }
 
+// Also test GH-4651 "<format>: Underlying formatters of pair-or-tuple formatter cannot access format args"
+
+template <class CharT>
+using default_format_parse_context = conditional_t<is_same_v<CharT, char>, format_parse_context,
+    conditional_t<is_same_v<CharT, wchar_t>, wformat_parse_context, void>>;
+
+template <size_t I>
+struct substitute_arg {};
+
+template <size_t I, class CharT>
+struct std::formatter<substitute_arg<I>, CharT> {
+    template <class ParseContext>
+    constexpr auto parse(ParseContext& ctx) {
+        auto it = ctx.begin();
+        if (it != ctx.end() && *it != '}') {
+            throw format_error{"Expected empty spec"};
+        }
+
+        ctx.check_arg_id(I);
+        return it;
+    }
+
+    template <class FormatContext>
+    auto format(substitute_arg<I>, FormatContext& ctx) const {
+        auto visitor = [&]<class T>(T val) -> FormatContext::iterator {
+            if constexpr (same_as<T, monostate>) {
+                return ranges::copy(STR("monostate"sv), ctx.out()).out;
+            } else if constexpr (same_as<T, typename basic_format_arg<FormatContext>::handle>) {
+                default_format_parse_context<CharT> parse_ctx{STR("")};
+                val.format(parse_ctx, ctx);
+                return ctx.out();
+            } else {
+                return format_to(ctx.out(), STR("{}"), val);
+            }
+        };
+
+        return visit_format_arg(visitor, ctx.arg(I));
+    }
+};
+
+template <class CharT>
+void check_substitute_arg_with_tuple_formatters() {
+    assert(format(STR("{0:}"), tuple{substitute_arg<1>{}, substitute_arg<2>{}}, STR("thread::id"), thread::id{})
+           == STR("(thread::id, 0)"));
+    assert(format(STR("{0:}"), pair{substitute_arg<1>{}, substitute_arg<2>{}}, STR("thread::id"), thread::id{})
+           == STR("(thread::id, 0)"));
+}
+
 template <class CharT>
 void test() {
     check_formatting_of_default_constructed_thread_id<CharT, FormatFn>();
     check_formatting_of_default_constructed_thread_id<CharT, VFormatFn>();
     check_formatting_of_default_constructed_thread_id<CharT, MoveOnlyFormat>();
+
+    check_substitute_arg_with_tuple_formatters<CharT>();
 
     const array checks = {
         // NB: those functions call 'this_thread::get_id' - let's check various ids

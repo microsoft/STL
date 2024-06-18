@@ -16,9 +16,6 @@
 
 namespace ranges = std::ranges;
 
-template <class>
-constexpr bool always_false = false; // TRANSITION, VSO-2016422 (EDG)
-
 template <class T>
 constexpr T* nullptr_to = nullptr;
 
@@ -877,6 +874,11 @@ namespace test {
         using S = conditional_t<to_bool(IsCommon), I, sentinel<Element, WrappedState::wrapped>>;
         using RebindAsMoveOnly =
             range<Category, Element, IsSized, Diff, IsCommon, Eq, Proxy, IsView, Copyability::move_only>;
+
+        template <class OtherElement>
+        using RebindElement = range<Category, OtherElement, IsSized, Diff, IsCommon, Eq, Proxy, IsView, Copy>;
+
+        static constexpr ProxyRef proxy_ref = Proxy;
 
         using detail::range_base<Element, Copy>::range_base;
 
