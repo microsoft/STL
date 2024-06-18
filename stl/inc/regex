@@ -3922,6 +3922,9 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
         }
 
         break;
+
+    default:
+        break;
     }
 }
 
