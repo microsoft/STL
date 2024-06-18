@@ -862,24 +862,17 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 #pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
 #endif // ^^^ not Clang ^^^
 
-#if _HAS_CXX20
 // build Ti x[] = {std::forward<T>(t)};
 template <size_t _Idx, class _TargetType>
 auto _Construct_array(_TargetType (&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
 
 template <size_t _Idx, class _TargetType, class _InitializerType>
 using _Variant_type_resolver = decltype(_STD _Construct_array<_Idx, _TargetType>({_STD declval<_InitializerType>()}));
-#endif // _HAS_CXX20
 
 template <size_t _Idx, class _TargetType>
 struct _Variant_init_single_overload {
-#if _HAS_CXX20
     template <class _InitializerType>
     auto operator()(_TargetType, _InitializerType&&) -> _Variant_type_resolver<_Idx, _TargetType, _InitializerType>;
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-    template <class _InitializerType>
-    auto operator()(_TargetType, _InitializerType&&) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
-#endif // ^^^ !_HAS_CXX20 ^^^
 };
 
 template <class _Indices, class... _Types>

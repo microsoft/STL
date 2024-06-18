@@ -4177,6 +4177,8 @@ namespace chrono {
             case '+':
                 ++_First;
                 break;
+            default:
+                break;
             }
 
             // For a regular offset hh[mm], simply read four digits, with the option of an EOF or non-digit after

@@ -7,5 +7,7 @@
     <Rule Id="C26815" Action="Warning" />
     <!-- The pointer points to memory allocated on the stack (ES.65) -->
     <Rule Id="C26816" Action="Warning" />
+    <!-- Switch statement does not cover all cases. Consider adding a 'default' label (es.79). -->
+    <Rule Id="C26818" Action="Warning" />
   </Rules>
 </RuleSet>
