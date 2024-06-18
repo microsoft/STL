@@ -121,6 +121,7 @@
 // P0602R4 Propagating Copy/Move Triviality In variant/optional
 // P0604R0 invoke_result, is_invocable, is_nothrow_invocable
 // P0607R0 Inline Variables For The STL
+// P0608R3 Improving variant's Converting Constructor/Assignment
 // P0682R1 Repairing Elementary String Conversions
 // P0739R0 Improving Class Template Argument Deduction For The STL
 // P0858R0 Constexpr Iterator Requirements
@@ -185,7 +186,6 @@
 // P0586R2 Integer Comparison Functions
 // P0591R4 Utility Functions For Uses-Allocator Construction
 // P0595R2 is_constant_evaluated()
-// P0608R3 Improving variant's Converting Constructor/Assignment
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
 // P0645R10 <format> Text Formatting
