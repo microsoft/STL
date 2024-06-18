@@ -31,6 +31,9 @@ std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requir
 std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/default.pass.cpp:2 FAIL
 std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/default.pass.cpp:2 FAIL
 
+# LLVM-95944: [libc++][test] thread.condition.condvar/notify_all.pass.cpp has a flaky timing assumption
+std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIPPED
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
