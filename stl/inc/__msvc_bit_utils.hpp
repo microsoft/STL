@@ -13,18 +13,6 @@
 
 #include _STL_INTRIN_HEADER
 
-// TRANSITION, GH-2129, move down to _Arm64_popcount
-#if (defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)) && !defined(_M_CEE_PURE) \
-    && !defined(__CUDACC__) && !defined(__INTEL_COMPILER) && !defined(__clang__) // TRANSITION, LLVM-51488
-#define _HAS_NEON_INTRINSICS 1
-#else // ^^^ intrinsics available / intrinsics unavailable vvv
-#define _HAS_NEON_INTRINSICS 0
-#endif // ^^^ intrinsics unavailable ^^^
-
-#if _HAS_NEON_INTRINSICS
-#include <arm64_neon.h> // TRANSITION, GH-2129
-#endif // _HAS_NEON_INTRINSICS
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -312,16 +300,21 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 
 #endif // _HAS_TZCNT_BSF_INTRINSICS
 
-#if ((defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))) \
-    && !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
+#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64)) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+    && !defined(__INTEL_COMPILER)
 #define _HAS_POPCNT_INTRINSICS 1
+#if defined(__AVX__) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#define _POPCNT_INTRINSICS_ALWAYS_AVAILABLE 1
+#else // ^^^ intrinsics always available / intrinsics not always available vvv
+#define _POPCNT_INTRINSICS_ALWAYS_AVAILABLE 0
+#endif // ^^^ intrinsics not always available ^^^
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_POPCNT_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_POPCNT_INTRINSICS
 template <class _Ty>
-_NODISCARD int _Unchecked_x86_x64_popcount(const _Ty _Val) noexcept {
+_NODISCARD int _Unchecked_popcount(const _Ty _Val) noexcept {
     constexpr int _Digits = _Unsigned_integer_digits<_Ty>;
     if constexpr (_Digits <= 16) {
         return static_cast<int>(__popcnt16(_Val));
@@ -337,23 +330,16 @@ _NODISCARD int _Unchecked_x86_x64_popcount(const _Ty _Val) noexcept {
 }
 
 template <class _Ty>
-_NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
-#ifndef __AVX__
+_NODISCARD int _Checked_popcount(const _Ty _Val) noexcept {
+#if !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE
     const bool _Definitely_have_popcnt = __isa_available >= _Stl_isa_available_sse42;
     if (!_Definitely_have_popcnt) {
         return _Popcount_fallback(_Val);
     }
-#endif // !defined(__AVX__)
-    return _Unchecked_x86_x64_popcount(_Val);
+#endif // ^^^ !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE ^^^
+    return _Unchecked_popcount(_Val);
 }
-#endif // _HAS_POPCNT_INTRINSICS
-
-#if _HAS_NEON_INTRINSICS
-_NODISCARD inline int _Arm64_popcount(const unsigned long long _Val) noexcept {
-    const __n64 _Temp = neon_cnt(__uint64ToN64_v(_Val));
-    return neon_addv8(_Temp).n8_i8[0];
-}
-#endif // _HAS_NEON_INTRINSICS
+#endif // ^^^ _HAS_POPCNT_INTRINSICS ^^^
 
 template <class _Ty>
 constexpr bool _Is_standard_unsigned_integer =
@@ -395,51 +381,42 @@ constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
-#if _HAS_POPCNT_INTRINSICS || _HAS_NEON_INTRINSICS
+#if _HAS_POPCNT_INTRINSICS
 #if _HAS_CXX20
     if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
     {
-#if _HAS_POPCNT_INTRINSICS
-        return _Checked_x86_x64_popcount(_Val);
-#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available / ARM64 intrinsics available vvv
-        return _Arm64_popcount(_Val);
-#endif // ^^^ ARM64 intrinsics available ^^^
+        return _Checked_popcount(_Val);
     }
-#endif // ^^^ any intrinsics available ^^^
+#endif // ^^^ _HAS_POPCNT_INTRINSICS ^^^
     return _Popcount_fallback(_Val);
 }
 
 template <class _Ty, class _Fn>
 _CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
     // TRANSITION, DevCom-1527995: Lambdas in this function ensure inlining
-#if _HAS_POPCNT_INTRINSICS || _HAS_NEON_INTRINSICS
+#if _HAS_POPCNT_INTRINSICS
 #if _HAS_CXX20
     if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
     {
-#if _HAS_POPCNT_INTRINSICS
-#ifndef __AVX__
+#if !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE
         const bool _Definitely_have_popcnt = __isa_available >= _Stl_isa_available_sse42;
         if (!_Definitely_have_popcnt) {
             return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Popcount_fallback(_Val); });
         }
-#endif // !defined(__AVX__)
-        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Unchecked_x86_x64_popcount(_Val); });
-#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available / ARM64 intrinsics available vvv
-        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Arm64_popcount(_Val); });
-#endif // ^^^ ARM64 intrinsics available ^^^
+#endif // ^^^ !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE ^^^
+        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Unchecked_popcount(_Val); });
     }
-#endif // ^^^ any intrinsics available ^^^
+#endif // ^^^ _HAS_POPCNT_INTRINSICS ^^^
     return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Popcount_fallback(_Val); });
 }
 
 #undef _HAS_POPCNT_INTRINSICS
 #undef _HAS_TZCNT_BSF_INTRINSICS
+#undef _POPCNT_INTRINSICS_ALWAYS_AVAILABLE
 
 _STD_END
-
-#undef _HAS_NEON_INTRINSICS
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
