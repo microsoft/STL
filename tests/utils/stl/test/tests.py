@@ -267,7 +267,7 @@ class STLTest(Test):
             if flag[1:5] == 'std:':
                 foundStd = True
                 if flag[5:] == 'c++latest':
-                    self._addCustomFeature('c++2b')
+                    self._addCustomFeature('c++23')
                 elif flag[5:] == 'c++20':
                     self._addCustomFeature('c++20')
                 elif flag[5:] == 'c++17':
@@ -321,9 +321,6 @@ class STLTest(Test):
         if not foundCRT:
             self._addCustomFeature('MT')
             self._addCustomFeature('static_CRT')
-
-        self._addCustomFeature('non-lockfree-atomics') # we always support non-lockfree-atomics
-        self._addCustomFeature('is-lockfree-runtime-function') # Ditto
 
         # clang doesn't know how to link in the VS version of the asan runtime automatically
         if 'asan' in self.config.available_features and 'clang' in self.config.available_features:

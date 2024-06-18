@@ -1716,7 +1716,7 @@ namespace std_iterator_tags_test {
 namespace incomplete_test {
     template <class T>
     struct do_not_instantiate {
-        static_assert(always_false<T>);
+        static_assert(false);
     };
 
     using E = do_not_instantiate<void>;
