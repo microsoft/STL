@@ -113,10 +113,11 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_create(_Thrd_t* thr, _Thrd_start_t func
     _Thrd_result res;
     _Thrd_binder b;
     int started = 0;
-    _Cnd_t cond;
-    _Mtx_t mtx;
-    _Cnd_init(&cond);
-    _Mtx_init(&mtx, _Mtx_plain);
+    _Cnd_internal_imp_t cond_var{};
+    _Cnd_t cond = &cond_var;
+    _Mtx_internal_imp_t mtx_var{};
+    _Mtx_t mtx = &mtx_var;
+    _Mtx_init_in_situ(mtx, _Mtx_plain);
     b.func    = func;
     b.data    = d;
     b.cond    = &cond;
@@ -129,8 +130,6 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Thrd_create(_Thrd_t* thr, _Thrd_start_t func
         }
     }
     _Mtx_unlock(mtx);
-    _Cnd_destroy(cond);
-    _Mtx_destroy(mtx);
     return res;
 }
 

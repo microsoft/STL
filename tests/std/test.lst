@@ -307,6 +307,7 @@ tests\P0053R7_cpp_synchronized_buffered_ostream
 tests\P0067R5_charconv
 tests\P0083R3_splicing_maps_and_sets
 tests\P0088R3_variant
+tests\P0088R3_variant_msvc
 tests\P0092R1_polishing_chrono
 tests\P0122R7_span
 tests\P0122R7_span_death
@@ -619,6 +620,7 @@ tests\P2286R8_text_formatting_escaping
 tests\P2286R8_text_formatting_escaping_legacy_text_encoding
 tests\P2286R8_text_formatting_escaping_utf8
 tests\P2286R8_text_formatting_formattable
+tests\P2286R8_text_formatting_range_formatter
 tests\P2286R8_text_formatting_tuple
 tests\P2286R8_text_formatting_vector_bool_reference
 tests\P2302R4_ranges_alg_contains

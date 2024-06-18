@@ -35,11 +35,9 @@ enum { // mutex types
     _Mtx_recursive = 0x100
 };
 
-#ifdef _CRTBLD
-_CRTIMP2_PURE _Thrd_result __cdecl _Mtx_init(_Mtx_t*, int) noexcept;
-_CRTIMP2_PURE void __cdecl _Mtx_destroy(_Mtx_t) noexcept;
-#endif // _CRTBLD
+#if defined(_CRTBLD) || defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 _CRTIMP2_PURE void __cdecl _Mtx_init_in_situ(_Mtx_t, int) noexcept;
+#endif // ^^^ defined(_CRTBLD) || defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) ^^^
 _CRTIMP2_PURE int __cdecl _Mtx_current_owns(_Mtx_t) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_lock(_Mtx_t) noexcept;
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_trylock(_Mtx_t) noexcept;
@@ -55,12 +53,9 @@ void __cdecl _Smtx_unlock_exclusive(_Smtx_t*) noexcept;
 void __cdecl _Smtx_unlock_shared(_Smtx_t*) noexcept;
 
 // condition variables
-#ifdef _CRTBLD
-_CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t*) noexcept;
-_CRTIMP2_PURE void __cdecl _Cnd_destroy(_Cnd_t) noexcept;
-#endif // _CRTBLD
+#ifdef _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(_Cnd_t) noexcept;
-_CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) noexcept;
+#endif // ^^^ defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) ^^^
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(_Cnd_t, _Mtx_t) noexcept; // TRANSITION, ABI: Always succeeds
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(_Cnd_t) noexcept; // TRANSITION, ABI: Always succeeds
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(_Cnd_t) noexcept; // TRANSITION, ABI: Always succeeds
