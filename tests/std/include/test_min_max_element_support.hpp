@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -116,6 +117,13 @@ void test_case_min_max_element(const std::vector<T>& input) {
         assert(*expected_max == actual_max_value);
         assert(*expected_minmax.first == actual_minmax_value.min);
         assert(*expected_minmax.second == actual_minmax_value.max);
+
+        if constexpr (std::is_floating_point_v<T>) {
+            assert(signbit(*expected_min) == signbit(actual_min_value));
+            assert(signbit(*expected_max) == signbit(actual_max_value));
+            assert(signbit(*expected_minmax.first) == signbit(actual_minmax_value.min));
+            assert(signbit(*expected_minmax.second) == signbit(actual_minmax_value.max));
+        }
     }
 #endif // _HAS_CXX20
 }
