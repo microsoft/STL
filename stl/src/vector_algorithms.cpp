@@ -2132,6 +2132,7 @@ namespace {
             __m128 _Cur_min_sse = _mm_undefined_ps();
             __m128 _Cur_max_sse = _mm_undefined_ps();
 
+        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
             if constexpr ((_Mode & _Mode_min) != 0) {
                 _Cur_min_sse = _mm_set_ss(_Cur_min_val);
             }
