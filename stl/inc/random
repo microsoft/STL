@@ -262,15 +262,15 @@ private:
 };
 
 struct _Urbg_gen_can_params {
-    int _Kx          = 0; // $k$ in [rand.util.canonical]/1.4
-    uint64_t _Xx     = 0; // $x$ in [rand.util.canonical]/1.4
+    int _Kx          = 0; // $k$ in N4981 [rand.util.canonical]/1.4
+    uint64_t _Xx     = 0; // $x$ in N4981 [rand.util.canonical]/1.5
     int _Smax_bits   = 0; // number of bits in $R^k$
     float _Scale     = 0.0f; // $r^{-d}$, always representable as a float
     bool _Rx_is_pow2 = false;
 };
 
 _NODISCARD constexpr _Urbg_gen_can_params _Generate_canonical_params(size_t _Bits, uint64_t _Rm1) {
-    const auto _Rx        = _Unsigned128{_Rm1} + 1u; // $R$ in [rand.util.canonical]/1.2
+    const auto _Rx        = _Unsigned128{_Rm1} + 1u; // $R$ in N4981 [rand.util.canonical]/1.2
     const auto _Target    = (_Unsigned128{1} << _Bits); // $r^d$
     _Unsigned128 _Product = 1u;
     _Urbg_gen_can_params _Result;
@@ -355,7 +355,7 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
 template <class _Gen, class = void>
 struct _Has_static_min_max : false_type {};
 
-// This checks a requirement of N4950 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
+// This checks a requirement of N4981 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
 // to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
 template <class _Gen>
 struct _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> : true_type {};
