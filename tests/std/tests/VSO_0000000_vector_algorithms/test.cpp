@@ -418,7 +418,7 @@ void test_min_max_element_floating_any(mt19937_64& gen) {
 
 template <class T>
 void test_min_max_element_floating_zero(mt19937_64& gen) {
-    vector<T> input_of_input{-0.0, +0.0};
+    vector<T> input_of_input{-0, +0};
 
     uniform_int_distribution<size_t> idx_dis(0, input_of_input.size() - 1);
 
@@ -434,6 +434,21 @@ void test_min_max_element_floating_zero(mt19937_64& gen) {
 template <class T>
 void test_min_max_element_floating(mt19937_64& gen) {
     test_case_min_max_element(vector<T>{+0.0, -0.0});
+
+    test_case_min_max_element(vector<T>{+0.0, +0.0, -0.0});
+    test_case_min_max_element(vector<T>{+0.0, -0.0, +0.0});
+    test_case_min_max_element(vector<T>{-0.0, +0.0, +0.0});
+
+    test_case_min_max_element(vector<T>{+0.0, +0.0, +0.0, -0.0});
+    test_case_min_max_element(vector<T>{+0.0, +0.0, -0.0, +0.0});
+    test_case_min_max_element(vector<T>{+0.0, -0.0, +0.0, +0.0});
+    test_case_min_max_element(vector<T>{-0.0, +0.0, +0.0, +0.0});
+
+    test_case_min_max_element(vector<T>{+0.0, +0.0, +0.0, +0.0, -0.0});
+    test_case_min_max_element(vector<T>{+0.0, +0.0, +0.0, -0.0, +0.0});
+    test_case_min_max_element(vector<T>{+0.0, +0.0, -0.0, +0.0, +0.0});
+    test_case_min_max_element(vector<T>{+0.0, -0.0, +0.0, +0.0, +0.0});
+    test_case_min_max_element(vector<T>{-0.0, +0.0, +0.0, +0.0, +0.0});
 
     test_min_max_element_floating_any<T>(gen);
     test_min_max_element_floating_zero<T>(gen);
