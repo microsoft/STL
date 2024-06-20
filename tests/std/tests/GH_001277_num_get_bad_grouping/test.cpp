@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef __EDG__ // TRANSITION, VSO-2064546
-
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -461,5 +459,3 @@ int main() {
     test_nonending_unlimited_grouping<double>();
     test_nonending_unlimited_grouping<long double>();
 }
-
-#endif // ^^^ no workaround ^^^

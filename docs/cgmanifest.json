@@ -15,7 +15,7 @@
                 "type": "git",
                 "git": {
                     "repositoryUrl": "https://github.com/llvm/llvm-project.git",
-                    "commitHash": "2e2b6b53f5f63179b52168ee156df7c76b90bc71"
+                    "commitHash": "12fcca0afeb08fbe41d79c5387cfacb249992bb4"
                 }
             }
         },
