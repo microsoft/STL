@@ -2132,7 +2132,6 @@ namespace {
             __m128 _Cur_min_sse = _mm_undefined_ps();
             __m128 _Cur_max_sse = _mm_undefined_ps();
 
-        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
             if constexpr ((_Mode & _Mode_min) != 0) {
                 _Cur_min_sse = _mm_set_ss(_Cur_min_val);
             }
@@ -2198,6 +2197,7 @@ namespace {
         } else
 #endif // !defined(_M_IX86_FP) || _M_IX86_FP != 0
         {
+#pragma loop(no_vector) // TRANSITION, VSO-2093761: work around a compiler back-end assertion
             for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
                 if constexpr ((_Mode & _Mode_min) != 0) {
                     if (*_Ptr < _Cur_min_val) {
