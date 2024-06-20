@@ -1415,8 +1415,8 @@ namespace {
         template <class _Fn>
         static __m128 _H_func(const __m128 _Cur, _Fn _Funct) noexcept {
             __m128 _H_min_val = _Cur;
-            _H_min_val        = _Funct(_H_min_val, _mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val        = _Funct(_H_min_val, _mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            _H_min_val        = _Funct(_mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)), _H_min_val);
+            _H_min_val        = _Funct(_mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
             return _H_min_val;
         }
 
@@ -1426,6 +1426,10 @@ namespace {
 
         static __m128 _H_max(const __m128 _Cur) noexcept {
             return _H_func(_Cur, [](__m128 _Val1, __m128 _Val2) { return _mm_max_ps(_Val1, _Val2); });
+        }
+
+        static __m128 _H_max_r(const __m128 _Cur) noexcept {
+            return _H_func(_Cur, [](__m128 _Val1, __m128 _Val2) { return _mm_max_ps(_Val2, _Val1); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
@@ -1457,10 +1461,14 @@ namespace {
         }
 
         static __m128 _Min(const __m128 _First, const __m128 _Second, __m128 = _mm_undefined_ps()) noexcept {
-            return _mm_min_ps(_First, _Second);
+            return _mm_min_ps(_Second, _First);
         }
 
         static __m128 _Max(const __m128 _First, const __m128 _Second, __m128 = _mm_undefined_ps()) noexcept {
+            return _mm_max_ps(_Second, _First);
+        }
+
+        static __m128 _Max_r(const __m128 _First, const __m128 _Second, __m128 = _mm_undefined_ps()) noexcept {
             return _mm_max_ps(_First, _Second);
         }
 
@@ -1485,9 +1493,9 @@ namespace {
         template <class _Fn>
         static __m256 _H_func(const __m256 _Cur, _Fn _Funct) noexcept {
             __m256 _H_min_val = _Cur;
-            _H_min_val        = _Funct(_H_min_val, _mm256_permute2f128_ps(_H_min_val, _mm256_undefined_ps(), 0x01));
-            _H_min_val        = _Funct(_H_min_val, _mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val        = _Funct(_H_min_val, _mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            _H_min_val        = _Funct(_mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)), _H_min_val);
+            _H_min_val        = _Funct(_mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
+            _H_min_val        = _Funct(_mm256_permute2f128_ps(_H_min_val, _mm256_undefined_ps(), 0x01), _H_min_val);
             return _H_min_val;
         }
 
@@ -1497,6 +1505,10 @@ namespace {
 
         static __m256 _H_max(const __m256 _Cur) noexcept {
             return _H_func(_Cur, [](__m256 _Val1, __m256 _Val2) { return _mm256_max_ps(_Val1, _Val2); });
+        }
+
+        static __m256 _H_max_r(const __m256 _Cur) noexcept {
+            return _H_func(_Cur, [](__m256 _Val1, __m256 _Val2) { return _mm256_max_ps(_Val2, _Val1); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
@@ -1528,10 +1540,14 @@ namespace {
         }
 
         static __m256 _Min(const __m256 _First, const __m256 _Second, __m256 = _mm256_undefined_ps()) noexcept {
-            return _mm256_min_ps(_First, _Second);
+            return _mm256_min_ps(_Second, _First);
         }
 
         static __m256 _Max(const __m256 _First, const __m256 _Second, __m256 = _mm256_undefined_ps()) noexcept {
+            return _mm256_max_ps(_Second, _First);
+        }
+
+        static __m256 _Max_r(const __m256 _First, const __m256 _Second, __m256 = _mm256_undefined_ps()) noexcept {
             return _mm256_max_ps(_First, _Second);
         }
 
@@ -1575,7 +1591,7 @@ namespace {
         template <class _Fn>
         static __m128d _H_func(const __m128d _Cur, _Fn _Funct) noexcept {
             __m128d _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_pd(_H_min_val, _H_min_val, 1));
+            _H_min_val         = _Funct(_mm_shuffle_pd(_H_min_val, _H_min_val, 1), _H_min_val);
             return _H_min_val;
         }
 
@@ -1585,6 +1601,10 @@ namespace {
 
         static __m128d _H_max(const __m128d _Cur) noexcept {
             return _H_func(_Cur, [](__m128d _Val1, __m128d _Val2) { return _mm_max_pd(_Val1, _Val2); });
+        }
+
+        static __m128d _H_max_r(const __m128d _Cur) noexcept {
+            return _H_func(_Cur, [](__m128d _Val1, __m128d _Val2) { return _mm_max_pd(_Val2, _Val1); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
@@ -1615,10 +1635,14 @@ namespace {
         }
 
         static __m128d _Min(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
-            return _mm_min_pd(_First, _Second);
+            return _mm_min_pd(_Second, _First);
         }
 
         static __m128d _Max(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
+            return _mm_max_pd(_Second, _First);
+        }
+
+        static __m128d _Max_r(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
             return _mm_max_pd(_First, _Second);
         }
 
@@ -1643,8 +1667,8 @@ namespace {
         template <class _Fn>
         static __m256d _H_func(const __m256d _Cur, _Fn _Funct) noexcept {
             __m256d _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm256_permute4x64_pd(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_pd(_H_min_val, _H_min_val, 0b0101));
+            _H_min_val         = _Funct(_mm256_permute4x64_pd(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
+            _H_min_val         = _Funct(_mm256_shuffle_pd(_H_min_val, _H_min_val, 0b0101), _H_min_val);
             return _H_min_val;
         }
 
@@ -1654,6 +1678,10 @@ namespace {
 
         static __m256d _H_max(const __m256d _Cur) noexcept {
             return _H_func(_Cur, [](__m256d _Val1, __m256d _Val2) { return _mm256_max_pd(_Val1, _Val2); });
+        }
+
+        static __m256d _H_max_r(const __m256d _Cur) noexcept {
+            return _H_func(_Cur, [](__m256d _Val1, __m256d _Val2) { return _mm256_max_pd(_Val2, _Val1); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
@@ -1685,10 +1713,14 @@ namespace {
         }
 
         static __m256d _Min(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
-            return _mm256_min_pd(_First, _Second);
+            return _mm256_min_pd(_Second, _First);
         }
 
         static __m256d _Max(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
+            return _mm256_max_pd(_Second, _First);
+        }
+
+        static __m256d _Max_r(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
             return _mm256_max_pd(_First, _Second);
         }
 
@@ -2029,7 +2061,9 @@ namespace {
                     }
 
                     if constexpr ((_Mode & _Mode_max) != 0) {
-                        if constexpr (_Sign || _Sign_correction) {
+                        if constexpr (_Traits::_Is_floating && _Mode == _Mode_both) {
+                            _Cur_vals_max = _Traits::_Max_r(_Cur_vals_max, _Cur_vals); // Update the current maximum
+                        } else if constexpr (_Sign || _Sign_correction) {
                             _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals); // Update the current maximum
                         } else {
                             _Cur_vals_max = _Traits::_Max_u(_Cur_vals_max, _Cur_vals); // Update the current maximum
@@ -2051,7 +2085,11 @@ namespace {
                     }
 
                     if constexpr ((_Mode & _Mode_max) != 0) {
-                        if constexpr (_Sign || _Sign_correction) {
+                        if constexpr (_Traits::_Is_floating && _Mode == _Mode_both) {
+                            const auto _H_max =
+                                _Traits::_H_max_r(_Cur_vals_max); // Vector populated by the largest element
+                            _Cur_max_val = _Traits::_Get_any(_H_max); // Get any element of it
+                        } else if constexpr (_Sign || _Sign_correction) {
                             const auto _H_max =
                                 _Traits::_H_max(_Cur_vals_max); // Vector populated by the largest element
                             _Cur_max_val = _Traits::_Get_any(_H_max); // Get any element of it
@@ -2087,23 +2125,100 @@ namespace {
             _Advance_bytes(_First, sizeof(_Ty));
         }
 
-        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+#if !defined(_M_IX86_FP) || _M_IX86_FP == 2
+        // TRANSITION, DevCom-10686775: Spell out SSE2 minss/maxss/minsd/maxsd explicitly
+        // to avoid the compiler messing with comparison. Not applicable to /arch:IA32
+        if constexpr (_STD is_same_v<_Ty, float>) {
+            __m128 _Cur_min_sse = _mm_undefined_ps();
+            __m128 _Cur_max_sse = _mm_undefined_ps();
+
             if constexpr ((_Mode & _Mode_min) != 0) {
-                if (*_Ptr < _Cur_min_val) {
-                    _Cur_min_val = *_Ptr;
-                }
+                _Cur_min_sse = _mm_set_ss(_Cur_min_val);
             }
 
             if constexpr ((_Mode & _Mode_max) != 0) {
-                if (_Cur_max_val < *_Ptr) {
-                    _Cur_max_val = *_Ptr;
+                _Cur_max_sse = _mm_set_ss(_Cur_max_val);
+            }
+
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                __m128 _Cur = _mm_load_ss(_Ptr);
+
+                if constexpr ((_Mode & _Mode_min) != 0) {
+                    _Cur_min_sse = _mm_min_ss(_Cur, _Cur_min_sse);
+                }
+
+                if constexpr (_Mode == _Mode_max) {
+                    _Cur_max_sse = _mm_max_ss(_Cur, _Cur_max_sse);
+                } else if constexpr (_Mode == _Mode_both) {
+                    _Cur_max_sse = _mm_max_ss(_Cur_max_sse, _Cur);
                 }
             }
 
-            // _Mode_both could have been handled separately with 'else'.
-            // We have _Cur_min_val / _Cur_max_val initialized by processing at least one element,
-            // so the 'else' would be correct here.
-            // But still separate 'if' statements promote branchless codegen.
+            if constexpr ((_Mode & _Mode_min) != 0) {
+                _Cur_min_val = _mm_cvtss_f32(_Cur_min_sse);
+            }
+
+            if constexpr ((_Mode & _Mode_max) != 0) {
+                _Cur_max_val = _mm_cvtss_f32(_Cur_max_sse);
+            }
+        } else if constexpr (_STD is_same_v<_Ty, double>) {
+            __m128d _Cur_min_sse = _mm_undefined_pd();
+            __m128d _Cur_max_sse = _mm_undefined_pd();
+
+            if constexpr ((_Mode & _Mode_min) != 0) {
+                _Cur_min_sse = _mm_set_sd(_Cur_min_val);
+            }
+
+            if constexpr ((_Mode & _Mode_max) != 0) {
+                _Cur_max_sse = _mm_set_sd(_Cur_max_val);
+            }
+
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                __m128d _Cur = _mm_load_sd(_Ptr);
+
+                if constexpr ((_Mode & _Mode_min) != 0) {
+                    _Cur_min_sse = _mm_min_sd(_Cur, _Cur_min_sse);
+                }
+
+                if constexpr (_Mode == _Mode_max) {
+                    _Cur_max_sse = _mm_max_sd(_Cur, _Cur_max_sse);
+                } else if constexpr (_Mode == _Mode_both) {
+                    _Cur_max_sse = _mm_max_sd(_Cur_max_sse, _Cur);
+                }
+            }
+
+            if constexpr ((_Mode & _Mode_min) != 0) {
+                _Cur_min_val = _mm_cvtsd_f64(_Cur_min_sse);
+            }
+
+            if constexpr ((_Mode & _Mode_max) != 0) {
+                _Cur_max_val = _mm_cvtsd_f64(_Cur_max_sse);
+            }
+        } else
+#endif // !defined(_M_IX86_FP) || _M_IX86_FP != 0
+        {
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if constexpr ((_Mode & _Mode_min) != 0) {
+                    if (*_Ptr < _Cur_min_val) {
+                        _Cur_min_val = *_Ptr;
+                    }
+                }
+
+                if constexpr (_Mode == _Mode_max) {
+                    if (_Cur_max_val < *_Ptr) {
+                        _Cur_max_val = *_Ptr;
+                    }
+                } else if constexpr (_Mode == _Mode_both) {
+                    if (_Cur_max_val <= *_Ptr) {
+                        _Cur_max_val = *_Ptr;
+                    }
+                }
+
+                // _Mode_both could have been handled separately with 'else'.
+                // We have _Cur_min_val / _Cur_max_val initialized by processing at least one element,
+                // so the 'else' would be correct here.
+                // But still separate 'if' statements promote branchless codegen.
+            }
         }
 
         if constexpr (_Mode == _Mode_min) {
