@@ -582,6 +582,9 @@ std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp
 # test4() constructs a negative_binomial_distribution from (40, 1); [rand.dist.bern.negbin] says p == 1 generates undefined probabilities.
 std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
 
+# libc++ hasn't implemented P0952, which changes the generate_canonical algorithm.
+std/numerics/rand/rand.util/rand.util.canonical/generate_canonical.pass.cpp FAIL
+
 # Assertion failed: (std::lerp(T(2.3), T(2.3), inf) == T(2.3))
 # Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
 # They shouldn't behave differently. Both of them should probably return NaN.

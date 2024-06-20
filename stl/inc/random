@@ -261,30 +261,37 @@ private:
     vector<result_type> _Myvec;
 };
 
-_NODISCARD constexpr int _Generate_canonical_iterations(const int _Bits, const uint64_t _Gmin, const uint64_t _Gmax) {
-    // For a URBG type `G` with range == `(G::max() - G::min()) + 1`, returns the number of calls to generate at least
-    // _Bits bits of entropy. Specifically, max(1, ceil(_Bits / log2(range))).
+struct _Urbg_gen_can_params {
+    int _Kx          = 0; // $k$ in [rand.util.canonical]/1.4
+    uint64_t _Xx     = 0; // $x$ in [rand.util.canonical]/1.4
+    int _Smax_bits   = 0; // number of bits in $R^k$
+    float _Scale     = 0.0f; // $r^{-d}$, always representable as a float
+    bool _Rx_is_pow2 = false;
+};
 
-    _STL_INTERNAL_CHECK(0 <= _Bits && _Bits <= 64);
-
-    if (_Bits == 0 || (_Gmax == UINT64_MAX && _Gmin == 0)) {
-        return 1;
+_NODISCARD constexpr _Urbg_gen_can_params _Generate_canonical_params(size_t _Bits, uint64_t _Rm1) {
+    const auto _Rx        = _Unsigned128{_Rm1} + 1u; // $R$ in [rand.util.canonical]/1.2
+    const auto _Target    = (_Unsigned128{1} << _Bits); // $r^d$
+    _Unsigned128 _Product = 1u;
+    _Urbg_gen_can_params _Result;
+    _Result._Rx_is_pow2 = (_Rx & (_Rx - 1u)) == 0;
+    _Result._Kx         = 0;
+    while (_Product < _Target) {
+        _Product *= _Rx;
+        ++_Result._Kx;
     }
 
-    const auto _Range  = (_Gmax - _Gmin) + 1;
-    const auto _Target = ~uint64_t{0} >> (64 - _Bits);
-    uint64_t _Prod     = 1;
-    int _Ceil          = 0;
-    while (_Prod <= _Target) {
-        ++_Ceil;
-        if (_Prod > UINT64_MAX / _Range) {
-            break;
-        }
-
-        _Prod *= _Range;
+    _Result._Xx        = static_cast<uint64_t>(_Product / _Target);
+    _Result._Scale     = 1.0f / static_cast<float>(uint64_t{1} << _Bits);
+    _Result._Smax_bits = 0;
+    // $S \in [0, _Product)$
+    --_Product;
+    while (_Product > 0u) {
+        ++_Result._Smax_bits;
+        _Product >>= 1;
     }
 
-    return _Ceil;
+    return _Result;
 }
 
 _EXPORT_STD template <class _Real, size_t _Bits, class _Gen>
@@ -294,21 +301,55 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     constexpr auto _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
     constexpr auto _Minbits = static_cast<int>(_Digits < _Bits ? _Digits : _Bits);
 
-    constexpr auto _Gxmin = static_cast<_Real>((_Gen::min)());
-    constexpr auto _Gxmax = static_cast<_Real>((_Gen::max)());
-    constexpr auto _Rx    = (_Gxmax - _Gxmin) + _Real{1};
-
-    constexpr int _Kx = _Generate_canonical_iterations(_Minbits, (_Gen::min)(), (_Gen::max)());
-
-    _Real _Ans{0};
-    _Real _Factor{1};
-
-    for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
-        _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
-        _Factor *= _Rx;
+    if constexpr (_Minbits == 0) {
+        return _Real{0};
     }
 
-    return _Ans / _Factor;
+    using _Result_int_type = std::conditional_t<_Minbits <= 32, uint32_t, uint64_t>;
+
+    constexpr auto _Gxmin                  = (_Gen::min)();
+    constexpr auto _Gxmax                  = (_Gen::max)();
+    constexpr _Urbg_gen_can_params _Params = _Generate_canonical_params(_Minbits, _Gxmax - _Gxmin);
+
+    using _Sx_type = std::conditional_t<_Params._Smax_bits <= 32, uint32_t,
+        std::conditional_t<_Params._Smax_bits <= 64, uint64_t, _Unsigned128>>;
+    _Sx_type _Sx;
+
+    if constexpr (_Params._Rx_is_pow2) {
+        if constexpr (_Params._Kx == 1) {
+            _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
+        } else if constexpr (_Params._Kx > 1) {
+            constexpr int _Rx_bits = _Params._Smax_bits / _Params._Kx;
+            _Sx                    = 0;
+            int _Shift             = 0;
+            for (int _Idx = 0; _Idx < _Params._Kx; ++_Idx) {
+                _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) << _Shift;
+                _Shift += _Rx_bits;
+            }
+        }
+
+        _Sx >>= (_Params._Smax_bits - _Minbits);
+        return static_cast<_Real>(static_cast<_Result_int_type>(_Sx)) * static_cast<_Real>(_Params._Scale);
+    }
+
+    constexpr auto _Rx        = _Sx_type{_Gxmax - _Gxmin} + 1u;
+    constexpr _Sx_type _Limit = static_cast<_Sx_type>(_Params._Xx) * (static_cast<_Sx_type>(1) << _Minbits);
+
+    do {
+        _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
+        if constexpr (_Params._Kx == 2) {
+            _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Rx;
+        } else if constexpr (_Params._Kx > 2) {
+            _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Rx;
+            _Sx_type _Factor = _Rx;
+            for (int _Idx = 2; _Idx < _Params._Kx; ++_Idx) {
+                _Factor *= _Rx;
+                _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Factor;
+            }
+        }
+    } while (_Sx >= _Limit);
+
+    return static_cast<_Real>(static_cast<_Result_int_type>(_Sx / _Params._Xx)) * static_cast<_Real>(_Params._Scale);
 }
 
 template <class _Gen, class = void>
