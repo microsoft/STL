@@ -1637,8 +1637,8 @@ namespace {
         template <class _Fn>
         static __m256d _H_func(const __m256d _Cur, _Fn _Funct) noexcept {
             __m256d _H_min_val = _Cur;
-            _H_min_val         = _Funct(_mm256_permute4x64_pd(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
             _H_min_val         = _Funct(_mm256_shuffle_pd(_H_min_val, _H_min_val, 0b0101), _H_min_val);
+            _H_min_val         = _Funct(_mm256_permute4x64_pd(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
             return _H_min_val;
         }
 
