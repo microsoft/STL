@@ -99,8 +99,17 @@ std/utilities/function.objects/range.cmp/less.pass.cpp FAIL
 std/utilities/function.objects/range.cmp/less_equal.pass.cpp FAIL
 std/utilities/function.objects/range.cmp/not_equal_to.pass.cpp FAIL
 
+# libc++ has not implemented P2407R5: "Freestanding Library: Partial Classes"
+std/language.support/support.limits/support.limits.general/array.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/optional.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/string_view.version.compile.pass.cpp FAIL
+
 # libc++ doesn't implement P2588R3 barrier's Phase Completion Guarantees
 std/language.support/support.limits/support.limits.general/barrier.version.compile.pass.cpp FAIL
+
+# libc++ has not implemented P2833R2: "Freestanding Library: inout expected span"
+std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/mdspan.version.compile.pass.cpp FAIL
 
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
