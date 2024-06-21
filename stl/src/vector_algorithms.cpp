@@ -1385,9 +1385,6 @@ namespace {
         static constexpr _Signed_t _Init_min_val = __builtin_huge_valf();
         static constexpr _Signed_t _Init_max_val = -__builtin_huge_valf();
 
-        using _Minmax_i_t = _Min_max_f;
-        using _Minmax_u_t = void;
-
 #ifndef _M_ARM64EC
 #ifdef _M_IX86
         static constexpr bool _Has_portion_max = false;
@@ -1428,10 +1425,6 @@ namespace {
             return _H_func(_Cur, [](__m128 _Val1, __m128 _Val2) { return _mm_max_ps(_Val1, _Val2); });
         }
 
-        static __m128 _H_max_r(const __m128 _Cur) noexcept {
-            return _H_func(_Cur, [](__m128 _Val1, __m128 _Val2) { return _mm_max_ps(_Val2, _Val1); });
-        }
-
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
             return _Minmax_traits_4_sse::_H_min_u(_Cur);
         }
@@ -1468,10 +1461,6 @@ namespace {
             return _mm_max_ps(_Second, _First);
         }
 
-        static __m128 _Max_r(const __m128 _First, const __m128 _Second, __m128 = _mm_undefined_ps()) noexcept {
-            return _mm_max_ps(_First, _Second);
-        }
-
         static __m128i _Mask_cast(const __m128 _Mask) noexcept {
             return _mm_castps_si128(_Mask);
         }
@@ -1505,10 +1494,6 @@ namespace {
 
         static __m256 _H_max(const __m256 _Cur) noexcept {
             return _H_func(_Cur, [](__m256 _Val1, __m256 _Val2) { return _mm256_max_ps(_Val1, _Val2); });
-        }
-
-        static __m256 _H_max_r(const __m256 _Cur) noexcept {
-            return _H_func(_Cur, [](__m256 _Val1, __m256 _Val2) { return _mm256_max_ps(_Val2, _Val1); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
@@ -1547,10 +1532,6 @@ namespace {
             return _mm256_max_ps(_Second, _First);
         }
 
-        static __m256 _Max_r(const __m256 _First, const __m256 _Second, __m256 = _mm256_undefined_ps()) noexcept {
-            return _mm256_max_ps(_First, _Second);
-        }
-
         static __m256i _Mask_cast(const __m256 _Mask) noexcept {
             return _mm256_castps_si256(_Mask);
         }
@@ -1565,9 +1546,6 @@ namespace {
 
         static constexpr _Signed_t _Init_min_val = __builtin_huge_val();
         static constexpr _Signed_t _Init_max_val = -__builtin_huge_val();
-
-        using _Minmax_i_t = _Min_max_d;
-        using _Minmax_u_t = void;
 
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
@@ -1601,10 +1579,6 @@ namespace {
 
         static __m128d _H_max(const __m128d _Cur) noexcept {
             return _H_func(_Cur, [](__m128d _Val1, __m128d _Val2) { return _mm_max_pd(_Val1, _Val2); });
-        }
-
-        static __m128d _H_max_r(const __m128d _Cur) noexcept {
-            return _H_func(_Cur, [](__m128d _Val1, __m128d _Val2) { return _mm_max_pd(_Val2, _Val1); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
@@ -1642,10 +1616,6 @@ namespace {
             return _mm_max_pd(_Second, _First);
         }
 
-        static __m128d _Max_r(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
-            return _mm_max_pd(_First, _Second);
-        }
-
         static __m128i _Mask_cast(const __m128d _Mask) noexcept {
             return _mm_castpd_si128(_Mask);
         }
@@ -1678,10 +1648,6 @@ namespace {
 
         static __m256d _H_max(const __m256d _Cur) noexcept {
             return _H_func(_Cur, [](__m256d _Val1, __m256d _Val2) { return _mm256_max_pd(_Val1, _Val2); });
-        }
-
-        static __m256d _H_max_r(const __m256d _Cur) noexcept {
-            return _H_func(_Cur, [](__m256d _Val1, __m256d _Val2) { return _mm256_max_pd(_Val2, _Val1); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
@@ -1718,10 +1684,6 @@ namespace {
 
         static __m256d _Max(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
             return _mm256_max_pd(_Second, _First);
-        }
-
-        static __m256d _Max_r(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
-            return _mm256_max_pd(_First, _Second);
         }
 
         static __m256i _Mask_cast(const __m256d _Mask) noexcept {
@@ -2014,6 +1976,14 @@ namespace {
 
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __std_minmax_impl(const void* _First, const void* const _Last) noexcept {
+        static_assert(!_Traits::_Is_floating, "This does not work for floats, see bellow");
+        // The value-based vectorized rather than the position-based one does not work for floats.
+        // Efficient vectorization needs to find vertical minmax first, and then the horizontal one.
+        // This alters order of comparison: index zero element is first compared against
+        // vector size equal index element and only in the end against index one element.
+        // With equivalent but distinguishable +0.0 and -0.0 values, the altered comparison order
+        // will not produce the expected result in some cases (will return +0.0 instead of -0.0 or the reverse)
+
         using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
         _Ty _Cur_min_val; // initialized in both of the branches below
@@ -2061,9 +2031,7 @@ namespace {
                     }
 
                     if constexpr ((_Mode & _Mode_max) != 0) {
-                        if constexpr (_Traits::_Is_floating && _Mode == _Mode_both) {
-                            _Cur_vals_max = _Traits::_Max_r(_Cur_vals_max, _Cur_vals); // Update the current maximum
-                        } else if constexpr (_Sign || _Sign_correction) {
+                        if constexpr (_Sign || _Sign_correction) {
                             _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals); // Update the current maximum
                         } else {
                             _Cur_vals_max = _Traits::_Max_u(_Cur_vals_max, _Cur_vals); // Update the current maximum
@@ -2085,11 +2053,7 @@ namespace {
                     }
 
                     if constexpr ((_Mode & _Mode_max) != 0) {
-                        if constexpr (_Traits::_Is_floating && _Mode == _Mode_both) {
-                            const auto _H_max =
-                                _Traits::_H_max_r(_Cur_vals_max); // Vector populated by the largest element
-                            _Cur_max_val = _Traits::_Get_any(_H_max); // Get any element of it
-                        } else if constexpr (_Sign || _Sign_correction) {
+                        if constexpr (_Sign || _Sign_correction) {
                             const auto _H_max =
                                 _Traits::_H_max(_Cur_vals_max); // Vector populated by the largest element
                             _Cur_max_val = _Traits::_Get_any(_H_max); // Get any element of it
@@ -2125,101 +2089,28 @@ namespace {
             _Advance_bytes(_First, sizeof(_Ty));
         }
 
-#if !defined(_M_IX86_FP) || _M_IX86_FP == 2
-        // TRANSITION, DevCom-10686775: Spell out SSE2 minss/maxss/minsd/maxsd explicitly
-        // to avoid the compiler messing with comparison. Not applicable to /arch:IA32
-        if constexpr (_STD is_same_v<_Ty, float>) {
-            __m128 _Cur_min_sse = _mm_undefined_ps();
-            __m128 _Cur_max_sse = _mm_undefined_ps();
-
-            if constexpr ((_Mode & _Mode_min) != 0) {
-                _Cur_min_sse = _mm_set_ss(_Cur_min_val);
-            }
-
-            if constexpr ((_Mode & _Mode_max) != 0) {
-                _Cur_max_sse = _mm_set_ss(_Cur_max_val);
-            }
-
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                __m128 _Cur = _mm_load_ss(_Ptr);
-
-                if constexpr ((_Mode & _Mode_min) != 0) {
-                    _Cur_min_sse = _mm_min_ss(_Cur, _Cur_min_sse);
-                }
-
-                if constexpr (_Mode == _Mode_max) {
-                    _Cur_max_sse = _mm_max_ss(_Cur, _Cur_max_sse);
-                } else if constexpr (_Mode == _Mode_both) {
-                    _Cur_max_sse = _mm_max_ss(_Cur_max_sse, _Cur);
-                }
-            }
-
-            if constexpr ((_Mode & _Mode_min) != 0) {
-                _Cur_min_val = _mm_cvtss_f32(_Cur_min_sse);
-            }
-
-            if constexpr ((_Mode & _Mode_max) != 0) {
-                _Cur_max_val = _mm_cvtss_f32(_Cur_max_sse);
-            }
-        } else if constexpr (_STD is_same_v<_Ty, double>) {
-            __m128d _Cur_min_sse = _mm_undefined_pd();
-            __m128d _Cur_max_sse = _mm_undefined_pd();
-
-            if constexpr ((_Mode & _Mode_min) != 0) {
-                _Cur_min_sse = _mm_set_sd(_Cur_min_val);
-            }
-
-            if constexpr ((_Mode & _Mode_max) != 0) {
-                _Cur_max_sse = _mm_set_sd(_Cur_max_val);
-            }
-
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                __m128d _Cur = _mm_load_sd(_Ptr);
-
-                if constexpr ((_Mode & _Mode_min) != 0) {
-                    _Cur_min_sse = _mm_min_sd(_Cur, _Cur_min_sse);
-                }
-
-                if constexpr (_Mode == _Mode_max) {
-                    _Cur_max_sse = _mm_max_sd(_Cur, _Cur_max_sse);
-                } else if constexpr (_Mode == _Mode_both) {
-                    _Cur_max_sse = _mm_max_sd(_Cur_max_sse, _Cur);
-                }
-            }
-
-            if constexpr ((_Mode & _Mode_min) != 0) {
-                _Cur_min_val = _mm_cvtsd_f64(_Cur_min_sse);
-            }
-
-            if constexpr ((_Mode & _Mode_max) != 0) {
-                _Cur_max_val = _mm_cvtsd_f64(_Cur_max_sse);
-            }
-        } else
-#endif // !defined(_M_IX86_FP) || _M_IX86_FP != 0
-        {
 #pragma loop(no_vector) // TRANSITION, VSO-2093761: work around a compiler back-end assertion
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if constexpr ((_Mode & _Mode_min) != 0) {
-                    if (*_Ptr < _Cur_min_val) {
-                        _Cur_min_val = *_Ptr;
-                    }
+        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+            if constexpr ((_Mode & _Mode_min) != 0) {
+                if (*_Ptr < _Cur_min_val) {
+                    _Cur_min_val = *_Ptr;
                 }
-
-                if constexpr (_Mode == _Mode_max) {
-                    if (_Cur_max_val < *_Ptr) {
-                        _Cur_max_val = *_Ptr;
-                    }
-                } else if constexpr (_Mode == _Mode_both) {
-                    if (_Cur_max_val <= *_Ptr) {
-                        _Cur_max_val = *_Ptr;
-                    }
-                }
-
-                // _Mode_both could have been handled separately with 'else'.
-                // We have _Cur_min_val / _Cur_max_val initialized by processing at least one element,
-                // so the 'else' would be correct here.
-                // But still separate 'if' statements promote branchless codegen.
             }
+
+            if constexpr (_Mode == _Mode_max) {
+                if (_Cur_max_val < *_Ptr) {
+                    _Cur_max_val = *_Ptr;
+                }
+            } else if constexpr (_Mode == _Mode_both) {
+                if (_Cur_max_val <= *_Ptr) {
+                    _Cur_max_val = *_Ptr;
+                }
+            }
+
+            // _Mode_both could have been handled separately with 'else'.
+            // We have _Cur_min_val / _Cur_max_val initialized by processing at least one element,
+            // so the 'else' would be correct here.
+            // But still separate 'if' statements promote branchless codegen.
         }
 
         if constexpr (_Mode == _Mode_min) {
@@ -2372,11 +2263,11 @@ __declspec(noalias) uint64_t __stdcall __std_min_8u(const void* const _First, co
 }
 
 __declspec(noalias) float __stdcall __std_min_f(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_disp<_Mode_min, _Minmax_traits_f, true>(_First, _Last);
+    return *static_cast<const float*>(__std_minmax_element_disp<_Mode_min, _Minmax_traits_f>(_First, _Last, false));
 }
 
 __declspec(noalias) double __stdcall __std_min_d(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_disp<_Mode_min, _Minmax_traits_d, true>(_First, _Last);
+    return *static_cast<const double*>(__std_minmax_element_disp<_Mode_min, _Minmax_traits_d>(_First, _Last, false));
 }
 
 __declspec(noalias) int8_t __stdcall __std_max_1i(const void* const _First, const void* const _Last) noexcept {
@@ -2412,11 +2303,11 @@ __declspec(noalias) uint64_t __stdcall __std_max_8u(const void* const _First, co
 }
 
 __declspec(noalias) float __stdcall __std_max_f(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_disp<_Mode_max, _Minmax_traits_f, true>(_First, _Last);
+    return *static_cast<const float*>(__std_minmax_element_disp<_Mode_max, _Minmax_traits_f>(_First, _Last, false));
 }
 
 __declspec(noalias) double __stdcall __std_max_d(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_disp<_Mode_max, _Minmax_traits_d, true>(_First, _Last);
+    return *static_cast<const double*>(__std_minmax_element_disp<_Mode_max, _Minmax_traits_d>(_First, _Last, false));
 }
 
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* const _First, const void* const _Last) noexcept {
@@ -2452,11 +2343,13 @@ __declspec(noalias) _Min_max_8u __stdcall __std_minmax_8u(const void* const _Fir
 }
 
 __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_disp<_Mode_both, _Minmax_traits_f, true>(_First, _Last);
+    _Min_max_element_t _Result = __std_minmax_element_disp<_Mode_both, _Minmax_traits_f>(_First, _Last, false);
+    return {*static_cast<const float*>(_Result._Min), *static_cast<const float*>(_Result._Max)};
 }
 
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* const _First, const void* const _Last) noexcept {
-    return __std_minmax_disp<_Mode_both, _Minmax_traits_d, true>(_First, _Last);
+    _Min_max_element_t _Result = __std_minmax_element_disp<_Mode_both, _Minmax_traits_d>(_First, _Last, false);
+    return {*static_cast<const double*>(_Result._Min), *static_cast<const double*>(_Result._Max)};
 }
 
 } // extern "C"
