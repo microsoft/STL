@@ -2097,12 +2097,8 @@ namespace {
                 }
             }
 
-            if constexpr (_Mode == _Mode_max) {
+            if constexpr ((_Mode & _Mode_max) != 0) {
                 if (_Cur_max_val < *_Ptr) {
-                    _Cur_max_val = *_Ptr;
-                }
-            } else if constexpr (_Mode == _Mode_both) {
-                if (_Cur_max_val <= *_Ptr) {
                     _Cur_max_val = *_Ptr;
                 }
             }
