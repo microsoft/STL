@@ -118,12 +118,16 @@ void test_case_min_max_element(const std::vector<T>& input) {
         assert(*expected_minmax.first == actual_minmax_value.min);
         assert(*expected_minmax.second == actual_minmax_value.max);
 
+#ifndef _M_FP_FAST
+        // With /fp:fast mode the compiler does not try to produce the code that correctly
+        // distincts +0.0 and -0.0, so the algorithms are not expected to either.
         if constexpr (std::is_floating_point_v<T>) {
             assert(signbit(*expected_min) == signbit(actual_min_value));
             assert(signbit(*expected_max) == signbit(actual_max_value));
             assert(signbit(*expected_minmax.first) == signbit(actual_minmax_value.min));
             assert(signbit(*expected_minmax.second) == signbit(actual_minmax_value.max));
         }
+#endif // !defined(_M_FP_FAST)
     }
 #endif // _HAS_CXX20
 }
