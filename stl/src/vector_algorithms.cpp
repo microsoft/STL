@@ -1992,7 +1992,7 @@ namespace {
         // will not produce the expected result in some cases (will return +0.0 instead of -0.0 or the reverse)
         //
         // The result is still acceptable for /fp:fast when +0.0 / -0.0 are not expected to be properly distinguished,
-        // and even the compiler itself takes advantage of it.
+        // and the compiler itself takes advantage of it.
 
         using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 

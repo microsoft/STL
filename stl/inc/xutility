@@ -6783,6 +6783,24 @@ constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms
 #endif // _HAS_CXX20
             is_same<_Pr, less<>>, is_same<_Pr, less<_Elem>>>>; // predicate is less
 
+// The value-based vectorized rather than the position-based one does not always produce
+// the expected results for floatting point types.
+//
+// Efficient vectorization needs to find vertical minmax first, and then the horizontal one.
+// This alters order of comparison: index zero element is first compared against
+// vector size equal index element and only in the end against index one element.
+// With equivalent but distinguishable +0.0 and -0.0 values, the altered comparison order
+// will not produce the expected result in some cases (will return +0.0 instead of -0.0 or the reverse)
+//
+// The result is still acceptable for /fp:fast when +0.0 / -0.0 are not expected to be properly distinguished,
+// and the compiler itself takes advantage of it.
+template <class _Iter, class _Pr, class _Elem = _Iter_value_t<_Iter>>
+constexpr bool _Is_min_max_value_optimization_safe = // Activate the vector algorithms for ranges::min/max?
+#ifndef _M_FP_FAST
+    !is_floating_point_v<_Elem> &&
+#endif // !_M_FP_FAST
+    _Is_min_max_optimization_safe<_Iter, _Pr, _Elem>;
+
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
 #if _USE_STD_VECTOR_ALGORITHMS
@@ -6913,7 +6931,7 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::max must not be empty. (N4971 [alg.min.max]/13)");
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+    if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_Is_constant_evaluated()) {
             return static_cast<_Ty>(_STD _Max_vectorized(_Ilist.begin(), _Ilist.end()));
         }
@@ -6959,7 +6977,7 @@ namespace ranges {
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::max must not be empty. (N4971 [alg.min.max]/13)");
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
                     return static_cast<_Ty>(_STD _Max_vectorized(_First, _Last));
                 }
@@ -6978,7 +6996,7 @@ namespace ranges {
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::max must not be empty. (N4971 [alg.min.max]/13)");
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<decltype(_UFirst), _Pr>
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>
                           && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_UFirst);
@@ -7137,7 +7155,7 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::min must not be empty. (N4971 [alg.min.max]/5)");
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+    if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_Is_constant_evaluated()) {
             return static_cast<_Ty>(_STD _Min_vectorized(_Ilist.begin(), _Ilist.end()));
         }
@@ -7177,7 +7195,7 @@ namespace ranges {
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::min must not be empty. (N4971 [alg.min.max]/5)");
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
                     return static_cast<_Ty>(_STD _Min_vectorized(_First, _Last));
                 }
@@ -7196,7 +7214,7 @@ namespace ranges {
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::min must not be empty. (N4971 [alg.min.max]/5)");
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<decltype(_UFirst), _Pr>
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>
                           && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_UFirst);
