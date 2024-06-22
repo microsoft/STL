@@ -425,7 +425,8 @@ void test_min_max_element_floating_any(mt19937_64& gen) {
 template <class T>
 void test_min_max_element_floating_zero(mt19937_64& gen) {
     test_min_max_element_floating_with_values<T>(gen, {-0, +0});
-    test_min_max_element_floating_with_values<T>(gen, {-0, +0, +1, -1});
+    test_min_max_element_floating_with_values<T>(gen, {-0, +0, +1});
+    test_min_max_element_floating_with_values<T>(gen, {-0, +0, -1});
 }
 
 template <class T>
