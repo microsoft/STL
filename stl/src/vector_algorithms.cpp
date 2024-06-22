@@ -1385,6 +1385,9 @@ namespace {
         static constexpr _Signed_t _Init_min_val = __builtin_huge_valf();
         static constexpr _Signed_t _Init_max_val = -__builtin_huge_valf();
 
+        using _Minmax_i_t = _Min_max_f;
+        using _Minmax_u_t = void;
+
 #ifndef _M_ARM64EC
 #ifdef _M_IX86
         static constexpr bool _Has_portion_max = false;
@@ -1546,6 +1549,9 @@ namespace {
 
         static constexpr _Signed_t _Init_min_val = __builtin_huge_val();
         static constexpr _Signed_t _Init_max_val = -__builtin_huge_val();
+
+        using _Minmax_i_t = _Min_max_d;
+        using _Minmax_u_t = void;
 
 #ifndef _M_ARM64EC
         static constexpr bool _Has_portion_max = false;
@@ -1976,13 +1982,17 @@ namespace {
 
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __std_minmax_impl(const void* _First, const void* const _Last) noexcept {
-        static_assert(!_Traits::_Is_floating, "This does not work for floats, see bellow");
-        // The value-based vectorized rather than the position-based one does not work for floats.
+        // The value-based vectorized rather than the position-based one does not always produce
+        // the expected results for floatting point types.
+        //
         // Efficient vectorization needs to find vertical minmax first, and then the horizontal one.
         // This alters order of comparison: index zero element is first compared against
         // vector size equal index element and only in the end against index one element.
         // With equivalent but distinguishable +0.0 and -0.0 values, the altered comparison order
         // will not produce the expected result in some cases (will return +0.0 instead of -0.0 or the reverse)
+        //
+        // The result is still acceptable for /fp:fast when +0.0 / -0.0 are not expected to be properly distinguished,
+        // and even the compiler itself takes advantage of it.
 
         using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
@@ -2259,11 +2269,11 @@ __declspec(noalias) uint64_t __stdcall __std_min_8u(const void* const _First, co
 }
 
 __declspec(noalias) float __stdcall __std_min_f(const void* const _First, const void* const _Last) noexcept {
-    return *static_cast<const float*>(__std_minmax_element_disp<_Mode_min, _Minmax_traits_f>(_First, _Last, false));
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_f, true>(_First, _Last);
 }
 
 __declspec(noalias) double __stdcall __std_min_d(const void* const _First, const void* const _Last) noexcept {
-    return *static_cast<const double*>(__std_minmax_element_disp<_Mode_min, _Minmax_traits_d>(_First, _Last, false));
+    return __std_minmax_disp<_Mode_min, _Minmax_traits_d, true>(_First, _Last);
 }
 
 __declspec(noalias) int8_t __stdcall __std_max_1i(const void* const _First, const void* const _Last) noexcept {
@@ -2299,11 +2309,11 @@ __declspec(noalias) uint64_t __stdcall __std_max_8u(const void* const _First, co
 }
 
 __declspec(noalias) float __stdcall __std_max_f(const void* const _First, const void* const _Last) noexcept {
-    return *static_cast<const float*>(__std_minmax_element_disp<_Mode_max, _Minmax_traits_f>(_First, _Last, false));
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_f, true>(_First, _Last);
 }
 
 __declspec(noalias) double __stdcall __std_max_d(const void* const _First, const void* const _Last) noexcept {
-    return *static_cast<const double*>(__std_minmax_element_disp<_Mode_max, _Minmax_traits_d>(_First, _Last, false));
+    return __std_minmax_disp<_Mode_max, _Minmax_traits_d, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* const _First, const void* const _Last) noexcept {
@@ -2339,13 +2349,11 @@ __declspec(noalias) _Min_max_8u __stdcall __std_minmax_8u(const void* const _Fir
 }
 
 __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* const _First, const void* const _Last) noexcept {
-    _Min_max_element_t _Result = __std_minmax_element_disp<_Mode_both, _Minmax_traits_f>(_First, _Last, false);
-    return {*static_cast<const float*>(_Result._Min), *static_cast<const float*>(_Result._Max)};
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_f, true>(_First, _Last);
 }
 
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* const _First, const void* const _Last) noexcept {
-    _Min_max_element_t _Result = __std_minmax_element_disp<_Mode_both, _Minmax_traits_d>(_First, _Last, false);
-    return {*static_cast<const double*>(_Result._Min), *static_cast<const double*>(_Result._Max)};
+    return __std_minmax_disp<_Mode_both, _Minmax_traits_d, true>(_First, _Last);
 }
 
 } // extern "C"
