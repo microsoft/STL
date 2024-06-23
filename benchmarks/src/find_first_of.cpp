@@ -38,7 +38,7 @@ void bm(benchmark::State& state) {
         benchmark::DoNotOptimize(h);
         benchmark::DoNotOptimize(n);
         if constexpr (Alg == AlgType::str_member) {
-            benchmark::DoNotOptimize(h.find_first_of(n.data(), n.size()));
+            benchmark::DoNotOptimize(h.find_first_of(n.data(), 0, n.size()));
         } else {
             benchmark::DoNotOptimize(find_first_of(h.begin(), h.end(), n.begin(), n.end()));
         }
