@@ -701,7 +701,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
                     _Haystack + _Start_at, _Haystack + _Hay_size, _Needle, _Needle + _Needle_size);
 
                 if (_Found != _Haystack + _Hay_size) {
-                    return _Found - _Haystack;
+                    return static_cast<size_t>(_Found - _Haystack);
                 } else {
                     return static_cast<size_t>(-1); // no match
                 }
