@@ -270,11 +270,11 @@ struct _Urbg_gen_can_params {
 };
 
 _NODISCARD constexpr _Urbg_gen_can_params _Generate_canonical_params(size_t _Bits, uint64_t _Rm1) {
-    const auto _Rx        = _Unsigned128{_Rm1} + 1u; // $R$ in N4981 [rand.util.canonical]/1.2
+    const auto _Rx        = _Unsigned128{_Rm1} + 1; // $R$ in N4981 [rand.util.canonical]/1.2
     const auto _Target    = (_Unsigned128{1} << _Bits); // $r^d$
-    _Unsigned128 _Product = 1u;
+    _Unsigned128 _Product = 1;
     _Urbg_gen_can_params _Result;
-    _Result._Rx_is_pow2 = (_Rx & (_Rx - 1u)) == 0;
+    _Result._Rx_is_pow2 = (_Rx & (_Rx - 1)) == 0;
     _Result._Kx         = 0;
     while (_Product < _Target) {
         _Product *= _Rx;
@@ -282,11 +282,11 @@ _NODISCARD constexpr _Urbg_gen_can_params _Generate_canonical_params(size_t _Bit
     }
 
     _Result._Xx        = static_cast<uint64_t>(_Product / _Target);
-    _Result._Scale     = 1.0f / static_cast<float>(uint64_t{1} << _Bits);
+    _Result._Scale     = 1.0f / static_cast<float>(1ULL << _Bits);
     _Result._Smax_bits = 0;
     // $S \in [0, _Product)$
     --_Product;
-    while (_Product > 0u) {
+    while (_Product > 0) {
         ++_Result._Smax_bits;
         _Product >>= 1;
     }
@@ -316,6 +316,7 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     _Sx_type _Sx;
 
     if constexpr (_Params._Rx_is_pow2) {
+        // Always needs only one attempt. Multiplications can be replaced with shift/add. Optimize k=1 case.
         if constexpr (_Params._Kx == 1) {
             _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
         } else if constexpr (_Params._Kx > 1) {
@@ -336,6 +337,7 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     constexpr _Sx_type _Limit = static_cast<_Sx_type>(_Params._Xx) * (static_cast<_Sx_type>(1) << _Minbits);
 
     do {
+        // unroll first two iterations to avoid unnecessary multiplications
         _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
         if constexpr (_Params._Kx == 2) {
             _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Rx;

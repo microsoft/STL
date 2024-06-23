@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <__msvc_int128.hpp>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -33,16 +34,10 @@ int main() {
             assert(eng() == values[i]);
         }
 
-        constexpr float expected1 = 0.8964107f;
-        constexpr float expected2 = 0.5677083f;
-        constexpr float expected3 = 0.8684871f;
+        const auto expected1 = ldexpf(0xE57B2C >> (1 * 24 - 24), -24);
+        const auto expected2 = ldexpf(0x91555'57B2C >> (2 * 20 - 24), -24);
+        const auto expected3 = ldexpf(0xDE'55'2C >> (3 * 8 - 24), -24);
 
-#ifdef __cpp_hex_float
-        // independent_bits_engine keeps lower 24, 20, or 8 bits
-        static_assert(expected1 == 0x0.E57B2Cp0f, "expected value mismatch");
-        static_assert(expected2 == 0x0.91555'5p0f, "expected value mismatch"); // upper 24 bits of cat(91555, 57B2C)
-        static_assert(expected3 == 0x0.DE'55'2Cp0f, "expected value mismatch");
-#endif
         assert((generate_with_ibe<float, 24, Engine>) () == expected1);
         assert((generate_with_ibe<float, 20, Engine>) () == expected2); // needs a 64 bit accumulator for $S$
         assert((generate_with_ibe<float, 8, Engine>) () == expected3);
@@ -51,24 +46,18 @@ int main() {
     {
         // double, URBG range is a power of two
         using Engine                = mt19937_64;
-        constexpr uint64_t values[] = {0xC96D191CF6F6AEA6, 0x401F7AC78BC80F1C, 0xB5EE8CB6ABE457F8};
+        constexpr uint64_t values[] = {0xC96D191C'F6'F6AEA6, 0x401F7AC7'8B'C80F1C, 0xB5EE8CB6AB'E457F8};
         Engine eng;
         for (size_t i = 0; i < std::size(values); ++i) {
             assert(eng() == values[i]);
         }
 
-        constexpr double expected1 = 0.7868209548678019;
-        constexpr double expected2 = 0.5460214086260416;
-        constexpr double expected3 = 0.8919673431802158;
+        const auto expected1 = ldexp(0xC96D191C'F6F'6AEA6 >> (1 * 64 - 53), -53);
+        const auto expected2 = ldexp(0x8B'C80F1C'F6'F6AEA6 >> (2 * 32 - 53), -53);
+        const auto expected3 =
+            ldexp(static_cast<uint64_t>(_Unsigned128{0x57F8'C80F1C'F6AEA6, 0xE4} >> (3 * 24 - 53)), -53);
 
-#ifdef __cpp_hex_float
-        // upper 53 bits of C96D191CF6F6AEA6
-        static_assert(expected1 == 0x0.C96D191CF6F6A8p0, "expected value mismatch");
-        // upper 53 bits of cat(8BC80F1C, F6F6AEA6)
-        static_assert(expected2 == 0x0.8BC80F1C'F6F6A8p0, "expected value mismatch");
-        // upper 53 bits of cat(E457F8, C80F1C, F6AEA6)
-        static_assert(expected3 == 0x0.E457F8'C80F1C'F0p0, "expected value mismatch");
-#endif
+
         assert((generate_with_ibe<double, 64, Engine>) () == expected1);
         assert((generate_with_ibe<double, 32, Engine>) () == expected2);
         assert((generate_with_ibe<double, 24, Engine>) () == expected3); // needs a 128 bit accumulator for $S$
@@ -76,23 +65,18 @@ int main() {
 
     {
         // $k \in \{1,2\}$, URBG range is NOT a power of two
-        using Engine                = minstd_rand; // R = 2^31-2 = 2'147'483'646, minstd_rand::min() == 1
-        constexpr uint32_t values[] = {48270 + 1, 182605793 + 1};
+        using Engine                = minstd_rand;
+        constexpr uint32_t values[] = {48271 - 1, 182605794 - 1}; // minstd_rand::min() == 1
         Engine eng;
         for (size_t i = 0; i < std::size(values); ++i) {
-            assert(eng() == values[i]);
+            assert(eng() - Engine::min() == values[i]);
         }
 
-        constexpr float expected1  = 2.2649765e-5f;
-        constexpr double expected2 = 0.08519885256797011;
-
-#ifdef __cpp_hex_float
-        static_assert(expected1 == 0x0.00017Cp0f, "expected value mismatch"); // 48270 / 127 = 380 = 0x17C
-
-        // 392,142,954,132,409,548 / 511 = 0x0002B9F2F1ADF500
-        // p=3 to get bottom 53 bits of a 56-bit constant
-        static_assert(expected2 == 0x0.02B9F2F1ADF500p3, "expected value mismatch");
-#endif
+        constexpr uint64_t range = Engine::max() - Engine::min() + 1;
+        constexpr auto x1        = range / (1 << 24);
+        constexpr auto x2        = (range * range) / (1ULL << 53);
+        const float expected1    = ldexpf(static_cast<float>(values[0] / x1), -24);
+        const double expected2   = ldexp((values[0] + range * values[1]) / x2, -53);
 
         // $k$ == 1
         eng.seed();
@@ -111,15 +95,14 @@ int main() {
         constexpr uint32_t values[] = {149, 11249, 57305, 38044};
         Engine eng;
         for (size_t i = 0; i < std::size(values); ++i) {
-            assert(eng() == values[i]);
+            assert(eng() - Engine::min() == values[i]);
         }
 
-        constexpr double expected = 0.5805452877334312;
-
-#ifdef __cpp_hex_float
-        // 10,709,170,346,016,678,139 / 2,048 = 0x001293D3B6152F14
-        static_assert(expected == 0x0.1293D3B6152F14p3, "expected value mismatch");
-#endif
+        constexpr _Unsigned128 range = Engine::max() - Engine::min() + 1;
+        constexpr auto x             = static_cast<uint64_t>((range * range * range * range) / (1ULL << 53));
+        const auto expected          = ldexp(
+            static_cast<uint64_t>((values[0] + range * (values[1] + range * (values[2] + range * values[3]))) / x),
+            -53);
 
         eng.seed();
         assert((generate_canonical<double, 64, Engine>) (eng) == expected);
