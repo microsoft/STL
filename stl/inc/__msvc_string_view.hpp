@@ -695,6 +695,18 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
     // in [_Haystack, _Haystack + _Hay_size), look for one of [_Needle, _Needle + _Needle_size), at/after _Start_at
     if (_Needle_size != 0 && _Start_at < _Hay_size) { // room for match, look for it
         if constexpr (_Special) {
+#if _USE_STD_VECTOR_ALGORITHMS
+            if (!_STD _Is_constant_evaluated() && _Hay_size - _Start_at > _Threshold_find_first_of) {
+                const _Traits_ptr_t<_Traits> _Found = _STD _Find_first_of_vectorized(
+                    _Haystack + _Start_at, _Haystack + _Hay_size, _Needle, _Needle + _Needle_size);
+
+                if (_Found != _Haystack + _Hay_size) {
+                    return _Found - _Haystack;
+                } else {
+                    return static_cast<size_t>(-1); // no match
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
             _String_bitmap<typename _Traits::char_type> _Matches;
             if (!_Matches._Mark(_Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the
                                                                     // bitmap, fall back to the serial algorithm
