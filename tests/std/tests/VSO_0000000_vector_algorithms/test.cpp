@@ -1212,7 +1212,6 @@ static_assert(test_constexpr());
 #endif // _HAS_CXX20
 
 int main() {
-    _set_abort_behavior(_CALL_REPORTFAULT, _CALL_REPORTFAULT);
 #if _HAS_CXX20
     assert(test_constexpr());
 #endif // _HAS_CXX20
