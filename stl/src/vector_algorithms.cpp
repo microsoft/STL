@@ -3262,61 +3262,6 @@ namespace {
         return _Result;
     }
 
-#ifndef _M_ARM64EC
-    template <class _Ty>
-    bool _Equal_avx2(const void* _First1, const void* _First2, size_t _Size) noexcept {
-        // no need for DevCom-10331414 workaround; this function is called only from AVX2 path
-
-        // preconditions: non-zero length needle, first is already equal
-        _Advance_bytes(_First1, sizeof(_Ty));
-        _Advance_bytes(_First2, sizeof(_Ty));
-        _Size -= sizeof(_Ty);
-
-        const void* _Stop1 = _First1;
-        _Advance_bytes(_Stop1, _Size & ~size_t{0x1F});
-
-        while (_First1 != _Stop1) {
-            const __m256i _Data1 = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
-            const __m256i _Data2 = _mm256_loadu_si256(static_cast<const __m256i*>(_First2));
-            const __m256i _Eq    = _mm256_xor_si256(_Data1, _Data2);
-            if (!_mm256_testz_si256(_Eq, _Eq)) {
-                return false;
-            }
-
-            _Advance_bytes(_First1, 32);
-            _Advance_bytes(_First2, 32);
-        }
-
-        if (const size_t _Avx_tail_size = _Size & 0x1C; _Avx_tail_size != 0) {
-            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
-            const __m256i _Data1     = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
-            const __m256i _Data2     = _mm256_maskload_epi32(static_cast<const int*>(_First2), _Tail_mask);
-            const __m256i _Eq        = _mm256_xor_si256(_Data1, _Data2);
-            if (!_mm256_testz_si256(_Eq, _Eq)) {
-                return false;
-            }
-
-            _Advance_bytes(_First1, _Avx_tail_size);
-            _Advance_bytes(_First2, _Avx_tail_size);
-        }
-
-        if constexpr (sizeof(_Ty) <= 2) {
-            const void* _Stop1_final_tail = _First1;
-            _Advance_bytes(_Stop1_final_tail, _Size & 0x3);
-
-            while (_First1 != _Stop1_final_tail) {
-                if (*static_cast<const _Ty*>(_First1) != *static_cast<const _Ty*>(_First2)) {
-                    return false;
-                }
-                _Advance_bytes(_First1, sizeof(_Ty));
-                _Advance_bytes(_First2, sizeof(_Ty));
-            }
-        }
-
-        return true;
-    }
-#endif // !defined(_M_ARM64EC)
-
     template <class _Traits, class _Ty>
     const void* __stdcall __std_search_impl(
         const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
@@ -3331,106 +3276,98 @@ namespace {
         }
 
         const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
-        if (_Size_bytes_1 < _Size_bytes_2) {
-            return _Last1;
-        }
-
-        const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
 
 #ifndef _M_ARM64EC
-        if (_Use_avx2()) {
-            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+        if (_Use_sse42() && _Size_bytes_2 <= 16 && _Size_bytes_1 >= 16) {
+            constexpr int _Op_elem      = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS);
+            constexpr int _Op_srch      = _Op_elem | _SIDD_BIT_MASK | _SIDD_CMP_EQUAL_ORDERED;
+            constexpr int _Op_cmp       = _Op_elem | _SIDD_BIT_MASK | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
+            constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
 
-            const __m256i _Comparand = _Traits::_Set_avx(*static_cast<const _Ty*>(_First2));
-            const void* _Stop1       = _First1;
-            _Advance_bytes(_Stop1, _Max_pos & ~size_t{0x1F});
+            const int _Size_el_2 = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
+
+            alignas(16) uint8_t _Tmp2[16];
+            memcpy(_Tmp2, _First2, _Size_bytes_2);
+            const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+
+            const void* _Stop1 = _First1;
+            _Advance_bytes(_Stop1, _Size_bytes_1 & ~size_t{0xF});
 
             while (_First1 != _Stop1) {
-                const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
-                long _Bingo         = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+                const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+
+                // TRANSITION, DevCom-10689455: could _mm_cmpestrc as a faster initial check,
+                // but currently the compiler fails to fuse the underlying instruction with the _mm_cmpestrm below.
+
+                long _Bingo = _mm_cvtsi128_si32(_mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op_srch));
 
                 while (_Bingo != 0) {
                     const unsigned long _Offset = _tzcnt_u32(_Bingo);
 
                     const void* _Match1 = _First1;
-                    _Advance_bytes(_Match1, _Offset);
+                    _Advance_bytes(_Match1, _Offset * sizeof(_Ty));
 
-                    if (_Equal_avx2<_Ty>(_Match1, _First2, _Size_bytes_2)) {
+                    __m128i _Match_data = _mm_undefined_si128();
+
+                    const size_t _Match_byte_length = _Byte_length(_Match1, _Last1);
+
+                    if (_Match_byte_length < _Size_bytes_2) {
+                        return _Last1;
+                    }
+
+                    if (_Match_byte_length >= 16) {
+                        _Match_data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Match1));
+                    } else {
+                        alignas(16) uint8_t _Tmp1[16];
+                        memcpy(_Tmp1, _Match1, _Match_byte_length);
+                        _Match_data = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    }
+
+                    if (!_mm_cmpestrc(_Data2, _Size_el_2, _Match_data, _Size_el_2, _Op_cmp)) {
                         return _Match1;
                     }
 
                     _bittestandreset(&_Bingo, _Offset);
                 }
 
-                _Advance_bytes(_First1, 32);
+                _Advance_bytes(_First1, 16);
             }
-
-            if (const size_t _Avx_tail_size = _Max_pos & 0x1C; _Avx_tail_size != 0) {
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
-                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
-                long _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
-
-                while (_Bingo != 0) {
-                    const unsigned long _Offset = _tzcnt_u32(_Bingo);
-
-                    const void* _Match1 = _First1;
-                    _Advance_bytes(_Match1, _Offset);
-
-                    if (_Equal_avx2<_Ty>(_Match1, _First2, _Size_bytes_2)) {
-                        return _Match1;
-                    }
-
-                    _bittestandreset(&_Bingo, _Offset);
-                }
-
-                _Advance_bytes(_First1, _Avx_tail_size);
-            }
-
-            if constexpr (sizeof(_Ty) <= 2) {
-                const void* _Stop1_final_tail = _First1;
-                _Advance_bytes(_Stop1_final_tail, _Max_pos & 0x3);
-
-                while (_First1 != _Stop1_final_tail) {
-                    if (*static_cast<const _Ty*>(_First1) == *static_cast<const _Ty*>(_First2)) {
-                        if (_Equal_avx2<_Ty>(_First1, _First2, _Size_bytes_2)) {
-                            return _First1;
-                        }
-                    }
-
-                    _Advance_bytes(_First1, sizeof(_Ty));
-                }
-            }
-
-            return _Last1;
-        } else
+        }
 #endif // !defined(_M_ARM64EC)
-        {
-            auto _Ptr1           = static_cast<const _Ty*>(_First1);
-            const auto _Ptr2     = static_cast<const _Ty*>(_First2);
-            const size_t _Count2 = _Size_bytes_2 / sizeof(_Ty);
-            const void* _Stop1   = _Ptr1;
-            _Advance_bytes(_Stop1, _Max_pos);
+        const size_t _Size_bytes_1_tail = _Byte_length(_First1, _Last1);
 
-            for (; _Ptr1 != _Stop1; ++_Ptr1) {
-                if (*_Ptr1 != *_Ptr2) {
-                    continue;
-                }
-
-                bool _Equal = true;
-
-                for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
-                    if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
-                        _Equal = false;
-                        break;
-                    }
-                }
-
-                if (_Equal) {
-                    return _Ptr1;
-                }
-            }
+        if (_Size_bytes_1_tail < _Size_bytes_2) {
             return _Last1;
         }
+
+        const size_t _Max_pos = _Size_bytes_1_tail - _Size_bytes_2 + sizeof(_Ty);
+
+        auto _Ptr1           = static_cast<const _Ty*>(_First1);
+        const auto _Ptr2     = static_cast<const _Ty*>(_First2);
+        const size_t _Count2 = _Size_bytes_2 / sizeof(_Ty);
+        const void* _Stop1   = _Ptr1;
+        _Advance_bytes(_Stop1, _Max_pos);
+
+        for (; _Ptr1 != _Stop1; ++_Ptr1) {
+            if (*_Ptr1 != *_Ptr2) {
+                continue;
+            }
+
+            bool _Equal = true;
+
+            for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
+                if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
+                    _Equal = false;
+                    break;
+                }
+            }
+
+            if (_Equal) {
+                return _Ptr1;
+            }
+        }
+
+        return _Last1;
     }
 } // unnamed namespace
 
