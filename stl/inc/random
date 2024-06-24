@@ -354,6 +354,53 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     return static_cast<_Real>(static_cast<_Result_int_type>(_Sx / _Params._Xx)) * static_cast<_Real>(_Params._Scale);
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4701) //  potentially uninitialized local variable [_Xx and _Limit]
+template <class _Uint_type, class _Gen, class _Real>
+bool _Nrand_for_tr1(
+    const uint64_t _Rd, const uint64_t _Rx, _Gen& _Gx, _Real& _Val, uint64_t& _Sx_init, uint64_t& _Factor_init) {
+    // Minimally-constexpr generate_canonical algorithm. Will save work and exit if _Factor would overflow.
+    _Uint_type _Sx             = _Sx_init;
+    _Uint_type _Factor         = _Factor_init;
+    const auto _Gxmin          = (_Gx.min)();
+    const auto _Overflow_limit = UINT64_MAX / _Rx;
+
+    _Uint_type _Xx;
+    _Uint_type _Limit;
+    bool _Init = false;
+    while (true) {
+        while (_Factor < _Rd) {
+            if constexpr (is_same_v<_Uint_type, uint64_t>) {
+                if (_Factor > _Overflow_limit) {
+                    _Sx_init     = _Sx;
+                    _Factor_init = _Factor;
+                    return true;
+                }
+            }
+
+            _Sx += (_Gx() - _Gxmin) * _Factor;
+            _Factor *= _Rx;
+        }
+
+        if (!_Init) {
+            _Init  = true;
+            _Xx    = _Factor / _Rd;
+            _Limit = _Xx * _Rd;
+        }
+
+        if (_Sx < _Limit) {
+            break;
+        } else {
+            _Sx     = 0;
+            _Factor = 1;
+        }
+    }
+
+    _Val = static_cast<_Real>(static_cast<uint64_t>(_Sx / _Xx));
+    return false;
+}
+#pragma warning(pop)
+
 template <class _Gen, class = void>
 struct _Has_static_min_max : false_type {};
 
@@ -372,7 +419,8 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
 
     if constexpr (_Has_static_min_max<_Gen>::value && _Minbits <= 64) {
         return _STD generate_canonical<_Real, _Minbits>(_Gx);
-    } else { // TRANSITION, for tr1 machinery only; Standard machinery can call generate_canonical directly
+    } else if constexpr (!is_integral_v<typename _Gen::result_type>) {
+        // the pre-P0952R2 algorithm
         const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
         const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
         const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
@@ -389,6 +437,32 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
         }
 
         return _Ans / _Factor;
+    } else {
+        // TRANSITION, for integral tr1 machinery only; Standard machinery can call generate_canonical directly
+        const auto _Gxmax = (_Gx.max)();
+        const auto _Gxmin = (_Gx.min)();
+        _Real _Val;
+
+        if (_Gxmax == UINT64_MAX && _Gxmin == 0) {
+            // special case when uint64_t can't hold the full URBG range
+#pragma warning(push)
+#pragma warning(disable : 4293) // shift count negative or too big
+            _Val = static_cast<_Real>(static_cast<uint64_t>(_Gx()) >> (64 - _Minbits));
+#pragma warning(pop)
+        } else {
+            constexpr auto _Rd = 1ULL << _Minbits;
+            const auto _Rx     = static_cast<uint64_t>(_Gxmax - _Gxmin) + 1;
+            uint64_t _Sx       = 0;
+            uint64_t _Factor   = 1;
+
+            // Try with 64 bits first, upgrade to 128 if necessary.
+            const bool _Would_overflow = _Nrand_for_tr1<uint64_t>(_Rd, _Rx, _Gx, _Val, _Sx, _Factor);
+            if (_Would_overflow) {
+                _Nrand_for_tr1<_Unsigned128>(_Rd, _Rx, _Gx, _Val, _Sx, _Factor);
+            }
+        }
+
+        return _STD ldexp(_Val, -static_cast<int>(_Minbits));
     }
 }
 
@@ -2011,8 +2085,8 @@ public:
     explicit _Rng_from_urng_v2(_Urng& _Func) noexcept : _Ref(_Func) {}
 
     _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
-        // From Daniel Lemire, "Fast Random Integer Generation in an Interval", ACM Trans. Model. Comput. Simul. 29 (1),
-        // 2019.
+        // From Daniel Lemire, "Fast Random Integer Generation in an Interval", ACM Trans. Model. Comput. Simul. 29
+        // (1), 2019.
         //
         // Algorithm 5 <-> This Code:
         //   m <-> _Product
@@ -2968,8 +3042,8 @@ public:
 
 private:
     template <class _Engine>
-    result_type _Eval(
-        _Engine& _Eng, const param_type& _Par0) const { // Press et al., Numerical Recipes in C, 2nd ed., pp 295-296.
+    result_type _Eval(_Engine& _Eng,
+        const param_type& _Par0) const { // Press et al., Numerical Recipes in C, 2nd ed., pp 295-296.
         _Ty _Res;
         if (_Par0._Tx < 25) { // generate directly
             _Res = 0;
@@ -2981,7 +3055,8 @@ private:
 
             return _Res;
         } else if (_Par0._Mean < 1.0) {
-            // Events are rare, use waiting time method (Luc Devroye, Non-Uniform Random Variate Generation, p. 525).
+            // Events are rare, use waiting time method (Luc Devroye, Non-Uniform Random Variate Generation, p.
+            // 525).
             const _Ty1 _Rand = _NRAND(_Eng, _Ty1);
 
             // The exit condition is log(1 - _Rand)/t < log(1-p), which is equivalent to _Rand > 1 - (1-p)^t. If
