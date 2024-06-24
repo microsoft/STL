@@ -10,6 +10,14 @@
 
 using namespace std;
 
+void test_lwg2524() {
+    mt19937_64 mt2(1);
+    mt2.discard(517517);
+    assert((generate_canonical<float, 32>) (mt2) < 1.0f);
+    assert((generate_canonical<float, 32>) (mt2) < 1.0f);
+    assert((generate_canonical<float, 32>) (mt2) < 1.0f);
+}
+
 template <class Real, size_t Bits, class Engine>
 Real generate_with_ibe() {
     independent_bits_engine<Engine, Bits, uint64_t> ibe;
@@ -107,6 +115,8 @@ int main() {
         eng.seed();
         assert((generate_canonical<double, 64, Engine>) (eng) == expected);
     }
+
+    test_lwg2524();
 
     return 0;
 }
