@@ -4269,7 +4269,7 @@ concept _Const_formattable_range =
 template <class _Rng, class _CharT>
 using _Fmt_maybe_const = conditional_t<_Const_formattable_range<_Rng, _CharT>, const _Rng, _Rng>;
 
-template <range_format _Kind, class _Rng, class _CharT>
+template <range_format _Kind, _RANGES input_range _Rng, class _CharT>
 struct _Range_default_formatter;
 
 template <_RANGES input_range _Rng, class _CharT>
