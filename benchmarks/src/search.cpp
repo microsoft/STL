@@ -4,9 +4,12 @@
 #include <algorithm>
 #include <benchmark/benchmark.h>
 #include <cstdint>
+#include <cstring>
+#include <functional>
+#include <string>
 #include <vector>
 
-const char src[] =
+const char src_haystack[] =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mollis imperdiet massa, at dapibus elit interdum "
     "ac. In eget sollicitudin mi. Nam at tellus at sapien tincidunt sollicitudin vel non eros. Pellentesque nunc nunc, "
     "ullamcorper eu accumsan at, pulvinar non turpis. Quisque vel mauris pulvinar, pretium purus vel, ultricies erat. "
@@ -37,50 +40,75 @@ const char src[] =
     "euismod eros, ut posuere ligula ullamcorper id. Nullam aliquet malesuada est at dignissim. Pellentesque finibus "
     "sagittis libero nec bibendum. Phasellus dolor ipsum, finibus quis turpis quis, mollis interdum felis.";
 
-template <class T>
-void r(benchmark::State& state) {
-    const std::vector<T> a(std::begin(src), std::end(src));
-    std::vector<T> b(std::size(src));
+const char src_needle[] = "aliquet";
+
+void c_strstr(benchmark::State& state) {
+    const std::string haystack(std::begin(src_haystack), std::end(src_haystack));
+    const std::string needle(std::begin(src_needle), std::end(src_needle));
 
     for (auto _ : state) {
-        b = a;
-        std::replace(std::begin(b), std::end(b), T{'m'}, T{'w'});
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = std::strstr(haystack.c_str(), needle.c_str());
+        benchmark::DoNotOptimize(res);
     }
 }
 
 template <class T>
-void rc(benchmark::State& state) {
-    const std::vector<T> a(std::begin(src), std::end(src));
-    std::vector<T> b(std::size(src));
+void classic_search(benchmark::State& state) {
+    const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
+    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
 
     for (auto _ : state) {
-        std::replace_copy(std::begin(a), std::end(a), std::begin(b), T{'m'}, T{'w'});
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+        benchmark::DoNotOptimize(res);
     }
 }
 
 template <class T>
-void rc_if(benchmark::State& state) {
-    const std::vector<T> a(std::begin(src), std::end(src));
-    std::vector<T> b(std::size(src));
+void ranges_search(benchmark::State& state) {
+    const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
+    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
 
     for (auto _ : state) {
-        (void) std::replace_copy_if(
-            std::begin(a), std::end(a), std::begin(b), [](auto x) { return x <= T{'Z'}; }, T{'X'});
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = std::ranges::search(haystack, needle);
+        benchmark::DoNotOptimize(res);
     }
 }
 
-// replace() is vectorized for 4 and 8 bytes only.
-BENCHMARK(r<std::uint32_t>);
-BENCHMARK(r<std::uint64_t>);
+template <class T>
+void search_default_searcher(benchmark::State& state) {
+    const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
+    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
 
-BENCHMARK(rc<std::uint8_t>);
-BENCHMARK(rc<std::uint16_t>);
-BENCHMARK(rc<std::uint32_t>);
-BENCHMARK(rc<std::uint64_t>);
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = std::search(haystack.begin(), haystack.end(), std::default_searcher{needle.begin(), needle.end()});
+        benchmark::DoNotOptimize(res);
+    }
+}
 
-BENCHMARK(rc_if<std::uint8_t>);
-BENCHMARK(rc_if<std::uint16_t>);
-BENCHMARK(rc_if<std::uint32_t>);
-BENCHMARK(rc_if<std::uint64_t>);
+BENCHMARK(c_strstr);
+
+BENCHMARK(classic_search<std::uint8_t>);
+BENCHMARK(classic_search<std::uint16_t>);
+BENCHMARK(classic_search<std::uint32_t>);
+BENCHMARK(classic_search<std::uint64_t>);
+
+BENCHMARK(ranges_search<std::uint8_t>);
+BENCHMARK(ranges_search<std::uint16_t>);
+BENCHMARK(ranges_search<std::uint32_t>);
+BENCHMARK(ranges_search<std::uint64_t>);
+
+BENCHMARK(search_default_searcher<std::uint8_t>);
+BENCHMARK(search_default_searcher<std::uint16_t>);
+BENCHMARK(search_default_searcher<std::uint32_t>);
+BENCHMARK(search_default_searcher<std::uint64_t>);
+
 
 BENCHMARK_MAIN();

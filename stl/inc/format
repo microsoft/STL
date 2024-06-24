@@ -276,6 +276,8 @@ _NODISCARD constexpr _Decode_result<char> _Decode_utf(const char* _First, const 
             return {_First + 1, false};
         }
         break;
+    default:
+        break;
     }
 
     // mask out the "value bits" in the leading byte,
@@ -291,6 +293,9 @@ _NODISCARD constexpr _Decode_result<char> _Decode_utf(const char* _First, const 
         break;
     case 4:
         _Val &= 0b111u;
+        break;
+    default:
+        _STL_UNREACHABLE; // can't happen, see how the value of _Num_bytes is determined
         break;
     }
 
@@ -1257,6 +1262,8 @@ _NODISCARD constexpr const _CharT* _Parse_align(
             break;
         case '^':
             _Parsed_align = _Fmt_align::_Center;
+            break;
+        default:
             break;
         }
 
@@ -2848,6 +2855,8 @@ _NODISCARD _OutputIt _Write_integral(
         break;
     case 'o':
         _Base = 8;
+        break;
+    default:
         break;
     }
 
@@ -4447,6 +4456,8 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
         _Callbacks._On_type(_Maybe_type);
         ++_Begin;
         break;
+    default:
+        break;
     }
 
     return _Begin;
@@ -4533,6 +4544,10 @@ public:
                 _Throw_format_error("Range-types 's' and '?s' require type T to be charT.");
             }
 
+            break;
+
+        default:
+            _STL_UNREACHABLE; // can't happen, we've handled all possible outputs from _Parse_range_specs()
             break;
         }
 
