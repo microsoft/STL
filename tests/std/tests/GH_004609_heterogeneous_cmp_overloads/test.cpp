@@ -769,7 +769,7 @@ void test_heterogeneous_integer_overloads_per_rhs_type() {
     assert(!std::isunordered(l0, r1));
     assert(!std::isunordered(l1, r1));
 
-    // test overloads in the global namepace
+    // test overloads in the global namespace
 
     assert(!::isgreater(l0, r0));
     assert(::isgreater(l1, r0));
