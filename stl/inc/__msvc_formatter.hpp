@@ -321,12 +321,6 @@ template <_RANGES input_range _Rng, _Format_supported_charT _CharT>
     requires _Formatting_enabled_range<_Rng>
 struct formatter<_Rng, _CharT>;
 
-_EXPORT_STD template <class, class>
-struct pair;
-
-_EXPORT_STD template <class...>
-class tuple;
-
 template <_Format_supported_charT _CharT, class _Ty1, class _Ty2>
 struct formatter<pair<_Ty1, _Ty2>, _CharT>;
 
