@@ -1962,7 +1962,7 @@ auto test_format = []<class CharT, class... Args>(basic_string_view<CharT> expec
 
 auto test_format_exception = []<class CharT, class... Args>(string_view, basic_string_view<CharT>, Args&&...) {
     // After P2216 most exceptions thrown by format become ill-formed.
-    // Therefore this tests does nothing.
+    // Therefore this test does nothing.
 };
 
 auto test_vformat = []<class CharT, class... Args>(

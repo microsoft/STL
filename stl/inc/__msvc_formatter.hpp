@@ -308,7 +308,7 @@ constexpr range_format format_kind<_Rng> = []() consteval {
     }
 }();
 
-// Specializations for pairs, tuples and ranges are forward-declared to avoid any risk of using the disabled primary
+// Specializations for pairs, tuples, and ranges are forward-declared to avoid any risk of using the disabled primary
 // template.
 
 // Per LWG-3997, `_CharT` in library-provided `formatter` specializations is

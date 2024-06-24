@@ -4363,7 +4363,7 @@ private:
 
     using _Range_type = _Maybe_const<_RANGES input_range<const _Rng>, _Rng>;
 
-    formatter<basic_string_view<_CharT>, _CharT> _Underlying; // avoid copy the string if possible
+    formatter<basic_string_view<_CharT>, _CharT> _Underlying; // avoid copying the string if possible
 
 public:
     template <class _ParseContext>

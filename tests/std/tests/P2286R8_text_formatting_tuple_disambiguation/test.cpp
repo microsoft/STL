@@ -18,7 +18,8 @@ using namespace std;
 #define STR(Str)  basic_string(CSTR(Str))
 #define SV(Str)   basic_string_view(CSTR(Str))
 
-// If a pair or tuple is not formattable as a tuple but an input range, it should be formattable as a range.
+// If a pair or tuple is not formattable as a tuple but is formattable as an input range,
+// it should be formattable as a range.
 namespace not_formatted_as_tuple {
     struct tag {};
 
