@@ -3547,16 +3547,6 @@ const void* __stdcall __std_search_2(
     return __std_search_impl<_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Last2);
 }
 
-const void* __stdcall __std_search_4(
-    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_search_impl<_Find_traits_4, uint32_t>(_First1, _Last1, _First2, _Last2);
-}
-
-const void* __stdcall __std_search_8(
-    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_search_impl<_Find_traits_8, uint64_t>(_First1, _Last1, _First2, _Last2);
-}
-
 __declspec(noalias) size_t
     __stdcall __std_mismatch_1(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     return __std_mismatch_impl<_Find_traits_1, uint8_t>(_First1, _First2, _Count);

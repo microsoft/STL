@@ -2460,7 +2460,7 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
         _Iter_diff_t<_FwdItPat> _Count2      = _Last2 - _First2;
 
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Equal_memcmp_is_safe<_FwdItHaystack, _FwdItPat, _Pred_eq>) {
+        if constexpr (_Vector_alg_in_search_is_safe<_FwdItHaystack, _FwdItPat, _Pred_eq>) {
             if (!_STD _Is_constant_evaluated()) {
                 const auto _Ptr1 = _STD _To_address(_First1);
 
