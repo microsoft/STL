@@ -1306,8 +1306,8 @@ void test_pointer(TestFunction check, ExceptionTest check_exception, auto&& inpu
 template <class CharT, class TestFunction, class ExceptionTest>
 void test_pointer(TestFunction check, ExceptionTest check_exception) {
     test_pointer<CharT>(check, check_exception, array{nullptr});
-    test_pointer<CharT>(check, check_exception, array{static_cast<const void*>(0)});
-    test_pointer<CharT>(check, check_exception, array{static_cast<void*>(0)});
+    test_pointer<CharT>(check, check_exception, array{static_cast<const void*>(nullptr)});
+    test_pointer<CharT>(check, check_exception, array{static_cast<void*>(nullptr)});
 }
 
 //

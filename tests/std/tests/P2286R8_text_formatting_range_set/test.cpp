@@ -1134,8 +1134,8 @@ void test_pointer(TestFunction check, ExceptionTest check_exception, auto&& inpu
 template <class CharT, class TestFunction, class ExceptionTest>
 void test_pointer(TestFunction check, ExceptionTest check_exception) {
     // Note nullptr_t can only be equality compared so not used in a set.
-    test_pointer<CharT>(check, check_exception, unordered_set{static_cast<const void*>(0)});
-    test_pointer<CharT>(check, check_exception, unordered_multiset{static_cast<void*>(0)});
+    test_pointer<CharT>(check, check_exception, unordered_set{static_cast<const void*>(nullptr)});
+    test_pointer<CharT>(check, check_exception, unordered_multiset{static_cast<void*>(nullptr)});
 }
 
 //
