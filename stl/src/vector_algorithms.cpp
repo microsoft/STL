@@ -3279,58 +3279,33 @@ namespace {
 
 #ifndef _M_ARM64EC
         if (_Use_sse42() && _Size_bytes_2 <= 16 && _Size_bytes_1 >= 16) {
-            constexpr int _Op_elem      = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS);
-            constexpr int _Op_srch      = _Op_elem | _SIDD_BIT_MASK | _SIDD_CMP_EQUAL_ORDERED;
-            constexpr int _Op_cmp       = _Op_elem | _SIDD_BIT_MASK | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
+            constexpr int _Op = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
             constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
+            const int _Size_el_2        = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
 
-            const int _Size_el_2 = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
+            const int _Max_full_match_pos = _Part_size_el - _Size_el_2;
 
             alignas(16) uint8_t _Tmp2[16];
             memcpy(_Tmp2, _First2, _Size_bytes_2);
             const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
 
             const void* _Stop1 = _First1;
-            _Advance_bytes(_Stop1, _Size_bytes_1 & ~size_t{0xF});
+            _Advance_bytes(_Stop1, _Size_bytes_1 - 16);
 
-            while (_First1 != _Stop1) {
+            while (_First1 <= _Stop1) {
                 const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
 
-                // TRANSITION, DevCom-10689455: could _mm_cmpestrc as a faster initial check,
-                // but currently the compiler fails to fuse the underlying instruction with the _mm_cmpestrm below.
-
-                long _Bingo = _mm_cvtsi128_si32(_mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op_srch));
-
-                while (_Bingo != 0) {
-                    const unsigned long _Offset = _tzcnt_u32(_Bingo);
-
-                    const void* _Match1 = _First1;
-                    _Advance_bytes(_Match1, _Offset * sizeof(_Ty));
-
-                    __m128i _Match_data = _mm_undefined_si128();
-
-                    const size_t _Match_byte_length = _Byte_length(_Match1, _Last1);
-
-                    if (_Match_byte_length < _Size_bytes_2) {
-                        return _Last1;
+                if (!_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op)) {
+                    _Advance_bytes(_First1, 16); // No matches, next.
+                } else {
+                    int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                    _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                    if (_Pos <= _Max_full_match_pos) {
+                        // Full match. Return this match.
+                        return _First1;
                     }
-
-                    if (_Match_byte_length >= 16) {
-                        _Match_data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Match1));
-                    } else {
-                        alignas(16) uint8_t _Tmp1[16];
-                        memcpy(_Tmp1, _Match1, _Match_byte_length);
-                        _Match_data = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
-                    }
-
-                    if (!_mm_cmpestrc(_Data2, _Size_el_2, _Match_data, _Size_el_2, _Op_cmp)) {
-                        return _Match1;
-                    }
-
-                    _bittestandreset(&_Bingo, _Offset);
+                    // Partial match. Search again from the match start. will return it if it is full.
                 }
-
-                _Advance_bytes(_First1, 16);
             }
         }
 #endif // !defined(_M_ARM64EC)
