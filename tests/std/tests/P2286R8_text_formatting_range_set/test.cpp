@@ -1682,8 +1682,8 @@ class adaptor {
     using adaptee = set<int>;
 
 public:
-    using key_type = typename adaptee::key_type;
-    using iterator = typename adaptee::iterator;
+    using key_type = adaptee::key_type;
+    using iterator = adaptee::iterator;
 
     iterator begin() {
         return data_.begin();

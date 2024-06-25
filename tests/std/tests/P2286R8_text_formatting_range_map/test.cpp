@@ -1014,9 +1014,9 @@ class adaptor {
     using adaptee = map<int, int>;
 
 public:
-    using key_type    = typename adaptee::key_type;
-    using mapped_type = typename adaptee::mapped_type;
-    using iterator    = typename adaptee::iterator;
+    using key_type    = adaptee::key_type;
+    using mapped_type = adaptee::mapped_type;
+    using iterator    = adaptee::iterator;
 
     iterator begin() {
         return data_.begin();

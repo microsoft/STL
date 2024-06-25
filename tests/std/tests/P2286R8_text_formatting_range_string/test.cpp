@@ -114,10 +114,10 @@ class test_range_format_string {
 public:
     explicit test_range_format_string(Container str) : str_(move(str)) {}
 
-    typename Container::const_iterator begin() const {
+    Container::const_iterator begin() const {
         return str_.begin();
     }
-    typename Container::const_iterator end() const {
+    Container::const_iterator end() const {
         return str_.end();
     }
 
@@ -133,10 +133,10 @@ class test_range_format_debug_string {
 public:
     explicit test_range_format_debug_string(Container str) : str_(move(str)) {}
 
-    typename Container::const_iterator begin() const {
+    Container::const_iterator begin() const {
         return str_.begin();
     }
-    typename Container::const_iterator end() const {
+    Container::const_iterator end() const {
         return str_.end();
     }
 
