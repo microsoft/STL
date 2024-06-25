@@ -354,8 +354,6 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     return static_cast<_Real>(static_cast<_Result_int_type>(_Sx / _Params._Xx)) * static_cast<_Real>(_Params._Scale);
 }
 
-#pragma warning(push)
-#pragma warning(disable : 4701) //  potentially uninitialized local variable [_Xx and _Limit]
 template <class _Uint_type, class _Gen, class _Real>
 bool _Nrand_for_tr1(
     const uint64_t _Rd, const uint64_t _Rx, _Gen& _Gx, _Real& _Val, uint64_t& _Sx_init, uint64_t& _Factor_init) {
@@ -365,9 +363,9 @@ bool _Nrand_for_tr1(
     const auto _Gxmin          = (_Gx.min)();
     const auto _Overflow_limit = UINT64_MAX / _Rx;
 
-    _Uint_type _Xx;
-    _Uint_type _Limit;
-    bool _Init = false;
+    _Uint_type _Xx    = 0;
+    _Uint_type _Limit = 0;
+    bool _Init        = false;
     for (;;) {
         while (_Factor < _Rd) {
             if constexpr (is_same_v<_Uint_type, uint64_t>) {
@@ -399,7 +397,6 @@ bool _Nrand_for_tr1(
     _Val = static_cast<_Real>(static_cast<uint64_t>(_Sx / _Xx));
     return false;
 }
-#pragma warning(pop)
 
 template <class _Gen, class = void>
 struct _Has_static_min_max : false_type {};
