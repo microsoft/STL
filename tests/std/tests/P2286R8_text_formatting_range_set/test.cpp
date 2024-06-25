@@ -995,18 +995,6 @@ void test_floating_point(TestFunction check, ExceptionTest check_exception, auto
 
     // *** locale-specific form ***
     check(SV("{-42.5, 0, 1.25, 42.5}"), SV("{::L}"), input); // does not require locales present
-#ifndef TEST_HAS_NO_LOCALIZATION
-// TODO FMT Enable with locale testing active
-#if 0
-  locale::global(locale(LOCALE_fr_FR_UTF_8));
-  check(SV("{-42,5, 0, 1,25, 42,5}"), SV("{::L}"), input);
-
-  locale::global(locale(LOCALE_en_US_UTF_8));
-  check(SV("{-42.5, 0, 1.25, 42.5}"), SV("{::L}"), input);
-
-  locale::global(locale::classic());
-#endif
-#endif // TEST_HAS_NO_LOCALIZATION
 
     // *** type ***
     for (basic_string_view<CharT> fmt : fmt_invalid_nested_types<CharT>("aAeEfFgG")) {
