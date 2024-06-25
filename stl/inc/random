@@ -368,7 +368,7 @@ bool _Nrand_for_tr1(
     _Uint_type _Xx;
     _Uint_type _Limit;
     bool _Init = false;
-    while (true) {
+    for (;;) {
         while (_Factor < _Rd) {
             if constexpr (is_same_v<_Uint_type, uint64_t>) {
                 if (_Factor > _Overflow_limit) {
