@@ -145,7 +145,7 @@ private:
 };
 
 template <class Container>
-constexpr range_format format_kind<test_range_format_debug_string<Container>> = range_format::debug_string;
+constexpr range_format std::format_kind<test_range_format_debug_string<Container>> = range_format::debug_string;
 
 //
 // String
