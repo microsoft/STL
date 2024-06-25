@@ -3307,42 +3307,60 @@ namespace {
                     // Partial match. Search again from the match start. will return it if it is full.
                 }
             }
-        }
-#endif // !defined(_M_ARM64EC)
-        const size_t _Size_bytes_1_tail = _Byte_length(_First1, _Last1);
 
-        if (_Size_bytes_1_tail < _Size_bytes_2) {
-            return _Last1;
-        }
+            const size_t _Size_bytes_1_tail = _Byte_length(_First1, _Last1);
+            if (_Size_bytes_1_tail != 0) {
+                const int _Size_el_1_tail = static_cast<int>(_Size_bytes_1_tail / sizeof(_Ty));
 
-        const size_t _Max_pos = _Size_bytes_1_tail - _Size_bytes_2 + sizeof(_Ty);
+                alignas(16) uint8_t _Tmp1[16];
+                memcpy(_Tmp1, _First1, _Size_bytes_1_tail);
+                const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
 
-        auto _Ptr1           = static_cast<const _Ty*>(_First1);
-        const auto _Ptr2     = static_cast<const _Ty*>(_First2);
-        const size_t _Count2 = _Size_bytes_2 / sizeof(_Ty);
-        const void* _Stop1   = _Ptr1;
-        _Advance_bytes(_Stop1, _Max_pos);
-
-        for (; _Ptr1 != _Stop1; ++_Ptr1) {
-            if (*_Ptr1 != *_Ptr2) {
-                continue;
-            }
-
-            bool _Equal = true;
-
-            for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
-                if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
-                    _Equal = false;
-                    break;
+                if (_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op)) {
+                    int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                    _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                    // Full match because size is less than 16. Return this match.
+                    return _First1;
                 }
             }
 
-            if (_Equal) {
-                return _Ptr1;
+            return _Last1;
+        } else
+#endif // !defined(_M_ARM64EC)
+        {
+            if (_Size_bytes_1 < _Size_bytes_2) {
+                return _Last1;
             }
-        }
 
-        return _Last1;
+            const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
+
+            auto _Ptr1           = static_cast<const _Ty*>(_First1);
+            const auto _Ptr2     = static_cast<const _Ty*>(_First2);
+            const size_t _Count2 = _Size_bytes_2 / sizeof(_Ty);
+            const void* _Stop1   = _Ptr1;
+            _Advance_bytes(_Stop1, _Max_pos);
+
+            for (; _Ptr1 != _Stop1; ++_Ptr1) {
+                if (*_Ptr1 != *_Ptr2) {
+                    continue;
+                }
+
+                bool _Equal = true;
+
+                for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
+                    if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
+                        _Equal = false;
+                        break;
+                    }
+                }
+
+                if (_Equal) {
+                    return _Ptr1;
+                }
+            }
+
+            return _Last1;
+        }
     }
 } // unnamed namespace
 
