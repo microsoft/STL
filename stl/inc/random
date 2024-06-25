@@ -2085,8 +2085,8 @@ public:
     explicit _Rng_from_urng_v2(_Urng& _Func) noexcept : _Ref(_Func) {}
 
     _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
-        // From Daniel Lemire, "Fast Random Integer Generation in an Interval", ACM Trans. Model. Comput. Simul. 29
-        // (1), 2019.
+        // From Daniel Lemire, "Fast Random Integer Generation in an Interval",
+        // ACM Trans. Model. Comput. Simul. 29 (1), 2019.
         //
         // Algorithm 5 <-> This Code:
         //   m <-> _Product
@@ -3042,8 +3042,8 @@ public:
 
 private:
     template <class _Engine>
-    result_type _Eval(_Engine& _Eng,
-        const param_type& _Par0) const { // Press et al., Numerical Recipes in C, 2nd ed., pp 295-296.
+    result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
+        // Press et al., Numerical Recipes in C, 2nd ed., pp 295-296.
         _Ty _Res;
         if (_Par0._Tx < 25) { // generate directly
             _Res = 0;
@@ -3055,8 +3055,7 @@ private:
 
             return _Res;
         } else if (_Par0._Mean < 1.0) {
-            // Events are rare, use waiting time method (Luc Devroye, Non-Uniform Random Variate Generation, p.
-            // 525).
+            // Events are rare, use waiting time method (Luc Devroye, Non-Uniform Random Variate Generation, p. 525).
             const _Ty1 _Rand = _NRAND(_Eng, _Ty1);
 
             // The exit condition is log(1 - _Rand)/t < log(1-p), which is equivalent to _Rand > 1 - (1-p)^t. If
