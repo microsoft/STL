@@ -6,7 +6,6 @@ RUNALL_CROSSLIST
 *	PM_CL="/FIfenv_prefix.hpp /w14640 /Zc:threadSafeInit- /EHsc /std:c++latest"
 RUNALL_CROSSLIST
 *	PM_CL=""
-*	PM_CL="/arch:IA32"
 *	PM_CL="/arch:AVX2"
 *	PM_CL="/arch:VFPv4"
 RUNALL_CROSSLIST
