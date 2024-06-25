@@ -271,7 +271,7 @@ struct _Urbg_gen_can_params {
 
 _NODISCARD constexpr _Urbg_gen_can_params _Generate_canonical_params(size_t _Bits, uint64_t _Rm1) {
     const auto _Rx        = _Unsigned128{_Rm1} + 1; // $R$ in N4981 [rand.util.canonical]/1.2
-    const auto _Target    = (_Unsigned128{1} << _Bits); // $r^d$
+    const auto _Target    = _Unsigned128{1} << _Bits; // $r^d$
     _Unsigned128 _Product = 1;
     _Urbg_gen_can_params _Result;
     _Result._Rx_is_pow2 = (_Rx & (_Rx - 1)) == 0;
@@ -329,7 +329,7 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
             }
         }
 
-        _Sx >>= (_Params._Smax_bits - _Minbits);
+        _Sx >>= _Params._Smax_bits - _Minbits;
         return static_cast<_Real>(static_cast<_Result_int_type>(_Sx)) * static_cast<_Real>(_Params._Scale);
     }
 
