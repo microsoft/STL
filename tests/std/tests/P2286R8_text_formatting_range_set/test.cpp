@@ -452,7 +452,6 @@ void test_char(TestFunction check, ExceptionTest check_exception) {
 // char -> wchar_t
 //
 
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
 template <class TestFunction, class ExceptionTest>
 void test_char_to_wchar(TestFunction check, ExceptionTest check_exception) {
     set input{'a', 'c', 'b'}; // input not sorted.
@@ -573,7 +572,6 @@ void test_char_to_wchar(TestFunction check, ExceptionTest check_exception) {
     check_exception("Type s requires character type as formatting argument", SV("{:s}"), input);
     check_exception("Type ?s requires character type as formatting argument", SV("{:?s}"), input);
 }
-#endif //  _LIBCPP_HAS_NO_WIDE_CHARACTERS
 
 //
 // Bool
@@ -1715,11 +1713,9 @@ template <class CharT, class TestFunction, class ExceptionTest>
 void format_tests(TestFunction check, ExceptionTest check_exception) {
     test_char<CharT>(check, check_exception);
 
-#ifndef _LIBCPP_HAS_NO_WIDE_CHARACTERS
     if (same_as<CharT, wchar_t>) { // avoid testing twice
         test_char_to_wchar(check, check_exception);
     }
-#endif
     test_bool<CharT>(check, check_exception);
     test_bool_multiset<CharT>(check, check_exception);
     test_int<CharT>(check, check_exception);
