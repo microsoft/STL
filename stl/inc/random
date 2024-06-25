@@ -303,55 +303,56 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
 
     if constexpr (_Minbits == 0) {
         return _Real{0};
-    }
+    } else {
+        using _Result_int_type = conditional_t<_Minbits <= 32, uint32_t, uint64_t>;
 
-    using _Result_int_type = conditional_t<_Minbits <= 32, uint32_t, uint64_t>;
+        constexpr auto _Gxmin                  = (_Gen::min)();
+        constexpr auto _Gxmax                  = (_Gen::max)();
+        constexpr _Urbg_gen_can_params _Params = _Generate_canonical_params(_Minbits, _Gxmax - _Gxmin);
 
-    constexpr auto _Gxmin                  = (_Gen::min)();
-    constexpr auto _Gxmax                  = (_Gen::max)();
-    constexpr _Urbg_gen_can_params _Params = _Generate_canonical_params(_Minbits, _Gxmax - _Gxmin);
+        using _Sx_type = conditional_t<_Params._Smax_bits <= 32, uint32_t,
+            conditional_t<_Params._Smax_bits <= 64, uint64_t, _Unsigned128>>;
+        _Sx_type _Sx;
 
-    using _Sx_type = conditional_t<_Params._Smax_bits <= 32, uint32_t,
-        conditional_t<_Params._Smax_bits <= 64, uint64_t, _Unsigned128>>;
-    _Sx_type _Sx;
-
-    if constexpr (_Params._Rx_is_pow2) {
-        // Always needs only one attempt. Multiplications can be replaced with shift/add. Optimize k=1 case.
-        if constexpr (_Params._Kx == 1) {
-            _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
-        } else if constexpr (_Params._Kx > 1) {
-            constexpr int _Rx_bits = _Params._Smax_bits / _Params._Kx;
-            _Sx                    = 0;
-            int _Shift             = 0;
-            for (int _Idx = 0; _Idx < _Params._Kx; ++_Idx) {
-                _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) << _Shift;
-                _Shift += _Rx_bits;
+        if constexpr (_Params._Rx_is_pow2) {
+            // Always needs only one attempt. Multiplications can be replaced with shift/add. Optimize k=1 case.
+            if constexpr (_Params._Kx == 1) {
+                _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
+            } else if constexpr (_Params._Kx > 1) {
+                constexpr int _Rx_bits = _Params._Smax_bits / _Params._Kx;
+                _Sx                    = 0;
+                int _Shift             = 0;
+                for (int _Idx = 0; _Idx < _Params._Kx; ++_Idx) {
+                    _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) << _Shift;
+                    _Shift += _Rx_bits;
+                }
             }
-        }
 
-        _Sx >>= _Params._Smax_bits - _Minbits;
-        return static_cast<_Real>(static_cast<_Result_int_type>(_Sx)) * static_cast<_Real>(_Params._Scale);
+            _Sx >>= _Params._Smax_bits - _Minbits;
+            return static_cast<_Real>(static_cast<_Result_int_type>(_Sx)) * static_cast<_Real>(_Params._Scale);
+        } else {
+            constexpr auto _Rx        = _Sx_type{_Gxmax - _Gxmin} + 1u;
+            constexpr _Sx_type _Limit = static_cast<_Sx_type>(_Params._Xx) * (static_cast<_Sx_type>(1) << _Minbits);
+
+            do {
+                // unroll first two iterations to avoid unnecessary multiplications
+                _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
+                if constexpr (_Params._Kx == 2) {
+                    _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Rx;
+                } else if constexpr (_Params._Kx > 2) {
+                    _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Rx;
+                    _Sx_type _Factor = _Rx;
+                    for (int _Idx = 2; _Idx < _Params._Kx; ++_Idx) {
+                        _Factor *= _Rx;
+                        _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Factor;
+                    }
+                }
+            } while (_Sx >= _Limit);
+
+            return static_cast<_Real>(static_cast<_Result_int_type>(_Sx / _Params._Xx))
+                 * static_cast<_Real>(_Params._Scale);
+        }
     }
-
-    constexpr auto _Rx        = _Sx_type{_Gxmax - _Gxmin} + 1u;
-    constexpr _Sx_type _Limit = static_cast<_Sx_type>(_Params._Xx) * (static_cast<_Sx_type>(1) << _Minbits);
-
-    do {
-        // unroll first two iterations to avoid unnecessary multiplications
-        _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
-        if constexpr (_Params._Kx == 2) {
-            _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Rx;
-        } else if constexpr (_Params._Kx > 2) {
-            _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Rx;
-            _Sx_type _Factor = _Rx;
-            for (int _Idx = 2; _Idx < _Params._Kx; ++_Idx) {
-                _Factor *= _Rx;
-                _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Factor;
-            }
-        }
-    } while (_Sx >= _Limit);
-
-    return static_cast<_Real>(static_cast<_Result_int_type>(_Sx / _Params._Xx)) * static_cast<_Real>(_Params._Scale);
 }
 
 template <class _Uint_type, class _Gen, class _Real>
