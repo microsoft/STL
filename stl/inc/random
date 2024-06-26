@@ -438,7 +438,7 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
         // TRANSITION, for integral tr1 machinery only; Standard machinery can call generate_canonical directly
         const auto _Gxmax = (_Gx.max)();
         const auto _Gxmin = (_Gx.min)();
-        _Real _Val;
+        _Real _Val{0};
 
         if (_Gxmax == UINT64_MAX && _Gxmin == 0) {
             // special case when uint64_t can't hold the full URBG range
