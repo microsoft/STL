@@ -306,9 +306,9 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     } else {
         using _Result_int_type = conditional_t<_Minbits <= 32, uint32_t, uint64_t>;
 
-        constexpr auto _Gxmin                  = (_Gen::min)();
-        constexpr auto _Gxmax                  = (_Gen::max)();
-        constexpr _Urbg_gen_can_params _Params = _Generate_canonical_params(_Minbits, _Gxmax - _Gxmin);
+        constexpr auto _Gxmin  = (_Gen::min)();
+        constexpr auto _Gxmax  = (_Gen::max)();
+        constexpr auto _Params = _Generate_canonical_params(_Minbits, _Gxmax - _Gxmin);
 
         using _Sx_type = conditional_t<_Params._Smax_bits <= 32, uint32_t,
             conditional_t<_Params._Smax_bits <= 64, uint64_t, _Unsigned128>>;
