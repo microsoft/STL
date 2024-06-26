@@ -262,11 +262,11 @@ private:
 };
 
 struct _Urbg_gen_can_params {
+    bool _Rx_is_pow2 = false; // $R$ (in N4981 [rand.util.canonical]/1.2) is a power of 2
     int _Kx          = 0; // $k$ in N4981 [rand.util.canonical]/1.4
     uint64_t _Xx     = 0; // $x$ in N4981 [rand.util.canonical]/1.5
-    int _Smax_bits   = 0; // number of bits in $R^k$
     float _Scale     = 0.0f; // $r^{-d}$, always representable as a float
-    bool _Rx_is_pow2 = false; // $R$ (in N4981 [rand.util.canonical]/1.2) is a power of 2
+    int _Smax_bits   = 0; // number of bits in $R^k$
 };
 
 _NODISCARD constexpr _Urbg_gen_can_params _Generate_canonical_params(const size_t _Bits, const uint64_t _Rm1) {
