@@ -415,7 +415,7 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
     if constexpr (_Has_static_min_max<_Gen>::value) {
         return _STD generate_canonical<_Real, _Digits>(_Gx);
     } else if constexpr (!is_integral_v<typename _Gen::result_type>) {
-        // the pre-P0952R2 algorithm
+        // TRANSITION, the pre-P0952R2 algorithm, for non-integral tr1 machinery only (e.g. subtract_with_carry_01)
         const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
         const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
         const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
