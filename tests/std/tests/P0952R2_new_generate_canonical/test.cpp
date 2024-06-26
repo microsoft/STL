@@ -119,8 +119,8 @@ int main() {
         using Engine                = ranlux24;
         constexpr uint32_t values[] = {0xE57B2C, 0xF91555, 0xD9F2DE};
         Engine eng;
-        for (size_t i = 0; i < std::size(values); ++i) {
-            assert(eng() == values[i]);
+        for (const auto& value : values) {
+            assert(eng() == value);
         }
 
         const auto expected1 = ldexpf(0xE57B2C >> (1 * 24 - 24), -24);
@@ -137,8 +137,8 @@ int main() {
         using Engine                = mt19937_64;
         constexpr uint64_t values[] = {0xC96D191C'F6'F6AEA6, 0x401F7AC7'8B'C80F1C, 0xB5EE8CB6AB'E457F8};
         Engine eng;
-        for (size_t i = 0; i < std::size(values); ++i) {
-            assert(eng() == values[i]);
+        for (const auto& value : values) {
+            assert(eng() == value);
         }
 
         const auto expected1 = ldexp(0xC96D191C'F6F'6AEA6 >> (1 * 64 - 53), -53);
@@ -157,8 +157,8 @@ int main() {
         using Engine                = minstd_rand;
         constexpr uint32_t values[] = {48271 - 1, 182605794 - 1}; // minstd_rand::min() == 1
         Engine eng;
-        for (size_t i = 0; i < std::size(values); ++i) {
-            assert(eng() - Engine::min() == values[i]);
+        for (const auto& value : values) {
+            assert(eng() - Engine::min() == value);
         }
 
         constexpr uint64_t range = Engine::max() - Engine::min() + 1;
@@ -183,8 +183,8 @@ int main() {
         using Engine                = linear_congruential_engine<uint32_t, 75, 74, 65537>;
         constexpr uint32_t values[] = {149, 11249, 57305, 38044};
         Engine eng;
-        for (size_t i = 0; i < std::size(values); ++i) {
-            assert(eng() - Engine::min() == values[i]);
+        for (const auto& value : values) {
+            assert(eng() - Engine::min() == value);
         }
 
         constexpr _Unsigned128 range = Engine::max() - Engine::min() + 1;
