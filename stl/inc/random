@@ -410,19 +410,17 @@ template <class _Real, class _Gen>
 _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(_Nrand_impl, _Real);
 
-    constexpr auto _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
-    constexpr auto _Bits    = ~size_t{0};
-    constexpr auto _Minbits = _Digits < _Bits ? _Digits : _Bits;
+    constexpr auto _Digits = static_cast<size_t>(numeric_limits<_Real>::digits);
 
-    if constexpr (_Has_static_min_max<_Gen>::value && _Minbits <= 64) {
-        return _STD generate_canonical<_Real, _Minbits>(_Gx);
+    if constexpr (_Has_static_min_max<_Gen>::value) {
+        return _STD generate_canonical<_Real, _Digits>(_Gx);
     } else if constexpr (!is_integral_v<typename _Gen::result_type>) {
         // the pre-P0952R2 algorithm
         const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
         const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
         const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
 
-        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Minbits) / _STD log2(_Rx)));
+        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Digits) / _STD log2(_Rx)));
         const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
 
         _Real _Ans{0};
@@ -442,9 +440,9 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
 
         if (_Gxmax == UINT64_MAX && _Gxmin == 0) {
             // special case when uint64_t can't hold the full URBG range
-            _Val = static_cast<_Real>(static_cast<uint64_t>(_Gx()) >> (64 - _Minbits));
+            _Val = static_cast<_Real>(static_cast<uint64_t>(_Gx()) >> (64 - _Digits));
         } else {
-            constexpr auto _Rd = 1ULL << _Minbits;
+            constexpr auto _Rd = 1ULL << _Digits;
             const auto _Rx     = static_cast<uint64_t>(_Gxmax - _Gxmin) + 1;
             uint64_t _Sx       = 0;
             uint64_t _Factor   = 1;
@@ -456,7 +454,7 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
             }
         }
 
-        return _STD ldexp(_Val, -static_cast<int>(_Minbits));
+        return _STD ldexp(_Val, -static_cast<int>(_Digits));
     }
 }
 
