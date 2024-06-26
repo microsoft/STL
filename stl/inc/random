@@ -304,7 +304,7 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     if constexpr (_Minbits == 0) {
         return _Real{0};
     } else {
-        using _Result_int_type = conditional_t<_Minbits <= 32, uint32_t, uint64_t>;
+        using _Result_uint_type = conditional_t<_Minbits <= 32, uint32_t, uint64_t>;
 
         constexpr auto _Gxmin  = (_Gen::min)();
         constexpr auto _Gxmax  = (_Gen::max)();
@@ -329,7 +329,7 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
             }
 
             _Sx >>= _Params._Smax_bits - _Minbits;
-            return static_cast<_Real>(static_cast<_Result_int_type>(_Sx)) * static_cast<_Real>(_Params._Scale);
+            return static_cast<_Real>(static_cast<_Result_uint_type>(_Sx)) * static_cast<_Real>(_Params._Scale);
         } else {
             constexpr auto _Rx        = _Sx_type{_Gxmax - _Gxmin} + 1u;
             constexpr _Sx_type _Limit = static_cast<_Sx_type>(_Params._Xx) * (static_cast<_Sx_type>(1) << _Minbits);
@@ -349,7 +349,7 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
                 }
             } while (_Sx >= _Limit);
 
-            return static_cast<_Real>(static_cast<_Result_int_type>(_Sx / _Params._Xx))
+            return static_cast<_Real>(static_cast<_Result_uint_type>(_Sx / _Params._Xx))
                  * static_cast<_Real>(_Params._Scale);
         }
     }
