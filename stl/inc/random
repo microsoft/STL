@@ -414,25 +414,7 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
 
     if constexpr (_Has_static_min_max<_Gen>::value) {
         return _STD generate_canonical<_Real, _Digits>(_Gx);
-    } else if constexpr (!is_integral_v<typename _Gen::result_type>) {
-        // TRANSITION, the pre-P0952R2 algorithm, for non-integral tr1 machinery only (e.g. subtract_with_carry_01)
-        const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
-        const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
-        const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
-
-        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Digits) / _STD log2(_Rx)));
-        const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
-
-        _Real _Ans{0};
-        _Real _Factor{1};
-
-        for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
-            _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
-            _Factor *= _Rx;
-        }
-
-        return _Ans / _Factor;
-    } else {
+    } else if constexpr (is_integral_v<typename _Gen::result_type>) {
         // TRANSITION, for integral tr1 machinery only; Standard machinery can call generate_canonical directly
         const auto _Gxmax = (_Gx.max)();
         const auto _Gxmin = (_Gx.min)();
@@ -455,6 +437,24 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
         }
 
         return _STD ldexp(_Val, -static_cast<int>(_Digits));
+    } else {
+        // TRANSITION, the pre-P0952R2 algorithm, for non-integral tr1 machinery only (e.g. subtract_with_carry_01)
+        const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
+        const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
+        const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
+
+        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Digits) / _STD log2(_Rx)));
+        const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
+
+        _Real _Ans{0};
+        _Real _Factor{1};
+
+        for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
+            _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
+            _Factor *= _Rx;
+        }
+
+        return _Ans / _Factor;
     }
 }
 
