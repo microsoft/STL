@@ -326,6 +326,8 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
                     _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) << _Shift;
                     _Shift += _Rx_bits;
                 }
+            } else {
+                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected k
             }
 
             _Sx >>= _Params._Smax_bits - _Minbits;
