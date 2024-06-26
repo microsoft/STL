@@ -442,10 +442,7 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
 
         if (_Gxmax == UINT64_MAX && _Gxmin == 0) {
             // special case when uint64_t can't hold the full URBG range
-#pragma warning(push)
-#pragma warning(disable : 4293) // shift count negative or too big
             _Val = static_cast<_Real>(static_cast<uint64_t>(_Gx()) >> (64 - _Minbits));
-#pragma warning(pop)
         } else {
             constexpr auto _Rd = 1ULL << _Minbits;
             const auto _Rx     = static_cast<uint64_t>(_Gxmax - _Gxmin) + 1;
