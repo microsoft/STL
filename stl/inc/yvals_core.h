@@ -62,6 +62,7 @@
 // P0883R2 Fixing Atomic Initialization
 // P0935R0 Eradicating Unnecessarily Explicit Default Constructors
 // P0941R2 Feature-Test Macros
+// P0952R2 A New Specification For generate_canonical()
 // P0972R0 noexcept For <chrono> zero(), min(), max()
 // P1065R2 constexpr INVOKE
 //     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)

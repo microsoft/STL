@@ -73,6 +73,9 @@ std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 
+# libc++ hasn't implemented P0952R2, which changes the generate_canonical algorithm.
+std/numerics/rand/rand.util/rand.util.canonical/generate_canonical.pass.cpp FAIL
+
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 std/language.support/support.limits/support.limits.general/chrono.version.compile.pass.cpp FAIL
 

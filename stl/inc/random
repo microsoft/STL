@@ -261,30 +261,37 @@ private:
     vector<result_type> _Myvec;
 };
 
-_NODISCARD constexpr int _Generate_canonical_iterations(const int _Bits, const uint64_t _Gmin, const uint64_t _Gmax) {
-    // For a URBG type `G` with range == `(G::max() - G::min()) + 1`, returns the number of calls to generate at least
-    // _Bits bits of entropy. Specifically, max(1, ceil(_Bits / log2(range))).
+struct _Urbg_gen_can_params {
+    bool _Rx_is_pow2 = false; // $R$ (in N4981 [rand.util.canonical]/1.2) is a power of 2
+    int _Kx          = 0; // $k$ in N4981 [rand.util.canonical]/1.4
+    uint64_t _Xx     = 0; // $x$ in N4981 [rand.util.canonical]/1.5
+    float _Scale     = 0.0f; // $r^{-d}$, always representable as a float
+    int _Smax_bits   = 0; // number of bits in $R^k$
+};
 
-    _STL_INTERNAL_CHECK(0 <= _Bits && _Bits <= 64);
-
-    if (_Bits == 0 || (_Gmax == UINT64_MAX && _Gmin == 0)) {
-        return 1;
+_NODISCARD constexpr _Urbg_gen_can_params _Generate_canonical_params(const size_t _Bits, const uint64_t _Rm1) {
+    const auto _Rx        = _Unsigned128{_Rm1} + 1; // $R$ in N4981 [rand.util.canonical]/1.2
+    const auto _Target    = _Unsigned128{1} << _Bits; // $r^d$
+    _Unsigned128 _Product = 1;
+    _Urbg_gen_can_params _Result;
+    _Result._Rx_is_pow2 = (_Rx & (_Rx - 1)) == 0;
+    _Result._Kx         = 0;
+    while (_Product < _Target) {
+        _Product *= _Rx;
+        ++_Result._Kx;
     }
 
-    const auto _Range  = (_Gmax - _Gmin) + 1;
-    const auto _Target = ~uint64_t{0} >> (64 - _Bits);
-    uint64_t _Prod     = 1;
-    int _Ceil          = 0;
-    while (_Prod <= _Target) {
-        ++_Ceil;
-        if (_Prod > UINT64_MAX / _Range) {
-            break;
-        }
-
-        _Prod *= _Range;
+    _Result._Xx        = static_cast<uint64_t>(_Product / _Target);
+    _Result._Scale     = 1.0f / static_cast<float>(1ULL << _Bits);
+    _Result._Smax_bits = 0;
+    // $S \in [0, _Product)$
+    --_Product;
+    while (_Product > 0) {
+        ++_Result._Smax_bits;
+        _Product >>= 1;
     }
 
-    return _Ceil;
+    return _Result;
 }
 
 _EXPORT_STD template <class _Real, size_t _Bits, class _Gen>
@@ -294,27 +301,110 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     constexpr auto _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
     constexpr auto _Minbits = static_cast<int>(_Digits < _Bits ? _Digits : _Bits);
 
-    constexpr auto _Gxmin = static_cast<_Real>((_Gen::min)());
-    constexpr auto _Gxmax = static_cast<_Real>((_Gen::max)());
-    constexpr auto _Rx    = (_Gxmax - _Gxmin) + _Real{1};
+    if constexpr (_Minbits == 0) {
+        return _Real{0};
+    } else {
+        using _Result_uint_type = conditional_t<_Minbits <= 32, uint32_t, uint64_t>;
 
-    constexpr int _Kx = _Generate_canonical_iterations(_Minbits, (_Gen::min)(), (_Gen::max)());
+        constexpr auto _Gxmin  = (_Gen::min)();
+        constexpr auto _Gxmax  = (_Gen::max)();
+        constexpr auto _Params = _Generate_canonical_params(_Minbits, _Gxmax - _Gxmin);
 
-    _Real _Ans{0};
-    _Real _Factor{1};
+        using _Sx_type = conditional_t<_Params._Smax_bits <= 32, uint32_t,
+            conditional_t<_Params._Smax_bits <= 64, uint64_t, _Unsigned128>>;
+        _Sx_type _Sx;
 
-    for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
-        _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
-        _Factor *= _Rx;
+        if constexpr (_Params._Rx_is_pow2) {
+            // Always needs only one attempt. Multiplications can be replaced with shift/add. Optimize k=1 case.
+            if constexpr (_Params._Kx == 1) {
+                _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
+            } else if constexpr (_Params._Kx > 1) {
+                constexpr int _Rx_bits = _Params._Smax_bits / _Params._Kx;
+                _Sx                    = 0;
+                int _Shift             = 0;
+                for (int _Idx = 0; _Idx < _Params._Kx; ++_Idx) {
+                    _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) << _Shift;
+                    _Shift += _Rx_bits;
+                }
+            } else {
+                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected k
+            }
+
+            _Sx >>= _Params._Smax_bits - _Minbits;
+            return static_cast<_Real>(static_cast<_Result_uint_type>(_Sx)) * static_cast<_Real>(_Params._Scale);
+        } else {
+            constexpr auto _Rx        = _Sx_type{_Gxmax - _Gxmin} + 1u;
+            constexpr _Sx_type _Limit = static_cast<_Sx_type>(_Params._Xx) * (_Sx_type{1} << _Minbits);
+
+            do {
+                // unroll first two iterations to avoid unnecessary multiplications
+                _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
+                if constexpr (_Params._Kx == 2) {
+                    _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Rx;
+                } else if constexpr (_Params._Kx > 2) {
+                    _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Rx;
+                    _Sx_type _Factor = _Rx;
+                    for (int _Idx = 2; _Idx < _Params._Kx; ++_Idx) {
+                        _Factor *= _Rx;
+                        _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) * _Factor;
+                    }
+                }
+            } while (_Sx >= _Limit);
+
+            return static_cast<_Real>(static_cast<_Result_uint_type>(_Sx / _Params._Xx))
+                 * static_cast<_Real>(_Params._Scale);
+        }
+    }
+}
+
+template <class _Uint_type, class _Gen, class _Real>
+bool _Nrand_for_tr1(
+    const uint64_t _Rd, const uint64_t _Rx, _Gen& _Gx, _Real& _Val, uint64_t& _Sx_init, uint64_t& _Factor_init) {
+    // Minimally-constexpr generate_canonical algorithm. Will save work and exit if _Factor would overflow.
+    _Uint_type _Sx             = _Sx_init;
+    _Uint_type _Factor         = _Factor_init;
+    const auto _Gxmin          = (_Gx.min)();
+    const auto _Overflow_limit = UINT64_MAX / _Rx;
+
+    _Uint_type _Xx    = 0;
+    _Uint_type _Limit = 0;
+    bool _Init        = false;
+    for (;;) {
+        while (_Factor < _Rd) {
+            if constexpr (is_same_v<_Uint_type, uint64_t>) {
+                if (_Factor > _Overflow_limit) {
+                    _Sx_init     = _Sx;
+                    _Factor_init = _Factor;
+                    return true;
+                }
+            }
+
+            _Sx += (_Gx() - _Gxmin) * _Factor;
+            _Factor *= _Rx;
+        }
+
+        if (!_Init) {
+            _Init  = true;
+            _Xx    = _Factor / _Rd;
+            _Limit = _Xx * _Rd;
+        }
+
+        if (_Sx < _Limit) {
+            break;
+        } else {
+            _Sx     = 0;
+            _Factor = 1;
+        }
     }
 
-    return _Ans / _Factor;
+    _Val = static_cast<_Real>(static_cast<uint64_t>(_Sx / _Xx));
+    return false;
 }
 
 template <class _Gen, class = void>
 struct _Has_static_min_max : false_type {};
 
-// This checks a requirement of N4950 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
+// This checks a requirement of N4981 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
 // to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
 template <class _Gen>
 struct _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> : true_type {};
@@ -323,18 +413,40 @@ template <class _Real, class _Gen>
 _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(_Nrand_impl, _Real);
 
-    constexpr auto _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
-    constexpr auto _Bits    = ~size_t{0};
-    constexpr auto _Minbits = _Digits < _Bits ? _Digits : _Bits;
+    constexpr auto _Digits = static_cast<size_t>(numeric_limits<_Real>::digits);
 
-    if constexpr (_Has_static_min_max<_Gen>::value && _Minbits <= 64) {
-        return _STD generate_canonical<_Real, _Minbits>(_Gx);
-    } else { // TRANSITION, for tr1 machinery only; Standard machinery can call generate_canonical directly
+    if constexpr (_Has_static_min_max<_Gen>::value) {
+        return _STD generate_canonical<_Real, _Digits>(_Gx);
+    } else if constexpr (is_integral_v<typename _Gen::result_type>) {
+        // TRANSITION, for integral tr1 machinery only; Standard machinery can call generate_canonical directly
+        const auto _Gxmax = (_Gx.max)();
+        const auto _Gxmin = (_Gx.min)();
+        _Real _Val{0};
+
+        if (_Gxmax == UINT64_MAX && _Gxmin == 0) {
+            // special case when uint64_t can't hold the full URBG range
+            _Val = static_cast<_Real>(static_cast<uint64_t>(_Gx()) >> (64 - _Digits));
+        } else {
+            constexpr auto _Rd = 1ULL << _Digits;
+            const auto _Rx     = static_cast<uint64_t>(_Gxmax - _Gxmin) + 1;
+            uint64_t _Sx       = 0;
+            uint64_t _Factor   = 1;
+
+            // Try with 64 bits first, upgrade to 128 if necessary.
+            const bool _Would_overflow = _Nrand_for_tr1<uint64_t>(_Rd, _Rx, _Gx, _Val, _Sx, _Factor);
+            if (_Would_overflow) {
+                _Nrand_for_tr1<_Unsigned128>(_Rd, _Rx, _Gx, _Val, _Sx, _Factor);
+            }
+        }
+
+        return _STD ldexp(_Val, -static_cast<int>(_Digits));
+    } else {
+        // TRANSITION, the pre-P0952R2 algorithm, for non-integral tr1 machinery only (e.g. subtract_with_carry_01)
         const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
         const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
         const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
 
-        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Minbits) / _STD log2(_Rx)));
+        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Digits) / _STD log2(_Rx)));
         const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
 
         _Real _Ans{0};
@@ -1968,8 +2080,8 @@ public:
     explicit _Rng_from_urng_v2(_Urng& _Func) noexcept : _Ref(_Func) {}
 
     _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
-        // From Daniel Lemire, "Fast Random Integer Generation in an Interval", ACM Trans. Model. Comput. Simul. 29 (1),
-        // 2019.
+        // From Daniel Lemire, "Fast Random Integer Generation in an Interval",
+        // ACM Trans. Model. Comput. Simul. 29 (1), 2019.
         //
         // Algorithm 5 <-> This Code:
         //   m <-> _Product
@@ -2925,8 +3037,8 @@ public:
 
 private:
     template <class _Engine>
-    result_type _Eval(
-        _Engine& _Eng, const param_type& _Par0) const { // Press et al., Numerical Recipes in C, 2nd ed., pp 295-296.
+    result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
+        // Press et al., Numerical Recipes in C, 2nd ed., pp 295-296.
         _Ty _Res;
         if (_Par0._Tx < 25) { // generate directly
             _Res = 0;
