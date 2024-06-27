@@ -360,16 +360,6 @@ constexpr bool test() {
     test_iterator_arithmetic<wchar_t>();
     test_iterator_arithmetic<_Signed128>();
 
-    // GH-4507: LWG-4053 Unary call to std::views::repeat does not decay the argument
-    {
-        using RPV = ranges::repeat_view<const char*>;
-
-        static_assert(same_as<decltype(views::repeat("foo", unreachable_sentinel)), RPV>);
-        static_assert(same_as<decltype(views::repeat(+"foo", unreachable_sentinel)), RPV>);
-        static_assert(same_as<decltype(views::repeat("foo")), RPV>);
-        static_assert(same_as<decltype(views::repeat(+"foo")), RPV>);
-    }
-
     return true;
 }
 
@@ -379,6 +369,11 @@ static_assert(CanViewRepeat<string, unsigned long long>);
 static_assert(CanViewRepeat<string, _Signed128>);
 static_assert(
     !CanViewRepeat<string, _Unsigned128>); // _Unsigned128 does not satisfy 'integer-like-with-usable-difference-type'
+
+// Check LWG-4053 "Unary call to std::views::repeat does not decay the argument" (affects CTAD only due to LWG-4054)
+static_assert(is_same_v<decltype(ranges::repeat_view(ranges::repeat_view(42))), ranges::repeat_view<int>>);
+static_assert(is_same_v<decltype(ranges::repeat_view("Hello world!")), ranges::repeat_view<const char*>>);
+static_assert(is_same_v<decltype(ranges::repeat_view(test)), ranges::repeat_view<bool (*)()>>);
 
 // Check LWG-4054 "Repeating a repeat_view should repeat the view"
 static_assert(is_same_v<decltype(views::repeat(views::repeat(42))), ranges::repeat_view<ranges::repeat_view<int>>>);
