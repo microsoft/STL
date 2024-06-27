@@ -357,8 +357,9 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     }
 }
 
-template <class _Uint_type, uint64_t _Rd, class _Gen, class _Real>
-bool _Nrand_for_tr1(const uint64_t _Rx, _Gen& _Gx, _Real& _Val, uint64_t& _Sx_init, uint64_t& _Factor_init) {
+template <class _Uint_type, class _Gen, class _Real>
+bool _Nrand_for_tr1(
+    const uint64_t _Rd, const uint64_t _Rx, _Gen& _Gx, _Real& _Val, uint64_t& _Sx_init, uint64_t& _Factor_init) {
     // Minimally-constexpr generate_canonical algorithm. Will save work and exit if _Factor would overflow.
     _Uint_type _Sx             = _Sx_init;
     _Uint_type _Factor         = _Factor_init;
@@ -432,9 +433,9 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
             uint64_t _Factor   = 1;
 
             // Try with 64 bits first, upgrade to 128 if necessary.
-            const bool _Would_overflow = _Nrand_for_tr1<uint64_t, _Rd>(_Rx, _Gx, _Val, _Sx, _Factor);
+            const bool _Would_overflow = _Nrand_for_tr1<uint64_t>(_Rd, _Rx, _Gx, _Val, _Sx, _Factor);
             if (_Would_overflow) {
-                _Nrand_for_tr1<_Unsigned128, _Rd>(_Rx, _Gx, _Val, _Sx, _Factor);
+                _Nrand_for_tr1<_Unsigned128>(_Rd, _Rx, _Gx, _Val, _Sx, _Factor);
             }
         }
 
