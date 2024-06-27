@@ -76,6 +76,8 @@
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (except for __cpp_lib_freestanding_charconv)
 // P2401R0 Conditional noexcept For exchange()
+// P2407R5 Freestanding Library: Partial Classes
+//     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
 // P2937R0 Freestanding Library: Remove strtok
 
 // _HAS_CXX17 directly controls:
@@ -133,6 +135,9 @@
 //     (basic_string_view always provides this behavior)
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (including __cpp_lib_freestanding_charconv)
+// P2407R5 Freestanding Library: Partial Classes
+//     (including __cpp_lib_freestanding_optional, __cpp_lib_freestanding_string_view, and
+//     __cpp_lib_freestanding_variant)
 // P2517R1 Conditional noexcept For apply()
 // P2875R4 Undeprecate polymorphic_allocator::destroy
 
@@ -384,6 +389,8 @@
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
+// P2833R2 Freestanding Library: inout expected span
+//     (except for __cpp_lib_span which also covers C++26 span::at)
 // P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
 // P3142R0 Printing Blank Lines With println()
 
@@ -1563,6 +1570,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono_udls                      201304L
 #define __cpp_lib_complex_udls                     201309L
 #define __cpp_lib_exchange_function                201304L
+#define __cpp_lib_freestanding_algorithm           202311L
+#define __cpp_lib_freestanding_array               202311L
 #define __cpp_lib_freestanding_char_traits         202306L
 #define __cpp_lib_freestanding_cstdlib             202306L
 #define __cpp_lib_freestanding_cstring             202311L
@@ -1626,6 +1635,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_clamp                             201603L
 #define __cpp_lib_filesystem                        201703L
 #define __cpp_lib_freestanding_charconv             202306L
+#define __cpp_lib_freestanding_optional             202311L
+#define __cpp_lib_freestanding_string_view          202311L
+#define __cpp_lib_freestanding_variant              202311L
 #define __cpp_lib_gcd_lcm                           201606L
 #define __cpp_lib_hardware_interference_size        201703L
 #define __cpp_lib_has_unique_object_representations 201606L
@@ -1750,12 +1762,14 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_expected                          202211L
 #define __cpp_lib_formatters                        202302L
 #define __cpp_lib_forward_like                      202207L
+#define __cpp_lib_freestanding_expected             202311L
+#define __cpp_lib_freestanding_mdspan               202311L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_ios_noreplace                     202207L
 #define __cpp_lib_is_scoped_enum                    202011L
 #define __cpp_lib_mdspan                            202207L
 #define __cpp_lib_move_only_function                202110L
-#define __cpp_lib_out_ptr                           202106L
+#define __cpp_lib_out_ptr                           202311L
 #define __cpp_lib_print                             202207L
 #define __cpp_lib_ranges_as_const                   202311L
 #define __cpp_lib_ranges_as_rvalue                  202207L
