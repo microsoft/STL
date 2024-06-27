@@ -447,6 +447,22 @@ void test_gh_4472() {
     assert(ar.is_lock_free());
 }
 
+// GH-4728 "<atomic>: On x64, atomic_ref::is_lock_free() incorrectly returns true when it shouldn't"
+void test_gh_4728() {
+    struct Large {
+        char str[100]{};
+    };
+
+    alignas(std::atomic_ref<Large>::required_alignment) Large lg{};
+
+    static_assert(std::atomic_ref<Large>::required_alignment == alignof(Large));
+
+    static_assert(!std::atomic_ref<Large>::is_always_lock_free);
+
+    std::atomic_ref<Large> ar{lg};
+    assert(!ar.is_lock_free());
+}
+
 int main() {
     test_ops<false, char>();
     test_ops<false, signed char>();
@@ -500,6 +516,7 @@ int main() {
 
     test_gh_1497();
     test_gh_4472();
+    test_gh_4728();
 }
 
 #endif // ^^^ run test ^^^
