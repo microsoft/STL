@@ -315,22 +315,6 @@ _EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #define _LOCK_STREAM 2
 #define _LOCK_DEBUG  3
 
-#ifndef _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B
-#if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WINBLUE && defined(_WIN64)
-#define _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B 1
-#else // ^^^ modern 64-bit / less modern or 32-bit vvv
-#define _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B 0
-#endif // _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WINBLUE && defined(_WIN64)
-#endif // !defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B)
-
-#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 && defined(_M_ARM64)
-#error ARM64 requires _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B to be 1.
-#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 && defined(_M_ARM64)
-
-#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 && !defined(_WIN64)
-#error _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 requires 64-bit.
-#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 && !defined(_WIN64)
-
 _STD_BEGIN
 enum _Uninitialized { // tag for suppressing initialization
     _Noinit
