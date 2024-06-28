@@ -3277,61 +3277,105 @@ namespace {
 
         const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
 
+        if (_Size_bytes_1 < _Size_bytes_2) {
+            return _Last1;
+        }
+
 #ifndef _M_ARM64EC
-        if (_Use_sse42() && _Size_bytes_2 <= 16 && _Size_bytes_1 >= 16) {
+        if (_Use_sse42() && _Size_bytes_1 >= 16) {
             constexpr int _Op = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
             constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
-            const int _Size_el_2        = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
 
-            const int _Max_full_match_pos = _Part_size_el - _Size_el_2;
+            if (_Size_bytes_2 <= 16) {
+                const int _Size_el_2 = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
 
-            alignas(16) uint8_t _Tmp2[16];
-            memcpy(_Tmp2, _First2, _Size_bytes_2);
-            const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+                const int _Max_full_match_pos = _Part_size_el - _Size_el_2;
 
-            const void* _Stop1 = _First1;
-            _Advance_bytes(_Stop1, _Size_bytes_1 - 16);
+                alignas(16) uint8_t _Tmp2[16];
+                memcpy(_Tmp2, _First2, _Size_bytes_2);
+                const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
 
-            while (_First1 <= _Stop1) {
-                const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                const void* _Stop1 = _First1;
+                _Advance_bytes(_Stop1, _Size_bytes_1 - 16);
 
-                if (!_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op)) {
-                    _Advance_bytes(_First1, 16); // No matches, next.
-                } else {
-                    int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
-                    _Advance_bytes(_First1, _Pos * sizeof(_Ty));
-                    if (_Pos <= _Max_full_match_pos) {
-                        // Full match. Return this match.
+                do {
+                    const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+
+                    if (!_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op)) {
+                        _Advance_bytes(_First1, 16); // No matches, next.
+                    } else {
+                        int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                        _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                        if (_Pos <= _Max_full_match_pos) {
+                            // Full match. Return this match.
+                            return _First1;
+                        }
+                        // Partial match. Search again from the match start. will return it if it is full.
+                    }
+                } while (_First1 <= _Stop1);
+
+                const size_t _Size_bytes_1_tail = _Byte_length(_First1, _Last1);
+                if (_Size_bytes_1_tail != 0) {
+                    const int _Size_el_1_tail = static_cast<int>(_Size_bytes_1_tail / sizeof(_Ty));
+
+                    alignas(16) uint8_t _Tmp1[16];
+                    memcpy(_Tmp1, _First1, _Size_bytes_1_tail);
+                    const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+
+                    if (_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op)) {
+                        const int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                        _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                        // Full match because size is less than 16. Return this match.
                         return _First1;
                     }
-                    // Partial match. Search again from the match start. will return it if it is full.
                 }
-            }
+            } else {
+                const __m128i _Data2  = _mm_load_si128(reinterpret_cast<const __m128i*>(_First2));
+                const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2;
 
-            const size_t _Size_bytes_1_tail = _Byte_length(_First1, _Last1);
-            if (_Size_bytes_1_tail != 0) {
-                const int _Size_el_1_tail = static_cast<int>(_Size_bytes_1_tail / sizeof(_Ty));
+                const void* _Stop1 = _First1;
+                _Advance_bytes(_Stop1, _Max_pos);
 
-                alignas(16) uint8_t _Tmp1[16];
-                memcpy(_Tmp1, _First1, _Size_bytes_1_tail);
-                const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                const void* _Tail2 = _First2;
+                _Advance_bytes(_Tail2, 16);
 
-                if (_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op)) {
-                    int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
-                    _Advance_bytes(_First1, _Pos * sizeof(_Ty));
-                    // Full match because size is less than 16. Return this match.
-                    return _First1;
-                }
+                do {
+                    const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                    if (!_mm_cmpestrc(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op)) {
+                        _Advance_bytes(_First1, 16); // No matches, next.
+                    } else {
+                        const int _Pos = _mm_cmpestri(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+                        // Matched first 16 or less
+                        if (_Pos != 0) {
+                            _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                            // Match not from the first byte, check 16 symbols
+                            const __m128i _Match1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                            const __m128i _Cmp    = _mm_xor_si128(_Data2, _Match1);
+                            if (!_mm_testz_si128(_Cmp, _Cmp)) {
+                                // Start form the next element
+                                _Advance_bytes(_First1, sizeof(_Ty));
+                                continue;
+                            }
+                        }
+                        // Matched first 16, check the rest
+
+                        const void* _Tail1 = _First1;
+                        _Advance_bytes(_Tail1, 16);
+
+                        if (_CSTD memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
+                            return _First1;
+                        }
+
+                        // Start form the next element
+                        _Advance_bytes(_First1, sizeof(_Ty));
+                    }
+                } while (_First1 <= _Stop1);
             }
 
             return _Last1;
         } else
 #endif // !defined(_M_ARM64EC)
         {
-            if (_Size_bytes_1 < _Size_bytes_2) {
-                return _Last1;
-            }
-
             const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
 
             auto _Ptr1           = static_cast<const _Ty*>(_First1);
