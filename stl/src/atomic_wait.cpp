@@ -238,9 +238,13 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
 #ifdef _WIN64
     return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#else
+#else // ^^^ 64-bit / 32-bit vvv
+    (void) _Destination;
+    (void) _ExchangeHigh;
+    (void) _ExchangeLow;
+    (void) _ComparandResult;
     _CSTD abort();
-#endif
+#endif // ^^^ 32-bit ^^^
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
