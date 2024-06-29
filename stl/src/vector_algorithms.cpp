@@ -21,8 +21,6 @@ extern "C" long __isa_enabled;
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
 #endif // !defined(_DEBUG)
 
-#pragma optimize("", off)
-
 namespace {
     bool _Use_avx2() noexcept {
         return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
