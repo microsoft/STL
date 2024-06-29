@@ -3325,7 +3325,7 @@ namespace {
                     const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
 
                     if (_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op)) {
-                        const int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                        const int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op);
                         _Advance_bytes(_First1, _Pos * sizeof(_Ty));
                         // Full match because size is less than 16. Return this match.
                         return _First1;
