@@ -21,6 +21,8 @@ extern "C" long __isa_enabled;
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
 #endif // !defined(_DEBUG)
 
+#pragma optimize("", off)
+
 namespace {
     bool _Use_avx2() noexcept {
         return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
@@ -3348,6 +3350,11 @@ namespace {
                         // Matched first 16 or less
                         if (_Pos != 0) {
                             _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+
+                            if (_First1 > _Stop1) {
+                                break; // Oops, don't fit
+                            }
+
                             // Match not from the first byte, check 16 symbols
                             const __m128i _Match1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
                             const __m128i _Cmp    = _mm_xor_si128(_Data2, _Match1);
