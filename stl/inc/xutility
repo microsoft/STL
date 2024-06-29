@@ -5378,7 +5378,7 @@ constexpr bool _Equal_memcmp_is_safe =
 // Can we activate the vector algorithms for std::search?
 template <class _It1, class _It2, class _Pr>
 constexpr bool _Vector_alg_in_search_is_safe = _Equal_memcmp_is_safe<_It1, _It2, _Pr> && // can search bitwise
-                                               sizeof(_Iter_value_t<_It1>) <= 2; // pcmpestr* compatible element size
+                                               sizeof(_Iter_value_t<_It1>) <= 2; // pcmpestri compatible element size
 
 template <class _CtgIt1, class _CtgIt2>
 _NODISCARD int _Memcmp_ranges(_CtgIt1 _First1, _CtgIt1 _Last1, _CtgIt2 _First2) {
