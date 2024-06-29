@@ -5404,9 +5404,9 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
             _STL_INTERNAL_STATIC_ASSERT(
                 sizeof(_Iter_value_t<decltype(_UFirst1)>) == sizeof(_Iter_value_t<decltype(_UFirst2)>));
             const auto _First1_ch = reinterpret_cast<const char*>(_STD _To_address(_First1));
-            const auto _Last1_ch  = reinterpret_cast<const char*>(_STD _To_address(_Last1));
-            return _CSTD memcmp(_First1_ch, _STD _To_address(_First2), static_cast<size_t>(_Last1_ch - _First1_ch))
-                == 0;
+            const auto _Size =
+                static_cast<size_t>(reinterpret_cast<const char*>(_STD _To_address(_Last1)) - _First1_ch);
+            return _CSTD memcmp(_First1_ch, _STD _To_address(_First2), _Size) == 0;
         }
     }
 
