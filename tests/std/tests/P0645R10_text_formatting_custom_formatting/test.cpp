@@ -266,8 +266,13 @@ void test_basic_format_context_construction() {
     using context = basic_format_context<OutIt, CharT>;
 
     static_assert(!is_default_constructible_v<context>);
-    static_assert(is_copy_constructible_v<context> == is_copy_constructible_v<OutIt>);
-    static_assert(is_move_constructible_v<context>);
+    static_assert(!is_copy_constructible_v<context>);
+    static_assert(!is_move_constructible_v<context>);
+
+    // Also test the deleted copy assignment operator
+    // from LWG-4061 "Should std::basic_format_context be default-constructible/copyable/movable?"
+    static_assert(!is_copy_assignable_v<context>);
+    static_assert(!is_move_assignable_v<context>);
 
     static_assert(!is_constructible_v<context, OutIt, basic_format_args<context>>);
     static_assert(!is_constructible_v<context, OutIt, const basic_format_args<context>&>);
