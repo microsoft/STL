@@ -62,7 +62,8 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(_Cnd_t) noexcept; // TRANSITION, 
 _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t, _Mtx_t, int*) noexcept;
 _CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t) noexcept;
 _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() noexcept;
-_Thrd_result __stdcall _Cnd_timedwait_for(_Cnd_t, _Mtx_t, unsigned int) noexcept;
+// '_unchecked' means it is not checked against the 'steady_clock', so may report timeout prematurely
+_Thrd_result __stdcall _Cnd_timedwait_for_unchecked(_Cnd_t, _Mtx_t, unsigned int) noexcept;
 } // extern "C"
 
 _STD_BEGIN

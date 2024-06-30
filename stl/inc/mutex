@@ -599,7 +599,7 @@ public:
 
             const unsigned long _Rel_ms_count = _Clamped_rel_time_ms_count(_Abs_time - _Now)._Count;
 
-            const _Thrd_result _Res = _Cnd_timedwait_for(_Mycnd(), _Lck.mutex()->_Mymtx(), _Rel_ms_count);
+            const _Thrd_result _Res = _Cnd_timedwait_for_unchecked(_Mycnd(), _Lck.mutex()->_Mymtx(), _Rel_ms_count);
             if (_Res == _Thrd_result::_Success) {
                 return cv_status::no_timeout;
             }
