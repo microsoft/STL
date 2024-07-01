@@ -121,7 +121,7 @@ struct _Tuple_perfect_val<tuple<_Ty0, _Ty1, _Ty2>, _Uty0, _Uty1, _Uty2>
 
 struct _Ignore { // struct that ignores assignments
     template <class _Ty>
-    constexpr const _Ignore& operator=(const _Ty&) const noexcept /* strengthened */ {
+    constexpr const _Ignore& operator=(const _Ty&) const noexcept {
         // do nothing
         return *this;
     }
