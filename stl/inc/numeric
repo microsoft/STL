@@ -622,18 +622,43 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
     // calculate greatest common divisor
     static_assert(_Is_nonbool_integral<_Mt> && _Is_nonbool_integral<_Nt>, "GCD requires nonbool integral types");
 
+#if _HAS_CXX20
+    if constexpr (is_signed_v<_Mt> || is_signed_v<_Nt>) {
+#ifndef _DEBUG
+        if (_STD is_constant_evaluated())
+#endif // ^^^ !defined(_DEBUG) ^^
+        {
+            if constexpr (is_signed_v<_Mt>) {
+                if (_Mx == _STD _Min_limit<_Mt>()) {
+                    _STL_REPORT_ERROR(
+                        "Preconditions: |m| and |n| are representable as a value of common_type_t<M, N>."
+                        "(N4981 [numeric.ops.gcd]/2, N4981 [numeric.ops.lcm]/2)"));
+                }
+            }
+
+            if constexpr (is_signed_v<_Nt>) {
+                if (_Nx == _STD _Min_limit<_Mt>()) {
+                    _STL_REPORT_ERROR(
+                        "Preconditions: |m| and |n| are representable as a value of common_type_t<M, N>."
+                        "(N4981 [numeric.ops.gcd]/2, N4981 [numeric.ops.lcm]/2)"));
+                }
+            }
+        }
+    }
+#endif // _HAS_CXX20
+
     using _Common          = common_type_t<_Mt, _Nt>;
     using _Common_unsigned = make_unsigned_t<_Common>;
 
-    _Common_unsigned _Result = _Select_countr_zero_impl<_Common_unsigned>([=](auto _Countr_zero_impl) {
+    return _Select_countr_zero_impl<_Common_unsigned>([=](auto _Countr_zero_impl) {
         _Common_unsigned _Mx_magnitude = _Abs_u(_Mx);
         _Common_unsigned _Nx_magnitude = _Abs_u(_Nx);
         if (_Mx_magnitude == 0U) {
-            return _Nx_magnitude;
+            return static_cast<_Common>(_Nx_magnitude);
         }
 
         if (_Nx_magnitude == 0U) {
-            return _Mx_magnitude;
+            return static_cast<_Common>(_Mx_magnitude);
         }
 
         const auto _Mx_trailing_zeroes  = static_cast<unsigned long>(_Countr_zero_impl(_Mx_magnitude));
@@ -650,25 +675,12 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
 
             _Nx_magnitude -= _Mx_magnitude;
             if (_Nx_magnitude == 0U) {
-                return static_cast<_Common_unsigned>(_Mx_magnitude << _Common_factors_of_2);
+                return static_cast<_Common>(_Mx_magnitude << _Common_factors_of_2);
             }
 
             _Nx_trailing_zeroes = static_cast<unsigned long>(_Countr_zero_impl(_Nx_magnitude));
         }
     });
-
-#if _HAS_CXX20
-#ifndef _DEBUG
-    if (_STD _Is_constant_evaluated())
-#endif // ^^^ !defined(_DEBUG) ^^
-    {
-        if (!in_range<_Common>(_Result)) {
-            _STL_REPORT_ERROR("gcd overflow");
-        }
-    }
-#endif // _HAS_CXX20
-
-    return static_cast<_Common>(_Result);
 }
 
 _EXPORT_STD template <class _Mt, class _Nt>
@@ -687,14 +699,15 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> lcm(const _Mt _Mx, const _Nt _Nx) n
 #ifdef _DEBUG
     if constexpr (true)
 #else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
-    if (_STD _Is_constant_evaluated())
+    if (_STD is_constant_evaluated())
 #endif // ^^^ !defined(_DEBUG) ^^^
     {
         _Common_unsigned _Result = 0;
         _Common_unsigned _Tmp    = _Mx_magnitude / _STD gcd(_Mx_magnitude, _Nx_magnitude);
 
         if (_Mul_overflow(_Tmp, _Nx_magnitude, _Result) || !in_range<_Common>(_Result)) {
-            _STL_REPORT_ERROR("lcm overflow");
+            _STL_REPORT_ERROR("Preconditions: The least common multiple of |m| and |n| is representable as a value of "
+                              "type common_type_t<M, N>. (N4981 [numeric.ops.lcm]/2)");
         }
 
         return static_cast<_Common>(_Result);
