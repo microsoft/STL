@@ -7372,7 +7372,9 @@ _NODISCARD constexpr bool _Add_overflow(const _Int _Left, const _Int _Right, _In
         }
     }
 }
+#endif // _HAS_CXX23
 
+#if _HAS_CXX20
 template <_Integer_like _Int>
 _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _Int& _Out) {
 #ifdef __clang__
@@ -7421,7 +7423,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
         }
     }
 }
-#endif // _HAS_CXX23
+#endif // _HAS_CXX20
 
 _STD_END
 

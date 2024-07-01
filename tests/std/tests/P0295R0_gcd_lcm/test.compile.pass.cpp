@@ -36,7 +36,7 @@ static_assert(gcd(1073741824, 536870912) == 536870912);
 static_assert(gcd(1073741824, -536870912) == 536870912);
 static_assert(gcd(-1073741824, 536870912) == 536870912);
 static_assert(gcd(int_max, int_max) == int_max);
-static_assert(gcd(int_min, int_max) == 1);
+// gcd(int_min, int_max) -> undefined behavior
 // gcd(int_min, int_min) -> undefined behavior
 static_assert(gcd(int_min + 1, int_min + 1) == int_max);
 
