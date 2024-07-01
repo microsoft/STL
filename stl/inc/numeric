@@ -631,7 +631,7 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
         if (_STD is_constant_evaluated())
 #endif // ^^^ !defined(_DEBUG) ^^
         {
-            if (_Mx == _STD _Min_limit<_Common>() && _Nx == _STD _Min_limit<_Common>()) {
+            if (_Mx == _STD _Min_limit<_Common>() || _Nx == _STD _Min_limit<_Common>()) {
                 _STL_REPORT_ERROR("Preconditions: |m| and |n| are representable as a value of common_type_t<M, N>."
                                   "(N4981 [numeric.ops.gcd]/2, N4981 [numeric.ops.lcm]/2)");
             }
