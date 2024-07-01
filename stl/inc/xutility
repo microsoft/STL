@@ -7010,7 +7010,7 @@ namespace ranges {
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
+            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Max_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
             } else {
@@ -7228,7 +7228,7 @@ namespace ranges {
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
+            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Min_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
             } else {
