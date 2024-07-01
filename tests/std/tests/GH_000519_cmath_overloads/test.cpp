@@ -82,6 +82,10 @@ CONSTEXPR23 void test_bool_overloads() {
 
 template <class I>
 CONSTEXPR23 void test_other_integral_overloads() {
+    constexpr I imax                    = std::numeric_limits<I>::max();
+    constexpr I imaxm1                  = static_cast<I>(imax - 1);
+    constexpr bool narrower_than_double = std::numeric_limits<I>::digits < std::numeric_limits<double>::digits;
+
     // test overloads in std
 
     assert(std::fpclassify(I{}) == FP_ZERO);
@@ -118,6 +122,14 @@ CONSTEXPR23 void test_other_integral_overloads() {
         assert(std::islessequal(static_cast<I>(17), static_cast<I>(29)));
         assert(std::islessgreater(static_cast<I>(17), static_cast<I>(29)));
         assert(!std::isunordered(static_cast<I>(17), static_cast<I>(29)));
+
+        // test that integers are converted to double
+        assert(std::isgreater(imax, imaxm1) == narrower_than_double);
+        assert(std::isgreaterequal(imaxm1, imax) == !narrower_than_double);
+        assert(std::isless(imaxm1, imax) == narrower_than_double);
+        assert(std::islessequal(imax, imaxm1) == !narrower_than_double);
+        assert(std::islessgreater(imax, imaxm1) == narrower_than_double);
+        assert(!std::isunordered(imax, imaxm1));
     }
 
     // test overloads in the global namespace
@@ -156,6 +168,14 @@ CONSTEXPR23 void test_other_integral_overloads() {
         assert(::islessequal(static_cast<I>(17), static_cast<I>(29)));
         assert(::islessgreater(static_cast<I>(17), static_cast<I>(29)));
         assert(!::isunordered(static_cast<I>(17), static_cast<I>(29)));
+
+        // test that integers are converted to double
+        assert(::isgreater(imax, imaxm1) == narrower_than_double);
+        assert(::isgreaterequal(imaxm1, imax) == !narrower_than_double);
+        assert(::isless(imaxm1, imax) == narrower_than_double);
+        assert(::islessequal(imax, imaxm1) == !narrower_than_double);
+        assert(::islessgreater(imax, imaxm1) == narrower_than_double);
+        assert(!::isunordered(imax, imaxm1));
     }
 }
 

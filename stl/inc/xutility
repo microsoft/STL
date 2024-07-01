@@ -1205,6 +1205,16 @@ using _Common_diff_t = common_type_t<_Iter_diff_t<_Iters>...>;
 template <class _Iter>
 using _Iter_cat_t = typename iterator_traits<_Iter>::iterator_category;
 
+#if _HAS_CXX20
+template <class _Ty>
+concept _Iterator_for_container = requires { typename _Iter_cat_t<_Ty>; };
+
+template <class _Ty>
+constexpr bool _Is_iterator_v = _Iterator_for_container<_Ty>;
+
+template <class _Ty>
+struct _Is_iterator : bool_constant<_Iterator_for_container<_Ty>> {};
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty, class = void>
 constexpr bool _Is_iterator_v = false;
 
@@ -1213,6 +1223,7 @@ constexpr bool _Is_iterator_v<_Ty, void_t<_Iter_cat_t<_Ty>>> = true;
 
 template <class _Ty>
 struct _Is_iterator : bool_constant<_Is_iterator_v<_Ty>> {};
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Iter>
 constexpr bool _Is_cpp17_input_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, input_iterator_tag>;
@@ -1423,6 +1434,17 @@ constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
 }
 
 #if _HAS_CXX17
+#if _HAS_CXX20
+// detects whether _Ty resembles an allocator, N4981 [container.reqmts]/69
+template <class _Ty>
+concept _Allocator_for_container = requires(_Ty& _Alloc) {
+    typename _Ty::value_type;
+    _Alloc.deallocate(_Alloc.allocate(size_t{1}), size_t{1});
+};
+
+template <class _Ty>
+struct _Is_allocator : bool_constant<_Allocator_for_container<_Ty>> {};
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty, class = void>
 struct _Is_allocator : false_type {}; // selected when _Ty can't possibly be an allocator
 
@@ -1430,6 +1452,7 @@ template <class _Ty>
 struct _Is_allocator<_Ty, void_t<typename _Ty::value_type, decltype(_STD declval<_Ty&>().deallocate(
                                                                _STD declval<_Ty&>().allocate(size_t{1}), size_t{1}))>>
     : true_type {}; // selected when _Ty resembles an allocator, N4950 [container.reqmts]/69
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 // deduction guide utilities (N4950 [associative.general]/2)
 template <class _Iter>

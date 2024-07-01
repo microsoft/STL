@@ -1335,10 +1335,9 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Kx, class _Mycomp = key_compare,
-        enable_if_t<conjunction_v<_Is_transparent<_Mycomp>,
-                        negation<disjunction<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>>>,
-            int> = 0>
+    template <class _Kx>
+        requires _Is_transparent_v<key_compare>
+              && (!is_convertible_v<_Kx, const_iterator>) && (!is_convertible_v<_Kx, iterator>)
     size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Eqrange(_Keyval))) /* strengthened */ {
         return _Erase(_Eqrange(_Keyval));
     }
@@ -1390,7 +1389,8 @@ public:
         return _Lower_bound_duplicate(_Find_lower_bound(_Keyval)._Bound, _Keyval);
     }
 
-    template <class _Other, class _Mycomp = key_compare, enable_if_t<_Is_transparent_v<_Mycomp>, int> = 0>
+    template <class _Other>
+        requires _Is_transparent_v<key_compare>
     _NODISCARD bool contains(const _Other& _Keyval) const {
         return _Lower_bound_duplicate(_Find_lower_bound(_Keyval)._Bound, _Keyval);
     }
@@ -1743,10 +1743,9 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Kx, class _Mycomp = key_compare,
-        enable_if_t<conjunction_v<_Is_transparent<_Mycomp>,
-                        negation<disjunction<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>>>,
-            int> = 0>
+    template <class _Kx>
+        requires _Is_transparent_v<key_compare>
+              && (!is_convertible_v<_Kx, const_iterator>) && (!is_convertible_v<_Kx, iterator>)
     node_type extract(_Kx&& _Keyval) {
         const const_iterator _Where = find(_Keyval);
         if (_Where == end()) {

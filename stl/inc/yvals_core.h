@@ -62,6 +62,7 @@
 // P0883R2 Fixing Atomic Initialization
 // P0935R0 Eradicating Unnecessarily Explicit Default Constructors
 // P0941R2 Feature-Test Macros
+// P0952R2 A New Specification For generate_canonical()
 // P0972R0 noexcept For <chrono> zero(), min(), max()
 // P1065R2 constexpr INVOKE
 //     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
@@ -75,6 +76,8 @@
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (except for __cpp_lib_freestanding_charconv)
 // P2401R0 Conditional noexcept For exchange()
+// P2407R5 Freestanding Library: Partial Classes
+//     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
 // P2937R0 Freestanding Library: Remove strtok
 
 // _HAS_CXX17 directly controls:
@@ -132,6 +135,9 @@
 //     (basic_string_view always provides this behavior)
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (including __cpp_lib_freestanding_charconv)
+// P2407R5 Freestanding Library: Partial Classes
+//     (including __cpp_lib_freestanding_optional, __cpp_lib_freestanding_string_view, and
+//     __cpp_lib_freestanding_variant)
 // P2517R1 Conditional noexcept For apply()
 // P2875R4 Undeprecate polymorphic_allocator::destroy
 
@@ -384,6 +390,8 @@
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
+// P2833R2 Freestanding Library: inout expected span
+//     (except for __cpp_lib_span which also covers C++26 span::at)
 // P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
 // P3142R0 Printing Blank Lines With println()
 
@@ -1563,6 +1571,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono_udls                      201304L
 #define __cpp_lib_complex_udls                     201309L
 #define __cpp_lib_exchange_function                201304L
+#define __cpp_lib_freestanding_algorithm           202311L
+#define __cpp_lib_freestanding_array               202311L
 #define __cpp_lib_freestanding_char_traits         202306L
 #define __cpp_lib_freestanding_cstdlib             202306L
 #define __cpp_lib_freestanding_cstring             202311L
@@ -1626,6 +1636,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_clamp                             201603L
 #define __cpp_lib_filesystem                        201703L
 #define __cpp_lib_freestanding_charconv             202306L
+#define __cpp_lib_freestanding_optional             202311L
+#define __cpp_lib_freestanding_string_view          202311L
+#define __cpp_lib_freestanding_variant              202311L
 #define __cpp_lib_gcd_lcm                           201606L
 #define __cpp_lib_hardware_interference_size        201703L
 #define __cpp_lib_has_unique_object_representations 201606L
@@ -1751,12 +1764,14 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_flat_map                          202207L
 #define __cpp_lib_formatters                        202302L
 #define __cpp_lib_forward_like                      202207L
+#define __cpp_lib_freestanding_expected             202311L
+#define __cpp_lib_freestanding_mdspan               202311L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_ios_noreplace                     202207L
 #define __cpp_lib_is_scoped_enum                    202011L
 #define __cpp_lib_mdspan                            202207L
 #define __cpp_lib_move_only_function                202110L
-#define __cpp_lib_out_ptr                           202106L
+#define __cpp_lib_out_ptr                           202311L
 #define __cpp_lib_print                             202207L
 #define __cpp_lib_ranges_as_const                   202311L
 #define __cpp_lib_ranges_as_rvalue                  202207L
@@ -1929,7 +1944,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
 #define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
-#define _STL_WIN32_WINNT_WIN7    0x0601 // _WIN32_WINNT_WIN7 from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
 #define _STL_WIN32_WINNT_WINBLUE 0x0603 // _WIN32_WINNT_WINBLUE from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN10   0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
@@ -1939,13 +1953,10 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #if defined(_M_ARM64)
 // The first ARM64 Windows was Windows 10
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN10
-#elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
-// The first ARM or OneCore or App Windows was Windows 8
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+// The earliest Windows supported by this implementation is Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
-#else // ^^^ default to Win8 / default to Win7 vvv
-// The earliest Windows supported by this implementation is Windows 7
-#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN7
-#endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
+#endif // ^^^ !defined(_M_ARM64) ^^^
 #endif // !defined(_STL_WIN32_WINNT)
 
 #ifdef __cpp_noexcept_function_type
