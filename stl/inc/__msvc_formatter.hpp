@@ -47,6 +47,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+#if _HAS_CXX23
+#include <xutility>
+#endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -268,16 +271,55 @@ struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
 };
 
 #if _HAS_CXX23
-_EXPORT_STD template <class, class>
-struct pair;
+_EXPORT_STD enum class range_format { disabled, map, set, sequence, string, debug_string };
 
-_EXPORT_STD template <class...>
-class tuple;
+template <class _Ty>
+struct _Invalid_format_kind {
+    static_assert(_Always_false<_Ty>, "A program that instantiates the primary template of format_kind is ill-formed. "
+                                      "(N4981 [format.range.fmtkind]/1)");
+};
 
-// Specializations for pairs and tuples are forward-declared to avoid any risk of using the disabled primary template.
+_EXPORT_STD template <class _Ty>
+constexpr _Invalid_format_kind<_Ty> format_kind;
+
+template <class _Ty>
+constexpr bool _Is_two_tuple = false;
+
+template <class _Ty, class _Uty>
+constexpr bool _Is_two_tuple<pair<_Ty, _Uty>> = true;
+
+template <class _Ty, class _Uty>
+constexpr bool _Is_two_tuple<tuple<_Ty, _Uty>> = true;
+
+template <_RANGES input_range _Rng>
+    requires same_as<_Rng, remove_cvref_t<_Rng>>
+constexpr range_format format_kind<_Rng> = []() consteval {
+    using _Ref_value_t = remove_cvref_t<_RANGES range_reference_t<_Rng>>;
+    if constexpr (same_as<_Ref_value_t, _Rng>) {
+        return range_format::disabled;
+    } else if constexpr (requires { typename _Rng::key_type; }) {
+        if constexpr (requires { typename _Rng::mapped_type; } && _Is_two_tuple<_Ref_value_t>) {
+            return range_format::map;
+        } else {
+            return range_format::set;
+        }
+    } else {
+        return range_format::sequence;
+    }
+}();
+
+// Specializations for pairs, tuples, and ranges are forward-declared to avoid any risk of using the disabled primary
+// template.
 
 // Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
 // constrained to character types supported by `format`.
+
+template <class _Rng>
+concept _Formatting_enabled_range = format_kind<_Rng> != range_format::disabled;
+
+template <_RANGES input_range _Rng, _Format_supported_charT _CharT>
+    requires _Formatting_enabled_range<_Rng>
+struct formatter<_Rng, _CharT>;
 
 template <_Format_supported_charT _CharT, class _Ty1, class _Ty2>
 struct formatter<pair<_Ty1, _Ty2>, _CharT>;

@@ -198,7 +198,6 @@ tests\GH_001850_clog_tied_to_cout
 tests\GH_001858_iostream_exception
 tests\GH_001912_random_distribution_operator_const
 tests\GH_001914_cached_position
-tests\GH_001964_constexpr_generate_canonical
 tests\GH_002030_asan_annotate_string
 tests\GH_002030_asan_annotate_vector
 tests\GH_002039_byte_is_not_trivially_swappable
@@ -244,6 +243,7 @@ tests\GH_004275_seeking_fancy_iterators
 tests\GH_004388_unordered_meow_operator_equal
 tests\GH_004477_mdspan_warning_5246
 tests\GH_004597_self_swap
+tests\GH_004609_heterogeneous_cmp_overloads
 tests\GH_004618_mixed_operator_usage_keeps_statistical_properties
 tests\GH_004618_normal_distribution_avoids_resets
 tests\GH_004657_expected_constraints_permissive
@@ -512,6 +512,7 @@ tests\P0898R3_identity
 tests\P0912R5_coroutine
 tests\P0919R3_heterogeneous_unordered_lookup
 tests\P0943R6_stdatomic_h
+tests\P0952R2_new_generate_canonical
 tests\P0966R1_string_reserve_should_not_shrink
 tests\P0980R1_constexpr_strings
 tests\P1004R2_constexpr_vector
@@ -523,7 +524,6 @@ tests\P1032R1_miscellaneous_constexpr
 tests\P1132R7_out_ptr
 tests\P1135R6_atomic_flag_test
 tests\P1135R6_atomic_wait
-tests\P1135R6_atomic_wait_vista
 tests\P1135R6_barrier
 tests\P1135R6_latch
 tests\P1135R6_semaphore
@@ -621,7 +621,12 @@ tests\P2286R8_text_formatting_escaping_legacy_text_encoding
 tests\P2286R8_text_formatting_escaping_utf8
 tests\P2286R8_text_formatting_formattable
 tests\P2286R8_text_formatting_range_formatter
+tests\P2286R8_text_formatting_range_map
+tests\P2286R8_text_formatting_range_sequence
+tests\P2286R8_text_formatting_range_set
+tests\P2286R8_text_formatting_range_string
 tests\P2286R8_text_formatting_tuple
+tests\P2286R8_text_formatting_tuple_disambiguation
 tests\P2286R8_text_formatting_vector_bool_reference
 tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange

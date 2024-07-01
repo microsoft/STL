@@ -2370,8 +2370,10 @@ public:
 #else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
         if constexpr (is_always_lock_free) {
             return true;
-        } else {
+        } else if constexpr (_Is_potentially_lock_free) {
             return __std_atomic_has_cmpxchg16b() != 0;
+        } else {
+            return false;
         }
 #endif // ^^^ !_ATOMIC_HAS_DCAS ^^^
     }

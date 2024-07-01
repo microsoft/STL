@@ -93,17 +93,22 @@ _STD_END
 #endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 _STD_BEGIN
-template <class _Kty, class _Hasher, class _Keyeq, class = void>
+template <class _Kty, class _Hasher, class _Keyeq>
 struct _Uhash_choose_transparency {
     // transparency selector for non-transparent hashed containers
     template <class>
     using _Deduce_key = const _Kty&;
+
+#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, DevCom-10678753
+    template <class, class>
+    static constexpr bool _Supports_transparency = false;
+#endif // ^^^ workaround ^^^
 };
 
 #if _HAS_CXX20
 template <class _Kty, class _Hasher, class _Keyeq>
-struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
-    enable_if_t<conjunction_v<_Is_transparent<_Hasher>, _Is_transparent<_Keyeq>>>> {
+    requires _Is_transparent_v<_Hasher> && _Is_transparent_v<_Keyeq>
+struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq> {
     // transparency selector for transparent hashed containers
     template <class _Keyty>
     using _Deduce_key = const _Keyty&;
@@ -1137,8 +1142,8 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Kx, class _Mytraits = _Traits,
-        enable_if_t<_Mytraits::template _Supports_transparency<_Hash, _Kx>, int> = 0>
+    template <class _Kx>
+        requires (_Traits::template _Supports_transparency<_Hash, _Kx>)
     size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Erase(_Keyval))) /* strengthened */ {
         return _Erase(_Keyval);
     }
@@ -1347,8 +1352,8 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Kx, class _Mytraits = _Traits,
-        enable_if_t<_Mytraits::template _Supports_transparency<_Hash, _Kx>, int> = 0>
+    template <class _Kx>
+        requires (_Traits::template _Supports_transparency<_Hash, _Kx>)
     node_type extract(_Kx&& _Keyval) {
         const auto _Ptr = _Extract(_Keyval);
         if (!_Ptr) {
@@ -1967,9 +1972,17 @@ protected:
 };
 
 #if _HAS_CXX17
-// For constraining deduction guides (N4950 [unord.req.general]/243.3)
+// For constraining deduction guides (N4981 [unord.req.general]/248.3)
+#if _HAS_CXX23
+template <class _Hasher>
+concept _Hasher_for_container = !integral<_Hasher> && !_Allocator_for_container<_Hasher>;
+
+template <class _Hasher>
+using _Is_hasher = bool_constant<_Hasher_for_container<_Hasher>>;
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
+#endif // ^^^ !_HAS_CXX23 ^^^
 #endif // _HAS_CXX17
 
 template <class _Traits>
