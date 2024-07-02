@@ -1085,6 +1085,7 @@ public:
 
     using _MyBase::_MyBase;
     using _MyBase::operator=;
+    using _MyBase::insert;
 
     // [flat.map.access] Access
     _NODISCARD mapped_type& operator[](const key_type& _Key_val) {
@@ -1391,6 +1392,7 @@ public:
 
     using _MyBase::_MyBase;
     using _MyBase::operator=;
+    using _MyBase::insert;
 
     // [flat.multimap.modifiers] Modifiers
     template <class... _ArgTypes>
