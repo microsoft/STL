@@ -2050,8 +2050,8 @@ struct _Select_fixer<_Cv_TiD, false, false, _Jx> { // placeholder fixer
 
 template <class _Cv_TiD, class _Untuple>
 constexpr auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
-    noexcept(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut)))) -> decltype(_Select_fixer<_Cv_TiD>::_Fix(_Tid,
-    _STD move(_Ut))) { // translate an argument for bind
+    noexcept(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut))))
+    -> decltype(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut))) { // translate an argument for bind
     return _Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut));
 }
 
