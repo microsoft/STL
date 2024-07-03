@@ -591,12 +591,6 @@
 #define _NODISCARD_CTOR_MSG(_Msg)
 #endif // ^^^ defined(__has_cpp_attribute) && __has_cpp_attribute(nodiscard) < 201907L ^^^
 
-#if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, VSO-568006
-#define _NODISCARD_FRIEND friend
-#else // ^^^ workaround / no workaround vvv
-#define _NODISCARD_FRIEND _NODISCARD friend
-#endif // ^^^ no workaround ^^^
-
 #define _NODISCARD_REMOVE_ALG                                                                                    \
     _NODISCARD_MSG("The 'remove' and 'remove_if' algorithms return the iterator past the last element "          \
                    "that should be kept. You need to call container.erase(result, container.end()) afterwards. " \

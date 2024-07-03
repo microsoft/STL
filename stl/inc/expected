@@ -98,7 +98,7 @@ public:
 
     // [expected.un.eq]
     template <class _UErr>
-    _NODISCARD_FRIEND constexpr bool operator==(const unexpected& _Left, const unexpected<_UErr>& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const unexpected& _Left, const unexpected<_UErr>& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         return _Left._Unexpected == _Right.error();
     }
@@ -1140,7 +1140,7 @@ public:
     // [expected.object.eq]
     template <class _Uty, class _UErr>
         requires (!is_void_v<_Uty>)
-    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left._Value == *_Right)) && noexcept(
             _STD _Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value != _Right.has_value()) {
@@ -1153,7 +1153,7 @@ public:
     }
 
     template <class _Uty>
-    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const _Uty& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const expected& _Left, const _Uty& _Right) noexcept(
         noexcept(static_cast<bool>(_Left._Value == _Right))) /* strengthened */ {
         if (_Left._Has_value) {
             return static_cast<bool>(_Left._Value == _Right);
@@ -1163,7 +1163,7 @@ public:
     }
 
     template <class _UErr>
-    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
         noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value) {
             return false;
@@ -1876,7 +1876,7 @@ public:
     // [expected.void.eq]
     template <class _Uty, class _UErr>
         requires is_void_v<_Uty>
-    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
         noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value != _Right.has_value()) {
             return false;
@@ -1886,7 +1886,7 @@ public:
     }
 
     template <class _UErr>
-    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
         noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value) {
             return false;

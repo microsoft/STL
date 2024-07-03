@@ -1783,7 +1783,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
+    _NODISCARD friend constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
         is_nothrow_copy_constructible_v<_BidIt> //
             && noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
         auto _Tmp = _It.current;
@@ -2386,47 +2386,47 @@ public:
 
     template <_Not_a_const_iterator _Other>
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD_FRIEND constexpr bool operator<(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator<(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left < _Right._Current))) /* strengthened */ {
         return _Left < _Right._Current;
     }
 
     template <_Not_a_const_iterator _Other>
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD_FRIEND constexpr bool operator>(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator>(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left > _Right._Current))) /* strengthened */ {
         return _Left > _Right._Current;
     }
 
     template <_Not_a_const_iterator _Other>
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD_FRIEND constexpr bool operator<=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator<=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left <= _Right._Current))) /* strengthened */ {
         return _Left <= _Right._Current;
     }
 
     template <_Not_a_const_iterator _Other>
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD_FRIEND constexpr bool operator>=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator>=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left >= _Right._Current))) /* strengthened */ {
         return _Left >= _Right._Current;
     }
 
-    _NODISCARD_FRIEND constexpr basic_const_iterator operator+(const basic_const_iterator& _It,
+    _NODISCARD friend constexpr basic_const_iterator operator+(const basic_const_iterator& _It,
         const difference_type _Off) noexcept(noexcept(basic_const_iterator{_It._Current + _Off})) // strengthened
         requires random_access_iterator<_Iter>
     {
         return basic_const_iterator{_It._Current + _Off};
     }
 
-    _NODISCARD_FRIEND constexpr basic_const_iterator operator+(const difference_type _Off,
+    _NODISCARD friend constexpr basic_const_iterator operator+(const difference_type _Off,
         const basic_const_iterator& _It) noexcept(noexcept(basic_const_iterator{_It._Current + _Off})) // strengthened
         requires random_access_iterator<_Iter>
     {
         return basic_const_iterator{_It._Current + _Off};
     }
 
-    _NODISCARD_FRIEND constexpr basic_const_iterator operator-(const basic_const_iterator& _It,
+    _NODISCARD friend constexpr basic_const_iterator operator-(const basic_const_iterator& _It,
         const difference_type _Off) noexcept(noexcept(basic_const_iterator{_It._Current - _Off})) // strengthened
         requires random_access_iterator<_Iter>
     {
@@ -2441,12 +2441,12 @@ public:
 
     template <_Not_a_const_iterator _Sent>
         requires sized_sentinel_for<_Sent, _Iter>
-    _NODISCARD_FRIEND constexpr difference_type operator-(const _Sent& _Se, const basic_const_iterator& _It) noexcept(
+    _NODISCARD friend constexpr difference_type operator-(const _Sent& _Se, const basic_const_iterator& _It) noexcept(
         noexcept(_Se - _It._Current)) /* strengthened */ {
         return _Se - _It._Current;
     }
 
-    _NODISCARD_FRIEND constexpr _Rvalue_reference iter_move(const basic_const_iterator& _It) noexcept(
+    _NODISCARD friend constexpr _Rvalue_reference iter_move(const basic_const_iterator& _It) noexcept(
         noexcept(static_cast<_Rvalue_reference>(_RANGES iter_move(_It._Current)))) {
         return static_cast<_Rvalue_reference>(_RANGES iter_move(_It._Current));
     }
@@ -4313,25 +4313,25 @@ public:
 
 #if _HAS_CXX20
     template <sentinel_for<_Iter> _Sent>
-    _NODISCARD_FRIEND constexpr bool
+    _NODISCARD friend constexpr bool
         operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) noexcept(
             noexcept(_STD _Fake_copy_init<bool>(_Left._Current == _Right._Get_last()))) /* strengthened */ {
         return _Left._Current == _Right._Get_last();
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
-    _NODISCARD_FRIEND constexpr difference_type operator-(const move_sentinel<_Sent>& _Left,
+    _NODISCARD friend constexpr difference_type operator-(const move_sentinel<_Sent>& _Left,
         const move_iterator& _Right) noexcept(noexcept(_Left._Get_last() - _Right._Current)) /* strengthened */ {
         return _Left._Get_last() - _Right._Current;
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
-    _NODISCARD_FRIEND constexpr difference_type operator-(const move_iterator& _Left,
+    _NODISCARD friend constexpr difference_type operator-(const move_iterator& _Left,
         const move_sentinel<_Sent>& _Right) noexcept(noexcept(_Left._Current - _Right._Get_last())) /* strengthened */ {
         return _Left._Current - _Right._Get_last();
     }
 
-    _NODISCARD_FRIEND constexpr reference iter_move(const move_iterator& _It) noexcept(
+    _NODISCARD friend constexpr reference iter_move(const move_iterator& _It) noexcept(
         noexcept(_RANGES iter_move(_It._Current))) {
         return _RANGES iter_move(_It._Current);
     }
@@ -4500,7 +4500,7 @@ _EXPORT_STD struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
     struct _Base {
         template <weakly_incrementable _Winc>
-        _NODISCARD_FRIEND constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
+        _NODISCARD friend constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
             return false;
         }
     };
