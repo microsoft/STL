@@ -134,7 +134,7 @@ _EXPORT_STD struct piecewise_construct_t { // tag type for pair tuple arguments
 
 _EXPORT_STD _INLINE_VAR constexpr piecewise_construct_t piecewise_construct{};
 
-_EXPORT_STD struct _Ignore { // struct that ignores assignments
+struct _Ignore { // struct that ignores assignments
     template <class _Ty>
     constexpr const _Ignore& operator=(const _Ty&) const noexcept {
         // do nothing
