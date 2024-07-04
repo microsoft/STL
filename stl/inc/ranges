@@ -1532,7 +1532,7 @@ namespace ranges {
 
             template <class _Rng>
             _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
-                if constexpr (same_as<range_rvalue_reference_t<_Rng>, range_reference_t<_Rng>>) {
+                if constexpr (input_range<_Rng> && same_as<range_rvalue_reference_t<_Rng>, range_reference_t<_Rng>>) {
                     return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
                 } else if constexpr (_Can_as_rvalue<_Rng>) {
                     return {_St::_As_rvalue, noexcept(as_rvalue_view{_STD declval<_Rng>()})};
