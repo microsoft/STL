@@ -43,7 +43,7 @@ function load_charts() {
 
     type AxisID = `${string}Axis`;
 
-    type ColorName = `--color-${string}`;
+    type ColorName = `--fgColor-${string}` | `--borderColor-${string}`;
 
     class DatasetInfo {
         url_key: string;
@@ -73,21 +73,21 @@ function load_charts() {
 
         static {
             const arr = [
-                new DatasetInfo('cxx17', 'C++17 Features', 'smallAxis', '--color-severe-emphasis'),
-                new DatasetInfo('cxx20', 'C++20 Features', 'smallAxis', '--color-sponsors-emphasis'),
-                new DatasetInfo('cxx23', 'C++23 Features', 'smallAxis', '--color-done-emphasis'),
-                new DatasetInfo('cxx26', 'C++26 Features', 'smallAxis', '--color-severe-emphasis'),
-                new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '--color-success-emphasis'),
-                new DatasetInfo('pr', 'Pull Requests', 'smallAxis', '--color-fg-default'),
-                new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '--color-scale-red-7', true),
-                new DatasetInfo('bug', 'GitHub Bugs', 'largeAxis', '--color-danger-emphasis', true),
-                new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '--color-neutral-emphasis', true),
-                new DatasetInfo('libcxx', 'Skipped Libcxx Tests', 'largeAxis', '--color-attention-emphasis'),
+                new DatasetInfo('cxx17', 'C++17 Features', 'smallAxis', '--fgColor-severe'),
+                new DatasetInfo('cxx20', 'C++20 Features', 'smallAxis', '--fgColor-sponsors'),
+                new DatasetInfo('cxx23', 'C++23 Features', 'smallAxis', '--fgColor-done'),
+                new DatasetInfo('cxx26', 'C++26 Features', 'smallAxis', '--fgColor-severe'),
+                new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '--fgColor-success'),
+                new DatasetInfo('pr', 'Pull Requests', 'smallAxis', '--fgColor-default'),
+                new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '--fgColor-attention', true),
+                new DatasetInfo('bug', 'GitHub Bugs', 'largeAxis', '--fgColor-danger', true),
+                new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '--fgColor-neutral', true),
+                new DatasetInfo('libcxx', 'Skipped Libcxx Tests', 'largeAxis', '--fgColor-attention'),
 
-                new DatasetInfo('sum_age', 'Combined Age', 'rightAxis', '--color-fg-default'),
+                new DatasetInfo('sum_age', 'Combined Age', 'rightAxis', '--fgColor-default'),
 
-                new DatasetInfo('merged', 'Line: Sliding Window', 'mergeAxis', '--color-accent-emphasis'),
-                new DatasetInfo('merge_bar', 'Bars: Calendar Months', 'mergeAxis', '--color-border-default'),
+                new DatasetInfo('merged', 'Line: Sliding Window', 'mergeAxis', '--fgColor-accent'),
+                new DatasetInfo('merge_bar', 'Bars: Calendar Months', 'mergeAxis', '--borderColor-default'),
             ];
 
             for (const elem of arr) {
@@ -306,7 +306,7 @@ function load_charts() {
                 legend: {
                     display: true,
                     labels: {
-                        color: get_css_property('--color-fg-default'),
+                        color: get_css_property('--fgColor-default'),
                     },
                     onClick: legend_click_handler,
                 },
@@ -330,18 +330,18 @@ function load_charts() {
             min: timeframe.min,
             max: daily_table[daily_table.length - 1].date,
             border: {
-                color: get_css_property('--color-border-default'),
+                color: get_css_property('--borderColor-default'),
             },
             grid: {
-                color: get_css_property('--color-border-default'),
+                color: get_css_property('--borderColor-default'),
                 offset: false,
             },
             offset: false,
             title: {
-                color: get_css_property('--color-fg-default'),
+                color: get_css_property('--fgColor-default'),
             },
             ticks: {
-                color: get_css_property('--color-fg-default'),
+                color: get_css_property('--fgColor-default'),
             },
             time: {
                 parser: 'yyyy-MM-dd',
@@ -360,20 +360,20 @@ function load_charts() {
             display: 'auto' as const,
             position: position,
             title: {
-                color: get_css_property('--color-fg-default'),
+                color: get_css_property('--fgColor-default'),
                 display: true,
                 text: title_text,
             },
             min: min,
             max: max,
             border: {
-                color: get_css_property('--color-border-default'),
+                color: get_css_property('--borderColor-default'),
             },
             grid: {
-                color: get_css_property('--color-border-default'),
+                color: get_css_property('--borderColor-default'),
             },
             ticks: {
-                color: get_css_property('--color-fg-default'),
+                color: get_css_property('--fgColor-default'),
                 stepSize: stepSize,
             },
         };
@@ -437,8 +437,8 @@ function load_charts() {
     });
 
     function update_dark_mode(_event: MediaQueryListEvent) {
-        const color_fg_default = get_css_property('--color-fg-default');
-        const color_border_default = get_css_property('--color-border-default');
+        const color_fg_default = get_css_property('--fgColor-default');
+        const color_border_default = get_css_property('--borderColor-default');
 
         for (const chart of [status_chart, age_chart, merge_chart]) {
             if (chart.options.plugins?.legend?.labels === undefined || chart.options.scales === undefined) {
