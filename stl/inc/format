@@ -2079,8 +2079,6 @@ class _Format_arg_store<_Context> {};
 _EXPORT_STD template <class _Context>
 class basic_format_args {
 public:
-    basic_format_args() noexcept = default;
-
     basic_format_args(const _Format_arg_store<_Context>&) noexcept {}
 
     template <class... _Args>
