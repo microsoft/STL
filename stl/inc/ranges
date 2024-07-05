@@ -1044,10 +1044,10 @@ namespace ranges {
         struct _Iota_fn {
             template <class _Ty>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(noexcept(iota_view(static_cast<_Ty&&>(_Val))))
-                requires requires { iota_view(static_cast<_Ty&&>(_Val)); }
+                noexcept(noexcept(iota_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val))))
+                requires requires { iota_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val)); }
             {
-                return iota_view(static_cast<_Ty&&>(_Val));
+                return iota_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val));
             }
 
             template <class _Ty1, class _Ty2>
