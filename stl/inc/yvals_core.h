@@ -79,6 +79,7 @@
 // P2407R5 Freestanding Library: Partial Classes
 //     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
 // P2937R0 Freestanding Library: Remove strtok
+// P2968R2 Make std::ignore A First-Class Object
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()

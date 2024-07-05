@@ -119,16 +119,6 @@ struct _Tuple_perfect_val<tuple<_Ty0, _Ty1, _Ty2>, _Uty0, _Uty1, _Uty2>
     : bool_constant<disjunction_v<negation<is_same<_Remove_cvref_t<_Uty0>, allocator_arg_t>>,
           is_same<_Remove_cvref_t<_Ty0>, allocator_arg_t>>> {};
 
-struct _Ignore { // struct that ignores assignments
-    template <class _Ty>
-    constexpr const _Ignore& operator=(const _Ty&) const noexcept /* strengthened */ {
-        // do nothing
-        return *this;
-    }
-};
-
-_EXPORT_STD _INLINE_VAR constexpr _Ignore ignore{};
-
 // Note: To improve throughput, this file uses extra _STD qualification for names that appear in the
 // arguments of enable_if_t. Specifically, we qualify names which appear anywhere in the STL as members of
 // some class - including injected-class-names! - that we know are not members of the class being defined.
