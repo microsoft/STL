@@ -269,7 +269,11 @@ enum class ec { a };
 template <class CharT>
 void test_disabled() {
     if constexpr (!same_as<CharT, char>) {
+        assert_is_not_formattable<char*, CharT>();
         assert_is_not_formattable<const char*, CharT>();
+        assert_is_not_formattable<char[42], CharT>();
+        assert_is_not_formattable<string, CharT>();
+        assert_is_not_formattable<string_view, CharT>();
     }
 
     assert_is_not_formattable<c, CharT>();
