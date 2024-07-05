@@ -2208,6 +2208,9 @@ private:
         _Out&& _OutputIt_, const basic_format_args<basic_format_context>& _Ctx_args, const _Lazy_locale& _Loc_)
         : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
 
+    basic_format_context(const basic_format_context&)            = delete;
+    basic_format_context& operator=(const basic_format_context&) = delete;
+
 public:
     using iterator  = _Out;
     using char_type = _CharT;
