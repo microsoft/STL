@@ -620,14 +620,14 @@ public:
         _Prev = _Temp;
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
     /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
     /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
@@ -711,13 +711,13 @@ public:
         _Prev = _Temp;
     }
 
-    _NODISCARD_FRIEND bool operator==(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
+    _NODISCARD friend bool operator==(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
     /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
+    _NODISCARD friend bool operator!=(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
     /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
@@ -864,12 +864,12 @@ public:
         }
     }
 
-    _NODISCARD_FRIEND bool operator==(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
+    _NODISCARD friend bool operator==(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
         return static_cast<const _Swc_base::_Mybase&>(_Left)._Equals(_Right) && _Left._Carry == _Right._Carry;
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
+    _NODISCARD friend bool operator!=(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -1099,13 +1099,13 @@ public:
         return _Mx - 1;
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const subtract_with_carry_engine& _Left, const subtract_with_carry_engine& _Right) noexcept /* strengthened */ {
         return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const subtract_with_carry_engine& _Left, const subtract_with_carry_engine& _Right) noexcept /* strengthened */ {
         return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
     }
@@ -1298,13 +1298,13 @@ public:
         this->_Idx = _Nx;
     }
 
-    _NODISCARD_FRIEND bool operator==(const mersenne_twister& _Left, const mersenne_twister& _Right) noexcept
+    _NODISCARD friend bool operator==(const mersenne_twister& _Left, const mersenne_twister& _Right) noexcept
     /* strengthened */ {
         return _Left._Equals(_Right);
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const mersenne_twister& _Left, const mersenne_twister& _Right) noexcept
+    _NODISCARD friend bool operator!=(const mersenne_twister& _Left, const mersenne_twister& _Right) noexcept
     /* strengthened */ {
         return !_Left._Equals(_Right);
     }
@@ -1501,13 +1501,13 @@ public:
         return _Mybase::_WMSK;
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const mersenne_twister_engine& _Left, const mersenne_twister_engine& _Right) noexcept /* strengthened */ {
         return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const mersenne_twister_engine& _Left, const mersenne_twister_engine& _Right) noexcept /* strengthened */ {
         return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
     }
@@ -1604,12 +1604,12 @@ public:
         }
     }
 
-    _NODISCARD_FRIEND bool operator==(const discard_block& _Left, const discard_block& _Right) {
+    _NODISCARD friend bool operator==(const discard_block& _Left, const discard_block& _Right) {
         return _Left._Eng == _Right._Eng && _Left._Nx == _Right._Nx;
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const discard_block& _Left, const discard_block& _Right) {
+    _NODISCARD friend bool operator!=(const discard_block& _Left, const discard_block& _Right) {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -1685,12 +1685,12 @@ public:
         }
     }
 
-    _NODISCARD_FRIEND bool operator==(const _Discard_block_base& _Left, const _Discard_block_base& _Right) {
+    _NODISCARD friend bool operator==(const _Discard_block_base& _Left, const _Discard_block_base& _Right) {
         return _Left._Eng == _Right._Eng && _Left._Nx == _Right._Nx;
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const _Discard_block_base& _Left, const _Discard_block_base& _Right) {
+    _NODISCARD friend bool operator!=(const _Discard_block_base& _Left, const _Discard_block_base& _Right) {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -1771,12 +1771,12 @@ public:
         return (_Engine::max)();
     }
 
-    _NODISCARD_FRIEND bool operator==(const discard_block_engine& _Left, const discard_block_engine& _Right) {
+    _NODISCARD friend bool operator==(const discard_block_engine& _Left, const discard_block_engine& _Right) {
         return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const discard_block_engine& _Left, const discard_block_engine& _Right) {
+    _NODISCARD friend bool operator!=(const discard_block_engine& _Left, const discard_block_engine& _Right) {
         return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
     }
 #endif // !_HAS_CXX20
@@ -1886,12 +1886,12 @@ public:
         }
     }
 
-    _NODISCARD_FRIEND bool operator==(const independent_bits_engine& _Left, const independent_bits_engine& _Right) {
+    _NODISCARD friend bool operator==(const independent_bits_engine& _Left, const independent_bits_engine& _Right) {
         return _Left.base() == _Right.base();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const independent_bits_engine& _Left, const independent_bits_engine& _Right) {
+    _NODISCARD friend bool operator!=(const independent_bits_engine& _Left, const independent_bits_engine& _Right) {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -2016,12 +2016,12 @@ public:
         }
     }
 
-    _NODISCARD_FRIEND bool operator==(const shuffle_order_engine& _Left, const shuffle_order_engine& _Right) {
+    _NODISCARD friend bool operator==(const shuffle_order_engine& _Left, const shuffle_order_engine& _Right) {
         return _Left.base() == _Right.base();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const shuffle_order_engine& _Left, const shuffle_order_engine& _Right) {
+    _NODISCARD friend bool operator!=(const shuffle_order_engine& _Left, const shuffle_order_engine& _Right) {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -2205,13 +2205,13 @@ public:
             _Init(_Min0, _Max0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Min == _Right._Min && _Left._Max == _Right._Max;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -2413,13 +2413,13 @@ public:
         return _Ostr << static_cast<const _Mybase&>(_Dist);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -2442,13 +2442,13 @@ public:
             _Init(_Px0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Px == _Right._Px;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -2508,13 +2508,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -2602,13 +2602,13 @@ public:
             _Init(_Px0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Px == _Right._Px;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -2669,13 +2669,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const geometric_distribution& _Left, const geometric_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const geometric_distribution& _Left, const geometric_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -2758,13 +2758,13 @@ public:
             _Init(_Mean0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Mean == _Right._Mean;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -2832,13 +2832,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const poisson_distribution& _Left, const poisson_distribution& _Right) noexcept
+    _NODISCARD friend bool operator==(const poisson_distribution& _Left, const poisson_distribution& _Right) noexcept
     /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const poisson_distribution& _Left, const poisson_distribution& _Right) noexcept
+    _NODISCARD friend bool operator!=(const poisson_distribution& _Left, const poisson_distribution& _Right) noexcept
     /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -2913,13 +2913,13 @@ public:
             _Init(_Tx0, _Px0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Tx == _Right._Tx && _Left._Px == _Right._Px;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -3004,13 +3004,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const binomial_distribution& _Left, const binomial_distribution& _Right) noexcept
+    _NODISCARD friend bool operator==(const binomial_distribution& _Left, const binomial_distribution& _Right) noexcept
     /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const binomial_distribution& _Left, const binomial_distribution& _Right) noexcept
+    _NODISCARD friend bool operator!=(const binomial_distribution& _Left, const binomial_distribution& _Right) noexcept
     /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -3114,13 +3114,13 @@ public:
             _Init(_Min0, _Max0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Min == _Right._Min && _Left._Max == _Right._Max;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -3304,13 +3304,13 @@ public:
         return _Ostr << static_cast<const _Mybase&>(_Dist);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -3336,13 +3336,13 @@ public:
             _Init(_Lambda0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Lambda == _Right._Lambda;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -3401,13 +3401,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const exponential_distribution& _Left, const exponential_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const exponential_distribution& _Left, const exponential_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -3456,13 +3456,13 @@ public:
             _Init(_Mean0, _Sigma0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Mean == _Right._Mean && _Left._Sigma == _Right._Sigma;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -3542,13 +3542,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const normal_distribution& _Left, const normal_distribution& _Right) noexcept
+    _NODISCARD friend bool operator==(const normal_distribution& _Left, const normal_distribution& _Right) noexcept
     /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const normal_distribution& _Left, const normal_distribution& _Right) noexcept
+    _NODISCARD friend bool operator!=(const normal_distribution& _Left, const normal_distribution& _Right) noexcept
     /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -3648,13 +3648,13 @@ public:
             _Init(_Alpha0, _Beta0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Alpha == _Right._Alpha && _Left._Beta == _Right._Beta;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -3729,13 +3729,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const gamma_distribution& _Left, const gamma_distribution& _Right) noexcept
+    _NODISCARD friend bool operator==(const gamma_distribution& _Left, const gamma_distribution& _Right) noexcept
     /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const gamma_distribution& _Left, const gamma_distribution& _Right) noexcept
+    _NODISCARD friend bool operator!=(const gamma_distribution& _Left, const gamma_distribution& _Right) noexcept
     /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -3842,13 +3842,13 @@ public:
             _Init(_Ax0, _Bx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Ax == _Right._Ax && _Left._Bx == _Right._Bx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -3918,13 +3918,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const weibull_distribution& _Left, const weibull_distribution& _Right) noexcept
+    _NODISCARD friend bool operator==(const weibull_distribution& _Left, const weibull_distribution& _Right) noexcept
     /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const weibull_distribution& _Left, const weibull_distribution& _Right) noexcept
+    _NODISCARD friend bool operator!=(const weibull_distribution& _Left, const weibull_distribution& _Right) noexcept
     /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -3977,13 +3977,13 @@ public:
             _Init(_Ax0, _Bx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Ax == _Right._Ax && _Left._Bx == _Right._Bx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -4052,13 +4052,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const extreme_value_distribution& _Left, const extreme_value_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const extreme_value_distribution& _Left, const extreme_value_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -4111,13 +4111,13 @@ public:
             _Init(_Mx0, _Sx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Mx == _Right._Mx && _Left._Sx == _Right._Sx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -4186,13 +4186,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const lognormal_distribution& _Left, const lognormal_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const lognormal_distribution& _Left, const lognormal_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -4245,13 +4245,13 @@ public:
             _Init(_Nx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Nx == _Right._Nx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -4310,13 +4310,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const chi_squared_distribution& _Left, const chi_squared_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const chi_squared_distribution& _Left, const chi_squared_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -4365,13 +4365,13 @@ public:
             _Init(_Ax0, _Bx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Ax == _Right._Ax && _Left._Bx == _Right._Bx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -4440,13 +4440,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const cauchy_distribution& _Left, const cauchy_distribution& _Right) noexcept
+    _NODISCARD friend bool operator==(const cauchy_distribution& _Left, const cauchy_distribution& _Right) noexcept
     /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const cauchy_distribution& _Left, const cauchy_distribution& _Right) noexcept
+    _NODISCARD friend bool operator!=(const cauchy_distribution& _Left, const cauchy_distribution& _Right) noexcept
     /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -4558,13 +4558,13 @@ public:
             _Init(_Mx0, _Nx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Mx == _Right._Mx && _Left._Nx == _Right._Nx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -4634,13 +4634,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) noexcept
+    _NODISCARD friend bool operator==(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) noexcept
     /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) noexcept
+    _NODISCARD friend bool operator!=(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) noexcept
     /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -4704,13 +4704,13 @@ public:
             _Init(_Nx0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Nx == _Right._Nx;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -4769,13 +4769,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const student_t_distribution& _Left, const student_t_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const student_t_distribution& _Left, const student_t_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -4839,13 +4839,13 @@ public:
             _Init(_Kx0, _Px0);
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return _Left._Kx == _Right._Kx && _Left._Px == _Right._Px;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
         /* strengthened */ {
             return !(_Left == _Right);
         }
@@ -4915,13 +4915,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const negative_binomial_distribution& _Left,
+    _NODISCARD friend bool operator==(const negative_binomial_distribution& _Left,
         const negative_binomial_distribution& _Right) noexcept /* strengthened */ {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const negative_binomial_distribution& _Left,
+    _NODISCARD friend bool operator!=(const negative_binomial_distribution& _Left,
         const negative_binomial_distribution& _Right) noexcept /* strengthened */ {
         return !(_Left == _Right);
     }
@@ -5004,12 +5004,12 @@ public:
             _Init();
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) {
             return _Left._Pvec == _Right._Pvec;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
@@ -5121,12 +5121,12 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(const discrete_distribution& _Left, const discrete_distribution& _Right) {
+    _NODISCARD friend bool operator==(const discrete_distribution& _Left, const discrete_distribution& _Right) {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const discrete_distribution& _Left, const discrete_distribution& _Right) {
+    _NODISCARD friend bool operator!=(const discrete_distribution& _Left, const discrete_distribution& _Right) {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
@@ -5213,13 +5213,13 @@ public:
             }
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) {
             return static_cast<const _Mypbase&>(_Left) == static_cast<const _Mypbase&>(_Right)
                 && _Left._Bvec == _Right._Bvec;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
@@ -5297,13 +5297,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const piecewise_constant_distribution& _Left, const piecewise_constant_distribution& _Right) {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const piecewise_constant_distribution& _Left, const piecewise_constant_distribution& _Right) {
         return !(_Left == _Right);
     }
@@ -5410,13 +5410,13 @@ public:
             _Init();
         }
 
-        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) {
             return static_cast<const _Mypbase&>(_Left) == static_cast<const _Mypbase&>(_Right)
                 && _Left._Bvec == _Right._Bvec;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) {
             return !(_Left == _Right);
         }
 #endif // !_HAS_CXX20
@@ -5521,13 +5521,13 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
-    _NODISCARD_FRIEND bool operator==(
+    _NODISCARD friend bool operator==(
         const piecewise_linear_distribution& _Left, const piecewise_linear_distribution& _Right) {
         return _Left.param() == _Right.param();
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(
+    _NODISCARD friend bool operator!=(
         const piecewise_linear_distribution& _Left, const piecewise_linear_distribution& _Right) {
         return !(_Left == _Right);
     }

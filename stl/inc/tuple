@@ -119,16 +119,6 @@ struct _Tuple_perfect_val<tuple<_Ty0, _Ty1, _Ty2>, _Uty0, _Uty1, _Uty2>
     : bool_constant<disjunction_v<negation<is_same<_Remove_cvref_t<_Uty0>, allocator_arg_t>>,
           is_same<_Remove_cvref_t<_Ty0>, allocator_arg_t>>> {};
 
-struct _Ignore { // struct that ignores assignments
-    template <class _Ty>
-    constexpr const _Ignore& operator=(const _Ty&) const noexcept /* strengthened */ {
-        // do nothing
-        return *this;
-    }
-};
-
-_EXPORT_STD _INLINE_VAR constexpr _Ignore ignore{};
-
 // Note: To improve throughput, this file uses extra _STD qualification for names that appear in the
 // arguments of enable_if_t. Specifically, we qualify names which appear anywhere in the STL as members of
 // some class - including injected-class-names! - that we know are not members of the class being defined.
@@ -288,14 +278,14 @@ public:
 
 #if _HAS_CXX23
     template <_Tuple_like_non_tuple _Other>
-    _NODISCARD_FRIEND constexpr bool operator==(const tuple&, const _Other&) noexcept /* strengthened */ {
+    _NODISCARD friend constexpr bool operator==(const tuple&, const _Other&) noexcept /* strengthened */ {
         static_assert(tuple_size_v<_Other> == 0, "Cannot compare tuples of different sizes (N4950 [tuple.rel]/2).");
         return true;
     }
 
     template <_Tuple_like_non_tuple _Other>
         requires (tuple_size_v<remove_cvref_t<_Other>> == 0)
-    _NODISCARD_FRIEND constexpr strong_ordering operator<=>(const tuple&, const _Other&) noexcept /* strengthened */ {
+    _NODISCARD friend constexpr strong_ordering operator<=>(const tuple&, const _Other&) noexcept /* strengthened */ {
         return strong_ordering::equal;
     }
 #endif // _HAS_CXX23
@@ -781,7 +771,7 @@ public:
     }
 
     template <_Tuple_like_non_tuple _Other>
-    _NODISCARD_FRIEND constexpr bool operator==(const tuple& _Left, const _Other& _Right) {
+    _NODISCARD friend constexpr bool operator==(const tuple& _Left, const _Other& _Right) {
         static_assert(1 + sizeof...(_Rest) == tuple_size_v<_Other>,
             "Cannot compare tuples of different sizes (N4950 [tuple.rel]/2).");
         static_assert(_Can_equal_compare_with_tuple_like_v<_Other>,
@@ -799,7 +789,7 @@ public:
     }
 
     template <_Tuple_like_non_tuple _Other>
-    _NODISCARD_FRIEND constexpr auto operator<=>(const tuple& _Left, const _Other& _Right)
+    _NODISCARD friend constexpr auto operator<=>(const tuple& _Left, const _Other& _Right)
         -> _Three_way_comparison_result_with_tuple_like_t<tuple, _Other> {
         return _Left._Three_way_compare_with_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
     }

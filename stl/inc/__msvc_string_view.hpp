@@ -990,7 +990,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND constexpr _String_view_iterator operator+(
+    _NODISCARD friend constexpr _String_view_iterator operator+(
         const difference_type _Off, _String_view_iterator _Right) noexcept {
         _Right += _Off;
         return _Right;

@@ -271,6 +271,41 @@ struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
 };
 
 #if _HAS_CXX23
+template <>
+struct formatter<char*, wchar_t> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
+
+template <>
+struct formatter<const char*, wchar_t> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
+
+template <size_t _Size>
+struct formatter<char[_Size], wchar_t> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
+
+template <class _Traits, class _Allocator>
+struct formatter<basic_string<char, _Traits, _Allocator>, wchar_t> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
+
+template <class _Traits>
+struct formatter<basic_string_view<char, _Traits>, wchar_t> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
+
 _EXPORT_STD enum class range_format { disabled, map, set, sequence, string, debug_string };
 
 template <class _Ty>

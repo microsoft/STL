@@ -1783,7 +1783,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
+    _NODISCARD friend constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
         is_nothrow_copy_constructible_v<_BidIt> //
             && noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
         auto _Tmp = _It.current;
@@ -2386,47 +2386,47 @@ public:
 
     template <_Not_a_const_iterator _Other>
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD_FRIEND constexpr bool operator<(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator<(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left < _Right._Current))) /* strengthened */ {
         return _Left < _Right._Current;
     }
 
     template <_Not_a_const_iterator _Other>
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD_FRIEND constexpr bool operator>(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator>(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left > _Right._Current))) /* strengthened */ {
         return _Left > _Right._Current;
     }
 
     template <_Not_a_const_iterator _Other>
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD_FRIEND constexpr bool operator<=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator<=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left <= _Right._Current))) /* strengthened */ {
         return _Left <= _Right._Current;
     }
 
     template <_Not_a_const_iterator _Other>
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD_FRIEND constexpr bool operator>=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator>=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left >= _Right._Current))) /* strengthened */ {
         return _Left >= _Right._Current;
     }
 
-    _NODISCARD_FRIEND constexpr basic_const_iterator operator+(const basic_const_iterator& _It,
+    _NODISCARD friend constexpr basic_const_iterator operator+(const basic_const_iterator& _It,
         const difference_type _Off) noexcept(noexcept(basic_const_iterator{_It._Current + _Off})) // strengthened
         requires random_access_iterator<_Iter>
     {
         return basic_const_iterator{_It._Current + _Off};
     }
 
-    _NODISCARD_FRIEND constexpr basic_const_iterator operator+(const difference_type _Off,
+    _NODISCARD friend constexpr basic_const_iterator operator+(const difference_type _Off,
         const basic_const_iterator& _It) noexcept(noexcept(basic_const_iterator{_It._Current + _Off})) // strengthened
         requires random_access_iterator<_Iter>
     {
         return basic_const_iterator{_It._Current + _Off};
     }
 
-    _NODISCARD_FRIEND constexpr basic_const_iterator operator-(const basic_const_iterator& _It,
+    _NODISCARD friend constexpr basic_const_iterator operator-(const basic_const_iterator& _It,
         const difference_type _Off) noexcept(noexcept(basic_const_iterator{_It._Current - _Off})) // strengthened
         requires random_access_iterator<_Iter>
     {
@@ -2441,12 +2441,12 @@ public:
 
     template <_Not_a_const_iterator _Sent>
         requires sized_sentinel_for<_Sent, _Iter>
-    _NODISCARD_FRIEND constexpr difference_type operator-(const _Sent& _Se, const basic_const_iterator& _It) noexcept(
+    _NODISCARD friend constexpr difference_type operator-(const _Sent& _Se, const basic_const_iterator& _It) noexcept(
         noexcept(_Se - _It._Current)) /* strengthened */ {
         return _Se - _It._Current;
     }
 
-    _NODISCARD_FRIEND constexpr _Rvalue_reference iter_move(const basic_const_iterator& _It) noexcept(
+    _NODISCARD friend constexpr _Rvalue_reference iter_move(const basic_const_iterator& _It) noexcept(
         noexcept(static_cast<_Rvalue_reference>(_RANGES iter_move(_It._Current)))) {
         return static_cast<_Rvalue_reference>(_RANGES iter_move(_It._Current));
     }
@@ -4313,25 +4313,25 @@ public:
 
 #if _HAS_CXX20
     template <sentinel_for<_Iter> _Sent>
-    _NODISCARD_FRIEND constexpr bool
+    _NODISCARD friend constexpr bool
         operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) noexcept(
             noexcept(_STD _Fake_copy_init<bool>(_Left._Current == _Right._Get_last()))) /* strengthened */ {
         return _Left._Current == _Right._Get_last();
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
-    _NODISCARD_FRIEND constexpr difference_type operator-(const move_sentinel<_Sent>& _Left,
+    _NODISCARD friend constexpr difference_type operator-(const move_sentinel<_Sent>& _Left,
         const move_iterator& _Right) noexcept(noexcept(_Left._Get_last() - _Right._Current)) /* strengthened */ {
         return _Left._Get_last() - _Right._Current;
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
-    _NODISCARD_FRIEND constexpr difference_type operator-(const move_iterator& _Left,
+    _NODISCARD friend constexpr difference_type operator-(const move_iterator& _Left,
         const move_sentinel<_Sent>& _Right) noexcept(noexcept(_Left._Current - _Right._Get_last())) /* strengthened */ {
         return _Left._Current - _Right._Get_last();
     }
 
-    _NODISCARD_FRIEND constexpr reference iter_move(const move_iterator& _It) noexcept(
+    _NODISCARD friend constexpr reference iter_move(const move_iterator& _It) noexcept(
         noexcept(_RANGES iter_move(_It._Current))) {
         return _RANGES iter_move(_It._Current);
     }
@@ -4500,7 +4500,7 @@ _EXPORT_STD struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
     struct _Base {
         template <weakly_incrementable _Winc>
-        _NODISCARD_FRIEND constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
+        _NODISCARD friend constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
             return false;
         }
     };
@@ -5382,15 +5382,6 @@ constexpr bool _Equal_memcmp_is_safe =
     _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, remove_const_t<_Pr>>;
 
 template <class _CtgIt1, class _CtgIt2>
-_NODISCARD int _Memcmp_ranges(_CtgIt1 _First1, _CtgIt1 _Last1, _CtgIt2 _First2) {
-    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_CtgIt1>) == sizeof(_Iter_value_t<_CtgIt2>));
-    const auto _First1_ch = reinterpret_cast<const char*>(_STD _To_address(_First1));
-    const auto _Last1_ch  = reinterpret_cast<const char*>(_STD _To_address(_Last1));
-    const auto _First2_ch = reinterpret_cast<const char*>(_STD _To_address(_First2));
-    return _CSTD memcmp(_First1_ch, _First2_ch, static_cast<size_t>(_Last1_ch - _First1_ch));
-}
-
-template <class _CtgIt1, class _CtgIt2>
 _NODISCARD int _Memcmp_count(_CtgIt1 _First1, _CtgIt2 _First2, const size_t _Count) {
     _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_CtgIt1>) == sizeof(_Iter_value_t<_CtgIt2>));
     const auto _First1_ch = reinterpret_cast<const char*>(_STD _To_address(_First1));
@@ -5410,7 +5401,11 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            return _STD _Memcmp_ranges(_UFirst1, _ULast1, _UFirst2) == 0;
+            _STL_INTERNAL_STATIC_ASSERT(
+                sizeof(_Iter_value_t<decltype(_UFirst1)>) == sizeof(_Iter_value_t<decltype(_UFirst2)>));
+            const auto _First1_ch = reinterpret_cast<const char*>(_STD _To_address(_UFirst1));
+            const auto _Size      = reinterpret_cast<const char*>(_STD _To_address(_ULast1)) - _First1_ch;
+            return _CSTD memcmp(_First1_ch, _STD _To_address(_UFirst2), static_cast<size_t>(_Size)) == 0;
         }
     }
 
@@ -7010,7 +7005,7 @@ namespace ranges {
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
+            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Max_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
             } else {
@@ -7228,7 +7223,7 @@ namespace ranges {
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
+            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Min_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
             } else {
