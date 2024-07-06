@@ -37,42 +37,41 @@
     <ul>
         <li>Right axis:
             <ul>
-                <li><span class="Counter color-bg-severe-emphasis color-fg-on-emphasis">0</span>
+                <li><span class="Counter bgColor-severe-emphasis fgColor-onEmphasis">0</span>
                     C++17 STL features remaining to be implemented. This reached zero when we implemented
                     <a href="https://www.reddit.com/r/cpp/comments/dgj89g/cppcon_2019_stephan_t_lavavej_floatingpoint/"
                         rel="nofollow"><code>&lt;charconv&gt;</code>, C++17's final boss</a>.
                 </li>
-                <li><span class="Counter color-bg-sponsors-emphasis color-fg-on-emphasis"
-                        id="currentValue-cxx20"></span>
+                <li><span class="Counter bgColor-sponsors-emphasis fgColor-onEmphasis" id="currentValue-cxx20"></span>
                     <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20">
                         C++20 STL features remaining to be implemented.</a>
                     This increased whenever more features were voted into the Working Paper at
                     <a href="https://isocpp.org/std/meetings-and-participation" rel="nofollow">WG21 meetings</a>.
                 </li>
-                <li><span class="Counter color-bg-done-emphasis color-fg-on-emphasis" id="currentValue-cxx23"></span>
+                <li><span class="Counter bgColor-done-emphasis fgColor-onEmphasis" id="currentValue-cxx23"></span>
                     <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx23">
                         C++23 STL features remaining to be implemented.</a> Also increases after WG21 meetings.
                 </li>
-                <li><span class="Counter color-bg-severe-emphasis color-fg-on-emphasis" id="currentValue-cxx26"></span>
+                <li><span class="Counter bgColor-severe-emphasis fgColor-onEmphasis" id="currentValue-cxx26"></span>
                     <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx26">
                         C++26 STL features remaining to be implemented.</a> Also increases after WG21 meetings.
                 </li>
-                <li><span class="Counter color-bg-success-emphasis color-fg-on-emphasis" id="currentValue-lwg"></span>
+                <li><span class="Counter bgColor-success-emphasis fgColor-onEmphasis" id="currentValue-lwg"></span>
                     <a
                         href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG+-label%3AvNext+-label%3Ablocked">
                         LWG issue resolutions remaining to be implemented.</a> Also increases after WG21 meetings.
                 </li>
-                <li><span class="Counter color-bg-emphasis color-fg-on-emphasis" id="currentValue-pr"></span>
+                <li><span class="Counter bgColor-emphasis fgColor-onEmphasis" id="currentValue-pr"></span>
                     <a href="https://github.com/microsoft/STL/pulls">Open pull requests.</a>
                 </li>
             </ul>
         </li>
         <li>Left axis:
             <ul>
-                <li><span class="Counter color-bg-attention-emphasis color-fg-on-emphasis" id="currentValue-vso"></span>
+                <li><span class="Counter bgColor-attention-emphasis fgColor-onEmphasis" id="currentValue-vso"></span>
                     Active "old bugs" in our Microsoft-internal database. We're keeping them active while
                     porting them to GitHub, unless they're discovered to be duplicates or already fixed.</li>
-                <li><span class="Counter color-bg-danger-emphasis color-fg-on-emphasis" id="currentValue-bug"></span>
+                <li><span class="Counter bgColor-danger-emphasis fgColor-onEmphasis" id="currentValue-bug"></span>
                     <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug">
                         Open GitHub bugs.</a> That is, only GitHub issues that have
                     <span class="Label Label--danger">bug</span> labels.
@@ -89,8 +88,7 @@
                     <span class="Label Label--attention">cxx26</span>, and
                     <span class="Label Label--success">LWG</span> to avoid double-counting.
                 </li>
-                <li><span class="Counter color-bg-attention-emphasis color-fg-on-emphasis"
-                        id="currentValue-libcxx"></span>
+                <li><span class="Counter bgColor-attention-emphasis fgColor-onEmphasis" id="currentValue-libcxx"></span>
                     <a href="https://github.com/microsoft/STL/blob/main/tests/libcxx/expected_results.txt">
                         Skipped/failing tests in the libcxx test suite.</a> There are many reasons for such tests:
                     STL bugs, test bugs, compiler bugs, missing STL features, missing compiler features, etc.
@@ -115,7 +113,7 @@
     <ul>
         <li>Right axis:
             <ul>
-                <li><span class="Counter color-bg-emphasis color-fg-on-emphasis" id="currentValue-sum_age"></span>
+                <li><span class="Counter bgColor-emphasis fgColor-onEmphasis" id="currentValue-sum_age"></span>
                     The combined age of open pull requests. The unit is PR-months (like kilowatt-hours);
                     for example, 5 PRs that were all opened 2 months ago have a combined age of 10 PR-months.</li>
             </ul>
@@ -132,7 +130,7 @@
         and excludes PRs that were closed without being merged, which are rare.</p>
 
     <ul>
-        <li><span class="Counter color-bg-accent-emphasis color-fg-on-emphasis" id="currentValue-merged"></span>
+        <li><span class="Counter bgColor-accent-emphasis fgColor-onEmphasis" id="currentValue-merged"></span>
             Line: How many PRs have been merged over the past month.
             This uses a "30 day" sliding window, with some smoothing:
             <ul>
