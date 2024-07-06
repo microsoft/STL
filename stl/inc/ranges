@@ -1524,7 +1524,11 @@ namespace ranges {
 
     namespace views {
         template <class _Rng>
+#ifdef __EDG__ // TRANSITION, DevCom-10698021
+        concept _Can_as_rvalue = requires(_Rng&& __r) { as_rvalue_view(static_cast<_Rng&&>(__r)); };
+#else // ^^^ workaround / no workaround vvv
         concept _Can_as_rvalue = requires(_Rng&& __r) { as_rvalue_view{static_cast<_Rng&&>(__r)}; };
+#endif // ^^^ no workaround ^^^
 
         class _As_rvalue_fn : public _Pipe::_Base<_As_rvalue_fn> {
         private:
