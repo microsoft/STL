@@ -18,9 +18,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#ifndef _STD_BITSET_TO_STRREAM_STACK_RESERVATION
-#define _STD_BITSET_TO_STRREAM_STACK_RESERVATION 128
-#endif // !defined(_STD_BITSET_TO_STRREAM_STACK_RESERVATION)
+#ifndef _STD_BITSET_TO_STREAM_STACK_RESERVATION
+#define _STD_BITSET_TO_STREAM_STACK_RESERVATION 128
+#endif // !defined(_STD_BITSET_TO_STREAM_STACK_RESERVATION)
 
 #if _USE_STD_VECTOR_ALGORITHMS
 extern "C" {
@@ -558,7 +558,7 @@ basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const bi
     const _Elem _Elem0       = _Ctype_fac.widen('0');
     const _Elem _Elem1       = _Ctype_fac.widen('1');
 
-    if constexpr (_Bits * sizeof(_Elem) <= _STD_BITSET_TO_STRREAM_STACK_RESERVATION) {
+    if constexpr (_Bits * sizeof(_Elem) <= _STD_BITSET_TO_STREAM_STACK_RESERVATION) {
         _Elem _Buf[_Bits + 1];
         _Right._To_string(_Buf, _Bits, _Elem0, _Elem1);
         _Buf[_Bits] = _Elem{'\0'};
