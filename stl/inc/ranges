@@ -1523,12 +1523,10 @@ namespace ranges {
     constexpr auto _Compile_time_max_size<const as_rvalue_view<_Rng>> = _Compile_time_max_size<const _Rng>;
 
     namespace views {
+        // direct-intialization is specified in the Standard (N4981 [range.as.rvalue.overview]/2.2)
+        // and needed for EDG, DevCom-10698021
         template <class _Rng>
-#ifdef __EDG__ // TRANSITION, DevCom-10698021
         concept _Can_as_rvalue = requires(_Rng&& __r) { as_rvalue_view(static_cast<_Rng&&>(__r)); };
-#else // ^^^ workaround / no workaround vvv
-        concept _Can_as_rvalue = requires(_Rng&& __r) { as_rvalue_view{static_cast<_Rng&&>(__r)}; };
-#endif // ^^^ no workaround ^^^
 
         class _As_rvalue_fn : public _Pipe::_Base<_As_rvalue_fn> {
         private:
