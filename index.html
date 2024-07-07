@@ -35,38 +35,33 @@
     <p>For all lines, fewer is better.</p>
 
     <ul>
-        <li>Right axis:
-            <ul>
-                <li><span class="Counter bgColor-severe-emphasis fgColor-onEmphasis">0</span>
-                    C++17 STL features remaining to be implemented. This reached zero when we implemented
-                    <a href="https://www.reddit.com/r/cpp/comments/dgj89g/cppcon_2019_stephan_t_lavavej_floatingpoint/"
-                        rel="nofollow"><code>&lt;charconv&gt;</code>, C++17's final boss</a>.
-                </li>
-                <li><span class="Counter bgColor-sponsors-emphasis fgColor-onEmphasis" id="currentValue-cxx20"></span>
-                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20">
-                        C++20 STL features remaining to be implemented.</a>
-                    This increased whenever more features were voted into the Working Paper at
-                    <a href="https://isocpp.org/std/meetings-and-participation" rel="nofollow">WG21 meetings</a>.
-                </li>
-                <li><span class="Counter bgColor-done-emphasis fgColor-onEmphasis" id="currentValue-cxx23"></span>
-                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx23">
-                        C++23 STL features remaining to be implemented.</a> Also increases after WG21 meetings.
-                </li>
-                <li><span class="Counter bgColor-accent-emphasis fgColor-onEmphasis" id="currentValue-cxx26"></span>
-                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx26">
-                        C++26 STL features remaining to be implemented.</a> Also increases after WG21 meetings.
-                </li>
-                <li><span class="Counter bgColor-success-emphasis fgColor-onEmphasis" id="currentValue-lwg"></span>
-                    <a
-                        href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG+-label%3AvNext+-label%3Ablocked">
-                        LWG issue resolutions remaining to be implemented.</a> Also increases after WG21 meetings.
-                </li>
-                <li><span class="Counter bgColor-emphasis fgColor-onEmphasis" id="currentValue-pr"></span>
-                    <a href="https://github.com/microsoft/STL/pulls">Open pull requests.</a>
-                </li>
-            </ul>
+        <li><span class="Counter bgColor-severe-emphasis fgColor-onEmphasis">0</span>
+            C++17 STL features remaining to be implemented. This reached zero when we implemented
+            <a href="https://www.reddit.com/r/cpp/comments/dgj89g/cppcon_2019_stephan_t_lavavej_floatingpoint/"
+                rel="nofollow"><code>&lt;charconv&gt;</code>, C++17's final boss</a>.
         </li>
-
+        <li><span class="Counter bgColor-sponsors-emphasis fgColor-onEmphasis" id="currentValue-cxx20"></span>
+            <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20">
+                C++20 STL features remaining to be implemented.</a>
+            This increased whenever more features were voted into the Working Paper at
+            <a href="https://isocpp.org/std/meetings-and-participation" rel="nofollow">WG21 meetings</a>.
+        </li>
+        <li><span class="Counter bgColor-done-emphasis fgColor-onEmphasis" id="currentValue-cxx23"></span>
+            <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx23">
+                C++23 STL features remaining to be implemented.</a> Also increases after WG21 meetings.
+        </li>
+        <li><span class="Counter bgColor-accent-emphasis fgColor-onEmphasis" id="currentValue-cxx26"></span>
+            <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx26">
+                C++26 STL features remaining to be implemented.</a> Also increases after WG21 meetings.
+        </li>
+        <li><span class="Counter bgColor-success-emphasis fgColor-onEmphasis" id="currentValue-lwg"></span>
+            <a
+                href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG+-label%3AvNext+-label%3Ablocked">
+                LWG issue resolutions remaining to be implemented.</a> Also increases after WG21 meetings.
+        </li>
+        <li><span class="Counter bgColor-emphasis fgColor-onEmphasis" id="currentValue-pr"></span>
+            <a href="https://github.com/microsoft/STL/pulls">Open pull requests.</a>
+        </li>
     </ul>
 
     <p>We don't count "patch papers" as extra work when one paper adds a feature
@@ -82,35 +77,31 @@
 
     <h2>Explanation</h2>
     <ul>
-        <li>Right axis:
-            <ul>
-                <li><span class="Counter bgColor-done-emphasis fgColor-onEmphasis" id="currentValue-vso"></span>
-                    Active "old bugs" in our Microsoft-internal database. We're keeping them active while
-                    porting them to GitHub, unless they're discovered to be duplicates or already fixed.</li>
-                <li><span class="Counter bgColor-danger-emphasis fgColor-onEmphasis" id="currentValue-bug"></span>
-                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug">
-                        Open GitHub bugs.</a> That is, only GitHub issues that have
-                    <span class="Label Label--danger">bug</span> labels.
-                </li>
-                <li><span class="Counter Counter--primary" id="currentValue-issue"></span>
-                    <a
-                        href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+-label%3Acxx20+-label%3Acxx23+-label%3Acxx26+-label%3ALWG">
-                        Open GitHub issues.</a> That is, all GitHub issues including
-                    <span class="Label Label--danger">bug</span>,
-                    <span class="Label Label--accent">performance</span>,
-                    <span class="Label Label--done">throughput</span>, etc. and excluding only
-                    <span class="Label Label--attention">cxx20</span>,
-                    <span class="Label Label--severe">cxx23</span>,
-                    <span class="Label Label--attention">cxx26</span>, and
-                    <span class="Label Label--success">LWG</span> to avoid double-counting.
-                </li>
-                <li><span class="Counter bgColor-attention-emphasis fgColor-onEmphasis" id="currentValue-libcxx"></span>
-                    <a href="https://github.com/microsoft/STL/blob/main/tests/libcxx/expected_results.txt">
-                        Skipped/failing tests in the libcxx test suite.</a> There are many reasons for such tests:
-                    STL bugs, test bugs, compiler bugs, missing STL features, missing compiler features, etc.
-                    To avoid double-counting, this line excludes missing STL features.
-                </li>
-            </ul>
+        <li><span class="Counter bgColor-done-emphasis fgColor-onEmphasis" id="currentValue-vso"></span>
+            Active "old bugs" in our Microsoft-internal database. We're keeping them active while
+            porting them to GitHub, unless they're discovered to be duplicates or already fixed.</li>
+        <li><span class="Counter bgColor-danger-emphasis fgColor-onEmphasis" id="currentValue-bug"></span>
+            <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug">
+                Open GitHub bugs.</a> That is, only GitHub issues that have
+            <span class="Label Label--danger">bug</span> labels.
+        </li>
+        <li><span class="Counter Counter--primary" id="currentValue-issue"></span>
+            <a
+                href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+-label%3Acxx20+-label%3Acxx23+-label%3Acxx26+-label%3ALWG">
+                Open GitHub issues.</a> That is, all GitHub issues including
+            <span class="Label Label--danger">bug</span>,
+            <span class="Label Label--accent">performance</span>,
+            <span class="Label Label--done">throughput</span>, etc. and excluding only
+            <span class="Label Label--attention">cxx20</span>,
+            <span class="Label Label--severe">cxx23</span>,
+            <span class="Label Label--attention">cxx26</span>, and
+            <span class="Label Label--success">LWG</span> to avoid double-counting.
+        </li>
+        <li><span class="Counter bgColor-attention-emphasis fgColor-onEmphasis" id="currentValue-libcxx"></span>
+            <a href="https://github.com/microsoft/STL/blob/main/tests/libcxx/expected_results.txt">
+                Skipped/failing tests in the libcxx test suite.</a> There are many reasons for such tests:
+            STL bugs, test bugs, compiler bugs, missing STL features, missing compiler features, etc.
+            To avoid double-counting, this line excludes missing STL features.
         </li>
     </ul>
 
@@ -121,13 +112,9 @@
 
     <h2>Explanation</h2>
     <ul>
-        <li>Right axis:
-            <ul>
-                <li><span class="Counter bgColor-emphasis fgColor-onEmphasis" id="currentValue-sum_age"></span>
-                    The combined age of open pull requests. The unit is PR-months (like kilowatt-hours);
-                    for example, 5 PRs that were all opened 2 months ago have a combined age of 10 PR-months.</li>
-            </ul>
-        </li>
+        <li><span class="Counter bgColor-emphasis fgColor-onEmphasis" id="currentValue-sum_age"></span>
+            The combined age of open pull requests. The unit is PR-months (like kilowatt-hours);
+            for example, 5 PRs that were all opened 2 months ago have a combined age of 10 PR-months.</li>
     </ul>
 
     <hr />
