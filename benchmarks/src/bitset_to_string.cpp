@@ -26,6 +26,7 @@ namespace {
     void BM_bitset_to_string(benchmark::State& state) {
         for (auto _ : state) {
             for (const auto& bits : random_bits) {
+                benchmark::DoNotOptimize(bits);
                 bitset<N> bs{bits};
                 benchmark::DoNotOptimize(bs.to_string<charT>());
             }
@@ -36,6 +37,7 @@ namespace {
     void BM_bitset_to_string_large_single(benchmark::State& state) {
         const auto large_bitset = bit_cast<bitset<CHAR_BIT * sizeof(random_bits)>>(random_bits);
         for (auto _ : state) {
+            benchmark::DoNotOptimize(large_bitset);
             benchmark::DoNotOptimize(large_bitset.to_string<charT>());
         }
     }
