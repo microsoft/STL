@@ -473,6 +473,8 @@ public:
                     __std_bitset_to_string_2(reinterpret_cast<wchar_t*>(_Buf), _Array, _Len,
                         static_cast<wchar_t>(_Elem0), static_cast<wchar_t>(_Elem1));
                 }
+
+                return;
             }
         }
 #endif // _USE_STD_VECTOR_ALGORITHMS
