@@ -181,6 +181,11 @@ function load_charts() {
                 data: get_daily_values('pr'),
                 ...get_dataset_properties('pr'),
             },
+        ],
+    };
+
+    const bug_data = {
+        datasets: [
             {
                 data: get_weekly_values('vso'),
                 ...get_dataset_properties('vso'),
@@ -383,8 +388,15 @@ function load_charts() {
         ...make_common_options(),
         scales: {
             x: make_xAxis(timeframes[timeframe_idx]),
-            largeAxis: make_yAxis('left', 'Bugs, Issues, Libcxx', 0, 800, 100),
             smallAxis: make_yAxis('right', 'Features, LWG, PRs', 0, 80, 10),
+        },
+    };
+
+    const bug_options = {
+        ...make_common_options(),
+        scales: {
+            x: make_xAxis(timeframes[timeframe_idx]),
+            largeAxis: make_yAxis('left', 'Bugs, Issues, Libcxx', 0, 800, 100),
         },
     };
 
@@ -424,6 +436,12 @@ function load_charts() {
         options: status_options,
     });
 
+    const bug_chart = new Chart('bugChart', {
+        type: 'line',
+        data: bug_data,
+        options: bug_options,
+    });
+
     const age_chart = new Chart('ageChart', {
         type: 'line',
         data: age_data,
@@ -440,7 +458,7 @@ function load_charts() {
         const color_fg_default = get_css_property('--fgColor-default');
         const color_border_default = get_css_property('--borderColor-default');
 
-        for (const chart of [status_chart, age_chart, merge_chart]) {
+        for (const chart of [status_chart, bug_chart, age_chart, merge_chart]) {
             if (chart.options.plugins?.legend?.labels === undefined || chart.options.scales === undefined) {
                 throw new Error('update_dark_mode() was surprised by chart.options.');
             }
@@ -504,6 +522,7 @@ function load_charts() {
         const clamped_idx = Math.max(timeframe_idx, timeframe_github_idx);
 
         update_chart_timeframe(status_chart, timeframe_idx);
+        update_chart_timeframe(bug_chart, timeframe_idx);
         update_chart_timeframe(age_chart, clamped_idx);
         update_chart_timeframe(merge_chart, clamped_idx);
     }
