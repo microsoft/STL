@@ -76,12 +76,12 @@ function load_charts() {
                 new DatasetInfo('cxx17', 'C++17 Features', 'smallAxis', '--fgColor-severe'),
                 new DatasetInfo('cxx20', 'C++20 Features', 'smallAxis', '--fgColor-sponsors'),
                 new DatasetInfo('cxx23', 'C++23 Features', 'smallAxis', '--fgColor-done'),
-                new DatasetInfo('cxx26', 'C++26 Features', 'smallAxis', '--fgColor-severe'),
+                new DatasetInfo('cxx26', 'C++26 Features', 'smallAxis', '--fgColor-accent'),
                 new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '--fgColor-success'),
                 new DatasetInfo('pr', 'Pull Requests', 'smallAxis', '--fgColor-default'),
-                new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '--fgColor-attention', true),
-                new DatasetInfo('bug', 'GitHub Bugs', 'largeAxis', '--fgColor-danger', true),
-                new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '--fgColor-neutral', true),
+                new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '--fgColor-done'),
+                new DatasetInfo('bug', 'GitHub Bugs', 'largeAxis', '--fgColor-danger'),
+                new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '--fgColor-neutral'),
                 new DatasetInfo('libcxx', 'Skipped Libcxx Tests', 'largeAxis', '--fgColor-attention'),
 
                 new DatasetInfo('sum_age', 'Combined Age', 'rightAxis', '--fgColor-default'),
@@ -396,7 +396,7 @@ function load_charts() {
         ...make_common_options(),
         scales: {
             x: make_xAxis(timeframes[timeframe_idx]),
-            largeAxis: make_yAxis('left', 'Bugs, Issues, Libcxx', 0, 800, 100),
+            largeAxis: make_yAxis('right', 'Bugs, Issues, Libcxx', 0, 800, 100),
         },
     };
 
