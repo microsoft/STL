@@ -2348,14 +2348,12 @@ public:
 
 inline constexpr size_t _Fmt_buffer_size = 256;
 
-template <class _Iterator>
-struct _Back_insert_iterator_container_type {
-    using type = void;
-};
-
-template <class _Container>
-struct _Back_insert_iterator_container_type<back_insert_iterator<_Container>> {
-    using type = _Container;
+template <class _OutputIt>
+struct _Fmt_iterator_flush {
+    template<class _Ty>
+    static _OutputIt _Flush(const _Ty* _First, const _Ty* _Last, _OutputIt _Output) {
+        return _STD _Copy_unchecked(_First, _Last, _STD move(_Output));
+    }
 };
 
 template <class _Container>
@@ -2364,6 +2362,19 @@ struct _Back_insert_iterator_container_access : back_insert_iterator<_Container>
         : back_insert_iterator<_Container>(_Iter) {}
 
     using back_insert_iterator<_Container>::container;
+};
+
+template <class _Container>
+    requires (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>)
+struct _Fmt_iterator_flush<back_insert_iterator<_Container>> {
+    using _OutputIt = back_insert_iterator<_Container>;
+
+    template <class _Ty>
+    static _OutputIt _Flush(const _Ty* _First, const _Ty* _Last, _OutputIt _Output) {
+        _Container& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
+        _Cont.insert(_Cont.end(), _First, _Last);
+        return _Output;
+    }
 };
 
 template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
@@ -2383,14 +2394,7 @@ private:
         this->_Clear();
         const auto _End = _Data + this->_Limit(_Size);
 
-        // extracts back_insert_iterator's underlying container type, or void if not.
-        using _Container = _Back_insert_iterator_container_type<_OutputIt>::type;
-        if constexpr (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>) {
-            auto& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
-            _Cont.insert(_Cont.end(), _Data, _End);
-        } else {
-            _Output = _STD _Copy_unchecked(_Data, _End, _STD move(_Output));
-        }
+        _Output = _Fmt_iterator_flush<_OutputIt>::_Flush(_Data, _End, _STD move(_Output));
     }
 
 public:
