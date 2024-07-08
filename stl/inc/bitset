@@ -458,7 +458,7 @@ public:
         return _Array[_Wpos];
     }
 
-    template <class _Elem = char>
+    template <class _Elem>
     _CONSTEXPR23 void _To_string(
         _Elem* const _Buf, const size_t _Len, const _Elem _Elem0, const _Elem _Elem1) const noexcept {
 #if _USE_STD_VECTOR_ALGORITHMS
