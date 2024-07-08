@@ -1,4 +1,4 @@
-﻿#include <benchmark/benchmark.h>
+#include <benchmark/benchmark.h>
 #include <print>
 
 namespace {
@@ -7,7 +7,7 @@ namespace {
     template <PrintType PrintFunction>
     void BM_vprint(benchmark::State& state) {
         for (auto _ : state) {
-            PrintFunction(stdout, "Hello cool unicode 😊😊😊\n", std::make_format_args());
+            PrintFunction(stdout, "Hello cool I am going to print as unicode\n", std::make_format_args());
         }
     }
     BENCHMARK(BM_vprint<&std::vprint_unicode>);
@@ -16,12 +16,13 @@ namespace {
     template <PrintType PrintFunction>
     void BM_vprint_complex(benchmark::State& state) {
         const int i           = 42;
-        const std::string str = "Hello world 😊😊😊😊😊😊😊😊😊😊😊😊😊";
+        const std::string str = "Hello world!!!!!!!!!!!!!!!!!!!!!!!!";
         const double f        = -902.16283758;
         const std::pair<int, double> p{16, 2.073f};
         for (auto _ : state) {
             PrintFunction(stdout,
-                "Hello cool unicode 😊😊😊 {:X}, {}, {:a}, I am a big string, lots of lines, multiple {} formats\n",
+                "Hello cool I am going print as unicode!! {:X}, {}, {:a}, I am a big string, lots of words, multiple "
+                "{} formats\n",
                 std::make_format_args(i, str, f, p));
         }
     }
