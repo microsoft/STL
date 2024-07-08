@@ -44,8 +44,7 @@ public:
 
     explicit _Print_to_stream_it(FILE* const _Stream) noexcept : _Stream(_Stream) {}
 
-    template <class _Ty>
-    _Print_to_stream_it& operator=(const _Ty&) {
+    _Print_to_stream_it& operator=(const char) {
         return *this;
     }
 
@@ -97,8 +96,7 @@ public:
     explicit _Print_to_unicode_console_it(const __std_unicode_console_handle _Console_handle) noexcept
         : _Console_handle(_Console_handle) {}
 
-    template <class _Ty>
-    _Print_to_unicode_console_it& operator=(const _Ty&) {
+    _Print_to_unicode_console_it& operator=(const char) {
         return *this;
     }
 
@@ -161,9 +159,9 @@ inline void _Vprint_nonunicode_buffered_impl(
 inline void _Vprint_nonunicode_impl(
     const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
     const _Stream_lock_guard _Guard{_Stream};
-    auto _Output_it = _STD vformat_to(_Print_to_stream_it{_Stream}, _Fmt_str, _Fmt_args);
+    _STD vformat_to(_Print_to_stream_it{_Stream}, _Fmt_str, _Fmt_args);
     if (_Add_nl == _Add_newline::_Yes) {
-        *_Output_it++ = '\n';
+        _Print_noformat_nonunicode_nonlocking(_Stream, "\n");
     }
 }
 
@@ -240,9 +238,9 @@ inline void _Vprint_unicode_impl(
             _Throw_system_error(static_cast<errc>(errno));
         }
 
-        auto _Output_it = _STD vformat_to(_Print_to_unicode_console_it{_Console_handle}, _Fmt_str, _Fmt_args);
+        _STD vformat_to(_Print_to_unicode_console_it{_Console_handle}, _Fmt_str, _Fmt_args);
         if (_Add_nl == _Add_newline::_Yes) {
-            *_Output_it++ = '\n';
+            _Print_noformat_unicode_to_console_nonlocking(_Console_handle, "\n");
         }
     };
 
