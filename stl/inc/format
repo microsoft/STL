@@ -2351,7 +2351,7 @@ inline constexpr size_t _Fmt_buffer_size = 256;
 template <class _OutputIt>
 struct _Fmt_iterator_flush {
     template <class _Ty>
-    static _OutputIt _Flush(const _Ty* _First, const _Ty* _Last, _OutputIt _Output) {
+    static _OutputIt _Flush(const _Ty* const _First, const _Ty* const _Last, _OutputIt _Output) {
         return _STD _Copy_unchecked(_First, _Last, _STD move(_Output));
     }
 };
@@ -2370,7 +2370,7 @@ struct _Fmt_iterator_flush<back_insert_iterator<_Container>> {
     using _OutputIt = back_insert_iterator<_Container>;
 
     template <class _Ty>
-    static _OutputIt _Flush(const _Ty* _First, const _Ty* _Last, _OutputIt _Output) {
+    static _OutputIt _Flush(const _Ty* const _First, const _Ty* const _Last, _OutputIt _Output) {
         _Container& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
         _Cont.insert(_Cont.end(), _First, _Last);
         return _Output;
