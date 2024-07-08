@@ -61,7 +61,7 @@ namespace {
 
         ~_Allocated_string() {
             if (_Using_heap()) {
-                _Str.release();
+                _Str.~__crt_unique_heap_ptr<wchar_t>();
             }
         }
 
