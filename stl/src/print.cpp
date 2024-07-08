@@ -78,6 +78,7 @@ namespace {
                 return true;
             }
 
+            // This is actually a reset in std::unique_ptr terms, it deallocates the memory
             _Str.release();
             _Str_capacity = 0;
 
