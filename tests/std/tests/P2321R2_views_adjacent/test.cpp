@@ -943,7 +943,7 @@ struct input_only_instantiator {
 constexpr void instantiation_input_only_test() {
 #ifdef TEST_EVERYTHING
     test_in<input_only_instantiator, const int>();
-#else // ^^^ test all forward range permutations / test only "interesting" permutations vvv
+#else // ^^^ test all input range permutations / test only "interesting" permutations vvv
     using test::Common, test::Sized;
 
     // The view is sensitive to category, commonality, and size, but oblivious to proxyness and differencing
