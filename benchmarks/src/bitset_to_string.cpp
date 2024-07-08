@@ -44,7 +44,7 @@ namespace {
         static_assert(N % 64 == 0 && N >= 64);
         const auto& bitset_data = random_bits<N / 64>;
 
-        const auto large_bitset = bit_cast<bitset<CHAR_BIT * sizeof(bitset_data)>>(bitset_data);
+        const auto large_bitset = bit_cast<bitset<N>>(bitset_data);
         for (auto _ : state) {
             benchmark::DoNotOptimize(large_bitset);
             benchmark::DoNotOptimize(large_bitset.to_string<charT>());
