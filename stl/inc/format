@@ -2350,7 +2350,7 @@ inline constexpr size_t _Fmt_buffer_size = 256;
 
 template <class _OutputIt>
 struct _Fmt_iterator_flush {
-    template<class _Ty>
+    template <class _Ty>
     static _OutputIt _Flush(const _Ty* _First, const _Ty* _Last, _OutputIt _Output) {
         return _STD _Copy_unchecked(_First, _Last, _STD move(_Output));
     }

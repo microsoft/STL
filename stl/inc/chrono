@@ -5972,8 +5972,8 @@ inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO duration<
     _STD enable_nonlocking_formatter_optimization<_Rep>;
 
 template <class _Duration>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO zoned_time<_Duration, const std::chrono::time_zone*>> =
-    true;
+inline constexpr bool
+    enable_nonlocking_formatter_optimization<_CHRONO zoned_time<_Duration, const std::chrono::time_zone*>> = true;
 #endif
 
 namespace chrono {

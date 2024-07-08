@@ -167,8 +167,9 @@ inline void _Vprint_nonunicode_impl(
     }
 }
 
-template<class _UnicodeConsoleFn, class _FallbackFn>
-void _Do_on_maybe_unicode_console(FILE* const _Stream, _UnicodeConsoleFn _Unicode_console_func, _FallbackFn _Fallback_func) {
+template <class _UnicodeConsoleFn, class _FallbackFn>
+void _Do_on_maybe_unicode_console(
+    FILE* const _Stream, _UnicodeConsoleFn _Unicode_console_func, _FallbackFn _Fallback_func) {
     const __std_unicode_console_retrieval_result _Unicode_console_retrieval_result{
         __std_get_unicode_console_handle_from_file_stream(_Stream)};
 
@@ -214,9 +215,7 @@ inline void _Vprint_unicode_noformat_impl(FILE* const _Stream, const string_view
         _STD _Print_noformat_unicode_to_console_nonlocking(_Console_handle, _Output_str);
     };
 
-    const auto _Fallback = [&] {
-        _STD _Print_noformat_nonunicode(_Stream, _Output_str);
-    };
+    const auto _Fallback = [&] { _STD _Print_noformat_nonunicode(_Stream, _Output_str); };
 
     _STD _Do_on_maybe_unicode_console(_Stream, _Unicode_console, _Fallback);
 }
@@ -247,17 +246,15 @@ void _Vprint_unicode_impl(
         }
     };
 
-    const auto _Fallback = [&] {
-        _STD _Vprint_nonunicode_impl( _Add_nl, _Stream, _Fmt_str, _Fmt_args );
-    };
-    
+    const auto _Fallback = [&] { _STD _Vprint_nonunicode_impl(_Add_nl, _Stream, _Fmt_str, _Fmt_args); };
+
     _STD _Do_on_maybe_unicode_console(_Stream, _Unicode_console, _Fallback);
 }
 
 template <class... _Types>
 void _Print_impl(
     const _Add_newline _Add_nl, FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
-    constexpr bool _Has_format_args  = sizeof...(_Types) > 0;
+    constexpr bool _Has_format_args = sizeof...(_Types) > 0;
     constexpr bool _Print_nonlocking =
         (_STD enable_nonlocking_formatter_optimization<_STD remove_cvref_t<_Types>> && ...);
 
