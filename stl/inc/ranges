@@ -3066,7 +3066,7 @@ namespace ranges {
     concept _Concat_indirectly_readable =
         common_reference_with<_Concat_reference_t<_Rngs...>&&, _Concat_value_t<_Rngs...>&>
         && common_reference_with<_Concat_reference_t<_Rngs...>&&, _Concat_rvalue_reference_t<_Rngs...>&&>
-        && common_reference_with<_Concat_rvalue_reference_t<_Rngs...>&&, _Concat_value_t<_Rngs...> const&>
+        && common_reference_with<_Concat_rvalue_reference_t<_Rngs...>&&, const _Concat_value_t<_Rngs...>&>
         && (_Concat_indirectly_readable_impl<_Concat_reference_t<_Rngs...>, _Concat_rvalue_reference_t<_Rngs...>,
                 iterator_t<_Rngs>>
             && ...);
