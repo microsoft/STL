@@ -80,7 +80,7 @@ inline void _Print_noformat_nonunicode_nonlocking(FILE* const _Stream, const str
 
 template <>
 struct _Fmt_iterator_flush<_Print_to_stream_it> {
-    static _Print_to_stream_it _Flush(const char* _First, const char* _Last, _Print_to_stream_it _Output) {
+    static _Print_to_stream_it _Flush(const char* const _First, const char* const _Last, _Print_to_stream_it _Output) {
         _STD _Print_noformat_nonunicode_nonlocking(_Output._Get_stream(), {_First, _Last});
         return _Output;
     }
@@ -135,7 +135,7 @@ inline void _Print_noformat_unicode_to_console_nonlocking(
 template <>
 struct _Fmt_iterator_flush<_Print_to_unicode_console_it> {
     static _Print_to_unicode_console_it _Flush(
-        const char* _First, const char* _Last, _Print_to_unicode_console_it _Output) {
+        const char* const _First, const char* const _Last, _Print_to_unicode_console_it _Output) {
         _STD _Print_noformat_unicode_to_console_nonlocking(_Output._Get_console_handle(), {_First, _Last});
         return _Output;
     }
