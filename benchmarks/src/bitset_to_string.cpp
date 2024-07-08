@@ -13,18 +13,18 @@
 using namespace std;
 
 namespace {
-    template <size_t N>
+    template <size_t Elems>
     auto random_bits_init() {
         mt19937_64 rnd{};
-        array<uint64_t, N> arr;
+        array<uint64_t, Elems> arr;
         for (auto& d : arr) {
             d = rnd();
         }
         return arr;
     }
 
-    template <size_t N = 32>
-    const auto random_bits = random_bits_init<N>();
+    template <size_t Elems = 32>
+    const auto random_bits = random_bits_init<Elems>();
 
     template <size_t N, class charT>
     void BM_bitset_to_string(benchmark::State& state) {
