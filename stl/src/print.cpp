@@ -59,25 +59,53 @@ namespace {
     public:
         _Allocated_string() = default;
 
-        explicit _Allocated_string(__crt_unique_heap_ptr<wchar_t>&& _Other_str, const size_t _Other_capacity) noexcept
-            : _Str(_STD move(_Other_str)), _Str_capacity(_Other_capacity) {}
+        ~_Allocated_string() {
+            if (_Using_heap()) {
+                _Str.release();
+            }
+        }
 
-        [[nodiscard]] wchar_t* _Data() const noexcept {
-            return _Str.get();
+        [[nodiscard]] wchar_t* _Data() noexcept {
+            return _Using_heap() ? _Str.get() : _Buffer;
         }
 
         [[nodiscard]] size_t _Capacity() const noexcept {
             return _Str_capacity;
         }
 
-        void _Reset() noexcept {
+        bool _Grow(const size_t _Capacity) {
+            if (_Capacity <= _Str_capacity) {
+                return true;
+            }
+
             _Str.release();
             _Str_capacity = 0;
+
+            __crt_unique_heap_ptr<wchar_t> _Wide_str{_malloc_crt_t(wchar_t, _Capacity)};
+            if (!_Wide_str) [[unlikely]] {
+                return false;
+            }
+
+            _Str          = std::move(_Wide_str);
+            _Str_capacity = _Capacity;
+
+            return true;
         }
 
     private:
-        __crt_unique_heap_ptr<wchar_t> _Str;
-        size_t _Str_capacity = 0;
+        // Allows small formatted strings, such as those from _Print_to_unicode_console_it, to not allocate any extra
+        // internal transcoding buffer
+        static constexpr size_t _Buffer_size = 2048;
+
+        bool _Using_heap() const {
+            return _Str_capacity > _Buffer_size;
+        }
+
+        union {
+            wchar_t _Buffer[_Buffer_size]{};
+            __crt_unique_heap_ptr<wchar_t> _Str;
+        };
+        size_t _Str_capacity = _Buffer_size;
     };
 
     template <class _Char_type>
@@ -187,15 +215,9 @@ namespace {
             return static_cast<__std_win_error>(GetLastError());
         }
 
-        if (static_cast<size_t>(_Num_chars_required) > _Dst_str._Capacity()) {
-            _Dst_str._Reset();
-
-            __crt_unique_heap_ptr<wchar_t> _Wide_str{_malloc_crt_t(wchar_t, _Num_chars_required)};
-            if (!_Wide_str) [[unlikely]] {
-                return __std_win_error::_Not_enough_memory;
-            }
-
-            _Dst_str = _Allocated_string{_STD move(_Wide_str), static_cast<size_t>(_Num_chars_required)};
+        const bool _Has_space = _Dst_str._Grow(static_cast<size_t>(_Num_chars_required));
+        if (!_Has_space) [[unlikely]] {
+            return __std_win_error::_Not_enough_memory;
         }
 
         const int32_t _Conversion_result = MultiByteToWideChar(CP_UTF8, 0, _Src_str._Data(),
