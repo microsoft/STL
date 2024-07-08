@@ -14,7 +14,7 @@ using namespace std;
 
 namespace {
     template <size_t N>
-    const auto random_bits_init() {
+    auto random_bits_init() {
         mt19937_64 rnd{};
         array<uint64_t, N> arr;
         for (auto& d : arr) {
