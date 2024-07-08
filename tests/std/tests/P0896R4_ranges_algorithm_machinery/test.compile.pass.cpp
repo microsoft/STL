@@ -79,6 +79,8 @@ namespace indirectly_unary_invocable_test {
         // 2: not invocable<Fn&, iter_reference_t<simple_iter_archetype>>
         void operator()(simple_reference<int>) const requires (I == 2) = delete;
         // 3: not invocable<Fn&, iter_common_reference_t<simple_iter_archetype>>
+        // This case is made valid by P2997R1
+        // "Removing The Common Reference Requirement From The Indirectly Invocable Concepts".
         void operator()(simple_common_reference<int>) const requires (I == 3) = delete;
 
         // 4 : not common_reference_with<invoke_result_t<Fn&, iter_value_t<simple_iter_archetype>&>,
@@ -130,6 +132,8 @@ namespace indirect_unary_predicate_test {
         // 2: not predicate<Fn&, iter_reference_t<simple_iter_archetype>>
         void operator()(simple_reference<int>) const requires (I == 2) = delete;
         // 3: not predicate<Fn&, iter_common_reference_t<simple_iter_archetype>>
+        // This case is made valid by P2997R1
+        // "Removing The Common Reference Requirement From The Indirectly Invocable Concepts".
         void operator()(simple_common_reference<int>) const requires (I == 3) = delete;
 
         // 4: all of the above
