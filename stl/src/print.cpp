@@ -98,7 +98,7 @@ namespace {
         // internal transcoding buffer
         static constexpr size_t _Buffer_size = 2048;
 
-        bool _Using_heap() const {
+        bool _Using_heap() const noexcept {
             return _Str_capacity > _Buffer_size;
         }
 
