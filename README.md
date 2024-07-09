@@ -145,7 +145,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.28.0 or later, and [Ninja][] 1.11.0 or later.
+    * Otherwise, install [CMake][] 3.29.0 or later, and [Ninja][] 1.11.0 or later.
     * Make sure [Python][] 3.12 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
@@ -160,7 +160,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.28.0 or later, and [Ninja][] 1.11.0 or later.
+    * Otherwise, install [CMake][] 3.29.0 or later, and [Ninja][] 1.11.0 or later.
     * Make sure [Python][] 3.12 or later is available to CMake.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
