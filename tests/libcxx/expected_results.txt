@@ -87,6 +87,7 @@ std/language.support/support.limits/support.limits.general/iterator.version.comp
 
 # Test expects __cpp_lib_print to have the old value 202207L for P2093R14; we define the C++23 value 202406L for P3107R5.
 std/language.support/support.limits/support.limits.general/print.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/ostream.version.compile.pass.cpp FAIL
 
 # libc++ tests strengthened assignment operators (not compatible with P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects")
 std/utilities/tuple/tuple.tuple/tuple.assign/const_pair.pass.cpp FAIL
