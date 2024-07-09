@@ -73,7 +73,7 @@ namespace {
             return _Str_capacity;
         }
 
-        bool _Grow(const size_t _Capacity) {
+        bool _Grow(const size_t _Capacity) noexcept {
             if (_Capacity <= _Str_capacity) {
                 return true;
             }
