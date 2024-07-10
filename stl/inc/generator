@@ -199,18 +199,13 @@ using _Gen_reference_t = conditional_t<is_void_v<_Vty>, _Rty&&, _Rty>;
 template <class _Ref>
 using _Gen_yield_t = conditional_t<is_reference_v<_Ref>, _Ref, const _Ref&>;
 
-template <class>
-struct _Gen_promise_base_provider {
-    class _Base;
-};
-
 template <class, class>
 struct _Gen_iter_provider {
     class _Iterator;
 };
 
 template <class _Yielded>
-class _Gen_promise_base_provider<_Yielded>::_Base {
+class _Gen_promise_base {
 public:
     _STL_INTERNAL_STATIC_ASSERT(is_reference_v<_Yielded>);
 
@@ -284,11 +279,11 @@ private:
         template <class _CoroPromise>
         constexpr void await_suspend(coroutine_handle<_CoroPromise> _Handle) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
-            _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _CoroPromise>);
+            _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
 
-            _Base& _Current = _Handle.promise();
-            _Current._Ptr   = _STD addressof(_Val);
+            _Gen_promise_base& _Current = _Handle.promise();
+            _Current._Ptr               = _STD addressof(_Val);
         }
 
         constexpr void await_resume() const noexcept {}
@@ -296,8 +291,8 @@ private:
 
     struct _Nest_info {
         exception_ptr _Except;
-        coroutine_handle<_Base> _Parent;
-        coroutine_handle<_Base> _Root;
+        coroutine_handle<_Gen_promise_base> _Parent;
+        coroutine_handle<_Gen_promise_base> _Root;
     };
 
     struct _Final_awaiter {
@@ -308,11 +303,11 @@ private:
         template <class _CoroPromise>
         _NODISCARD coroutine_handle<> await_suspend(coroutine_handle<_CoroPromise> _Handle) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
-            _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _CoroPromise>);
+            _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
 
             if (const auto _Info = _Handle.promise()._Try_get_nest_info()) {
-                coroutine_handle<_Base> _Cont = _Info->_Parent;
+                coroutine_handle<_Gen_promise_base> _Cont = _Info->_Parent;
                 _Info->_Root.promise()._Set_top(_Cont);
                 return _Cont;
             }
@@ -338,12 +333,13 @@ private:
             }
 
             template <class _CoroPromise>
-            _NODISCARD coroutine_handle<_Base> await_suspend(coroutine_handle<_CoroPromise> _Current) noexcept {
+            _NODISCARD coroutine_handle<_Gen_promise_base> await_suspend(
+                coroutine_handle<_CoroPromise> _Current) noexcept {
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
-                _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Base, _CoroPromise>);
+                _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
-                auto _Target    = coroutine_handle<_Base>::from_address(_Gen._Coro.address());
-                _Nested._Parent = coroutine_handle<_Base>::from_address(_Current.address());
+                auto _Target    = coroutine_handle<_Gen_promise_base>::from_address(_Gen._Coro.address());
+                _Nested._Parent = coroutine_handle<_Gen_promise_base>::from_address(_Current.address());
                 if (const auto _Parent_nest_info = _Nested._Parent.promise()._Try_get_nest_info()) {
                     _Nested._Root = _Parent_nest_info->_Root;
                 } else {
@@ -370,16 +366,16 @@ private:
         return nullptr;
     }
 
-    _NODISCARD coroutine_handle<_Base> _Get_top() const noexcept {
+    _NODISCARD coroutine_handle<_Gen_promise_base> _Get_top() const noexcept {
         _STL_INTERNAL_CHECK((_Data & 1U) == 0);
-        return coroutine_handle<_Base>::from_address(reinterpret_cast<void*>(_Data));
+        return coroutine_handle<_Gen_promise_base>::from_address(reinterpret_cast<void*>(_Data));
     }
 
     void _Set_nest_info(_Nest_info* _Info) noexcept {
         _Data = reinterpret_cast<uintptr_t>(_Info) | 1U;
     }
 
-    void _Set_top(coroutine_handle<_Base> _Top) noexcept {
+    void _Set_top(coroutine_handle<_Gen_promise_base> _Top) noexcept {
         _Data = reinterpret_cast<uintptr_t>(_Top.address());
     }
 
@@ -389,12 +385,9 @@ private:
     // Least significant bit of `_Data` indicates stored information:
     // LSB 0: `_Data` is a top coroutine handle,
     // LSB 1: `_Data ^ 1U` is a pointer to an object of type `_Nest_info`.
-    uintptr_t _Data              = reinterpret_cast<uintptr_t>(coroutine_handle<_Base>::from_promise(*this).address());
+    uintptr_t _Data = reinterpret_cast<uintptr_t>(coroutine_handle<_Gen_promise_base>::from_promise(*this).address());
     add_pointer_t<_Yielded> _Ptr = nullptr;
 };
-
-template <class _Yielded>
-using _Gen_promise_base = _Gen_promise_base_provider<_Yielded>::_Base;
 
 struct _Gen_secret_tag {};
 
