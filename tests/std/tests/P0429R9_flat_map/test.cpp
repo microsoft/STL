@@ -418,8 +418,16 @@ void test_insert() {
     assert(res3.first->second == 'w');
     assert(res3.second);
 
-    assert(check_key_content(fm, {10, 90}));
-    assert(check_value_content(fm, {'m', 'w'}));
+    const auto res4 = fm.insert(fm.cbegin(), std::pair<int, char>{30, 'c'});
+    assert(res4->first == 30);
+    assert(res4->second == 'c');
+
+    const auto res5 = fm.insert(fm.cbegin(), std::pair<char, char>{static_cast<char>(40), 'd'});
+    assert(res5->first == 40);
+    assert(res5->second == 'd');
+
+    assert(check_key_content(fm, {10, 30, 40, 90}));
+    assert(check_value_content(fm, {'m', 'c', 'd', 'w'}));
 
     flat_multimap<int, char> fmm;
 
@@ -431,13 +439,24 @@ void test_insert() {
     assert(it2->first == 10);
     assert(it2->second == 'n');
 
-    const flat_multimap<int, char>::value_type val_pair2{90, 'w'};
-    const auto it3 = fmm.insert(val_pair2);
-    assert(it3->first == 90);
-    assert(it3->second == 'w');
+    const auto it3 = fmm.insert(fmm.cend(), {70, 'p'});
+    assert(it3->first == 70);
+    assert(it3->second == 'p');
 
-    assert(check_key_content(fmm, {10, 10, 90}));
-    assert(check_value_content(fmm, {'n', 'm', 'w'}));
+    const flat_multimap<int, char>::value_type val_pair2{90, 'w'};
+    const auto it4 = fmm.insert(val_pair2);
+    assert(it4->first == 90);
+    assert(it4->second == 'w');
+
+    const auto it5 = fmm.insert(fmm.cend(), std::pair<char, char>{static_cast<char>(70), 'q'});
+    assert(it5->first == 70);
+    assert(it5->second == 'q');
+
+    assert(check_key_content(fmm, {10, 10, 70, 70, 90}));
+    // FIXME: The expected order of the last 3 value elements is 'p', 'q', 'w' (no permutation allowed), according to
+    // N4981 [associative.reqmts.general]/72. The current implementation gives 'q', 'p', 'w', which is wrong.
+    assert(check_value_content(fmm, {'n', 'm', 'p', 'q', 'w'},
+        {{0, 1, subrange_type::permutation}, {2, 3, subrange_type::permutation}, {4, 4, subrange_type::equal}}));
 }
 
 // GH-4344 <flat_map> Fix compile errors
