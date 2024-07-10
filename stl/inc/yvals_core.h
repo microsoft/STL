@@ -356,6 +356,7 @@
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
+// P2286R8 Formatting Ranges
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
 // P2286R8 Formatting Ranges
@@ -383,6 +384,7 @@
 // P2539R4 Synchronizing print() With The Underlying Stream
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
+// P2585R1 Improve Default Container Formatting
 // P2599R2 mdspan: index_type, size_type
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
 // P2613R1 mdspan: empty()
@@ -1755,6 +1757,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_constexpr_typeinfo                202106L
 #define __cpp_lib_containers_ranges                 202202L
 #define __cpp_lib_expected                          202211L
+#define __cpp_lib_format_ranges                     202207L
 #define __cpp_lib_formatters                        202302L
 #define __cpp_lib_forward_like                      202207L
 #define __cpp_lib_freestanding_expected             202311L

@@ -11,6 +11,7 @@
 
 #if _HAS_CXX23
 #include <__msvc_ranges_to.hpp>
+#include <format>
 #include <iterator>
 #endif // _HAS_CXX23
 
@@ -209,6 +210,31 @@ void swap(stack<_Ty, _Container>& _Left, stack<_Ty, _Container>& _Right) noexcep
 
 template <class _Ty, class _Container, class _Alloc>
 struct uses_allocator<stack<_Ty, _Container>, _Alloc> : uses_allocator<_Container, _Alloc>::type {};
+
+#if _HAS_CXX23
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+template <_Format_supported_charT _CharT, class _Ty, formattable<_CharT> _Container>
+struct formatter<stack<_Ty, _Container>, _CharT> {
+private:
+    using _Maybe_const_container = _Fmt_maybe_const<_Container, _CharT>;
+    using _Maybe_const_adaptor   = _Maybe_const<is_const_v<_Maybe_const_container>, stack<_Ty, _Container>>;
+
+    formatter<_RANGES ref_view<_Maybe_const_container>, _CharT> _Underlying;
+
+public:
+    template <class _ParseCtx>
+    constexpr _ParseCtx::iterator parse(_ParseCtx& _Ctx) {
+        return _Underlying.parse(_Ctx);
+    }
+
+    template <class _FmtCtx>
+    _FmtCtx::iterator format(_Maybe_const_adaptor& _Adaptor, _FmtCtx& _Ctx) const {
+        constexpr auto _Mem_cont_ptr = _STD _Get_member_pointer_to_adapted_container<stack<_Ty, _Container>>();
+        return _Underlying.format(_Adaptor.*_Mem_cont_ptr, _Ctx);
+    }
+};
+#endif // _HAS_CXX23
 _STD_END
 
 #pragma pop_macro("new")

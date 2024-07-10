@@ -4774,6 +4774,18 @@ public:
 private:
     _Fill_align_and_width_specs<_CharT> _Specs;
 };
+
+template <class _Adaptor>
+consteval auto _Get_member_pointer_to_adapted_container() noexcept {
+    struct _Container_exposer : _Adaptor {
+        using _Adaptor::c;
+
+        _Container_exposer(const _Container_exposer&)            = delete;
+        _Container_exposer& operator=(const _Container_exposer&) = delete;
+        ~_Container_exposer()                                    = delete;
+    };
+    return &_Container_exposer::c;
+}
 #endif // _HAS_CXX23
 _STD_END
 
