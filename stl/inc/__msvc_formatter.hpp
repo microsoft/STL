@@ -376,34 +376,34 @@ template <_Format_supported_charT _CharT, class... _Types>
 struct formatter<tuple<_Types...>, _CharT>;
 
 template <_Format_supported_charT _CharT>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CharT> = true;
+constexpr bool enable_nonlocking_formatter_optimization<_CharT> = true;
 
 template <_Format_supported_charT _CharT>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CharT*> = true;
+constexpr bool enable_nonlocking_formatter_optimization<_CharT*> = true;
 
 template <_Format_supported_charT _CharT>
-inline constexpr bool enable_nonlocking_formatter_optimization<const _CharT*> = true;
+constexpr bool enable_nonlocking_formatter_optimization<const _CharT*> = true;
 
 template <_Format_supported_charT _CharT, size_t _Nx>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CharT[_Nx]> = true;
+constexpr bool enable_nonlocking_formatter_optimization<_CharT[_Nx]> = true;
 
 template <_Format_supported_charT _CharT, class _Traits, class _Allocator>
-inline constexpr bool enable_nonlocking_formatter_optimization<basic_string<_CharT, _Traits, _Allocator>> = true;
+constexpr bool enable_nonlocking_formatter_optimization<basic_string<_CharT, _Traits, _Allocator>> = true;
 
 template <_Format_supported_charT _CharT, class _Traits>
-inline constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<_CharT, _Traits>> = true;
+constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<_CharT, _Traits>> = true;
 
 template <class _Ty1, class _Ty2>
-inline constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
+constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
     _STD enable_nonlocking_formatter_optimization<_Ty1> && _STD enable_nonlocking_formatter_optimization<_Ty2>;
 
 template <class... _Ts>
-inline constexpr bool enable_nonlocking_formatter_optimization<tuple<_Ts...>> =
+constexpr bool enable_nonlocking_formatter_optimization<tuple<_Ts...>> =
     (_STD enable_nonlocking_formatter_optimization<_Ts> && ...);
 
 template <_RANGES input_range _Rng>
     requires (format_kind<_Rng> != range_format::disabled)
-inline constexpr bool enable_nonlocking_formatter_optimization<_Rng> = false;
+constexpr bool enable_nonlocking_formatter_optimization<_Rng> = false;
 #endif // _HAS_CXX23
 _STD_END
 
