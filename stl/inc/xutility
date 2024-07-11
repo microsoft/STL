@@ -7367,16 +7367,25 @@ _NODISCARD constexpr bool _Add_overflow(const _Int _Left, const _Int _Right, _In
         }
     }
 }
+#endif // _HAS_CXX23
 
+#if _HAS_CXX17
+#if _HAS_CXX20
 template <_Integer_like _Int>
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Int, enable_if_t<_Is_nonbool_integral<_Int>, int> = 0>
+#endif // ^^^ !_HAS_CXX20 ^^^
 _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _Int& _Out) {
+#if defined(__clang__) && !_HAS_CXX20
+    return __builtin_mul_overflow(_Left, _Right, &_Out);
+#else // ^^^ defined(__clang__) && !_HAS_CXX20 / !defined(__clang__) || _HAS_CXX20 vvv
 #ifdef __clang__
-    if constexpr (integral<_Int>) {
+    if constexpr (is_integral_v<_Int>) {
         return __builtin_mul_overflow(_Left, _Right, &_Out);
     } else
 #endif // defined(__clang__)
     {
-        if constexpr (!_Signed_integer_like<_Int>) {
+        if constexpr (static_cast<_Int>(-1) > static_cast<_Int>(0)) {
             constexpr auto _UInt_max = _STD _Max_limit<_Int>();
             const bool _Overflow     = _Left != 0 && _Right > _UInt_max / _Left;
             if (!_Overflow) {
@@ -7415,8 +7424,9 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
             // ^^^ Based on llvm::MulOverflow ^^^
         }
     }
+#endif // ^^^ !defined(__clang__) || _HAS_CXX20 ^^^
 }
-#endif // _HAS_CXX23
+#endif // _HAS_CXX17
 
 _STD_END
 

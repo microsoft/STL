@@ -794,14 +794,9 @@ _EXPORT_STD template <size_t _Idx>
 constexpr in_place_index_t<_Idx> in_place_index{};
 #endif // _HAS_CXX17
 
-template <class _Ty>
-constexpr bool _Is_standard_integer = _Is_any_of_v<remove_cv_t<_Ty>, signed char, short, int, long, long long,
-    unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
-
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool _Cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
-        "The integer comparison functions only accept standard and extended integer types.");
+    _STL_INTERNAL_STATIC_ASSERT(_Is_nonbool_integral<_Ty1> && _Is_nonbool_integral<_Ty2>); // allows character types
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
         return _Left == _Right;
     } else if constexpr (is_signed_v<_Ty2>) {
@@ -818,8 +813,7 @@ _NODISCARD constexpr bool _Cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) no
 
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool _Cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
-        "The integer comparison functions only accept standard and extended integer types.");
+    _STL_INTERNAL_STATIC_ASSERT(_Is_nonbool_integral<_Ty1> && _Is_nonbool_integral<_Ty2>); // allows character types
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
         return _Left < _Right;
     } else if constexpr (is_signed_v<_Ty2>) {
@@ -868,8 +862,7 @@ _NODISCARD constexpr _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>
 
 template <class _Rx, class _Ty>
 _NODISCARD constexpr bool _In_range(const _Ty _Value) noexcept {
-    static_assert(_Is_standard_integer<_Rx> && _Is_standard_integer<_Ty>,
-        "The integer comparison functions only accept standard and extended integer types.");
+    _STL_INTERNAL_STATIC_ASSERT(_Is_nonbool_integral<_Rx> && _Is_nonbool_integral<_Ty>); // allows character types
 
     constexpr auto _Ty_min = _Min_limit<_Ty>();
     constexpr auto _Rx_min = _Min_limit<_Rx>();
@@ -893,38 +886,56 @@ _NODISCARD constexpr bool _In_range(const _Ty _Value) noexcept {
 }
 
 #if _HAS_CXX20
+template <class _Ty>
+constexpr bool _Is_standard_integer = _Is_any_of_v<remove_cv_t<_Ty>, signed char, short, int, long, long long,
+    unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_equal(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_not_equal(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_less(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_greater(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_less_equal(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_greater_equal(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Rx, class _Ty>
 _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
+    static_assert(_Is_standard_integer<_Rx> && _Is_standard_integer<_Ty>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _In_range<_Rx>(_Value);
 }
 #endif // _HAS_CXX20
