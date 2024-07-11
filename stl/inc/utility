@@ -261,8 +261,8 @@ struct pair { // store a pair of values
     pair(pair&&)      = default;
 
 #if _HAS_CXX23
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1&>, is_constructible<_Ty2, _Other2&>>, int> = 0>
+    template <class _Other1, class _Other2>
+        requires is_constructible_v<_Ty1, _Other1&> && is_constructible_v<_Ty2, _Other2&>
     constexpr explicit(!conjunction_v<is_convertible<_Other1&, _Ty1>, is_convertible<_Other2&, _Ty2>>)
         pair(pair<_Other1, _Other2>& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1&> && is_nothrow_constructible_v<_Ty2, _Other2&>) // strengthened
@@ -286,9 +286,8 @@ struct pair { // store a pair of values
         : first(_STD forward<_Other1>(_Right.first)), second(_STD forward<_Other2>(_Right.second)) {}
 
 #if _HAS_CXX23
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<is_constructible<_Ty1, const _Other1>, is_constructible<_Ty2, const _Other2>>, int> =
-            0>
+    template <class _Other1, class _Other2>
+        requires is_constructible_v<_Ty1, const _Other1> && is_constructible_v<_Ty2, const _Other2>
     constexpr explicit(!conjunction_v<is_convertible<const _Other1, _Ty1>, is_convertible<const _Other2, _Ty2>>)
         pair(const pair<_Other1, _Other2>&& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, const _Other1>
@@ -335,10 +334,9 @@ struct pair { // store a pair of values
     }
 
 #if _HAS_CXX23
-    template <class _Myself = pair,
-        enable_if_t<conjunction_v<_Is_copy_assignable_no_precondition_check<const typename _Myself::first_type>,
-                        _Is_copy_assignable_no_precondition_check<const typename _Myself::second_type>>,
-            int>            = 0>
+    template <class _Myself = pair>
+        requires _Is_copy_assignable_unchecked_v<const typename _Myself::first_type>
+              && _Is_copy_assignable_unchecked_v<const typename _Myself::second_type>
     constexpr const pair& operator=(_Identity_t<const _Myself&> _Right) const
         noexcept(conjunction_v<is_nothrow_copy_assignable<const _Ty1>,
             is_nothrow_copy_assignable<const _Ty2>>) /* strengthened */ {
@@ -360,10 +358,9 @@ struct pair { // store a pair of values
     }
 
 #if _HAS_CXX23
-    template <class _Myself = pair,
-        enable_if_t<conjunction_v<_Is_assignable_no_precondition_check<const typename _Myself::first_type&, _Ty1>,
-                        _Is_assignable_no_precondition_check<const typename _Myself::second_type&, _Ty2>>,
-            int>            = 0>
+    template <class _Myself = pair>
+        requires _Is_assignable_no_precondition_check<const typename _Myself::first_type&, _Ty1>::value
+              && _Is_assignable_no_precondition_check<const typename _Myself::second_type&, _Ty2>::value
     constexpr const pair& operator=(_Identity_t<_Myself&&> _Right) const
         noexcept(conjunction_v<is_nothrow_assignable<const _Ty1&, _Ty1>,
             is_nothrow_assignable<const _Ty2&, _Ty2>>) /* strengthened */ {
@@ -386,10 +383,9 @@ struct pair { // store a pair of values
     }
 
 #if _HAS_CXX23
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<negation<is_same<pair, pair<_Other1, _Other2>>>,
-                        is_assignable<const _Ty1&, const _Other1&>, is_assignable<const _Ty2&, const _Other2&>>,
-            int> = 0>
+    template <class _Other1, class _Other2>
+        requires (!is_same_v<pair, pair<_Other1, _Other2>>)
+              && is_assignable_v<const _Ty1&, const _Other1&> && is_assignable_v<const _Ty2&, const _Other2&>
     constexpr const pair& operator=(const pair<_Other1, _Other2>& _Right) const
         noexcept(is_nothrow_assignable_v<const _Ty1&, const _Other1&>
                  && is_nothrow_assignable_v<const _Ty2&, const _Other2&>) /* strengthened */ {
@@ -411,10 +407,9 @@ struct pair { // store a pair of values
     }
 
 #if _HAS_CXX23
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<negation<is_same<pair, pair<_Other1, _Other2>>>, is_assignable<const _Ty1&, _Other1>,
-                        is_assignable<const _Ty2&, _Other2>>,
-            int> = 0>
+    template <class _Other1, class _Other2>
+        requires (!is_same_v<pair, pair<_Other1, _Other2>>)
+              && is_assignable_v<const _Ty1&, _Other1> && is_assignable_v<const _Ty2&, _Other2>
     constexpr const pair& operator=(pair<_Other1, _Other2>&& _Right) const
         noexcept(is_nothrow_assignable_v<const _Ty1&, _Other1>
                  && is_nothrow_assignable_v<const _Ty2&, _Other2>) /* strengthened */ {
@@ -481,8 +476,8 @@ _CONSTEXPR20 void swap(pair<_Ty1, _Ty2>& _Left, pair<_Ty1, _Ty2>& _Right) noexce
 }
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Ty1, class _Ty2,
-    enable_if_t<is_swappable_v<const _Ty1> && is_swappable_v<const _Ty2>, int> = 0>
+_EXPORT_STD template <class _Ty1, class _Ty2>
+    requires is_swappable<const _Ty1>::value && is_swappable<const _Ty2>::value // TRANSITION, /permissive needs ::value
 constexpr void swap(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
