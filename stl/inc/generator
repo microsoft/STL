@@ -420,7 +420,7 @@ public:
         ++*this;
     }
 
-    _NODISCARD_FRIEND bool operator==(const _Iterator& _It, default_sentinel_t) noexcept /* strengthened */
+    _NODISCARD friend bool operator==(const _Iterator& _It, default_sentinel_t) noexcept /* strengthened */
     {
         return _It._Coro.done();
     }
