@@ -141,7 +141,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR20 _String_const_iterator operator+(
+    _NODISCARD friend _CONSTEXPR20 _String_const_iterator operator+(
         const difference_type _Off, _String_const_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
@@ -318,7 +318,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR20 _String_iterator operator+(
+    _NODISCARD friend _CONSTEXPR20 _String_iterator operator+(
         const difference_type _Off, _String_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;

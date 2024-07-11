@@ -2079,8 +2079,6 @@ class _Format_arg_store<_Context> {};
 _EXPORT_STD template <class _Context>
 class basic_format_args {
 public:
-    basic_format_args() noexcept = default;
-
     basic_format_args(const _Format_arg_store<_Context>&) noexcept {}
 
     template <class... _Args>
@@ -2207,6 +2205,9 @@ private:
     constexpr basic_format_context(
         _Out&& _OutputIt_, const basic_format_args<basic_format_context>& _Ctx_args, const _Lazy_locale& _Loc_)
         : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
+
+    basic_format_context(const basic_format_context&)            = delete;
+    basic_format_context& operator=(const basic_format_context&) = delete;
 
 public:
     using iterator  = _Out;
