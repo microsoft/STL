@@ -3049,15 +3049,40 @@ namespace ranges {
     } // namespace views
 
 #if _HAS_CXX23
-    template <class _Rng, class _Pat>
-    concept _Compatible_joinable_ranges =
-        common_with<range_value_t<_Rng>, range_value_t<_Pat>>
-        && common_reference_with<range_reference_t<_Rng>, range_reference_t<_Pat>>
-        && common_reference_with<range_rvalue_reference_t<_Rng>, range_rvalue_reference_t<_Pat>>;
+    template <class... _Rngs>
+    using _Concat_reference_t = common_reference_t<range_reference_t<_Rngs>...>;
+
+    template <class... _Rngs>
+    using _Concat_value_t = common_type_t<range_value_t<_Rngs>...>;
+
+    template <class... _Rngs>
+    using _Concat_rvalue_reference_t = common_reference_t<range_rvalue_reference_t<_Rngs>...>;
+
+    template <class _Ref, class _RRef, class _It>
+    concept _Concat_indirectly_readable_impl = requires(const _It __i) {
+        { *__i } -> convertible_to<_Ref>;
+        { _RANGES iter_move(__i) } -> convertible_to<_RRef>;
+    };
+
+    template <class... _Rngs>
+    concept _Concat_indirectly_readable =
+        common_reference_with<_Concat_reference_t<_Rngs...>&&, _Concat_value_t<_Rngs...>&>
+        && common_reference_with<_Concat_reference_t<_Rngs...>&&, _Concat_rvalue_reference_t<_Rngs...>&&>
+        && common_reference_with<_Concat_rvalue_reference_t<_Rngs...>&&, const _Concat_value_t<_Rngs...>&>
+        && (_Concat_indirectly_readable_impl<_Concat_reference_t<_Rngs...>, _Concat_rvalue_reference_t<_Rngs...>,
+                iterator_t<_Rngs>>
+            && ...);
+
+    template <class... _Rngs>
+    concept _Concatable = requires {
+        typename _Concat_reference_t<_Rngs...>;
+        typename _Concat_value_t<_Rngs...>;
+        typename _Concat_rvalue_reference_t<_Rngs...>;
+    } && _Concat_indirectly_readable<_Rngs...>;
 
     _EXPORT_STD template <input_range _Vw, forward_range _Pat>
         requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat>
-              && _Compatible_joinable_ranges<range_reference_t<_Vw>, _Pat>
+              && _Concatable<range_reference_t<_Vw>, _Pat>
     class join_with_view;
 
     template <class _Vw, class _Pat>
@@ -3091,7 +3116,7 @@ namespace ranges {
 
     _EXPORT_STD template <input_range _Vw, forward_range _Pat>
         requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat>
-              && _Compatible_joinable_ranges<range_reference_t<_Vw>, _Pat>
+              && _Concatable<range_reference_t<_Vw>, _Pat>
     class join_with_view : public _Join_with_view_outer_iter_base<_Vw, _Pat> {
     private:
         template <bool _Const>
@@ -3502,7 +3527,7 @@ namespace ranges {
 
         _NODISCARD constexpr auto begin() const
             requires forward_range<const _Vw> && forward_range<const _Pat> && is_reference_v<_InnerRng<true>>
-                  && input_range<_InnerRng<true>>
+                  && input_range<_InnerRng<true>> && _Concatable<range_reference_t<const _Vw>, const _Pat>
         {
             return _Iterator<true>{*this, _RANGES begin(_Range)};
         }
@@ -3519,7 +3544,7 @@ namespace ranges {
 
         _NODISCARD constexpr auto end() const
             requires forward_range<const _Vw> && forward_range<const _Pat> && is_reference_v<_InnerRng<true>>
-                  && input_range<_InnerRng<true>>
+                  && input_range<_InnerRng<true>> && _Concatable<range_reference_t<const _Vw>, const _Pat>
         {
             if constexpr (forward_range<_InnerRng<true>> && common_range<_Vw> && common_range<_InnerRng<true>>) {
                 return _Iterator<true>{*this, _RANGES end(_Range)};
