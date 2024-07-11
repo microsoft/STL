@@ -357,6 +357,24 @@ void test_construction() {
                 {4, 5, subrange_type::equal},
             }));
     }
+    // Test GH-4779 (access from _Flat_map_base to derived flat_map/flat_multimap)
+    {
+        allocator<int> ator;
+
+        using fm = flat_map<int, int, less<>, vector<int>, vector<int>>;
+        fm m0;
+        fm m1(m0);
+        fm m2(m0, ator);
+        fm m3(move(m0));
+        fm m4(move(m1), ator);
+
+        using fmm = flat_multimap<int, int, less<>, vector<int>, vector<int>>;
+        fmm mm0;
+        fmm mm1(mm0);
+        fmm mm2(mm0, ator);
+        fmm mm3(move(mm0));
+        fmm mm4(move(mm1), ator);
+    }
 }
 
 void test_erase_if() {
@@ -453,10 +471,8 @@ void test_insert() {
     assert(it5->second == 'q');
 
     assert(check_key_content(fmm, {10, 10, 70, 70, 90}));
-    // FIXME: The expected order of the last 3 value elements is 'p', 'q', 'w' (no permutation allowed), according to
-    // N4981 [associative.reqmts.general]/72. The current implementation gives 'q', 'p', 'w', which is wrong.
-    assert(check_value_content(fmm, {'n', 'm', 'p', 'q', 'w'},
-        {{0, 1, subrange_type::permutation}, {2, 3, subrange_type::permutation}, {4, 4, subrange_type::equal}}));
+    // N4981 [associative.reqmts.general]/68 and /72 specify the values of the result to be {'m', 'n', 'p', 'q', 'w'}.
+    assert(check_value_content(fmm, {'m', 'n', 'p', 'q', 'w'}));
 }
 
 // GH-4344 <flat_map> Fix compile errors

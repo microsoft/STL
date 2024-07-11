@@ -459,27 +459,34 @@ public:
         : _Flat_map_base(_Tag, _Ilist, key_compare(), _Alloc) {}
 
     // Copy constructors
-    _Flat_map_base(const _Derived& _Other) : _Key_compare(_Other._Key_compare), _Data(_Other._Data) {}
+    _Flat_map_base(const _Derived& _Other)
+        : _Key_compare(static_cast<const _Flat_map_base&>(_Other)._Key_compare),
+          _Data(static_cast<const _Flat_map_base&>(_Other)._Data) {}
 
     template <_Valid_allocator_for_flat_map<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(const _Derived& _Other, const _Allocator& _Alloc)
-        : _Key_compare(_Other._Key_compare),
-          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Other._Data.keys),
-              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Other._Data.values)} {}
+        : _Key_compare(static_cast<const _Flat_map_base&>(_Other)._Key_compare),
+          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(
+                    _Alloc, static_cast<const _Flat_map_base&>(_Other)._Data.keys),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(
+                  _Alloc, static_cast<const _Flat_map_base&>(_Other)._Data.values)} {}
 
     // Move constructors
     _Flat_map_base(_Derived&& _Other) noexcept(is_nothrow_move_constructible_v<key_compare>
                                                && is_nothrow_move_constructible_v<key_container_type>
                                                && is_nothrow_move_constructible_v<mapped_container_type>)
-        : _Key_compare(move(_Other._Key_compare)), _Data(move(_Other).extract()) {}
+        : _Key_compare(_STD move(static_cast<_Flat_map_base&>(_Other)._Key_compare)),
+          _Data(_STD move(static_cast<_Flat_map_base&>(_Other).extract())) {}
 
     template <_Valid_allocator_for_flat_map<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(_Derived&& _Other, const _Allocator& _Alloc) noexcept(
         is_nothrow_move_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_container_type>
         && is_nothrow_move_constructible_v<mapped_container_type>)
-        : _Key_compare(move(_Other._Key_compare)),
-          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, move(_Other._Data.keys)),
-              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, move(_Other._Data.values))} {}
+        : _Key_compare(_STD move(static_cast<_Flat_map_base&>(_Other)._Key_compare)),
+          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(
+                    _Alloc, _STD move(static_cast<_Flat_map_base&>(_Other)._Data.keys)),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(
+                  _Alloc, _STD move(static_cast<_Flat_map_base&>(_Other)._Data.values))} {}
 
     _Derived& operator=(initializer_list<value_type> _Ilist) {
         clear();
@@ -780,14 +787,14 @@ public:
         return _Equal_range(_Key_val);
     }
 
-    _NODISCARD_FRIEND bool operator==(const _Derived& _Left, const _Derived& _Right) {
+    _NODISCARD friend bool operator==(const _Derived& _Left, const _Derived& _Right) {
         auto& _Left_base  = static_cast<const _Flat_map_base&>(_Left);
         auto& _Right_base = static_cast<const _Flat_map_base&>(_Right);
         return _RANGES equal(_Left_base._Data.keys, _Right_base._Data.keys)
             && _RANGES equal(_Left_base._Data.values, _Right_base._Data.values);
     }
 
-    _NODISCARD_FRIEND auto operator<=>(const _Derived& _Left, const _Derived& _Right) {
+    _NODISCARD friend auto operator<=>(const _Derived& _Left, const _Derived& _Right) {
         return _STD lexicographical_compare_three_way(_STD _Get_unwrapped(_Left.cbegin()),
             _STD _Get_unwrapped(_Left.cend()), _STD _Get_unwrapped(_Right.cbegin()), _STD _Get_unwrapped(_Right.cend()),
             _Synth_three_way{});
@@ -830,20 +837,28 @@ protected:
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
-        const bool _Hint_is_accurate = [&] {
+        const weak_ordering _Hint_order = [&] {
             if constexpr (_IsUnique) {
                 if (_Position == _End || _Key_compare(_Key_val, *_Position._Key_it)) {
-                    return _Position == _Begin || _Key_compare(_Position._Key_it[-1], _Key_val);
+                    if (_Position == _Begin || _Key_compare(_Position._Key_it[-1], _Key_val)) {
+                        return weak_ordering::equivalent;
+                    } else {
+                        return weak_ordering::greater;
+                    }
                 }
             } else {
                 if (_Position == _End || !_Key_compare(*_Position._Key_it, _Key_val)) {
-                    return _Position == _Begin || !_Key_compare(_Key_val, _Position._Key_it[-1]);
+                    if (_Position == _Begin || !_Key_compare(_Key_val, _Position._Key_it[-1])) {
+                        return weak_ordering::equivalent;
+                    } else {
+                        return weak_ordering::greater;
+                    }
                 }
             }
-            return false;
+            return weak_ordering::less;
         }();
 
-        if (_Hint_is_accurate) {
+        if (_Hint_order == weak_ordering::equivalent) {
             const auto _Dist = _Position._Key_it - _Begin._Key_it;
             {
                 key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
@@ -861,7 +876,7 @@ protected:
                 return _It;
             }
 
-            _Position = lower_bound(_Key_val);
+            _Position = _Hint_order == weak_ordering::less ? lower_bound(_Key_val) : upper_bound(_Key_val);
             if (_Position != _End && !_Key_compare(_Key_val, *_Position._Key_it)) {
                 const auto _Dist = _Position._Key_it - _Begin._Key_it;
                 auto _It         = begin() + _Dist;
@@ -869,7 +884,7 @@ protected:
                 return _It;
             }
         } else {
-            _Position = lower_bound(_Key_val);
+            _Position = _Hint_order == weak_ordering::less ? lower_bound(_Key_val) : upper_bound(_Key_val);
         }
 
         const auto _Dist = _Position._Key_it - _Begin._Key_it;
@@ -1428,7 +1443,7 @@ private:
 
     template <class _KeyTy, class _MappedTy>
     iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
-        const auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
+        const auto _Key_it = _STD upper_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
         const auto _Index  = _Key_it - _Data.keys.begin();
 
         {
