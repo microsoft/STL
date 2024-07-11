@@ -704,7 +704,7 @@ STATIC_ASSERT(__cpp_lib_print == 202207L);
 STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 
 #if _HAS_CXX23
-STATIC_ASSERT(__cpp_lib_ranges == 202302L);
+STATIC_ASSERT(__cpp_lib_ranges == 202406L);
 #elif _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #elif defined(__cpp_lib_ranges)
