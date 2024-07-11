@@ -357,6 +357,24 @@ void test_construction() {
                 {4, 5, subrange_type::equal},
             }));
     }
+    // Test GH-4779 (access from _Flat_map_base to derived flat_map/flat_multimap)
+    {
+        allocator<int> ator;
+
+        using fm = flat_map<int, int, less<>, vector<int>, vector<int>>;
+        fm m0;
+        fm m1(m0);
+        fm m2(m0, ator);
+        fm m3(move(m0));
+        fm m4(move(m1), ator);
+
+        using fmm = flat_multimap<int, int, less<>, vector<int>, vector<int>>;
+        fmm mm0;
+        fmm mm1(mm0);
+        fmm mm2(mm0, ator);
+        fmm mm3(move(mm0));
+        fmm mm4(move(mm1), ator);
+    }
 }
 
 void test_erase_if() {
