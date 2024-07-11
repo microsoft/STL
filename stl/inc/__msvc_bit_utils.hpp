@@ -300,9 +300,8 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 
 #endif // _HAS_TZCNT_BSF_INTRINSICS
 
-// TRANSITION, remove `_MSC_VER > 1940` check after MSVC-internal toolset update
-#if (defined(_M_IX86) || defined(_M_X64) || (defined(_M_ARM64) && _MSC_VER > 1940)) && !defined(_M_CEE_PURE) \
-    && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
+#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64)) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+    && !defined(__INTEL_COMPILER)
 #define _HAS_POPCNT_INTRINSICS 1
 #if defined(__AVX__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _POPCNT_INTRINSICS_ALWAYS_AVAILABLE 1

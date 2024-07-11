@@ -53,6 +53,11 @@ namespace stdext {
         using _Deduce_key = const _Kty&;
         using key_equal   = _Tr;
 
+#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, DevCom-10678753
+        template <class, class>
+        static constexpr bool _Supports_transparency = false;
+#endif // ^^^ workaround ^^^
+
         _Hset_traits() = default;
 
         _Hset_traits(const _Tr& _Traits) noexcept(_STD is_nothrow_copy_constructible_v<_Tr>) : _Tr(_Traits) {}
