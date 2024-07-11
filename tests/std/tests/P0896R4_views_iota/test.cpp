@@ -19,6 +19,9 @@ static_assert(ranges::_Advanceable<long long>);
 template <class W, class B>
 concept CanViewIota = requires(W w, B b) { views::iota(w, b); };
 
+template <class W>
+concept CanUnaryViewsIota = requires(W&& w) { views::iota(forward<W>(w)); };
+
 template <class R>
 concept CanSize = requires(R& r) { ranges::size(r); };
 
@@ -332,6 +335,18 @@ constexpr bool test_gh_3025() {
 
     return true;
 }
+
+// LWG-4096 "views::iota(views::iota(0)) should be rejected"
+static_assert(CanUnaryViewsIota<int>);
+static_assert(CanUnaryViewsIota<const char*>);
+static_assert(CanUnaryViewsIota<ranges::iterator_t<ranges::iota_view<long long>>>);
+static_assert(!CanUnaryViewsIota<ranges::iota_view<int>>);
+static_assert(!CanUnaryViewsIota<ranges::iota_view<const char*>>);
+static_assert(!CanUnaryViewsIota<ranges::iota_view<ranges::iterator_t<ranges::iota_view<long long>>>>);
+static_assert(!CanUnaryViewsIota<ranges::iota_view<int, int>>);
+static_assert(!CanUnaryViewsIota<ranges::iota_view<const char*, const char*>>);
+static_assert(!CanUnaryViewsIota<ranges::iota_view<ranges::iterator_t<ranges::iota_view<long long>>,
+                  ranges::iterator_t<ranges::iota_view<long long>>>>);
 
 int main() {
     // Validate standard signed integer types

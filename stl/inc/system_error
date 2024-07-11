@@ -212,39 +212,39 @@ public:
     }
 
 #if _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
-    _NODISCARD_FRIEND bool operator==(const error_code& _Left, const error_code& _Right) noexcept {
+    _NODISCARD friend bool operator==(const error_code& _Left, const error_code& _Right) noexcept {
         return _Left.category() == _Right.category() && _Left.value() == _Right.value();
     }
 
-    _NODISCARD_FRIEND bool operator==(const error_code& _Left, const error_condition& _Right) noexcept {
+    _NODISCARD friend bool operator==(const error_code& _Left, const error_condition& _Right) noexcept {
         return _System_error_equal(_Left, _Right);
     }
 
 #if _HAS_CXX20
-    _NODISCARD_FRIEND strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
+    _NODISCARD friend strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
         if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
             return _Result;
         }
         return _Left.value() <=> _Right.value();
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-    _NODISCARD_FRIEND bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
+    _NODISCARD friend bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
         return _Left.category() < _Right.category()
             || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
     }
-    _NODISCARD_FRIEND bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
+    _NODISCARD friend bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
         return _System_error_equal(_Right, _Left);
     }
 
-    _NODISCARD_FRIEND bool operator!=(const error_code& _Left, const error_code& _Right) noexcept {
+    _NODISCARD friend bool operator!=(const error_code& _Left, const error_code& _Right) noexcept {
         return !(_Left == _Right);
     }
 
-    _NODISCARD_FRIEND bool operator!=(const error_code& _Left, const error_condition& _Right) noexcept {
+    _NODISCARD friend bool operator!=(const error_code& _Left, const error_condition& _Right) noexcept {
         return !_System_error_equal(_Left, _Right);
     }
 
-    _NODISCARD_FRIEND bool operator!=(const error_condition& _Left, const error_code& _Right) noexcept {
+    _NODISCARD friend bool operator!=(const error_condition& _Left, const error_code& _Right) noexcept {
         return !_System_error_equal(_Right, _Left);
     }
 #endif // ^^^ !_HAS_CXX20 ^^^
@@ -301,12 +301,12 @@ public:
     }
 
 #if _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
-    _NODISCARD_FRIEND bool operator==(const error_condition& _Left, const error_condition& _Right) noexcept {
+    _NODISCARD friend bool operator==(const error_condition& _Left, const error_condition& _Right) noexcept {
         return _Left.category() == _Right.category() && _Left.value() == _Right.value();
     }
 
 #if _HAS_CXX20
-    _NODISCARD_FRIEND strong_ordering operator<=>(
+    _NODISCARD friend strong_ordering operator<=>(
         const error_condition& _Left, const error_condition& _Right) noexcept {
         if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
             return _Result;
@@ -314,11 +314,11 @@ public:
         return _Left.value() <=> _Right.value();
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-    _NODISCARD_FRIEND bool operator<(const error_condition& _Left, const error_condition& _Right) noexcept {
+    _NODISCARD friend bool operator<(const error_condition& _Left, const error_condition& _Right) noexcept {
         return _Left.category() < _Right.category()
             || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
     }
-    _NODISCARD_FRIEND bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
+    _NODISCARD friend bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
         return !(_Left == _Right);
     }
 #endif // ^^^ !_HAS_CXX20 ^^^
