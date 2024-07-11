@@ -453,10 +453,8 @@ void test_insert() {
     assert(it5->second == 'q');
 
     assert(check_key_content(fmm, {10, 10, 70, 70, 90}));
-    // FIXME: The expected order of the last 3 value elements is 'p', 'q', 'w' (no permutation allowed), according to
-    // N4981 [associative.reqmts.general]/72. The current implementation gives 'q', 'p', 'w', which is wrong.
-    assert(check_value_content(fmm, {'n', 'm', 'p', 'q', 'w'},
-        {{0, 1, subrange_type::permutation}, {2, 3, subrange_type::permutation}, {4, 4, subrange_type::equal}}));
+    // N4981 [associative.reqmts.general]/68 and /72 specify the values of the result to be {'m', 'n', 'p', 'q', 'w'}.
+    assert(check_value_content(fmm, {'m', 'n', 'p', 'q', 'w'}));
 }
 
 // GH-4344 <flat_map> Fix compile errors

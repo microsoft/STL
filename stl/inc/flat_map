@@ -830,20 +830,28 @@ protected:
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
-        const bool _Hint_is_accurate = [&] {
+        const weak_ordering _Hint_order = [&] {
             if constexpr (_IsUnique) {
                 if (_Position == _End || _Key_compare(_Key_val, *_Position._Key_it)) {
-                    return _Position == _Begin || _Key_compare(_Position._Key_it[-1], _Key_val);
+                    if (_Position == _Begin || _Key_compare(_Position._Key_it[-1], _Key_val)) {
+                        return weak_ordering::equivalent;
+                    } else {
+                        return weak_ordering::greater;
+                    }
                 }
             } else {
                 if (_Position == _End || !_Key_compare(*_Position._Key_it, _Key_val)) {
-                    return _Position == _Begin || !_Key_compare(_Key_val, _Position._Key_it[-1]);
+                    if (_Position == _Begin || !_Key_compare(_Key_val, _Position._Key_it[-1])) {
+                        return weak_ordering::equivalent;
+                    } else {
+                        return weak_ordering::greater;
+                    }
                 }
             }
-            return false;
+            return weak_ordering::less;
         }();
 
-        if (_Hint_is_accurate) {
+        if (_Hint_order == weak_ordering::equivalent) {
             const auto _Dist = _Position._Key_it - _Begin._Key_it;
             {
                 key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
@@ -861,7 +869,7 @@ protected:
                 return _It;
             }
 
-            _Position = lower_bound(_Key_val);
+            _Position = _Hint_order == weak_ordering::less ? lower_bound(_Key_val) : upper_bound(_Key_val);
             if (_Position != _End && !_Key_compare(_Key_val, *_Position._Key_it)) {
                 const auto _Dist = _Position._Key_it - _Begin._Key_it;
                 auto _It         = begin() + _Dist;
@@ -869,7 +877,7 @@ protected:
                 return _It;
             }
         } else {
-            _Position = lower_bound(_Key_val);
+            _Position = _Hint_order == weak_ordering::less ? lower_bound(_Key_val) : upper_bound(_Key_val);
         }
 
         const auto _Dist = _Position._Key_it - _Begin._Key_it;
@@ -1428,7 +1436,7 @@ private:
 
     template <class _KeyTy, class _MappedTy>
     iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
-        const auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
+        const auto _Key_it = _STD upper_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
         const auto _Index  = _Key_it - _Data.keys.begin();
 
         {
