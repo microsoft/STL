@@ -269,28 +269,28 @@ public:
         __ExceptionPtrSwap(&_Lhs, &_Rhs);
     }
 
-    _NODISCARD_FRIEND bool operator==(const exception_ptr& _Lhs, const exception_ptr& _Rhs) noexcept {
+    _NODISCARD friend bool operator==(const exception_ptr& _Lhs, const exception_ptr& _Rhs) noexcept {
         return __ExceptionPtrCompare(&_Lhs, &_Rhs);
     }
 
-    _NODISCARD_FRIEND bool operator==(const exception_ptr& _Lhs, nullptr_t) noexcept {
+    _NODISCARD friend bool operator==(const exception_ptr& _Lhs, nullptr_t) noexcept {
         return !_Lhs;
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator==(nullptr_t, const exception_ptr& _Rhs) noexcept {
+    _NODISCARD friend bool operator==(nullptr_t, const exception_ptr& _Rhs) noexcept {
         return !_Rhs;
     }
 
-    _NODISCARD_FRIEND bool operator!=(const exception_ptr& _Lhs, const exception_ptr& _Rhs) noexcept {
+    _NODISCARD friend bool operator!=(const exception_ptr& _Lhs, const exception_ptr& _Rhs) noexcept {
         return !(_Lhs == _Rhs);
     }
 
-    _NODISCARD_FRIEND bool operator!=(const exception_ptr& _Lhs, nullptr_t) noexcept {
+    _NODISCARD friend bool operator!=(const exception_ptr& _Lhs, nullptr_t) noexcept {
         return !(_Lhs == nullptr);
     }
 
-    _NODISCARD_FRIEND bool operator!=(nullptr_t, const exception_ptr& _Rhs) noexcept {
+    _NODISCARD friend bool operator!=(nullptr_t, const exception_ptr& _Rhs) noexcept {
         return !(nullptr == _Rhs);
     }
 #endif // !_HAS_CXX20

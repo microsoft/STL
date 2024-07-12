@@ -253,7 +253,7 @@ public:
         : extents(span{_Exts}, make_index_sequence<rank_dynamic()>{}) {}
 
     template <class _OtherIndexType, size_t... _OtherExtents>
-    _NODISCARD_FRIEND constexpr bool operator==(
+    _NODISCARD friend constexpr bool operator==(
         const extents& _Left, const extents<_OtherIndexType, _OtherExtents...>& _Right) noexcept {
         if constexpr (rank() != sizeof...(_OtherExtents)) {
             return false;
@@ -603,7 +603,7 @@ public:
 
     template <class _OtherExtents>
         requires (extents_type::rank() == _OtherExtents::rank())
-    _NODISCARD_FRIEND constexpr bool operator==(const mapping& _Left, const mapping<_OtherExtents>& _Right) noexcept {
+    _NODISCARD friend constexpr bool operator==(const mapping& _Left, const mapping<_OtherExtents>& _Right) noexcept {
         return _Left._Exts == _Right.extents();
     }
 
@@ -756,7 +756,7 @@ public:
 
     template <class _OtherExtents>
         requires (extents_type::rank() == _OtherExtents::rank())
-    _NODISCARD_FRIEND constexpr bool operator==(const mapping& _Left, const mapping<_OtherExtents>& _Right) noexcept {
+    _NODISCARD friend constexpr bool operator==(const mapping& _Left, const mapping<_OtherExtents>& _Right) noexcept {
         return _Left._Exts == _Right.extents();
     }
 
@@ -986,7 +986,7 @@ public:
     template <class _OtherMapping>
         requires _Layout_mapping_alike<_OtherMapping> && (extents_type::rank() == _OtherMapping::extents_type::rank())
               && (_OtherMapping::is_always_strided())
-    _NODISCARD_FRIEND constexpr bool operator==(const mapping& _Left, const _OtherMapping& _Right) noexcept {
+    _NODISCARD friend constexpr bool operator==(const mapping& _Left, const _OtherMapping& _Right) noexcept {
         if constexpr (extents_type::rank() != 0) {
             if (_Left.extents() != _Right.extents()) {
                 return false;

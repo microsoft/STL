@@ -266,8 +266,13 @@ void test_basic_format_context_construction() {
     using context = basic_format_context<OutIt, CharT>;
 
     static_assert(!is_default_constructible_v<context>);
-    static_assert(is_copy_constructible_v<context> == is_copy_constructible_v<OutIt>);
-    static_assert(is_move_constructible_v<context>);
+    static_assert(!is_copy_constructible_v<context>);
+    static_assert(!is_move_constructible_v<context>);
+
+    // Also test the deleted copy assignment operator
+    // from LWG-4061 "Should std::basic_format_context be default-constructible/copyable/movable?"
+    static_assert(!is_copy_assignable_v<context>);
+    static_assert(!is_move_assignable_v<context>);
 
     static_assert(!is_constructible_v<context, OutIt, basic_format_args<context>>);
     static_assert(!is_constructible_v<context, OutIt, const basic_format_args<context>&>);
@@ -275,6 +280,9 @@ void test_basic_format_context_construction() {
     static_assert(!is_constructible_with_trailing_empty_brace_impl<context>);
     static_assert(!is_constructible_with_trailing_empty_brace_impl<context, OutIt, basic_format_args<context>>);
     static_assert(!is_constructible_with_trailing_empty_brace_impl<context, OutIt, const basic_format_args<context>&>);
+
+    // Also test LWG-4106 "basic_format_args should not be default-constructible"
+    static_assert(!is_default_constructible_v<basic_format_args<context>>);
 }
 
 // Test GH-4636 "<format>: Call to next_arg_id may result in unexpected error (regression)"
