@@ -2002,7 +2002,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::ranges::view_interface&lt;*&gt;">
-    <DisplayString>{{ size={size()} }}</DisplayString>
+    <!-- the view_interface has size() -->
+    <DisplayString Optional="true">{{ size={size()} }}</DisplayString>
+    <!-- the view_interface doesn't have size() -->
+    <DisplayString Optional="true">unknown size</DisplayString>
     <Expand>
       <Item Optional="true" Name="empty">empty()</Item>
       <Item Optional="true" Name="front">front()</Item>
