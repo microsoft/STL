@@ -1520,9 +1520,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 
   <Type Name="std::move_iterator&lt;*&gt;">
-      <DisplayString>move_iterator {current}</DisplayString>
+      <DisplayString>move_iterator {_Current}</DisplayString>
       <Expand>
-          <Item Name="current">current</Item>
+          <Item Name="[current]">_Current</Item>
       </Expand>
   </Type>
 
