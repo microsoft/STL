@@ -3665,4 +3665,52 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
 }
 
 } // extern "C"
+
+namespace {
+    template <class _Elem>
+    bool __std_bitset_from_string_fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes,
+        const size_t _Size_bits, const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
+        const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
+        size_t _Size_convert   = _Size_chars;
+
+        if (_Size_chars > _Size_bits) {
+            _Size_convert = _Size_bits;
+
+            for (size_t _Ix = 0, _Mx = _Size_chars - _Size_bits; _Ix < _Mx; ++_Ix) {
+                if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
+                    return false;
+                }
+            }
+        }
+
+        _CSTD memset(_Dest, 0, _Size_bytes);
+
+        for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
+            const _Elem _Cur = _Src[_Size_chars - _Ix - 1];
+
+            if (_Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
+                return false;
+            }
+
+            _Dest_bytes[_Ix >> 3] |= static_cast<uint8_t>(_Cur == _Elem1) << (_Ix & 0x7);
+        }
+
+        return true;
+    }
+
+} // unnamed namespace
+
+extern "C" {
+
+__declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const char* _Src, size_t _Size_bytes,
+    size_t _Size_bits, size_t _Size_chars, char _Elem0, char _Elem1) noexcept {
+    return __std_bitset_from_string_fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+}
+
+__declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const wchar_t* _Src, size_t _Size_bytes,
+    size_t _Size_bits, size_t _Size_chars, wchar_t _Elem0, wchar_t _Elem1) noexcept {
+    return __std_bitset_from_string_fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+}
+
+} // extern "C"
 #endif // defined(_M_IX86) || defined(_M_X64)

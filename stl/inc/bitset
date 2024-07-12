@@ -28,6 +28,10 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* _Dest, const void* _Src, size_t _Size_bits, char _Elem0, char _Elem1) noexcept;
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     wchar_t* _Dest, const void* _Src, size_t _Size_bits, wchar_t _Elem0, wchar_t _Elem1) noexcept;
+__declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const char* _Src, size_t _Size_bytes,
+    size_t _Size_bits, size_t _Size_chars, char _Elem0, char _Elem1) noexcept;
+__declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const wchar_t* _Src, size_t _Size_bytes,
+    size_t _Size_bits, size_t _Size_chars, wchar_t _Elem0, wchar_t _Elem1) noexcept;
 } // extern "C"
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -115,46 +119,66 @@ public:
 private:
     template <class _Traits, class _Elem>
     _CONSTEXPR23 void _Construct(const _Elem* const _Ptr, size_t _Count, const _Elem _Elem0, const _Elem _Elem1) {
-        if (_Count > _Bits) {
-            for (size_t _Idx = _Bits; _Idx < _Count; ++_Idx) {
-                const auto _Ch = _Ptr[_Idx];
-                if (!_Traits::eq(_Elem1, _Ch) && !_Traits::eq(_Elem0, _Ch)) {
-                    _Xinv();
-                }
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (_Is_specialization_v<_Traits, char_traits> && sizeof(_Elem) <= 2) {
+            bool _Result;
+
+            if constexpr (sizeof(_Elem) == 1) {
+                _Result = __std_bitset_from_string_1(_Array, reinterpret_cast<const char*>(_Ptr), sizeof(_Array), _Bits,
+                    _Count, static_cast<char>(_Elem0), static_cast<char>(_Elem1));
+            } else {
+                _STL_INTERNAL_STATIC_ASSERT(sizeof(_Elem) == 2);
+                _Result = __std_bitset_from_string_2(_Array, reinterpret_cast<const wchar_t*>(_Ptr), sizeof(_Array),
+                    _Bits, _Count, static_cast<wchar_t>(_Elem0), static_cast<wchar_t>(_Elem1));
             }
 
-            _Count = _Bits;
-        }
-
-        size_t _Wpos = 0;
-        if (_Count != 0) {
-            size_t _Bits_used_in_word = 0;
-            auto _Last                = _Ptr + _Count;
-            _Ty _This_word            = 0;
-            do {
-                --_Last;
-                const auto _Ch = *_Last;
-                _This_word |= static_cast<_Ty>(_Traits::eq(_Elem1, _Ch)) << _Bits_used_in_word;
-                if (!_Traits::eq(_Elem1, _Ch) && !_Traits::eq(_Elem0, _Ch)) {
-                    _Xinv();
+            if (!_Result) {
+                _Xinv();
+            }
+        } else
+#endif // _USE_STD_VECTOR_ALGORITHMS
+        {
+            if (_Count > _Bits) {
+                for (size_t _Idx = _Bits; _Idx < _Count; ++_Idx) {
+                    const auto _Ch = _Ptr[_Idx];
+                    if (!_Traits::eq(_Elem1, _Ch) && !_Traits::eq(_Elem0, _Ch)) {
+                        _Xinv();
+                    }
                 }
 
-                if (++_Bits_used_in_word == _Bitsperword) {
+                _Count = _Bits;
+            }
+
+            size_t _Wpos = 0;
+            if (_Count != 0) {
+                size_t _Bits_used_in_word = 0;
+                auto _Last                = _Ptr + _Count;
+                _Ty _This_word            = 0;
+                do {
+                    --_Last;
+                    const auto _Ch = *_Last;
+                    _This_word |= static_cast<_Ty>(_Traits::eq(_Elem1, _Ch)) << _Bits_used_in_word;
+                    if (!_Traits::eq(_Elem1, _Ch) && !_Traits::eq(_Elem0, _Ch)) {
+                        _Xinv();
+                    }
+
+                    if (++_Bits_used_in_word == _Bitsperword) {
+                        _Array[_Wpos] = _This_word;
+                        ++_Wpos;
+                        _This_word         = 0;
+                        _Bits_used_in_word = 0;
+                    }
+                } while (_Ptr != _Last);
+
+                if (_Bits_used_in_word != 0) {
                     _Array[_Wpos] = _This_word;
                     ++_Wpos;
-                    _This_word         = 0;
-                    _Bits_used_in_word = 0;
                 }
-            } while (_Ptr != _Last);
-
-            if (_Bits_used_in_word != 0) {
-                _Array[_Wpos] = _This_word;
-                ++_Wpos;
             }
-        }
 
-        for (; _Wpos <= _Words; ++_Wpos) {
-            _Array[_Wpos] = 0;
+            for (; _Wpos <= _Words; ++_Wpos) {
+                _Array[_Wpos] = 0;
+            }
         }
     }
 
