@@ -3537,8 +3537,8 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
 
         if (_Size_bits > 0) {
             __assume(_Size_bits < 32);
-            uint32_t _Val = 0;
-            memcpy(&_Val, _Src, (_Size_bits + 7) / 8);
+            uint32_t _Val;
+            memcpy(&_Val, _Src, 4);
             const __m256i _Elems = _Bitset_to_string_1_step_avx(_Val, _Px0, _Px1);
             char _Tmp[32];
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Elems);
@@ -3567,11 +3567,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
         if (_Size_bits > 0) {
             __assume(_Size_bits < 16);
             uint16_t _Val;
-            if (_Size_bits > 8) {
-                memcpy(&_Val, _Src, 2);
-            } else {
-                _Val = *reinterpret_cast<const uint8_t*>(_Src);
-            }
+            memcpy(&_Val, _Src, 2);
             const __m128i _Elems = _Bitset_to_string_1_step(_Val, _Px0, _Px1);
             char _Tmp[16];
             _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Elems);
@@ -3614,11 +3610,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
         if (_Size_bits > 0) {
             __assume(_Size_bits < 16);
             uint16_t _Val;
-            if (_Size_bits > 8) {
-                memcpy(&_Val, _Src, 2);
-            } else {
-                _Val = *reinterpret_cast<const uint8_t*>(_Src);
-            }
+            memcpy(&_Val, _Src, 2);
             const __m256i _Elems = _Bitset_to_string_2_step_avx(_Val, _Px0, _Px1);
             wchar_t _Tmp[16];
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Elems);
