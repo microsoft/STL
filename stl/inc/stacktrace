@@ -107,9 +107,9 @@ public:
         return __std_stacktrace_source_line(_Address);
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
+    _NODISCARD friend constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
 
-    _NODISCARD_FRIEND constexpr strong_ordering operator<=>(
+    _NODISCARD friend constexpr strong_ordering operator<=>(
         const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
 
 private:
@@ -253,12 +253,12 @@ public:
     }
 
     template <class _Al2>
-    _NODISCARD_FRIEND bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
+    _NODISCARD friend bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
         return _Lhs._Hash == _Rhs._Hash && _STD equal(_Lhs.begin(), _Lhs.end(), _Rhs.begin(), _Rhs.end());
     }
 
     template <class _Al2>
-    _NODISCARD_FRIEND strong_ordering operator<=>(
+    _NODISCARD friend strong_ordering operator<=>(
         const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
         const auto _Result = _Lhs._Frames.size() <=> _Rhs._Frames.size();
         if (_Result != strong_ordering::equal) {
