@@ -108,6 +108,7 @@ function(add_benchmark name)
     target_compile_definitions(benchmark-${name} PRIVATE BENCHMARK_STATIC_DEFINE)
 endfunction()
 
+add_benchmark(bitset_from_string src/bitset_from_string.cpp)
 add_benchmark(bitset_to_string src/bitset_to_string.cpp)
 add_benchmark(find_and_count src/find_and_count.cpp)
 add_benchmark(find_first_of src/find_first_of.cpp)
