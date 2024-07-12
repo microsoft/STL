@@ -230,8 +230,7 @@ public:
     }
 
 #if _HAS_CXX20
-    template <class _Alloc2>
-        requires _Is_allocator<_Alloc2>::value
+    template <_Allocator_for_container _Alloc2>
     _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return basic_string<_Elem, _Traits, _Alloc2>{view(), _Al};
     }
@@ -694,8 +693,7 @@ public:
     }
 
 #if _HAS_CXX20
-    template <class _Alloc2>
-        requires _Is_allocator<_Alloc2>::value
+    template <_Allocator_for_container _Alloc2>
     _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return _Stringbuffer.str(_Al);
     }
@@ -814,7 +812,7 @@ public:
     }
 
 #if _HAS_CXX20
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator_for_container _Alloc2>
     _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return _Stringbuffer.str(_Al);
     }
@@ -939,7 +937,7 @@ public:
     }
 
 #if _HAS_CXX20
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator_for_container _Alloc2>
     _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return _Stringbuffer.str(_Al);
     }

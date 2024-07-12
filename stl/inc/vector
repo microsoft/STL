@@ -136,7 +136,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR20 _Vector_const_iterator operator+(
+    _NODISCARD friend _CONSTEXPR20 _Vector_const_iterator operator+(
         const difference_type _Off, _Vector_const_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
@@ -316,7 +316,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR20 _Vector_iterator operator+(
+    _NODISCARD friend _CONSTEXPR20 _Vector_iterator operator+(
         const difference_type _Off, _Vector_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
@@ -2208,8 +2208,7 @@ vector(_Iter, _Iter, _Alloc = _Alloc()) -> vector<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
-    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
 vector(from_range_t, _Rng&&, _Alloc = _Alloc()) -> vector<_RANGES range_value_t<_Rng>, _Alloc>;
 #endif // _HAS_CXX23
 
@@ -2569,7 +2568,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR20 _Vb_const_iterator operator+(
+    _NODISCARD friend _CONSTEXPR20 _Vb_const_iterator operator+(
         const difference_type _Off, _Vb_const_iterator _Right) noexcept {
         _Right += _Off;
         return _Right;
@@ -2742,7 +2741,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR20 _Vb_iterator operator+(const difference_type _Off, _Vb_iterator _Right) noexcept {
+    _NODISCARD friend _CONSTEXPR20 _Vb_iterator operator+(const difference_type _Off, _Vb_iterator _Right) noexcept {
         _Right += _Off;
         return _Right;
     }

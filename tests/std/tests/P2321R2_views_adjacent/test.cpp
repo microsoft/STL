@@ -43,7 +43,7 @@ static_assert(same_as<repeated_tuple<int, 5>, tuple<int, int, int, int, int>>);
 // Check views::pairwise
 static_assert(same_as<decltype(views::pairwise), decltype(views::adjacent<2>)>);
 
-template <size_t N, ranges::input_range Rng, class Expected>
+template <size_t N, ranges::forward_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::adjacent_view, ranges::forward_range, ranges::bidirectional_range, ranges::random_access_range,
         ranges::sized_range, ranges::common_range, ranges::iterator_t, ranges::sentinel_t, ranges::const_iterator_t,
@@ -55,7 +55,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using R = adjacent_view<V, N>;
 
     static_assert(ranges::view<R>);
-    static_assert(ranges::input_range<R>);
     static_assert(forward_range<R>);
     static_assert(bidirectional_range<R> == bidirectional_range<Rng>);
     static_assert(random_access_range<R> == random_access_range<Rng>);
@@ -732,7 +731,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     return true;
 }
 
-template <ranges::input_range Rng>
+template <ranges::forward_range Rng>
 constexpr void test_adjacent0(Rng&& rng) {
     static_assert(!CanConstructAdjacentView<Rng, 0>);
     using V = views::all_t<Rng>;
@@ -783,7 +782,7 @@ constexpr void test_adjacent0(Rng&& rng) {
     }
 }
 
-template <size_t N, ranges::input_range Rng>
+template <size_t N, ranges::forward_range Rng>
     requires indirectly_swappable<ranges::iterator_t<Rng>>
 constexpr void test_iter_swap(Rng& rng) {
     // This test assumes that 'ranges::size(views::adjacent<N>(rng))' is at least 2
@@ -841,7 +840,7 @@ using test_range =
 
 struct instantiator {
 #ifdef TEST_EVERYTHING
-    template <ranges::input_range R>
+    template <ranges::forward_range R>
     static constexpr void call() {
         R r{some_ints};
         test_one<1>(r, adjacent1_result);
@@ -899,6 +898,62 @@ constexpr void instantiation_test() {
 #endif // TEST_EVERYTHING
 }
 
+// LWG-4098 views::adjacent<0> should reject non-forward ranges
+template <size_t N, ranges::input_range Rng>
+constexpr void test_input_only(Rng&&) {
+    if constexpr (!ranges::forward_range<Rng>) {
+        static_assert(!CanViewAdjacent<Rng&, N>);
+        static_assert(!CanViewAdjacent<Rng, N>);
+        static_assert(!CanConstructAdjacentView<Rng&, N>);
+        static_assert(!CanConstructAdjacentView<Rng, N>);
+    }
+
+    if constexpr (!ranges::forward_range<const Rng>) {
+        static_assert(!CanViewAdjacent<const Rng&, N>);
+        static_assert(!CanViewAdjacent<const Rng, N>);
+        static_assert(!CanConstructAdjacentView<const Rng&, N>);
+        static_assert(!CanConstructAdjacentView<const Rng, N>);
+    }
+}
+
+struct input_only_instantiator {
+#ifdef TEST_EVERYTHING
+    template <ranges::input_range R>
+    static constexpr void call() {
+        R r{some_ints};
+        test_input_only<0>(r);
+        test_input_only<1>(r);
+        test_input_only<2>(r);
+        test_input_only<4>(r);
+        test_input_only<7>(r);
+    }
+#else // ^^^ test all input range permutations / test only "interesting" permutations vvv
+    template <class Tag, test::Common IsCommon, test::Sized IsSized>
+    static constexpr void call() {
+        test_range<const int, Tag, IsCommon, IsSized> r{some_ints};
+        test_input_only<0>(r);
+        test_input_only<1>(r);
+        test_input_only<2>(r);
+        test_input_only<4>(r);
+        test_input_only<7>(r);
+    }
+#endif // TEST_EVERYTHING
+};
+
+constexpr void instantiation_input_only_test() {
+#ifdef TEST_EVERYTHING
+    test_in<input_only_instantiator, const int>();
+#else // ^^^ test all input range permutations / test only "interesting" permutations vvv
+    using test::Common, test::Sized;
+
+    // The view is sensitive to category, commonality, and size, but oblivious to proxyness and differencing
+    input_only_instantiator::call<input_iterator_tag, Common::no, Sized::yes>();
+    input_only_instantiator::call<input_iterator_tag, Common::no, Sized::no>();
+    input_only_instantiator::call<input_iterator_tag, Common::yes, Sized::yes>();
+    input_only_instantiator::call<input_iterator_tag, Common::yes, Sized::no>();
+#endif // TEST_EVERYTHING
+}
+
 template <class Category, test::Common IsCommon, bool is_random = derived_from<Category, random_access_iterator_tag>>
 using move_only_view = test::range<Category, const int, test::Sized{is_random}, test::CanDifference{is_random},
     IsCommon, test::CanCompare::yes, test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>},
@@ -939,4 +994,7 @@ int main() {
 
     static_assert((instantiation_test(), true));
     instantiation_test();
+
+    static_assert((instantiation_input_only_test(), true));
+    instantiation_input_only_test();
 }

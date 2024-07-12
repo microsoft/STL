@@ -26,6 +26,12 @@ std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.copy/uninitialized_copy.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_move.pass.cpp FAIL
 
+# LLVM-90196: [libc++][format] Formatting range with m range-type is incorrect
+std/utilities/format/format.range/format.range.formatter/format.functions.format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.formatter/format.functions.vformat.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
+
 # LLVM-94907: [libc++][test] Avoid -Wunused-variable warnings in mutex tests
 std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/default.pass.cpp:2 FAIL
 std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/default.pass.cpp:2 FAIL
@@ -67,6 +73,9 @@ std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 
+# libc++ hasn't implemented P0952R2, which changes the generate_canonical algorithm.
+std/numerics/rand/rand.util/rand.util.canonical/generate_canonical.pass.cpp FAIL
+
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 std/language.support/support.limits/support.limits.general/chrono.version.compile.pass.cpp FAIL
 
@@ -99,11 +108,28 @@ std/utilities/function.objects/range.cmp/less.pass.cpp FAIL
 std/utilities/function.objects/range.cmp/less_equal.pass.cpp FAIL
 std/utilities/function.objects/range.cmp/not_equal_to.pass.cpp FAIL
 
+# libc++ has not implemented P2407R5: "Freestanding Library: Partial Classes"
+std/language.support/support.limits/support.limits.general/array.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/optional.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/string_view.version.compile.pass.cpp FAIL
+
 # libc++ doesn't implement P2588R3 barrier's Phase Completion Guarantees
 std/language.support/support.limits/support.limits.general/barrier.version.compile.pass.cpp FAIL
 
+# libc++ has not implemented P2833R2: "Freestanding Library: inout expected span"
+std/language.support/support.limits/support.limits.general/expected.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/mdspan.version.compile.pass.cpp FAIL
+
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
+
+# libc++ has not implemented P2997R1: "Removing The Common Reference Requirement From The Indirectly Invocable Concepts"
+std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_binary_predicate.compile.pass.cpp FAIL
+std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_equivalence_relation.compile.pass.cpp FAIL
+std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_strict_weak_order.compile.pass.cpp FAIL
+std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_unary_predicate.compile.pass.cpp FAIL
+std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirectly_regular_unary_invocable.compile.pass.cpp FAIL
+std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirectly_unary_invocable.compile.pass.cpp FAIL
 
 # Various bogosity (LLVM-D141004), warning C6011: Dereferencing NULL pointer
 # Note: The :1 (ASAN) configuration doesn't run static analysis.
@@ -149,6 +175,13 @@ std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitiali
 # libc++ doesn't implement LWG-4013
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.default.pass.cpp FAIL
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.iter.pass.cpp FAIL
+
+# libc++ doesn't implement LWG-4061
+std/utilities/format/format.functions/bug_81590.compile.pass.cpp FAIL
+
+# libc++ doesn't implement LWG-4106
+std/utilities/format/format.arguments/format.args/ctor.pass.cpp FAIL
+std/utilities/format/format.arguments/format.args/get.pass.cpp FAIL
 
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
@@ -219,29 +252,7 @@ std/containers/container.adaptors/container.adaptors.format/format.functions.vfo
 std/containers/container.adaptors/container.adaptors.format/format.pass.cpp FAIL
 std/containers/container.adaptors/container.adaptors.format/parse.pass.cpp FAIL
 std/containers/container.adaptors/container.adaptors.format/types.compile.pass.cpp FAIL
-std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.format.pass.cpp FAIL
-std/containers/sequences/vector.bool/vector.bool.fmt/format.functions.vformat.pass.cpp FAIL
-std/containers/sequences/vector.bool/vector.bool.fmt/format.pass.cpp FAIL
-std/input.output/iostream.format/print.fun/includes.compile.pass.cpp FAIL
 std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtdef/format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtdef/parse.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtdef/set_brackets.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtdef/set_separator.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtmap/format.functions.format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtmap/format.functions.vformat.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtmap/format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtmap/parse.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtset/format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtset/parse.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtstr/format.functions.format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtstr/format.functions.vformat.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtstr/format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtstr/parse.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/format.functions.format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/format.functions.vformat.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -965,6 +976,7 @@ std/input.output/string.streams/stringstream/stringstream.members/str.allocator_
 # These formatter tests need to create basic_format_contexts, so test_format_context.h
 # says "Please create a vendor specific version of the test functions".
 # If we do, some of these tests should be able to work.
+std/containers/sequences/vector.bool/vector.bool.fmt/format.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.id/format.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.context/advance_to.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.context/arg.pass.cpp FAIL
@@ -986,6 +998,12 @@ std/utilities/format/format.formatter/format.formatter.spec/formatter.unsigned_i
 std/utilities/format/format.range/format.range.formatter/format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/set_brackets.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/set_separator.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtdef/format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtdef/set_brackets.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtdef/set_separator.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtmap/format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtset/format.pass.cpp FAIL
+std/utilities/format/format.range/format.range.fmtstr/format.pass.cpp FAIL
 std/utilities/format/format.tuple/format.pass.cpp FAIL
 
 # Not analyzed. Apparent false positives from static analysis where it thinks that array indexing is out of bounds.
