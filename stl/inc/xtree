@@ -433,6 +433,20 @@ public:
     using _Unchecked_const_iterator = _Tree_unchecked_const_iterator<_Tree_val>;
     using const_iterator            = _Tree_const_iterator<_Tree_val>;
 
+    template <class _AllocNode>
+    struct _NODISCARD _Erase_tree_and_orphan_guard {
+        _Tree_val* _Val_ptr;
+        _AllocNode& _Al;
+        _Nodeptr _New_root;
+
+        _Erase_tree_and_orphan_guard& operator=(const _Erase_tree_and_orphan_guard&) = delete;
+        ~_Erase_tree_and_orphan_guard() noexcept {
+            if (_Val_ptr != nullptr) {
+                _Val_ptr->_Erase_tree_and_orphan(_Al, _New_root); // subtree copy failed, bail out
+            }
+        }
+    };
+
     _Tree_val() noexcept : _Myhead(), _Mysize(0) {}
 
     enum _Redbl { // colors for link to parent
@@ -1661,20 +1675,16 @@ protected:
         _Nodeptr _Newroot = _Scary->_Myhead; // point at nil node
 
         if (!_Rootnode->_Isnil) { // copy or move a node, then any subtrees
-            _Nodeptr _Pnode = _Copy_or_move<_Strat>(_Rootnode->_Myval);
-            _Pnode->_Parent = _Wherenode;
-            _Pnode->_Color  = _Rootnode->_Color;
-            if (_Newroot->_Isnil) {
-                _Newroot = _Pnode; // memorize new root
-            }
+            _Newroot          = _Copy_or_move<_Strat>(_Rootnode->_Myval); // memorize new root
+            _Newroot->_Parent = _Wherenode;
+            _Newroot->_Color  = _Rootnode->_Color;
 
-            _TRY_BEGIN
-            _Pnode->_Left  = _Copy_nodes<_Strat>(_Rootnode->_Left, _Pnode);
-            _Pnode->_Right = _Copy_nodes<_Strat>(_Rootnode->_Right, _Pnode);
-            _CATCH_ALL
-            _Scary->_Erase_tree_and_orphan(_Getal(), _Newroot); // subtree copy failed, bail out
-            _RERAISE;
-            _CATCH_END
+            typename _Scary_val::template _Erase_tree_and_orphan_guard<_Alnode> _Guard{_Scary, _Getal(), _Newroot};
+
+            _Newroot->_Left  = _Copy_nodes<_Strat>(_Rootnode->_Left, _Newroot);
+            _Newroot->_Right = _Copy_nodes<_Strat>(_Rootnode->_Right, _Newroot);
+
+            _Guard._Val_ptr = nullptr;
         }
 
         return _Newroot; // return newly constructed tree

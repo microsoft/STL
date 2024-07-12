@@ -47,52 +47,52 @@ _EXPORT_STD struct partial_ordering {
     static const partial_ordering greater;
     static const partial_ordering unordered;
 
-    _NODISCARD_FRIEND constexpr bool operator==(const partial_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator==(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value == 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(partial_ordering, partial_ordering) noexcept = default;
+    _NODISCARD friend constexpr bool operator==(partial_ordering, partial_ordering) noexcept = default;
 
-    _NODISCARD_FRIEND constexpr bool operator<(const partial_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator<(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value == static_cast<_Compare_t>(_Compare_ord::less);
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>(const partial_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator>(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value > 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator<=(const partial_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator<=(const partial_ordering _Val, _Literal_zero) noexcept {
         // The stored value is either less (0xff), equivalent (0x00), greater (0x01), or unordered (0x80).
         // Subtracting from 0 produces either 0x01, 0x00, 0xff, or 0x80. The result is greater than or equal to 0
         // if and only if the initial value was less or equivalent, for which we want to return true.
         return static_cast<signed char>(0 - static_cast<unsigned int>(_Val._Value)) >= 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>=(const partial_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator>=(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value >= 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator<(_Literal_zero, const partial_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator<(_Literal_zero, const partial_ordering _Val) noexcept {
         return _Val > 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>(_Literal_zero, const partial_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator>(_Literal_zero, const partial_ordering _Val) noexcept {
         return _Val < 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator<=(_Literal_zero, const partial_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator<=(_Literal_zero, const partial_ordering _Val) noexcept {
         return _Val >= 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>=(_Literal_zero, const partial_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator>=(_Literal_zero, const partial_ordering _Val) noexcept {
         return _Val <= 0;
     }
 
-    _NODISCARD_FRIEND constexpr partial_ordering operator<=>(const partial_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr partial_ordering operator<=>(const partial_ordering _Val, _Literal_zero) noexcept {
         return _Val;
     }
 
-    _NODISCARD_FRIEND constexpr partial_ordering operator<=>(_Literal_zero, const partial_ordering _Val) noexcept {
+    _NODISCARD friend constexpr partial_ordering operator<=>(_Literal_zero, const partial_ordering _Val) noexcept {
         // The stored value is either less (0xff), equivalent (0x00), greater (0x01), or unordered (0x80).
         // Subtracting from 0 produces either 0x01, 0x00, 0xff, or 0x80. Note that the effect is to
         // exchange less for greater (and vice versa), while leaving equivalent and unordered unchanged.
@@ -116,49 +116,49 @@ _EXPORT_STD struct weak_ordering {
         return {static_cast<_Compare_t>(_Value)};
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(const weak_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator==(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value == 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(weak_ordering, weak_ordering) noexcept = default;
+    _NODISCARD friend constexpr bool operator==(weak_ordering, weak_ordering) noexcept = default;
 
-    _NODISCARD_FRIEND constexpr bool operator<(const weak_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator<(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value < 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>(const weak_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator>(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value > 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator<=(const weak_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator<=(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value <= 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>=(const weak_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator>=(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value >= 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator<(_Literal_zero, const weak_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator<(_Literal_zero, const weak_ordering _Val) noexcept {
         return _Val > 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>(_Literal_zero, const weak_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator>(_Literal_zero, const weak_ordering _Val) noexcept {
         return _Val < 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator<=(_Literal_zero, const weak_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator<=(_Literal_zero, const weak_ordering _Val) noexcept {
         return _Val >= 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>=(_Literal_zero, const weak_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator>=(_Literal_zero, const weak_ordering _Val) noexcept {
         return _Val <= 0;
     }
 
-    _NODISCARD_FRIEND constexpr weak_ordering operator<=>(const weak_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr weak_ordering operator<=>(const weak_ordering _Val, _Literal_zero) noexcept {
         return _Val;
     }
 
-    _NODISCARD_FRIEND constexpr weak_ordering operator<=>(_Literal_zero, const weak_ordering _Val) noexcept {
+    _NODISCARD friend constexpr weak_ordering operator<=>(_Literal_zero, const weak_ordering _Val) noexcept {
         return {static_cast<_Compare_t>(-_Val._Value)};
     }
 
@@ -183,49 +183,49 @@ _EXPORT_STD struct strong_ordering {
         return {static_cast<_Compare_t>(_Value)};
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(const strong_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator==(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value == 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(strong_ordering, strong_ordering) noexcept = default;
+    _NODISCARD friend constexpr bool operator==(strong_ordering, strong_ordering) noexcept = default;
 
-    _NODISCARD_FRIEND constexpr bool operator<(const strong_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator<(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value < 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>(const strong_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator>(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value > 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator<=(const strong_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator<=(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value <= 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>=(const strong_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr bool operator>=(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val._Value >= 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator<(_Literal_zero, const strong_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator<(_Literal_zero, const strong_ordering _Val) noexcept {
         return _Val > 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>(_Literal_zero, const strong_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator>(_Literal_zero, const strong_ordering _Val) noexcept {
         return _Val < 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator<=(_Literal_zero, const strong_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator<=(_Literal_zero, const strong_ordering _Val) noexcept {
         return _Val >= 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator>=(_Literal_zero, const strong_ordering _Val) noexcept {
+    _NODISCARD friend constexpr bool operator>=(_Literal_zero, const strong_ordering _Val) noexcept {
         return _Val <= 0;
     }
 
-    _NODISCARD_FRIEND constexpr strong_ordering operator<=>(const strong_ordering _Val, _Literal_zero) noexcept {
+    _NODISCARD friend constexpr strong_ordering operator<=>(const strong_ordering _Val, _Literal_zero) noexcept {
         return _Val;
     }
 
-    _NODISCARD_FRIEND constexpr strong_ordering operator<=>(_Literal_zero, const strong_ordering _Val) noexcept {
+    _NODISCARD friend constexpr strong_ordering operator<=>(_Literal_zero, const strong_ordering _Val) noexcept {
         return {static_cast<_Compare_t>(-_Val._Value)};
     }
 

@@ -136,7 +136,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR20 _Vector_const_iterator operator+(
+    _NODISCARD friend _CONSTEXPR20 _Vector_const_iterator operator+(
         const difference_type _Off, _Vector_const_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
@@ -316,7 +316,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR20 _Vector_iterator operator+(
+    _NODISCARD friend _CONSTEXPR20 _Vector_iterator operator+(
         const difference_type _Off, _Vector_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
@@ -2568,7 +2568,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR20 _Vb_const_iterator operator+(
+    _NODISCARD friend _CONSTEXPR20 _Vb_const_iterator operator+(
         const difference_type _Off, _Vb_const_iterator _Right) noexcept {
         _Right += _Off;
         return _Right;
@@ -2741,7 +2741,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR20 _Vb_iterator operator+(const difference_type _Off, _Vb_iterator _Right) noexcept {
+    _NODISCARD friend _CONSTEXPR20 _Vb_iterator operator+(const difference_type _Off, _Vb_iterator _Right) noexcept {
         _Right += _Off;
         return _Right;
     }

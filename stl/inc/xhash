@@ -199,12 +199,12 @@ struct _Reinterpret_move_iter {
 
     // post ++ intentionally omitted
 
-    _NODISCARD_FRIEND bool operator==(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
+    _NODISCARD friend bool operator==(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
         return _Lhs._Base == _Rhs._Base;
     }
 
 #if !_HAS_CXX20
-    _NODISCARD_FRIEND bool operator!=(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
+    _NODISCARD friend bool operator!=(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
         return _Lhs._Base != _Rhs._Base;
     }
 #endif // !_HAS_CXX20

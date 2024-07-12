@@ -252,7 +252,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR17 _Array_const_iterator operator+(
+    _NODISCARD friend _CONSTEXPR17 _Array_const_iterator operator+(
         const ptrdiff_t _Off, _Array_const_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
@@ -360,7 +360,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _CONSTEXPR17 _Array_iterator operator+(const ptrdiff_t _Off, _Array_iterator _Next) noexcept {
+    _NODISCARD friend _CONSTEXPR17 _Array_iterator operator+(const ptrdiff_t _Off, _Array_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
     }

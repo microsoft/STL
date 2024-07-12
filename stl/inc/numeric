@@ -625,6 +625,19 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
     using _Common          = common_type_t<_Mt, _Nt>;
     using _Common_unsigned = make_unsigned_t<_Common>;
 
+    if constexpr (is_signed_v<_Common>) {
+#ifndef _DEBUG
+        if (_STD _Is_constant_evaluated())
+#endif // ^^^ !defined(_DEBUG) ^^^
+        {
+            constexpr auto _Min_common = _STD _Min_limit<_Common>();
+            if (_Mx == _Min_common || _Nx == _Min_common) {
+                _STL_REPORT_ERROR("Preconditions: |m| and |n| are representable as a value of common_type_t<M, N>. "
+                                  "(N4981 [numeric.ops.gcd]/2, N4981 [numeric.ops.lcm]/2)");
+            }
+        }
+    }
+
     return _Select_countr_zero_impl<_Common_unsigned>([=](auto _Countr_zero_impl) {
         _Common_unsigned _Mx_magnitude = _Abs_u(_Mx);
         _Common_unsigned _Nx_magnitude = _Abs_u(_Nx);
@@ -670,7 +683,21 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> lcm(const _Mt _Mx, const _Nt _Nx) n
         return 0;
     }
 
-    return static_cast<_Common>((_Mx_magnitude / _STD gcd(_Mx_magnitude, _Nx_magnitude)) * _Nx_magnitude);
+#ifndef _DEBUG
+    if (!_STD _Is_constant_evaluated()) {
+        return static_cast<_Common>((_Mx_magnitude / _STD gcd(_Mx_magnitude, _Nx_magnitude)) * _Nx_magnitude);
+    }
+#endif // ^^^ !defined(_DEBUG) ^^^
+
+    _Common_unsigned _Result = 0;
+    _Common_unsigned _Tmp    = static_cast<_Common_unsigned>(_Mx_magnitude / _STD gcd(_Mx_magnitude, _Nx_magnitude));
+
+    if (_Mul_overflow(_Tmp, _Nx_magnitude, _Result) || !_In_range<_Common>(_Result)) {
+        _STL_REPORT_ERROR("Preconditions: The least common multiple of |m| and |n| is representable as a value of "
+                          "type common_type_t<M, N>. (N4981 [numeric.ops.lcm]/2)");
+    }
+
+    return static_cast<_Common>(_Result);
 }
 #endif // _HAS_CXX17
 
