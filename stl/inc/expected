@@ -258,6 +258,8 @@ public:
         is_trivially_copy_constructible_v<_Ty> && is_trivially_copy_constructible_v<_Err> = default;
     // clang-format on
 
+    expected(const expected&) = delete;
+
     constexpr expected(expected&& _Other) noexcept(
         is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_constructible_v<_Err>)
         requires (!(is_trivially_move_constructible_v<_Ty> && is_trivially_move_constructible_v<_Err>)
@@ -440,6 +442,8 @@ public:
                   && _Trivially_copy_constructible_assignable_destructible<_Ty>
                   && _Trivially_copy_constructible_assignable_destructible<_Err>
     = default;
+
+    expected& operator=(const expected&) = delete;
 
     constexpr expected& operator=(expected&& _Other) noexcept(
         is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_constructible_v<_Err>
@@ -1243,6 +1247,8 @@ public:
     expected(const expected&) requires is_trivially_copy_constructible_v<_Err> = default;
     // clang-format on
 
+    expected(const expected&) = delete;
+
     constexpr expected(expected&& _Other) noexcept(is_nothrow_move_constructible_v<_Err>)
         requires (!is_trivially_move_constructible_v<_Err> && is_move_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
@@ -1343,6 +1349,8 @@ public:
     expected& operator=(const expected&)
         requires _Expected_unary_copy_assignable<_Err> && _Trivially_copy_constructible_assignable_destructible<_Err>
     = default;
+
+    expected& operator=(const expected&) = delete;
 
     constexpr expected& operator=(expected&& _Other) noexcept(
         is_nothrow_move_constructible_v<_Err> && is_nothrow_move_assignable_v<_Err>)

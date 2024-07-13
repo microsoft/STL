@@ -2343,6 +2343,51 @@ constexpr bool test_inherited_constructors() {
 
 static_assert(test_inherited_constructors());
 
+// Test GH-4279 "Add deleted function overloads to expected"
+
+template <class T, class E>
+struct ambiguating_expected_copy_constructor_caller {
+    struct const_lvalue_taker {
+        const_lvalue_taker(const expected<T, E>&) {}
+    };
+
+    void operator()(expected<T, E>) {}
+    void operator()(const_lvalue_taker) {}
+};
+
+template <class T, class E>
+struct ambiguating_expected_assignment_source {
+    operator const expected<T, E>&() && {
+        return ex;
+    }
+
+    operator expected<T, E>&&() && {
+        return move(ex);
+    }
+
+    expected<T, E> ex;
+};
+
+struct move_only {
+    move_only()                       = default;
+    move_only(move_only&&)            = default;
+    move_only& operator=(move_only&&) = default;
+};
+
+static_assert(is_invocable_v<ambiguating_expected_copy_constructor_caller<int, char>, const expected<int, char>&>);
+static_assert(is_invocable_v<ambiguating_expected_copy_constructor_caller<void, int>, const expected<void, int>&>);
+static_assert(
+    !is_invocable_v<ambiguating_expected_copy_constructor_caller<move_only, char>, const expected<move_only, char>&>);
+static_assert(
+    !is_invocable_v<ambiguating_expected_copy_constructor_caller<void, move_only>, const expected<void, move_only>&>);
+
+#ifndef __EDG__ // TRANSITION, VSO-1601179
+static_assert(!is_assignable_v<expected<int, char>&, ambiguating_expected_assignment_source<int, char>>);
+static_assert(!is_assignable_v<expected<void, int>&, ambiguating_expected_assignment_source<void, int>>);
+#endif // ^^^ no workaround ^^^
+static_assert(!is_assignable_v<expected<move_only, char>&, ambiguating_expected_assignment_source<move_only, char>>);
+static_assert(!is_assignable_v<expected<void, move_only>&, ambiguating_expected_assignment_source<void, move_only>>);
+
 int main() {
     test_unexpected::test_all();
     static_assert(test_unexpected::test_all());
