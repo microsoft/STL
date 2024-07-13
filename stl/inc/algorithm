@@ -10723,7 +10723,8 @@ namespace ranges {
 #endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Ty, class _Pr>
-_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val, _Pr _Pred) {
+_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val _MSVC_LIFETIMEBOUND, const _Ty& _Min_val _MSVC_LIFETIMEBOUND,
+    const _Ty& _Max_val _MSVC_LIFETIMEBOUND, _Pr _Pred) {
     // returns _Val constrained to [_Min_val, _Max_val]
 #if _ITERATOR_DEBUG_LEVEL == 2
     if (_DEBUG_LT_PRED(_Pred, _Max_val, _Min_val)) {
@@ -10750,7 +10751,8 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val) {
+_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val _MSVC_LIFETIMEBOUND, const _Ty& _Min_val _MSVC_LIFETIMEBOUND,
+    const _Ty& _Max_val _MSVC_LIFETIMEBOUND) {
     // returns _Val constrained to [_Min_val, _Max_val]
     return _STD clamp(_Val, _Min_val, _Max_val, less{});
 }
@@ -10761,8 +10763,9 @@ namespace ranges {
     public:
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(
-            const _Ty& _Val, const _Ty& _Lo, const _Ty& _Hi, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(const _Ty& _Val _MSVC_LIFETIMEBOUND,
+            const _Ty& _Lo _MSVC_LIFETIMEBOUND, const _Ty& _Hi _MSVC_LIFETIMEBOUND, _Pr _Pred = {},
+            _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STL_ASSERT(!_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Lo)),
                 "The lower bound cannot be greater than the upper bound in a call to std::ranges::clamp "
                 "(N4950 [alg.clamp]/2).");
