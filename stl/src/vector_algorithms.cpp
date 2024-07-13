@@ -3920,6 +3920,23 @@ namespace {
             return true;
         }
 
+        template <class _Avx, class _Sse, class _Elem>
+        bool _Dispatch(void* _Dest, const _Elem* _Src, size_t _Size_bytes, size_t _Size_bits, size_t _Size_chars,
+            _Elem _Elem0, _Elem _Elem1) {
+#ifndef _M_ARM64EC
+            if (_Use_avx2() && _Size_bits >= 256) {
+                _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+                return _Impl<_Avx>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+            } else if (_Use_sse42()) {
+                return _Impl<_Sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+            } else
+#endif // !defined(_M_ARM64EC)
+            {
+                return _Fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+            }
+        }
+
     } // namespace __std_bitset_from_string
 
 } // unnamed namespace
@@ -3930,36 +3947,14 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const
     size_t _Size_bits, size_t _Size_chars, char _Elem0, char _Elem1) noexcept {
     using namespace __std_bitset_from_string;
 
-#ifndef _M_ARM64EC
-    if (_Use_avx2() && _Size_bits >= 256) {
-        _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
-
-        return _Impl<_Traits_1_avx>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
-    } else if (_Use_sse42()) {
-        return _Impl<_Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
-    } else
-#endif // !defined(_M_ARM64EC)
-    {
-        return _Fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
-    }
+    return _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
 }
 
 __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const wchar_t* _Src, size_t _Size_bytes,
     size_t _Size_bits, size_t _Size_chars, wchar_t _Elem0, wchar_t _Elem1) noexcept {
     using namespace __std_bitset_from_string;
 
-#ifndef _M_ARM64EC
-    if (_Use_avx2() && _Size_bits >= 256) {
-        _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
-
-        return _Impl<_Traits_2_avx>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
-    } else if (_Use_sse42()) {
-        return _Impl<_Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
-    } else
-#endif // !defined(_M_ARM64EC)
-    {
-        return _Fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
-    }
+    return _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
 }
 
 } // extern "C"
