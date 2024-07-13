@@ -3694,6 +3694,7 @@ namespace {
         }
 
         struct _Traits_1_avx {
+#ifndef _M_ARM64EC
             using _Vec  = __m256i;
             using _Word = uint32_t;
 
@@ -3741,9 +3742,11 @@ namespace {
                     _Out(_Ex1);
                 }
             }
+#endif // !defined(_M_ARM64EC)
         };
 
         struct _Traits_1_sse {
+#ifndef _M_ARM64EC
             using _Vec  = __m128i;
             using _Word = uint16_t;
 
@@ -3788,9 +3791,11 @@ namespace {
                     _Out(_Ex1);
                 }
             }
+#endif // !defined(_M_ARM64EC)
         };
 
         struct _Traits_2_avx {
+#ifndef _M_ARM64EC
             using _Vec  = __m256i;
             using _Word = uint16_t;
 
@@ -3839,9 +3844,11 @@ namespace {
                     _Out(_Ex1);
                 }
             }
+#endif // !defined(_M_ARM64EC)
         };
 
         struct _Traits_2_sse {
+#ifndef _M_ARM64EC
             using _Vec  = __m128i;
             using _Word = uint8_t;
 
@@ -3886,8 +3893,10 @@ namespace {
                     _Out(_Ex1);
                 }
             }
+#endif // !defined(_M_ARM64EC)
         };
 
+#ifndef _M_ARM64EC
         template <class _Traits, class _Elem>
         static bool _Impl(void* _Dest, const _Elem* _Src, size_t _Size_bytes, size_t _Size_bits, size_t _Size_chars,
             _Elem _Elem0, _Elem _Elem1) noexcept {
@@ -3919,6 +3928,7 @@ namespace {
 
             return true;
         }
+#endif // !defined(_M_ARM64EC)
 
         template <class _Avx, class _Sse, class _Elem>
         bool _Dispatch(void* _Dest, const _Elem* _Src, size_t _Size_bytes, size_t _Size_bits, size_t _Size_chars,
