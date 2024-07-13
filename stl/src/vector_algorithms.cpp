@@ -3898,24 +3898,21 @@ namespace {
             void* _Dst_words_end = _Dst_words;
             _Advance_bytes(_Dst_words_end, _Size_bytes);
 
-            auto _Out = [&_Dst_words](const _Traits::_Vec _Ex1) { _Traits::_Out(_Dst_words, _Ex1); };
+            auto _Out                  = [&_Dst_words](const _Traits::_Vec _Ex1) { _Traits::_Out(_Dst_words, _Ex1); };
+            const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
 
-            if (_Size_chars <= _Size_bits) {
-                if (!_Traits::_Loop(_Src, _Src + _Size_chars, _Dx0, _Dx1, _Out)) {
-                    return false;
-                }
-            } else {
-                const auto _Discard = [](_Traits::_Vec) {};
-
-                if (!_Traits::_Loop(_Src, _Src + _Size_bits, _Dx0, _Dx1, _Out)) {
-                    return false;
-                }
-
-                if (!_Traits::_Loop(_Src + _Size_bits, _Src + _Size_chars, _Dx0, _Dx1, _Discard)) {
-                    return false;
-                }
+            // Convert characters to bits
+            if (!_Traits::_Loop(_Src, _Src + _Size_convert, _Dx0, _Dx1, _Out)) {
+                return false;
             }
 
+            // Verify remaining characters, if any
+            if (_Size_convert != _Size_chars
+                && !_Traits::_Loop(_Src + _Size_convert, _Src + _Size_chars, _Dx0, _Dx1, [](_Traits::_Vec) {})) {
+                return false;
+            }
+
+            // Trim tail (may be natural tail, or too short string, or both)
             if (_Dst_words != _Dst_words_end) {
                 _CSTD memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
             }
