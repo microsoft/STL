@@ -3827,19 +3827,18 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const
         const __m256i _Dx0 = _mm256_set1_epi8(_Elem0);
         const __m256i _Dx1 = _mm256_set1_epi8(_Elem1);
 
-        uint32_t* _Dst_words           = reinterpret_cast<uint32_t*>(_Dest);
-        uint32_t* const _Dst_words_end = _Dst_words + _Size_bytes / sizeof(uint32_t);
+        uint32_t* _Dst_words = reinterpret_cast<uint32_t*>(_Dest);
+        void* _Dst_words_end = _Dst_words;
+        _Advance_bytes(_Dst_words_end, _Size_bytes);
 
-        auto _Out = [&_Dst_words, _Dst_words_end](const __m256i _Ex1) {
+        auto _Out = [&_Dst_words](const __m256i _Ex1) {
             const __m256i _Shuf = _mm256_set_epi8( //
                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
 
-            if (_Dst_words != _Dst_words_end) {
-                const __m256i _Ex2 = _mm256_shuffle_epi8(_Ex1, _Shuf);
-                *_Dst_words        = _rotl(static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2)), 16);
-                ++_Dst_words;
-            }
+            const __m256i _Ex2 = _mm256_shuffle_epi8(_Ex1, _Shuf);
+            *_Dst_words        = _rotl(static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2)), 16);
+            ++_Dst_words;
         };
 
         if (_Size_chars <= _Size_bits) {
@@ -3867,17 +3866,15 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const
         const __m128i _Dx0 = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Elem0), _mm_setzero_si128());
         const __m128i _Dx1 = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Elem1), _mm_setzero_si128());
 
-        uint16_t* _Dst_words           = reinterpret_cast<uint16_t*>(_Dest);
-        uint16_t* const _Dst_words_end = _Dst_words + _Size_bytes / sizeof(uint16_t);
+        uint16_t* _Dst_words = reinterpret_cast<uint16_t*>(_Dest);
+        void* _Dst_words_end = _Dst_words;
+        _Advance_bytes(_Dst_words_end, _Size_bytes);
 
-        auto _Out = [&_Dst_words, _Dst_words_end](const __m128i _Ex1) {
+        auto _Out = [&_Dst_words](const __m128i _Ex1) {
             const __m128i _Shuf = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-
-            if (_Dst_words != _Dst_words_end) {
-                const __m128i _Ex2 = _mm_shuffle_epi8(_Ex1, _Shuf);
-                *_Dst_words        = static_cast<uint16_t>(_mm_movemask_epi8(_Ex2));
-                ++_Dst_words;
-            }
+            const __m128i _Ex2  = _mm_shuffle_epi8(_Ex1, _Shuf);
+            *_Dst_words         = static_cast<uint16_t>(_mm_movemask_epi8(_Ex2));
+            ++_Dst_words;
         };
 
         if (_Size_chars <= _Size_bits) {
@@ -3917,20 +3914,19 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const
         const __m256i _Dx0 = _mm256_set1_epi16(_Elem0);
         const __m256i _Dx1 = _mm256_set1_epi16(_Elem1);
 
-        uint16_t* _Dst_words           = reinterpret_cast<uint16_t*>(_Dest);
-        uint16_t* const _Dst_words_end = _Dst_words + _Size_bytes / sizeof(uint16_t);
+        uint16_t* _Dst_words = reinterpret_cast<uint16_t*>(_Dest);
+        void* _Dst_words_end = _Dst_words;
+        _Advance_bytes(_Dst_words_end, _Size_bytes);
 
-        auto _Out = [&_Dst_words, _Dst_words_end](const __m256i _Ex1) {
+        auto _Out = [&_Dst_words](const __m256i _Ex1) {
             const __m256i _Shuf = _mm256_set_epi8( //
                 +0, +2, +4, +6, +8, 10, 12, 14, -1, -1, -1, -1, -1, -1, -1, -1, //
                 -1, -1, -1, -1, -1, -1, -1, -1, +0, +2, +4, +6, +8, 10, 12, 14);
 
-            if (_Dst_words != _Dst_words_end) {
-                const __m256i _Ex2 = _mm256_shuffle_epi8(_Ex1, _Shuf);
-                const auto _Tmp    = static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2));
-                *_Dst_words        = static_cast<uint16_t>(_rotl(_Tmp, 8));
-                ++_Dst_words;
-            }
+            const __m256i _Ex2 = _mm256_shuffle_epi8(_Ex1, _Shuf);
+            const auto _Tmp    = static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2));
+            *_Dst_words        = static_cast<uint16_t>(_rotl(_Tmp, 8));
+            ++_Dst_words;
         };
 
         if (_Size_chars <= _Size_bits) {
@@ -3958,17 +3954,15 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const
         const __m128i _Dx0 = _mm_set1_epi16(_Elem0);
         const __m128i _Dx1 = _mm_set1_epi16(_Elem1);
 
-        uint8_t* _Dst_words           = reinterpret_cast<uint8_t*>(_Dest);
-        uint8_t* const _Dst_words_end = _Dst_words + _Size_bytes / sizeof(uint8_t);
+        uint8_t* _Dst_words  = reinterpret_cast<uint8_t*>(_Dest);
+        void* _Dst_words_end = _Dst_words;
+        _Advance_bytes(_Dst_words_end, _Size_bytes);
 
-        auto _Out = [&_Dst_words, _Dst_words_end](const __m128i _Ex1) {
+        auto _Out = [&_Dst_words](const __m128i _Ex1) {
             const __m128i _Shuf = _mm_set_epi8(-1, -1, -1, -1, -1, -1, -1, -1, 0, 2, 4, 6, 8, 10, 12, 14);
-
-            if (_Dst_words != _Dst_words_end) {
-                const __m128i _Ex2 = _mm_shuffle_epi8(_Ex1, _Shuf);
-                *_Dst_words        = static_cast<uint8_t>(_mm_movemask_epi8(_Ex2));
-                ++_Dst_words;
-            }
+            const __m128i _Ex2  = _mm_shuffle_epi8(_Ex1, _Shuf);
+            *_Dst_words         = static_cast<uint8_t>(_mm_movemask_epi8(_Ex2));
+            ++_Dst_words;
         };
 
         if (_Size_chars <= _Size_bits) {
