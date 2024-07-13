@@ -3659,160 +3659,271 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
 } // extern "C"
 
 namespace {
-    template <class _Elem>
-    bool __std_bitset_from_string_fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes,
-        const size_t _Size_bits, const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
-        const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
-        size_t _Size_convert   = _Size_chars;
 
-        if (_Size_chars > _Size_bits) {
-            _Size_convert = _Size_bits;
+    namespace __std_bitset_from_string {
 
-            for (size_t _Ix = 0, _Mx = _Size_chars - _Size_bits; _Ix < _Mx; ++_Ix) {
-                if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
+        template <class _Elem>
+        bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
+            const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
+            const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
+            size_t _Size_convert   = _Size_chars;
+
+            if (_Size_chars > _Size_bits) {
+                _Size_convert = _Size_bits;
+
+                for (size_t _Ix = 0, _Mx = _Size_chars - _Size_bits; _Ix < _Mx; ++_Ix) {
+                    if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
+                        return false;
+                    }
+                }
+            }
+
+            _CSTD memset(_Dest, 0, _Size_bytes);
+
+            for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
+                const _Elem _Cur = _Src[_Size_chars - _Ix - 1];
+
+                if (_Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
+                    return false;
+                }
+
+                _Dest_bytes[_Ix >> 3] |= static_cast<uint8_t>(_Cur == _Elem1) << (_Ix & 0x7);
+            }
+
+            return true;
+        }
+
+        struct _Traits_1_avx {
+            using _Vec  = __m256i;
+            using _Word = uint32_t;
+
+            static __m256i _Set(const char _Val) noexcept {
+                return _mm256_set1_epi8(_Val);
+            }
+
+            static void _Out(uint32_t*& _Dst_words, const __m256i _Ex1) noexcept {
+                const __m256i _Shuf = _mm256_set_epi8( //
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+
+                const __m256i _Ex2 = _mm256_shuffle_epi8(_Ex1, _Shuf);
+                *_Dst_words        = _rotl(static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2)), 16);
+                ++_Dst_words;
+            }
+
+            template <class _OutFn>
+            static bool _Loop(const char* const _Src, const char* _Src_end, const __m256i _Dx0, const __m256i _Dx1,
+                _OutFn _Out) noexcept {
+                for (;;) {
+                    __m256i _Val = _mm256_undefined_si256();
+
+                    if (const size_t _Left = _Src_end - _Src; _Left > 32) {
+                        _Src_end -= 32;
+                        _Val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src_end));
+                    } else if (_Left == 0) {
+                        return true;
+                    } else {
+                        _Src_end = _Src;
+                        char _Tmp[32];
+                        _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Dx0);
+                        char* const _Tmpd = _Tmp + (32 - _Left);
+                        _CSTD memcpy(_Tmpd, _Src_end, _Left);
+                        _Val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tmp));
+                    }
+
+                    const __m256i _Ex1 = _mm256_cmpeq_epi8(_Val, _Dx1);
+                    const __m256i _Ex0 = _mm256_xor_si256(_Val, _Dx0);
+
+                    if (!_mm256_testc_si256(_Ex1, _Ex0)) {
+                        return false;
+                    }
+
+                    _Out(_Ex1);
+                }
+            }
+        };
+
+        struct _Traits_1_sse {
+            using _Vec  = __m128i;
+            using _Word = uint16_t;
+
+            static __m128i _Set(const char _Val) noexcept {
+                return _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
+            }
+
+            static void _Out(uint16_t*& _Dst_words, const __m128i _Ex1) noexcept {
+                const __m128i _Shuf = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+                const __m128i _Ex2  = _mm_shuffle_epi8(_Ex1, _Shuf);
+                *_Dst_words         = static_cast<uint16_t>(_mm_movemask_epi8(_Ex2));
+                ++_Dst_words;
+            }
+
+            template <class _OutFn>
+            static bool _Loop(const char* const _Src, const char* _Src_end, const __m128i _Dx0, const __m128i _Dx1,
+                _OutFn _Out) noexcept {
+                for (;;) {
+                    __m128i _Val = _mm_undefined_si128();
+
+                    if (const size_t _Left = _Src_end - _Src; _Left > 16) {
+                        _Src_end -= 16;
+                        _Val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src_end));
+                    } else if (_Left == 0) {
+                        return true;
+                    } else {
+                        _Src_end = _Src;
+                        char _Tmp[16];
+                        _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Dx0);
+                        char* const _Tmpd = _Tmp + (16 - _Left);
+                        _CSTD memcpy(_Tmpd, _Src_end, _Left);
+                        _Val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp));
+                    }
+
+                    const __m128i _Ex1 = _mm_cmpeq_epi8(_Val, _Dx1);
+                    const __m128i _Ex0 = _mm_xor_si128(_Val, _Dx0);
+
+                    if (!_mm_testc_si128(_Ex1, _Ex0)) {
+                        return false;
+                    }
+
+                    _Out(_Ex1);
+                }
+            }
+        };
+
+        struct _Traits_2_avx {
+            using _Vec  = __m256i;
+            using _Word = uint16_t;
+
+            static __m256i _Set(const wchar_t _Val) noexcept {
+                return _mm256_set1_epi16(_Val);
+            }
+
+            static void _Out(uint16_t*& _Dst_words, const __m256i _Ex1) noexcept {
+                const __m256i _Shuf = _mm256_set_epi8( //
+                    +0, +2, +4, +6, +8, 10, 12, 14, -1, -1, -1, -1, -1, -1, -1, -1, //
+                    -1, -1, -1, -1, -1, -1, -1, -1, +0, +2, +4, +6, +8, 10, 12, 14);
+
+                const __m256i _Ex2 = _mm256_shuffle_epi8(_Ex1, _Shuf);
+                const auto _Tmp    = static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2));
+                *_Dst_words        = static_cast<uint16_t>(_rotl(_Tmp, 8));
+                ++_Dst_words;
+            }
+
+            template <class _OutFn>
+            static bool _Loop(const wchar_t* const _Src, const wchar_t* _Src_end, const __m256i _Dx0,
+                const __m256i _Dx1, _OutFn _Out) noexcept {
+                for (;;) {
+                    __m256i _Val = _mm256_undefined_si256();
+
+                    if (const size_t _Left = _Src_end - _Src; _Left > 16) {
+                        _Src_end -= 16;
+                        _Val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src_end));
+                    } else if (_Left == 0) {
+                        return true;
+                    } else {
+                        _Src_end = _Src;
+                        wchar_t _Tmp[16];
+                        _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Dx0);
+                        wchar_t* const _Tmpd = _Tmp + (16 - _Left);
+                        _CSTD memcpy(_Tmpd, _Src_end, _Left * sizeof(wchar_t));
+                        _Val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tmp));
+                    }
+
+                    const __m256i _Ex1 = _mm256_cmpeq_epi16(_Val, _Dx1);
+                    const __m256i _Ex0 = _mm256_xor_si256(_Val, _Dx0);
+
+                    if (!_mm256_testc_si256(_Ex1, _Ex0)) {
+                        return false;
+                    }
+
+                    _Out(_Ex1);
+                }
+            }
+        };
+
+        struct _Traits_2_sse {
+            using _Vec  = __m128i;
+            using _Word = uint8_t;
+
+            static __m128i _Set(const wchar_t _Val) noexcept {
+                return _mm_set1_epi16(_Val);
+            }
+
+            static void _Out(uint8_t*& _Dst_words, const __m128i _Ex1) noexcept {
+                const __m128i _Shuf = _mm_set_epi8(-1, -1, -1, -1, -1, -1, -1, -1, 0, 2, 4, 6, 8, 10, 12, 14);
+                const __m128i _Ex2  = _mm_shuffle_epi8(_Ex1, _Shuf);
+                *_Dst_words         = static_cast<uint8_t>(_mm_movemask_epi8(_Ex2));
+                ++_Dst_words;
+            }
+
+            template <class _OutFn>
+            static bool _Loop(const wchar_t* const _Src, const wchar_t* _Src_end, const __m128i _Dx0,
+                const __m128i _Dx1, _OutFn _Out) noexcept {
+                for (;;) {
+                    __m128i _Val = _mm_undefined_si128();
+
+                    if (const size_t _Left = _Src_end - _Src; _Left > 8) {
+                        _Src_end -= 8;
+                        _Val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src_end));
+                    } else if (_Left == 0) {
+                        return true;
+                    } else {
+                        _Src_end = _Src;
+                        wchar_t _Tmp[8];
+                        _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Dx0);
+                        wchar_t* const _Tmpd = _Tmp + (8 - _Left);
+                        _CSTD memcpy(_Tmpd, _Src_end, _Left * sizeof(wchar_t));
+                        _Val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp));
+                    }
+
+                    const __m128i _Ex1 = _mm_cmpeq_epi16(_Val, _Dx1);
+                    const __m128i _Ex0 = _mm_xor_si128(_Val, _Dx0);
+
+                    if (!_mm_testc_si128(_Ex1, _Ex0)) {
+                        return false;
+                    }
+
+                    _Out(_Ex1);
+                }
+            }
+        };
+
+        template <class _Traits, class _Elem>
+        static bool _Impl(void* _Dest, const _Elem* _Src, size_t _Size_bytes, size_t _Size_bits, size_t _Size_chars,
+            _Elem _Elem0, _Elem _Elem1) noexcept {
+            const auto _Dx0 = _Traits::_Set(_Elem0);
+            const auto _Dx1 = _Traits::_Set(_Elem1);
+
+            auto _Dst_words      = reinterpret_cast<_Traits::_Word*>(_Dest);
+            void* _Dst_words_end = _Dst_words;
+            _Advance_bytes(_Dst_words_end, _Size_bytes);
+
+            auto _Out = [&_Dst_words](const _Traits::_Vec _Ex1) { _Traits::_Out(_Dst_words, _Ex1); };
+
+            if (_Size_chars <= _Size_bits) {
+                if (!_Traits::_Loop(_Src, _Src + _Size_chars, _Dx0, _Dx1, _Out)) {
+                    return false;
+                }
+            } else {
+                const auto _Discard = [](_Traits::_Vec) {};
+
+                if (!_Traits::_Loop(_Src, _Src + _Size_bits, _Dx0, _Dx1, _Out)) {
+                    return false;
+                }
+
+                if (!_Traits::_Loop(_Src + _Size_bits, _Src + _Size_chars, _Dx0, _Dx1, _Discard)) {
                     return false;
                 }
             }
+
+            if (_Dst_words != _Dst_words_end) {
+                _CSTD memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
+            }
+
+            return true;
         }
 
-        _CSTD memset(_Dest, 0, _Size_bytes);
-
-        for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
-            const _Elem _Cur = _Src[_Size_chars - _Ix - 1];
-
-            if (_Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
-                return false;
-            }
-
-            _Dest_bytes[_Ix >> 3] |= static_cast<uint8_t>(_Cur == _Elem1) << (_Ix & 0x7);
-        }
-
-        return true;
-    }
-
-    template <class _OutFn>
-    bool __std_bitset_from_string_1_avx_loop(
-        const char* const _Src, const char* _Src_end, const __m256i _Dx0, const __m256i _Dx1, _OutFn _Out) {
-        for (;;) {
-            __m256i _Val = _mm256_undefined_si256();
-
-            if (const size_t _Left = _Src_end - _Src; _Left > 32) {
-                _Src_end -= 32;
-                _Val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src_end));
-            } else if (_Left == 0) {
-                return true;
-            } else {
-                _Src_end = _Src;
-                char _Tmp[32];
-                _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Dx0);
-                char* const _Tmpd = _Tmp + (32 - _Left);
-                _CSTD memcpy(_Tmpd, _Src_end, _Left);
-                _Val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tmp));
-            }
-
-            const __m256i _Ex1 = _mm256_cmpeq_epi8(_Val, _Dx1);
-            const __m256i _Ex0 = _mm256_xor_si256(_Val, _Dx0);
-
-            if (!_mm256_testc_si256(_Ex1, _Ex0)) {
-                return false;
-            }
-
-            _Out(_Ex1);
-        }
-    }
-
-    template <class _OutFn>
-    bool __std_bitset_from_string_1_sse_loop(
-        const char* const _Src, const char* _Src_end, const __m128i _Dx0, const __m128i _Dx1, _OutFn _Out) {
-        for (;;) {
-            __m128i _Val = _mm_undefined_si128();
-
-            if (const size_t _Left = _Src_end - _Src; _Left > 16) {
-                _Src_end -= 16;
-                _Val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src_end));
-            } else if (_Left == 0) {
-                return true;
-            } else {
-                _Src_end = _Src;
-                char _Tmp[16];
-                _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Dx0);
-                char* const _Tmpd = _Tmp + (16 - _Left);
-                _CSTD memcpy(_Tmpd, _Src_end, _Left);
-                _Val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp));
-            }
-
-            const __m128i _Ex1 = _mm_cmpeq_epi8(_Val, _Dx1);
-            const __m128i _Ex0 = _mm_xor_si128(_Val, _Dx0);
-
-            if (!_mm_testc_si128(_Ex1, _Ex0)) {
-                return false;
-            }
-
-            _Out(_Ex1);
-        }
-    }
-
-    template <class _OutFn>
-    bool __std_bitset_from_string_2_avx_loop(
-        const wchar_t* const _Src, const wchar_t* _Src_end, const __m256i _Dx0, const __m256i _Dx1, _OutFn _Out) {
-        for (;;) {
-            __m256i _Val = _mm256_undefined_si256();
-
-            if (const size_t _Left = _Src_end - _Src; _Left > 16) {
-                _Src_end -= 16;
-                _Val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src_end));
-            } else if (_Left == 0) {
-                return true;
-            } else {
-                _Src_end = _Src;
-                wchar_t _Tmp[16];
-                _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Tmp), _Dx0);
-                wchar_t* const _Tmpd = _Tmp + (16 - _Left);
-                _CSTD memcpy(_Tmpd, _Src_end, _Left * sizeof(wchar_t));
-                _Val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tmp));
-            }
-
-            const __m256i _Ex1 = _mm256_cmpeq_epi16(_Val, _Dx1);
-            const __m256i _Ex0 = _mm256_xor_si256(_Val, _Dx0);
-
-            if (!_mm256_testc_si256(_Ex1, _Ex0)) {
-                return false;
-            }
-
-            _Out(_Ex1);
-        }
-    }
-
-    template <class _OutFn>
-    bool __std_bitset_from_string_2_sse_loop(
-        const wchar_t* const _Src, const wchar_t* _Src_end, const __m128i _Dx0, const __m128i _Dx1, _OutFn _Out) {
-        for (;;) {
-            __m128i _Val = _mm_undefined_si128();
-
-            if (const size_t _Left = _Src_end - _Src; _Left > 8) {
-                _Src_end -= 8;
-                _Val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src_end));
-            } else if (_Left == 0) {
-                return true;
-            } else {
-                _Src_end = _Src;
-                wchar_t _Tmp[8];
-                _mm_storeu_si128(reinterpret_cast<__m128i*>(_Tmp), _Dx0);
-                wchar_t* const _Tmpd = _Tmp + (8 - _Left);
-                _CSTD memcpy(_Tmpd, _Src_end, _Left * sizeof(wchar_t));
-                _Val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp));
-            }
-
-            const __m128i _Ex1 = _mm_cmpeq_epi16(_Val, _Dx1);
-            const __m128i _Ex0 = _mm_xor_si128(_Val, _Dx0);
-
-            if (!_mm_testc_si128(_Ex1, _Ex0)) {
-                return false;
-            }
-
-            _Out(_Ex1);
-        }
-    }
+    } // namespace __std_bitset_from_string
 
 } // unnamed namespace
 
@@ -3820,176 +3931,37 @@ extern "C" {
 
 __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const char* _Src, size_t _Size_bytes,
     size_t _Size_bits, size_t _Size_chars, char _Elem0, char _Elem1) noexcept {
+    using namespace __std_bitset_from_string;
+
 #ifndef _M_ARM64EC
     if (_Use_avx2() && _Size_bits >= 256) {
         _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
-        const __m256i _Dx0 = _mm256_set1_epi8(_Elem0);
-        const __m256i _Dx1 = _mm256_set1_epi8(_Elem1);
-
-        uint32_t* _Dst_words = reinterpret_cast<uint32_t*>(_Dest);
-        void* _Dst_words_end = _Dst_words;
-        _Advance_bytes(_Dst_words_end, _Size_bytes);
-
-        auto _Out = [&_Dst_words](const __m256i _Ex1) {
-            const __m256i _Shuf = _mm256_set_epi8( //
-                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
-                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-
-            const __m256i _Ex2 = _mm256_shuffle_epi8(_Ex1, _Shuf);
-            *_Dst_words        = _rotl(static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2)), 16);
-            ++_Dst_words;
-        };
-
-        if (_Size_chars <= _Size_bits) {
-            if (!__std_bitset_from_string_1_avx_loop(_Src, _Src + _Size_chars, _Dx0, _Dx1, _Out)) {
-                return false;
-            }
-        } else {
-            const auto _Discard = [](__m256i) {};
-
-            if (!__std_bitset_from_string_1_avx_loop(_Src, _Src + _Size_bits, _Dx0, _Dx1, _Out)) {
-                return false;
-            }
-
-            if (!__std_bitset_from_string_1_avx_loop(_Src + _Size_bits, _Src + _Size_chars, _Dx0, _Dx1, _Discard)) {
-                return false;
-            }
-        }
-
-        if (_Dst_words != _Dst_words_end) {
-            _CSTD memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
-        }
-
-        return true;
+        return _Impl<_Traits_1_avx>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
     } else if (_Use_sse42()) {
-        const __m128i _Dx0 = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Elem0), _mm_setzero_si128());
-        const __m128i _Dx1 = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Elem1), _mm_setzero_si128());
-
-        uint16_t* _Dst_words = reinterpret_cast<uint16_t*>(_Dest);
-        void* _Dst_words_end = _Dst_words;
-        _Advance_bytes(_Dst_words_end, _Size_bytes);
-
-        auto _Out = [&_Dst_words](const __m128i _Ex1) {
-            const __m128i _Shuf = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-            const __m128i _Ex2  = _mm_shuffle_epi8(_Ex1, _Shuf);
-            *_Dst_words         = static_cast<uint16_t>(_mm_movemask_epi8(_Ex2));
-            ++_Dst_words;
-        };
-
-        if (_Size_chars <= _Size_bits) {
-            if (!__std_bitset_from_string_1_sse_loop(_Src, _Src + _Size_chars, _Dx0, _Dx1, _Out)) {
-                return false;
-            }
-        } else {
-            const auto _Discard = [](__m128i) {};
-
-            if (!__std_bitset_from_string_1_sse_loop(_Src, _Src + _Size_bits, _Dx0, _Dx1, _Out)) {
-                return false;
-            }
-
-            if (!__std_bitset_from_string_1_sse_loop(_Src + _Size_bits, _Src + _Size_chars, _Dx0, _Dx1, _Discard)) {
-                return false;
-            }
-        }
-
-        if (_Dst_words != _Dst_words_end) {
-            _CSTD memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
-        }
-
-        return true;
+        return _Impl<_Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
     } else
 #endif // !defined(_M_ARM64EC)
     {
-        return __std_bitset_from_string_fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+        return _Fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
     }
 }
 
 __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const wchar_t* _Src, size_t _Size_bytes,
     size_t _Size_bits, size_t _Size_chars, wchar_t _Elem0, wchar_t _Elem1) noexcept {
+    using namespace __std_bitset_from_string;
+
 #ifndef _M_ARM64EC
     if (_Use_avx2() && _Size_bits >= 256) {
         _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
-        const __m256i _Dx0 = _mm256_set1_epi16(_Elem0);
-        const __m256i _Dx1 = _mm256_set1_epi16(_Elem1);
-
-        uint16_t* _Dst_words = reinterpret_cast<uint16_t*>(_Dest);
-        void* _Dst_words_end = _Dst_words;
-        _Advance_bytes(_Dst_words_end, _Size_bytes);
-
-        auto _Out = [&_Dst_words](const __m256i _Ex1) {
-            const __m256i _Shuf = _mm256_set_epi8( //
-                +0, +2, +4, +6, +8, 10, 12, 14, -1, -1, -1, -1, -1, -1, -1, -1, //
-                -1, -1, -1, -1, -1, -1, -1, -1, +0, +2, +4, +6, +8, 10, 12, 14);
-
-            const __m256i _Ex2 = _mm256_shuffle_epi8(_Ex1, _Shuf);
-            const auto _Tmp    = static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2));
-            *_Dst_words        = static_cast<uint16_t>(_rotl(_Tmp, 8));
-            ++_Dst_words;
-        };
-
-        if (_Size_chars <= _Size_bits) {
-            if (!__std_bitset_from_string_2_avx_loop(_Src, _Src + _Size_chars, _Dx0, _Dx1, _Out)) {
-                return false;
-            }
-        } else {
-            const auto _Discard = [](__m256i) {};
-
-            if (!__std_bitset_from_string_2_avx_loop(_Src, _Src + _Size_bits, _Dx0, _Dx1, _Out)) {
-                return false;
-            }
-
-            if (!__std_bitset_from_string_2_avx_loop(_Src + _Size_bits, _Src + _Size_chars, _Dx0, _Dx1, _Discard)) {
-                return false;
-            }
-        }
-
-        if (_Dst_words != _Dst_words_end) {
-            _CSTD memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
-        }
-
-        return true;
+        return _Impl<_Traits_2_avx>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
     } else if (_Use_sse42()) {
-        const __m128i _Dx0 = _mm_set1_epi16(_Elem0);
-        const __m128i _Dx1 = _mm_set1_epi16(_Elem1);
-
-        uint8_t* _Dst_words  = reinterpret_cast<uint8_t*>(_Dest);
-        void* _Dst_words_end = _Dst_words;
-        _Advance_bytes(_Dst_words_end, _Size_bytes);
-
-        auto _Out = [&_Dst_words](const __m128i _Ex1) {
-            const __m128i _Shuf = _mm_set_epi8(-1, -1, -1, -1, -1, -1, -1, -1, 0, 2, 4, 6, 8, 10, 12, 14);
-            const __m128i _Ex2  = _mm_shuffle_epi8(_Ex1, _Shuf);
-            *_Dst_words         = static_cast<uint8_t>(_mm_movemask_epi8(_Ex2));
-            ++_Dst_words;
-        };
-
-        if (_Size_chars <= _Size_bits) {
-            if (!__std_bitset_from_string_2_sse_loop(_Src, _Src + _Size_chars, _Dx0, _Dx1, _Out)) {
-                return false;
-            }
-        } else {
-            const auto _Discard = [](__m128i) {};
-
-            if (!__std_bitset_from_string_2_sse_loop(_Src, _Src + _Size_bits, _Dx0, _Dx1, _Out)) {
-                return false;
-            }
-
-            if (!__std_bitset_from_string_2_sse_loop(_Src + _Size_bits, _Src + _Size_chars, _Dx0, _Dx1, _Discard)) {
-                return false;
-            }
-        }
-
-        if (_Dst_words != _Dst_words_end) {
-            _CSTD memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
-        }
-
-        return true;
-    }
+        return _Impl<_Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+    } else
 #endif // !defined(_M_ARM64EC)
-    else {
-        return __std_bitset_from_string_fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+    {
+        return _Fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
     }
 }
 
