@@ -65,29 +65,29 @@ namespace {
     }
 } // namespace
 
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 8, char>);
 BENCHMARK(BM_bitset_from_string<length_type::char_count, 15, char>);
+BENCHMARK(BM_bitset_from_string<length_type::char_count, 16, char>);
 BENCHMARK(BM_bitset_from_string<length_type::char_count, 36, char>);
 BENCHMARK(BM_bitset_from_string<length_type::char_count, 64, char>);
 BENCHMARK(BM_bitset_from_string<length_type::char_count, 512, char>);
 BENCHMARK(BM_bitset_from_string<length_type::char_count, 2048, char>);
 
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 8, wchar_t>);
 BENCHMARK(BM_bitset_from_string<length_type::char_count, 15, wchar_t>);
+BENCHMARK(BM_bitset_from_string<length_type::char_count, 16, wchar_t>);
 BENCHMARK(BM_bitset_from_string<length_type::char_count, 36, wchar_t>);
 BENCHMARK(BM_bitset_from_string<length_type::char_count, 64, wchar_t>);
 BENCHMARK(BM_bitset_from_string<length_type::char_count, 512, wchar_t>);
 BENCHMARK(BM_bitset_from_string<length_type::char_count, 2048, wchar_t>);
 
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 8, char>);
 BENCHMARK(BM_bitset_from_string<length_type::null_term, 15, char>);
+BENCHMARK(BM_bitset_from_string<length_type::null_term, 16, char>);
 BENCHMARK(BM_bitset_from_string<length_type::null_term, 36, char>);
 BENCHMARK(BM_bitset_from_string<length_type::null_term, 64, char>);
 BENCHMARK(BM_bitset_from_string<length_type::null_term, 512, char>);
 BENCHMARK(BM_bitset_from_string<length_type::null_term, 2048, char>);
 
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 8, wchar_t>);
 BENCHMARK(BM_bitset_from_string<length_type::null_term, 15, wchar_t>);
+BENCHMARK(BM_bitset_from_string<length_type::null_term, 16, wchar_t>);
 BENCHMARK(BM_bitset_from_string<length_type::null_term, 36, wchar_t>);
 BENCHMARK(BM_bitset_from_string<length_type::null_term, 64, wchar_t>);
 BENCHMARK(BM_bitset_from_string<length_type::null_term, 512, wchar_t>);
