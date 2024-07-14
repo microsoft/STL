@@ -3890,7 +3890,7 @@ namespace {
                 return false;
             }
 
-            // Trim tail (may be natural tail, or too short string, or both)
+            // Trim tail (may be padding tail, or too short string, or both)
             if (_Dst_words != _Dst_words_end) {
                 _CSTD memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
             }
