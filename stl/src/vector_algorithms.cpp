@@ -3662,37 +3662,6 @@ namespace {
 
     namespace __std_bitset_from_string {
 
-        template <class _Elem>
-        bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
-            const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
-            const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
-            size_t _Size_convert   = _Size_chars;
-
-            if (_Size_chars > _Size_bits) {
-                _Size_convert = _Size_bits;
-
-                for (size_t _Ix = _Size_bits, _Mx = _Size_chars; _Ix < _Mx; ++_Ix) {
-                    if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
-                        return false;
-                    }
-                }
-            }
-
-            _CSTD memset(_Dest, 0, _Size_bytes);
-
-            for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
-                const _Elem _Cur = _Src[_Size_convert - _Ix - 1];
-
-                if (_Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
-                    return false;
-                }
-
-                _Dest_bytes[_Ix >> 3] |= static_cast<uint8_t>(_Cur == _Elem1) << (_Ix & 0x7);
-            }
-
-            return true;
-        }
-
         struct _Traits_1_avx {
 #ifndef _M_ARM64EC
             using _Vec  = __m256i;
@@ -3929,6 +3898,37 @@ namespace {
             return true;
         }
 #endif // !defined(_M_ARM64EC)
+
+        template <class _Elem>
+        bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
+            const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
+            const auto _Dest_bytes = static_cast<uint8_t*>(_Dest);
+            size_t _Size_convert   = _Size_chars;
+
+            if (_Size_chars > _Size_bits) {
+                _Size_convert = _Size_bits;
+
+                for (size_t _Ix = _Size_bits, _Mx = _Size_chars; _Ix < _Mx; ++_Ix) {
+                    if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
+                        return false;
+                    }
+                }
+            }
+
+            _CSTD memset(_Dest, 0, _Size_bytes);
+
+            for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
+                const _Elem _Cur = _Src[_Size_convert - _Ix - 1];
+
+                if (_Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
+                    return false;
+                }
+
+                _Dest_bytes[_Ix >> 3] |= static_cast<uint8_t>(_Cur == _Elem1) << (_Ix & 0x7);
+            }
+
+            return true;
+        }
 
         template <class _Avx, class _Sse, class _Elem>
         bool _Dispatch(void* _Dest, const _Elem* _Src, size_t _Size_bytes, size_t _Size_bits, size_t _Size_chars,
