@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <array>
 #include <benchmark/benchmark.h>
 #include <bitset>
 #include <climits>
@@ -12,47 +13,43 @@
 using namespace std;
 
 namespace {
-    template <typename charT>
-    std::basic_string<charT> random_digits_init(size_t min_length, const size_t n) {
+    template <typename charT, size_t Min_length, size_t N>
+    const auto random_digits_init() {
         mt19937_64 rnd{};
         uniform_int_distribution<> dis('0', '1');
         std::basic_string<charT> str;
 
-        const size_t number_of_bitsets = (min_length + n - 1) / n;
-        if (number_of_bitsets == 0) {
-            std::abort();
-        }
-        const size_t actual_size = number_of_bitsets * n + number_of_bitsets - 1;
+        constexpr size_t number_of_bitsets = (Min_length + N - 1) / N;
+        static_assert(number_of_bitsets != 0);
 
-        str.resize_and_overwrite(actual_size, [&dis, &rnd, n](charT* dest, size_t len) {
-            const charT* end = dest + len;
-            for (;;) {
-                for (size_t i = 0; i != n; ++i, ++dest) {
-                    *dest = static_cast<charT>(dis(rnd));
-                }
+        constexpr size_t actual_size = number_of_bitsets * (N + 1); // +1 for \0
 
-                if (dest == end) {
-                    break;
-                }
+        std::array<charT, actual_size> result;
 
-                *dest = charT{'\0'};
-                ++dest;
+        for (auto dest = result.begin(); dest != result.end();) {
+            for (size_t i = 0; i != N; ++i, ++dest) {
+                *dest = static_cast<charT>(dis(rnd));
             }
 
-            return len;
-        });
-        return str;
+            *dest = charT{'\0'};
+            ++dest;
+        }
+
+        return result;
     }
 
     enum class length_type : bool { char_count, null_term };
 
+    template <size_t N, typename charT>
+    const auto random_digits = random_digits_init<charT, 2048, N>();
+
     template <length_type Length, size_t N, class charT>
     void BM_bitset_from_string(benchmark::State& state) {
-        const auto bit_string = random_digits_init<charT>(2048, N);
+        const auto& bit_string = random_digits<N, charT>;
         for (auto _ : state) {
             benchmark::DoNotOptimize(bit_string);
-            const charT* data = bit_string.c_str();
-            for (size_t pos = 0, max = bit_string.size(); pos < max; pos += N + 1) {
+            const charT* const data = bit_string.data();
+            for (size_t pos = 0, max = bit_string.size(); pos != max; pos += N + 1) {
                 if constexpr (Length == length_type::char_count) {
                     bitset<N> bs(data + pos, N);
                     benchmark::DoNotOptimize(bs);
