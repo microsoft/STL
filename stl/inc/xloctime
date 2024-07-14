@@ -651,6 +651,17 @@ protected:
     __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
+constexpr bool _Is_valid_fmt_specifier(const char _Specifier) {
+    constexpr char _Valid_specifiers[] = "aAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ";
+    for (const char _Valid_specifier : _Valid_specifiers) {
+        if (_Valid_specifier == _Specifier) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 _EXPORT_STD extern "C++" template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put : public locale::facet { // facet for converting encoded times to text
 public:
@@ -687,7 +698,19 @@ public:
                     _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
                 }
 
-                _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                if (_Specifier == '%' && _Modifier == '\0') {
+                    // if the specifier is percent and no modifier is set, just append it
+                    *_Dest++ = _Percent;
+                } else if (!_Is_valid_fmt_specifier(_Specifier)) {
+                    // no valid specifier, directly copy as literal elements
+                    *_Dest++ = _Percent;
+                    if (_Modifier != '\0') {
+                        *_Dest++ = _Modifier;
+                    }
+                    *_Dest++ = _Specifier;
+                } else {
+                    _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                }
             }
         }
 
@@ -811,7 +834,19 @@ public:
                     _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
                 }
 
-                _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                if (_Specifier == '%' && _Modifier == '\0') {
+                    // if the specifier is percent and no modifier is set, just append it
+                    *_Dest++ = _Percent;
+                } else if (!_Is_valid_fmt_specifier(_Specifier)) {
+                    // no valid specifier, directly copy as literal elements
+                    *_Dest++ = _Percent;
+                    *_Dest++ = _Raw;
+                    if (_Modifier != '\0') {
+                        *_Dest++ = *_Fmtfirst;
+                    }
+                } else {
+                    _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                }
             }
         }
 
@@ -943,7 +978,19 @@ public:
                     _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
                 }
 
-                _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                if (_Specifier == '%' && _Modifier == '\0') {
+                    // if the specifier is percent and no modifier is set, just append it
+                    *_Dest++ = _Percent;
+                } else if (!_Is_valid_fmt_specifier(_Specifier)) {
+                    // no valid specifier, directly copy as literal elements
+                    *_Dest++ = _Percent;
+                    if (_Modifier != '\0') {
+                        *_Dest++ = _Modifier;
+                    }
+                    *_Dest++ = _Specifier;
+                } else {
+                    _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                }
             }
         }
 

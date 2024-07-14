@@ -110,6 +110,7 @@ void test_invalid_argument();
 void test_buffer_resizing();
 void test_gh_2618();
 void test_gh_2848();
+void test_gh_4820();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -157,6 +158,7 @@ int main() {
     test_buffer_resizing();
     test_gh_2618();
     test_gh_2848();
+    test_gh_4820();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -792,16 +794,17 @@ void test_invalid_argument() {
     time_t t = time(nullptr);
     tm currentTime;
     localtime_s(&currentTime, &t);
+    currentTime.tm_hour = 25; // set invalid hour
 
     {
         wstringstream wss;
-        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M-%s");
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
         assert(wss.rdstate() == ios_base::badbit);
     }
 
     {
         stringstream ss;
-        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M-%s");
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
         assert(ss.rdstate() == ios_base::badbit);
     }
 #endif // _M_CEE_PURE
@@ -903,5 +906,26 @@ void test_gh_2848() {
         const istreambuf_iterator<wchar_t> last{};
         tmget.get(first, last, iss, err, &when, fmt.data(), fmt.data() + fmt.size());
         assert(err == (ios_base::eofbit | ios_base::failbit));
+    }
+}
+
+void test_gh_4820() {
+    // GH-4820 <iomanip>: std::put_time should copy unknown conversion specifiers instead of crash
+    time_t t = time(nullptr);
+    tm currentTime;
+    localtime_s(&currentTime, &t);
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Ei%!%E%J%P");
+        assert(wss.rdstate() == ios_base::goodbit);
+        assert(wss.str() == L"%Ei%!%E%J%P");
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Ei%!%E%J%P");
+        assert(ss.rdstate() == ios_base::goodbit);
+        assert(ss.str() == "%Ei%!%E%J%P");
     }
 }
