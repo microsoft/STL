@@ -3671,14 +3671,13 @@ namespace {
                 return _mm256_set1_epi8(_Val);
             }
 
-            static void _Out(uint32_t*& _Dst_words, const __m256i _Ex1) noexcept {
+            static uint32_t _To_bits(const __m256i _Ex1) noexcept {
                 const __m256i _Shuf = _mm256_set_epi8( //
                     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
                     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
 
                 const __m256i _Ex2 = _mm256_shuffle_epi8(_Ex1, _Shuf);
-                *_Dst_words        = _rotl(static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2)), 16);
-                ++_Dst_words;
+                return _rotl(static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2)), 16);
             }
 
             template <class _OutFn>
@@ -3723,11 +3722,10 @@ namespace {
                 return _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
             }
 
-            static void _Out(uint16_t*& _Dst_words, const __m128i _Ex1) noexcept {
+            static uint16_t _To_bits(const __m128i _Ex1) noexcept {
                 const __m128i _Shuf = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
                 const __m128i _Ex2  = _mm_shuffle_epi8(_Ex1, _Shuf);
-                *_Dst_words         = static_cast<uint16_t>(_mm_movemask_epi8(_Ex2));
-                ++_Dst_words;
+                return static_cast<uint16_t>(_mm_movemask_epi8(_Ex2));
             }
 
             template <class _OutFn>
@@ -3772,15 +3770,13 @@ namespace {
                 return _mm256_set1_epi16(_Val);
             }
 
-            static void _Out(uint16_t*& _Dst_words, const __m256i _Ex1) noexcept {
+            static uint16_t _To_bits(const __m256i _Ex1) noexcept {
                 const __m256i _Shuf = _mm256_set_epi8( //
                     +0, +2, +4, +6, +8, 10, 12, 14, -1, -1, -1, -1, -1, -1, -1, -1, //
                     -1, -1, -1, -1, -1, -1, -1, -1, +0, +2, +4, +6, +8, 10, 12, 14);
 
                 const __m256i _Ex2 = _mm256_shuffle_epi8(_Ex1, _Shuf);
-                const auto _Tmp    = static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2));
-                *_Dst_words        = static_cast<uint16_t>(_rotl(_Tmp, 8));
-                ++_Dst_words;
+                return static_cast<uint16_t>(_rotl(static_cast<uint32_t>(_mm256_movemask_epi8(_Ex2)), 8));
             }
 
             template <class _OutFn>
@@ -3825,11 +3821,10 @@ namespace {
                 return _mm_set1_epi16(_Val);
             }
 
-            static void _Out(uint8_t*& _Dst_words, const __m128i _Ex1) noexcept {
+            static uint8_t _To_bits(const __m128i _Ex1) noexcept {
                 const __m128i _Shuf = _mm_set_epi8(-1, -1, -1, -1, -1, -1, -1, -1, 0, 2, 4, 6, 8, 10, 12, 14);
                 const __m128i _Ex2  = _mm_shuffle_epi8(_Ex1, _Shuf);
-                *_Dst_words         = static_cast<uint8_t>(_mm_movemask_epi8(_Ex2));
-                ++_Dst_words;
+                return static_cast<uint8_t>(_mm_movemask_epi8(_Ex2));
             }
 
             template <class _OutFn>
@@ -3876,7 +3871,11 @@ namespace {
             void* _Dst_words_end = _Dst_words;
             _Advance_bytes(_Dst_words_end, _Size_bytes);
 
-            auto _Out                  = [&_Dst_words](const _Traits::_Vec _Ex1) { _Traits::_Out(_Dst_words, _Ex1); };
+            auto _Out = [&_Dst_words](const _Traits::_Vec _Ex1) {
+                *_Dst_words = _Traits::_To_bits(_Ex1);
+                ++_Dst_words;
+            };
+
             const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
 
             // Convert characters to bits
