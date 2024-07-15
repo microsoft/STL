@@ -28,7 +28,7 @@ namespace gh4108 {
         friend RRef&& iter_move(const I&);
     };
 
-    // <algorithm>: ranges::inplace_merge accidentally constructed remove_cvref_t<iter_rvalue_reference_t <I>>
+    // GH-4108 <algorithm>: ranges::inplace_merge accidentally constructed remove_cvref_t<iter_rvalue_reference_t <I>>
     void test_gh_4108() {
         ranges::inplace_merge(I{}, I{}, I{});
     }
@@ -55,7 +55,7 @@ namespace gh4102 {
         bool operator==(const I&) const;
     };
 
-    // <algorithm>: ranges::minmax accidentally constructed remove_cvref_t<iter_reference_t<I>>
+    // GH-4102 <algorithm>: ranges::minmax accidentally constructed remove_cvref_t<iter_reference_t<I>>
     void test_gh_4102() {
         [[maybe_unused]] auto max = ranges::minmax(ranges::subrange<I, I>{});
     }
