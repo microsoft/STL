@@ -100,7 +100,7 @@ void test_operator_new(typename Gen::promise_type& p, const Alloc2& alloc2 = {})
     }
 }
 
-template <class Ref, class V = void, class Alloc = void>
+template <class Ref, class V, class Alloc, bool TestingIncomplete>
 void test_one() {
     using Gen     = generator<Ref, V, Alloc>;
     using Promise = Gen::promise_type;
@@ -108,6 +108,10 @@ void test_one() {
     static_assert(semiregular<Promise>);
 
     Promise p;
+
+    // Test that operator& for promise_type resolves to the built-in version and doesn't involve ADL
+    static_assert(same_as<decltype(&p), Promise*>);
+    assert(&p == addressof(p));
 
     // Test 'get_return_object'
     static_assert(same_as<decltype(p.get_return_object()), Gen>);
@@ -154,7 +158,8 @@ void test_one() {
     }
 
     using ValTy = conditional_t<is_void_v<V>, remove_cvref_t<Ref>, V>;
-    if constexpr (convertible_to<ValTy&, Yielded>) { // Test 'yield_value(ranges::elements_of<range>)'
+    if constexpr (!TestingIncomplete && convertible_to<ValTy&, Yielded>) {
+        // Test 'yield_value(ranges::elements_of<range>)'
         test_yield_elements_of_range<Gen, vector<ValTy>>(p);
         test_yield_elements_of_range<Gen, list<ValTy>>(p);
         test_yield_elements_of_range<Gen, forward_list<ValTy>>(p);
@@ -186,31 +191,40 @@ void test_one() {
     }
 }
 
-template <class Ref, class V = void>
+template <class Ref, class V, bool TestingIncomplete = false>
 void test_with_allocator() {
-    test_one<Ref, V>();
-    test_one<Ref, V, allocator<void>>();
-    test_one<Ref, V, pmr::polymorphic_allocator<void>>();
-    test_one<Ref, V, StatelessAlloc<void>>();
-    test_one<Ref, V, StatelessAlloc<void, false_type>>();
-    test_one<Ref, V, StatelessAlloc<void, true_type, int>>();
-    test_one<Ref, V, StatelessAlloc<void, false_type, int>>();
+    test_one<Ref, V, void, TestingIncomplete>();
+    test_one<Ref, V, allocator<void>, TestingIncomplete>();
+    test_one<Ref, V, pmr::polymorphic_allocator<void>, TestingIncomplete>();
+    test_one<Ref, V, StatelessAlloc<void>, TestingIncomplete>();
+    test_one<Ref, V, StatelessAlloc<void, false_type>, TestingIncomplete>();
+    test_one<Ref, V, StatelessAlloc<void, true_type, int>, TestingIncomplete>();
+    test_one<Ref, V, StatelessAlloc<void, false_type, int>, TestingIncomplete>();
 }
 
-template <class T>
+template <class T, bool TestingIncomplete = false>
 void test_with_type() {
-    test_with_allocator<T>();
-    test_with_allocator<T&>();
-    test_with_allocator<const T&>();
-    test_with_allocator<T&&>();
-    test_with_allocator<const T&&>();
+    test_with_allocator<T, void, TestingIncomplete>();
+    test_with_allocator<T&, void, TestingIncomplete>();
+    test_with_allocator<const T&, void, TestingIncomplete>();
+    test_with_allocator<T&&, void, TestingIncomplete>();
+    test_with_allocator<const T&&, void, TestingIncomplete>();
 
-    test_with_allocator<Proxy<T>, T>();
-    test_with_allocator<Proxy<T>&, T>();
-    test_with_allocator<const Proxy<T>&, T>();
-    test_with_allocator<Proxy<T>&&, T>();
-    test_with_allocator<const Proxy<T>&&, T>();
+    test_with_allocator<Proxy<T>, T, TestingIncomplete>();
+    test_with_allocator<Proxy<T>&, T, TestingIncomplete>();
+    test_with_allocator<const Proxy<T>&, T, TestingIncomplete>();
+    test_with_allocator<Proxy<T>&&, T, TestingIncomplete>();
+    test_with_allocator<const Proxy<T>&&, T, TestingIncomplete>();
 }
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+template <class T>
+struct Holder {
+    T t;
+};
+
+struct Incomplete;
+#endif // ^^^ no workaround ^^^
 
 int main() {
     test_with_type<int>();
@@ -219,4 +233,7 @@ int main() {
     test_with_type<MoveOnly>();
     test_with_type<Immovable>();
     test_with_allocator<vector<bool>::reference, bool>();
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    test_with_type<Holder<Incomplete>*, true>();
+#endif // ^^^ no workaround ^^^
 }
