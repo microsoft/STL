@@ -1707,9 +1707,9 @@ public:
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
 
-#if _ITERATOR_DEBUG_LEVEL == 2
+#if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _Mylast, "vector empty before pop");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+#endif // _CONTAINER_DEBUG_LEVEL > 0
 
         _Orphan_range(_Mylast - 1, _Mylast);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
