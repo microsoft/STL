@@ -1794,6 +1794,10 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_unreachable                       202202L
 #endif // _HAS_CXX23
 
+#if _HAS_CXX26
+#define __cpp_lib_inplace_vector                    202406L
+#endif  // _HAS_CXX26
+
 // macros with language mode sensitivity
 #if _HAS_CXX20
 #define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr

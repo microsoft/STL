@@ -1,0 +1,1112 @@
+// inplace_vector standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#ifndef _INPLACE_VECTOR_
+#define _INPLACE_VECTOR_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#if !_HAS_CXX23 // TODO: Change to _HAS_CXX26
+_EMIT_STL_WARNING(STL4038, "The contents of <inplace_vector> are available only with C++26 or later.");
+#else // ^^^ !_HAS_CXX26 / _HAS_CXX26 vvv
+#include <memory> // TODO: Required for uninitialized range ops without allocator parameter
+#include <xmemory>
+
+_STD_BEGIN
+
+template <class _Ty, size_t _N>
+struct _Inplace_vector_data {
+    size_t _My_size;
+    union {
+        _Nontrivial_dummy_type _Dummy;
+        _Ty _My_data[_N];
+    };
+
+    constexpr _Inplace_vector_data() : _My_size(0) {}
+
+    constexpr ~_Inplace_vector_data() noexcept {
+        _STD _Destroy_range(_My_data, _My_data + _My_size);
+    }
+
+    ~_Inplace_vector_data()
+        requires is_trivially_destructible_v<_Ty>
+    = default;
+
+    constexpr void _Set_size(const size_t _Size) {
+        _My_size = _Size;
+    }
+};
+
+template <class _Ty>
+struct _Inplace_vector_data<_Ty, 0> {
+    static constexpr size_t _My_size = 0;
+    static constexpr _Ty* _My_data   = nullptr;
+
+    constexpr void _Set_size(size_t) {}
+};
+
+template <class _Ty>
+class _Inplace_vector_iterator {
+    template <class>
+    friend class _Inplace_vector_iterator;
+
+public:
+    using iterator_concept  = contiguous_iterator_tag;
+    using iterator_category = random_access_iterator_tag;
+    using value_type        = remove_cv_t<_Ty>;
+    using difference_type   = ptrdiff_t;
+    using pointer           = _Ty*;
+    using reference         = _Ty&;
+
+#if _ITERATOR_DEBUG_LEVEL == 0
+    constexpr _Inplace_vector_iterator() noexcept : _Ptr() {}
+
+    constexpr explicit _Inplace_vector_iterator(_Myvec* _Vec, size_t _Off = 0) noexcept : _Ptr(_Vec->data() + _Off) {}
+
+    _NODISCARD constexpr reference operator*() const noexcept {
+        return *_Ptr;
+    }
+
+    _NODISCARD constexpr pointer operator->() const noexcept {
+        return _Ptr;
+    }
+
+    constexpr _Inplace_vector_iterator& operator++() noexcept {
+        ++_Ptr;
+        return *this;
+    }
+
+    constexpr _Inplace_vector_iterator operator++(int) noexcept {
+        _Inplace_vector_iterator _Tmp = *this;
+        ++_Ptr;
+        return _Tmp;
+    }
+
+    constexpr _Inplace_vector_iterator& operator--() noexcept {
+        --_Ptr;
+        return *this;
+    }
+
+    constexpr _Inplace_vector_iterator operator--(int) noexcept {
+        _Inplace_vector_iterator _Tmp = *this;
+        --_Ptr;
+        return _Tmp;
+    }
+
+    constexpr _Inplace_vector_iterator& operator+=(const ptrdiff_t _Off) noexcept {
+        _Ptr += _Off;
+        return *this;
+    }
+
+    constexpr _Inplace_vector_iterator& operator-=(const ptrdiff_t _Off) noexcept {
+        _Ptr -= _Off;
+        return *this;
+    }
+
+    _NODISCARD constexpr ptrdiff_t operator-(const _Inplace_vector_iterator& _Right) const noexcept {
+        return _Ptr - _Right._Ptr;
+    }
+
+    _NODISCARD constexpr reference operator[](const ptrdiff_t _Off) const noexcept {
+        return _Ptr[_Off];
+    }
+
+    _NODISCARD constexpr bool operator==(const _Inplace_vector_iterator& _Right) const noexcept {
+        return _Ptr == _Right._Ptr;
+    }
+
+    _NODISCARD constexpr strong_ordering operator<=>(const _Inplace_vector_iterator& _Right) const noexcept {
+        return _Ptr <=> _Right._Ptr;
+    }
+
+    using _Prevent_inheriting_unwrap = _Inplace_vector_iterator;
+
+    _NODISCARD constexpr pointer _Unwrapped() const noexcept {
+        return _Ptr;
+    }
+
+    static constexpr bool _Unwrap_when_unverified = true;
+
+    constexpr void _Seek_to(pointer _It) noexcept {
+        _Ptr = _It;
+    }
+
+private:
+    pointer _Ptr;
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
+    constexpr _Inplace_vector_iterator() noexcept : _Ptr(), _Idx(0), _Max(0) {}
+
+    template <class _Uty>
+    constexpr _Inplace_vector_iterator(const _Inplace_vector_iterator<_Uty>& _It)
+        requires is_const_v<_Ty> && is_same_v<_Uty, value_type>
+        : _Ptr(_It._Ptr), _Idx(_It._Idx), _Max(_It._Max) {}
+
+    template <size_t _N>
+    constexpr explicit _Inplace_vector_iterator(
+        _Copy_cv<_Ty, _Inplace_vector_data<value_type, _N>>* _Vec, size_t _Off = 0) noexcept
+        : _Ptr(_Vec->_My_data), _Idx(_Off), _Max(&_Vec->_My_size) {}
+
+    _NODISCARD constexpr reference operator*() const noexcept {
+        return *operator->();
+    }
+
+    _NODISCARD constexpr pointer operator->() const noexcept {
+        _STL_VERIFY(_Ptr, "cannot dereference value-initialized inplace_vector iterator");
+        _STL_VERIFY(_Idx < *_Max, "cannot dereference out of range inplace_vector iterator");
+        return _Ptr + _Idx;
+    }
+
+    constexpr _Inplace_vector_iterator& operator++() noexcept {
+        _STL_VERIFY(_Ptr, "cannot increment value-initialized inplace_vector iterator");
+        _STL_VERIFY(_Idx < *_Max, "cannot increment inplace_vector iterator past end");
+        ++_Idx;
+        return *this;
+    }
+
+    constexpr _Inplace_vector_iterator operator++(int) noexcept {
+        _Inplace_vector_iterator _Tmp = *this;
+        ++*this;
+        return _Tmp;
+    }
+
+    constexpr _Inplace_vector_iterator& operator--() noexcept {
+        _STL_VERIFY(_Ptr, "cannot decrement value-initialized inplace_vector iterator");
+        _STL_VERIFY(_Idx != 0, "cannot decrement inplace_vector iterator before begin");
+        --_Idx;
+        return *this;
+    }
+
+    constexpr _Inplace_vector_iterator operator--(int) noexcept {
+        _Inplace_vector_iterator _Tmp = *this;
+        --*this;
+        return _Tmp;
+    }
+
+    constexpr void _Verify_offset(const ptrdiff_t _Off) const noexcept {
+        if (_Off != 0) {
+            _STL_VERIFY(_Ptr, "cannot seek value-initialized inplace_vector iterator");
+        }
+
+        if (_Off < 0) {
+            _STL_VERIFY(
+                _Idx >= size_t{0} - static_cast<size_t>(_Off), "cannot seek inplace_vector iterator before begin");
+        }
+
+        if (_Off > 0) {
+            _STL_VERIFY(*_Max - _Idx >= static_cast<size_t>(_Off), "cannot seek inplace_vector iterator after end");
+        }
+    }
+
+    constexpr _Inplace_vector_iterator& operator+=(const ptrdiff_t _Off) noexcept {
+        _Verify_offset(_Off);
+        _Idx += static_cast<size_t>(_Off);
+        return *this;
+    }
+
+    constexpr _Inplace_vector_iterator& operator-=(const ptrdiff_t _Off) noexcept {
+        return *this += -_Off;
+    }
+
+    _NODISCARD friend constexpr ptrdiff_t operator-(
+        const _Inplace_vector_iterator& _Left, const _Inplace_vector_iterator& _Right) noexcept {
+        _Left._Compat(_Right);
+        return static_cast<ptrdiff_t>(_Left._Idx - _Right._Idx);
+    }
+
+    _NODISCARD constexpr reference operator[](const ptrdiff_t _Off) const noexcept {
+        return *(*this + _Off);
+    }
+
+    _NODISCARD constexpr bool operator==(const _Inplace_vector_iterator& _Right) const noexcept {
+        _Compat(_Right);
+        return _Idx == _Right._Idx;
+    }
+
+    _NODISCARD constexpr strong_ordering operator<=>(const _Inplace_vector_iterator& _Right) const noexcept {
+        _Compat(_Right);
+        return _Idx <=> _Right._Idx;
+    }
+
+    _NODISCARD constexpr _Ty* _Getptr() const noexcept {
+        return _Ptr;
+    }
+
+    using _Prevent_inheriting_unwrap = _Inplace_vector_iterator;
+
+    constexpr void _Compat(const _Inplace_vector_iterator& _Right) const noexcept { // test for compatible iterator pair
+        _STL_VERIFY(_Ptr == _Right._Ptr, "inplace_vector iterators incompatible");
+    }
+
+    _NODISCARD constexpr pointer _Unwrapped() const noexcept {
+        return _Ptr + _Idx;
+    }
+
+    constexpr void _Verify_with(const _Inplace_vector_iterator& _Last) const noexcept {
+        // note _Compat check inside operator<=
+        _STL_VERIFY(*this <= _Last, "inplace_vector iterator range transposed");
+    }
+
+    constexpr void _Seek_to(pointer _It) noexcept {
+        _Idx = static_cast<size_t>(_It - _Ptr);
+    }
+
+private:
+    _Ty* _Ptr;
+    size_t _Idx;
+    const size_t* _Max;
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
+
+public:
+    _NODISCARD constexpr _Inplace_vector_iterator operator+(const ptrdiff_t _Off) const noexcept {
+        _Inplace_vector_iterator _Tmp = *this;
+        _Tmp += _Off;
+        return _Tmp;
+    }
+
+    _NODISCARD constexpr _Inplace_vector_iterator operator-(const ptrdiff_t _Off) const noexcept {
+        _Inplace_vector_iterator _Tmp = *this;
+        _Tmp -= _Off;
+        return _Tmp;
+    }
+
+    _NODISCARD friend constexpr _Inplace_vector_iterator operator+(
+        const ptrdiff_t _Off, _Inplace_vector_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+};
+
+template <class _Ty>
+struct pointer_traits<_Inplace_vector_iterator<_Ty>> {
+    using pointer         = _Inplace_vector_iterator<_Ty>;
+    using element_type    = _Ty;
+    using difference_type = pointer::difference_type;
+
+    _NODISCARD static constexpr _Ty* to_address(const pointer _Iter) noexcept {
+        return _Iter._Unwrapped();
+    }
+};
+
+_EXPORT_STD template <class _Ty, size_t _N>
+class inplace_vector : _Inplace_vector_data<_Ty, _N> {
+public:
+    static_assert(is_object_v<_Ty>, "The C++ Standard forbids containers of non-object types "
+                                    "because of [container.requirements].");
+
+    using value_type      = _Ty;
+    using size_type       = size_t;
+    using difference_type = ptrdiff_t;
+    using pointer         = _Ty*;
+    using const_pointer   = const _Ty*;
+    using reference       = _Ty&;
+    using const_reference = const _Ty&;
+
+    using iterator               = _Inplace_vector_iterator<_Ty>;
+    using const_iterator         = _Inplace_vector_iterator<const _Ty>;
+    using reverse_iterator       = _STD reverse_iterator<iterator>;
+    using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+
+    constexpr inplace_vector() noexcept {}
+
+    constexpr explicit inplace_vector(const size_type _Count) {
+        resize(_Count);
+    }
+
+    constexpr inplace_vector(const size_type _Count, const _Ty& _Val) {
+        _Resize(_Count, _Val);
+    }
+
+    template <class _Iter>
+        requires _Is_iterator_v<_Iter>
+    constexpr inplace_vector(_Iter _First, _Iter _Last) {
+        insert(cend(), _STD move(_First), _STD move(_Last));
+    }
+
+    template <_Container_compatible_range<_Ty> _Rng>
+    constexpr inplace_vector(from_range_t, _Rng&& _Range) {
+        insert_range(cend(), _STD forward<_Rng>(_Range));
+    }
+
+    constexpr inplace_vector(const inplace_vector& _Right) {
+        _STD uninitialized_copy_n(_Right._My_data, _Right._My_size, this->_My_data);
+        this->_Set_size(_Right._My_size);
+    }
+
+    inplace_vector(const inplace_vector&)
+        requires is_trivially_copyable_v<_Ty>
+    = default;
+
+    constexpr inplace_vector(inplace_vector&& _Right) noexcept(_N == 0 || is_nothrow_move_constructible_v<_Ty>) {
+        _STD uninitialized_move_n(_Right._My_data, _Right._My_size, this->_My_data);
+        this->_Set_size(_Right._My_size);
+    }
+
+    inplace_vector(inplace_vector&&)
+        requires is_trivially_copyable_v<_Ty>
+    = default;
+
+    constexpr inplace_vector(const initializer_list<_Ty> _Ilist) {
+        insert(cend(), _Ilist.begin(), _Ilist.end());
+    }
+
+    constexpr inplace_vector& operator=(const inplace_vector& _Right) {
+        const auto _Newsize = _Right._My_Size;
+        const auto _Minsize = (_STD min)(this->_My_size, _Newsize);
+        _STD copy_n(_Right._My_data, _Minsize, this->_My_data);
+
+        if (this->_My_size > _Newsize) {
+            _STD _Destroy_range(this->_My_data + _Newsize, this->_My_data + this->_My_size);
+        } else if (this->_My_size < _Newsize) {
+            _STD uninitialized_copy_n(
+                _Right._My_data + _Minsize, _Newsize - this->_My_size, this->_My_data + this->_My_size);
+        }
+        this->_Set_size(_Newsize);
+
+        return *this;
+    }
+
+    inplace_vector& operator=(const inplace_vector&)
+        requires is_trivially_copyable_v<_Ty>
+    = default;
+
+    constexpr inplace_vector& operator=(inplace_vector&& _Right) {
+        const auto _Newsize = _Right._My_Size;
+        const auto _Minsize = (_STD min)(this->_My_size, _Newsize);
+
+        for (size_type _Idx = 0; _Idx < _Minsize; ++_Idx) {
+            this->_My_data[_Idx] = _STD move(_Right._My_data[_Idx]);
+        }
+
+        if (this->_My_size > _Newsize) {
+            _STD _Destroy_range(this->_My_data + _Newsize, this->_My_data + this->_My_size);
+        } else if (this->_My_size < _Newsize) {
+            _STD uninitialized_move_n(
+                _Right._My_data + _Minsize, _Newsize - this->_My_size, this->_My_data + this->_My_size);
+        }
+        this->_Set_size(_Newsize);
+
+        return *this;
+    }
+
+    inplace_vector& operator=(inplace_vector&&)
+        requires is_trivially_copyable_v<_Ty>
+    = default;
+
+    template <class _Iter>
+        requires _Is_iterator_v<_Iter>
+    constexpr void assign(_Iter _First, _Iter _Last) {
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst = _STD _Get_unwrapped(_First);
+        auto _ULast  = _STD _Get_unwrapped(_Last);
+        if constexpr (/* _Is_cpp17_fwd_iter_v<_Iter> */ _Is_cpp17_random_iter_v<_Iter>) {
+            const auto _Length = _STD _To_unsigned_like(_STD distance(_UFirst, _ULast));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
+            _Assign_counted_range(_STD move(_UFirst), _Count);
+        } else if constexpr (/* forward_iterator<_Iter> */ random_access_iterator<_Iter>) {
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
+            _Assign_counted_range(_STD move(_UFirst), _Count);
+        } else {
+            _Assign_uncounted_range(_STD move(_UFirst), _STD move(_ULast));
+        }
+    }
+
+    template <class _Rng>
+    constexpr void assign_range(_Rng&& _Range) {
+        if constexpr (/* _RANGES forward_range<_Rng> || */ _RANGES sized_range<_Rng>) {
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_Range));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
+            _Assign_counted_range(_RANGES _Ubegin(_Range), _Count);
+        } else {
+            _Assign_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        }
+    }
+
+    constexpr void assign(const size_type _Newsize, const _Ty& _Val) {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        {
+            const auto _Valptr = _STD addressof(_Val);
+            _STL_VERIFY(!(this->_My_data <= _Valptr && _Valptr < this->_My_data + this->_My_size),
+                "assignment value cannot be a reference into the container");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        if (_Newsize > _N) {
+            _Xbad_alloc();
+        }
+
+        if (_Newsize > this->_My_size) {
+            _STD fill_n(this->_My_data, this->_My_size, _Val);
+            _STD uninitialized_fill_n(this->_My_data + this->_My_size, _Newsize - this->_My_size, _Val);
+        } else {
+            _STD fill_n(this->_My_data, _Newsize, _Val);
+            _STD _Destroy_range(this->_My_data + _Newsize, this->_My_data + this->_My_size);
+        }
+        this->_Set_size(_Newsize);
+    }
+
+    constexpr void assign(const initializer_list<_Ty> _Ilist) {
+        const auto _Count = _STD _Convert_size<size_type>(_Ilist.size());
+        _Assign_counted_range(_Ilist.begin(), _Count);
+    }
+
+    // iterators
+    _NODISCARD constexpr iterator begin() noexcept {
+        return iterator(this);
+    }
+
+    _NODISCARD constexpr const_iterator begin() const noexcept {
+        return const_iterator(this);
+    }
+
+    _NODISCARD constexpr iterator end() noexcept {
+        return iterator(this, this->_My_size);
+    }
+
+    _NODISCARD constexpr const_iterator end() const noexcept {
+        return const_iterator(this, this->_My_size);
+    }
+
+    _NODISCARD constexpr reverse_iterator rbegin() noexcept {
+        return reverse_iterator(end());
+    }
+
+    _NODISCARD constexpr const_reverse_iterator rbegin() const noexcept {
+        return const_reverse_iterator(end());
+    }
+
+    _NODISCARD constexpr reverse_iterator rend() noexcept {
+        return reverse_iterator(begin());
+    }
+
+    _NODISCARD constexpr const_reverse_iterator rend() const noexcept {
+        return const_reverse_iterator(begin());
+    }
+
+    _NODISCARD constexpr const_iterator cbegin() const noexcept {
+        return begin();
+    }
+
+    _NODISCARD constexpr const_iterator cend() const noexcept {
+        return end();
+    }
+
+    _NODISCARD constexpr const_reverse_iterator crbegin() const noexcept {
+        return rbegin();
+    }
+
+    _NODISCARD constexpr const_reverse_iterator crend() const noexcept {
+        return rend();
+    }
+
+    _NODISCARD constexpr _Ty* _Unchecked_begin() noexcept {
+        return this->_My_data;
+    }
+
+    _NODISCARD constexpr const _Ty* _Unchecked_begin() const noexcept {
+        return this->_My_data;
+    }
+
+    _NODISCARD constexpr _Ty* _Unchecked_end() noexcept {
+        return this->_My_data + this->_My_size;
+    }
+
+    _NODISCARD constexpr const _Ty* _Unchecked_end() const noexcept {
+        return this->_My_data + this->_My_size;
+    }
+
+    // [containers.sequences.inplace.vector.members] size/capacity
+    _NODISCARD constexpr bool empty() const noexcept {
+        return this->_My_size == 0;
+    }
+
+    _NODISCARD constexpr size_type size() const noexcept {
+        return this->_My_size;
+    }
+
+    _NODISCARD constexpr size_type max_size() const noexcept {
+        return _N;
+    }
+
+    _NODISCARD constexpr size_type capacity() const noexcept {
+        return _N;
+    }
+
+    constexpr void resize(const size_type _Newsize) {
+        _Resize(_Newsize, _Value_init_tag{});
+    }
+
+    constexpr void resize(const size_type _Newsize, const _Ty& _Val) {
+        _Resize(_Newsize, _Val);
+    }
+
+    constexpr void reserve(const size_type _Newcapacity) {
+        if (_Newcapacity > _N) {
+            _Xbad_alloc();
+        }
+    }
+
+    constexpr void shrink_to_fit() noexcept {}
+
+    // element access
+    _NODISCARD constexpr _Ty& operator[](const size_type _Pos) noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Pos < this->_My_size, "inplace_vector subscript out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return this->_My_data[_Pos];
+    }
+
+    _NODISCARD constexpr const _Ty& operator[](const size_type _Pos) const noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Pos < this->_My_size, "inplace_vector subscript out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return this->_My_data[_Pos];
+    }
+
+    _NODISCARD constexpr _Ty& at(const size_type _Pos) {
+        if (_Pos >= this->_My_size) {
+            _Xrange();
+        }
+
+        return this->_My_data[_Pos];
+    }
+
+    _NODISCARD constexpr const _Ty& at(const size_type _Pos) const {
+        if (_Pos >= this->_My_size) {
+            _Xrange();
+        }
+
+        return this->_My_data[_Pos];
+    }
+
+    _NODISCARD constexpr _Ty& front() noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_My_size != 0, "front() called on empty inplace_vector");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return this->_My_data[0];
+    }
+
+    _NODISCARD constexpr const _Ty& front() const noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_My_size != 0, "front() called on empty inplace_vector");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return this->_My_data[0];
+    }
+
+    _NODISCARD constexpr _Ty& back() noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_My_size != 0, "back() called on empty inplace_vector");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return this->_My_data[this->_My_size - 1];
+    }
+
+    _NODISCARD constexpr const _Ty& back() const noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_My_size != 0, "back() called on empty inplace_vector");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return this->_My_data[this->_My_size - 1];
+    }
+
+    // [containers.sequences.inplace.vector.data], data access
+    _NODISCARD constexpr _Ty* data() noexcept {
+        return this->_My_data;
+    }
+
+    _NODISCARD constexpr const _Ty* data() const noexcept {
+        return this->_My_data;
+    }
+
+    // [containers.sequences.inplace.vector.modifiers], modifiers
+    template <class... _Valty>
+    constexpr _Ty& emplace_back(_Valty&&... _Val) {
+        return _Emplace_back(_STD forward<_Valty>(_Val)...);
+    }
+
+    constexpr _Ty& push_back(const _Ty& _Val) {
+        return _Emplace_back(_Val);
+    }
+
+    constexpr _Ty& push_back(_Ty&& _Val) {
+        return _Emplace_back(_STD move(_Val));
+    }
+
+    template <_Container_compatible_range<_Ty> _Rng>
+    constexpr void append_range(_Rng&& _Range) {
+        if constexpr (/* _RANGES forward_range<_Rng> || */ _RANGES sized_range<_Rng>) {
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_Range));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
+            _Append_counted_range(_RANGES _Ubegin(_Range), _Count);
+        } else {
+            _Append_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        }
+    }
+
+    constexpr void pop_back() noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_My_size != 0, "inplace_vector empty before pop");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        _STD destroy_at(this->_My_data + this->_My_size - 1);
+        this->_Set_size(this->_My_size - 1);
+    }
+
+    template <class... _Valty>
+    constexpr _Ty* try_emplace_back(_Valty&&... _Val) {
+        if (this->_My_size == _N) {
+            return nullptr;
+        }
+
+        return _Unchecked_emplace_back(_STD forward<_Valty>(_Val)...);
+    }
+
+    constexpr _Ty* try_push_back(const _Ty& _Val) {
+        return try_emplace_back(_Val);
+    }
+
+    constexpr _Ty* try_push_back(_Ty&& _Val) {
+        return try_emplace_back(_STD move(_Val));
+    }
+
+    template <_Container_compatible_range<_Ty> _Rng>
+    constexpr _RANGES borrowed_iterator_t<_Rng> try_append_range(_Rng&& _Range) {
+        auto _First      = _RANGES _Ubegin(_Range);
+        const auto _Last = _RANGES _Uend(_Range);
+
+        for (; this->_My_size != _N && _First != _Last; ++_First) {
+            _Unchecked_emplace_back(*_First);
+        }
+
+        return _Seek_to(_STD move(_First));
+    }
+
+    template <class... _Valty>
+    constexpr _Ty& unchecked_emplace_back(_Valty&&... _Val) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_My_size != _N, "inplace_vector full before unchecked_emplace_back");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return *_Unchecked_emplace_back(_STD forward<_Valty>(_Val)...);
+    }
+
+    constexpr _Ty& unchecked_push_back(const _Ty& _Val) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_My_size != _N, "inplace_vector full before unchecked_push_back");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return *_Unchecked_emplace_back(_Val);
+    }
+
+    constexpr _Ty& unchecked_push_back(_Ty&& _Val) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_My_size != _N, "inplace_vector full before unchecked_push_back");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+        return *_Unchecked_emplace_back(_STD move(_Val));
+    }
+
+    template <class... _Valty>
+    constexpr iterator emplace(const_iterator _Where, _Valty&&... _Val) {
+        const pointer _Whereptr = const_cast<pointer>(_Where._Unwrapped());
+        const pointer _Oldlast  = this->_My_data + this->_My_size;
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Where._Getptr() == this->_My_data && _Whereptr >= this->_My_data && _Oldlast >= _Whereptr,
+            "inplace_vector emplace iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        if (_Whereptr == _Oldlast) { // at back, provide strong guarantee
+            _Emplace_back(_STD forward<_Valty>(_Val)...);
+        } else {
+            _Ty _Obj(_STD forward<_Valty>(_Val)...);
+            // after constructing _Obj, provide basic guarantee
+            this->_Set_size(this->_My_size + 1);
+            _STD _Move_backward_unchecked(_Whereptr, _Oldlast - 1, _Oldlast);
+            *_Whereptr = _STD move(_Obj);
+        }
+
+        return _Make_iterator(_Whereptr);
+    }
+
+    constexpr iterator insert(const_iterator _Where, const _Ty& _Val) {
+        return emplace(_Where, _Val);
+    }
+
+    constexpr iterator insert(const_iterator _Where, _Ty&& _Val) {
+        return emplace(_Where, _STD move(_Val));
+    }
+
+    constexpr iterator insert(const_iterator _Where, size_type _Count, const _Ty& _Val) {
+        const pointer _Whereptr = const_cast<pointer>(_Where._Unwrapped());
+        const pointer _Oldlast  = this->_My_data + this->_My_size;
+
+        if (_Count == 0) {
+        } else if (_Count > _N - this->_My_size) {
+            _Xbad_alloc();
+        } else if (_Count == 1 && _Whereptr == _Oldlast) { // provide strong guarantee
+            _Unchecked_emplace_back(_Val);
+        } else { // provide basic guarantee
+            const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
+            pointer _Newlast;
+
+            if (_Count > _Affected_elements) { // new stuff spills off end
+                _Newlast = _STD uninitialized_fill_n(_Oldlast, _Count - _Affected_elements, _Val);
+                this->_Set_size(static_cast<size_type>(_Newlast - this->_My_data));
+                _Newlast = _STD uninitialized_move(_Whereptr, _Oldlast, _Newlast);
+                this->_Set_size(static_cast<size_type>(_Newlast - this->_My_data));
+                _STD fill(_Whereptr, _Oldlast, _Val);
+            } else { // new stuff can all be assigned
+                _Newlast = _STD uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast);
+                this->_Set_size(static_cast<size_type>(_Newlast - this->_My_data));
+                _STD _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
+                _STD fill_n(_Whereptr, _Count, _Val);
+            }
+        }
+
+        return _Make_iterator(_Whereptr);
+    }
+
+    template <class _Iter>
+        requires _Is_iterator_v<_Iter>
+    constexpr iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
+        const pointer _Whereptr = const_cast<pointer>(_Where._Unwrapped());
+        const pointer _Oldlast  = this->_My_data + this->_My_size;
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Where._Getptr() == this->_My_data && _Whereptr >= this->_My_data && _Oldlast >= _Whereptr,
+            "inplace_vector insert iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        _STD _Adl_verify_range(_First, _Last);
+        auto _UFirst = _STD _Get_unwrapped(_First);
+        auto _ULast  = _STD _Get_unwrapped(_Last);
+
+        if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
+            const auto _Length = _STD _To_unsigned_like(_STD distance(_UFirst, _ULast));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
+            _Insert_counted_range(_Whereptr, _STD move(_UFirst), _Count);
+        } else if constexpr (forward_iterator<_Iter>) {
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
+            _Insert_counted_range(_Whereptr, _STD move(_UFirst), _Count);
+        } else {
+            _Insert_uncounted_range(_Whereptr, _STD move(_UFirst), _STD move(_ULast));
+        }
+        return _Make_iterator(_Whereptr);
+    }
+
+    template <_Container_compatible_range<_Ty> _Rng>
+    constexpr iterator insert_range(const_iterator _Where, _Rng&& _Range) {
+        const pointer _Whereptr = const_cast<pointer>(_Where._Unwrapped());
+        const pointer _Oldlast  = this->_My_data + this->_My_size;
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Where._Getptr() == this->_My_data && _Whereptr >= this->_My_data && _Oldlast >= _Whereptr,
+            "inplace_vector insert iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        if constexpr (_RANGES forward_range<_Rng> || _RANGES sized_range<_Rng>) {
+            const auto _Length = _STD _To_unsigned_like(_RANGES distance(_Range));
+            const auto _Count  = _STD _Convert_size<size_type>(_Length);
+            _Insert_counted_range(_Whereptr, _RANGES _Ubegin(_Range), _Count);
+        } else {
+            _Insert_uncounted_range(_Whereptr, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        }
+        return _Make_iterator(_Whereptr);
+    }
+
+    constexpr iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
+        const pointer _Whereptr = const_cast<pointer>(_Where._Unwrapped());
+        const pointer _Oldlast  = this->_My_data + this->_My_size;
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Where._Getptr() == this->_My_data && _Whereptr >= this->_My_data && _Oldlast >= _Whereptr,
+            "inplace_vector insert iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        const auto _Count = _STD _Convert_size<size_type>(_Ilist.size());
+        _Insert_counted_range(_Whereptr, _Ilist.begin(), _Count);
+        return _Make_iterator(_Whereptr);
+    }
+
+    constexpr iterator erase(const_iterator _Where) noexcept(
+        is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
+        const pointer _Whereptr = const_cast<pointer>(_Where._Unwrapped());
+        const pointer _Oldlast  = this->_My_data + this->_My_size;
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Where._Getptr() == this->_My_data && _Whereptr >= this->_My_data && _Oldlast > _Whereptr,
+            "inplace_vector erase iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        _STD _Move_unchecked(_Whereptr + 1, _Oldlast, _Whereptr);
+        _STD destroy_at(_Oldlast - 1);
+        this->_Set_size(this->_My_size - 1);
+
+        return _Make_iterator(_Whereptr);
+    }
+
+    constexpr iterator erase(const_iterator _First, const_iterator _Last) noexcept(
+        is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
+        const pointer _Firstptr = const_cast<pointer>(_First._Unwrapped());
+        const pointer _Lastptr  = const_cast<pointer>(_Last._Unwrapped());
+        const pointer _Oldlast  = this->_My_data + this->_My_size;
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_First._Getptr() == this->_My_data && _Last._Getptr() == this->_My_data
+                        && _Firstptr >= this->_My_data && _Lastptr >= _Firstptr && _Oldlast >= _Lastptr,
+            "inplace_vector erase iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        if (_Firstptr != _Lastptr) {
+            const pointer _Newlast = _STD _Move_unchecked(_Lastptr, _Oldlast, _Firstptr);
+            _STD _Destroy_range(_Newlast, _Oldlast);
+            this->_Set_size(static_cast<size_type>(_Newlast - this->_My_data));
+        }
+
+        return _Make_iterator(_Firstptr);
+    }
+
+    constexpr void swap(inplace_vector& _Right) noexcept(
+        _N == 0 || (is_nothrow_swappable_v<_Ty> && is_nothrow_move_constructible_v<_Ty>) ) {
+        // first swap the common subrange
+        const size_type _Minsize = (_STD min)(this->_My_size, _Right._My_size);
+        _STD _Swap_ranges_unchecked(this->_My_data, this->_My_data + _Minsize, _Right._My_data);
+
+        if (this->_My_size == _Right._My_size) {
+            return;
+        }
+
+        // next move the remaining elements from the larger container
+        const bool _Fromleft = this->_My_size >= _Right._My_size;
+        inplace_vector& _Src = _Fromleft ? *this : _Right;
+        inplace_vector& _Dst = _Fromleft ? _Right : *this;
+
+        _STD uninitialized_move(_Src._My_data + _Minsize, _Src._My_data + _Src._My_size, _Dst._My_data + _Minsize);
+        _STD _Destroy_range(_Src._My_data + _Minsize, _Src._My_data + _Src._My_size);
+
+        const auto _Src_size = _Src._My_size;
+        _Src._Set_size(_Dst._My_size);
+        _Dst._Set_size(_Src_size);
+    }
+
+    constexpr void clear() noexcept {
+        _STD _Destroy_range(this->_My_data, this->_My_data + this->_My_size);
+        this->_Set_size(0);
+    }
+
+    _NODISCARD constexpr friend bool operator==(const inplace_vector& _Left, const inplace_vector& _Right) {
+        if (_Left._My_size != _Right._My_size) {
+            return false;
+        }
+
+        return _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
+    }
+
+    _NODISCARD constexpr friend auto operator<=>(const inplace_vector& _Left, const inplace_vector& _Right)
+        requires requires(const _Ty _Val) {
+            { _Val < _Val } -> _Boolean_testable;
+        }
+    {
+        return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
+            _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
+    }
+
+    constexpr friend void swap(inplace_vector& _Left, inplace_vector& _Right) noexcept(
+        _N == 0 || (is_nothrow_swappable_v<_Ty> && is_nothrow_move_constructible_v<_Ty>) ) {
+        _Left.swap(_Right);
+    }
+
+private:
+    [[noreturn]] static void _Xrange() {
+        _Xout_of_range("invalid inplace_vector subscript");
+    }
+
+    _NODISCARD constexpr iterator _Make_iterator(const pointer _Whereptr) {
+        return iterator(this, static_cast<size_type>(_Whereptr - this->_My_data));
+    }
+
+    template <class _Iter, class _Sent>
+    constexpr void _Assign_uncounted_range(_Iter _First, _Sent _Last) {
+        pointer _Mynext       = this->_My_data;
+        const pointer _Mylast = this->_My_data + this->_My_size;
+
+        for (; _First != _Last && _Mynext != _Mylast; ++_First, (void) ++_Mynext) {
+            *_Mynext = *_First;
+        }
+
+        _Destroy_range(_Mynext, _Mylast);
+        this->_Set_size(static_cast<size_type>(_Mynext - this->_My_data));
+
+        _Append_uncounted_range(_STD move(_First), _STD move(_Last));
+    }
+
+    template <class _Iter>
+    constexpr void _Assign_counted_range(_Iter _First, const size_type _Newsize) {
+        if (_Newsize > this->_My_size) {
+            for (size_type _Idx = 0; _Idx < this->_My_size; ++_Idx, (void) ++_First) {
+                this->_My_data[_Idx] = *_First;
+            }
+            _STD uninitialized_copy_n(_STD move(_First), _Newsize - this->_My_size, this->_My_data + this->_My_size);
+        } else {
+            _STD _Copy_n_unchecked4(_STD move(_First), _Newsize, this->_My_data);
+            _STD _Destroy_range(this->_My_data + _Newsize, this->_My_data + this->_My_size);
+        }
+        this->_Set_size(_Newsize);
+    }
+
+    template <class _Ty2>
+    constexpr void _Resize(const size_type _Newsize, const _Ty2& _Val) {
+        if (_Newsize > _N) {
+            _Xbad_alloc();
+        }
+
+        if (_Newsize < this->_My_size) {
+            _STD _Destroy_range(this->_My_data + _Newsize, this->_My_data + this->_My_size);
+            this->_Set_size(_Newsize);
+            return;
+        }
+
+        if (_Newsize > this->_My_size) {
+            if constexpr (is_same_v<_Ty2, _Ty>) {
+                _STD uninitialized_fill(this->_My_data + this->_My_size, this->_My_data + _Newsize, _Val);
+            } else {
+                _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty2, _Value_init_tag>);
+                _STD uninitialized_value_construct(this->_My_data + this->_My_size, this->_My_data + _Newsize);
+            }
+            this->_Set_size(_Newsize);
+            return;
+        }
+    }
+
+    template <class... _Valty>
+    constexpr _Ty& _Emplace_back(_Valty&&... _Val) {
+        if (this->_My_size == _N) {
+            _Xbad_alloc();
+        }
+
+        return *_Unchecked_emplace_back(_STD forward<_Valty>(_Val)...);
+    }
+
+    template <class... _Valty>
+    constexpr _Ty* _Unchecked_emplace_back(_Valty&&... _Val) {
+        _Ty* _Result = _STD construct_at(this->_My_data + this->_My_size, _STD forward<_Valty>(_Val)...);
+        this->_Set_size(this->_My_size + 1);
+
+        return _Result;
+    }
+
+    template <class _Iter, class _Sent>
+    constexpr void _Append_uncounted_range(_Iter _First, _Iter _Last) {
+        for (; _First != _Last; ++_First) {
+            _Emplace_back(*_First);
+        }
+    }
+
+    template <class _Iter>
+    constexpr void _Append_counted_range(_Iter _First, const size_type _Count) {
+        if (_Count > _N - this->_My_size) {
+            _Xbad_alloc();
+        }
+
+        _STD uninitialized_copy_n(_STD move(_First), _Count, this->_My_data + this->_My_size);
+        this->_My_size += _Count;
+    }
+
+    template <class _Iter, class _Sent>
+    constexpr void _Insert_uncounted_range(const pointer _Whereptr, _Iter _First, _Iter _Last) {
+        // insert range [_First, _Last) at _Whereptr
+        if (_First == _Last) {
+            return;
+        }
+
+        const auto _Oldlast = this->_My_data + this->_My_size;
+        _Append_uncounted_range(_STD move(_First), _STD move(_Last));
+        _STD rotate(_Whereptr, _Oldlast, this->_My_data + this->_My_size);
+    }
+
+    template <class _Iter>
+    constexpr void _Insert_counted_range(const pointer _Whereptr, _Iter _First, const size_type _Count) {
+        if (_Count == 0) {
+        } else if (_Count > _N - this->_My_size) {
+            _Xbad_alloc();
+        } else {
+            const auto _Oldlast           = this->_My_data + this->_My_size;
+            const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
+            pointer _Newlast;
+
+            if (_Count < _Affected_elements) { // some affected elements must be assigned
+                _Newlast = _STD uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast);
+                this->_Set_size(static_cast<size_type>(_Newlast - this->_My_data));
+                _STD _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
+                _STD _Destroy_range(_Whereptr, _Whereptr + _Count);
+
+                _TRY_BEGIN
+                _STD uninitialized_copy_n(_STD move(_First), _Count, _Whereptr);
+                _CATCH_ALL
+                // glue the broken pieces back together
+
+                _TRY_BEGIN
+                _STD uninitialized_move(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr);
+                _CATCH_ALL
+                // vaporize the detached piece
+                _STD _Destroy_range(_Whereptr + _Count, _Newlast);
+                this->_Set_size(static_cast<size_type>(_Whereptr - this->_My_data));
+                _RERAISE;
+                _CATCH_END
+
+                _STD _Move_unchecked(_Whereptr + 2 * _Count, _Newlast, _Whereptr + _Count);
+                _STD _Destroy_range(_Oldlast, _Newlast);
+                this->_Set_size(static_cast<size_type>(_Oldlast - this->_My_data));
+                _RERAISE;
+                _CATCH_END
+            } else { // affected elements don't overlap before/after
+                const pointer _Relocated = _Whereptr + _Count;
+
+                _Newlast = _STD uninitialized_move(_Whereptr, _Oldlast, _Relocated);
+                this->_Set_size(static_cast<size_type>(_Newlast - this->_My_data));
+                _STD _Destroy_range(_Whereptr, _Oldlast);
+
+                _TRY_BEGIN
+                _STD uninitialized_copy_n(_STD move(_First), _Count, _Whereptr);
+                _CATCH_ALL
+                // glue the broken pieces back together
+
+                _TRY_BEGIN
+                _STD uninitialized_move(_Relocated, _Newlast, _Whereptr);
+                _CATCH_ALL
+                // vaporize the detached piece
+                _STD _Destroy_range(_Relocated, _Newlast);
+                this->_Set_size(static_cast<size_type>(_Whereptr - this->_My_data));
+                _RERAISE;
+                _CATCH_END
+
+                _STD _Destroy_range(_Relocated, _Newlast);
+                this->_Set_size(static_cast<size_type>(_Newlast - this->_My_data));
+                _RERAISE;
+                _CATCH_END
+            }
+        }
+    }
+};
+
+_EXPORT_STD template <class _Ty, size_t _N, class _Uty>
+constexpr inplace_vector<_Ty, _N>::size_type erase(inplace_vector<_Ty, _N>& _Cont, const _Uty& _Val) {
+    return _STD _Erase_remove(_Cont, _Val);
+}
+
+_EXPORT_STD template <class _Ty, size_t _N, class _Pr>
+constexpr inplace_vector<_Ty, _N>::size_type erase_if(inplace_vector<_Ty, _N>& _Cont, _Pr _Pred) {
+    return _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Pred));
+}
+_STD_END
+
+#endif // ^^^ _HAS_CXX26 ^^^
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _INPLACE_VECTOR_

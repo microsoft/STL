@@ -382,10 +382,6 @@ struct _Vec_iter_types {
     using const_pointer   = _Const_pointer;
 };
 
-struct _Value_init_tag { // tag to request value-initialization
-    explicit _Value_init_tag() = default;
-};
-
 template <class _Val_types>
 class _Vector_val : public _Container_base {
 public:

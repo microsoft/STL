@@ -53,13 +53,6 @@ protected:
     _THROW(bad_optional_access{});
 }
 
-struct _Nontrivial_dummy_type {
-    constexpr _Nontrivial_dummy_type() noexcept {
-        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
-    }
-};
-_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
-
 #if _HAS_CXX23
 struct _Construct_from_invoke_result_tag {
     explicit _Construct_from_invoke_result_tag() = default;

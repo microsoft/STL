@@ -7422,6 +7422,19 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 }
 #endif // _HAS_CXX17
 
+#if _HAS_CXX17
+struct _Nontrivial_dummy_type {
+    constexpr _Nontrivial_dummy_type() noexcept {
+        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
+    }
+};
+_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
+#endif // _HAS_CXX17
+
+struct _Value_init_tag { // tag to request value-initialization
+    explicit _Value_init_tag() = default;
+};
+
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
