@@ -370,6 +370,12 @@ std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:0 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
 
+# VSO-2170500 C1XX's type trait optimization mishandles conjunction/disjunction with non-bool types
+std/utilities/meta/meta.logical/conjunction.compile.pass.cpp:0 FAIL
+std/utilities/meta/meta.logical/conjunction.compile.pass.cpp:1 FAIL
+std/utilities/meta/meta.logical/disjunction.compile.pass.cpp:0 FAIL
+std/utilities/meta/meta.logical/disjunction.compile.pass.cpp:1 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
@@ -904,12 +910,6 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass
 
 # Not analyzed. Checking whether packaged_task is constructible from an allocator and a packaged_task of a different type.
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
-
-# Not analyzed.
-# MSVC warning C4305: 'specialization': truncation from 'const int' to 'bool'
-# Clang error: non-type template argument evaluates to -1, which cannot be narrowed to type 'bool' [-Wc++11-narrowing]
-std/utilities/meta/meta.logical/conjunction.compile.pass.cpp FAIL
-std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
 
 # Not analyzed. Possible MSVC compiler bug, this is inspecting type trait behavior.
 std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
