@@ -3950,7 +3950,7 @@ void test_devcom_953628() { // COMPILE-ONLY
     path{S{}};
 }
 
-int wmain(int argc, wchar_t* argv[]) {
+int run_all_tests(int argc, wchar_t* argv[]) {
     error_code ec;
 
     // Store old path and change current path to a temporary path
@@ -4077,4 +4077,20 @@ int wmain(int argc, wchar_t* argv[]) {
     EXPECT(good(ec));
 
     assert(pass);
+
+    return 0;
+}
+
+int wmain(int argc, wchar_t* argv[]) {
+    try {
+        return run_all_tests(argc, argv);
+    } catch (const filesystem_error& fe) {
+        cout << "filesystem_error: " << fe.what() << endl;
+    } catch (const exception& e) {
+        cout << "exception: " << e.what() << endl;
+    } catch (...) {
+        cout << "Unknown exception." << endl;
+    }
+
+    return EXIT_FAILURE;
 }
