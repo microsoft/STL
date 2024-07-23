@@ -16,13 +16,19 @@ using namespace std;
 void test_static_extent_function_with_invalid_index() {
     using E = extents<int, 3>;
     // Index must be less than rank()
+#pragma warning(push)
+#pragma warning(disable : 28020) // yay, /analyze catches this mistake at compile time!
     (void) E::static_extent(1);
+#pragma warning(pop)
 }
 
 void test_extent_function_with_invalid_index() {
     extents<int, 3> e;
     // Index must be less than rank()
+#pragma warning(push)
+#pragma warning(disable : 28020) // yay, /analyze catches this mistake at compile time!
     (void) e.extent(1);
+#pragma warning(pop)
 }
 
 void test_construction_from_other_extents_with_invalid_values() {
