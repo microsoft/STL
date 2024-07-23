@@ -640,7 +640,7 @@ namespace chrono {
         return time_point<_Clock, _To>(_CHRONO round<_To>(_Time.time_since_epoch()));
     }
 
-    _EXPORT_STD struct system_clock { // wraps GetSystemTimePreciseAsFileTime
+    _EXPORT_STD struct system_clock { // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
         using rep                       = long long;
         using period                    = ratio<1, 10'000'000>; // 100 nanoseconds
         using duration                  = _CHRONO duration<rep, period>;
