@@ -1006,22 +1006,15 @@ std/utilities/format/format.range/format.range.fmtset/format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtstr/format.pass.cpp FAIL
 std/utilities/format/format.tuple/format.pass.cpp FAIL
 
-# Not analyzed. Apparent false positives from static analysis where it thinks that array indexing is out of bounds.
-# warning C28020: The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call.
+# Not analyzed. Static analysis thinks that array indexing is out of bounds because it can't prove otherwise.
+# warning C28020: The expression '_Param_(1)<1' is not true at this call.
 # Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/containers/views/mdspan/extents/ctor_default.pass.cpp:0 FAIL
 std/containers/views/mdspan/extents/ctor_from_array.pass.cpp:0 FAIL
 std/containers/views/mdspan/extents/ctor_from_integral.pass.cpp:0 FAIL
 std/containers/views/mdspan/extents/ctor_from_span.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_left/ctor.layout_stride.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_left/stride.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_right/ctor.layout_stride.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_right/stride.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_stride/ctor.default.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_stride/ctor.extents_array.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_stride/ctor.extents_span.pass.cpp:0 FAIL
+std/containers/views/mdspan/layout_stride/comparison.pass.cpp:0 FAIL
 std/containers/views/mdspan/layout_stride/ctor.strided_mapping.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_stride/stride.pass.cpp:0 FAIL
 std/containers/views/mdspan/mdspan/conversion.pass.cpp:0 FAIL
 std/containers/views/mdspan/mdspan/ctor.dh_array.pass.cpp:0 FAIL
 std/containers/views/mdspan/mdspan/ctor.dh_span.pass.cpp:0 FAIL
