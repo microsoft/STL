@@ -1798,5 +1798,6 @@ export const daily_table: DailyRow[] = [
     { date: '2024-07-20', merged: 38.13, pr: 18, cxx20: null, cxx23: 9, cxx26: 50, lwg: 3, issue: 419, bug: 146, sum_age: 30.07, } as DailyRow,
     { date: '2024-07-21', merged: 36.88, pr: 20, cxx20: null, cxx23: 9, cxx26: 50, lwg: 3, issue: 420, bug: 146, sum_age: 30.73, } as DailyRow,
     { date: '2024-07-22', merged: 35.63, pr: 21, cxx20: null, cxx23: 9, cxx26: 50, lwg: 3, issue: 416, bug: 145, sum_age: 31.42, } as DailyRow,
+    { date: '2024-07-23', merged: 34.38, pr: 23, cxx20: null, cxx23: 9, cxx26: 50, lwg: 3, issue: 416, bug: 145, sum_age: 32.16, } as DailyRow,
 ];
 // Generated file - DO NOT EDIT manually!
