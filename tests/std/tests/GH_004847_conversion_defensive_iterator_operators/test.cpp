@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if !defined(__clang__) && !defined(__EDG__)
+// Invalid annotation: 'NullTerminated' property may only be used on buffers whose elements are of integral or pointer
+// type
+#pragma warning(disable : 6510)
+#endif // !defined(__clang__) && !defined(__EDG__)
+
 #include <algorithm>
 #include <array>
 #include <cassert>
