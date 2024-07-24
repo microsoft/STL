@@ -44,9 +44,6 @@ std/re/re.traits/lookup_classname.pass.cpp FAIL
 std/input.output/iostreams.base/ios.base/ios.base.storage/iword.pass.cpp SKIPPED
 std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
 
-# allocator<const T>
-std/utilities/memory/default.allocator/allocator.ctor.pass.cpp FAIL
-
 # This test is passing non-BidirectionalIterators to std::prev.
 # LWG-3197 "std::prev should not require BidirectionalIterator" (New)
 std/iterators/iterator.primitives/iterator.operations/prev.pass.cpp FAIL
