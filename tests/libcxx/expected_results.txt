@@ -32,9 +32,6 @@ std/utilities/format/format.range/format.range.formatter/format.functions.vforma
 std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
 
-# LLVM-95944: [libc++][test] thread.condition.condvar/notify_all.pass.cpp has a flaky timing assumption
-std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIPPED
-
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
