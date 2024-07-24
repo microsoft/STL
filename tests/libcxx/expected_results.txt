@@ -32,11 +32,6 @@ std/utilities/format/format.range/format.range.formatter/format.functions.vforma
 std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
 
-# LLVM-94907: [libc++][test] Avoid -Wunused-variable warnings in mutex tests
-std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/default.pass.cpp:2 FAIL
-std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/default.pass.cpp:2 FAIL
-std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/default.pass.cpp:2 FAIL
-
 # LLVM-95944: [libc++][test] thread.condition.condvar/notify_all.pass.cpp has a flaky timing assumption
 std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIPPED
 
