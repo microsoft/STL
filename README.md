@@ -143,8 +143,10 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 1. Install Visual Studio 2022 17.11 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
-    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer if you would like to build ARM64/ARM64EC library.
-    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" in the VS Installer if you would like to build ARM library.
+    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
+    if you would like to build the ARM64/ARM64EC target.
+    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" in the VS Installer
+    if you would like to build the ARM target.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.29.0 or later, and [Ninja][] 1.11.0 or later.
@@ -160,8 +162,10 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 1. Install Visual Studio 2022 17.11 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
-    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer if you would like to build ARM64/ARM64EC library.
-    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" in the VS Installer if you would like to build ARM library.
+    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
+    if you would like to build the ARM64/ARM64EC target.
+    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" in the VS Installer
+    if you would like to build the ARM target.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.29.0 or later, and [Ninja][] 1.11.0 or later.
