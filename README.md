@@ -147,6 +147,8 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.29.0 or later, and [Ninja][] 1.11.0 or later.
     * Make sure [Python][] 3.12 or later is available to CMake.
+    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" if you would like to build ARM64/ARM64EC library.
+    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" if you would like to build ARM library.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
@@ -179,6 +181,30 @@ To build the x64 target (recommended):
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset x64`
 4. `cmake --build --preset x64`
+
+To build the ARM target:
+
+1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
+2. Change directories to the previously cloned `STL` directory.
+3. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm`
+4. `cmake --preset ARM`
+5. `cmake --build --preset ARM`
+
+To build the ARM64 target:
+
+1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
+2. Change directories to the previously cloned `STL` directory.
+3. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm64`
+4. `cmake --preset ARM64`
+5. `cmake --build --preset ARM64`
+
+To build the ARM64EC target:
+
+1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
+2. Change directories to the previously cloned `STL` directory.
+3. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm64`
+4. `cmake --preset ARM64EC`
+5. `cmake --build --preset ARM64EC`
 
 # How To Consume
 
