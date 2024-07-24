@@ -335,9 +335,109 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD _CONSTEXPR20 difference_type operator-(const _Vector_iterator& _Right) const noexcept {
+        _Mybase::_Compat(_Right);
+        return static_cast<difference_type>(this->_Ptr - _Right._Ptr);
+    }
+    _NODISCARD friend _CONSTEXPR20 difference_type operator-(
+        const _Mybase& _Left, const _Vector_iterator& _Right) noexcept {
+        _Left._Compat(_Right);
+        return static_cast<difference_type>(_Left._Ptr - _Right._Ptr);
+    }
+
     _NODISCARD _CONSTEXPR20 reference operator[](const difference_type _Off) const noexcept {
         return const_cast<reference>(_Mybase::operator[](_Off));
     }
+
+    _NODISCARD _CONSTEXPR20 bool operator==(const _Vector_iterator& _Right) const noexcept {
+        _Mybase::_Compat(_Right);
+        return this->_Ptr == _Right._Ptr;
+    }
+
+    _NODISCARD _CONSTEXPR20 bool operator==(const _Mybase& _Right) const noexcept {
+        _Mybase::_Compat(_Right);
+        return this->_Ptr == _Right._Ptr;
+    }
+
+#if _HAS_CXX20
+    _NODISCARD constexpr strong_ordering operator<=>(const _Vector_iterator& _Right) const noexcept {
+        _Mybase::_Compat(_Right);
+        return _STD _Unfancy_maybe_null(this->_Ptr) <=> _STD _Unfancy_maybe_null(_Right._Ptr);
+    }
+
+    _NODISCARD constexpr strong_ordering operator<=>(const _Mybase& _Right) const noexcept {
+        _Mybase::_Compat(_Right);
+        return _STD _Unfancy_maybe_null(this->_Ptr) <=> _STD _Unfancy_maybe_null(_Right._Ptr);
+    }
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    _NODISCARD friend bool operator==(const _Mybase& _Left, const _Vector_iterator& _Right) noexcept {
+        _Left._Compat(_Right);
+        return _Left._Ptr == _Right._Ptr;
+    }
+
+    _NODISCARD bool operator!=(const _Vector_iterator& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+
+    _NODISCARD bool operator!=(const _Mybase& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+
+    _NODISCARD friend bool operator!=(const _Mybase& _Left, const _Vector_iterator& _Right) noexcept {
+        return !(_Left == _Right);
+    }
+
+    _NODISCARD bool operator<(const _Vector_iterator& _Right) const noexcept {
+        _Mybase::_Compat(_Right);
+        return this->_Ptr < _Right._Ptr;
+    }
+
+    _NODISCARD bool operator<(const _Mybase& _Right) const noexcept {
+        _Mybase::_Compat(_Right);
+        return this->_Ptr < _Right._Ptr;
+    }
+
+    _NODISCARD friend bool operator<(const _Mybase& _Left, const _Vector_iterator& _Right) noexcept {
+        _Left._Compat(_Right);
+        return _Left._Ptr < _Right._Ptr;
+    }
+
+    _NODISCARD bool operator>(const _Vector_iterator& _Right) const noexcept {
+        return _Right < *this;
+    }
+
+    _NODISCARD bool operator>(const _Mybase& _Right) const noexcept {
+        return _Right < *this;
+    }
+
+    _NODISCARD friend bool operator>(const _Mybase& _Left, const _Vector_iterator& _Right) noexcept {
+        return _Right < _Left;
+    }
+
+    _NODISCARD bool operator<=(const _Vector_iterator& _Right) const noexcept {
+        return !(_Right < *this);
+    }
+
+    _NODISCARD bool operator<=(const _Mybase& _Right) const noexcept {
+        return !(_Right < *this);
+    }
+
+    _NODISCARD friend bool operator<=(const _Mybase& _Left, const _Vector_iterator& _Right) noexcept {
+        return !(_Right < _Left);
+    }
+
+    _NODISCARD bool operator>=(const _Vector_iterator& _Right) const noexcept {
+        return !(*this < _Right);
+    }
+
+    _NODISCARD bool operator>=(const _Mybase& _Right) const noexcept {
+        return !(*this < _Right);
+    }
+
+    _NODISCARD friend bool operator>=(const _Mybase& _Left, const _Vector_iterator& _Right) noexcept {
+        return !(_Left < _Right);
+    }
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     using _Prevent_inheriting_unwrap = _Vector_iterator;
 
