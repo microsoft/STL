@@ -1218,9 +1218,6 @@ std/time/time.zone/time.zone.leap/members/date.pass.cpp FAIL
 std/time/time.zone/time.zone.leap/members/value.pass.cpp FAIL
 std/time/time.zone/time.zone.leap/nonmembers/comparison.pass.cpp FAIL
 
-# Not analyzed. Assertion failed: tzdb.leap_seconds.size() >= leap_seconds.size()
-std/time/time.zone/time.zone.db/leap_seconds.pass.cpp FAIL
-
 # Not analyzed. Assertion failed: tz->name() == zone
 std/time/time.zone/time.zone.db/time.zone.db.access/current_zone.pass.cpp FAIL
 std/time/time.zone/time.zone.db/time.zone.db.tzdb/current_zone.pass.cpp FAIL
