@@ -1939,6 +1939,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
 #define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN7  0x0601 // _WIN32_WINNT_WIN7 from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN8  0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN10 0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
 
@@ -1947,10 +1948,13 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #if defined(_M_ARM64)
 // The first ARM64 Windows was Windows 10
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN10
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-// The earliest Windows supported by this implementation is Windows 8
+#elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
+// The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#else // ^^^ default to Win8 / default to Win7 vvv
+// The earliest Windows supported by this implementation is Windows 7
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN7
+#endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
 #endif // !defined(_STL_WIN32_WINNT)
 
 #ifdef __cpp_noexcept_function_type

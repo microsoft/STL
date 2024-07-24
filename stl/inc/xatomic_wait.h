@@ -21,9 +21,23 @@ _STL_DISABLE_CLANG_WARNINGS
 extern "C" {
 inline constexpr unsigned long __std_atomic_wait_no_timeout = 0xFFFF'FFFF; // Pass as partial timeout
 
+enum class __std_atomic_api_level : unsigned long {
+    __not_set,
+    __detecting,
+    __has_srwlock,
+    __has_wait_on_address,
+};
+
+// This function allows testing the atomic wait support while always using the APIs for a platform with fewer
+// capabilities; it attempts to lock the APIs used to the level `_Requested_api_level`, and returns the actual API level
+// in use. Once the API level has been set by calling this function (or detected by a call to one of the atomic wait
+// functions), it can no longer be changed.
+__std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level _Requested_api_level) noexcept;
+
 // Support for atomic waits.
 // The "direct" functions are used when the underlying infrastructure can use WaitOnAddress directly; that is, _Size is
-// 1, 2, 4, or 8. The contract is the same as the WaitOnAddress function from the Windows SDK.
+// 1, 2, 4, or 8. The contract is the same as the WaitOnAddress function from the Windows SDK. If WaitOnAddress is not
+// available on the current platform, falls back to a similar solution based on SRWLOCK and CONDITION_VARIABLE.
 int __stdcall __std_atomic_wait_direct(
     const void* _Storage, void* _Comparand, size_t _Size, unsigned long _Remaining_timeout) noexcept;
 void __stdcall __std_atomic_notify_one_direct(const void* _Storage) noexcept;
