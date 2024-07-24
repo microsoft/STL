@@ -646,7 +646,6 @@ std/re/re.traits/lookup_collatename.pass.cpp FAIL
 std/re/re.traits/transform_primary.pass.cpp FAIL
 
 # Not analyzed, likely STL bugs. Various assertions.
-std/numerics/complex.number/complex.member.ops/divide_equal_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.ops/complex_divide_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.ops/complex_times_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.ops/scalar_divide_complex.pass.cpp FAIL
