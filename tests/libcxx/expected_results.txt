@@ -112,14 +112,6 @@ std/language.support/support.limits/support.limits.general/mdspan.version.compil
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
 
-# libc++ has not implemented P2997R1: "Removing The Common Reference Requirement From The Indirectly Invocable Concepts"
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_binary_predicate.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_equivalence_relation.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_strict_weak_order.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_unary_predicate.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirectly_regular_unary_invocable.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirectly_unary_invocable.compile.pass.cpp FAIL
-
 # Various bogosity (LLVM-D141004), warning C6011: Dereferencing NULL pointer
 # Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
