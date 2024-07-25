@@ -364,6 +364,10 @@ std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:2 FAIL
 
+# LLVM-95311 [clang] __has_unique_object_representations gives inconsistent answer based on instantiation order
+# A libc++ product code workaround (using `remove_all_extents_t`) and test coverage were added by LLVM-95314.
+std/utilities/meta/meta.unary/meta.unary.prop/has_unique_object_representations.compile.pass.cpp:2 FAIL
+
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?
