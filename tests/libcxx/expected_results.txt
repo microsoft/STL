@@ -41,6 +41,9 @@ std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last_if_not.pass.cpp F
 # Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/comparisons.pass.cpp:0 FAIL
 
+# LLVM-100504: [libc++][test] Fix Clang -Wunused-variable warnings in time.zone.members/to_sys.pass.cpp
+std/time/time.zone/time.zone.timezone/time.zone.members/to_sys.pass.cpp:2 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
