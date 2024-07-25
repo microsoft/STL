@@ -100,6 +100,7 @@ std/utilities/tuple/tuple.tuple/tuple.assign/const_pair.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/variant.version.compile.pass.cpp FAIL
 
 # libc++ has not implemented P2278R4: "cbegin should always return a constant iterator"
+std/containers/views/views.span/span.cons/span.pass.cpp FAIL
 std/containers/views/views.span/types.pass.cpp FAIL
 std/ranges/range.access/begin.pass.cpp FAIL
 std/ranges/range.access/data.pass.cpp FAIL
@@ -1265,9 +1266,6 @@ std/time/time.zone/time.zone.timezone/time.zone.members/get_info.local_time.pass
 std/time/time.zone/time.zone.timezone/time.zone.members/to_sys_choose.pass.cpp FAIL
 std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.members/get_info.pass.cpp FAIL
 std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.nonmembers/ostream.pass.cpp FAIL
-
-# Not analyzed. `span<volatile string>` causes constraint failure in `std::const_iterator`.
-std/containers/views/views.span/span.cons/span.pass.cpp FAIL
 
 # Not analyzed. static_assert(testComplexity()) is failing.
 std/algorithms/alg.sorting/alg.set.operations/set.intersection/set_intersection_complexity.pass.cpp FAIL
