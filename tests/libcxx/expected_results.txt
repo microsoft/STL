@@ -44,6 +44,9 @@ std/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/comparisons.pass.
 # LLVM-100504: [libc++][test] Fix Clang -Wunused-variable warnings in time.zone.members/to_sys.pass.cpp
 std/time/time.zone/time.zone.timezone/time.zone.members/to_sys.pass.cpp:2 FAIL
 
+# LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
+std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -570,10 +573,6 @@ std/numerics/complex.number/cmplx.over/proj.pass.cpp:1 FAIL
 # Testing input values outside the range of [complex.value.ops]/9
 # libc++ handles those input values differently
 std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
-
-# Assertion failed: invalid min and max arguments for uniform_real
-# `param_type p(5);` is a precondition violation.
-std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
 # Assertion failed: invalid beta argument for gamma_distribution
 # test4() constructs a negative_binomial_distribution from (40, 1); [rand.dist.bern.negbin] says p == 1 generates undefined probabilities.
