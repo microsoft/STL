@@ -32,6 +32,11 @@ std/utilities/format/format.range/format.range.formatter/format.functions.vforma
 std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
 
+# LLVM-100498: [libc++][test] alg.find.last tests assume that std::array iterators are pointers
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp FAIL
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last_if.pass.cpp FAIL
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last_if_not.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
