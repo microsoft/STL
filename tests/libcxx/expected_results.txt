@@ -21,6 +21,8 @@ std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_day_last.pass.cpp:1 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
+std/time/time.syn/formatter.zoned_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.zoned_time.pass.cpp:1 FAIL
 
 # LLVM-74756: [libc++][test] overload_compare_iterator doesn't support its claimed iterator_category
 std/utilities/memory/specialized.algorithms/uninitialized.copy/uninitialized_copy.pass.cpp FAIL
@@ -32,13 +34,20 @@ std/utilities/format/format.range/format.range.formatter/format.functions.vforma
 std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
 
-# LLVM-94907: [libc++][test] Avoid -Wunused-variable warnings in mutex tests
-std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/default.pass.cpp:2 FAIL
-std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/default.pass.cpp:2 FAIL
-std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/default.pass.cpp:2 FAIL
+# LLVM-100498: [libc++][test] alg.find.last tests assume that std::array iterators are pointers
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp FAIL
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last_if.pass.cpp FAIL
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last_if_not.pass.cpp FAIL
 
-# LLVM-95944: [libc++][test] thread.condition.condvar/notify_all.pass.cpp has a flaky timing assumption
-std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp SKIPPED
+# LLVM-100502: [libc++][test] Bogus loops in time.cal.ymdlast.nonmembers/comparisons.pass.cpp
+# Note: The :1 (ASAN) configuration doesn't run static analysis.
+std/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/comparisons.pass.cpp:0 FAIL
+
+# LLVM-100504: [libc++][test] Fix Clang -Wunused-variable warnings in time.zone.members/to_sys.pass.cpp
+std/time/time.zone/time.zone.timezone/time.zone.members/to_sys.pass.cpp:2 FAIL
+
+# LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
+std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
@@ -48,9 +57,6 @@ std/re/re.traits/lookup_classname.pass.cpp FAIL
 # They contain 10K^2 / 2 == 50M loops.
 std/input.output/iostreams.base/ios.base/ios.base.storage/iword.pass.cpp SKIPPED
 std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
-
-# allocator<const T>
-std/utilities/memory/default.allocator/allocator.ctor.pass.cpp FAIL
 
 # This test is passing non-BidirectionalIterators to std::prev.
 # LWG-3197 "std::prev should not require BidirectionalIterator" (New)
@@ -79,6 +85,9 @@ std/numerics/rand/rand.util/rand.util.canonical/generate_canonical.pass.cpp FAIL
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 std/language.support/support.limits/support.limits.general/chrono.version.compile.pass.cpp FAIL
 
+# Test expects __cpp_lib_three_way_comparison to have the old value 201711L for P0768R1; we define the C++20 value 201907L for P1614R2.
+std/language.support/support.limits/support.limits.general/compare.version.compile.pass.cpp FAIL
+
 # Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
 std/language.support/support.limits/support.limits.general/algorithm.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/functional.version.compile.pass.cpp FAIL
@@ -91,6 +100,7 @@ std/utilities/tuple/tuple.tuple/tuple.assign/const_pair.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/variant.version.compile.pass.cpp FAIL
 
 # libc++ has not implemented P2278R4: "cbegin should always return a constant iterator"
+std/containers/views/views.span/span.cons/span.pass.cpp FAIL
 std/containers/views/views.span/types.pass.cpp FAIL
 std/ranges/range.access/begin.pass.cpp FAIL
 std/ranges/range.access/data.pass.cpp FAIL
@@ -122,14 +132,6 @@ std/language.support/support.limits/support.limits.general/mdspan.version.compil
 
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
-
-# libc++ has not implemented P2997R1: "Removing The Common Reference Requirement From The Indirectly Invocable Concepts"
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_binary_predicate.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_equivalence_relation.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_strict_weak_order.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirect_unary_predicate.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirectly_regular_unary_invocable.compile.pass.cpp FAIL
-std/iterators/iterator.requirements/indirectcallable/indirectinvocable/indirectly_unary_invocable.compile.pass.cpp FAIL
 
 # Various bogosity (LLVM-D141004), warning C6011: Dereferencing NULL pointer
 # Note: The :1 (ASAN) configuration doesn't run static analysis.
@@ -175,13 +177,6 @@ std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitiali
 # libc++ doesn't implement LWG-4013
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.default.pass.cpp FAIL
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.iter.pass.cpp FAIL
-
-# libc++ doesn't implement LWG-4061
-std/utilities/format/format.functions/bug_81590.compile.pass.cpp FAIL
-
-# libc++ doesn't implement LWG-4106
-std/utilities/format/format.arguments/format.args/ctor.pass.cpp FAIL
-std/utilities/format/format.arguments/format.args/get.pass.cpp FAIL
 
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
@@ -374,6 +369,10 @@ std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:2 FAIL
+
+# LLVM-95311 [clang] __has_unique_object_representations gives inconsistent answer based on instantiation order
+# A libc++ product code workaround (using `remove_all_extents_t`) and test coverage were added by LLVM-95314.
+std/utilities/meta/meta.unary/meta.unary.prop/has_unique_object_representations.compile.pass.cpp:2 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -585,10 +584,6 @@ std/numerics/complex.number/cmplx.over/proj.pass.cpp:1 FAIL
 # libc++ handles those input values differently
 std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
 
-# Assertion failed: invalid min and max arguments for uniform_real
-# `param_type p(5);` is a precondition violation.
-std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
-
 # Assertion failed: invalid beta argument for gamma_distribution
 # test4() constructs a negative_binomial_distribution from (40, 1); [rand.dist.bern.negbin] says p == 1 generates undefined probabilities.
 std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
@@ -646,7 +641,6 @@ std/re/re.traits/lookup_collatename.pass.cpp FAIL
 std/re/re.traits/transform_primary.pass.cpp FAIL
 
 # Not analyzed, likely STL bugs. Various assertions.
-std/numerics/complex.number/complex.member.ops/divide_equal_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.ops/complex_divide_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.ops/complex_times_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.ops/scalar_divide_complex.pass.cpp FAIL
@@ -1050,6 +1044,7 @@ std/time/time.syn/formatter.file_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.hh_mm_ss.pass.cpp:2 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
+std/time/time.syn/formatter.zoned_time.pass.cpp:2 FAIL
 
 # Not analyzed. constexpr evaluation fails with "vector iterators incompatible".
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:0 FAIL
@@ -1219,9 +1214,6 @@ std/time/time.zone/time.zone.leap/members/date.pass.cpp FAIL
 std/time/time.zone/time.zone.leap/members/value.pass.cpp FAIL
 std/time/time.zone/time.zone.leap/nonmembers/comparison.pass.cpp FAIL
 
-# Not analyzed. Assertion failed: tzdb.leap_seconds.size() >= leap_seconds.size()
-std/time/time.zone/time.zone.db/leap_seconds.pass.cpp FAIL
-
 # Not analyzed. Assertion failed: tz->name() == zone
 std/time/time.zone/time.zone.db/time.zone.db.access/current_zone.pass.cpp FAIL
 std/time/time.zone/time.zone.db/time.zone.db.tzdb/current_zone.pass.cpp FAIL
@@ -1261,6 +1253,33 @@ std/atomics/atomics.ref/operator_minus_equals.pass.cpp SKIPPED
 std/atomics/atomics.ref/operator_plus_equals.pass.cpp SKIPPED
 std/atomics/atomics.ref/store.pass.cpp SKIPPED
 std/atomics/atomics.ref/wait.pass.cpp SKIPPED
+
+# Not analyzed. Attempting to dereference `void *`.
+std/utilities/memory/unique.ptr/noexcept_operator_star.compile.pass.cpp FAIL
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.observers/dereference.single.pass.cpp FAIL
+
+# Not analyzed. Attempting to delete `nullptr_t`.
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter.pass.cpp FAIL
+
+# Not analyzed. Various assertions.
+std/time/time.zone/time.zone.timezone/time.zone.members/get_info.local_time.pass.cpp FAIL
+std/time/time.zone/time.zone.timezone/time.zone.members/to_sys_choose.pass.cpp FAIL
+std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.members/get_info.pass.cpp FAIL
+std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.nonmembers/ostream.pass.cpp FAIL
+
+# Not analyzed. static_assert(testComplexity()) is failing.
+std/algorithms/alg.sorting/alg.set.operations/set.intersection/set_intersection_complexity.pass.cpp FAIL
+
+# Not analyzed.
+# MSVC constexpr error: failure was caused by unexpected deallocation count
+# Clang assertion: _CrtIsValidHeapPointer(block)
+std/containers/sequences/vector.bool/shrink_to_fit.pass.cpp FAIL
+std/containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp FAIL
+
+# Not analyzed.
+# MSVC truncation warnings.
+# Clang assertion: std::hermite(n, +inf) == inf
+std/numerics/c.math/hermite.pass.cpp FAIL
 
 
 # *** XFAILs WHICH PASS ***
@@ -1333,6 +1352,6 @@ std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cp
 # Similarly, this test is marked as `REQUIRES: 32-bit-pointer`.
 std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
 
-# These tests are marked as "UNSUPPORTED: !has-unix-headers" with comments saying:
-# "`check_assertion.h` requires Unix headers".
-std/algorithms/pstl.exception_handling.pass.cpp:9 SKIPPED
+# This test is marked as `REQUIRES: has-unix-headers, libcpp-has-abi-bounded-iterators-in-vector`.
+# Listing these on separate lines would allow magic_comments.txt to recognize it.
+std/containers/sequences/vector/vector.modifiers/assert.push_back.invalidation.pass.cpp:9 SKIPPED
