@@ -1253,6 +1253,36 @@ std/atomics/atomics.ref/operator_plus_equals.pass.cpp SKIPPED
 std/atomics/atomics.ref/store.pass.cpp SKIPPED
 std/atomics/atomics.ref/wait.pass.cpp SKIPPED
 
+# Not analyzed. Attempting to dereference `void *`.
+std/utilities/memory/unique.ptr/noexcept_operator_star.compile.pass.cpp FAIL
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.observers/dereference.single.pass.cpp FAIL
+
+# Not analyzed. Attempting to delete `nullptr_t`.
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter.pass.cpp FAIL
+
+# Not analyzed. Various assertions.
+std/time/time.zone/time.zone.timezone/time.zone.members/get_info.local_time.pass.cpp FAIL
+std/time/time.zone/time.zone.timezone/time.zone.members/to_sys_choose.pass.cpp FAIL
+std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.members/get_info.pass.cpp FAIL
+std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.nonmembers/ostream.pass.cpp FAIL
+
+# Not analyzed. `span<volatile string>` causes constraint failure in `std::const_iterator`.
+std/containers/views/views.span/span.cons/span.pass.cpp FAIL
+
+# Not analyzed. static_assert(testComplexity()) is failing.
+std/algorithms/alg.sorting/alg.set.operations/set.intersection/set_intersection_complexity.pass.cpp FAIL
+
+# Not analyzed.
+# MSVC constexpr error: failure was caused by unexpected deallocation count
+# Clang assertion: _CrtIsValidHeapPointer(block)
+std/containers/sequences/vector.bool/shrink_to_fit.pass.cpp FAIL
+std/containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp FAIL
+
+# Not analyzed.
+# MSVC truncation warnings.
+# Clang assertion: std::hermite(n, +inf) == inf
+std/numerics/c.math/hermite.pass.cpp FAIL
+
 
 # *** XFAILs WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
