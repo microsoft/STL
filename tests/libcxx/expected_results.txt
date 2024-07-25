@@ -21,6 +21,8 @@ std/time/time.syn/formatter.year_month_day_last.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_day_last.pass.cpp:1 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
+std/time/time.syn/formatter.zoned_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.zoned_time.pass.cpp:1 FAIL
 
 # LLVM-74756: [libc++][test] overload_compare_iterator doesn't support its claimed iterator_category
 std/utilities/memory/specialized.algorithms/uninitialized.copy/uninitialized_copy.pass.cpp FAIL
@@ -1041,6 +1043,7 @@ std/time/time.syn/formatter.file_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.hh_mm_ss.pass.cpp:2 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
+std/time/time.syn/formatter.zoned_time.pass.cpp:2 FAIL
 
 # Not analyzed. constexpr evaluation fails with "vector iterators incompatible".
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:0 FAIL
