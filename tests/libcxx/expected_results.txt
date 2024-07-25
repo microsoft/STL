@@ -1351,3 +1351,7 @@ std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cp
 
 # Similarly, this test is marked as `REQUIRES: 32-bit-pointer`.
 std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
+
+# This test is marked as `REQUIRES: has-unix-headers, libcpp-has-abi-bounded-iterators-in-vector`.
+# Listing these on separate lines would allow magic_comments.txt to recognize it.
+std/containers/sequences/vector/vector.modifiers/assert.push_back.invalidation.pass.cpp:9 SKIPPED
