@@ -933,10 +933,8 @@ namespace ranges {
         _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
-                using _Size1      = _Make_unsigned_like_t<range_size_t<_Rng1>>;
-                const auto _Count = static_cast<_Size1>(_RANGES size(_Range1));
-                using _Size2      = _Make_unsigned_like_t<range_size_t<_Rng2>>;
-                if (_Count != static_cast<_Size2>(_RANGES size(_Range2))) {
+                const auto _Count = _RANGES distance(_Range1);
+                if (_Count != _RANGES distance(_Range2)) {
                     return false;
                 }
                 return _RANGES _Equal_count(_Ubegin(_Range1), _Ubegin(_Range2), _Count, _STD _Pass_fn(_Pred),
