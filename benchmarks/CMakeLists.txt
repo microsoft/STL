@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.28.0)
+cmake_minimum_required(VERSION 3.29.0)
 project(msvc_standard_libraries_benchmarks LANGUAGES CXX)
 
 if(DEFINED STL_BINARY_DIR)
@@ -119,6 +119,7 @@ add_benchmark(path_lexically_normal src/path_lexically_normal.cpp)
 add_benchmark(priority_queue_push_range src/priority_queue_push_range.cpp)
 add_benchmark(random_integer_generation src/random_integer_generation.cpp)
 add_benchmark(replace src/replace.cpp)
+add_benchmark(search src/search.cpp)
 add_benchmark(std_copy src/std_copy.cpp)
 add_benchmark(swap_ranges src/swap_ranges.cpp)
 

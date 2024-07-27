@@ -162,7 +162,7 @@ public:
         return _Local != nullptr && _Local->_Stop_possible();
     }
 
-    _NODISCARD_FRIEND bool operator==(const stop_token& _Lhs, const stop_token& _Rhs) noexcept = default;
+    _NODISCARD friend bool operator==(const stop_token& _Lhs, const stop_token& _Rhs) noexcept = default;
 
     friend void swap(stop_token& _Lhs, stop_token& _Rhs) noexcept {
         _STD swap(_Lhs._State, _Rhs._State);
@@ -234,7 +234,7 @@ public:
         return _Local && _Local->_Request_stop();
     }
 
-    _NODISCARD_FRIEND bool operator==(const stop_source& _Lhs, const stop_source& _Rhs) noexcept = default;
+    _NODISCARD friend bool operator==(const stop_source& _Lhs, const stop_source& _Rhs) noexcept = default;
 
     friend void swap(stop_source& _Lhs, stop_source& _Rhs) noexcept {
         _STD swap(_Lhs._State, _Rhs._State);
@@ -357,14 +357,16 @@ class stop_callback : public _Stop_callback_base {
 public:
     using callback_type = _Callback;
 
-    template <class _CbInitTy, enable_if_t<is_constructible_v<_Callback, _CbInitTy>, int> = 0>
+    template <class _CbInitTy>
+        requires is_constructible_v<_Callback, _CbInitTy>
     explicit stop_callback(const stop_token& _Token, _CbInitTy&& _Cb_) noexcept(
         is_nothrow_constructible_v<_Callback, _CbInitTy>)
         : _Stop_callback_base{_Invoke_by_stop}, _Cb(_STD forward<_CbInitTy>(_Cb_)) {
         _Attach(_Token);
     }
 
-    template <class _CbInitTy, enable_if_t<is_constructible_v<_Callback, _CbInitTy>, int> = 0>
+    template <class _CbInitTy>
+        requires is_constructible_v<_Callback, _CbInitTy>
     explicit stop_callback(stop_token&& _Token, _CbInitTy&& _Cb_) noexcept(
         is_nothrow_constructible_v<_Callback, _CbInitTy>)
         : _Stop_callback_base{_Invoke_by_stop}, _Cb(_STD forward<_CbInitTy>(_Cb_)) {

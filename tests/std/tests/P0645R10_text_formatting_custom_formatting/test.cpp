@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <format>
 #include <iterator>
 #include <limits>
@@ -58,10 +59,10 @@ struct not_const_formattable_type {
 template <>
 struct std::formatter<basic_custom_formattable_type, char> {
     constexpr basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
-        if (parse_ctx.begin() != parse_ctx.end()) {
+        if (parse_ctx.begin() != parse_ctx.end() && *parse_ctx.begin() != '}') {
             throw format_error{"only empty specs please"};
         }
-        return parse_ctx.end();
+        return parse_ctx.begin();
     }
     format_context::iterator format(const basic_custom_formattable_type& val, format_context& ctx) const {
         ctx.advance_to(copy(val.string_content.begin(), val.string_content.end(), ctx.out()));
@@ -72,10 +73,10 @@ struct std::formatter<basic_custom_formattable_type, char> {
 template <>
 struct std::formatter<not_const_formattable_type, char> {
     constexpr basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
-        if (parse_ctx.begin() != parse_ctx.end()) {
+        if (parse_ctx.begin() != parse_ctx.end() && *parse_ctx.begin() != '}') {
             throw format_error{"only empty specs please"};
         }
-        return parse_ctx.end();
+        return parse_ctx.begin();
     }
     format_context::iterator format(not_const_formattable_type& val, format_context& ctx) const {
         ctx.advance_to(copy(val.string_content.begin(), val.string_content.end(), ctx.out()));
@@ -265,8 +266,13 @@ void test_basic_format_context_construction() {
     using context = basic_format_context<OutIt, CharT>;
 
     static_assert(!is_default_constructible_v<context>);
-    static_assert(is_copy_constructible_v<context> == is_copy_constructible_v<OutIt>);
-    static_assert(is_move_constructible_v<context>);
+    static_assert(!is_copy_constructible_v<context>);
+    static_assert(!is_move_constructible_v<context>);
+
+    // Also test the deleted copy assignment operator
+    // from LWG-4061 "Should std::basic_format_context be default-constructible/copyable/movable?"
+    static_assert(!is_copy_assignable_v<context>);
+    static_assert(!is_move_assignable_v<context>);
 
     static_assert(!is_constructible_v<context, OutIt, basic_format_args<context>>);
     static_assert(!is_constructible_v<context, OutIt, const basic_format_args<context>&>);
@@ -274,6 +280,72 @@ void test_basic_format_context_construction() {
     static_assert(!is_constructible_with_trailing_empty_brace_impl<context>);
     static_assert(!is_constructible_with_trailing_empty_brace_impl<context, OutIt, basic_format_args<context>>);
     static_assert(!is_constructible_with_trailing_empty_brace_impl<context, OutIt, const basic_format_args<context>&>);
+
+    // Also test LWG-4106 "basic_format_args should not be default-constructible"
+    static_assert(!is_default_constructible_v<basic_format_args<context>>);
+}
+
+// Test GH-4636 "<format>: Call to next_arg_id may result in unexpected error (regression)"
+
+struct FormatNextArg {};
+
+template <class CharT>
+struct std::formatter<FormatNextArg, CharT> {
+public:
+    template <class ParseContext>
+    constexpr auto parse(ParseContext& ctx) {
+        auto it = ctx.begin();
+        if (it != ctx.end() && *it != '}') {
+            throw format_error{"Expected empty spec"};
+        }
+
+        arg_id = ctx.next_arg_id();
+        return it;
+    }
+
+    template <class FormatContext>
+    auto format(FormatNextArg, FormatContext& ctx) const {
+        return format_to(ctx.out(), TYPED_LITERAL(CharT, "arg-id: {}"), arg_id);
+    }
+
+private:
+    size_t arg_id;
+};
+
+template <class CharT>
+void test_parsing_with_next_id() {
+    assert(format(TYPED_LITERAL(CharT, "{}, {}"), FormatNextArg{}, 0, FormatNextArg{}, TYPED_LITERAL(CharT, "1"))
+           == TYPED_LITERAL(CharT, "arg-id: 1, arg-id: 3"));
+    assert(format(TYPED_LITERAL(CharT, "{:}, {:}"), FormatNextArg{}, 2, FormatNextArg{}, TYPED_LITERAL(CharT, "3"))
+           == TYPED_LITERAL(CharT, "arg-id: 1, arg-id: 3"));
+}
+
+struct NeedMagicWord {};
+
+template <class CharT>
+struct std::formatter<NeedMagicWord, CharT> {
+    constexpr auto parse(const basic_format_parse_context<CharT>& ctx) {
+        constexpr basic_string_view<CharT> magic_word{TYPED_LITERAL(CharT, "narf")};
+        auto [i, j] = ranges::mismatch(ctx, magic_word);
+        if (j != magic_word.end()) {
+            throw format_error{"you didn't say the magic word!"};
+        }
+
+        if (i != ctx.end() && *i != '}') {
+            throw format_error{"the whole spec must be the magic word!"};
+        }
+        return i;
+    }
+
+    template <class OutIt>
+    auto format(NeedMagicWord, basic_format_context<OutIt, CharT>& ctx) const {
+        return ctx.out();
+    }
+};
+
+template <class CharT>
+void test_parsing_needing_magic_word() {
+    assert(format(TYPED_LITERAL(CharT, "{:narf}"), NeedMagicWord{}).empty());
 }
 
 int main() {
@@ -297,5 +369,9 @@ int main() {
     test_basic_format_context_construction<wchar_t*, wchar_t>();
     test_basic_format_context_construction<wstring::iterator, wchar_t>();
     test_basic_format_context_construction<back_insert_iterator<wstring>, wchar_t>();
-    return 0;
+
+    test_parsing_with_next_id<char>();
+    test_parsing_with_next_id<wchar_t>();
+    test_parsing_needing_magic_word<char>();
+    test_parsing_needing_magic_word<wchar_t>();
 }

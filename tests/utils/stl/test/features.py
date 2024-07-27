@@ -24,6 +24,8 @@ def hasLocale(loc):
 def getDefaultFeatures(config, litConfig):
     DEFAULT_FEATURES = [
         Feature(name='has-64-bit-atomics'),
+        Feature(name='has-1024-bit-atomics'),
+        Feature(name='has-no-zdump'),
         Feature(name='msvc'),
         Feature(name='windows'),
     ]
@@ -48,7 +50,6 @@ def getDefaultFeatures(config, litConfig):
         DEFAULT_FEATURES.append(Feature(name='edg_drop'))
 
     if litConfig.target_arch.casefold() == 'x86'.casefold():
-        DEFAULT_FEATURES.append(Feature(name='arch_ia32'))
         DEFAULT_FEATURES.append(Feature(name='arch_avx2'))
         DEFAULT_FEATURES.append(Feature(name='x86'))
 

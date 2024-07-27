@@ -87,14 +87,14 @@ public:
     }
 
     friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(is_nothrow_swappable_v<_Err>)
-        requires is_swappable_v<_Err>
+        requires is_swappable<_Err>::value // TRANSITION, /permissive needs ::value
     {
         _Left.swap(_Right);
     }
 
     // [expected.un.eq]
     template <class _UErr>
-    _NODISCARD_FRIEND constexpr bool operator==(const unexpected& _Left, const unexpected<_UErr>& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const unexpected& _Left, const unexpected<_UErr>& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         return _Left._Unexpected == _Right.error();
     }
@@ -306,11 +306,18 @@ public:
     template <class _Uty = _Ty>
         requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected>
                      && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
-                     && (!is_same_v<remove_cv_t<_Ty>, bool> || !_Is_specialization_v<remove_cvref_t<_Uty>, expected>)
+                     && (!is_same_v<remove_cv_t<_Ty>, bool>
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10655311
+                         || !_Is_specialization_v<remove_cvref_t<_Uty>, expected>
+#else // ^^^ no workaround / workaround vvv
+                         || !_Is_specialization_v<remove_cvref_t<_Uty>, _STD expected>
+#endif // ^^^ workaround ^^^
+                         )
                      && is_constructible_v<_Ty, _Uty>)
     constexpr explicit(!is_convertible_v<_Uty, _Ty>)
         expected(_Uty&& _Other) noexcept(is_nothrow_constructible_v<_Ty, _Uty>) // strengthened
-        : _Value(_STD forward<_Uty>(_Other)), _Has_value(true) {}
+        : _Value(_STD forward<_Uty>(_Other)), _Has_value(true) {
+    }
 
     template <class _UErr>
         requires is_constructible_v<_Err, const _UErr&>
@@ -601,7 +608,7 @@ public:
     friend constexpr void swap(expected& _Lhs, expected& _Rhs) noexcept(
         is_nothrow_move_constructible_v<_Ty> && is_nothrow_swappable_v<_Ty> && is_nothrow_move_constructible_v<_Err>
         && is_nothrow_swappable_v<_Err>)
-        requires is_swappable_v<_Ty> && is_swappable_v<_Err> //
+        requires is_swappable<_Ty>::value && is_swappable<_Err>::value // TRANSITION, /permissive needs ::value
               && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err>
               && (is_nothrow_move_constructible_v<_Ty> || is_nothrow_move_constructible_v<_Err>)
     {
@@ -1125,7 +1132,7 @@ public:
     // [expected.object.eq]
     template <class _Uty, class _UErr>
         requires (!is_void_v<_Uty>)
-    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
         noexcept(_STD _Fake_copy_init<bool>(_Left._Value == *_Right)) && noexcept(
             _STD _Fake_copy_init<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value != _Right.has_value()) {
@@ -1138,7 +1145,7 @@ public:
     }
 
     template <class _Uty>
-    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const _Uty& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const expected& _Left, const _Uty& _Right) noexcept(
         noexcept(static_cast<bool>(_Left._Value == _Right))) /* strengthened */ {
         if (_Left._Has_value) {
             return static_cast<bool>(_Left._Value == _Right);
@@ -1148,7 +1155,7 @@ public:
     }
 
     template <class _UErr>
-    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
         noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value) {
             return false;
@@ -1429,7 +1436,12 @@ public:
 
     friend constexpr void swap(expected& _Left, expected& _Right) noexcept(
         is_nothrow_move_constructible_v<_Err> && is_nothrow_swappable_v<_Err>)
-        requires is_swappable_v<_Err> && is_move_constructible_v<_Err>
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, /permissive
+        requires is_swappable_v<_Err>
+#else // ^^^ no workaround / workaround vvv
+        requires is_swappable<_Err>::value
+#endif // ^^^ workaround ^^^
+              && is_move_constructible_v<_Err>
     {
         _Left.swap(_Right);
     }
@@ -1856,7 +1868,7 @@ public:
     // [expected.void.eq]
     template <class _Uty, class _UErr>
         requires is_void_v<_Uty>
-    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
         noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value != _Right.has_value()) {
             return false;
@@ -1866,7 +1878,7 @@ public:
     }
 
     template <class _UErr>
-    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
+    _NODISCARD friend constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
         noexcept(static_cast<bool>(_Left._Unexpected == _Right.error()))) /* strengthened */ {
         if (_Left._Has_value) {
             return false;

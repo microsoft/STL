@@ -98,13 +98,13 @@ public:
     }
 
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD_FRIEND bool operator==(const fpos& _Left, const _Int _Right) noexcept /* strengthened */ {
+    _NODISCARD friend bool operator==(const fpos& _Left, const _Int _Right) noexcept /* strengthened */ {
         return static_cast<streamoff>(_Left) == _Right;
     }
 
 #if !_HAS_CXX20
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD_FRIEND bool operator==(const _Int _Left, const fpos& _Right) noexcept /* strengthened */ {
+    _NODISCARD friend bool operator==(const _Int _Left, const fpos& _Right) noexcept /* strengthened */ {
         return _Left == static_cast<streamoff>(_Right);
     }
 
@@ -113,12 +113,12 @@ public:
     }
 
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD_FRIEND bool operator!=(const fpos& _Left, const _Int _Right) noexcept /* strengthened */ {
+    _NODISCARD friend bool operator!=(const fpos& _Left, const _Int _Right) noexcept /* strengthened */ {
         return static_cast<streamoff>(_Left) != _Right;
     }
 
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD_FRIEND bool operator!=(const _Int _Left, const fpos& _Right) noexcept /* strengthened */ {
+    _NODISCARD friend bool operator!=(const _Int _Left, const fpos& _Right) noexcept /* strengthened */ {
         return _Left != static_cast<streamoff>(_Right);
     }
 #endif // !_HAS_CXX20

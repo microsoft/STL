@@ -995,7 +995,7 @@ namespace test_subrange {
 
     template <class T>
     struct illformed {
-        static_assert(always_false<T>);
+        static_assert(false);
     };
 
     template <class T>

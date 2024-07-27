@@ -12,13 +12,15 @@
 
 extern "C" {
 
-
+// TRANSITION, ABI: preserved for binary compatibility (and _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 _CRTIMP2_PURE void __cdecl _Cnd_init_in_situ(const _Cnd_t cond) noexcept { // initialize condition variable in situ
-    new (Concurrency::details::_Get_cond_var(cond)) Concurrency::details::stl_condition_variable_win7;
+    new (cond) _Cnd_internal_imp_t;
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE void __cdecl _Cnd_destroy_in_situ(_Cnd_t) noexcept {} // destroy condition variable in situ
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t* const pcond) noexcept { // initialize
     *pcond = nullptr;
 
@@ -32,9 +34,9 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_init(_Cnd_t* const pcond) noexcept { // 
     return _Thrd_result::_Success;
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE void __cdecl _Cnd_destroy(const _Cnd_t cond) noexcept { // clean up
     if (cond) { // something to do, do it
-        _Cnd_destroy_in_situ(cond);
         _free_crt(cond);
     }
 }
@@ -52,9 +54,8 @@ _CRTIMP2_PURE void __cdecl _Mtx_reset_owner(_Mtx_t mtx) noexcept { // set owner 
 }
 
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx) noexcept { // wait until signaled
-    const auto cs = &mtx->_Critical_section;
     _Mtx_clear_owner(mtx);
-    Concurrency::details::_Get_cond_var(cond)->wait(cs);
+    _Primitive_wait(cond, mtx);
     _Mtx_reset_owner(mtx);
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
@@ -63,17 +64,15 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_wait(const _Cnd_t cond, const _Mtx_t mtx
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(
     const _Cnd_t cond, const _Mtx_t mtx, const _timespec64* const target) noexcept {
     _Thrd_result res = _Thrd_result::_Success;
-    const auto cs    = &mtx->_Critical_section;
     if (target == nullptr) { // no target time specified, wait on mutex
         _Mtx_clear_owner(mtx);
-        Concurrency::details::_Get_cond_var(cond)->wait(cs);
+        _Primitive_wait(cond, mtx);
         _Mtx_reset_owner(mtx);
     } else { // target time specified, wait for it
         _timespec64 now;
         _Timespec64_get_sys(&now);
         _Mtx_clear_owner(mtx);
-        if (!Concurrency::details::_Get_cond_var(cond)->wait_for(
-                cs, _Xtime_diff_to_millis2(target, &now))) { // report timeout
+        if (!_Primitive_wait_for(cond, mtx, _Xtime_diff_to_millis2(target, &now))) { // report timeout
             _Timespec64_get_sys(&now);
             if (_Xtime_diff_to_millis2(target, &now) == 0) {
                 res = _Thrd_result::_Timedout;
@@ -85,12 +84,12 @@ _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_timedwait(
 }
 
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_signal(const _Cnd_t cond) noexcept { // release one waiting thread
-    Concurrency::details::_Get_cond_var(cond)->notify_one();
+    _Primitive_notify_one(cond);
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 
 _CRTIMP2_PURE _Thrd_result __cdecl _Cnd_broadcast(const _Cnd_t cond) noexcept { // release all waiting threads
-    Concurrency::details::_Get_cond_var(cond)->notify_all();
+    _Primitive_notify_all(cond);
     return _Thrd_result::_Success; // TRANSITION, ABI: Always succeeds
 }
 

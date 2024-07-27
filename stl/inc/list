@@ -1193,7 +1193,7 @@ public:
 
     _NODISCARD size_type max_size() const noexcept {
         return (_STD min)(
-            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alnode_traits::max_size(_Getal()));
+            static_cast<size_type>(_STD _Max_limit<difference_type>()), _Alnode_traits::max_size(_Getal()));
     }
 
     _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
@@ -1864,8 +1864,7 @@ list(_Iter, _Iter, _Alloc = _Alloc()) -> list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
-    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
 list(from_range_t, _Rng&&, _Alloc = _Alloc()) -> list<_RANGES range_value_t<_Rng>, _Alloc>;
 #endif // _HAS_CXX23
 

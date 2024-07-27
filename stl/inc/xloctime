@@ -563,6 +563,7 @@ protected:
 
         default:
             _State |= ios_base::failbit; // unknown specifier
+            break;
         }
 
         if (_First == _Last) {

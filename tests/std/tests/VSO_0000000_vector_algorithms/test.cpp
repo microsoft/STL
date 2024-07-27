@@ -170,6 +170,19 @@ auto last_known_good_find_first_of(FwdItH h_first, FwdItH h_last, FwdItN n_first
     return h_first;
 }
 
+template <class RanItH, class RanItN>
+auto last_known_good_search(RanItH h_first, RanItH h_last, RanItN n_first, RanItN n_last) {
+    const auto n_len = n_last - n_first;
+
+    for (; h_last - h_first >= n_len; ++h_first) {
+        if (equal(h_first, h_first + n_len, n_first, n_last)) {
+            return h_first;
+        }
+    }
+
+    return h_last;
+}
+
 template <class T>
 void test_case_find(const vector<T>& input, T v) {
     auto expected = last_known_good_find(input.begin(), input.end(), v);
@@ -275,12 +288,13 @@ void test_case_find_first_of(const vector<T>& input_haystack, const vector<T>& i
 
 template <class T>
 void test_find_first_of(mt19937_64& gen) {
-    constexpr size_t needleDataCount = 50;
-    using TD                         = conditional_t<sizeof(T) == 1, int, T>;
+    constexpr size_t haystackDataCount = 200;
+    constexpr size_t needleDataCount   = 35;
+    using TD                           = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('a', 'z');
     vector<T> input_haystack;
     vector<T> input_needle;
-    input_haystack.reserve(dataCount);
+    input_haystack.reserve(haystackDataCount);
     input_needle.reserve(needleDataCount);
 
     for (;;) {
@@ -292,7 +306,7 @@ void test_find_first_of(mt19937_64& gen) {
             test_case_find_first_of(input_haystack, input_needle);
         }
 
-        if (input_haystack.size() == dataCount) {
+        if (input_haystack.size() == haystackDataCount) {
             break;
         }
 
@@ -310,6 +324,56 @@ void test_find_first_of_containers() {
     const auto ranges_result = ranges::find_first_of(haystack, needle);
     assert(ranges_result == haystack.begin() + 6);
 #endif // _HAS_CXX20
+}
+
+template <class T>
+void test_case_search(const vector<T>& input_haystack, const vector<T>& input_needle) {
+    auto expected =
+        last_known_good_search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    auto actual = search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    assert(expected == actual);
+#if _HAS_CXX17
+    auto searcher_actual = search(
+        input_haystack.begin(), input_haystack.end(), default_searcher{input_needle.begin(), input_needle.end()});
+    assert(expected == searcher_actual);
+#endif // _HAS_CXX17
+#if _HAS_CXX20
+    auto ranges_actual = ranges::search(input_haystack, input_needle);
+    assert(expected == begin(ranges_actual));
+    if (expected != input_haystack.end()) {
+        assert(expected + static_cast<ptrdiff_t>(input_needle.size()) == end(ranges_actual));
+    } else {
+        assert(expected == end(ranges_actual));
+    }
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_search(mt19937_64& gen) {
+    constexpr size_t haystackDataCount = 200;
+    constexpr size_t needleDataCount   = 35;
+    using TD                           = conditional_t<sizeof(T) == 1, int, T>;
+    uniform_int_distribution<TD> dis('0', '9');
+    vector<T> input_haystack;
+    vector<T> input_needle;
+    input_haystack.reserve(haystackDataCount);
+    input_needle.reserve(needleDataCount);
+
+    for (;;) {
+        input_needle.clear();
+
+        test_case_search(input_haystack, input_needle);
+        for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
+            input_needle.push_back(static_cast<T>(dis(gen)));
+            test_case_search(input_haystack, input_needle);
+        }
+
+        if (input_haystack.size() == haystackDataCount) {
+            break;
+        }
+
+        input_haystack.push_back(static_cast<T>(dis(gen)));
+    }
 }
 
 template <class T>
@@ -426,38 +490,34 @@ auto last_known_good_mismatch(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt las
 }
 
 template <class FwdIt>
-bool last_known_good_lex_compare(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
-    for (;; ++first1, ++first2) {
-        if (first2 == last2) {
-            return false;
-        } else if (first1 == last1) {
-            return true;
-        } else if (*first1 < *first2) {
-            return true;
-        } else if (*first2 < *first1) {
-            return false;
-        }
+bool last_known_good_lex_compare(pair<FwdIt, FwdIt> expected_mismatch, FwdIt last1, FwdIt last2) {
+    if (expected_mismatch.second == last2) {
+        return false;
+    } else if (expected_mismatch.first == last1) {
+        return true;
+    } else if (*expected_mismatch.first < *expected_mismatch.second) {
+        return true;
+    } else {
+        assert(*expected_mismatch.second < *expected_mismatch.first);
+        return false;
     }
 }
 
 #if _HAS_CXX20
 template <class FwdIt>
-auto last_known_good_lex_compare_3way(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
-    for (;; ++first1, ++first2) {
-        if (first2 == last2) {
-            if (first1 == last1) {
-                return strong_ordering::equal;
-            } else {
-                return strong_ordering::greater;
-            }
-        } else if (first1 == last1) {
-            return strong_ordering::less;
+auto last_known_good_lex_compare_3way(pair<FwdIt, FwdIt> expected_mismatch, FwdIt last1, FwdIt last2) {
+    if (expected_mismatch.second == last2) {
+        if (expected_mismatch.first == last1) {
+            return strong_ordering::equal;
         } else {
-            auto order = *first1 <=> *first2;
-            if (order != 0) {
-                return order;
-            }
+            return strong_ordering::greater;
         }
+    } else if (expected_mismatch.first == last1) {
+        return strong_ordering::less;
+    } else {
+        auto order = *expected_mismatch.first <=> *expected_mismatch.second;
+        assert(order != 0);
+        return order;
     }
 }
 #endif // _HAS_CXX20
@@ -468,7 +528,7 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
     auto actual_mismatch   = mismatch(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_mismatch == actual_mismatch);
 
-    auto expected_lex = last_known_good_lex_compare(a.begin(), a.end(), b.begin(), b.end());
+    auto expected_lex = last_known_good_lex_compare(expected_mismatch, a.end(), b.end());
     auto actual_lex   = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_lex == actual_lex);
 
@@ -480,7 +540,7 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
     auto ranges_actual_lex = ranges::lexicographical_compare(a, b);
     assert(expected_lex == ranges_actual_lex);
 
-    auto expected_lex_3way = last_known_good_lex_compare_3way(a.begin(), a.end(), b.begin(), b.end());
+    auto expected_lex_3way = last_known_good_lex_compare_3way(expected_mismatch, a.end(), b.end());
     auto actual_lex_3way   = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_lex_3way == actual_lex_3way);
 #endif // _HAS_CXX20
@@ -489,7 +549,7 @@ void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<
 template <class T>
 void test_mismatch_and_lex_compare_family(mt19937_64& gen) {
     constexpr size_t shrinkCount   = 4;
-    constexpr size_t mismatchCount = 30;
+    constexpr size_t mismatchCount = 10;
     using TD                       = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('a', 'z');
     vector<T> input_a;
@@ -821,6 +881,16 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_find_first_of_containers<const vector<wchar_t>, vector<wchar_t>>();
     test_find_first_of_containers<vector<char>, vector<int>>();
 
+    test_search<char>(gen);
+    test_search<signed char>(gen);
+    test_search<unsigned char>(gen);
+    test_search<short>(gen);
+    test_search<unsigned short>(gen);
+    test_search<int>(gen);
+    test_search<unsigned int>(gen);
+    test_search<long long>(gen);
+    test_search<unsigned long long>(gen);
+
     test_min_max_element<char>(gen);
     test_min_max_element<signed char>(gen);
     test_min_max_element<unsigned char>(gen);
@@ -1110,11 +1180,5 @@ int main() {
     test_various_containers();
     test_bitset(gen);
 #endif // defined(_M_IX86) || defined(_M_X64)
-#if defined(_M_IX86)
-    disable_instructions(__ISA_AVAILABLE_SSE2);
-    test_vector_algorithms(gen);
-    test_various_containers();
-    test_bitset(gen);
-#endif // defined(_M_IX86)
 #endif // _M_CEE_PURE
 }
