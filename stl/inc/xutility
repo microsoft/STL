@@ -960,31 +960,28 @@ concept contiguous_iterator = random_access_iterator<_It>
 // clang-format on
 
 _EXPORT_STD template <class _Fn, class _It>
-concept indirectly_unary_invocable =
-    indirectly_readable<_It> && copy_constructible<_Fn> && invocable<_Fn&, _Indirect_value_t<_It>>
-    && invocable<_Fn&, iter_reference_t<_It>> && invocable<_Fn&, iter_common_reference_t<_It>>
-    && common_reference_with<invoke_result_t<_Fn&, _Indirect_value_t<_It>>,
-        invoke_result_t<_Fn&, iter_reference_t<_It>>>;
+concept indirectly_unary_invocable = indirectly_readable<_It> && copy_constructible<_Fn>
+                                  && invocable<_Fn&, _Indirect_value_t<_It>> && invocable<_Fn&, iter_reference_t<_It>>
+                                  && common_reference_with<invoke_result_t<_Fn&, _Indirect_value_t<_It>>,
+                                      invoke_result_t<_Fn&, iter_reference_t<_It>>>;
 
 _EXPORT_STD template <class _Fn, class _It>
 concept indirectly_regular_unary_invocable =
     indirectly_readable<_It> && copy_constructible<_Fn> && regular_invocable<_Fn&, _Indirect_value_t<_It>>
-    && regular_invocable<_Fn&, iter_reference_t<_It>> && regular_invocable<_Fn&, iter_common_reference_t<_It>>
+    && regular_invocable<_Fn&, iter_reference_t<_It>>
     && common_reference_with<invoke_result_t<_Fn&, _Indirect_value_t<_It>>,
         invoke_result_t<_Fn&, iter_reference_t<_It>>>;
 
 _EXPORT_STD template <class _Fn, class _It>
-concept indirect_unary_predicate =
-    indirectly_readable<_It> && copy_constructible<_Fn> && predicate<_Fn&, _Indirect_value_t<_It>>
-    && predicate<_Fn&, iter_reference_t<_It>> && predicate<_Fn&, iter_common_reference_t<_It>>;
+concept indirect_unary_predicate = indirectly_readable<_It> && copy_constructible<_Fn>
+                                && predicate<_Fn&, _Indirect_value_t<_It>> && predicate<_Fn&, iter_reference_t<_It>>;
 
 _EXPORT_STD template <class _Fn, class _It1, class _It2>
 concept indirect_binary_predicate = indirectly_readable<_It1> && indirectly_readable<_It2> && copy_constructible<_Fn>
                                  && predicate<_Fn&, _Indirect_value_t<_It1>, _Indirect_value_t<_It2>>
                                  && predicate<_Fn&, _Indirect_value_t<_It1>, iter_reference_t<_It2>>
                                  && predicate<_Fn&, iter_reference_t<_It1>, _Indirect_value_t<_It2>>
-                                 && predicate<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
-                                 && predicate<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
+                                 && predicate<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>;
 
 _EXPORT_STD template <class _Fn, class _It1, class _It2 = _It1>
 concept indirect_equivalence_relation =
@@ -992,17 +989,14 @@ concept indirect_equivalence_relation =
     && equivalence_relation<_Fn&, _Indirect_value_t<_It1>, _Indirect_value_t<_It2>>
     && equivalence_relation<_Fn&, _Indirect_value_t<_It1>, iter_reference_t<_It2>>
     && equivalence_relation<_Fn&, iter_reference_t<_It1>, _Indirect_value_t<_It2>>
-    && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
-    && equivalence_relation<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
+    && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>;
 
 _EXPORT_STD template <class _Fn, class _It1, class _It2 = _It1>
-concept indirect_strict_weak_order =
-    indirectly_readable<_It1> && indirectly_readable<_It2> && copy_constructible<_Fn>
-    && strict_weak_order<_Fn&, _Indirect_value_t<_It1>, _Indirect_value_t<_It2>>
-    && strict_weak_order<_Fn&, _Indirect_value_t<_It1>, iter_reference_t<_It2>>
-    && strict_weak_order<_Fn&, iter_reference_t<_It1>, _Indirect_value_t<_It2>>
-    && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
-    && strict_weak_order<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
+concept indirect_strict_weak_order = indirectly_readable<_It1> && indirectly_readable<_It2> && copy_constructible<_Fn>
+                                  && strict_weak_order<_Fn&, _Indirect_value_t<_It1>, _Indirect_value_t<_It2>>
+                                  && strict_weak_order<_Fn&, _Indirect_value_t<_It1>, iter_reference_t<_It2>>
+                                  && strict_weak_order<_Fn&, iter_reference_t<_It1>, _Indirect_value_t<_It2>>
+                                  && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>;
 
 _EXPORT_STD template <class _Fn, class... _Its>
     requires (indirectly_readable<_Its> && ...) && invocable<_Fn, iter_reference_t<_Its>...>
@@ -7367,16 +7361,25 @@ _NODISCARD constexpr bool _Add_overflow(const _Int _Left, const _Int _Right, _In
         }
     }
 }
+#endif // _HAS_CXX23
 
+#if _HAS_CXX17
+#if _HAS_CXX20
 template <_Integer_like _Int>
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Int, enable_if_t<_Is_nonbool_integral<_Int>, int> = 0>
+#endif // ^^^ !_HAS_CXX20 ^^^
 _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _Int& _Out) {
+#if defined(__clang__) && !_HAS_CXX20
+    return __builtin_mul_overflow(_Left, _Right, &_Out);
+#else // ^^^ defined(__clang__) && !_HAS_CXX20 / !defined(__clang__) || _HAS_CXX20 vvv
 #ifdef __clang__
-    if constexpr (integral<_Int>) {
+    if constexpr (is_integral_v<_Int>) {
         return __builtin_mul_overflow(_Left, _Right, &_Out);
     } else
 #endif // defined(__clang__)
     {
-        if constexpr (!_Signed_integer_like<_Int>) {
+        if constexpr (static_cast<_Int>(-1) > static_cast<_Int>(0)) {
             constexpr auto _UInt_max = _STD _Max_limit<_Int>();
             const bool _Overflow     = _Left != 0 && _Right > _UInt_max / _Left;
             if (!_Overflow) {
@@ -7415,8 +7418,9 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
             // ^^^ Based on llvm::MulOverflow ^^^
         }
     }
+#endif // ^^^ !defined(__clang__) || _HAS_CXX20 ^^^
 }
-#endif // _HAS_CXX23
+#endif // _HAS_CXX17
 
 _STD_END
 

@@ -1523,8 +1523,10 @@ namespace ranges {
     constexpr auto _Compile_time_max_size<const as_rvalue_view<_Rng>> = _Compile_time_max_size<const _Rng>;
 
     namespace views {
+        // direct-non-list-initialization is specified in the Standard (N4981 [range.as.rvalue.overview]/2.2)
+        // and needed for EDG, DevCom-10698021
         template <class _Rng>
-        concept _Can_as_rvalue = requires(_Rng&& __r) { as_rvalue_view{static_cast<_Rng&&>(__r)}; };
+        concept _Can_as_rvalue = requires(_Rng&& __r) { as_rvalue_view(static_cast<_Rng&&>(__r)); };
 
         class _As_rvalue_fn : public _Pipe::_Base<_As_rvalue_fn> {
         private:
@@ -1532,10 +1534,10 @@ namespace ranges {
 
             template <class _Rng>
             _NODISCARD static consteval _Choice_t<_St> _Choose() noexcept {
-                if constexpr (same_as<range_rvalue_reference_t<_Rng>, range_reference_t<_Rng>>) {
+                if constexpr (input_range<_Rng> && same_as<range_rvalue_reference_t<_Rng>, range_reference_t<_Rng>>) {
                     return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
                 } else if constexpr (_Can_as_rvalue<_Rng>) {
-                    return {_St::_As_rvalue, noexcept(as_rvalue_view{_STD declval<_Rng>()})};
+                    return {_St::_As_rvalue, noexcept(as_rvalue_view(_STD declval<_Rng>()))};
                 } else {
                     return {_St::_None};
                 }
@@ -1553,7 +1555,7 @@ namespace ranges {
                 if constexpr (_Strat == _St::_All) {
                     return views::all(_STD forward<_Rng>(_Range));
                 } else if constexpr (_Strat == _St::_As_rvalue) {
-                    return as_rvalue_view{_STD forward<_Rng>(_Range)};
+                    return as_rvalue_view(_STD forward<_Rng>(_Range));
                 } else {
                     _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
                 }
@@ -3047,15 +3049,40 @@ namespace ranges {
     } // namespace views
 
 #if _HAS_CXX23
-    template <class _Rng, class _Pat>
-    concept _Compatible_joinable_ranges =
-        common_with<range_value_t<_Rng>, range_value_t<_Pat>>
-        && common_reference_with<range_reference_t<_Rng>, range_reference_t<_Pat>>
-        && common_reference_with<range_rvalue_reference_t<_Rng>, range_rvalue_reference_t<_Pat>>;
+    template <class... _Rngs>
+    using _Concat_reference_t = common_reference_t<range_reference_t<_Rngs>...>;
+
+    template <class... _Rngs>
+    using _Concat_value_t = common_type_t<range_value_t<_Rngs>...>;
+
+    template <class... _Rngs>
+    using _Concat_rvalue_reference_t = common_reference_t<range_rvalue_reference_t<_Rngs>...>;
+
+    template <class _Ref, class _RRef, class _It>
+    concept _Concat_indirectly_readable_impl = requires(const _It __i) {
+        { *__i } -> convertible_to<_Ref>;
+        { _RANGES iter_move(__i) } -> convertible_to<_RRef>;
+    };
+
+    template <class... _Rngs>
+    concept _Concat_indirectly_readable =
+        common_reference_with<_Concat_reference_t<_Rngs...>&&, _Concat_value_t<_Rngs...>&>
+        && common_reference_with<_Concat_reference_t<_Rngs...>&&, _Concat_rvalue_reference_t<_Rngs...>&&>
+        && common_reference_with<_Concat_rvalue_reference_t<_Rngs...>&&, const _Concat_value_t<_Rngs...>&>
+        && (_Concat_indirectly_readable_impl<_Concat_reference_t<_Rngs...>, _Concat_rvalue_reference_t<_Rngs...>,
+                iterator_t<_Rngs>>
+            && ...);
+
+    template <class... _Rngs>
+    concept _Concatable = requires {
+        typename _Concat_reference_t<_Rngs...>;
+        typename _Concat_value_t<_Rngs...>;
+        typename _Concat_rvalue_reference_t<_Rngs...>;
+    } && _Concat_indirectly_readable<_Rngs...>;
 
     _EXPORT_STD template <input_range _Vw, forward_range _Pat>
         requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat>
-              && _Compatible_joinable_ranges<range_reference_t<_Vw>, _Pat>
+              && _Concatable<range_reference_t<_Vw>, _Pat>
     class join_with_view;
 
     template <class _Vw, class _Pat>
@@ -3089,7 +3116,7 @@ namespace ranges {
 
     _EXPORT_STD template <input_range _Vw, forward_range _Pat>
         requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat>
-              && _Compatible_joinable_ranges<range_reference_t<_Vw>, _Pat>
+              && _Concatable<range_reference_t<_Vw>, _Pat>
     class join_with_view : public _Join_with_view_outer_iter_base<_Vw, _Pat> {
     private:
         template <bool _Const>
@@ -3500,7 +3527,7 @@ namespace ranges {
 
         _NODISCARD constexpr auto begin() const
             requires forward_range<const _Vw> && forward_range<const _Pat> && is_reference_v<_InnerRng<true>>
-                  && input_range<_InnerRng<true>>
+                  && input_range<_InnerRng<true>> && _Concatable<range_reference_t<const _Vw>, const _Pat>
         {
             return _Iterator<true>{*this, _RANGES begin(_Range)};
         }
@@ -3517,7 +3544,7 @@ namespace ranges {
 
         _NODISCARD constexpr auto end() const
             requires forward_range<const _Vw> && forward_range<const _Pat> && is_reference_v<_InnerRng<true>>
-                  && input_range<_InnerRng<true>>
+                  && input_range<_InnerRng<true>> && _Concatable<range_reference_t<const _Vw>, const _Pat>
         {
             if constexpr (forward_range<_InnerRng<true>> && common_range<_Vw> && common_range<_InnerRng<true>>) {
                 return _Iterator<true>{*this, _RANGES end(_Range)};
@@ -8343,7 +8370,7 @@ namespace ranges {
 
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&&) _CONST_CALL_OPERATOR noexcept
-                requires (_Nx == 0)
+                requires (_Nx == 0) && forward_range<_Rng>
             {
                 return empty_view<tuple<>>{};
             }
@@ -8679,7 +8706,8 @@ namespace ranges {
             template <viewable_range _Rng, class _Fn>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&&, _Fn&& _Func) _CONST_CALL_OPERATOR
                 noexcept(noexcept(views::zip_transform(_STD forward<_Fn>(_Func))))
-                requires (_Nx == 0) && requires { views::zip_transform(_STD forward<_Fn>(_Func)); }
+                requires (_Nx == 0)
+                      && forward_range<_Rng> && requires { views::zip_transform(_STD forward<_Fn>(_Func)); }
             {
                 return views::zip_transform(_STD forward<_Fn>(_Func));
             }

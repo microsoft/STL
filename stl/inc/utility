@@ -261,8 +261,8 @@ struct pair { // store a pair of values
     pair(pair&&)      = default;
 
 #if _HAS_CXX23
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1&>, is_constructible<_Ty2, _Other2&>>, int> = 0>
+    template <class _Other1, class _Other2>
+        requires is_constructible_v<_Ty1, _Other1&> && is_constructible_v<_Ty2, _Other2&>
     constexpr explicit(!conjunction_v<is_convertible<_Other1&, _Ty1>, is_convertible<_Other2&, _Ty2>>)
         pair(pair<_Other1, _Other2>& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1&> && is_nothrow_constructible_v<_Ty2, _Other2&>) // strengthened
@@ -286,9 +286,8 @@ struct pair { // store a pair of values
         : first(_STD forward<_Other1>(_Right.first)), second(_STD forward<_Other2>(_Right.second)) {}
 
 #if _HAS_CXX23
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<is_constructible<_Ty1, const _Other1>, is_constructible<_Ty2, const _Other2>>, int> =
-            0>
+    template <class _Other1, class _Other2>
+        requires is_constructible_v<_Ty1, const _Other1> && is_constructible_v<_Ty2, const _Other2>
     constexpr explicit(!conjunction_v<is_convertible<const _Other1, _Ty1>, is_convertible<const _Other2, _Ty2>>)
         pair(const pair<_Other1, _Other2>&& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, const _Other1>
@@ -335,10 +334,9 @@ struct pair { // store a pair of values
     }
 
 #if _HAS_CXX23
-    template <class _Myself = pair,
-        enable_if_t<conjunction_v<_Is_copy_assignable_no_precondition_check<const typename _Myself::first_type>,
-                        _Is_copy_assignable_no_precondition_check<const typename _Myself::second_type>>,
-            int>            = 0>
+    template <class _Myself = pair>
+        requires _Is_copy_assignable_unchecked_v<const typename _Myself::first_type>
+              && _Is_copy_assignable_unchecked_v<const typename _Myself::second_type>
     constexpr const pair& operator=(_Identity_t<const _Myself&> _Right) const
         noexcept(conjunction_v<is_nothrow_copy_assignable<const _Ty1>,
             is_nothrow_copy_assignable<const _Ty2>>) /* strengthened */ {
@@ -360,10 +358,9 @@ struct pair { // store a pair of values
     }
 
 #if _HAS_CXX23
-    template <class _Myself = pair,
-        enable_if_t<conjunction_v<_Is_assignable_no_precondition_check<const typename _Myself::first_type&, _Ty1>,
-                        _Is_assignable_no_precondition_check<const typename _Myself::second_type&, _Ty2>>,
-            int>            = 0>
+    template <class _Myself = pair>
+        requires _Is_assignable_no_precondition_check<const typename _Myself::first_type&, _Ty1>::value
+              && _Is_assignable_no_precondition_check<const typename _Myself::second_type&, _Ty2>::value
     constexpr const pair& operator=(_Identity_t<_Myself&&> _Right) const
         noexcept(conjunction_v<is_nothrow_assignable<const _Ty1&, _Ty1>,
             is_nothrow_assignable<const _Ty2&, _Ty2>>) /* strengthened */ {
@@ -386,10 +383,9 @@ struct pair { // store a pair of values
     }
 
 #if _HAS_CXX23
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<negation<is_same<pair, pair<_Other1, _Other2>>>,
-                        is_assignable<const _Ty1&, const _Other1&>, is_assignable<const _Ty2&, const _Other2&>>,
-            int> = 0>
+    template <class _Other1, class _Other2>
+        requires (!is_same_v<pair, pair<_Other1, _Other2>>)
+              && is_assignable_v<const _Ty1&, const _Other1&> && is_assignable_v<const _Ty2&, const _Other2&>
     constexpr const pair& operator=(const pair<_Other1, _Other2>& _Right) const
         noexcept(is_nothrow_assignable_v<const _Ty1&, const _Other1&>
                  && is_nothrow_assignable_v<const _Ty2&, const _Other2&>) /* strengthened */ {
@@ -411,10 +407,9 @@ struct pair { // store a pair of values
     }
 
 #if _HAS_CXX23
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<negation<is_same<pair, pair<_Other1, _Other2>>>, is_assignable<const _Ty1&, _Other1>,
-                        is_assignable<const _Ty2&, _Other2>>,
-            int> = 0>
+    template <class _Other1, class _Other2>
+        requires (!is_same_v<pair, pair<_Other1, _Other2>>)
+              && is_assignable_v<const _Ty1&, _Other1> && is_assignable_v<const _Ty2&, _Other2>
     constexpr const pair& operator=(pair<_Other1, _Other2>&& _Right) const
         noexcept(is_nothrow_assignable_v<const _Ty1&, _Other1>
                  && is_nothrow_assignable_v<const _Ty2&, _Other2>) /* strengthened */ {
@@ -481,8 +476,8 @@ _CONSTEXPR20 void swap(pair<_Ty1, _Ty2>& _Left, pair<_Ty1, _Ty2>& _Right) noexce
 }
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Ty1, class _Ty2,
-    enable_if_t<is_swappable_v<const _Ty1> && is_swappable_v<const _Ty2>, int> = 0>
+_EXPORT_STD template <class _Ty1, class _Ty2>
+    requires is_swappable<const _Ty1>::value && is_swappable<const _Ty2>::value // TRANSITION, /permissive needs ::value
 constexpr void swap(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
@@ -794,14 +789,9 @@ _EXPORT_STD template <size_t _Idx>
 constexpr in_place_index_t<_Idx> in_place_index{};
 #endif // _HAS_CXX17
 
-template <class _Ty>
-constexpr bool _Is_standard_integer = _Is_any_of_v<remove_cv_t<_Ty>, signed char, short, int, long, long long,
-    unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
-
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool _Cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
-        "The integer comparison functions only accept standard and extended integer types.");
+    _STL_INTERNAL_STATIC_ASSERT(_Is_nonbool_integral<_Ty1> && _Is_nonbool_integral<_Ty2>); // allows character types
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
         return _Left == _Right;
     } else if constexpr (is_signed_v<_Ty2>) {
@@ -818,8 +808,7 @@ _NODISCARD constexpr bool _Cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) no
 
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool _Cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
-    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
-        "The integer comparison functions only accept standard and extended integer types.");
+    _STL_INTERNAL_STATIC_ASSERT(_Is_nonbool_integral<_Ty1> && _Is_nonbool_integral<_Ty2>); // allows character types
     if constexpr (is_signed_v<_Ty1> == is_signed_v<_Ty2>) {
         return _Left < _Right;
     } else if constexpr (is_signed_v<_Ty2>) {
@@ -868,8 +857,7 @@ _NODISCARD constexpr _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>
 
 template <class _Rx, class _Ty>
 _NODISCARD constexpr bool _In_range(const _Ty _Value) noexcept {
-    static_assert(_Is_standard_integer<_Rx> && _Is_standard_integer<_Ty>,
-        "The integer comparison functions only accept standard and extended integer types.");
+    _STL_INTERNAL_STATIC_ASSERT(_Is_nonbool_integral<_Rx> && _Is_nonbool_integral<_Ty>); // allows character types
 
     constexpr auto _Ty_min = _Min_limit<_Ty>();
     constexpr auto _Rx_min = _Min_limit<_Rx>();
@@ -893,38 +881,56 @@ _NODISCARD constexpr bool _In_range(const _Ty _Value) noexcept {
 }
 
 #if _HAS_CXX20
+template <class _Ty>
+constexpr bool _Is_standard_integer = _Is_any_of_v<remove_cv_t<_Ty>, signed char, short, int, long, long long,
+    unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_equal(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_not_equal(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_less(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_greater(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_less_equal(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
+    static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _Cmp_greater_equal(_Left, _Right);
 }
 
 _EXPORT_STD template <class _Rx, class _Ty>
 _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
+    static_assert(_Is_standard_integer<_Rx> && _Is_standard_integer<_Ty>,
+        "The integer comparison functions only accept standard and extended integer types.");
     return _STD _In_range<_Rx>(_Value);
 }
 #endif // _HAS_CXX20

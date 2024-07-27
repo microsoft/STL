@@ -553,12 +553,11 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Myself = tuple, class _This2 = _This,
-        enable_if_t<conjunction_v<_STD _Is_copy_assignable_no_precondition_check<const _This2>,
-                        _STD _Is_copy_assignable_no_precondition_check<const _Rest>...>,
-            int> = 0>
+    template <class _Myself = tuple>
+        requires conjunction_v<_STD _Is_copy_assignable_no_precondition_check<const _This>,
+            _STD _Is_copy_assignable_no_precondition_check<const _Rest>...>
     constexpr const tuple& operator=(_Identity_t<const _Myself&> _Right) const
-        noexcept(conjunction_v<is_nothrow_copy_assignable<const _This2>,
+        noexcept(conjunction_v<is_nothrow_copy_assignable<const _This>,
             is_nothrow_copy_assignable<const _Rest>...>) /* strengthened */ {
         _Myfirst._Val = _Right._Myfirst._Val;
         _Get_rest()   = _Right._Get_rest();
@@ -578,12 +577,11 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Myself = tuple, class _This2 = _This,
-        enable_if_t<conjunction_v<_STD _Is_assignable_no_precondition_check<const _This2&, _This2>,
-                        _STD _Is_assignable_no_precondition_check<const _Rest&, _Rest>...>,
-            int> = 0>
+    template <class _Myself = tuple>
+        requires conjunction_v<_STD _Is_assignable_no_precondition_check<const _This&, _This>,
+            _STD _Is_assignable_no_precondition_check<const _Rest&, _Rest>...>
     constexpr const tuple& operator=(_Identity_t<_Myself&&> _Right) const
-        noexcept(conjunction_v<is_nothrow_assignable<const _This2&, _This2>,
+        noexcept(conjunction_v<is_nothrow_assignable<const _This&, _This>,
             is_nothrow_assignable<const _Rest&, _Rest>...>) /* strengthened */ {
         _Myfirst._Val = _STD forward<_This>(_Right._Myfirst._Val);
         _Get_rest()   = _STD forward<_Mybase>(_Right._Get_rest());
@@ -602,9 +600,8 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class... _Other, enable_if_t<conjunction_v<_STD negation<_STD is_same<tuple, _STD tuple<_Other...>>>,
-                                               _STD _Tuple_assignable_val<const tuple, const _Other&...>>,
-                                   int> = 0>
+    template <class... _Other>
+        requires (!is_same_v<tuple, _STD tuple<_Other...>>) && _Tuple_assignable_v<const tuple, const _Other&...>
     constexpr const tuple& operator=(const tuple<_Other...>& _Right) const
         noexcept(_Tuple_nothrow_assignable_v<const tuple, const _Other&...>) /* strengthened */ {
         _Myfirst._Val = _Right._Myfirst._Val;
@@ -624,9 +621,8 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class... _Other, enable_if_t<conjunction_v<_STD negation<_STD is_same<tuple, _STD tuple<_Other...>>>,
-                                               _STD _Tuple_assignable_val<const tuple, _Other...>>,
-                                   int> = 0>
+    template <class... _Other>
+        requires (!is_same_v<tuple, _STD tuple<_Other...>>) && _Tuple_assignable_v<const tuple, _Other...>
     constexpr const tuple& operator=(tuple<_Other...>&& _Right) const
         noexcept(_Tuple_nothrow_assignable_v<const tuple, _Other...>) /* strengthened */ {
         _Myfirst._Val = _STD forward<typename tuple<_Other...>::_This_type>(_Right._Myfirst._Val);
@@ -645,8 +641,8 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _First, class _Second,
-        enable_if_t<_Tuple_assignable_v<const tuple, const _First&, const _Second&>, int> = 0>
+    template <class _First, class _Second>
+        requires _Tuple_assignable_v<const tuple, const _First&, const _Second&>
     constexpr const tuple& operator=(const pair<_First, _Second>& _Right) const
         noexcept(_Tuple_nothrow_assignable_v<const tuple, const _First&, const _Second&>) /* strengthened */ {
         _Myfirst._Val             = _Right.first;
@@ -664,7 +660,8 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _First, class _Second, enable_if_t<_Tuple_assignable_v<const tuple, _First, _Second>, int> = 0>
+    template <class _First, class _Second>
+        requires _Tuple_assignable_v<const tuple, _First, _Second>
     constexpr const tuple& operator=(pair<_First, _Second>&& _Right) const
         noexcept(_Tuple_nothrow_assignable_v<const tuple, _First, _Second>) /* strengthened */ {
         _Myfirst._Val             = _STD forward<_First>(_Right.first);
@@ -896,7 +893,8 @@ _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexce
 }
 
 #if _HAS_CXX23
-_EXPORT_STD template <class... _Types, enable_if_t<conjunction_v<is_swappable<const _Types>...>, int> = 0>
+_EXPORT_STD template <class... _Types>
+    requires conjunction_v<is_swappable<const _Types>...>
 constexpr void swap(const tuple<_Types...>& _Left, const tuple<_Types...>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);

@@ -313,6 +313,7 @@
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
 // P2905R2 Runtime Format Strings
 // P2909R4 Fix Formatting Of Code Units As Integers
+// P2997R1 Removing The Common Reference Requirement From The Indirectly Invocable Concepts
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -897,8 +898,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 17.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1940 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.40 or newer.");
+#if _MSC_VER < 1941 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.41 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1838,7 +1839,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif
 
 #if _HAS_CXX23
-#define __cpp_lib_ranges 202302L // P2609R3 Relaxing Ranges Just A Smidge
+// P2997R1 Removing The Common Reference Requirement From The Indirectly Invocable Concepts
+#define __cpp_lib_ranges 202406L
 #elif _HAS_CXX20
 #define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
 #endif
@@ -1938,6 +1940,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
 #define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN7  0x0601 // _WIN32_WINNT_WIN7 from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN8  0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN10 0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
 
@@ -1946,10 +1949,13 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #if defined(_M_ARM64)
 // The first ARM64 Windows was Windows 10
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN10
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-// The earliest Windows supported by this implementation is Windows 8
+#elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
+// The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#else // ^^^ default to Win8 / default to Win7 vvv
+// The earliest Windows supported by this implementation is Windows 7
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN7
+#endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
 #endif // !defined(_STL_WIN32_WINNT)
 
 #ifdef __cpp_noexcept_function_type

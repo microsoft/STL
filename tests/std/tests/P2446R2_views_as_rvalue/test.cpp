@@ -401,6 +401,17 @@ void test_example_from_p2446r2() {
     assert(ranges::all_of(words, ranges::empty)); // all strings from words are empty (implementation assumption)
 }
 
+// LWG-4083 "views::as_rvalue should reject non-input ranges"
+struct OutputRvalueIterator {
+    using difference_type = int;
+    int operator*() const;
+    OutputRvalueIterator& operator++();
+    void operator++(int);
+};
+using OutputRvalueRange = decltype(ranges::subrange{OutputRvalueIterator{}, unreachable_sentinel});
+
+static_assert(!CanViewAsRvalue<OutputRvalueRange>);
+
 int main() {
     { // Validate views
         // ... copyable
