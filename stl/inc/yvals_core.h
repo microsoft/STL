@@ -392,6 +392,7 @@
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
+// P2787R1 pmr::generator
 // P2833R2 Freestanding Library: inout expected span
 //     (except for __cpp_lib_span which also covers C++26 span::at)
 // P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility

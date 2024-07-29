@@ -16,6 +16,9 @@ _EMIT_STL_WARNING(STL4038, "The contents of <generator> are available only with 
 #include <coroutine>
 #include <exception>
 #include <xmemory>
+#ifdef __cpp_lib_byte
+#include <xpolymorphic_allocator.h>
+#endif // defined(__cpp_lib_byte)
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -504,6 +507,12 @@ private:
     explicit generator(_Gen_secret_tag, coroutine_handle<promise_type> _Coro_) noexcept : _Coro(_Coro_) {}
 };
 
+#ifdef __cpp_lib_byte
+namespace pmr {
+    _EXPORT_STD template <class _Rty, class _Vty = void>
+    using generator = _STD generator<_Rty, _Vty, polymorphic_allocator<>>;
+} // namespace pmr
+#endif // defined(__cpp_lib_byte)
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
