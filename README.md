@@ -190,27 +190,27 @@ To build the x64 target (recommended):
 
 To build the ARM target:
 
-1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
+1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm`
+    * If you installed VS to a non-default location, change this path accordingly.
 2. Change directories to the previously cloned `STL` directory.
-3. `"%VSINSTALLDIR%VC\Auxiliary\Build\vcvarsall.bat" x64_arm`
-4. `cmake --preset ARM`
-5. `cmake --build --preset ARM`
+3. `cmake --preset ARM`
+4. `cmake --build --preset ARM`
 
 To build the ARM64 target:
 
-1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
+1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
+    * If you installed VS to a non-default location, change this path accordingly.
 2. Change directories to the previously cloned `STL` directory.
-3. `"%VSINSTALLDIR%VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
-4. `cmake --preset ARM64`
-5. `cmake --build --preset ARM64`
+3. `cmake --preset ARM64`
+4. `cmake --build --preset ARM64`
 
 To build the ARM64EC target:
 
-1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
+1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
+    * If you installed VS to a non-default location, change this path accordingly.
 2. Change directories to the previously cloned `STL` directory.
-3. `"%VSINSTALLDIR%VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
-4. `cmake --preset ARM64EC`
-5. `cmake --build --preset ARM64EC`
+3. `cmake --preset ARM64EC`
+4. `cmake --build --preset ARM64EC`
 
 # How To Consume
 
