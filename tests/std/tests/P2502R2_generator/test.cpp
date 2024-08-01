@@ -9,6 +9,7 @@
 #include <forward_list>
 #include <generator>
 #include <memory>
+#include <memory_resource>
 #include <new>
 #include <ostream>
 #include <random>
@@ -163,6 +164,18 @@ void static_allocator_test() {
         assert(ranges::equal(g(allocator_arg, stateful_alloc<int>{42}, 1024), views::iota(0, 1024)));
     }
 #endif // ^^^ no workaround ^^^
+    {
+        auto g = [](allocator_arg_t, pmr::polymorphic_allocator<int>, const int hi) -> pmr::generator<int, int> {
+            constexpr size_t n = 64;
+            int some_ints[n];
+            for (int i = 0; i < hi; ++i) {
+                co_yield some_ints[i % n] = i;
+            }
+        };
+
+        static_assert(is_same_v<pmr::generator<int, int>, generator<int, int, pmr::polymorphic_allocator<>>>);
+        assert(ranges::equal(g(allocator_arg, pmr::polymorphic_allocator<int>{}, 1024), views::iota(0, 1024)));
+    }
 }
 
 void dynamic_allocator_test() {
@@ -179,6 +192,8 @@ void dynamic_allocator_test() {
 #ifndef __EDG__ // TRANSITION, VSO-1951821
     assert(ranges::equal(g(allocator_arg, stateful_alloc<float>{1729}, 1024), views::iota(0, 1024)));
 #endif // ^^^ no workaround ^^^
+    pmr::synchronized_pool_resource pool;
+    assert(ranges::equal(g(allocator_arg, pmr::polymorphic_allocator<int>{&pool}, 1024), views::iota(0, 1024)));
 }
 
 void zip_example() {
