@@ -221,15 +221,11 @@ public:
         // compare [_First1, _First1 + _Count) with [_First2, ...)
 #if _HAS_CXX17
         if constexpr (is_same_v<_Elem, wchar_t>) {
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) {
+            if (_STD _Is_constant_evaluated()) {
                 return __builtin_wmemcmp(_First1, _First2, _Count);
             } else {
                 return _CSTD wmemcmp(_First1, _First2, _Count);
             }
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-            return __builtin_wmemcmp(_First1, _First2, _Count);
-#endif // ^^^ !_HAS_CXX20 ^^^
         } else {
             return _Primary_char_traits::compare(_First1, _First2, _Count);
         }
@@ -257,15 +253,11 @@ public:
         // look for _Ch in [_First, _First + _Count)
 #if _HAS_CXX17
         if constexpr (is_same_v<_Elem, wchar_t>) {
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) {
+            if (_STD _Is_constant_evaluated()) {
                 return __builtin_wmemchr(_First, _Ch, _Count);
             } else {
                 return _CSTD wmemchr(_First, _Ch, _Count);
             }
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-            return __builtin_wmemchr(_First, _Ch, _Count);
-#endif // ^^^ !_HAS_CXX20 ^^^
         } else {
             return _Primary_char_traits::find(_First, _Count, _Ch);
         }
