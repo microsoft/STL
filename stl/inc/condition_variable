@@ -138,10 +138,10 @@ public:
             return cv_status::no_timeout; // Real or WinAPI-internal spurious wake
         } else if (_Rel_time_ms._Clamped) {
             return cv_status::no_timeout; // Spuriously wake due to clamped timeout
+        } else if (_CHRONO steady_clock::now() < _Target) {
+            return cv_status::no_timeout; // Spuriously wake due to premature timeout
         } else {
-            const auto _Now = _CHRONO steady_clock::now();
-            // Spuriously wake if timed out prematurely
-            return (_Now >= _Target) ? cv_status::timeout : cv_status::no_timeout;
+            return cv_status::timeout;
         }
     }
 
