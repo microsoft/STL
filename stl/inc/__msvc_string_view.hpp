@@ -236,14 +236,16 @@ public:
     _NODISCARD static _CONSTEXPR17 size_t length(_In_z_ const _Elem* _First) noexcept /* strengthened */ {
         // find length of null-terminated sequence
 #if _HAS_CXX17
-        if constexpr (is_same_v<_Elem, wchar_t>) {
-            return __builtin_wcslen(_First);
-        } else {
-            return _Primary_char_traits::length(_First);
+        if (_STD _Is_constant_evaluated()) {
+            if constexpr (is_same_v<_Elem, wchar_t>) {
+                return __builtin_wcslen(_First);
+            } else {
+                return _Primary_char_traits::length(_First);
+            }
         }
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+#endif // _HAS_CXX17
+
         return _CSTD wcslen(reinterpret_cast<const wchar_t*>(_First));
-#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     _NODISCARD static _CONSTEXPR17 const _Elem* find(
