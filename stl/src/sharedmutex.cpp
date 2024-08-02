@@ -43,7 +43,7 @@ void __stdcall _Thrd_sleep_for(const unsigned long ms) noexcept { // suspend cur
 
 namespace {
     _Thrd_result __stdcall _Cnd_timedwait_for_impl(
-        const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target_ms, bool checked) noexcept {
+        const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target_ms, const bool checked) noexcept {
         _Thrd_result res            = _Thrd_result::_Success;
         unsigned long long start_ms = 0;
 
