@@ -82,7 +82,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _Deque_unchecked_const_iterator operator+(
+    _NODISCARD friend _Deque_unchecked_const_iterator operator+(
         const difference_type _Off, _Deque_unchecked_const_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
@@ -202,7 +202,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _Deque_unchecked_iterator operator+(
+    _NODISCARD friend _Deque_unchecked_iterator operator+(
         const difference_type _Off, _Deque_unchecked_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
@@ -323,7 +323,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _Deque_const_iterator operator+(
+    _NODISCARD friend _Deque_const_iterator operator+(
         const difference_type _Off, _Deque_const_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
@@ -484,7 +484,7 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND _Deque_iterator operator+(const difference_type _Off, _Deque_iterator _Next) noexcept {
+    _NODISCARD friend _Deque_iterator operator+(const difference_type _Off, _Deque_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
     }
