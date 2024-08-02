@@ -222,7 +222,7 @@ public:
 #if _HAS_CXX17
         if constexpr (is_same_v<_Elem, wchar_t>) {
 #if _HAS_CXX20
-            if (_STD _Is_constant_evaluated()) {
+            if (_STD is_constant_evaluated()) {
                 return __builtin_wmemcmp(_First1, _First2, _Count);
             } else {
                 return _CSTD wmemcmp(_First1, _First2, _Count);
@@ -258,7 +258,7 @@ public:
 #if _HAS_CXX17
         if constexpr (is_same_v<_Elem, wchar_t>) {
 #if _HAS_CXX20
-            if (_STD _Is_constant_evaluated()) {
+            if (_STD is_constant_evaluated()) {
                 return __builtin_wmemchr(_First, _Ch, _Count);
             } else {
                 return _CSTD wmemchr(_First, _Ch, _Count);
