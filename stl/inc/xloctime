@@ -651,7 +651,8 @@ protected:
     __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
-_INLINE_VAR constexpr char _Valid_specifiers[] = "aAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ";
+_INLINE_VAR constexpr char _Valid_specifiers[] = {'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'F', 'g', 'G', 'h', 'H',
+    'I', 'j', 'm', 'M', 'n', 'p', 'r', 'R', 'S', 't', 'T', 'u', 'U', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z', 'Z'};
 
 constexpr bool _Is_valid_fmt_specifier(const char _Specifier) {
     for (const char _Valid_specifier : _Valid_specifiers) {
