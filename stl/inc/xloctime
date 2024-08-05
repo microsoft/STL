@@ -651,8 +651,9 @@ protected:
     __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
+_INLINE_VAR constexpr char _Valid_specifiers[] = "aAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ";
+
 constexpr bool _Is_valid_fmt_specifier(const char _Specifier) {
-    constexpr char _Valid_specifiers[] = "aAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ";
     for (const char _Valid_specifier : _Valid_specifiers) {
         if (_Valid_specifier == _Specifier) {
             return true;
