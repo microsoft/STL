@@ -656,7 +656,7 @@ _INLINE_VAR constexpr char _Valid_strftime_specifiers[] = {'a', 'A', 'b', 'B', '
     'h', 'H', 'I', 'j', 'm', 'M', 'n', 'p', 'r', 'R', 'S', 't', 'T', 'u', 'U', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z',
     'Z'};
 
-constexpr bool _Is_valid_strftime_specifier(const char _Specifier) {
+_NODISCARD constexpr bool _Is_valid_strftime_specifier(const char _Specifier) {
     for (const char _Valid_specifier : _Valid_strftime_specifiers) {
         if (_Valid_specifier == _Specifier) {
             return true;
