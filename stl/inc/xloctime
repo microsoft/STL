@@ -844,10 +844,10 @@ public:
                 } else if (!_Is_valid_strftime_specifier(_Specifier)) {
                     // no valid specifier, directly copy as literal elements
                     *_Dest++ = _Percent;
-                    *_Dest++ = _Raw;
                     if (_Modifier != '\0') {
-                        *_Dest++ = *_Fmtfirst;
+                        *_Dest++ = _Raw;
                     }
+                    *_Dest++ = *_Fmtfirst;
                 } else {
                     _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
                 }
