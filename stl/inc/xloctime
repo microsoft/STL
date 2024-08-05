@@ -651,6 +651,7 @@ protected:
     __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
+// C23 7.29.3.5 "The strftime function"/3
 _INLINE_VAR constexpr char _Valid_strftime_specifiers[] = {'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'F', 'g', 'G',
     'h', 'H', 'I', 'j', 'm', 'M', 'n', 'p', 'r', 'R', 'S', 't', 'T', 'u', 'U', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z',
     'Z'};
