@@ -915,17 +915,32 @@ void test_gh_4820() {
     tm currentTime;
     localtime_s(&currentTime, &t);
 
+    // Case 1: Test various unknown conversion specifiers.
+    // Case 2: "%%" is a known escape sequence with a dedicated fast path.
+    // Case 3: "% " is percent followed by space, which is an unknown conversion specifier.
+    // Case 4: "%E%Z" is parsed as "%E%" followed by "Z", so it should be copied unchanged,
+    //         even though "%Z" by itself would be a known conversion specifier (time zone name).
+    //         (In case 1, "%E%J" is parsed the same way; the difference is that "%J" would be unknown.)
     {
         wstringstream wss;
-        wss << put_time(&currentTime, L"%Ei%!%E%J%P");
+        wss << put_time(&currentTime, L"1:%Ei%!%E%J%P 2:%% 3:% 4:%E%Z");
         assert(wss.rdstate() == ios_base::goodbit);
-        assert(wss.str() == L"%Ei%!%E%J%P");
+        assert(wss.str() == L"1:%Ei%!%E%J%P 2:% 3:% 4:%E%Z");
     }
 
     {
         stringstream ss;
-        ss << put_time(&currentTime, "%Ei%!%E%J%P");
+        ss << put_time(&currentTime, "1:%Ei%!%E%J%P 2:%% 3:% 4:%E%Z");
         assert(ss.rdstate() == ios_base::goodbit);
-        assert(ss.str() == "%Ei%!%E%J%P");
+        assert(ss.str() == "1:%Ei%!%E%J%P 2:% 3:% 4:%E%Z");
+    }
+
+    // Also verify that wide characters aren't truncated.
+    // This tests a character appearing by itself, two as specifiers, and two as modified specifiers.
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"\x043a%\x043e%\x0448%E\x043a%O\x0430");
+        assert(wss.rdstate() == ios_base::goodbit);
+        assert(wss.str() == L"\x043a%\x043e%\x0448%E\x043a%O\x0430");
     }
 }
