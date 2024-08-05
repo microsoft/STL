@@ -658,7 +658,7 @@ _INLINE_VAR constexpr char _Valid_strftime_specifiers[] = {'a', 'A', 'b', 'B', '
 
 _NODISCARD constexpr bool _Is_valid_strftime_specifier(const char _Specifier) {
     for (const char _Valid_specifier : _Valid_strftime_specifiers) {
-        if (_Valid_specifier == _Specifier) {
+        if (_Specifier == _Valid_specifier) {
             return true;
         }
     }
