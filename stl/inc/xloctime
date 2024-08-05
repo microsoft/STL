@@ -966,14 +966,15 @@ public:
                 *_Dest++ = _Fmtfirst[-1];
                 break;
             } else { // get specifier after %
-                char _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
+                _Elem _Raw      = *_Fmtfirst;
+                char _Specifier = _Ctype_fac.narrow(_Raw);
                 char _Modifier  = '\0';
                 _Elem _Percent  = _Fmtfirst[-1];
 
                 if (_Specifier == 'E' || _Specifier == 'O' || _Specifier == 'Q' || _Specifier == '#') {
                     if (++_Fmtfirst == _Fmtlast) { // no specifier, copy %[E0Q#] as literal elements
                         *_Dest++ = _Percent;
-                        *_Dest++ = _Specifier;
+                        *_Dest++ = _Raw;
                         break;
                     }
 
@@ -989,9 +990,9 @@ public:
                     // no valid specifier, directly copy as literal elements
                     *_Dest++ = _Percent;
                     if (_Modifier != '\0') {
-                        *_Dest++ = _Modifier;
+                        *_Dest++ = _Raw;
                     }
-                    *_Dest++ = _Specifier;
+                    *_Dest++ = *_Fmtfirst;
                 } else {
                     _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
                 }
