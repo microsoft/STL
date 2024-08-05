@@ -5824,6 +5824,10 @@ using _Lex_compare_three_way_memcmp_classify =
 _EXPORT_STD template <class _InIt1, class _InIt2, class _Cmp>
 _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1, const _InIt1 _Last1,
     const _InIt2 _First2, const _InIt2 _Last2, _Cmp _Comp) -> decltype(_Comp(*_First1, *_First2)) {
+    static_assert(
+        _Classify_category<decltype(_Comp(*_First1, *_First2))> != _Comparison_category::_Comparison_category_none,
+        "The result of the comparator must have comparison category type (N4988 [alg.three.way]/2).");
+
     _STD _Adl_verify_range(_First1, _Last1);
     _STD _Adl_verify_range(_First2, _Last2);
     auto _UFirst1      = _STD _Get_unwrapped(_First1);
