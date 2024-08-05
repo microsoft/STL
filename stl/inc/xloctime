@@ -651,11 +651,12 @@ protected:
     __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
-_INLINE_VAR constexpr char _Valid_specifiers[] = {'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'F', 'g', 'G', 'h', 'H',
-    'I', 'j', 'm', 'M', 'n', 'p', 'r', 'R', 'S', 't', 'T', 'u', 'U', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z', 'Z'};
+_INLINE_VAR constexpr char _Valid_strftime_specifiers[] = {'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'F', 'g', 'G',
+    'h', 'H', 'I', 'j', 'm', 'M', 'n', 'p', 'r', 'R', 'S', 't', 'T', 'u', 'U', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z',
+    'Z'};
 
-constexpr bool _Is_valid_fmt_specifier(const char _Specifier) {
-    for (const char _Valid_specifier : _Valid_specifiers) {
+constexpr bool _Is_valid_strftime_specifier(const char _Specifier) {
+    for (const char _Valid_specifier : _Valid_strftime_specifiers) {
         if (_Valid_specifier == _Specifier) {
             return true;
         }
@@ -703,7 +704,7 @@ public:
                 if (_Specifier == '%' && _Modifier == '\0') {
                     // if the specifier is percent and no modifier is set, just append it
                     *_Dest++ = _Percent;
-                } else if (!_Is_valid_fmt_specifier(_Specifier)) {
+                } else if (!_Is_valid_strftime_specifier(_Specifier)) {
                     // no valid specifier, directly copy as literal elements
                     *_Dest++ = _Percent;
                     if (_Modifier != '\0') {
@@ -839,7 +840,7 @@ public:
                 if (_Specifier == '%' && _Modifier == '\0') {
                     // if the specifier is percent and no modifier is set, just append it
                     *_Dest++ = _Percent;
-                } else if (!_Is_valid_fmt_specifier(_Specifier)) {
+                } else if (!_Is_valid_strftime_specifier(_Specifier)) {
                     // no valid specifier, directly copy as literal elements
                     *_Dest++ = _Percent;
                     *_Dest++ = _Raw;
@@ -983,7 +984,7 @@ public:
                 if (_Specifier == '%' && _Modifier == '\0') {
                     // if the specifier is percent and no modifier is set, just append it
                     *_Dest++ = _Percent;
-                } else if (!_Is_valid_fmt_specifier(_Specifier)) {
+                } else if (!_Is_valid_strftime_specifier(_Specifier)) {
                     // no valid specifier, directly copy as literal elements
                     *_Dest++ = _Percent;
                     if (_Modifier != '\0') {
