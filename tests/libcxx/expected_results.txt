@@ -1092,6 +1092,8 @@ std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.ra
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.range.pass.cpp:1 SKIPPED
 std/algorithms/alg.nonmodifying/alg.ends_with/ranges.ends_with.pass.cpp:0 SKIPPED
 std/algorithms/alg.nonmodifying/alg.ends_with/ranges.ends_with.pass.cpp:1 SKIPPED
+std/algorithms/alg.sorting/alg.lex.comparison/ranges.lexicographical_compare.pass.cpp:0 SKIPPED
+std/algorithms/alg.sorting/alg.lex.comparison/ranges.lexicographical_compare.pass.cpp:1 SKIPPED
 std/algorithms/alg.sorting/alg.merge/ranges_merge.pass.cpp:0 SKIPPED
 std/algorithms/alg.sorting/alg.merge/ranges_merge.pass.cpp:1 SKIPPED
 std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:0 SKIPPED
