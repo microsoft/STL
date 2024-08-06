@@ -2385,8 +2385,10 @@ static_assert(
 static_assert(!is_assignable_v<expected<int, char>&, ambiguating_expected_assignment_source<int, char>>);
 static_assert(!is_assignable_v<expected<void, int>&, ambiguating_expected_assignment_source<void, int>>);
 #endif // ^^^ no workaround ^^^
+#ifndef __EDG__ // TRANSITION, VSO-2188364
 static_assert(!is_assignable_v<expected<move_only, char>&, ambiguating_expected_assignment_source<move_only, char>>);
 static_assert(!is_assignable_v<expected<void, move_only>&, ambiguating_expected_assignment_source<void, move_only>>);
+#endif // ^^^ no workaround ^^^
 
 int main() {
     test_unexpected::test_all();
