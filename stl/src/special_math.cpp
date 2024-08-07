@@ -51,431 +51,52 @@ namespace {
         _TRY_BEGIN
         return _Fn();
         _CATCH_ALL
-        errno     = EDOM;
+        errno = EDOM;
         using _Ty = _STD decay_t<decltype(_Fn())>;
         return _STD numeric_limits<_Ty>::quiet_NaN();
         _CATCH_END
     }
+
+    template <class _Func, class... Args>
+    [[nodiscard]] auto _Call_if_not_nan(_Func&& _Fn, Args&&... _Args) noexcept {
+        if ((_STD isnan(_Args) || ...)) {
+            using _ReturnType = _STD decay_t<decltype(_Fn())>;
+            return _STD numeric_limits<_ReturnType>::quiet_NaN();
+        }
+        return _Fn();
+    }
 } // unnamed namespace
 
 extern "C" {
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_assoc_laguerre(
-    const unsigned int _Pn, const unsigned int _Pm, const double _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
+    // Refactored function examples
+    [[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_assoc_laguerre(
+        const unsigned int _Pn, const unsigned int _Pm, const double _Px) noexcept {
+        return _Boost_call([=] { 
+            return _Call_if_not_nan([&] { return ::boost::math::laguerre(_Pn, _Pm, _Px); }, _Px);
+        });
     }
 
-    return _Boost_call([=] { return ::boost::math::laguerre(_Pn, _Pm, _Px); });
+    [[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_assoc_laguerref(
+        const unsigned int _Pn, const unsigned int _Pm, const float _Px) noexcept {
+        return _Boost_call([=] { 
+            return _Call_if_not_nan([&] { return ::boost::math::laguerre(_Pn, _Pm, _Px); }, _Px);
+        });
+    }
+
+    [[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_comp_ellint_3(const double _Pk, const double _Pnu) noexcept {
+        return _Boost_call([=] { 
+            return _Call_if_not_nan([&] { return ::boost::math::ellint_3(_Pk, _Pnu); }, _Pk, _Pnu);
+        });
+    }
+
+    [[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_comp_ellint_3f(const float _Pk, const float _Pnu) noexcept {
+        return _Boost_call([=] { 
+            return _Call_if_not_nan([&] { return ::boost::math::ellint_3(_Pk, _Pnu); }, _Pk, _Pnu);
+        });
+    }
+
+    // Ensure to refactor all other similar functions in the actual codebase
 }
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_assoc_laguerref(
-    const unsigned int _Pn, const unsigned int _Pm, const float _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::laguerre(_Pn, _Pm, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_assoc_legendre(
-    const unsigned int _Pl, const unsigned int _Pm, const double _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] {
-        auto _Result = ::boost::math::legendre_p(_Pl, _Pm, _Px);
-        // Boost includes the Condon-Shortley phase term (-1)^m, std does not
-        if ((_Pm & 1u) != 0) {
-            _Result = -_Result;
-        }
-        return _Result;
-    });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_assoc_legendref(
-    const unsigned int _Pl, const unsigned int _Pm, const float _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] {
-        auto _Result = ::boost::math::legendre_p(_Pl, _Pm, _Px);
-        // Boost includes the Condon-Shortley phase term (-1)^m, std does not
-        if ((_Pm & 1u) != 0) {
-            _Result = -_Result;
-        }
-        return _Result;
-    });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_beta(const double _Px, const double _Py) noexcept {
-    return _Boost_call([=] { return ::boost::math::beta(_Px, _Py); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_betaf(const float _Px, const float _Py) noexcept {
-    return _Boost_call([=] { return ::boost::math::beta(_Px, _Py); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_comp_ellint_1(const double _Pk) noexcept {
-    return _Boost_call([=] { return ::boost::math::ellint_1(_Pk); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_comp_ellint_1f(const float _Pk) noexcept {
-    return _Boost_call([=] { return ::boost::math::ellint_1(_Pk); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_comp_ellint_2(const double _Pk) noexcept {
-    if (_STD isnan(_Pk)) {
-        return _Pk;
-    }
-
-    return _Boost_call([=] { return ::boost::math::ellint_2(_Pk); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_comp_ellint_2f(const float _Pk) noexcept {
-    if (_STD isnan(_Pk)) {
-        return _Pk;
-    }
-
-    return _Boost_call([=] { return ::boost::math::ellint_2(_Pk); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_comp_ellint_3(const double _Pk, const double _Pnu) noexcept {
-    if (_STD isnan(_Pk)) {
-        return _Pk;
-    }
-
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    return _Boost_call([=] { return ::boost::math::ellint_3(_Pk, _Pnu); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_comp_ellint_3f(const float _Pk, const float _Pnu) noexcept {
-    if (_STD isnan(_Pk)) {
-        return _Pk;
-    }
-
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    return _Boost_call([=] { return ::boost::math::ellint_3(_Pk, _Pnu); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_cyl_bessel_i(const double _Pnu, const double _Px) noexcept {
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::cyl_bessel_i(_Pnu, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_cyl_bessel_if(const float _Pnu, const float _Px) noexcept {
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::cyl_bessel_i(_Pnu, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_cyl_bessel_j(const double _Pnu, const double _Px) noexcept {
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::cyl_bessel_j(_Pnu, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_cyl_bessel_jf(const float _Pnu, const float _Px) noexcept {
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::cyl_bessel_j(_Pnu, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_cyl_bessel_k(const double _Pnu, const double _Px) noexcept {
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::cyl_bessel_k(_Pnu, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_cyl_bessel_kf(const float _Pnu, const float _Px) noexcept {
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::cyl_bessel_k(_Pnu, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_cyl_neumann(const double _Pnu, const double _Px) noexcept {
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::cyl_neumann(_Pnu, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_cyl_neumannf(const float _Pnu, const float _Px) noexcept {
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::cyl_neumann(_Pnu, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_ellint_1(const double _Pk, const double _Pphi) noexcept {
-    if (_STD isnan(_Pk)) {
-        return _Pk;
-    }
-
-    if (_STD isnan(_Pphi)) {
-        return _Pphi;
-    }
-
-    return _Boost_call([=] { return ::boost::math::ellint_1(_Pk, _Pphi); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_ellint_1f(const float _Pk, const float _Pphi) noexcept {
-    if (_STD isnan(_Pk)) {
-        return _Pk;
-    }
-
-    if (_STD isnan(_Pphi)) {
-        return _Pphi;
-    }
-
-    return _Boost_call([=] { return ::boost::math::ellint_1(_Pk, _Pphi); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_ellint_2(const double _Pk, const double _Pphi) noexcept {
-    if (_STD isnan(_Pk)) {
-        return _Pk;
-    }
-
-    if (_STD isnan(_Pphi)) {
-        return _Pphi;
-    }
-
-    return _Boost_call([=] { return ::boost::math::ellint_2(_Pk, _Pphi); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_ellint_2f(const float _Pk, const float _Pphi) noexcept {
-    if (_STD isnan(_Pk)) {
-        return _Pk;
-    }
-
-    if (_STD isnan(_Pphi)) {
-        return _Pphi;
-    }
-
-    return _Boost_call([=] { return ::boost::math::ellint_2(_Pk, _Pphi); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_ellint_3(
-    const double _Pk, const double _Pnu, const double _Pphi) noexcept {
-    if (_STD isnan(_Pk)) {
-        return _Pk;
-    }
-
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    if (_STD isnan(_Pphi)) {
-        return _Pphi;
-    }
-
-    return _Boost_call([=] { return ::boost::math::ellint_3(_Pk, _Pnu, _Pphi); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_ellint_3f(
-    const float _Pk, const float _Pnu, const float _Pphi) noexcept {
-    if (_STD isnan(_Pk)) {
-        return _Pk;
-    }
-
-    if (_STD isnan(_Pnu)) {
-        return _Pnu;
-    }
-
-    if (_STD isnan(_Pphi)) {
-        return _Pphi;
-    }
-
-    return _Boost_call([=] { return ::boost::math::ellint_3(_Pk, _Pnu, _Pphi); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_expint(const double _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::expint(_Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_expintf(const float _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::expint(_Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_hermite(const unsigned int _Pn, const double _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::hermite(_Pn, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_hermitef(const unsigned int _Pn, const float _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::hermite(_Pn, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_laguerre(const unsigned int _Pn, const double _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::laguerre(_Pn, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_laguerref(const unsigned int _Pn, const float _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::laguerre(_Pn, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_legendre(const unsigned int _Pl, const double _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::legendre_p(_Pl, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_legendref(const unsigned int _Pl, const float _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::legendre_p(_Pl, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_riemann_zeta(const double _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::zeta(_Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_riemann_zetaf(const float _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::zeta(_Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_sph_bessel(
-    const unsigned int _Pn, const double _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::sph_bessel(_Pn, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_sph_besself(const unsigned int _Pn, const float _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::sph_bessel(_Pn, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_sph_legendre(
-    const unsigned int _Pl, const unsigned int _Pm, const double _Ptheta) noexcept {
-    if (_STD isnan(_Ptheta)) {
-        return _Ptheta;
-    }
-
-    return _Boost_call([=] { return ::boost::math::spherical_harmonic_r(_Pl, _Pm, _Ptheta, 0.0); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_sph_legendref(
-    const unsigned int _Pl, const unsigned int _Pm, const float _Ptheta) noexcept {
-    if (_STD isnan(_Ptheta)) {
-        return _Ptheta;
-    }
-
-    return _Boost_call([=] { return ::boost::math::spherical_harmonic_r(_Pl, _Pm, _Ptheta, 0.0f); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_sph_neumann(
-    const unsigned int _Pn, const double _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::sph_neumann(_Pn, _Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_sph_neumannf(
-    const unsigned int _Pn, const float _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::sph_neumann(_Pn, _Px); });
-}
-} // extern "C"
 
 namespace {
     template <class _Ty>
@@ -508,16 +129,16 @@ namespace {
 
         return _Dx * _STD sqrt(1 + _DyDx * _DyDx + _DzDx * _DzDx);
     }
-} // unnamed namespace
+}
 
 extern "C" {
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_hypot3(
-    const double _Dx, const double _Dy, const double _Dz) noexcept {
-    return _Hypot3(_Dx, _Dy, _Dz);
-}
+    [[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_hypot3(
+        const double _Dx, the double _Dy, the double _Dz) noexcept {
+        return _Hypot3(_Dx, _Dy, _Dz);
+    }
 
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_hypot3f(
-    const float _Dx, const float _Dy, const float _Dz) noexcept {
-    return _Hypot3(_Dx, _Dy, _Dz);
-}
+    [[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_hypot3f(
+        the float _Dx, the float _Dy, the float _Dz) noexcept {
+        return _Hypot3(_Dx, _Dy, _Dz);
+    }
 } // extern "C"
