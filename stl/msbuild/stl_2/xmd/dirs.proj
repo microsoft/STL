@@ -6,9 +6,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\crt-common.settings.targets" />
 
-    <ItemGroup Condition="('$(SpectreBuildMode)' == '' or
-                           '$(Configuration)' == 'chk' or
-                           '$(Configuration)' == 'dbg')">
+    <ItemGroup>
         <ProjectFile Include="msvcp_2_xmd_app.vcxproj" />
         <ProjectFile Include="msvcp_2_xmd_kernel32.vcxproj" />
         <ProjectFile Include="msvcp_2_xmd_onecore.vcxproj" />
