@@ -84,6 +84,52 @@ inline void _Print_noformat_unicode(FILE* const _Stream, const string_view _Str)
     }
 }
 
+inline void _Print_newline_only_unicode(FILE* const _Stream) {
+    const __std_unicode_console_retrieval_result _Unicode_console_retrieval_result{
+        __std_get_unicode_console_handle_from_file_stream(_Stream)};
+
+    // See the documentation for __std_unicode_console_retrieval_result to understand why we do this.
+    bool _Is_unicode_console;
+
+#pragma warning(push)
+#pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
+    switch (_Unicode_console_retrieval_result._Error) {
+    case __std_win_error::_Success:
+        _Is_unicode_console = true;
+        break;
+
+    case __std_win_error::_File_not_found:
+        _Is_unicode_console = false;
+        break;
+
+    case __std_win_error::_Not_supported:
+        [[unlikely]] return;
+
+    default:
+        [[unlikely]] _STD _Throw_system_error_from_std_win_error(_Unicode_console_retrieval_result._Error);
+    }
+#pragma warning(pop)
+
+    if (_Is_unicode_console) {
+        const bool _Was_flush_successful = _CSTD fflush(_Stream) == 0;
+        if (!_Was_flush_successful) [[unlikely]] {
+            _Throw_system_error(static_cast<errc>(errno));
+        }
+
+        const __std_win_error _Console_print_result =
+            __std_print_newline_only_to_unicode_console(_Unicode_console_retrieval_result._Console_handle);
+        if (_Console_print_result != __std_win_error::_Success) [[unlikely]] {
+            _STD _Throw_system_error_from_std_win_error(_Console_print_result);
+        }
+    } else {
+        const bool _Was_write_successful = _CSTD fputc('\n', _Stream) == '\n';
+
+        if (!_Was_write_successful) [[unlikely]] {
+            _Throw_system_error(static_cast<errc>(errno));
+        }
+    }
+}
+
 inline void _Vprint_unicode_impl(
     const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
     string _Output_str = _STD vformat(_Fmt_str, _Fmt_args);
@@ -133,7 +179,15 @@ void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&.
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void println(FILE* _Stream) {
-    _STD print(_Stream, "\n");
+    if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
+        _STD _Print_newline_only_unicode(_Stream);
+    } else {
+        const bool _Was_write_successful = _CSTD fputc('\n', _Stream) == '\n';
+
+        if (!_Was_write_successful) [[unlikely]] {
+            _Throw_system_error(static_cast<errc>(errno));
+        }
+    }
 }
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329

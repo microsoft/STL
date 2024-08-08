@@ -386,6 +386,9 @@ public:
 #if _HAS_CXX23 && defined(_CPPRTTI)
     template <class _Filebuf_type>
     friend ios_base::iostate _Print_noformat_unicode(ostream&, string_view);
+
+    template <class _Filebuf_type>
+    friend ios_base::iostate _Print_newline_only_unicode(ostream&);
 #endif
 
 protected:
