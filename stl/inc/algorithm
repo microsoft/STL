@@ -7781,7 +7781,7 @@ namespace ranges {
     void _Rotate_one_right(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
         _STL_INTERNAL_CHECK(_RANGES next(_Mid) == _Last);
-        auto _Temp = _RANGES iter_move(_Mid);
+        iter_value_t<_It> _Temp(_RANGES iter_move(_Mid));
         _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
         *_First = _STD move(_Temp);
     }
@@ -7790,7 +7790,7 @@ namespace ranges {
     void _Rotate_one_left(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
         _STL_INTERNAL_CHECK(_RANGES next(_First) == _Mid);
-        auto _Temp   = _RANGES iter_move(_First);
+        iter_value_t<_It> _Temp(_RANGES iter_move(_First));
         auto _Result = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First));
         *_Result.out = _STD move(_Temp);
     }
@@ -10286,7 +10286,7 @@ namespace ranges {
                 }
 
                 while (++_UFirst != _ULast) { // process one or two elements
-                    auto _Prev = *_UFirst;
+                    _Vty _Prev(*_UFirst);
                     if (++_UFirst == _ULast) { // process last element
                         if (_STD invoke(_Pred, _STD invoke(_Proj, _Prev), _STD invoke(_Proj, _Found.min))) {
                             _Found.min = _STD move(_Prev);
