@@ -111,6 +111,7 @@ void test_buffer_resizing();
 void test_gh_2618();
 void test_gh_2848();
 void test_gh_4820();
+void test_gh_4882();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -159,6 +160,7 @@ int main() {
     test_gh_2618();
     test_gh_2848();
     test_gh_4820();
+    test_gh_4882();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -799,13 +801,13 @@ void test_invalid_argument() {
     {
         wstringstream wss;
         wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
-        assert(wss.rdstate() == ios_base::badbit);
+        assert(wss.rdstate() == ios_base::failbit);
     }
 
     {
         stringstream ss;
         ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
-        assert(ss.rdstate() == ios_base::badbit);
+        assert(ss.rdstate() == ios_base::failbit);
     }
 #endif // _M_CEE_PURE
 }
@@ -943,4 +945,266 @@ void test_gh_4820() {
         assert(wss.rdstate() == ios_base::goodbit);
         assert(wss.str() == L"\x043a%\x043e%\x0448%E\x043a%O\x0430");
     }
+}
+
+void test_gh_4882() {
+    // GH-4882 <iomanip>: std::put_time should set failbit on invalid/out-of-range tm struct, instead of crash
+    time_t t = time(nullptr);
+    tm currentTime;
+
+    // Check tm_sec - START
+    localtime_s(&currentTime, &t);
+    currentTime.tm_sec = -1; // set invalid lower limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+
+    localtime_s(&currentTime, &t);
+    currentTime.tm_sec = 61; // set invalid upper limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+    // Check tm_sec - END
+
+    // Check tm_min - START
+    localtime_s(&currentTime, &t);
+    currentTime.tm_min = -1; // set invalid lower limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+
+    localtime_s(&currentTime, &t);
+    currentTime.tm_min = 60; // set invalid upper limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+    // Check tm_min - END
+
+    // Check tm_hour - START
+    localtime_s(&currentTime, &t);
+    currentTime.tm_hour = -1; // set invalid lower limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+
+    localtime_s(&currentTime, &t);
+    currentTime.tm_hour = 24; // set invalid upper limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+    // Check tm_hour - END
+
+    // Check tm_mday - START
+    localtime_s(&currentTime, &t);
+    currentTime.tm_mday = 0; // set invalid lower limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+
+    localtime_s(&currentTime, &t);
+    currentTime.tm_mday = 32; // set invalid upper limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+    // Check tm_mday - END
+
+    // Check tm_mon - START
+    localtime_s(&currentTime, &t);
+    currentTime.tm_mon = -1; // set invalid lower limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+
+    localtime_s(&currentTime, &t);
+    currentTime.tm_mon = 12; // set invalid upper limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+    // Check tm_mon - END
+
+    // Check tm_year - START
+    localtime_s(&currentTime, &t);
+    currentTime.tm_year = -1901; // set invalid lower limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+
+    localtime_s(&currentTime, &t);
+    currentTime.tm_year = 8100; // set invalid upper limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+    // Check tm_year - END
+
+    // Check tm_wday - START
+    localtime_s(&currentTime, &t);
+    currentTime.tm_wday = -1; // set invalid lower limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+
+    localtime_s(&currentTime, &t);
+    currentTime.tm_wday = 7; // set invalid upper limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+    // Check tm_wday - END
+
+    // Check tm_yday - START
+    localtime_s(&currentTime, &t);
+    currentTime.tm_yday = -1; // set invalid lower limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+
+    localtime_s(&currentTime, &t);
+    currentTime.tm_yday = 366; // set invalid upper limit
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
+        assert(wss.rdstate() == ios_base::failbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
+        assert(ss.rdstate() == ios_base::failbit);
+    }
+    // Check tm_yday - END
 }
