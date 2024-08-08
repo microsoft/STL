@@ -378,6 +378,13 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD _CONSTEXPR17 ptrdiff_t operator-(const _Array_iterator& _Right) const noexcept {
+        return static_cast<const _Mybase&>(*this) - static_cast<const _Mybase&>(_Right);
+    }
+    _NODISCARD friend _CONSTEXPR17 ptrdiff_t operator-(const _Mybase& _Left, const _Array_iterator& _Right) noexcept {
+        return _Left - static_cast<const _Mybase&>(_Right);
+    }
+
     _NODISCARD _CONSTEXPR17 reference operator[](const ptrdiff_t _Off) const noexcept {
         return const_cast<reference>(_Mybase::operator[](_Off));
     }
@@ -387,6 +394,76 @@ public:
     _NODISCARD constexpr pointer _Unwrapped() const noexcept {
         return const_cast<pointer>(_Mybase::_Unwrapped());
     }
+
+    _NODISCARD _CONSTEXPR17 bool operator==(const _Array_iterator& _Right) const noexcept {
+        return static_cast<const _Mybase&>(*this) == static_cast<const _Mybase&>(_Right);
+    }
+    _NODISCARD _CONSTEXPR17 bool operator==(const _Mybase& _Right) const noexcept {
+        return static_cast<const _Mybase&>(*this) == _Right;
+    }
+
+#if _HAS_CXX20
+    _NODISCARD constexpr strong_ordering operator<=>(const _Array_iterator& _Right) const noexcept {
+        return static_cast<const _Mybase&>(*this) <=> static_cast<const _Mybase&>(_Right);
+    }
+    _NODISCARD constexpr strong_ordering operator<=>(const _Mybase& _Right) const noexcept {
+        return static_cast<const _Mybase&>(*this) <=> _Right;
+    }
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    _NODISCARD friend _CONSTEXPR17 bool operator==(const _Mybase& _Left, const _Array_iterator& _Right) noexcept {
+        return _Left == static_cast<const _Mybase&>(_Right);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator<(const _Array_iterator& _Right) const noexcept {
+        return static_cast<const _Mybase&>(*this) < static_cast<const _Mybase&>(_Right);
+    }
+    _NODISCARD _CONSTEXPR17 bool operator<(const _Mybase& _Right) const noexcept {
+        return static_cast<const _Mybase&>(*this) < _Right;
+    }
+    _NODISCARD friend _CONSTEXPR17 bool operator<(const _Mybase& _Left, const _Array_iterator& _Right) noexcept {
+        return _Left < static_cast<const _Mybase&>(_Right);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator!=(const _Array_iterator& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+    _NODISCARD _CONSTEXPR17 bool operator!=(const _Mybase& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+    _NODISCARD friend _CONSTEXPR17 bool operator!=(const _Mybase& _Left, const _Array_iterator& _Right) noexcept {
+        return !(_Left == _Right);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator>(const _Array_iterator& _Right) const noexcept {
+        return _Right < *this;
+    }
+    _NODISCARD _CONSTEXPR17 bool operator>(const _Mybase& _Right) const noexcept {
+        return _Right < *this;
+    }
+    _NODISCARD friend _CONSTEXPR17 bool operator>(const _Mybase& _Left, const _Array_iterator& _Right) noexcept {
+        return _Right < _Left;
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator<=(const _Array_iterator& _Right) const noexcept {
+        return !(_Right < *this);
+    }
+    _NODISCARD _CONSTEXPR17 bool operator<=(const _Mybase& _Right) const noexcept {
+        return !(_Right < *this);
+    }
+    _NODISCARD friend _CONSTEXPR17 bool operator<=(const _Mybase& _Left, const _Array_iterator& _Right) noexcept {
+        return !(_Right < _Left);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator>=(const _Array_iterator& _Right) const noexcept {
+        return !(*this < _Right);
+    }
+    _NODISCARD _CONSTEXPR17 bool operator>=(const _Mybase& _Right) const noexcept {
+        return !(*this < _Right);
+    }
+    _NODISCARD friend _CONSTEXPR17 bool operator>=(const _Mybase& _Left, const _Array_iterator& _Right) noexcept {
+        return !(_Left < _Right);
+    }
+#endif // ^^^ !_HAS_CXX20 ^^^
 };
 
 #if _HAS_CXX20

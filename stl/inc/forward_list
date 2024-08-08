@@ -112,6 +112,35 @@ public:
         _Mybase::operator++();
         return _Tmp;
     }
+
+    _NODISCARD bool operator==(const _Flist_unchecked_iterator& _Right) const noexcept {
+        return this->_Ptr == _Right._Ptr;
+    }
+    _NODISCARD bool operator==(const _Mybase& _Right) const noexcept {
+        return this->_Ptr == _Right._Ptr;
+    }
+    _NODISCARD bool operator==(_Default_sentinel) const noexcept {
+        return this->_Ptr == nullptr;
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD friend bool operator==(const _Mybase& _Left, const _Flist_unchecked_iterator& _Right) noexcept {
+        return _Left._Ptr == _Right._Ptr;
+    }
+
+    _NODISCARD bool operator!=(const _Flist_unchecked_iterator& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+    _NODISCARD bool operator!=(const _Mybase& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+    _NODISCARD friend bool operator!=(const _Mybase& _Left, const _Flist_unchecked_iterator& _Right) noexcept {
+        return !(_Left == _Right);
+    }
+    _NODISCARD bool operator!=(_Default_sentinel) const noexcept {
+        return this->_Ptr != nullptr;
+    }
+#endif // !_HAS_CXX20
 };
 
 template <class _Mylist>
@@ -217,6 +246,41 @@ public:
         _Mybase::operator++();
         return _Tmp;
     }
+
+    _NODISCARD bool operator==(const _Flist_iterator& _Right) const noexcept {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "forward_list iterators incompatible");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        return this->_Ptr == _Right._Ptr;
+    }
+    _NODISCARD bool operator==(const _Mybase& _Right) const noexcept {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "forward_list iterators incompatible");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        return this->_Ptr == _Right._Ptr;
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD friend bool operator==(const _Mybase& _Left, const _Flist_iterator& _Right) noexcept {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Left._Getcont() == _Right._Getcont(), "forward_list iterators incompatible");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        return _Left._Ptr == _Right._Ptr;
+    }
+
+    _NODISCARD bool operator!=(const _Flist_iterator& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+    _NODISCARD bool operator!=(const _Mybase& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+    _NODISCARD friend bool operator!=(const _Mybase& _Left, const _Flist_iterator& _Right) noexcept {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
 
     using _Prevent_inheriting_unwrap = _Flist_iterator;
 
