@@ -310,31 +310,31 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
         constexpr auto _Gxmax  = (_Gen::max)();
         constexpr auto _Params = _Generate_canonical_params(_Minbits, _Gxmax - _Gxmin);
 
-        using _Sx_type = conditional_t<_Params._Smax_bits <= 32, uint32_t,
-            conditional_t<_Params._Smax_bits <= 64, uint64_t, _Unsigned128>>;
-        _Sx_type _Sx;
+        _STL_INTERNAL_STATIC_ASSERT(_Params._Kx >= 1);
 
         if constexpr (_Params._Rx_is_pow2) {
-            // Always needs only one attempt. Multiplications can be replaced with shift/add. Optimize k=1 case.
-            if constexpr (_Params._Kx == 1) {
-                _Sx = static_cast<_Sx_type>(_Gx() - _Gxmin);
-            } else if constexpr (_Params._Kx > 1) {
+            // Always needs only one attempt. Multiplications can be replaced with shift/add.
+            constexpr int _Discarded_bits = _Params._Smax_bits - _Minbits;
+            _Result_uint_type _Sx         = static_cast<_Result_uint_type>((_Gx() - _Gxmin) >> _Discarded_bits);
+
+            if constexpr (_Params._Kx > 1) {
                 constexpr int _Rx_bits = _Params._Smax_bits / _Params._Kx;
-                _Sx                    = 0;
-                int _Shift             = 0;
-                for (int _Idx = 0; _Idx < _Params._Kx; ++_Idx) {
-                    _Sx += static_cast<_Sx_type>(_Gx() - _Gxmin) << _Shift;
+                int _Shift             = -_Discarded_bits;
+                for (int _Idx = 1; _Idx < _Params._Kx; ++_Idx) {
                     _Shift += _Rx_bits;
+                    _Sx += static_cast<_Result_uint_type>(_Gx() - _Gxmin) << _Shift;
                 }
-            } else {
-                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected k
             }
 
-            _Sx >>= _Params._Smax_bits - _Minbits;
-            return static_cast<_Real>(static_cast<_Result_uint_type>(_Sx)) * static_cast<_Real>(_Params._Scale);
+            return static_cast<_Real>(_Sx) * static_cast<_Real>(_Params._Scale);
         } else {
+            using _Sx_type = conditional_t<_Params._Smax_bits <= 32, uint32_t,
+                conditional_t<_Params._Smax_bits <= 64, uint64_t, _Unsigned128>>;
+
             constexpr auto _Rx        = _Sx_type{_Gxmax - _Gxmin} + 1u;
             constexpr _Sx_type _Limit = static_cast<_Sx_type>(_Params._Xx) * (_Sx_type{1} << _Minbits);
+
+            _Sx_type _Sx;
 
             do {
                 // unroll first two iterations to avoid unnecessary multiplications
