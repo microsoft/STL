@@ -2001,16 +2001,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::ranges::view_interface&lt;*&gt;">
-    <DisplayString>{{ size={size()} }}</DisplayString>
-    <Expand>
-      <Item Optional="true" Name="empty">empty()</Item>
-      <Item Optional="true" Name="front">front()</Item>
-      <Item Optional="true" Name="back">back()</Item>
-      <Item Optional="true" Name="data">data()</Item>
-    </Expand>
-  </Type>
-
   <Type Name="std::ranges::dangling">
     <DisplayString>dangling</DisplayString>
   </Type>
