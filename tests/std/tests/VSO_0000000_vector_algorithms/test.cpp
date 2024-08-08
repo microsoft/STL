@@ -1049,6 +1049,15 @@ void test_randomized_bitset_base_count(mt19937_64& gen) {
     test_randomized_bitset_base<Base>(make_index_sequence<Count>{}, gen);
 }
 
+template <class F>
+void assert_throws_inv(F f) {
+    try {
+        f();
+        assert(false);
+    } catch (std::invalid_argument&) {
+    }
+}
+
 void test_bitset(mt19937_64& gen) {
     assert(bitset<0>(0x0ULL).to_string() == "");
     assert(bitset<0>(0xFEDCBA9876543210ULL).to_string() == "");
@@ -1089,6 +1098,33 @@ void test_bitset(mt19937_64& gen) {
            == u"000000000001111111011011100101110101001100001110110010101000011001000010000");
     assert(bitset<75>(0xFEDCBA9876543210ULL).to_string<char32_t>()
            == U"000000000001111111011011100101110101001100001110110010101000011001000010000"); // not vectorized
+
+    assert(bitset<0>("").to_ullong() == 0);
+    assert(bitset<0>("1").to_ullong() == 0);
+    assert_throws_inv([] { (void) bitset<0>("x"); });
+
+    assert(bitset<45>("101110000000111010001011100101001111111111111").to_ullong() == 0x1701D1729FFFULL);
+    assert(bitset<45>("110101001100001110110010101000011001000010000").to_ullong() == 0x1A9876543210ULL);
+    assert(bitset<45>("111").to_ullong() == 0x7);
+    assert_throws_inv([] { (void) bitset<45>("11x11"); });
+
+    assert(bitset<64>(
+               "xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo", basic_string<char>::npos, 'o', 'x')
+               .to_ullong()
+           == 0xFEDCBA9876543210ULL);
+    assert(bitset<64>(L"xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo", basic_string<wchar_t>::npos,
+               L'o', L'x')
+               .to_ullong()
+           == 0xFEDCBA9876543210ULL);
+
+#ifdef __cpp_lib_char8_t
+    assert(bitset<75>(u8"000000000001111111011011100101110101001100001110110010101000011001000010000").to_ullong()
+           == 0xFEDCBA9876543210ULL);
+#endif // __cpp_lib_char8_t
+    assert(bitset<75>(u"000000000001111111011011100101110101001100001110110010101000011001000010000").to_ullong()
+           == 0xFEDCBA9876543210ULL);
+    assert(bitset<75>(U"000000000001111111011011100101110101001100001110110010101000011001000010000").to_ullong()
+           == 0xFEDCBA9876543210ULL); // not vectorized
 
     test_randomized_bitset_base_count<512 - 5, 32 + 10>(gen);
 }
