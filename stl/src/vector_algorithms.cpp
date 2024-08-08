@@ -1415,8 +1415,8 @@ namespace {
         template <class _Fn>
         static __m128 _H_func(const __m128 _Cur, _Fn _Funct) noexcept {
             __m128 _H_min_val = _Cur;
-            _H_min_val        = _Funct(_H_min_val, _mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val        = _Funct(_H_min_val, _mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            _H_min_val        = _Funct(_mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)), _H_min_val);
+            _H_min_val        = _Funct(_mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
             return _H_min_val;
         }
 
@@ -1457,11 +1457,11 @@ namespace {
         }
 
         static __m128 _Min(const __m128 _First, const __m128 _Second, __m128 = _mm_undefined_ps()) noexcept {
-            return _mm_min_ps(_First, _Second);
+            return _mm_min_ps(_Second, _First);
         }
 
         static __m128 _Max(const __m128 _First, const __m128 _Second, __m128 = _mm_undefined_ps()) noexcept {
-            return _mm_max_ps(_First, _Second);
+            return _mm_max_ps(_Second, _First);
         }
 
         static __m128i _Mask_cast(const __m128 _Mask) noexcept {
@@ -1485,9 +1485,9 @@ namespace {
         template <class _Fn>
         static __m256 _H_func(const __m256 _Cur, _Fn _Funct) noexcept {
             __m256 _H_min_val = _Cur;
-            _H_min_val        = _Funct(_H_min_val, _mm256_permute2f128_ps(_H_min_val, _mm256_undefined_ps(), 0x01));
-            _H_min_val        = _Funct(_H_min_val, _mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val        = _Funct(_H_min_val, _mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            _H_min_val        = _Funct(_mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)), _H_min_val);
+            _H_min_val        = _Funct(_mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
+            _H_min_val        = _Funct(_mm256_permute2f128_ps(_H_min_val, _mm256_undefined_ps(), 0x01), _H_min_val);
             return _H_min_val;
         }
 
@@ -1528,11 +1528,11 @@ namespace {
         }
 
         static __m256 _Min(const __m256 _First, const __m256 _Second, __m256 = _mm256_undefined_ps()) noexcept {
-            return _mm256_min_ps(_First, _Second);
+            return _mm256_min_ps(_Second, _First);
         }
 
         static __m256 _Max(const __m256 _First, const __m256 _Second, __m256 = _mm256_undefined_ps()) noexcept {
-            return _mm256_max_ps(_First, _Second);
+            return _mm256_max_ps(_Second, _First);
         }
 
         static __m256i _Mask_cast(const __m256 _Mask) noexcept {
@@ -1575,7 +1575,7 @@ namespace {
         template <class _Fn>
         static __m128d _H_func(const __m128d _Cur, _Fn _Funct) noexcept {
             __m128d _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_pd(_H_min_val, _H_min_val, 1));
+            _H_min_val         = _Funct(_mm_shuffle_pd(_H_min_val, _H_min_val, 1), _H_min_val);
             return _H_min_val;
         }
 
@@ -1615,11 +1615,11 @@ namespace {
         }
 
         static __m128d _Min(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
-            return _mm_min_pd(_First, _Second);
+            return _mm_min_pd(_Second, _First);
         }
 
         static __m128d _Max(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
-            return _mm_max_pd(_First, _Second);
+            return _mm_max_pd(_Second, _First);
         }
 
         static __m128i _Mask_cast(const __m128d _Mask) noexcept {
@@ -1643,8 +1643,8 @@ namespace {
         template <class _Fn>
         static __m256d _H_func(const __m256d _Cur, _Fn _Funct) noexcept {
             __m256d _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm256_permute4x64_pd(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_pd(_H_min_val, _H_min_val, 0b0101));
+            _H_min_val         = _Funct(_mm256_shuffle_pd(_H_min_val, _H_min_val, 0b0101), _H_min_val);
+            _H_min_val         = _Funct(_mm256_permute4x64_pd(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
             return _H_min_val;
         }
 
@@ -1685,11 +1685,11 @@ namespace {
         }
 
         static __m256d _Min(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
-            return _mm256_min_pd(_First, _Second);
+            return _mm256_min_pd(_Second, _First);
         }
 
         static __m256d _Max(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
-            return _mm256_max_pd(_First, _Second);
+            return _mm256_max_pd(_Second, _First);
         }
 
         static __m256i _Mask_cast(const __m256d _Mask) noexcept {
@@ -1982,6 +1982,18 @@ namespace {
 
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __std_minmax_impl(const void* _First, const void* const _Last) noexcept {
+        // The value-based vectorized rather than the position-based one does not always produce
+        // the expected results for floatting point types.
+        //
+        // Efficient vectorization needs to find vertical minmax first, and then the horizontal one.
+        // This alters order of comparison: index zero element is first compared against
+        // vector size equal index element and only in the end against index one element.
+        // With equivalent but distinguishable +0.0 and -0.0 values, the altered comparison order
+        // will not produce the expected result in some cases (will return +0.0 instead of -0.0 or the reverse)
+        //
+        // The result is still acceptable for /fp:fast when +0.0 / -0.0 are not expected to be properly distinguished,
+        // and the compiler itself takes advantage of it.
+
         using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
         _Ty _Cur_min_val; // initialized in both of the branches below
