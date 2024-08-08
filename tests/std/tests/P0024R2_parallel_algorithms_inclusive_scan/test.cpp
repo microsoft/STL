@@ -193,11 +193,6 @@ struct typesBop {
     bopResult operator()(intermediateType&&, intermediateType&&) {
         return 0;
     }
-
-    // *result = binary_op(tmp, move(*result))
-    bopResult operator()(intermediateType&, outputType&&) {
-        return 0;
-    }
 };
 
 void test_case_inclusive_scan_init_writes_intermediate_type() {
