@@ -30,9 +30,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("msvc")
 #pragma push_macro("intrinsic")
 #pragma push_macro("known_semantics")
+#pragma push_macro("lifetimebound")
 #undef msvc
 #undef intrinsic
 #undef known_semantics
+#undef lifetimebound
 
 _STD_BEGIN
 _EXPORT_STD template <class _Ty, _Ty... _Vals>
@@ -59,8 +61,8 @@ _EXPORT_STD template <class... _Types>
 using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
 
 _EXPORT_STD template <class _Ty, class _Pr>
-_NODISCARD constexpr const _Ty&(max) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
-    noexcept(_Pred(_Left, _Right))) /* strengthened */ {
+_NODISCARD constexpr const _Ty&(max) (const _Ty& _Left _MSVC_LIFETIMEBOUND, const _Ty& _Right _MSVC_LIFETIMEBOUND,
+    _Pr _Pred) noexcept(noexcept(_Pred(_Left, _Right))) /* strengthened */ {
     // return larger of _Left and _Right
     return _Pred(_Left, _Right) ? _Right : _Left;
 }
@@ -69,7 +71,8 @@ _NODISCARD constexpr const _Ty&(max) (const _Ty& _Left, const _Ty& _Right, _Pr _
 #pragma warning(disable : 28285) // (syntax error in SAL annotation, occurs when _Ty is not an integral type)
 _EXPORT_STD template <class _Ty>
 _NODISCARD _Post_equal_to_(_Left < _Right ? _Right : _Left) constexpr const _Ty& //
-    (max) (const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Left < _Right)) /* strengthened */ {
+    (max) (const _Ty& _Left _MSVC_LIFETIMEBOUND, const _Ty& _Right _MSVC_LIFETIMEBOUND) noexcept(
+        noexcept(_Left < _Right)) /* strengthened */ {
     // return larger of _Left and _Right
     return _Left < _Right ? _Right : _Left;
 }
@@ -82,8 +85,8 @@ _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty>); // implemented in <algorithm>
 
 _EXPORT_STD template <class _Ty, class _Pr>
-_NODISCARD constexpr const _Ty&(min) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
-    noexcept(_Pred(_Right, _Left))) /* strengthened */ {
+_NODISCARD constexpr const _Ty&(min) (const _Ty& _Left _MSVC_LIFETIMEBOUND, const _Ty& _Right _MSVC_LIFETIMEBOUND,
+    _Pr _Pred) noexcept(noexcept(_Pred(_Right, _Left))) /* strengthened */ {
     // return smaller of _Left and _Right
     return _Pred(_Right, _Left) ? _Right : _Left;
 }
@@ -92,7 +95,8 @@ _NODISCARD constexpr const _Ty&(min) (const _Ty& _Left, const _Ty& _Right, _Pr _
 #pragma warning(disable : 28285) // (syntax error in SAL annotation, occurs when _Ty is not an integral type)
 _EXPORT_STD template <class _Ty>
 _NODISCARD _Post_equal_to_(_Right < _Left ? _Right : _Left) constexpr const _Ty& //
-    (min) (const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */ {
+    (min) (const _Ty& _Left _MSVC_LIFETIMEBOUND, const _Ty& _Right _MSVC_LIFETIMEBOUND) noexcept(
+        noexcept(_Right < _Left)) /* strengthened */ {
     // return smaller of _Left and _Right
     return _Right < _Left ? _Right : _Left;
 }
@@ -969,6 +973,7 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("lifetimebound")
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("intrinsic")
 #pragma pop_macro("msvc")
