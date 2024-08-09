@@ -744,6 +744,8 @@ _NODISCARD constexpr bool _Is_valid_strftime_tm_data(const char _Specifier, cons
             return false;
         }
         break;
+    default:
+        break;
     }
 
     // daylight savings time flag
