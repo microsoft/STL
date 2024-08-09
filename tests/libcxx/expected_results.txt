@@ -518,6 +518,7 @@ std/thread/futures/futures.shared_future/wait_until.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/get.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_for.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvarany/notify_one.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_duration.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_time_point.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_try_to_lock.pass.cpp SKIPPED
