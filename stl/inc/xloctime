@@ -666,84 +666,100 @@ _NODISCARD constexpr bool _Is_valid_strftime_specifier(const char _Specifier) {
     return false;
 }
 
-_NODISCARD constexpr bool _Is_valid_strftime_tm_data(const char _Specifier, const tm* const _Pt) {
+_NODISCARD constexpr bool _Is_valid_strftime_tm_sec(const tm* const _Pt) noexcept {
+    // seconds after the minute - [0, 60] including leap second
+    return _Pt->tm_sec >= 0 && _Pt->tm_sec <= 60;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_min(const tm* const _Pt) noexcept {
+    // minutes after the hour - [0, 59]
+    return _Pt->tm_min >= 0 && _Pt->tm_min <= 59;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_hour(const tm* const _Pt) noexcept {
+    // hours since midnight - [0, 23]
+    return _Pt->tm_hour >= 0 && _Pt->tm_hour <= 23;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_mday(const tm* const _Pt) noexcept {
+    // day of the month - [1, 31]
+    return _Pt->tm_mday >= 1 && _Pt->tm_mday <= 31;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_mon(const tm* const _Pt) noexcept {
+    // months since January - [0, 11]
+    return _Pt->tm_mon >= 0 && _Pt->tm_mon <= 11;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_year(const tm* const _Pt) noexcept {
+    // years since 1900 - UCRT max range is up until 8099
+    return _Pt->tm_year >= -1900 && _Pt->tm_year <= 8099;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_wday(const tm* const _Pt) noexcept {
+    // days since Sunday - [0, 6]
+    return _Pt->tm_wday >= 0 && _Pt->tm_wday <= 6;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_yday(const tm* const _Pt) noexcept {
+    // days since January 1 - [0, 365]
+    return _Pt->tm_yday >= 0 && _Pt->tm_yday <= 365;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_data(const char _Specifier, const tm* const _Pt) noexcept {
     if (!_Pt) {
         return false;
     }
 
     switch (_Specifier) {
     case 'S':
-        // seconds after the minute - [0, 60] including leap second
-        if (_Pt->tm_sec < 0 || _Pt->tm_sec > 60) {
-            return false;
-        }
-        break;
+        return _Is_valid_strftime_tm_sec(_Pt);
     case 'M':
-        // minutes after the hour - [0, 59]
-        if (_Pt->tm_min < 0 || _Pt->tm_min > 59) {
-            return false;
-        }
-        break;
+        return _Is_valid_strftime_tm_min(_Pt);
     case 'H':
     case 'I':
     case 'p':
-        // hours since midnight - [0, 23]
-        if (_Pt->tm_hour < 0 || _Pt->tm_hour > 23) {
-            return false;
-        }
-        break;
+        return _Is_valid_strftime_tm_hour(_Pt);
     case 'd':
     case 'e':
-        // day of the month - [1, 31]
-        if (_Pt->tm_mday < 1 || _Pt->tm_mday > 31) {
-            return false;
-        }
-        break;
+        return _Is_valid_strftime_tm_mday(_Pt);
     case 'b':
     case 'B':
     case 'm':
-        // months since January - [0, 11]
-        if (_Pt->tm_mon < 0 || _Pt->tm_mon > 11) {
-            return false;
-        }
-        break;
+    case 'h':
+        return _Is_valid_strftime_tm_mon(_Pt);
     case 'C':
-    case 'g':
-    case 'G':
     case 'y':
     case 'Y':
-        // years since 1900 - UCRT max range is up until 8099
-        if (_Pt->tm_year < -1900 || _Pt->tm_year > 8099) {
-            return false;
-        }
-        break;
+        return _Is_valid_strftime_tm_year(_Pt);
+    case 'j':
+        return _Is_valid_strftime_tm_yday(_Pt);
     case 'a':
     case 'A':
     case 'u':
     case 'w':
-        // days since Sunday - [0, 6]
-        if (_Pt->tm_wday < 0 || _Pt->tm_wday > 6) {
-            return false;
-        }
-        break;
+        return _Is_valid_strftime_tm_wday(_Pt);
     case 'U':
     case 'W':
-        // days since Sunday - [0, 6]
-        if (_Pt->tm_wday < 0 || _Pt->tm_wday > 6) {
-            return false;
-        }
-
-        // days since January 1 - [0, 365]
-        if (_Pt->tm_yday < 0 || _Pt->tm_yday > 365) {
-            return false;
-        }
-        break;
-    case 'j':
-        // days since January 1 - [0, 365]
-        if (_Pt->tm_yday < 0 || _Pt->tm_yday > 365) {
-            return false;
-        }
-        break;
+        return _Is_valid_strftime_tm_wday(_Pt) && _Is_valid_strftime_tm_yday(_Pt);
+    case 'R':
+        return _Is_valid_strftime_tm_hour(_Pt) && _Is_valid_strftime_tm_min(_Pt);
+    case 'D':
+    case 'x':
+    case 'F':
+        return _Is_valid_strftime_tm_year(_Pt) && _Is_valid_strftime_tm_mon(_Pt) && _Is_valid_strftime_tm_mday(_Pt);
+    case 'g':
+    case 'G':
+    case 'V':
+        return _Is_valid_strftime_tm_year(_Pt) && _Is_valid_strftime_tm_wday(_Pt) && _Is_valid_strftime_tm_yday(_Pt);
+    case 'r':
+    case 'X':
+    case 'T':
+        return _Is_valid_strftime_tm_hour(_Pt) && _Is_valid_strftime_tm_min(_Pt) && _Is_valid_strftime_tm_sec(_Pt);
+    case 'c':
+        return _Is_valid_strftime_tm_wday(_Pt) && _Is_valid_strftime_tm_mon(_Pt) && _Is_valid_strftime_tm_mday(_Pt)
+            && _Is_valid_strftime_tm_hour(_Pt) && _Is_valid_strftime_tm_min(_Pt) && _Is_valid_strftime_tm_sec(_Pt)
+            && _Is_valid_strftime_tm_year(_Pt);
     default:
         break;
     }
