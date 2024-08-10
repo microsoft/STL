@@ -911,7 +911,7 @@ void test_gh_4820() {
 }
 
 void test_gh_4882() {
-    // GH-4882 <iomanip>: std::put_time should set failbit on invalid/out-of-range tm struct, instead of crash
+    // GH-4882 <iomanip>: std::put_time should not crash on invalid/out-of-range tm struct values
     const auto fieldValidation = [](int tm::*field, int value, const string& format) {
         time_t t = time(nullptr);
         tm currentTime;
@@ -923,25 +923,26 @@ void test_gh_4882() {
         ss << put_time(&currentTime, format.c_str());
         assert(ss.rdstate() == ios_base::goodbit);
         const auto result = ss.str();
-        assert(result.length() == format.length() / 2);
-        assert(std::all_of(result.cbegin(), result.cend(), [](const char c) { return c == '?'; }));
+        assert(result.size() == format.size() / 2);
+        assert(all_of(result.cbegin(), result.cend(), [](const char c) { return c == '?'; }));
 
         // Narrow conversion is good enough for our ASCII only format strings
-        wstring wformat(format.length(), L' ');
-        transform(format.cbegin(), format.cend(), wformat.begin(), [](const char c) { return wchar_t(c); });
+        wstring wformat(format.size(), L' ');
+        transform(
+            format.cbegin(), format.cend(), wformat.begin(), [](const char c) { return static_cast<wchar_t>(c); });
 
         wstringstream wss;
         wss << put_time(&currentTime, wformat.c_str());
         assert(wss.rdstate() == ios_base::goodbit);
         const auto wresult = wss.str();
-        assert(wresult.length() == format.length() / 2);
-        assert(std::all_of(wresult.cbegin(), wresult.cend(), [](const wchar_t c) { return c == L'?'; }));
+        assert(wresult.size() == format.size() / 2);
+        assert(all_of(wresult.cbegin(), wresult.cend(), [](const wchar_t c) { return c == L'?'; }));
     };
 
     struct FormatTestData {
         int tm::*field;
         int value;
-        std::string format;
+        string format;
     };
 
     const FormatTestData testDataList[] = {
