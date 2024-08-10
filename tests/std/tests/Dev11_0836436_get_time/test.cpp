@@ -946,29 +946,32 @@ void test_gh_4882() {
     };
 
     const FormatTestData testDataList[] = {
-        {&tm::tm_sec, -1, "%S"},
-        {&tm::tm_sec, 61, "%S"},
+        {&tm::tm_sec, -1, "%S%r%X%T%c"},
+        {&tm::tm_sec, 61, "%S%r%X%T%c"},
 
-        {&tm::tm_min, -1, "%M"},
-        {&tm::tm_min, 60, "%M"},
+        {&tm::tm_min, -1, "%M%r%X%T%c"},
+        {&tm::tm_min, 60, "%M%r%X%T%c"},
 
-        {&tm::tm_hour, -1, "%H%I%p"},
-        {&tm::tm_hour, 24, "%H%I%p"},
+        {&tm::tm_hour, -1, "%H%I%p%R%r%X%T%c"},
+        {&tm::tm_hour, 24, "%H%I%p%R%r%X%T%c"},
 
-        {&tm::tm_mday, 0, "%d%e"},
-        {&tm::tm_mday, 32, "%d%e"},
+        {&tm::tm_mday, 0, "%d%e%c"},
+        {&tm::tm_mday, 32, "%d%e%c"},
 
-        {&tm::tm_mon, -1, "%b%B%m"},
-        {&tm::tm_mon, 12, "%b%B%m"},
+        {&tm::tm_mon, -1, "%b%B%m%h%c"},
+        {&tm::tm_mon, 12, "%b%B%m%h%c"},
 
-        {&tm::tm_year, -1901, "%C%g%G%y%Y"},
-        {&tm::tm_year, 8100, "%C%g%G%y%Y"},
-
-        {&tm::tm_wday, -1, "%a%A%u%w%U%W"},
-        {&tm::tm_wday, 7, "%a%A%u%w%U%W"},
+        {&tm::tm_year, -1901, "%C%y%Y%D%x%F%g%G%V%c"},
+        {&tm::tm_year, 8100, "%C%y%Y%D%x%F%g%G%V%c"},
 
         {&tm::tm_yday, -1, "%j%U%W"},
         {&tm::tm_yday, 366, "%j%U%W"},
+
+        {&tm::tm_wday, -1, "%a%A%u%w%c"},
+        {&tm::tm_wday, 7, "%a%A%u%w%c"},
+
+        {&tm::tm_wday, -1, "%U%W"},
+        {&tm::tm_wday, 7, "%U%W"},
     };
 
     for (const auto& testData : testDataList) {
