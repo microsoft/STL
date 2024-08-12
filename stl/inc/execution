@@ -3619,9 +3619,9 @@ struct _Scan_decoupled_lookback {
         __std_execution_wake_by_address_all(&_State);
     }
 
-    template <class _FwdIt, class _FwdIt2, class _BinOp>
+    template <class _FwdIt, class _BinOp>
     void _Apply_exclusive_predecessor(
-        _Ty& _Preceding, _FwdIt _First, _FwdIt2 _First2, const _FwdIt _Last, _BinOp _Reduce_op) {
+        _Ty& _Preceding, _FwdIt _First, _Ty* _First2, const _FwdIt _Last, _BinOp _Reduce_op) {
         // apply _Preceding to [_First, _Last) and _Sum._Ref(), using _Reduce_op
         _STD _Implicitly_construct_in_place_by_binary_op(_Sum._Ref(), _Reduce_op, _Preceding, _Local._Ref());
         _State.store(_Local_available | _Sum_available);
@@ -3647,9 +3647,9 @@ struct _Scan_decoupled_lookback {
         }
     }
 
-    template <class _FwdIt, class _FwdIt2, class _BinOp>
+    template <class _FwdIt, class _BinOp>
     void _Apply_inclusive_predecessor(
-        _Ty& _Preceding, _FwdIt _First, _FwdIt2 _First2, const _FwdIt _Last, _BinOp _Reduce_op) {
+        _Ty& _Preceding, _FwdIt _First, _Ty* _First2, const _FwdIt _Last, _BinOp _Reduce_op) {
         // apply _Preceding to [_First, _Last) and _Sum._Ref(), using _Reduce_op
         _STD _Implicitly_construct_in_place_by_binary_op(_Sum._Ref(), _Reduce_op, _Preceding, _Local._Ref());
         _State.store(_Local_available | _Sum_available);
