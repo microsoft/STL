@@ -3652,12 +3652,8 @@ struct _Scan_decoupled_lookback {
             if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt>::value_type>) {
                 *_First = _Reduce_op(_Preceding, _STD move(*_First));
             } else {
-                if (_STD next(_First) == _Last) {
-                    *_First = _Reduce_op(_Preceding, _Local._Ref());
-                } else {
-                    *_First = _Reduce_op(_Preceding, _STD move(*_First2));
-                    ++_First2;
-                }
+                *_First = _Reduce_op(_Preceding, _STD move(*_First2));
+                ++_First2;
             }
         }
     }
