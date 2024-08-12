@@ -3594,6 +3594,45 @@ _FwdIt partition(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
 inline constexpr unsigned char _Local_available = 1;
 inline constexpr unsigned char _Sum_available   = 2;
 
+// For scan algorithms: if the intermediate and output types are the same, we can directly store the binary operation
+// result in the output. IF not, then we need a place to store intermediate results.
+template <class _Ty, class _Iter>
+constexpr bool _Scan_reuse_output = is_same_v<_Ty, typename iterator_traits<_Iter>::value_type>;
+
+template <class _Ty, class _Iter, bool = _Scan_reuse_output<_Ty, _Iter>>
+class _Scan_intermediate_storage {
+private:
+    _Parallel_vector<_Ty> _Data;
+
+public:
+    template <class _Diff>
+    _Scan_intermediate_storage(const _Static_partition_team<_Diff>&) noexcept {}
+
+    _Parallel_vector<_Ty>& operator[](size_t) noexcept {
+        return _Data;
+    }
+};
+
+template <class _Ty, class _Iter>
+class _Scan_intermediate_storage<_Ty, _Iter, false> {
+private:
+    _Parallel_vector<_Parallel_vector<_Ty>> _Data;
+
+public:
+    template <class _Diff>
+    _Scan_intermediate_storage(const _Static_partition_team<_Diff>& _Team) : _Data(_Team._Chunks) {
+        const auto _Chunk_size = static_cast<size_t>(_Team._Chunk_size);
+        for (auto& _Vec : _Data) {
+            _Vec.reserve(_Chunk_size);
+        }
+    }
+
+    _Parallel_vector<_Ty>& operator[](const size_t _Idx) noexcept {
+        _STL_INTERNAL_CHECK(_Idx < _Data.size());
+        return _Data[_Idx];
+    }
+};
+
 template <class _Ty>
 struct _Scan_decoupled_lookback {
     // inter-chunk communication block in "Single-pass Parallel Prefix Scan with Decoupled Look-back" by Merrill and
@@ -3629,8 +3668,7 @@ struct _Scan_decoupled_lookback {
 
 #pragma loop(ivdep)
         while (++_First != _Last) {
-            // If the intermediate and output types are the same, we can directly store the bop result in the output
-            if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt>::value_type>) {
+            if constexpr (_Scan_reuse_output<_Ty, _FwdIt>) {
                 *_First = _Reduce_op(_Preceding, _STD move(*_First));
             } else {
                 ++_First2;
@@ -3648,8 +3686,7 @@ struct _Scan_decoupled_lookback {
 
 #pragma loop(ivdep)
         for (; _First != _Last; ++_First) {
-            // If the intermediate and output types are the same, we can directly store the bop result in the output
-            if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt>::value_type>) {
+            if constexpr (_Scan_reuse_output<_Ty, _FwdIt>) {
                 *_First = _Reduce_op(_Preceding, _STD move(*_First));
             } else {
                 *_First = _Reduce_op(_Preceding, _STD move(*_First2));
@@ -4370,8 +4407,7 @@ _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
         }
 
         _Ty _Tmp = _Reduce_op(_Val, *_First); // temp to enable _First == _Dest
-        // If the intermediate and output types are the same, we can directly store the bop result in the output
-        if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
+        if constexpr (_Scan_reuse_output<_Ty, _FwdIt2>) {
             *_Dest = _Val;
         } else {
             _STL_INTERNAL_CHECK(_Intermediate_result.size() < _Intermediate_result.capacity());
@@ -4397,24 +4433,6 @@ void _Exclusive_scan_per_chunk_complete(
     }
 }
 
-template <class _Ty>
-struct _Scan_intermediate_storage {
-    _Parallel_vector<_Parallel_vector<_Ty>> _Data;
-
-    template <class _Diff>
-    _Scan_intermediate_storage(const _Static_partition_team<_Diff>& _Team) : _Data(_Team._Chunks) {
-        const auto _Chunk_size = static_cast<size_t>(_Team._Chunk_size);
-        for (auto& _Vec : _Data) {
-            _Vec.reserve(_Chunk_size);
-        }
-    }
-
-    _Parallel_vector<_Ty>& operator[](const size_t _Idx) noexcept {
-        _STL_INTERNAL_CHECK(_Idx < _Data.size());
-        return _Data[_Idx];
-    }
-};
-
 template <class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp>
 struct _Static_partitioned_exclusive_scan2 {
     using _Diff = _Common_diff_t<_FwdIt1, _FwdIt2>;
@@ -4422,7 +4440,7 @@ struct _Static_partitioned_exclusive_scan2 {
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
     _Static_partition_range<_FwdIt2, _Diff> _Basis2;
     _Parallel_vector<_Scan_decoupled_lookback<_Ty>> _Lookback;
-    _Scan_intermediate_storage<_Ty> _Intermediate_result;
+    _Scan_intermediate_storage<_Ty, _FwdIt2> _Intermediate_result;
     _Ty& _Initial;
     _BinOp _Reduce_op;
 
@@ -4475,7 +4493,9 @@ struct _Static_partitioned_exclusive_scan2 {
                 _Tmp, _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         }
 
-        _Intermediate_result[_Chunk_number].clear();
+        if constexpr (!_Scan_reuse_output<_Ty, _FwdIt2>) {
+            _Intermediate_result[_Chunk_number].clear();
+        }
         return _Cancellation_status::_Running;
     }
 
@@ -4548,8 +4568,7 @@ _FwdIt2 _Inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
             return _Dest;
         }
 
-        // If the intermediate and output types are the same, we can directly store the bop result in the output
-        if constexpr (sizeof...(_VectorTy) == 0 || is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
+        if constexpr (sizeof...(_VectorTy) == 0 || _Scan_reuse_output<_Ty, _FwdIt2>) {
             _Val = _Reduce_op(_STD move(_Val), *_First);
         } else {
             _STL_INTERNAL_CHECK(((_Intermediate_result.size() < _Intermediate_result.capacity()) && ...));
@@ -4565,7 +4584,7 @@ struct _Static_partitioned_inclusive_scan2 {
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
     _Static_partition_range<_FwdIt2, _Diff> _Basis2;
     _Parallel_vector<_Scan_decoupled_lookback<_Ty>> _Lookback;
-    _Scan_intermediate_storage<_Ty> _Intermediate_result;
+    _Scan_intermediate_storage<_Ty, _FwdIt2> _Intermediate_result;
     _BinOp _Reduce_op;
     _Init_ty& _Initial;
 
@@ -4616,7 +4635,9 @@ struct _Static_partitioned_inclusive_scan2 {
                 _Tmp, _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         }
 
-        _Intermediate_result[_Chunk_number].clear();
+        if constexpr (!_Scan_reuse_output<_Ty, _FwdIt2>) {
+            _Intermediate_result[_Chunk_number].clear();
+        }
         return _Cancellation_status::_Running;
     }
 
@@ -4728,8 +4749,7 @@ _FwdIt2 _Transform_exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
         }
 
         _Ty _Tmp = _Reduce_op(_Val, _Transform_op(*_First)); // temp to enable _First == _Dest
-        // If the intermediate and output types are the same, we can directly store the bop result in the output
-        if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
+        if constexpr (_Scan_reuse_output<_Ty, _FwdIt2>) {
             *_Dest = _Val;
         } else {
             _STL_INTERNAL_CHECK(_Intermediate_result.size() < _Intermediate_result.capacity());
@@ -4763,7 +4783,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
     _Static_partition_range<_FwdIt2, _Diff> _Basis2;
     _Parallel_vector<_Scan_decoupled_lookback<_Ty>> _Lookback;
-    _Scan_intermediate_storage<_Ty> _Intermediate_result;
+    _Scan_intermediate_storage<_Ty, _FwdIt2> _Intermediate_result;
     _Ty& _Initial;
     _BinOp _Reduce_op;
     _UnaryOp _Transform_op;
@@ -4814,10 +4834,13 @@ struct _Static_partitioned_transform_exclusive_scan2 {
                 _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         } else {
             auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
+            _Chunk->_Apply_exclusive_predecessor(
+                _Tmp, _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         }
 
-        _Intermediate_result[_Chunk_number].clear();
+        if constexpr (!_Scan_reuse_output<_Ty, _FwdIt2>) {
+            _Intermediate_result[_Chunk_number].clear();
+        }
         return _Cancellation_status::_Running;
     }
 
@@ -4890,8 +4913,7 @@ _FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
             return _Dest;
         }
 
-        // If the intermediate and output types are the same, we can directly store the bop result in the output
-        if constexpr (sizeof...(_VectorTy) == 0 || is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
+        if constexpr (sizeof...(_VectorTy) == 0 || _Scan_reuse_output<_Ty, _FwdIt2>) {
             _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_First));
         } else {
             _STL_INTERNAL_CHECK(((_Intermediate_result.size() < _Intermediate_result.capacity()) && ...));
@@ -4907,7 +4929,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
     _Static_partition_range<_FwdIt2, _Diff> _Basis2;
     _Parallel_vector<_Scan_decoupled_lookback<_Ty>> _Lookback;
-    _Scan_intermediate_storage<_Ty> _Intermediate_result;
+    _Scan_intermediate_storage<_Ty, _FwdIt2> _Intermediate_result;
     _BinOp _Reduce_op;
     _UnaryOp _Transform_op;
     _Init_ty& _Initial;
@@ -4960,7 +4982,9 @@ struct _Static_partitioned_transform_inclusive_scan2 {
                 _Tmp, _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         }
 
-        _Intermediate_result[_Chunk_number].clear();
+        if constexpr (!_Scan_reuse_output<_Ty, _FwdIt2>) {
+            _Intermediate_result[_Chunk_number].clear();
+        }
         return _Cancellation_status::_Running;
     }
 
