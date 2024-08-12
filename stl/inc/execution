@@ -4389,9 +4389,8 @@ _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
         }
 
         _Ty _Tmp = _Reduce_op(_Val, *_First); // temp to enable _First == _Dest
-        _Intermediate_result.emplace_back(_STD move(_Val));
-        *_Dest = _Intermediate_result.back();
-        _Val   = _STD move(_Tmp);
+        *_Dest   = _Intermediate_result.emplace_back(_STD move(_Val));
+        _Val     = _STD move(_Tmp);
     }
 }
 
@@ -4579,8 +4578,7 @@ _FwdIt2 _Inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
             return _Dest;
         }
 
-        _Intermediate_result.emplace_back(_STD move(_Val));
-        _Val = _Reduce_op(_Intermediate_result.back(), *_First);
+        _Val = _Reduce_op(_Intermediate_result.emplace_back(_STD move(_Val)), *_First);
     }
 }
 
@@ -4794,9 +4792,8 @@ _FwdIt2 _Transform_exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
         }
 
         _Ty _Tmp = _Reduce_op(_Val, _Transform_op(*_First)); // temp to enable _First == _Dest
-        _Intermediate_result.emplace_back(_STD move(_Val));
-        *_Dest = _Intermediate_result.back();
-        _Val   = _STD move(_Tmp);
+        *_Dest   = _Intermediate_result.emplace_back(_STD move(_Val));
+        _Val     = _STD move(_Tmp);
     }
 }
 
@@ -4987,8 +4984,7 @@ _FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
             return _Dest;
         }
 
-        _Intermediate_result.emplace_back(_STD move(_Val));
-        _Val = _Reduce_op(_Intermediate_result.back(), _Transform_op(*_First));
+        _Val = _Reduce_op(_Intermediate_result.emplace_back(_STD move(_Val)), _Transform_op(*_First));
     }
 }
 
