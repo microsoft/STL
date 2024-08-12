@@ -4775,18 +4775,6 @@ private:
     _Fill_align_and_width_specs<_CharT> _Specs;
 };
 
-template <class _Adaptor>
-consteval auto _Get_member_pointer_to_adapted_container() noexcept {
-    struct _Container_exposer : _Adaptor {
-        using _Adaptor::c;
-
-        _Container_exposer(const _Container_exposer&)            = delete;
-        _Container_exposer& operator=(const _Container_exposer&) = delete;
-        ~_Container_exposer()                                    = delete;
-    };
-    return &_Container_exposer::c;
-}
-
 // Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
 // constrained to character types supported by `format`.
 template <class _AdaptorType, _Format_supported_charT _CharT, template <class> class _RefView>
@@ -4806,7 +4794,15 @@ public:
 
     template <class _FmtCtx>
     _FmtCtx::iterator format(_Maybe_const_adaptor& _Adaptor, _FmtCtx& _Ctx) const {
-        constexpr auto _Mem_cont_ptr = _STD _Get_member_pointer_to_adapted_container<_AdaptorType>();
+        struct _Container_exposer : _AdaptorType {
+            using _AdaptorType::c;
+
+            _Container_exposer(const _Container_exposer&)            = delete;
+            _Container_exposer& operator=(const _Container_exposer&) = delete;
+            ~_Container_exposer()                                    = delete;
+        };
+
+        constexpr auto _Mem_cont_ptr = &_Container_exposer::c;
         return _Underlying.format(_Adaptor.*_Mem_cont_ptr, _Ctx);
     }
 };
