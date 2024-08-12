@@ -4357,7 +4357,7 @@ struct _No_init_tag {
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty>
 _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val,
-    vector<_Ty>& _Intermediate_result) {
+    _Parallel_vector<_Ty>& _Intermediate_result) {
     // local-sum for parallel exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and stores
     // successor sum in _Val
     // pre: _Val is *uninitialized* && _First != _Last
@@ -4374,6 +4374,7 @@ _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
         if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             *_Dest = _Val;
         } else {
+            _STL_INTERNAL_CHECK(_Intermediate_result.size() < _Intermediate_result.capacity());
             *_Dest = _Intermediate_result.emplace_back(_STD move(_Val));
         }
         _Val = _STD move(_Tmp);
@@ -4396,6 +4397,24 @@ void _Exclusive_scan_per_chunk_complete(
     }
 }
 
+template <class _Ty>
+struct _Scan_intermediate_storage {
+    _Parallel_vector<_Parallel_vector<_Ty>> _Data;
+
+    template <class _Diff>
+    _Scan_intermediate_storage(const _Static_partition_team<_Diff>& _Team) : _Data(_Team._Chunks) {
+        const auto _Chunk_size = static_cast<size_t>(_Team._Chunk_size);
+        for (auto& _Vec : _Data) {
+            _Vec.reserve(_Chunk_size);
+        }
+    }
+
+    _Parallel_vector<_Ty>& operator[](const size_t _Idx) noexcept {
+        _STL_INTERNAL_CHECK(_Idx < _Data.size());
+        return _Data[_Idx];
+    }
+};
+
 template <class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp>
 struct _Static_partitioned_exclusive_scan2 {
     using _Diff = _Common_diff_t<_FwdIt1, _FwdIt2>;
@@ -4403,13 +4422,14 @@ struct _Static_partitioned_exclusive_scan2 {
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
     _Static_partition_range<_FwdIt2, _Diff> _Basis2;
     _Parallel_vector<_Scan_decoupled_lookback<_Ty>> _Lookback;
+    _Scan_intermediate_storage<_Ty> _Intermediate_result;
     _Ty& _Initial;
     _BinOp _Reduce_op;
 
     _Static_partitioned_exclusive_scan2(const size_t _Hw_threads, const _Diff _Count, const _FwdIt1 _First,
         _Ty& _Initial_, _BinOp _Reduce_op_, const _FwdIt2&)
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
-          _Lookback(_Team._Chunks), _Initial(_Initial_), _Reduce_op(_Reduce_op_) {
+          _Lookback(_Team._Chunks), _Intermediate_result{_Team}, _Initial(_Initial_), _Reduce_op(_Reduce_op_) {
         _Basis1._Populate(_Team, _First);
     }
 
@@ -4440,23 +4460,22 @@ struct _Static_partitioned_exclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        // Make a vector to handle the intermediate and output types being different
-        vector<_Ty> _Intermediate_result;
-
         // Calculate local sum and publish to other threads
-        const auto _Last = _STD _Exclusive_scan_per_chunk(
-            _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Local._Ref(), _Intermediate_result);
+        const auto _Last = _STD _Exclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
+            _Chunk->_Local._Ref(), _Intermediate_result[_Chunk_number]);
         _Chunk->_Store_available_state(_Local_available);
 
         // Apply the predecessor overall sum to current overall sum and elements
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_exclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+                _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         } else {
             auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            _Chunk->_Apply_exclusive_predecessor(
+                _Tmp, _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         }
 
+        _Intermediate_result[_Chunk_number].clear();
         return _Cancellation_status::_Running;
     }
 
@@ -4533,6 +4552,7 @@ _FwdIt2 _Inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
         if constexpr (sizeof...(_VectorTy) == 0 || is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             _Val = _Reduce_op(_STD move(_Val), *_First);
         } else {
+            _STL_INTERNAL_CHECK(((_Intermediate_result.size() < _Intermediate_result.capacity()) && ...));
             _Val = _Reduce_op(_Intermediate_result.emplace_back(_STD move(_Val))..., *_First);
         }
     }
@@ -4545,13 +4565,14 @@ struct _Static_partitioned_inclusive_scan2 {
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
     _Static_partition_range<_FwdIt2, _Diff> _Basis2;
     _Parallel_vector<_Scan_decoupled_lookback<_Ty>> _Lookback;
+    _Scan_intermediate_storage<_Ty> _Intermediate_result;
     _BinOp _Reduce_op;
     _Init_ty& _Initial;
 
     _Static_partitioned_inclusive_scan2(
         const size_t _Hw_threads, const _Diff _Count, _BinOp _Reduce_op_, _Init_ty& _Initial_)
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
-          _Lookback(_Team._Chunks), _Reduce_op(_Reduce_op_), _Initial(_Initial_) {}
+          _Lookback(_Team._Chunks), _Intermediate_result{_Team}, _Reduce_op(_Reduce_op_), _Initial(_Initial_) {}
 
     _Cancellation_status _Process_chunk() {
         const auto _Key = _Team._Get_next_key();
@@ -4580,23 +4601,22 @@ struct _Static_partitioned_inclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        // Make a vector to handle the intermediate and output types being different
-        vector<_Ty> _Intermediate_result;
-
         // Calculate local sum and publish to other threads
         const auto _Last = _STD _Inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
-            _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result);
+            _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result[_Chunk_number]);
         _Chunk->_Store_available_state(_Local_available);
 
         // Apply the predecessor overall sum to current overall sum and elements
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_inclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+                _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         } else {
             auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_inclusive_predecessor(_Tmp, _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            _Chunk->_Apply_inclusive_predecessor(
+                _Tmp, _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         }
 
+        _Intermediate_result[_Chunk_number].clear();
         return _Cancellation_status::_Running;
     }
 
@@ -4695,7 +4715,7 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
 
 template <class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp, class _Ty>
 _FwdIt2 _Transform_exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
-    _UnaryOp _Transform_op, _Ty& _Val, vector<_Ty>& _Intermediate_result) {
+    _UnaryOp _Transform_op, _Ty& _Val, _Parallel_vector<_Ty>& _Intermediate_result) {
     // Local-sum for parallel transform_exclusive_scan; writes local sums into [_Dest + 1, _Dest + (_Last - _First)) and
     // stores successor sum in _Val.
     // pre: _Val is *uninitialized* && _First != _Last
@@ -4712,6 +4732,7 @@ _FwdIt2 _Transform_exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
         if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             *_Dest = _Val;
         } else {
+            _STL_INTERNAL_CHECK(_Intermediate_result.size() < _Intermediate_result.capacity());
             *_Dest = _Intermediate_result.emplace_back(_STD move(_Val));
         }
         _Val = _STD move(_Tmp);
@@ -4742,6 +4763,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
     _Static_partition_range<_FwdIt2, _Diff> _Basis2;
     _Parallel_vector<_Scan_decoupled_lookback<_Ty>> _Lookback;
+    _Scan_intermediate_storage<_Ty> _Intermediate_result;
     _Ty& _Initial;
     _BinOp _Reduce_op;
     _UnaryOp _Transform_op;
@@ -4749,7 +4771,8 @@ struct _Static_partitioned_transform_exclusive_scan2 {
     _Static_partitioned_transform_exclusive_scan2(const size_t _Hw_threads, const _Diff _Count, const _FwdIt1 _First,
         _Ty& _Initial_, _BinOp _Reduce_op_, _UnaryOp _Transform_op_, const _FwdIt2&)
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
-          _Lookback(_Team._Chunks), _Initial(_Initial_), _Reduce_op(_Reduce_op_), _Transform_op(_Transform_op_) {
+          _Lookback(_Team._Chunks), _Intermediate_result{_Team}, _Initial(_Initial_), _Reduce_op(_Reduce_op_),
+          _Transform_op(_Transform_op_) {
         _Basis1._Populate(_Team, _First);
     }
 
@@ -4780,23 +4803,21 @@ struct _Static_partitioned_transform_exclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        // Make a vector to handle the intermediate and output types being different
-        vector<_Ty> _Intermediate_result;
-
         // Calculate local sum and publish to other threads
         const auto _Last = _STD _Transform_exclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest,
-            _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _Intermediate_result);
+            _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _Intermediate_result[_Chunk_number]);
         _Chunk->_Store_available_state(_Local_available);
 
         // Apply the predecessor overall sum to current overall sum and elements
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_exclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+                _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         } else {
             auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            _Chunk->_Apply_exclusive_predecessor(_Tmp, _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         }
 
+        _Intermediate_result[_Chunk_number].clear();
         return _Cancellation_status::_Running;
     }
 
@@ -4873,6 +4894,7 @@ _FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
         if constexpr (sizeof...(_VectorTy) == 0 || is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_First));
         } else {
+            _STL_INTERNAL_CHECK(((_Intermediate_result.size() < _Intermediate_result.capacity()) && ...));
             _Val = _Reduce_op(_Intermediate_result.emplace_back(_STD move(_Val))..., _Transform_op(*_First));
         }
     }
@@ -4885,6 +4907,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
     _Static_partition_range<_FwdIt2, _Diff> _Basis2;
     _Parallel_vector<_Scan_decoupled_lookback<_Ty>> _Lookback;
+    _Scan_intermediate_storage<_Ty> _Intermediate_result;
     _BinOp _Reduce_op;
     _UnaryOp _Transform_op;
     _Init_ty& _Initial;
@@ -4892,7 +4915,8 @@ struct _Static_partitioned_transform_inclusive_scan2 {
     _Static_partitioned_transform_inclusive_scan2(
         const size_t _Hw_threads, const _Diff _Count, _BinOp _Reduce_op_, _UnaryOp _Transform_op_, _Init_ty& _Initial_)
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
-          _Lookback(_Team._Chunks), _Reduce_op(_Reduce_op_), _Transform_op(_Transform_op_), _Initial(_Initial_) {}
+          _Lookback(_Team._Chunks), _Intermediate_result{_Team}, _Reduce_op(_Reduce_op_), _Transform_op(_Transform_op_),
+          _Initial(_Initial_) {}
 
     _Cancellation_status _Process_chunk() {
         const auto _Key = _Team._Get_next_key();
@@ -4921,23 +4945,22 @@ struct _Static_partitioned_transform_inclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        // Make a vector to handle the intermediate and output types being different
-        vector<_Ty> _Intermediate_result;
-
         // Calculate local sum and publish to other threads
         const auto _Last = _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest,
-            _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result);
+            _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result[_Chunk_number]);
         _Chunk->_Store_available_state(_Local_available);
 
         // Apply the predecessor overall sum to current overall sum and elements
         if (_Prev_chunk->_Get_available_state() & _Sum_available) { // predecessor overall sum done, use directly
             _Chunk->_Apply_inclusive_predecessor(
-                _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+                _Prev_chunk->_Sum._Ref(), _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         } else {
             auto _Tmp = _STD _Get_lookback_sum(_Prev_chunk, _Reduce_op);
-            _Chunk->_Apply_inclusive_predecessor(_Tmp, _Dest, _Intermediate_result.data(), _Last, _Reduce_op);
+            _Chunk->_Apply_inclusive_predecessor(
+                _Tmp, _Dest, _Intermediate_result[_Chunk_number].data(), _Last, _Reduce_op);
         }
 
+        _Intermediate_result[_Chunk_number].clear();
         return _Cancellation_status::_Running;
     }
 
