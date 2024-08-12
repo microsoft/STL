@@ -951,7 +951,7 @@ void test_pointer(TestFunction check, ExceptionTest check_exception, auto&& inpu
 
 template <class CharT, class TestFunction, class ExceptionTest>
 void test_pointer(TestFunction check, ExceptionTest check_exception) {
-    array input{static_cast<void*>(0)};
+    array input{static_cast<void*>(nullptr)};
     test_pointer<CharT>(check, check_exception, queue{input.begin(), input.end()});
     test_pointer<CharT>(check, check_exception, priority_queue{input.begin(), input.end()});
     test_pointer<CharT>(check, check_exception, stack{input.begin(), input.end()});
