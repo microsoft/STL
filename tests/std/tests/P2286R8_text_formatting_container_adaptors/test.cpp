@@ -18,13 +18,24 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cctype>
 #include <charconv>
 #include <concepts>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <format>
-#include <list>
+#include <functional>
+#include <iterator>
+#include <locale>
 #include <queue>
 #include <ranges>
 #include <stack>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include <is_permissive.hpp>
 #include <test_format_support.hpp>
