@@ -111,7 +111,7 @@ enum class status : uint16_t { foo = 0xAAAA, bar = 0x5555, foobar = 0xAA55 };
 template <class CharT>
 struct formatter<status, CharT> {
     // During the 2023 Issaquah meeting LEWG made it clear a formatter is
-    // required to call its parse function. LWG3892 Adds the wording for that
+    // required to call its parse function. LWG-3892 Adds the wording for that
     // requirement. Therefore this formatter is initialized in an invalid state.
     // A call to parse sets it in a valid state and a call to format validates
     // the state.
@@ -446,7 +446,7 @@ void test_char(TestFunction check, ExceptionTest check_exception) {
     test_char_escaped_string<CharT>(check, check_exception, priority_queue{input.begin(), input.end(), greater{}});
     test_char_escaped_string<CharT>(check, check_exception, stack{input.begin(), input.end()});
 
-    // LWG3881 fixes formatting container adaptors backed by a string.
+    // LWG-3881 fixes formatting container adaptors backed by a string.
     test_char_default<CharT>(check, check_exception, queue{basic_string<CharT>{input.begin(), input.end()}});
     test_char_default<CharT>(
         check, check_exception, priority_queue{greater{}, basic_string<CharT>{input.begin(), input.end()}});
