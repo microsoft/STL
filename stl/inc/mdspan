@@ -81,7 +81,7 @@ private:
         rank_type _Counter = 0;
         for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
             if (_Static_extents[_Idx] == dynamic_extent) {
-                _Analysis_assume_(_Counter < _Rank_dynamic); // TRANSITION, DevCom-923103
+                _Analysis_assume_(_Counter < _Rank_dynamic); // guaranteed by how _Rank_dynamic is calculated
                 _Result[_Counter] = _Idx;
                 ++_Counter;
             }
@@ -174,7 +174,7 @@ private:
     }
 
 public:
-    _NODISCARD static constexpr rank_type rank() noexcept {
+    _NODISCARD _Ret_range_(==, _Rank) static constexpr rank_type rank() noexcept {
         return _Rank;
     }
 
@@ -182,14 +182,14 @@ public:
         return _Rank_dynamic;
     }
 
-    _NODISCARD static constexpr size_t static_extent(const rank_type _Idx) noexcept {
+    _NODISCARD static constexpr size_t static_extent(_In_range_(<, _Rank) const rank_type _Idx) noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < _Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/1)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Static_extents[_Idx];
     }
 
-    _NODISCARD constexpr index_type extent(const rank_type _Idx) const noexcept {
+    _NODISCARD constexpr index_type extent(_In_range_(<, _Rank) const rank_type _Idx) const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < _Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/3)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -591,7 +591,7 @@ public:
         return true;
     }
 
-    _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept
+    _NODISCARD constexpr index_type stride(_In_range_(<, extents_type::_Rank) const rank_type _Idx) const noexcept
         requires (extents_type::rank() > 0)
     {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -744,7 +744,7 @@ public:
         return true;
     }
 
-    _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept
+    _NODISCARD constexpr index_type stride(_In_range_(<, extents_type::_Rank) const rank_type _Idx) const noexcept
         requires (extents_type::rank() > 0)
     {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -975,10 +975,14 @@ public:
         return true;
     }
 
-    _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept {
+    _NODISCARD constexpr index_type stride(_In_range_(<, extents_type::_Rank) const rank_type _Idx) const noexcept {
         if constexpr (extents_type::rank() == 0) {
             _STL_VERIFY(false, "The argument to stride must be nonnegative and less than extents_type::rank().");
         } else {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Idx < extents_type::_Rank,
+                "The argument to stride must be nonnegative and less than extents_type::rank().");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
             return this->_Array[_Idx];
         }
     }
@@ -1187,7 +1191,7 @@ private:
         "[mdspan.mdspan.overview]/2.3).");
 
 public:
-    _NODISCARD static constexpr rank_type rank() noexcept {
+    _NODISCARD _Ret_range_(==, extents_type::_Rank) static constexpr rank_type rank() noexcept {
         return extents_type::_Rank;
     }
 
@@ -1195,14 +1199,14 @@ public:
         return extents_type::_Rank_dynamic;
     }
 
-    _NODISCARD static constexpr size_t static_extent(const rank_type _Idx) noexcept {
+    _NODISCARD static constexpr size_t static_extent(_In_range_(<, extents_type::_Rank) const rank_type _Idx) noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < extents_type::_Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/1)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return extents_type::_Static_extents[_Idx];
     }
 
-    _NODISCARD constexpr index_type extent(const rank_type _Idx) const noexcept {
+    _NODISCARD constexpr index_type extent(_In_range_(<, extents_type::_Rank) const rank_type _Idx) const noexcept {
         return this->_Map.extents().extent(_Idx);
     }
 

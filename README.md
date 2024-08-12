@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4981][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4986][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -143,6 +143,10 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 1. Install Visual Studio 2022 17.11 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
+    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
+    if you would like to build the ARM64/ARM64EC target.
+    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" in the VS Installer
+    if you would like to build the ARM target.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.29.0 or later, and [Ninja][] 1.11.0 or later.
@@ -158,6 +162,10 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 1. Install Visual Studio 2022 17.11 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
+    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
+    if you would like to build the ARM64/ARM64EC target.
+    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" in the VS Installer
+    if you would like to build the ARM target.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.29.0 or later, and [Ninja][] 1.11.0 or later.
@@ -179,6 +187,30 @@ To build the x64 target (recommended):
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset x64`
 4. `cmake --build --preset x64`
+
+To build the ARM target:
+
+1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm`
+    * If you installed VS to a non-default location, change this path accordingly.
+2. Change directories to the previously cloned `STL` directory.
+3. `cmake --preset ARM`
+4. `cmake --build --preset ARM`
+
+To build the ARM64 target:
+
+1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
+    * If you installed VS to a non-default location, change this path accordingly.
+2. Change directories to the previously cloned `STL` directory.
+3. `cmake --preset ARM64`
+4. `cmake --build --preset ARM64`
+
+To build the ARM64EC target:
+
+1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
+    * If you installed VS to a non-default location, change this path accordingly.
+2. Change directories to the previously cloned `STL` directory.
+3. `cmake --preset ARM64EC`
+4. `cmake --build --preset ARM64EC`
 
 # How To Consume
 
@@ -537,7 +569,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4981]: https://wg21.link/N4981
+[N4986]: https://wg21.link/N4986
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"

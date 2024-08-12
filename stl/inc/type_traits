@@ -37,14 +37,14 @@ struct _Conjunction { // handle false trait or last trait
 
 template <class _True, class _Next, class... _Rest>
 struct _Conjunction<true, _True, _Next, _Rest...> { // the first trait is true, try the next one
-    using type = typename _Conjunction<_Next::value, _Next, _Rest...>::type;
+    using type = typename _Conjunction<static_cast<bool>(_Next::value), _Next, _Rest...>::type;
 };
 
 _EXPORT_STD template <class... _Traits>
 struct conjunction : true_type {}; // If _Traits is empty, true_type
 
 template <class _First, class... _Rest>
-struct conjunction<_First, _Rest...> : _Conjunction<_First::value, _First, _Rest...>::type {
+struct conjunction<_First, _Rest...> : _Conjunction<static_cast<bool>(_First::value), _First, _Rest...>::type {
     // the first false trait in _Traits, or the last trait if none are false
 };
 
