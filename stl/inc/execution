@@ -3629,7 +3629,7 @@ struct _Scan_decoupled_lookback {
 
 #pragma loop(ivdep)
         while (++_First != _Last) {
-            // If the intermediate type is same with output type, then we can direct store the bop result in the output
+            // If the intermediate and output types are the same, we can directly store the bop result in the output
             if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt>::value_type>) {
                 *_First = _Reduce_op(_Preceding, _STD move(*_First));
             } else {
@@ -3648,7 +3648,7 @@ struct _Scan_decoupled_lookback {
 
 #pragma loop(ivdep)
         for (; _First != _Last; ++_First) {
-            // If the intermediate type is same with output type, then we can direct store the bop result in the output
+            // If the intermediate and output types are the same, we can directly store the bop result in the output
             if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt>::value_type>) {
                 *_First = _Reduce_op(_Preceding, _STD move(*_First));
             } else {
@@ -4370,7 +4370,7 @@ _FwdIt2 _Exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
         }
 
         _Ty _Tmp = _Reduce_op(_Val, *_First); // temp to enable _First == _Dest
-        // If the intermediate type is same with output type, then we can direct store the bop result in the output
+        // If the intermediate and output types are the same, we can directly store the bop result in the output
         if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             *_Dest = _Val;
         } else {
@@ -4440,6 +4440,7 @@ struct _Static_partitioned_exclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
+        // Make a vector to handle the intermediate and output types being different
         vector<_Ty> _Intermediate_result;
 
         // Calculate local sum and publish to other threads
@@ -4528,7 +4529,7 @@ _FwdIt2 _Inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
             return _Dest;
         }
 
-        // If the intermediate type is same with output type, then we can direct store the bop result in the output
+        // If the intermediate and output types are the same, we can directly store the bop result in the output
         if constexpr (sizeof...(_VectorTy) == 0 || is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             _Val = _Reduce_op(_STD move(_Val), *_First);
         } else {
@@ -4579,7 +4580,7 @@ struct _Static_partitioned_inclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        // Make a vector to avoid the type of *_Dest is different with _Ty
+        // Make a vector to handle the intermediate and output types being different
         vector<_Ty> _Intermediate_result;
 
         // Calculate local sum and publish to other threads
@@ -4707,7 +4708,7 @@ _FwdIt2 _Transform_exclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
         }
 
         _Ty _Tmp = _Reduce_op(_Val, _Transform_op(*_First)); // temp to enable _First == _Dest
-        // If the intermediate type is same with output type, then we can direct store the bop result in the output
+        // If the intermediate and output types are the same, we can directly store the bop result in the output
         if constexpr (is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             *_Dest = _Val;
         } else {
@@ -4779,7 +4780,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        // Make a vector to avoid the type of *_Dest is different with _Ty
+        // Make a vector to handle the intermediate and output types being different
         vector<_Ty> _Intermediate_result;
 
         // Calculate local sum and publish to other threads
@@ -4868,7 +4869,7 @@ _FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
             return _Dest;
         }
 
-        // If the intermediate type is same with output type, then we can direct store the bop result in the output
+        // If the intermediate and output types are the same, we can directly store the bop result in the output
         if constexpr (sizeof...(_VectorTy) == 0 || is_same_v<_Ty, typename iterator_traits<_FwdIt2>::value_type>) {
             _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_First));
         } else {
@@ -4920,7 +4921,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
             return _Cancellation_status::_Running;
         }
 
-        // Make a vector to avoid the type of *_Dest is different with _Ty
+        // Make a vector to handle the intermediate and output types being different
         vector<_Ty> _Intermediate_result;
 
         // Calculate local sum and publish to other threads
