@@ -1346,37 +1346,37 @@ namespace filesystem {
             return _Istr;
         }
 
-        _NODISCARD_FRIEND bool operator==(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD friend bool operator==(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right._Text) == 0;
         }
 
 #if _HAS_CXX20
-        _NODISCARD_FRIEND strong_ordering operator<=>(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD friend strong_ordering operator<=>(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right._Text) <=> 0;
         }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        _NODISCARD_FRIEND bool operator!=(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD friend bool operator!=(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) != 0;
         }
 
-        _NODISCARD_FRIEND bool operator<(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD friend bool operator<(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) < 0;
         }
 
-        _NODISCARD_FRIEND bool operator>(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD friend bool operator>(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) > 0;
         }
 
-        _NODISCARD_FRIEND bool operator<=(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD friend bool operator<=(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) <= 0;
         }
 
-        _NODISCARD_FRIEND bool operator>=(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD friend bool operator>=(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) >= 0;
         }
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-        _NODISCARD_FRIEND path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
+        _NODISCARD friend path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
             const auto _Right_size  = _Right._Text.size();
             const auto _Right_first = _Right._Text.data();
             const auto _Right_last  = _Right_first + _Right_size;
@@ -1578,12 +1578,12 @@ namespace filesystem {
             return _Tmp;
         }
 
-        _NODISCARD_FRIEND bool operator==(const _Path_iterator& _Lhs, const _Path_iterator& _Rhs) {
+        _NODISCARD friend bool operator==(const _Path_iterator& _Lhs, const _Path_iterator& _Rhs) {
             return _Lhs._Position == _Rhs._Position;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD_FRIEND bool operator!=(const _Path_iterator& _Lhs, const _Path_iterator& _Rhs) {
+        _NODISCARD friend bool operator!=(const _Path_iterator& _Lhs, const _Path_iterator& _Rhs) {
             return _Lhs._Position != _Rhs._Position;
         }
 #endif // !_HAS_CXX20
@@ -1981,7 +1981,7 @@ namespace filesystem {
         }
 
 #if _HAS_CXX20
-        _NODISCARD_FRIEND bool operator==(const file_status& _Lhs, const file_status& _Rhs) noexcept {
+        _NODISCARD friend bool operator==(const file_status& _Lhs, const file_status& _Rhs) noexcept {
             return _Lhs._Myftype == _Rhs._Myftype && _Lhs._Myperms == _Rhs._Myperms;
         }
 #endif // _HAS_CXX20
@@ -3719,7 +3719,7 @@ namespace filesystem {
         uintmax_t available;
 
 #if _HAS_CXX20
-        _NODISCARD_FRIEND constexpr bool operator==(const space_info&, const space_info&) noexcept = default;
+        _NODISCARD friend constexpr bool operator==(const space_info&, const space_info&) noexcept = default;
 #endif // _HAS_CXX20
     };
 

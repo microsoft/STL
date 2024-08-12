@@ -13,7 +13,7 @@ $ErrorActionPreference = 'Stop'
 
 $CurrentDate = Get-Date
 
-$Location = 'eastus'
+$Location = 'eastus2'
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $ImagePublisher = 'MicrosoftWindowsServer'

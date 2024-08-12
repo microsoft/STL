@@ -41,26 +41,42 @@ void __stdcall _Thrd_sleep_for(const unsigned long ms) noexcept { // suspend cur
     Sleep(ms);
 }
 
-_Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target_ms) noexcept {
-    _Thrd_result res    = _Thrd_result::_Success;
-    const auto cs       = &mtx->_Critical_section;
-    const auto start_ms = GetTickCount64();
+namespace {
+    _Thrd_result __stdcall _Cnd_timedwait_for_impl(
+        const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target_ms, const bool checked) noexcept {
+        _Thrd_result res            = _Thrd_result::_Success;
+        unsigned long long start_ms = 0;
 
-    // TRANSITION: replace with _Mtx_clear_owner(mtx);
-    mtx->_Thread_id = -1;
-    --mtx->_Count;
-
-    if (!Concurrency::details::_Get_cond_var(cond)->wait_for(cs, target_ms)) { // report timeout
-        const auto end_ms = GetTickCount64();
-        if (end_ms - start_ms >= target_ms) {
-            res = _Thrd_result::_Timedout;
+        if (checked) {
+            start_ms = GetTickCount64();
         }
-    }
-    // TRANSITION: replace with _Mtx_reset_owner(mtx);
-    mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
-    ++mtx->_Count;
 
-    return res;
+        // TRANSITION: replace with _Mtx_clear_owner(mtx);
+        mtx->_Thread_id = -1;
+        --mtx->_Count;
+
+        if (!_Primitive_wait_for(cond, mtx, target_ms)) { // report timeout
+            if (!checked || GetTickCount64() - start_ms >= target_ms) {
+                res = _Thrd_result::_Timedout;
+            }
+        }
+        // TRANSITION: replace with _Mtx_reset_owner(mtx);
+        mtx->_Thread_id = static_cast<long>(GetCurrentThreadId());
+        ++mtx->_Count;
+
+        return res;
+    }
+} // namespace
+
+// TRANSITION, ABI: preserved for compatibility
+_Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target_ms) noexcept {
+    return _Cnd_timedwait_for_impl(cond, mtx, target_ms, true);
 }
+
+_Thrd_result __stdcall _Cnd_timedwait_for_unchecked(
+    const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target_ms) noexcept {
+    return _Cnd_timedwait_for_impl(cond, mtx, target_ms, false);
+}
+
 
 } // extern "C"

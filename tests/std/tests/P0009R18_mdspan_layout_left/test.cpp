@@ -90,10 +90,7 @@ constexpr void check_members(const extents<IndexType, Extents...>& ext, index_se
         if constexpr (Ext::rank() > 0) {
             strides.front() = 1;
             for (size_t i = 1; i < Ext::rank(); ++i) {
-#pragma warning(push)
-#pragma warning(disable : 28020) // TRANSITION, DevCom-923103
                 strides[i] = static_cast<IndexType>(strides[i - 1] * ext.extent(i - 1));
-#pragma warning(pop)
             }
         }
 

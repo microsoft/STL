@@ -61,7 +61,10 @@ void test_call_operator() {
 void test_stride_with_empty_extents() {
     layout_stride::mapping<extents<int>> m;
     // The argument to stride must be nonnegative and less than extents_type::rank()
+#pragma warning(push)
+#pragma warning(disable : 28020) // yay, /analyze catches this mistake at compile time!
     (void) m.stride(0);
+#pragma warning(pop)
 }
 
 int main(int argc, char* argv[]) {

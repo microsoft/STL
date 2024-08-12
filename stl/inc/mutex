@@ -531,13 +531,15 @@ _EXPORT_STD enum class cv_status { // names for wait returns
 
 _EXPORT_STD class condition_variable { // class for waiting for conditions
 public:
+#ifdef _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
     condition_variable() noexcept /* strengthened */ {
         _Cnd_init_in_situ(_Mycnd());
     }
+#else // ^^^ defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) / !defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) vvv
+    condition_variable() noexcept /* strengthened */ = default;
+#endif // ^^^ !defined(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR) ^^^
 
-    ~condition_variable() noexcept {
-        _Cnd_destroy_in_situ(_Mycnd());
-    }
+    ~condition_variable() noexcept = default;
 
     condition_variable(const condition_variable&)            = delete;
     condition_variable& operator=(const condition_variable&) = delete;
@@ -597,7 +599,7 @@ public:
 
             const unsigned long _Rel_ms_count = _Clamped_rel_time_ms_count(_Abs_time - _Now)._Count;
 
-            const _Thrd_result _Res = _Cnd_timedwait_for(_Mycnd(), _Lck.mutex()->_Mymtx(), _Rel_ms_count);
+            const _Thrd_result _Res = _Cnd_timedwait_for_unchecked(_Mycnd(), _Lck.mutex()->_Mymtx(), _Rel_ms_count);
             if (_Res == _Thrd_result::_Success) {
                 return cv_status::no_timeout;
             }
@@ -629,7 +631,7 @@ public:
     }
 
 private:
-    _Cnd_internal_imp_t _Cnd_storage;
+    _Cnd_internal_imp_t _Cnd_storage{};
 
     _Cnd_t _Mycnd() noexcept {
         return &_Cnd_storage;

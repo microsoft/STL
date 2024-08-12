@@ -7,6 +7,7 @@
 #define _ALGORITHM_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_heap_algorithms.hpp>
 #include <__msvc_minmax.hpp>
 #include <xmemory>
 
@@ -200,6 +201,7 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
 template <class _Ty1, class _Ty2>
 _Ty1* _Find_first_of_vectorized(
     _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, _Ty2* const _Last2) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Ty1) == sizeof(_Ty2));
     if constexpr (sizeof(_Ty1) == 1) {
         return const_cast<_Ty1*>(
             static_cast<const _Ty1*>(::__std_find_first_of_trivial_1(_First1, _Last1, _First2, _Last2)));
@@ -931,10 +933,8 @@ namespace ranges {
         _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
-                using _Size1      = _Make_unsigned_like_t<range_size_t<_Rng1>>;
-                const auto _Count = static_cast<_Size1>(_RANGES size(_Range1));
-                using _Size2      = _Make_unsigned_like_t<range_size_t<_Rng2>>;
-                if (_Count != static_cast<_Size2>(_RANGES size(_Range2))) {
+                const auto _Count = _RANGES distance(_Range1);
+                if (_Count != _RANGES distance(_Range2)) {
                     return false;
                 }
                 return _RANGES _Equal_count(_Ubegin(_Range1), _Ubegin(_Range2), _Count, _STD _Pass_fn(_Pred),
@@ -2119,15 +2119,6 @@ namespace ranges {
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, ...) to [_First2, _Last2)
-    if constexpr (_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
-            return _STD _Memcmp_ranges(_First2, _Last2, _First1) == 0;
-        }
-    }
-
     for (; _First2 != _Last2; ++_First1, (void) ++_First2) {
         if (!_Pred(*_First1, *_First2)) {
             return false;
@@ -6638,46 +6629,7 @@ namespace ranges {
     };
 
     _EXPORT_STD inline constexpr _Stable_partition_fn stable_partition;
-} // namespace ranges
-#endif // _HAS_CXX20
 
-template <class _RanIt, class _Ty, class _Pr>
-_CONSTEXPR20 void _Push_heap_by_index(
-    _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Top, _Ty&& _Val, _Pr _Pred) {
-    // percolate _Hole to _Top or where _Val belongs
-    using _Diff = _Iter_diff_t<_RanIt>;
-    for (_Diff _Idx                                                          = (_Hole - 1) >> 1; // shift for codegen
-         _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val); _Idx = (_Hole - 1) >> 1) { // shift for codegen
-        // move _Hole up to parent
-        *(_First + _Hole) = _STD move(*(_First + _Idx));
-        _Hole             = _Idx;
-    }
-
-    *(_First + _Hole) = _STD forward<_Ty>(_Val); // drop _Val into final hole
-}
-
-_EXPORT_STD template <class _RanIt, class _Pr>
-_CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
-    // push *(_Last - 1) onto heap at [_First, _Last - 1)
-    _STD _Adl_verify_range(_First, _Last);
-    const auto _UFirst = _STD _Get_unwrapped(_First);
-    auto _ULast        = _STD _Get_unwrapped(_Last);
-    using _Diff        = _Iter_diff_t<_RanIt>;
-    _Diff _Count       = _ULast - _UFirst;
-    if (2 <= _Count) {
-        _Iter_value_t<_RanIt> _Val(_STD move(*--_ULast));
-        _STD _Push_heap_by_index(_UFirst, --_Count, _Diff(0), _STD move(_Val), _STD _Pass_fn(_Pred));
-    }
-}
-
-_EXPORT_STD template <class _RanIt>
-_CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
-    // push *(_Last - 1) onto heap at [_First, _Last - 1)
-    _STD push_heap(_First, _Last, less<>{});
-}
-
-#if _HAS_CXX20
-namespace ranges {
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
               && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
@@ -6745,75 +6697,7 @@ namespace ranges {
     };
 
     _EXPORT_STD inline constexpr _Push_heap_fn push_heap;
-} // namespace ranges
-#endif // _HAS_CXX20
 
-template <class _RanIt, class _Ty, class _Pr>
-_CONSTEXPR20 void _Pop_heap_hole_by_index(
-    _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Bottom, _Ty&& _Val, _Pr _Pred) {
-    // percolate _Hole to _Bottom, then push _Val
-    _STL_INTERNAL_CHECK(_Bottom > 0);
-
-    using _Diff      = _Iter_diff_t<_RanIt>;
-    const _Diff _Top = _Hole;
-    _Diff _Idx       = _Hole;
-
-    // Check whether _Idx can have a child before calculating that child's index, since
-    // calculating the child's index can trigger integer overflows
-    const _Diff _Max_sequence_non_leaf = (_Bottom - 1) >> 1; // shift for codegen
-    while (_Idx < _Max_sequence_non_leaf) { // move _Hole down to larger child
-        _Idx = 2 * _Idx + 2;
-        if (_DEBUG_LT_PRED(_Pred, *(_First + _Idx), *(_First + (_Idx - 1)))) {
-            --_Idx;
-        }
-        *(_First + _Hole) = _STD move(*(_First + _Idx));
-        _Hole             = _Idx;
-    }
-
-    if (_Idx == _Max_sequence_non_leaf && _Bottom % 2 == 0) { // only child at bottom, move _Hole down to it
-        *(_First + _Hole) = _STD move(*(_First + (_Bottom - 1)));
-        _Hole             = _Bottom - 1;
-    }
-
-    _STD _Push_heap_by_index(_First, _Hole, _Top, _STD forward<_Ty>(_Val), _Pred);
-}
-
-template <class _RanIt, class _Ty, class _Pr>
-_CONSTEXPR20 void _Pop_heap_hole_unchecked(_RanIt _First, _RanIt _Last, _RanIt _Dest, _Ty&& _Val, _Pr _Pred) {
-    // pop *_First to *_Dest and reheap
-    // precondition: _First != _Last
-    // precondition: _First != _Dest
-    *_Dest      = _STD move(*_First);
-    using _Diff = _Iter_diff_t<_RanIt>;
-    _STD _Pop_heap_hole_by_index(
-        _First, static_cast<_Diff>(0), static_cast<_Diff>(_Last - _First), _STD forward<_Ty>(_Val), _Pred);
-}
-
-template <class _RanIt, class _Pr>
-_CONSTEXPR20 void _Pop_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
-    // pop *_First to *(_Last - 1) and reheap
-    if (2 <= _Last - _First) {
-        --_Last;
-        _Iter_value_t<_RanIt> _Val(_STD move(*_Last));
-        _STD _Pop_heap_hole_unchecked(_First, _Last, _Last, _STD move(_Val), _Pred);
-    }
-}
-
-_EXPORT_STD template <class _RanIt, class _Pr>
-_CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) {
-    // pop *_First to *(_Last - 1) and reheap
-    _STD _Adl_verify_range(_First, _Last);
-    _STD _Pop_heap_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _STD _Pass_fn(_Pred));
-}
-
-_EXPORT_STD template <class _RanIt>
-_CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
-    // pop *_First to *(_Last - 1) and reheap
-    _STD pop_heap(_First, _Last, less<>{});
-}
-
-#if _HAS_CXX20
-namespace ranges {
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
               && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
@@ -6908,35 +6792,7 @@ namespace ranges {
     };
 
     _EXPORT_STD inline constexpr _Pop_heap_fn pop_heap;
-} // namespace ranges
-#endif // _HAS_CXX20
 
-template <class _RanIt, class _Pr>
-_CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
-    // make [_First, _Last) into a heap
-    using _Diff   = _Iter_diff_t<_RanIt>;
-    _Diff _Bottom = _Last - _First;
-    for (_Diff _Hole = _Bottom >> 1; _Hole > 0;) { // shift for codegen
-        // reheap top half, bottom to top
-        --_Hole;
-        _Iter_value_t<_RanIt> _Val(_STD move(*(_First + _Hole)));
-        _STD _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred);
-    }
-}
-
-_EXPORT_STD template <class _RanIt, class _Pr>
-_CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // make [_First, _Last) into a heap
-    _STD _Adl_verify_range(_First, _Last);
-    _STD _Make_heap_unchecked(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _STD _Pass_fn(_Pred));
-}
-
-_EXPORT_STD template <class _RanIt>
-_CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Last) into a heap
-    _STD make_heap(_First, _Last, less<>{});
-}
-
-#if _HAS_CXX20
-namespace ranges {
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
     constexpr void _Make_heap_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
@@ -7923,7 +7779,7 @@ namespace ranges {
     void _Rotate_one_right(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
         _STL_INTERNAL_CHECK(_RANGES next(_Mid) == _Last);
-        auto _Temp = _RANGES iter_move(_Mid);
+        iter_value_t<_It> _Temp(_RANGES iter_move(_Mid));
         _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
         *_First = _STD move(_Temp);
     }
@@ -7932,7 +7788,7 @@ namespace ranges {
     void _Rotate_one_left(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
         _STL_INTERNAL_CHECK(_RANGES next(_First) == _Mid);
-        auto _Temp   = _RANGES iter_move(_First);
+        iter_value_t<_It> _Temp(_RANGES iter_move(_First));
         auto _Result = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First));
         *_Result.out = _STD move(_Temp);
     }
@@ -10416,7 +10272,7 @@ namespace ranges {
             auto _ULast  = _RANGES _Uend(_Range);
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
-            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<iterator_t<_Rng>>) {
+            if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return _Minmax_fwd_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             } else {
@@ -10428,7 +10284,7 @@ namespace ranges {
                 }
 
                 while (++_UFirst != _ULast) { // process one or two elements
-                    auto _Prev = *_UFirst;
+                    _Vty _Prev(*_UFirst);
                     if (++_UFirst == _ULast) { // process last element
                         if (_STD invoke(_Pred, _STD invoke(_Proj, _Prev), _STD invoke(_Proj, _Found.min))) {
                             _Found.min = _STD move(_Prev);
@@ -10865,7 +10721,8 @@ namespace ranges {
 #endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Ty, class _Pr>
-_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val, _Pr _Pred) {
+_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val _MSVC_LIFETIMEBOUND, const _Ty& _Min_val _MSVC_LIFETIMEBOUND,
+    const _Ty& _Max_val _MSVC_LIFETIMEBOUND, _Pr _Pred) {
     // returns _Val constrained to [_Min_val, _Max_val]
 #if _ITERATOR_DEBUG_LEVEL == 2
     if (_DEBUG_LT_PRED(_Pred, _Max_val, _Min_val)) {
@@ -10892,7 +10749,8 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val) {
+_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val _MSVC_LIFETIMEBOUND, const _Ty& _Min_val _MSVC_LIFETIMEBOUND,
+    const _Ty& _Max_val _MSVC_LIFETIMEBOUND) {
     // returns _Val constrained to [_Min_val, _Max_val]
     return _STD clamp(_Val, _Min_val, _Max_val, less{});
 }
@@ -10903,8 +10761,9 @@ namespace ranges {
     public:
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(
-            const _Ty& _Val, const _Ty& _Lo, const _Ty& _Hi, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(const _Ty& _Val _MSVC_LIFETIMEBOUND,
+            const _Ty& _Lo _MSVC_LIFETIMEBOUND, const _Ty& _Hi _MSVC_LIFETIMEBOUND, _Pr _Pred = {},
+            _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STL_ASSERT(!_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Lo)),
                 "The lower bound cannot be greater than the upper bound in a call to std::ranges::clamp "
                 "(N4950 [alg.clamp]/2).");

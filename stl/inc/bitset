@@ -18,6 +18,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#ifndef _STD_BITSET_TO_STREAM_STACK_RESERVATION
+#define _STD_BITSET_TO_STREAM_STACK_RESERVATION 128
+#endif // !defined(_STD_BITSET_TO_STREAM_STACK_RESERVATION)
+
 #if _USE_STD_VECTOR_ALGORITHMS
 extern "C" {
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
@@ -357,26 +361,7 @@ public:
         // convert bitset to string
         basic_string<_Elem, _Tr, _Alloc> _Str;
         _Str._Resize_and_overwrite(_Bits, [this, _Elem0, _Elem1](_Elem* _Buf, size_t _Len) {
-#if _USE_STD_VECTOR_ALGORITHMS
-            constexpr size_t _Bitset_vector_threshold = 32;
-            if constexpr (_Bits >= _Bitset_vector_threshold && is_integral_v<_Elem> && sizeof(_Elem) <= 2) {
-                if (!_Is_constant_evaluated()) {
-                    if constexpr (sizeof(_Elem) == 1) {
-                        __std_bitset_to_string_1(reinterpret_cast<char*>(_Buf), _Array, _Len, static_cast<char>(_Elem0),
-                            static_cast<char>(_Elem1));
-                    } else {
-                        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Elem) == 2);
-                        __std_bitset_to_string_2(reinterpret_cast<wchar_t*>(_Buf), _Array, _Len,
-                            static_cast<wchar_t>(_Elem0), static_cast<wchar_t>(_Elem1));
-                    }
-                    return _Len;
-                }
-            }
-#endif // _USE_STD_VECTOR_ALGORITHMS
-
-            for (size_t _Pos = 0; _Pos < _Len; ++_Pos) {
-                _Buf[_Pos] = _Subscript(_Len - 1 - _Pos) ? _Elem1 : _Elem0;
-            }
+            _To_string(_Buf, _Len, _Elem0, _Elem1);
             return _Len;
         });
         return _Str;
@@ -473,6 +458,32 @@ public:
         return _Array[_Wpos];
     }
 
+    template <class _Elem>
+    _CONSTEXPR23 void _To_string(
+        _Elem* const _Buf, const size_t _Len, const _Elem _Elem0, const _Elem _Elem1) const noexcept {
+#if _USE_STD_VECTOR_ALGORITHMS
+        constexpr size_t _Bitset_vector_threshold = 32;
+        if constexpr (_Bits >= _Bitset_vector_threshold && is_integral_v<_Elem> && sizeof(_Elem) <= 2) {
+            if (!_Is_constant_evaluated()) {
+                if constexpr (sizeof(_Elem) == 1) {
+                    __std_bitset_to_string_1(reinterpret_cast<char*>(_Buf), _Array, _Len, static_cast<char>(_Elem0),
+                        static_cast<char>(_Elem1));
+                } else {
+                    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Elem) == 2);
+                    __std_bitset_to_string_2(reinterpret_cast<wchar_t*>(_Buf), _Array, _Len,
+                        static_cast<wchar_t>(_Elem0), static_cast<wchar_t>(_Elem1));
+                }
+
+                return;
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+        for (size_t _Pos = 0; _Pos < _Len; ++_Pos) {
+            _Buf[_Pos] = _Subscript(_Len - 1 - _Pos) ? _Elem1 : _Elem0;
+        }
+    }
+
 private:
     friend hash<bitset<_Bits>>;
 
@@ -547,7 +558,14 @@ basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const bi
     const _Elem _Elem0       = _Ctype_fac.widen('0');
     const _Elem _Elem1       = _Ctype_fac.widen('1');
 
-    return _Ostr << _Right.template to_string<_Elem, _Tr, allocator<_Elem>>(_Elem0, _Elem1);
+    if constexpr (_Bits * sizeof(_Elem) <= _STD_BITSET_TO_STREAM_STACK_RESERVATION) {
+        _Elem _Buf[_Bits + 1];
+        _Right._To_string(_Buf, _Bits, _Elem0, _Elem1);
+        _Buf[_Bits] = _Elem{'\0'};
+        return _Ostr << _Buf;
+    } else {
+        return _Ostr << _Right.template to_string<_Elem, _Tr, allocator<_Elem>>(_Elem0, _Elem1);
+    }
 }
 
 _EXPORT_STD template <class _Elem, class _Tr, size_t _Bits>
