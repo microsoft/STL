@@ -933,10 +933,8 @@ namespace ranges {
         _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(
             _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
-                using _Size1      = _Make_unsigned_like_t<range_size_t<_Rng1>>;
-                const auto _Count = static_cast<_Size1>(_RANGES size(_Range1));
-                using _Size2      = _Make_unsigned_like_t<range_size_t<_Rng2>>;
-                if (_Count != static_cast<_Size2>(_RANGES size(_Range2))) {
+                const auto _Count = _RANGES distance(_Range1);
+                if (_Count != _RANGES distance(_Range2)) {
                     return false;
                 }
                 return _RANGES _Equal_count(_Ubegin(_Range1), _Ubegin(_Range2), _Count, _STD _Pass_fn(_Pred),
@@ -7781,7 +7779,7 @@ namespace ranges {
     void _Rotate_one_right(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
         _STL_INTERNAL_CHECK(_RANGES next(_Mid) == _Last);
-        auto _Temp = _RANGES iter_move(_Mid);
+        iter_value_t<_It> _Temp(_RANGES iter_move(_Mid));
         _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
         *_First = _STD move(_Temp);
     }
@@ -7790,7 +7788,7 @@ namespace ranges {
     void _Rotate_one_left(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
         _STL_INTERNAL_CHECK(_RANGES next(_First) == _Mid);
-        auto _Temp   = _RANGES iter_move(_First);
+        iter_value_t<_It> _Temp(_RANGES iter_move(_First));
         auto _Result = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First));
         *_Result.out = _STD move(_Temp);
     }
@@ -10286,7 +10284,7 @@ namespace ranges {
                 }
 
                 while (++_UFirst != _ULast) { // process one or two elements
-                    auto _Prev = *_UFirst;
+                    _Vty _Prev(*_UFirst);
                     if (++_UFirst == _ULast) { // process last element
                         if (_STD invoke(_Pred, _STD invoke(_Proj, _Prev), _STD invoke(_Proj, _Found.min))) {
                             _Found.min = _STD move(_Prev);
@@ -10723,7 +10721,8 @@ namespace ranges {
 #endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Ty, class _Pr>
-_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val, _Pr _Pred) {
+_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val _MSVC_LIFETIMEBOUND, const _Ty& _Min_val _MSVC_LIFETIMEBOUND,
+    const _Ty& _Max_val _MSVC_LIFETIMEBOUND, _Pr _Pred) {
     // returns _Val constrained to [_Min_val, _Max_val]
 #if _ITERATOR_DEBUG_LEVEL == 2
     if (_DEBUG_LT_PRED(_Pred, _Max_val, _Min_val)) {
@@ -10750,7 +10749,8 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val) {
+_NODISCARD constexpr const _Ty& clamp(const _Ty& _Val _MSVC_LIFETIMEBOUND, const _Ty& _Min_val _MSVC_LIFETIMEBOUND,
+    const _Ty& _Max_val _MSVC_LIFETIMEBOUND) {
     // returns _Val constrained to [_Min_val, _Max_val]
     return _STD clamp(_Val, _Min_val, _Max_val, less{});
 }
@@ -10761,8 +10761,9 @@ namespace ranges {
     public:
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(
-            const _Ty& _Val, const _Ty& _Lo, const _Ty& _Hi, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(const _Ty& _Val _MSVC_LIFETIMEBOUND,
+            const _Ty& _Lo _MSVC_LIFETIMEBOUND, const _Ty& _Hi _MSVC_LIFETIMEBOUND, _Pr _Pred = {},
+            _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STL_ASSERT(!_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Lo)),
                 "The lower bound cannot be greater than the upper bound in a call to std::ranges::clamp "
                 "(N4950 [alg.clamp]/2).");
