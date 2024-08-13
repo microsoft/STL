@@ -4434,7 +4434,7 @@ void _Exclusive_scan_per_chunk_complete(
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp>
-struct _Static_partitioned_exclusive_scan2 {
+struct _Static_partitioned_exclusive_scan3 {
     using _Diff = _Common_diff_t<_FwdIt1, _FwdIt2>;
     _Static_partition_team<_Diff> _Team;
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
@@ -4444,7 +4444,7 @@ struct _Static_partitioned_exclusive_scan2 {
     _Ty& _Initial;
     _BinOp _Reduce_op;
 
-    _Static_partitioned_exclusive_scan2(const size_t _Hw_threads, const _Diff _Count, const _FwdIt1 _First,
+    _Static_partitioned_exclusive_scan3(const size_t _Hw_threads, const _Diff _Count, const _FwdIt1 _First,
         _Ty& _Initial_, _BinOp _Reduce_op_, const _FwdIt2&)
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
           _Lookback(_Team._Chunks), _Intermediate_result{_Team}, _Initial(_Initial_), _Reduce_op(_Reduce_op_) {
@@ -4501,7 +4501,7 @@ struct _Static_partitioned_exclusive_scan2 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_exclusive_scan2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_exclusive_scan3*>(_Context));
     }
 };
 
@@ -4522,7 +4522,7 @@ _FwdIt2 exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdI
             const auto _UDest = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
-                _Static_partitioned_exclusive_scan2 _Operation{
+                _Static_partitioned_exclusive_scan3 _Operation{
                     _Hw_threads, _Count, _UFirst, _Val, _STD _Pass_fn(_Reduce_op), _UDest};
                 _STD _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
                 // Note that _Val is used as temporary storage by whichever thread runs the first chunk.
@@ -4578,7 +4578,7 @@ _FwdIt2 _Inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _
 }
 
 template <class _Ty, class _Init_ty, class _FwdIt1, class _FwdIt2, class _BinOp>
-struct _Static_partitioned_inclusive_scan2 {
+struct _Static_partitioned_inclusive_scan3 {
     using _Diff = _Common_diff_t<_FwdIt1, _FwdIt2>;
     _Static_partition_team<_Diff> _Team;
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
@@ -4588,7 +4588,7 @@ struct _Static_partitioned_inclusive_scan2 {
     _BinOp _Reduce_op;
     _Init_ty& _Initial;
 
-    _Static_partitioned_inclusive_scan2(
+    _Static_partitioned_inclusive_scan3(
         const size_t _Hw_threads, const _Diff _Count, _BinOp _Reduce_op_, _Init_ty& _Initial_)
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
           _Lookback(_Team._Chunks), _Intermediate_result{_Team}, _Reduce_op(_Reduce_op_), _Initial(_Initial_) {}
@@ -4643,7 +4643,7 @@ struct _Static_partitioned_inclusive_scan2 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_inclusive_scan2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_inclusive_scan3*>(_Context));
     }
 };
 
@@ -4665,7 +4665,7 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
                 auto _Passed_op = _STD _Pass_fn(_Reduce_op);
-                _Static_partitioned_inclusive_scan2<_Ty, _Ty, _Unwrapped_t<const _FwdIt1&>, decltype(_UDest),
+                _Static_partitioned_inclusive_scan3<_Ty, _Ty, _Unwrapped_t<const _FwdIt1&>, decltype(_UDest),
                     decltype(_Passed_op)>
                     _Operation{_Hw_threads, _Count, _Passed_op, _Val};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
@@ -4711,7 +4711,7 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
                 _TRY_BEGIN
                 _No_init_tag _Tag;
                 auto _Passed_op = _STD _Pass_fn(_Reduce_op);
-                _Static_partitioned_inclusive_scan2<_Iter_value_t<_FwdIt1>, _No_init_tag, _Unwrapped_t<const _FwdIt1&>,
+                _Static_partitioned_inclusive_scan3<_Iter_value_t<_FwdIt1>, _No_init_tag, _Unwrapped_t<const _FwdIt1&>,
                     decltype(_UDest), decltype(_Passed_op)>
                     _Operation{_Hw_threads, _Count, _Passed_op, _Tag};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
@@ -4777,7 +4777,7 @@ void _Transform_exclusive_scan_per_chunk_complete(_FwdIt1 _First, const _FwdIt1 
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp>
-struct _Static_partitioned_transform_exclusive_scan2 {
+struct _Static_partitioned_transform_exclusive_scan3 {
     using _Diff = _Common_diff_t<_FwdIt1, _FwdIt2>;
     _Static_partition_team<_Diff> _Team;
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
@@ -4788,7 +4788,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
     _BinOp _Reduce_op;
     _UnaryOp _Transform_op;
 
-    _Static_partitioned_transform_exclusive_scan2(const size_t _Hw_threads, const _Diff _Count, const _FwdIt1 _First,
+    _Static_partitioned_transform_exclusive_scan3(const size_t _Hw_threads, const _Diff _Count, const _FwdIt1 _First,
         _Ty& _Initial_, _BinOp _Reduce_op_, _UnaryOp _Transform_op_, const _FwdIt2&)
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
           _Lookback(_Team._Chunks), _Intermediate_result{_Team}, _Initial(_Initial_), _Reduce_op(_Reduce_op_),
@@ -4846,7 +4846,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_transform_exclusive_scan2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_transform_exclusive_scan3*>(_Context));
     }
 };
 
@@ -4867,7 +4867,7 @@ _FwdIt2 transform_exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
             const auto _UDest = _STD _Get_unwrapped_n(_Dest, _Count);
             if (_Count >= 2) { // ... with at least 2 elements
                 _TRY_BEGIN
-                _Static_partitioned_transform_exclusive_scan2 _Operation{_Hw_threads, _Count, _UFirst, _Val,
+                _Static_partitioned_transform_exclusive_scan3 _Operation{_Hw_threads, _Count, _UFirst, _Val,
                     _STD _Pass_fn(_Reduce_op), _STD _Pass_fn(_Transform_op), _UDest};
                 _STD _Seek_wrapped(_Dest, _Operation._Basis2._Populate(_Operation._Team, _UDest));
                 // Note that _Val is used as temporary storage by whichever thread runs the first chunk.
@@ -4923,7 +4923,7 @@ _FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
 }
 
 template <class _Ty, class _Init_ty, class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp>
-struct _Static_partitioned_transform_inclusive_scan2 {
+struct _Static_partitioned_transform_inclusive_scan3 {
     using _Diff = _Common_diff_t<_FwdIt1, _FwdIt2>;
     _Static_partition_team<_Diff> _Team;
     _Static_partition_range<_FwdIt1, _Diff> _Basis1;
@@ -4934,7 +4934,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
     _UnaryOp _Transform_op;
     _Init_ty& _Initial;
 
-    _Static_partitioned_transform_inclusive_scan2(
+    _Static_partitioned_transform_inclusive_scan3(
         const size_t _Hw_threads, const _Diff _Count, _BinOp _Reduce_op_, _UnaryOp _Transform_op_, _Init_ty& _Initial_)
         : _Team{_Count, _Get_chunked_work_chunk_count(_Hw_threads, _Count)}, _Basis1{}, _Basis2{},
           _Lookback(_Team._Chunks), _Intermediate_result{_Team}, _Reduce_op(_Reduce_op_), _Transform_op(_Transform_op_),
@@ -4990,7 +4990,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_transform_inclusive_scan2*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_transform_inclusive_scan3*>(_Context));
     }
 };
 
@@ -5013,7 +5013,7 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
                 _TRY_BEGIN
                 auto _Passed_reduce    = _STD _Pass_fn(_Reduce_op);
                 auto _Passed_transform = _STD _Pass_fn(_Transform_op);
-                _Static_partitioned_transform_inclusive_scan2<_Ty, _Ty, _Unwrapped_t<const _FwdIt1&>, decltype(_UDest),
+                _Static_partitioned_transform_inclusive_scan3<_Ty, _Ty, _Unwrapped_t<const _FwdIt1&>, decltype(_UDest),
                     decltype(_Passed_reduce), decltype(_Passed_transform)>
                     _Operation{_Hw_threads, _Count, _Passed_reduce, _Passed_transform, _Val};
                 _Operation._Basis1._Populate(_Operation._Team, _UFirst);
@@ -5061,7 +5061,7 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
                 auto _Passed_reduce    = _STD _Pass_fn(_Reduce_op);
                 auto _Passed_transform = _STD _Pass_fn(_Transform_op);
                 using _Intermediate_t  = decay_t<decltype(_Transform_op(*_UFirst))>;
-                _Static_partitioned_transform_inclusive_scan2<_Intermediate_t, _No_init_tag,
+                _Static_partitioned_transform_inclusive_scan3<_Intermediate_t, _No_init_tag,
                     _Unwrapped_t<const _FwdIt1&>, decltype(_UDest), decltype(_Passed_reduce),
                     decltype(_Passed_transform)>
                     _Operation{_Hw_threads, _Count, _Passed_reduce, _Passed_transform, _Tag};
