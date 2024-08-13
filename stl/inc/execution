@@ -3608,7 +3608,7 @@ public:
     template <class _Diff>
     _Scan_intermediate_storage(const _Static_partition_team<_Diff>&) noexcept {}
 
-    _Parallel_vector<_Ty>& operator[](size_t) noexcept {
+    _NODISCARD _Parallel_vector<_Ty>& operator[](size_t) noexcept {
         return _Data;
     }
 };
@@ -3627,7 +3627,7 @@ public:
         }
     }
 
-    _Parallel_vector<_Ty>& operator[](const size_t _Idx) noexcept {
+    _NODISCARD _Parallel_vector<_Ty>& operator[](const size_t _Idx) noexcept {
         _STL_INTERNAL_CHECK(_Idx < _Data.size());
         return _Data[_Idx];
     }
