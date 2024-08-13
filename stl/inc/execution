@@ -3606,7 +3606,7 @@ private:
 
 public:
     template <class _Diff>
-    _Scan_intermediate_storage(const _Static_partition_team<_Diff>&) noexcept {}
+    explicit _Scan_intermediate_storage(const _Static_partition_team<_Diff>&) noexcept {}
 
     _NODISCARD _Parallel_vector<_Ty>& operator[](size_t) noexcept {
         return _Data;
@@ -3620,7 +3620,7 @@ private:
 
 public:
     template <class _Diff>
-    _Scan_intermediate_storage(const _Static_partition_team<_Diff>& _Team) : _Data(_Team._Chunks) {
+    explicit _Scan_intermediate_storage(const _Static_partition_team<_Diff>& _Team) : _Data(_Team._Chunks) {
         const auto _Chunk_size = static_cast<size_t>(_Team._Chunk_size);
         for (auto& _Vec : _Data) {
             _Vec.reserve(_Chunk_size);
