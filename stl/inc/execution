@@ -3595,7 +3595,7 @@ inline constexpr unsigned char _Local_available = 1;
 inline constexpr unsigned char _Sum_available   = 2;
 
 // For scan algorithms: if the intermediate and output types are the same, we can directly store the binary operation
-// result in the output. IF not, then we need a place to store intermediate results.
+// result in the output. If not, then we need a place to store intermediate results.
 template <class _Ty, class _Iter>
 constexpr bool _Scan_reuse_output = is_same_v<_Ty, typename iterator_traits<_Iter>::value_type>;
 
