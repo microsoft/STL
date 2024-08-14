@@ -321,7 +321,7 @@ std/utilities/utility/pairs/pairs.spec/three_way_comparison.pass.cpp:1 FAIL
 std/utilities/variant/variant.relops/three_way.pass.cpp:0 FAIL
 std/utilities/variant/variant.relops/three_way.pass.cpp:1 FAIL
 
-# DevCom-1626727 VSO-1457307: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
+# VSO-2188243 constexpr ICE in C1XX adapt::to_prvalue
 std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
 std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
 
