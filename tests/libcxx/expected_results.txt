@@ -373,6 +373,7 @@ std/depr/depr.c.headers/tgmath_h.pass.cpp:2 FAIL
 
 # LLVM-95311 [clang] __has_unique_object_representations gives inconsistent answer based on instantiation order
 # A libc++ product code workaround (using `remove_all_extents_t`) and test coverage were added by LLVM-95314.
+# Fixed by llvm/llvm-project#95432 in Clang 19.
 std/utilities/meta/meta.unary/meta.unary.prop/has_unique_object_representations.compile.pass.cpp:2 FAIL
 
 
