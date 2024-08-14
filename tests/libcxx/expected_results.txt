@@ -348,7 +348,7 @@ std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_wit
 std/containers/sequences/array/array.cons/initialization.pass.cpp:0 FAIL
 std/containers/sequences/array/array.cons/initialization.pass.cpp:1 FAIL
 
-# DevCom-10456523: MSVC incorrectly raises constant evaluation failure in pointer comparison
+# DevCom-10456523 VSO-1880569: MSVC incorrectly raises constant evaluation failure in pointer comparison
 std/algorithms/robust_against_adl.compile.pass.cpp:0 FAIL
 std/algorithms/robust_against_adl.compile.pass.cpp:1 FAIL
 
