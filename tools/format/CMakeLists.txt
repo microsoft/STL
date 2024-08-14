@@ -6,6 +6,7 @@ project(msvc_standard_libraries_format NONE)
 
 find_program(CLANG_FORMAT
     NAMES clang-format
+    HINTS "$ENV{VCINSTALLDIR}/Tools/Llvm/$ENV{VSCMD_ARG_HOST_ARCH}/bin"
     DOC "The clang-format program to use"
     REQUIRED
 )
