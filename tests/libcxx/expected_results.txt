@@ -244,14 +244,6 @@ std/language.support/support.limits/support.limits.general/cstdlib.version.compi
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 
-# P2286R8 Formatting Ranges
-std/containers/container.adaptors/container.adaptors.format/format.functions.format.pass.cpp FAIL
-std/containers/container.adaptors/container.adaptors.format/format.functions.vformat.pass.cpp FAIL
-std/containers/container.adaptors/container.adaptors.format/format.pass.cpp FAIL
-std/containers/container.adaptors/container.adaptors.format/parse.pass.cpp FAIL
-std/containers/container.adaptors/container.adaptors.format/types.compile.pass.cpp FAIL
-std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
-
 
 # *** MISSING COMPILER FEATURES ***
 # P1169R4 static operator()
@@ -969,6 +961,7 @@ std/input.output/string.streams/stringstream/stringstream.members/str.allocator_
 # These formatter tests need to create basic_format_contexts, so test_format_context.h
 # says "Please create a vendor specific version of the test functions".
 # If we do, some of these tests should be able to work.
+std/containers/container.adaptors/container.adaptors.format/format.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector.bool.fmt/format.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.id/format.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.context/advance_to.pass.cpp FAIL
