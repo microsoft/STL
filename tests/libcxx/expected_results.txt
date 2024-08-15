@@ -509,25 +509,17 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.single.pass.cpp FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move.pass.cpp FAIL
 
-# Not analyzed, likely bogus tests. Appears to be timing assumptions.
+# `ALLOW_RETRIES` comments indicate tests with timing assumptions
 std/thread/futures/futures.async/async.pass.cpp SKIPPED
-std/thread/futures/futures.shared_future/get.pass.cpp SKIPPED
-std/thread/futures/futures.shared_future/wait.pass.cpp SKIPPED
-std/thread/futures/futures.shared_future/wait_for.pass.cpp SKIPPED
-std/thread/futures/futures.shared_future/wait_until.pass.cpp SKIPPED
-std/thread/futures/futures.unique_future/get.pass.cpp SKIPPED
-std/thread/futures/futures.unique_future/wait.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_for.pass.cpp SKIPPED
-std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_duration.pass.cpp SKIPPED
-std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_time_point.pass.cpp SKIPPED
+std/thread/thread.condition/thread.condition.condvarany/notify_one.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_try_to_lock.pass.cpp SKIPPED
-std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex.pass.cpp SKIPPED
-std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/lock.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex_duration.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex_time_point.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex_try_to_lock.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.locking/lock.pass.cpp SKIPPED
+std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.locking/try_lock.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.mutex.requirements/thread.mutex.requirements.mutex/thread.mutex.class/lock.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.mutex.requirements/thread.mutex.requirements.mutex/thread.mutex.class/try_lock.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.mutex.requirements/thread.mutex.requirements.mutex/thread.mutex.recursive/lock.pass.cpp SKIPPED
@@ -552,6 +544,18 @@ std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements
 std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/try_lock_for.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/try_lock_until.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.recursive/try_lock.pass.cpp SKIPPED
+
+# Not analyzed, likely bogus tests. Appears to be timing assumptions.
+std/thread/futures/futures.shared_future/get.pass.cpp SKIPPED
+std/thread/futures/futures.shared_future/wait.pass.cpp SKIPPED
+std/thread/futures/futures.shared_future/wait_for.pass.cpp SKIPPED
+std/thread/futures/futures.shared_future/wait_until.pass.cpp SKIPPED
+std/thread/futures/futures.unique_future/get.pass.cpp SKIPPED
+std/thread/futures/futures.unique_future/wait.pass.cpp SKIPPED
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_duration.pass.cpp SKIPPED
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_time_point.pass.cpp SKIPPED
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex.pass.cpp SKIPPED
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/lock.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp SKIPPED
 
 # Not analyzed, likely bogus tests. Various assertions, probably POSIX assumptions.
