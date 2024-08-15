@@ -651,6 +651,21 @@ protected:
     __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
+// C23 7.29.3.5 "The strftime function"/3
+_INLINE_VAR constexpr char _Valid_strftime_specifiers[] = {'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'F', 'g', 'G',
+    'h', 'H', 'I', 'j', 'm', 'M', 'n', 'p', 'r', 'R', 'S', 't', 'T', 'u', 'U', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z',
+    'Z'};
+
+_NODISCARD constexpr bool _Is_valid_strftime_specifier(const char _Specifier) {
+    for (const auto& _Valid_specifier : _Valid_strftime_specifiers) {
+        if (_Specifier == _Valid_specifier) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 _EXPORT_STD extern "C++" template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put : public locale::facet { // facet for converting encoded times to text
 public:
@@ -687,7 +702,19 @@ public:
                     _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
                 }
 
-                _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                if (_Specifier == '%' && _Modifier == '\0') {
+                    // if the specifier is percent and no modifier is set, just append it
+                    *_Dest++ = _Percent;
+                } else if (!_Is_valid_strftime_specifier(_Specifier)) {
+                    // no valid specifier, directly copy as literal elements
+                    *_Dest++ = _Percent;
+                    if (_Modifier != '\0') {
+                        *_Dest++ = _Modifier;
+                    }
+                    *_Dest++ = _Specifier;
+                } else {
+                    _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                }
             }
         }
 
@@ -811,7 +838,19 @@ public:
                     _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
                 }
 
-                _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                if (_Specifier == '%' && _Modifier == '\0') {
+                    // if the specifier is percent and no modifier is set, just append it
+                    *_Dest++ = _Percent;
+                } else if (!_Is_valid_strftime_specifier(_Specifier)) {
+                    // no valid specifier, directly copy as literal elements
+                    *_Dest++ = _Percent;
+                    if (_Modifier != '\0') {
+                        *_Dest++ = _Raw;
+                    }
+                    *_Dest++ = *_Fmtfirst;
+                } else {
+                    _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                }
             }
         }
 
@@ -927,14 +966,15 @@ public:
                 *_Dest++ = _Fmtfirst[-1];
                 break;
             } else { // get specifier after %
-                char _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
+                _Elem _Raw      = *_Fmtfirst;
+                char _Specifier = _Ctype_fac.narrow(_Raw);
                 char _Modifier  = '\0';
                 _Elem _Percent  = _Fmtfirst[-1];
 
                 if (_Specifier == 'E' || _Specifier == 'O' || _Specifier == 'Q' || _Specifier == '#') {
                     if (++_Fmtfirst == _Fmtlast) { // no specifier, copy %[E0Q#] as literal elements
                         *_Dest++ = _Percent;
-                        *_Dest++ = _Specifier;
+                        *_Dest++ = _Raw;
                         break;
                     }
 
@@ -943,7 +983,19 @@ public:
                     _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
                 }
 
-                _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                if (_Specifier == '%' && _Modifier == '\0') {
+                    // if the specifier is percent and no modifier is set, just append it
+                    *_Dest++ = _Percent;
+                } else if (!_Is_valid_strftime_specifier(_Specifier)) {
+                    // no valid specifier, directly copy as literal elements
+                    *_Dest++ = _Percent;
+                    if (_Modifier != '\0') {
+                        *_Dest++ = _Raw;
+                    }
+                    *_Dest++ = *_Fmtfirst;
+                } else {
+                    _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                }
             }
         }
 

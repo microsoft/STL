@@ -500,7 +500,7 @@ public:
         return _Elems + _Size;
     }
 
-    _NODISCARD constexpr size_type size() const noexcept {
+    _NODISCARD _Ret_range_(==, _Size) constexpr size_type size() const noexcept {
         return _Size;
     }
 
@@ -528,7 +528,7 @@ public:
         return _Elems[_Pos];
     }
 
-    _NODISCARD _CONSTEXPR17 reference operator[](_In_range_(0, _Size - 1) size_type _Pos) noexcept /* strengthened */ {
+    _NODISCARD _CONSTEXPR17 reference operator[](_In_range_(<, _Size) size_type _Pos) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Size, "array subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -536,7 +536,7 @@ public:
         return _Elems[_Pos];
     }
 
-    _NODISCARD constexpr const_reference operator[](_In_range_(0, _Size - 1) size_type _Pos) const noexcept
+    _NODISCARD constexpr const_reference operator[](_In_range_(<, _Size) size_type _Pos) const noexcept
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Size, "array subscript out of range");
