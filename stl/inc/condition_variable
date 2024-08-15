@@ -123,12 +123,26 @@ public:
         }
 
         const auto _Rel_time_ms = _Clamped_rel_time_ms_count(_Rel_time);
-        const cv_status _Result = _Wait_for_ms_count(_Lck, _Rel_time_ms._Count);
-        if (_Rel_time_ms._Clamped) {
-            return cv_status::no_timeout;
-        }
 
-        return _Result;
+        // wait for signal with timeout
+        const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
+        const auto _Start            = _CHRONO steady_clock::now();
+        const auto _Target           = _Start + _Rel_time;
+
+        unique_lock<mutex> _Guard{*_Ptr};
+        _Unlock_guard<_Lock> _Unlock_outer{_Lck};
+        const _Thrd_result _Res = _Cnd_timedwait_for_unchecked(_Mycnd(), _Ptr->_Mymtx(), _Rel_time_ms._Count);
+        _Guard.unlock();
+
+        if (_Res == _Thrd_result::_Success) {
+            return cv_status::no_timeout; // Real or WinAPI-internal spurious wake
+        } else if (_Rel_time_ms._Clamped) {
+            return cv_status::no_timeout; // Spuriously wake due to clamped timeout
+        } else if (_CHRONO steady_clock::now() < _Target) {
+            return cv_status::no_timeout; // Spuriously wake due to premature timeout
+        } else {
+            return cv_status::timeout;
+        }
     }
 
     template <class _Lock, class _Rep, class _Period, class _Predicate>
@@ -202,7 +216,7 @@ public:
             }
 
             const unsigned long _Rel_ms_count = _Clamped_rel_time_ms_count(_Abs_time - _Now)._Count;
-            (void) _Cnd_timedwait_for(_Mycnd(), _Myptr->_Mymtx(), _Rel_ms_count);
+            (void) _Cnd_timedwait_for_unchecked(_Mycnd(), _Myptr->_Mymtx(), _Rel_ms_count);
             _Guard_unlocks_before_locking_outer.unlock();
         } // relock
 
@@ -222,22 +236,6 @@ private:
 
     _NODISCARD _Cnd_t _Mycnd() noexcept {
         return &_Cnd_storage;
-    }
-
-    template <class _Lock>
-    cv_status _Wait_for_ms_count(_Lock& _Lck, const unsigned int _Rel_ms_count) {
-        // wait for signal with timeout
-        const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
-        unique_lock<mutex> _Guard{*_Ptr};
-        _Unlock_guard<_Lock> _Unlock_outer{_Lck};
-        const _Thrd_result _Res = _Cnd_timedwait_for(_Mycnd(), _Ptr->_Mymtx(), _Rel_ms_count);
-        _Guard.unlock();
-
-        if (_Res == _Thrd_result::_Success) {
-            return cv_status::no_timeout;
-        } else {
-            return cv_status::timeout;
-        }
     }
 };
 

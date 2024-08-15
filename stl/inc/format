@@ -4774,6 +4774,38 @@ public:
 private:
     _Fill_align_and_width_specs<_CharT> _Specs;
 };
+
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+template <class _AdaptorType, _Format_supported_charT _CharT, template <class> class _RefView>
+struct _Adaptor_formatter_base {
+private:
+    using _Container             = _AdaptorType::container_type;
+    using _Maybe_const_container = _Fmt_maybe_const<_Container, _CharT>;
+    using _Maybe_const_adaptor   = _Maybe_const<is_const_v<_Maybe_const_container>, _AdaptorType>;
+
+    formatter<_RefView<_Maybe_const_container>, _CharT> _Underlying;
+
+public:
+    template <class _ParseCtx>
+    constexpr _ParseCtx::iterator parse(_ParseCtx& _Ctx) {
+        return _Underlying.parse(_Ctx);
+    }
+
+    template <class _FmtCtx>
+    _FmtCtx::iterator format(_Maybe_const_adaptor& _Adaptor, _FmtCtx& _Ctx) const {
+        struct _Container_exposer : _AdaptorType {
+            using _AdaptorType::c;
+
+            _Container_exposer(const _Container_exposer&)            = delete;
+            _Container_exposer& operator=(const _Container_exposer&) = delete;
+            ~_Container_exposer()                                    = delete;
+        };
+
+        constexpr auto _Mem_cont_ptr = &_Container_exposer::c;
+        return _Underlying.format(_Adaptor.*_Mem_cont_ptr, _Ctx);
+    }
+};
 #endif // _HAS_CXX23
 _STD_END
 

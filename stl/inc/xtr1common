@@ -152,14 +152,14 @@ struct _Disjunction { // handle true trait or last trait
 
 template <class _False, class _Next, class... _Rest>
 struct _Disjunction<false, _False, _Next, _Rest...> { // first trait is false, try the next trait
-    using type = typename _Disjunction<_Next::value, _Next, _Rest...>::type;
+    using type = typename _Disjunction<static_cast<bool>(_Next::value), _Next, _Rest...>::type;
 };
 
 _EXPORT_STD template <class... _Traits>
 struct disjunction : false_type {}; // If _Traits is empty, false_type
 
 template <class _First, class... _Rest>
-struct disjunction<_First, _Rest...> : _Disjunction<_First::value, _First, _Rest...>::type {
+struct disjunction<_First, _Rest...> : _Disjunction<static_cast<bool>(_First::value), _First, _Rest...>::type {
     // the first true trait in _Traits, or the last trait if none are true
 };
 
