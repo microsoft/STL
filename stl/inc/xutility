@@ -6009,17 +6009,31 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
                 return _First + (_Result - _First_ptr);
             }
 #else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
-            if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
+            if constexpr (sizeof(_Iter_value_t<_InIt>) == 1 || sizeof(_Iter_value_t<_InIt>) == 2) {
                 const auto _First_ptr = _STD _To_address(_First);
-                const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_InIt>>*>(
-                    _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
+                const auto _Size      = static_cast<size_t>(_Last - _First);
+
+                using _Result_t = remove_reference_t<_Iter_ref_t<_InIt>>*;
+                _Result_t _Result;
+
+                if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
+                    _Result = static_cast<_Result_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Size));
+                } else {
+                    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_InIt>) == 2);
+
+                    using _Src_type =
+                        conditional_t<is_const_v<remove_reference_t<_Iter_ref_t<_InIt>>>, const wchar_t*, wchar_t*>;
+
+                    _Result = reinterpret_cast<_Result_t>(
+                        _CSTD wmemchr(reinterpret_cast<_Src_type>(_First_ptr), static_cast<wchar_t>(_Val), _Size));
+                }
+
                 if constexpr (is_pointer_v<_InIt>) {
                     return _Result ? _Result : _Last;
                 } else {
                     return _Result ? _First + (_Result - _First_ptr) : _Last;
                 }
             }
-            // TRANSITION, DevCom-1614562: not trying wmemchr
 #endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
         }
     }
@@ -6062,14 +6076,12 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
-        // TRANSITION, DevCom-1614562: not trying wmemchr
-        // Only single-byte elements are suitable for unsized optimization
-        constexpr bool _Single_byte_elements = sizeof(_Iter_value_t<_It>) == 1;
-        constexpr bool _Is_sized             = sized_sentinel_for<_Se, _It>;
+        constexpr bool _1_or_2_bytes_elements = sizeof(_Iter_value_t<_It>) <= 2;
+        constexpr bool _Is_sized              = sized_sentinel_for<_Se, _It>;
 
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty>
-                      && (_Single_byte_elements ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
-                                                : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)
+                      && (_1_or_2_bytes_elements ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
+                                                 : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)
                       && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
@@ -6093,7 +6105,7 @@ namespace ranges {
                 } else
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
                 {
-                    _STL_INTERNAL_STATIC_ASSERT(_Single_byte_elements);
+                    _STL_INTERNAL_STATIC_ASSERT(_1_or_2_bytes_elements);
                     size_t _Count;
                     if constexpr (_Is_sized) {
                         _Count = static_cast<size_t>(_Last - _First);
@@ -6101,7 +6113,18 @@ namespace ranges {
                         _Count = SIZE_MAX;
                     }
 
-                    _Result = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+                    if constexpr (sizeof(_Iter_value_t<_It>) == 1) {
+                        _Result =
+                            static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+                    } else {
+                        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_It>) == 2);
+
+                        using _Src_type =
+                            conditional_t<is_const_v<remove_reference_t<_Iter_ref_t<_It>>>, const wchar_t*, wchar_t*>;
+
+                        _Result = reinterpret_cast<_Ptr_t>(
+                            _CSTD wmemchr(reinterpret_cast<_Src_type>(_First_ptr), static_cast<wchar_t>(_Val), _Count));
+                    }
 
                     if constexpr (_Is_sized) {
                         if (_Result == nullptr) {
