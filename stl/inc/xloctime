@@ -750,7 +750,6 @@ _NODISCARD constexpr bool _Is_valid_strftime_tm_data(const char _Specifier, cons
         return _Is_valid_strftime_tm_year(_Pt) && _Is_valid_strftime_tm_mon(_Pt) && _Is_valid_strftime_tm_mday(_Pt);
     case 'g':
     case 'G':
-    case 'V':
         return _Is_valid_strftime_tm_year(_Pt) && _Is_valid_strftime_tm_wday(_Pt) && _Is_valid_strftime_tm_yday(_Pt);
     case 'r':
     case 'X':

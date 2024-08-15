@@ -961,8 +961,8 @@ void test_gh_4882() {
         {&tm::tm_mon, -1, "%b%B%m%h%c"},
         {&tm::tm_mon, 12, "%b%B%m%h%c"},
 
-        {&tm::tm_year, -1901, "%C%y%Y%D%x%F%g%G%V%c"},
-        {&tm::tm_year, 8100, "%C%y%Y%D%x%F%g%G%V%c"},
+        {&tm::tm_year, -1901, "%C%y%Y%D%x%F%g%G%c"},
+        {&tm::tm_year, 8100, "%C%y%Y%D%x%F%g%G%c"},
 
         {&tm::tm_yday, -1, "%j%U%W"},
         {&tm::tm_yday, 366, "%j%U%W"},
