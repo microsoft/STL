@@ -5,8 +5,7 @@ cmake_minimum_required(VERSION 3.29.0)
 project(msvc_standard_libraries_validate LANGUAGES CXX)
 
 add_executable(validate-binary validate.cpp)
-# we use SAL annotations, so pass /analyze
-target_compile_options(validate-binary PRIVATE /W4 /WX /analyze)
+target_compile_options(validate-binary PRIVATE /W4 /WX /analyze /Zc:preprocessor)
 set_target_properties(validate-binary
     PROPERTIES
         CXX_STANDARD 23

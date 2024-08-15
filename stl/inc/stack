@@ -11,6 +11,7 @@
 
 #if _HAS_CXX23
 #include <__msvc_ranges_to.hpp>
+#include <format>
 #include <iterator>
 #endif // _HAS_CXX23
 
@@ -209,6 +210,14 @@ void swap(stack<_Ty, _Container>& _Left, stack<_Ty, _Container>& _Right) noexcep
 
 template <class _Ty, class _Container, class _Alloc>
 struct uses_allocator<stack<_Ty, _Container>, _Alloc> : uses_allocator<_Container, _Alloc>::type {};
+
+#if _HAS_CXX23
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+template <_Format_supported_charT _CharT, class _Ty, formattable<_CharT> _Container>
+struct formatter<stack<_Ty, _Container>, _CharT>
+    : _Adaptor_formatter_base<stack<_Ty, _Container>, _CharT, _RANGES ref_view> {};
+#endif // _HAS_CXX23
 _STD_END
 
 #pragma pop_macro("new")
