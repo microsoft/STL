@@ -3859,11 +3859,12 @@ basic_ostream<Elem, Traits>& operator<<(basic_ostream<Elem, Traits>& ostr, const
         L"symlink"sv, L"block"sv, L"character"sv, L"fifo"sv, L"socket"sv, L"unknown"sv, L"junction"sv}};
 
     const size_t index = static_cast<size_t>(ft);
-    if (!EXPECT(index < names.size())) {
+    if (index < names.size()) {
+        return ostr << L"file_type::" << names[index];
+    } else {
+        EXPECT(false);
         return ostr << L"!!! INVALID file_type(" << index << L") !!!!";
     }
-
-    return ostr << L"file_type::" << names[index];
 }
 
 template <typename Elem, typename Traits>
@@ -3950,7 +3951,7 @@ void test_devcom_953628() { // COMPILE-ONLY
     path{S{}};
 }
 
-int wmain(int argc, wchar_t* argv[]) {
+int run_all_tests(int argc, wchar_t* argv[]) {
     error_code ec;
 
     // Store old path and change current path to a temporary path
@@ -4077,4 +4078,20 @@ int wmain(int argc, wchar_t* argv[]) {
     EXPECT(good(ec));
 
     assert(pass);
+
+    return 0;
+}
+
+int wmain(int argc, wchar_t* argv[]) {
+    try {
+        return run_all_tests(argc, argv);
+    } catch (const filesystem_error& fe) {
+        cout << "filesystem_error: " << fe.what() << endl;
+    } catch (const exception& e) {
+        cout << "exception: " << e.what() << endl;
+    } catch (...) {
+        cout << "Unknown exception." << endl;
+    }
+
+    return EXIT_FAILURE;
 }
