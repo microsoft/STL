@@ -37,14 +37,14 @@ struct _Conjunction { // handle false trait or last trait
 
 template <class _True, class _Next, class... _Rest>
 struct _Conjunction<true, _True, _Next, _Rest...> { // the first trait is true, try the next one
-    using type = typename _Conjunction<_Next::value, _Next, _Rest...>::type;
+    using type = typename _Conjunction<static_cast<bool>(_Next::value), _Next, _Rest...>::type;
 };
 
 _EXPORT_STD template <class... _Traits>
 struct conjunction : true_type {}; // If _Traits is empty, true_type
 
 template <class _First, class... _Rest>
-struct conjunction<_First, _Rest...> : _Conjunction<_First::value, _First, _Rest...>::type {
+struct conjunction<_First, _Rest...> : _Conjunction<static_cast<bool>(_First::value), _First, _Rest...>::type {
     // the first false trait in _Traits, or the last trait if none are false
 };
 
@@ -1295,23 +1295,14 @@ template <class _Ty1, class _Ty2>
 using _Conditional_type = decltype(false ? _STD declval<_Ty1>() : _STD declval<_Ty2>());
 
 #if _HAS_CXX20
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10648215
 template <class _Ty1, class _Ty2>
-#else // ^^^ no workaround / workaround vvv
-template <class _Ty1, class _Ty2, class = void>
-#endif // ^^^ workaround ^^^
-struct _Const_lvalue_cond_oper {
-};
+struct _Const_lvalue_cond_oper {};
 
 // N4950 [meta.trans.other]/3.3.4 (per the proposed resolution of LWG-3205): "Otherwise, if remove_cvref_t</**/> denotes
 // a type..."
 template <class _Ty1, class _Ty2>
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10648215
     requires requires { typename _Conditional_type<const _Ty1&, const _Ty2&>; }
 struct _Const_lvalue_cond_oper<_Ty1, _Ty2> {
-#else // ^^^ no workaround / workaround vvv
-struct _Const_lvalue_cond_oper<_Ty1, _Ty2, void_t<_Conditional_type<const _Ty1&, const _Ty2&>>> {
-#endif // ^^^ workaround ^^^
     using type = remove_cvref_t<_Conditional_type<const _Ty1&, const _Ty2&>>;
 };
 

@@ -427,8 +427,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             same_as<I&> decltype(auto) i2 = ++i;
             assert(&i2 == &i);
             if (i != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                 assert(*i == expected_rng[1]);
+#pragma warning(pop)
             }
             i = r.begin();
         }
@@ -437,8 +439,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             same_as<I> decltype(auto) i2 = i++;
             assert(*i2 == expected_rng[0]);
             if (i != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                 assert(*i == expected_rng[1]);
+#pragma warning(pop)
             }
             i = r.begin();
         }
@@ -466,8 +470,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
 
                 same_as<I> decltype(auto) i2 = i--;
                 if (i2 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*i2 == expected_rng[1]);
+#pragma warning(pop)
                 }
                 assert(*i == expected_rng[0]);
             }
@@ -478,8 +484,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
                 same_as<I&> decltype(auto) i2 = (i += 1);
                 assert(&i2 == &i);
                 if (i != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*i == expected_rng[1]);
+#pragma warning(pop)
                 }
 
                 same_as<I&> decltype(auto) i3 = (i -= 1);
@@ -517,14 +525,18 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             { // Check operator+
                 same_as<I> auto i2 = i + 1;
                 if (i2 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*i2 == expected_rng[1]);
+#pragma warning(pop)
                 }
 
                 same_as<I> auto i3 = 1 + i;
                 if (i3 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*i3 == expected_rng[1]);
+#pragma warning(pop)
                 }
             }
 
@@ -609,8 +621,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             same_as<CI&> decltype(auto) ci2 = ++ci;
             assert(&ci2 == &ci);
             if (ci != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                 assert(*ci == expected_rng[1]);
+#pragma warning(pop)
             }
             ci = r.begin();
         }
@@ -619,8 +633,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             same_as<CI> decltype(auto) ci2 = ci++;
             assert(*ci2 == expected_rng[0]);
             if (ci != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                 assert(*ci == expected_rng[1]);
+#pragma warning(pop)
             }
             ci = r.begin();
         }
@@ -657,8 +673,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
 
                 same_as<CI> decltype(auto) ci2 = ci--;
                 if (ci2 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*ci2 == expected_rng[1]);
+#pragma warning(pop)
                 }
                 assert(*ci == expected_rng[0]);
             }
@@ -669,8 +687,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
                 same_as<CI&> decltype(auto) ci2 = (ci += 1);
                 assert(&ci2 == &ci);
                 if (ci != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*ci == expected_rng[1]);
+#pragma warning(pop)
                 }
 
                 same_as<CI&> decltype(auto) ci3 = (ci -= 1);
@@ -732,14 +752,18 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             { // Check operator+
                 same_as<CI> auto ci2 = ci + 1;
                 if (ci2 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*ci2 == expected_rng[1]);
+#pragma warning(pop)
                 }
 
                 same_as<CI> auto ci3 = 1 + ci;
                 if (ci3 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*ci3 == expected_rng[1]);
+#pragma warning(pop)
                 }
             }
 

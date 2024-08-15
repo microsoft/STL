@@ -220,42 +220,48 @@ public:
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
 #if _HAS_CXX17
-        if constexpr (is_same_v<_Elem, wchar_t>) {
-            return __builtin_wmemcmp(_First1, _First2, _Count);
-        } else {
-            return _Primary_char_traits::compare(_First1, _First2, _Count);
+        if (_STD _Is_constant_evaluated()) {
+            if constexpr (is_same_v<_Elem, wchar_t>) {
+                return __builtin_wmemcmp(_First1, _First2, _Count);
+            } else {
+                return _Primary_char_traits::compare(_First1, _First2, _Count);
+            }
         }
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+#endif // _HAS_CXX17
+
         return _CSTD wmemcmp(
             reinterpret_cast<const wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
-#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     _NODISCARD static _CONSTEXPR17 size_t length(_In_z_ const _Elem* _First) noexcept /* strengthened */ {
         // find length of null-terminated sequence
 #if _HAS_CXX17
-        if constexpr (is_same_v<_Elem, wchar_t>) {
-            return __builtin_wcslen(_First);
-        } else {
-            return _Primary_char_traits::length(_First);
+        if (_STD _Is_constant_evaluated()) {
+            if constexpr (is_same_v<_Elem, wchar_t>) {
+                return __builtin_wcslen(_First);
+            } else {
+                return _Primary_char_traits::length(_First);
+            }
         }
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+#endif // _HAS_CXX17
+
         return _CSTD wcslen(reinterpret_cast<const wchar_t*>(_First));
-#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     _NODISCARD static _CONSTEXPR17 const _Elem* find(
         _In_reads_(_Count) const _Elem* _First, const size_t _Count, const _Elem& _Ch) noexcept /* strengthened */ {
         // look for _Ch in [_First, _First + _Count)
 #if _HAS_CXX17
-        if constexpr (is_same_v<_Elem, wchar_t>) {
-            return __builtin_wmemchr(_First, _Ch, _Count);
-        } else {
-            return _Primary_char_traits::find(_First, _Count, _Ch);
+        if (_STD _Is_constant_evaluated()) {
+            if constexpr (is_same_v<_Elem, wchar_t>) {
+                return __builtin_wmemchr(_First, _Ch, _Count);
+            } else {
+                return _Primary_char_traits::find(_First, _Count, _Ch);
+            }
         }
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+#endif // _HAS_CXX17
+
         return reinterpret_cast<const _Elem*>(_CSTD wmemchr(reinterpret_cast<const wchar_t*>(_First), _Ch, _Count));
-#endif // ^^^ !_HAS_CXX17 ^^^
     }
 
     static _CONSTEXPR20 _Elem* assign(

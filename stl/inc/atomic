@@ -33,18 +33,29 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma clang attribute _STD_ATOMIC_HEADER.push([[gnu::target("cx16")]], apply_to = function)
 #endif // ^^^ defined(__clang__) && defined(_M_X64) ^^^
 
-// Controls whether ARM64 ldar/ldapr/stlr should be used
-#ifndef _STD_ATOMIC_USE_ARM64_LDAR_STLR
 #if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-#ifdef __clang__ // TRANSITION, LLVM-62103
-#define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
-#else // ^^^ Clang doesn't support new intrinsics / __load_acquire/__stlr intrinsics are available vvv
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 1
-#endif // ^^^ __load_acquire/__stlr intrinsics are available ^^^
+#ifdef __clang__
+#define __LOAD_ACQUIRE_ARM64(_Width, _Ptr) \
+    static_cast<__int##_Width>(__atomic_load_n(reinterpret_cast<const volatile unsigned __int##_Width*>(_Ptr), 2))
+#define __STORE_RELEASE(_Width, _Ptr, _Desired) \
+    _Compiler_barrier();                        \
+    __atomic_store_n(                           \
+        reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired), 3)
+#else // ^^^ Clang / MSVC vvv
+#define __LOAD_ACQUIRE_ARM64(_Width, _Ptr) \
+    static_cast<__int##_Width>(__load_acquire##_Width(reinterpret_cast<const volatile unsigned __int##_Width*>(_Ptr)))
+#define __STORE_RELEASE(_Width, _Ptr, _Desired) \
+    _Compiler_barrier();                        \
+    __stlr##_Width(                             \
+        reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired))
+#endif // ^^^ MSVC ^^^
 #else // ^^^ ARM64/ARM64EC/HYBRID_X86_ARM64 / Other architectures vvv
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 0
+#define __STORE_RELEASE(_Width, _Ptr, _Desired) \
+    _Compiler_or_memory_barrier();              \
+    __iso_volatile_store##_Width((_Ptr), (_Desired))
 #endif // ^^^ Other architectures ^^^
-#endif // _STD_ATOMIC_USE_ARM64_LDAR_STLR
 
 #define ATOMIC_BOOL_LOCK_FREE 2
 #define ATOMIC_CHAR_LOCK_FREE 2
@@ -122,9 +133,6 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
 
-#define __LOAD_ACQUIRE_ARM64(_Width, _Ptr) \
-    static_cast<__int##_Width>(__load_acquire##_Width(reinterpret_cast<const volatile unsigned __int##_Width*>(_Ptr)))
-
 #define _ATOMIC_LOAD_ARM64(_Result, _Width, _Ptr, _Order_var) \
     switch (_Order_var) {                                     \
     case _Atomic_memory_order_relaxed:                        \
@@ -162,27 +170,12 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
         break;                                          \
     }
 
-#if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
-
-#define __STORE_RELEASE(_Width, _Ptr, _Desired) \
-    _Compiler_barrier();                        \
-    __stlr##_Width(                             \
-        reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired));
-
-#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
-
-#define __STORE_RELEASE(_Width, _Ptr, _Desired) \
-    _Compiler_or_memory_barrier();              \
-    __iso_volatile_store##_Width((_Ptr), (_Desired));
-
-#endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 ^^^
-
 #define _ATOMIC_STORE_PREFIX(_Width, _Ptr, _Desired)      \
     case _Atomic_memory_order_relaxed:                    \
         __iso_volatile_store##_Width((_Ptr), (_Desired)); \
         return;                                           \
     case _Atomic_memory_order_release:                    \
-        __STORE_RELEASE(_Width, _Ptr, _Desired)           \
+        __STORE_RELEASE(_Width, _Ptr, _Desired);          \
         return;                                           \
     default:                                              \
     case _Atomic_memory_order_consume:                    \
@@ -196,15 +189,9 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     __iso_volatile_store##_Width((_Ptr), (_Desired));     \
     _Memory_barrier();
 
-#if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
-#define _ATOMIC_STORE_SEQ_CST_ARM64(_Width, _Ptr, _Desired)                                                       \
-    _Compiler_barrier();                                                                                          \
-    __stlr##_Width(                                                                                               \
-        reinterpret_cast<volatile unsigned __int##_Width*>(_Ptr), static_cast<unsigned __int##_Width>(_Desired)); \
+#define _ATOMIC_STORE_SEQ_CST_ARM64(_Width, _Ptr, _Desired) \
+    __STORE_RELEASE(_Width, _Ptr, _Desired);                \
     _Memory_barrier();
-#else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
-#define _ATOMIC_STORE_SEQ_CST_ARM64 _ATOMIC_STORE_SEQ_CST_ARM
-#endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 ^^^
 
 #define _ATOMIC_STORE_SEQ_CST_X86_X64(_Width, _Ptr, _Desired) (void) _InterlockedExchange##_Width((_Ptr), (_Desired));
 #define _ATOMIC_STORE_32_SEQ_CST_X86_X64(_Ptr, _Desired) \
@@ -257,7 +244,11 @@ extern "C" inline void _Atomic_thread_fence(const unsigned int _Order) noexcept 
         _Compiler_barrier();
     }
 #elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-    _Memory_barrier();
+    if (_Order == _Atomic_memory_order_acquire || _Order == _Atomic_memory_order_consume) {
+        _Memory_load_acquire_barrier();
+    } else {
+        _Memory_barrier();
+    }
 #else // ^^^ ARM32/ARM64/ARM64EC/HYBRID_X86_ARM64 / unsupported hardware vvv
 #error Unsupported hardware
 #endif // ^^^ unsupported hardware ^^^
@@ -519,7 +510,7 @@ inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
         }
     }
 #elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-    while (_InterlockedExchange(&_Spinlock, 1) != 0) { // TRANSITION, GH-1133: _InterlockedExchange_acq
+    while (_InterlockedExchange_acq(&_Spinlock, 1) != 0) {
         while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
             __yield();
         }
@@ -530,15 +521,7 @@ inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
 }
 
 inline void _Atomic_lock_release(long& _Spinlock) noexcept {
-#if (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))
-    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: same as ARM
-#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-    _Memory_barrier();
-    __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
-    _Memory_barrier(); // TRANSITION, GH-1133: remove
-#else // ^^^ defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64) ^^^
-#error Unsupported hardware
-#endif
+    __STORE_RELEASE(32, reinterpret_cast<int*>(&_Spinlock), 0);
 }
 
 inline void _Atomic_lock_acquire(_Smtx_t* _Spinlock) noexcept {
