@@ -788,7 +788,7 @@ private:
         if constexpr (conjunction_v<is_nothrow_constructible<_Ty, _Valty...>,
                           _Uses_default_construct<_Alloc, _Ty*, _Valty...>>) {
             _ASAN_VECTOR_MODIFY(1);
-            _Construct_in_place(*_Mylast, _STD forward<_Valty>(_Val)...);
+            _STD _Construct_in_place(*_Mylast, _STD forward<_Valty>(_Val)...);
         } else {
             _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Mylast - _My_data._Myfirst) + 1);
             _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
@@ -822,27 +822,27 @@ private:
         const size_type _Newsize = _Oldsize + 1;
         size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
-        const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
+        const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Constructed_last = _Newvec + _Whereoff + 1;
         pointer _Constructed_first      = _Constructed_last;
 
         _TRY_BEGIN
-        _Alty_traits::construct(_Al, _Unfancy(_Newvec + _Whereoff), _STD forward<_Valty>(_Val)...);
+        _Alty_traits::construct(_Al, _STD _Unfancy(_Newvec + _Whereoff), _STD forward<_Valty>(_Val)...);
         _Constructed_first = _Newvec + _Whereoff;
 
         if (_Whereptr == _Mylast) { // at back, provide strong guarantee
             if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-                _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
+                _STD _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
             } else {
-                _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
+                _STD _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
             }
         } else { // provide basic guarantee
-            _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Al);
+            _STD _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Al);
             _Constructed_first = _Newvec;
-            _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Al);
+            _STD _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Al);
         }
         _CATCH_ALL
-        _Destroy_range(_Constructed_first, _Constructed_last, _Al);
+        _STD _Destroy_range(_Constructed_first, _Constructed_last, _Al);
         _Al.deallocate(_Newvec, _Newcapacity);
         _RERAISE;
         _CATCH_END
@@ -2024,7 +2024,7 @@ private:
         _My_data._Orphan_all();
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy_range(_Myfirst, _Mylast, _Al);
+            _STD _Destroy_range(_Myfirst, _Mylast, _Al);
             _ASAN_VECTOR_REMOVE;
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
         }
