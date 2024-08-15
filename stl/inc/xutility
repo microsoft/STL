@@ -12,6 +12,7 @@
 #include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <wchar.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
