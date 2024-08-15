@@ -251,7 +251,10 @@ MappingProperties<Mapping> get_mapping_properties(const Mapping& mapping) {
     constexpr auto rank = Mapping::extents_type::rank();
     constexpr std::make_index_sequence<rank> rank_indices;
 
-    auto get_extent       = [&](size_t i) { return mapping.extents().extent(i); };
+    auto get_extent = [&](size_t i) {
+        assert(i < rank);
+        return mapping.extents().extent(i);
+    };
     auto multidim_indices = [&]<size_t... Indices>(std::index_sequence<Indices...>) {
         return std::views::cartesian_product(std::views::iota(IndexType{0}, get_extent(Indices))...);
     }(rank_indices);
