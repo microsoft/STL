@@ -2087,7 +2087,6 @@ namespace {
             _Advance_bytes(_First, sizeof(_Ty));
         }
 
-#pragma loop(no_vector) // TRANSITION, VSO-2093761: work around a compiler back-end assertion
         for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
             if constexpr ((_Mode & _Mode_min) != 0) {
                 if (*_Ptr < _Cur_min_val) {

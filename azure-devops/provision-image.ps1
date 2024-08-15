@@ -40,10 +40,10 @@ foreach ($workload in $VisualStudioWorkloads) {
 }
 
 # https://github.com/PowerShell/PowerShell/releases/latest
-$PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.3/PowerShell-7.4.3-win-x64.msi'
+$PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.4/PowerShell-7.4.4-win-x64.msi'
 $PowerShellArgs = @('/quiet', '/norestart')
 
-$PythonUrl = 'https://www.python.org/ftp/python/3.12.4/python-3.12.4-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.12.5/python-3.12.5-amd64.exe'
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
 
 $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_551.61_windows.exe'
