@@ -6010,7 +6010,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
                 return _First + (_Result - _First_ptr);
             }
 #else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
-            if constexpr (sizeof(_Iter_value_t<_InIt>) == 1 || sizeof(_Iter_value_t<_InIt>) == 2) {
+            if constexpr (sizeof(_Iter_value_t<_InIt>) <= 2) {
                 const auto _First_ptr = _STD _To_address(_First);
                 const auto _Size      = static_cast<size_t>(_Last - _First);
 
