@@ -6012,21 +6012,21 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
 #else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
             if constexpr (sizeof(_Iter_value_t<_InIt>) <= 2) {
                 const auto _First_ptr = _STD _To_address(_First);
-                const auto _Size      = static_cast<size_t>(_Last - _First);
+                const auto _Count     = static_cast<size_t>(_Last - _First);
 
-                using _Result_t = remove_reference_t<_Iter_ref_t<_InIt>>*;
-                _Result_t _Result;
+                using _Ptr_t = remove_reference_t<_Iter_ref_t<_InIt>>*;
+                _Ptr_t _Result;
 
                 if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
-                    _Result = static_cast<_Result_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Size));
+                    _Result = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
                 } else {
                     _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_InIt>) == 2);
 
                     using _Src_type =
                         conditional_t<is_const_v<remove_reference_t<_Iter_ref_t<_InIt>>>, const wchar_t*, wchar_t*>;
 
-                    _Result = reinterpret_cast<_Result_t>(
-                        _CSTD wmemchr(reinterpret_cast<_Src_type>(_First_ptr), static_cast<wchar_t>(_Val), _Size));
+                    _Result = reinterpret_cast<_Ptr_t>(
+                        _CSTD wmemchr(reinterpret_cast<_Src_type>(_First_ptr), static_cast<wchar_t>(_Val), _Count));
                 }
 
                 if constexpr (is_pointer_v<_InIt>) {
