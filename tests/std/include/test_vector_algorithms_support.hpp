@@ -47,7 +47,8 @@ void disable_instructions(ISA_AVAILABILITY isa) {
 
 constexpr std::size_t dataCount = 1024;
 
-void run_randomized_tests_with_different_isa_levels(void tests(std::mt19937_64& gen)) {
+template <class TestFunc>
+void run_randomized_tests_with_different_isa_levels(TestFunc tests) {
     std::mt19937_64 gen;
     initialize_randomness(gen);
 
