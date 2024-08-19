@@ -12,7 +12,7 @@
 #include <random>
 #include <vector>
 
-void initialize_randomness(std::mt19937_64& gen) {
+inline void initialize_randomness(std::mt19937_64& gen) {
     constexpr std::size_t n = std::mt19937_64::state_size;
     constexpr std::size_t w = std::mt19937_64::word_size;
     static_assert(w % 32 == 0, "w should be evenly divisible by 32");
@@ -40,7 +40,7 @@ void initialize_randomness(std::mt19937_64& gen) {
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
 extern "C" long __isa_enabled;
 
-void disable_instructions(ISA_AVAILABILITY isa) {
+inline void disable_instructions(ISA_AVAILABILITY isa) {
     __isa_enabled &= ~(1UL << static_cast<unsigned long>(isa));
 }
 #endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
