@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <bitset>
 #include <cassert>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -12,6 +13,7 @@
 #include <functional>
 #include <limits>
 #include <list>
+#include <random>
 #include <string>
 #include <type_traits>
 #include <utility>

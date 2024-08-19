@@ -3,6 +3,11 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <functional>
 #include <isa_availability.h>
 #include <random>
 #include <vector>
