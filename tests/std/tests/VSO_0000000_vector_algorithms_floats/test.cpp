@@ -63,7 +63,7 @@ void test_min_max_element_floating_zero_predef() {
             test_case_min_max_element(v);
 
             for (size_t i = 0; i != pos; ++i) {
-                v[i] = -1, 0;
+                v[i] = -1.0;
             }
 
             test_case_min_max_element(v);
