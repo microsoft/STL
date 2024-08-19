@@ -12,7 +12,7 @@
 using namespace std;
 
 template <class T>
-void test_min_max_element_floating_with_values(mt19937_64& gen, const std::vector<T>& input_of_input) {
+void test_min_max_element_floating_with_values(mt19937_64& gen, const vector<T>& input_of_input) {
     uniform_int_distribution<size_t> idx_dis(0, input_of_input.size() - 1);
 
     vector<T> input;
