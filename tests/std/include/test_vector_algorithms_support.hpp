@@ -12,11 +12,6 @@
 #include <random>
 #include <vector>
 
-#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
-#ifdef __clang__
-#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
-#endif // __clang__
-
 void initialize_randomness(std::mt19937_64& gen) {
     constexpr std::size_t n = std::mt19937_64::state_size;
     constexpr std::size_t w = std::mt19937_64::word_size;
