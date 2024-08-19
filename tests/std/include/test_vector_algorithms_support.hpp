@@ -53,13 +53,12 @@ void run_randomized_tests_with_different_isa_levels(TestFunc tests) {
     initialize_randomness(gen);
 
     tests(gen);
-#ifndef _M_CEE_PURE
-#if defined(_M_IX86) || defined(_M_X64)
+
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
     disable_instructions(__ISA_AVAILABLE_AVX2);
     tests(gen);
 
     disable_instructions(__ISA_AVAILABLE_SSE42);
     tests(gen);
-#endif // defined(_M_IX86) || defined(_M_X64)
-#endif // _M_CEE_PURE
+#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
 }
