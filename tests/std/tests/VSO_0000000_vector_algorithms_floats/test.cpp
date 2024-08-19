@@ -1,23 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <algorithm>
-#include <cassert>
 #include <cstddef>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <isa_availability.h>
 #include <limits>
 #include <random>
-#include <type_traits>
-#include <utility>
 #include <vector>
-
-#if _HAS_CXX20
-#include <compare>
-#include <ranges>
-#endif // _HAS_CXX20
 
 #include "test_min_max_element_support.hpp"
 #include "test_vector_algorithms_support.hpp"
