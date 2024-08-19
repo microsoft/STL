@@ -4658,7 +4658,7 @@ _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     if constexpr (is_pointer_v<_OutCtgIt>) {
         return reinterpret_cast<_OutCtgIt>(_Dest_ch + _Count);
     } else {
-        return _Dest + (_LastPtr - _FirstPtr);
+        return _Dest + static_cast<_Iter_diff_t<_OutCtgIt>>(_LastPtr - _FirstPtr);
     }
 }
 
@@ -4983,7 +4983,7 @@ _CtgIt2 _Copy_backward_memmove(_CtgIt1 _First, _CtgIt1 _Last, _CtgIt2 _Dest) {
     if constexpr (is_pointer_v<_CtgIt2>) {
         return static_cast<_CtgIt2>(_Result);
     } else {
-        return _Dest - (_LastPtr - _FirstPtr);
+        return _Dest - static_cast<_Iter_diff_t<_CtgIt2>>(_LastPtr - _FirstPtr);
     }
 }
 
