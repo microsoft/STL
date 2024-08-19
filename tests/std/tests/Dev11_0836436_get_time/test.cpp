@@ -110,6 +110,7 @@ void test_invalid_argument();
 void test_buffer_resizing();
 void test_gh_2618();
 void test_gh_2848();
+void test_gh_4820();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -157,6 +158,7 @@ int main() {
     test_buffer_resizing();
     test_gh_2618();
     test_gh_2848();
+    test_gh_4820();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -792,16 +794,17 @@ void test_invalid_argument() {
     time_t t = time(nullptr);
     tm currentTime;
     localtime_s(&currentTime, &t);
+    currentTime.tm_hour = 25; // set invalid hour
 
     {
         wstringstream wss;
-        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M-%s");
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
         assert(wss.rdstate() == ios_base::badbit);
     }
 
     {
         stringstream ss;
-        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M-%s");
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
         assert(ss.rdstate() == ios_base::badbit);
     }
 #endif // _M_CEE_PURE
@@ -903,5 +906,41 @@ void test_gh_2848() {
         const istreambuf_iterator<wchar_t> last{};
         tmget.get(first, last, iss, err, &when, fmt.data(), fmt.data() + fmt.size());
         assert(err == (ios_base::eofbit | ios_base::failbit));
+    }
+}
+
+void test_gh_4820() {
+    // GH-4820 <iomanip>: std::put_time should copy unknown conversion specifiers instead of crash
+    time_t t = time(nullptr);
+    tm currentTime;
+    localtime_s(&currentTime, &t);
+
+    // Case 1: Test various unknown conversion specifiers.
+    // Case 2: "%%" is a known escape sequence with a dedicated fast path.
+    // Case 3: "% " is percent followed by space, which is an unknown conversion specifier.
+    // Case 4: "%E%Z" is parsed as "%E%" followed by "Z", so it should be copied unchanged,
+    //         even though "%Z" by itself would be a known conversion specifier (time zone name).
+    //         (In case 1, "%E%J" is parsed the same way; the difference is that "%J" would be unknown.)
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"1:%Ei%!%E%J%P 2:%% 3:% 4:%E%Z");
+        assert(wss.rdstate() == ios_base::goodbit);
+        assert(wss.str() == L"1:%Ei%!%E%J%P 2:% 3:% 4:%E%Z");
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "1:%Ei%!%E%J%P 2:%% 3:% 4:%E%Z");
+        assert(ss.rdstate() == ios_base::goodbit);
+        assert(ss.str() == "1:%Ei%!%E%J%P 2:% 3:% 4:%E%Z");
+    }
+
+    // Also verify that wide characters aren't truncated.
+    // This tests a character appearing by itself, two as specifiers, and two as modified specifiers.
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"\x043a%\x043e%\x0448%E\x043a%O\x0430");
+        assert(wss.rdstate() == ios_base::goodbit);
+        assert(wss.str() == L"\x043a%\x043e%\x0448%E\x043a%O\x0430");
     }
 }

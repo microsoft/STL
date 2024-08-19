@@ -611,6 +611,53 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
         return __builtin_##NAME(_Xx, _Yx);                                                               \
     }
 
+#define _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, ARG)                                                         \
+    template <class _Ty, _STD enable_if_t<_STD is_arithmetic_v<_Ty>, int> = 0>                           \
+    _NODISCARD _Check_return_ inline bool NAME(_In_ ARG _Xx, _In_ _Ty _Yx) noexcept /* strengthened */ { \
+        return __builtin_##NAME(static_cast<double>(_Xx), static_cast<double>(_Yx));                     \
+    }
+
+#ifdef __cpp_char8_t
+#define _CLANG_BUILTIN2_ARG_TEMPLATED_CHAR8_T(NAME)                                                          \
+    template <class _Ty, _STD enable_if_t<_STD is_arithmetic_v<_Ty>, int> = 0>                               \
+    _NODISCARD _Check_return_ inline bool NAME(_In_ char8_t _Xx, _In_ _Ty _Yx) noexcept /* strengthened */ { \
+        return __builtin_##NAME(static_cast<double>(_Xx), static_cast<double>(_Yx));                         \
+    }
+#else // ^^^ defined(__cpp_char8_t) / !defined(__cpp_char8_t) vvv
+#define _CLANG_BUILTIN2_ARG_TEMPLATED_CHAR8_T(NAME)
+#endif // ^^^ !defined(__cpp_char8_t) ^^^
+
+#ifdef _NATIVE_WCHAR_T_DEFINED
+#define _CLANG_BUILTIN2_ARG_TEMPLATED_WCHAR_T(NAME)                                                          \
+    template <class _Ty, _STD enable_if_t<_STD is_arithmetic_v<_Ty>, int> = 0>                               \
+    _NODISCARD _Check_return_ inline bool NAME(_In_ wchar_t _Xx, _In_ _Ty _Yx) noexcept /* strengthened */ { \
+        return __builtin_##NAME(static_cast<double>(_Xx), static_cast<double>(_Yx));                         \
+    }
+#else // ^^^ defined(_NATIVE_WCHAR_T_DEFINED) / !defined(_NATIVE_WCHAR_T_DEFINED) vvv
+#define _CLANG_BUILTIN2_ARG_TEMPLATED_WCHAR_T(NAME)
+#endif // ^^^ !defined(_NATIVE_WCHAR_T_DEFINED) ^^^
+
+#define _CLANG_BUILTIN2_TEMPLATED(NAME)                     \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, float)              \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, double)             \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, long double)        \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, signed char)        \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, short)              \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, int)                \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, long)               \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, long long)          \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, unsigned char)      \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, unsigned short)     \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, unsigned int)       \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, unsigned long)      \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, unsigned long long) \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, bool)               \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, char)               \
+    _CLANG_BUILTIN2_ARG_TEMPLATED_CHAR8_T(NAME)             \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, char16_t)           \
+    _CLANG_BUILTIN2_ARG_TEMPLATED(NAME, char32_t)           \
+    _CLANG_BUILTIN2_ARG_TEMPLATED_WCHAR_T(NAME)
+
 #define _CLANG_BUILTIN1(NAME)         \
     _CLANG_BUILTIN1_ARG(NAME, float)  \
     _CLANG_BUILTIN1_ARG(NAME, double) \
@@ -633,19 +680,30 @@ _CLANG_BUILTIN2(islessequal)
 _CLANG_BUILTIN2(islessgreater)
 _CLANG_BUILTIN2(isunordered)
 
+_CLANG_BUILTIN2_TEMPLATED(isgreater)
+_CLANG_BUILTIN2_TEMPLATED(isgreaterequal)
+_CLANG_BUILTIN2_TEMPLATED(isless)
+_CLANG_BUILTIN2_TEMPLATED(islessequal)
+_CLANG_BUILTIN2_TEMPLATED(islessgreater)
+_CLANG_BUILTIN2_TEMPLATED(isunordered)
+
 #undef _CLANG_BUILTIN1_ARG
 #undef _CLANG_BUILTIN2_ARG
 #undef _CLANG_BUILTIN1
 #undef _CLANG_BUILTIN2
+#undef _CLANG_BUILTIN2_ARG_TEMPLATED
+#undef _CLANG_BUILTIN2_ARG_TEMPLATED_CHAR8_T
+#undef _CLANG_BUILTIN2_ARG_TEMPLATED_WCHAR_T
+#undef _CLANG_BUILTIN2_TEMPLATED
 #endif // ^^^ defined(__clang__) ^^^
 
-// TRANSITION, GH-519, should be provided by UCRT
+// TRANSITION, DevCom-10294165, should be provided by UCRT
 template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
 _NODISCARD _Check_return_ _CONSTEXPR23 int fpclassify(_In_ const _Ty _Ix) noexcept /* strengthened */ {
     return _Ix == 0 ? FP_ZERO : FP_NORMAL;
 }
 
-// TRANSITION, GH-519, should be provided by UCRT
+// TRANSITION, DevCom-10294165, should be provided by UCRT
 template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
 _NODISCARD _Check_return_ _CONSTEXPR23 bool signbit(_In_ const _Ty _Ix) noexcept /* strengthened */ {
     if constexpr (static_cast<_Ty>(-1) < _Ty{}) {
@@ -655,7 +713,7 @@ _NODISCARD _Check_return_ _CONSTEXPR23 bool signbit(_In_ const _Ty _Ix) noexcept
     }
 }
 
-// TRANSITION, GH-519, additional overloads are not templated to avoid ambiguity with the major overload in UCRT
+// TRANSITION, DevCom-10294165, additional overloads are not templated to avoid ambiguity with the overload in UCRT
 #define _GENERIC_MATH_ISNORMAL(TYPE)                                                                        \
     _NODISCARD _Check_return_ _CONSTEXPR23 bool isnormal(_In_ const TYPE _Ix) noexcept /* strengthened */ { \
         return _Ix != 0;                                                                                    \
@@ -729,7 +787,7 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
-// TRANSITION, GH-519, additional overloads are not templated to avoid ambiguity with the major overload in UCRT
+// TRANSITION, DevCom-10294165, additional overloads are not templated to avoid ambiguity with the overload in UCRT
 #define _GENERIC_MATH_CLASSIFY1_RETV_INTEGER(FUN, RETV, TYPE)                                \
     _NODISCARD _Check_return_ _CONSTEXPR23 bool FUN(_In_ TYPE) noexcept /* strengthened */ { \
         return RETV;                                                                         \

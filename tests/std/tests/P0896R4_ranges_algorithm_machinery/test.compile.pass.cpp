@@ -79,6 +79,8 @@ namespace indirectly_unary_invocable_test {
         // 2: not invocable<Fn&, iter_reference_t<simple_iter_archetype>>
         void operator()(simple_reference<int>) const requires (I == 2) = delete;
         // 3: not invocable<Fn&, iter_common_reference_t<simple_iter_archetype>>
+        // This case is made valid by P2997R1
+        // "Removing The Common Reference Requirement From The Indirectly Invocable Concepts".
         void operator()(simple_common_reference<int>) const requires (I == 3) = delete;
 
         // 4 : not common_reference_with<invoke_result_t<Fn&, iter_value_t<simple_iter_archetype>&>,
@@ -101,7 +103,7 @@ namespace indirectly_unary_invocable_test {
     static_assert(!test<Fn<0>, simple_iter_archetype<1>>());
     static_assert(!test<Fn<1>, simple_iter_archetype<1>>());
     static_assert(!test<Fn<2>, simple_iter_archetype<1>>());
-    static_assert(!test<Fn<3>, simple_iter_archetype<1>>());
+    static_assert(test<Fn<3>, simple_iter_archetype<1>>());
     static_assert(!test<Fn<4>, simple_iter_archetype<1>>());
     static_assert(!test<Fn<5>, simple_iter_archetype<0>>());
     static_assert(test<Fn<5>, simple_iter_archetype<1>>());
@@ -130,6 +132,8 @@ namespace indirect_unary_predicate_test {
         // 2: not predicate<Fn&, iter_reference_t<simple_iter_archetype>>
         void operator()(simple_reference<int>) const requires (I == 2) = delete;
         // 3: not predicate<Fn&, iter_common_reference_t<simple_iter_archetype>>
+        // This case is made valid by P2997R1
+        // "Removing The Common Reference Requirement From The Indirectly Invocable Concepts".
         void operator()(simple_common_reference<int>) const requires (I == 3) = delete;
 
         // 4: all of the above
@@ -142,7 +146,7 @@ namespace indirect_unary_predicate_test {
     static_assert(!indirect_unary_predicate<Fn<0>, simple_iter_archetype<1>>);
     static_assert(!indirect_unary_predicate<Fn<1>, simple_iter_archetype<1>>);
     static_assert(!indirect_unary_predicate<Fn<2>, simple_iter_archetype<1>>);
-    static_assert(!indirect_unary_predicate<Fn<3>, simple_iter_archetype<1>>);
+    static_assert(indirect_unary_predicate<Fn<3>, simple_iter_archetype<1>>);
     static_assert(!indirect_unary_predicate<Fn<4>, simple_iter_archetype<1>>);
     static_assert(!indirect_unary_predicate<Fn<5>, simple_iter_archetype<0>>);
     static_assert(indirect_unary_predicate<Fn<5>, simple_iter_archetype<1>>);
@@ -174,6 +178,8 @@ namespace indirect_binary_predicate_test {
         // 4: not predicate<Fn&, iter_reference_t<simple_iter_archetype>, iter_reference_t<simple_iter_archetype>>
         void operator()(simple_reference<int>, simple_reference<int>) const requires (I == 4);
         // 5: not predicate<Fn&, iter_common_reference_t</**/>, iter_common_reference_t</**/>>
+        // This case is made valid by P2997R1
+        // "Removing The Common Reference Requirement From The Indirectly Invocable Concepts".
         void operator()(simple_common_reference<int>, simple_common_reference<int>) const requires (I == 5);
 
         bool operator()(int&, int&) const requires (I != 1);
@@ -202,7 +208,7 @@ namespace indirect_binary_predicate_test {
     static_assert(!test<2, 1, 1>());
     static_assert(!test<3, 1, 1>());
     static_assert(!test<4, 1, 1>());
-    static_assert(!test<5, 1, 1>());
+    static_assert(test<5, 1, 1>());
 
     static_assert(!test<6, 0, 1>());
     static_assert(!test<6, 1, 0>());

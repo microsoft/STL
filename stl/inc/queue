@@ -18,6 +18,7 @@
 
 #if _HAS_CXX23
 #include <__msvc_ranges_to.hpp>
+#include <format>
 #include <iterator>
 #endif // _HAS_CXX23
 
@@ -50,7 +51,7 @@ public:
         : c(_STD move(_Cont)) {}
 
 #if _HAS_CXX23
-    template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
+    template <_Iterator_for_container _InIt>
     queue(_InIt _First, _InIt _Last) noexcept(is_nothrow_constructible_v<_Container, _InIt, _InIt>) // strengthened
         : c(_STD move(_First), _STD move(_Last)) {}
 
@@ -79,8 +80,8 @@ public:
         : c(_STD move(_Right.c), _Al) {}
 
 #if _HAS_CXX23
-    template <class _InIt, class _Alloc,
-        enable_if_t<conjunction_v<_Is_iterator<_InIt>, uses_allocator<_Container, _Alloc>>, int> = 0>
+    template <_Iterator_for_container _InIt, class _Alloc>
+        requires uses_allocator_v<_Container, _Alloc>
     queue(_InIt _First, _InIt _Last, const _Alloc& _Al) noexcept(
         is_nothrow_constructible_v<_Container, _InIt, _InIt, const _Alloc&>) // strengthened
         : c(_STD move(_First), _STD move(_Last), _Al) {}
@@ -169,12 +170,10 @@ queue(_Container, _Alloc) -> queue<typename _Container::value_type, _Container>;
 #endif // _HAS_CXX17
 
 #if _HAS_CXX23
-template <class _InIt, class _Alloc = allocator<_Iter_value_t<_InIt>>,
-    enable_if_t<conjunction_v<_Is_iterator<_InIt>, _Is_allocator<_Alloc>>, int> = 0>
+template <_Iterator_for_container _InIt, _Allocator_for_container _Alloc = allocator<_Iter_value_t<_InIt>>>
 queue(_InIt, _InIt, _Alloc = _Alloc()) -> queue<_Iter_value_t<_InIt>, deque<_Iter_value_t<_InIt>, _Alloc>>;
 
-template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
-    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
 queue(from_range_t, _Rng&&, _Alloc = _Alloc())
     -> queue<_RANGES range_value_t<_Rng>, deque<_RANGES range_value_t<_Rng>, _Alloc>>;
 #endif // _HAS_CXX23
@@ -224,6 +223,14 @@ void swap(queue<_Ty, _Container>& _Left, queue<_Ty, _Container>& _Right) noexcep
 
 template <class _Ty, class _Container, class _Alloc>
 struct uses_allocator<queue<_Ty, _Container>, _Alloc> : uses_allocator<_Container, _Alloc>::type {};
+
+#if _HAS_CXX23
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+template <_Format_supported_charT _CharT, class _Ty, formattable<_CharT> _Container>
+struct formatter<queue<_Ty, _Container>, _CharT>
+    : _Adaptor_formatter_base<queue<_Ty, _Container>, _CharT, _RANGES ref_view> {};
+#endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty, class _Container = vector<_Ty>, class _Pr = less<typename _Container::value_type>>
 class priority_queue {
@@ -345,15 +352,15 @@ public:
     }
 
 #if _HAS_CXX23
-    template <_Container_compatible_range<_Ty> _Rng, class _Alloc,
-        enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
+    template <_Container_compatible_range<_Ty> _Rng, class _Alloc>
+        requires uses_allocator_v<_Container, _Alloc>
     priority_queue(from_range_t, _Rng&& _Range, const _Pr& _Pred, const _Alloc& _Al)
         : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range), _Al)), comp(_Pred) {
         _Make_heap();
     }
 
-    template <_Container_compatible_range<_Ty> _Rng, class _Alloc,
-        enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
+    template <_Container_compatible_range<_Ty> _Rng, class _Alloc>
+        requires uses_allocator_v<_Container, _Alloc>
     priority_queue(from_range_t, _Rng&& _Range, const _Alloc& _Al)
         : c(_RANGES to<_Container>(_STD forward<_Rng>(_Range), _Al)), comp() {
         _Make_heap();
@@ -492,6 +499,13 @@ void swap(priority_queue<_Ty, _Container, _Pr>& _Left, priority_queue<_Ty, _Cont
 template <class _Ty, class _Container, class _Pr, class _Alloc>
 struct uses_allocator<priority_queue<_Ty, _Container, _Pr>, _Alloc> : uses_allocator<_Container, _Alloc>::type {};
 
+#if _HAS_CXX23
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+template <_Format_supported_charT _CharT, class _Ty, formattable<_CharT> _Container, class _Comp>
+struct formatter<priority_queue<_Ty, _Container, _Comp>, _CharT>
+    : _Adaptor_formatter_base<priority_queue<_Ty, _Container, _Comp>, _CharT, _RANGES ref_view> {};
+#endif // _HAS_CXX23
 _STD_END
 
 #pragma pop_macro("new")

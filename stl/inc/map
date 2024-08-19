@@ -385,12 +385,12 @@ map(initializer_list<pair<_Kty, _Ty>>, _Alloc) -> map<_Kty, _Ty, less<_Kty>, _Al
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Pr = less<_Range_key_type<_Rng>>,
-    class _Alloc = allocator<_Range_to_alloc_type<_Rng>>,
-    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+    _Allocator_for_container _Alloc = allocator<_Range_to_alloc_type<_Rng>>>
+    requires (!_Allocator_for_container<_Pr>)
 map(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc())
     -> map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Pr, _Alloc>;
 
-template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
 map(from_range_t, _Rng&&, _Alloc)
     -> map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, less<_Range_key_type<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23
@@ -616,12 +616,12 @@ multimap(initializer_list<pair<_Kty, _Ty>>, _Alloc) -> multimap<_Kty, _Ty, less<
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Pr = less<_Range_key_type<_Rng>>,
-    class _Alloc = allocator<_Range_to_alloc_type<_Rng>>,
-    enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
+    _Allocator_for_container _Alloc = allocator<_Range_to_alloc_type<_Rng>>>
+    requires (!_Allocator_for_container<_Pr>)
 multimap(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc())
     -> multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Pr, _Alloc>;
 
-template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
 multimap(from_range_t, _Rng&&, _Alloc)
     -> multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, less<_Range_key_type<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23

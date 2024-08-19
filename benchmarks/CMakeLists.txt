@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.28.0)
+cmake_minimum_required(VERSION 3.29.0)
 project(msvc_standard_libraries_benchmarks LANGUAGES CXX)
 
 if(DEFINED STL_BINARY_DIR)
@@ -62,7 +62,7 @@ endif()
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 # /utf-8 affects <format>.
-add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8>")
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8;/Zc:preprocessor>")
 
 if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/google-benchmark/.git")
     message(FATAL_ERROR "google-benchmark is not checked out; make sure to run\n    git submodule update --init benchmarks/google-benchmark")
