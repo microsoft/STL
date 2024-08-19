@@ -942,7 +942,7 @@ namespace test {
         std::signed_integral<I> || std::same_as<I, std::ranges::range_difference_t<std::ranges::iota_view<long long>>>;
 
     template <signed_integer_like I>
-    constexpr auto to_unsigned(I n) noexcept {
+    [[nodiscard]] constexpr auto to_unsigned(I n) noexcept {
         if constexpr (std::signed_integral<I>) {
             return static_cast<std::make_unsigned_t<I>>(n);
         } else {
@@ -1037,7 +1037,7 @@ namespace test {
             return *this;
         }
 
-        constexpr decltype(auto) operator[](std::same_as<difference_type> auto n) const
+        [[nodiscard]] constexpr decltype(auto) operator[](std::same_as<difference_type> auto n) const
             requires std::random_access_iterator<It>
         {
             return i_[static_cast<std::iter_difference_t<It>>(n)];
@@ -1115,7 +1115,7 @@ namespace test {
             return !(i.i_ < j.i_);
         }
 
-        constexpr const It& base() const noexcept {
+        [[nodiscard]] constexpr const It& base() const noexcept {
             return i_;
         }
 
@@ -1149,7 +1149,7 @@ namespace test {
     };
 
     template <signed_integer_like Diff, std::ranges::borrowed_range Rng>
-    constexpr auto make_redifference_subrange(Rng&& r) {
+    [[nodiscard]] constexpr auto make_redifference_subrange(Rng&& r) {
         constexpr bool is_sized = std::ranges::sized_range<Rng>
                                || std::sized_sentinel_for<std::ranges::sentinel_t<Rng>, std::ranges::iterator_t<Rng>>;
         using rediff_iter = redifference_iterator<Diff, std::ranges::iterator_t<Rng>>;
