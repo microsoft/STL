@@ -939,15 +939,15 @@ namespace test {
 
     template <class I>
     concept signed_integer_like =
-        std::signed_integral<I> || std::same_as<I, std::ranges::range_difference_t<std::ranges::iota_view<long long>>>;
+        std::signed_integral<I> || std::same_as<I, ranges::range_difference_t<ranges::iota_view<long long>>>;
 
     template <signed_integer_like I>
     [[nodiscard]] constexpr auto to_unsigned(I n) noexcept {
         if constexpr (std::signed_integral<I>) {
             return static_cast<std::make_unsigned_t<I>>(n);
         } else {
-            using huge_iter          = std::ranges::iterator_t<std::ranges::iota_view<long long>>;
-            using unsigned_int_class = decltype(std::ranges::size(std::views::iota(huge_iter{}, huge_iter{})));
+            using huge_iter          = ranges::iterator_t<ranges::iota_view<long long>>;
+            using unsigned_int_class = decltype(ranges::size(std::views::iota(huge_iter{}, huge_iter{})));
             return static_cast<unsigned_int_class>(n);
         }
     }
@@ -1148,19 +1148,19 @@ namespace test {
         }
     };
 
-    template <signed_integer_like Diff, std::ranges::borrowed_range Rng>
+    template <signed_integer_like Diff, ranges::borrowed_range Rng>
     [[nodiscard]] constexpr auto make_redifference_subrange(Rng&& r) {
-        constexpr bool is_sized = std::ranges::sized_range<Rng>
-                               || std::sized_sentinel_for<std::ranges::sentinel_t<Rng>, std::ranges::iterator_t<Rng>>;
-        using rediff_iter = redifference_iterator<Diff, std::ranges::iterator_t<Rng>>;
-        using rediff_sent = redifference_sentinel<std::ranges::sentinel_t<Rng>>;
+        constexpr bool is_sized =
+            ranges::sized_range<Rng> || std::sized_sentinel_for<ranges::sentinel_t<Rng>, ranges::iterator_t<Rng>>;
+        using rediff_iter = redifference_iterator<Diff, ranges::iterator_t<Rng>>;
+        using rediff_sent = redifference_sentinel<ranges::sentinel_t<Rng>>;
 
         if constexpr (is_sized) {
-            const auto sz = to_unsigned(static_cast<Diff>(std::ranges::distance(r)));
-            return std::ranges::subrange<rediff_iter, rediff_sent, std::ranges::subrange_kind::sized>{
+            const auto sz = to_unsigned(static_cast<Diff>(ranges::distance(r)));
+            return ranges::subrange<rediff_iter, rediff_sent, ranges::subrange_kind::sized>{
                 rediff_iter{r.begin()}, rediff_sent{r.end()}, sz};
         } else {
-            return std::ranges::subrange<rediff_iter, rediff_sent, std::ranges::subrange_kind::unsized>{
+            return ranges::subrange<rediff_iter, rediff_sent, ranges::subrange_kind::unsized>{
                 rediff_iter{r.begin()}, rediff_sent{r.end()}};
         }
     }
