@@ -6816,7 +6816,7 @@ template <class _Iter, class _Pr, class _Elem = _Iter_value_t<_Iter>>
 constexpr bool _Is_min_max_value_optimization_safe = // Activate the vector algorithms for ranges::min/max?
 #ifndef _M_FP_FAST
     !is_floating_point_v<_Elem> &&
-#endif // !_M_FP_FAST
+#endif // ^^^ !defined(_M_FP_FAST) ^^^
     _Is_min_max_optimization_safe<_Iter, _Pr, _Elem>;
 
 template <class _FwdIt, class _Pr>
