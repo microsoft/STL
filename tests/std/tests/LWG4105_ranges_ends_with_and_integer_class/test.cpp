@@ -27,7 +27,7 @@ struct instantiator {
     static constexpr pair<long, long> short_needle[] = {{13, 2}, {13, 4}};
     static constexpr pair<long, long> wrong_needle[] = {{13, 2}, {13, 3}};
 
-    template <test::signed_integer_like Diff1, testable_range In1, test::signed_integer_like Diff2, testable_range In2>
+    template <std::_Signed_integer_like Diff1, testable_range In1, std::_Signed_integer_like Diff2, testable_range In2>
     static constexpr void test_range_rediff() {
         using ranges::ends_with, ranges::equal_to;
 
@@ -82,8 +82,41 @@ struct instantiator {
     }
 };
 
+#ifdef TEST_EVERYTHING
 int main() {
 #if !defined(_PREFAST_) && !defined(__EDG__) // TRANSITION, GH-1030 and GH-3567
     test_in_in<instantiator, const pair<int, int>, const pair<long, long>>();
 #endif // ^^^ no workaround ^^^
 }
+#else // ^^^ test all permutations of range properties / test only interesting permutations vvv
+template <class R>
+void run_tests_inner() {
+    instantiator::call<R, test::range<test::input, const pair<long, long>, test::Sized::yes>>();
+    instantiator::call<R, test::range<test::fwd, const pair<long, long>, test::Sized::no>>();
+    instantiator::call<R, test::range<test::fwd, const pair<long, long>, test::Sized::yes>>();
+    instantiator::call<R, test::range<test::bidi, const pair<long, long>, test::Sized::no>>();
+    instantiator::call<R, test::range<test::bidi, const pair<long, long>, test::Sized::yes>>();
+    instantiator::call<R, test::range<test::random, const pair<long, long>, test::Sized::no>>();
+    instantiator::call<R, test::range<test::random, const pair<long, long>, test::Sized::yes>>();
+    instantiator::call<R, test::range<test::contiguous, const pair<long, long>, test::Sized::no>>();
+    instantiator::call<R, test::range<test::contiguous, const pair<long, long>, test::Sized::yes>>();
+}
+
+void run_tests() {
+    run_tests_inner<test::range<test::input, const pair<int, int>, test::Sized::yes>>();
+    run_tests_inner<test::range<test::fwd, const pair<int, int>, test::Sized::no>>();
+    run_tests_inner<test::range<test::fwd, const pair<int, int>, test::Sized::yes>>();
+    run_tests_inner<test::range<test::bidi, const pair<int, int>, test::Sized::no>>();
+    run_tests_inner<test::range<test::bidi, const pair<int, int>, test::Sized::yes>>();
+    run_tests_inner<test::range<test::random, const pair<int, int>, test::Sized::no>>();
+    run_tests_inner<test::range<test::random, const pair<int, int>, test::Sized::yes>>();
+    run_tests_inner<test::range<test::contiguous, const pair<int, int>, test::Sized::no>>();
+    run_tests_inner<test::range<test::contiguous, const pair<int, int>, test::Sized::yes>>();
+}
+
+int main() {
+#if !defined(_PREFAST_) && !defined(__EDG__) // TRANSITION, GH-1030 and GH-3567
+    run_tests();
+#endif // ^^^ no workaround ^^^
+}
+#endif // TEST_EVERYTHING

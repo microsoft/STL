@@ -937,25 +937,19 @@ namespace test {
         }
     };
 
-    template <class I>
-    concept signed_integer_like =
-        std::signed_integral<I> || std::same_as<I, ranges::range_difference_t<ranges::iota_view<long long>>>;
-
-    template <signed_integer_like I>
+    template <std::_Signed_integer_like I>
     [[nodiscard]] constexpr auto to_unsigned(I n) noexcept {
         if constexpr (std::signed_integral<I>) {
             return static_cast<std::make_unsigned_t<I>>(n);
         } else {
-            using huge_iter          = ranges::iterator_t<ranges::iota_view<long long>>;
-            using unsigned_int_class = decltype(ranges::size(std::views::iota(huge_iter{}, huge_iter{})));
-            return static_cast<unsigned_int_class>(n);
+            return static_cast<std::_Unsigned128>(n);
         }
     }
 
-    template <signed_integer_like Diff, std::input_or_output_iterator It>
+    template <std::_Signed_integer_like Diff, std::input_iterator It>
     struct redifference_iterator_category_base {};
 
-    template <signed_integer_like Diff, std::input_or_output_iterator It>
+    template <std::_Signed_integer_like Diff, std::input_iterator It>
         requires std::signed_integral<Diff> && requires { typename std::iterator_traits<It>::iterator_category; }
     struct redifference_iterator_category_base<Diff, It> {
         using iterator_category = std::iterator_traits<It>::iterator_category;
@@ -974,7 +968,7 @@ namespace test {
         }());
     };
 
-    template <signed_integer_like Diff, std::input_or_output_iterator It>
+    template <std::_Signed_integer_like Diff, std::input_iterator It>
     class redifference_iterator : public redifference_iterator_category_base<Diff, It> {
     public:
         using value_type      = std::iter_value_t<It>;
@@ -1072,7 +1066,7 @@ namespace test {
             const redifference_iterator& i, const redifference_iterator& j)
             requires std::random_access_iterator<It>
         {
-            return i.i_ - j.i_;
+            return static_cast<Diff>(i.i_ - j.i_);
         }
 
         [[nodiscard]] friend constexpr auto operator<=>(const redifference_iterator& i, const redifference_iterator& j)
@@ -1127,20 +1121,20 @@ namespace test {
     struct redifference_sentinel {
         S se_;
 
-        template <signed_integer_like Diff, class It>
+        template <std::_Signed_integer_like Diff, class It>
             requires std::sentinel_for<S, It>
         [[nodiscard]] friend constexpr bool operator==(
             const redifference_iterator<Diff, It>& i, const redifference_sentinel& s) {
             return i.base() == s.se_;
         }
 
-        template <signed_integer_like Diff, class It>
+        template <std::_Signed_integer_like Diff, class It>
             requires std::sized_sentinel_for<S, It>
         [[nodiscard]] friend constexpr Diff operator-(
             const redifference_iterator<Diff, It>& i, const redifference_sentinel& s) {
             return static_cast<Diff>(i.base() - s.se_);
         }
-        template <signed_integer_like Diff, class It>
+        template <std::_Signed_integer_like Diff, class It>
             requires std::sized_sentinel_for<S, It>
         [[nodiscard]] friend constexpr Diff operator-(
             const redifference_sentinel& s, const redifference_iterator<Diff, It>& i) {
@@ -1148,7 +1142,7 @@ namespace test {
         }
     };
 
-    template <signed_integer_like Diff, ranges::borrowed_range Rng>
+    template <std::_Signed_integer_like Diff, ranges::borrowed_range Rng>
     [[nodiscard]] constexpr auto make_redifference_subrange(Rng&& r) {
         constexpr bool is_sized =
             ranges::sized_range<Rng> || std::sized_sentinel_for<ranges::sentinel_t<Rng>, ranges::iterator_t<Rng>>;
