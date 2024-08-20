@@ -9091,9 +9091,8 @@ namespace ranges {
                 requires (indirectly_swappable<iterator_t<_Maybe_const<_Const, _First>>> && ...
                           && indirectly_swappable<iterator_t<_Maybe_const<_Const, _Rest>>>)
             {
-                return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                    return (_RANGES iter_swap(_STD get<_Indices>(_Left._Current), _STD get<_Indices>(_Right._Current)),
-                        ...);
+                [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+                    (_RANGES iter_swap(_STD get<_Indices>(_Left._Current), _STD get<_Indices>(_Right._Current)), ...);
                 }(make_index_sequence<1 + sizeof...(_Rest)>{});
             }
         };
