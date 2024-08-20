@@ -115,8 +115,6 @@ void run_tests() {
 }
 
 int main() {
-#if !defined(_PREFAST_) && !defined(__EDG__) // TRANSITION, GH-1030 and GH-3567
     run_tests();
-#endif // ^^^ no workaround ^^^
 }
 #endif // TEST_EVERYTHING
