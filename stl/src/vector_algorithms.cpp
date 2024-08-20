@@ -1982,18 +1982,6 @@ namespace {
 
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __std_minmax_impl(const void* _First, const void* const _Last) noexcept {
-        // The value-based vectorized rather than the position-based one does not always produce
-        // the expected results for floatting point types.
-        //
-        // Efficient vectorization needs to find vertical minmax first, and then the horizontal one.
-        // This alters order of comparison: index zero element is first compared against
-        // vector size equal index element and only in the end against index one element.
-        // With equivalent but distinguishable +0.0 and -0.0 values, the altered comparison order
-        // will not produce the expected result in some cases (will return +0.0 instead of -0.0 or the reverse)
-        //
-        // The result is still acceptable for /fp:fast when +0.0 / -0.0 are not expected to be properly distinguished,
-        // and the compiler itself takes advantage of it.
-
         using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
 
         _Ty _Cur_min_val; // initialized in both of the branches below
