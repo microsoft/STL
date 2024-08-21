@@ -940,37 +940,24 @@ void test_gh_4882() {
 
     struct FormatTestData {
         int tm::*field;
-        int value;
+        int lo;
+        int hi;
         string fmt;
     };
 
     const FormatTestData testDataList[] = {
-        {&tm::tm_sec, -1, "%S%r%X%T%c"},
-        {&tm::tm_sec, 61, "%S%r%X%T%c"},
-
-        {&tm::tm_min, -1, "%M%R%r%X%T%c"},
-        {&tm::tm_min, 60, "%M%R%r%X%T%c"},
-
-        {&tm::tm_hour, -1, "%H%I%p%R%r%X%T%c"},
-        {&tm::tm_hour, 24, "%H%I%p%R%r%X%T%c"},
-
-        {&tm::tm_mday, 0, "%d%e%D%x%F%c"},
-        {&tm::tm_mday, 32, "%d%e%D%x%F%c"},
-
-        {&tm::tm_mon, -1, "%b%B%m%h%D%x%F%c"},
-        {&tm::tm_mon, 12, "%b%B%m%h%D%x%F%c"},
-
-        {&tm::tm_year, -1901, "%C%y%Y%D%x%F%g%G%c"},
-        {&tm::tm_year, 8100, "%C%y%Y%D%x%F%g%G%c"},
-
-        {&tm::tm_wday, -1, "%a%A%u%w%U%W%g%G%c"},
-        {&tm::tm_wday, 7, "%a%A%u%w%U%W%g%G%c"},
-
-        {&tm::tm_yday, -1, "%j%U%W%g%G"},
-        {&tm::tm_yday, 366, "%j%U%W%g%G"},
+        {&tm::tm_sec, -1, 61, "%S%r%X%T%c"},
+        {&tm::tm_min, -1, 60, "%M%R%r%X%T%c"},
+        {&tm::tm_hour, -1, 24, "%H%I%p%R%r%X%T%c"},
+        {&tm::tm_mday, 0, 32, "%d%e%D%x%F%c"},
+        {&tm::tm_mon, -1, 12, "%b%B%m%h%D%x%F%c"},
+        {&tm::tm_year, -1901, 8100, "%C%y%Y%D%x%F%g%G%c"},
+        {&tm::tm_wday, -1, 7, "%a%A%u%w%U%W%g%G%c"},
+        {&tm::tm_yday, -1, 366, "%j%U%W%g%G"},
     };
 
     for (const auto& testData : testDataList) {
-        fieldValidation(testData.field, testData.value, testData.fmt);
+        fieldValidation(testData.field, testData.lo, testData.fmt);
+        fieldValidation(testData.field, testData.hi, testData.fmt);
     }
 }
