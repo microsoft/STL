@@ -476,7 +476,7 @@ void test() {
     }
 }
 
-// LWG-4139 "§[time.zone.leap] recursive constraint in <=>"
+// LWG-4139 "[time.zone.leap] recursive constraint in <=>"
 namespace lwg_4139 {
     struct conv_to_leap_second : local_t {
         operator leap_second() const noexcept;
