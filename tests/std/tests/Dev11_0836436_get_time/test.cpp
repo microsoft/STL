@@ -917,7 +917,7 @@ void test_gh_4882() {
         tm currentTime;
         localtime_s(&currentTime, &t);
 
-        (currentTime.*field) = value;
+        currentTime.*field = value;
 
         stringstream ss;
         ss << put_time(&currentTime, fmt.c_str());
