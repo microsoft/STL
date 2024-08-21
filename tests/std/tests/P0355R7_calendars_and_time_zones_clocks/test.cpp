@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <utility>
 
+#include <is_permissive.hpp>
 #include <timezone_data.hpp>
 
 using namespace std;
@@ -482,12 +483,12 @@ namespace lwg_4139 {
         operator leap_second() const noexcept;
     };
 
-    static_assert(!equality_comparable<conv_to_leap_second>);
-    static_assert(!equality_comparable_with<conv_to_leap_second, leap_second>);
-    static_assert(!totally_ordered<conv_to_leap_second>);
-    static_assert(!totally_ordered_with<conv_to_leap_second, leap_second>);
-    static_assert(!three_way_comparable<conv_to_leap_second>);
-    static_assert(!three_way_comparable_with<conv_to_leap_second, leap_second>);
+    static_assert(equality_comparable<conv_to_leap_second> == is_permissive);
+    static_assert(equality_comparable_with<conv_to_leap_second, leap_second> == is_permissive);
+    static_assert(totally_ordered<conv_to_leap_second> == is_permissive);
+    static_assert(totally_ordered_with<conv_to_leap_second, leap_second> == is_permissive);
+    static_assert(three_way_comparable<conv_to_leap_second> == is_permissive);
+    static_assert(three_way_comparable_with<conv_to_leap_second, leap_second> == is_permissive);
 
     using ref_leap_second = reference_wrapper<leap_second>;
 
