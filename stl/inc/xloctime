@@ -739,8 +739,8 @@ _NODISCARD constexpr bool _Is_valid_strftime_tm_data(const char _Specifier, cons
     case 'u':
     case 'w':
         return _Is_valid_strftime_tm_wday(_Pt);
-    case 'U':
-    case 'W':
+    case 'U': // C23 7.29.3.5 "The strftime function"/3 says that %U and %W depend on tm_year,
+    case 'W': // but the UCRT neither uses nor validates it.
         return _Is_valid_strftime_tm_wday(_Pt) && _Is_valid_strftime_tm_yday(_Pt);
     case 'R':
         return _Is_valid_strftime_tm_hour(_Pt) && _Is_valid_strftime_tm_min(_Pt);
@@ -759,14 +759,20 @@ _NODISCARD constexpr bool _Is_valid_strftime_tm_data(const char _Specifier, cons
         return _Is_valid_strftime_tm_wday(_Pt) && _Is_valid_strftime_tm_mon(_Pt) && _Is_valid_strftime_tm_mday(_Pt)
             && _Is_valid_strftime_tm_hour(_Pt) && _Is_valid_strftime_tm_min(_Pt) && _Is_valid_strftime_tm_sec(_Pt)
             && _Is_valid_strftime_tm_year(_Pt);
+    case 'V': // C23 7.29.3.5 "The strftime function"/3 says that %V depends on tm_year, tm_wday, and tm_yday.
+              // The UCRT uses them without validating them.
+        return true;
+    case 'z': // C23 7.29.3.5 "The strftime function"/3 says that %z and %Z depend on tm_isdst.
+    case 'Z': // The UCRT treats it as a boolean value, so there's no need for validation.
+        return true;
+    case 'n': // newline
+    case 't': // tab
+        return true;
     default:
-        break;
+        // We should have handled %% and called _Is_valid_strftime_specifier() before calling this function.
+        _STL_INTERNAL_CHECK(false);
+        return false;
     }
-
-    // daylight savings time flag
-    // _Pt->tm_isdst - no need for validation as UCRT treats it as boolean
-
-    return true;
 }
 
 _EXPORT_STD extern "C++" template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
