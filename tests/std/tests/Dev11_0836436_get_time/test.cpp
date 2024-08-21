@@ -963,14 +963,11 @@ void test_gh_4882() {
         {&tm::tm_year, -1901, "%C%y%Y%D%x%F%g%G%c"},
         {&tm::tm_year, 8100, "%C%y%Y%D%x%F%g%G%c"},
 
+        {&tm::tm_wday, -1, "%a%A%u%w%c%U%W"},
+        {&tm::tm_wday, 7, "%a%A%u%w%c%U%W"},
+
         {&tm::tm_yday, -1, "%j%U%W"},
         {&tm::tm_yday, 366, "%j%U%W"},
-
-        {&tm::tm_wday, -1, "%a%A%u%w%c"},
-        {&tm::tm_wday, 7, "%a%A%u%w%c"},
-
-        {&tm::tm_wday, -1, "%U%W"},
-        {&tm::tm_wday, 7, "%U%W"},
     };
 
     for (const auto& testData : testDataList) {
