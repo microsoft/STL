@@ -912,7 +912,7 @@ void test_gh_4820() {
 
 void test_gh_4882() {
     // GH-4882 <iomanip>: std::put_time should not crash on invalid/out-of-range tm struct values
-    const auto fieldValidation = [](int tm::*const field, const int value, const string& format) {
+    const auto fieldValidation = [](int tm::*const field, const int value, const string& fmt) {
         time_t t = time(nullptr);
         tm currentTime;
         localtime_s(&currentTime, &t);
@@ -920,29 +920,28 @@ void test_gh_4882() {
         (currentTime.*field) = value;
 
         stringstream ss;
-        ss << put_time(&currentTime, format.c_str());
+        ss << put_time(&currentTime, fmt.c_str());
         assert(ss.rdstate() == ios_base::goodbit);
         const auto result = ss.str();
-        assert(result.size() == format.size() / 2);
+        assert(result.size() == fmt.size() / 2);
         assert(all_of(result.cbegin(), result.cend(), [](const char c) { return c == '?'; }));
 
         // Narrow conversion is good enough for our ASCII only format strings
-        wstring wformat(format.size(), L' ');
-        transform(
-            format.cbegin(), format.cend(), wformat.begin(), [](const char c) { return static_cast<wchar_t>(c); });
+        wstring wfmt(fmt.size(), L' ');
+        transform(fmt.cbegin(), fmt.cend(), wfmt.begin(), [](const char c) { return static_cast<wchar_t>(c); });
 
         wstringstream wss;
-        wss << put_time(&currentTime, wformat.c_str());
+        wss << put_time(&currentTime, wfmt.c_str());
         assert(wss.rdstate() == ios_base::goodbit);
         const auto wresult = wss.str();
-        assert(wresult.size() == format.size() / 2);
+        assert(wresult.size() == fmt.size() / 2);
         assert(all_of(wresult.cbegin(), wresult.cend(), [](const wchar_t c) { return c == L'?'; }));
     };
 
     struct FormatTestData {
         int tm::*field;
         int value;
-        string format;
+        string fmt;
     };
 
     const FormatTestData testDataList[] = {
@@ -975,6 +974,6 @@ void test_gh_4882() {
     };
 
     for (const auto& testData : testDataList) {
-        fieldValidation(testData.field, testData.value, testData.format);
+        fieldValidation(testData.field, testData.value, testData.fmt);
     }
 }
