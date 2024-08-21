@@ -741,6 +741,87 @@ namespace msvc {
         }
     } // namespace gh2770
 
+    namespace gh4901 {
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEXPR20 inline
+#endif // ^^^ !_HAS_CXX20  ^^^
+        struct X {
+            CONSTEXPR20 ~X() {}
+        };
+
+        struct Y {
+            X _;
+        };
+
+        struct ZA {
+            std::variant<Y, int> z;
+        };
+
+        struct ZB {
+            std::variant<int, Y> z;
+        };
+
+#if _HAS_CXX20
+        static_assert(ZA{0}.z.index() == 1);
+        static_assert(ZA{Y{}}.z.index() == 0);
+        static_assert(ZB{0}.z.index() == 0);
+        static_assert(ZB{Y{}}.z.index() == 1);
+#endif // _HAS_CXX20
+
+        static_assert(std::is_nothrow_destructible_v<X>);
+        static_assert(std::is_nothrow_destructible_v<Y>);
+        static_assert(std::is_nothrow_destructible_v<std::variant<Y, int>>);
+        static_assert(std::is_nothrow_destructible_v<std::variant<int, Y>>);
+        static_assert(std::is_nothrow_destructible_v<ZA>);
+        static_assert(std::is_nothrow_destructible_v<ZB>);
+
+        // Verify that variant::~variant is always noexcept, per N4988 [res.on.exception.handling]/3.
+        struct X2 {
+            CONSTEXPR20 ~X2() noexcept(false) {}
+        };
+
+        struct Y2 {
+            X2 _;
+        };
+
+        struct ZA2 {
+            std::variant<Y2, int> z;
+        };
+
+        struct ZB2 {
+            std::variant<int, Y2> z;
+        };
+
+#if _HAS_CXX20
+        static_assert(ZA2{0}.z.index() == 1);
+        static_assert(ZA2{Y2{}}.z.index() == 0);
+        static_assert(ZB2{0}.z.index() == 0);
+        static_assert(ZB2{Y2{}}.z.index() == 1);
+#endif // _HAS_CXX20
+
+        static_assert(!std::is_nothrow_destructible_v<X2>);
+        static_assert(!std::is_nothrow_destructible_v<Y2>);
+        static_assert(std::is_nothrow_destructible_v<std::variant<Y2, int>>);
+        static_assert(std::is_nothrow_destructible_v<std::variant<int, Y2>>);
+        static_assert(std::is_nothrow_destructible_v<ZA2>);
+        static_assert(std::is_nothrow_destructible_v<ZB2>);
+
+        struct ZC {
+            std::variant<Y, int, Y2> z;
+        };
+
+#if _HAS_CXX20
+        static_assert(ZC{Y{}}.z.index() == 0);
+        static_assert(ZC{0}.z.index() == 1);
+        static_assert(ZC{Y2{}}.z.index() == 2);
+#endif // _HAS_CXX20
+
+        static_assert(std::is_nothrow_destructible_v<std::variant<Y, int, Y2>>);
+        static_assert(std::is_nothrow_destructible_v<ZC>);
+    } // namespace gh4901
+
     namespace assign_cv {
         template <class T>
         struct TypeIdentityImpl {
