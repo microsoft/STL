@@ -777,7 +777,8 @@ namespace msvc {
         static_assert(std::is_nothrow_destructible_v<ZA>);
         static_assert(std::is_nothrow_destructible_v<ZB>);
 
-        // Verify that variant::~variant is always noexcept, per N4988 [res.on.exception.handling]/3.
+        // Verify that variant::~variant is noexcept even when an alternative has a potentially-throwing destructor,
+        // per N4988 [res.on.exception.handling]/3.
         struct X2 {
             CONSTEXPR20 ~X2() noexcept(false) {}
         };
@@ -820,6 +821,7 @@ namespace msvc {
 
         static_assert(std::is_nothrow_destructible_v<std::variant<Y, int, Y2>>);
         static_assert(std::is_nothrow_destructible_v<ZC>);
+#undef CONSTEXPR20
     } // namespace gh4901
 
     namespace assign_cv {
