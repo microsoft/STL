@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iterator>
 
-class contiguous_iterator {
+class ContiguousIterator {
 public:
     using value_type        = int;
     using difference_type   = int;
@@ -13,22 +13,22 @@ public:
     int* operator->() const;
     int& operator*() const;
     int& operator[](int) const;
-    contiguous_iterator& operator++();
-    contiguous_iterator operator++(int);
-    contiguous_iterator& operator--();
-    contiguous_iterator operator--(int);
-    contiguous_iterator& operator+=(int);
-    contiguous_iterator& operator-=(int);
-    friend auto operator<=>(contiguous_iterator, contiguous_iterator) = default;
-    friend int operator-(contiguous_iterator, contiguous_iterator);
-    friend contiguous_iterator operator+(contiguous_iterator, int);
-    friend contiguous_iterator operator-(contiguous_iterator, int);
-    friend contiguous_iterator operator+(int, contiguous_iterator);
+    ContiguousIterator& operator++();
+    ContiguousIterator operator++(int);
+    ContiguousIterator& operator--();
+    ContiguousIterator operator--(int);
+    ContiguousIterator& operator+=(int);
+    ContiguousIterator& operator-=(int);
+    friend auto operator<=>(ContiguousIterator, ContiguousIterator) = default;
+    friend int operator-(ContiguousIterator, ContiguousIterator);
+    friend ContiguousIterator operator+(ContiguousIterator, int);
+    friend ContiguousIterator operator-(ContiguousIterator, int);
+    friend ContiguousIterator operator+(int, ContiguousIterator);
 };
 
 // GH-3663 <algorithm>/<iterator>: contiguous iterators with non-ptrdiff_t difference types
 void test() {
     int* p = nullptr;
-    std::copy(p, p, contiguous_iterator{});
-    std::sort(contiguous_iterator{}, contiguous_iterator{});
+    std::copy(p, p, ContiguousIterator{});
+    std::sort(ContiguousIterator{}, ContiguousIterator{});
 }
