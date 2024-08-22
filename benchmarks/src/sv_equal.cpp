@@ -34,17 +34,15 @@ constexpr auto haystack =
 constexpr std::size_t count = 8u;
 
 template <std::size_t length>
-inline constexpr std::array<std::string_view, count> make_svs() {
+constexpr std::array<std::string_view, count> make_svs() {
     std::array<std::string_view, count> result{};
 
-    if constexpr (length == 0) {
-        return result;
+    if constexpr (length != 0) {
+        using namespace std::views;
+
+        std::ranges::copy(haystack | chunk(length) | transform([](auto&& t) { return std::string_view(t); }) | take(count),
+            result.begin());
     }
-
-    using namespace std::views;
-
-    std::ranges::copy(haystack | chunk(length) | transform([](auto&& t) { return std::string_view(t); }) | take(count),
-        result.begin());
 
     return result;
 }
@@ -70,5 +68,7 @@ BENCHMARK(equal<32>);
 BENCHMARK(equal<64>);
 BENCHMARK(equal<128>);
 BENCHMARK(equal<256>);
+
+static_assert(haystack.size() >= count * 256, "haystack is too small");
 
 BENCHMARK_MAIN();
