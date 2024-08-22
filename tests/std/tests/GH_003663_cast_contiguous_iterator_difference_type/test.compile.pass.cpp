@@ -27,7 +27,7 @@ public:
 };
 
 // GH-3663 <algorithm>/<iterator>: contiguous iterators with non-ptrdiff_t difference types
-int main() {
+void test() {
     int* p = nullptr;
     std::copy(p, p, contiguous_iterator{});
     std::sort(contiguous_iterator{}, contiguous_iterator{});
