@@ -26,6 +26,8 @@ public:
     friend ContiguousIterator operator+(int, ContiguousIterator);
 };
 
+static_assert(std::contiguous_iterator<ContiguousIterator>);
+
 // GH-3663 <algorithm>/<iterator>: contiguous iterators with non-ptrdiff_t difference types
 void test() {
     int* p = nullptr;
