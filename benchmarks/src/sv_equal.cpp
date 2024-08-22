@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <array>
 #include <benchmark/benchmark.h>
 #include <cstddef>
 #include <ranges>
 #include <string_view>
-
 
 using namespace std::string_view_literals;
 
@@ -31,13 +31,12 @@ constexpr auto haystack =
     "hendrerit placerat dui,aliquam mollis sem convallis et. Integer vitae urna diam. Phasellus et imperdiet est. "
     "Maecenas auctor facilisisnibh non commodo. Suspendisse iaculis quam "sv;
 
-
 constexpr std::size_t count = 8u;
 
 template <std::size_t length>
 inline constexpr std::array<std::string_view, count> make_svs() {
-
     std::array<std::string_view, count> result{};
+
     if constexpr (length == 0) {
         return result;
     }
