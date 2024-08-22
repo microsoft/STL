@@ -40,7 +40,8 @@ constexpr std::array<std::string_view, count> make_svs() {
     if constexpr (length != 0) {
         using namespace std::views;
 
-        std::ranges::copy(haystack | chunk(length) | transform([](auto&& t) { return std::string_view(t); }) | take(count),
+        std::ranges::copy(
+            haystack | chunk(length) | transform([](auto&& t) { return std::string_view(t); }) | take(count),
             result.begin());
     }
 
