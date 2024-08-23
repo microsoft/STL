@@ -3095,7 +3095,7 @@ _NODISCARD _OutputIt _Fmt_write(
         switch (_Format) {
         case chars_format::hex:
         case chars_format::scientific:
-            if (_Extra_precision != 0) {
+            if (_Extra_precision != 0 && !_Specs._Alt && !_Specs._Localized) {
                 // Trailing zeroes are in front of the exponent
                 while (*--_Exponent_start != _Exponent) {
                 }
