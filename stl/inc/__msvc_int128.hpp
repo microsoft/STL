@@ -1024,9 +1024,9 @@ struct _Signed128 : _Base128 {
     using _Signed_type   = _Signed128;
     using _Unsigned_type = _Unsigned128;
 
-#if !_HAS_CXX17
+#if !_HAS_CXX17 || (_HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)) // TRANSITION, DevCom-10729775
     constexpr _Signed128() noexcept : _Base128{} {}
-#endif // !_HAS_CXX17
+#endif // ^^^ workaround for C++20 MSVC modules and header units; should be guarded for !_HAS_CXX17 only ^^^
 
     using _Base128::_Base128;
     constexpr explicit _Signed128(const _Base128& _That) noexcept : _Base128{_That} {}
