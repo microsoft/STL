@@ -233,6 +233,9 @@ std/language.support/support.limits/support.limits.general/cstdlib.version.compi
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 
+# P3107R5 "Permit An Efficient Implementation Of <print>"
+std/utilities/format/format.formatter/format.formatter.locking/enable_nonlocking_formatter_optimization.compile.pass.cpp FAIL
+
 
 # *** MISSING COMPILER FEATURES ***
 # P1169R4 static operator()
