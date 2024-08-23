@@ -9,7 +9,7 @@
 #include <__msvc_minmax.hpp>
 #include <cstdint>
 #include <cstring>
-#include <wchar.h>
+#include <cwchar>
 #include <xtr1common>
 
 #ifndef _M_ARM64EC
