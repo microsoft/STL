@@ -6077,12 +6077,12 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
-        constexpr bool _1_or_2_bytes_elements = sizeof(_Iter_value_t<_It>) <= 2;
-        constexpr bool _Is_sized              = sized_sentinel_for<_Se, _It>;
+        constexpr bool _Elements_are_1_or_2_bytes = sizeof(_Iter_value_t<_It>) <= 2;
+        constexpr bool _Is_sized                  = sized_sentinel_for<_Se, _It>;
 
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty>
-                      && (_1_or_2_bytes_elements ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
-                                                 : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)
+                      && (_Elements_are_1_or_2_bytes ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
+                                                     : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)
                       && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
@@ -6106,7 +6106,7 @@ namespace ranges {
                 } else
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
                 {
-                    _STL_INTERNAL_STATIC_ASSERT(_1_or_2_bytes_elements);
+                    _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_or_2_bytes);
                     size_t _Count;
                     if constexpr (_Is_sized) {
                         _Count = static_cast<size_t>(_Last - _First);
