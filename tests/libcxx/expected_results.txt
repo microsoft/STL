@@ -837,6 +837,8 @@ std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 
 # Not analyzed. Possible MSVC constexpr bug.
 # note: failure was caused by a read of a variable outside its lifetime
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:1 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:1 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:0 FAIL
