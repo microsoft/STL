@@ -34,11 +34,6 @@ std/utilities/format/format.range/format.range.formatter/format.functions.vforma
 std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
 
-# LLVM-100498: [libc++][test] alg.find.last tests assume that std::array iterators are pointers
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp FAIL
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last_if.pass.cpp FAIL
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last_if_not.pass.cpp FAIL
-
 # LLVM-100502: [libc++][test] Bogus loops in time.cal.ymdlast.nonmembers/comparisons.pass.cpp
 # Note: The :1 (ASAN) configuration doesn't run static analysis.
 std/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/comparisons.pass.cpp:0 FAIL
