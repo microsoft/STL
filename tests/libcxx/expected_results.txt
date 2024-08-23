@@ -37,6 +37,10 @@ std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.p
 # LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
+# LLVM-105878: [libc++][test] fp_compare.h includes non-portable <__config>
+std/numerics/c.math/cmath.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
