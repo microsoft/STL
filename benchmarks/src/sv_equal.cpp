@@ -33,24 +33,24 @@ constexpr auto haystack =
 
 constexpr std::size_t Count = 8u;
 
-template <std::size_t length>
+template <std::size_t Length>
 constexpr std::array<std::string_view, Count> make_svs() {
     std::array<std::string_view, Count> result{};
 
-    if constexpr (length != 0) {
+    if constexpr (Length != 0) {
         using namespace std::views;
 
         std::ranges::copy(
-            haystack | chunk(length) | transform([](auto&& t) { return std::string_view(t); }) | take(Count),
+            haystack | chunk(Length) | transform([](auto&& t) { return std::string_view(t); }) | take(Count),
             result.begin());
     }
 
     return result;
 }
 
-template <std::size_t length>
+template <std::size_t Length>
 void equal(benchmark::State& state) {
-    constexpr auto arr = make_svs<length>();
+    constexpr auto arr = make_svs<Length>();
     benchmark::DoNotOptimize(arr);
 
     for (auto _ : state) {
