@@ -1221,10 +1221,6 @@ std/atomics/atomics.ref/operator_plus_equals.pass.cpp SKIPPED
 std/atomics/atomics.ref/store.pass.cpp SKIPPED
 std/atomics/atomics.ref/wait.pass.cpp SKIPPED
 
-# Not analyzed. Attempting to dereference `void *`.
-std/utilities/memory/unique.ptr/noexcept_operator_star.compile.pass.cpp FAIL
-std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.observers/dereference.single.pass.cpp FAIL
-
 # Not analyzed. Attempting to delete `nullptr_t`.
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter.pass.cpp FAIL
 
