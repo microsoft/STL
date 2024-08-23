@@ -49,7 +49,7 @@ constexpr std::array<std::string_view, Count> make_svs() {
 }
 
 template <std::size_t Length>
-void equal(benchmark::State& state) {
+void sv_equal(benchmark::State& state) {
     constexpr auto arr = make_svs<Length>();
     benchmark::DoNotOptimize(arr);
 
@@ -62,13 +62,13 @@ void equal(benchmark::State& state) {
     }
 }
 
-BENCHMARK(equal<0>);
-BENCHMARK(equal<8>);
-BENCHMARK(equal<16>);
-BENCHMARK(equal<32>);
-BENCHMARK(equal<64>);
-BENCHMARK(equal<128>);
-BENCHMARK(equal<256>);
+BENCHMARK(sv_equal<0>);
+BENCHMARK(sv_equal<8>);
+BENCHMARK(sv_equal<16>);
+BENCHMARK(sv_equal<32>);
+BENCHMARK(sv_equal<64>);
+BENCHMARK(sv_equal<128>);
+BENCHMARK(sv_equal<256>);
 
 static_assert(haystack.size() >= Count * 256, "haystack is too small");
 
