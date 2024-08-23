@@ -31,17 +31,17 @@ constexpr auto haystack =
     "hendrerit placerat dui,aliquam mollis sem convallis et. Integer vitae urna diam. Phasellus et imperdiet est. "
     "Maecenas auctor facilisisnibh non commodo. Suspendisse iaculis quam "sv;
 
-constexpr std::size_t count = 8u;
+constexpr std::size_t Count = 8u;
 
 template <std::size_t length>
-constexpr std::array<std::string_view, count> make_svs() {
-    std::array<std::string_view, count> result{};
+constexpr std::array<std::string_view, Count> make_svs() {
+    std::array<std::string_view, Count> result{};
 
     if constexpr (length != 0) {
         using namespace std::views;
 
         std::ranges::copy(
-            haystack | chunk(length) | transform([](auto&& t) { return std::string_view(t); }) | take(count),
+            haystack | chunk(length) | transform([](auto&& t) { return std::string_view(t); }) | take(Count),
             result.begin());
     }
 
@@ -70,6 +70,6 @@ BENCHMARK(equal<64>);
 BENCHMARK(equal<128>);
 BENCHMARK(equal<256>);
 
-static_assert(haystack.size() >= count * 256, "haystack is too small");
+static_assert(haystack.size() >= Count * 256, "haystack is too small");
 
 BENCHMARK_MAIN();
