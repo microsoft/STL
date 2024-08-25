@@ -378,7 +378,11 @@ public:
         _Variant_storage<_Rest...> _Tail;
     };
 
-    _CONSTEXPR20 ~_Variant_storage_() noexcept {
+    _CONSTEXPR20 ~_Variant_storage_()
+#ifndef __clang__ // TRANSITION, LLVM-59854
+        noexcept
+#endif // ^^^ no workaround ^^^
+    {
         // explicitly non-trivial destructor (which would otherwise be defined as deleted
         // since the class has a variant member with a non-trivial destructor)
     }

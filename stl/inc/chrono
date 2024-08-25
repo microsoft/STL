@@ -1944,65 +1944,75 @@ namespace chrono {
             return _Elapsed_offset;
         }
 
+        _NODISCARD friend constexpr bool operator==(const leap_second& _Left, const leap_second& _Right) noexcept {
+            return _Left.date() == _Right.date();
+        }
+        template <class _Duration>
+        _NODISCARD friend constexpr bool operator==(
+            const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+            return _Left.date() == _Right;
+        }
+
+        template <class _Duration>
+        _NODISCARD friend constexpr bool operator<(
+            const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+            return _Left.date() < _Right;
+        }
+        template <class _Duration>
+        _NODISCARD friend constexpr bool operator<(
+            const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+            return _Left < _Right.date();
+        }
+
+        template <class _Duration>
+        _NODISCARD friend constexpr bool operator>(
+            const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+            return _Right < _Left.date();
+        }
+        template <class _Duration>
+        _NODISCARD friend constexpr bool operator>(
+            const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+            return _Right.date() < _Left;
+        }
+
+        template <class _Duration>
+        _NODISCARD friend constexpr bool operator<=(
+            const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+            return !(_Right < _Left.date());
+        }
+        template <class _Duration>
+        _NODISCARD friend constexpr bool operator<=(
+            const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+            return !(_Right.date() < _Left);
+        }
+
+        template <class _Duration>
+        _NODISCARD friend constexpr bool operator>=(
+            const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+            return !(_Left.date() < _Right);
+        }
+        template <class _Duration>
+        _NODISCARD friend constexpr bool operator>=(
+            const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+            return !(_Left < _Right.date());
+        }
+
+        template <class _Duration>
+            requires three_way_comparable_with<sys_seconds, sys_time<_Duration>>
+        _NODISCARD friend constexpr auto operator<=>(
+            const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+            return _Left.date() <=> _Right;
+        }
+        _NODISCARD friend constexpr strong_ordering operator<=>(
+            const leap_second& _Left, const leap_second& _Right) noexcept {
+            return _Left.date() <=> _Right.date();
+        }
+
     private:
         sys_seconds _Date;
         bool _Is_positive;
         seconds _Elapsed_offset;
     };
-
-    _EXPORT_STD _NODISCARD constexpr bool operator==(const leap_second& _Left, const leap_second& _Right) noexcept {
-        return _Left.date() == _Right.date();
-    }
-    _EXPORT_STD template <class _Duration>
-    _NODISCARD constexpr bool operator==(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
-        return _Left.date() == _Right;
-    }
-
-    _EXPORT_STD template <class _Duration>
-    _NODISCARD constexpr bool operator<(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
-        return _Left.date() < _Right;
-    }
-    _EXPORT_STD template <class _Duration>
-    _NODISCARD constexpr bool operator<(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
-        return _Left < _Right.date();
-    }
-
-    _EXPORT_STD template <class _Duration>
-    _NODISCARD constexpr bool operator>(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
-        return _Right < _Left.date();
-    }
-    _EXPORT_STD template <class _Duration>
-    _NODISCARD constexpr bool operator>(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
-        return _Right.date() < _Left;
-    }
-
-    _EXPORT_STD template <class _Duration>
-    _NODISCARD constexpr bool operator<=(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
-        return !(_Right < _Left.date());
-    }
-    _EXPORT_STD template <class _Duration>
-    _NODISCARD constexpr bool operator<=(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
-        return !(_Right.date() < _Left);
-    }
-
-    _EXPORT_STD template <class _Duration>
-    _NODISCARD constexpr bool operator>=(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
-        return !(_Left.date() < _Right);
-    }
-    _EXPORT_STD template <class _Duration>
-    _NODISCARD constexpr bool operator>=(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
-        return !(_Left < _Right.date());
-    }
-
-    _EXPORT_STD template <class _Duration>
-        requires three_way_comparable_with<sys_seconds, sys_time<_Duration>>
-    _NODISCARD constexpr auto operator<=>(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
-        return _Left.date() <=> _Right;
-    }
-    _EXPORT_STD _NODISCARD constexpr strong_ordering operator<=>(
-        const leap_second& _Left, const leap_second& _Right) noexcept {
-        return _Left.date() <=> _Right.date();
-    }
 
     // [time.zone.link]
 

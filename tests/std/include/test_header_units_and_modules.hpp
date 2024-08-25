@@ -593,6 +593,14 @@ void test_random() {
     minstd_rand0 lcg;
     lcg.discard(9999);
     assert(lcg() == 1043618065); // N4868 [rand.predef]/1
+
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, VSO-2226569
+    // Test coverage for GH-4899 "Standard Library Modules: uniform_real_distribution emits
+    // error C2512: 'std::_Unsigned128': no appropriate default constructor available":
+    const double val = generate_canonical<double, 53>(lcg);
+    assert(val >= 0.0);
+    assert(val < 1.0);
+#endif // ^^^ no workaround ^^^
 }
 
 void test_ranges() {

@@ -10203,7 +10203,7 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist, _Pr _Pr
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::minmax must not be empty. (N4971 [alg.min.max]/21)");
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+    if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _Result = _STD _Minmax_vectorized(_Ilist.begin(), _Ilist.end());
             return {static_cast<_Ty>(_Result._Min), static_cast<_Ty>(_Result._Max)};
@@ -10332,13 +10332,21 @@ namespace ranges {
 
             using _Vty = iter_value_t<_It>;
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
-                          && sized_sentinel_for<_Se, _It>) {
-                if (!_STD is_constant_evaluated()) {
-                    const auto _First_ptr = _STD to_address(_First);
-                    const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                    const auto _Result    = _STD _Minmax_vectorized(_First_ptr, _Last_ptr);
-                    return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
+            if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>) {
+                if constexpr (_Is_min_max_value_optimization_safe<_It, _Pr>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _First_ptr = _STD to_address(_First);
+                        const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                        const auto _Result    = _STD _Minmax_vectorized(_First_ptr, _Last_ptr);
+                        return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
+                    }
+                } else if constexpr (_Is_min_max_optimization_safe<_It, _Pr>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _First_ptr = _STD to_address(_First);
+                        const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                        const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
+                        return {*static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
+                    }
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS
