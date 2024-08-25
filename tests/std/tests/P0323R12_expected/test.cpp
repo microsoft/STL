@@ -2232,8 +2232,8 @@ void test_reinit_regression() {
     }
 }
 
-// Defend against regression of llvm-project#59854, in which clang is confused
-// by the explicit `noexcept` on `expected`'s destructors.
+// Defend against regression of LLVM-59854, in which clang is confused by the
+// explicit `noexcept` on `expected`'s destructors.
 struct Data {
     vector<int> vec_;
     constexpr Data(initializer_list<int> il) : vec_(il) {}

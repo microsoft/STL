@@ -34,20 +34,15 @@ std/utilities/format/format.range/format.range.formatter/format.functions.vforma
 std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
 
-# LLVM-100498: [libc++][test] alg.find.last tests assume that std::array iterators are pointers
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp FAIL
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last_if.pass.cpp FAIL
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last_if_not.pass.cpp FAIL
-
-# LLVM-100502: [libc++][test] Bogus loops in time.cal.ymdlast.nonmembers/comparisons.pass.cpp
-# Note: The :1 (ASAN) configuration doesn't run static analysis.
-std/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/comparisons.pass.cpp:0 FAIL
-
-# LLVM-100504: [libc++][test] Fix Clang -Wunused-variable warnings in time.zone.members/to_sys.pass.cpp
-std/time/time.zone/time.zone.timezone/time.zone.members/to_sys.pass.cpp:2 FAIL
-
 # LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
+
+# LLVM-105878: [libc++][test] fp_compare.h includes non-portable <__config>
+std/numerics/c.math/cmath.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp FAIL
+
+# LLVM-105966: [libc++][test] Fix is_always_lock_free test
+std/atomics/atomics.lockfree/is_always_lock_free.cpp FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
@@ -84,9 +79,6 @@ std/numerics/rand/rand.util/rand.util.canonical/generate_canonical.pass.cpp FAIL
 
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 std/language.support/support.limits/support.limits.general/chrono.version.compile.pass.cpp FAIL
-
-# Test expects __cpp_lib_three_way_comparison to have the old value 201711L for P0768R1; we define the C++20 value 201907L for P1614R2.
-std/language.support/support.limits/support.limits.general/compare.version.compile.pass.cpp FAIL
 
 # Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
 std/language.support/support.limits/support.limits.general/algorithm.version.compile.pass.cpp FAIL
@@ -243,6 +235,9 @@ std/language.support/support.limits/support.limits.general/cstdlib.version.compi
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
+
+# P3107R5 "Permit An Efficient Implementation Of <print>"
+std/utilities/format/format.formatter/format.formatter.locking/enable_nonlocking_formatter_optimization.compile.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -815,6 +810,8 @@ std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 
 # Not analyzed. Possible MSVC constexpr bug.
 # note: failure was caused by a read of a variable outside its lifetime
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:1 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:1 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:0 FAIL
@@ -908,6 +905,7 @@ std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requir
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_piecewise_pair_evil.pass.cpp FAIL
 
 # Not analyzed, failing due to constexpr step limits.
+std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp:2 FAIL
 std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp FAIL
 std/containers/sequences/vector.bool/append_range.pass.cpp FAIL
@@ -1014,11 +1012,6 @@ std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.
 std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:1 FAIL
-
-# Not analyzed. constexpr evaluation fails with note: subobject '_Val' is not initialized
-std/ranges/range.adaptors/range.join/end.pass.cpp:2 FAIL
-std/ranges/range.adaptors/range.join/range.join.sentinel/ctor.parent.pass.cpp:2 FAIL
-std/ranges/range.adaptors/range.join/range.join.sentinel/eq.pass.cpp:2 FAIL
 
 # Not analyzed. constexpr evaluation fails with note: failure was caused by out of range index MEOW; allowed range is 0 <= index < 2
 std/ranges/range.adaptors/range.join/adaptor.pass.cpp:0 FAIL
@@ -1211,10 +1204,6 @@ std/atomics/atomics.ref/operator_plus_equals.pass.cpp SKIPPED
 std/atomics/atomics.ref/store.pass.cpp SKIPPED
 std/atomics/atomics.ref/wait.pass.cpp SKIPPED
 
-# Not analyzed. Attempting to dereference `void *`.
-std/utilities/memory/unique.ptr/noexcept_operator_star.compile.pass.cpp FAIL
-std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.observers/dereference.single.pass.cpp FAIL
-
 # Not analyzed. Attempting to delete `nullptr_t`.
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter.pass.cpp FAIL
 
@@ -1237,6 +1226,12 @@ std/containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp FAIL
 # MSVC truncation warnings.
 # Clang assertion: std::hermite(n, +inf) == inf
 std/numerics/c.math/hermite.pass.cpp FAIL
+
+# Not analyzed. Test coverage for LLVM-104496 uses span<Incomplete>.
+std/containers/views/views.span/span.cons/copy.pass.cpp FAIL
+
+# Not analyzed. LLVM-103409 added a test to verify that std::optional's internal constructors aren't visible to users.
+std/utilities/optional/optional.object/optional.object.ctor/gh_101960_internal_ctor.compile.pass.cpp FAIL
 
 
 # *** XFAILs WHICH PASS ***

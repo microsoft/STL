@@ -12,6 +12,7 @@
 #include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <cwchar>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -4658,7 +4659,7 @@ _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     if constexpr (is_pointer_v<_OutCtgIt>) {
         return reinterpret_cast<_OutCtgIt>(_Dest_ch + _Count);
     } else {
-        return _Dest + (_LastPtr - _FirstPtr);
+        return _Dest + static_cast<_Iter_diff_t<_OutCtgIt>>(_LastPtr - _FirstPtr);
     }
 }
 
@@ -4983,7 +4984,7 @@ _CtgIt2 _Copy_backward_memmove(_CtgIt1 _First, _CtgIt1 _Last, _CtgIt2 _Dest) {
     if constexpr (is_pointer_v<_CtgIt2>) {
         return static_cast<_CtgIt2>(_Result);
     } else {
-        return _Dest - (_LastPtr - _FirstPtr);
+        return _Dest - static_cast<_Iter_diff_t<_CtgIt2>>(_LastPtr - _FirstPtr);
     }
 }
 
@@ -6009,17 +6010,27 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
                 return _First + (_Result - _First_ptr);
             }
 #else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
-            if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
+            if constexpr (sizeof(_Iter_value_t<_InIt>) <= 2) {
                 const auto _First_ptr = _STD _To_address(_First);
-                const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_InIt>>*>(
-                    _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
+                const auto _Count     = static_cast<size_t>(_Last - _First);
+
+                using _Ptr_t = remove_reference_t<_Iter_ref_t<_InIt>>*;
+                _Ptr_t _Result;
+
+                if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
+                    _Result = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+                } else {
+                    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_InIt>) == 2);
+                    _Result = reinterpret_cast<_Ptr_t>(const_cast<wchar_t*>(_CSTD wmemchr(
+                        reinterpret_cast<const wchar_t*>(_First_ptr), static_cast<wchar_t>(_Val), _Count)));
+                }
+
                 if constexpr (is_pointer_v<_InIt>) {
                     return _Result ? _Result : _Last;
                 } else {
                     return _Result ? _First + (_Result - _First_ptr) : _Last;
                 }
             }
-            // TRANSITION, DevCom-1614562: not trying wmemchr
 #endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
         }
     }
@@ -6062,14 +6073,12 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
-        // TRANSITION, DevCom-1614562: not trying wmemchr
-        // Only single-byte elements are suitable for unsized optimization
-        constexpr bool _Single_byte_elements = sizeof(_Iter_value_t<_It>) == 1;
-        constexpr bool _Is_sized             = sized_sentinel_for<_Se, _It>;
+        constexpr bool _Elements_are_1_or_2_bytes = sizeof(_Iter_value_t<_It>) <= 2;
+        constexpr bool _Is_sized                  = sized_sentinel_for<_Se, _It>;
 
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty>
-                      && (_Single_byte_elements ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
-                                                : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)
+                      && (_Elements_are_1_or_2_bytes ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
+                                                     : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)
                       && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
@@ -6087,13 +6096,13 @@ namespace ranges {
                 _Ptr_t _Result;
 #if _USE_STD_VECTOR_ALGORITHMS
                 if constexpr (_Is_sized) {
-                    // When _Is_sized && _Single_byte_elements, prefer this over memchr() for performance
+                    // When _Is_sized && _Elements_are_1_or_2_bytes, prefer this over memchr()/wmemchr() for performance
                     const auto _Last_ptr = _First_ptr + (_Last - _First);
                     _Result              = _STD _Find_vectorized(_First_ptr, _Last_ptr, _Val);
                 } else
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
                 {
-                    _STL_INTERNAL_STATIC_ASSERT(_Single_byte_elements);
+                    _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_or_2_bytes);
                     size_t _Count;
                     if constexpr (_Is_sized) {
                         _Count = static_cast<size_t>(_Last - _First);
@@ -6101,7 +6110,14 @@ namespace ranges {
                         _Count = SIZE_MAX;
                     }
 
-                    _Result = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+                    if constexpr (sizeof(_Iter_value_t<_It>) == 1) {
+                        _Result =
+                            static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+                    } else {
+                        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_It>) == 2);
+                        _Result = reinterpret_cast<_Ptr_t>(const_cast<wchar_t*>(_CSTD wmemchr(
+                            reinterpret_cast<const wchar_t*>(_First_ptr), static_cast<wchar_t>(_Val), _Count)));
+                    }
 
                     if constexpr (_Is_sized) {
                         if (_Result == nullptr) {
@@ -6801,6 +6817,24 @@ constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms
 #endif // _HAS_CXX20
             is_same<_Pr, less<>>, is_same<_Pr, less<_Elem>>>>; // predicate is less
 
+// Unlike the position-based vectorized implementation, the value-based vectorized implementation
+// does not always produce the expected results for floating-point types.
+//
+// Efficient vectorization needs to find the vertical minmax first, and then the horizontal one.
+// This alters the order of comparison: index zero element is first compared against
+// vector size equal index element and only in the end against index one element.
+// With equivalent but distinguishable +0.0 and -0.0 values, the altered comparison order
+// will not produce the expected result in some cases (will return +0.0 instead of -0.0 or the reverse).
+//
+// The result is still acceptable for /fp:fast when +0.0 / -0.0 are not expected to be properly distinguished,
+// and the compiler itself takes advantage of it.
+template <class _Iter, class _Pr, class _Elem = _Iter_value_t<_Iter>>
+constexpr bool _Is_min_max_value_optimization_safe = // Activate the vector algorithms for ranges::min/max?
+#ifndef _M_FP_FAST
+    !is_floating_point_v<_Elem> &&
+#endif // ^^^ !defined(_M_FP_FAST) ^^^
+    _Is_min_max_optimization_safe<_Iter, _Pr, _Elem>;
+
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
 #if _USE_STD_VECTOR_ALGORITHMS
@@ -6931,7 +6965,7 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::max must not be empty. (N4971 [alg.min.max]/13)");
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+    if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_Is_constant_evaluated()) {
             return static_cast<_Ty>(_STD _Max_vectorized(_Ilist.begin(), _Ilist.end()));
         }
@@ -6977,7 +7011,7 @@ namespace ranges {
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::max must not be empty. (N4971 [alg.min.max]/13)");
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
                     return static_cast<_Ty>(_STD _Max_vectorized(_First, _Last));
                 }
@@ -6996,7 +7030,7 @@ namespace ranges {
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::max must not be empty. (N4971 [alg.min.max]/13)");
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<decltype(_UFirst), _Pr>
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>
                           && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_UFirst);
@@ -7155,7 +7189,7 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::min must not be empty. (N4971 [alg.min.max]/5)");
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+    if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_Is_constant_evaluated()) {
             return static_cast<_Ty>(_STD _Min_vectorized(_Ilist.begin(), _Ilist.end()));
         }
@@ -7195,7 +7229,7 @@ namespace ranges {
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::min must not be empty. (N4971 [alg.min.max]/5)");
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
                     return static_cast<_Ty>(_STD _Min_vectorized(_First, _Last));
                 }
@@ -7214,7 +7248,7 @@ namespace ranges {
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::min must not be empty. (N4971 [alg.min.max]/5)");
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<decltype(_UFirst), _Pr>
+            if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>
                           && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_UFirst);
