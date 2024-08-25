@@ -4,13 +4,12 @@
 #include <algorithm>
 #include <bitset>
 #include <cassert>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
-#include <cstdio>
 #include <cstdlib>
 #include <deque>
 #include <functional>
-#include <isa_availability.h>
 #include <limits>
 #include <list>
 #include <random>
@@ -25,48 +24,9 @@
 #endif // _HAS_CXX20
 
 #include "test_min_max_element_support.hpp"
+#include "test_vector_algorithms_support.hpp"
 
 using namespace std;
-
-#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
-#ifdef __clang__
-#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
-#endif // __clang__
-
-void initialize_randomness(mt19937_64& gen) {
-    constexpr size_t n = mt19937_64::state_size;
-    constexpr size_t w = mt19937_64::word_size;
-    static_assert(w % 32 == 0, "w should be evenly divisible by 32");
-    constexpr size_t k = w / 32;
-
-    vector<uint32_t> vec(n * k);
-
-    random_device rd;
-    generate(vec.begin(), vec.end(), ref(rd));
-
-    printf("This is a randomized test.\n");
-    printf("DO NOT IGNORE/RERUN ANY FAILURES.\n");
-    printf("You must report them to the STL maintainers.\n\n");
-
-    printf("Seed vector: ");
-    for (const auto& e : vec) {
-        printf("%u,", e);
-    }
-    printf("\n");
-
-    seed_seq seq(vec.cbegin(), vec.cend());
-    gen.seed(seq);
-}
-
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
-extern "C" long __isa_enabled;
-
-void disable_instructions(ISA_AVAILABILITY isa) {
-    __isa_enabled &= ~(1UL << static_cast<unsigned long>(isa));
-}
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
-
-constexpr size_t dataCount = 1024;
 
 template <class FwdIt, class T>
 ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
@@ -386,31 +346,6 @@ void test_min_max_element(mt19937_64& gen) {
     test_case_min_max_element(input);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         input.push_back(static_cast<T>(dis(gen)));
-        test_case_min_max_element(input);
-    }
-}
-
-template <class T>
-void test_min_max_element_floating(mt19937_64& gen) {
-    normal_distribution<T> dis(-100000.0, 100000.0);
-
-    constexpr auto input_of_input_size = dataCount / 2;
-    vector<T> input_of_input(input_of_input_size);
-    input_of_input[0] = -numeric_limits<T>::infinity();
-    input_of_input[1] = +numeric_limits<T>::infinity();
-    input_of_input[2] = -0.0;
-    input_of_input[3] = +0.0;
-    for (size_t i = 4; i < input_of_input_size; ++i) {
-        input_of_input[i] = dis(gen);
-    }
-
-    uniform_int_distribution<size_t> idx_dis(0, input_of_input_size - 1);
-
-    vector<T> input;
-    input.reserve(dataCount);
-    test_case_min_max_element(input);
-    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        input.push_back(input_of_input[idx_dis(gen)]);
         test_case_min_max_element(input);
     }
 }
@@ -900,10 +835,6 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_min_max_element<long long>(gen);
     test_min_max_element<unsigned long long>(gen);
 
-    test_min_max_element_floating<float>(gen);
-    test_min_max_element_floating<double>(gen);
-    test_min_max_element_floating<long double>(gen);
-
     test_min_max_element_pointers(gen);
 
     test_min_max_element_special_cases<int8_t, 16>(); // SSE2 vectors
@@ -1215,27 +1146,10 @@ int main() {
 #if _HAS_CXX20
     assert(test_constexpr());
 #endif // _HAS_CXX20
-
-    mt19937_64 gen;
-    initialize_randomness(gen);
-
-    test_vector_algorithms(gen);
-    test_various_containers();
-    test_bitset(gen);
-    test_string(gen);
-#ifndef _M_CEE_PURE
-#if defined(_M_IX86) || defined(_M_X64)
-    disable_instructions(__ISA_AVAILABLE_AVX2);
-    test_vector_algorithms(gen);
-    test_various_containers();
-    test_bitset(gen);
-    test_string(gen);
-
-    disable_instructions(__ISA_AVAILABLE_SSE42);
-    test_vector_algorithms(gen);
-    test_various_containers();
-    test_bitset(gen);
-    test_string(gen);
-#endif // defined(_M_IX86) || defined(_M_X64)
-#endif // _M_CEE_PURE
+    run_randomized_tests_with_different_isa_levels([](mt19937_64& gen) {
+        test_vector_algorithms(gen);
+        test_various_containers();
+        test_bitset(gen);
+        test_string(gen);
+    });
 }

@@ -353,22 +353,22 @@ unordered_set(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Hasher, _Allo
     -> unordered_set<_Kty, _Hasher, equal_to<_Kty>, _Alloc>;
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Hasher = hash<_RANGES range_value_t<_Rng>>,
-    class _Keyeq = equal_to<_RANGES range_value_t<_Rng>>, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
-    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>, int> = 0>
+template <_RANGES input_range _Rng, _Hasher_for_container _Hasher = hash<_RANGES range_value_t<_Rng>>,
+    class _Keyeq                    = equal_to<_RANGES range_value_t<_Rng>>,
+    _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
+    requires (!_Allocator_for_container<_Keyeq>)
 unordered_set(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
     _Alloc = _Alloc()) -> unordered_set<_RANGES range_value_t<_Rng>, _Hasher, _Keyeq, _Alloc>;
 
-template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
 unordered_set(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Alloc) -> unordered_set<_RANGES range_value_t<_Rng>,
     hash<_RANGES range_value_t<_Rng>>, equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
 
-template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
 unordered_set(from_range_t, _Rng&&, _Alloc) -> unordered_set<_RANGES range_value_t<_Rng>,
     hash<_RANGES range_value_t<_Rng>>, equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
 
-template <_RANGES input_range _Rng, class _Hasher, class _Alloc,
-    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
+template <_RANGES input_range _Rng, _Hasher_for_container _Hasher, _Allocator_for_container _Alloc>
 unordered_set(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
     -> unordered_set<_RANGES range_value_t<_Rng>, _Hasher, equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23
@@ -696,23 +696,23 @@ unordered_multiset(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Hasher, 
     -> unordered_multiset<_Kty, _Hasher, equal_to<_Kty>, _Alloc>;
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Hasher = hash<_RANGES range_value_t<_Rng>>,
-    class _Keyeq = equal_to<_RANGES range_value_t<_Rng>>, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
-    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, negation<_Is_allocator<_Keyeq>>, _Is_allocator<_Alloc>>, int> = 0>
+template <_RANGES input_range _Rng, _Hasher_for_container _Hasher = hash<_RANGES range_value_t<_Rng>>,
+    class _Keyeq                    = equal_to<_RANGES range_value_t<_Rng>>,
+    _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
+    requires (!_Allocator_for_container<_Keyeq>)
 unordered_multiset(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
     _Alloc = _Alloc()) -> unordered_multiset<_RANGES range_value_t<_Rng>, _Hasher, _Keyeq, _Alloc>;
 
-template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
 unordered_multiset(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Alloc)
     -> unordered_multiset<_RANGES range_value_t<_Rng>, hash<_RANGES range_value_t<_Rng>>,
         equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
 
-template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
 unordered_multiset(from_range_t, _Rng&&, _Alloc) -> unordered_multiset<_RANGES range_value_t<_Rng>,
     hash<_RANGES range_value_t<_Rng>>, equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
 
-template <_RANGES input_range _Rng, class _Hasher, class _Alloc,
-    enable_if_t<conjunction_v<_Is_hasher<_Hasher>, _Is_allocator<_Alloc>>, int> = 0>
+template <_RANGES input_range _Rng, _Hasher_for_container _Hasher, _Allocator_for_container _Alloc>
 unordered_multiset(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Hasher, _Alloc)
     -> unordered_multiset<_RANGES range_value_t<_Rng>, _Hasher, equal_to<_RANGES range_value_t<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23

@@ -1439,7 +1439,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD_FRIEND bool operator==(const slice& _Left, const slice& _Right) noexcept /* strengthened */ {
+    _NODISCARD friend bool operator==(const slice& _Left, const slice& _Right) noexcept /* strengthened */ {
         return _Left.start() == _Right.start() && _Left.size() == _Right.size() && _Left.stride() == _Right.stride();
     }
 #endif // _HAS_CXX20

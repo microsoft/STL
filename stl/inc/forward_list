@@ -1561,8 +1561,7 @@ forward_list(_Iter, _Iter, _Alloc = _Alloc()) -> forward_list<_Iter_value_t<_Ite
 #endif // _HAS_CXX17
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
-    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
 forward_list(from_range_t, _Rng&&, _Alloc = _Alloc()) -> forward_list<_RANGES range_value_t<_Rng>, _Alloc>;
 #endif // _HAS_CXX23
 

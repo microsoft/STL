@@ -359,6 +359,12 @@ STATIC_ASSERT(__cpp_lib_format == 202304L);
 #error __cpp_lib_format is defined
 #endif
 
+#if _HAS_CXX23
+STATIC_ASSERT(__cpp_lib_format_ranges == 202207L);
+#elif defined(__cpp_lib_format_ranges)
+#error __cpp_lib_format_ranges is defined
+#endif
+
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_format_uchar == 202311L);
 #elif defined(__cpp_lib_format_uchar)
@@ -377,6 +383,10 @@ STATIC_ASSERT(__cpp_lib_forward_like == 202207L);
 #error __cpp_lib_forward_like is defined
 #endif
 
+STATIC_ASSERT(__cpp_lib_freestanding_algorithm == 202311L);
+
+STATIC_ASSERT(__cpp_lib_freestanding_array == 202311L);
+
 STATIC_ASSERT(__cpp_lib_freestanding_char_traits == 202306L);
 
 #if _HAS_CXX17
@@ -393,15 +403,33 @@ STATIC_ASSERT(__cpp_lib_freestanding_cwchar == 202306L);
 
 STATIC_ASSERT(__cpp_lib_freestanding_errc == 202306L);
 
+#if _HAS_CXX23
+STATIC_ASSERT(__cpp_lib_freestanding_expected == 202311L);
+#elif defined(__cpp_lib_freestanding_expected)
+#error __cpp_lib_freestanding_expected is defined
+#endif
+
 STATIC_ASSERT(__cpp_lib_freestanding_feature_test_macros == 202306L);
 
 STATIC_ASSERT(__cpp_lib_freestanding_functional == 202306L);
 
 STATIC_ASSERT(__cpp_lib_freestanding_iterator == 202306L);
 
+#if _HAS_CXX23
+STATIC_ASSERT(__cpp_lib_freestanding_mdspan == 202311L);
+#elif defined(__cpp_lib_freestanding_mdspan)
+#error __cpp_lib_freestanding_mdspan is defined
+#endif
+
 STATIC_ASSERT(__cpp_lib_freestanding_memory == 202306L);
 
 STATIC_ASSERT(__cpp_lib_freestanding_operator_new == 202306L);
+
+#if _HAS_CXX17
+STATIC_ASSERT(__cpp_lib_freestanding_optional == 202311L);
+#elif defined(__cpp_lib_freestanding_optional)
+#error __cpp_lib_freestanding_optional is defined
+#endif
 
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_freestanding_ranges == 202306L);
@@ -411,9 +439,21 @@ STATIC_ASSERT(__cpp_lib_freestanding_ranges == 202306L);
 
 STATIC_ASSERT(__cpp_lib_freestanding_ratio == 202306L);
 
+#if _HAS_CXX17
+STATIC_ASSERT(__cpp_lib_freestanding_string_view == 202311L);
+#elif defined(__cpp_lib_freestanding_string_view)
+#error __cpp_lib_freestanding_string_view is defined
+#endif
+
 STATIC_ASSERT(__cpp_lib_freestanding_tuple == 202306L);
 
 STATIC_ASSERT(__cpp_lib_freestanding_utility == 202306L);
+
+#if _HAS_CXX17
+STATIC_ASSERT(__cpp_lib_freestanding_variant == 202311L);
+#elif defined(__cpp_lib_freestanding_variant)
+#error __cpp_lib_freestanding_variant is defined
+#endif
 
 #if _HAS_CXX17
 STATIC_ASSERT(__cpp_lib_gcd_lcm == 201606L);
@@ -644,7 +684,7 @@ STATIC_ASSERT(__cpp_lib_optional == 201606L);
 #endif
 
 #if _HAS_CXX23
-STATIC_ASSERT(__cpp_lib_out_ptr == 202106L);
+STATIC_ASSERT(__cpp_lib_out_ptr == 202311L);
 #elif defined(__cpp_lib_out_ptr)
 #error __cpp_lib_out_ptr is defined
 #endif
@@ -670,7 +710,7 @@ STATIC_ASSERT(__cpp_lib_print == 202207L);
 STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 
 #if _HAS_CXX23
-STATIC_ASSERT(__cpp_lib_ranges == 202302L);
+STATIC_ASSERT(__cpp_lib_ranges == 202406L);
 #elif _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #elif defined(__cpp_lib_ranges)

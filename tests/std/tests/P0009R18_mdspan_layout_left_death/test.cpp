@@ -59,7 +59,10 @@ void test_call_operator() {
 void test_stride_function() {
     layout_left::mapping<extents<int, 3>> m;
     // Value of i must be less than extents_type::rank()
+#pragma warning(push)
+#pragma warning(disable : 28020) // yay, /analyze catches this mistake at compile time!
     (void) m.stride(1);
+#pragma warning(pop)
 }
 
 int main(int argc, char* argv[]) {
