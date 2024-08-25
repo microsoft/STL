@@ -201,18 +201,20 @@ template <class _Ty1, class _Ty2>
 concept _Different_from = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
 template <class>
-constexpr bool _Is_std_array_v = false;
-
-template <class _Ty, size_t _Size>
-constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
-
-template <class>
 constexpr bool _Is_subrange_v = false;
 
 #if _HAS_CXX23
-template <class _Ty>
-constexpr bool _Tuple_like_impl =
-    _Is_specialization_v<_Ty, tuple> || _Is_specialization_v<_Ty, pair> || _Is_std_array_v<_Ty> || _Is_subrange_v<_Ty>;
+template <class>
+constexpr bool _Tuple_like_impl = false;
+
+template <class... _Types>
+constexpr bool _Tuple_like_impl<tuple<_Types...>> = true;
+
+template <class _Ty1, class _Ty2>
+constexpr bool _Tuple_like_impl<pair<_Ty1, _Ty2>> = true;
+
+template <class _Ty, size_t _Size>
+constexpr bool _Tuple_like_impl<array<_Ty, _Size>> = true;
 
 template <class _Ty>
 concept _Tuple_like = _Tuple_like_impl<remove_cvref_t<_Ty>>;
