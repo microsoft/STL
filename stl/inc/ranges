@@ -1051,11 +1051,12 @@ namespace ranges {
             }
 
             template <class _Ty1, class _Ty2>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty1&& _Val1, _Ty2&& _Val2) _CONST_CALL_OPERATOR
-                noexcept(noexcept(iota_view(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2))))
-                requires requires { iota_view(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2)); }
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
+                _Ty1&& _Start, _Ty2&& _Bound) _CONST_CALL_OPERATOR
+                noexcept(noexcept(iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound))))
+                requires requires { iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound)); }
             {
-                return iota_view(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
+                return iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound));
             }
         };
 
@@ -1306,11 +1307,12 @@ namespace ranges {
             }
 
             template <class _Ty1, class _Ty2>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty1&& _Val1, _Ty2&& _Val2) _CONST_CALL_OPERATOR
-                noexcept(noexcept(repeat_view(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2))))
-                requires requires { repeat_view(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2)); }
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
+                _Ty1&& _Value, _Ty2&& _Count) _CONST_CALL_OPERATOR
+                noexcept(noexcept(repeat_view(_STD forward<_Ty1>(_Value), _STD forward<_Ty2>(_Count))))
+                requires requires { repeat_view(_STD forward<_Ty1>(_Value), _STD forward<_Ty2>(_Count)); }
             {
-                return repeat_view(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2));
+                return repeat_view(_STD forward<_Ty1>(_Value), _STD forward<_Ty2>(_Count));
             }
         };
 
