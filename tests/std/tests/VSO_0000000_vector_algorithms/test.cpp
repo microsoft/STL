@@ -28,6 +28,11 @@
 
 using namespace std;
 
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
+#endif // __clang__
+
 template <class FwdIt, class T>
 ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
     ptrdiff_t result = 0;
