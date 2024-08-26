@@ -52,6 +52,7 @@ struct _Fac_node { // node for lazy facet recording
 
         return _Ptr;
     }
+
     void operator delete(void* _Ptr) noexcept { // ensure operator new is not tainted by global replacement, if any
         free(_Ptr);
     }
