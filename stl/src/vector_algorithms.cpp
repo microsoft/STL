@@ -1849,6 +1849,61 @@ namespace {
                         _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
                     }
                 } else {
+                    if constexpr (_Traits::_Tail_mask != 0) {
+                        const size_t _Remaining_byte_size = _Byte_length(_First, _Last);
+                        bool _Last_portion;
+
+                        if constexpr (_Traits::_Has_portion_max) {
+                            _Last_portion = (_Remaining_byte_size & ~_Traits::_Vec_mask) == 0;
+                        } else {
+                            _Last_portion = true;
+                        }
+
+                        const size_t _Tail_byte_size = _Remaining_byte_size & _Traits::_Tail_mask;
+
+                        if (_Last_portion && _Tail_byte_size != 0) {
+                            const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size >> 2);
+                            const auto _Tail_vals =
+                                _Traits::_Sign_correction(_Traits::_Load_mask(_First, _Tail_mask), _Sign);
+                            _Cur_vals = _Traits::_Blendval(_Cur_vals, _Tail_vals, _Tail_mask);
+
+                            if constexpr ((_Mode & _Mode_min) != 0) {
+                                // Looking for the first occurrence of minimum, don't overwrite with newly found
+                                // occurrences
+                                auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
+                                _Cur_idx_min  = _Traits::_Blend(_Cur_idx_min, _Cur_idx,
+                                     _mm256_and_si256(_Traits::_Mask_cast(_Is_less),
+                                         _Tail_mask)); // Remember their vertical indices
+                                _Cur_vals_min =
+                                    _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
+                            }
+
+                            if constexpr (_Mode == _Mode_max) {
+                                // Looking for the first occurrence of maximum, don't overwrite with newly found
+                                // occurrences
+                                const auto _Is_greater =
+                                    _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
+                                _Cur_idx_max = _Traits::_Blend(_Cur_idx_max, _Cur_idx,
+                                    _mm256_and_si256(_Traits::_Mask_cast(_Is_greater),
+                                        _Tail_mask)); // Remember their vertical indices
+                                _Cur_vals_max =
+                                    _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
+                            } else if constexpr (_Mode == _Mode_both) {
+                                // Looking for the last occurrence of maximum, do overwrite with newly found
+                                // occurrences
+                                const auto _Is_less =
+                                    _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
+                                _Cur_idx_max = _Traits::_Blend(_Cur_idx_max, _Cur_idx,
+                                    _mm256_andnot_si256(
+                                        _Traits::_Mask_cast(_Is_less), _Tail_mask)); // Remember their vertical indices
+                                _Cur_vals_max =
+                                    _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
+                            }
+
+                            _Advance_bytes(_First, _Tail_byte_size);
+                        }
+                    }
+
                     // Reached end or indices wrap around point.
                     // Compute horizontal min and/or max. Determine horizontal and vertical position of it.
 
