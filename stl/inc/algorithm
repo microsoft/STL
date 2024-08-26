@@ -10260,6 +10260,21 @@ namespace ranges {
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (is_same_v<_Pj, identity>) {
+                if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _Result = _STD _Minmax_vectorized(_First, _Last);
+                        return {static_cast<_Ty>(_Result._Min), static_cast<_Ty>(_Result._Max)};
+                    }
+                } else if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _Result = _STD _Minmax_element_vectorized(_First, _Last);
+                        return {*static_cast<const _Ty*>(_Result.first), *static_cast<const _Ty*>(_Result.second)};
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
             return _Minmax_fwd_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -10272,11 +10287,30 @@ namespace ranges {
             auto _ULast  = _RANGES _Uend(_Range);
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
+            using _Vty = range_value_t<_Rng>;
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
+                if constexpr (_Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _First_ptr = _STD to_address(_UFirst);
+                        const auto _Last_ptr  = _First_ptr + (_ULast - _UFirst);
+                        const auto _Result    = _STD _Minmax_vectorized(_First_ptr, _Last_ptr);
+                        return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
+                    }
+                } else if constexpr (_Is_min_max_optimization_safe<decltype(_UFirst), _Pr>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _First_ptr = _STD to_address(_UFirst);
+                        const auto _Last_ptr  = _First_ptr + (_ULast - _UFirst);
+                        const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
+                        return {*static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return _Minmax_fwd_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             } else {
-                using _Vty = range_value_t<_Rng>;
                 // This initialization is correct, similar to the N4950 [dcl.init.aggr]/6 example
                 minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), _Found.min};
                 if (_UFirst == _ULast) {
@@ -10331,25 +10365,6 @@ namespace ranges {
             _STL_INTERNAL_CHECK(_First != _Last);
 
             using _Vty = iter_value_t<_It>;
-#if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>) {
-                if constexpr (_Is_min_max_value_optimization_safe<_It, _Pr>) {
-                    if (!_STD is_constant_evaluated()) {
-                        const auto _First_ptr = _STD to_address(_First);
-                        const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                        const auto _Result    = _STD _Minmax_vectorized(_First_ptr, _Last_ptr);
-                        return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
-                    }
-                } else if constexpr (_Is_min_max_optimization_safe<_It, _Pr>) {
-                    if (!_STD is_constant_evaluated()) {
-                        const auto _First_ptr = _STD to_address(_First);
-                        const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                        const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
-                        return {*static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
-                    }
-                }
-            }
-#endif // _USE_STD_VECTOR_ALGORITHMS
 
             auto _Found_min = _First;
             if (++_First == _Last) {
