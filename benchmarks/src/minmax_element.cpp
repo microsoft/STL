@@ -54,81 +54,81 @@ void bm(benchmark::State& state) {
     }
 }
 
+template <size_t ElementSize>
 void common_arg(auto bm) {
     bm->Arg(8021);
     // AVX tail tests
-    bm->Arg(63)->Arg(31)->Arg(15)->Arg(7);
+    bm->Arg(63 / ElementSize);
 }
 
-BENCHMARK(bm<uint8_t, Op::Min>)->Apply(common_arg);
-BENCHMARK(bm<uint8_t, Op::Max>)->Apply(common_arg);
-BENCHMARK(bm<uint8_t, Op::Both>)->Apply(common_arg);
-BENCHMARK(bm<uint8_t, Op::Min_val>)->Apply(common_arg);
-BENCHMARK(bm<uint8_t, Op::Max_val>)->Apply(common_arg);
-BENCHMARK(bm<uint8_t, Op::Both_val>)->Apply(common_arg);
+BENCHMARK(bm<uint8_t, Op::Min>)->Apply(common_arg<1>);
+BENCHMARK(bm<uint8_t, Op::Max>)->Apply(common_arg<1>);
+BENCHMARK(bm<uint8_t, Op::Both>)->Apply(common_arg<1>);
+BENCHMARK(bm<uint8_t, Op::Min_val>)->Apply(common_arg<1>);
+BENCHMARK(bm<uint8_t, Op::Max_val>)->Apply(common_arg<1>);
+BENCHMARK(bm<uint8_t, Op::Both_val>)->Apply(common_arg<1>);
 
-BENCHMARK(bm<uint16_t, Op::Min>)->Apply(common_arg);
-BENCHMARK(bm<uint16_t, Op::Max>)->Apply(common_arg);
-BENCHMARK(bm<uint16_t, Op::Both>)->Apply(common_arg);
-BENCHMARK(bm<uint16_t, Op::Min_val>)->Apply(common_arg);
-BENCHMARK(bm<uint16_t, Op::Max_val>)->Apply(common_arg);
-BENCHMARK(bm<uint16_t, Op::Both_val>)->Apply(common_arg);
+BENCHMARK(bm<uint16_t, Op::Min>)->Apply(common_arg<2>);
+BENCHMARK(bm<uint16_t, Op::Max>)->Apply(common_arg<2>);
+BENCHMARK(bm<uint16_t, Op::Both>)->Apply(common_arg<2>);
+BENCHMARK(bm<uint16_t, Op::Min_val>)->Apply(common_arg<2>);
+BENCHMARK(bm<uint16_t, Op::Max_val>)->Apply(common_arg<2>);
+BENCHMARK(bm<uint16_t, Op::Both_val>)->Apply(common_arg<2>);
 
-BENCHMARK(bm<uint32_t, Op::Min>)->Apply(common_arg);
-BENCHMARK(bm<uint32_t, Op::Max>)->Apply(common_arg);
-BENCHMARK(bm<uint32_t, Op::Both>)->Apply(common_arg);
-BENCHMARK(bm<uint32_t, Op::Min_val>)->Apply(common_arg);
-BENCHMARK(bm<uint32_t, Op::Max_val>)->Apply(common_arg);
-BENCHMARK(bm<uint32_t, Op::Both_val>)->Apply(common_arg);
+BENCHMARK(bm<uint32_t, Op::Min>)->Apply(common_arg<4>);
+BENCHMARK(bm<uint32_t, Op::Max>)->Apply(common_arg<4>);
+BENCHMARK(bm<uint32_t, Op::Both>)->Apply(common_arg<4>);
+BENCHMARK(bm<uint32_t, Op::Min_val>)->Apply(common_arg<4>);
+BENCHMARK(bm<uint32_t, Op::Max_val>)->Apply(common_arg<4>);
+BENCHMARK(bm<uint32_t, Op::Both_val>)->Apply(common_arg<4>);
 
-BENCHMARK(bm<uint64_t, Op::Min>)->Apply(common_arg);
-BENCHMARK(bm<uint64_t, Op::Max>)->Apply(common_arg);
-BENCHMARK(bm<uint64_t, Op::Both>)->Apply(common_arg);
-BENCHMARK(bm<uint64_t, Op::Min_val>)->Apply(common_arg);
-BENCHMARK(bm<uint64_t, Op::Max_val>)->Apply(common_arg);
-BENCHMARK(bm<uint64_t, Op::Both_val>)->Apply(common_arg);
+BENCHMARK(bm<uint64_t, Op::Min>)->Apply(common_arg<8>);
+BENCHMARK(bm<uint64_t, Op::Max>)->Apply(common_arg<8>);
+BENCHMARK(bm<uint64_t, Op::Both>)->Apply(common_arg<8>);
+BENCHMARK(bm<uint64_t, Op::Min_val>)->Apply(common_arg<8>);
+BENCHMARK(bm<uint64_t, Op::Max_val>)->Apply(common_arg<8>);
+BENCHMARK(bm<uint64_t, Op::Both_val>)->Apply(common_arg<8>);
 
-BENCHMARK(bm<int8_t, Op::Min>)->Apply(common_arg);
-BENCHMARK(bm<int8_t, Op::Max>)->Apply(common_arg);
-BENCHMARK(bm<int8_t, Op::Both>)->Apply(common_arg);
-BENCHMARK(bm<int8_t, Op::Min_val>)->Apply(common_arg);
-BENCHMARK(bm<int8_t, Op::Max_val>)->Apply(common_arg);
-BENCHMARK(bm<int8_t, Op::Both_val>)->Apply(common_arg);
+BENCHMARK(bm<int8_t, Op::Min>)->Apply(common_arg<1>);
+BENCHMARK(bm<int8_t, Op::Max>)->Apply(common_arg<1>);
+BENCHMARK(bm<int8_t, Op::Both>)->Apply(common_arg<1>);
+BENCHMARK(bm<int8_t, Op::Min_val>)->Apply(common_arg<1>);
+BENCHMARK(bm<int8_t, Op::Max_val>)->Apply(common_arg<1>);
+BENCHMARK(bm<int8_t, Op::Both_val>)->Apply(common_arg<1>);
 
-BENCHMARK(bm<int16_t, Op::Min>)->Apply(common_arg);
-BENCHMARK(bm<int16_t, Op::Max>)->Apply(common_arg);
-BENCHMARK(bm<int16_t, Op::Both>)->Apply(common_arg);
-BENCHMARK(bm<int16_t, Op::Min_val>)->Apply(common_arg);
-BENCHMARK(bm<int16_t, Op::Max_val>)->Apply(common_arg);
-BENCHMARK(bm<int16_t, Op::Both_val>)->Apply(common_arg);
+BENCHMARK(bm<int16_t, Op::Min>)->Apply(common_arg<2>);
+BENCHMARK(bm<int16_t, Op::Max>)->Apply(common_arg<2>);
+BENCHMARK(bm<int16_t, Op::Both>)->Apply(common_arg<2>);
+BENCHMARK(bm<int16_t, Op::Min_val>)->Apply(common_arg<2>);
+BENCHMARK(bm<int16_t, Op::Max_val>)->Apply(common_arg<2>);
+BENCHMARK(bm<int16_t, Op::Both_val>)->Apply(common_arg<2>);
 
-BENCHMARK(bm<int32_t, Op::Min>)->Apply(common_arg);
-BENCHMARK(bm<int32_t, Op::Max>)->Apply(common_arg);
-BENCHMARK(bm<int32_t, Op::Both>)->Apply(common_arg);
-BENCHMARK(bm<int32_t, Op::Min_val>)->Apply(common_arg);
-BENCHMARK(bm<int32_t, Op::Max_val>)->Apply(common_arg);
-BENCHMARK(bm<int32_t, Op::Both_val>)->Apply(common_arg);
+BENCHMARK(bm<int32_t, Op::Min>)->Apply(common_arg<4>);
+BENCHMARK(bm<int32_t, Op::Max>)->Apply(common_arg<4>);
+BENCHMARK(bm<int32_t, Op::Both>)->Apply(common_arg<4>);
+BENCHMARK(bm<int32_t, Op::Min_val>)->Apply(common_arg<4>);
+BENCHMARK(bm<int32_t, Op::Max_val>)->Apply(common_arg<4>);
+BENCHMARK(bm<int32_t, Op::Both_val>)->Apply(common_arg<4>);
 
-BENCHMARK(bm<int64_t, Op::Min>)->Apply(common_arg);
-BENCHMARK(bm<int64_t, Op::Max>)->Apply(common_arg);
-BENCHMARK(bm<int64_t, Op::Both>)->Apply(common_arg);
-BENCHMARK(bm<int64_t, Op::Min_val>)->Apply(common_arg);
-BENCHMARK(bm<int64_t, Op::Max_val>)->Apply(common_arg);
-BENCHMARK(bm<int64_t, Op::Both_val>)->Apply(common_arg);
+BENCHMARK(bm<int64_t, Op::Min>)->Apply(common_arg<8>);
+BENCHMARK(bm<int64_t, Op::Max>)->Apply(common_arg<8>);
+BENCHMARK(bm<int64_t, Op::Both>)->Apply(common_arg<8>);
+BENCHMARK(bm<int64_t, Op::Min_val>)->Apply(common_arg<8>);
+BENCHMARK(bm<int64_t, Op::Max_val>)->Apply(common_arg<8>);
+BENCHMARK(bm<int64_t, Op::Both_val>)->Apply(common_arg<8>);
 
-BENCHMARK(bm<float, Op::Min>)->Apply(common_arg);
-BENCHMARK(bm<float, Op::Max>)->Apply(common_arg);
-BENCHMARK(bm<float, Op::Both>)->Apply(common_arg);
-BENCHMARK(bm<float, Op::Min_val>)->Apply(common_arg);
-BENCHMARK(bm<float, Op::Max_val>)->Apply(common_arg);
-BENCHMARK(bm<float, Op::Both_val>)->Apply(common_arg);
+BENCHMARK(bm<float, Op::Min>)->Apply(common_arg<4>);
+BENCHMARK(bm<float, Op::Max>)->Apply(common_arg<4>);
+BENCHMARK(bm<float, Op::Both>)->Apply(common_arg<4>);
+BENCHMARK(bm<float, Op::Min_val>)->Apply(common_arg<4>);
+BENCHMARK(bm<float, Op::Max_val>)->Apply(common_arg<4>);
+BENCHMARK(bm<float, Op::Both_val>)->Apply(common_arg<4>);
 
-BENCHMARK(bm<double, Op::Min>)->Apply(common_arg);
-BENCHMARK(bm<double, Op::Max>)->Apply(common_arg);
-BENCHMARK(bm<double, Op::Both>)->Apply(common_arg);
-BENCHMARK(bm<double, Op::Min_val>)->Apply(common_arg);
-BENCHMARK(bm<double, Op::Max_val>)->Apply(common_arg);
-BENCHMARK(bm<double, Op::Both_val>)->Apply(common_arg);
-
+BENCHMARK(bm<double, Op::Min>)->Apply(common_arg<8>);
+BENCHMARK(bm<double, Op::Max>)->Apply(common_arg<8>);
+BENCHMARK(bm<double, Op::Both>)->Apply(common_arg<8>);
+BENCHMARK(bm<double, Op::Min_val>)->Apply(common_arg<8>);
+BENCHMARK(bm<double, Op::Max_val>)->Apply(common_arg<8>);
+BENCHMARK(bm<double, Op::Both_val>)->Apply(common_arg<8>);
 
 BENCHMARK_MAIN();
