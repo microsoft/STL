@@ -2632,16 +2632,16 @@ template <integral _Integral>
 _NODISCARD constexpr string_view _Get_integral_prefix(const char _Type, const _Integral _Value) noexcept {
     switch (_Type) {
     case 'b':
-        return "0b"sv;
+        return string_view{"0b", 2}; // TRANSITION, VSO-1775715 (should use UDLs in this function)
     case 'B':
-        return "0B"sv;
+        return string_view{"0B", 2};
     case 'x':
-        return "0x"sv;
+        return string_view{"0x", 2};
     case 'X':
-        return "0X"sv;
+        return string_view{"0X", 2};
     case 'o':
         if (_Value != _Integral{0}) {
-            return "0"sv;
+            return string_view{"0", 1};
         }
         return {};
     default:
