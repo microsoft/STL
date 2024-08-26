@@ -548,9 +548,10 @@ namespace {
 
 #ifndef _M_ARM64EC
     struct _Minmax_traits_sse_base {
-        static constexpr bool _Vectorized = true;
-        static constexpr size_t _Vec_size = 16;
-        static constexpr size_t _Vec_mask = 0xF;
+        static constexpr bool _Vectorized  = true;
+        static constexpr size_t _Vec_size  = 16;
+        static constexpr size_t _Vec_mask  = 0xF;
+        static constexpr size_t _Tail_mask = 0;
 
         static __m128i _Zero() noexcept {
             return _mm_setzero_si128();
@@ -594,6 +595,18 @@ namespace {
 
         static void _Exit_vectorized() noexcept {
             _mm256_zeroupper();
+        }
+    };
+
+    struct _Minmax_traits_avx_i_base : _Minmax_traits_avx_base {
+        static constexpr size_t _Tail_mask = 0x1C;
+
+        static __m256i _Blendval(const __m256i _Px1, const __m256i _Px2, const __m256i _Msk) noexcept {
+            return _mm256_blendv_epi8(_Px1, _Px2, _Msk);
+        }
+
+        static __m256i _Load_mask(const void* _Src, const __m256i _Mask) noexcept {
+            return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
         }
     };
 #endif // !defined(_M_ARM64EC)
@@ -702,7 +715,7 @@ namespace {
         }
     };
 
-    struct _Minmax_traits_1_avx : _Minmax_traits_1_base, _Minmax_traits_avx_base {
+    struct _Minmax_traits_1_avx : _Minmax_traits_1_base, _Minmax_traits_avx_i_base {
         static __m256i _Load(const void* _Src) noexcept {
             return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
         }
@@ -898,7 +911,7 @@ namespace {
         }
     };
 
-    struct _Minmax_traits_2_avx : _Minmax_traits_2_base, _Minmax_traits_avx_base {
+    struct _Minmax_traits_2_avx : _Minmax_traits_2_base, _Minmax_traits_avx_i_base {
         static __m256i _Load(const void* _Src) noexcept {
             return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
         }
@@ -1091,7 +1104,7 @@ namespace {
         }
     };
 
-    struct _Minmax_traits_4_avx : _Minmax_traits_4_base, _Minmax_traits_avx_base {
+    struct _Minmax_traits_4_avx : _Minmax_traits_4_base, _Minmax_traits_avx_i_base {
         static __m256i _Load(const void* _Src) noexcept {
             return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
         }
@@ -1279,7 +1292,7 @@ namespace {
         }
     };
 
-    struct _Minmax_traits_8_avx : _Minmax_traits_8_base, _Minmax_traits_avx_base {
+    struct _Minmax_traits_8_avx : _Minmax_traits_8_base, _Minmax_traits_avx_i_base {
         static __m256i _Load(const void* _Src) noexcept {
             return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
         }
@@ -1471,8 +1484,18 @@ namespace {
     };
 
     struct _Minmax_traits_f_avx : _Minmax_traits_f_base, _Minmax_traits_avx_base {
+        static constexpr size_t _Tail_mask = 0xC;
+
+        static __m256 _Blendval(const __m256 _Px1, const __m256 _Px2, const __m256i _Msk) noexcept {
+            return _mm256_blendv_ps(_Px1, _Px2, _mm256_castsi256_ps(_Msk));
+        }
+
         static __m256 _Load(const void* _Src) noexcept {
             return _mm256_loadu_ps(reinterpret_cast<const float*>(_Src));
+        }
+
+        static __m256 _Load_mask(const void* _Src, const __m256i _Mask) noexcept {
+            return _mm256_maskload_ps(reinterpret_cast<const float*>(_Src), _Mask);
         }
 
         static __m256 _Sign_correction(const __m256 _Val, bool) noexcept {
@@ -1629,8 +1652,18 @@ namespace {
     };
 
     struct _Minmax_traits_d_avx : _Minmax_traits_d_base, _Minmax_traits_avx_base {
+        static constexpr size_t _Tail_mask = 0x8;
+
+        static __m256d _Blendval(const __m256d _Px1, const __m256d _Px2, const __m256i _Msk) noexcept {
+            return _mm256_blendv_pd(_Px1, _Px2, _mm256_castsi256_pd(_Msk));
+        }
+
         static __m256d _Load(const void* _Src) noexcept {
             return _mm256_loadu_pd(reinterpret_cast<const double*>(_Src));
+        }
+
+        static __m256d _Load_mask(const void* _Src, const __m256i _Mask) noexcept {
+            return _mm256_maskload_pd(reinterpret_cast<const double*>(_Src), _Mask);
         }
 
         static __m256d _Sign_correction(const __m256d _Val, bool) noexcept {
@@ -1992,10 +2025,11 @@ namespace {
 #ifdef _M_ARM64EC
             static_assert(false, "No vectorization for _M_ARM64EC yet");
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-            const size_t _Sse_byte_size = _Byte_length(_First, _Last) & ~_Traits::_Vec_mask;
+            const size_t _Total_size_bytes = _Byte_length(_First, _Last);
+            const size_t _Vec_byte_size    = _Total_size_bytes & ~_Traits::_Vec_mask;
 
             const void* _Stop_at = _First;
-            _Advance_bytes(_Stop_at, _Sse_byte_size);
+            _Advance_bytes(_Stop_at, _Vec_byte_size);
 
             auto _Cur_vals = _Traits::_Load(_First);
 
@@ -2009,6 +2043,24 @@ namespace {
             auto _Cur_vals_min = _Cur_vals; // vector of vertical minimum values
             auto _Cur_vals_max = _Cur_vals; // vector of vertical maximum values
 
+            const auto _Update_min_max = [&](const auto _Cur_vals) noexcept {
+                if constexpr ((_Mode & _Mode_min) != 0) {
+                    if constexpr (_Sign || _Sign_correction) {
+                        _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals); // Update the current minimum
+                    } else {
+                        _Cur_vals_min = _Traits::_Min_u(_Cur_vals_min, _Cur_vals); // Update the current minimum
+                    }
+                }
+
+                if constexpr ((_Mode & _Mode_max) != 0) {
+                    if constexpr (_Sign || _Sign_correction) {
+                        _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals); // Update the current maximum
+                    } else {
+                        _Cur_vals_max = _Traits::_Max_u(_Cur_vals_max, _Cur_vals); // Update the current maximum
+                    }
+                }
+            };
+
             for (;;) {
                 _Advance_bytes(_First, _Traits::_Vec_size);
 
@@ -2021,22 +2073,26 @@ namespace {
                         _Cur_vals = _Traits::_Sign_correction(_Cur_vals, false);
                     }
 
-                    if constexpr ((_Mode & _Mode_min) != 0) {
-                        if constexpr (_Sign || _Sign_correction) {
-                            _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals); // Update the current minimum
-                        } else {
-                            _Cur_vals_min = _Traits::_Min_u(_Cur_vals_min, _Cur_vals); // Update the current minimum
+                    _Update_min_max(_Cur_vals);
+                } else {
+                    if constexpr (_Traits::_Tail_mask != 0) {
+                        const size_t _Tail_byte_size = _Total_size_bytes & _Traits::_Tail_mask;
+                        if (_Tail_byte_size != 0) {
+                            const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size >> 2);
+                            auto _Tail_vals       = _Traits::_Load_mask(_First, _Tail_mask);
+
+                            if constexpr (_Sign_correction) {
+                                _Tail_vals = _Traits::_Sign_correction(_Tail_vals, false);
+                            }
+
+                            _Tail_vals = _Traits::_Blendval(_Cur_vals, _Tail_vals, _Tail_mask);
+
+                            _Update_min_max(_Tail_vals);
                         }
+
+                        _Advance_bytes(_First, _Tail_byte_size);
                     }
 
-                    if constexpr ((_Mode & _Mode_max) != 0) {
-                        if constexpr (_Sign || _Sign_correction) {
-                            _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals); // Update the current maximum
-                        } else {
-                            _Cur_vals_max = _Traits::_Max_u(_Cur_vals_max, _Cur_vals); // Update the current maximum
-                        }
-                    }
-                } else {
                     // Reached end. Compute horizontal min and/or max.
 
                     if constexpr ((_Mode & _Mode_min) != 0) {
