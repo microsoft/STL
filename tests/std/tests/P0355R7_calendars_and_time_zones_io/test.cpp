@@ -1070,7 +1070,7 @@ void parse_timepoints() {
         leap_vec.emplace_back(sys_days{1d / January / 2020y}, false, leap_vec.back()._Elapsed());
         leap_vec.emplace_back(sys_days{1d / January / 2022y}, true, leap_vec.back()._Elapsed());
         my_tzdb._All_ls_positive = false;
-        get_tzdb_list()._Emplace_front(move(my_tzdb));
+        tzdb_list_hack::emplace_front(get_tzdb_list(), move(my_tzdb));
     }
 
     utc_seconds ut_ref = utc_clock::from_sys(sys_days{1d / July / 1972y}) - 1s; // leap second insertion
