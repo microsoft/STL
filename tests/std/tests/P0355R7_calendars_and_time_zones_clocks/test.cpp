@@ -431,7 +431,7 @@ void test() {
         leap_vec.emplace_back(sys_days{1d / January / 2020y}, false, leap_vec.back()._Elapsed());
         leap_vec.emplace_back(sys_days{1d / January / 2021y}, true, leap_vec.back()._Elapsed());
         my_tzdb._All_ls_positive = false;
-        tzdb_list_hack::emplace_front(get_tzdb_list(), move(my_tzdb));
+        get_tzdb_list()._Emplace_front(move(my_tzdb));
     }
 
     offset = 0s;
@@ -458,7 +458,7 @@ void test() {
             leap_vec.emplace_back(sys_days{1d / January / year{i + 2020}}, false, leap_vec.back()._Elapsed());
         }
         leap_vec.emplace_back(sys_days{1d / January / 2060y}, true, leap_vec.back()._Elapsed());
-        tzdb_list_hack::emplace_front(get_tzdb_list(), move(my_tzdb));
+        get_tzdb_list()._Emplace_front(move(my_tzdb));
     }
 
     offset = 0s;
