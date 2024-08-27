@@ -1812,6 +1812,43 @@ namespace {
             auto _Cur_idx_max  = _Traits::_Zero(); // vector of vertical maximum indices
             auto _Cur_idx      = _Traits::_Zero(); // current vector of indices
 
+            const auto _Update_min_max = [&](const auto _Cur_vals, const auto _Blend_idx_0,
+                                             const auto _Blend_idx_1) noexcept {
+                if constexpr ((_Mode & _Mode_min) != 0) {
+                    // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
+                    const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
+                    // Remember their vertical indices
+                    _Cur_idx_min  = _Blend_idx_1(_Cur_idx_min, _Cur_idx, _Traits::_Mask_cast(_Is_less));
+                    _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
+
+                    (void) _Blend_idx_0;
+                }
+
+                if constexpr (_Mode == _Mode_max) {
+                    // Looking for the first occurrence of maximum, don't overwrite with newly found occurrences
+                    const auto _Is_greater = _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
+                    // Remember their vertical indices
+                    _Cur_idx_max  = _Blend_idx_1(_Cur_idx_max, _Cur_idx, _Traits::_Mask_cast(_Is_greater));
+                    _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
+
+                    (void) _Blend_idx_0;
+                } else if constexpr (_Mode == _Mode_both) {
+                    // Looking for the last occurrence of maximum, do overwrite with newly found occurrences
+                    const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
+                    // Remember their vertical indices
+                    _Cur_idx_max  = _Blend_idx_0(_Cur_idx_max, _Cur_idx, _Traits::_Mask_cast(_Is_less));
+                    _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
+                }
+            };
+
+            const auto _Blend_idx_0 = [](const auto _Prev, const auto _Cur, const auto _Mask) noexcept {
+                return _Traits::_Blend(_Cur, _Prev, _Mask);
+            };
+
+            const auto _Blend_idx_1 = [](const auto _Prev, const auto _Cur, const auto _Mask) noexcept {
+                return _Traits::_Blend(_Prev, _Cur, _Mask);
+            };
+
             for (;;) {
                 _Advance_bytes(_First, _Traits::_Vec_size);
 
@@ -1824,30 +1861,7 @@ namespace {
                     // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
                     _Cur_vals = _Traits::_Sign_correction(_Traits::_Load(_First), _Sign);
 
-                    if constexpr ((_Mode & _Mode_min) != 0) {
-                        // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
-                        const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
-                        _Cur_idx_min        = _Traits::_Blend(
-                            _Cur_idx_min, _Cur_idx, _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
-                        _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
-                    }
-
-                    if constexpr (_Mode == _Mode_max) {
-                        // Looking for the first occurrence of maximum, don't overwrite with newly found occurrences
-                        const auto _Is_greater =
-                            _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
-                        _Cur_idx_max = _Traits::_Blend(_Cur_idx_max, _Cur_idx,
-                            _Traits::_Mask_cast(_Is_greater)); // Remember their vertical indices
-                        _Cur_vals_max =
-                            _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
-                    } else if constexpr (_Mode == _Mode_both) {
-                        // Looking for the last occurrence of maximum, do overwrite with newly found occurrences
-                        const auto _Is_less =
-                            _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
-                        _Cur_idx_max  = _Traits::_Blend(_Cur_idx, _Cur_idx_max,
-                             _Traits::_Mask_cast(_Is_less)); // Remember their vertical indices
-                        _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
-                    }
+                    _Update_min_max(_Cur_vals, _Blend_idx_0, _Blend_idx_1);
                 } else {
                     if constexpr (_Traits::_Tail_mask != 0) {
                         const size_t _Remaining_byte_size = _Byte_length(_First, _Last);
@@ -1867,39 +1881,17 @@ namespace {
                                 _Traits::_Sign_correction(_Traits::_Load_mask(_First, _Tail_mask), _Sign);
                             _Cur_vals = _Traits::_Blendval(_Cur_vals, _Tail_vals, _Tail_mask);
 
-                            if constexpr ((_Mode & _Mode_min) != 0) {
-                                // Looking for the first occurrence of minimum, don't overwrite with newly found
-                                // occurrences
-                                auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
-                                _Cur_idx_min  = _Traits::_Blend(_Cur_idx_min, _Cur_idx,
-                                     _mm256_and_si256(_Traits::_Mask_cast(_Is_less),
-                                         _Tail_mask)); // Remember their vertical indices
-                                _Cur_vals_min =
-                                    _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
-                            }
+                            const auto _Blend_idx_0_mask = [_Tail_mask](const auto _Prev, const auto _Cur,
+                                                               const auto _Mask) noexcept {
+                                return _Traits::_Blend(_Prev, _Cur, _mm256_andnot_si256(_Mask, _Tail_mask));
+                            };
 
-                            if constexpr (_Mode == _Mode_max) {
-                                // Looking for the first occurrence of maximum, don't overwrite with newly found
-                                // occurrences
-                                const auto _Is_greater =
-                                    _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
-                                _Cur_idx_max = _Traits::_Blend(_Cur_idx_max, _Cur_idx,
-                                    _mm256_and_si256(_Traits::_Mask_cast(_Is_greater),
-                                        _Tail_mask)); // Remember their vertical indices
-                                _Cur_vals_max =
-                                    _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
-                            } else if constexpr (_Mode == _Mode_both) {
-                                // Looking for the last occurrence of maximum, do overwrite with newly found
-                                // occurrences
-                                const auto _Is_less =
-                                    _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
-                                _Cur_idx_max = _Traits::_Blend(_Cur_idx_max, _Cur_idx,
-                                    _mm256_andnot_si256(
-                                        _Traits::_Mask_cast(_Is_less), _Tail_mask)); // Remember their vertical indices
-                                _Cur_vals_max =
-                                    _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
-                            }
+                            const auto _Blend_idx_1_mask = [_Tail_mask](const auto _Prev, const auto _Cur,
+                                                               const auto _Mask) noexcept {
+                                return _Traits::_Blend(_Prev, _Cur, _mm256_and_si256(_Tail_mask, _Mask));
+                            };
 
+                            _Update_min_max(_Cur_vals, _Blend_idx_0_mask, _Blend_idx_1_mask);
                             _Advance_bytes(_First, _Tail_byte_size);
                         }
                     }
