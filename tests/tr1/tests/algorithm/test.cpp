@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <ctype.h>
 #include <functional>
+#include <random>
 #include <string.h>
 
 // FUNCTION OBJECTS
@@ -294,15 +295,13 @@ void test_copy(char* first, char* last, char* dest) { // test copying template f
     CHECK_STR(array2, "aaxx");
 }
 
-CSTD size_t frand(CSTD size_t nmax) { // return random value in [0, nmax)
-    return CSTD rand() % nmax;
-}
-
 struct rand_gen { // uniform random number generator
+    STD mt19937 mt;
+
     typedef CSTD size_t result_type;
 
     result_type operator()() { // get random value
-        return CSTD rand() & 0xfffff;
+        return mt() & 0xfffff;
     }
 
     static result_type(min)() { // get minimum value
@@ -429,8 +428,12 @@ void test_mutate(char* first, char* last, char* dest) { // test mutating templat
     CHECK_STR(array, "ebgf");
 
     STD random_shuffle(first, last);
-    CSTD size_t (*prand)(CSTD size_t) = &frand;
-    STD random_shuffle(first, last, prand);
+
+    auto rng_func = [mt = STD mt19937{}](CSTD size_t nmax) mutable { // return random value in [0, nmax)
+        STD uniform_int_distribution<CSTD size_t> dist{0, nmax - 1};
+        return dist(mt);
+    };
+    STD random_shuffle(first, last, STD ref(rng_func));
 
     rand_gen urng;
     STD shuffle(first, last, urng);
