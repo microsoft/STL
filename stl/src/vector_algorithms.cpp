@@ -1484,7 +1484,7 @@ namespace {
     };
 
     struct _Minmax_traits_f_avx : _Minmax_traits_f_base, _Minmax_traits_avx_base {
-        static constexpr size_t _Tail_mask = 0xC;
+        static constexpr size_t _Tail_mask = 0x1C;
 
         static __m256 _Blendval(const __m256 _Px1, const __m256 _Px2, const __m256i _Msk) noexcept {
             return _mm256_blendv_ps(_Px1, _Px2, _mm256_castsi256_ps(_Msk));
@@ -1652,7 +1652,7 @@ namespace {
     };
 
     struct _Minmax_traits_d_avx : _Minmax_traits_d_base, _Minmax_traits_avx_base {
-        static constexpr size_t _Tail_mask = 0x8;
+        static constexpr size_t _Tail_mask = 0x18;
 
         static __m256d _Blendval(const __m256d _Px1, const __m256d _Px2, const __m256i _Msk) noexcept {
             return _mm256_blendv_pd(_Px1, _Px2, _mm256_castsi256_pd(_Msk));
