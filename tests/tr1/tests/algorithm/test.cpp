@@ -429,11 +429,12 @@ void test_mutate(char* first, char* last, char* dest) { // test mutating templat
 
     STD random_shuffle(first, last);
 
-    auto rng_func = [mt = STD mt19937{}](CSTD size_t nmax) mutable { // return random value in [0, nmax)
+    STD mt19937 mt;
+    auto rng_func = [&mt](CSTD size_t nmax) { // return random value in [0, nmax)
         STD uniform_int_distribution<CSTD size_t> dist{0, nmax - 1};
         return dist(mt);
     };
-    STD random_shuffle(first, last, STD ref(rng_func));
+    STD random_shuffle(first, last, rng_func);
 
     rand_gen urng;
     STD shuffle(first, last, urng);
