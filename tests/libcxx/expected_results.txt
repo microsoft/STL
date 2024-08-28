@@ -576,14 +576,16 @@ std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.c
 # This test is bogus according to the wording that was ultimately accepted for C++23.
 std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
 
-# contiguous_iterator requires to_address() which calls operator->(), but this bogus test uses an iterator that lacks operator->().
+# libc++ speculatively implements the proposed resolution for LWG-4058.
 std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
-
-# Bogus test expects to_address() to SFINAE away for int.
 std/utilities/memory/pointer.conversion/to_address_without_pointer_traits.pass.cpp FAIL
 
 # We disagree about whether various chrono types should be optimized, and the test is clearly wrong about vector<bool>::reference.
 std/utilities/format/format.formatter/format.formatter.locking/enable_nonlocking_formatter_optimization.compile.pass.cpp FAIL
+
+# `increasing_allocator` calls `std::allocator::deallocate` with the wrong size
+std/containers/sequences/vector.bool/shrink_to_fit.pass.cpp FAIL
+std/containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -1220,12 +1222,6 @@ std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.nonmembers/ostream.pa
 
 # Not analyzed. static_assert(testComplexity()) is failing.
 std/algorithms/alg.sorting/alg.set.operations/set.intersection/set_intersection_complexity.pass.cpp FAIL
-
-# Not analyzed.
-# MSVC constexpr error: failure was caused by unexpected deallocation count
-# Clang assertion: _CrtIsValidHeapPointer(block)
-std/containers/sequences/vector.bool/shrink_to_fit.pass.cpp FAIL
-std/containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp FAIL
 
 # Not analyzed.
 # MSVC truncation warnings.
