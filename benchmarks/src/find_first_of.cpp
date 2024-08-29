@@ -13,7 +13,7 @@
 
 using namespace std;
 
-enum class AlgType : bool { std, str_member };
+enum class AlgType : bool { std_func, str_member };
 
 template <AlgType Alg, class T, T Start = T{'a'}>
 void bm(benchmark::State& state) {
@@ -50,10 +50,10 @@ void common_args(auto bm) {
     bm->Args({102, 4})->Args({325, 1})->Args({1011, 11})->Args({1502, 23})->Args({3056, 7});
 }
 
-BENCHMARK(bm<AlgType::std, uint8_t>)->Apply(common_args);
-BENCHMARK(bm<AlgType::std, uint16_t>)->Apply(common_args);
-BENCHMARK(bm<AlgType::std, uint32_t>)->Apply(common_args);
-BENCHMARK(bm<AlgType::std, uint64_t>)->Apply(common_args);
+BENCHMARK(bm<AlgType::std_func, uint8_t>)->Apply(common_args);
+BENCHMARK(bm<AlgType::std_func, uint16_t>)->Apply(common_args);
+BENCHMARK(bm<AlgType::std_func, uint32_t>)->Apply(common_args);
+BENCHMARK(bm<AlgType::std_func, uint64_t>)->Apply(common_args);
 
 BENCHMARK(bm<AlgType::str_member, char>)->Apply(common_args);
 BENCHMARK(bm<AlgType::str_member, wchar_t>)->Apply(common_args);
