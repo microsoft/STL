@@ -31,6 +31,10 @@ struct _NODISCARD _Stream_lock_guard {
     ~_Stream_lock_guard() {
         _CSTD _unlock_file(_Stream);
     }
+
+    _Stream_lock_guard(const _Stream_lock_guard&)            = delete;
+    _Stream_lock_guard& operator=(const _Stream_lock_guard&) = delete;
+
     FILE* const _Stream;
 };
 
