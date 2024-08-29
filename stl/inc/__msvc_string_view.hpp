@@ -708,6 +708,9 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
     const size_t _Needle_size) noexcept {
     // in [_Haystack, _Haystack + _Hay_size), look for one of [_Needle, _Needle + _Needle_size), at/after _Start_at
     if (_Needle_size != 0 && _Start_at < _Hay_size) { // room for match, look for it
+        const auto _Hay_start = _Haystack + _Start_at;
+        const auto _Hay_end   = _Haystack + _Hay_size;
+
         if constexpr (_Special) {
             using _Elem = typename _Traits::char_type;
 
@@ -729,8 +732,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
                 _String_bitmap<_Elem> _Matches;
 
                 if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
-                    const auto _End = _Haystack + _Hay_size;
-                    for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
+                    for (auto _Match_try = _Hay_start; _Match_try < _Hay_end; ++_Match_try) {
                         if (_Matches._Match(*_Match_try)) {
                             return static_cast<size_t>(_Match_try - _Haystack); // found a match
                         }
@@ -743,10 +745,10 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
 
 #if _USE_STD_VECTOR_ALGORITHMS
             if (_Try_vectorize) {
-                const _Traits_ptr_t<_Traits> _Found = _STD _Find_first_of_vectorized(
-                    _Haystack + _Start_at, _Haystack + _Hay_size, _Needle, _Needle + _Needle_size);
+                const _Traits_ptr_t<_Traits> _Found =
+                    _STD _Find_first_of_vectorized(_Hay_start, _Hay_end, _Needle, _Needle + _Needle_size);
 
-                if (_Found != _Haystack + _Hay_size) {
+                if (_Found != _Hay_end) {
                     return static_cast<size_t>(_Found - _Haystack);
                 } else {
                     return static_cast<size_t>(-1); // no match
@@ -755,8 +757,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
 #endif // _USE_STD_VECTOR_ALGORITHMS
         }
 
-        const auto _End = _Haystack + _Hay_size;
-        for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
+        for (auto _Match_try = _Hay_start; _Match_try < _Hay_end; ++_Match_try) {
             if (_Traits::find(_Needle, _Needle_size, *_Match_try)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
