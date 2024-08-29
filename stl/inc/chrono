@@ -5969,10 +5969,10 @@ struct formatter<_CHRONO zoned_time<_Duration, _TimeZonePtr>, _CharT>
 #if _HAS_CXX23
 template <class _Rep, class _Period>
 constexpr bool enable_nonlocking_formatter_optimization<_CHRONO duration<_Rep, _Period>> =
-    _STD enable_nonlocking_formatter_optimization<_Rep>;
+    enable_nonlocking_formatter_optimization<_Rep>;
 
 template <class _Duration>
-constexpr bool enable_nonlocking_formatter_optimization<_CHRONO zoned_time<_Duration, const std::chrono::time_zone*>> =
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO zoned_time<_Duration, const _CHRONO time_zone*>> =
     true;
 #endif
 

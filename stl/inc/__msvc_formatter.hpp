@@ -395,11 +395,11 @@ constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<_CharT
 
 template <class _Ty1, class _Ty2>
 constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
-    _STD enable_nonlocking_formatter_optimization<_Ty1> && _STD enable_nonlocking_formatter_optimization<_Ty2>;
+    enable_nonlocking_formatter_optimization<_Ty1> && enable_nonlocking_formatter_optimization<_Ty2>;
 
 template <class... _Ts>
 constexpr bool enable_nonlocking_formatter_optimization<tuple<_Ts...>> =
-    (_STD enable_nonlocking_formatter_optimization<_Ts> && ...);
+    (enable_nonlocking_formatter_optimization<_Ts> && ...);
 
 template <_RANGES input_range _Rng>
     requires (format_kind<_Rng> != range_format::disabled)

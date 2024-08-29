@@ -252,9 +252,8 @@ inline void _Vprint_unicode_impl(
 template <class... _Types>
 void _Print_impl(
     const _Add_newline _Add_nl, FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&... _Args) {
-    constexpr bool _Has_format_args = sizeof...(_Types) > 0;
-    constexpr bool _Print_nonlocking =
-        (_STD enable_nonlocking_formatter_optimization<_STD remove_cvref_t<_Types>> && ...);
+    constexpr bool _Has_format_args  = sizeof...(_Types) > 0;
+    constexpr bool _Print_nonlocking = (enable_nonlocking_formatter_optimization<remove_cvref_t<_Types>> && ...);
 
     if constexpr (_Has_format_args) {
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
