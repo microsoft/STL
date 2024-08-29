@@ -709,20 +709,24 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
     // in [_Haystack, _Haystack + _Hay_size), look for one of [_Needle, _Needle + _Needle_size), at/after _Start_at
     if (_Needle_size != 0 && _Start_at < _Hay_size) { // room for match, look for it
         if constexpr (_Special) {
+            using _Elem = typename _Traits::char_type;
+
             bool _Use_bitmap = true;
 
 #if _USE_STD_VECTOR_ALGORITHMS
             bool _Try_vectorize = !_STD _Is_constant_evaluated() && _Hay_size - _Start_at > _Threshold_find_first_of;
-            constexpr size_t _Elem_size = sizeof(*_Haystack);
 
+#pragma warning(push)
+#pragma warning(disable : 4127) // conditional expression is constant
             // Additional condition for the case where the table lookup outperforms the vectorization
-            if (_Try_vectorize && (_Elem_size == 1 || _Elem_size * _Needle_size <= 16)) {
+            if (_Try_vectorize && (sizeof(_Elem) == 1 || sizeof(_Elem) * _Needle_size <= 16)) {
                 _Use_bitmap = false;
             }
+#pragma warning(pop)
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
             if (_Use_bitmap) {
-                _String_bitmap<typename _Traits::char_type> _Matches;
+                _String_bitmap<_Elem> _Matches;
 
                 if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
                     const auto _End = _Haystack + _Hay_size;
