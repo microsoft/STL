@@ -740,7 +740,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
                     return static_cast<size_t>(-1); // no match
                 }
 
-                // couldn't put one of the characters into the bitmap, fall back to the serial algorithm
+                // couldn't put one of the characters into the bitmap, fall back to the vectorized or serial algorithms
             }
 
 #if _USE_STD_VECTOR_ALGORITHMS
