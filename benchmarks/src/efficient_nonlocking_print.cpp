@@ -1,5 +1,10 @@
 #include <benchmark/benchmark.h>
+#include <cstdio>
+#include <format>
 #include <print>
+#include <string>
+#include <string_view>
+#include <utility>
 
 namespace {
     using PrintType = void (*)(FILE*, std::string_view, std::format_args);
