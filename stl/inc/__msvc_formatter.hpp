@@ -174,15 +174,15 @@ private:
 _FMT_P2286_END
 
 #if _HAS_CXX23
-#define _FORMAT_SPECIALIZE_NON_LOCKING_FOR(_Type) \
+#define _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type) \
     template <>                                   \
     inline constexpr bool enable_nonlocking_formatter_optimization<_Type> = true;
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-#define _FORMAT_SPECIALIZE_NON_LOCKING_FOR(_Type)
+#define _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type)
 #endif // ^^^ !_HAS_CXX23 ^^^
 
 #define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
-    _FORMAT_SPECIALIZE_NON_LOCKING_FOR(_Type);  \
+    _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type);  \
     template <_Format_supported_charT _CharT>   \
     struct formatter<_Type, _CharT> : _Formatter_base<_Type, _CharT, _ArgType> {}
 
@@ -205,7 +205,7 @@ _FORMAT_SPECIALIZE_FOR(signed char, _Basic_format_arg_type::_Int_type);
 _FORMAT_SPECIALIZE_FOR(unsigned char, _Basic_format_arg_type::_UInt_type);
 
 #undef _FORMAT_SPECIALIZE_FOR
-#undef _FORMAT_SPECIALIZE_NON_LOCKING_FOR
+#undef _FORMAT_SPECIALIZE_NONLOCKING_FOR
 
 // not using the macro because we'd like to add 'set_debug_format' member function in C++23 mode
 template <_Format_supported_charT _CharT>
