@@ -749,7 +749,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
                     _STD _Find_first_of_vectorized(_Hay_start, _Hay_end, _Needle, _Needle + _Needle_size);
 
                 if (_Found != _Hay_end) {
-                    return static_cast<size_t>(_Found - _Haystack);
+                    return static_cast<size_t>(_Found - _Haystack); // found a match
                 } else {
                     return static_cast<size_t>(-1); // no match
                 }
