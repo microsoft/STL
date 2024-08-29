@@ -57,11 +57,11 @@ extern "C" {
 namespace {
     class _Allocated_string {
     public:
-        _Allocated_string() = default;
+        _Allocated_string() noexcept : _Buffer(L'\0') {}
 
         ~_Allocated_string() {
             if (_Using_heap()) {
-                _Str.~__crt_unique_heap_ptr<wchar_t>();
+                _Str.~_Heap_string();
             }
         }
 
@@ -73,27 +73,30 @@ namespace {
             return _Str_capacity;
         }
 
-        bool _Grow(const size_t _Capacity) noexcept {
+        [[nodiscard]] bool _Grow(const size_t _Capacity) noexcept {
             if (_Capacity <= _Str_capacity) {
                 return true;
             }
 
-            // This is actually a reset in std::unique_ptr terms, it deallocates the memory
-            _Str.release();
-            _Str_capacity = 0;
+            if (_Using_heap()) {
+                _Str.~_Heap_string();
+            }
 
-            __crt_unique_heap_ptr<wchar_t> _Wide_str{_malloc_crt_t(wchar_t, _Capacity)};
-            if (!_Wide_str) [[unlikely]] {
+            ::new (&_Str) _Heap_string(_Wide_str{_malloc_crt_t(wchar_t, _Capacity)};
+
+            if (!_Str) [[unlikely]] {
+                _Str_capacity = _Buffer_size;
+                _Buffer[0]    = L'\0'; // Activiate inline buffer member
                 return false;
             }
 
-            _Str          = std::move(_Wide_str);
             _Str_capacity = _Capacity;
-
             return true;
         }
 
     private:
+        using _Heap_string = __crt_unique_heap_ptr<wchar_t>;
+
         // Allows small formatted strings, such as those from _Print_to_unicode_console_it, to not allocate any extra
         // internal transcoding buffer
         static constexpr size_t _Buffer_size = 2048;
@@ -102,11 +105,11 @@ namespace {
             return _Str_capacity > _Buffer_size;
         }
 
-        union {
-            wchar_t _Buffer[_Buffer_size]{};
-            __crt_unique_heap_ptr<wchar_t> _Str;
-        };
         size_t _Str_capacity = _Buffer_size;
+        union {
+            wchar_t _Buffer[_Buffer_size];
+            _Heap_string _Str;
+        };
     };
 
     template <class _Char_type>
