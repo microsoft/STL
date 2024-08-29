@@ -46,7 +46,7 @@ public:
     using pointer           = void;
     using reference         = void;
 
-    explicit _Print_to_stream_it(FILE* const _Stream) noexcept : _Stream(_Stream) {}
+    explicit _Print_to_stream_it(FILE* const _Stream_) noexcept : _Stream(_Stream_) {}
 
     _Print_to_stream_it& operator=(const char) {
         return *this;
@@ -97,8 +97,8 @@ public:
     using pointer           = void;
     using reference         = void;
 
-    explicit _Print_to_unicode_console_it(const __std_unicode_console_handle _Console_handle) noexcept
-        : _Console_handle(_Console_handle) {}
+    explicit _Print_to_unicode_console_it(const __std_unicode_console_handle _Console_handle_) noexcept
+        : _Console_handle(_Console_handle_) {}
 
     _Print_to_unicode_console_it& operator=(const char) {
         return *this;
