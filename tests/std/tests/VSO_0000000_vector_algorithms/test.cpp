@@ -1030,9 +1030,9 @@ void test_bitset(mt19937_64& gen) {
 
 template <class T>
 void test_case_string_find_first_of(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
-    auto expected_ptr = last_known_good_find_first_of(
+    auto expected_iter = last_known_good_find_first_of(
         input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
-    auto expected = (expected_ptr != input_haystack.end()) ? expected_ptr - input_haystack.begin() : ptrdiff_t{-1};
+    auto expected = (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
     auto actual   = static_cast<ptrdiff_t>(input_haystack.find_first_of(input_needle.data(), 0, input_needle.size()));
     assert(expected == actual);
 }
