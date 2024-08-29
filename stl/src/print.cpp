@@ -82,11 +82,11 @@ namespace {
                 _Str.~_Heap_string();
             }
 
-            ::new (&_Str) _Heap_string(_Wide_str{_malloc_crt_t(wchar_t, _Capacity)};
+            ::new (&_Str) _Heap_string(_malloc_crt_t(wchar_t, _Capacity));
 
             if (!_Str) [[unlikely]] {
                 _Str_capacity = _Buffer_size;
-                _Buffer[0]    = L'\0'; // Activiate inline buffer member
+                _Buffer[0]    = L'\0'; // Activate inline buffer member
                 return false;
             }
 
