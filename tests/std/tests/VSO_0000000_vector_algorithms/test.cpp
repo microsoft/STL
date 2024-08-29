@@ -1068,7 +1068,7 @@ void test_basic_string(mt19937_64& gen) {
     uniform_int_distribution<dis_int_type> dis_latin('a', 'z');
     test_basic_string_dis<T>(gen, dis_latin);
     if constexpr (sizeof(T) >= 2) {
-        uniform_int_distribution<dis_int_type> dis_greek(0x0391, 0x003C9);
+        uniform_int_distribution<dis_int_type> dis_greek(0x391, 0x3C9);
         test_basic_string_dis<T>(gen, dis_greek);
     }
 }
