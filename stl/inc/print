@@ -72,7 +72,6 @@ private:
     FILE* _Stream;
 };
 
-// Print nonunicode _Str to _Stream, caller must have locked _Stream
 inline void _Print_noformat_nonunicode_nonlocking(FILE* const _Stream, const string_view _Str) {
     const bool _Was_write_successful = _CSTD _fwrite_nolock(_Str.data(), 1, _Str.size(), _Stream) == _Str.size();
 
@@ -124,7 +123,6 @@ private:
     __std_unicode_console_handle _Console_handle;
 };
 
-// Print unicode _Str to unicode console handle, caller must have locked _Stream
 inline void _Print_noformat_unicode_to_console_nonlocking(
     const __std_unicode_console_handle _Console_handle, const string_view _Str) {
     const __std_win_error _Console_print_result =
