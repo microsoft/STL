@@ -528,7 +528,15 @@ template <class _Traits>
 constexpr bool _Traits_equal(_In_reads_(_Left_size) const _Traits_ptr_t<_Traits> _Left, const size_t _Left_size,
     _In_reads_(_Right_size) const _Traits_ptr_t<_Traits> _Right, const size_t _Right_size) noexcept {
     // compare [_Left, _Left + _Left_size) to [_Right, _Right + _Right_size) for equality using _Traits
-    return _Left_size == _Right_size && _Traits::compare(_Left, _Right, _Left_size) == 0;
+    if (_Left_size != _Right_size) {
+        return false;
+    }
+
+    if (_Left_size == 0u) {
+        return true;
+    }
+
+    return _Traits::compare(_Left, _Right, _Left_size) == 0;
 }
 
 template <class _Traits>
