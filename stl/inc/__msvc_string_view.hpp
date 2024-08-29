@@ -721,7 +721,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
 
 #pragma warning(push)
 #pragma warning(disable : 4127) // conditional expression is constant
-            // Additional condition for the case where the table lookup outperforms the vectorization
+            // Additional condition for when the vectorization outperforms the table lookup
             if (_Try_vectorize && (sizeof(_Elem) == 1 || sizeof(_Elem) * _Needle_size <= 16)) {
                 _Use_bitmap = false;
             }
