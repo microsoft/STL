@@ -753,14 +753,12 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS
+        }
 
-            return _Traits_find_first_of<_Traits, false>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size);
-        } else {
-            const auto _End = _Haystack + _Hay_size;
-            for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
-                if (_Traits::find(_Needle, _Needle_size, *_Match_try)) {
-                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
-                }
+        const auto _End = _Haystack + _Hay_size;
+        for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
+            if (_Traits::find(_Needle, _Needle_size, *_Match_try)) {
+                return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
         }
     }
