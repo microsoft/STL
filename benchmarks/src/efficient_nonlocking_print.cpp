@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// This benchmark inherently prints many lines to stdout. To view its results, run it with these options:
+// --benchmark_out=efficient_nonlocking_print.log --benchmark_out_format=console
+
 #include <benchmark/benchmark.h>
 #include <cstdio>
 #include <format>
