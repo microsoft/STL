@@ -5974,7 +5974,7 @@ private:
 
 #if _HAS_CXX23
 template <class _Duration>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO sys_time<_Duration>> = true;
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO sys_time<_Duration>> = true;
 #endif // _HAS_CXX23
 
 template <class _Duration, _Format_supported_charT _CharT>
@@ -5995,7 +5995,7 @@ private:
 
 #if _HAS_CXX23
 template <class _Duration>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO utc_time<_Duration>> = true;
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO utc_time<_Duration>> = true;
 #endif // _HAS_CXX23
 
 template <class _Duration, _Format_supported_charT _CharT>
@@ -6019,7 +6019,7 @@ private:
 
 #if _HAS_CXX23
 template <class _Duration>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO tai_time<_Duration>> = true;
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO tai_time<_Duration>> = true;
 #endif // _HAS_CXX23
 
 template <class _Duration, _Format_supported_charT _CharT>
@@ -6043,7 +6043,7 @@ private:
 
 #if _HAS_CXX23
 template <class _Duration>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO gps_time<_Duration>> = true;
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO gps_time<_Duration>> = true;
 #endif // _HAS_CXX23
 
 template <class _Duration, _Format_supported_charT _CharT>
@@ -6065,7 +6065,7 @@ private:
 
 #if _HAS_CXX23
 template <class _Duration>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO file_time<_Duration>> = true;
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO file_time<_Duration>> = true;
 #endif // _HAS_CXX23
 
 template <class _Duration, _Format_supported_charT _CharT>
@@ -6073,7 +6073,7 @@ struct formatter<_CHRONO local_time<_Duration>, _CharT> : _Fill_tm_formatter<_CH
 
 #if _HAS_CXX23
 template <class _Duration>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO local_time<_Duration>> = true;
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO local_time<_Duration>> = true;
 #endif // _HAS_CXX23
 
 template <class _Duration, _Format_supported_charT _CharT>
@@ -6082,7 +6082,7 @@ struct formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>
 
 #if _HAS_CXX23
 template <class _Duration>
-inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO _Local_time_format_t<_Duration>> = true;
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO _Local_time_format_t<_Duration>> = true;
 #endif // _HAS_CXX23
 
 template <class _Duration, class _TimeZonePtr, _Format_supported_charT _CharT>
