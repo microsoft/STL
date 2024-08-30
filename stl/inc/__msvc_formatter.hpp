@@ -400,10 +400,6 @@ constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
 template <class... _Ts>
 constexpr bool enable_nonlocking_formatter_optimization<tuple<_Ts...>> =
     (enable_nonlocking_formatter_optimization<_Ts> && ...);
-
-template <_RANGES input_range _Rng>
-    requires (format_kind<_Rng> != range_format::disabled)
-constexpr bool enable_nonlocking_formatter_optimization<_Rng> = false;
 #endif // _HAS_CXX23
 _STD_END
 
