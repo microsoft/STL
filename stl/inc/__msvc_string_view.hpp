@@ -715,18 +715,13 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
             if (!_STD _Is_constant_evaluated()) {
                 using _Elem = typename _Traits::char_type;
 
-                bool _Use_bitmap = true;
-
 #if _USE_STD_VECTOR_ALGORITHMS
                 const bool _Try_vectorize = _Hay_size - _Start_at > _Threshold_find_first_of;
 
-#pragma warning(push)
-#pragma warning(disable : 4127) // conditional expression is constant
                 // Additional condition for when the vectorization outperforms the table lookup
-                if (_Try_vectorize && (sizeof(_Elem) == 1 || sizeof(_Elem) * _Needle_size <= 16)) {
-                    _Use_bitmap = false;
-                }
-#pragma warning(pop)
+                const bool _Use_bitmap = !_Try_vectorize || (sizeof(_Elem) > 1 && sizeof(_Elem) * _Needle_size > 16);
+#else
+                const bool _Use_bitmap = true;
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
                 if (_Use_bitmap) {
