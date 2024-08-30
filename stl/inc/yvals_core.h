@@ -394,9 +394,10 @@
 // P2833R2 Freestanding Library: inout expected span
 //     (except for __cpp_lib_span which also covers C++26 span::at)
 // P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
+// P3107R5 Permit An Efficient Implementation Of <print>
 // P3142R0 Printing Blank Lines With println()
-// P3107R5 Permit An Efficient Implementation Of<print>
 // P3235R3 std::print More Types Faster With Less Memory
+//     (partial implementation; see GH-4924)
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
