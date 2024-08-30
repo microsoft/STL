@@ -25,6 +25,7 @@ struct std::formatter<unoptimized, CharT> : formatter<string_view, CharT> {
     }
 };
 
+static_assert(formattable<unoptimized, char>);
 static_assert(!enable_nonlocking_formatter_optimization<unoptimized>);
 
 template <class T>
