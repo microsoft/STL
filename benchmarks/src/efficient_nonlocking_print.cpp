@@ -29,8 +29,8 @@ namespace {
         const std::pair<int, double> p{16, 2.073f};
         for (auto _ : state) {
             PrintFunction(stdout,
-                "Hello cool I am going print as unicode!! {:X}, {}, {:a}, I am a big string, lots of words, multiple "
-                "{} formats\n",
+                "Hello cool I am going to print as unicode!! {:X}, {}, {:a}, "
+                "I am a big string, lots of words, multiple {} formats\n",
                 std::make_format_args(i, str, f, p));
         }
     }
