@@ -85,7 +85,7 @@ std/language.support/support.limits/support.limits.general/algorithm.version.com
 std/language.support/support.limits/support.limits.general/functional.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/iterator.version.compile.pass.cpp FAIL
 
-# Test expects __cpp_lib_print to have the old value 202207L for P2093R14; we define the C++23 value 202406L for P3107R5.
+# Test expects __cpp_lib_print to have the old value 202207L for P2093R14; we define the C++23 value 202406L for P3235R3.
 std/language.support/support.limits/support.limits.general/ostream.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/print.version.compile.pass.cpp FAIL
 
