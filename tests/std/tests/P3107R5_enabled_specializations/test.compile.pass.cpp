@@ -47,6 +47,8 @@ struct myalloc {
 static_assert(enable_nonlocking_formatter_optimization<chrono::seconds>);
 static_assert(!enable_nonlocking_formatter_optimization<chrono::duration<unoptimized>>);
 
+// Other than `duration` itself, other <chrono> types that depend on `duration` should be unconditionally
+// enabled since they decompose `duration`s rather than formatting them directly.
 static_assert(enable_nonlocking_formatter_optimization<chrono::sys_time<chrono::seconds>>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::sys_time<chrono::duration<unoptimized>>>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::utc_time<chrono::seconds>>);
