@@ -45,17 +45,17 @@ static_assert(enable_nonlocking_formatter_optimization<chrono::seconds>);
 static_assert(!enable_nonlocking_formatter_optimization<chrono::duration<unoptimized>>);
 
 static_assert(enable_nonlocking_formatter_optimization<chrono::sys_time<chrono::seconds>>);
-static_assert(!enable_nonlocking_formatter_optimization<chrono::sys_time<chrono::duration<unoptimized>>>);
+static_assert(enable_nonlocking_formatter_optimization<chrono::sys_time<chrono::duration<unoptimized>>>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::utc_time<chrono::seconds>>);
-static_assert(!enable_nonlocking_formatter_optimization<chrono::utc_time<chrono::duration<unoptimized>>>);
+static_assert(enable_nonlocking_formatter_optimization<chrono::utc_time<chrono::duration<unoptimized>>>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::tai_time<chrono::seconds>>);
-static_assert(!enable_nonlocking_formatter_optimization<chrono::tai_time<chrono::duration<unoptimized>>>);
+static_assert(enable_nonlocking_formatter_optimization<chrono::tai_time<chrono::duration<unoptimized>>>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::gps_time<chrono::seconds>>);
-static_assert(!enable_nonlocking_formatter_optimization<chrono::gps_time<chrono::duration<unoptimized>>>);
+static_assert(enable_nonlocking_formatter_optimization<chrono::gps_time<chrono::duration<unoptimized>>>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::file_time<chrono::seconds>>);
-static_assert(!enable_nonlocking_formatter_optimization<chrono::file_time<chrono::duration<unoptimized>>>);
+static_assert(enable_nonlocking_formatter_optimization<chrono::file_time<chrono::duration<unoptimized>>>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::local_time<chrono::seconds>>);
-static_assert(!enable_nonlocking_formatter_optimization<chrono::local_time<chrono::duration<unoptimized>>>);
+static_assert(enable_nonlocking_formatter_optimization<chrono::local_time<chrono::duration<unoptimized>>>);
 
 static_assert(enable_nonlocking_formatter_optimization<chrono::day>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::month>);
@@ -74,13 +74,13 @@ static_assert(enable_nonlocking_formatter_optimization<chrono::year_month_weekda
 static_assert(enable_nonlocking_formatter_optimization<chrono::year_month_weekday_last>);
 
 static_assert(enable_nonlocking_formatter_optimization<chrono::hh_mm_ss<chrono::seconds>>);
-static_assert(!enable_nonlocking_formatter_optimization<chrono::hh_mm_ss<chrono::duration<unoptimized>>>);
+static_assert(enable_nonlocking_formatter_optimization<chrono::hh_mm_ss<chrono::duration<unoptimized>>>);
 
 static_assert(enable_nonlocking_formatter_optimization<chrono::sys_info>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::local_info>);
 
 static_assert(enable_nonlocking_formatter_optimization<chrono::zoned_time<chrono::seconds>>);
-static_assert(!enable_nonlocking_formatter_optimization<chrono::zoned_time<chrono::duration<unoptimized>>>);
+static_assert(enable_nonlocking_formatter_optimization<chrono::zoned_time<chrono::duration<unoptimized>>>);
 static_assert(!enable_nonlocking_formatter_optimization<chrono::zoned_time<chrono::seconds, long long>>);
 
 // <format> ====================================================================
