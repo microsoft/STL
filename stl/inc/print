@@ -41,28 +41,17 @@ struct _NODISCARD _Stream_lock_guard {
 class _Print_to_stream_it {
 public:
     using iterator_category = output_iterator_tag;
-    using difference_type   = ptrdiff_t;
     using value_type        = void;
+    using difference_type   = ptrdiff_t;
     using pointer           = void;
     using reference         = void;
 
     explicit _Print_to_stream_it(FILE* const _Stream_) noexcept : _Stream(_Stream_) {}
 
-    _Print_to_stream_it& operator=(const char) {
-        return *this;
-    }
-
-    _Print_to_stream_it& operator*() noexcept {
-        return *this;
-    }
-
-    _Print_to_stream_it& operator++() noexcept {
-        return *this;
-    }
-
-    _Print_to_stream_it operator++(int) noexcept {
-        return *this;
-    }
+    _Print_to_stream_it& operator=(const char); // These members are intentionally not defined
+    _Print_to_stream_it& operator*();
+    _Print_to_stream_it& operator++();
+    _Print_to_stream_it operator++(int);
 
     FILE* _Get_stream() const noexcept {
         return _Stream;
@@ -91,29 +80,18 @@ struct _Fmt_iterator_flush<_Print_to_stream_it> {
 class _Print_to_unicode_console_it {
 public:
     using iterator_category = output_iterator_tag;
-    using difference_type   = ptrdiff_t;
     using value_type        = void;
+    using difference_type   = ptrdiff_t;
     using pointer           = void;
     using reference         = void;
 
     explicit _Print_to_unicode_console_it(const __std_unicode_console_handle _Console_handle_) noexcept
         : _Console_handle(_Console_handle_) {}
 
-    _Print_to_unicode_console_it& operator=(const char) {
-        return *this;
-    }
-
-    _Print_to_unicode_console_it& operator*() noexcept {
-        return *this;
-    }
-
-    _Print_to_unicode_console_it& operator++() noexcept {
-        return *this;
-    }
-
-    _Print_to_unicode_console_it operator++(int) noexcept {
-        return *this;
-    }
+    _Print_to_unicode_console_it& operator=(const char); // These members are intentionally not defined
+    _Print_to_unicode_console_it& operator*();
+    _Print_to_unicode_console_it& operator++();
+    _Print_to_unicode_console_it operator++(int);
 
     __std_unicode_console_handle _Get_console_handle() const noexcept {
         return _Console_handle;
