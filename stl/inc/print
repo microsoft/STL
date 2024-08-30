@@ -180,7 +180,7 @@ void _Do_on_maybe_unicode_console(
     }
 }
 
-// If a unicode console write using native API, else write to stream
+// If a unicode console, write using native API, else write to stream
 inline void _Vprint_unicode_noformat_impl(FILE* const _Stream, const string_view _Output_str) {
     const auto _Unicode_console = [&](const __std_unicode_console_handle _Console_handle) {
         const _Stream_lock_guard _Guard{_Stream};
