@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 struct _NODISCARD _Stream_lock_guard {
-    explicit _Stream_lock_guard(FILE* const _Stream) : _Stream(_Stream) {
+    explicit _Stream_lock_guard(FILE* const _Stream_) : _Stream(_Stream_) {
         _CSTD _lock_file(_Stream);
     }
     ~_Stream_lock_guard() {
