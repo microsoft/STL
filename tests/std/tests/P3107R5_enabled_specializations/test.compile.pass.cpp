@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <chrono>
+#include <cstddef>
 #include <format>
 #include <list>
 #include <ranges>
