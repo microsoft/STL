@@ -4757,8 +4757,8 @@ _CONSTEXPR20 _OutIt copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy [_Fi
     _STD _Adl_verify_range(_First, _Last);
     const auto _UFirst = _STD _Get_unwrapped(_First);
     const auto _ULast  = _STD _Get_unwrapped(_Last);
-    const auto _UDest  = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
-    _STD _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst, _ULast, _UDest));
+    auto _UDest        = _STD _Get_unwrapped_n(_STD move(_Dest), _STD _Idl_distance<_InIt>(_UFirst, _ULast));
+    _STD _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst, _ULast, _STD move(_UDest)));
     return _Dest;
 }
 

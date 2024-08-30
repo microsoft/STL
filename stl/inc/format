@@ -2352,7 +2352,7 @@ template <class _OutputIt>
 struct _Fmt_iterator_flush {
     template <class _Ty>
     static _OutputIt _Flush(const _Ty* const _First, const _Ty* const _Last, _OutputIt _Output) {
-        return _STD _Copy_unchecked(_First, _Last, _STD move(_Output));
+        return _STD copy(_First, _Last, _STD move(_Output));
     }
 };
 
