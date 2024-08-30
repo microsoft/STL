@@ -57,7 +57,9 @@ extern "C" {
 namespace {
     class _Allocated_string {
     public:
-        _Allocated_string() noexcept : _Buffer(L'\0') {}
+        _Allocated_string() noexcept {
+            _Buffer[0] = L'\0'; // Activate _Buffer
+        }
 
         ~_Allocated_string() {
             if (_Using_heap()) {
@@ -80,13 +82,16 @@ namespace {
 
             if (_Using_heap()) {
                 _Str.~_Heap_string();
+                // We must not throw until restoring the invariant that:
+                // (_Str_capacity == _Buffer_size && _Buffer is active) ||
+                // (_Str_capacity > _Buffer_size && _Str is active)
             }
 
-            ::new (&_Str) _Heap_string(_malloc_crt_t(wchar_t, _Capacity));
+            ::new (&_Str) _Heap_string(_malloc_crt_t(wchar_t, _Capacity)); // Activate _Str
 
             if (!_Str) [[unlikely]] {
                 _Str_capacity = _Buffer_size;
-                _Buffer[0]    = L'\0'; // Activate inline buffer member
+                _Buffer[0]    = L'\0'; // Activate _Buffer
                 return false;
             }
 
