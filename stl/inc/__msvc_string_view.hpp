@@ -712,49 +712,51 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
         const auto _Hay_end   = _Haystack + _Hay_size;
 
         if constexpr (_Special) {
-            using _Elem = typename _Traits::char_type;
+            if (!_STD _Is_constant_evaluated()) {
+                using _Elem = typename _Traits::char_type;
 
-            bool _Use_bitmap = true;
+                bool _Use_bitmap = true;
 
 #if _USE_STD_VECTOR_ALGORITHMS
-            bool _Try_vectorize = !_STD _Is_constant_evaluated() && _Hay_size - _Start_at > _Threshold_find_first_of;
+                const bool _Try_vectorize = _Hay_size - _Start_at > _Threshold_find_first_of;
 
 #pragma warning(push)
 #pragma warning(disable : 4127) // conditional expression is constant
-            // Additional condition for when the vectorization outperforms the table lookup
-            if (_Try_vectorize && (sizeof(_Elem) == 1 || sizeof(_Elem) * _Needle_size <= 16)) {
-                _Use_bitmap = false;
-            }
+                // Additional condition for when the vectorization outperforms the table lookup
+                if (_Try_vectorize && (sizeof(_Elem) == 1 || sizeof(_Elem) * _Needle_size <= 16)) {
+                    _Use_bitmap = false;
+                }
 #pragma warning(pop)
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
-            if (_Use_bitmap) {
-                _String_bitmap<_Elem> _Matches;
+                if (_Use_bitmap) {
+                    _String_bitmap<_Elem> _Matches;
 
-                if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
-                    for (auto _Match_try = _Hay_start; _Match_try < _Hay_end; ++_Match_try) {
-                        if (_Matches._Match(*_Match_try)) {
-                            return static_cast<size_t>(_Match_try - _Haystack); // found a match
+                    if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
+                        for (auto _Match_try = _Hay_start; _Match_try < _Hay_end; ++_Match_try) {
+                            if (_Matches._Match(*_Match_try)) {
+                                return static_cast<size_t>(_Match_try - _Haystack); // found a match
+                            }
                         }
+                        return static_cast<size_t>(-1); // no match
                     }
-                    return static_cast<size_t>(-1); // no match
-                }
 
-                // couldn't put one of the characters into the bitmap, fall back to the vectorized or serial algorithms
-            }
+                    // couldn't put one of the characters into the bitmap, fall back to vectorized or serial algorithms
+                }
 
 #if _USE_STD_VECTOR_ALGORITHMS
-            if (_Try_vectorize) {
-                const _Traits_ptr_t<_Traits> _Found =
-                    _STD _Find_first_of_vectorized(_Hay_start, _Hay_end, _Needle, _Needle + _Needle_size);
+                if (_Try_vectorize) {
+                    const _Traits_ptr_t<_Traits> _Found =
+                        _STD _Find_first_of_vectorized(_Hay_start, _Hay_end, _Needle, _Needle + _Needle_size);
 
-                if (_Found != _Hay_end) {
-                    return static_cast<size_t>(_Found - _Haystack); // found a match
-                } else {
-                    return static_cast<size_t>(-1); // no match
+                    if (_Found != _Hay_end) {
+                        return static_cast<size_t>(_Found - _Haystack); // found a match
+                    } else {
+                        return static_cast<size_t>(-1); // no match
+                    }
                 }
-            }
 #endif // _USE_STD_VECTOR_ALGORITHMS
+            }
         }
 
         for (auto _Match_try = _Hay_start; _Match_try < _Hay_end; ++_Match_try) {
