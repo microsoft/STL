@@ -182,7 +182,7 @@ _FMT_P2286_END
 #endif // ^^^ !_HAS_CXX23 ^^^
 
 #define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
-    _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type);   \
+    _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type)    \
     template <_Format_supported_charT _CharT>   \
     struct formatter<_Type, _CharT> : _Formatter_base<_Type, _CharT, _ArgType> {}
 
