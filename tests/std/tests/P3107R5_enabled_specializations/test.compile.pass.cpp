@@ -59,6 +59,7 @@ static_assert(enable_nonlocking_formatter_optimization<chrono::file_time<chrono:
 static_assert(enable_nonlocking_formatter_optimization<chrono::file_time<chrono::duration<unoptimized>>>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::local_time<chrono::seconds>>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::local_time<chrono::duration<unoptimized>>>);
+static_assert(enable_nonlocking_formatter_optimization<decltype(chrono::local_time_format(chrono::local_seconds{}))>);
 
 static_assert(enable_nonlocking_formatter_optimization<chrono::day>);
 static_assert(enable_nonlocking_formatter_optimization<chrono::month>);
