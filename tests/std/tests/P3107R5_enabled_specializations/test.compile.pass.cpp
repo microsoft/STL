@@ -20,7 +20,7 @@ struct unoptimized {};
 template <class CharT>
 struct std::formatter<unoptimized, CharT> : formatter<string_view, CharT> {
     template <class FormatContext>
-    auto format(const unoptimized&, FormatContext& ctx) {
+    auto format(const unoptimized&, FormatContext& ctx) const {
         return formatter<string_view, CharT>::format("unoptimized", ctx);
     }
 };
