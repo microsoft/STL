@@ -7064,9 +7064,9 @@ namespace ranges {
 
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Lower_bound_unchecked(
-        _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
+        _It _First, iter_difference_t<_It> _Count, _Ty&& _Val, _Pr _Pred, _Pj _Proj) {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, const _Ty*, projected<_It, _Pj>>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, add_pointer_t<_Ty>, projected<_It, _Pj>>);
 
         using _Diff = iter_difference_t<_It>;
 
@@ -7115,9 +7115,9 @@ namespace ranges {
 
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Upper_bound_unchecked(
-        _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
+        _It _First, iter_difference_t<_It> _Count, _Ty&& _Val, _Pr _Pred, _Pj _Proj) {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, const _Ty*, projected<_It, _Pj>>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, add_pointer_t<_Ty>, projected<_It, _Pj>>);
 
         using _Diff = iter_difference_t<_It>;
 
