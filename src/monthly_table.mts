@@ -65,5 +65,6 @@ export const monthly_table: MonthlyRow[] = [
     { date: '2024-05-16', merge_bar: 28, },
     { date: '2024-06-16', merge_bar: 26, },
     { date: '2024-07-16', merge_bar: 29, },
+    { date: '2024-08-16', merge_bar: 49, },
 ];
 // Generated file - DO NOT EDIT manually!
