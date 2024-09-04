@@ -823,9 +823,9 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
                 if constexpr (sizeof(_Elem) <= 2) {
                     _Try_vectorize = _Hay_size - _Start_at > _Threshold_find_first_of;
                     // Additional condition for when the vectorization outperforms the table lookup
-                    constexpr size_t _Find_first_of_bitmap_threshold = sizeof(_Elem) == 1 ? 48 : 8;
+                    constexpr size_t _Find_last_of_bitmap_threshold = sizeof(_Elem) == 1 ? 48 : 8;
 
-                    _Use_bitmap = !_Try_vectorize || _Needle_size > _Find_first_of_bitmap_threshold;
+                    _Use_bitmap = !_Try_vectorize || _Needle_size > _Find_last_of_bitmap_threshold;
                 }
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
