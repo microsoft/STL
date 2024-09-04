@@ -2905,6 +2905,8 @@ namespace {
                         }
                     };
 
+#pragma warning(push)
+#pragma warning(disable : 4324)
                     const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1) noexcept {
                         const void* _Cur_needle = _First2;
                         do {
@@ -2917,6 +2919,7 @@ namespace {
                             _Step(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1);
                         }
                     };
+#pragma warning(pop)
 
                     while (_First1 != _Stop_at) {
                         _Test_whole_needle(_mm_loadu_si128(static_cast<const __m128i*>(_First1)), _Part_size_el);
@@ -3235,6 +3238,8 @@ namespace {
                     }
                 };
 
+#pragma warning(push)
+#pragma warning(disable : 4324)
                 const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1) noexcept {
                     const void* _Cur_needle = _Needle;
                     do {
@@ -3247,6 +3252,7 @@ namespace {
                         _Step(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1);
                     }
                 };
+#pragma warning(pop)
 
                 while (_Cur != _Stop_at) {
                     _Rewind_bytes(_Cur, 16);
