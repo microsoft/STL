@@ -5805,61 +5805,157 @@ template <class _Rep, class _Period, _Format_supported_charT _CharT>
 struct formatter<_CHRONO duration<_Rep, _Period>, _CharT>
     : _Fill_tm_formatter<_CHRONO duration<_Rep, _Period>, _CharT> {};
 
+#if _HAS_CXX23
+template <class _Rep, class _Period>
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO duration<_Rep, _Period>> =
+    enable_nonlocking_formatter_optimization<_Rep>;
+#endif // _HAS_CXX23
+
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO day, _CharT> : _Fill_tm_formatter<_CHRONO day, _CharT> {};
+
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO day> = true;
+#endif // _HAS_CXX23
 
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO month, _CharT> : _Fill_tm_formatter<_CHRONO month, _CharT> {};
 
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO month> = true;
+#endif // _HAS_CXX23
+
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year, _CharT> : _Fill_tm_formatter<_CHRONO year, _CharT> {};
+
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO year> = true;
+#endif // _HAS_CXX23
 
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO weekday, _CharT> : _Fill_tm_formatter<_CHRONO weekday, _CharT> {};
 
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO weekday> = true;
+#endif // _HAS_CXX23
+
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO weekday_indexed, _CharT> : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
+
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO weekday_indexed> = true;
+#endif // _HAS_CXX23
 
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO weekday_last, _CharT> : _Fill_tm_formatter<_CHRONO weekday_last, _CharT> {};
 
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO weekday_last> = true;
+#endif // _HAS_CXX23
+
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO month_day, _CharT> : _Fill_tm_formatter<_CHRONO month_day, _CharT> {};
+
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO month_day> = true;
+#endif // _HAS_CXX23
 
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO month_day_last, _CharT> : _Fill_tm_formatter<_CHRONO month_day_last, _CharT> {};
 
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO month_day_last> = true;
+#endif // _HAS_CXX23
+
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO month_weekday, _CharT> : _Fill_tm_formatter<_CHRONO month_weekday, _CharT> {};
+
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO month_weekday> = true;
+#endif // _HAS_CXX23
 
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO month_weekday_last, _CharT> : _Fill_tm_formatter<_CHRONO month_weekday_last, _CharT> {};
 
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO month_weekday_last> = true;
+#endif // _HAS_CXX23
+
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year_month, _CharT> : _Fill_tm_formatter<_CHRONO year_month, _CharT> {};
+
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO year_month> = true;
+#endif // _HAS_CXX23
 
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year_month_day, _CharT> : _Fill_tm_formatter<_CHRONO year_month_day, _CharT> {};
 
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO year_month_day> = true;
+#endif // _HAS_CXX23
+
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year_month_day_last, _CharT> : _Fill_tm_formatter<_CHRONO year_month_day_last, _CharT> {};
 
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO year_month_day_last> = true;
+#endif // _HAS_CXX23
+
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year_month_weekday, _CharT> : _Fill_tm_formatter<_CHRONO year_month_weekday, _CharT> {};
+
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO year_month_weekday> = true;
+#endif // _HAS_CXX23
 
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO year_month_weekday_last, _CharT>
     : _Fill_tm_formatter<_CHRONO year_month_weekday_last, _CharT> {};
 
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO year_month_weekday_last> = true;
+#endif // _HAS_CXX23
+
 template <class _Rep, class _Period, _Format_supported_charT _CharT>
 struct formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT>
     : _Fill_tm_formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT> {};
 
+#if _HAS_CXX23
+template <class _Rep, class _Period>
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>> = true;
+#endif // _HAS_CXX23
+
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO sys_info, _CharT> : _Fill_tm_formatter<_CHRONO sys_info, _CharT> {};
 
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO sys_info> = true;
+#endif // _HAS_CXX23
+
 template <_Format_supported_charT _CharT>
 struct formatter<_CHRONO local_info, _CharT> : _Fill_tm_formatter<_CHRONO local_info, _CharT> {};
+
+#if _HAS_CXX23
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<_CHRONO local_info> = true;
+#endif // _HAS_CXX23
 
 template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
@@ -5876,6 +5972,11 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
+#if _HAS_CXX23
+template <class _Duration>
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO sys_time<_Duration>> = true;
+#endif // _HAS_CXX23
+
 template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
     constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
@@ -5891,6 +5992,11 @@ struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
 private:
     _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
+
+#if _HAS_CXX23
+template <class _Duration>
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO utc_time<_Duration>> = true;
+#endif // _HAS_CXX23
 
 template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO tai_time<_Duration>, _CharT> {
@@ -5911,6 +6017,11 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "TAI")};
 };
 
+#if _HAS_CXX23
+template <class _Duration>
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO tai_time<_Duration>> = true;
+#endif // _HAS_CXX23
+
 template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO gps_time<_Duration>, _CharT> {
     constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
@@ -5930,6 +6041,11 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "GPS")};
 };
 
+#if _HAS_CXX23
+template <class _Duration>
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO gps_time<_Duration>> = true;
+#endif // _HAS_CXX23
+
 template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO file_time<_Duration>, _CharT> {
     constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
@@ -5947,12 +6063,27 @@ private:
     _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
+#if _HAS_CXX23
+template <class _Duration>
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO file_time<_Duration>> = true;
+#endif // _HAS_CXX23
+
 template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO local_time<_Duration>, _CharT> : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
+
+#if _HAS_CXX23
+template <class _Duration>
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO local_time<_Duration>> = true;
+#endif // _HAS_CXX23
 
 template <class _Duration, _Format_supported_charT _CharT>
 struct formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>
     : _Fill_tm_formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT> {};
+
+#if _HAS_CXX23
+template <class _Duration>
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO _Local_time_format_t<_Duration>> = true;
+#endif // _HAS_CXX23
 
 template <class _Duration, class _TimeZonePtr, _Format_supported_charT _CharT>
 struct formatter<_CHRONO zoned_time<_Duration, _TimeZonePtr>, _CharT>
@@ -5965,6 +6096,11 @@ struct formatter<_CHRONO zoned_time<_Duration, _TimeZonePtr>, _CharT>
         return _Mybase::format({_Val.get_local_time(), &_Info.abbrev, &_Info.offset}, _FormatCtx);
     }
 };
+
+#if _HAS_CXX23
+template <class _Duration>
+constexpr bool enable_nonlocking_formatter_optimization<_CHRONO zoned_time<_Duration, const _CHRONO time_zone*>> = true;
+#endif // _HAS_CXX23
 
 namespace chrono {
     template <class _Duration>

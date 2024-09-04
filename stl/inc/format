@@ -2199,9 +2199,6 @@ private:
     basic_format_args<basic_format_context> _Args;
     _Lazy_locale _Loc;
 
-    constexpr basic_format_context(_Out&& _OutputIt_, const basic_format_args<basic_format_context>& _Ctx_args)
-        : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args) {}
-
     constexpr basic_format_context(
         _Out&& _OutputIt_, const basic_format_args<basic_format_context>& _Ctx_args, const _Lazy_locale& _Loc_)
         : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
@@ -2236,10 +2233,6 @@ public:
         return _Loc;
     }
 
-    _NODISCARD static constexpr basic_format_context _Make_from(
-        _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args) {
-        return basic_format_context{_STD move(_OutputIt_), _Ctx_args};
-    }
     _NODISCARD static constexpr basic_format_context _Make_from(
         _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const _Lazy_locale& _Loc_) {
         return basic_format_context{_STD move(_OutputIt_), _Ctx_args, _Loc_};
@@ -2355,14 +2348,12 @@ public:
 
 inline constexpr size_t _Fmt_buffer_size = 256;
 
-template <class _Iterator>
-struct _Back_insert_iterator_container_type {
-    using type = void;
-};
-
-template <class _Container>
-struct _Back_insert_iterator_container_type<back_insert_iterator<_Container>> {
-    using type = _Container;
+template <class _OutputIt>
+struct _Fmt_iterator_flush {
+    template <class _Ty>
+    static _OutputIt _Flush(const _Ty* const _First, const _Ty* const _Last, _OutputIt _Output) {
+        return _STD copy(_First, _Last, _STD move(_Output));
+    }
 };
 
 template <class _Container>
@@ -2371,6 +2362,19 @@ struct _Back_insert_iterator_container_access : back_insert_iterator<_Container>
         : back_insert_iterator<_Container>(_Iter) {}
 
     using back_insert_iterator<_Container>::container;
+};
+
+template <class _Container>
+    requires (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>)
+struct _Fmt_iterator_flush<back_insert_iterator<_Container>> {
+    using _OutputIt = back_insert_iterator<_Container>;
+
+    template <class _Ty>
+    static _OutputIt _Flush(const _Ty* const _First, const _Ty* const _Last, _OutputIt _Output) {
+        _Container& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
+        _Cont.insert(_Cont.end(), _First, _Last);
+        return _Output;
+    }
 };
 
 template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
@@ -2390,14 +2394,7 @@ private:
         this->_Clear();
         const auto _End = _Data + this->_Limit(_Size);
 
-        // extracts back_insert_iterator's underlying container type, or void if not.
-        using _Container = _Back_insert_iterator_container_type<_OutputIt>::type;
-        if constexpr (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>) {
-            auto& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
-            _Cont.insert(_Cont.end(), _Data, _End);
-        } else {
-            _Output = _STD _Copy_unchecked(_Data, _End, _STD move(_Output));
-        }
+        _Output = _Fmt_iterator_flush<_OutputIt>::_Flush(_Data, _End, _STD move(_Output));
     }
 
 public:
@@ -3606,9 +3603,6 @@ struct _Format_handler {
     basic_format_parse_context<_CharT> _Parse_context;
     _Context _Ctx;
 
-    explicit _Format_handler(_OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args)
-        : _Parse_context(_Str), _Ctx(_Context::_Make_from(_STD move(_Out), _Format_args)) {}
-
     explicit _Format_handler(_OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args,
         const _Lazy_locale& _Loc)
         : _Parse_context(_Str), _Ctx(_Context::_Make_from(_STD move(_Out), _Format_args, _Loc)) {}
@@ -3735,68 +3729,40 @@ _NODISCARD auto make_wformat_args(_Args&... _Vals) {
 }
 
 _FMT_P2286_BEGIN
-_EXPORT_STD template <output_iterator<const char&> _OutputIt>
-_OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
-    // Make `_Parse_format_string` type-dependent to defer instantiation:
-    using _Dependent_char = decltype((void) _Out, char{});
-    if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
-        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args);
+template <class _CharT, output_iterator<const _CharT&> _OutputIt, class _Context>
+_OutputIt _Format_to_it(_OutputIt _Out, const basic_string_view<_CharT> _Fmt, const basic_format_args<_Context> _Args,
+    const _Lazy_locale _Loc) {
+    using _Fmt_it_char = _Basic_fmt_it<_CharT>;
+    if constexpr (is_same_v<_OutputIt, _Fmt_it_char>) {
+        _Format_handler<_CharT> _Handler(_Out, _Fmt, _Args, _Loc);
         _Parse_format_string(_Fmt, _Handler);
         return _Out;
     } else {
-        _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
-        _Format_handler<_Dependent_char> _Handler(_Fmt_it{_Buf}, _Fmt, _Args);
+        _Fmt_iterator_buffer<_OutputIt, _CharT> _Buf(_STD move(_Out));
+        _Format_handler<_CharT> _Handler(_Fmt_it_char{_Buf}, _Fmt, _Args, _Loc);
         _Parse_format_string(_Fmt, _Handler);
         return _Buf._Out();
     }
+}
+
+_EXPORT_STD template <output_iterator<const char&> _OutputIt>
+_OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
+    return _Format_to_it(_STD move(_Out), _Fmt, _Args, _Lazy_locale{});
 }
 
 _EXPORT_STD template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const wstring_view _Fmt, const wformat_args _Args) {
-    // Make `_Parse_format_string` type-dependent to defer instantiation:
-    using _Dependent_char = decltype((void) _Out, wchar_t{});
-    if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
-        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args);
-        _Parse_format_string(_Fmt, _Handler);
-        return _Out;
-    } else {
-        _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
-        _Format_handler<_Dependent_char> _Handler(_Fmt_wit{_Buf}, _Fmt, _Args);
-        _Parse_format_string(_Fmt, _Handler);
-        return _Buf._Out();
-    }
+    return _Format_to_it(_STD move(_Out), _Fmt, _Args, _Lazy_locale{});
 }
 
 _EXPORT_STD template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const format_args _Args) {
-    // Make `_Parse_format_string` type-dependent to defer instantiation:
-    using _Dependent_char = decltype((void) _Out, char{});
-    if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
-        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
-        _Parse_format_string(_Fmt, _Handler);
-        return _Out;
-    } else {
-        _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
-        _Format_handler<_Dependent_char> _Handler(_Fmt_it{_Buf}, _Fmt, _Args, _Lazy_locale{_Loc});
-        _Parse_format_string(_Fmt, _Handler);
-        return _Buf._Out();
-    }
+    return _Format_to_it(_STD move(_Out), _Fmt, _Args, _Lazy_locale{_Loc});
 }
 
 _EXPORT_STD template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
-    // Make `_Parse_format_string` type-dependent to defer instantiation:
-    using _Dependent_char = decltype((void) _Out, wchar_t{});
-    if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
-        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
-        _Parse_format_string(_Fmt, _Handler);
-        return _Out;
-    } else {
-        _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
-        _Format_handler<_Dependent_char> _Handler(_Fmt_wit{_Buf}, _Fmt, _Args, _Lazy_locale{_Loc});
-        _Parse_format_string(_Fmt, _Handler);
-        return _Buf._Out();
-    }
+    return _Format_to_it(_STD move(_Out), _Fmt, _Args, _Lazy_locale{_Loc});
 }
 
 _EXPORT_STD template <output_iterator<const char&> _OutputIt, class... _Types>

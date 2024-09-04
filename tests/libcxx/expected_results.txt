@@ -85,6 +85,10 @@ std/language.support/support.limits/support.limits.general/algorithm.version.com
 std/language.support/support.limits/support.limits.general/functional.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/iterator.version.compile.pass.cpp FAIL
 
+# Test expects __cpp_lib_print to have the old value 202207L for P2093R14; we define the C++23 value 202406L for P3235R3.
+std/language.support/support.limits/support.limits.general/ostream.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/print.version.compile.pass.cpp FAIL
+
 # libc++ tests strengthened assignment operators (not compatible with P2165R4: "Compatibility Between tuple, pair, And tuple-like Objects")
 std/utilities/tuple/tuple.tuple/tuple.assign/const_pair.pass.cpp FAIL
 
@@ -235,9 +239,6 @@ std/language.support/support.limits/support.limits.general/cstdlib.version.compi
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
-
-# P3107R5 "Permit An Efficient Implementation Of <print>"
-std/utilities/format/format.formatter/format.formatter.locking/enable_nonlocking_formatter_optimization.compile.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -580,6 +581,9 @@ std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.ac
 
 # Bogus test expects to_address() to SFINAE away for int.
 std/utilities/memory/pointer.conversion/to_address_without_pointer_traits.pass.cpp FAIL
+
+# We disagree about whether various chrono types should be optimized, and the test is clearly wrong about vector<bool>::reference.
+std/utilities/format/format.formatter/format.formatter.locking/enable_nonlocking_formatter_optimization.compile.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***

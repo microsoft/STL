@@ -90,6 +90,9 @@ enum class _Basic_format_arg_type : uint8_t {
 static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must fit in 4-bit bitfield");
 
 #if _HAS_CXX23
+_EXPORT_STD template <class _Ty>
+constexpr bool enable_nonlocking_formatter_optimization = false;
+
 _NODISCARD consteval bool _Is_debug_enabled_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty == _Basic_format_arg_type::_Char_type || _Ty == _Basic_format_arg_type::_CString_type
         || _Ty == _Basic_format_arg_type::_String_type;
@@ -170,7 +173,16 @@ private:
 };
 _FMT_P2286_END
 
+#if _HAS_CXX23
+#define _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type) \
+    template <>                                  \
+    inline constexpr bool enable_nonlocking_formatter_optimization<_Type> = true;
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+#define _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type)
+#endif // ^^^ !_HAS_CXX23 ^^^
+
 #define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
+    _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type)    \
     template <_Format_supported_charT _CharT>   \
     struct formatter<_Type, _CharT> : _Formatter_base<_Type, _CharT, _ArgType> {}
 
@@ -193,6 +205,7 @@ _FORMAT_SPECIALIZE_FOR(signed char, _Basic_format_arg_type::_Int_type);
 _FORMAT_SPECIALIZE_FOR(unsigned char, _Basic_format_arg_type::_UInt_type);
 
 #undef _FORMAT_SPECIALIZE_FOR
+#undef _FORMAT_SPECIALIZE_NONLOCKING_FOR
 
 // not using the macro because we'd like to add 'set_debug_format' member function in C++23 mode
 template <_Format_supported_charT _CharT>
@@ -361,6 +374,32 @@ struct formatter<pair<_Ty1, _Ty2>, _CharT>;
 
 template <_Format_supported_charT _CharT, class... _Types>
 struct formatter<tuple<_Types...>, _CharT>;
+
+template <_Format_supported_charT _CharT>
+constexpr bool enable_nonlocking_formatter_optimization<_CharT> = true;
+
+template <_Format_supported_charT _CharT>
+constexpr bool enable_nonlocking_formatter_optimization<_CharT*> = true;
+
+template <_Format_supported_charT _CharT>
+constexpr bool enable_nonlocking_formatter_optimization<const _CharT*> = true;
+
+template <_Format_supported_charT _CharT, size_t _Nx>
+constexpr bool enable_nonlocking_formatter_optimization<_CharT[_Nx]> = true;
+
+template <_Format_supported_charT _CharT, class _Traits, class _Allocator>
+constexpr bool enable_nonlocking_formatter_optimization<basic_string<_CharT, _Traits, _Allocator>> = true;
+
+template <_Format_supported_charT _CharT, class _Traits>
+constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<_CharT, _Traits>> = true;
+
+template <class _Ty1, class _Ty2>
+constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
+    enable_nonlocking_formatter_optimization<_Ty1> && enable_nonlocking_formatter_optimization<_Ty2>;
+
+template <class... _Ts>
+constexpr bool enable_nonlocking_formatter_optimization<tuple<_Ts...>> =
+    (enable_nonlocking_formatter_optimization<_Ts> && ...);
 #endif // _HAS_CXX23
 _STD_END
 

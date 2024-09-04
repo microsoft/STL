@@ -3595,6 +3595,10 @@ public:
         return _Underlying.format(_Ref, _Ctx);
     }
 };
+
+template <class _Ty>
+    requires _Is_specialization_v<_Ty, _Vb_reference>
+constexpr bool enable_nonlocking_formatter_optimization<_Ty> = true;
 #endif // _HAS_CXX23
 
 template <class _Alloc, bool _RequiresMutable>
