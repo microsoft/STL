@@ -162,7 +162,7 @@ public:
         return _Local != nullptr && _Local->_Stop_possible();
     }
 
-    _NODISCARD_FRIEND bool operator==(const stop_token& _Lhs, const stop_token& _Rhs) noexcept = default;
+    _NODISCARD friend bool operator==(const stop_token& _Lhs, const stop_token& _Rhs) noexcept = default;
 
     friend void swap(stop_token& _Lhs, stop_token& _Rhs) noexcept {
         _STD swap(_Lhs._State, _Rhs._State);
@@ -234,7 +234,7 @@ public:
         return _Local && _Local->_Request_stop();
     }
 
-    _NODISCARD_FRIEND bool operator==(const stop_source& _Lhs, const stop_source& _Rhs) noexcept = default;
+    _NODISCARD friend bool operator==(const stop_source& _Lhs, const stop_source& _Rhs) noexcept = default;
 
     friend void swap(stop_source& _Lhs, stop_source& _Rhs) noexcept {
         _STD swap(_Lhs._State, _Rhs._State);

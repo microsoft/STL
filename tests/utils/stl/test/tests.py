@@ -290,8 +290,6 @@ class STLTest(Test):
                 self.requires.append('edg') # available for x64, see features.py
             elif flag[1:] == 'arch:AVX2':
                 self.requires.append('arch_avx2') # available for x86 and x64, see features.py
-            elif flag[1:] == 'arch:IA32':
-                self.requires.append('arch_ia32') # available for x86, see features.py
             elif flag[1:] == 'arch:VFPv4':
                 self.requires.append('arch_vfpv4') # available for arm, see features.py
             elif flag[1:] == 'MDd':

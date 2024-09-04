@@ -330,6 +330,9 @@ public:
 private:
     _Fill_align_and_width_formatter<_CharT> _Impl;
 };
+
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<thread::id> = true;
 #endif // _HAS_CXX23
 
 template <>

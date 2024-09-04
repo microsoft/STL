@@ -7,10 +7,12 @@
 #include <cmath>
 #include <compare>
 #include <filesystem>
+#include <functional>
 #include <iterator>
 #include <type_traits>
 #include <utility>
 
+#include <is_permissive.hpp>
 #include <timezone_data.hpp>
 
 using namespace std;
@@ -474,6 +476,63 @@ void test() {
         assert(leap._Elapsed() == offset);
     }
 }
+
+// LWG-4139 "[time.zone.leap] recursive constraint in <=>"
+namespace lwg_4139 {
+    struct conv_to_leap_second : local_t {
+        operator leap_second() const noexcept;
+    };
+
+    static_assert(equality_comparable<conv_to_leap_second> == is_permissive);
+    static_assert(equality_comparable_with<conv_to_leap_second, leap_second> == is_permissive);
+    static_assert(totally_ordered<conv_to_leap_second> == is_permissive);
+    static_assert(totally_ordered_with<conv_to_leap_second, leap_second> == is_permissive);
+    static_assert(three_way_comparable<conv_to_leap_second> == is_permissive);
+    static_assert(three_way_comparable_with<conv_to_leap_second, leap_second> == is_permissive);
+
+    using ref_leap_second = reference_wrapper<leap_second>;
+
+    static_assert(equality_comparable<ref_leap_second>);
+    static_assert(equality_comparable_with<ref_leap_second, leap_second>);
+    static_assert(totally_ordered<ref_leap_second>);
+    static_assert(totally_ordered_with<ref_leap_second, leap_second>);
+    static_assert(three_way_comparable<ref_leap_second>);
+    static_assert(three_way_comparable_with<ref_leap_second, leap_second>);
+
+    template <class T, class U>
+    concept can_equality_compare_with = requires(const remove_reference_t<T>& t, const remove_reference_t<U>& u) {
+        t == u;
+        t != u;
+        u == t;
+        u != t;
+    };
+
+    template <class T, class U>
+    concept can_relation_compare_with = requires(const remove_reference_t<T>& t, const remove_reference_t<U>& u) {
+        t < u;
+        t > u;
+        t <= u;
+        t >= u;
+        u < t;
+        u > t;
+        u <= t;
+        u >= t;
+    };
+
+    template <class T, class U>
+    concept can_three_way_compare_with = requires(const remove_reference_t<T>& t, const remove_reference_t<U>& u) {
+        t <=> u;
+        u <=> t;
+    };
+
+    static_assert(!can_equality_compare_with<conv_to_leap_second, sys_seconds>);
+    static_assert(!can_relation_compare_with<conv_to_leap_second, sys_seconds>);
+    static_assert(!can_three_way_compare_with<conv_to_leap_second, sys_seconds>);
+
+    static_assert(can_equality_compare_with<ref_leap_second, sys_seconds>);
+    static_assert(can_relation_compare_with<ref_leap_second, sys_seconds>);
+    static_assert(can_three_way_compare_with<ref_leap_second, sys_seconds>);
+} // namespace lwg_4139
 
 int main() {
     run_tz_test([] { test(); });

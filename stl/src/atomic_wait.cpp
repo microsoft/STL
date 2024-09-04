@@ -5,6 +5,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <cstdlib>
 #include <new>
 #include <thread>
 
@@ -202,24 +203,6 @@ namespace {
         }
     }
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-
-    [[nodiscard]] unsigned char __std_atomic_compare_exchange_128_fallback(
-        _Inout_bytecount_(16) long long* _Destination, _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
-        _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
-        static SRWLOCK _Mtx = SRWLOCK_INIT;
-        _SrwLock_guard _Guard{_Mtx};
-        if (_Destination[0] == _ComparandResult[0] && _Destination[1] == _ComparandResult[1]) {
-            _ComparandResult[0] = _Destination[0];
-            _ComparandResult[1] = _Destination[1];
-            _Destination[0]     = _ExchangeLow;
-            _Destination[1]     = _ExchangeHigh;
-            return static_cast<unsigned char>(true);
-        } else {
-            _ComparandResult[0] = _Destination[0];
-            _ComparandResult[1] = _Destination[1];
-            return static_cast<unsigned char>(false);
-        }
-    }
 } // unnamed namespace
 
 extern "C" {
@@ -397,41 +380,27 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 }
 #pragma warning(pop)
 
+// TRANSITION, ABI: preserved for binary compatibility
 [[nodiscard]] unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
     _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
-#if !defined(_WIN64)
-    return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
+#ifdef _WIN64
     return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 / _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
-    if (__std_atomic_has_cmpxchg16b()) {
-        return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-    }
-
-    return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 ^^^
+#else // ^^^ 64-bit / 32-bit vvv
+    (void) _Destination;
+    (void) _ExchangeHigh;
+    (void) _ExchangeLow;
+    (void) _ComparandResult;
+    _CSTD abort();
+#endif // ^^^ 32-bit ^^^
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 [[nodiscard]] char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
-#if !defined(_WIN64)
-    return false;
-#elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
+#ifdef _WIN64
     return true;
-#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 / _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
-    constexpr char _Cmpxchg_Absent  = 0;
-    constexpr char _Cmpxchg_Present = 1;
-    constexpr char _Cmpxchg_Unknown = 2;
-
-    static std::atomic<char> _Cached_value{_Cmpxchg_Unknown};
-
-    char _Value = _Cached_value.load(std::memory_order_relaxed);
-    if (_Value == _Cmpxchg_Unknown) {
-        _Value = IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE128) ? _Cmpxchg_Present : _Cmpxchg_Absent;
-        _Cached_value.store(_Value, std::memory_order_relaxed);
-    }
-
-    return _Value;
-#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 ^^^
+#else
+    _CSTD abort();
+#endif
 }
 } // extern "C"

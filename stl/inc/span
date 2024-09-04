@@ -110,7 +110,7 @@ struct _Span_iterator {
         return _Tmp;
     }
 
-    _NODISCARD_FRIEND constexpr _Span_iterator operator+(const difference_type _Off, _Span_iterator _Next) noexcept {
+    _NODISCARD friend constexpr _Span_iterator operator+(const difference_type _Off, _Span_iterator _Next) noexcept {
         _Next += _Off;
         return _Next;
     }
@@ -234,6 +234,12 @@ constexpr bool _Is_span_v = false;
 
 template <class _Ty, size_t _Extent>
 constexpr bool _Is_span_v<span<_Ty, _Extent>> = true;
+
+template <class>
+constexpr bool _Is_std_array_v = false;
+
+template <class _Ty, size_t _Size>
+constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
 
 // clang-format off
 template <class _It, class _Ty>

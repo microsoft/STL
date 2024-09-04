@@ -107,9 +107,9 @@ public:
         return __std_stacktrace_source_line(_Address);
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
+    _NODISCARD friend constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
 
-    _NODISCARD_FRIEND constexpr strong_ordering operator<=>(
+    _NODISCARD friend constexpr strong_ordering operator<=>(
         const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
 
 private:
@@ -253,12 +253,12 @@ public:
     }
 
     template <class _Al2>
-    _NODISCARD_FRIEND bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
+    _NODISCARD friend bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
         return _Lhs._Hash == _Rhs._Hash && _STD equal(_Lhs.begin(), _Lhs.end(), _Rhs.begin(), _Rhs.end());
     }
 
     template <class _Al2>
-    _NODISCARD_FRIEND strong_ordering operator<=>(
+    _NODISCARD friend strong_ordering operator<=>(
         const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
         const auto _Result = _Lhs._Frames.size() <=> _Rhs._Frames.size();
         if (_Result != strong_ordering::equal) {
@@ -356,6 +356,9 @@ private:
     _Fill_align_and_width_formatter<char> _Impl;
 };
 
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<stacktrace_entry> = true;
+
 template <class _Alloc>
 struct formatter<basic_stacktrace<_Alloc>> {
     constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
@@ -372,6 +375,9 @@ struct formatter<basic_stacktrace<_Alloc>> {
         return _RANGES copy(_STD to_string(_Val), _Format_ctx.out()).out;
     }
 };
+
+template <class _Alloc>
+constexpr bool enable_nonlocking_formatter_optimization<basic_stacktrace<_Alloc>> = true;
 
 namespace pmr {
     _EXPORT_STD using stacktrace = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;

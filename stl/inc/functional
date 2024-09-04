@@ -1946,7 +1946,7 @@ public:
         _Fn1._Swap(_Fn2);
     }
 
-    _NODISCARD_FRIEND bool operator==(const move_only_function& _This, nullptr_t) noexcept {
+    _NODISCARD friend bool operator==(const move_only_function& _This, nullptr_t) noexcept {
         return _This._Is_null();
     }
 };

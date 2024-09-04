@@ -3380,7 +3380,7 @@ public:
 
 #if _HAS_AUTO_PTR_ETC
     template <class _Ty2,
-        enable_if_t<conjunction_v<is_convertible<_Ty2*, _Ty*>, is_same<_Dx, default_delete<_Ty>>>, int> = 0>
+        enable_if_t<conjunction_v<is_convertible<_Ty2*, pointer>, is_same<_Dx, default_delete<_Ty>>>, int> = 0>
     unique_ptr(auto_ptr<_Ty2>&& _Right) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Right.release()) {}
 #endif // _HAS_AUTO_PTR_ETC
 
