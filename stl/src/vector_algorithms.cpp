@@ -3183,15 +3183,15 @@ namespace {
             const void* _Cur = _Haystack;
             _Advance_bytes(_Cur, _Haystack_length_bytes);
 
-            const size_t _Haystack_length_bytes = _Needle_length * sizeof(_Ty);
+            const size_t _Needle_length_bytes = _Needle_length * sizeof(_Ty);
 
-            if (_Haystack_length_bytes <= 16) {
+            if (_Needle_length_bytes <= 16) {
                 // Special handling of small needle
                 // The generic branch could also be modified to handle it, but with slightly worse performance
                 const int _Needle_length_el = static_cast<int>(_Needle_length);
 
                 alignas(16) uint8_t _Tmp2[16];
-                memcpy(_Tmp2, _Needle, _Haystack_length_bytes);
+                memcpy(_Tmp2, _Needle, _Needle_length_bytes);
                 const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
 
                 while (_Cur != _Stop_at) {
