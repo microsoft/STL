@@ -3216,9 +3216,9 @@ namespace {
                 return static_cast<size_t>(-1);
             } else {
                 const void* _Last_needle = _Needle;
-                _Advance_bytes(_Last_needle, _Haystack_length_bytes & ~size_t{0xF});
+                _Advance_bytes(_Last_needle, _Needle_length_bytes & ~size_t{0xF});
 
-                const int _Last_needle_length = static_cast<int>(_Haystack_length_bytes & 0xF);
+                const int _Last_needle_length = static_cast<int>(_Needle_length_bytes & 0xF);
 
                 alignas(16) uint8_t _Tmp2[16];
                 memcpy(_Tmp2, _Last_needle, _Last_needle_length);
