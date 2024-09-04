@@ -28,6 +28,11 @@
 
 using namespace std;
 
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
+#endif // __clang__
+
 template <class FwdIt, class T>
 ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
     ptrdiff_t result = 0;
@@ -246,11 +251,12 @@ void test_case_find_first_of(const vector<T>& input_haystack, const vector<T>& i
 #endif // _HAS_CXX20
 }
 
+constexpr size_t haystackDataCount = 200;
+constexpr size_t needleDataCount   = 35;
+
 template <class T>
 void test_find_first_of(mt19937_64& gen) {
-    constexpr size_t haystackDataCount = 200;
-    constexpr size_t needleDataCount   = 35;
-    using TD                           = conditional_t<sizeof(T) == 1, int, T>;
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('a', 'z');
     vector<T> input_haystack;
     vector<T> input_needle;
@@ -310,9 +316,7 @@ void test_case_search(const vector<T>& input_haystack, const vector<T>& input_ne
 
 template <class T>
 void test_search(mt19937_64& gen) {
-    constexpr size_t haystackDataCount = 200;
-    constexpr size_t needleDataCount   = 35;
-    using TD                           = conditional_t<sizeof(T) == 1, int, T>;
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('0', '9');
     vector<T> input_haystack;
     vector<T> input_needle;
@@ -1024,6 +1028,61 @@ void test_bitset(mt19937_64& gen) {
     test_randomized_bitset_base_count<512 - 5, 32 + 10>(gen);
 }
 
+template <class T>
+void test_case_string_find_first_of(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
+    auto expected_iter = last_known_good_find_first_of(
+        input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    auto expected = (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
+    auto actual   = static_cast<ptrdiff_t>(input_haystack.find_first_of(input_needle.data(), 0, input_needle.size()));
+    assert(expected == actual);
+}
+
+template <class T, class D>
+void test_basic_string_dis(mt19937_64& gen, D& dis) {
+    basic_string<T> input_haystack;
+    basic_string<T> input_needle;
+    input_haystack.reserve(haystackDataCount);
+    input_needle.reserve(needleDataCount);
+
+    for (;;) {
+        input_needle.clear();
+
+        test_case_string_find_first_of(input_haystack, input_needle);
+        for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
+            input_needle.push_back(static_cast<T>(dis(gen)));
+            test_case_string_find_first_of(input_haystack, input_needle);
+        }
+
+        if (input_haystack.size() == haystackDataCount) {
+            break;
+        }
+
+        input_haystack.push_back(static_cast<T>(dis(gen)));
+    }
+}
+
+template <class T>
+void test_basic_string(mt19937_64& gen) {
+    using dis_int_type = conditional_t<is_signed_v<T>, int32_t, uint32_t>;
+
+    uniform_int_distribution<dis_int_type> dis_latin('a', 'z');
+    test_basic_string_dis<T>(gen, dis_latin);
+    if constexpr (sizeof(T) >= 2) {
+        uniform_int_distribution<dis_int_type> dis_greek(0x391, 0x3C9);
+        test_basic_string_dis<T>(gen, dis_greek);
+    }
+}
+
+void test_string(mt19937_64& gen) {
+    test_basic_string<char>(gen);
+    test_basic_string<wchar_t>(gen);
+#ifdef __cpp_lib_char8_t
+    test_basic_string<char8_t>(gen);
+#endif // __cpp_lib_char8_t
+    test_basic_string<char16_t>(gen);
+    test_basic_string<char32_t>(gen);
+}
+
 void test_various_containers() {
     test_one_container<vector<int>>(); // contiguous, vectorizable
     test_one_container<deque<int>>(); // random-access, not vectorizable
@@ -1096,5 +1155,6 @@ int main() {
         test_vector_algorithms(gen);
         test_various_containers();
         test_bitset(gen);
+        test_string(gen);
     });
 }
