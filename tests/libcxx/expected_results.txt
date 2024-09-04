@@ -1286,6 +1286,14 @@ std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPE
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
 std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
+std/containers/associative/map/map.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/multimap/multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/multiset/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/set/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.map/unord.map.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.multimap/unord.multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.multiset/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.set/insert_range.pass.cpp:9 SKIPPED
 
 # This test is marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED
