@@ -1033,7 +1033,27 @@ void test_case_string_find_first_of(const basic_string<T>& input_haystack, const
     auto expected_iter = last_known_good_find_first_of(
         input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
     auto expected = (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
-    auto actual   = static_cast<ptrdiff_t>(input_haystack.find_first_of(input_needle.data(), 0, input_needle.size()));
+    auto actual   = static_cast<ptrdiff_t>(input_haystack.find_first_of(input_needle));
+    assert(expected == actual);
+}
+
+template <class T>
+size_t last_known_good_find_last_of(const basic_string<T>& h, const basic_string<T>& n) {
+    size_t pos = h.size();
+    while (pos != 0) {
+        --pos;
+        if (n.find(h[pos]) != basic_string<T>::npos) {
+            return pos;
+        }
+    }
+
+    return basic_string<T>::npos;
+}
+
+template <class T>
+void test_case_string_find_last_of(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
+    size_t expected = last_known_good_find_last_of(input_haystack, input_needle);
+    size_t actual   = input_haystack.find_last_of(input_needle);
     assert(expected == actual);
 }
 
@@ -1048,9 +1068,11 @@ void test_basic_string_dis(mt19937_64& gen, D& dis) {
         input_needle.clear();
 
         test_case_string_find_first_of(input_haystack, input_needle);
+        test_case_string_find_last_of(input_haystack, input_needle);
         for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
             input_needle.push_back(static_cast<T>(dis(gen)));
             test_case_string_find_first_of(input_haystack, input_needle);
+            test_case_string_find_last_of(input_haystack, input_needle);
         }
 
         if (input_haystack.size() == haystackDataCount) {
@@ -1081,6 +1103,7 @@ void test_string(mt19937_64& gen) {
 #endif // __cpp_lib_char8_t
     test_basic_string<char16_t>(gen);
     test_basic_string<char32_t>(gen);
+    test_basic_string<unsigned long long>(gen);
 }
 
 void test_various_containers() {
