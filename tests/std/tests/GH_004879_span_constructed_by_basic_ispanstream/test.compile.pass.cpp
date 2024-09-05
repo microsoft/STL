@@ -13,6 +13,6 @@ struct R {
 
 int main() {
     R r{};
-    std::basic_ispanstream<char> is{ r };
+    std::basic_ispanstream<char> is{r};
     is.span(r);
 }
