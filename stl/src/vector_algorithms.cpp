@@ -3304,7 +3304,7 @@ namespace {
                     if (!_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op)) {
                         _Advance_bytes(_First1, 16); // No matches, next.
                     } else {
-                        int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                        const int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
                         _Advance_bytes(_First1, _Pos * sizeof(_Ty));
                         if (_Pos <= _Max_full_match_pos) {
                             // Full match. Return this match.
