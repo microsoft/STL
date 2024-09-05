@@ -332,7 +332,7 @@ void test_search(mt19937_64& gen) {
             test_case_search(input_haystack, input_needle);
 
             // For large needles the chance of a match is low, so test a guaranteed match
-            if (!input_needle.empty() && input_haystack.size() > input_needle.size() * 2) {
+            if (input_haystack.size() > input_needle.size() * 2) {
                 uniform_int_distribution<size_t> pos_dis(0, input_haystack.size() - input_needle.size());
                 const size_t pos = pos_dis(gen);
                 copy(input_needle.begin(), input_needle.end(), input_haystack.begin() + static_cast<ptrdiff_t>(pos));
