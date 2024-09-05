@@ -218,7 +218,8 @@ public:
             !convertible_to<_ReadOnlyRange, _STD span<_Elem>> && convertible_to<_ReadOnlyRange, _STD span<const _Elem>>)
     explicit basic_ispanstream(_ReadOnlyRange&& _Range)
         : basic_ispanstream(
-            _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(_Range)), static_cast<size_t>(_RANGES size(_Range))}) {}
+            _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(static_cast<_STD span<const _Elem>>(_Range))),
+                static_cast<size_t>(static_cast<_STD span<const _Elem>>(_Range).size())}) {}
 
     basic_ispanstream& operator=(const basic_ispanstream&) = delete;
 
@@ -251,8 +252,8 @@ public:
         requires (
             !convertible_to<_ReadOnlyRange, _STD span<_Elem>> && convertible_to<_ReadOnlyRange, _STD span<const _Elem>>)
     void span(_ReadOnlyRange&& _Range) noexcept {
-        this->span(
-            _STD span<_Elem>{const_cast<_Elem*>(_RANGES data(_Range)), static_cast<size_t>(_RANGES size(_Range))});
+        this->span(_STD span<_Elem>{const_cast<_Elem*>(_RANGES data(static_cast<_STD span<const _Elem>>(_Range))),
+            static_cast<size_t>(static_cast<_STD span<const _Elem>>(_Range).size())});
     }
 
 private:
