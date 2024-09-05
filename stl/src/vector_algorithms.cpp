@@ -3367,7 +3367,7 @@ namespace {
                         const void* _Tail1 = _First1;
                         _Advance_bytes(_Tail1, 16);
 
-                        if (_CSTD memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
+                        if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
                             return _First1;
                         }
 
