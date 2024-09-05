@@ -3272,7 +3272,7 @@ namespace {
         }
 
         if (_Size_bytes_2 == sizeof(_Ty)) {
-            return __std_find_trivial_impl<_Traits, _Ty>(_First1, _Last1, *static_cast<const _Ty*>(_First2));
+            return __std_find_trivial_impl<_Traits>(_First1, _Last1, *static_cast<const _Ty*>(_First2));
         }
 
         const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
