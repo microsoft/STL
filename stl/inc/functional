@@ -2474,7 +2474,7 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
                 }
 
                 if (_First1 != _Last1) {
-                    return {_First1, _First1 + _Count2};
+                    return {_First1, _First1 + static_cast<_Iter_diff_t<_FwdItHaystack>>(_Count2)};
                 } else {
                     return {_Last1, _Last1};
                 }
