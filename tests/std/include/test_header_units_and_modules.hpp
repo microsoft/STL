@@ -742,19 +742,7 @@ constexpr bool impl_test_source_location() {
     const auto sl = source_location::current();
     assert(sl.line() == __LINE__ - 1);
     assert(sl.column() == 38);
-
-#ifdef __EDG__ // TRANSITION, DevCom-10199227
-#define TEST_DETAILED_FUNCTION_NAME 0
-#else // ^^^ workaround / no workaround vvv
-#define TEST_DETAILED_FUNCTION_NAME 1
-#endif // ^^^ no workaround ^^^
-
-#if TEST_DETAILED_FUNCTION_NAME
     assert(sl.function_name() == "bool __cdecl impl_test_source_location(void)"sv);
-#else // ^^^ detailed / basic vvv
-    assert(sl.function_name() == "impl_test_source_location"sv);
-#endif // ^^^ basic ^^^
-
     assert(string_view{sl.file_name()}.ends_with("test_header_units_and_modules.hpp"sv));
     return true;
 }
