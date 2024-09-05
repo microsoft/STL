@@ -3330,7 +3330,7 @@ namespace {
                     }
                 }
             } else {
-                const __m128i _Data2  = _mm_load_si128(reinterpret_cast<const __m128i*>(_First2));
+                const __m128i _Data2  = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2));
                 const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2;
 
                 const void* _Stop1 = _First1;
