@@ -3310,7 +3310,7 @@ namespace {
                             // Full match. Return this match.
                             return _First1;
                         }
-                        // Partial match. Search again from the match start. will return it if it is full.
+                        // Partial match. Search again from the match start. Will return it if it is full.
                     }
                 } while (_First1 <= _Stop1);
 
@@ -3350,14 +3350,14 @@ namespace {
                             _Advance_bytes(_First1, _Pos * sizeof(_Ty));
 
                             if (_First1 > _Stop1) {
-                                break; // Oops, don't fit
+                                break; // Oops, doesn't fit
                             }
 
                             // Match not from the first byte, check 16 symbols
                             const __m128i _Match1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
                             const __m128i _Cmp    = _mm_xor_si128(_Data2, _Match1);
                             if (!_mm_testz_si128(_Cmp, _Cmp)) {
-                                // Start form the next element
+                                // Start from the next element
                                 _Advance_bytes(_First1, sizeof(_Ty));
                                 continue;
                             }
@@ -3371,7 +3371,7 @@ namespace {
                             return _First1;
                         }
 
-                        // Start form the next element
+                        // Start from the next element
                         _Advance_bytes(_First1, sizeof(_Ty));
                     }
                 } while (_First1 <= _Stop1);
