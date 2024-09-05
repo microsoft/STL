@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <array>
 #include <benchmark/benchmark.h>
 #include <cstdint>
 #include <cstring>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <vector>
+using namespace std::string_view_literals;
 
 const char src_haystack[] =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mollis imperdiet massa, at dapibus elit interdum "
@@ -40,9 +43,9 @@ const char src_haystack[] =
     "euismod eros, ut posuere ligula ullamcorper id. Nullam aliquet malesuada est at dignissim. Pellentesque finibus "
     "sagittis libero nec bibendum. Phasellus dolor ipsum, finibus quis turpis quis, mollis interdum felis.";
 
-const std::vector<std::string> patterns = {
-    "aliquet",
-    "aliquet malesuada",
+constexpr std::array patterns = {
+    "aliquet"sv,
+    "aliquet malesuada"sv,
 };
 
 void c_strstr(benchmark::State& state) {
