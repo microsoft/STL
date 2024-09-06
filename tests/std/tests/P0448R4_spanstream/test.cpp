@@ -6,6 +6,7 @@
 #include <cassert>
 #include <ios>
 #include <limits>
+#include <list>
 #include <span>
 #include <spanstream>
 #include <string_view>
@@ -28,6 +29,22 @@ template <class CharT>
 constexpr array input_std_array{'1', ' ', '2', ' ', '3', ' ', '4', ' ', '5'};
 template <>
 inline constexpr array input_std_array<wchar_t>{L'1', L' ', L'2', L' ', L'3', L' ', L'4', L' ', L'5'};
+
+template <class CharT>
+list<CharT> li{};
+// Neither size_range nor continuous_range.
+template <class CharT>
+struct R {
+    auto begin() {
+        return std::begin(li<CharT>);
+    }
+    auto end() {
+        return std::end(li<CharT>);
+    }
+    operator span<const CharT>() const {
+        return span<const CharT>(input_view<CharT>);
+    }
+};
 
 template <class Spanbuf>
 class basic_test_buf : public Spanbuf {
@@ -624,6 +641,28 @@ void test_ispanstream() {
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->pbase() == nullptr);
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->pptr() == nullptr);
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->epptr() == nullptr);
+
+        span<const CharT> span_const_elem;
+        basic_ispanstream<CharT> span_const_elem_constructed{span_const_elem};
+        assert(span_const_elem_constructed.span().data() == span_const_elem.data());
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->eback() == span_const_elem.data());
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->gptr() == span_const_elem.data());
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->egptr()
+               == span_const_elem.data() + span_const_elem.size());
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->pbase() == nullptr);
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->pptr() == nullptr);
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->epptr() == nullptr);
+
+        R<CharT> special_range{};
+        auto rr = static_cast<span<const CharT>>(special_range);
+        basic_ispanstream<CharT> special_range_constructed{special_range};
+        assert(range_constructed.span().data() == rr.data());
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->eback() == rr.data());
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->gptr() == rr.data());
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->egptr() == rr.data() + rr.size());
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->pbase() == nullptr);
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->pptr() == nullptr);
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->epptr() == nullptr);
     }
 
     { // span

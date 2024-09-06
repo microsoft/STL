@@ -207,6 +207,9 @@ public:
     explicit basic_ispanstream(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::in)
         : _Mybase(_STD addressof(_Buf)), _Buf(_Span, _Which | ios_base::in) {}
 
+    explicit basic_ispanstream(_STD span<const _Elem> _Span)
+        : basic_ispanstream(_STD span<_Elem>{const_cast<_Elem*>(_Span.data()), _Span.size()}) {}
+
     basic_ispanstream(const basic_ispanstream&) = delete;
 
     basic_ispanstream(basic_ispanstream&& _Right) : _Mybase(_STD move(_Right)), _Buf(_STD move(_Right._Buf)) {
@@ -217,8 +220,7 @@ public:
         requires (
             !convertible_to<_ReadOnlyRange, _STD span<_Elem>> && convertible_to<_ReadOnlyRange, _STD span<const _Elem>>)
     explicit basic_ispanstream(_ReadOnlyRange&& _Range)
-        : basic_ispanstream(_STD span<_Elem>{const_cast<_Elem*>(static_cast<_STD span<const _Elem>>(_Range).data()),
-            static_cast<_STD span<const _Elem>>(_Range).size()}) {}
+        : basic_ispanstream(static_cast<_STD span<const _Elem>>(_STD forward<_ReadOnlyRange>(_Range))) {}
 
     basic_ispanstream& operator=(const basic_ispanstream&) = delete;
 
@@ -251,7 +253,7 @@ public:
         requires (
             !convertible_to<_ReadOnlyRange, _STD span<_Elem>> && convertible_to<_ReadOnlyRange, _STD span<const _Elem>>)
     void span(_ReadOnlyRange&& _Range) noexcept {
-        auto _Sp = static_cast<_STD span<const _Elem>>(_Range);
+        const auto _Sp = static_cast<_STD span<const _Elem>>(_STD forward<_ReadOnlyRange>(_Range));
         this->span(_STD span<_Elem>{const_cast<_Elem*>(_Sp.data()), _Sp.size()});
     }
 
