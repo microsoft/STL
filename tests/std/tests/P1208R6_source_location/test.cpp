@@ -122,7 +122,9 @@ constexpr void sloc_constructor_test() {
         assert(x.loc.function_name() == "main"sv);
     } else
 #endif // ^^^ workaround ^^^
+    {
         assert(x.loc.function_name() == "sloc_constructor_test"sv);
+    }
 #endif // ^^^ basic ^^^
     assert(string_view{x.loc.file_name()}.ends_with(test_cpp));
 }
@@ -176,7 +178,9 @@ constexpr void sub_member_test() {
         assert(s.x.loc.function_name() == "main"sv);
     } else
 #endif // ^^^ workaround ^^^
+    {
         assert(s.x.loc.function_name() == "sub_member_test"sv);
+    }
 #endif // ^^^ basic ^^^
     assert(string_view{s.x.loc.file_name()}.ends_with(test_cpp));
 
@@ -231,9 +235,9 @@ constexpr void lambda_test() {
 #if !_USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
 #if !defined(__clang__) && !defined(__EDG__)
     assert(fun2 == "operator ()"sv);
-#else // ^^ C1XX / Other vv
+#else // ^^^ C1XX / Other vvv
     assert(fun2 == "operator()"sv);
-#endif // ^^ Other ^^
+#endif // ^^^ Other ^^^
 #elif defined(__clang__) // ^^^ basic / detailed Clang vvv
     assert(fun2 == "auto " THISCALL_OR_CDECL " lambda_test()::(anonymous class)::operator()(void) const"sv);
 #elif defined(__EDG__) // ^^^ detailed Clang / detailed __EDG__ vvv
