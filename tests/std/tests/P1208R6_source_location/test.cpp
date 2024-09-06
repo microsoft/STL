@@ -224,7 +224,7 @@ constexpr void lambda_test() {
     assert(fun2 == "auto " THISCALL_OR_CDECL " lambda_test()::(anonymous class)::operator()(void) const"sv);
 #elif defined(__EDG__) // ^^^ detailed Clang / detailed __EDG__ vvv
     assert(fun2 == "lambda []()->auto::operator()()->auto"sv);
-#else // ^^^ detailed __EDG__
+#else // ^^^ detailed __EDG__ / detailed C1XX vvv
     assert(fun2.starts_with("struct std::source_location " THISCALL_OR_CDECL " lambda_test::<lambda_"sv));
     assert(fun2.ends_with("::operator ()(void) const"sv));
 #endif // ^^^ detailed non-Clang ^^^
@@ -253,7 +253,7 @@ constexpr void function_template_test() {
     assert(x1.function_name() == "source_location __cdecl function_template(void) [T = void]"sv);
 #elif defined(__EDG__) // ^^^ detailed Clang / detailed __EDG__ vvv
     assert(x1.function_name() == "std::source_location function_template<void>()"sv);
-#else // ^^^ detailed __EDG__ / detailed CX1 vvv
+#else // ^^^ detailed __EDG__ / detailed C1XX vvv
     assert(x1.function_name() == "struct std::source_location __cdecl function_template<void>(void)"sv);
 #endif // ^^^ detailed non-Clang ^^^
     assert(string_view{x1.file_name()}.ends_with(test_cpp));
@@ -267,7 +267,7 @@ constexpr void function_template_test() {
     assert(x2.function_name() == "source_location __cdecl function_template(void) [T = int]"sv);
 #elif defined(__EDG__) // ^^^ detailed Clang / detailed __EDG__ vvv
     assert(x2.function_name() == "std::source_location function_template<int>()"sv);
-#else // ^^^ detailed __EDG__ / detailed CX1 vvv
+#else // ^^^ detailed __EDG__ / detailed C1XX vvv
     assert(x2.function_name() == "struct std::source_location __cdecl function_template<int>(void)"sv);
 #endif // ^^^ detailed non-Clang ^^^
     assert(string_view{x1.file_name()} == string_view{x2.file_name()});
