@@ -1268,9 +1268,9 @@ public:
     template <class _Fty2, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
     explicit packaged_task(_Fty2&& _Fnarg) : _MyPromise(new _MyStateType(_STD forward<_Fty2>(_Fnarg))) {}
 
-    packaged_task(packaged_task&&) = default;
+    packaged_task(packaged_task&&) noexcept = default;
 
-    packaged_task& operator=(packaged_task&&) = default;
+    packaged_task& operator=(packaged_task&&) noexcept = default;
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     template <class _Fty2, class _Alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
