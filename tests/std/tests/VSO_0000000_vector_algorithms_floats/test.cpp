@@ -31,20 +31,16 @@ void test_min_max_element_floating_any(mt19937_64& gen) {
     constexpr auto input_of_input_size = dataCount / 2;
     vector<T> input_of_input(input_of_input_size);
 
+    for (auto& element : input_of_input) {
+        element = dis(gen);
+    }
+
     input_of_input[0] = -0.0;
     input_of_input[1] = +0.0;
 #ifndef _M_FP_FAST
-    constexpr size_t special_values_count = 2;
-#else // ^^^ defined(_M_FP_FAST) / !defined(_M_FP_FAST) vvv
     input_of_input[2] = -numeric_limits<T>::infinity();
     input_of_input[3] = +numeric_limits<T>::infinity();
-
-    constexpr size_t special_values_count = 4;
-#endif // ^^^ !defined(_M_FP_FAST) ^^^
-
-    for (size_t i = special_values_count; i < input_of_input_size; ++i) {
-        input_of_input[i] = dis(gen);
-    }
+#endif // !defined(_M_FP_FAST)
 
     test_min_max_element_floating_with_values(gen, input_of_input);
 }
