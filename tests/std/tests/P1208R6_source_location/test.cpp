@@ -227,7 +227,7 @@ constexpr void lambda_test() {
 #else // ^^^ detailed __EDG__ / detailed C1XX vvv
     assert(fun2.starts_with("struct std::source_location " THISCALL_OR_CDECL " lambda_test::<lambda_"sv));
     assert(fun2.ends_with("::operator ()(void) const"sv));
-#endif // ^^^ detailed non-Clang ^^^
+#endif // ^^^ detailed C1XX ^^^
     assert(string_view{x1.file_name()}.ends_with(test_cpp));
     assert(string_view{x2.file_name()}.ends_with(test_cpp));
 }
@@ -255,7 +255,7 @@ constexpr void function_template_test() {
     assert(x1.function_name() == "std::source_location function_template<void>()"sv);
 #else // ^^^ detailed __EDG__ / detailed C1XX vvv
     assert(x1.function_name() == "struct std::source_location __cdecl function_template<void>(void)"sv);
-#endif // ^^^ detailed non-Clang ^^^
+#endif // ^^^ detailed C1XX ^^^
     assert(string_view{x1.file_name()}.ends_with(test_cpp));
 
     const auto x2 = function_template<int>();
@@ -269,7 +269,7 @@ constexpr void function_template_test() {
     assert(x2.function_name() == "std::source_location function_template<int>()"sv);
 #else // ^^^ detailed __EDG__ / detailed C1XX vvv
     assert(x2.function_name() == "struct std::source_location __cdecl function_template<int>(void)"sv);
-#endif // ^^^ detailed non-Clang ^^^
+#endif // ^^^ detailed C1XX ^^^
     assert(string_view{x1.file_name()} == string_view{x2.file_name()});
 }
 
