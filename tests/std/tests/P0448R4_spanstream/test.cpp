@@ -651,13 +651,13 @@ void test_ispanstream() {
     }
 
     { // GH-4879 <spanstream>: The span constructed by basic_ispanstream's range constructor may be ill-formed
-        span<const CharT> span_const_elem;
+        const CharT buffer[17]{};
+        span<const CharT> span_const_elem{buffer};
         basic_ispanstream<CharT> span_const_elem_constructed{span_const_elem};
-        assert(span_const_elem_constructed.span().data() == span_const_elem.data());
-        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->eback() == span_const_elem.data());
-        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->gptr() == span_const_elem.data());
-        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->egptr()
-               == span_const_elem.data() + span_const_elem.size());
+        assert(span_const_elem_constructed.span().data() == buffer);
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->eback() == buffer);
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->gptr() == buffer);
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->egptr() == end(buffer));
         assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->pbase() == nullptr);
         assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->pptr() == nullptr);
         assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->epptr() == nullptr);
