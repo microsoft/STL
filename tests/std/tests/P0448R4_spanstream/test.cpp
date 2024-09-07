@@ -32,7 +32,7 @@ inline constexpr array input_std_array<wchar_t>{L'1', L' ', L'2', L' ', L'3', L'
 
 template <class CharT>
 list<CharT> li{};
-// Neither size_range nor continuous_range.
+// Neither sized_range nor contiguous_range.
 template <class CharT>
 struct R {
     auto begin() {
