@@ -2465,7 +2465,7 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
                 const auto _Ptr1 = _STD _To_address(_First1);
 
                 const auto _Ptr_res1 = _STD _Search_vectorized(
-                    _Ptr1, _STD _To_address(_Last1), _STD _To_address(_First2), _STD _To_address(_Last2));
+                    _Ptr1, _STD _To_address(_Last1), _STD _To_address(_First2), static_cast<size_t>(_Count2));
 
                 if constexpr (is_pointer_v<_FwdItHaystack>) {
                     _First1 = _Ptr_res1;

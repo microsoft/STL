@@ -3264,18 +3264,17 @@ namespace {
 
     template <class _Traits, class _Ty>
     const void* __stdcall __std_search_impl(
-        const void* _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-        const size_t _Size_bytes_2 = _Byte_length(_First2, _Last2);
-
-        if (_Size_bytes_2 == 0) {
+        const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+        if (_Count2 == 0) {
             return _First1;
         }
 
-        if (_Size_bytes_2 == sizeof(_Ty)) {
+        if (_Count2 == 1) {
             return __std_find_trivial_impl<_Traits>(_First1, _Last1, *static_cast<const _Ty*>(_First2));
         }
 
         const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
+        const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
 
         if (_Size_bytes_1 < _Size_bytes_2) {
             return _Last1;
@@ -3516,13 +3515,13 @@ const void* __stdcall __std_find_first_of_trivial_8(
 }
 
 const void* __stdcall __std_search_1(
-    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_search_impl<_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Last2);
+    const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+    return __std_search_impl<_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_search_2(
-    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_search_impl<_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Last2);
+    const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+    return __std_search_impl<_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
 }
 
 __declspec(noalias) size_t
