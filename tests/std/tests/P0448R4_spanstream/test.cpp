@@ -34,7 +34,7 @@ template <class CharT>
 list<CharT> li{};
 // Neither sized_range nor contiguous_range.
 template <class CharT>
-struct R {
+struct SpecialRange {
     auto begin() {
         return std::begin(li<CharT>);
     }
@@ -653,7 +653,7 @@ void test_ispanstream() {
         assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->pptr() == nullptr);
         assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->epptr() == nullptr);
 
-        R<CharT> special_range{};
+        SpecialRange<CharT> special_range{};
         auto rr = static_cast<span<const CharT>>(special_range);
         basic_ispanstream<CharT> special_range_constructed{special_range};
         assert(range_constructed.span().data() == rr.data());
