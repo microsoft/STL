@@ -3382,10 +3382,9 @@ namespace {
         {
             const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
 
-            auto _Ptr1           = static_cast<const _Ty*>(_First1);
-            const auto _Ptr2     = static_cast<const _Ty*>(_First2);
-            const size_t _Count2 = _Size_bytes_2 / sizeof(_Ty);
-            const void* _Stop1   = _Ptr1;
+            auto _Ptr1         = static_cast<const _Ty*>(_First1);
+            const auto _Ptr2   = static_cast<const _Ty*>(_First2);
+            const void* _Stop1 = _Ptr1;
             _Advance_bytes(_Stop1, _Max_pos);
 
             for (; _Ptr1 != _Stop1; ++_Ptr1) {
