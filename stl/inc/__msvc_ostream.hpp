@@ -3,8 +3,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef __MSVC_CXX_OSTREAM_HPP
-#define __MSVC_CXX_OSTREAM_HPP
+#ifndef __MSVC_OSTREAM_HPP
+#define __MSVC_OSTREAM_HPP
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <ios>
@@ -1040,4 +1040,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma pack(pop)
 
 #endif // _STL_COMPILER_PREPROCESSOR
-#endif // __MSVC_CXX_OSTREAM_HPP
+#endif // __MSVC_OSTREAM_HPP
