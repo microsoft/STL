@@ -665,7 +665,7 @@ public:
     }
 
     constexpr bool _Match(const _Elem _Ch) const noexcept { // test if _Ch is in the bitmap
-        return _Matches[static_cast<unsigned char>(_Ch)];
+        return _Matches[static_cast<unsigned char>(_Ch)]; // lgtm [cpp/unclear-array-index-validation]
     }
 
 private:
@@ -1331,7 +1331,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < _Mysize, "string_view subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        return _Mydata[_Off];
+        return _Mydata[_Off]; // lgtm [cpp/unclear-array-index-validation]
     }
 
     _NODISCARD constexpr const_reference at(const size_type _Off) const {
