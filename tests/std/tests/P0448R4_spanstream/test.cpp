@@ -694,6 +694,14 @@ void test_ispanstream() {
         assert(is.span().data() == input_range.data());
         assert(is.span().size() == input_range.size());
 
+        // also test GH-4879 for basic_ispanstream::span(ROS&&)
+        is.span(span<const CharT>{other_buffer});
+        assert(is.span().data() == other_buffer);
+        assert(is.span().size() == size(other_buffer));
+        is.span(SpecialRange<CharT>{});
+        assert(is.span().data() == input_range.data());
+        assert(is.span().size() == input_range.size());
+
         if constexpr (is_same_v<CharT, char>) {
             const char const_buffer[] = "1 2 3 4 5";
             basic_ispanstream<CharT> is_const_buffer{span<const CharT>{const_buffer}};
