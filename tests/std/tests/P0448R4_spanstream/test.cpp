@@ -648,7 +648,9 @@ void test_ispanstream() {
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->pbase() == nullptr);
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->pptr() == nullptr);
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->epptr() == nullptr);
+    }
 
+    { // GH-4879 <spanstream>: The span constructed by basic_ispanstream's range constructor may be ill-formed
         span<const CharT> span_const_elem;
         basic_ispanstream<CharT> span_const_elem_constructed{span_const_elem};
         assert(span_const_elem_constructed.span().data() == span_const_elem.data());
