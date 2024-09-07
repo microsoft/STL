@@ -7,6 +7,7 @@
 #include <ios>
 #include <limits>
 #include <list>
+#include <ranges>
 #include <span>
 #include <spanstream>
 #include <string_view>
@@ -45,6 +46,12 @@ struct SpecialRange {
         return span<const CharT>(input_view<CharT>);
     }
 };
+template <class CharT>
+constexpr bool ranges::enable_borrowed_range<SpecialRange<CharT>> = true;
+
+static_assert(!ranges::sized_range<SpecialRange<char>>);
+static_assert(!ranges::contiguous_range<SpecialRange<char>>);
+static_assert(ranges::borrowed_range<SpecialRange<char>>);
 
 template <class Spanbuf>
 class basic_test_buf : public Spanbuf {
