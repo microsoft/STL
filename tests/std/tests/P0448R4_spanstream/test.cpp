@@ -665,7 +665,7 @@ void test_ispanstream() {
         SpecialRange<CharT> special_range{};
         auto rr = static_cast<span<const CharT>>(special_range);
         basic_ispanstream<CharT> special_range_constructed{special_range};
-        assert(range_constructed.span().data() == rr.data());
+        assert(special_range_constructed.span().data() == rr.data());
         assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->eback() == rr.data());
         assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->gptr() == rr.data());
         assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->egptr() == rr.data() + rr.size());
