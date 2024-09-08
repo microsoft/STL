@@ -62,7 +62,7 @@ endif()
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 # /utf-8 affects <format>.
-add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8>")
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8;/Zc:preprocessor>")
 
 if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/google-benchmark/.git")
     message(FATAL_ERROR "google-benchmark is not checked out; make sure to run\n    git submodule update --init benchmarks/google-benchmark")
@@ -104,11 +104,10 @@ function(add_benchmark name)
     target_compile_features(benchmark-${name} PRIVATE cxx_std_${arg_CXX_STANDARD})
     target_include_directories(benchmark-${name} PRIVATE inc)
     target_link_libraries(benchmark-${name} PRIVATE benchmark::benchmark)
-    # TRANSITION, google/benchmark#1450
-    target_compile_definitions(benchmark-${name} PRIVATE BENCHMARK_STATIC_DEFINE)
 endfunction()
 
 add_benchmark(bitset_to_string src/bitset_to_string.cpp)
+add_benchmark(efficient_nonlocking_print src/efficient_nonlocking_print.cpp)
 add_benchmark(find_and_count src/find_and_count.cpp)
 add_benchmark(find_first_of src/find_first_of.cpp)
 add_benchmark(iota src/iota.cpp)
@@ -121,6 +120,7 @@ add_benchmark(random_integer_generation src/random_integer_generation.cpp)
 add_benchmark(replace src/replace.cpp)
 add_benchmark(search src/search.cpp)
 add_benchmark(std_copy src/std_copy.cpp)
+add_benchmark(sv_equal src/sv_equal.cpp)
 add_benchmark(swap_ranges src/swap_ranges.cpp)
 
 add_benchmark(vector_bool_copy src/std/containers/sequences/vector.bool/copy/test.cpp)

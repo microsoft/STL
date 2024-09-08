@@ -128,7 +128,7 @@ int main() {
         const auto expected3 = ldexpf(0xDE'55'2C >> (3 * 8 - 24), -24);
 
         assert((generate_with_ibe<float, 24, Engine>) () == expected1);
-        assert((generate_with_ibe<float, 20, Engine>) () == expected2); // needs a 64 bit accumulator for $S$
+        assert((generate_with_ibe<float, 20, Engine>) () == expected2);
         assert((generate_with_ibe<float, 8, Engine>) () == expected3);
     }
 
@@ -149,7 +149,7 @@ int main() {
 
         assert((generate_with_ibe<double, 64, Engine>) () == expected1);
         assert((generate_with_ibe<double, 32, Engine>) () == expected2);
-        assert((generate_with_ibe<double, 24, Engine>) () == expected3); // needs a 128 bit accumulator for $S$
+        assert((generate_with_ibe<double, 24, Engine>) () == expected3);
     }
 
     {

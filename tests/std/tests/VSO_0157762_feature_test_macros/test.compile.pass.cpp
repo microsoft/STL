@@ -359,6 +359,12 @@ STATIC_ASSERT(__cpp_lib_format == 202304L);
 #error __cpp_lib_format is defined
 #endif
 
+#if _HAS_CXX23
+STATIC_ASSERT(__cpp_lib_format_ranges == 202207L);
+#elif defined(__cpp_lib_format_ranges)
+#error __cpp_lib_format_ranges is defined
+#endif
+
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_format_uchar == 202311L);
 #elif defined(__cpp_lib_format_uchar)
@@ -696,7 +702,7 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 #endif
 
 #if _HAS_CXX23
-STATIC_ASSERT(__cpp_lib_print == 202207L);
+STATIC_ASSERT(__cpp_lib_print == 202406L);
 #elif defined(__cpp_lib_print)
 #error __cpp_lib_print is defined
 #endif

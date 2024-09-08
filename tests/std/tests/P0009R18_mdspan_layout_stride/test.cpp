@@ -210,12 +210,9 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     }
 
     { // Check 'stride' function
-        for (size_t i = 0; i < strs.size(); ++i) {
+        for (size_t i = 0; i < Ext::rank(); ++i) {
             same_as<IndexType> decltype(auto) s = m.stride(i);
-#pragma warning(push)
-#pragma warning(disable : 28020) // TRANSITION, DevCom-923103
             assert(cmp_equal(strs[i], s));
-#pragma warning(pop)
         }
     }
 

@@ -360,7 +360,6 @@
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
 // P2286R8 Formatting Ranges
-//     (only the '?' format specifier for strings and characters)
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
@@ -384,6 +383,7 @@
 // P2539R4 Synchronizing print() With The Underlying Stream
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
+// P2585R1 Improve Default Container Formatting
 // P2599R2 mdspan: index_type, size_type
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
 // P2613R1 mdspan: empty()
@@ -394,7 +394,10 @@
 // P2833R2 Freestanding Library: inout expected span
 //     (except for __cpp_lib_span which also covers C++26 span::at)
 // P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
+// P3107R5 Permit An Efficient Implementation Of <print>
 // P3142R0 Printing Blank Lines With println()
+// P3235R3 std::print More Types Faster With Less Memory
+//     (partial implementation; see GH-4924)
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -884,7 +887,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202407L
+#define _MSVC_STL_UPDATE  202409L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1756,6 +1759,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_constexpr_typeinfo                202106L
 #define __cpp_lib_containers_ranges                 202202L
 #define __cpp_lib_expected                          202211L
+#define __cpp_lib_format_ranges                     202207L
 #define __cpp_lib_formatters                        202302L
 #define __cpp_lib_forward_like                      202207L
 #define __cpp_lib_freestanding_expected             202311L
@@ -1766,7 +1770,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_mdspan                            202207L
 #define __cpp_lib_move_only_function                202110L
 #define __cpp_lib_out_ptr                           202311L
-#define __cpp_lib_print                             202207L
+#define __cpp_lib_print                             202406L
 #define __cpp_lib_ranges_as_const                   202311L
 #define __cpp_lib_ranges_as_rvalue                  202207L
 #define __cpp_lib_ranges_cartesian_product          202207L

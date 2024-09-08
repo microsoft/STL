@@ -3859,11 +3859,12 @@ basic_ostream<Elem, Traits>& operator<<(basic_ostream<Elem, Traits>& ostr, const
         L"symlink"sv, L"block"sv, L"character"sv, L"fifo"sv, L"socket"sv, L"unknown"sv, L"junction"sv}};
 
     const size_t index = static_cast<size_t>(ft);
-    if (!EXPECT(index < names.size())) {
+    if (index < names.size()) {
+        return ostr << L"file_type::" << names[index];
+    } else {
+        EXPECT(false);
         return ostr << L"!!! INVALID file_type(" << index << L") !!!!";
     }
-
-    return ostr << L"file_type::" << names[index];
 }
 
 template <typename Elem, typename Traits>

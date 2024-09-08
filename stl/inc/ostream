@@ -100,7 +100,7 @@ public:
             }
 
             const auto _Tied = _Ostr.tie();
-            if (!_Tied || _Tied == &_Ostr) {
+            if (!_Tied || _Tied == _STD addressof(_Ostr)) {
                 _Ok = true;
                 return;
             }
