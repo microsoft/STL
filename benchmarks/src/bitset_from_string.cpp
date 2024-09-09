@@ -22,13 +22,12 @@ namespace {
 
         array<charT, actual_size> result;
 
-        for (auto dest = result.begin(); dest != result.end();) {
-            for (size_t i = 0; i != N; ++i, ++dest) {
-                *dest = static_cast<charT>(dis(rnd));
-            }
+        for (auto& elem : result) {
+            elem = static_cast<charT>(dis(rnd)); // fill random digits
+        }
 
-            *dest = charT{'\0'};
-            ++dest;
+        for (size_t bitset_idx = 0; bitset_idx < number_of_bitsets; ++bitset_idx) {
+            result[bitset_idx * (N + 1) + N] = charT{'\0'}; // write null terminators
         }
 
         return result;
