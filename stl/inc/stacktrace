@@ -356,6 +356,9 @@ private:
     _Fill_align_and_width_formatter<char> _Impl;
 };
 
+template <>
+inline constexpr bool enable_nonlocking_formatter_optimization<stacktrace_entry> = true;
+
 template <class _Alloc>
 struct formatter<basic_stacktrace<_Alloc>> {
     constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
@@ -372,6 +375,9 @@ struct formatter<basic_stacktrace<_Alloc>> {
         return _RANGES copy(_STD to_string(_Val), _Format_ctx.out()).out;
     }
 };
+
+template <class _Alloc>
+constexpr bool enable_nonlocking_formatter_optimization<basic_stacktrace<_Alloc>> = true;
 
 namespace pmr {
     _EXPORT_STD using stacktrace = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;

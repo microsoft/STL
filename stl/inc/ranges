@@ -1051,11 +1051,12 @@ namespace ranges {
             }
 
             template <class _Ty1, class _Ty2>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty1&& _Val1, _Ty2&& _Val2) _CONST_CALL_OPERATOR
-                noexcept(noexcept(iota_view(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2))))
-                requires requires { iota_view(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2)); }
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
+                _Ty1&& _Start, _Ty2&& _Bound) _CONST_CALL_OPERATOR
+                noexcept(noexcept(iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound))))
+                requires requires { iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound)); }
             {
-                return iota_view(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
+                return iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound));
             }
         };
 
@@ -1306,11 +1307,12 @@ namespace ranges {
             }
 
             template <class _Ty1, class _Ty2>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty1&& _Val1, _Ty2&& _Val2) _CONST_CALL_OPERATOR
-                noexcept(noexcept(repeat_view(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2))))
-                requires requires { repeat_view(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2)); }
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
+                _Ty1&& _Value, _Ty2&& _Count) _CONST_CALL_OPERATOR
+                noexcept(noexcept(repeat_view(_STD forward<_Ty1>(_Value), _STD forward<_Ty2>(_Count))))
+                requires requires { repeat_view(_STD forward<_Ty1>(_Value), _STD forward<_Ty2>(_Count)); }
             {
-                return repeat_view(_STD forward<_Ty1>(_Val1), _STD forward<_Ty2>(_Val2));
+                return repeat_view(_STD forward<_Ty1>(_Value), _STD forward<_Ty2>(_Count));
             }
         };
 
@@ -7134,7 +7136,7 @@ namespace ranges {
         const auto _Evaluate_equality_closure =
             [&_Lhs_tuple, &_Rhs_tuple]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(
                 (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>())&&...)) {
-                return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ...);
+                return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ... || false);
             };
 
         return _Evaluate_equality_closure(index_sequence_for<_LHSTupleTypes...>{});
@@ -7455,6 +7457,11 @@ namespace ranges {
             }
         }
 
+        static constexpr auto _Size_closure = [](auto... _Sizes) _STATIC_CALL_OPERATOR noexcept {
+            using _Common_unsigned_type = _Make_unsigned_like_t<common_type_t<decltype(_Sizes)...>>;
+            return (_RANGES min)({static_cast<_Common_unsigned_type>(_Sizes)...});
+        };
+
     public:
         zip_view() noexcept((is_nothrow_default_constructible_v<_ViewTypes> && ...)) = default;
 
@@ -7501,25 +7508,17 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto size() noexcept(
-            noexcept(_STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views)))) // strengthened
+            noexcept(_STD apply(_Size_closure, _Tuple_transform(_RANGES size, _Views)))) // strengthened
             requires (sized_range<_ViewTypes> && ...)
         {
-            return _STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views));
+            return _STD apply(_Size_closure, _Tuple_transform(_RANGES size, _Views));
         }
 
         _NODISCARD constexpr auto size() const
-            noexcept(noexcept(_STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views)))) // strengthened
+            noexcept(noexcept(_STD apply(_Size_closure, _Tuple_transform(_RANGES size, _Views)))) // strengthened
             requires (sized_range<const _ViewTypes> && ...)
         {
-            return _STD apply(_Size_closure(), _Tuple_transform(_RANGES size, _Views));
-        }
-
-    private:
-        _NODISCARD static constexpr auto _Size_closure() noexcept {
-            return [](auto... _Sizes) _STATIC_CALL_OPERATOR noexcept {
-                using _Common_unsigned_type = _Make_unsigned_like_t<common_type_t<decltype(_Sizes)...>>;
-                return (_RANGES min)({static_cast<_Common_unsigned_type>(_Sizes)...});
-            };
+            return _STD apply(_Size_closure, _Tuple_transform(_RANGES size, _Views));
         }
     };
 
@@ -9094,9 +9093,8 @@ namespace ranges {
                 requires (indirectly_swappable<iterator_t<_Maybe_const<_Const, _First>>> && ...
                           && indirectly_swappable<iterator_t<_Maybe_const<_Const, _Rest>>>)
             {
-                return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                    return (_RANGES iter_swap(_STD get<_Indices>(_Left._Current), _STD get<_Indices>(_Right._Current)),
-                        ...);
+                [&]<size_t... _Indices>(index_sequence<_Indices...>) {
+                    (_RANGES iter_swap(_STD get<_Indices>(_Left._Current), _STD get<_Indices>(_Right._Current)), ...);
                 }(make_index_sequence<1 + sizeof...(_Rest)>{});
             }
         };
@@ -9144,7 +9142,7 @@ namespace ranges {
             requires ((!_Simple_view<_First> || ... || !_Simple_view<_Rest>) && _Cartesian_product_is_common<_First>)
         {
             const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
+                return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ... || false);
             }(make_index_sequence<sizeof...(_Rest)>{});
 
             const auto _Make_iter_tuple = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
@@ -9157,7 +9155,7 @@ namespace ranges {
             requires _Cartesian_product_is_common<const _First>
         {
             const bool _Is_empty = [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ...);
+                return (_RANGES empty(_STD get<_Indices + 1>(_Bases)) || ... || false);
             }(make_index_sequence<sizeof...(_Rest)>{});
 
             const auto _Make_iter_tuple = [&]<size_t... _Indices>(index_sequence<_Indices...>) {

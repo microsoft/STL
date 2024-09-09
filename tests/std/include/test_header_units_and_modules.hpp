@@ -593,6 +593,14 @@ void test_random() {
     minstd_rand0 lcg;
     lcg.discard(9999);
     assert(lcg() == 1043618065); // N4868 [rand.predef]/1
+
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, VSO-2226569
+    // Test coverage for GH-4899 "Standard Library Modules: uniform_real_distribution emits
+    // error C2512: 'std::_Unsigned128': no appropriate default constructor available":
+    const double val = generate_canonical<double, 53>(lcg);
+    assert(val >= 0.0);
+    assert(val < 1.0);
+#endif // ^^^ no workaround ^^^
 }
 
 void test_ranges() {
@@ -735,17 +743,11 @@ constexpr bool impl_test_source_location() {
     assert(sl.line() == __LINE__ - 1);
     assert(sl.column() == 38);
 
-#ifdef __EDG__ // TRANSITION, DevCom-10199227
-#define TEST_DETAILED_FUNCTION_NAME 0
-#else // ^^^ workaround / no workaround vvv
-#define TEST_DETAILED_FUNCTION_NAME 1
-#endif // ^^^ no workaround ^^^
-
-#if TEST_DETAILED_FUNCTION_NAME
+#ifdef __EDG__
+    assert(sl.function_name() == "bool impl_test_source_location()"sv);
+#else // ^^^ EDG / Other vvv
     assert(sl.function_name() == "bool __cdecl impl_test_source_location(void)"sv);
-#else // ^^^ detailed / basic vvv
-    assert(sl.function_name() == "impl_test_source_location"sv);
-#endif // ^^^ basic ^^^
+#endif // ^^^ Other ^^^
 
     assert(string_view{sl.file_name()}.ends_with("test_header_units_and_modules.hpp"sv));
     return true;

@@ -456,6 +456,11 @@ _EXPORT_STD using ranges::get;
 template <class _It, class _Se, ranges::subrange_kind _Ki>
 constexpr bool _Is_subrange_v<ranges::subrange<_It, _Se, _Ki>> = true;
 
+#if _HAS_CXX23
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+constexpr bool _Tuple_like_impl<ranges::subrange<_It, _Se, _Ki>> = true;
+#endif // _HAS_CXX23
+
 template <class _It, class _Se, ranges::subrange_kind _Ki>
 struct tuple_size<ranges::subrange<_It, _Se, _Ki>> : integral_constant<size_t, 2> {};
 
