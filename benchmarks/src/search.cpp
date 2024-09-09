@@ -7,12 +7,13 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
 using namespace std::string_view_literals;
 
-const char src_haystack[] =
+constexpr std::string_view common_src_data =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mollis imperdiet massa, at dapibus elit interdum "
     "ac. In eget sollicitudin mi. Nam at tellus at sapien tincidunt sollicitudin vel non eros. Pellentesque nunc nunc, "
     "ullamcorper eu accumsan at, pulvinar non turpis. Quisque vel mauris pulvinar, pretium purus vel, ultricies erat. "
@@ -43,13 +44,42 @@ const char src_haystack[] =
     "euismod eros, ut posuere ligula ullamcorper id. Nullam aliquet malesuada est at dignissim. Pellentesque finibus "
     "sagittis libero nec bibendum. Phasellus dolor ipsum, finibus quis turpis quis, mollis interdum felis.";
 
-constexpr std::array patterns = {
-    "aliquet"sv,
-    "aliquet malesuada"sv,
+template <size_t Size, bool Last_is_different>
+constexpr auto make_fill_pattern_array() {
+    std::array<char, Size> result;
+    result.fill('*');
+
+    if constexpr (Last_is_different) {
+        result.back() = '!';
+    }
+
+    return result;
+}
+
+template <size_t Size, bool Last_is_different>
+constexpr std::array fill_pattern_array = make_fill_pattern_array<Size, Last_is_different>();
+
+template <size_t Size, bool Last_is_different>
+constexpr std::string_view fill_pattern_view = fill_pattern_array<Size, Last_is_different>;
+
+struct data_and_pattern {
+    std::string_view data;
+    std::string_view pattern;
+};
+
+constexpr data_and_pattern patterns[] = {
+    /* 0. Small, closer to end   */ {common_src_data, "aliquet"sv},
+    /* 1. Large, closer to end   */ {common_src_data, "aliquet malesuada"sv},
+    /* 2. Small, closer to begin */ {common_src_data, "pulvinar"sv},
+    /* 3. Large, closer to begin */ {common_src_data, "dapibus elit interdum"sv},
+
+    /* 4. Small, evil */ {fill_pattern_view<3000, false>, fill_pattern_view<7, true>},
+    /* 5. Large, evli */ {fill_pattern_view<3000, false>, fill_pattern_view<20, true>},
 };
 
 void c_strstr(benchmark::State& state) {
-    const auto& src_needle = patterns[static_cast<size_t>(state.range())];
+    const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
+    const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
     const std::string haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::string needle(std::begin(src_needle), std::end(src_needle));
@@ -64,7 +94,8 @@ void c_strstr(benchmark::State& state) {
 
 template <class T>
 void classic_search(benchmark::State& state) {
-    const auto& src_needle = patterns[static_cast<size_t>(state.range())];
+    const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
+    const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
     const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
@@ -79,7 +110,8 @@ void classic_search(benchmark::State& state) {
 
 template <class T>
 void ranges_search(benchmark::State& state) {
-    const auto& src_needle = patterns[static_cast<size_t>(state.range())];
+    const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
+    const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
     const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
@@ -94,7 +126,8 @@ void ranges_search(benchmark::State& state) {
 
 template <class T>
 void search_default_searcher(benchmark::State& state) {
-    const auto& src_needle = patterns[static_cast<size_t>(state.range())];
+    const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
+    const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
     const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
@@ -107,26 +140,57 @@ void search_default_searcher(benchmark::State& state) {
     }
 }
 
+template <class T>
+void classic_find_end(benchmark::State& state) {
+    const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
+    const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
+
+    const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
+    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
+
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = std::find_end(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+        benchmark::DoNotOptimize(res);
+    }
+}
+
+template <class T>
+void ranges_find_end(benchmark::State& state) {
+    const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
+    const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
+
+    const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
+    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
+
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = std::ranges::find_end(haystack, needle);
+        benchmark::DoNotOptimize(res);
+    }
+}
+
 void common_args(auto bm) {
-    bm->Range(0, patterns.size() - 1);
+    bm->DenseRange(0, std::size(patterns) - 1, 1);
 }
 
 BENCHMARK(c_strstr)->Apply(common_args);
 
 BENCHMARK(classic_search<std::uint8_t>)->Apply(common_args);
 BENCHMARK(classic_search<std::uint16_t>)->Apply(common_args);
-BENCHMARK(classic_search<std::uint32_t>)->Apply(common_args);
-BENCHMARK(classic_search<std::uint64_t>)->Apply(common_args);
 
 BENCHMARK(ranges_search<std::uint8_t>)->Apply(common_args);
 BENCHMARK(ranges_search<std::uint16_t>)->Apply(common_args);
-BENCHMARK(ranges_search<std::uint32_t>)->Apply(common_args);
-BENCHMARK(ranges_search<std::uint64_t>)->Apply(common_args);
 
 BENCHMARK(search_default_searcher<std::uint8_t>)->Apply(common_args);
 BENCHMARK(search_default_searcher<std::uint16_t>)->Apply(common_args);
-BENCHMARK(search_default_searcher<std::uint32_t>)->Apply(common_args);
-BENCHMARK(search_default_searcher<std::uint64_t>)->Apply(common_args);
 
+BENCHMARK(classic_find_end<std::uint8_t>)->Apply(common_args);
+BENCHMARK(classic_find_end<std::uint16_t>)->Apply(common_args);
+
+BENCHMARK(ranges_find_end<std::uint8_t>)->Apply(common_args);
+BENCHMARK(ranges_find_end<std::uint16_t>)->Apply(common_args);
 
 BENCHMARK_MAIN();
