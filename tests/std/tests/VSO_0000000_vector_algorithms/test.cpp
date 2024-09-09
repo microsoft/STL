@@ -320,8 +320,10 @@ void test_search(mt19937_64& gen) {
     uniform_int_distribution<TD> dis('0', '9');
     vector<T> input_haystack;
     vector<T> input_needle;
+    vector<T> temp;
     input_haystack.reserve(haystackDataCount);
     input_needle.reserve(needleDataCount);
+    temp.reserve(needleDataCount);
 
     for (;;) {
         input_needle.clear();
@@ -330,6 +332,17 @@ void test_search(mt19937_64& gen) {
         for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
             input_needle.push_back(static_cast<T>(dis(gen)));
             test_case_search(input_haystack, input_needle);
+
+            // For large needles the chance of a match is low, so test a guaranteed match
+            if (input_haystack.size() > input_needle.size() * 2) {
+                uniform_int_distribution<size_t> pos_dis(0, input_haystack.size() - input_needle.size());
+                const size_t pos             = pos_dis(gen);
+                const auto overwritten_first = input_haystack.begin() + static_cast<ptrdiff_t>(pos);
+                temp.assign(overwritten_first, overwritten_first + static_cast<ptrdiff_t>(input_needle.size()));
+                copy(input_needle.begin(), input_needle.end(), overwritten_first);
+                test_case_search(input_haystack, input_needle);
+                copy(temp.begin(), temp.end(), overwritten_first);
+            }
         }
 
         if (input_haystack.size() == haystackDataCount) {
