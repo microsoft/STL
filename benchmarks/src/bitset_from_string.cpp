@@ -41,16 +41,17 @@ namespace {
 
     template <length_type Length, size_t N, class charT>
     void BM_bitset_from_string(benchmark::State& state) {
-        const auto& bit_string = random_digits<N, charT>;
+        const auto& digit_array = random_digits<N, charT>;
         for (auto _ : state) {
-            benchmark::DoNotOptimize(bit_string);
-            const charT* const data = bit_string.data();
-            for (size_t pos = 0, max = bit_string.size(); pos != max; pos += N + 1) {
+            benchmark::DoNotOptimize(digit_array);
+            const auto arr_data = digit_array.data();
+            const auto arr_size = digit_array.size();
+            for (size_t pos = 0; pos != arr_size; pos += N + 1) {
                 if constexpr (Length == length_type::char_count) {
-                    bitset<N> bs(data + pos, N);
+                    bitset<N> bs(arr_data + pos, N);
                     benchmark::DoNotOptimize(bs);
                 } else {
-                    bitset<N> bs(data + pos);
+                    bitset<N> bs(arr_data + pos);
                     benchmark::DoNotOptimize(bs);
                 }
             }
