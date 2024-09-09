@@ -11,7 +11,7 @@ using namespace std;
 
 namespace {
     template <class charT, size_t Min_length, size_t N>
-    const auto random_digits_init() {
+    auto random_digits_init() {
         mt19937_64 rnd{};
         uniform_int_distribution<> dis('0', '1');
         std::basic_string<charT> str;
