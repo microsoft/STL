@@ -14,7 +14,6 @@ namespace {
     auto random_digits_init() {
         mt19937_64 rnd{};
         uniform_int_distribution<> dis('0', '1');
-        std::basic_string<charT> str;
 
         constexpr size_t number_of_bitsets = (Min_length + N - 1) / N;
         static_assert(number_of_bitsets != 0);
