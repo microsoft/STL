@@ -20,7 +20,7 @@ namespace {
 
         constexpr size_t actual_size = number_of_bitsets * (N + 1); // +1 for \0
 
-        std::array<charT, actual_size> result;
+        array<charT, actual_size> result;
 
         for (auto dest = result.begin(); dest != result.end();) {
             for (size_t i = 0; i != N; ++i, ++dest) {
