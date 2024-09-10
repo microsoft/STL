@@ -466,18 +466,27 @@ template <class _Ret, class... _ArgTypes>
 class _Packaged_state<_Ret(_ArgTypes...)>
     : public _Associated_state<_Ret> { // class for managing associated asynchronous state for packaged_task
 public:
-    using _Mybase = _Associated_state<_Ret>;
-    using _Mydel  = typename _Mybase::_Mydel;
+    using _Mybase        = _Associated_state<_Ret>;
+    using _Mydel         = typename _Mybase::_Mydel;
+    using _Function_type = function<_Ret(_ArgTypes...)>;
 
-    explicit _Packaged_state(const function<_Ret(_ArgTypes...)>& _Fnarg) : _Fn(_Fnarg) {}
+    explicit _Packaged_state(const _Function_type& _Fnarg) : _Fn(_Fnarg) {}
 
-    explicit _Packaged_state(function<_Ret(_ArgTypes...)>&& _Fnarg) noexcept : _Fn(_STD move(_Fnarg)) {}
+    explicit _Packaged_state(_Function_type&& _Fnarg) noexcept : _Fn(_STD move(_Fnarg)) {}
 
-    template <class _Fty2>
+    template <class _Fty2, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, _Function_type>, int> = 0>
     explicit _Packaged_state(_Fty2&& _Fnarg) : _Fn(_Secret_copyability_ignoring_tag{}, _STD forward<_Fty2>(_Fnarg)) {}
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-    template <class _Fty2, class _Alloc>
+    template <class _Alloc>
+    _Packaged_state(const _Function_type& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
+        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _Fnarg) {}
+
+    template <class _Alloc>
+    _Packaged_state(_Function_type&& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
+        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _STD move(_Fnarg)) {}
+
+    template <class _Fty2, class _Alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, _Function_type>, int> = 0>
     _Packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
         : _Mybase(_Dp), _Fn(_Secret_copyability_ignoring_tag{}, allocator_arg, _Al, _STD forward<_Fty2>(_Fnarg)) {}
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
@@ -510,25 +519,34 @@ public:
     }
 
 private:
-    function<_Ret(_ArgTypes...)> _Fn;
+    _Function_type _Fn;
 };
 
 template <class _Ret, class... _ArgTypes>
 class _Packaged_state<_Ret&(_ArgTypes...)>
     : public _Associated_state<_Ret*> { // class for managing associated asynchronous state for packaged_task
 public:
-    using _Mybase = _Associated_state<_Ret*>;
-    using _Mydel  = typename _Mybase::_Mydel;
+    using _Mybase        = _Associated_state<_Ret*>;
+    using _Mydel         = typename _Mybase::_Mydel;
+    using _Function_type = function<_Ret&(_ArgTypes...)>;
 
-    explicit _Packaged_state(const function<_Ret&(_ArgTypes...)>& _Fnarg) : _Fn(_Fnarg) {}
+    explicit _Packaged_state(const _Function_type& _Fnarg) : _Fn(_Fnarg) {}
 
-    explicit _Packaged_state(function<_Ret&(_ArgTypes...)>&& _Fnarg) noexcept : _Fn(_STD move(_Fnarg)) {}
+    explicit _Packaged_state(_Function_type&& _Fnarg) noexcept : _Fn(_STD move(_Fnarg)) {}
 
-    template <class _Fty2>
+    template <class _Fty2, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, _Function_type>, int> = 0>
     explicit _Packaged_state(_Fty2&& _Fnarg) : _Fn(_Secret_copyability_ignoring_tag{}, _STD forward<_Fty2>(_Fnarg)) {}
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-    template <class _Fty2, class _Alloc>
+    template <class _Alloc>
+    _Packaged_state(const _Function_type& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
+        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _Fnarg) {}
+
+    template <class _Alloc>
+    _Packaged_state(_Function_type&& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
+        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _STD move(_Fnarg)) {}
+
+    template <class _Fty2, class _Alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, _Function_type>, int> = 0>
     _Packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
         : _Mybase(_Dp), _Fn(_Secret_copyability_ignoring_tag{}, allocator_arg, _Al, _STD forward<_Fty2>(_Fnarg)) {}
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
@@ -561,25 +579,34 @@ public:
     }
 
 private:
-    function<_Ret&(_ArgTypes...)> _Fn;
+    _Function_type _Fn;
 };
 
 template <class... _ArgTypes>
 class _Packaged_state<void(_ArgTypes...)>
     : public _Associated_state<int> { // class for managing associated asynchronous state for packaged_task
 public:
-    using _Mybase = _Associated_state<int>;
-    using _Mydel  = typename _Mybase::_Mydel;
+    using _Mybase        = _Associated_state<int>;
+    using _Mydel         = typename _Mybase::_Mydel;
+    using _Function_type = function<void(_ArgTypes...)>;
 
-    explicit _Packaged_state(const function<void(_ArgTypes...)>& _Fnarg) : _Fn(_Fnarg) {}
+    explicit _Packaged_state(const _Function_type& _Fnarg) : _Fn(_Fnarg) {}
 
-    explicit _Packaged_state(function<void(_ArgTypes...)>&& _Fnarg) noexcept : _Fn(_STD move(_Fnarg)) {}
+    explicit _Packaged_state(_Function_type&& _Fnarg) noexcept : _Fn(_STD move(_Fnarg)) {}
 
-    template <class _Fty2>
+    template <class _Fty2, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, _Function_type>, int> = 0>
     explicit _Packaged_state(_Fty2&& _Fnarg) : _Fn(_Secret_copyability_ignoring_tag{}, _STD forward<_Fty2>(_Fnarg)) {}
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-    template <class _Fty2, class _Alloc>
+    template <class _Alloc>
+    _Packaged_state(const _Function_type& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
+        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _Fnarg) {}
+
+    template <class _Alloc>
+    _Packaged_state(_Function_type&& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
+        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _STD move(_Fnarg)) {}
+
+    template <class _Fty2, class _Alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, _Function_type>, int> = 0>
     _Packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
         : _Mybase(_Dp), _Fn(_Secret_copyability_ignoring_tag{}, allocator_arg, _Al, _STD forward<_Fty2>(_Fnarg)) {}
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
@@ -614,7 +641,7 @@ public:
     }
 
 private:
-    function<void(_ArgTypes...)> _Fn;
+    _Function_type _Fn;
 };
 
 template <class _Ty, class _Alloc>
