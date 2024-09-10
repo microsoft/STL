@@ -469,13 +469,17 @@ public:
     using _Mybase = _Associated_state<_Ret>;
     using _Mydel  = typename _Mybase::_Mydel;
 
+    explicit _Packaged_state(const function<_Ret(_ArgTypes...)>& _Fnarg) : _Fn(_Fnarg) {}
+
+    explicit _Packaged_state(function<_Ret(_ArgTypes...)>&& _Fnarg) noexcept : _Fn(_STD move(_Fnarg)) {}
+
     template <class _Fty2>
-    _Packaged_state(_Fty2&& _Fnarg) : _Fn(_STD forward<_Fty2>(_Fnarg)) {}
+    explicit _Packaged_state(_Fty2&& _Fnarg) : _Fn(_Secret_copyability_ignoring_tag{}, _STD forward<_Fty2>(_Fnarg)) {}
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     template <class _Fty2, class _Alloc>
     _Packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
-        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _STD forward<_Fty2>(_Fnarg)) {}
+        : _Mybase(_Dp), _Fn(_Secret_copyability_ignoring_tag{}, allocator_arg, _Al, _STD forward<_Fty2>(_Fnarg)) {}
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     void _Call_deferred(_ArgTypes... _Args) { // set deferred call
@@ -498,8 +502,11 @@ public:
         _CATCH_END
     }
 
-    const auto& _Get_fn() const {
+    const auto& _Get_fn() const& {
         return _Fn;
+    }
+    auto&& _Get_fn() && noexcept {
+        return _STD move(_Fn);
     }
 
 private:
@@ -513,13 +520,17 @@ public:
     using _Mybase = _Associated_state<_Ret*>;
     using _Mydel  = typename _Mybase::_Mydel;
 
+    explicit _Packaged_state(const function<_Ret&(_ArgTypes...)>& _Fnarg) : _Fn(_Fnarg) {}
+
+    explicit _Packaged_state(function<_Ret&(_ArgTypes...)>&& _Fnarg) noexcept : _Fn(_STD move(_Fnarg)) {}
+
     template <class _Fty2>
-    _Packaged_state(_Fty2&& _Fnarg) : _Fn(_STD forward<_Fty2>(_Fnarg)) {}
+    explicit _Packaged_state(_Fty2&& _Fnarg) : _Fn(_Secret_copyability_ignoring_tag{}, _STD forward<_Fty2>(_Fnarg)) {}
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     template <class _Fty2, class _Alloc>
     _Packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
-        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _STD forward<_Fty2>(_Fnarg)) {}
+        : _Mybase(_Dp), _Fn(_Secret_copyability_ignoring_tag{}, allocator_arg, _Al, _STD forward<_Fty2>(_Fnarg)) {}
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     void _Call_deferred(_ArgTypes... _Args) { // set deferred call
@@ -542,8 +553,11 @@ public:
         _CATCH_END
     }
 
-    const auto& _Get_fn() const {
+    const auto& _Get_fn() const& {
         return _Fn;
+    }
+    auto&& _Get_fn() && noexcept {
+        return _STD move(_Fn);
     }
 
 private:
@@ -557,13 +571,17 @@ public:
     using _Mybase = _Associated_state<int>;
     using _Mydel  = typename _Mybase::_Mydel;
 
+    explicit _Packaged_state(const function<void(_ArgTypes...)>& _Fnarg) : _Fn(_Fnarg) {}
+
+    explicit _Packaged_state(function<void(_ArgTypes...)>&& _Fnarg) noexcept : _Fn(_STD move(_Fnarg)) {}
+
     template <class _Fty2>
-    _Packaged_state(_Fty2&& _Fnarg) : _Fn(_STD forward<_Fty2>(_Fnarg)) {}
+    explicit _Packaged_state(_Fty2&& _Fnarg) : _Fn(_Secret_copyability_ignoring_tag{}, _STD forward<_Fty2>(_Fnarg)) {}
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     template <class _Fty2, class _Alloc>
     _Packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al, _Mydel* _Dp)
-        : _Mybase(_Dp), _Fn(allocator_arg, _Al, _STD forward<_Fty2>(_Fnarg)) {}
+        : _Mybase(_Dp), _Fn(_Secret_copyability_ignoring_tag{}, allocator_arg, _Al, _STD forward<_Fty2>(_Fnarg)) {}
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     void _Call_deferred(_ArgTypes... _Args) { // set deferred call
@@ -588,8 +606,11 @@ public:
         _CATCH_END
     }
 
-    const auto& _Get_fn() const {
+    const auto& _Get_fn() const& {
         return _Fn;
+    }
+    auto&& _Get_fn() && noexcept {
+        return _STD move(_Fn);
     }
 
 private:
@@ -1266,7 +1287,10 @@ public:
     packaged_task() = default;
 
     template <class _Fty2, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
-    explicit packaged_task(_Fty2&& _Fnarg) : _MyPromise(new _MyStateType(_STD forward<_Fty2>(_Fnarg))) {}
+    explicit packaged_task(_Fty2&& _Fnarg) : _MyPromise(new _MyStateType(_STD forward<_Fty2>(_Fnarg))) {
+        static_assert(_Is_invocable_r<_Ret, decay_t<_Fty2>&, _ArgTypes...>::value,
+            "The function object must be callable with _ArgTypes... and return _Ret (N4988 [futures.task.members]/3).");
+    }
 
     packaged_task(packaged_task&&) noexcept = default;
 
@@ -1275,7 +1299,10 @@ public:
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     template <class _Fty2, class _Alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
     packaged_task(allocator_arg_t, const _Alloc& _Al, _Fty2&& _Fnarg)
-        : _MyPromise(_STD _Make_packaged_state<_MyStateType>(_STD forward<_Fty2>(_Fnarg), _Al)) {}
+        : _MyPromise(_STD _Make_packaged_state<_MyStateType>(_STD forward<_Fty2>(_Fnarg), _Al)) {
+        static_assert(_Is_invocable_r<_Ret, decay_t<_Fty2>&, _ArgTypes...>::value,
+            "The function object must be callable with _ArgTypes... and return _Ret (N4140 [futures.task.members]/2).");
+    }
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     ~packaged_task() noexcept {
@@ -1319,9 +1346,9 @@ public:
     }
 
     void reset() { // reset to newly constructed state
-        _MyStateManagerType& _State = _MyPromise._Get_state_for_set();
-        _MyStateType* _MyState      = static_cast<_MyStateType*>(_State._Ptr());
-        _MyPromiseType _New_promise(new _MyStateType(_MyState->_Get_fn()));
+        _MyStateManagerType& _State_mgr = _MyPromise._Get_state_for_set();
+        _MyStateType& _MyState          = *static_cast<_MyStateType*>(_State_mgr._Ptr());
+        _MyPromiseType _New_promise(new _MyStateType(_STD move(_MyState)._Get_fn()));
         _MyPromise._Get_state()._Abandon();
         _MyPromise._Swap(_New_promise);
     }
