@@ -10,7 +10,7 @@
 using namespace std;
 
 namespace {
-    template <class charT, size_t Min_length, size_t N>
+    template <size_t N, class charT, size_t Min_length>
     auto random_digits_init() {
         mt19937_64 rnd{};
         uniform_int_distribution<> dis('0', '1');
@@ -36,7 +36,7 @@ namespace {
     enum class length_type : bool { char_count, null_term };
 
     template <size_t N, class charT>
-    const auto random_digits = random_digits_init<charT, 2048, N>();
+    const auto random_digits = random_digits_init<N, charT, 2048>();
 
     template <length_type Length, size_t N, class charT>
     void BM_bitset_from_string(benchmark::State& state) {
