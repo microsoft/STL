@@ -62,7 +62,7 @@ constexpr bool test_reservable() {
         assert(r.cap_ == ranges::size(some_ints));
         assert(r.reserved_ == ranges::size(some_ints));
     }
-#endif
+#endif // ^^^ no workaround ^^^
 
     return true;
 }
@@ -100,7 +100,7 @@ constexpr bool test_common_constructible() {
         assert(c1.last_ == ranges::end(some_ints));
         assert(c1.args_ == 3);
     }
-#endif
+#endif // ^^^ no workaround ^^^
 
     // Verify that more than one argument can be passed after the range:
     {
@@ -116,7 +116,7 @@ constexpr bool test_common_constructible() {
         assert(c3.last_ == ranges::end(some_ints));
         assert(c3.args_ == 4);
     }
-#endif
+#endif // ^^^ no workaround ^^^
 
     return true;
 }
@@ -315,7 +315,7 @@ constexpr void test_lwg4016_per_kind() {
         std::same_as<V> auto vec = std::views::empty<int> | ranges::to<V>(std::size_t{42}, std::allocator<int>{});
         assert(ranges::equal(vec, std::views::repeat(0, 42)));
     }
-#endif
+#endif // ^^^ no workaround ^^^
     {
         std::same_as<V> auto vec = ranges::to<V>(std::views::iota(0, 42), std::initializer_list<int>{-3, -2, -1});
         assert(ranges::equal(vec, std::views::iota(-3, 42)));

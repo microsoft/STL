@@ -151,7 +151,7 @@ struct sequence_instantiator {
             assert(c6.get_allocator().state == 13);
             assert(ranges::equal(c6, meow));
         }
-#endif
+#endif // ^^^ no workaround ^^^
         {
             std::same_as<T> auto c7 = R{meow} | ranges::to<C>(Alloc{13});
             assert(c7.get_allocator().state == 13);
