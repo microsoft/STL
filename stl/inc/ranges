@@ -7158,7 +7158,7 @@ namespace ranges {
         private:
             friend zip_view;
 
-#ifdef __clang__ // TRANSITION, LLVM-61763
+#ifdef __clang__ // TRANSITION, need to reduce and report (was thought to be LLVM-61763)
         public:
 #else // ^^^ workaround / no workaround vvv
             template <class _Func, class... _OtherViews>
@@ -7983,13 +7983,14 @@ namespace ranges {
         private:
             friend adjacent_view;
 
-#ifdef __clang__ // TRANSITION, LLVM-61763
+#ifdef __clang__ // TRANSITION, need to reduce and report (was thought to be LLVM-61763)
         public:
 #else // ^^^ workaround / no workaround vvv
             template <class _Vw2, class _Fn, size_t _Nx2>
                 requires _Adjacent_transform_constraints<_Vw2, _Fn, _Nx2>
             friend class adjacent_transform_view;
 #endif // ^^^ no workaround ^^^
+
             using _Base          = _Maybe_const<_Const, _Vw>;
             using _Base_iterator = iterator_t<_Base>;
 
