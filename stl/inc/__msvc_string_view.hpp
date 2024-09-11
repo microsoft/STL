@@ -1240,20 +1240,15 @@ public:
         : _Mydata(_STD to_address(_First)), _Mysize(static_cast<size_type>(_Last - _First)) {}
 
 #if _HAS_CXX23
-    // clang-format off
     template <class _Range>
-        requires (!same_as<remove_cvref_t<_Range>, basic_string_view>
-            && _RANGES contiguous_range<_Range>
-            && _RANGES sized_range<_Range>
-            && same_as<_RANGES range_value_t<_Range>, _Elem>
-            && !is_convertible_v<_Range, const _Elem*>
-            && !requires(remove_cvref_t<_Range>& _Rng) {
-                _Rng.operator _STD basic_string_view<_Elem, _Traits>();
-            })
-    constexpr explicit basic_string_view(_Range&& _Rng) noexcept(
-        noexcept(_RANGES data(_Rng)) && noexcept(_RANGES size(_Rng))) // strengthened
+        requires (!same_as<remove_cvref_t<_Range>, basic_string_view> && _RANGES contiguous_range<_Range>
+                     && _RANGES sized_range<_Range> && same_as<_RANGES range_value_t<_Range>, _Elem>
+                     && !is_convertible_v<_Range, const _Elem*>
+                     && !requires(
+                         remove_cvref_t<_Range>& _Rng) { _Rng.operator _STD basic_string_view<_Elem, _Traits>(); })
+    constexpr explicit basic_string_view(_Range&& _Rng)
+        noexcept(noexcept(_RANGES data(_Rng)) && noexcept(_RANGES size(_Rng))) // strengthened
         : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<size_t>(_RANGES size(_Rng))) {}
-    // clang-format on
 #endif // _HAS_CXX23
 #endif // _HAS_CXX20
 

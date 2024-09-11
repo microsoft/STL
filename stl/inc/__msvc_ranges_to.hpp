@@ -33,14 +33,12 @@ namespace ranges {
     template <class _Ty>
     constexpr bool _Is_initializer_list = _Is_specialization_v<remove_cvref_t<_Ty>, initializer_list>;
 
-    // clang-format off
     _EXPORT_STD template <class _Rng>
     concept viewable_range = range<_Rng>
-        && ((view<remove_cvref_t<_Rng>> && constructible_from<remove_cvref_t<_Rng>, _Rng>)
-            || (!view<remove_cvref_t<_Rng>>
-                && (is_lvalue_reference_v<_Rng>
-                    || (movable<remove_reference_t<_Rng>> && !_Is_initializer_list<_Rng>))));
-    // clang-format on
+                          && ((view<remove_cvref_t<_Rng>> && constructible_from<remove_cvref_t<_Rng>, _Rng>)
+                              || (!view<remove_cvref_t<_Rng>>
+                                  && (is_lvalue_reference_v<_Rng>
+                                      || (movable<remove_reference_t<_Rng>> && !_Is_initializer_list<_Rng>) )));
 
     namespace _Pipe {
         template <class _Derived>
@@ -157,12 +155,13 @@ namespace ranges {
             }
         }
 
-        // clang-format off
-        ~_Movable_box() requires is_trivially_destructible_v<_Ty> = default;
+        ~_Movable_box()
+            requires is_trivially_destructible_v<_Ty>
+        = default;
 
         _Movable_box(const _Movable_box&)
-            requires copy_constructible<_Ty> && is_trivially_copy_constructible_v<_Ty> = default;
-        // clang-format on
+            requires copy_constructible<_Ty> && is_trivially_copy_constructible_v<_Ty>
+        = default;
 
         constexpr _Movable_box(const _Movable_box& _That)
             requires copy_constructible<_Ty>
@@ -172,9 +171,9 @@ namespace ranges {
             }
         }
 
-        // clang-format off
-        _Movable_box(_Movable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
-        // clang-format on
+        _Movable_box(_Movable_box&&)
+            requires is_trivially_move_constructible_v<_Ty>
+        = default;
 
         constexpr _Movable_box(_Movable_box&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
@@ -182,10 +181,9 @@ namespace ranges {
             }
         }
 
-        // clang-format off
         _Movable_box& operator=(const _Movable_box&) noexcept
-            requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty> = default;
-        // clang-format on
+            requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty>
+        = default;
 
         constexpr _Movable_box& operator=(const _Movable_box& _That)
             noexcept(is_nothrow_copy_constructible_v<_Ty> && is_nothrow_copy_assignable_v<_Ty>) // strengthened
@@ -230,10 +228,9 @@ namespace ranges {
             return *this;
         }
 
-        // clang-format off
         _Movable_box& operator=(_Movable_box&&) noexcept
-            requires movable<_Ty> && is_trivially_move_assignable_v<_Ty> = default;
-        // clang-format on
+            requires movable<_Ty> && is_trivially_move_assignable_v<_Ty>
+        = default;
 
         constexpr _Movable_box& operator=(_Movable_box&& _That)
             noexcept(is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_assignable_v<_Ty>) // strengthened
@@ -314,20 +311,21 @@ namespace ranges {
         requires _Use_simple_movable_box_wrapper<_Ty>
     class _Movable_box<_Ty> { // provide the same API more efficiently when we can avoid the disengaged state
     public:
-        // clang-format off
-        _Movable_box() requires default_initializable<_Ty> = default;
-        // clang-format on
+        _Movable_box()
+            requires default_initializable<_Ty>
+        = default;
 
         template <class... _Types>
         constexpr _Movable_box(in_place_t, _Types&&... _Args)
             noexcept(is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             : _Val(_STD forward<_Types>(_Args)...) {}
 
-        // clang-format off
         _Movable_box(const _Movable_box&)
-            requires _Copy_constructible_for_box<_Ty> && is_trivially_copy_constructible_v<_Ty> = default;
-        _Movable_box(_Movable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
-        // clang-format on
+            requires _Copy_constructible_for_box<_Ty> && is_trivially_copy_constructible_v<_Ty>
+        = default;
+        _Movable_box(_Movable_box&&)
+            requires is_trivially_move_constructible_v<_Ty>
+        = default;
 
         constexpr _Movable_box(const _Movable_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>)
             requires _Copy_constructible_for_box<_Ty>
@@ -336,11 +334,12 @@ namespace ranges {
         constexpr _Movable_box(_Movable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>)
             : _Val(static_cast<_Ty&&>(_That._Val)) {}
 
-        // clang-format off
         _Movable_box& operator=(const _Movable_box&)
-            requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty> = default;
-        _Movable_box& operator=(_Movable_box&&) requires movable<_Ty> && is_trivially_move_assignable_v<_Ty> = default;
-        // clang-format on
+            requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty>
+        = default;
+        _Movable_box& operator=(_Movable_box&&)
+            requires movable<_Ty> && is_trivially_move_assignable_v<_Ty>
+        = default;
 
         constexpr _Movable_box& operator=(const _Movable_box& _That)
             noexcept(is_nothrow_copy_assignable_v<_Ty> || !copyable<_Ty>) // strengthened
@@ -459,14 +458,11 @@ namespace ranges {
         static void _Rvalue_poison(_Rng&&) = delete;
 
     public:
-        // clang-format off
         template <_Different_from<ref_view> _OtherRng>
-        constexpr ref_view(_OtherRng&& _Other) noexcept(
-            noexcept(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))) // strengthened
-            requires convertible_to<_OtherRng, _Rng&> && requires {
-                _Rvalue_poison(static_cast<_OtherRng&&>(_Other));
-            } : _Range{_STD addressof(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))} {}
-        // clang-format on
+        constexpr ref_view(_OtherRng&& _Other)
+            noexcept(noexcept(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))) // strengthened
+            requires convertible_to<_OtherRng, _Rng&> && requires { _Rvalue_poison(static_cast<_OtherRng&&>(_Other)); }
+            : _Range{_STD addressof(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))} {}
 
         _NODISCARD constexpr _Rng& base() const noexcept /* strengthened */ {
             return *_Range;
@@ -513,9 +509,9 @@ namespace ranges {
         _Rng _Range{};
 
     public:
-        // clang-format off
-        owning_view() requires default_initializable<_Rng> = default;
-        // clang-format on
+        owning_view()
+            requires default_initializable<_Rng>
+        = default;
 
         constexpr owning_view(_Rng&& _Range_) noexcept(is_nothrow_move_constructible_v<_Rng>) // strengthened
             : _Range(_STD move(_Range_)) {}
@@ -700,9 +696,9 @@ namespace ranges {
             using value_type = remove_cvref_t<invoke_result_t<_Maybe_const<_Const, _Fn>&, range_reference_t<_Base>>>;
             using difference_type = range_difference_t<_Base>;
 
-            // clang-format off
-            _Iterator() requires default_initializable<iterator_t<_Base>> = default;
-            // clang-format on
+            _Iterator()
+                requires default_initializable<iterator_t<_Base>>
+            = default;
 
             constexpr _Iterator(_Parent_t& _Parent_, iterator_t<_Base> _Current_)
                 noexcept(is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
@@ -981,9 +977,9 @@ namespace ranges {
         };
 
     public:
-        // clang-format off
-        transform_view() requires default_initializable<_Vw> && default_initializable<_Fn> = default;
-        // clang-format on
+        transform_view()
+            requires default_initializable<_Vw> && default_initializable<_Fn>
+        = default;
 
         constexpr explicit transform_view(_Vw _Range_, _Fn _Fun_)
             noexcept(is_nothrow_move_constructible_v<_Vw> && is_nothrow_move_constructible_v<_Fn>) // strengthened

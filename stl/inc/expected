@@ -253,10 +253,9 @@ public:
         }
     }
 
-    // clang-format off
-    expected(const expected&) requires
-        is_trivially_copy_constructible_v<_Ty> && is_trivially_copy_constructible_v<_Err> = default;
-    // clang-format on
+    expected(const expected&)
+        requires is_trivially_copy_constructible_v<_Ty> && is_trivially_copy_constructible_v<_Err>
+    = default;
 
     expected(const expected&) = delete;
 
@@ -272,10 +271,9 @@ public:
         }
     }
 
-    // clang-format off
-    expected(expected&&) requires
-        is_trivially_move_constructible_v<_Ty> && is_trivially_move_constructible_v<_Err> = default;
-    // clang-format on
+    expected(expected&&)
+        requires is_trivially_move_constructible_v<_Ty> && is_trivially_move_constructible_v<_Err>
+    = default;
 
     template <class _Uty, class _UErr>
         requires _Different_from<expected<_Uty, _UErr>, expected> && is_constructible_v<_Ty, const _Uty&>
@@ -375,9 +373,9 @@ public:
         }
     }
 
-    // clang-format off
-    ~expected() requires is_trivially_destructible_v<_Ty> && is_trivially_destructible_v<_Err> = default;
-    // clang-format on
+    ~expected()
+        requires is_trivially_destructible_v<_Ty> && is_trivially_destructible_v<_Err>
+    = default;
 
     // [expected.object.assign]
     template <class _Uty>
@@ -1244,9 +1242,9 @@ public:
         }
     }
 
-    // clang-format off
-    expected(const expected&) requires is_trivially_copy_constructible_v<_Err> = default;
-    // clang-format on
+    expected(const expected&)
+        requires is_trivially_copy_constructible_v<_Err>
+    = default;
 
     expected(const expected&) = delete;
 
@@ -1258,9 +1256,9 @@ public:
         }
     }
 
-    // clang-format off
-    expected(expected&&) requires is_trivially_move_constructible_v<_Err> = default;
-    // clang-format on
+    expected(expected&&)
+        requires is_trivially_move_constructible_v<_Err>
+    = default;
 
     template <class _Uty, class _UErr>
         requires _Different_from<expected<_Uty, _UErr>, expected> && is_void_v<_Uty>
@@ -1321,9 +1319,9 @@ public:
         }
     }
 
-    // clang-format off
-    ~expected() requires is_trivially_destructible_v<_Err> = default;
-    // clang-format on
+    ~expected()
+        requires is_trivially_destructible_v<_Err>
+    = default;
 
     // [expected.void.assign]
     constexpr expected& operator=(const expected& _Other)

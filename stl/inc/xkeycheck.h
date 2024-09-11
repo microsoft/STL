@@ -13,13 +13,11 @@
 
 #if !defined(_ALLOW_KEYWORD_MACROS) && !defined(__INTELLISENSE__)
 
-// clang-format off
 // #if defined($KEYWORD)
 // #define $KEYWORD EMIT WARNING C4005
 // #error The C++ Standard Library forbids macroizing the keyword "$KEYWORD". \
 // Enable warning C4005 to find the forbidden define.
 // #endif // $KEYWORD
-// clang-format on
 
 // *don't* check the "alternative token representations"
 

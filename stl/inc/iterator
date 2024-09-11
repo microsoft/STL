@@ -602,10 +602,9 @@ public:
         }
     }
 
-    // clang-format off
-    constexpr _Variantish(const _Variantish&) requires is_trivially_copy_constructible_v<_Ty1>
-        && is_trivially_copy_constructible_v<_Ty2> = default;
-    // clang-format on
+    constexpr _Variantish(const _Variantish&)
+        requires is_trivially_copy_constructible_v<_Ty1> && is_trivially_copy_constructible_v<_Ty2>
+    = default;
 
     constexpr _Variantish(const _Variantish& _That)
         noexcept(is_nothrow_copy_constructible_v<_Ty1> && is_nothrow_copy_constructible_v<_Ty2>)
@@ -622,10 +621,9 @@ public:
         }
     }
 
-    // clang-format off
-    constexpr _Variantish(_Variantish&&) requires is_trivially_move_constructible_v<_Ty1>
-        && is_trivially_move_constructible_v<_Ty2> = default;
-    // clang-format on
+    constexpr _Variantish(_Variantish&&)
+        requires is_trivially_move_constructible_v<_Ty1> && is_trivially_move_constructible_v<_Ty2>
+    = default;
 
     constexpr _Variantish(_Variantish&& _That)
         noexcept(is_nothrow_move_constructible_v<_Ty1> && is_nothrow_move_constructible_v<_Ty2>)
@@ -646,16 +644,15 @@ public:
         _Raw_clear();
     }
 
-    // clang-format off
-    constexpr ~_Variantish() requires is_trivially_destructible_v<_Ty1> && is_trivially_destructible_v<_Ty2> = default;
+    constexpr ~_Variantish()
+        requires is_trivially_destructible_v<_Ty1> && is_trivially_destructible_v<_Ty2>
+    = default;
 
-    constexpr _Variantish& operator=(const _Variantish&) requires is_trivially_destructible_v<_Ty1>
-        && is_trivially_destructible_v<_Ty2>
-        && is_trivially_copy_constructible_v<_Ty1>
-        && is_trivially_copy_constructible_v<_Ty2>
-        && is_trivially_copy_assignable_v<_Ty1>
-        && is_trivially_copy_assignable_v<_Ty2> = default;
-    // clang-format on
+    constexpr _Variantish& operator=(const _Variantish&)
+        requires is_trivially_destructible_v<_Ty1> && is_trivially_destructible_v<_Ty2>
+                  && is_trivially_copy_constructible_v<_Ty1> && is_trivially_copy_constructible_v<_Ty2>
+                  && is_trivially_copy_assignable_v<_Ty1> && is_trivially_copy_assignable_v<_Ty2>
+    = default;
 
     constexpr _Variantish& operator=(const _Variantish& _That)
         noexcept(is_nothrow_copy_constructible_v<_Ty1> && is_nothrow_copy_constructible_v<_Ty2>
@@ -693,14 +690,11 @@ public:
         return *this;
     }
 
-    // clang-format off
-    constexpr _Variantish& operator=(_Variantish&&) requires is_trivially_destructible_v<_Ty1>
-        && is_trivially_destructible_v<_Ty2>
-        && is_trivially_move_constructible_v<_Ty1>
-        && is_trivially_move_constructible_v<_Ty2>
-        && is_trivially_move_assignable_v<_Ty1>
-        && is_trivially_move_assignable_v<_Ty2> = default;
-    // clang-format on
+    constexpr _Variantish& operator=(_Variantish&&)
+        requires is_trivially_destructible_v<_Ty1> && is_trivially_destructible_v<_Ty2>
+                  && is_trivially_move_constructible_v<_Ty1> && is_trivially_move_constructible_v<_Ty2>
+                  && is_trivially_move_assignable_v<_Ty1> && is_trivially_move_assignable_v<_Ty2>
+    = default;
 
     constexpr _Variantish& operator=(_Variantish&& _That)
         noexcept(is_nothrow_move_constructible_v<_Ty1> && is_nothrow_move_constructible_v<_Ty2>
@@ -776,12 +770,11 @@ public:
         return *this;
     }
 
-    // clang-format off
-    friend constexpr void swap(_Variantish& _Left, _Variantish& _Right) noexcept(
-        is_nothrow_move_constructible_v<_Ty1> && is_nothrow_move_constructible_v<_Ty2>
-            && is_nothrow_swappable_v<_Ty1> && is_nothrow_swappable_v<_Ty2>)
-        requires (!_Is_trivially_swappable_v<_Ty1> || !_Is_trivially_swappable_v<_Ty2>) {
-        // clang-format on
+    friend constexpr void swap(_Variantish& _Left, _Variantish& _Right)
+        noexcept(is_nothrow_move_constructible_v<_Ty1> && is_nothrow_move_constructible_v<_Ty2>
+                 && is_nothrow_swappable_v<_Ty1> && is_nothrow_swappable_v<_Ty2>)
+        requires (!_Is_trivially_swappable_v<_Ty1> || !_Is_trivially_swappable_v<_Ty2>)
+    {
         if (_Left._Contains == _Right._Contains) {
             switch (_Left._Contains) {
             case _Variantish_state::_Holds_first:
@@ -858,13 +851,12 @@ public:
     _Variantish_state _Contains;
 };
 
-// clang-format off
 template <class _Iter>
-concept _Use_postfix_proxy = !requires(_Iter& __it) { { *__it++ } -> _Can_reference; }
-    && indirectly_readable<_Iter>
-    && constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>
+concept _Use_postfix_proxy =
+    !requires(_Iter& __it) {
+        { *__it++ } -> _Can_reference;
+    } && indirectly_readable<_Iter> && constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>
     && move_constructible<iter_value_t<_Iter>>;
-// clang-format on
 
 _EXPORT_STD template <input_or_output_iterator _Iter, sentinel_for<_Iter> _Se>
     requires (!same_as<_Iter, _Se> && copyable<_Iter>)
@@ -879,9 +871,9 @@ private:
     };
 
 public:
-    // clang-format off
-    constexpr common_iterator() requires default_initializable<_Iter> = default;
-    // clang-format on
+    constexpr common_iterator()
+        requires default_initializable<_Iter>
+    = default;
 
     constexpr common_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Val{in_place_type<_Iter>, _STD move(_Right)} {}
@@ -1156,9 +1148,9 @@ public:
     using difference_type = iter_difference_t<_Iter>;
 
     // [counted.iter.const]
-    // clang-format off
-    constexpr counted_iterator() requires default_initializable<_Iter> = default;
-    // clang-format on
+    constexpr counted_iterator()
+        requires default_initializable<_Iter>
+    = default;
 
     constexpr counted_iterator(_Iter _Right, const iter_difference_t<_Iter> _Diff)
         noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened

@@ -1836,23 +1836,20 @@ class move_only_function : private _Move_only_function_call<_Signature...> {
 private:
     using _Call = _Move_only_function_call<_Signature...>;
 
-    // clang-format off
     template <class _Fn>
-    static constexpr bool _Enable_one_arg_constructor =
-        !is_same_v<remove_cvref_t<_Fn>, move_only_function>
-        && !_Is_specialization_v<remove_cvref_t<_Fn>, in_place_type_t>
-        && _Call::template _Is_callable_from<decay_t<_Fn>>;
+    static constexpr bool _Enable_one_arg_constructor = !is_same_v<remove_cvref_t<_Fn>, move_only_function>
+                                                     && !_Is_specialization_v<remove_cvref_t<_Fn>, in_place_type_t>
+                                                     && _Call::template _Is_callable_from<decay_t<_Fn>>;
 
     template <class _Fn, class... _CTypes>
     static constexpr bool _Enable_in_place_constructor =
-        is_constructible_v<decay_t<_Fn>, _CTypes...>
-        && _Call::template _Is_callable_from<decay_t<_Fn>>;
+        is_constructible_v<decay_t<_Fn>, _CTypes...> && _Call::template _Is_callable_from<decay_t<_Fn>>;
 
     template <class _Fn, class _Ux, class... _CTypes>
     static constexpr bool _Enable_in_place_list_constructor =
         is_constructible_v<decay_t<_Fn>, initializer_list<_Ux>&, _CTypes...>
         && _Call::template _Is_callable_from<decay_t<_Fn>>;
-    // clang-format on
+
 public:
     using typename _Call::result_type;
 

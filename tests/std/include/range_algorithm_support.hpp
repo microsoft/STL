@@ -257,56 +257,66 @@ namespace test {
             return {ref_ >= that.peek()};
         }
 
-        // clang-format off
         [[nodiscard]] friend constexpr boolish operator==(proxy_reference r, Value const& val)
-            requires CanEq<Element, Value> {
+            requires CanEq<Element, Value>
+        {
             return {r.ref_ == val};
         }
         [[nodiscard]] friend constexpr boolish operator==(Value const& val, proxy_reference r)
-            requires CanEq<Element, Value> {
+            requires CanEq<Element, Value>
+        {
             return {r.ref_ == val};
         }
         [[nodiscard]] friend constexpr boolish operator!=(proxy_reference r, Value const& val)
-            requires CanNEq<Element, Value> {
+            requires CanNEq<Element, Value>
+        {
             return {r.ref_ != val};
         }
         [[nodiscard]] friend constexpr boolish operator!=(Value const& val, proxy_reference r)
-            requires CanNEq<Element, Value> {
+            requires CanNEq<Element, Value>
+        {
             return {r.ref_ != val};
         }
         [[nodiscard]] friend constexpr boolish operator<(Value const& val, proxy_reference r)
-            requires CanLt<Value, Element> {
+            requires CanLt<Value, Element>
+        {
             return {val < r.ref_};
         }
         [[nodiscard]] friend constexpr boolish operator<(proxy_reference r, Value const& val)
-            requires CanLt<Element, Value> {
+            requires CanLt<Element, Value>
+        {
             return {r.ref_ < val};
         }
         [[nodiscard]] friend constexpr boolish operator>(Value const& val, proxy_reference r)
-            requires CanGt<Value, Element> {
+            requires CanGt<Value, Element>
+        {
             return {val > r.ref_};
         }
         [[nodiscard]] friend constexpr boolish operator>(proxy_reference r, Value const& val)
-            requires CanGt<Element, Value> {
+            requires CanGt<Element, Value>
+        {
             return {r.ref_ > val};
         }
         [[nodiscard]] friend constexpr boolish operator<=(Value const& val, proxy_reference r)
-            requires CanLtE<Value, Element> {
+            requires CanLtE<Value, Element>
+        {
             return {val <= r.ref_};
         }
         [[nodiscard]] friend constexpr boolish operator<=(proxy_reference r, Value const& val)
-            requires CanLtE<Element, Value> {
+            requires CanLtE<Element, Value>
+        {
             return {r.ref_ <= val};
         }
         [[nodiscard]] friend constexpr boolish operator>=(Value const& val, proxy_reference r)
-            requires CanGtE<Value, Element> {
+            requires CanGtE<Value, Element>
+        {
             return {val >= r.ref_};
         }
         [[nodiscard]] friend constexpr boolish operator>=(proxy_reference r, Value const& val)
-            requires CanGtE<Element, Value> {
+            requires CanGtE<Element, Value>
+        {
             return {r.ref_ >= val};
         }
-        // clang-format on
 
         [[nodiscard]] constexpr Element& peek() const noexcept {
             return ref_;
@@ -420,9 +430,9 @@ namespace test {
         using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
         // output iterator operations
-        // clang-format off
-        iterator() requires at_least<fwd> || (Eq == CanCompare::yes) = default;
-        // clang-format on
+        iterator()
+            requires at_least<fwd> || (Eq == CanCompare::yes)
+        = default;
 
         constexpr explicit iterator(Element* ptr) noexcept : ptr_{ptr} {}
 
@@ -543,10 +553,12 @@ namespace test {
         }
 
         // sentinel operations (implied by forward iterator):
-        // clang-format off
-        iterator(iterator const&) requires (to_bool(Eq)) = default;
-        iterator& operator=(iterator const&) requires (to_bool(Eq)) = default;
-        // clang-format on
+        iterator(iterator const&)
+            requires (to_bool(Eq))
+        = default;
+        iterator& operator=(iterator const&)
+            requires (to_bool(Eq))
+        = default;
 
         constexpr operator Consterator() const& noexcept
             requires (to_bool(Eq))
