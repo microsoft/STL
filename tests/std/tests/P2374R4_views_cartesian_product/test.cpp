@@ -57,9 +57,8 @@ concept UnsignedIntegerLike = _Integer_like<T> && !_Signed_integer_like<T>;
 
 template <class First, class... Rest>
 constexpr bool is_iter_move_nothrow() {
-    constexpr bool is_inner_iter_move_nothrow =
-        (noexcept(ranges::iter_move(declval<const iterator_t<First>&>())) && ... //
-            && noexcept(ranges::iter_move(declval<const iterator_t<Rest>&>())));
+    constexpr bool is_inner_iter_move_nothrow = (noexcept(ranges::iter_move(declval<const iterator_t<First>&>())) && ...
+                                                 && noexcept(ranges::iter_move(declval<const iterator_t<Rest>&>())));
     constexpr bool are_references_nothrow_movable =
         conjunction_v<is_nothrow_move_constructible<ranges::range_rvalue_reference_t<First>>,
             is_nothrow_move_constructible<ranges::range_rvalue_reference_t<Rest>>...>;
