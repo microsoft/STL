@@ -157,20 +157,23 @@ IncludeBlocks:   Regroup
 #     SortPriority:    0
 #     CaseSensitive:   false
 IncludeCategories:
-  - Regex:           '^<yvals(_core)?\.h>$'
-    Priority:        1
-  - Regex:           '^<(Windows|userenv)\.h>$'
-    Priority:        3
-    SortPriority:    3
-  - Regex:           '^<WinIoCtl\.h>$'
-    Priority:        3
-    SortPriority:    4
-  - Regex:           '^<__.*\.hpp>$'
-    Priority:        2
+  - Regex:           '^<(yvals|yvals_core)\.h>$'
+    Priority:        10
+  - Regex:           '^<__msvc_.*\.hpp>$'
+    Priority:        20
+  - Regex:           '^<initguid\.h>$' # <initguid.h> should be included before any header that includes <guiddef.h>
+    Priority:        30
+    SortPriority:    30
+  - Regex:           '^<(DbgEng|DbgHelp|Shlwapi|Windows)\.h>$'
+    Priority:        30
+    SortPriority:    31
+  - Regex:           '^<winioctl\.h>$'
+    Priority:        30
+    SortPriority:    32
   - Regex:           '\.hpp[>"]$'
-    Priority:        5
+    Priority:        40
   - Regex:           '.*'
-    Priority:        2
+    Priority:        20
 # IncludeIsMainRegex: '(Test)?$'
 # IncludeIsMainSourceRegex: ''
 # IndentAccessModifiers: false
