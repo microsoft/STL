@@ -4308,14 +4308,14 @@ public:
     }
 
     template <class _Iter2 = _Iter>
-    _NODISCARD auto operator==(
-        _Default_sentinel _Sentinel) const noexcept -> decltype(_STD declval<const _Iter2&>() == _Sentinel) {
+    _NODISCARD auto operator==(_Default_sentinel _Sentinel) const noexcept //
+        -> decltype(_STD declval<const _Iter2&>() == _Sentinel) {
         return _Current == _Sentinel;
     }
 
     template <class _Iter2 = _Iter>
-    _NODISCARD auto operator!=(
-        _Default_sentinel _Sentinel) const noexcept -> decltype(_STD declval<const _Iter2&>() != _Sentinel) {
+    _NODISCARD auto operator!=(_Default_sentinel _Sentinel) const noexcept //
+        -> decltype(_STD declval<const _Iter2&>() != _Sentinel) {
         return _Current != _Sentinel;
     }
 
