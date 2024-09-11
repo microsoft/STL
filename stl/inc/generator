@@ -40,22 +40,38 @@ struct alignas(__STDCPP_DEFAULT_NEW_ALIGNMENT__) _Aligned_block {
 template <class _Alloc>
 concept _Has_real_pointers = same_as<_Alloc, void> || is_pointer_v<typename allocator_traits<_Alloc>::pointer>;
 
-template <class _Allocator>
-class _Promise_allocator { // statically specified allocator type
+template <class _Proto_allocator>
+class _Coro_promise_allocator { // statically specified allocator type
 private:
-    using _Alloc           = _Rebind_alloc_t<_Allocator, _Aligned_block>;
+    using _Alloc           = _Rebind_alloc_t<_Proto_allocator, _Aligned_block>;
     using _Alloc_size_type = allocator_traits<_Alloc>::size_type;
 
+    static size_t _Allocation_block_size(const size_t _Size) noexcept {
+        // Compute the number of _Aligned_blocks needed to store a coroutine
+        // frame of _Size bytes and, if necessary, an _Alloc.
+        if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
+            // allocator is stateless, we need no additional space
+            return (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
+        } else {
+            // allocator is stateful, we need space for it
+            constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+            return (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
+        }
+    }
+
     static void* _Allocate(_Alloc _Al, const size_t _Size) {
+        // memory layout:
+        // |--- coroutine frame --|- alignment padding -|---- _Alloc -----|
+        // |--- always present ---|----------- stateful only -------------|
+        // all rounded up to a multiple of sizeof(_Aligned_block)
+
+        const size_t _Size_in_blocks = _Allocation_block_size(_Size);
         if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
             // do not store stateless allocator
-            const size_t _Count = (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
-            return _Al.allocate(_Convert_size<_Alloc_size_type>(_Count));
+            return _Al.allocate(_Convert_size<_Alloc_size_type>(_Size_in_blocks));
         } else {
             // store stateful allocator
-            constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
-            const size_t _Count     = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
-            void* const _Ptr        = _Al.allocate(_Convert_size<_Alloc_size_type>(_Count));
+            void* const _Ptr = _Al.allocate(_Convert_size<_Alloc_size_type>(_Size_in_blocks));
             const auto _Al_address =
                 (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
             ::new (reinterpret_cast<void*>(_Al_address)) _Alloc(_STD move(_Al));
@@ -71,23 +87,23 @@ public:
     }
 
     template <class _Alloc2, class... _Args>
-        requires convertible_to<const _Alloc2&, _Allocator>
+        requires convertible_to<const _Alloc2&, _Proto_allocator>
     static void* operator new(const size_t _Size, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
-        return _Allocate(static_cast<_Alloc>(static_cast<_Allocator>(_Al)), _Size);
+        return _Allocate(static_cast<_Alloc>(static_cast<_Proto_allocator>(_Al)), _Size);
     }
 
     template <class _This, class _Alloc2, class... _Args>
-        requires convertible_to<const _Alloc2&, _Allocator>
+        requires convertible_to<const _Alloc2&, _Proto_allocator>
     static void* operator new(const size_t _Size, const _This&, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
-        return _Allocate(static_cast<_Alloc>(static_cast<_Allocator>(_Al)), _Size);
+        return _Allocate(static_cast<_Alloc>(static_cast<_Proto_allocator>(_Al)), _Size);
     }
 
     static void operator delete(void* const _Ptr, const size_t _Size) noexcept {
         if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
-            // make stateless allocator
+            // recreate stateless allocator
             _Alloc _Al{};
-            const size_t _Count = (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
-            _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), static_cast<_Alloc_size_type>(_Count));
+            const size_t _Size_in_blocks = _Allocation_block_size(_Size);
+            _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), static_cast<_Alloc_size_type>(_Size_in_blocks));
         } else {
             // retrieve stateful allocator
             const auto _Al_address =
@@ -96,23 +112,35 @@ public:
             _Alloc _Al{_STD move(_Stored_al)};
             _Stored_al.~_Alloc();
 
-            constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
-            const size_t _Count     = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
-            _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), static_cast<_Alloc_size_type>(_Count));
+            const size_t _Size_in_blocks = _Allocation_block_size(_Size);
+            _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), static_cast<_Alloc_size_type>(_Size_in_blocks));
         }
     }
 };
 
 template <>
-class _Promise_allocator<void> { // type-erased allocator
+class _Coro_promise_allocator<void> { // type-erased allocator
 private:
     using _Dealloc_fn = void(__stdcall*)(void*, size_t) _NOEXCEPT_FNPTR;
 
     template <class _Alloc>
+    static size_t _Allocation_block_size(const size_t _Size) noexcept {
+        size_t _Blocks = _Size + sizeof(_Dealloc_fn);
+        if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
+            _Blocks += sizeof(_Aligned_block) - 1;
+        } else {
+            constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+            _Blocks += sizeof(_Alloc) + _Align - 1;
+        }
+        return _Blocks / sizeof(_Aligned_block);
+    }
+
+    template <class _Alloc>
     static void __stdcall _Dealloc_stateless(void* const _Ptr, const size_t _Size) noexcept {
         _Alloc _Al{};
-        const size_t _Count = (_Size + sizeof(_Dealloc_fn) + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
-        _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), static_cast<allocator_traits<_Alloc>::size_type>(_Count));
+        const size_t _Size_in_blocks = _Allocation_block_size<_Alloc>(_Size);
+        _Al.deallocate(
+            static_cast<_Aligned_block*>(_Ptr), static_cast<allocator_traits<_Alloc>::size_type>(_Size_in_blocks));
     }
 
     template <class _Alloc>
@@ -126,38 +154,40 @@ private:
         _Alloc _Al{_STD move(_Stored_al)};
         _Stored_al.~_Alloc();
 
-        const size_t _Count = (_Size + sizeof(_Al) + _Align - 1) / sizeof(_Aligned_block);
-        _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), static_cast<allocator_traits<_Alloc>::size_type>(_Count));
+        const size_t _Size_in_blocks = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
+        _Al.deallocate(
+            static_cast<_Aligned_block*>(_Ptr), static_cast<allocator_traits<_Alloc>::size_type>(_Size_in_blocks));
     }
 
-    static void __stdcall _Dealloc_delete(void* const _Ptr, const size_t _Size) noexcept {
+    static void __stdcall _Dealloc_default(void* const _Ptr, const size_t _Size) noexcept {
         ::operator delete(_Ptr, _Size + sizeof(_Dealloc_fn));
     }
 
     template <class _ProtoAlloc>
     static void* _Allocate(const _ProtoAlloc& _Proto, size_t _Size) {
+        // memory layout:
+        // |--- coroutine frame (_Size bytes) ---|--- _Dealloc_fn ---|-- alignment padding --|--- _Alloc ---|
+        // |-------------------- always present -----(not aligned)---|------------ stateful only -----------|
+        // all rounded up to a multiple of sizeof(_Aligned_block)
+
         using _Alloc           = _Rebind_alloc_t<_ProtoAlloc, _Aligned_block>;
         using _Alloc_size_type = allocator_traits<_Alloc>::size_type;
-        auto _Al               = static_cast<_Alloc>(_Proto);
+
+        _Alloc _Al{_Proto};
+        const size_t _Size_in_blocks = _Allocation_block_size<_Alloc>(_Size);
+        void* const _Ptr             = _Al.allocate(_Convert_size<_Alloc_size_type>(_Size_in_blocks));
 
         if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
             // don't store stateless allocator
             const _Dealloc_fn _Dealloc = _Dealloc_stateless<_Alloc>;
-
-            const size_t _Count = (_Size + sizeof(_Dealloc_fn) + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
-            void* const _Ptr    = _Al.allocate(_Convert_size<_Alloc_size_type>(_Count));
             _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
             return _Ptr;
         } else {
             // store stateful allocator
-            constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
-
             const _Dealloc_fn _Dealloc = _Dealloc_stateful<_Alloc>;
-
-            const size_t _Count = (_Size + sizeof(_Dealloc_fn) + sizeof(_Al) + _Align - 1) / sizeof(_Aligned_block);
-            void* const _Ptr    = _Al.allocate(_Convert_size<_Alloc_size_type>(_Count));
             _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
             _Size += sizeof(_Dealloc_fn);
+
             const auto _Al_address =
                 (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
             ::new (reinterpret_cast<void*>(_Al_address)) _Alloc{_STD move(_Al)};
@@ -166,22 +196,24 @@ private:
     }
 
 public:
-    static void* operator new(const size_t _Size) { // default: new/delete
+    static void* operator new(const size_t _Size) {
         void* const _Ptr           = ::operator new(_Size + sizeof(_Dealloc_fn));
-        const _Dealloc_fn _Dealloc = _Dealloc_delete;
+        const _Dealloc_fn _Dealloc = _Dealloc_default;
         _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc_fn));
         return _Ptr;
     }
 
     template <class _Alloc, class... _Args>
     static void* operator new(const size_t _Size, allocator_arg_t, const _Alloc& _Al, const _Args&...) {
-        static_assert(_Has_real_pointers<_Alloc>, "coroutine allocators must use raw pointers");
+        static_assert(_Has_real_pointers<_Alloc>, "generator allocators must use raw pointers "
+                                                  "(N4988 [coro.generator.class]/1.1)");
         return _Allocate(_Al, _Size);
     }
 
     template <class _This, class _Alloc, class... _Args>
     static void* operator new(const size_t _Size, const _This&, allocator_arg_t, const _Alloc& _Al, const _Args&...) {
-        static_assert(_Has_real_pointers<_Alloc>, "coroutine allocators must use raw pointers");
+        static_assert(_Has_real_pointers<_Alloc>, "generator allocators must use raw pointers "
+                                                  "(N4988 [coro.generator.class]/1.1)");
         return _Allocate(_Al, _Size);
     }
 
@@ -470,7 +502,7 @@ public:
 
     friend _Gen_promise_base<yielded>;
 
-    struct __declspec(empty_bases) promise_type : _Promise_allocator<_Alloc>, _Gen_promise_base<yielded> {
+    struct __declspec(empty_bases) promise_type : _Coro_promise_allocator<_Alloc>, _Gen_promise_base<yielded> {
         _NODISCARD generator get_return_object() noexcept {
             return generator{_Gen_secret_tag{}, coroutine_handle<promise_type>::from_promise(*this)};
         }
