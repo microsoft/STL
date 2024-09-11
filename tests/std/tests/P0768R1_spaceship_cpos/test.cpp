@@ -76,8 +76,8 @@ namespace TestAdl {
     };
 
     template <bool NE>
-    [[nodiscard]] constexpr strong_ordering strong_order(
-        const StrongType<NE>& left, const StrongType<NE>& right) noexcept(NE) {
+    [[nodiscard]] constexpr strong_ordering strong_order(const StrongType<NE>& left, const StrongType<NE>& right)
+        noexcept(NE) {
         return left.val <=> right.val;
     }
 
@@ -97,8 +97,8 @@ namespace TestAdl {
     };
 
     template <bool NE>
-    [[nodiscard]] constexpr partial_ordering partial_order(
-        const PartialType<NE>& left, const PartialType<NE>& right) noexcept(NE) {
+    [[nodiscard]] constexpr partial_ordering partial_order(const PartialType<NE>& left, const PartialType<NE>& right)
+        noexcept(NE) {
         return left.val <=> right.val;
     }
 } // namespace TestAdl

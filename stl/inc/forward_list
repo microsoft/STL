@@ -635,8 +635,8 @@ public:
         _Take_head(_Right);
     }
 
-    forward_list(forward_list&& _Right, const _Identity_t<_Alloc>& _Al) noexcept(
-        _Alnode_traits::is_always_equal::value) // strengthened
+    forward_list(forward_list&& _Right, const _Identity_t<_Alloc>& _Al)
+        noexcept(_Alnode_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
@@ -653,8 +653,8 @@ public:
         _Take_head(_Right);
     }
 
-    forward_list& operator=(forward_list&& _Right) noexcept(
-        _Choose_pocma_v<_Alnode> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
+    forward_list& operator=(forward_list&& _Right)
+        noexcept(_Choose_pocma_v<_Alnode> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
         if (this == _STD addressof(_Right)) {
             return *this;
         }

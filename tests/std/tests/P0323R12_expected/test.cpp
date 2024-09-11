@@ -475,14 +475,14 @@ namespace test_expected {
         struct payload_constructors {
             payload_constructors() = default;
             // Note clang does not accept local variables in explicit
-            constexpr explicit(IsYes(explicitConstructible))
-                payload_constructors(const convertible&) noexcept(should_be_noexcept)
+            constexpr explicit(IsYes(explicitConstructible)) payload_constructors(const convertible&)
+                noexcept(should_be_noexcept)
                 : _val(3) {}
-            constexpr explicit(IsYes(explicitConstructible))
-                payload_constructors(convertible&&) noexcept(should_be_noexcept)
+            constexpr explicit(IsYes(explicitConstructible)) payload_constructors(convertible&&)
+                noexcept(should_be_noexcept)
                 : _val(42) {}
-            constexpr explicit(IsYes(explicitConstructible))
-                payload_constructors(initializer_list<int>&, convertible) noexcept(should_be_noexcept)
+            constexpr explicit(IsYes(explicitConstructible)) payload_constructors(initializer_list<int>&, convertible)
+                noexcept(should_be_noexcept)
                 : _val(1337) {}
 
             [[nodiscard]] constexpr bool operator==(const int val) const noexcept {

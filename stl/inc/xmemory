@@ -1082,8 +1082,8 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _L
 }
 
 template <class _Size_type, class _Unsigned_type>
-_NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len) noexcept(
-    sizeof(_Unsigned_type) <= sizeof(_Size_type)) {
+_NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len)
+    noexcept(sizeof(_Unsigned_type) <= sizeof(_Size_type)) {
     // convert _Unsigned_type to _Size_type, avoiding truncation
     _STL_INTERNAL_STATIC_ASSERT(_Unsigned_type(-1) > 0);
     _STL_INTERNAL_STATIC_ASSERT(_Size_type(-1) > 0);
@@ -1492,13 +1492,13 @@ public:
     using _Mybase = _Ty1; // for visualization
 
     template <class... _Other2>
-    constexpr explicit _Compressed_pair(_Zero_then_variadic_args_t, _Other2&&... _Val2) noexcept(
-        conjunction_v<is_nothrow_default_constructible<_Ty1>, is_nothrow_constructible<_Ty2, _Other2...>>)
+    constexpr explicit _Compressed_pair(_Zero_then_variadic_args_t, _Other2&&... _Val2)
+        noexcept(conjunction_v<is_nothrow_default_constructible<_Ty1>, is_nothrow_constructible<_Ty2, _Other2...>>)
         : _Ty1(), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
     template <class _Other1, class... _Other2>
-    constexpr _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2) noexcept(
-        conjunction_v<is_nothrow_constructible<_Ty1, _Other1>, is_nothrow_constructible<_Ty2, _Other2...>>)
+    constexpr _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2)
+        noexcept(conjunction_v<is_nothrow_constructible<_Ty1, _Other1>, is_nothrow_constructible<_Ty2, _Other2...>>)
         : _Ty1(_STD forward<_Other1>(_Val1)), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
     constexpr _Ty1& _Get_first() noexcept {
@@ -1517,13 +1517,13 @@ public:
     _Ty2 _Myval2;
 
     template <class... _Other2>
-    constexpr explicit _Compressed_pair(_Zero_then_variadic_args_t, _Other2&&... _Val2) noexcept(
-        conjunction_v<is_nothrow_default_constructible<_Ty1>, is_nothrow_constructible<_Ty2, _Other2...>>)
+    constexpr explicit _Compressed_pair(_Zero_then_variadic_args_t, _Other2&&... _Val2)
+        noexcept(conjunction_v<is_nothrow_default_constructible<_Ty1>, is_nothrow_constructible<_Ty2, _Other2...>>)
         : _Myval1(), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
     template <class _Other1, class... _Other2>
-    constexpr _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2) noexcept(
-        conjunction_v<is_nothrow_constructible<_Ty1, _Other1>, is_nothrow_constructible<_Ty2, _Other2...>>)
+    constexpr _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2)
+        noexcept(conjunction_v<is_nothrow_constructible<_Ty1, _Other1>, is_nothrow_constructible<_Ty2, _Other2...>>)
         : _Myval1(_STD forward<_Other1>(_Val1)), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
     constexpr _Ty1& _Get_first() noexcept {
@@ -2134,8 +2134,8 @@ struct _Alloc_temporary2 {
 #endif // ^^^ no workaround ^^^
 
     template <class... _Args>
-    _CONSTEXPR20 explicit _Alloc_temporary2(_Alloc& _Al_, _Args&&... _Vals) noexcept(
-        noexcept(_Traits::construct(_Al_, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...)))
+    _CONSTEXPR20 explicit _Alloc_temporary2(_Alloc& _Al_, _Args&&... _Vals)
+        noexcept(noexcept(_Traits::construct(_Al_, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...)))
         : _Al(_Al_) {
         _Traits::construct(_Al, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...);
     }

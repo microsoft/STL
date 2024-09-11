@@ -438,8 +438,8 @@ _NODISCARD bool operator>=(const map<_Kty, _Ty, _Pr, _Alloc>& _Left, const map<_
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Kty, class _Ty, class _Pr, class _Alloc>
-void swap(map<_Kty, _Ty, _Pr, _Alloc>& _Left, map<_Kty, _Ty, _Pr, _Alloc>& _Right) noexcept(
-    noexcept(_Left.swap(_Right))) {
+void swap(map<_Kty, _Ty, _Pr, _Alloc>& _Left, map<_Kty, _Ty, _Pr, _Alloc>& _Right)
+    noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
@@ -544,8 +544,8 @@ public:
 
     multimap(multimap&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    multimap& operator=(multimap&& _Right) noexcept(
-        _Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<_Pr>) {
+    multimap& operator=(multimap&& _Right)
+        noexcept(_Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<_Pr>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -675,8 +675,8 @@ _NODISCARD bool operator>=(
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Kty, class _Ty, class _Pr, class _Alloc>
-void swap(multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, multimap<_Kty, _Ty, _Pr, _Alloc>& _Right) noexcept(
-    noexcept(_Left.swap(_Right))) {
+void swap(multimap<_Kty, _Ty, _Pr, _Alloc>& _Left, multimap<_Kty, _Ty, _Pr, _Alloc>& _Right)
+    noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 

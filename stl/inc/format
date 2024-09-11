@@ -4274,8 +4274,8 @@ private:
     range_formatter<_Element_type, _CharT> _Underlying;
 
 public:
-    constexpr _Range_default_formatter() noexcept(
-        is_nothrow_default_constructible_v<range_formatter<_Element_type, _CharT>>) /* strengthened */ {
+    constexpr _Range_default_formatter()
+        noexcept(is_nothrow_default_constructible_v<range_formatter<_Element_type, _CharT>>) /* strengthened */ {
         static_assert(_Is_two_tuple<_Element_type>, "the element type of the formatted range must be either pair<T, U> "
                                                     "or tuple<T, U> (N4981 [format.range.fmtmap]/1)");
 

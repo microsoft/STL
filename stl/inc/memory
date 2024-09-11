@@ -3852,8 +3852,8 @@ struct owner_less<void> {
 template <class _Ty, class _Dx>
 struct hash<unique_ptr<_Ty, _Dx>> : _Conditionally_enabled_hash<unique_ptr<_Ty, _Dx>,
                                         is_default_constructible_v<hash<typename unique_ptr<_Ty, _Dx>::pointer>>> {
-    static size_t _Do_hash(const unique_ptr<_Ty, _Dx>& _Keyval) noexcept(
-        _Is_nothrow_hashable<typename unique_ptr<_Ty, _Dx>::pointer>::value) {
+    static size_t _Do_hash(const unique_ptr<_Ty, _Dx>& _Keyval)
+        noexcept(_Is_nothrow_hashable<typename unique_ptr<_Ty, _Dx>::pointer>::value) {
         return hash<typename unique_ptr<_Ty, _Dx>::pointer>{}(_Keyval.get());
     }
 };
@@ -4315,8 +4315,8 @@ class out_ptr_t {
         "out_ptr_t with shared_ptr requires a deleter (N4950 [out.ptr.t]/3)");
 
 public:
-    explicit out_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
-        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>) /* strengthened */
+    explicit out_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_)
+        noexcept(is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>) /* strengthened */
         : _Smart_ptr(_Smart_ptr_),
           _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...}) {
         constexpr bool _Is_resettable = requires { _Smart_ptr.reset(); }; // TRANSITION, DevCom-10291456
@@ -4399,9 +4399,9 @@ private:
     }
 
 public:
-    explicit inout_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
-        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...> //
-        && noexcept(_Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
+    explicit inout_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_)
+        noexcept(is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...> //
+                 && noexcept(_Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
         : _Smart_ptr(_Smart_ptr_),
           _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...},
               _Get_ptr_from_smart(_Smart_ptr_)) {}

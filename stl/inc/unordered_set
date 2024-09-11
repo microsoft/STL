@@ -245,9 +245,9 @@ public:
 
     unordered_set(unordered_set&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    unordered_set& operator=(unordered_set&& _Right) noexcept(_Alnode_traits::is_always_equal::value
-                                                              && is_nothrow_move_assignable_v<_Hasher>
-                                                              && is_nothrow_move_assignable_v<_Keyeq>) {
+    unordered_set& operator=(unordered_set&& _Right)
+        noexcept(_Alnode_traits::is_always_equal::value
+                 && is_nothrow_move_assignable_v<_Hasher> && is_nothrow_move_assignable_v<_Keyeq>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -377,8 +377,8 @@ unordered_set(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc>, _Hasher,
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Kty, class _Hasher, class _Keyeq, class _Alloc>
-void swap(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Left,
-    unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
+void swap(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Left, unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Right)
+    noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
@@ -589,9 +589,9 @@ public:
     }
 #endif // _HAS_CXX23
 
-    unordered_multiset& operator=(unordered_multiset&& _Right) noexcept(_Alnode_traits::is_always_equal::value
-                                                                        && is_nothrow_move_assignable_v<_Hasher>
-                                                                        && is_nothrow_move_assignable_v<_Keyeq>) {
+    unordered_multiset& operator=(unordered_multiset&& _Right)
+        noexcept(_Alnode_traits::is_always_equal::value
+                 && is_nothrow_move_assignable_v<_Hasher> && is_nothrow_move_assignable_v<_Keyeq>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }

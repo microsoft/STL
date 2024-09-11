@@ -10173,9 +10173,9 @@ namespace ranges {
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Ty, class _Pr>
-_NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left _MSVC_LIFETIMEBOUND,
-    const _Ty& _Right _MSVC_LIFETIMEBOUND,
-    _Pr _Pred) noexcept(noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
+_NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(
+    const _Ty& _Left _MSVC_LIFETIMEBOUND, const _Ty& _Right _MSVC_LIFETIMEBOUND, _Pr _Pred)
+    noexcept(noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
     // return pair(leftmost/smaller, rightmost/larger) of _Left and _Right
     if (_DEBUG_LT_PRED(_Pred, _Right, _Left)) {
         return {_Right, _Left};

@@ -46,8 +46,8 @@ _NODISCARD unsigned short __stdcall __std_stacktrace_capture(unsigned long _Fram
 // Some of these functions may throw
 // (they would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
 
-void __stdcall __std_stacktrace_address_to_string(
-    const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
+void __stdcall __std_stacktrace_address_to_string(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill)
+    noexcept(false);
 
 void __stdcall __std_stacktrace_description( //
     const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);

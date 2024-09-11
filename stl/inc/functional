@@ -601,8 +601,8 @@ private:
 
 public:
     template <class _Callable, class _Tag, enable_if_t<is_same_v<_Tag, _Not_fn_tag>, int> = 0>
-    constexpr explicit _Not_fn(_Callable&& _Obj, _Tag) noexcept(
-        is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
+    constexpr explicit _Not_fn(_Callable&& _Obj, _Tag)
+        noexcept(is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
         : _Mybase(_STD forward<_Callable>(_Obj)) {} // store a callable object
 
     constexpr _Not_fn(const _Not_fn&) = default;
@@ -676,8 +676,8 @@ public:
 };
 
 _EXPORT_STD template <class _Callable>
-_NODISCARD _CONSTEXPR20 _Not_fn<decay_t<_Callable>> not_fn(_Callable&& _Obj) noexcept(
-    is_nothrow_constructible_v<decay_t<_Callable>, _Callable>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 _Not_fn<decay_t<_Callable>> not_fn(_Callable&& _Obj)
+    noexcept(is_nothrow_constructible_v<decay_t<_Callable>, _Callable>) /* strengthened */ {
     // wrap a callable object to be negated
     static_assert(is_move_constructible_v<decay_t<_Callable>>,
         "the callable type used with std::not_fn should be move constructible.");
@@ -2008,16 +2008,16 @@ template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
     template <class _Untuple, size_t... _Jx,
         enable_if_t<conjunction_v<bool_constant<(_Jx < tuple_size_v<_Untuple>)>...>, int> = 0>
-    static constexpr auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut, index_sequence<_Jx...>) noexcept(
-        noexcept(_Tid(_STD get<_Jx>(_STD move(_Ut))...))) -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) {
+    static constexpr auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut, index_sequence<_Jx...>)
+        noexcept(noexcept(_Tid(_STD get<_Jx>(_STD move(_Ut))...))) -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) {
         // call a nested bind expression
         return _Tid(_STD get<_Jx>(_STD move(_Ut))...);
     }
 
     template <class _Untuple>
-    static constexpr auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(noexcept(_Apply(_Tid, _STD move(_Ut),
-        make_index_sequence<tuple_size_v<_Untuple>>{}))) -> decltype(_Apply(_Tid, _STD move(_Ut),
-                                                             make_index_sequence<tuple_size_v<_Untuple>>{})) {
+    static constexpr auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut)
+        noexcept(noexcept(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})))
+            -> decltype(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})) {
         // call a nested bind expression
         return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{});
     }
@@ -2075,18 +2075,18 @@ struct _Invoker_ret { // selected for all _Rx other than _Unforced
 template <>
 struct _Invoker_ret<_Unforced> { // selected for _Rx being _Unforced
     template <class _Fx, class... _Valtys>
-    static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(
-        _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
-        -> decltype(_STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
+    static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals)
+        noexcept(_Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
+            -> decltype(_STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
         return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
 template <class _Ret, size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class _Untuple>
-_CONSTEXPR20 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl,
-    _Untuple&& _Ut) noexcept(noexcept(_Invoker_ret<_Ret>::_Call(_Obj,
-    _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)))
-    -> decltype(_Invoker_ret<_Ret>::_Call(_Obj, _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)) {
+_CONSTEXPR20 auto _Call_binder(
+    _Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl, _Untuple&& _Ut)
+    noexcept(noexcept(_Invoker_ret<_Ret>::_Call(_Obj, _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)))
+        -> decltype(_Invoker_ret<_Ret>::_Call(_Obj, _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)) {
     // bind() and bind<R>() invocation
     return _Invoker_ret<_Ret>::_Call(_Obj, _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...);
 }
@@ -2215,11 +2215,11 @@ namespace placeholders {
 
 #if _HAS_CXX20
 template <size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class... _Unbound>
-constexpr auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl,
-    _Unbound&&... _Unbargs) noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj),
-    _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))..., _STD forward<_Unbound>(_Unbargs)...)))
-    -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...,
-        _STD forward<_Unbound>(_Unbargs)...)) {
+constexpr auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl, _Unbound&&... _Unbargs)
+    noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...,
+        _STD forward<_Unbound>(_Unbargs)...))) -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj),
+                                                   _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...,
+                                                   _STD forward<_Unbound>(_Unbargs)...)) {
     return _STD invoke(_STD forward<_Cv_FD>(_Obj), _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...,
         _STD forward<_Unbound>(_Unbargs)...);
 }
@@ -2308,11 +2308,11 @@ _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
 
 #if _HAS_CXX23
 template <size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class... _Unbound>
-constexpr auto _Call_back_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl,
-    _Unbound&&... _Unbargs) noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj),
-    _STD forward<_Unbound>(_Unbargs)..., _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)))
-    -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
-        _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)) {
+constexpr auto _Call_back_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl, _Unbound&&... _Unbargs)
+    noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
+        _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)))
+        -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
+            _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)) {
     return _STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
         _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...);
 }
