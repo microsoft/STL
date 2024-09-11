@@ -22,7 +22,6 @@ AccessModifierOffset: -4
 # AlignAfterOpenBracket: Align
 AlignAfterOpenBracket: DontAlign
 # AlignArrayOfStructures: None
-# TRANSITION, LLVM-51935 (try using AlignArrayOfStructures after this crash is fixed)
 # AlignConsecutiveAssignments:
 #   Enabled:         false
 #   AcrossEmptyLines: false
