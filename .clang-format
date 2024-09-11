@@ -70,6 +70,7 @@ AlignTrailingComments:
 # AllowAllArgumentsOnNextLine: true
 # AllowAllParametersOfDeclarationOnNextLine: true
 # AllowBreakBeforeNoexceptSpecifier: Never
+AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
 # AllowShortBlocksOnASingleLine: Never
 # AllowShortCaseLabelsOnASingleLine: false
 # AllowShortCompoundRequirementOnASingleLine: true
