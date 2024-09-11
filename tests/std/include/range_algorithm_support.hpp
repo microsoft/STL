@@ -672,7 +672,7 @@ namespace test {
         }
 
         using unwrap              = std::conditional_t<derived_from<Category, contiguous>, Element*,
-            iterator<Category, Element, Diff, Eq, Proxy, WrappedState::unwrapped>>;
+                         iterator<Category, Element, Diff, Eq, Proxy, WrappedState::unwrapped>>;
         using unwrapping_ignorant = iterator<Category, Element, Diff, Eq, Proxy, WrappedState::ignorant>;
 
         [[nodiscard]] constexpr auto _Unwrapped() const& noexcept
@@ -745,7 +745,7 @@ template <class Element, ::test::CanDifference Diff, ::test::WrappedState Wrappe
 struct std::pointer_traits<::test::iterator<std::contiguous_iterator_tag, Element, Diff, ::test::CanCompare::yes,
     ::test::ProxyRef::no, Wrapped>> {
     using pointer         = ::test::iterator<contiguous_iterator_tag, Element, Diff, ::test::CanCompare::yes,
-        ::test::ProxyRef::no, Wrapped>;
+                ::test::ProxyRef::no, Wrapped>;
     using element_type    = Element;
     using difference_type = ptrdiff_t;
 

@@ -5076,7 +5076,7 @@ namespace chrono {
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month& _Val) {
         return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%b}"), _Val)
                                  : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} is not a valid month"),
-                                     static_cast<unsigned int>(_Val)));
+                                       static_cast<unsigned int>(_Val)));
     }
 
     _EXPORT_STD template <class _CharT, class _Traits>
@@ -5089,7 +5089,7 @@ namespace chrono {
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday& _Val) {
         return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%a}"), _Val)
                                  : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} is not a valid weekday"),
-                                     _Val.c_encoding()));
+                                       _Val.c_encoding()));
     }
 
     _EXPORT_STD template <class _CharT, class _Traits>
@@ -5098,7 +5098,7 @@ namespace chrono {
         return _Os << (_Idx >= 1 && _Idx <= 5
                            ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}[{}]"), _Val.weekday(), _Idx)
                            : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}[{} is not a valid index]"),
-                               _Val.weekday(), _Idx));
+                                 _Val.weekday(), _Idx));
     }
 
     _EXPORT_STD template <class _CharT, class _Traits>

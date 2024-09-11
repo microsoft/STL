@@ -689,9 +689,9 @@ public:
 
     _CONSTEXPR20 vector(vector&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal()),
-            _STD exchange(_Right._Mypair._Myval2._Myfirst, nullptr),
-            _STD exchange(_Right._Mypair._Myval2._Mylast, nullptr),
-            _STD exchange(_Right._Mypair._Myval2._Myend, nullptr)) {
+              _STD exchange(_Right._Mypair._Myval2._Myfirst, nullptr),
+              _STD exchange(_Right._Mypair._Myval2._Mylast, nullptr),
+              _STD exchange(_Right._Mypair._Myval2._Myend, nullptr)) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
     }

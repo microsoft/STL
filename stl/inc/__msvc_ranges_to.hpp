@@ -73,7 +73,7 @@ namespace ranges {
             void operator()(auto&&) const&& = delete;
 
             template <class _Ty>
-            _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) & noexcept(
+            _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) & noexcept(
                 noexcept(_Right(_Left(_STD forward<_Ty>(_Val)))))
                 requires requires { _Right(_Left(_STD forward<_Ty>(_Val))); }
             {
@@ -81,7 +81,7 @@ namespace ranges {
             }
 
             template <class _Ty>
-            _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) const& noexcept(
+            _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) const& noexcept(
                 noexcept(_Right(_Left(_STD forward<_Ty>(_Val)))))
                 requires requires { _Right(_Left(_STD forward<_Ty>(_Val))); }
             {
@@ -89,7 +89,7 @@ namespace ranges {
             }
 
             template <class _Ty>
-            _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) && noexcept(
+            _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) && noexcept(
                 noexcept(_STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val)))))
                 requires requires { _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))); }
             {
@@ -97,7 +97,7 @@ namespace ranges {
             }
 
             template <class _Ty>
-            _NODISCARD constexpr decltype(auto) operator()(_Ty && _Val) const&& noexcept(
+            _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) const&& noexcept(
                 noexcept(_STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val)))))
                 requires requires { _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))); }
             {
@@ -119,7 +119,7 @@ namespace ranges {
 
         _EXPORT_STD template <class _Left, class _Right>
             requires (_Range_adaptor_closure_object<_Right> && range<_Left>)
-        _NODISCARD constexpr decltype(auto) operator|(_Left && __l, _Right && __r) noexcept(
+        _NODISCARD constexpr decltype(auto) operator|(_Left&& __l, _Right&& __r) noexcept(
             noexcept(_STD forward<_Right>(__r)(_STD forward<_Left>(__l))))
             requires requires { static_cast<_Right&&>(__r)(static_cast<_Left&&>(__l)); }
         {
@@ -412,28 +412,28 @@ namespace ranges {
 
         template <class _Ty>
             requires invocable<_Fn, _Ty, _Types&...>
-        constexpr decltype(auto) operator()(_Ty && _Arg) & noexcept(
+        constexpr decltype(auto) operator()(_Ty&& _Arg) & noexcept(
             noexcept(_Call(*this, _STD forward<_Ty>(_Arg), _Indices{}))) {
             return _Call(*this, _STD forward<_Ty>(_Arg), _Indices{});
         }
 
         template <class _Ty>
             requires invocable<_Fn, _Ty, const _Types&...>
-        constexpr decltype(auto) operator()(_Ty && _Arg) const& noexcept(
+        constexpr decltype(auto) operator()(_Ty&& _Arg) const& noexcept(
             noexcept(_Call(*this, _STD forward<_Ty>(_Arg), _Indices{}))) {
             return _Call(*this, _STD forward<_Ty>(_Arg), _Indices{});
         }
 
         template <class _Ty>
             requires invocable<_Fn, _Ty, _Types...>
-        constexpr decltype(auto) operator()(_Ty && _Arg) && noexcept(
+        constexpr decltype(auto) operator()(_Ty&& _Arg) && noexcept(
             noexcept(_Call(_STD move(*this), _STD forward<_Ty>(_Arg), _Indices{}))) {
             return _Call(_STD move(*this), _STD forward<_Ty>(_Arg), _Indices{});
         }
 
         template <class _Ty>
             requires invocable<_Fn, _Ty, const _Types...>
-        constexpr decltype(auto) operator()(_Ty && _Arg) const&& noexcept(
+        constexpr decltype(auto) operator()(_Ty&& _Arg) const&& noexcept(
             noexcept(_Call(_STD move(*this), _STD forward<_Ty>(_Arg), _Indices{}))) {
             return _Call(_STD move(*this), _STD forward<_Ty>(_Arg), _Indices{});
         }

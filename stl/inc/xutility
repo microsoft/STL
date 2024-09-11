@@ -79,14 +79,14 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept;
 
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+__declspec(noalias) size_t __stdcall __std_count_trivial_1(
+    const void* _First, const void* _Last, uint8_t _Val) noexcept;
+__declspec(noalias) size_t __stdcall __std_count_trivial_2(
+    const void* _First, const void* _Last, uint16_t _Val) noexcept;
+__declspec(noalias) size_t __stdcall __std_count_trivial_4(
+    const void* _First, const void* _Last, uint32_t _Val) noexcept;
+__declspec(noalias) size_t __stdcall __std_count_trivial_8(
+    const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
 const void* __stdcall __std_find_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
 const void* __stdcall __std_find_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
@@ -439,7 +439,7 @@ _EXPORT_STD template <class _Ty, class... _Types>
         ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...); // per LWG-3888
     }
 constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
-    noexcept(::new(static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
+    noexcept(::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
     _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
 }
 #endif // _HAS_CXX20
@@ -836,7 +836,7 @@ namespace ranges {
         public:
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr decltype(auto) operator()(_Ty && _Val) _CONST_CALL_OPERATOR
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr decltype(auto) operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
                 noexcept(_Choice<_Ty>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty>._Strategy;
 
@@ -1755,16 +1755,16 @@ public:
         return current;
     }
 
-    _NODISCARD _CONSTEXPR17 reference operator*() const noexcept(is_nothrow_copy_constructible_v<_BidIt> //
-            && noexcept(*--(_STD declval<_BidIt&>()))) /* strengthened */ {
+    _NODISCARD _CONSTEXPR17 reference operator*() const
+        noexcept(is_nothrow_copy_constructible_v<_BidIt> //
+                 && noexcept(*--(_STD declval<_BidIt&>()))) /* strengthened */ {
         _BidIt _Tmp = current;
         return *--_Tmp;
     }
 
-    _NODISCARD _CONSTEXPR17 pointer operator->() const
-        noexcept(is_nothrow_copy_constructible_v<_BidIt> //
-                     && noexcept(--(_STD declval<_BidIt&>()))
-                 && _Has_nothrow_operator_arrow<_BidIt&, pointer>) /* strengthened */
+    _NODISCARD _CONSTEXPR17 pointer operator->() const noexcept(
+        is_nothrow_copy_constructible_v<_BidIt> //
+        && noexcept(--(_STD declval<_BidIt&>())) && _Has_nothrow_operator_arrow<_BidIt&, pointer>) /* strengthened */
 #if _HAS_CXX20
         requires (is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); })
 #endif
@@ -1784,7 +1784,7 @@ public:
     }
 
     _CONSTEXPR17 reverse_iterator operator++(int) noexcept(is_nothrow_copy_constructible_v<_BidIt> //
-            && noexcept(--current)) /* strengthened */ {
+                                                           && noexcept(--current)) /* strengthened */ {
         reverse_iterator _Tmp = *this;
         --current;
         return _Tmp;
@@ -1796,7 +1796,7 @@ public:
     }
 
     _CONSTEXPR17 reverse_iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_BidIt> //
-            && noexcept(++current)) /* strengthened */ {
+                                                           && noexcept(++current)) /* strengthened */ {
         reverse_iterator _Tmp = *this;
         ++current;
         return _Tmp;
@@ -1832,7 +1832,7 @@ public:
 #if _HAS_CXX20
     _NODISCARD friend constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
         is_nothrow_copy_constructible_v<_BidIt> //
-            && noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
+        && noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
         auto _Tmp = _It.current;
         --_Tmp;
         return _RANGES iter_move(_Tmp);
@@ -1840,9 +1840,8 @@ public:
 
     template <indirectly_swappable<_BidIt> _BidIt2>
     friend constexpr void iter_swap(const reverse_iterator& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
-        is_nothrow_copy_constructible_v<_BidIt>
-        && is_nothrow_copy_constructible_v<_BidIt2> //
-            && noexcept(_RANGES iter_swap(--_STD declval<_BidIt&>(), --_STD declval<_BidIt2&>()))) {
+        is_nothrow_copy_constructible_v<_BidIt> && is_nothrow_copy_constructible_v<_BidIt2> //
+        && noexcept(_RANGES iter_swap(--_STD declval<_BidIt&>(), --_STD declval<_BidIt2&>()))) {
         auto _LTmp = _Left.current;
         auto _RTmp = _Right.base();
         --_LTmp;
@@ -2039,14 +2038,14 @@ _NODISCARD constexpr _Ty* end(_Ty (&_Array)[_Size]) noexcept {
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto cbegin(const _Container& _Cont) noexcept(noexcept(_STD begin(_Cont)))
-    -> decltype(_STD begin(_Cont)) {
+_NODISCARD constexpr auto cbegin(const _Container& _Cont) noexcept(
+    noexcept(_STD begin(_Cont))) -> decltype(_STD begin(_Cont)) {
     return _STD begin(_Cont);
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto cend(const _Container& _Cont) noexcept(noexcept(_STD end(_Cont)))
-    -> decltype(_STD end(_Cont)) {
+_NODISCARD constexpr auto cend(const _Container& _Cont) noexcept(
+    noexcept(_STD end(_Cont))) -> decltype(_STD end(_Cont)) {
     return _STD end(_Cont);
 }
 
@@ -4123,9 +4122,10 @@ namespace ranges {
     subrange(_It, _Se, _Make_unsigned_like_t<iter_difference_t<_It>>) -> subrange<_It, _Se, subrange_kind::sized>;
 
     template <borrowed_range _Rng>
-    subrange(_Rng&&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
-        (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
-                                                                                      : subrange_kind::unsized>;
+    subrange(_Rng&&)
+        -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
+            (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
+                                                                                          : subrange_kind::unsized>;
 
     template <borrowed_range _Rng>
     subrange(_Rng&&, _Make_unsigned_like_t<range_difference_t<_Rng>>)
@@ -4288,7 +4288,7 @@ public:
     }
 
     _CONSTEXPR17 auto operator++(int) noexcept(is_nothrow_copy_constructible_v<_Iter> //
-            && noexcept(++_Current)) /* strengthened */ {
+                                               && noexcept(++_Current)) /* strengthened */ {
 #if _HAS_CXX20
         if constexpr (forward_iterator<_Iter>) {
 #endif // _HAS_CXX20
@@ -4308,21 +4308,21 @@ public:
     }
 
     _CONSTEXPR17 move_iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Iter> //
-            && noexcept(--_Current)) /* strengthened */ {
+                                                        && noexcept(--_Current)) /* strengthened */ {
         move_iterator _Tmp = *this;
         --_Current;
         return _Tmp;
     }
 
     template <class _Iter2 = _Iter>
-    _NODISCARD auto operator==(_Default_sentinel _Sentinel) const noexcept
-        -> decltype(_STD declval<const _Iter2&>() == _Sentinel) {
+    _NODISCARD auto operator==(
+        _Default_sentinel _Sentinel) const noexcept -> decltype(_STD declval<const _Iter2&>() == _Sentinel) {
         return _Current == _Sentinel;
     }
 
     template <class _Iter2 = _Iter>
-    _NODISCARD auto operator!=(_Default_sentinel _Sentinel) const noexcept
-        -> decltype(_STD declval<const _Iter2&>() != _Sentinel) {
+    _NODISCARD auto operator!=(
+        _Default_sentinel _Sentinel) const noexcept -> decltype(_STD declval<const _Iter2&>() != _Sentinel) {
         return _Current != _Sentinel;
     }
 

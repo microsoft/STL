@@ -1367,7 +1367,7 @@ _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Ty
     // determine the three-way comparison of _Left's and _Right's index, if equal
     // return the three-way comparison of the contained values of _Left and _Right
     using _Visitor             = _Variant_relop_visitor2<compare_three_way,
-        common_comparison_category_t<compare_three_way_result_t<_Types>...>, _Types...>;
+                    common_comparison_category_t<compare_three_way_result_t<_Types>...>, _Types...>;
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     const auto _Offset_order   = _Left_offset <=> _Right_offset;

@@ -13,10 +13,8 @@
 // macros -- 64-bit
 #define NBITS (48 + _DOFF)
 
-#define INIT(w0) \
-    { 0, 0, 0, w0 }
-#define INIT2(w0, w1) \
-    { w1, 0, 0, w0 }
+#define INIT(w0)      {0, 0, 0, w0}
+#define INIT2(w0, w1) {w1, 0, 0, w0}
 
 // static data
 extern /* const */ _Dconst _LDenorm = {INIT2(0, 1)};
