@@ -8942,11 +8942,13 @@ namespace ranges {
 
         public:
             using iterator_category = input_iterator_tag;
-            using iterator_concept  = conditional_t<_Cartesian_product_is_random_access<_Const, _First, _Rest...>,
-                 random_access_iterator_tag,
-                 conditional_t<_Cartesian_product_is_bidirectional<_Const, _First, _Rest...>, bidirectional_iterator_tag,
-                     conditional_t<forward_range<_Maybe_const<_Const, _First>>, forward_iterator_tag,
-                         input_iterator_tag>>>;
+
+            using iterator_concept = conditional_t<_Cartesian_product_is_random_access<_Const, _First, _Rest...>,
+                random_access_iterator_tag,
+                conditional_t<_Cartesian_product_is_bidirectional<_Const, _First, _Rest...>, bidirectional_iterator_tag,
+                    conditional_t<forward_range<_Maybe_const<_Const, _First>>, forward_iterator_tag,
+                        input_iterator_tag>>>;
+
             using value_type =
                 tuple<range_value_t<_Maybe_const<_Const, _First>>, range_value_t<_Maybe_const<_Const, _Rest>>...>;
             using reference       = tuple<range_reference_t<_Maybe_const<_Const, _First>>,
