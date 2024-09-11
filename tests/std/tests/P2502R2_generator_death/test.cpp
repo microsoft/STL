@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _CONTAINER_DEBUG_LEVEL 1
+
 #include <generator>
 #include <utility>
 
@@ -37,14 +39,12 @@ void test_end_iterator_incrementation() {
 int main(int argc, char** argv) {
     std_testing::death_test_executive exec;
 
-#ifdef _DEBUG
     exec.add_death_tests({
         test_begin_after_initial_suspend_point,
         test_begin_after_moving_from,
         test_end_iterator_dereference,
         test_end_iterator_incrementation,
     });
-#endif // _DEBUG
 
     return exec.run(argc, argv);
 }

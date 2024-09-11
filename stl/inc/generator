@@ -409,12 +409,16 @@ public:
 
     _NODISCARD _Ref operator*() const
         noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr))) {
-        _STL_ASSERT(!_Coro.done(), "Can't dereference generator end iterator");
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!_Coro.done(), "Can't dereference generator end iterator");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr);
     }
 
     _Iterator& operator++() {
-        _STL_ASSERT(!_Coro.done(), "Can't increment generator end iterator");
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!_Coro.done(), "Can't increment generator end iterator");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         _Coro.promise()._Get_top().resume();
         return *this;
     }
@@ -491,7 +495,9 @@ public:
 
     _NODISCARD _Gen_iter_provider<_Value, _Ref>::_Iterator begin() {
         // Pre: _Coro is suspended at its initial suspend point
-        _STL_ASSERT(_Coro, "Can't call begin on moved-from generator");
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Coro, "Can't call begin on moved-from generator");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         _Coro.resume();
         return typename _Gen_iter_provider<_Value, _Ref>::_Iterator{
             _Gen_secret_tag{}, coroutine_handle<_Gen_promise_base<yielded>>::from_address(_Coro.address())};
