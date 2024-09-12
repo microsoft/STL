@@ -328,6 +328,23 @@ private:
         constexpr void await_resume() const noexcept {}
     };
 
+    // generator's stack of nested coroutines is realized as a linked list of promises. The "root" promise is the
+    // original that existed before any nested yields. The "top" promise is the one currently being iterated over.
+    // Iterators hold handles for the root's coroutine and the root promise holds a link to the top promise so iterators
+    // can resume it to generate the next element when incremented. Each promise keeps a link to the root so they can
+    // update the top link as promises are pushed and popped. It looks a bit like:
+    //
+    //    +--------------------------- Top ---------------------------+
+    //    v                                                           |
+    // +=====+             +=====+             +=====+             +=====+
+    // |     |-- Parent -->|     |-- Parent -->|     |-- Parent -->|     |
+    // +=====+             +=====+             +=====+             +=====+
+    //    |                   |                   |                   ^
+    //    +------- Root ------+------- Root ------+------- Root ------+
+    //
+    // The parent and root links are actually stored out-of-line in a _Nest_info. Since a promise is either a root or is
+    // nested, the single promise member _Data can be used to store either a top link or a pointer to a _Nest_info.
+
     struct _Nest_info {
         exception_ptr _Except;
         coroutine_handle<_Gen_promise_base> _Parent;
@@ -341,6 +358,7 @@ private:
 
         template <class _CoroPromise>
         _NODISCARD coroutine_handle<> await_suspend(coroutine_handle<_CoroPromise> _Handle) noexcept {
+            // Resume _Handle's parent coroutine, if any.
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
             _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
@@ -374,6 +392,7 @@ private:
             template <class _CoroPromise>
             _NODISCARD coroutine_handle<_Gen_promise_base> await_suspend(
                 coroutine_handle<_CoroPromise> _Current) noexcept {
+                // Push _Gen's coroutine onto the coroutine stack that _Current is at the top of.
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
                 _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_promise_base, _CoroPromise>);
 #endif // ^^^ no workaround ^^^
@@ -545,6 +564,9 @@ public:
 
 private:
     coroutine_handle<promise_type> _Coro = nullptr;
+    // The stack of coroutine handles depicted in the Standard is realized by a linked structure of promises and
+    // awaitable objects so all necessary storage is allocated in coroutine frames. See the description in the body of
+    // _Gen_promise_base.
 
     explicit generator(_Gen_secret_tag, coroutine_handle<promise_type> _Coro_) noexcept : _Coro(_Coro_) {}
 };
