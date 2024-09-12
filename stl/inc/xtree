@@ -903,7 +903,7 @@ public:
     template <class _Any_alloc>
     _Tree(const _Tree& _Right, _Any_alloc&& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{},
-            _STD forward<_Any_alloc>(_Al)) {
+              _STD forward<_Any_alloc>(_Al)) {
         auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
@@ -915,14 +915,14 @@ public:
 
     _Tree(_Tree&& _Right)
         : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
-            _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
+              _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
         _Swap_val_excluding_comp(_Right);
     }
 
     _Tree(_Tree&& _Right, const allocator_type& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
-            _One_then_variadic_args_t{}, _Al) {
+              _One_then_variadic_args_t{}, _Al) {
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
@@ -1350,8 +1350,8 @@ public:
 
 #if _HAS_CXX23
     template <class _Kx>
-        requires _Is_transparent_v<key_compare>
-              && (!is_convertible_v<_Kx, const_iterator>) && (!is_convertible_v<_Kx, iterator>)
+        requires _Is_transparent_v<key_compare> && (!is_convertible_v<_Kx, const_iterator>)
+              && (!is_convertible_v<_Kx, iterator>)
     size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Eqrange(_Keyval))) /* strengthened */ {
         return _Erase(_Eqrange(_Keyval));
     }
@@ -1754,8 +1754,8 @@ public:
 
 #if _HAS_CXX23
     template <class _Kx>
-        requires _Is_transparent_v<key_compare>
-              && (!is_convertible_v<_Kx, const_iterator>) && (!is_convertible_v<_Kx, iterator>)
+        requires _Is_transparent_v<key_compare> && (!is_convertible_v<_Kx, const_iterator>)
+              && (!is_convertible_v<_Kx, iterator>)
     node_type extract(_Kx&& _Keyval) {
         const const_iterator _Where = find(_Keyval);
         if (_Where == end()) {

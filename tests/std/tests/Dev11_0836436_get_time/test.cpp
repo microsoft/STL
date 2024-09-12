@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
@@ -106,11 +107,11 @@ void test_DevDiv_990695();
 void test_locale_russian();
 void test_locale_german();
 void test_locale_chinese();
-void test_invalid_argument();
 void test_buffer_resizing();
 void test_gh_2618();
 void test_gh_2848();
 void test_gh_4820();
+void test_gh_4882();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -154,11 +155,11 @@ int main() {
     test_locale_russian();
     test_locale_german();
     test_locale_chinese();
-    test_invalid_argument();
     test_buffer_resizing();
     test_gh_2618();
     test_gh_2848();
     test_gh_4820();
+    test_gh_4882();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -774,42 +775,6 @@ void test_locale_chinese() {
     assert(read_date_locale(L"2020-\x0031\x0032\x6708-31", "zh-CN") == make_tuple(31, 11, 120));
 }
 
-void test_invalid_parameter_handler(const wchar_t* const expression, const wchar_t* const function,
-    const wchar_t* const file, const unsigned int line, const uintptr_t reserved) {
-    (void) expression;
-    (void) reserved;
-
-    static int num_called = 0;
-    if (++num_called > 10) {
-        wprintf(
-            L"Test Failed: Invalid parameter handler was called over 10 times by %s in %s:%u\n", function, file, line);
-        exit(1);
-    }
-}
-
-void test_invalid_argument() {
-#ifndef _M_CEE_PURE
-    _set_invalid_parameter_handler(test_invalid_parameter_handler);
-
-    time_t t = time(nullptr);
-    tm currentTime;
-    localtime_s(&currentTime, &t);
-    currentTime.tm_hour = 25; // set invalid hour
-
-    {
-        wstringstream wss;
-        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M");
-        assert(wss.rdstate() == ios_base::badbit);
-    }
-
-    {
-        stringstream ss;
-        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M");
-        assert(ss.rdstate() == ios_base::badbit);
-    }
-#endif // _M_CEE_PURE
-}
-
 void test_buffer_resizing() {
     time_t t = time(nullptr);
     tm currentTime;
@@ -942,5 +907,57 @@ void test_gh_4820() {
         wss << put_time(&currentTime, L"\x043a%\x043e%\x0448%E\x043a%O\x0430");
         assert(wss.rdstate() == ios_base::goodbit);
         assert(wss.str() == L"\x043a%\x043e%\x0448%E\x043a%O\x0430");
+    }
+}
+
+void test_gh_4882() {
+    // GH-4882 <iomanip>: std::put_time should not crash on invalid/out-of-range tm struct values
+    const auto fieldValidation = [](int tm::*const field, const int value, const string& fmt) {
+        time_t t = time(nullptr);
+        tm currentTime;
+        localtime_s(&currentTime, &t);
+
+        currentTime.*field = value;
+
+        stringstream ss;
+        ss << put_time(&currentTime, fmt.c_str());
+        assert(ss.rdstate() == ios_base::goodbit);
+        const auto result = ss.str();
+        assert(result.size() == fmt.size() / 2);
+        assert(all_of(result.cbegin(), result.cend(), [](const char c) { return c == '?'; }));
+
+        // Narrow conversion is good enough for our ASCII only format strings
+        wstring wfmt(fmt.size(), L' ');
+        transform(fmt.cbegin(), fmt.cend(), wfmt.begin(), [](const char c) { return static_cast<wchar_t>(c); });
+
+        wstringstream wss;
+        wss << put_time(&currentTime, wfmt.c_str());
+        assert(wss.rdstate() == ios_base::goodbit);
+        const auto wresult = wss.str();
+        assert(wresult.size() == fmt.size() / 2);
+        assert(all_of(wresult.cbegin(), wresult.cend(), [](const wchar_t c) { return c == L'?'; }));
+    };
+
+    struct FormatTestData {
+        int tm::*field;
+        int lo;
+        int hi;
+        string fmt;
+    };
+
+    const FormatTestData testDataList[] = {
+        {&tm::tm_sec, -1, 61, "%S%r%X%T%c"},
+        {&tm::tm_min, -1, 60, "%M%R%r%X%T%c"},
+        {&tm::tm_hour, -1, 24, "%H%I%p%R%r%X%T%c"},
+        {&tm::tm_mday, 0, 32, "%d%e%D%x%F%c"},
+        {&tm::tm_mon, -1, 12, "%b%B%m%h%D%x%F%c"},
+        {&tm::tm_year, -1901, 8100, "%C%y%Y%D%x%F%g%G%c"},
+        {&tm::tm_wday, -1, 7, "%a%A%u%w%U%W%g%G%c"},
+        {&tm::tm_yday, -1, 366, "%j%U%W%g%G"},
+    };
+
+    for (const auto& testData : testDataList) {
+        fieldValidation(testData.field, testData.lo, testData.fmt);
+        fieldValidation(testData.field, testData.hi, testData.fmt);
     }
 }

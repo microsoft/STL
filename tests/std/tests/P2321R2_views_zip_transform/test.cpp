@@ -139,8 +139,8 @@ constexpr bool validate_iterators_sentinels(
     if constexpr (ranges::forward_range<BaseType>) {
         same_as<ranges::iterator_t<LocalZipTransformType>> auto duplicate_itr = itr++;
         assert(*duplicate_itr == *ranges::begin(transformed_elements));
-        static_assert(noexcept(itr++)
-                      == is_nothrow_copy_constructible_v<ranges::iterator_t<LocalZipTransformType>>&& noexcept(++itr));
+        static_assert(noexcept(itr++) == is_nothrow_copy_constructible_v<ranges::iterator_t<LocalZipTransformType>>
+                      && noexcept(++itr));
     } else {
         itr++;
         static_assert(noexcept(itr++) == noexcept(++itr));
@@ -150,8 +150,8 @@ constexpr bool validate_iterators_sentinels(
 
     if constexpr (ranges::bidirectional_range<BaseType>) {
         assert(*itr-- == transformed_elements[2]);
-        static_assert(noexcept(itr--)
-                      == is_nothrow_copy_constructible_v<ranges::iterator_t<LocalZipTransformType>>&& noexcept(--itr));
+        static_assert(noexcept(itr--) == is_nothrow_copy_constructible_v<ranges::iterator_t<LocalZipTransformType>>
+                      && noexcept(--itr));
 
         assert(*--itr == transformed_elements[0]);
         static_assert(noexcept(--itr) == noexcept(--declval<ranges::iterator_t<BaseType>&>()));
@@ -696,9 +696,9 @@ private:
         range_type<conditional_t<same_as<Category, input_iterator_tag>, forward_iterator_tag, input_iterator_tag>,
             const int, IsSized, IsCommon, Diff>;
     using differing_size_member_range_type            = range_type<Category, const int,
-        (IsSized == test::Sized::yes ? test::Sized::no : test::Sized::yes), IsCommon, Diff>;
+                   (IsSized == test::Sized::yes ? test::Sized::no : test::Sized::yes), IsCommon, Diff>;
     using differing_is_common_range_type              = range_type<Category, const int, IsSized,
-        (IsCommon == test::Common::yes ? test::Common::no : test::Common::yes), Diff>;
+                     (IsCommon == test::Common::yes ? test::Common::no : test::Common::yes), Diff>;
     using differing_iterator_sentinel_diff_range_type = range_type<Category, const int, IsSized, IsCommon,
         (Diff == test::CanDifference::yes ? test::CanDifference::no : test::CanDifference::yes)>;
 

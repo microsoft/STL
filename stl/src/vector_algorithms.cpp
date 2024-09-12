@@ -9,6 +9,7 @@
 #include <__msvc_minmax.hpp>
 #include <cstdint>
 #include <cstring>
+#include <cwchar>
 #include <xtr1common>
 
 #ifndef _M_ARM64EC
@@ -1415,8 +1416,8 @@ namespace {
         template <class _Fn>
         static __m128 _H_func(const __m128 _Cur, _Fn _Funct) noexcept {
             __m128 _H_min_val = _Cur;
-            _H_min_val        = _Funct(_H_min_val, _mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val        = _Funct(_H_min_val, _mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            _H_min_val        = _Funct(_mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)), _H_min_val);
+            _H_min_val        = _Funct(_mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
             return _H_min_val;
         }
 
@@ -1457,11 +1458,11 @@ namespace {
         }
 
         static __m128 _Min(const __m128 _First, const __m128 _Second, __m128 = _mm_undefined_ps()) noexcept {
-            return _mm_min_ps(_First, _Second);
+            return _mm_min_ps(_Second, _First);
         }
 
         static __m128 _Max(const __m128 _First, const __m128 _Second, __m128 = _mm_undefined_ps()) noexcept {
-            return _mm_max_ps(_First, _Second);
+            return _mm_max_ps(_Second, _First);
         }
 
         static __m128i _Mask_cast(const __m128 _Mask) noexcept {
@@ -1485,9 +1486,9 @@ namespace {
         template <class _Fn>
         static __m256 _H_func(const __m256 _Cur, _Fn _Funct) noexcept {
             __m256 _H_min_val = _Cur;
-            _H_min_val        = _Funct(_H_min_val, _mm256_permute2f128_ps(_H_min_val, _mm256_undefined_ps(), 0x01));
-            _H_min_val        = _Funct(_H_min_val, _mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val        = _Funct(_H_min_val, _mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
+            _H_min_val        = _Funct(_mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)), _H_min_val);
+            _H_min_val        = _Funct(_mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
+            _H_min_val        = _Funct(_mm256_permute2f128_ps(_H_min_val, _mm256_undefined_ps(), 0x01), _H_min_val);
             return _H_min_val;
         }
 
@@ -1528,11 +1529,11 @@ namespace {
         }
 
         static __m256 _Min(const __m256 _First, const __m256 _Second, __m256 = _mm256_undefined_ps()) noexcept {
-            return _mm256_min_ps(_First, _Second);
+            return _mm256_min_ps(_Second, _First);
         }
 
         static __m256 _Max(const __m256 _First, const __m256 _Second, __m256 = _mm256_undefined_ps()) noexcept {
-            return _mm256_max_ps(_First, _Second);
+            return _mm256_max_ps(_Second, _First);
         }
 
         static __m256i _Mask_cast(const __m256 _Mask) noexcept {
@@ -1575,7 +1576,7 @@ namespace {
         template <class _Fn>
         static __m128d _H_func(const __m128d _Cur, _Fn _Funct) noexcept {
             __m128d _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm_shuffle_pd(_H_min_val, _H_min_val, 1));
+            _H_min_val         = _Funct(_mm_shuffle_pd(_H_min_val, _H_min_val, 1), _H_min_val);
             return _H_min_val;
         }
 
@@ -1615,11 +1616,11 @@ namespace {
         }
 
         static __m128d _Min(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
-            return _mm_min_pd(_First, _Second);
+            return _mm_min_pd(_Second, _First);
         }
 
         static __m128d _Max(const __m128d _First, const __m128d _Second, __m128d = _mm_undefined_pd()) noexcept {
-            return _mm_max_pd(_First, _Second);
+            return _mm_max_pd(_Second, _First);
         }
 
         static __m128i _Mask_cast(const __m128d _Mask) noexcept {
@@ -1643,8 +1644,8 @@ namespace {
         template <class _Fn>
         static __m256d _H_func(const __m256d _Cur, _Fn _Funct) noexcept {
             __m256d _H_min_val = _Cur;
-            _H_min_val         = _Funct(_H_min_val, _mm256_permute4x64_pd(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
-            _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_pd(_H_min_val, _H_min_val, 0b0101));
+            _H_min_val         = _Funct(_mm256_shuffle_pd(_H_min_val, _H_min_val, 0b0101), _H_min_val);
+            _H_min_val         = _Funct(_mm256_permute4x64_pd(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
             return _H_min_val;
         }
 
@@ -1685,11 +1686,11 @@ namespace {
         }
 
         static __m256d _Min(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
-            return _mm256_min_pd(_First, _Second);
+            return _mm256_min_pd(_Second, _First);
         }
 
         static __m256d _Max(const __m256d _First, const __m256d _Second, __m256d = _mm256_undefined_pd()) noexcept {
-            return _mm256_max_pd(_First, _Second);
+            return _mm256_max_pd(_Second, _First);
         }
 
         static __m256i _Mask_cast(const __m256d _Mask) noexcept {
@@ -2708,8 +2709,8 @@ namespace {
     };
 
     template <class _Traits, class _Ty>
-    __declspec(noalias) size_t
-        __stdcall __std_count_trivial_impl(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
+    __declspec(noalias) size_t __stdcall __std_count_trivial_impl(
+        const void* _First, const void* const _Last, const _Ty _Val) noexcept {
         size_t _Result = 0;
 
 #ifndef _M_ARM64EC
@@ -3260,6 +3261,154 @@ namespace {
 
         return _Result;
     }
+
+    template <class _Traits, class _Ty>
+    const void* __stdcall __std_search_impl(
+        const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+        if (_Count2 == 0) {
+            return _First1;
+        }
+
+        if (_Count2 == 1) {
+            return __std_find_trivial_impl<_Traits>(_First1, _Last1, *static_cast<const _Ty*>(_First2));
+        }
+
+        const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
+        const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
+
+        if (_Size_bytes_1 < _Size_bytes_2) {
+            return _Last1;
+        }
+
+#ifndef _M_ARM64EC
+        if (_Use_sse42() && _Size_bytes_1 >= 16) {
+            constexpr int _Op = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
+            constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
+
+            if (_Size_bytes_2 <= 16) {
+                const int _Size_el_2 = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
+
+                const int _Max_full_match_pos = _Part_size_el - _Size_el_2;
+
+                alignas(16) uint8_t _Tmp2[16];
+                memcpy(_Tmp2, _First2, _Size_bytes_2);
+                const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+
+                const void* _Stop1 = _First1;
+                _Advance_bytes(_Stop1, _Size_bytes_1 - 16);
+
+                do {
+                    const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+
+                    if (!_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op)) {
+                        _Advance_bytes(_First1, 16); // No matches, next.
+                    } else {
+                        const int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                        _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                        if (_Pos <= _Max_full_match_pos) {
+                            // Full match. Return this match.
+                            return _First1;
+                        }
+                        // Partial match. Search again from the match start. Will return it if it is full.
+                    }
+                } while (_First1 <= _Stop1);
+
+                const size_t _Size_bytes_1_tail = _Byte_length(_First1, _Last1);
+                if (_Size_bytes_1_tail != 0) {
+                    const int _Size_el_1_tail = static_cast<int>(_Size_bytes_1_tail / sizeof(_Ty));
+
+                    alignas(16) uint8_t _Tmp1[16];
+                    memcpy(_Tmp1, _First1, _Size_bytes_1_tail);
+                    const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+
+                    if (_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op)) {
+                        const int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op);
+                        _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                        // Full match because size is less than 16. Return this match.
+                        return _First1;
+                    }
+                }
+            } else {
+                const __m128i _Data2  = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2));
+                const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2;
+
+                const void* _Stop1 = _First1;
+                _Advance_bytes(_Stop1, _Max_pos);
+
+                const void* _Tail2 = _First2;
+                _Advance_bytes(_Tail2, 16);
+
+                do {
+                    const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                    if (!_mm_cmpestrc(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op)) {
+                        _Advance_bytes(_First1, 16); // No matches, next.
+                    } else {
+                        const int _Pos = _mm_cmpestri(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+                        // Matched first 16 or less
+                        if (_Pos != 0) {
+                            _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+
+                            if (_First1 > _Stop1) {
+                                break; // Oops, doesn't fit
+                            }
+
+                            // Match not from the first byte, check 16 symbols
+                            const __m128i _Match1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                            const __m128i _Cmp    = _mm_xor_si128(_Data2, _Match1);
+                            if (!_mm_testz_si128(_Cmp, _Cmp)) {
+                                // Start from the next element
+                                _Advance_bytes(_First1, sizeof(_Ty));
+                                continue;
+                            }
+                        }
+                        // Matched first 16, check the rest
+
+                        const void* _Tail1 = _First1;
+                        _Advance_bytes(_Tail1, 16);
+
+                        if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
+                            return _First1;
+                        }
+
+                        // Start from the next element
+                        _Advance_bytes(_First1, sizeof(_Ty));
+                    }
+                } while (_First1 <= _Stop1);
+            }
+
+            return _Last1;
+        } else
+#endif // !defined(_M_ARM64EC)
+        {
+            const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
+
+            auto _Ptr1         = static_cast<const _Ty*>(_First1);
+            const auto _Ptr2   = static_cast<const _Ty*>(_First2);
+            const void* _Stop1 = _Ptr1;
+            _Advance_bytes(_Stop1, _Max_pos);
+
+            for (; _Ptr1 != _Stop1; ++_Ptr1) {
+                if (*_Ptr1 != *_Ptr2) {
+                    continue;
+                }
+
+                bool _Equal = true;
+
+                for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
+                    if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
+                        _Equal = false;
+                        break;
+                    }
+                }
+
+                if (_Equal) {
+                    return _Ptr1;
+                }
+            }
+
+            return _Last1;
+        }
+    }
 } // unnamed namespace
 
 extern "C" {
@@ -3271,8 +3420,7 @@ const void* __stdcall __std_find_trivial_unsized_1(const void* const _First, con
 
 // TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_2(const void* const _First, const uint16_t _Val) noexcept {
-    // TRANSITION, DevCom-1614562: not trying wmemchr
-    return __std_find_trivial_unsized_impl(_First, _Val);
+    return wmemchr(static_cast<const wchar_t*>(_First), static_cast<wchar_t>(_Val), SIZE_MAX);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
@@ -3325,23 +3473,23 @@ const void* __stdcall __std_find_last_trivial_8(
     return __std_find_last_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_1(const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+__declspec(noalias) size_t __stdcall __std_count_trivial_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
     return __std_count_trivial_impl<_Count_traits_1>(_First, _Last, _Val);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_2(const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+__declspec(noalias) size_t __stdcall __std_count_trivial_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
     return __std_count_trivial_impl<_Count_traits_2>(_First, _Last, _Val);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_4(const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+__declspec(noalias) size_t __stdcall __std_count_trivial_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
     return __std_count_trivial_impl<_Count_traits_4>(_First, _Last, _Val);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_8(const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+__declspec(noalias) size_t __stdcall __std_count_trivial_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
     return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
 }
 
@@ -3365,23 +3513,33 @@ const void* __stdcall __std_find_first_of_trivial_8(
     return __std_find_first_of::_Impl_4_8<__std_find_first_of::_Traits_8>(_First1, _Last1, _First2, _Last2);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_mismatch_1(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+const void* __stdcall __std_search_1(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+    return __std_search_impl<_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Count2);
+}
+
+const void* __stdcall __std_search_2(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+    return __std_search_impl<_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
+}
+
+__declspec(noalias) size_t __stdcall __std_mismatch_1(
+    const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     return __std_mismatch_impl<_Find_traits_1, uint8_t>(_First1, _First2, _Count);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_mismatch_2(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+__declspec(noalias) size_t __stdcall __std_mismatch_2(
+    const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     return __std_mismatch_impl<_Find_traits_2, uint16_t>(_First1, _First2, _Count);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_mismatch_4(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+__declspec(noalias) size_t __stdcall __std_mismatch_4(
+    const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     return __std_mismatch_impl<_Find_traits_4, uint32_t>(_First1, _First2, _Count);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_mismatch_8(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+__declspec(noalias) size_t __stdcall __std_mismatch_8(
+    const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     return __std_mismatch_impl<_Find_traits_8, uint64_t>(_First1, _First2, _Count);
 }
 
