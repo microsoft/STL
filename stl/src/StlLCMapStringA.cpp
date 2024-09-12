@@ -82,10 +82,12 @@ extern "C" _CRTIMP2 int __cdecl __crtLCMapStringA(_In_opt_z_ LPCWSTR LocaleName,
                 return retval;
             }
 
+            const auto wide_dest = reinterpret_cast<LPWSTR>(lpDestStr); // lgtm [cpp/incorrect-string-type-conversion]
+
             // do string mapping
             if (0
-                == LCMapStringEx(LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size,
-                    reinterpret_cast<LPWSTR>(lpDestStr), cchDest, nullptr, nullptr, 0)) {
+                == LCMapStringEx(
+                    LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size, wide_dest, cchDest, nullptr, nullptr, 0)) {
                 return retval;
             }
         }

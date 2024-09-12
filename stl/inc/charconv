@@ -228,7 +228,7 @@ _STL_INTERNAL_STATIC_ASSERT(_STD size(_Digit_from_byte) == 256);
 
 _NODISCARD _CONSTEXPR23 unsigned char _Digit_from_char(const char _Ch) noexcept {
     // convert ['0', '9'] ['A', 'Z'] ['a', 'z'] to [0, 35], everything else to 255
-    return _Digit_from_byte[static_cast<unsigned char>(_Ch)];
+    return _Digit_from_byte[static_cast<unsigned char>(_Ch)]; // lgtm [cpp/unclear-array-index-validation]
 }
 
 template <class _RawTy>

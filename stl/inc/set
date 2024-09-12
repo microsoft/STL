@@ -351,8 +351,8 @@ public:
 
     multiset(multiset&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-    multiset& operator=(multiset&& _Right) noexcept(
-        _Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<_Pr>) {
+    multiset& operator=(multiset&& _Right)
+        noexcept(_Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<_Pr>) {
         _Mybase::operator=(_STD move(_Right));
         return *this;
     }
@@ -415,8 +415,8 @@ template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>
 multiset(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc()) -> multiset<_RANGES range_value_t<_Rng>, _Pr, _Alloc>;
 
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
-multiset(from_range_t, _Rng&&, _Alloc)
-    -> multiset<_RANGES range_value_t<_Rng>, less<_RANGES range_value_t<_Rng>>, _Alloc>;
+multiset(
+    from_range_t, _Rng&&, _Alloc) -> multiset<_RANGES range_value_t<_Rng>, less<_RANGES range_value_t<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23
 #endif // _HAS_CXX17
 
@@ -462,8 +462,8 @@ _NODISCARD bool operator>=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multi
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 _EXPORT_STD template <class _Kty, class _Pr, class _Alloc>
-void swap(multiset<_Kty, _Pr, _Alloc>& _Left, multiset<_Kty, _Pr, _Alloc>& _Right) noexcept(
-    noexcept(_Left.swap(_Right))) {
+void swap(multiset<_Kty, _Pr, _Alloc>& _Left, multiset<_Kty, _Pr, _Alloc>& _Right)
+    noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 

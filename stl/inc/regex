@@ -2067,8 +2067,8 @@ void swap(basic_regex<_Elem, _RxTraits>& _Left, basic_regex<_Elem, _RxTraits>& _
 }
 
 _EXPORT_STD template <class _BidIt, class _Alloc>
-void swap(match_results<_BidIt, _Alloc>& _Left, match_results<_BidIt, _Alloc>& _Right) noexcept(
-    noexcept(_Left.swap(_Right))) /* strengthened */ {
+void swap(match_results<_BidIt, _Alloc>& _Left, match_results<_BidIt, _Alloc>& _Right)
+    noexcept(noexcept(_Left.swap(_Right))) /* strengthened */ {
     _Left.swap(_Right);
 }
 
