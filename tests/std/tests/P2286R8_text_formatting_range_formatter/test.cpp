@@ -44,9 +44,12 @@ private:
 
 template <class Category, class Element, class CharT>
 struct std::formatter<test::proxy_reference<Category, Element>, CharT> {
+private:
+    formatter<remove_cv_t<Element>, CharT> underlying;
+
 public:
     constexpr void set_debug_format()
-        requires requires { this->underlying.set_debug_format(); }
+        requires requires { underlying.set_debug_format(); }
     {
         underlying.set_debug_format();
     }
@@ -60,9 +63,6 @@ public:
     auto format(const test::proxy_reference<Category, Element>& proxy, FormatContext& ctx) const {
         return underlying.format(static_cast<Element&>(proxy), ctx);
     }
-
-private:
-    formatter<remove_cv_t<Element>, CharT> underlying;
 };
 
 struct FormatAsX {};

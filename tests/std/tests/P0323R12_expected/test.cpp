@@ -409,9 +409,9 @@ namespace test_expected {
     template <IsTriviallyDestructible triviallyDestructible>
     struct payload_destructor {
         constexpr payload_destructor(bool& destructor_called) : _destructor_called(destructor_called) {}
-        // clang-format off
-        constexpr ~payload_destructor() requires (IsYes(triviallyDestructible)) = default;
-        // clang-format on
+        constexpr ~payload_destructor()
+            requires (IsYes(triviallyDestructible))
+        = default;
         constexpr ~payload_destructor() {
             _destructor_called = true;
         }
@@ -475,14 +475,14 @@ namespace test_expected {
         struct payload_constructors {
             payload_constructors() = default;
             // Note clang does not accept local variables in explicit
-            constexpr explicit(IsYes(explicitConstructible))
-                payload_constructors(const convertible&) noexcept(should_be_noexcept)
+            constexpr explicit(IsYes(explicitConstructible)) payload_constructors(const convertible&)
+                noexcept(should_be_noexcept)
                 : _val(3) {}
-            constexpr explicit(IsYes(explicitConstructible))
-                payload_constructors(convertible&&) noexcept(should_be_noexcept)
+            constexpr explicit(IsYes(explicitConstructible)) payload_constructors(convertible&&)
+                noexcept(should_be_noexcept)
                 : _val(42) {}
-            constexpr explicit(IsYes(explicitConstructible))
-                payload_constructors(initializer_list<int>&, convertible) noexcept(should_be_noexcept)
+            constexpr explicit(IsYes(explicitConstructible)) payload_constructors(initializer_list<int>&, convertible)
+                noexcept(should_be_noexcept)
                 : _val(1337) {}
 
             [[nodiscard]] constexpr bool operator==(const int val) const noexcept {
@@ -2232,8 +2232,8 @@ void test_reinit_regression() {
     }
 }
 
-// Defend against regression of llvm-project#59854, in which clang is confused
-// by the explicit `noexcept` on `expected`'s destructors.
+// Defend against regression of LLVM-59854, in which clang is confused by the
+// explicit `noexcept` on `expected`'s destructors.
 struct Data {
     vector<int> vec_;
     constexpr Data(initializer_list<int> il) : vec_(il) {}

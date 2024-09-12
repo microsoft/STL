@@ -6,6 +6,8 @@
 #include <cassert>
 #include <ios>
 #include <limits>
+#include <list>
+#include <ranges>
 #include <span>
 #include <spanstream>
 #include <string_view>
@@ -28,6 +30,28 @@ template <class CharT>
 constexpr array input_std_array{'1', ' ', '2', ' ', '3', ' ', '4', ' ', '5'};
 template <>
 inline constexpr array input_std_array<wchar_t>{L'1', L' ', L'2', L' ', L'3', L' ', L'4', L' ', L'5'};
+
+template <class CharT>
+list<CharT> li{};
+// Neither sized_range nor contiguous_range.
+template <class CharT>
+struct SpecialRange {
+    auto begin() {
+        return std::begin(li<CharT>);
+    }
+    auto end() {
+        return std::end(li<CharT>);
+    }
+    operator span<const CharT>() const {
+        return span<const CharT>(input_view<CharT>);
+    }
+};
+template <class CharT>
+constexpr bool ranges::enable_borrowed_range<SpecialRange<CharT>> = true;
+
+static_assert(!ranges::sized_range<SpecialRange<char>>);
+static_assert(!ranges::contiguous_range<SpecialRange<char>>);
+static_assert(ranges::borrowed_range<SpecialRange<char>>);
 
 template <class Spanbuf>
 class basic_test_buf : public Spanbuf {
@@ -626,6 +650,30 @@ void test_ispanstream() {
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->epptr() == nullptr);
     }
 
+    { // GH-4879 <spanstream>: The span constructed by basic_ispanstream's range constructor may be ill-formed
+        const CharT buffer[17]{};
+        span<const CharT> span_const_elem{buffer};
+        basic_ispanstream<CharT> span_const_elem_constructed{span_const_elem};
+        assert(span_const_elem_constructed.span().data() == buffer);
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->eback() == buffer);
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->gptr() == buffer);
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->egptr() == end(buffer));
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->pbase() == nullptr);
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->pptr() == nullptr);
+        assert(static_cast<test_buf*>(span_const_elem_constructed.rdbuf())->epptr() == nullptr);
+
+        SpecialRange<CharT> special_range{};
+        auto rr = static_cast<span<const CharT>>(special_range);
+        basic_ispanstream<CharT> special_range_constructed{special_range};
+        assert(special_range_constructed.span().data() == rr.data());
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->eback() == rr.data());
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->gptr() == rr.data());
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->egptr() == rr.data() + rr.size());
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->pbase() == nullptr);
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->pptr() == nullptr);
+        assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->epptr() == nullptr);
+    }
+
     { // span
         CharT buffer[10];
         basic_ispanstream<CharT> is{span<CharT>{buffer}};
@@ -643,6 +691,14 @@ void test_ispanstream() {
 
         auto input_range = input_view<CharT>;
         is.span(input_view<CharT>);
+        assert(is.span().data() == input_range.data());
+        assert(is.span().size() == input_range.size());
+
+        // also test GH-4879 for basic_ispanstream::span(ROS&&)
+        is.span(span<const CharT>{other_buffer});
+        assert(is.span().data() == other_buffer);
+        assert(is.span().size() == size(other_buffer));
+        is.span(SpecialRange<CharT>{});
         assert(is.span().data() == input_range.data());
         assert(is.span().size() == input_range.size());
 

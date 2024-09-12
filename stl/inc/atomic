@@ -2089,8 +2089,7 @@ struct _Atomic_nonobject_pointer : _Atomic_storage<_Ty> {
     using _Base::_Base;
 };
 
-#define ATOMIC_VAR_INIT(_Value) \
-    { _Value }
+#define ATOMIC_VAR_INIT(_Value) {_Value}
 
 template <class _TVal, class _Ty = _TVal>
 using _Choose_atomic_base2_t =

@@ -89,8 +89,8 @@ struct _Init_once_completer {
 };
 
 _EXPORT_STD template <class _Fn, class... _Args>
-void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
-    noexcept(_STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...))) /* strengthened */ {
+void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax)
+    noexcept(noexcept(_STD invoke(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...))) /* strengthened */ {
     // call _Fx(_Ax...) once
     // parentheses against common "#define call_once(flag,func) pthread_once(flag,func)"
     int _Pending;

@@ -708,7 +708,7 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 #endif
 
 #if _HAS_CXX23
-STATIC_ASSERT(__cpp_lib_print == 202207L);
+STATIC_ASSERT(__cpp_lib_print == 202406L);
 #elif defined(__cpp_lib_print)
 #error __cpp_lib_print is defined
 #endif
