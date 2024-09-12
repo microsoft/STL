@@ -286,15 +286,12 @@ void adl_proof_test() {
 #endif // ^^^ no workaround ^^^
 #endif // ^^^ no workaround ^^^
 
-int main() {
-    // End-to-end tests
-    test_one<gen_traits<int>, int, int&&, int&&>(ints(), views::take(3), array{0, 1, 2});
-    assert(ranges::equal(co_upto(6), views::iota(0, 6)));
-
-    { // Test with mutable lvalue reference type
-        auto r   = co_upto<int&>(32);
+void test_weird_reference_types() {
+    constexpr int n = 32;
+    { // Test mutable lvalue reference type
+        auto r   = co_upto<int&>(n);
         auto pos = r.begin();
-        for (int i = 0; i < 16; ++i, ++*pos, ++pos) {
+        for (int i = 0; i < n / 2; ++i, ++*pos, ++pos) {
             assert(pos != r.end());
             assert(*pos == 2 * i);
         }
@@ -311,6 +308,7 @@ int main() {
                 vec.resize(size);
                 ranges::generate(vec, [&] { return dist(rd); });
                 co_yield move(vec);
+                assert(vec.empty()); // when we yield an rvalue, the caller moves from it
             }
 
             // Test yielding lvalue
@@ -318,7 +316,7 @@ int main() {
             ranges::generate(vec, [&] { return dist(rd); });
             const auto tmp = vec;
             co_yield vec;
-            assert(tmp == vec);
+            assert(tmp == vec); // when we yield an lvalue, the caller moves from a copy
         };
 
         constexpr size_t size = 16;
@@ -326,15 +324,20 @@ int main() {
         for (auto i = r.begin(); i != r.end(); ++i) {
             vector<int> vec = *i;
             assert(vec.size() == size);
-            assert((*i).empty());
         }
     }
 #endif // ^^^ no workaround ^^^
+}
 
+int main() {
+    // End-to-end tests
+    test_one<gen_traits<int>, int, int&&, int&&>(ints(), views::take(3), array{0, 1, 2});
+    assert(ranges::equal(co_upto(6), views::iota(0, 6)));
     static_allocator_test();
     dynamic_allocator_test();
 
     zip_example();
+    test_weird_reference_types();
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     recursive_test();
     arbitrary_range_test();
