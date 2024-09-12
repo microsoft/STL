@@ -4671,18 +4671,14 @@ namespace chrono {
 
 // [time.format]
 
-// clang-format off
 template <class _Ty, class _CharT>
-concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
-                                        && _Parse_width_callbacks<_Ty, _CharT>
-                                        && _Parse_precision_callbacks<_Ty, _CharT>
-                                        && _Width_adapter_callbacks<_Ty, _CharT>
-                                        && _Precision_adapter_callbacks<_Ty, _CharT>
-                                        && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln) {
-    { _At._On_conversion_spec(char{}, _CharT{}) } -> same_as<void>;
-    { _At._On_lit_char(_CharT{}) } -> same_as<void>;
-};
-// clang-format on
+concept _Chrono_parse_spec_callbacks =
+    _Parse_align_callbacks<_Ty, _CharT> && _Parse_width_callbacks<_Ty, _CharT>
+    && _Parse_precision_callbacks<_Ty, _CharT> && _Width_adapter_callbacks<_Ty, _CharT>
+    && _Precision_adapter_callbacks<_Ty, _CharT> && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln) {
+           { _At._On_conversion_spec(char{}, _CharT{}) } -> same_as<void>;
+           { _At._On_lit_char(_CharT{}) } -> same_as<void>;
+       };
 
 template <class _Ty>
 concept _Has_ok = requires(_Ty _At) {
@@ -5076,7 +5072,7 @@ namespace chrono {
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month& _Val) {
         return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%b}"), _Val)
                                  : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} is not a valid month"),
-                                     static_cast<unsigned int>(_Val)));
+                                       static_cast<unsigned int>(_Val)));
     }
 
     _EXPORT_STD template <class _CharT, class _Traits>
@@ -5089,7 +5085,7 @@ namespace chrono {
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday& _Val) {
         return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%a}"), _Val)
                                  : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} is not a valid weekday"),
-                                     _Val.c_encoding()));
+                                       _Val.c_encoding()));
     }
 
     _EXPORT_STD template <class _CharT, class _Traits>
@@ -5098,7 +5094,7 @@ namespace chrono {
         return _Os << (_Idx >= 1 && _Idx <= 5
                            ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}[{}]"), _Val.weekday(), _Idx)
                            : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}[{} is not a valid index]"),
-                               _Val.weekday(), _Idx));
+                                 _Val.weekday(), _Idx));
     }
 
     _EXPORT_STD template <class _CharT, class _Traits>

@@ -46,14 +46,14 @@ _NODISCARD unsigned short __stdcall __std_stacktrace_capture(unsigned long _Fram
 // Some of these functions may throw
 // (they would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
 
-void __stdcall __std_stacktrace_address_to_string(
-    const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
+void __stdcall __std_stacktrace_address_to_string(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill)
+    noexcept(false);
 
-void __stdcall __std_stacktrace_description( //
-    const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
+void __stdcall __std_stacktrace_description(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill)
+    noexcept(false);
 
-void __stdcall __std_stacktrace_source_file( //
-    const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
+void __stdcall __std_stacktrace_source_file(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill)
+    noexcept(false);
 
 _NODISCARD unsigned int __stdcall __std_stacktrace_source_line(const void* _Address) noexcept;
 
@@ -136,8 +136,8 @@ public:
     // __declspec(noinline) to make the same behavior for debug and release.
     // We force the current function to be always noinline and add its frame to skipped.
 
-    _NODISCARD __declspec(noinline) static basic_stacktrace
-        current(const allocator_type& _Al = allocator_type()) noexcept {
+    _NODISCARD __declspec(noinline) static basic_stacktrace current(
+        const allocator_type& _Al = allocator_type()) noexcept {
         _TRY_BEGIN
         basic_stacktrace _Result{_Internal_t{}, _Max_frames, _Al};
         const unsigned short _Actual_size = __std_stacktrace_capture(
@@ -149,8 +149,8 @@ public:
         _CATCH_END
     }
 
-    _NODISCARD __declspec(noinline) static basic_stacktrace
-        current(const size_type _Skip, const allocator_type& _Al = allocator_type()) noexcept {
+    _NODISCARD __declspec(noinline) static basic_stacktrace current(
+        const size_type _Skip, const allocator_type& _Al = allocator_type()) noexcept {
         _TRY_BEGIN
         basic_stacktrace _Result{_Internal_t{}, _Max_frames, _Al};
         const unsigned short _Actual_size = __std_stacktrace_capture(
@@ -162,8 +162,8 @@ public:
         _CATCH_END
     }
 
-    _NODISCARD __declspec(noinline) static basic_stacktrace
-        current(const size_type _Skip, size_type _Max_depth, const allocator_type& _Al = allocator_type()) noexcept {
+    _NODISCARD __declspec(noinline) static basic_stacktrace current(
+        const size_type _Skip, size_type _Max_depth, const allocator_type& _Al = allocator_type()) noexcept {
         _TRY_BEGIN
         if (_Max_depth > _Max_frames) {
             _Max_depth = _Max_frames;

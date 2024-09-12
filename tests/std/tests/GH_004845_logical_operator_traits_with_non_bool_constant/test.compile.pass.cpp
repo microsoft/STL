@@ -14,10 +14,8 @@ void test_base_derived() {
     using ValueType = typename Base::value_type;
     STATIC_ASSERT(is_same_v<const ValueType, decltype(Derived::type::value)>);
     STATIC_ASSERT(Base::value == Derived::type::value);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2170500 (C1XX type trait optimization)
     STATIC_ASSERT(is_same_v<const ValueType, decltype(Derived::value)>);
     STATIC_ASSERT(Base::value == Derived::value);
-#endif // ^^^ no workaround ^^^
 }
 
 template <short N>

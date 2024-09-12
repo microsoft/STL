@@ -168,8 +168,8 @@ private:
 
 public:
     template <class _Lock, class _Predicate>
-    bool wait(_Lock& _Lck, stop_token _Stoken, _Predicate _Pred) noexcept(
-        noexcept(static_cast<bool>(_Pred()))) /* strengthened */ {
+    bool wait(_Lock& _Lck, stop_token _Stoken, _Predicate _Pred)
+        noexcept(noexcept(static_cast<bool>(_Pred()))) /* strengthened */ {
         // TRANSITION, ABI: Due to the unsynchronized delivery of notify_all by _Stoken,
         // this implementation cannot tolerate *this destruction while an interruptible wait
         // is outstanding. A future ABI should store both the internal CV and internal mutex

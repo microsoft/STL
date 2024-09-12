@@ -2709,8 +2709,8 @@ namespace {
     };
 
     template <class _Traits, class _Ty>
-    __declspec(noalias) size_t
-        __stdcall __std_count_trivial_impl(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
+    __declspec(noalias) size_t __stdcall __std_count_trivial_impl(
+        const void* _First, const void* const _Last, const _Ty _Val) noexcept {
         size_t _Result = 0;
 
 #ifndef _M_ARM64EC
@@ -3701,23 +3701,23 @@ const void* __stdcall __std_find_last_trivial_8(
     return __std_find_last_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_1(const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+__declspec(noalias) size_t __stdcall __std_count_trivial_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
     return __std_count_trivial_impl<_Count_traits_1>(_First, _Last, _Val);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_2(const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+__declspec(noalias) size_t __stdcall __std_count_trivial_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
     return __std_count_trivial_impl<_Count_traits_2>(_First, _Last, _Val);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_4(const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+__declspec(noalias) size_t __stdcall __std_count_trivial_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
     return __std_count_trivial_impl<_Count_traits_4>(_First, _Last, _Val);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial_8(const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+__declspec(noalias) size_t __stdcall __std_count_trivial_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
     return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
 }
 
@@ -3761,23 +3761,23 @@ const void* __stdcall __std_find_end_2(
     return __std_find_end_impl<_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_mismatch_1(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+__declspec(noalias) size_t __stdcall __std_mismatch_1(
+    const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     return __std_mismatch_impl<_Find_traits_1, uint8_t>(_First1, _First2, _Count);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_mismatch_2(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+__declspec(noalias) size_t __stdcall __std_mismatch_2(
+    const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     return __std_mismatch_impl<_Find_traits_2, uint16_t>(_First1, _First2, _Count);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_mismatch_4(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+__declspec(noalias) size_t __stdcall __std_mismatch_4(
+    const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     return __std_mismatch_impl<_Find_traits_4, uint32_t>(_First1, _First2, _Count);
 }
 
-__declspec(noalias) size_t
-    __stdcall __std_mismatch_8(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+__declspec(noalias) size_t __stdcall __std_mismatch_8(
+    const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     return __std_mismatch_impl<_Find_traits_8, uint64_t>(_First1, _First2, _Count);
 }
 
