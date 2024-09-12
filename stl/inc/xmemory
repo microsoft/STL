@@ -97,7 +97,8 @@ struct _Default_allocate_traits {
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
         _CONSTEXPR20
 #endif // defined(__clang__)
-        void* _Allocate(const size_t _Bytes) {
+        void*
+        _Allocate(const size_t _Bytes) {
         return ::operator new(_Bytes);
     }
 
@@ -106,7 +107,8 @@ struct _Default_allocate_traits {
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
         _CONSTEXPR20
 #endif // defined(__clang__)
-        void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
+        void*
+        _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
@@ -547,13 +549,13 @@ struct _Normal_allocator_traits { // defines traits for allocators
     template <class _Other>
     using rebind_traits = allocator_traits<rebind_alloc<_Other>>;
 
-    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
-        allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer allocate(
+        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
         return _Al.allocate(_Count);
     }
 
-    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
-        allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer allocate(
+        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
         if constexpr (_Has_allocate_hint<_Alloc, size_type, const_void_pointer>::value) {
             return _Al.allocate(_Count, _Hint);
         } else {
@@ -644,8 +646,8 @@ struct _Default_allocator_traits { // traits for std::allocator
     template <class _Other>
     using rebind_traits = allocator_traits<allocator<_Other>>;
 
-    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
-        allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer allocate(
+        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
 #if _HAS_CXX20 // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
             return _Al.allocate(_Count);
@@ -658,8 +660,8 @@ struct _Default_allocator_traits { // traits for std::allocator
         }
     }
 
-    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
-        allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer allocate(
+        _Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
 #if _HAS_CXX20 // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
             return _Al.allocate(_Count);
@@ -739,8 +741,8 @@ template <class _Alloc>
 constexpr _Pocma_values _Choose_pocma_v = allocator_traits<_Alloc>::is_always_equal::value
                                             ? _Pocma_values::_Equal_allocators
                                             : (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
-                                                    ? _Pocma_values::_Propagate_allocators
-                                                    : _Pocma_values::_No_propagate_allocators);
+                                                      ? _Pocma_values::_Propagate_allocators
+                                                      : _Pocma_values::_No_propagate_allocators);
 
 template <class _Alloc, class _Value_type>
 using _Rebind_alloc_t = typename allocator_traits<_Alloc>::template rebind_alloc<_Value_type>;
@@ -962,8 +964,8 @@ public:
 #endif // _HAS_CXX23
 
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) _Ty* allocate(
-        _CRT_GUARDOVERFLOW const size_t _Count, const void*) {
+    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD_RAW_PTR_ALLOC __declspec(allocator)
+    _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count, const void*) {
         return allocate(_Count);
     }
 
@@ -1080,8 +1082,8 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _L
 }
 
 template <class _Size_type, class _Unsigned_type>
-_NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len) noexcept(
-    sizeof(_Unsigned_type) <= sizeof(_Size_type)) {
+_NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len)
+    noexcept(sizeof(_Unsigned_type) <= sizeof(_Size_type)) {
     // convert _Unsigned_type to _Size_type, avoiding truncation
     _STL_INTERNAL_STATIC_ASSERT(_Unsigned_type(-1) > 0);
     _STL_INTERNAL_STATIC_ASSERT(_Size_type(-1) > 0);
@@ -1490,13 +1492,13 @@ public:
     using _Mybase = _Ty1; // for visualization
 
     template <class... _Other2>
-    constexpr explicit _Compressed_pair(_Zero_then_variadic_args_t, _Other2&&... _Val2) noexcept(
-        conjunction_v<is_nothrow_default_constructible<_Ty1>, is_nothrow_constructible<_Ty2, _Other2...>>)
+    constexpr explicit _Compressed_pair(_Zero_then_variadic_args_t, _Other2&&... _Val2)
+        noexcept(conjunction_v<is_nothrow_default_constructible<_Ty1>, is_nothrow_constructible<_Ty2, _Other2...>>)
         : _Ty1(), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
     template <class _Other1, class... _Other2>
-    constexpr _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2) noexcept(
-        conjunction_v<is_nothrow_constructible<_Ty1, _Other1>, is_nothrow_constructible<_Ty2, _Other2...>>)
+    constexpr _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2)
+        noexcept(conjunction_v<is_nothrow_constructible<_Ty1, _Other1>, is_nothrow_constructible<_Ty2, _Other2...>>)
         : _Ty1(_STD forward<_Other1>(_Val1)), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
     constexpr _Ty1& _Get_first() noexcept {
@@ -1515,13 +1517,13 @@ public:
     _Ty2 _Myval2;
 
     template <class... _Other2>
-    constexpr explicit _Compressed_pair(_Zero_then_variadic_args_t, _Other2&&... _Val2) noexcept(
-        conjunction_v<is_nothrow_default_constructible<_Ty1>, is_nothrow_constructible<_Ty2, _Other2...>>)
+    constexpr explicit _Compressed_pair(_Zero_then_variadic_args_t, _Other2&&... _Val2)
+        noexcept(conjunction_v<is_nothrow_default_constructible<_Ty1>, is_nothrow_constructible<_Ty2, _Other2...>>)
         : _Myval1(), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
     template <class _Other1, class... _Other2>
-    constexpr _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2) noexcept(
-        conjunction_v<is_nothrow_constructible<_Ty1, _Other1>, is_nothrow_constructible<_Ty2, _Other2...>>)
+    constexpr _Compressed_pair(_One_then_variadic_args_t, _Other1&& _Val1, _Other2&&... _Val2)
+        noexcept(conjunction_v<is_nothrow_constructible<_Ty1, _Other1>, is_nothrow_constructible<_Ty2, _Other2...>>)
         : _Myval1(_STD forward<_Other1>(_Val1)), _Myval2(_STD forward<_Other2>(_Val2)...) {}
 
     constexpr _Ty1& _Get_first() noexcept {
@@ -2132,8 +2134,8 @@ struct _Alloc_temporary2 {
 #endif // ^^^ no workaround ^^^
 
     template <class... _Args>
-    _CONSTEXPR20 explicit _Alloc_temporary2(_Alloc& _Al_, _Args&&... _Vals) noexcept(
-        noexcept(_Traits::construct(_Al_, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...)))
+    _CONSTEXPR20 explicit _Alloc_temporary2(_Alloc& _Al_, _Args&&... _Vals)
+        noexcept(noexcept(_Traits::construct(_Al_, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...)))
         : _Al(_Al_) {
         _Traits::construct(_Al, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...);
     }
@@ -2503,7 +2505,7 @@ _EXPORT_STD inline constexpr from_range_t from_range;
 
 template <class _Rng, class _Elem>
 concept _Container_compatible_range =
-    (_RANGES input_range<_Rng>) &&convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
+    (_RANGES input_range<_Rng>) && convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
 
 template <_RANGES input_range _Rng>
 using _Range_key_type = remove_const_t<typename _RANGES range_value_t<_Rng>::first_type>;

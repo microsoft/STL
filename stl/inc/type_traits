@@ -1596,8 +1596,8 @@ struct _Invoker_functor {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Functor;
 
     template <class _Callable, class... _Types>
-    static constexpr auto _Call(_Callable&& _Obj, _Types&&... _Args) noexcept(
-        noexcept(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)))
+    static constexpr auto _Call(_Callable&& _Obj, _Types&&... _Args)
+        noexcept(noexcept(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...))) //
         -> decltype(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)) {
         return static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...);
     }
@@ -1607,8 +1607,8 @@ struct _Invoker_pmf_object {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_object;
 
     template <class _Decayed, class _Ty1, class... _Types2>
-    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-        noexcept((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2)
+        noexcept(noexcept((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...))) //
         -> decltype((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
         return (static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
@@ -1618,8 +1618,8 @@ struct _Invoker_pmf_refwrap {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_refwrap;
 
     template <class _Decayed, class _Refwrap, class... _Types2>
-    static constexpr auto _Call(_Decayed _Pmf, _Refwrap _Rw, _Types2&&... _Args2) noexcept(
-        noexcept((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+    static constexpr auto _Call(_Decayed _Pmf, _Refwrap _Rw, _Types2&&... _Args2)
+        noexcept(noexcept((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...))) //
         -> decltype((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
         return (_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
@@ -1629,8 +1629,8 @@ struct _Invoker_pmf_pointer {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_pointer;
 
     template <class _Decayed, class _Ty1, class... _Types2>
-    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-        noexcept(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2)
+        noexcept(noexcept(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...))) //
         -> decltype(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
         return ((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
@@ -1658,8 +1658,8 @@ struct _Invoker_pmd_pointer {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_pointer;
 
     template <class _Decayed, class _Ty1>
-    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept((*static_cast<_Ty1&&>(_Arg1)).*_Pmd))
-        -> decltype((*static_cast<_Ty1&&>(_Arg1)).*_Pmd) {
+    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1)
+        noexcept(noexcept((*static_cast<_Ty1&&>(_Arg1)).*_Pmd)) -> decltype((*static_cast<_Ty1&&>(_Arg1)).*_Pmd) {
         return (*static_cast<_Ty1&&>(_Arg1)).*_Pmd;
     }
 };
@@ -1690,15 +1690,15 @@ template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
 
 _EXPORT_STD template <class _Callable>
-constexpr auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
-    -> decltype(static_cast<_Callable&&>(_Obj)()) {
+constexpr auto invoke(_Callable&& _Obj)
+    noexcept(noexcept(static_cast<_Callable&&>(_Obj)())) -> decltype(static_cast<_Callable&&>(_Obj)()) {
     return static_cast<_Callable&&>(_Obj)();
 }
 
 _EXPORT_STD template <class _Callable, class _Ty1, class... _Types2>
-constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-    noexcept(_Invoker1<_Callable, _Ty1>::_Call(
-        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
+constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2)
+    noexcept(noexcept(_Invoker1<_Callable, _Ty1>::_Call(
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...))) //
     -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)) {
     if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Functor) {
@@ -2028,8 +2028,8 @@ private:
 public:
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) const
-        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)))
-            -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
+        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...))) //
+        -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
         return _STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...);
     }
 };

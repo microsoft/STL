@@ -175,7 +175,7 @@ template <class... _Types, class _Other, size_t... _Indices>
 constexpr bool _Can_construct_values_from_tuple_like_v<tuple<_Types...>, _Other, index_sequence<_Indices...>> =
     conjunction_v<is_constructible<_Types, decltype(_STD get<_Indices>(_STD declval<_Other>()))>...>;
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 and VSO-1900279
+#ifdef __EDG__ // TRANSITION, VSO-1900279
 template <class _TupleLike, class _Tuple>
 concept _Can_construct_from_tuple_like =
     _Different_from<_TupleLike, _Tuple> && _Tuple_like<_TupleLike> && !_Is_subrange_v<remove_cvref_t<_TupleLike>>
@@ -307,7 +307,7 @@ public:
     template <class _Tag, class _Tpl, enable_if_t<is_same_v<_Tag, _STD _Unpack_tuple_t>, int> = 0>
     constexpr tuple(_Tag, _Tpl&& _Right)
         : tuple(_Unpack_tuple_t{}, _STD forward<_Tpl>(_Right),
-            make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>{}) {}
+              make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>{}) {}
 
     template <class _Tag, class _Alloc, class _This2, class... _Rest2,
         enable_if_t<is_same_v<_Tag, _STD _Alloc_exact_args_t>, int> = 0>
@@ -322,7 +322,7 @@ public:
     template <class _Tag, class _Alloc, class _Tpl, enable_if_t<is_same_v<_Tag, _STD _Alloc_unpack_tuple_t>, int> = 0>
     constexpr tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Tpl>(_Right),
-            make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>{}) {}
+              make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>{}) {}
 
     template <class _This2 = _This,
         enable_if_t<conjunction_v<_STD is_default_constructible<_This2>, _STD is_default_constructible<_Rest>...>,
@@ -334,17 +334,19 @@ public:
         : _Mybase(), _Myfirst() {}
 
     template <class _This2 = _This, enable_if_t<_Tuple_constructible_v<tuple, const _This2&, const _Rest&...>, int> = 0>
-    constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _This2&, const _Rest&...>) tuple(
-        const _This& _This_arg, const _Rest&... _Rest_arg) noexcept(conjunction_v<is_nothrow_copy_constructible<_This2>,
-        is_nothrow_copy_constructible<_Rest>...>) // strengthened
+    constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _This2&, const _Rest&...>)
+        tuple(const _This& _This_arg, const _Rest&... _Rest_arg)
+            noexcept(conjunction_v<is_nothrow_copy_constructible<_This2>,
+                is_nothrow_copy_constructible<_Rest>...>) // strengthened
         : tuple(_Exact_args_t{}, _This_arg, _Rest_arg...) {}
 
     template <class _This2, class... _Rest2,
         enable_if_t<conjunction_v<_STD _Tuple_perfect_val<tuple, _This2, _Rest2...>,
                         _STD _Tuple_constructible_val<tuple, _This2, _Rest2...>>,
             int> = 0>
-    constexpr explicit(_Tuple_conditional_explicit_v<tuple, _This2, _Rest2...>) tuple(_This2&& _This_arg,
-        _Rest2&&... _Rest_arg) noexcept(_Tuple_nothrow_constructible_v<tuple, _This2, _Rest2...>) // strengthened
+    constexpr explicit(_Tuple_conditional_explicit_v<tuple, _This2, _Rest2...>)
+        tuple(_This2&& _This_arg, _Rest2&&... _Rest_arg)
+            noexcept(_Tuple_nothrow_constructible_v<tuple, _This2, _Rest2...>) // strengthened
         : tuple(_Exact_args_t{}, _STD forward<_This2>(_This_arg), _STD forward<_Rest2>(_Rest_arg)...) {}
 
     tuple(const tuple&) = default;
@@ -354,60 +356,57 @@ public:
     template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other&...>,
                                                _STD _Tuple_convert_val<tuple, tuple<_Other...>&, _Other...>>,
                                    int> = 0>
-    constexpr explicit(_Tuple_conditional_explicit_v<tuple, _Other&...>)
-        tuple(tuple<_Other...>& _Right) noexcept(_Tuple_nothrow_constructible_v<tuple, _Other&...>) // strengthened
+    constexpr explicit(_Tuple_conditional_explicit_v<tuple, _Other&...>) tuple(tuple<_Other...>& _Right)
+        noexcept(_Tuple_nothrow_constructible_v<tuple, _Other&...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _Right) {}
 #endif // _HAS_CXX23
 
     template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other&...>,
                                                _STD _Tuple_convert_val<tuple, const tuple<_Other...>&, _Other...>>,
                                    int> = 0>
-    constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>)
-        tuple(const tuple<_Other...>& _Right) noexcept(
-            _Tuple_nothrow_constructible_v<tuple, const _Other&...>) // strengthened
+    constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>) tuple(const tuple<_Other...>& _Right)
+        noexcept(_Tuple_nothrow_constructible_v<tuple, const _Other&...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _Right) {}
 
     template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other...>,
                                                _STD _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
                                    int> = 0>
-    constexpr explicit(_Tuple_conditional_explicit_v<tuple, _Other...>)
-        tuple(tuple<_Other...>&& _Right) noexcept(_Tuple_nothrow_constructible_v<tuple, _Other...>) // strengthened
+    constexpr explicit(_Tuple_conditional_explicit_v<tuple, _Other...>) tuple(tuple<_Other...>&& _Right)
+        noexcept(_Tuple_nothrow_constructible_v<tuple, _Other...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
 
 #if _HAS_CXX23
     template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other...>,
                                                _STD _Tuple_convert_val<tuple, const tuple<_Other...>, _Other...>>,
                                    int> = 0>
-    constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other...>)
-        tuple(const tuple<_Other...>&& _Right) noexcept(
-            _Tuple_nothrow_constructible_v<tuple, const _Other...>) // strengthened
+    constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other...>) tuple(const tuple<_Other...>&& _Right)
+        noexcept(_Tuple_nothrow_constructible_v<tuple, const _Other...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
 
     template <class _First, class _Second, enable_if_t<_Tuple_constructible_v<tuple, _First&, _Second&>, int> = 0>
-    constexpr explicit(_Tuple_conditional_explicit_v<tuple, _First&, _Second&>)
-        tuple(pair<_First, _Second>& _Right) noexcept(
-            _Tuple_nothrow_constructible_v<tuple, _First&, _Second&>) // strengthened
+    constexpr explicit(_Tuple_conditional_explicit_v<tuple, _First&, _Second&>) tuple(pair<_First, _Second>& _Right)
+        noexcept(_Tuple_nothrow_constructible_v<tuple, _First&, _Second&>) // strengthened
         : tuple(_Unpack_tuple_t{}, _Right) {}
 #endif // _HAS_CXX23
 
     template <class _First, class _Second,
         enable_if_t<_Tuple_constructible_v<tuple, const _First&, const _Second&>, int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _First&, const _Second&>)
-        tuple(const pair<_First, _Second>& _Right) noexcept(
-            _Tuple_nothrow_constructible_v<tuple, const _First&, const _Second&>) // strengthened
+        tuple(const pair<_First, _Second>& _Right)
+            noexcept(_Tuple_nothrow_constructible_v<tuple, const _First&, const _Second&>) // strengthened
         : tuple(_Unpack_tuple_t{}, _Right) {}
 
     template <class _First, class _Second, enable_if_t<_Tuple_constructible_v<tuple, _First, _Second>, int> = 0>
-    constexpr explicit(_Tuple_conditional_explicit_v<tuple, _First, _Second>) tuple(
-        pair<_First, _Second>&& _Right) noexcept(_Tuple_nothrow_constructible_v<tuple, _First, _Second>) // strengthened
+    constexpr explicit(_Tuple_conditional_explicit_v<tuple, _First, _Second>) tuple(pair<_First, _Second>&& _Right)
+        noexcept(_Tuple_nothrow_constructible_v<tuple, _First, _Second>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
 
 #if _HAS_CXX23
     template <class _First, class _Second,
         enable_if_t<_Tuple_constructible_v<tuple, const _First, const _Second>, int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _First, const _Second>)
-        tuple(const pair<_First, _Second>&& _Right) noexcept(
-            _Tuple_nothrow_constructible_v<tuple, const _First, const _Second>) // strengthened
+        tuple(const pair<_First, _Second>&& _Right)
+            noexcept(_Tuple_nothrow_constructible_v<tuple, const _First, const _Second>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
 
     template <class _Other, class _Indices = index_sequence_for<_Rest...>>
@@ -418,7 +417,7 @@ public:
         negation_v<conjunction<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _This>,
             is_convertible<decltype(_STD get<_Indices + 1>(_STD declval<_Other>())), _Rest>...>>;
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 and VSO-1900279
+#ifdef __EDG__ // TRANSITION, VSO-1900279
     template <class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
     template <_Different_from<tuple> _Other>
@@ -524,7 +523,7 @@ public:
         tuple(allocator_arg_t, const _Alloc& _Al, const pair<_First, _Second>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-59827 (Clang), VSO-1900279 (EDG)
+#ifdef __EDG__ // TRANSITION, VSO-1900279
     template <class _Alloc, class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
     template <class _Alloc, _Different_from<tuple> _Other>
@@ -569,8 +568,8 @@ public:
         enable_if_t<conjunction_v<_STD _Is_move_assignable_no_precondition_check<_This2>,
                         _STD _Is_move_assignable_no_precondition_check<_Rest>...>,
             int> = 0>
-    _CONSTEXPR20 tuple& operator=(_Identity_t<_Myself&&> _Right) noexcept(
-        conjunction_v<is_nothrow_move_assignable<_This2>, is_nothrow_move_assignable<_Rest>...>) {
+    _CONSTEXPR20 tuple& operator=(_Identity_t<_Myself&&> _Right)
+        noexcept(conjunction_v<is_nothrow_move_assignable<_This2>, is_nothrow_move_assignable<_Rest>...>) {
         _Myfirst._Val = _STD forward<_This>(_Right._Myfirst._Val);
         _Get_rest()   = _STD forward<_Mybase>(_Right._Get_rest());
         return *this;
@@ -592,8 +591,8 @@ public:
     template <class... _Other, enable_if_t<conjunction_v<_STD negation<_STD is_same<tuple, _STD tuple<_Other...>>>,
                                                _STD _Tuple_assignable_val<tuple, const _Other&...>>,
                                    int> = 0>
-    _CONSTEXPR20 tuple& operator=(const tuple<_Other...>& _Right) noexcept(
-        _Tuple_nothrow_assignable_v<tuple, const _Other&...>) /* strengthened */ {
+    _CONSTEXPR20 tuple& operator=(const tuple<_Other...>& _Right)
+        noexcept(_Tuple_nothrow_assignable_v<tuple, const _Other&...>) /* strengthened */ {
         _Myfirst._Val = _Right._Myfirst._Val;
         _Get_rest()   = _Right._Get_rest();
         return *this;
@@ -613,8 +612,8 @@ public:
     template <class... _Other, enable_if_t<conjunction_v<_STD negation<_STD is_same<tuple, _STD tuple<_Other...>>>,
                                                _STD _Tuple_assignable_val<tuple, _Other...>>,
                                    int> = 0>
-    _CONSTEXPR20 tuple& operator=(tuple<_Other...>&& _Right) noexcept(
-        _Tuple_nothrow_assignable_v<tuple, _Other...>) /* strengthened */ {
+    _CONSTEXPR20 tuple& operator=(tuple<_Other...>&& _Right)
+        noexcept(_Tuple_nothrow_assignable_v<tuple, _Other...>) /* strengthened */ {
         _Myfirst._Val = _STD forward<typename tuple<_Other...>::_This_type>(_Right._Myfirst._Val);
         _Get_rest()   = _STD forward<typename tuple<_Other...>::_Mybase>(_Right._Get_rest());
         return *this;
@@ -633,8 +632,8 @@ public:
 
     template <class _First, class _Second,
         enable_if_t<_Tuple_assignable_v<tuple, const _First&, const _Second&>, int> = 0>
-    _CONSTEXPR20 tuple& operator=(const pair<_First, _Second>& _Right) noexcept(
-        _Tuple_nothrow_assignable_v<tuple, const _First&, const _Second&>) /* strengthened */ {
+    _CONSTEXPR20 tuple& operator=(const pair<_First, _Second>& _Right)
+        noexcept(_Tuple_nothrow_assignable_v<tuple, const _First&, const _Second&>) /* strengthened */ {
         _Myfirst._Val             = _Right.first;
         _Get_rest()._Myfirst._Val = _Right.second;
         return *this;
@@ -652,8 +651,8 @@ public:
 #endif // _HAS_CXX23
 
     template <class _First, class _Second, enable_if_t<_Tuple_assignable_v<tuple, _First, _Second>, int> = 0>
-    _CONSTEXPR20 tuple& operator=(pair<_First, _Second>&& _Right) noexcept(
-        _Tuple_nothrow_assignable_v<tuple, _First, _Second>) /* strengthened */ {
+    _CONSTEXPR20 tuple& operator=(pair<_First, _Second>&& _Right)
+        noexcept(_Tuple_nothrow_assignable_v<tuple, _First, _Second>) /* strengthened */ {
         _Myfirst._Val             = _STD forward<_First>(_Right.first);
         _Get_rest()._Myfirst._Val = _STD forward<_Second>(_Right.second);
         return *this;
@@ -711,8 +710,8 @@ public:
     }
 #endif // _HAS_CXX23
 
-    _CONSTEXPR20 void swap(tuple& _Right) noexcept(
-        conjunction_v<_Is_nothrow_swappable<_This>, _Is_nothrow_swappable<_Rest>...>) {
+    _CONSTEXPR20 void swap(tuple& _Right)
+        noexcept(conjunction_v<_Is_nothrow_swappable<_This>, _Is_nothrow_swappable<_Rest>...>) {
         using _STD swap;
         swap(_Myfirst._Val, _Right._Myfirst._Val); // intentional ADL
         _Mybase::swap(_Right._Get_rest());
@@ -786,7 +785,7 @@ public:
     }
 
     template <_Tuple_like_non_tuple _Other>
-    _NODISCARD friend constexpr auto operator<=>(const tuple& _Left, const _Other& _Right)
+    _NODISCARD friend constexpr auto operator<=>(const tuple& _Left, const _Other& _Right) //
         -> _Three_way_comparison_result_with_tuple_like_t<tuple, _Other> {
         return _Left._Three_way_compare_with_tuple_like(_Right, make_index_sequence<1 + sizeof...(_Rest)>{});
     }
@@ -895,8 +894,8 @@ _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexce
 #if _HAS_CXX23
 _EXPORT_STD template <class... _Types>
     requires conjunction_v<is_swappable<const _Types>...>
-constexpr void swap(const tuple<_Types...>& _Left, const tuple<_Types...>& _Right) noexcept(
-    noexcept(_Left.swap(_Right))) {
+constexpr void swap(const tuple<_Types...>& _Left, const tuple<_Types...>& _Right)
+    noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 #endif // _HAS_CXX23
@@ -1059,8 +1058,8 @@ template <class _Callable, _Tuple_like _Tuple, size_t... _Indices>
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 template <class _Callable, class _Tuple, size_t... _Indices>
 #endif // ^^^ !_HAS_CXX23 ^^^
-constexpr decltype(auto) _Apply_impl(_Callable&& _Obj, _Tuple&& _Tpl, index_sequence<_Indices...>) noexcept(
-    noexcept(_STD invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...))) {
+constexpr decltype(auto) _Apply_impl(_Callable&& _Obj, _Tuple&& _Tpl, index_sequence<_Indices...>)
+    noexcept(noexcept(_STD invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...))) {
     return _STD invoke(_STD forward<_Callable>(_Obj), _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 
@@ -1069,8 +1068,8 @@ _EXPORT_STD template <class _Callable, _Tuple_like _Tuple>
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 _EXPORT_STD template <class _Callable, class _Tuple>
 #endif // ^^^ !_HAS_CXX23 ^^^
-constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) noexcept(
-    noexcept(_STD _Apply_impl(_STD forward<_Callable>(_Obj), _STD forward<_Tuple>(_Tpl),
+constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl)
+    noexcept(noexcept(_STD _Apply_impl(_STD forward<_Callable>(_Obj), _STD forward<_Tuple>(_Tpl),
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{}))) {
     return _STD _Apply_impl(_STD forward<_Callable>(_Obj), _STD forward<_Tuple>(_Tpl),
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
@@ -1083,8 +1082,8 @@ constexpr bool _Can_make_from_tuple<_Ty, _Tuple, index_sequence<_Indices...>> =
     is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD declval<_Tuple>()))...>;
 
 template <class _Ty, class _Tuple, size_t... _Indices>
-constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) noexcept(
-    is_nothrow_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>) {
+constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>)
+    noexcept(is_nothrow_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>) {
     return _Ty(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 
@@ -1127,9 +1126,8 @@ struct _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual, index_sequ
 template <_Tuple_like _TTuple, _Tuple_like _UTuple, template <class> class _TQual, template <class> class _UQual>
     requires (_Is_specialization_v<_TTuple, tuple> || _Is_specialization_v<_UTuple, tuple>)
           && is_same_v<_TTuple, decay_t<_TTuple>> && is_same_v<_UTuple, decay_t<_UTuple>>
-          && (tuple_size_v<_TTuple> == tuple_size_v<_UTuple>) && requires {
-                 typename _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type;
-             }
+          && (tuple_size_v<_TTuple> == tuple_size_v<_UTuple>)
+          && requires { typename _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type; }
 struct basic_common_reference<_TTuple, _UTuple, _TQual, _UQual> {
     using type = _Tuple_like_common_reference<_TTuple, _UTuple, _TQual, _UQual>::type;
 };
@@ -1148,9 +1146,8 @@ struct _Tuple_like_common_type<_TTuple, _UTuple, index_sequence<_Indices...>> {
 template <_Tuple_like _TTuple, _Tuple_like _UTuple>
     requires (_Is_specialization_v<_TTuple, tuple> || _Is_specialization_v<_UTuple, tuple>)
           && is_same_v<_TTuple, decay_t<_TTuple>> && is_same_v<_UTuple, decay_t<_UTuple>>
-          && (tuple_size_v<_TTuple> == tuple_size_v<_UTuple>) && requires {
-                 typename _Tuple_like_common_type<_TTuple, _UTuple>::type;
-             }
+          && (tuple_size_v<_TTuple> == tuple_size_v<_UTuple>)
+          && requires { typename _Tuple_like_common_type<_TTuple, _UTuple>::type; }
 struct common_type<_TTuple, _UTuple> {
     using type = _Tuple_like_common_type<_TTuple, _UTuple>::type;
 };

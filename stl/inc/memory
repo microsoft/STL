@@ -529,10 +529,8 @@ namespace ranges {
                 ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types&&>(_Args)...); // per LWG-3888
             }
         _STATIC_CALL_OPERATOR constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) _CONST_CALL_OPERATOR
-            // clang-format off
             noexcept(noexcept(
-                ::new(static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
-            // clang-format on
+                ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
 #ifdef __EDG__
             return _STD construct_at(_Location, _STD forward<_Types>(_Args)...);
 #else // ^^^ EDG / Other vvv
@@ -3034,8 +3032,8 @@ _NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
     // make a shared_ptr to an unbounded array
     static_assert(is_unbounded_array_v<_Ty>);
     using _Refc             = conditional_t<_IsForOverwrite, //
-        _Ref_count_unbounded_array_alloc_for_overwrite<remove_cv_t<_Ty>, _Alloc>,
-        _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>>;
+                    _Ref_count_unbounded_array_alloc_for_overwrite<remove_cv_t<_Ty>, _Alloc>,
+                    _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>>;
     constexpr size_t _Align = alignof(_Refc);
     using _Storage          = _Alignas_storage_unit<_Align>;
     _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
@@ -3665,14 +3663,12 @@ _NODISCARD bool operator<=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr
 }
 
 #if _HAS_CXX20
-// clang-format off
 _EXPORT_STD template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
     requires three_way_comparable_with<typename unique_ptr<_Ty1, _Dx1>::pointer,
         typename unique_ptr<_Ty2, _Dx2>::pointer>
-_NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer,
-        typename unique_ptr<_Ty2, _Dx2>::pointer>
+_NODISCARD
+    compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer, typename unique_ptr<_Ty2, _Dx2>::pointer>
     operator<=>(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
-    // clang-format on
     return _Left.get() <=> _Right.get();
 }
 #endif // _HAS_CXX20
@@ -3852,8 +3848,8 @@ struct owner_less<void> {
 template <class _Ty, class _Dx>
 struct hash<unique_ptr<_Ty, _Dx>> : _Conditionally_enabled_hash<unique_ptr<_Ty, _Dx>,
                                         is_default_constructible_v<hash<typename unique_ptr<_Ty, _Dx>::pointer>>> {
-    static size_t _Do_hash(const unique_ptr<_Ty, _Dx>& _Keyval) noexcept(
-        _Is_nothrow_hashable<typename unique_ptr<_Ty, _Dx>::pointer>::value) {
+    static size_t _Do_hash(const unique_ptr<_Ty, _Dx>& _Keyval)
+        noexcept(_Is_nothrow_hashable<typename unique_ptr<_Ty, _Dx>::pointer>::value) {
         return hash<typename unique_ptr<_Ty, _Dx>::pointer>{}(_Keyval.get());
     }
 };
@@ -4278,14 +4274,12 @@ struct _Pointer_of_helper<_Ty> {
     using type = _Ty::element_type*;
 };
 
-// clang-format off
 template <class _Ty>
-    requires (!_Has_member_element_type<_Ty> && !_Has_member_pointer<_Ty>
-        && _Has_member_element_type<pointer_traits<_Ty>>)
+    requires (
+        !_Has_member_element_type<_Ty> && !_Has_member_pointer<_Ty> && _Has_member_element_type<pointer_traits<_Ty>>)
 struct _Pointer_of_helper<_Ty> {
     using type = pointer_traits<_Ty>::element_type*;
 };
-// clang-format on
 
 template <class _Ty>
 using _Pointer_of = _Pointer_of_helper<_Ty>::type;
@@ -4315,8 +4309,8 @@ class out_ptr_t {
         "out_ptr_t with shared_ptr requires a deleter (N4950 [out.ptr.t]/3)");
 
 public:
-    explicit out_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
-        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>) /* strengthened */
+    explicit out_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_)
+        noexcept(is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>) /* strengthened */
         : _Smart_ptr(_Smart_ptr_),
           _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...}) {
         constexpr bool _Is_resettable = requires { _Smart_ptr.reset(); }; // TRANSITION, DevCom-10291456
@@ -4399,9 +4393,9 @@ private:
     }
 
 public:
-    explicit inout_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
-        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...> //
-            && noexcept(_Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
+    explicit inout_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_)
+        noexcept(is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>
+                 && noexcept(_Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
         : _Smart_ptr(_Smart_ptr_),
           _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...},
               _Get_ptr_from_smart(_Smart_ptr_)) {}

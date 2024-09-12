@@ -359,16 +359,16 @@ public:
 
     template <class _CbInitTy>
         requires is_constructible_v<_Callback, _CbInitTy>
-    explicit stop_callback(const stop_token& _Token, _CbInitTy&& _Cb_) noexcept(
-        is_nothrow_constructible_v<_Callback, _CbInitTy>)
+    explicit stop_callback(const stop_token& _Token, _CbInitTy&& _Cb_)
+        noexcept(is_nothrow_constructible_v<_Callback, _CbInitTy>)
         : _Stop_callback_base{_Invoke_by_stop}, _Cb(_STD forward<_CbInitTy>(_Cb_)) {
         _Attach(_Token);
     }
 
     template <class _CbInitTy>
         requires is_constructible_v<_Callback, _CbInitTy>
-    explicit stop_callback(stop_token&& _Token, _CbInitTy&& _Cb_) noexcept(
-        is_nothrow_constructible_v<_Callback, _CbInitTy>)
+    explicit stop_callback(stop_token&& _Token, _CbInitTy&& _Cb_)
+        noexcept(is_nothrow_constructible_v<_Callback, _CbInitTy>)
         : _Stop_callback_base{_Invoke_by_stop}, _Cb(_STD forward<_CbInitTy>(_Cb_)) {
         _Attach(_STD move(_Token));
     }

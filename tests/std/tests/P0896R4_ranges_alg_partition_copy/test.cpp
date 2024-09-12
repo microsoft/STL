@@ -74,8 +74,7 @@ struct partition_copy_test {
             ranges::fill(dest, P{-1, 13});
 
             const R range{source};
-            auto result = partition_copy(
-                range, O1{dest}, O2{dest + i}, [i](int x) { return x < i; }, get_first);
+            auto result = partition_copy(range, O1{dest}, O2{dest + i}, [i](int x) { return x < i; }, get_first);
             assert(result.in == range.end());
             assert(result.out1.peek() == dest + i);
             assert(result.out2.peek() == dest + N);
