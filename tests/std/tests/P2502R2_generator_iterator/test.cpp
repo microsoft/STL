@@ -18,12 +18,6 @@ generator<Ref, V, Alloc> generate_zero() {
     co_return;
 }
 
-template <class Ref, class V>
-using gen_value_t = conditional_t<is_void_v<V>, remove_cvref_t<Ref>, V>;
-
-template <class Ref, class V>
-using gen_reference_t = conditional_t<is_void_v<V>, Ref&&, Ref>;
-
 template <class Ref, class V, class Alloc, class ValueType = gen_value_t<Ref, V>>
     requires default_initializable<ValueType>
           && (same_as<remove_cvref_t<Ref>, ValueType> || constructible_from<remove_cvref_t<Ref>, ValueType&>)

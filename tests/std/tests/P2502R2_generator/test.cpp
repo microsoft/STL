@@ -21,35 +21,58 @@
 #include <utility>
 #include <vector>
 
-#include <test_generator_support.hpp>
+#include "test_generator_support.hpp"
 
 using namespace std;
 
-template <class G, class V, class R, class RR>
+template <class Traits, class ValueType, class ReferenceType, class RvalueReferenceType>
 consteval bool static_checks() {
-    static_assert(ranges::input_range<G>);
+    using G = Traits::generator;
+    static_assert(derived_from<G, ranges::view_interface<G>>);
+
+    // Specializations of generator are move-only input-and-no-stronger views
     static_assert(ranges::view<G>);
+    static_assert(ranges::input_range<G>);
     static_assert(!ranges::forward_range<G>);
-    static_assert(!ranges::borrowed_range<G>);
-    static_assert(!ranges::common_range<G>);
 
-    static_assert(same_as<ranges::range_value_t<G>, V>);
+    static_assert(!copy_constructible<G>);
+    static_assert(!is_copy_assignable_v<G>);
+
+    static_assert(is_nothrow_destructible_v<G>);
+    static_assert(is_nothrow_move_constructible_v<G>);
+    static_assert(is_nothrow_move_assignable_v<G>);
+
+    // Verify the generator's associated types
+    static_assert(same_as<ranges::range_value_t<G>, ValueType>);
     static_assert(same_as<ranges::range_difference_t<G>, ptrdiff_t>);
-    static_assert(same_as<ranges::range_reference_t<G>, R>);
-    static_assert(same_as<ranges::range_rvalue_reference_t<G>, RR>);
+    static_assert(same_as<ranges::range_reference_t<G>, ReferenceType>);
+    static_assert(same_as<ranges::range_rvalue_reference_t<G>, RvalueReferenceType>);
+    static_assert(same_as<typename G::yielded, typename Traits::yielded>);
 
-    // Non-portable size checks
+    // Verify end
+    static_assert(same_as<default_sentinel_t, ranges::sentinel_t<G>>);
+    static_assert(same_as<default_sentinel_t, decltype(declval<const G&>().end())>);
+    static_assert(noexcept(declval<G&>().end()));
+    static_assert(noexcept(declval<const G&>().end()));
+
+    // iterator properties are verified in P2502R2_generator_iterator
+    // promise properties are verified in P2502R2_generator_promise
+
+    // Non-portable size check
     static_assert(sizeof(G) == sizeof(void*));
-    static_assert(sizeof(typename G::promise_type) == 2 * sizeof(void*));
 
     return true;
 }
 
-static_assert(static_checks<generator<int>, int, int&&, int&&>());
-static_assert(static_checks<generator<const int&>, int, const int&, const int&&>());
-static_assert(static_checks<generator<int&&>, int, int&&, int&&>());
-static_assert(static_checks<generator<int&>, int, int&, int&&>());
-static_assert(static_checks<generator<int, int>, int, int, int>());
+static_assert(static_checks<gen_traits<int>, int, int&&, int&&>());
+static_assert(static_checks<gen_traits<const int&>, int, const int&, const int&&>());
+static_assert(static_checks<gen_traits<int&&>, int, int&&, int&&>());
+static_assert(static_checks<gen_traits<int&>, int, int&, int&&>());
+
+static_assert(static_checks<gen_traits<int, int>, int, int, int>());
+static_assert(static_checks<gen_traits<const int&, int>, int, const int&, const int&&>());
+static_assert(static_checks<gen_traits<int&&, int>, int, int&&, int&&>());
+static_assert(static_checks<gen_traits<int&, int>, int, int&, int&&>());
 
 // [coroutine.generator.overview] Example 1:
 generator<int> ints(int start = 0) {
