@@ -666,6 +666,115 @@ _NODISCARD constexpr bool _Is_valid_strftime_specifier(const char _Specifier) {
     return false;
 }
 
+_NODISCARD constexpr bool _Is_valid_strftime_tm_sec(const tm* const _Pt) noexcept {
+    // seconds after the minute - [0, 60] including leap second
+    return _Pt->tm_sec >= 0 && _Pt->tm_sec <= 60;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_min(const tm* const _Pt) noexcept {
+    // minutes after the hour - [0, 59]
+    return _Pt->tm_min >= 0 && _Pt->tm_min <= 59;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_hour(const tm* const _Pt) noexcept {
+    // hours since midnight - [0, 23]
+    return _Pt->tm_hour >= 0 && _Pt->tm_hour <= 23;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_mday(const tm* const _Pt) noexcept {
+    // day of the month - [1, 31]
+    return _Pt->tm_mday >= 1 && _Pt->tm_mday <= 31;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_mon(const tm* const _Pt) noexcept {
+    // months since January - [0, 11]
+    return _Pt->tm_mon >= 0 && _Pt->tm_mon <= 11;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_year(const tm* const _Pt) noexcept {
+    // years since 1900 - UCRT max range is up until 8099
+    return _Pt->tm_year >= -1900 && _Pt->tm_year <= 8099;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_wday(const tm* const _Pt) noexcept {
+    // days since Sunday - [0, 6]
+    return _Pt->tm_wday >= 0 && _Pt->tm_wday <= 6;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_yday(const tm* const _Pt) noexcept {
+    // days since January 1 - [0, 365]
+    return _Pt->tm_yday >= 0 && _Pt->tm_yday <= 365;
+}
+
+_NODISCARD constexpr bool _Is_valid_strftime_tm_data(const char _Specifier, const tm* const _Pt) noexcept {
+    if (!_Pt) {
+        return false;
+    }
+
+    switch (_Specifier) {
+    case 'S':
+        return _Is_valid_strftime_tm_sec(_Pt);
+    case 'M':
+        return _Is_valid_strftime_tm_min(_Pt);
+    case 'H':
+    case 'I':
+    case 'p':
+        return _Is_valid_strftime_tm_hour(_Pt);
+    case 'd':
+    case 'e':
+        return _Is_valid_strftime_tm_mday(_Pt);
+    case 'b':
+    case 'B':
+    case 'm':
+    case 'h':
+        return _Is_valid_strftime_tm_mon(_Pt);
+    case 'C':
+    case 'y':
+    case 'Y':
+        return _Is_valid_strftime_tm_year(_Pt);
+    case 'j':
+        return _Is_valid_strftime_tm_yday(_Pt);
+    case 'a':
+    case 'A':
+    case 'u':
+    case 'w':
+        return _Is_valid_strftime_tm_wday(_Pt);
+    case 'U': // C23 7.29.3.5 "The strftime function"/3 says that %U and %W depend on tm_year,
+    case 'W': // but the UCRT neither uses nor validates it.
+        return _Is_valid_strftime_tm_wday(_Pt) && _Is_valid_strftime_tm_yday(_Pt);
+    case 'R':
+        return _Is_valid_strftime_tm_hour(_Pt) && _Is_valid_strftime_tm_min(_Pt);
+    case 'D':
+    case 'x':
+    case 'F':
+        return _Is_valid_strftime_tm_year(_Pt) && _Is_valid_strftime_tm_mon(_Pt) && _Is_valid_strftime_tm_mday(_Pt);
+    case 'g':
+    case 'G':
+        return _Is_valid_strftime_tm_year(_Pt) && _Is_valid_strftime_tm_wday(_Pt) && _Is_valid_strftime_tm_yday(_Pt);
+    case 'r':
+    case 'X':
+    case 'T':
+        return _Is_valid_strftime_tm_hour(_Pt) && _Is_valid_strftime_tm_min(_Pt) && _Is_valid_strftime_tm_sec(_Pt);
+    case 'c':
+        return _Is_valid_strftime_tm_wday(_Pt) && _Is_valid_strftime_tm_mon(_Pt) && _Is_valid_strftime_tm_mday(_Pt)
+            && _Is_valid_strftime_tm_hour(_Pt) && _Is_valid_strftime_tm_min(_Pt) && _Is_valid_strftime_tm_sec(_Pt)
+            && _Is_valid_strftime_tm_year(_Pt);
+    case 'V': // C23 7.29.3.5 "The strftime function"/3 says that %V depends on tm_year, tm_wday, and tm_yday.
+              // The UCRT uses them without validating them.
+        return true;
+    case 'z': // C23 7.29.3.5 "The strftime function"/3 says that %z and %Z depend on tm_isdst.
+    case 'Z': // The UCRT treats it as a boolean value, so there's no need for validation.
+        return true;
+    case 'n': // newline
+    case 't': // tab
+        return true;
+    default:
+        // We should have handled %% and called _Is_valid_strftime_specifier() before calling this function.
+        _STL_INTERNAL_CHECK(false);
+        return false;
+    }
+}
+
 _EXPORT_STD extern "C++" template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put : public locale::facet { // facet for converting encoded times to text
 public:
@@ -713,7 +822,11 @@ public:
                     }
                     *_Dest++ = _Specifier;
                 } else {
-                    _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                    if (_Is_valid_strftime_tm_data(_Specifier, _Pt)) {
+                        _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                    } else {
+                        *_Dest++ = _Elem('?');
+                    }
                 }
             }
         }
@@ -849,7 +962,11 @@ public:
                     }
                     *_Dest++ = *_Fmtfirst;
                 } else {
-                    _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                    if (_Is_valid_strftime_tm_data(_Specifier, _Pt)) {
+                        _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                    } else {
+                        *_Dest++ = _Elem('?');
+                    }
                 }
             }
         }
@@ -994,7 +1111,11 @@ public:
                     }
                     *_Dest++ = *_Fmtfirst;
                 } else {
-                    _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                    if (_Is_valid_strftime_tm_data(_Specifier, _Pt)) {
+                        _Dest = do_put(_Dest, _Iosbase, _Fill, _Pt, _Specifier, _Modifier); // convert a single field
+                    } else {
+                        *_Dest++ = _Elem('?');
+                    }
                 }
             }
         }

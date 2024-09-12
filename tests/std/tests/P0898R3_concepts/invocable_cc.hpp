@@ -554,8 +554,8 @@ void NAME() {
         static_assert(test<PMF1PCVR, S&, int, long>());
 
         using PMF0RR  = int (MCALLCONV S::*)()&&;
-        using PMF1RR  = int* (MCALLCONV S::*) (long) &&;
-        using PMF2RR  = int& (MCALLCONV S::*) (long, int) &&;
+        using PMF1RR  = int* (MCALLCONV S::*) (long)&&;
+        using PMF2RR  = int& (MCALLCONV S::*) (long, int)&&;
         using PMF1PRR = int const& (S::*) (int, ...)&&;
         static_assert(test<PMF0RR, S>());
         static_assert(!test<PMF0RR, S&>());

@@ -7,7 +7,7 @@
 #include "tdefs.h"
 #include <memory>
 #include <mutex>
-#include <stdlib.h>
+#include <random>
 #include <thread>
 #include <vector>
 
@@ -15,6 +15,7 @@ using STD shared_ptr;
 using STD weak_ptr;
 
 using STD lock_guard;
+using STD mt19937;
 using STD mutex;
 using STD thread;
 using STD vector;
@@ -27,6 +28,7 @@ static shared_ptr<int> sp;
 static mutex start_mtx;
 
 static void ctors() { // construct a gazillion shared and weak pointers
+    mt19937 mt;
 
     { // wait for access
         lock_guard<mutex> lock(start_mtx);
@@ -34,7 +36,7 @@ static void ctors() { // construct a gazillion shared and weak pointers
 
     for (int i = 0; i < NSETS; ++i) {
         for (int j = 0; j < NREPS; ++j) {
-            if (rand() % 2 != 0) {
+            if (mt() % 2 != 0) {
                 shared_ptr<int> sp0(sp);
             } else {
                 weak_ptr<int> wp0(sp);

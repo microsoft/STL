@@ -1516,8 +1516,8 @@ public:
         return erase(_Where, _Next_iter(_Where));
     }
 
-    iterator erase(const_iterator _First_arg, const_iterator _Last_arg) noexcept(
-        is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
+    iterator erase(const_iterator _First_arg, const_iterator _Last_arg)
+        noexcept(is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
         iterator _First = _Make_iter(_First_arg);
         iterator _Last  = _Make_iter(_Last_arg);
 

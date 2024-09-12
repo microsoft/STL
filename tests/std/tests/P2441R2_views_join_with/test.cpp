@@ -112,7 +112,7 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
     static_assert(CanViewJoinWith<Outer&, Delimiter&> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewJoinWith<Outer&, Delimiter&>) {
         constexpr bool is_noexcept =
-            (!is_view || is_nothrow_copy_constructible_v<V>) &&is_nothrow_copy_constructible_v<DV>;
+            (!is_view || is_nothrow_copy_constructible_v<V>) && is_nothrow_copy_constructible_v<DV>;
 
         static_assert(same_as<decltype(views::join_with(rng, delimiter)), R>);
         static_assert(noexcept(views::join_with(rng, delimiter)) == is_noexcept);
@@ -127,7 +127,7 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
     if constexpr (CanViewJoinWith<const remove_reference_t<Outer>&, Delimiter&>) {
         using RC = join_with_view<views::all_t<const remove_reference_t<Outer>&>, DV>;
         constexpr bool is_noexcept =
-            (!is_view || is_nothrow_copy_constructible_v<V>) &&is_nothrow_copy_constructible_v<DV>;
+            (!is_view || is_nothrow_copy_constructible_v<V>) && is_nothrow_copy_constructible_v<DV>;
 
         static_assert(same_as<decltype(views::join_with(as_const(rng), delimiter)), RC>);
         static_assert(noexcept(views::join_with(as_const(rng), delimiter)) == is_noexcept);

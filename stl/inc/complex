@@ -1418,147 +1418,147 @@ public:
 };
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp += _Right;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const _Ty& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const _Ty& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp += _Right;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const _Ty& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const _Ty& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Right);
     _Tmp += _Left;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp -= _Right;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left, const _Ty& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left, const _Ty& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp -= _Right;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const _Ty& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const _Ty& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp -= _Right;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp *= _Right;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const _Ty& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const _Ty& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp *= _Right;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const _Ty& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const _Ty& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Right);
     _Tmp *= _Left;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const complex<_Ty>& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const complex<_Ty>& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp /= _Right;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const complex<_Ty>& _Left, const _Ty& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const complex<_Ty>& _Left, const _Ty& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp /= _Right;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const _Ty& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const _Ty& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     complex<_Ty> _Tmp(_Left);
     _Tmp /= _Right;
     return _Tmp;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     return _Left;
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     return complex<_Ty>(-_Left.real(), -_Left.imag());
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr bool operator==(const complex<_Ty>& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD constexpr bool operator==(const complex<_Ty>& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     return _Left.real() == _Right.real() && _Left.imag() == _Right.imag();
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD constexpr bool operator==(const complex<_Ty>& _Left, const _Ty& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD constexpr bool operator==(const complex<_Ty>& _Left, const _Ty& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     return _Left.real() == _Right && _Left.imag() == 0;
 }
 
 #if !_HAS_CXX20
 template <class _Ty>
-_NODISCARD constexpr bool operator==(const _Ty& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD constexpr bool operator==(const _Ty& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     return _Left == _Right.real() && 0 == _Right.imag();
 }
 
 template <class _Ty>
-_NODISCARD constexpr bool operator!=(const complex<_Ty>& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD constexpr bool operator!=(const complex<_Ty>& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     return !(_Left == _Right);
 }
 
 template <class _Ty>
-_NODISCARD constexpr bool operator!=(const complex<_Ty>& _Left, const _Ty& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD constexpr bool operator!=(const complex<_Ty>& _Left, const _Ty& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     return !(_Left == _Right);
 }
 
 template <class _Ty>
-_NODISCARD constexpr bool operator!=(const _Ty& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD constexpr bool operator!=(const _Ty& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     return !(_Left == _Right);
 }
 #endif // !_HAS_CXX20
@@ -1856,8 +1856,8 @@ _NODISCARD complex<_Ty> cosh(const complex<_Ty>& _Left) noexcept(_Is_unqual_fp<_
 }
 
 template <class _Ty>
-_NODISCARD complex<_Ty> _Polar_positive_nan_inf_zero_rho(const _Ty& _Rho, const _Ty& _Theta) noexcept(
-    _Is_unqual_fp<_Ty>) { // _Rho is +NaN/+Inf/+0
+_NODISCARD complex<_Ty> _Polar_positive_nan_inf_zero_rho(const _Ty& _Rho, const _Ty& _Theta)
+    noexcept(_Is_unqual_fp<_Ty>) { // _Rho is +NaN/+Inf/+0
     if (_Ctraits<_Ty>::_Isnan(_Theta) || _Ctraits<_Ty>::_Isinf(_Theta)) { // _Theta is NaN/Inf
         if (_Ctraits<_Ty>::_Isinf(_Rho)) {
             return complex<_Ty>(_Rho, _Ctraits<_Ty>::sin(_Theta)); // (Inf, NaN/Inf)
@@ -1990,8 +1990,8 @@ complex<_Ty> _Pow(const _Ty& _Left, const _Ty& _Right) noexcept(_Is_unqual_fp<_T
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, const _Ty& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, const _Ty& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     if (imag(_Left) == 0) {
         if (_Ctraits<_Ty>::_Signbit(imag(_Left))) {
             return conj(_Pow(real(_Left), _Right));
@@ -2004,8 +2004,8 @@ _NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, const _Ty& _Right) noexce
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD complex<_Ty> pow(const _Ty& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD complex<_Ty> pow(const _Ty& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     if (imag(_Right) == 0) {
         return _Pow(_Left, real(_Right));
     } else if (0 < _Left) {
@@ -2016,8 +2016,8 @@ _NODISCARD complex<_Ty> pow(const _Ty& _Left, const complex<_Ty>& _Right) noexce
 }
 
 _EXPORT_STD template <class _Ty>
-_NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, const complex<_Ty>& _Right) noexcept(
-    _Is_unqual_fp<_Ty>) /* strengthened */ {
+_NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, const complex<_Ty>& _Right)
+    noexcept(_Is_unqual_fp<_Ty>) /* strengthened */ {
     if (imag(_Right) == 0) {
         return pow(_Left, real(_Right));
     } else if (imag(_Left) == 0 && 0 < real(_Left)) {
@@ -2227,23 +2227,23 @@ _NODISCARD complex<_Upgrade_to_double<_Ty>> proj(_Ty _Left) noexcept /* strength
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
-_NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left,
-    const complex<_Ty2>& _Right) noexcept(_Is_unqual_fp<_Ty1> && _Is_unqual_fp<_Ty2>) /* strengthened */ {
+_NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left, const complex<_Ty2>& _Right)
+    noexcept(_Is_unqual_fp<_Ty1> && _Is_unqual_fp<_Ty2>) /* strengthened */ {
     using _Type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
     return _STD pow(_Type(_Left), _Type(_Right));
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2, enable_if_t<is_arithmetic_v<_Ty2>, int> = 0>
-_NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    _Is_unqual_fp<_Ty1>) /* strengthened */ {
+_NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left, const _Ty2& _Right)
+    noexcept(_Is_unqual_fp<_Ty1>) /* strengthened */ {
     using _Promoted = _Common_float_type_t<_Ty1, _Ty2>;
     using _Type     = complex<_Promoted>;
     return _STD pow(_Type(_Left), _Type(static_cast<_Promoted>(_Right)));
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2, enable_if_t<is_arithmetic_v<_Ty1>, int> = 0>
-_NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const _Ty1& _Left, const complex<_Ty2>& _Right) noexcept(
-    _Is_unqual_fp<_Ty2>) /* strengthened */ {
+_NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const _Ty1& _Left, const complex<_Ty2>& _Right)
+    noexcept(_Is_unqual_fp<_Ty2>) /* strengthened */ {
     using _Promoted = _Common_float_type_t<_Ty1, _Ty2>;
     using _Type     = complex<_Promoted>;
     return _STD pow(_Type(static_cast<_Promoted>(_Left)), _Type(_Right));
