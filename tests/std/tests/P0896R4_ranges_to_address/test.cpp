@@ -112,10 +112,9 @@ int main(int argc, char* argv[]) {
         test_positive_cases<std::vector<int>, false>();
     });
 
-    // clang-format off
 #if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
-        // Tests for only vector: basic_string doesn't invalidate on element creation/destruction because POD.
+    // Tests for only vector: basic_string doesn't invalidate on element creation/destruction because POD.
 #if _ITERATOR_DEBUG_LEVEL == 2
         test_invalidated_by_pop_back<std::vector<int>, false>,
         test_invalidated_by_pop_back<std::vector<int>, true>,
@@ -134,7 +133,6 @@ int main(int argc, char* argv[]) {
         test_out_of_range<std::vector<int>, true>,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-    // clang-format on
 
     return exec.run(argc, argv);
 }

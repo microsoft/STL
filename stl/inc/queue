@@ -67,23 +67,23 @@ public:
     queue(const _Container& _Cont, const _Alloc& _Al) : c(_Cont, _Al) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    queue(_Container&& _Cont, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
+    queue(_Container&& _Cont, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
         : c(_STD move(_Cont), _Al) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
     queue(const queue& _Right, const _Alloc& _Al) : c(_Right.c, _Al) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    queue(queue&& _Right, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
+    queue(queue&& _Right, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
         : c(_STD move(_Right.c), _Al) {}
 
 #if _HAS_CXX23
     template <_Iterator_for_container _InIt, class _Alloc>
         requires uses_allocator_v<_Container, _Alloc>
-    queue(_InIt _First, _InIt _Last, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _InIt, _InIt, const _Alloc&>) // strengthened
+    queue(_InIt _First, _InIt _Last, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, _InIt, _InIt, const _Alloc&>) // strengthened
         : c(_STD move(_First), _STD move(_Last), _Al) {}
 
     template <_Container_compatible_range<_Ty> _Rng, class _Alloc>
@@ -174,8 +174,8 @@ template <_Iterator_for_container _InIt, _Allocator_for_container _Alloc = alloc
 queue(_InIt, _InIt, _Alloc = _Alloc()) -> queue<_Iter_value_t<_InIt>, deque<_Iter_value_t<_InIt>, _Alloc>>;
 
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
-queue(from_range_t, _Rng&&, _Alloc = _Alloc())
-    -> queue<_RANGES range_value_t<_Rng>, deque<_RANGES range_value_t<_Rng>, _Alloc>>;
+queue(from_range_t, _Rng&&,
+    _Alloc = _Alloc()) -> queue<_RANGES range_value_t<_Rng>, deque<_RANGES range_value_t<_Rng>, _Alloc>>;
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty, class _Container>
@@ -248,9 +248,9 @@ public:
 
     priority_queue() = default;
 
-    explicit priority_queue(const _Pr& _Pred) noexcept(
-        is_nothrow_default_constructible_v<_Container>
-        && is_nothrow_copy_constructible_v<value_compare>) // strengthened
+    explicit priority_queue(const _Pr& _Pred)
+        noexcept(is_nothrow_default_constructible_v<_Container>
+                 && is_nothrow_copy_constructible_v<value_compare>) // strengthened
         : c(), comp(_Pred) {}
 
     priority_queue(const _Pr& _Pred, const _Container& _Cont) : c(_Cont), comp(_Pred) {
@@ -292,15 +292,15 @@ public:
 #endif // _HAS_CXX23
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    explicit priority_queue(const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, const _Alloc&>
-        && is_nothrow_default_constructible_v<value_compare>) // strengthened
+    explicit priority_queue(const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, const _Alloc&>
+                 && is_nothrow_default_constructible_v<value_compare>) // strengthened
         : c(_Al), comp() {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    priority_queue(const _Pr& _Pred, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, const _Alloc&>
-        && is_nothrow_copy_constructible_v<value_compare>) // strengthened
+    priority_queue(const _Pr& _Pred, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, const _Alloc&>
+                 && is_nothrow_copy_constructible_v<value_compare>) // strengthened
         : c(_Al), comp(_Pred) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
@@ -317,9 +317,9 @@ public:
     priority_queue(const priority_queue& _Right, const _Alloc& _Al) : c(_Right.c, _Al), comp(_Right.comp) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    priority_queue(priority_queue&& _Right, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _Container, const _Alloc&>
-        && is_nothrow_move_constructible_v<value_compare>) // strengthened
+    priority_queue(priority_queue&& _Right, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, _Container, const _Alloc&>
+                 && is_nothrow_move_constructible_v<value_compare>) // strengthened
         : c(_STD move(_Right.c), _Al), comp(_STD move(_Right.comp)) {}
 
     template <class _InIt, class _Alloc,
@@ -425,8 +425,8 @@ public:
         c.pop_back();
     }
 
-    void swap(priority_queue& _Right) noexcept(
-        _Is_nothrow_swappable<_Container>::value && _Is_nothrow_swappable<_Pr>::value) {
+    void swap(priority_queue& _Right)
+        noexcept(_Is_nothrow_swappable<_Container>::value && _Is_nothrow_swappable<_Pr>::value) {
         using _STD swap;
         swap(c, _Right.c); // intentional ADL
         swap(comp, _Right.comp); // intentional ADL
@@ -450,8 +450,8 @@ priority_queue(_Pr, _Container) -> priority_queue<typename _Container::value_typ
 template <class _Iter, class _Pr = less<_Iter_value_t<_Iter>>, class _Container = vector<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, negation<_Is_allocator<_Pr>>, negation<_Is_allocator<_Container>>>,
         int> = 0>
-priority_queue(_Iter, _Iter, _Pr = _Pr(), _Container = _Container())
-    -> priority_queue<_Iter_value_t<_Iter>, _Container, _Pr>;
+priority_queue(
+    _Iter, _Iter, _Pr = _Pr(), _Container = _Container()) -> priority_queue<_Iter_value_t<_Iter>, _Container, _Pr>;
 
 template <class _Pr, class _Container, class _Alloc,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, negation<_Is_allocator<_Container>>,
@@ -469,30 +469,30 @@ priority_queue(_Iter, _Iter, _Compare, _Alloc) -> priority_queue<_Iter_value_t<_
 
 template <class _Iter, class _Compare, class _Container, class _Alloc,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, uses_allocator<_Container, _Alloc>>, int> = 0>
-priority_queue(_Iter, _Iter, _Compare, _Container, _Alloc)
-    -> priority_queue<typename _Container::value_type, _Container, _Compare>;
+priority_queue(_Iter, _Iter, _Compare, _Container,
+    _Alloc) -> priority_queue<typename _Container::value_type, _Container, _Compare>;
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>,
     enable_if_t<!_Is_allocator<_Pr>::value, int> = 0>
-priority_queue(from_range_t, _Rng&&, _Pr = _Pr())
-    -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>>, _Pr>;
+priority_queue(from_range_t, _Rng&&,
+    _Pr = _Pr()) -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>>, _Pr>;
 
 template <_RANGES input_range _Rng, class _Pr, class _Alloc,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
-priority_queue(from_range_t, _Rng&&, _Pr, _Alloc)
-    -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>, _Pr>;
+priority_queue(from_range_t, _Rng&&, _Pr,
+    _Alloc) -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>, _Pr>;
 
 template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
-priority_queue(from_range_t, _Rng&&, _Alloc)
-    -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>>;
+priority_queue(from_range_t, _Rng&&,
+    _Alloc) -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>>;
 #endif // _HAS_CXX23
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Ty, class _Container, class _Pr,
     enable_if_t<_Is_swappable<_Container>::value && _Is_swappable<_Pr>::value, int> = 0>
-void swap(priority_queue<_Ty, _Container, _Pr>& _Left, priority_queue<_Ty, _Container, _Pr>& _Right) noexcept(
-    noexcept(_Left.swap(_Right))) {
+void swap(priority_queue<_Ty, _Container, _Pr>& _Left, priority_queue<_Ty, _Container, _Pr>& _Right)
+    noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 

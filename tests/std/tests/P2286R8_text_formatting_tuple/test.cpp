@@ -379,17 +379,15 @@ void run_tests(TestFunction check, ExceptionTest check_exception) {
     test_escaping<CharT>(check, make_tuple(CharT('*'), STR("")));
 
     // Test const ref-qualified types.
-    // clang-format off
-    check(SV("(42)"), SV("{}"), tuple<      int  >{42});
-    check(SV("(42)"), SV("{}"), tuple<const int  >{42});
+    check(SV("(42)"), SV("{}"), tuple<int>{42});
+    check(SV("(42)"), SV("{}"), tuple<const int>{42});
 
     int answer = 42;
-    check(SV("(42)"), SV("{}"), tuple<      int& >{answer});
-    check(SV("(42)"), SV("{}"), tuple<const int& >{answer});
+    check(SV("(42)"), SV("{}"), tuple<int&>{answer});
+    check(SV("(42)"), SV("{}"), tuple<const int&>{answer});
 
-    check(SV("(42)"), SV("{}"), tuple<      int&&>{42});
+    check(SV("(42)"), SV("{}"), tuple<int&&>{42});
     check(SV("(42)"), SV("{}"), tuple<const int&&>{42});
-    // clang-format on
 }
 
 template <class>

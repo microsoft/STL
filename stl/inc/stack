@@ -60,23 +60,23 @@ public:
     stack(const _Container& _Cont, const _Alloc& _Al) : c(_Cont, _Al) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    stack(_Container&& _Cont, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
+    stack(_Container&& _Cont, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
         : c(_STD move(_Cont), _Al) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
     stack(const stack& _Right, const _Alloc& _Al) : c(_Right.c, _Al) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    stack(stack&& _Right, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
+    stack(stack&& _Right, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
         : c(_STD move(_Right.c), _Al) {}
 
 #if _HAS_CXX23
     template <_Iterator_for_container _InIt, class _Alloc>
         requires uses_allocator_v<_Container, _Alloc>
-    stack(_InIt _First, _InIt _Last, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _InIt, _InIt, const _Alloc&>) // strengthened
+    stack(_InIt _First, _InIt _Last, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, _InIt, _InIt, const _Alloc&>) // strengthened
         : c(_STD move(_First), _STD move(_Last), _Al) {}
 
     template <_Container_compatible_range<_Ty> _Rng, class _Alloc>

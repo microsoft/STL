@@ -21,11 +21,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 #ifndef _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-#ifdef __EDG__ // TRANSITION, DevCom-10199227
-#define _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION 0
-#else // ^^^ workaround / no workaround vvv
 #define _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION 1
-#endif // ^^^ no workaround ^^^
 #endif // ^^^ !defined(_USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION) ^^^
 
 _STD_BEGIN

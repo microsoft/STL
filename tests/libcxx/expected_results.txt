@@ -130,7 +130,7 @@ std/language.support/support.limits/support.limits.general/mdspan.version.compil
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
 
 # Various bogosity (LLVM-D141004), warning C6011: Dereferencing NULL pointer
-# Note: The :1 (ASAN) configuration doesn't run static analysis.
+# Note: The :1 (ASan) configuration doesn't run static analysis.
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL
 
@@ -224,7 +224,7 @@ std/atomics/atomics.types.generic/atomics.types.float/compare_exchange_strong.pa
 std/atomics/atomics.types.generic/atomics.types.float/compare_exchange_weak.pass.cpp:1 SKIPPED
 std/input.output/syncstream/osyncstream/thread/several_threads.pass.cpp:1 SKIPPED
 
-# VSO-2164191 "[ASAN][STL] Interception breaks strtoll"
+# VSO-2164191 "[ASan][STL] Interception breaks strtoll"
 std/strings/string.conversions/stoll.pass.cpp:1 FAIL
 
 
@@ -285,7 +285,7 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:1 FAIL
 
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
-# Note: The :1 (ASAN) configuration doesn't run static analysis.
+# Note: The :1 (ASan) configuration doesn't run static analysis.
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
 
@@ -315,7 +315,7 @@ std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
 
 # DevCom-1638563 VSO-1457836: icky static analysis false positive
 # Resolved wontfix, need to report again.
-# Note: The :1 (ASAN) configuration doesn't run static analysis.
+# Note: The :1 (ASan) configuration doesn't run static analysis.
 std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
 
 # DevCom-1638496 VSO-1462745: C1XX doesn't properly reject int <=> unsigned
@@ -355,12 +355,6 @@ std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
 # VSO-1948221 x86chk ICE with constexpr type_info: Assertion failed: isIndirection()
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:0 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
-
-# VSO-2170500 C1XX's type trait optimization mishandles conjunction/disjunction with non-bool types
-std/utilities/meta/meta.logical/conjunction.compile.pass.cpp:0 FAIL
-std/utilities/meta/meta.logical/conjunction.compile.pass.cpp:1 FAIL
-std/utilities/meta/meta.logical/disjunction.compile.pass.cpp:0 FAIL
-std/utilities/meta/meta.logical/disjunction.compile.pass.cpp:1 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
@@ -468,7 +462,7 @@ std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAI
 
 # *** VCRUNTIME BUGS ***
 # DevCom-10373274 VSO-1824997 "vcruntime nothrow array operator new falls back on the wrong function"
-# This passes for the :1 (ASAN) configuration, surprisingly.
+# This passes for the :1 (ASan) configuration, surprisingly.
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:0 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:2 FAIL
 
@@ -576,14 +570,16 @@ std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.c
 # This test is bogus according to the wording that was ultimately accepted for C++23.
 std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
 
-# contiguous_iterator requires to_address() which calls operator->(), but this bogus test uses an iterator that lacks operator->().
+# libc++ speculatively implements the proposed resolution for LWG-4058.
 std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
-
-# Bogus test expects to_address() to SFINAE away for int.
 std/utilities/memory/pointer.conversion/to_address_without_pointer_traits.pass.cpp FAIL
 
 # We disagree about whether various chrono types should be optimized, and the test is clearly wrong about vector<bool>::reference.
 std/utilities/format/format.formatter/format.formatter.locking/enable_nonlocking_formatter_optimization.compile.pass.cpp FAIL
+
+# `increasing_allocator` calls `std::allocator::deallocate` with the wrong size
+std/containers/sequences/vector.bool/shrink_to_fit.pass.cpp FAIL
+std/containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -967,7 +963,7 @@ std/utilities/format/format.tuple/format.pass.cpp FAIL
 
 # Not analyzed. Static analysis thinks that array indexing is out of bounds because it can't prove otherwise.
 # warning C28020: The expression '_Param_(1)<1' is not true at this call.
-# Note: The :1 (ASAN) configuration doesn't run static analysis.
+# Note: The :1 (ASan) configuration doesn't run static analysis.
 std/containers/views/mdspan/extents/ctor_default.pass.cpp:0 FAIL
 std/containers/views/mdspan/extents/ctor_from_array.pass.cpp:0 FAIL
 std/containers/views/mdspan/extents/ctor_from_integral.pass.cpp:0 FAIL
@@ -980,7 +976,7 @@ std/containers/views/mdspan/mdspan/ctor.dh_span.pass.cpp:0 FAIL
 
 # Not analyzed. Apparent false positives from static analysis where it thinks `new (std::nothrow)` could return null, despite an assert().
 # warning C28182: Dereferencing NULL pointer.
-# Note: The :1 (ASAN) configuration doesn't run static analysis.
+# Note: The :1 (ASan) configuration doesn't run static analysis.
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.pass.cpp:0 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.pass.cpp:0 FAIL
 
@@ -1222,12 +1218,6 @@ std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.nonmembers/ostream.pa
 std/algorithms/alg.sorting/alg.set.operations/set.intersection/set_intersection_complexity.pass.cpp FAIL
 
 # Not analyzed.
-# MSVC constexpr error: failure was caused by unexpected deallocation count
-# Clang assertion: _CrtIsValidHeapPointer(block)
-std/containers/sequences/vector.bool/shrink_to_fit.pass.cpp FAIL
-std/containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp FAIL
-
-# Not analyzed.
 # MSVC truncation warnings.
 # Clang assertion: std::hermite(n, +inf) == inf
 std/numerics/c.math/hermite.pass.cpp FAIL
@@ -1239,7 +1229,7 @@ std/containers/views/views.span/span.cons/copy.pass.cpp FAIL
 std/utilities/optional/optional.object/optional.object.ctor/gh_101960_internal_ctor.compile.pass.cpp FAIL
 
 
-# *** XFAILs WHICH PASS ***
+# *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
 # However, for ARM and ARM64, they successfully compile, then we don't run them.
 # Our test harness properly handles the ambiguity of whether a FAIL line in this file means "fails to compile"
@@ -1250,7 +1240,7 @@ std/utilities/optional/optional.object/optional.object.ctor/gh_101960_internal_c
 # In the meantime, because this is platform-dependent and we don't have a way to express that in this file,
 # we need to mark these tests as SKIPPED.
 # Finally, note that only :0 (MSVC) and :2 (Clang) configurations are mentioned here,
-# because we don't run :1 (ASAN) for ARM and ARM64.
+# because we don't run :1 (ASan) for ARM and ARM64.
 std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:0 SKIPPED
 std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:2 SKIPPED
 std/time/time.clock/time.clock.system/sys_date.ostream.pass.cpp:0 SKIPPED
@@ -1290,6 +1280,17 @@ std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPE
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
 std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
+
+# These tests also need ADDITIONAL_COMPILE_FLAGS to silence warnings, but only for Clang 18.
+# TRANSITION, Clang 19
+std/containers/associative/map/map.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/multimap/multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/multiset/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/set/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.map/unord.map.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.multimap/unord.multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.multiset/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.set/insert_range.pass.cpp:9 SKIPPED
 
 # This test is marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED

@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <array>
 #include <benchmark/benchmark.h>
 #include <cstdint>
 #include <cstring>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <vector>
+using namespace std::string_view_literals;
 
 const char src_haystack[] =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mollis imperdiet massa, at dapibus elit interdum "
@@ -40,9 +43,14 @@ const char src_haystack[] =
     "euismod eros, ut posuere ligula ullamcorper id. Nullam aliquet malesuada est at dignissim. Pellentesque finibus "
     "sagittis libero nec bibendum. Phasellus dolor ipsum, finibus quis turpis quis, mollis interdum felis.";
 
-const char src_needle[] = "aliquet";
+constexpr std::array patterns = {
+    "aliquet"sv,
+    "aliquet malesuada"sv,
+};
 
 void c_strstr(benchmark::State& state) {
+    const auto& src_needle = patterns[static_cast<size_t>(state.range())];
+
     const std::string haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::string needle(std::begin(src_needle), std::end(src_needle));
 
@@ -56,6 +64,8 @@ void c_strstr(benchmark::State& state) {
 
 template <class T>
 void classic_search(benchmark::State& state) {
+    const auto& src_needle = patterns[static_cast<size_t>(state.range())];
+
     const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
 
@@ -69,6 +79,8 @@ void classic_search(benchmark::State& state) {
 
 template <class T>
 void ranges_search(benchmark::State& state) {
+    const auto& src_needle = patterns[static_cast<size_t>(state.range())];
+
     const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
 
@@ -82,6 +94,8 @@ void ranges_search(benchmark::State& state) {
 
 template <class T>
 void search_default_searcher(benchmark::State& state) {
+    const auto& src_needle = patterns[static_cast<size_t>(state.range())];
+
     const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
 
@@ -93,22 +107,26 @@ void search_default_searcher(benchmark::State& state) {
     }
 }
 
-BENCHMARK(c_strstr);
+void common_args(auto bm) {
+    bm->Range(0, patterns.size() - 1);
+}
 
-BENCHMARK(classic_search<std::uint8_t>);
-BENCHMARK(classic_search<std::uint16_t>);
-BENCHMARK(classic_search<std::uint32_t>);
-BENCHMARK(classic_search<std::uint64_t>);
+BENCHMARK(c_strstr)->Apply(common_args);
 
-BENCHMARK(ranges_search<std::uint8_t>);
-BENCHMARK(ranges_search<std::uint16_t>);
-BENCHMARK(ranges_search<std::uint32_t>);
-BENCHMARK(ranges_search<std::uint64_t>);
+BENCHMARK(classic_search<std::uint8_t>)->Apply(common_args);
+BENCHMARK(classic_search<std::uint16_t>)->Apply(common_args);
+BENCHMARK(classic_search<std::uint32_t>)->Apply(common_args);
+BENCHMARK(classic_search<std::uint64_t>)->Apply(common_args);
 
-BENCHMARK(search_default_searcher<std::uint8_t>);
-BENCHMARK(search_default_searcher<std::uint16_t>);
-BENCHMARK(search_default_searcher<std::uint32_t>);
-BENCHMARK(search_default_searcher<std::uint64_t>);
+BENCHMARK(ranges_search<std::uint8_t>)->Apply(common_args);
+BENCHMARK(ranges_search<std::uint16_t>)->Apply(common_args);
+BENCHMARK(ranges_search<std::uint32_t>)->Apply(common_args);
+BENCHMARK(ranges_search<std::uint64_t>)->Apply(common_args);
+
+BENCHMARK(search_default_searcher<std::uint8_t>)->Apply(common_args);
+BENCHMARK(search_default_searcher<std::uint16_t>)->Apply(common_args);
+BENCHMARK(search_default_searcher<std::uint32_t>)->Apply(common_args);
+BENCHMARK(search_default_searcher<std::uint64_t>)->Apply(common_args);
 
 
 BENCHMARK_MAIN();
