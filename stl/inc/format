@@ -149,21 +149,16 @@ concept _Precision_adapter_callbacks = requires(_Ty _At) {
     { _At._On_dynamic_precision(size_t{}) } -> same_as<void>;
 };
 
-// clang-format off
 template <class _Ty, class _CharT>
-concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
-                                && _Parse_width_callbacks<_Ty, _CharT>
-                                && _Parse_precision_callbacks<_Ty, _CharT>
-                                && _Width_adapter_callbacks<_Ty, _CharT>
-                                && _Precision_adapter_callbacks<_Ty, _CharT>
-                                && requires(_Ty _At, _Fmt_sign _Sgn) {
+concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT> && _Parse_width_callbacks<_Ty, _CharT>
+                             && _Parse_precision_callbacks<_Ty, _CharT> && _Width_adapter_callbacks<_Ty, _CharT>
+                             && _Precision_adapter_callbacks<_Ty, _CharT> && requires(_Ty _At, _Fmt_sign _Sgn) {
                                     { _At._On_sign(_Sgn) } -> same_as<void>;
                                     { _At._On_hash() } -> same_as<void>;
                                     { _At._On_zero() } -> same_as<void>;
                                     { _At._On_localized() } -> same_as<void>;
                                     { _At._On_type(_CharT{}) } -> same_as<void>;
-};
-// clang-format on
+                                };
 
 template <class _CharT>
 struct _Decode_result {
@@ -715,9 +710,8 @@ public:
 
         template <class _Ty>
         explicit handle(_Ty& _Val) noexcept
-            : _Ptr(_STD addressof(_Val)),
-              _Format([](basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
-                  // TRANSITION, Clang 18, should be marked _STATIC_CALL_OPERATOR
+            : _Ptr(_STD addressof(_Val)), _Format([](basic_format_parse_context<_CharType>& _Parse_ctx,
+                                                      _Context& _Format_ctx, const void* _Ptr) _STATIC_CALL_OPERATOR {
                   using _Td = remove_const_t<_Ty>;
                   // doesn't drop const-qualifier per an unnumbered LWG issue
                   using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
@@ -3494,9 +3488,8 @@ _NODISCARD _OutputIt _Fmt_write(
     int _Width          = _Specs._Precision;
     const _CharT* _Last = _Measure_string_prefix(_Value, _Width);
 
-    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left, [=](_OutputIt _Out) {
-        return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value.data(), _Last});
-    });
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,
+        [=](_OutputIt _Out) { return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value.data(), _Last}); });
 }
 
 // This is the visitor that's used for "simple" replacement fields.
@@ -4276,8 +4269,8 @@ private:
     range_formatter<_Element_type, _CharT> _Underlying;
 
 public:
-    constexpr _Range_default_formatter() noexcept(
-        is_nothrow_default_constructible_v<range_formatter<_Element_type, _CharT>>) /* strengthened */ {
+    constexpr _Range_default_formatter()
+        noexcept(is_nothrow_default_constructible_v<range_formatter<_Element_type, _CharT>>) /* strengthened */ {
         static_assert(_Is_two_tuple<_Element_type>, "the element type of the formatted range must be either pair<T, U> "
                                                     "or tuple<T, U> (N4981 [format.range.fmtmap]/1)");
 

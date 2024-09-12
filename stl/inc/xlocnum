@@ -970,7 +970,7 @@ private:
             *_Ptr++ = '0'; // save at least one leading digit for hex
         }
 
-        const char _Decimal_point = _CSTD localeconv()->decimal_point[0];
+        const char _Decimal_point = (_CSTD localeconv())->decimal_point[0];
         if (_First != _Last && *_First == _Punct_fac.decimal_point()) { // add .
             *_Ptr++ = _Decimal_point;
             ++_First;
@@ -1487,7 +1487,7 @@ private:
         }
         const size_t _Eoff = _CSTD strcspn(&_Buf[0], _Exps); // find exponent
         char _Dp[2]        = {"."};
-        _Dp[0]             = _CSTD localeconv()->decimal_point[0];
+        _Dp[0]             = (_CSTD localeconv())->decimal_point[0];
         const size_t _Poff = _CSTD strcspn(&_Buf[0], &_Dp[0]); // find decimal point
 
         const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Iosbase.getloc());

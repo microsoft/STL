@@ -54,7 +54,7 @@ struct reservable {
 };
 
 constexpr bool test_reservable() {
-#ifndef __EDG__ // TRANSITION, VSO-2208356
+#if defined(_MSVC_INTERNAL_TESTING) || !defined(__EDG__) // TRANSITION, VS 17.12p3
     int some_ints[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     {
         std::same_as<reservable> auto r = some_ints | ranges::to<reservable>(secret_key);
@@ -93,7 +93,7 @@ constexpr bool test_common_constructible() {
         assert(c0.last_ == ranges::end(some_ints));
         assert(c0.args_ == 3);
     }
-#ifndef __EDG__ // TRANSITION, VSO-2208356
+#if defined(_MSVC_INTERNAL_TESTING) || !defined(__EDG__) // TRANSITION, VS 17.12p3
     {
         std::same_as<common_constructible> auto c1 = some_ints | ranges::to<common_constructible>(secret_key);
         assert(c1.first_ == ranges::begin(some_ints));
@@ -109,7 +109,7 @@ constexpr bool test_common_constructible() {
         assert(c2.last_ == ranges::end(some_ints));
         assert(c2.args_ == 4);
     }
-#ifndef __EDG__ // TRANSITION, VSO-2208356
+#if defined(_MSVC_INTERNAL_TESTING) || !defined(__EDG__) // TRANSITION, VS 17.12p3
     {
         std::same_as<common_constructible> auto c3 = some_ints | ranges::to<common_constructible>(secret_key, 3.14);
         assert(c3.first_ == ranges::begin(some_ints));
@@ -239,8 +239,8 @@ public:
     constexpr restricted_vector(const size_type n, const T& val, const A& alloc = A()) : base_type(n, val, alloc) {}
     constexpr restricted_vector(const std::initializer_list<T> il, const A& alloc = A()) : base_type(il, alloc) {}
     constexpr restricted_vector(const restricted_vector& other, const A& alloc) : base_type(other, alloc) {}
-    constexpr restricted_vector(restricted_vector&& other, const A& alloc) noexcept(
-        std::allocator_traits<A>::is_always_equal::value)
+    constexpr restricted_vector(restricted_vector&& other, const A& alloc)
+        noexcept(std::allocator_traits<A>::is_always_equal::value)
         : base_type(std::move(other), alloc) {}
 
     using base_type::begin;
@@ -302,7 +302,7 @@ constexpr void test_lwg4016_per_kind() {
         std::same_as<V> auto vec = std::views::iota(0, 42) | ranges::to<V>();
         assert(ranges::equal(vec, std::views::iota(0, 42)));
     }
-#ifndef __EDG__ // TRANSITION, VSO-2208356
+#if defined(_MSVC_INTERNAL_TESTING) || !defined(__EDG__) // TRANSITION, VS 17.12p3
     {
         std::same_as<V> auto vec = std::views::iota(0, 42) | ranges::to<V>(std::allocator<int>{});
         assert(ranges::equal(vec, std::views::iota(0, 42)));

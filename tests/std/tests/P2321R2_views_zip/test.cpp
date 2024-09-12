@@ -703,7 +703,7 @@ private:
     using differing_size_member_range_type =
         range_type<Category, int, (IsSized == test::Sized::yes ? test::Sized::no : test::Sized::yes), IsCommon, Diff>;
     using differing_is_common_range_type              = range_type<Category, int, IsSized,
-        (IsCommon == test::Common::yes ? test::Common::no : test::Common::yes), Diff>;
+                     (IsCommon == test::Common::yes ? test::Common::no : test::Common::yes), Diff>;
     using differing_iterator_sentinel_diff_range_type = range_type<Category, int, IsSized, IsCommon,
         (Diff == test::CanDifference::yes ? test::CanDifference::no : test::CanDifference::yes)>;
 
