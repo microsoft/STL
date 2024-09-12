@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
@@ -21,6 +22,8 @@
 #include <vector>
 
 #include "test_generator_support.hpp"
+
+#pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
 using namespace std;
 
@@ -162,18 +165,6 @@ void static_allocator_test() {
             g(allocator_arg, StatefulAlloc<int>{42}, 1024), std::identity{}, views::iota(0, 1024));
     }
 #endif // ^^^ no workaround ^^^
-    {
-        auto g = [](allocator_arg_t, pmr::polymorphic_allocator<int>, const int hi) -> pmr::generator<int, int> {
-            constexpr size_t n = 64;
-            int some_ints[n];
-            for (int i = 0; i < hi; ++i) {
-                co_yield some_ints[i % n] = i;
-            }
-        };
-
-        static_assert(is_same_v<pmr::generator<int, int>, generator<int, int, pmr::polymorphic_allocator<>>>);
-        assert(ranges::equal(g(allocator_arg, pmr::polymorphic_allocator<int>{}, 1024), views::iota(0, 1024)));
-    }
 }
 
 // Verify behavior with erased allocator types
@@ -329,6 +320,88 @@ void test_weird_reference_types() {
 #endif // ^^^ no workaround ^^^
 }
 
+static atomic<bool> allow_allocation = true;
+
+void* operator new(const size_t n) {
+    if (allow_allocation) {
+        if (void* const result = malloc(n)) {
+            return result;
+        }
+    }
+    throw bad_alloc{};
+}
+
+void operator delete(void* const p) noexcept {
+    free(p);
+}
+
+void operator delete(void* const p, size_t) noexcept {
+    free(p);
+}
+
+void* operator new(const size_t n, const align_val_t al) {
+    if (allow_allocation) {
+        if (void* const result = ::_aligned_malloc(n, static_cast<size_t>(al))) {
+            return result;
+        }
+    }
+    throw bad_alloc{};
+}
+
+void operator delete(void* const p, align_val_t) noexcept {
+    ::_aligned_free(p);
+}
+
+void operator delete(void* const p, size_t, align_val_t) noexcept {
+    ::_aligned_free(p);
+}
+
+class malloc_resource final : public pmr::memory_resource {
+    void* do_allocate(size_t bytes, size_t align) override {
+        assert(align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+        if (!bytes) {
+            return nullptr;
+        }
+        if (void* result = malloc(bytes)) {
+            return result;
+        }
+        throw bad_alloc{};
+    }
+
+    void do_deallocate(void* ptr, size_t, size_t align) noexcept override {
+        assert(align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+        free(ptr);
+    }
+
+    bool do_is_equal(const memory_resource& that) const noexcept override {
+        return typeid(malloc_resource) == typeid(that);
+    }
+};
+
+void pmr_generator_test() {
+    // Verify alias template
+    static_assert(same_as<pmr::generator<int>, generator<int, void, pmr::polymorphic_allocator<>>>);
+    static_assert(same_as<pmr::generator<int, int>, generator<int, int, pmr::polymorphic_allocator<>>>);
+    static_assert(same_as<pmr::generator<const int&, int>, generator<const int&, int, pmr::polymorphic_allocator<>>>);
+
+    // Simple end-to-end test
+    malloc_resource mr{};
+    auto g = [&mr](allocator_arg_t, pmr::polymorphic_allocator<> alloc, const int hi) -> pmr::generator<int, int> {
+        assert(alloc.resource() == &mr);
+
+        constexpr size_t n = 64;
+        int some_ints[n];
+        for (int i = 0; i < hi; ++i) {
+            co_yield some_ints[i % n] = i;
+        }
+    };
+
+    allow_allocation = false;
+    test_one<gen_traits<int, int, pmr::polymorphic_allocator<>>, int, int, int>(
+        g(allocator_arg, pmr::polymorphic_allocator<>{&mr}, 1024), std::identity{}, views::iota(0, 1024));
+    allow_allocation = true;
+}
+
 int main() {
     // End-to-end tests
     test_one<gen_traits<int>, int, int&&, int&&>(ints(), views::take(3), array{0, 1, 2});
@@ -346,4 +419,6 @@ int main() {
     adl_proof_test();
 #endif // ^^^ no workaround ^^^
 #endif // ^^^ no workaround ^^^
+
+    pmr_generator_test();
 }
