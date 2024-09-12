@@ -18,7 +18,7 @@ execute_process(
 )
 
 if(clang_format_version MATCHES "clang-format version ([0-9]+\.[0-9]+\.[0-9]+)")
-    set(expected_version "17.0.3")
+    set(expected_version "18.1.8")
     if(CMAKE_MATCH_1 VERSION_LESS expected_version)
         message(FATAL_ERROR "Found clang-format ${CMAKE_MATCH_1}, older than expected ${expected_version}.")
     elseif(CMAKE_MATCH_1 VERSION_EQUAL expected_version)

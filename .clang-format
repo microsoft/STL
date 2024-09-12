@@ -1,7 +1,18 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/17.0.1/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/18.1.8/tools/clang/docs/ClangFormatStyleOptions.html
+
+# To update this .clang-format file for a new clang-format version:
+# 1. Update the documentation link above.
+# 2. Copy the output of `clang-format -dump-config` into a temporary file.
+#    a. Comment out all of its lines.
+#    b. Uncomment `BasedOnStyle:  LLVM`.
+# 3. Compare that temporary file to this .clang-format file.
+# 4. Adjust this .clang-format file to record new and updated options.
+#    a. Read the new documentation to understand such changes.
+# 5. The goal is for the comparison from the temporary file to this .clang-format file to be pure additions (green).
+#    a. That is, comments here are recording the defaults, while added lines are our customized settings.
 
 ---
 # Language:        Cpp
@@ -11,12 +22,12 @@ AccessModifierOffset: -4
 # AlignAfterOpenBracket: Align
 AlignAfterOpenBracket: DontAlign
 # AlignArrayOfStructures: None
-# TRANSITION, LLVM-51935 (try using AlignArrayOfStructures after this crash is fixed)
 # AlignConsecutiveAssignments:
 #   Enabled:         false
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionPointers: false
 #   PadOperators:    true
 AlignConsecutiveAssignments: Consecutive
 # AlignConsecutiveBitFields:
@@ -24,18 +35,21 @@ AlignConsecutiveAssignments: Consecutive
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionPointers: false
 #   PadOperators:    false
 # AlignConsecutiveDeclarations:
 #   Enabled:         false
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionPointers: false
 #   PadOperators:    false
 # AlignConsecutiveMacros:
 #   Enabled:         false
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionPointers: false
 #   PadOperators:    false
 AlignConsecutiveMacros: Consecutive
 # AlignConsecutiveShortCaseStatements:
@@ -54,8 +68,11 @@ AlignTrailingComments:
   Kind:            Never
 # AllowAllArgumentsOnNextLine: true
 # AllowAllParametersOfDeclarationOnNextLine: true
+# AllowBreakBeforeNoexceptSpecifier: Never
+AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
 # AllowShortBlocksOnASingleLine: Never
 # AllowShortCaseLabelsOnASingleLine: false
+# AllowShortCompoundRequirementOnASingleLine: true
 # AllowShortEnumsOnASingleLine: true
 # AllowShortFunctionsOnASingleLine: All
 AllowShortFunctionsOnASingleLine: Empty
@@ -91,7 +108,9 @@ AlwaysBreakTemplateDeclarations: Yes
 #   SplitEmptyFunction: true
 #   SplitEmptyRecord: true
 #   SplitEmptyNamespace: true
-# BreakAfterAttributes: Never
+# BreakAdjacentStringLiterals: true
+# BreakAfterAttributes: Leave
+BreakAfterAttributes: Never
 # BreakAfterJavaFieldAnnotations: false
 # BreakArrays:     true
 # BreakBeforeBinaryOperators: None
@@ -138,20 +157,23 @@ IncludeBlocks:   Regroup
 #     SortPriority:    0
 #     CaseSensitive:   false
 IncludeCategories:
-  - Regex:           '^<yvals(_core)?\.h>$'
-    Priority:        1
-  - Regex:           '^<(Windows|userenv)\.h>$'
-    Priority:        3
-    SortPriority:    3
-  - Regex:           '^<WinIoCtl\.h>$'
-    Priority:        3
-    SortPriority:    4
-  - Regex:           '^<__.*\.hpp>$'
-    Priority:        2
+  - Regex:           '^<(yvals|yvals_core)\.h>$'
+    Priority:        10
+  - Regex:           '^<__msvc_.*\.hpp>$'
+    Priority:        20
+  - Regex:           '^<initguid\.h>$' # <initguid.h> should be included before any header that includes <guiddef.h>
+    Priority:        30
+    SortPriority:    30
+  - Regex:           '^<(DbgEng|DbgHelp|Shlwapi|Windows)\.h>$'
+    Priority:        30
+    SortPriority:    31
+  - Regex:           '^<winioctl\.h>$'
+    Priority:        30
+    SortPriority:    32
   - Regex:           '\.hpp[>"]$'
-    Priority:        5
+    Priority:        40
   - Regex:           '.*'
-    Priority:        2
+    Priority:        20
 # IncludeIsMainRegex: '(Test)?$'
 # IncludeIsMainSourceRegex: ''
 # IndentAccessModifiers: false
@@ -203,6 +225,7 @@ NamespaceIndentation: All
 # PenaltyBreakComment: 300
 # PenaltyBreakFirstLessLess: 120
 # PenaltyBreakOpenParenthesis: 0
+# PenaltyBreakScopeResolution: 500
 # PenaltyBreakString: 1000
 # PenaltyBreakTemplateDeclaration: 10
 # PenaltyExcessCharacter: 1000000
@@ -222,6 +245,7 @@ RemoveSemicolon: true
 # RequiresExpressionIndentation: OuterScope
 # SeparateDefinitionBlocks: Leave
 # ShortNamespaceLines: 1
+# SkipMacroDefinitionBody: false
 # SortIncludes:    CaseSensitive
 # SortJavaStaticImport: Before
 # SortUsingDeclarations: LexicographicNumeric
@@ -244,6 +268,7 @@ SpaceAfterCStyleCast: true
 #   AfterFunctionDeclarationName: false
 #   AfterIfMacros:   true
 #   AfterOverloadedOperator: false
+#   AfterPlacementOperator: true
 #   AfterRequiresInClause: false
 #   AfterRequiresInExpression: false
 #   BeforeNonEmptyParentheses: false

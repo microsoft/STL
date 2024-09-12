@@ -356,12 +356,6 @@ std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:0 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
 
-# VSO-2170500 C1XX's type trait optimization mishandles conjunction/disjunction with non-bool types
-std/utilities/meta/meta.logical/conjunction.compile.pass.cpp:0 FAIL
-std/utilities/meta/meta.logical/conjunction.compile.pass.cpp:1 FAIL
-std/utilities/meta/meta.logical/disjunction.compile.pass.cpp:0 FAIL
-std/utilities/meta/meta.logical/disjunction.compile.pass.cpp:1 FAIL
-
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h

@@ -605,7 +605,8 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
         return __builtin_##NAME(_Xx);                                                            \
     }
 
-// Updated by P0533R9 "constexpr For <cmath> And <cstdlib>", but the builtins aren't constexpr as of Clang 18.
+// Updated by P0533R9 "constexpr For <cmath> And <cstdlib>".
+// TRANSITION, Clang 20: The builtins were made constexpr by LLVM-94118.
 #define _CLANG_BUILTIN2_ARG(NAME, ARG)                                                                   \
     _NODISCARD _Check_return_ inline bool NAME(_In_ ARG _Xx, _In_ ARG _Yx) noexcept /* strengthened */ { \
         return __builtin_##NAME(_Xx, _Yx);                                                               \

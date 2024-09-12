@@ -351,7 +351,7 @@ struct _Generalized_sum_drop { // drop off point for GENERALIZED_SUM intermediat
 
     explicit _Generalized_sum_drop(const size_t _Slots)
         : _Data(static_cast<_Ty*>(
-            _Allocate<_New_alignof<_Ty>, _Parallelism_allocate_traits>(_Get_size_of_n<sizeof(_Ty)>(_Slots)))),
+              _Allocate<_New_alignof<_Ty>, _Parallelism_allocate_traits>(_Get_size_of_n<sizeof(_Ty)>(_Slots)))),
           _Slots(_Slots), _Frontier(0) {}
 
     ~_Generalized_sum_drop() noexcept {
@@ -681,7 +681,7 @@ public:
 private:
     atomic<size_t> _Bottom{0}; // modified by only owning thread
     atomic<size_t> _Top{0}; // modified by all threads
-    _Guarded_by_(_Segment_lock) _Circular_buffer<_Ty>* _Segment{_Circular_buffer<_Ty>::_New_circular_buffer()};
+    _Guarded_by_(_Segment_lock) _Circular_buffer<_Ty>* _Segment { _Circular_buffer<_Ty>::_New_circular_buffer() };
     mutex _Segment_lock{};
 };
 

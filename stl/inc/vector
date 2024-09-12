@@ -689,15 +689,15 @@ public:
 
     _CONSTEXPR20 vector(vector&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal()),
-            _STD exchange(_Right._Mypair._Myval2._Myfirst, nullptr),
-            _STD exchange(_Right._Mypair._Myval2._Mylast, nullptr),
-            _STD exchange(_Right._Mypair._Myval2._Myend, nullptr)) {
+              _STD exchange(_Right._Mypair._Myval2._Myfirst, nullptr),
+              _STD exchange(_Right._Mypair._Myval2._Mylast, nullptr),
+              _STD exchange(_Right._Mypair._Myval2._Myend, nullptr)) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
     }
 
-    _CONSTEXPR20 vector(vector&& _Right, const _Identity_t<_Alloc>& _Al_) noexcept(
-        _Alty_traits::is_always_equal::value) // strengthened
+    _CONSTEXPR20 vector(vector&& _Right, const _Identity_t<_Alloc>& _Al_)
+        noexcept(_Alty_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al_) {
         _Alty& _Al        = _Getal();
         auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alty, _Al);
@@ -726,8 +726,8 @@ public:
         _Proxy._Release();
     }
 
-    _CONSTEXPR20 vector& operator=(vector&& _Right) noexcept(
-        _Choose_pocma_v<_Alty> != _Pocma_values::_No_propagate_allocators) {
+    _CONSTEXPR20 vector& operator=(vector&& _Right)
+        noexcept(_Choose_pocma_v<_Alty> != _Pocma_values::_No_propagate_allocators) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
@@ -1717,8 +1717,8 @@ public:
         --_Mylast;
     }
 
-    _CONSTEXPR20 iterator erase(const_iterator _Where) noexcept(
-        is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
+    _CONSTEXPR20 iterator erase(const_iterator _Where)
+        noexcept(is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
         const pointer _Whereptr = _Where._Ptr;
         auto& _My_data          = _Mypair._Myval2;
         pointer& _Mylast        = _My_data._Mylast;
@@ -1737,8 +1737,8 @@ public:
         return iterator(_Whereptr, _STD addressof(_My_data));
     }
 
-    _CONSTEXPR20 iterator erase(const_iterator _First, const_iterator _Last) noexcept(
-        is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
+    _CONSTEXPR20 iterator erase(const_iterator _First, const_iterator _Last)
+        noexcept(is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
         const pointer _Firstptr = _First._Ptr;
         const pointer _Lastptr  = _Last._Ptr;
         auto& _My_data          = _Mypair._Myval2;
@@ -2807,8 +2807,8 @@ public:
         this->_Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alvbase, _Getal()));
     }
 
-    _CONSTEXPR20 _Vb_val(_Vb_val&& _Right, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Vectype, _Vectype, _Alvbase>)
+    _CONSTEXPR20 _Vb_val(_Vb_val&& _Right, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Vectype, _Vectype, _Alvbase>)
         : _Myvec(_STD move(_Right._Myvec), static_cast<_Alvbase>(_Al)), _Mysize(_Right._Mysize) {
         if (_Right._Myvec.empty()) {
             // we took _Right's buffer, so zero out size
@@ -2917,8 +2917,8 @@ public:
         this->_Swap_proxy_and_iterators(_Right);
     }
 
-    _CONSTEXPR20 vector(vector&& _Right, const _Identity_t<_Alloc>& _Al) noexcept(
-        is_nothrow_constructible_v<_Mybase, _Mybase, const _Alloc&>) // strengthened
+    _CONSTEXPR20 vector(vector&& _Right, const _Identity_t<_Alloc>& _Al)
+        noexcept(is_nothrow_constructible_v<_Mybase, _Mybase, const _Alloc&>) // strengthened
         : _Mybase(_STD move(_Right), _Al) {
         if constexpr (!_Alvbase_traits::is_always_equal::value) {
             if (this->_Getal() != _Right._Getal()) {
@@ -2929,8 +2929,8 @@ public:
         this->_Swap_proxy_and_iterators(_Right);
     }
 
-    _CONSTEXPR20 vector& operator=(vector&& _Right) noexcept(
-        _Choose_pocma_v<_Alvbase> != _Pocma_values::_No_propagate_allocators) {
+    _CONSTEXPR20 vector& operator=(vector&& _Right)
+        noexcept(_Choose_pocma_v<_Alvbase> != _Pocma_values::_No_propagate_allocators) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
