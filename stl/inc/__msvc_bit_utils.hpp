@@ -127,24 +127,6 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 #endif // (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))
 
 #if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-#ifdef __clang__ // TRANSITION, GH-1586
-_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned short _Val) {
-    return __builtin_clzs(_Val);
-}
-
-_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned int _Val) {
-    return __builtin_clz(_Val);
-}
-
-_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned long _Val) {
-    return __builtin_clzl(_Val);
-}
-
-_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned long long _Val) {
-    return __builtin_clzll(_Val);
-}
-#endif // TRANSITION, GH-1586
-
 template <class _Ty>
 _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = _Unsigned_integer_digits<_Ty>;
@@ -152,20 +134,11 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
         return _Digits;
     }
 
-#ifdef __clang__ // TRANSITION, GH-1586
-    if constexpr (is_same_v<remove_cv_t<_Ty>, unsigned char>) {
-        return _Clang_arm_arm64_countl_zero(static_cast<unsigned short>(_Val))
-             - (_Unsigned_integer_digits<unsigned short> - _Digits);
-    } else {
-        return _Clang_arm_arm64_countl_zero(_Val);
-    }
-#else // ^^^ workaround / no workaround vvv
     if constexpr (_Digits <= 32) {
         return static_cast<int>(_CountLeadingZeros(_Val)) - (_Unsigned_integer_digits<unsigned long> - _Digits);
     } else {
         return static_cast<int>(_CountLeadingZeros64(_Val));
     }
-#endif // ^^^ no workaround ^^^
 }
 #endif // defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #endif // _HAS_COUNTL_ZERO_INTRINSICS

@@ -56,7 +56,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
     static_assert(CanViewLazySplit<Base&, Delimiter&> == (!is_view || copy_constructible<remove_cvref_t<Base>>) );
     if constexpr (CanViewLazySplit<Base&, Delimiter&>) { // Validate lvalue
         constexpr bool is_noexcept =
-            (!is_view || is_nothrow_copy_constructible_v<views::all_t<Base&>>) &&is_nothrow_copy_constructible_v<DV>;
+            (!is_view || is_nothrow_copy_constructible_v<views::all_t<Base&>>) && is_nothrow_copy_constructible_v<DV>;
 
         static_assert(same_as<decltype(views::lazy_split(base, delimiter)), R>);
         static_assert(noexcept(views::lazy_split(base, delimiter)) == is_noexcept);

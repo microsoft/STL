@@ -24,7 +24,7 @@ namespace fs = std::experimental::filesystem;
 
 bool path_names_equal(const wstring& lhs, const wstring& rhs) {
     // This isn't strictly the same as NTFS's rules; but getting NTFS rules would
-    // require <windows.h>, and it's "close enough" as far as these tests care
+    // require <Windows.h>, and it's "close enough" as far as these tests care
     return equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
         [](wchar_t lhs, wchar_t rhs) { return towupper(lhs) == towupper(rhs); });
 }
