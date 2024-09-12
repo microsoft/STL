@@ -520,7 +520,7 @@ struct _String_constructor_rvalue_allocator_tag {
 #if _HAS_CXX23
 template <class _Rng, class _Ty>
 concept _Contiguous_range_of =
-    (_RANGES contiguous_range<_Rng>) &&same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
+    (_RANGES contiguous_range<_Rng>) && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
@@ -1011,8 +1011,8 @@ public:
         _Take_contents(_Right);
     }
 
-    _CONSTEXPR20 basic_string(basic_string&& _Right, const _Alloc& _Al) noexcept(
-        _Alty_traits::is_always_equal::value) // strengthened
+    _CONSTEXPR20 basic_string(basic_string&& _Right, const _Alloc& _Al)
+        noexcept(_Alty_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
@@ -1029,8 +1029,8 @@ public:
     _CONSTEXPR20 basic_string(_String_constructor_concat_tag, const basic_string& _Source_of_al,
         const _Elem* const _Left_ptr, const size_type _Left_size, const _Elem* const _Right_ptr,
         const size_type _Right_size)
-        : _Mypair(
-            _One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Source_of_al._Getal())) {
+        : _Mypair(_One_then_variadic_args_t{},
+              _Alty_traits::select_on_container_copy_construction(_Source_of_al._Getal())) {
         _STL_INTERNAL_CHECK(_Left_size <= max_size());
         _STL_INTERNAL_CHECK(_Right_size <= max_size());
         _STL_INTERNAL_CHECK(_Right_size <= max_size() - _Left_size);
@@ -1208,8 +1208,8 @@ public:
     }
 #endif // _HAS_CXX20
 
-    _CONSTEXPR20 basic_string& operator=(basic_string&& _Right) noexcept(
-        _Choose_pocma_v<_Alty> != _Pocma_values::_No_propagate_allocators) {
+    _CONSTEXPR20 basic_string& operator=(basic_string&& _Right)
+        noexcept(_Choose_pocma_v<_Alty> != _Pocma_values::_No_propagate_allocators) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
@@ -3092,13 +3092,13 @@ private:
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-basic_string(_Iter, _Iter, _Alloc = _Alloc())
-    -> basic_string<_Iter_value_t<_Iter>, char_traits<_Iter_value_t<_Iter>>, _Alloc>;
+basic_string(
+    _Iter, _Iter, _Alloc = _Alloc()) -> basic_string<_Iter_value_t<_Iter>, char_traits<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
-explicit basic_string(basic_string_view<_Elem, _Traits>, const _Alloc& = _Alloc())
-    -> basic_string<_Elem, _Traits, _Alloc>;
+explicit basic_string(
+    basic_string_view<_Elem, _Traits>, const _Alloc& = _Alloc()) -> basic_string<_Elem, _Traits, _Alloc>;
 
 template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
@@ -3107,8 +3107,8 @@ basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Gui
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
-basic_string(from_range_t, _Rng&&, _Alloc = _Alloc())
-    -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
+basic_string(from_range_t, _Rng&&,
+    _Alloc = _Alloc()) -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23
 #endif // _HAS_CXX17
 

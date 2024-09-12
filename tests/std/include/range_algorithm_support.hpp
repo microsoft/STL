@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <functional>
 #include <iterator>
+#include <memory>
 #include <ranges>
 #include <span>
 #include <type_traits>
@@ -256,56 +257,66 @@ namespace test {
             return {ref_ >= that.peek()};
         }
 
-        // clang-format off
         [[nodiscard]] friend constexpr boolish operator==(proxy_reference r, Value const& val)
-            requires CanEq<Element, Value> {
+            requires CanEq<Element, Value>
+        {
             return {r.ref_ == val};
         }
         [[nodiscard]] friend constexpr boolish operator==(Value const& val, proxy_reference r)
-            requires CanEq<Element, Value> {
+            requires CanEq<Element, Value>
+        {
             return {r.ref_ == val};
         }
         [[nodiscard]] friend constexpr boolish operator!=(proxy_reference r, Value const& val)
-            requires CanNEq<Element, Value> {
+            requires CanNEq<Element, Value>
+        {
             return {r.ref_ != val};
         }
         [[nodiscard]] friend constexpr boolish operator!=(Value const& val, proxy_reference r)
-            requires CanNEq<Element, Value> {
+            requires CanNEq<Element, Value>
+        {
             return {r.ref_ != val};
         }
         [[nodiscard]] friend constexpr boolish operator<(Value const& val, proxy_reference r)
-            requires CanLt<Value, Element> {
+            requires CanLt<Value, Element>
+        {
             return {val < r.ref_};
         }
         [[nodiscard]] friend constexpr boolish operator<(proxy_reference r, Value const& val)
-            requires CanLt<Element, Value> {
+            requires CanLt<Element, Value>
+        {
             return {r.ref_ < val};
         }
         [[nodiscard]] friend constexpr boolish operator>(Value const& val, proxy_reference r)
-            requires CanGt<Value, Element> {
+            requires CanGt<Value, Element>
+        {
             return {val > r.ref_};
         }
         [[nodiscard]] friend constexpr boolish operator>(proxy_reference r, Value const& val)
-            requires CanGt<Element, Value> {
+            requires CanGt<Element, Value>
+        {
             return {r.ref_ > val};
         }
         [[nodiscard]] friend constexpr boolish operator<=(Value const& val, proxy_reference r)
-            requires CanLtE<Value, Element> {
+            requires CanLtE<Value, Element>
+        {
             return {val <= r.ref_};
         }
         [[nodiscard]] friend constexpr boolish operator<=(proxy_reference r, Value const& val)
-            requires CanLtE<Element, Value> {
+            requires CanLtE<Element, Value>
+        {
             return {r.ref_ <= val};
         }
         [[nodiscard]] friend constexpr boolish operator>=(Value const& val, proxy_reference r)
-            requires CanGtE<Value, Element> {
+            requires CanGtE<Value, Element>
+        {
             return {val >= r.ref_};
         }
         [[nodiscard]] friend constexpr boolish operator>=(proxy_reference r, Value const& val)
-            requires CanGtE<Element, Value> {
+            requires CanGtE<Element, Value>
+        {
             return {r.ref_ >= val};
         }
-        // clang-format on
 
         [[nodiscard]] constexpr Element& peek() const noexcept {
             return ref_;
@@ -419,9 +430,9 @@ namespace test {
         using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
         // output iterator operations
-        // clang-format off
-        iterator() requires at_least<fwd> || (Eq == CanCompare::yes) = default;
-        // clang-format on
+        iterator()
+            requires at_least<fwd> || (Eq == CanCompare::yes)
+        = default;
 
         constexpr explicit iterator(Element* ptr) noexcept : ptr_{ptr} {}
 
@@ -525,8 +536,8 @@ namespace test {
             return std::move(*i.ptr_);
         }
 
-        friend constexpr void iter_swap(iterator const& x, iterator const& y) noexcept(
-            std::is_nothrow_swappable_v<Element>)
+        friend constexpr void iter_swap(iterator const& x, iterator const& y)
+            noexcept(std::is_nothrow_swappable_v<Element>)
             requires at_least<input> && std::swappable<Element>
         {
             ranges::swap(*x.ptr_, *y.ptr_);
@@ -542,10 +553,12 @@ namespace test {
         }
 
         // sentinel operations (implied by forward iterator):
-        // clang-format off
-        iterator(iterator const&) requires (to_bool(Eq)) = default;
-        iterator& operator=(iterator const&) requires (to_bool(Eq)) = default;
-        // clang-format on
+        iterator(iterator const&)
+            requires (to_bool(Eq))
+        = default;
+        iterator& operator=(iterator const&)
+            requires (to_bool(Eq))
+        = default;
 
         constexpr operator Consterator() const& noexcept
             requires (to_bool(Eq))
@@ -671,7 +684,7 @@ namespace test {
         }
 
         using unwrap              = std::conditional_t<derived_from<Category, contiguous>, Element*,
-            iterator<Category, Element, Diff, Eq, Proxy, WrappedState::unwrapped>>;
+                         iterator<Category, Element, Diff, Eq, Proxy, WrappedState::unwrapped>>;
         using unwrapping_ignorant = iterator<Category, Element, Diff, Eq, Proxy, WrappedState::ignorant>;
 
         [[nodiscard]] constexpr auto _Unwrapped() const& noexcept
@@ -744,7 +757,7 @@ template <class Element, ::test::CanDifference Diff, ::test::WrappedState Wrappe
 struct std::pointer_traits<::test::iterator<std::contiguous_iterator_tag, Element, Diff, ::test::CanCompare::yes,
     ::test::ProxyRef::no, Wrapped>> {
     using pointer         = ::test::iterator<contiguous_iterator_tag, Element, Diff, ::test::CanCompare::yes,
-        ::test::ProxyRef::no, Wrapped>;
+                ::test::ProxyRef::no, Wrapped>;
     using element_type    = Element;
     using difference_type = ptrdiff_t;
 
@@ -935,6 +948,228 @@ namespace test {
             static_assert(false);
         }
     };
+
+    template <std::_Signed_integer_like I>
+    [[nodiscard]] constexpr auto to_unsigned(I n) noexcept {
+        if constexpr (std::signed_integral<I>) {
+            return static_cast<std::make_unsigned_t<I>>(n);
+        } else {
+            return static_cast<std::_Unsigned128>(n);
+        }
+    }
+
+    template <std::_Signed_integer_like Diff, std::input_iterator It>
+    struct redifference_iterator_category_base {};
+
+    template <std::_Signed_integer_like Diff, std::input_iterator It>
+        requires std::signed_integral<Diff> && requires { typename std::iterator_traits<It>::iterator_category; }
+    struct redifference_iterator_category_base<Diff, It> {
+        using iterator_category = std::iterator_traits<It>::iterator_category;
+        using iterator_concept  = decltype([] {
+            if constexpr (std::contiguous_iterator<It>) {
+                return std::contiguous_iterator_tag{};
+            } else if constexpr (std::random_access_iterator<It>) {
+                return std::random_access_iterator_tag{};
+            } else if constexpr (std::bidirectional_iterator<It>) {
+                return std::bidirectional_iterator_tag{};
+            } else if constexpr (std::forward_iterator<It>) {
+                return std::forward_iterator_tag{};
+            } else {
+                return std::input_iterator_tag{};
+            }
+        }());
+    };
+
+    template <std::_Signed_integer_like Diff, std::input_iterator It>
+    class redifference_iterator : public redifference_iterator_category_base<Diff, It> {
+    public:
+        using value_type      = std::iter_value_t<It>;
+        using difference_type = Diff;
+
+        redifference_iterator() = default;
+        constexpr explicit redifference_iterator(It it) : i_{std::move(it)} {}
+
+        [[nodiscard]] constexpr decltype(auto) operator*() const {
+            return *i_;
+        }
+
+        constexpr decltype(auto) operator->() const
+            requires std::contiguous_iterator<It> || (requires(const It& i) { i.operator->(); })
+        {
+            if constexpr (std::contiguous_iterator<It>) {
+                return std::to_address(i_);
+            } else {
+                return i_.operator->();
+            }
+        }
+
+        constexpr redifference_iterator& operator++() {
+            ++i_;
+            return *this;
+        }
+
+        constexpr decltype(auto) operator++(int) {
+            if constexpr (std::is_same_v<decltype(i_++), It>) {
+                return redifference_iterator{i_++};
+            } else {
+                return i_++;
+            }
+        }
+
+        constexpr redifference_iterator& operator--()
+            requires std::bidirectional_iterator<It>
+        {
+            --i_;
+            return *this;
+        }
+
+        constexpr redifference_iterator operator--(int)
+            requires std::bidirectional_iterator<It>
+        {
+            return redifference_iterator{--i_};
+        }
+
+        constexpr redifference_iterator& operator+=(std::same_as<difference_type> auto n)
+            requires std::random_access_iterator<It>
+        {
+            i_ += static_cast<std::iter_difference_t<It>>(n);
+            return *this;
+        }
+
+        constexpr redifference_iterator& operator-=(std::same_as<difference_type> auto n)
+            requires std::random_access_iterator<It>
+        {
+            i_ -= static_cast<std::iter_difference_t<It>>(n);
+            return *this;
+        }
+
+        [[nodiscard]] constexpr decltype(auto) operator[](std::same_as<difference_type> auto n) const
+            requires std::random_access_iterator<It>
+        {
+            return i_[static_cast<std::iter_difference_t<It>>(n)];
+        }
+
+        [[nodiscard]] friend constexpr bool operator==(const redifference_iterator& i, const redifference_iterator& j) {
+            return i.i_ == j.i_;
+        }
+
+        [[nodiscard]] friend constexpr redifference_iterator operator+(
+            const redifference_iterator& it, std::same_as<difference_type> auto n)
+            requires std::random_access_iterator<It>
+        {
+            return redifference_iterator{it.i_ + static_cast<std::iter_difference_t<It>>(n)};
+        }
+
+        [[nodiscard]] friend constexpr redifference_iterator operator+(
+            std::same_as<difference_type> auto n, const redifference_iterator& it)
+            requires std::random_access_iterator<It>
+        {
+            return redifference_iterator{it.i_ + static_cast<std::iter_difference_t<It>>(n)};
+        }
+
+        [[nodiscard]] friend constexpr redifference_iterator operator-(
+            const redifference_iterator& it, std::same_as<difference_type> auto n)
+            requires std::random_access_iterator<It>
+        {
+            return redifference_iterator{it.i_ - static_cast<std::iter_difference_t<It>>(n)};
+        }
+
+        [[nodiscard]] friend constexpr difference_type operator-(
+            const redifference_iterator& i, const redifference_iterator& j)
+            requires std::random_access_iterator<It>
+        {
+            return static_cast<Diff>(i.i_ - j.i_);
+        }
+
+        [[nodiscard]] friend constexpr auto operator<=>(const redifference_iterator& i, const redifference_iterator& j)
+            requires std::random_access_iterator<It>
+        {
+            if constexpr (std::three_way_comparable<It>) {
+                return i.i_ <=> j.i_;
+            } else {
+                if (i.i_ < j.i_) {
+                    return std::weak_ordering::less;
+                } else if (j.i_ < i.i_) {
+                    return std::weak_ordering::greater;
+                } else {
+                    return std::weak_ordering::equivalent;
+                }
+            }
+        }
+
+        [[nodiscard]] friend constexpr bool operator<(const redifference_iterator& i, const redifference_iterator& j)
+            requires std::random_access_iterator<It>
+        {
+            return i.i_ < j.i_;
+        }
+
+        [[nodiscard]] friend constexpr bool operator>(const redifference_iterator& i, const redifference_iterator& j)
+            requires std::random_access_iterator<It>
+        {
+            return j.i_ < i.i_;
+        }
+
+        [[nodiscard]] friend constexpr bool operator<=(const redifference_iterator& i, const redifference_iterator& j)
+            requires std::random_access_iterator<It>
+        {
+            return !(j.i_ < i.i_);
+        }
+
+        [[nodiscard]] friend constexpr bool operator>=(const redifference_iterator& i, const redifference_iterator& j)
+            requires std::random_access_iterator<It>
+        {
+            return !(i.i_ < j.i_);
+        }
+
+        [[nodiscard]] constexpr const It& base() const noexcept {
+            return i_;
+        }
+
+    private:
+        It i_;
+    };
+
+    template <std::copyable S>
+    struct redifference_sentinel {
+        S se_;
+
+        template <std::_Signed_integer_like Diff, class It>
+            requires std::sentinel_for<S, It>
+        [[nodiscard]] friend constexpr bool operator==(
+            const redifference_iterator<Diff, It>& i, const redifference_sentinel& s) {
+            return i.base() == s.se_;
+        }
+
+        template <std::_Signed_integer_like Diff, class It>
+            requires std::sized_sentinel_for<S, It>
+        [[nodiscard]] friend constexpr Diff operator-(
+            const redifference_iterator<Diff, It>& i, const redifference_sentinel& s) {
+            return static_cast<Diff>(i.base() - s.se_);
+        }
+        template <std::_Signed_integer_like Diff, class It>
+            requires std::sized_sentinel_for<S, It>
+        [[nodiscard]] friend constexpr Diff operator-(
+            const redifference_sentinel& s, const redifference_iterator<Diff, It>& i) {
+            return static_cast<Diff>(s.se_ - i.base());
+        }
+    };
+
+    template <std::_Signed_integer_like Diff, ranges::borrowed_range Rng>
+    [[nodiscard]] constexpr auto make_redifference_subrange(Rng&& r) {
+        constexpr bool is_sized =
+            ranges::sized_range<Rng> || std::sized_sentinel_for<ranges::sentinel_t<Rng>, ranges::iterator_t<Rng>>;
+        using rediff_iter = redifference_iterator<Diff, ranges::iterator_t<Rng>>;
+        using rediff_sent = redifference_sentinel<ranges::sentinel_t<Rng>>;
+
+        if constexpr (is_sized) {
+            const auto sz = to_unsigned(static_cast<Diff>(ranges::distance(r)));
+            return ranges::subrange<rediff_iter, rediff_sent, ranges::subrange_kind::sized>{
+                rediff_iter{r.begin()}, rediff_sent{r.end()}, sz};
+        } else {
+            return ranges::subrange<rediff_iter, rediff_sent, ranges::subrange_kind::unsized>{
+                rediff_iter{r.begin()}, rediff_sent{r.end()}};
+        }
+    }
 } // namespace test
 
 template <class Category, class Element, test::Sized IsSized, test::CanDifference Diff, test::Common IsCommon,

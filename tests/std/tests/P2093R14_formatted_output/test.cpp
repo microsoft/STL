@@ -12,6 +12,7 @@
 #include <io.h>
 #include <limits>
 #include <locale>
+#include <ostream>
 #include <print>
 #include <sstream>
 #include <string>
