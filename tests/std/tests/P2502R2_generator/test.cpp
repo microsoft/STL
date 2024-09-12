@@ -115,9 +115,9 @@ generator<tuple<ranges::range_reference_t<Rng1>, ranges::range_reference_t<Rng2>
     }
 }
 
-// Not from the proposal:
 template <class Reference = const int&>
 generator<Reference, int> co_upto(const int hi) {
+    assert(hi >= 0);
     for (int i = 0; i < hi; ++i) {
         co_yield i;
     }
@@ -262,10 +262,10 @@ void adl_proof_test() {
     static_assert(ranges::input_range<R>);
 
     using It = ranges::iterator_t<R>;
-    static_assert(is_same_v<decltype(&declval<It&>()), It*>);
+    static_assert(same_as<decltype(&declval<It&>()), It*>);
 
     using Promise = R::promise_type;
-    static_assert(is_same_v<decltype(&declval<Promise&>()), Promise*>);
+    static_assert(same_as<decltype(&declval<Promise&>()), Promise*>);
 
     size_t i = 0;
     for (const auto elem : yield_range()) {
@@ -406,9 +406,6 @@ int main() {
     // End-to-end tests
     test_one<gen_traits<int>, int, int&&, int&&>(ints(), views::take(3), array{0, 1, 2});
     assert(ranges::equal(co_upto(6), views::iota(0, 6)));
-    static_allocator_test();
-    dynamic_allocator_test();
-
     zip_example();
     test_weird_reference_types();
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
@@ -416,9 +413,13 @@ int main() {
     arbitrary_range_test();
 
 #ifndef _M_CEE // TRANSITION, VSO-1659496
+    // Verify generation of a range of pointers-to-incomplete
     adl_proof_test();
 #endif // ^^^ no workaround ^^^
 #endif // ^^^ no workaround ^^^
 
+    // Allocator tests
+    static_allocator_test();
+    dynamic_allocator_test();
     pmr_generator_test();
 }
