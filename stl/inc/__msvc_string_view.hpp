@@ -713,7 +713,7 @@ private:
     bool _Matches[256] = {};
 };
 
-template <class _Traits>
+template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
 constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
@@ -722,7 +722,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
         const auto _Hay_start = _Haystack + _Start_at;
         const auto _Hay_end   = _Haystack + _Hay_size;
 
-        if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
+        if constexpr (_Special) {
             if (!_STD _Is_constant_evaluated()) {
                 using _Elem = typename _Traits::char_type;
 
@@ -775,13 +775,13 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
     return static_cast<size_t>(-1); // no match
 }
 
-template <class _Traits>
+template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
 constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
     // in [_Haystack, _Haystack + _Hay_size), look for last of [_Needle, _Needle + _Needle_size), before _Start_at
     if (_Needle_size != 0 && _Hay_size != 0) { // worth searching, do it
-        if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
+        if constexpr (_Special) {
             _String_bitmap<typename _Traits::char_type> _Matches;
             if (!_Matches._Mark(_Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the
                                                                     // bitmap, fall back to the serial algorithm
@@ -813,13 +813,13 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
     return static_cast<size_t>(-1); // no match
 }
 
-template <class _Traits>
+template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
 constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
     // in [_Haystack, _Haystack + _Hay_size), look for none of [_Needle, _Needle + _Needle_size), at/after _Start_at
     if (_Start_at < _Hay_size) { // room for match, look for it
-        if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
+        if constexpr (_Special) {
             _String_bitmap<typename _Traits::char_type> _Matches;
             if (!_Matches._Mark(_Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the
                                                                     // bitmap, fall back to the serial algorithm
@@ -862,13 +862,13 @@ constexpr size_t _Traits_find_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_
     return static_cast<size_t>(-1); // no match
 }
 
-template <class _Traits>
+template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
 constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
     // in [_Haystack, _Haystack + _Hay_size), look for none of [_Needle, _Needle + _Needle_size), before _Start_at
     if (_Hay_size != 0) { // worth searching, do it
-        if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
+        if constexpr (_Special) {
             _String_bitmap<typename _Traits::char_type> _Matches;
             if (!_Matches._Mark(_Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the
                                                                     // bitmap, fall back to the serial algorithm
