@@ -53,12 +53,12 @@ void test_yield_elements_of_range(typename Gen::promise_type& p) {
 
     {
         using Awaitable = decltype(p.yield_value(ranges::elements_of{declval<Range&>()}));
-        static_assert(convertible_to<decltype(declval<Awaitable&>().await_ready()), bool>);
+        static_assert(same_as<decltype(declval<Awaitable&>().await_ready()), bool>);
     }
 
     if constexpr (!is_void_v<Alloc>) {
         using Awaitable = decltype(p.yield_value(ranges::elements_of{declval<Range&>(), declval<Alloc&>()}));
-        static_assert(convertible_to<decltype(declval<Awaitable&>().await_ready()), bool>);
+        static_assert(same_as<decltype(declval<Awaitable&>().await_ready()), bool>);
     }
 }
 
@@ -189,6 +189,9 @@ void test_one() {
         test_operator_new<Gen, StatelessAlloc<void, false_type>>(p);
         test_operator_new<Gen, StatelessAlloc<void, true_type, int>>(p);
     }
+
+    // Non-portable size check
+    static_assert(sizeof(Promise) == 2 * sizeof(void*));
 }
 
 template <class Ref, class V, bool TestingIncomplete = false>
