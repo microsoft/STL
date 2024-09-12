@@ -64,10 +64,6 @@ public:
         std::allocator<T>{}.deallocate(p, n);
     }
 
-    operator std::pmr::polymorphic_allocator<void>() const {
-        return {};
-    }
-
     template <class U>
     bool operator==(const StatelessAlloc<U, AlwaysEqual, DifferenceType>&) const noexcept {
         return true;
@@ -77,15 +73,14 @@ public:
 static_assert(std::default_initializable<StatelessAlloc<int>>);
 
 template <class T>
-struct StatefulAlloc {
+class StatefulAlloc {
+public:
     using value_type = T;
-
-    int domain;
 
     explicit StatefulAlloc(int dom) noexcept : domain{dom} {}
 
     template <class U>
-    constexpr StatefulAlloc(const StatefulAlloc<U>& that) noexcept : domain{that.domain} {}
+    StatefulAlloc(const StatefulAlloc<U>& that) noexcept : domain{that.domain} {}
 
     T* allocate(const size_t n) {
         return std::allocator<T>{}.allocate(n);
@@ -96,9 +91,15 @@ struct StatefulAlloc {
     }
 
     template <class U>
-    constexpr bool operator==(const StatefulAlloc<U>& that) noexcept {
+    bool operator==(const StatefulAlloc<U>& that) noexcept {
         return domain == that.domain;
     }
+
+private:
+    int domain;
+
+    template <class U>
+    friend class StatefulAlloc;
 };
 
 static_assert(!std::default_initializable<StatefulAlloc<int>>);

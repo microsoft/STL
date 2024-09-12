@@ -565,7 +565,7 @@ public:
 private:
     coroutine_handle<promise_type> _Coro = nullptr;
     // The stack of coroutine handles depicted in the Standard is realized by a linked structure of promises and
-    // awaitable objects so all necessary storage is allocated in coroutine frames. See the description in the body of
+    // awaitable objects, so all necessary storage is allocated in coroutine frames. See the description in the body of
     // _Gen_promise_base.
 
     explicit generator(_Gen_secret_tag, coroutine_handle<promise_type> _Coro_) noexcept : _Coro(_Coro_) {}
