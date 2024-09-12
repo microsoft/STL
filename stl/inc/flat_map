@@ -291,20 +291,23 @@ private:
          flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>>;
 
 public:
-    using key_type               = _Key;
-    using mapped_type            = _Mapped;
-    using value_type             = pair<key_type, mapped_type>;
-    using key_compare            = _Compare;
-    using reference              = pair<const key_type&, mapped_type&>;
-    using const_reference        = pair<const key_type&, const mapped_type&>;
-    using size_type              = size_t;
-    using difference_type        = ptrdiff_t;
-    using key_container_type     = _KeyContainer;
-    using mapped_container_type  = _MappedContainer;
-    using iterator               = _Pairing_iterator_provider<typename key_container_type::const_iterator,
-                      typename mapped_container_type::iterator, typename mapped_container_type::const_iterator>::_Iterator;
-    using const_iterator         = _Pairing_iterator_provider<typename key_container_type::const_iterator,
-                typename mapped_container_type::const_iterator, typename mapped_container_type::const_iterator>::_Iterator;
+    using key_type              = _Key;
+    using mapped_type           = _Mapped;
+    using value_type            = pair<key_type, mapped_type>;
+    using key_compare           = _Compare;
+    using reference             = pair<const key_type&, mapped_type&>;
+    using const_reference       = pair<const key_type&, const mapped_type&>;
+    using size_type             = size_t;
+    using difference_type       = ptrdiff_t;
+    using key_container_type    = _KeyContainer;
+    using mapped_container_type = _MappedContainer;
+
+    using iterator = _Pairing_iterator_provider<typename key_container_type::const_iterator,
+        typename mapped_container_type::iterator, typename mapped_container_type::const_iterator>::_Iterator;
+
+    using const_iterator = _Pairing_iterator_provider<typename key_container_type::const_iterator,
+        typename mapped_container_type::const_iterator, typename mapped_container_type::const_iterator>::_Iterator;
+
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
