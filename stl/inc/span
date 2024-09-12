@@ -241,25 +241,18 @@ constexpr bool _Is_std_array_v = false;
 template <class _Ty, size_t _Size>
 constexpr bool _Is_std_array_v<array<_Ty, _Size>> = true;
 
-// clang-format off
 template <class _It, class _Ty>
-concept _Span_compatible_iterator = contiguous_iterator<_It>
-                                 && is_convertible_v<remove_reference_t<iter_reference_t<_It>>(*)[], _Ty(*)[]>;
+concept _Span_compatible_iterator =
+    contiguous_iterator<_It> && is_convertible_v<remove_reference_t<iter_reference_t<_It>> (*)[], _Ty (*)[]>;
 
 template <class _Sentinel, class _It>
-concept _Span_compatible_sentinel = sized_sentinel_for<_Sentinel, _It>
-                                 && !is_convertible_v<_Sentinel, size_t>;
+concept _Span_compatible_sentinel = sized_sentinel_for<_Sentinel, _It> && !is_convertible_v<_Sentinel, size_t>;
 
 template <class _Rng, class _Ty>
 concept _Span_compatible_range =
-    !is_array_v<remove_cvref_t<_Rng>>
- && !_Is_span_v<remove_cvref_t<_Rng>>
- && !_Is_std_array_v<remove_cvref_t<_Rng>>
- && _RANGES contiguous_range<_Rng>
- && _RANGES sized_range<_Rng>
- && (_RANGES borrowed_range<_Rng> || is_const_v<_Ty>)
- && is_convertible_v<remove_reference_t<_RANGES range_reference_t<_Rng>>(*)[], _Ty(*)[]>;
-// clang-format on
+    !is_array_v<remove_cvref_t<_Rng>> && !_Is_span_v<remove_cvref_t<_Rng>> && !_Is_std_array_v<remove_cvref_t<_Rng>>
+    && _RANGES contiguous_range<_Rng> && _RANGES sized_range<_Rng> && (_RANGES borrowed_range<_Rng> || is_const_v<_Ty>)
+    && is_convertible_v<remove_reference_t<_RANGES range_reference_t<_Rng>> (*)[], _Ty (*)[]>;
 
 // [views.span]
 _EXPORT_STD template <class _Ty, size_t _Extent = dynamic_extent>
@@ -288,9 +281,9 @@ public:
     static constexpr size_type extent = _Extent;
 
     // [span.cons] Constructors, copy, and assignment
-    // clang-format off
-    constexpr span() noexcept requires (_Extent == 0 || _Extent == dynamic_extent) = default;
-    // clang-format on
+    constexpr span() noexcept
+        requires (_Extent == 0 || _Extent == dynamic_extent)
+    = default;
 
     template <_Span_compatible_iterator<element_type> _It>
     constexpr explicit(_Extent != dynamic_extent) span(_It _First, size_type _Count) noexcept // strengthened
@@ -304,8 +297,8 @@ public:
     }
 
     template <_Span_compatible_iterator<element_type> _It, _Span_compatible_sentinel<_It> _Sentinel>
-    constexpr explicit(_Extent != dynamic_extent)
-        span(_It _First, _Sentinel _Last) noexcept(noexcept(_Last - _First)) // strengthened
+    constexpr explicit(_Extent != dynamic_extent) span(_It _First, _Sentinel _Last)
+        noexcept(noexcept(_Last - _First)) // strengthened
         : _Mybase(_STD to_address(_First), static_cast<size_type>(_Last - _First)) {
         _STD _Adl_verify_range(_First, _Last);
 #if _CONTAINER_DEBUG_LEVEL > 0

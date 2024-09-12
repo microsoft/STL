@@ -132,16 +132,16 @@ public:
         bucket_size = 1 // 0 < bucket_size
     };
 
-    _Uhash_compare() noexcept(
-        conjunction_v<is_nothrow_default_constructible<_Hasher>, is_nothrow_default_constructible<_Keyeq>>)
+    _Uhash_compare()
+        noexcept(conjunction_v<is_nothrow_default_constructible<_Hasher>, is_nothrow_default_constructible<_Keyeq>>)
         : _Mypair(_Zero_then_variadic_args_t{}, _Zero_then_variadic_args_t{}, 0.0f) {}
 
-    explicit _Uhash_compare(const _Hasher& _Hasharg) noexcept(
-        conjunction_v<is_nothrow_copy_constructible<_Hasher>, is_nothrow_default_constructible<_Keyeq>>)
+    explicit _Uhash_compare(const _Hasher& _Hasharg)
+        noexcept(conjunction_v<is_nothrow_copy_constructible<_Hasher>, is_nothrow_default_constructible<_Keyeq>>)
         : _Mypair(_One_then_variadic_args_t{}, _Hasharg, _Zero_then_variadic_args_t{}, 0.0f) {}
 
-    explicit _Uhash_compare(const _Hasher& _Hasharg, const _Keyeq& _Keyeqarg) noexcept(
-        conjunction_v<is_nothrow_copy_constructible<_Hasher>, is_nothrow_copy_constructible<_Keyeq>>)
+    explicit _Uhash_compare(const _Hasher& _Hasharg, const _Keyeq& _Keyeqarg)
+        noexcept(conjunction_v<is_nothrow_copy_constructible<_Hasher>, is_nothrow_copy_constructible<_Keyeq>>)
         : _Mypair(_One_then_variadic_args_t{}, _Hasharg, _One_then_variadic_args_t{}, _Keyeqarg, 0.0f) {}
 
     template <class _Keyty>
@@ -165,8 +165,8 @@ public:
         return _Mypair._Myval2._Myval2;
     }
 
-    void swap(_Uhash_compare& _Rhs) noexcept(
-        conjunction_v<_Is_nothrow_swappable<_Hasher>, _Is_nothrow_swappable<_Keyeq>>) {
+    void swap(_Uhash_compare& _Rhs)
+        noexcept(conjunction_v<_Is_nothrow_swappable<_Hasher>, _Is_nothrow_swappable<_Keyeq>>) {
         using _STD swap;
         swap(_Mypair._Get_first(), _Rhs._Mypair._Get_first()); // intentional ADL
         auto& _Lsecond = _Mypair._Myval2;
@@ -361,7 +361,7 @@ public:
     using const_iterator = typename _Mylist::const_iterator;
 
     using _Unchecked_iterator       = conditional_t<is_same_v<key_type, value_type>,
-        typename _Mylist::_Unchecked_const_iterator, typename _Mylist::_Unchecked_iterator>;
+              typename _Mylist::_Unchecked_const_iterator, typename _Mylist::_Unchecked_iterator>;
     using _Unchecked_const_iterator = typename _Mylist::_Unchecked_const_iterator;
 
     using _Aliter = _Rebind_alloc_t<_Alnode, _Unchecked_iterator>;
@@ -1132,8 +1132,8 @@ public:
         return _List._Make_iter(_Unchecked_erase(_Plist._Ptr));
     }
 
-    iterator erase(const_iterator _First, const_iterator _Last) noexcept(
-        _Nothrow_hash<_Traits, key_type>) /* strengthened */ {
+    iterator erase(const_iterator _First, const_iterator _Last)
+        noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
         return _List._Make_iter(_Unchecked_erase(_First._Ptr, _Last._Ptr));
     }
 

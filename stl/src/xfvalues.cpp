@@ -13,10 +13,8 @@
 // macros
 #define NBITS (16 + _FOFF)
 
-#define INIT(w0) \
-    { 0, w0 }
-#define INIT2(w0, w1) \
-    { w1, w0 }
+#define INIT(w0)      {0, w0}
+#define INIT2(w0, w1) {w1, w0}
 
 _EXTERN_C_UNLESS_PURE
 

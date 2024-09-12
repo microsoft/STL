@@ -129,8 +129,6 @@ class basic_format_parse_context;
 template <class _CharT>
 concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
 
-// Generic formatter definition, the deleted default constructor
-// makes it "disabled" as per N4950 [format.formatter.spec]/5
 _EXPORT_STD template <class _Ty, class _CharT = char>
 struct formatter {
     formatter()                            = delete;
