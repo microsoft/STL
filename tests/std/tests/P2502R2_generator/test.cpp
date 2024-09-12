@@ -85,47 +85,7 @@ generator<Reference, int> co_upto(const int hi) {
     }
 }
 
-template <class T>
-struct stateful_alloc {
-    using value_type = T;
-
-    int domain;
-
-    explicit stateful_alloc(int dom) noexcept : domain{dom} {}
-
-    template <class U>
-    constexpr stateful_alloc(const stateful_alloc<U>& that) noexcept : domain{that.domain} {}
-
-    T* allocate(const size_t n) {
-        void* vp;
-        if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-            vp = ::_aligned_malloc(n * sizeof(T), alignof(T));
-        } else {
-            vp = malloc(n * sizeof(T));
-        }
-
-        if (vp) {
-            return static_cast<T*>(vp);
-        }
-
-        throw bad_alloc{};
-    }
-
-    void deallocate(void* const vp, [[maybe_unused]] const size_t n) noexcept {
-        if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-            ::_aligned_free(vp);
-        } else {
-            free(vp);
-        }
-    }
-
-    template <class U>
-    constexpr bool operator==(const stateful_alloc<U>& that) noexcept {
-        return this->domain == that.domain;
-    }
-};
-static_assert(!default_initializable<stateful_alloc<int>>);
-
+// Verify behavior with unerased allocator types
 void static_allocator_test() {
     {
         auto g = [](const int hi) -> generator<int, int, StatelessAlloc<char>> {
@@ -153,7 +113,7 @@ void static_allocator_test() {
 
 #ifndef __EDG__ // TRANSITION, VSO-1951821
     {
-        auto g = [](allocator_arg_t, stateful_alloc<int>, const int hi) -> generator<int, int, stateful_alloc<char>> {
+        auto g = [](allocator_arg_t, StatefulAlloc<int>, const int hi) -> generator<int, int, StatefulAlloc<char>> {
             constexpr size_t n = 64;
             int some_ints[n];
             for (int i = 0; i < hi; ++i) {
@@ -161,7 +121,7 @@ void static_allocator_test() {
             }
         };
 
-        assert(ranges::equal(g(allocator_arg, stateful_alloc<int>{42}, 1024), views::iota(0, 1024)));
+        assert(ranges::equal(g(allocator_arg, StatefulAlloc<int>{42}, 1024), views::iota(0, 1024)));
     }
 #endif // ^^^ no workaround ^^^
     {
@@ -178,6 +138,7 @@ void static_allocator_test() {
     }
 }
 
+// Verify behavior with erased allocator types
 void dynamic_allocator_test() {
     auto g = [](allocator_arg_t, const auto&, const int hi) -> generator<int> {
         constexpr size_t n = 64;
@@ -190,7 +151,7 @@ void dynamic_allocator_test() {
     assert(ranges::equal(g(allocator_arg, allocator<float>{}, 1024), views::iota(0, 1024)));
     assert(ranges::equal(g(allocator_arg, StatelessAlloc<float>{}, 1024), views::iota(0, 1024)));
 #ifndef __EDG__ // TRANSITION, VSO-1951821
-    assert(ranges::equal(g(allocator_arg, stateful_alloc<float>{1729}, 1024), views::iota(0, 1024)));
+    assert(ranges::equal(g(allocator_arg, StatefulAlloc<float>{1729}, 1024), views::iota(0, 1024)));
 #endif // ^^^ no workaround ^^^
     pmr::synchronized_pool_resource pool;
     assert(ranges::equal(g(allocator_arg, pmr::polymorphic_allocator<int>{&pool}, 1024), views::iota(0, 1024)));

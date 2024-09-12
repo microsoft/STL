@@ -8,11 +8,10 @@
 #include <cstdlib>
 #include <memory>
 #include <memory_resource>
-#include <new>
 #include <type_traits>
 
 template <class T, class AlwaysEqual = std::true_type, std::signed_integral DifferenceType = std::ptrdiff_t>
-class StatelessAlloc : public std::allocator<T> {
+class StatelessAlloc {
 public:
     using value_type      = T;
     using is_always_equal = AlwaysEqual;
@@ -25,36 +24,51 @@ public:
     StatelessAlloc(const StatelessAlloc<U, AlwaysEqual, DifferenceType>&) {}
 
     T* allocate(const size_type s) {
-        void* vp;
-        if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-            vp = ::_aligned_malloc(s * sizeof(T), alignof(T));
-        } else {
-            vp = std::malloc(s * sizeof(T));
-        }
-
-        if (vp) {
-            return static_cast<T*>(vp);
-        }
-
-        throw std::bad_alloc{};
+        return std::allocator<T>{}.allocate(s);
     }
 
-    void deallocate(T* const p, size_type) {
-        if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-            ::_aligned_free(p);
-        } else {
-            std::free(p);
-        }
+    void deallocate(T* const p, const size_type n) noexcept {
+        std::allocator<T>{}.deallocate(p, n);
     }
 
     operator std::pmr::polymorphic_allocator<void>() const {
         return {};
     }
 
-    bool operator==(const StatelessAlloc&) const = default;
+    template <class U>
+    bool operator==(const StatelessAlloc<U, AlwaysEqual, DifferenceType>&) const noexcept {
+        return true;
+    }
 };
 
 static_assert(std::default_initializable<StatelessAlloc<int>>);
+
+template <class T>
+struct StatefulAlloc {
+    using value_type = T;
+
+    int domain;
+
+    explicit StatefulAlloc(int dom) noexcept : domain{dom} {}
+
+    template <class U>
+    constexpr StatefulAlloc(const StatefulAlloc<U>& that) noexcept : domain{that.domain} {}
+
+    T* allocate(const size_t n) {
+        return std::allocator<T>{}.allocate(n);
+    }
+
+    void deallocate(T* const p, const size_t n) noexcept {
+        return std::allocator<T>{}.deallocate(p, n);
+    }
+
+    template <class U>
+    constexpr bool operator==(const StatefulAlloc<U>& that) noexcept {
+        return domain == that.domain;
+    }
+};
+
+static_assert(!std::default_initializable<StatefulAlloc<int>>);
 
 struct MoveOnly {
     MoveOnly()                           = default;
