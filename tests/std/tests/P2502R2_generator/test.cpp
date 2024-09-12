@@ -115,81 +115,6 @@ generator<tuple<ranges::range_reference_t<Rng1>, ranges::range_reference_t<Rng2>
     }
 }
 
-template <class Reference = const int&>
-generator<Reference, int> co_upto(const int hi) {
-    assert(hi >= 0);
-    for (int i = 0; i < hi; ++i) {
-        co_yield i;
-    }
-}
-
-// Verify behavior with unerased allocator types
-void static_allocator_test() {
-    {
-        auto g = [](const int hi) -> generator<int, int, StatelessAlloc<char>> {
-            constexpr size_t n = 64;
-            int some_ints[n];
-            for (int i = 0; i < hi; ++i) {
-                co_yield some_ints[i % n] = i;
-            }
-        };
-
-        test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(
-            g(1024), std::identity{}, views::iota(0, 1024));
-    }
-
-    {
-        auto g = [](allocator_arg_t, StatelessAlloc<int>, const int hi) -> generator<int, int, StatelessAlloc<char>> {
-            constexpr size_t n = 64;
-            int some_ints[n];
-            for (int i = 0; i < hi; ++i) {
-                co_yield some_ints[i % n] = i;
-            }
-        };
-
-        test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(
-            g(allocator_arg, {}, 1024), std::identity{}, views::iota(0, 1024));
-    }
-
-#ifndef __EDG__ // TRANSITION, VSO-1951821
-    {
-        auto g = [](allocator_arg_t, StatefulAlloc<int>, const int hi) -> generator<int, int, StatefulAlloc<char>> {
-            constexpr size_t n = 64;
-            int some_ints[n];
-            for (int i = 0; i < hi; ++i) {
-                co_yield some_ints[i % n] = i;
-            }
-        };
-
-        test_one<gen_traits<int, int, StatefulAlloc<char>>, int, int, int>(
-            g(allocator_arg, StatefulAlloc<int>{42}, 1024), std::identity{}, views::iota(0, 1024));
-    }
-#endif // ^^^ no workaround ^^^
-}
-
-// Verify behavior with erased allocator types
-void dynamic_allocator_test() {
-    auto g = [](allocator_arg_t, const auto&, const int hi) -> generator<int> {
-        constexpr size_t n = 64;
-        int some_ints[n];
-        for (int i = 0; i < hi; ++i) {
-            co_yield some_ints[i % n] = i;
-        }
-    };
-
-    test_one<gen_traits<int>, int, int&&, int&&>(
-        g(allocator_arg, allocator<float>{}, 1024), std::identity{}, views::iota(0, 1024));
-    test_one<gen_traits<int>, int, int&&, int&&>(
-        g(allocator_arg, StatelessAlloc<float>{}, 1024), std::identity{}, views::iota(0, 1024));
-#ifndef __EDG__ // TRANSITION, VSO-1951821
-    test_one<gen_traits<int>, int, int&&, int&&>(
-        g(allocator_arg, StatefulAlloc<float>{1729}, 1024), std::identity{}, views::iota(0, 1024));
-#endif // ^^^ no workaround ^^^
-    pmr::synchronized_pool_resource pool;
-    test_one<gen_traits<int>, int, int&&, int&&>(
-        g(allocator_arg, pmr::polymorphic_allocator<>{&pool}, 1024), std::identity{}, views::iota(0, 1024));
-}
-
 void zip_example() {
     using V = tuple<int, int>;
     using R = tuple<int&, int&>;
@@ -199,6 +124,57 @@ void zip_example() {
 
     g0 = co_zip(array{3, 2, 1}, vector{10, 20, 30, 40, 50});
     test_one<gen_traits<R, V>, V, R, R>(move(g0), std::identity{}, array{tuple{3, 10}, tuple{2, 20}, tuple{1, 30}});
+}
+
+template <class Reference = const int&>
+generator<Reference, int> co_upto(const int hi) {
+    assert(hi >= 0);
+    for (int i = 0; i < hi; ++i) {
+        co_yield i;
+    }
+}
+
+void test_weird_reference_types() {
+    constexpr int n = 32;
+    { // Test mutable lvalue reference type
+        auto r   = co_upto<int&>(n);
+        auto pos = r.begin();
+        for (int i = 0; i < n / 2; ++i, ++*pos, ++pos) {
+            assert(pos != r.end());
+            assert(*pos == 2 * i);
+        }
+        assert(pos == r.end());
+    }
+
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
+    { // Test with mutable xvalue reference type
+        auto woof = [](size_t size, size_t count) -> generator<vector<int>&&> {
+            random_device rd{};
+            uniform_int_distribution dist{0, 99};
+            vector<int> vec;
+            while (count-- > 0) {
+                vec.resize(size);
+                ranges::generate(vec, [&] { return dist(rd); });
+                co_yield move(vec);
+                assert(vec.empty()); // when we yield an rvalue, the caller moves from it
+            }
+
+            // Test yielding lvalue
+            vec.resize(size);
+            ranges::generate(vec, [&] { return dist(rd); });
+            const auto tmp = vec;
+            co_yield vec;
+            assert(tmp == vec); // when we yield an lvalue, the caller moves from a copy
+        };
+
+        constexpr size_t size = 16;
+        auto r                = woof(size, 4);
+        for (auto i = r.begin(); i != r.end(); ++i) {
+            vector<int> vec = *i;
+            assert(vec.size() == size);
+        }
+    }
+#endif // ^^^ no workaround ^^^
 }
 
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
@@ -277,47 +253,71 @@ void adl_proof_test() {
 #endif // ^^^ no workaround ^^^
 #endif // ^^^ no workaround ^^^
 
-void test_weird_reference_types() {
-    constexpr int n = 32;
-    { // Test mutable lvalue reference type
-        auto r   = co_upto<int&>(n);
-        auto pos = r.begin();
-        for (int i = 0; i < n / 2; ++i, ++*pos, ++pos) {
-            assert(pos != r.end());
-            assert(*pos == 2 * i);
-        }
-        assert(pos == r.end());
-    }
-
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
-    { // Test with mutable xvalue reference type
-        auto woof = [](size_t size, size_t count) -> generator<vector<int>&&> {
-            random_device rd{};
-            uniform_int_distribution dist{0, 99};
-            vector<int> vec;
-            while (count-- > 0) {
-                vec.resize(size);
-                ranges::generate(vec, [&] { return dist(rd); });
-                co_yield move(vec);
-                assert(vec.empty()); // when we yield an rvalue, the caller moves from it
+// Verify behavior with unerased allocator types
+void static_allocator_test() {
+    {
+        auto g = [](const int hi) -> generator<int, int, StatelessAlloc<char>> {
+            constexpr size_t n = 64;
+            int some_ints[n];
+            for (int i = 0; i < hi; ++i) {
+                co_yield some_ints[i % n] = i;
             }
-
-            // Test yielding lvalue
-            vec.resize(size);
-            ranges::generate(vec, [&] { return dist(rd); });
-            const auto tmp = vec;
-            co_yield vec;
-            assert(tmp == vec); // when we yield an lvalue, the caller moves from a copy
         };
 
-        constexpr size_t size = 16;
-        auto r                = woof(size, 4);
-        for (auto i = r.begin(); i != r.end(); ++i) {
-            vector<int> vec = *i;
-            assert(vec.size() == size);
-        }
+        test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(
+            g(1024), std::identity{}, views::iota(0, 1024));
+    }
+
+    {
+        auto g = [](allocator_arg_t, StatelessAlloc<int>, const int hi) -> generator<int, int, StatelessAlloc<char>> {
+            constexpr size_t n = 64;
+            int some_ints[n];
+            for (int i = 0; i < hi; ++i) {
+                co_yield some_ints[i % n] = i;
+            }
+        };
+
+        test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(
+            g(allocator_arg, {}, 1024), std::identity{}, views::iota(0, 1024));
+    }
+
+#ifndef __EDG__ // TRANSITION, VSO-1951821
+    {
+        auto g = [](allocator_arg_t, StatefulAlloc<int>, const int hi) -> generator<int, int, StatefulAlloc<char>> {
+            constexpr size_t n = 64;
+            int some_ints[n];
+            for (int i = 0; i < hi; ++i) {
+                co_yield some_ints[i % n] = i;
+            }
+        };
+
+        test_one<gen_traits<int, int, StatefulAlloc<char>>, int, int, int>(
+            g(allocator_arg, StatefulAlloc<int>{42}, 1024), std::identity{}, views::iota(0, 1024));
     }
 #endif // ^^^ no workaround ^^^
+}
+
+// Verify behavior with erased allocator types
+void dynamic_allocator_test() {
+    auto g = [](allocator_arg_t, const auto&, const int hi) -> generator<int> {
+        constexpr size_t n = 64;
+        int some_ints[n];
+        for (int i = 0; i < hi; ++i) {
+            co_yield some_ints[i % n] = i;
+        }
+    };
+
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        g(allocator_arg, allocator<float>{}, 1024), std::identity{}, views::iota(0, 1024));
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        g(allocator_arg, StatelessAlloc<float>{}, 1024), std::identity{}, views::iota(0, 1024));
+#ifndef __EDG__ // TRANSITION, VSO-1951821
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        g(allocator_arg, StatefulAlloc<float>{1729}, 1024), std::identity{}, views::iota(0, 1024));
+#endif // ^^^ no workaround ^^^
+    pmr::synchronized_pool_resource pool;
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        g(allocator_arg, pmr::polymorphic_allocator<>{&pool}, 1024), std::identity{}, views::iota(0, 1024));
 }
 
 static atomic<bool> allow_allocation = true;
