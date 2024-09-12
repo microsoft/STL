@@ -85,8 +85,8 @@ public:
         _Mysb::swap(_Right);
     }
 
-    basic_stringbuf& operator=(basic_stringbuf&& _Right) noexcept(
-        _Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
+    basic_stringbuf& operator=(basic_stringbuf&& _Right)
+        noexcept(_Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Assign_rv_no_alias(_STD move(_Right));
         }
@@ -135,8 +135,8 @@ public:
         _Right._Tidy();
     }
 
-    void _Assign_rv_no_alias(basic_stringbuf&& _Right) noexcept(
-        _Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) {
+    void _Assign_rv_no_alias(basic_stringbuf&& _Right)
+        noexcept(_Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) {
         // pre: this != std::addressof(_Right)
         _Tidy();
         if constexpr (_Choose_pocma_v<_Alloc> == _Pocma_values::_No_propagate_allocators) {
@@ -654,8 +654,8 @@ public:
         : _Mybase(_STD addressof(_Stringbuffer)),
           _Stringbuffer((_Mybase::swap(_Right), _STD move(_Right._Stringbuffer))) {}
 
-    basic_istringstream& operator=(basic_istringstream&& _Right) noexcept(
-        _Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
+    basic_istringstream& operator=(basic_istringstream&& _Right)
+        noexcept(_Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
             _Stringbuffer._Assign_rv_no_alias(_STD move(_Right._Stringbuffer));
@@ -773,8 +773,8 @@ public:
         : _Mybase(_STD addressof(_Stringbuffer)),
           _Stringbuffer((_Mybase::swap(_Right), _STD move(_Right._Stringbuffer))) {}
 
-    basic_ostringstream& operator=(basic_ostringstream&& _Right) noexcept(
-        _Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
+    basic_ostringstream& operator=(basic_ostringstream&& _Right)
+        noexcept(_Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
             _Stringbuffer._Assign_rv_no_alias(_STD move(_Right._Stringbuffer));
@@ -898,8 +898,8 @@ public:
         : _Mybase(_STD addressof(_Stringbuffer)),
           _Stringbuffer((_Mybase::swap(_Right), _STD move(_Right._Stringbuffer))) {}
 
-    basic_stringstream& operator=(basic_stringstream&& _Right) noexcept(
-        _Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
+    basic_stringstream& operator=(basic_stringstream&& _Right)
+        noexcept(_Choose_pocma_v<_Alloc> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Mybase::swap(_Right);
             _Stringbuffer._Assign_rv_no_alias(_STD move(_Right._Stringbuffer));

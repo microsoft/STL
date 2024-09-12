@@ -146,7 +146,7 @@ struct bit_not {
 template <>
 struct divides<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
         -> decltype(_STD forward<_Ty1>(_Left) / _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) / _STD forward<_Ty2>(_Right);
     }
@@ -157,7 +157,7 @@ struct divides<void> {
 template <>
 struct modulus<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
         -> decltype(_STD forward<_Ty1>(_Left) % _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) % _STD forward<_Ty2>(_Right);
     }
@@ -180,7 +180,7 @@ struct negate<void> {
 template <>
 struct logical_and<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
         -> decltype(_STD forward<_Ty1>(_Left) && _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) && _STD forward<_Ty2>(_Right);
     }
@@ -191,7 +191,7 @@ struct logical_and<void> {
 template <>
 struct logical_or<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
         -> decltype(_STD forward<_Ty1>(_Left) || _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) || _STD forward<_Ty2>(_Right);
     }
@@ -212,7 +212,7 @@ struct logical_not<void> {
 template <>
 struct bit_and<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
         -> decltype(_STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right);
     }
@@ -223,7 +223,7 @@ struct bit_and<void> {
 template <>
 struct bit_or<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
         -> decltype(_STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right);
     }
@@ -234,7 +234,7 @@ struct bit_or<void> {
 template <>
 struct bit_xor<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
         -> decltype(_STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right);
     }
@@ -573,8 +573,8 @@ public:
 
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) const
-        noexcept(noexcept(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)))
-            -> decltype(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)) {
+        noexcept(noexcept(_STD invoke(_Pm, _STD forward<_Types>(_Args)...))) //
+        -> decltype(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)) {
         return _STD invoke(_Pm, _STD forward<_Types>(_Args)...);
     }
 };
@@ -602,8 +602,8 @@ private:
 
 public:
     template <class _Callable, class _Tag, enable_if_t<is_same_v<_Tag, _Not_fn_tag>, int> = 0>
-    constexpr explicit _Not_fn(_Callable&& _Obj, _Tag) noexcept(
-        is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
+    constexpr explicit _Not_fn(_Callable&& _Obj, _Tag)
+        noexcept(is_nothrow_constructible_v<_Decayed, _Callable>) // strengthened
         : _Mybase(_STD forward<_Callable>(_Obj)) {} // store a callable object
 
     constexpr _Not_fn(const _Not_fn&) = default;
@@ -652,28 +652,28 @@ public:
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class... _Types>
     auto operator()(_Types&&... _Args) & noexcept(
-        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...)))
+        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...))) //
         -> decltype(!_STD declval<invoke_result_t<_Decayed&, _Types...>>()) {
         return !_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
     auto operator()(_Types&&... _Args) const& noexcept(
-        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...)))
+        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...))) //
         -> decltype(!_STD declval<invoke_result_t<const _Decayed&, _Types...>>()) {
         return !_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
     auto operator()(_Types&&... _Args) && noexcept(
-        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...)))
+        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...))) //
         -> decltype(!_STD declval<invoke_result_t<_Decayed, _Types...>>()) {
         return !_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
     auto operator()(_Types&&... _Args) const&& noexcept(
-        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...)))
+        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...))) //
         -> decltype(!_STD declval<invoke_result_t<const _Decayed, _Types...>>()) {
         return !_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...);
     }
@@ -681,8 +681,8 @@ public:
 };
 
 _EXPORT_STD template <class _Callable>
-_NODISCARD _CONSTEXPR20 _Not_fn<decay_t<_Callable>> not_fn(_Callable&& _Obj) noexcept(
-    is_nothrow_constructible_v<decay_t<_Callable>, _Callable>) /* strengthened */ {
+_NODISCARD _CONSTEXPR20 _Not_fn<decay_t<_Callable>> not_fn(_Callable&& _Obj)
+    noexcept(is_nothrow_constructible_v<decay_t<_Callable>, _Callable>) /* strengthened */ {
     // wrap a callable object to be negated
     static_assert(is_move_constructible_v<decay_t<_Callable>>,
         "the callable type used with std::not_fn should be move constructible.");
@@ -1836,23 +1836,20 @@ class move_only_function : private _Move_only_function_call<_Signature...> {
 private:
     using _Call = _Move_only_function_call<_Signature...>;
 
-    // clang-format off
     template <class _Fn>
-    static constexpr bool _Enable_one_arg_constructor =
-        !is_same_v<remove_cvref_t<_Fn>, move_only_function>
-        && !_Is_specialization_v<remove_cvref_t<_Fn>, in_place_type_t>
-        && _Call::template _Is_callable_from<decay_t<_Fn>>;
+    static constexpr bool _Enable_one_arg_constructor = !is_same_v<remove_cvref_t<_Fn>, move_only_function>
+                                                     && !_Is_specialization_v<remove_cvref_t<_Fn>, in_place_type_t>
+                                                     && _Call::template _Is_callable_from<decay_t<_Fn>>;
 
     template <class _Fn, class... _CTypes>
     static constexpr bool _Enable_in_place_constructor =
-        is_constructible_v<decay_t<_Fn>, _CTypes...>
-        && _Call::template _Is_callable_from<decay_t<_Fn>>;
+        is_constructible_v<decay_t<_Fn>, _CTypes...> && _Call::template _Is_callable_from<decay_t<_Fn>>;
 
     template <class _Fn, class _Ux, class... _CTypes>
     static constexpr bool _Enable_in_place_list_constructor =
         is_constructible_v<decay_t<_Fn>, initializer_list<_Ux>&, _CTypes...>
         && _Call::template _Is_callable_from<decay_t<_Fn>>;
-    // clang-format on
+
 public:
     using typename _Call::result_type;
 
@@ -2013,16 +2010,16 @@ template <class _Cv_TiD>
 struct _Select_fixer<_Cv_TiD, false, true, 0> { // nested bind fixer
     template <class _Untuple, size_t... _Jx,
         enable_if_t<conjunction_v<bool_constant<(_Jx < tuple_size_v<_Untuple>)>...>, int> = 0>
-    static constexpr auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut, index_sequence<_Jx...>) noexcept(
-        noexcept(_Tid(_STD get<_Jx>(_STD move(_Ut))...))) -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) {
+    static constexpr auto _Apply(_Cv_TiD& _Tid, _Untuple&& _Ut, index_sequence<_Jx...>)
+        noexcept(noexcept(_Tid(_STD get<_Jx>(_STD move(_Ut))...))) -> decltype(_Tid(_STD get<_Jx>(_STD move(_Ut))...)) {
         // call a nested bind expression
         return _Tid(_STD get<_Jx>(_STD move(_Ut))...);
     }
 
     template <class _Untuple>
-    static constexpr auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
-        noexcept(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})))
-        -> decltype(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})) {
+    static constexpr auto _Fix(_Cv_TiD& _Tid, _Untuple&& _Ut)
+        noexcept(noexcept(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})))
+            -> decltype(_Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{})) {
         // call a nested bind expression
         return _Apply(_Tid, _STD move(_Ut), make_index_sequence<tuple_size_v<_Untuple>>{});
     }
@@ -2049,8 +2046,8 @@ struct _Select_fixer<_Cv_TiD, false, false, _Jx> { // placeholder fixer
 };
 
 template <class _Cv_TiD, class _Untuple>
-constexpr auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
-    noexcept(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut))))
+constexpr auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut)
+    noexcept(noexcept(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut)))) //
     -> decltype(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut))) { // translate an argument for bind
     return _Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut));
 }
@@ -2080,18 +2077,18 @@ struct _Invoker_ret { // selected for all _Rx other than _Unforced
 template <>
 struct _Invoker_ret<_Unforced> { // selected for _Rx being _Unforced
     template <class _Fx, class... _Valtys>
-    static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(
-        _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
-        -> decltype(_STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
+    static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals)
+        noexcept(_Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
+            -> decltype(_STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...)) { // INVOKE, unchanged
         return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
     }
 };
 
 template <class _Ret, size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class _Untuple>
-_CONSTEXPR20 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl,
-    _Untuple&& _Ut) noexcept(noexcept(_Invoker_ret<_Ret>::_Call(_Obj,
-    _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)))
-    -> decltype(_Invoker_ret<_Ret>::_Call(_Obj, _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)) {
+_CONSTEXPR20 auto _Call_binder(
+    _Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl, _Untuple&& _Ut)
+    noexcept(noexcept(_Invoker_ret<_Ret>::_Call(_Obj, _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)))
+        -> decltype(_Invoker_ret<_Ret>::_Call(_Obj, _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...)) {
     // bind() and bind<R>() invocation
     return _Invoker_ret<_Ret>::_Call(_Obj, _STD _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...);
 }
@@ -2220,9 +2217,9 @@ namespace placeholders {
 
 #if _HAS_CXX20
 template <size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class... _Unbound>
-constexpr auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl,
-    _Unbound&&... _Unbargs) noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj),
-    _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))..., _STD forward<_Unbound>(_Unbargs)...)))
+constexpr auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl, _Unbound&&... _Unbargs)
+    noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...,
+        _STD forward<_Unbound>(_Unbargs)...))) //
     -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...,
         _STD forward<_Unbound>(_Unbargs)...)) {
     return _STD invoke(_STD forward<_Cv_FD>(_Obj), _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...,
@@ -2313,11 +2310,11 @@ _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
 
 #if _HAS_CXX23
 template <size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class... _Unbound>
-constexpr auto _Call_back_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl,
-    _Unbound&&... _Unbargs) noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj),
-    _STD forward<_Unbound>(_Unbargs)..., _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)))
-    -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
-        _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)) {
+constexpr auto _Call_back_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl, _Unbound&&... _Unbargs)
+    noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
+        _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)))
+        -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
+            _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)) {
     return _STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
         _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...);
 }
@@ -2458,6 +2455,29 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
     if constexpr (_Is_ranges_random_iter_v<_FwdItHaystack> && _Is_ranges_random_iter_v<_FwdItPat>) {
         _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
         _Iter_diff_t<_FwdItPat> _Count2      = _Last2 - _First2;
+
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (_Vector_alg_in_search_is_safe<_FwdItHaystack, _FwdItPat, _Pred_eq>) {
+            if (!_STD _Is_constant_evaluated()) {
+                const auto _Ptr1 = _STD _To_address(_First1);
+
+                const auto _Ptr_res1 = _STD _Search_vectorized(
+                    _Ptr1, _STD _To_address(_Last1), _STD _To_address(_First2), static_cast<size_t>(_Count2));
+
+                if constexpr (is_pointer_v<_FwdItHaystack>) {
+                    _First1 = _Ptr_res1;
+                } else {
+                    _First1 += _Ptr_res1 - _Ptr1;
+                }
+
+                if (_First1 != _Last1) {
+                    return {_First1, _First1 + static_cast<_Iter_diff_t<_FwdItHaystack>>(_Count2)};
+                } else {
+                    return {_Last1, _Last1};
+                }
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
         for (; _Count2 <= _Count1; ++_First1, (void) --_Count1) { // room for match, try it
             _FwdItHaystack _Mid1 = _First1;

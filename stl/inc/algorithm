@@ -59,15 +59,6 @@ const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* 
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
-const void* __stdcall __std_find_first_of_trivial_1(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-const void* __stdcall __std_find_first_of_trivial_2(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-const void* __stdcall __std_find_first_of_trivial_4(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-const void* __stdcall __std_find_first_of_trivial_8(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_2i __stdcall __std_minmax_2i(const void* _First, const void* _Last) noexcept;
@@ -198,27 +189,6 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
     }
 }
 
-template <class _Ty1, class _Ty2>
-_Ty1* _Find_first_of_vectorized(
-    _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, _Ty2* const _Last2) noexcept {
-    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Ty1) == sizeof(_Ty2));
-    if constexpr (sizeof(_Ty1) == 1) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_1(_First1, _Last1, _First2, _Last2)));
-    } else if constexpr (sizeof(_Ty1) == 2) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_2(_First1, _Last1, _First2, _Last2)));
-    } else if constexpr (sizeof(_Ty1) == 4) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_4(_First1, _Last1, _First2, _Last2)));
-    } else if constexpr (sizeof(_Ty1) == 8) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_8(_First1, _Last1, _First2, _Last2)));
-    } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
-    }
-}
-
 template <class _Ty, class _TVal1, class _TVal2>
 __declspec(noalias) void _Replace_vectorized(
     _Ty* const _First, _Ty* const _Last, const _TVal1 _Old_val, const _TVal2 _New_val) noexcept {
@@ -236,9 +206,6 @@ __declspec(noalias) void _Replace_vectorized(
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
-
-// find_first_of vectorization is likely to be a win after this size (in elements)
-_INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
 
 // Can we activate the vector algorithms for find_first_of?
 template <class _It1, class _It2, class _Pr>
@@ -2140,6 +2107,26 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
     if constexpr (_Is_ranges_random_iter_v<_FwdItHaystack> && _Is_ranges_random_iter_v<_FwdItPat>) {
         const _Iter_diff_t<_FwdItPat> _Count2 = _ULast2 - _UFirst2;
         if (_ULast1 - _UFirst1 >= _Count2) {
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+                if (!_STD _Is_constant_evaluated()) {
+                    const auto _Ptr1 = _STD _To_address(_UFirst1);
+
+                    const auto _Ptr_res1 = _STD _Search_vectorized(
+                        _Ptr1, _STD _To_address(_ULast1), _STD _To_address(_UFirst2), static_cast<size_t>(_Count2));
+
+                    if constexpr (is_pointer_v<decltype(_UFirst1)>) {
+                        _UFirst1 = _Ptr_res1;
+                    } else {
+                        _UFirst1 += _Ptr_res1 - _Ptr1;
+                    }
+
+                    _STD _Seek_wrapped(_Last1, _UFirst1);
+                    return _Last1;
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
             const auto _Last_possible = _ULast1 - static_cast<_Iter_diff_t<_FwdItHaystack>>(_Count2);
             for (;; ++_UFirst1) {
                 if (_STD _Equal_rev_pred_unchecked(_UFirst1, _UFirst2, _ULast2, _STD _Pass_fn(_Pred))) {
@@ -7064,9 +7051,9 @@ namespace ranges {
 
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Lower_bound_unchecked(
-        _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
+        _It _First, iter_difference_t<_It> _Count, _Ty&& _Val, _Pr _Pred, _Pj _Proj) {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, const _Ty*, projected<_It, _Pj>>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, add_pointer_t<_Ty>, projected<_It, _Pj>>);
 
         using _Diff = iter_difference_t<_It>;
 
@@ -7115,9 +7102,9 @@ namespace ranges {
 
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Upper_bound_unchecked(
-        _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
+        _It _First, iter_difference_t<_It> _Count, _Ty&& _Val, _Pr _Pred, _Pj _Proj) {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, const _Ty*, projected<_It, _Pj>>);
+        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, add_pointer_t<_Ty>, projected<_It, _Pj>>);
 
         using _Diff = iter_difference_t<_It>;
 
@@ -10186,9 +10173,9 @@ namespace ranges {
 #endif // _HAS_CXX17
 
 _EXPORT_STD template <class _Ty, class _Pr>
-_NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left _MSVC_LIFETIMEBOUND,
-    const _Ty& _Right _MSVC_LIFETIMEBOUND,
-    _Pr _Pred) noexcept(noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
+_NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(
+    const _Ty& _Left _MSVC_LIFETIMEBOUND, const _Ty& _Right _MSVC_LIFETIMEBOUND, _Pr _Pred)
+    noexcept(noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
     // return pair(leftmost/smaller, rightmost/larger) of _Left and _Right
     if (_DEBUG_LT_PRED(_Pred, _Right, _Left)) {
         return {_Right, _Left};
@@ -10260,6 +10247,21 @@ namespace ranges {
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (is_same_v<_Pj, identity>) {
+                if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _Result = _STD _Minmax_vectorized(_First, _Last);
+                        return {static_cast<_Ty>(_Result._Min), static_cast<_Ty>(_Result._Max)};
+                    }
+                } else if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _Result = _STD _Minmax_element_vectorized(_First, _Last);
+                        return {*static_cast<const _Ty*>(_Result.first), *static_cast<const _Ty*>(_Result.second)};
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
             return _Minmax_fwd_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -10272,11 +10274,30 @@ namespace ranges {
             auto _ULast  = _RANGES _Uend(_Range);
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
+            using _Vty = range_value_t<_Rng>;
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
+                if constexpr (_Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _First_ptr = _STD to_address(_UFirst);
+                        const auto _Last_ptr  = _First_ptr + (_ULast - _UFirst);
+                        const auto _Result    = _STD _Minmax_vectorized(_First_ptr, _Last_ptr);
+                        return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
+                    }
+                } else if constexpr (_Is_min_max_optimization_safe<decltype(_UFirst), _Pr>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _First_ptr = _STD to_address(_UFirst);
+                        const auto _Last_ptr  = _First_ptr + (_ULast - _UFirst);
+                        const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
+                        return {*static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return _Minmax_fwd_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             } else {
-                using _Vty = range_value_t<_Rng>;
                 // This initialization is correct, similar to the N4950 [dcl.init.aggr]/6 example
                 minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), _Found.min};
                 if (_UFirst == _ULast) {
@@ -10331,25 +10352,6 @@ namespace ranges {
             _STL_INTERNAL_CHECK(_First != _Last);
 
             using _Vty = iter_value_t<_It>;
-#if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>) {
-                if constexpr (_Is_min_max_value_optimization_safe<_It, _Pr>) {
-                    if (!_STD is_constant_evaluated()) {
-                        const auto _First_ptr = _STD to_address(_First);
-                        const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                        const auto _Result    = _STD _Minmax_vectorized(_First_ptr, _Last_ptr);
-                        return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
-                    }
-                } else if constexpr (_Is_min_max_optimization_safe<_It, _Pr>) {
-                    if (!_STD is_constant_evaluated()) {
-                        const auto _First_ptr = _STD to_address(_First);
-                        const auto _Last_ptr  = _First_ptr + (_Last - _First);
-                        const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
-                        return {*static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
-                    }
-                }
-            }
-#endif // _USE_STD_VECTOR_ALGORITHMS
 
             auto _Found_min = _First;
             if (++_First == _Last) {

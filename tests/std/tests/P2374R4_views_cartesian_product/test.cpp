@@ -57,10 +57,8 @@ concept UnsignedIntegerLike = _Integer_like<T> && !_Signed_integer_like<T>;
 
 template <class First, class... Rest>
 constexpr bool is_iter_move_nothrow() {
-    constexpr bool is_inner_iter_move_nothrow =
-        (noexcept(ranges::iter_move(declval<const iterator_t<First>&>()))
-            && ... //
-                && noexcept(ranges::iter_move(declval<const iterator_t<Rest>&>())));
+    constexpr bool is_inner_iter_move_nothrow = (noexcept(ranges::iter_move(declval<const iterator_t<First>&>())) && ...
+                                                 && noexcept(ranges::iter_move(declval<const iterator_t<Rest>&>())));
     constexpr bool are_references_nothrow_movable =
         conjunction_v<is_nothrow_move_constructible<ranges::range_rvalue_reference_t<First>>,
             is_nothrow_move_constructible<ranges::range_rvalue_reference_t<Rest>>...>;
@@ -71,7 +69,7 @@ template <class First, class... Rest>
 constexpr bool is_iter_swap_nothrow() {
     return (noexcept(ranges::iter_swap(declval<const iterator_t<First>&>(), declval<const iterator_t<First>&>()))
             && ... //
-                && noexcept(ranges::iter_swap(declval<const iterator_t<Rest>&>(), declval<const iterator_t<Rest>&>())));
+            && noexcept(ranges::iter_swap(declval<const iterator_t<Rest>&>(), declval<const iterator_t<Rest>&>())));
 }
 
 template <class Expected, ranges::input_range First, ranges::forward_range... Rest>
@@ -474,7 +472,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             if constexpr ((random_access_range<VFirst> && ...
                               && random_access_range<all_t<Rest>>) ) { // Check 3way comparisons
                 using Cat              = common_comparison_category_t<compare_three_way_result_t<iterator_t<VFirst>>,
-                    compare_three_way_result_t<iterator_t<all_t<Rest>>>...>;
+                                 compare_three_way_result_t<iterator_t<all_t<Rest>>>...>;
                 auto i2                = r.begin();
                 same_as<Cat> auto cmp1 = i <=> i2;
                 assert(cmp1 == Cat::equivalent);
@@ -791,7 +789,7 @@ constexpr void test_iter_swap(Rngs&... rngs) {
     }
 
     // Check iter_swap for cartesian_product_view::iterator<const>
-    if constexpr (((CanMemberBegin<const Rngs&> && indirectly_swappable<iterator_t<const Rngs&>>) &&...)) {
+    if constexpr (((CanMemberBegin<const Rngs&> && indirectly_swappable<iterator_t<const Rngs&>>) && ...)) {
         using CVal  = ranges::range_value_t<const R>;
         auto i      = as_const(r).begin();
         CVal first  = *i;

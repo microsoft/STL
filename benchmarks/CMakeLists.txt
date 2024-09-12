@@ -104,11 +104,10 @@ function(add_benchmark name)
     target_compile_features(benchmark-${name} PRIVATE cxx_std_${arg_CXX_STANDARD})
     target_include_directories(benchmark-${name} PRIVATE inc)
     target_link_libraries(benchmark-${name} PRIVATE benchmark::benchmark)
-    # TRANSITION, google/benchmark#1450
-    target_compile_definitions(benchmark-${name} PRIVATE BENCHMARK_STATIC_DEFINE)
 endfunction()
 
 add_benchmark(bitset_to_string src/bitset_to_string.cpp)
+add_benchmark(efficient_nonlocking_print src/efficient_nonlocking_print.cpp)
 add_benchmark(find_and_count src/find_and_count.cpp)
 add_benchmark(find_first_of src/find_first_of.cpp)
 add_benchmark(iota src/iota.cpp)

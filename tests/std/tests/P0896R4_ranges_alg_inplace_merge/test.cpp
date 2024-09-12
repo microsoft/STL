@@ -4,9 +4,11 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
+#include <cstddef>
 #include <ranges>
 #include <span>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -55,6 +57,26 @@ struct instantiator {
         }
     }
 };
+
+// Test GH-4863: <algorithm>: ranges::inplace_merge doesn't seem to be able to utilize ranges::upper_bound
+void test_gh_4863() { // COMPILE-ONLY
+    {
+        vector<int> v;
+        auto cmp = [](int&, int&) { return false; };
+        ranges::sort(v, cmp);
+        ranges::inplace_merge(v, v.begin(), cmp);
+    }
+    {
+        struct S {
+            operator nullptr_t() {
+                return nullptr;
+            }
+        };
+        vector<int> v;
+        auto cmp = [](const nullptr_t&, const nullptr_t&) { return false; };
+        ranges::inplace_merge(v, v.begin(), cmp, [](int) { return S{}; });
+    }
+}
 
 int main() {
     test_bidi<instantiator, P>();

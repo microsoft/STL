@@ -279,8 +279,8 @@ namespace stdext {
     };
 
     template <class _Kty, class _Ty, class _Tr, class _Alloc>
-    void swap(hash_map<_Kty, _Ty, _Tr, _Alloc>& _Left, hash_map<_Kty, _Ty, _Tr, _Alloc>& _Right) noexcept(
-        noexcept(_Left.swap(_Right))) {
+    void swap(hash_map<_Kty, _Ty, _Tr, _Alloc>& _Left, hash_map<_Kty, _Ty, _Tr, _Alloc>& _Right)
+        noexcept(noexcept(_Left.swap(_Right))) {
         _Left.swap(_Right);
     }
 
@@ -439,8 +439,8 @@ namespace stdext {
     };
 
     template <class _Kty, class _Ty, class _Tr, class _Alloc>
-    void swap(hash_multimap<_Kty, _Ty, _Tr, _Alloc>& _Left, hash_multimap<_Kty, _Ty, _Tr, _Alloc>& _Right) noexcept(
-        noexcept(_Left.swap(_Right))) {
+    void swap(hash_multimap<_Kty, _Ty, _Tr, _Alloc>& _Left, hash_multimap<_Kty, _Ty, _Tr, _Alloc>& _Right)
+        noexcept(noexcept(_Left.swap(_Right))) {
         _Left.swap(_Right);
     }
 

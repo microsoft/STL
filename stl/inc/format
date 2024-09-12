@@ -149,21 +149,16 @@ concept _Precision_adapter_callbacks = requires(_Ty _At) {
     { _At._On_dynamic_precision(size_t{}) } -> same_as<void>;
 };
 
-// clang-format off
 template <class _Ty, class _CharT>
-concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
-                                && _Parse_width_callbacks<_Ty, _CharT>
-                                && _Parse_precision_callbacks<_Ty, _CharT>
-                                && _Width_adapter_callbacks<_Ty, _CharT>
-                                && _Precision_adapter_callbacks<_Ty, _CharT>
-                                && requires(_Ty _At, _Fmt_sign _Sgn) {
+concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT> && _Parse_width_callbacks<_Ty, _CharT>
+                             && _Parse_precision_callbacks<_Ty, _CharT> && _Width_adapter_callbacks<_Ty, _CharT>
+                             && _Precision_adapter_callbacks<_Ty, _CharT> && requires(_Ty _At, _Fmt_sign _Sgn) {
                                     { _At._On_sign(_Sgn) } -> same_as<void>;
                                     { _At._On_hash() } -> same_as<void>;
                                     { _At._On_zero() } -> same_as<void>;
                                     { _At._On_localized() } -> same_as<void>;
                                     { _At._On_type(_CharT{}) } -> same_as<void>;
-};
-// clang-format on
+                                };
 
 template <class _CharT>
 struct _Decode_result {
@@ -715,9 +710,8 @@ public:
 
         template <class _Ty>
         explicit handle(_Ty& _Val) noexcept
-            : _Ptr(_STD addressof(_Val)),
-              _Format([](basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
-                  // TRANSITION, Clang 18, should be marked _STATIC_CALL_OPERATOR
+            : _Ptr(_STD addressof(_Val)), _Format([](basic_format_parse_context<_CharType>& _Parse_ctx,
+                                                      _Context& _Format_ctx, const void* _Ptr) _STATIC_CALL_OPERATOR {
                   using _Td = remove_const_t<_Ty>;
                   // doesn't drop const-qualifier per an unnumbered LWG issue
                   using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
@@ -2199,9 +2193,6 @@ private:
     basic_format_args<basic_format_context> _Args;
     _Lazy_locale _Loc;
 
-    constexpr basic_format_context(_Out&& _OutputIt_, const basic_format_args<basic_format_context>& _Ctx_args)
-        : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args) {}
-
     constexpr basic_format_context(
         _Out&& _OutputIt_, const basic_format_args<basic_format_context>& _Ctx_args, const _Lazy_locale& _Loc_)
         : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
@@ -2236,10 +2227,6 @@ public:
         return _Loc;
     }
 
-    _NODISCARD static constexpr basic_format_context _Make_from(
-        _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args) {
-        return basic_format_context{_STD move(_OutputIt_), _Ctx_args};
-    }
     _NODISCARD static constexpr basic_format_context _Make_from(
         _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const _Lazy_locale& _Loc_) {
         return basic_format_context{_STD move(_OutputIt_), _Ctx_args, _Loc_};
@@ -2355,14 +2342,12 @@ public:
 
 inline constexpr size_t _Fmt_buffer_size = 256;
 
-template <class _Iterator>
-struct _Back_insert_iterator_container_type {
-    using type = void;
-};
-
-template <class _Container>
-struct _Back_insert_iterator_container_type<back_insert_iterator<_Container>> {
-    using type = _Container;
+template <class _OutputIt>
+struct _Fmt_iterator_flush {
+    template <class _Ty>
+    static _OutputIt _Flush(const _Ty* const _First, const _Ty* const _Last, _OutputIt _Output) {
+        return _STD copy(_First, _Last, _STD move(_Output));
+    }
 };
 
 template <class _Container>
@@ -2371,6 +2356,19 @@ struct _Back_insert_iterator_container_access : back_insert_iterator<_Container>
         : back_insert_iterator<_Container>(_Iter) {}
 
     using back_insert_iterator<_Container>::container;
+};
+
+template <class _Container>
+    requires (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>)
+struct _Fmt_iterator_flush<back_insert_iterator<_Container>> {
+    using _OutputIt = back_insert_iterator<_Container>;
+
+    template <class _Ty>
+    static _OutputIt _Flush(const _Ty* const _First, const _Ty* const _Last, _OutputIt _Output) {
+        _Container& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
+        _Cont.insert(_Cont.end(), _First, _Last);
+        return _Output;
+    }
 };
 
 template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
@@ -2390,14 +2388,7 @@ private:
         this->_Clear();
         const auto _End = _Data + this->_Limit(_Size);
 
-        // extracts back_insert_iterator's underlying container type, or void if not.
-        using _Container = _Back_insert_iterator_container_type<_OutputIt>::type;
-        if constexpr (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>) {
-            auto& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
-            _Cont.insert(_Cont.end(), _Data, _End);
-        } else {
-            _Output = _STD _Copy_unchecked(_Data, _End, _STD move(_Output));
-        }
+        _Output = _Fmt_iterator_flush<_OutputIt>::_Flush(_Data, _End, _STD move(_Output));
     }
 
 public:
@@ -2632,16 +2623,16 @@ template <integral _Integral>
 _NODISCARD constexpr string_view _Get_integral_prefix(const char _Type, const _Integral _Value) noexcept {
     switch (_Type) {
     case 'b':
-        return "0b"sv;
+        return string_view{"0b", 2}; // TRANSITION, VSO-1775715 (should use UDLs in this function)
     case 'B':
-        return "0B"sv;
+        return string_view{"0B", 2};
     case 'x':
-        return "0x"sv;
+        return string_view{"0x", 2};
     case 'X':
-        return "0X"sv;
+        return string_view{"0X", 2};
     case 'o':
         if (_Value != _Integral{0}) {
-            return "0"sv;
+            return string_view{"0", 1};
         }
         return {};
     default:
@@ -3497,9 +3488,8 @@ _NODISCARD _OutputIt _Fmt_write(
     int _Width          = _Specs._Precision;
     const _CharT* _Last = _Measure_string_prefix(_Value, _Width);
 
-    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left, [=](_OutputIt _Out) {
-        return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value.data(), _Last});
-    });
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,
+        [=](_OutputIt _Out) { return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value.data(), _Last}); });
 }
 
 // This is the visitor that's used for "simple" replacement fields.
@@ -3605,9 +3595,6 @@ struct _Format_handler {
 
     basic_format_parse_context<_CharT> _Parse_context;
     _Context _Ctx;
-
-    explicit _Format_handler(_OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args)
-        : _Parse_context(_Str), _Ctx(_Context::_Make_from(_STD move(_Out), _Format_args)) {}
 
     explicit _Format_handler(_OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args,
         const _Lazy_locale& _Loc)
@@ -3735,68 +3722,40 @@ _NODISCARD auto make_wformat_args(_Args&... _Vals) {
 }
 
 _FMT_P2286_BEGIN
-_EXPORT_STD template <output_iterator<const char&> _OutputIt>
-_OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
-    // Make `_Parse_format_string` type-dependent to defer instantiation:
-    using _Dependent_char = decltype((void) _Out, char{});
-    if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
-        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args);
+template <class _CharT, output_iterator<const _CharT&> _OutputIt, class _Context>
+_OutputIt _Format_to_it(_OutputIt _Out, const basic_string_view<_CharT> _Fmt, const basic_format_args<_Context> _Args,
+    const _Lazy_locale _Loc) {
+    using _Fmt_it_char = _Basic_fmt_it<_CharT>;
+    if constexpr (is_same_v<_OutputIt, _Fmt_it_char>) {
+        _Format_handler<_CharT> _Handler(_Out, _Fmt, _Args, _Loc);
         _Parse_format_string(_Fmt, _Handler);
         return _Out;
     } else {
-        _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
-        _Format_handler<_Dependent_char> _Handler(_Fmt_it{_Buf}, _Fmt, _Args);
+        _Fmt_iterator_buffer<_OutputIt, _CharT> _Buf(_STD move(_Out));
+        _Format_handler<_CharT> _Handler(_Fmt_it_char{_Buf}, _Fmt, _Args, _Loc);
         _Parse_format_string(_Fmt, _Handler);
         return _Buf._Out();
     }
+}
+
+_EXPORT_STD template <output_iterator<const char&> _OutputIt>
+_OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
+    return _Format_to_it(_STD move(_Out), _Fmt, _Args, _Lazy_locale{});
 }
 
 _EXPORT_STD template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const wstring_view _Fmt, const wformat_args _Args) {
-    // Make `_Parse_format_string` type-dependent to defer instantiation:
-    using _Dependent_char = decltype((void) _Out, wchar_t{});
-    if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
-        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args);
-        _Parse_format_string(_Fmt, _Handler);
-        return _Out;
-    } else {
-        _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
-        _Format_handler<_Dependent_char> _Handler(_Fmt_wit{_Buf}, _Fmt, _Args);
-        _Parse_format_string(_Fmt, _Handler);
-        return _Buf._Out();
-    }
+    return _Format_to_it(_STD move(_Out), _Fmt, _Args, _Lazy_locale{});
 }
 
 _EXPORT_STD template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const format_args _Args) {
-    // Make `_Parse_format_string` type-dependent to defer instantiation:
-    using _Dependent_char = decltype((void) _Out, char{});
-    if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
-        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
-        _Parse_format_string(_Fmt, _Handler);
-        return _Out;
-    } else {
-        _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
-        _Format_handler<_Dependent_char> _Handler(_Fmt_it{_Buf}, _Fmt, _Args, _Lazy_locale{_Loc});
-        _Parse_format_string(_Fmt, _Handler);
-        return _Buf._Out();
-    }
+    return _Format_to_it(_STD move(_Out), _Fmt, _Args, _Lazy_locale{_Loc});
 }
 
 _EXPORT_STD template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
-    // Make `_Parse_format_string` type-dependent to defer instantiation:
-    using _Dependent_char = decltype((void) _Out, wchar_t{});
-    if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
-        _Format_handler<_Dependent_char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
-        _Parse_format_string(_Fmt, _Handler);
-        return _Out;
-    } else {
-        _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
-        _Format_handler<_Dependent_char> _Handler(_Fmt_wit{_Buf}, _Fmt, _Args, _Lazy_locale{_Loc});
-        _Parse_format_string(_Fmt, _Handler);
-        return _Buf._Out();
-    }
+    return _Format_to_it(_STD move(_Out), _Fmt, _Args, _Lazy_locale{_Loc});
 }
 
 _EXPORT_STD template <output_iterator<const char&> _OutputIt, class... _Types>
@@ -4310,8 +4269,8 @@ private:
     range_formatter<_Element_type, _CharT> _Underlying;
 
 public:
-    constexpr _Range_default_formatter() noexcept(
-        is_nothrow_default_constructible_v<range_formatter<_Element_type, _CharT>>) /* strengthened */ {
+    constexpr _Range_default_formatter()
+        noexcept(is_nothrow_default_constructible_v<range_formatter<_Element_type, _CharT>>) /* strengthened */ {
         static_assert(_Is_two_tuple<_Element_type>, "the element type of the formatted range must be either pair<T, U> "
                                                     "or tuple<T, U> (N4981 [format.range.fmtmap]/1)");
 

@@ -1284,10 +1284,7 @@ void test_directory_iterator_common_parts(const string_view typeName) {
 
             EXPECT(throws_filesystem_error([&] { DirectoryIterator bad_dir{nonexistent}; }, typeName, nonexistent));
             EXPECT(throws_filesystem_error(
-                [&] {
-                    DirectoryIterator bad_dir{nonexistent, directory_options::none};
-                },
-                typeName, nonexistent));
+                [&] { DirectoryIterator bad_dir{nonexistent, directory_options::none}; }, typeName, nonexistent));
         }
 
         // Test VSO-844835 "directory_iterator constructed with empty path iterates over the current directory"
@@ -3030,9 +3027,8 @@ void test_locale_conversions() {
         const path p4(utf8_koshka_cat.begin(), utf8_koshka_cat.end(), utf8_locale);
         EXPECT(p4.native() == utf16_koshka_cat);
 
-        EXPECT(throws_system_error([&] {
-            (void) path{utf8_koshka_cat.begin() + 1, utf8_koshka_cat.end(), utf8_locale};
-        }));
+        EXPECT(
+            throws_system_error([&] { (void) path{utf8_koshka_cat.begin() + 1, utf8_koshka_cat.end(), utf8_locale}; }));
     }
 }
 
