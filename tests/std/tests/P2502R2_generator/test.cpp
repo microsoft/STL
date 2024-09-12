@@ -11,7 +11,6 @@
 #include <memory>
 #include <memory_resource>
 #include <new>
-#include <ostream>
 #include <random>
 #include <ranges>
 #include <sstream>
@@ -74,16 +73,29 @@ static_assert(static_checks<gen_traits<const int&, int>, int, const int&, const 
 static_assert(static_checks<gen_traits<int&&, int>, int, int&&, int&&>());
 static_assert(static_checks<gen_traits<int&, int>, int, int&, int&&>());
 
-// [coroutine.generator.overview] Example 1:
+template <class Traits, class ValueType, class ReferenceType, class RvalueReferenceType, class R, class V, class A>
+void test_one(generator<R, V, A> g0, invocable<generator<R, V, A>> auto adaptor, ranges::input_range auto&& expected)
+    requires ranges::input_range<decltype(adaptor(move(g0)))>
+{
+    static_assert(same_as<generator<R, V, A>, typename Traits::generator>);
+    static_assert(static_checks<Traits, ValueType, ReferenceType, RvalueReferenceType>());
+
+    auto g1 = move(g0);
+    auto i  = ranges::cbegin(expected);
+    for (auto&& x : adaptor(move(g1))) {
+        assert(i != ranges::cend(expected));
+        assert(*i == x);
+        ++i;
+        // Verify iterator stays valid after move assignment
+        ranges::swap(g0, g1);
+    }
+    assert(i == ranges::cend(expected));
+}
+
+// Some simple end-to-end tests, mostly from the Working Draft or P2502R2
 generator<int> ints(int start = 0) {
     while (true) {
         co_yield start++;
-    }
-}
-
-void f(ostream& os) {
-    for (auto i : ints() | views::take(3)) {
-        os << i << ' '; // prints '0 1 2 '
     }
 }
 
@@ -119,7 +131,8 @@ void static_allocator_test() {
             }
         };
 
-        assert(ranges::equal(g(1024), views::iota(0, 1024)));
+        test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(
+            g(1024), std::identity{}, views::iota(0, 1024));
     }
 
     {
@@ -131,7 +144,8 @@ void static_allocator_test() {
             }
         };
 
-        assert(ranges::equal(g(allocator_arg, {}, 1024), views::iota(0, 1024)));
+        test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(
+            g(allocator_arg, {}, 1024), std::identity{}, views::iota(0, 1024));
     }
 
 #ifndef __EDG__ // TRANSITION, VSO-1951821
@@ -144,7 +158,8 @@ void static_allocator_test() {
             }
         };
 
-        assert(ranges::equal(g(allocator_arg, StatefulAlloc<int>{42}, 1024), views::iota(0, 1024)));
+        test_one<gen_traits<int, int, StatefulAlloc<char>>, int, int, int>(
+            g(allocator_arg, StatefulAlloc<int>{42}, 1024), std::identity{}, views::iota(0, 1024));
     }
 #endif // ^^^ no workaround ^^^
     {
@@ -171,23 +186,28 @@ void dynamic_allocator_test() {
         }
     };
 
-    assert(ranges::equal(g(allocator_arg, allocator<float>{}, 1024), views::iota(0, 1024)));
-    assert(ranges::equal(g(allocator_arg, StatelessAlloc<float>{}, 1024), views::iota(0, 1024)));
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        g(allocator_arg, allocator<float>{}, 1024), std::identity{}, views::iota(0, 1024));
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        g(allocator_arg, StatelessAlloc<float>{}, 1024), std::identity{}, views::iota(0, 1024));
 #ifndef __EDG__ // TRANSITION, VSO-1951821
-    assert(ranges::equal(g(allocator_arg, StatefulAlloc<float>{1729}, 1024), views::iota(0, 1024)));
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        g(allocator_arg, StatefulAlloc<float>{1729}, 1024), std::identity{}, views::iota(0, 1024));
 #endif // ^^^ no workaround ^^^
     pmr::synchronized_pool_resource pool;
-    assert(ranges::equal(g(allocator_arg, pmr::polymorphic_allocator<int>{&pool}, 1024), views::iota(0, 1024)));
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        g(allocator_arg, pmr::polymorphic_allocator<>{&pool}, 1024), std::identity{}, views::iota(0, 1024));
 }
 
 void zip_example() {
-    int length = 0;
-    for (auto x : co_zip(array{1, 2, 3}, vector{10, 20, 30, 40, 50})) {
-        static_assert(same_as<decltype(x), tuple<int&, int&>>);
-        assert(get<0>(x) * 10 == get<1>(x));
-        ++length;
-    }
-    assert(length == 3);
+    using V = tuple<int, int>;
+    using R = tuple<int&, int&>;
+
+    auto g0 = co_zip(array{1, 2, 3}, vector{10, 20, 30, 40, 50});
+    test_one<gen_traits<R, V>, V, R, R>(move(g0), std::identity{}, array{tuple{1, 10}, tuple{2, 20}, tuple{3, 30}});
+
+    g0 = co_zip(array{3, 2, 1}, vector{10, 20, 30, 40, 50});
+    test_one<gen_traits<R, V>, V, R, R>(move(g0), std::identity{}, array{tuple{3, 10}, tuple{2, 20}, tuple{1, 30}});
 }
 
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
@@ -215,8 +235,9 @@ void recursive_test() {
         co_yield 1;
     };
 
-    assert(ranges::equal(iota_repeater(3, 2), array{0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2}));
-    assert(ranges::equal(nested_ints(), array{0, 1}));
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        iota_repeater(3, 2), std::identity{}, array{0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2});
+    test_one<gen_traits<int>, int, int&&, int&&>(nested_ints(), std::identity{}, array{0, 1});
 }
 
 void arbitrary_range_test() {
@@ -227,7 +248,8 @@ void arbitrary_range_test() {
         co_yield ranges::elements_of(fl);
     };
 
-    assert(ranges::equal(yield_arbitrary_ranges(), array{40, 30, 20, 10, 0, 1, 2, 3, 500, 400, 300}));
+    test_one<gen_traits<const int&>, int, const int&, const int&&>(
+        yield_arbitrary_ranges(), std::identity{}, array{40, 30, 20, 10, 0, 1, 2, 3, 500, 400, 300});
 }
 
 #ifndef _M_CEE // TRANSITION, VSO-1659496
@@ -265,11 +287,8 @@ void adl_proof_test() {
 #endif // ^^^ no workaround ^^^
 
 int main() {
-    {
-        stringstream ss;
-        f(ss);
-        assert(ss.str() == "0 1 2 ");
-    }
+    // End-to-end tests
+    test_one<gen_traits<int>, int, int&&, int&&>(ints(), views::take(3), array{0, 1, 2});
     assert(ranges::equal(co_upto(6), views::iota(0, 6)));
 
     { // Test with mutable lvalue reference type
