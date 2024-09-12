@@ -162,7 +162,7 @@ struct mappish_instantiator {
             assert(c6.get_allocator().state == 13);
             assert(ranges::is_permutation(c6, expected, any_pair_eq));
         }
-#endif
+#endif // ^^^ no workaround ^^^
         {
             std::same_as<T> auto c7 = R{some_pairs} | ranges::to<C>(Alloc{13});
             assert(c7.get_allocator().state == 13);

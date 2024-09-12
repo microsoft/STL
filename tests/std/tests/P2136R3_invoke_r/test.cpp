@@ -6,8 +6,6 @@
 #include <string>
 #include <type_traits>
 
-#include <is_permissive.hpp>
-
 using namespace std;
 
 constexpr int square(int n) {
