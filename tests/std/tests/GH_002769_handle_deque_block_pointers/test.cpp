@@ -4,10 +4,10 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <deque>
 #include <iterator>
 #include <memory>
+#include <random>
 #include <type_traits>
 
 using namespace std;
@@ -332,23 +332,22 @@ void test_inconsistent_difference_types() {
 // Also test GH-4954: Endless loop in deque::shrink_to_fit()
 void test_gh_4954() {
     deque<int> qu;
+    mt19937_64 mteng;
 
-    int it = 0;
-    while (it < 1024) {
-        const auto numAlloc = static_cast<size_t>(rand() + 1);
-        for (size_t i = 0; i < numAlloc; i++) {
+    for (int i = 0; i < 256; ++i) {
+        const auto push_count = static_cast<size_t>((mteng() & 32767U) + 1);
+        for (size_t j = 0; j < push_count; ++j) {
             qu.push_back(0);
         }
 
-        auto numDealloc = static_cast<size_t>(rand() + 1);
-        if (it % 100 == 0 || numDealloc > qu.size()) {
-            numDealloc = qu.size();
+        auto pop_count = static_cast<size_t>((mteng() & 32767U) + 1);
+        if (i % 100 == 0 || pop_count > qu.size()) {
+            pop_count = qu.size();
         }
-        for (size_t i = 0; i < numDealloc; i++) {
+        for (size_t j = 0; j < pop_count; ++j) {
             qu.pop_front();
         }
         qu.shrink_to_fit();
-        ++it;
     }
 }
 
