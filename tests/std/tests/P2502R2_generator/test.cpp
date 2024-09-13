@@ -95,9 +95,10 @@ void test_one(generator<R, V, A> g0, invocable<generator<R, V, A>> auto adaptor,
     assert(i == ranges::cend(expected));
 }
 
-template <class Traits, class ValueType, class ReferenceType, class RvalueReferenceType, class R, class V, class A>
-void test_one(generator<R, V, A> g0, ranges::input_range auto&& expected) {
-    return test_one<Traits, ValueType, ReferenceType, RvalueReferenceType>(move(g0), identity{}, expected);
+template <class Traits, class ValueType, class ReferenceType, class RvalueReferenceType, class R, class V, class A,
+    ranges::input_range Ex>
+void test_one(generator<R, V, A> g0, Ex&& expected) {
+    return test_one<Traits, ValueType, ReferenceType, RvalueReferenceType>(move(g0), identity{}, forward<Ex>(expected));
 }
 
 // Some simple end-to-end tests, mostly from the Working Draft or P2502R2
