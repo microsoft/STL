@@ -19,12 +19,13 @@
 
 using namespace std;
 
-static constexpr unsigned char odd_mask = 0xF;
-
 enum odd_char : unsigned char {};
 
 template <>
 class std::char_traits<odd_char> {
+private:
+    static constexpr unsigned char odd_mask = 0xF;
+
 public:
     using char_type  = odd_char;
     using int_type   = int;
@@ -55,7 +56,7 @@ public:
 
     static constexpr size_t length(const char_type* const p) noexcept {
         const char_type* c = p;
-        while (static_cast<unsigned char>(*c) != 0) {
+        while ((static_cast<unsigned char>(*c) & odd_mask) != 0) {
             ++c;
         }
 
@@ -118,7 +119,7 @@ public:
     static constexpr void assign(char_type& r, const char_type& d) noexcept {
         r = d;
     }
-    static CONSTEXPR20 char_type* assign(char_type* const s, const size_t n, const char_type c) {
+    static CONSTEXPR20 char_type* assign(char_type* const s, const size_t n, const char_type c) noexcept {
 #if _HAS_CXX20
         if (is_constant_evaluated()) {
             for (size_t i = 0; i != n; ++i) {
@@ -132,8 +133,8 @@ public:
         return s;
     }
 
-    static constexpr bool not_eof(int) noexcept {
-        return true;
+    static constexpr bool not_eof(const int_type i) noexcept {
+        return i != -1;
     }
 
     static constexpr char_type to_char_type(const int_type i) noexcept {
@@ -162,40 +163,108 @@ CONSTEXPR20 bool test_gh_4930() {
         static_cast<odd_char>(0x22), static_cast<odd_char>(0x11), static_cast<odd_char>(0)};
     constexpr odd_char s2_init[]{static_cast<odd_char>(0x83), static_cast<odd_char>(0x12), static_cast<odd_char>(0)};
 
-    using odd_string = basic_string<odd_char>;
-    {
-        odd_string s(s_init);
-
-        assert(s.length() == 5);
-        assert(s.find(static_cast<odd_char>(0x54)) == 1);
-        assert(s.find(static_cast<odd_char>(0x26)) == s.npos);
-
-        odd_string s2(s2_init);
-
-        assert(s.find_first_of(s2) == 2);
-        assert(s2.find_first_of(s) == 0);
-
-        assert(s.find_last_of(s2) == 3);
-        assert(s2.find_last_of(s) == 1);
-    }
-
 #if _HAS_CXX17
     using odd_string_view = basic_string_view<odd_char>;
-    {
-        odd_string_view sv(s_init);
 
-        assert(sv.length() == 5);
-        assert(sv.find(static_cast<odd_char>(0x54)) == 1);
-        assert(sv.find(static_cast<odd_char>(0x26)) == sv.npos);
+    odd_string_view sv(s_init);
 
-        odd_string_view sv2(s2_init);
+    assert(sv.length() == 5);
 
-        assert(sv.find_first_of(sv2) == 2);
-        assert(sv2.find_first_of(sv) == 0);
+    assert(sv.find(static_cast<odd_char>(0x54)) == 1);
+    assert(sv.find(static_cast<odd_char>(0x26)) == sv.npos);
 
-        assert(sv.find_last_of(sv2) == 3);
-        assert(sv2.find_last_of(sv) == 1);
-    }
+    assert(sv.rfind(static_cast<odd_char>(0x54)) == 1);
+    assert(sv.rfind(static_cast<odd_char>(0x26)) == sv.npos);
+
+    odd_string_view sv2(s2_init);
+
+    assert(sv.compare(sv2) > 0);
+#if _HAS_CXX20
+    assert(!sv.starts_with(sv2));
+    assert(!sv.ends_with(sv2));
+#if _HAS_CXX23
+    assert(sv.contains(sv2));
+#endif // _HAS_CXX23
+#endif // _HAS_CXX20
+
+    assert(sv.find(sv2) == 2);
+
+    assert(sv.rfind(sv2) == 2);
+
+    assert(sv.find_first_of(sv2) == 2);
+    assert(sv2.find_first_of(sv) == 0);
+
+    assert(sv.find_last_of(sv2) == 3);
+    assert(sv2.find_last_of(sv) == 1);
+
+    assert(sv.find_first_not_of(sv2) == 0);
+    assert(sv2.find_first_not_of(sv) == sv2.npos);
+
+    assert(sv.find_last_not_of(sv2) == 4);
+    assert(sv2.find_last_not_of(sv) == sv2.npos);
+#endif // _HAS_CXX17
+
+    using odd_string = basic_string<odd_char>;
+
+    odd_string s(s_init);
+
+    assert(s.length() == 5);
+
+    assert(s.find(static_cast<odd_char>(0x54)) == 1);
+    assert(s.find(static_cast<odd_char>(0x26)) == s.npos);
+
+    assert(s.rfind(static_cast<odd_char>(0x54)) == 1);
+    assert(s.rfind(static_cast<odd_char>(0x26)) == s.npos);
+
+    odd_string s2(s2_init);
+
+    assert(s.compare(s2) > 0);
+#if _HAS_CXX20
+    assert(!s.starts_with(s2));
+    assert(!s.ends_with(s2));
+#if _HAS_CXX23
+    assert(s.contains(s2));
+#endif // _HAS_CXX23
+#endif // _HAS_CXX20
+
+    assert(s.find(s2) == 2);
+
+    assert(s.rfind(s2) == 2);
+
+    assert(s.find_first_of(s2) == 2);
+    assert(s2.find_first_of(s) == 0);
+
+    assert(s.find_last_of(s2) == 3);
+    assert(s2.find_last_of(s) == 1);
+
+    assert(s.find_first_not_of(s2) == 0);
+    assert(s2.find_first_not_of(s) == s2.npos);
+
+#if _HAS_CXX17
+    assert(s.compare(sv2) > 0);
+#if _HAS_CXX20
+    assert(!s.starts_with(sv2));
+    assert(!s.ends_with(sv2));
+#if _HAS_CXX23
+    assert(s.contains(sv2));
+#endif // _HAS_CXX23
+#endif // _HAS_CXX20
+
+    assert(s.find(sv2) == 2);
+
+    assert(s.rfind(sv2) == 2);
+
+    assert(s.find_first_of(sv2) == 2);
+    assert(s2.find_first_of(sv) == 0);
+
+    assert(s.find_last_of(sv2) == 3);
+    assert(s2.find_last_of(sv) == 1);
+
+    assert(s.find_first_not_of(sv2) == 0);
+    assert(s2.find_first_not_of(sv) == s2.npos);
+
+    assert(s.find_last_not_of(sv2) == 4);
+    assert(s2.find_last_not_of(sv) == s2.npos);
 #endif // _HAS_CXX17
 
     return true;
