@@ -40,6 +40,10 @@ struct alignas(__STDCPP_DEFAULT_NEW_ALIGNMENT__) _Aligned_block {
 template <class _Alloc>
 concept _Has_real_pointers = same_as<_Alloc, void> || is_pointer_v<typename allocator_traits<_Alloc>::pointer>;
 
+template <class _Alloc>
+constexpr bool _Allocator_is_stateless =
+    default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value;
+
 template <class _Proto_allocator>
 class _Coro_promise_allocator { // statically specified allocator type
 private:
@@ -49,7 +53,7 @@ private:
     static size_t _Allocation_block_size(const size_t _Size) noexcept {
         // Compute the number of _Aligned_blocks needed to store a coroutine
         // frame of _Size bytes and, if necessary, an _Alloc.
-        if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
+        if constexpr (_Allocator_is_stateless<_Alloc>) {
             // allocator is stateless, we need no additional space
             return (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
         } else {
@@ -63,19 +67,30 @@ private:
         // memory layout:
         // |--- coroutine frame --|- alignment padding -|---- _Alloc -----|
         // |--- always present ---|----------- stateful only -------------|
-        // all rounded up to a multiple of sizeof(_Aligned_block)
+        // all rounded up to an integral number of _Aligned_blocks
 
         const size_t _Size_in_blocks = _Allocation_block_size(_Size);
-        if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
-            // do not store stateless allocator
-            return _Al.allocate(_Convert_size<_Alloc_size_type>(_Size_in_blocks));
-        } else {
-            // store stateful allocator
-            void* const _Ptr = _Al.allocate(_Convert_size<_Alloc_size_type>(_Size_in_blocks));
+        void* const _Ptr             = _Al.allocate(_Convert_size<_Alloc_size_type>(_Size_in_blocks));
+
+        if constexpr (!_Allocator_is_stateless<_Alloc>) {
+            // store only stateful allocators
             const auto _Al_address =
                 (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
             ::new (reinterpret_cast<void*>(_Al_address)) _Alloc(_STD move(_Al));
-            return _Ptr;
+        }
+
+        return _Ptr;
+    }
+
+    _NODISCARD static _Alloc _Get_allocator(
+        [[maybe_unused]] void* const _Ptr, [[maybe_unused]] const size_t _Size) noexcept {
+        // recreate or retrieve a copy of the allocator used to allocate _Ptr
+        if constexpr (_Allocator_is_stateless<_Alloc>) {
+            return _Alloc{};
+        } else {
+            const auto _Al_address =
+                (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
+            return *reinterpret_cast<_Alloc*>(_Al_address);
         }
     }
 
@@ -99,22 +114,9 @@ public:
     }
 
     static void operator delete(void* const _Ptr, const size_t _Size) noexcept {
-        if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
-            // recreate stateless allocator
-            _Alloc _Al{};
-            const size_t _Size_in_blocks = _Allocation_block_size(_Size);
-            _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), static_cast<_Alloc_size_type>(_Size_in_blocks));
-        } else {
-            // retrieve stateful allocator
-            const auto _Al_address =
-                (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
-            auto& _Stored_al = *reinterpret_cast<_Alloc*>(_Al_address);
-            _Alloc _Al{_STD move(_Stored_al)};
-            _Stored_al.~_Alloc();
-
-            const size_t _Size_in_blocks = _Allocation_block_size(_Size);
-            _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), static_cast<_Alloc_size_type>(_Size_in_blocks));
-        }
+        _Alloc _Al                   = _Get_allocator(_Ptr, _Size);
+        const size_t _Size_in_blocks = _Allocation_block_size(_Size);
+        _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), static_cast<_Alloc_size_type>(_Size_in_blocks));
     }
 };
 
@@ -125,38 +127,35 @@ private:
 
     template <class _Alloc>
     static size_t _Allocation_block_size(const size_t _Size) noexcept {
-        size_t _Blocks = _Size + sizeof(_Dealloc_fn);
-        if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
-            _Blocks += sizeof(_Aligned_block) - 1;
+        size_t _Bytes = _Size + sizeof(_Dealloc_fn);
+        if constexpr (_Allocator_is_stateless<_Alloc>) {
+            _Bytes += sizeof(_Aligned_block) - 1;
         } else {
             constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
-            _Blocks += sizeof(_Alloc) + _Align - 1;
+            _Bytes += sizeof(_Alloc) + _Align - 1;
         }
-        return _Blocks / sizeof(_Aligned_block);
+        return _Bytes / sizeof(_Aligned_block);
     }
 
     template <class _Alloc>
     static void __stdcall _Dealloc_stateless(void* const _Ptr, const size_t _Size) noexcept {
         _Alloc _Al{};
         const size_t _Size_in_blocks = _Allocation_block_size<_Alloc>(_Size);
-        _Al.deallocate(
-            static_cast<_Aligned_block*>(_Ptr), static_cast<allocator_traits<_Alloc>::size_type>(_Size_in_blocks));
+        const auto _Alloc_size       = static_cast<allocator_traits<_Alloc>::size_type>(_Size_in_blocks);
+        _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Alloc_size);
     }
 
     template <class _Alloc>
-    static void __stdcall _Dealloc_stateful(void* const _Ptr, size_t _Size) noexcept {
-        constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
-
-        _Size += sizeof(_Dealloc_fn);
-        const auto _Al_address =
-            (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
+    static void __stdcall _Dealloc_stateful(void* const _Ptr, const size_t _Size) noexcept {
+        const auto _Al_address = (reinterpret_cast<uintptr_t>(_Ptr) + _Size + sizeof(_Dealloc_fn) + alignof(_Alloc) - 1)
+                               & ~(alignof(_Alloc) - 1);
         auto& _Stored_al = *reinterpret_cast<_Alloc*>(_Al_address);
         _Alloc _Al{_STD move(_Stored_al)};
         _Stored_al.~_Alloc();
 
-        const size_t _Size_in_blocks = (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
-        _Al.deallocate(
-            static_cast<_Aligned_block*>(_Ptr), static_cast<allocator_traits<_Alloc>::size_type>(_Size_in_blocks));
+        const size_t _Size_in_blocks = _Allocation_block_size<_Alloc>(_Size);
+        const auto _Alloc_size       = static_cast<allocator_traits<_Alloc>::size_type>(_Size_in_blocks);
+        _Al.deallocate(static_cast<_Aligned_block*>(_Ptr), _Alloc_size);
     }
 
     static void __stdcall _Dealloc_default(void* const _Ptr, const size_t _Size) noexcept {
@@ -168,16 +167,17 @@ private:
         // memory layout:
         // |--- coroutine frame (_Size bytes) ---|--- _Dealloc_fn ---|-- alignment padding --|--- _Alloc ---|
         // |-------------------- always present -----(not aligned)---|------------ stateful only -----------|
-        // all rounded up to a multiple of sizeof(_Aligned_block)
+        // all rounded up to an integral number of _Aligned_blocks
 
         using _Alloc           = _Rebind_alloc_t<_ProtoAlloc, _Aligned_block>;
         using _Alloc_size_type = allocator_traits<_Alloc>::size_type;
 
         _Alloc _Al{_Proto};
         const size_t _Size_in_blocks = _Allocation_block_size<_Alloc>(_Size);
-        void* const _Ptr             = _Al.allocate(_Convert_size<_Alloc_size_type>(_Size_in_blocks));
+        const auto _Alloc_size       = _Convert_size<_Alloc_size_type>(_Size_in_blocks);
+        void* const _Ptr             = _Al.allocate(_Alloc_size);
 
-        if constexpr (default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value) {
+        if constexpr (_Allocator_is_stateless<_Alloc>) {
             // don't store stateless allocator
             const _Dealloc_fn _Dealloc = _Dealloc_stateless<_Alloc>;
             _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
@@ -307,7 +307,7 @@ private:
     struct _Element_awaiter {
         remove_cvref_t<_Yielded> _Val;
 
-        _Element_awaiter(const remove_reference_t<_Yielded>& _Val_)
+        explicit _Element_awaiter(const remove_reference_t<_Yielded>& _Val_)
             noexcept(is_nothrow_constructible_v<remove_cvref_t<_Yielded>, const remove_reference_t<_Yielded>&>)
             : _Val(_Val_) {}
 

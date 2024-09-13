@@ -14,10 +14,10 @@
 #include <new>
 #include <random>
 #include <ranges>
-#include <sstream>
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
+#include <typeinfo>
 #include <utility>
 #include <vector>
 
@@ -95,6 +95,11 @@ void test_one(generator<R, V, A> g0, invocable<generator<R, V, A>> auto adaptor,
     assert(i == ranges::cend(expected));
 }
 
+template <class Traits, class ValueType, class ReferenceType, class RvalueReferenceType, class R, class V, class A>
+void test_one(generator<R, V, A> g0, ranges::input_range auto&& expected) {
+    return test_one<Traits, ValueType, ReferenceType, RvalueReferenceType>(move(g0), identity{}, expected);
+}
+
 // Some simple end-to-end tests, mostly from the Working Draft or P2502R2
 generator<int> ints(int start = 0) {
     while (true) {
@@ -120,10 +125,10 @@ void zip_example() {
     using R = tuple<int&, int&>;
 
     auto g0 = co_zip(array{1, 2, 3}, vector{10, 20, 30, 40, 50});
-    test_one<gen_traits<R, V>, V, R, R>(move(g0), std::identity{}, array{tuple{1, 10}, tuple{2, 20}, tuple{3, 30}});
+    test_one<gen_traits<R, V>, V, R, R>(move(g0), array{tuple{1, 10}, tuple{2, 20}, tuple{3, 30}});
 
     g0 = co_zip(array{3, 2, 1}, vector{10, 20, 30, 40, 50});
-    test_one<gen_traits<R, V>, V, R, R>(move(g0), std::identity{}, array{tuple{3, 10}, tuple{2, 20}, tuple{1, 30}});
+    test_one<gen_traits<R, V>, V, R, R>(move(g0), array{tuple{3, 10}, tuple{2, 20}, tuple{1, 30}});
 }
 
 template <class Reference = const int&>
@@ -202,9 +207,8 @@ void recursive_test() {
         co_yield 1;
     };
 
-    test_one<gen_traits<int>, int, int&&, int&&>(
-        iota_repeater(3, 2), std::identity{}, array{0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2});
-    test_one<gen_traits<int>, int, int&&, int&&>(nested_ints(), std::identity{}, array{0, 1});
+    test_one<gen_traits<int>, int, int&&, int&&>(iota_repeater(3, 2), array{0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2});
+    test_one<gen_traits<int>, int, int&&, int&&>(nested_ints(), array{0, 1});
 }
 
 void arbitrary_range_test() {
@@ -216,7 +220,7 @@ void arbitrary_range_test() {
     };
 
     test_one<gen_traits<const int&>, int, const int&, const int&&>(
-        yield_arbitrary_ranges(), std::identity{}, array{40, 30, 20, 10, 0, 1, 2, 3, 500, 400, 300});
+        yield_arbitrary_ranges(), array{40, 30, 20, 10, 0, 1, 2, 3, 500, 400, 300});
 }
 
 #ifndef _M_CEE // TRANSITION, VSO-1659496
@@ -264,8 +268,7 @@ void static_allocator_test() {
             }
         };
 
-        test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(
-            g(1024), std::identity{}, views::iota(0, 1024));
+        test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(g(1024), views::iota(0, 1024));
     }
 
     {
@@ -278,7 +281,7 @@ void static_allocator_test() {
         };
 
         test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(
-            g(allocator_arg, {}, 1024), std::identity{}, views::iota(0, 1024));
+            g(allocator_arg, {}, 1024), views::iota(0, 1024));
     }
 
 #ifndef __EDG__ // TRANSITION, VSO-1951821
@@ -292,7 +295,7 @@ void static_allocator_test() {
         };
 
         test_one<gen_traits<int, int, StatefulAlloc<char>>, int, int, int>(
-            g(allocator_arg, StatefulAlloc<int>{42}, 1024), std::identity{}, views::iota(0, 1024));
+            g(allocator_arg, StatefulAlloc<int>{42}, 1024), views::iota(0, 1024));
     }
 #endif // ^^^ no workaround ^^^
 }
@@ -307,20 +310,18 @@ void dynamic_allocator_test() {
         }
     };
 
-    test_one<gen_traits<int>, int, int&&, int&&>(
-        g(allocator_arg, allocator<float>{}, 1024), std::identity{}, views::iota(0, 1024));
-    test_one<gen_traits<int>, int, int&&, int&&>(
-        g(allocator_arg, StatelessAlloc<float>{}, 1024), std::identity{}, views::iota(0, 1024));
+    test_one<gen_traits<int>, int, int&&, int&&>(g(allocator_arg, allocator<float>{}, 1024), views::iota(0, 1024));
+    test_one<gen_traits<int>, int, int&&, int&&>(g(allocator_arg, StatelessAlloc<float>{}, 1024), views::iota(0, 1024));
 #ifndef __EDG__ // TRANSITION, VSO-1951821
     test_one<gen_traits<int>, int, int&&, int&&>(
-        g(allocator_arg, StatefulAlloc<float>{1729}, 1024), std::identity{}, views::iota(0, 1024));
+        g(allocator_arg, StatefulAlloc<float>{1729}, 1024), views::iota(0, 1024));
 #endif // ^^^ no workaround ^^^
     pmr::synchronized_pool_resource pool;
     test_one<gen_traits<int>, int, int&&, int&&>(
-        g(allocator_arg, pmr::polymorphic_allocator<>{&pool}, 1024), std::identity{}, views::iota(0, 1024));
+        g(allocator_arg, pmr::polymorphic_allocator<>{&pool}, 1024), views::iota(0, 1024));
 }
 
-static atomic<bool> allow_allocation = true;
+static atomic<bool> allow_allocation{true};
 
 void* operator new(const size_t n) {
     if (allow_allocation) {
@@ -357,11 +358,13 @@ void operator delete(void* const p, size_t, align_val_t) noexcept {
 }
 
 class malloc_resource final : public pmr::memory_resource {
+private:
     void* do_allocate(size_t bytes, size_t align) override {
         assert(align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__);
-        if (!bytes) {
-            return nullptr;
+        if (bytes == 0) {
+            bytes = 1;
         }
+
         if (void* result = malloc(bytes)) {
             return result;
         }
@@ -398,7 +401,7 @@ void pmr_generator_test() {
 
     allow_allocation = false;
     test_one<gen_traits<int, int, pmr::polymorphic_allocator<>>, int, int, int>(
-        g(allocator_arg, pmr::polymorphic_allocator<>{&mr}, 1024), std::identity{}, views::iota(0, 1024));
+        g(allocator_arg, pmr::polymorphic_allocator<>{&mr}, 1024), views::iota(0, 1024));
     allow_allocation = true;
 }
 

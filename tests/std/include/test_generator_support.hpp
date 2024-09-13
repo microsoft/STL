@@ -12,9 +12,8 @@
 #include <type_traits>
 
 template <class R, class V = void, class A = void>
-struct gen_traits : gen_traits<R, V> {
-    using generator = std::generator<R, V, A>;
-};
+struct gen_traits;
+
 template <class R>
 struct gen_traits<R> {
     using generator = std::generator<R>;
@@ -35,6 +34,10 @@ struct gen_traits<R, V> {
 
     // Ditto verify default template arguments
     static_assert(std::same_as<std::generator<R, V>, std::generator<R, V, void>>);
+};
+template <class R, class V, class A>
+struct gen_traits : gen_traits<R, V> {
+    using generator = std::generator<R, V, A>;
 };
 
 template <class Ref, class V>
