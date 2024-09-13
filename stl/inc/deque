@@ -997,7 +997,8 @@ public:
 
         const auto _Mask = static_cast<size_type>(_Mapsize() - 1);
 
-        const auto _First_used_block_idx = static_cast<size_type>(_Myoff() / _Block_size);
+        const auto _Unmasked_first_used_block_idx = static_cast<size_type>(_Myoff() / _Block_size);
+        const auto _First_used_block_idx          = static_cast<size_type>(_Unmasked_first_used_block_idx & _Mask);
 
         // (_Myoff() + _Mysize() - 1) is for the last element, i.e. the back() of the deque.
         // Divide by _Block_size to get the unmasked index of the last used block.
@@ -1017,7 +1018,8 @@ public:
             }
         }
 
-        const auto _Used_block_count = static_cast<size_type>(_Unmasked_first_unused_block_idx - _First_used_block_idx);
+        const auto _Used_block_count =
+            static_cast<size_type>(_Unmasked_first_unused_block_idx - _Unmasked_first_used_block_idx);
 
         size_type _New_block_count = _Minimum_map_size; // should be power of 2
 

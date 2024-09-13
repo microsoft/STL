@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <deque>
 #include <iterator>
 #include <memory>
@@ -328,8 +329,32 @@ void test_inconsistent_difference_types() {
     assert(counter == 0);
 }
 
+// Also test GH-4954: Endless loop in deque::shrink_to_fit()
+void test_gh_4954() {
+    deque<int> qu;
+
+    int it = 0;
+    while (it < 1024) {
+        const auto numAlloc = static_cast<size_t>(rand() + 1);
+        for (size_t i = 0; i < numAlloc; i++) {
+            qu.push_back(0);
+        }
+
+        auto numDealloc = static_cast<size_t>(rand() + 1);
+        if (it % 100 == 0 || numDealloc > qu.size()) {
+            numDealloc = qu.size();
+        }
+        for (size_t i = 0; i < numDealloc; i++) {
+            qu.pop_front();
+        }
+        qu.shrink_to_fit();
+        ++it;
+    }
+}
+
 int main() {
     test_gh_2769();
     test_gh_3717();
+    test_gh_4954();
     test_inconsistent_difference_types();
 }
