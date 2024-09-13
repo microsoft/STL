@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
@@ -11,56 +12,98 @@
 #include <memory>
 #include <memory_resource>
 #include <new>
-#include <ostream>
 #include <random>
 #include <ranges>
-#include <sstream>
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
+#include <typeinfo>
 #include <utility>
 #include <vector>
 
-#include <test_generator_support.hpp>
+#include "test_generator_support.hpp"
+
+#pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
 using namespace std;
 
-template <class G, class V, class R, class RR>
+template <class Traits, class ValueType, class ReferenceType, class RvalueReferenceType>
 consteval bool static_checks() {
-    static_assert(ranges::input_range<G>);
+    using G = Traits::generator;
+    static_assert(derived_from<G, ranges::view_interface<G>>);
+
+    // Specializations of generator are move-only input-and-no-stronger views
     static_assert(ranges::view<G>);
+    static_assert(ranges::input_range<G>);
     static_assert(!ranges::forward_range<G>);
-    static_assert(!ranges::borrowed_range<G>);
-    static_assert(!ranges::common_range<G>);
 
-    static_assert(same_as<ranges::range_value_t<G>, V>);
+    static_assert(!copy_constructible<G>);
+    static_assert(!is_copy_assignable_v<G>);
+
+    static_assert(is_nothrow_destructible_v<G>);
+    static_assert(is_nothrow_move_constructible_v<G>);
+    static_assert(is_nothrow_move_assignable_v<G>);
+
+    // Verify the generator's associated types
+    static_assert(same_as<ranges::range_value_t<G>, ValueType>);
     static_assert(same_as<ranges::range_difference_t<G>, ptrdiff_t>);
-    static_assert(same_as<ranges::range_reference_t<G>, R>);
-    static_assert(same_as<ranges::range_rvalue_reference_t<G>, RR>);
+    static_assert(same_as<ranges::range_reference_t<G>, ReferenceType>);
+    static_assert(same_as<ranges::range_rvalue_reference_t<G>, RvalueReferenceType>);
+    static_assert(same_as<typename G::yielded, typename Traits::yielded>);
 
-    // Non-portable size checks
+    // Verify end
+    static_assert(same_as<default_sentinel_t, ranges::sentinel_t<G>>);
+    static_assert(same_as<default_sentinel_t, decltype(declval<const G&>().end())>);
+    static_assert(noexcept(declval<G&>().end()));
+    static_assert(noexcept(declval<const G&>().end()));
+
+    // iterator properties are verified in P2502R2_generator_iterator
+    // promise properties are verified in P2502R2_generator_promise
+
+    // Non-portable size check
     static_assert(sizeof(G) == sizeof(void*));
-    static_assert(sizeof(typename G::promise_type) == 2 * sizeof(void*));
 
     return true;
 }
 
-static_assert(static_checks<generator<int>, int, int&&, int&&>());
-static_assert(static_checks<generator<const int&>, int, const int&, const int&&>());
-static_assert(static_checks<generator<int&&>, int, int&&, int&&>());
-static_assert(static_checks<generator<int&>, int, int&, int&&>());
-static_assert(static_checks<generator<int, int>, int, int, int>());
+static_assert(static_checks<gen_traits<int>, int, int&&, int&&>());
+static_assert(static_checks<gen_traits<const int&>, int, const int&, const int&&>());
+static_assert(static_checks<gen_traits<int&&>, int, int&&, int&&>());
+static_assert(static_checks<gen_traits<int&>, int, int&, int&&>());
 
-// [coroutine.generator.overview] Example 1:
+static_assert(static_checks<gen_traits<int, int>, int, int, int>());
+static_assert(static_checks<gen_traits<const int&, int>, int, const int&, const int&&>());
+static_assert(static_checks<gen_traits<int&&, int>, int, int&&, int&&>());
+static_assert(static_checks<gen_traits<int&, int>, int, int&, int&&>());
+
+template <class Traits, class ValueType, class ReferenceType, class RvalueReferenceType, class R, class V, class A>
+void test_one(generator<R, V, A> g0, invocable<generator<R, V, A>> auto adaptor, ranges::input_range auto&& expected)
+    requires ranges::input_range<decltype(adaptor(move(g0)))>
+{
+    static_assert(same_as<generator<R, V, A>, typename Traits::generator>);
+    static_assert(static_checks<Traits, ValueType, ReferenceType, RvalueReferenceType>());
+
+    auto g1 = move(g0);
+    auto i  = ranges::cbegin(expected);
+    for (auto&& x : adaptor(move(g1))) {
+        assert(i != ranges::cend(expected));
+        assert(*i == x);
+        ++i;
+        // Verify iterator stays valid after move assignment
+        ranges::swap(g0, g1);
+    }
+    assert(i == ranges::cend(expected));
+}
+
+template <class Traits, class ValueType, class ReferenceType, class RvalueReferenceType, class R, class V, class A>
+void test_one(generator<R, V, A> g0, ranges::input_range auto&& expected) {
+    return test_one<Traits, ValueType, ReferenceType, RvalueReferenceType>(move(g0), identity{}, expected);
+}
+
+// Some simple end-to-end tests, mostly from the Working Draft or P2502R2
 generator<int> ints(int start = 0) {
     while (true) {
         co_yield start++;
-    }
-}
-
-void f(ostream& os) {
-    for (auto i : ints() | views::take(3)) {
-        os << i << ' '; // prints '0 1 2 '
     }
 }
 
@@ -77,133 +120,66 @@ generator<tuple<ranges::range_reference_t<Rng1>, ranges::range_reference_t<Rng2>
     }
 }
 
-// Not from the proposal:
+void zip_example() {
+    using V = tuple<int, int>;
+    using R = tuple<int&, int&>;
+
+    auto g0 = co_zip(array{1, 2, 3}, vector{10, 20, 30, 40, 50});
+    test_one<gen_traits<R, V>, V, R, R>(move(g0), array{tuple{1, 10}, tuple{2, 20}, tuple{3, 30}});
+
+    g0 = co_zip(array{3, 2, 1}, vector{10, 20, 30, 40, 50});
+    test_one<gen_traits<R, V>, V, R, R>(move(g0), array{tuple{3, 10}, tuple{2, 20}, tuple{1, 30}});
+}
+
 template <class Reference = const int&>
 generator<Reference, int> co_upto(const int hi) {
+    assert(hi >= 0);
     for (int i = 0; i < hi; ++i) {
         co_yield i;
     }
 }
 
-template <class T>
-struct stateful_alloc {
-    using value_type = T;
-
-    int domain;
-
-    explicit stateful_alloc(int dom) noexcept : domain{dom} {}
-
-    template <class U>
-    constexpr stateful_alloc(const stateful_alloc<U>& that) noexcept : domain{that.domain} {}
-
-    T* allocate(const size_t n) {
-        void* vp;
-        if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-            vp = ::_aligned_malloc(n * sizeof(T), alignof(T));
-        } else {
-            vp = malloc(n * sizeof(T));
+void test_weird_reference_types() {
+    constexpr int n = 32;
+    { // Test mutable lvalue reference type
+        auto r   = co_upto<int&>(n);
+        auto pos = r.begin();
+        for (int i = 0; i < n / 2; ++i, ++*pos, ++pos) {
+            assert(pos != r.end());
+            assert(*pos == 2 * i);
         }
-
-        if (vp) {
-            return static_cast<T*>(vp);
-        }
-
-        throw bad_alloc{};
+        assert(pos == r.end());
     }
 
-    void deallocate(void* const vp, [[maybe_unused]] const size_t n) noexcept {
-        if constexpr (alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-            ::_aligned_free(vp);
-        } else {
-            free(vp);
-        }
-    }
-
-    template <class U>
-    constexpr bool operator==(const stateful_alloc<U>& that) noexcept {
-        return this->domain == that.domain;
-    }
-};
-static_assert(!default_initializable<stateful_alloc<int>>);
-
-void static_allocator_test() {
-    {
-        auto g = [](const int hi) -> generator<int, int, StatelessAlloc<char>> {
-            constexpr size_t n = 64;
-            int some_ints[n];
-            for (int i = 0; i < hi; ++i) {
-                co_yield some_ints[i % n] = i;
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
+    { // Test with mutable xvalue reference type
+        auto woof = [](size_t size, size_t count) -> generator<vector<int>&&> {
+            random_device rd{};
+            uniform_int_distribution dist{0, 99};
+            vector<int> vec;
+            while (count-- > 0) {
+                vec.resize(size);
+                ranges::generate(vec, [&] { return dist(rd); });
+                co_yield move(vec);
+                assert(vec.empty()); // when we yield an rvalue, the caller moves from it
             }
+
+            // Test yielding lvalue
+            vec.resize(size);
+            ranges::generate(vec, [&] { return dist(rd); });
+            const auto tmp = vec;
+            co_yield vec;
+            assert(tmp == vec); // when we yield an lvalue, the caller moves from a copy
         };
 
-        assert(ranges::equal(g(1024), views::iota(0, 1024)));
-    }
-
-    {
-        auto g = [](allocator_arg_t, StatelessAlloc<int>, const int hi) -> generator<int, int, StatelessAlloc<char>> {
-            constexpr size_t n = 64;
-            int some_ints[n];
-            for (int i = 0; i < hi; ++i) {
-                co_yield some_ints[i % n] = i;
-            }
-        };
-
-        assert(ranges::equal(g(allocator_arg, {}, 1024), views::iota(0, 1024)));
-    }
-
-#ifndef __EDG__ // TRANSITION, VSO-1951821
-    {
-        auto g = [](allocator_arg_t, stateful_alloc<int>, const int hi) -> generator<int, int, stateful_alloc<char>> {
-            constexpr size_t n = 64;
-            int some_ints[n];
-            for (int i = 0; i < hi; ++i) {
-                co_yield some_ints[i % n] = i;
-            }
-        };
-
-        assert(ranges::equal(g(allocator_arg, stateful_alloc<int>{42}, 1024), views::iota(0, 1024)));
+        constexpr size_t size = 16;
+        auto r                = woof(size, 4);
+        for (auto i = r.begin(); i != r.end(); ++i) {
+            vector<int> vec = *i;
+            assert(vec.size() == size);
+        }
     }
 #endif // ^^^ no workaround ^^^
-    {
-        auto g = [](allocator_arg_t, pmr::polymorphic_allocator<int>, const int hi) -> pmr::generator<int, int> {
-            constexpr size_t n = 64;
-            int some_ints[n];
-            for (int i = 0; i < hi; ++i) {
-                co_yield some_ints[i % n] = i;
-            }
-        };
-
-        static_assert(is_same_v<pmr::generator<int, int>, generator<int, int, pmr::polymorphic_allocator<>>>);
-        assert(ranges::equal(g(allocator_arg, pmr::polymorphic_allocator<int>{}, 1024), views::iota(0, 1024)));
-    }
-}
-
-void dynamic_allocator_test() {
-    auto g = [](allocator_arg_t, const auto&, const int hi) -> generator<int> {
-        constexpr size_t n = 64;
-        int some_ints[n];
-        for (int i = 0; i < hi; ++i) {
-            co_yield some_ints[i % n] = i;
-        }
-    };
-
-    assert(ranges::equal(g(allocator_arg, allocator<float>{}, 1024), views::iota(0, 1024)));
-    assert(ranges::equal(g(allocator_arg, StatelessAlloc<float>{}, 1024), views::iota(0, 1024)));
-#ifndef __EDG__ // TRANSITION, VSO-1951821
-    assert(ranges::equal(g(allocator_arg, stateful_alloc<float>{1729}, 1024), views::iota(0, 1024)));
-#endif // ^^^ no workaround ^^^
-    pmr::synchronized_pool_resource pool;
-    assert(ranges::equal(g(allocator_arg, pmr::polymorphic_allocator<int>{&pool}, 1024), views::iota(0, 1024)));
-}
-
-void zip_example() {
-    int length = 0;
-    for (auto x : co_zip(array{1, 2, 3}, vector{10, 20, 30, 40, 50})) {
-        static_assert(same_as<decltype(x), tuple<int&, int&>>);
-        assert(get<0>(x) * 10 == get<1>(x));
-        ++length;
-    }
-    assert(length == 3);
 }
 
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
@@ -231,8 +207,8 @@ void recursive_test() {
         co_yield 1;
     };
 
-    assert(ranges::equal(iota_repeater(3, 2), array{0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2}));
-    assert(ranges::equal(nested_ints(), array{0, 1}));
+    test_one<gen_traits<int>, int, int&&, int&&>(iota_repeater(3, 2), array{0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2});
+    test_one<gen_traits<int>, int, int&&, int&&>(nested_ints(), array{0, 1});
 }
 
 void arbitrary_range_test() {
@@ -243,7 +219,8 @@ void arbitrary_range_test() {
         co_yield ranges::elements_of(fl);
     };
 
-    assert(ranges::equal(yield_arbitrary_ranges(), array{40, 30, 20, 10, 0, 1, 2, 3, 500, 400, 300}));
+    test_one<gen_traits<const int&>, int, const int&, const int&&>(
+        yield_arbitrary_ranges(), array{40, 30, 20, 10, 0, 1, 2, 3, 500, 400, 300});
 }
 
 #ifndef _M_CEE // TRANSITION, VSO-1659496
@@ -265,10 +242,10 @@ void adl_proof_test() {
     static_assert(ranges::input_range<R>);
 
     using It = ranges::iterator_t<R>;
-    static_assert(is_same_v<decltype(&declval<It&>()), It*>);
+    static_assert(same_as<decltype(&declval<It&>()), It*>);
 
     using Promise = R::promise_type;
-    static_assert(is_same_v<decltype(&declval<Promise&>()), Promise*>);
+    static_assert(same_as<decltype(&declval<Promise&>()), Promise*>);
 
     size_t i = 0;
     for (const auto elem : yield_range()) {
@@ -280,64 +257,172 @@ void adl_proof_test() {
 #endif // ^^^ no workaround ^^^
 #endif // ^^^ no workaround ^^^
 
-int main() {
+// Verify behavior with unerased allocator types
+void static_allocator_test() {
     {
-        stringstream ss;
-        f(ss);
-        assert(ss.str() == "0 1 2 ");
-    }
-    assert(ranges::equal(co_upto(6), views::iota(0, 6)));
-
-    { // Test with mutable lvalue reference type
-        auto r   = co_upto<int&>(32);
-        auto pos = r.begin();
-        for (int i = 0; i < 16; ++i, ++*pos, ++pos) {
-            assert(pos != r.end());
-            assert(*pos == 2 * i);
-        }
-        assert(pos == r.end());
-    }
-
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
-    { // Test with mutable xvalue reference type
-        auto woof = [](size_t size, size_t count) -> generator<vector<int>&&> {
-            random_device rd{};
-            uniform_int_distribution dist{0, 99};
-            vector<int> vec;
-            while (count-- > 0) {
-                vec.resize(size);
-                ranges::generate(vec, [&] { return dist(rd); });
-                co_yield move(vec);
+        auto g = [](const int hi) -> generator<int, int, StatelessAlloc<char>> {
+            constexpr size_t n = 64;
+            int some_ints[n];
+            for (int i = 0; i < hi; ++i) {
+                co_yield some_ints[i % n] = i;
             }
-
-            // Test yielding lvalue
-            vec.resize(size);
-            ranges::generate(vec, [&] { return dist(rd); });
-            const auto tmp = vec;
-            co_yield vec;
-            assert(tmp == vec);
         };
 
-        constexpr size_t size = 16;
-        auto r                = woof(size, 4);
-        for (auto i = r.begin(); i != r.end(); ++i) {
-            vector<int> vec = *i;
-            assert(vec.size() == size);
-            assert((*i).empty());
-        }
+        test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(g(1024), views::iota(0, 1024));
+    }
+
+    {
+        auto g = [](allocator_arg_t, StatelessAlloc<int>, const int hi) -> generator<int, int, StatelessAlloc<char>> {
+            constexpr size_t n = 64;
+            int some_ints[n];
+            for (int i = 0; i < hi; ++i) {
+                co_yield some_ints[i % n] = i;
+            }
+        };
+
+        test_one<gen_traits<int, int, StatelessAlloc<char>>, int, int, int>(
+            g(allocator_arg, {}, 1024), views::iota(0, 1024));
+    }
+
+#ifndef __EDG__ // TRANSITION, VSO-1951821
+    {
+        auto g = [](allocator_arg_t, StatefulAlloc<int>, const int hi) -> generator<int, int, StatefulAlloc<char>> {
+            constexpr size_t n = 64;
+            int some_ints[n];
+            for (int i = 0; i < hi; ++i) {
+                co_yield some_ints[i % n] = i;
+            }
+        };
+
+        test_one<gen_traits<int, int, StatefulAlloc<char>>, int, int, int>(
+            g(allocator_arg, StatefulAlloc<int>{42}, 1024), views::iota(0, 1024));
     }
 #endif // ^^^ no workaround ^^^
+}
 
-    static_allocator_test();
-    dynamic_allocator_test();
+// Verify behavior with erased allocator types
+void dynamic_allocator_test() {
+    auto g = [](allocator_arg_t, const auto&, const int hi) -> generator<int> {
+        constexpr size_t n = 64;
+        int some_ints[n];
+        for (int i = 0; i < hi; ++i) {
+            co_yield some_ints[i % n] = i;
+        }
+    };
 
+    test_one<gen_traits<int>, int, int&&, int&&>(g(allocator_arg, allocator<float>{}, 1024), views::iota(0, 1024));
+    test_one<gen_traits<int>, int, int&&, int&&>(g(allocator_arg, StatelessAlloc<float>{}, 1024), views::iota(0, 1024));
+#ifndef __EDG__ // TRANSITION, VSO-1951821
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        g(allocator_arg, StatefulAlloc<float>{1729}, 1024), views::iota(0, 1024));
+#endif // ^^^ no workaround ^^^
+    pmr::synchronized_pool_resource pool;
+    test_one<gen_traits<int>, int, int&&, int&&>(
+        g(allocator_arg, pmr::polymorphic_allocator<>{&pool}, 1024), views::iota(0, 1024));
+}
+
+static atomic<bool> allow_allocation{true};
+
+void* operator new(const size_t n) {
+    if (allow_allocation) {
+        if (void* const result = malloc(n)) {
+            return result;
+        }
+    }
+    throw bad_alloc{};
+}
+
+void operator delete(void* const p) noexcept {
+    free(p);
+}
+
+void operator delete(void* const p, size_t) noexcept {
+    free(p);
+}
+
+void* operator new(const size_t n, const align_val_t al) {
+    if (allow_allocation) {
+        if (void* const result = ::_aligned_malloc(n, static_cast<size_t>(al))) {
+            return result;
+        }
+    }
+    throw bad_alloc{};
+}
+
+void operator delete(void* const p, align_val_t) noexcept {
+    ::_aligned_free(p);
+}
+
+void operator delete(void* const p, size_t, align_val_t) noexcept {
+    ::_aligned_free(p);
+}
+
+class malloc_resource final : public pmr::memory_resource {
+private:
+    void* do_allocate(size_t bytes, size_t align) override {
+        assert(align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+        if (bytes == 0) {
+            bytes = 1;
+        }
+
+        if (void* result = malloc(bytes)) {
+            return result;
+        }
+        throw bad_alloc{};
+    }
+
+    void do_deallocate(void* ptr, size_t, size_t align) noexcept override {
+        assert(align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+        free(ptr);
+    }
+
+    bool do_is_equal(const memory_resource& that) const noexcept override {
+        return typeid(malloc_resource) == typeid(that);
+    }
+};
+
+void pmr_generator_test() {
+    // Verify alias template
+    static_assert(same_as<pmr::generator<int>, generator<int, void, pmr::polymorphic_allocator<>>>);
+    static_assert(same_as<pmr::generator<int, int>, generator<int, int, pmr::polymorphic_allocator<>>>);
+    static_assert(same_as<pmr::generator<const int&, int>, generator<const int&, int, pmr::polymorphic_allocator<>>>);
+
+    // Simple end-to-end test
+    malloc_resource mr{};
+    auto g = [&mr](allocator_arg_t, pmr::polymorphic_allocator<> alloc, const int hi) -> pmr::generator<int, int> {
+        assert(alloc.resource() == &mr);
+
+        constexpr size_t n = 64;
+        int some_ints[n];
+        for (int i = 0; i < hi; ++i) {
+            co_yield some_ints[i % n] = i;
+        }
+    };
+
+    allow_allocation = false;
+    test_one<gen_traits<int, int, pmr::polymorphic_allocator<>>, int, int, int>(
+        g(allocator_arg, pmr::polymorphic_allocator<>{&mr}, 1024), views::iota(0, 1024));
+    allow_allocation = true;
+}
+
+int main() {
+    // End-to-end tests
+    test_one<gen_traits<int>, int, int&&, int&&>(ints(), views::take(3), array{0, 1, 2});
+    assert(ranges::equal(co_upto(6), views::iota(0, 6)));
     zip_example();
+    test_weird_reference_types();
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     recursive_test();
     arbitrary_range_test();
 
 #ifndef _M_CEE // TRANSITION, VSO-1659496
+    // Verify generation of a range of pointers-to-incomplete
     adl_proof_test();
 #endif // ^^^ no workaround ^^^
 #endif // ^^^ no workaround ^^^
+
+    // Allocator tests
+    static_allocator_test();
+    dynamic_allocator_test();
+    pmr_generator_test();
 }
