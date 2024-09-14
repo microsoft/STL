@@ -471,11 +471,15 @@ bool _Arrays_overlap(const _Ty* const _First, const _Ty* const _Second, const si
 
 template <class _Ty, class _BinOp>
 void _Adjacent_difference_no_overlap(
-    _Ty* __restrict _Dest, const _Ty* __restrict _Src, const size_t _Count, _BinOp _Func) {
+    _Ty* const __restrict _Dest, _Ty* const __restrict _Src, const size_t _Count, _BinOp _Func) {
     _Dest[0] = _Src[0];
     for (size_t _Ix = 1; _Ix != _Count; ++_Ix) {
+#if _HAS_CXX20
         _Ty _Tmp   = _Src[_Ix - 1];
         _Dest[_Ix] = _Func(_Src[_Ix], _STD move(_Tmp));
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+        _Dest[_Ix] = _Func(_Src[_Ix], _Src[_Ix - 1]);
+#endif // ^^^ !_HAS_CXX20 ^^^
     }
 }
 
