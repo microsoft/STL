@@ -461,6 +461,23 @@ _FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _
     _UnaryOp _Transform_op) noexcept; // terminates
 #endif // _HAS_CXX17
 
+template <class _Ty>
+_CONSTEXPR20 bool _Arrays_overlap(const _Ty* const _First, const _Ty* const _Second, const size_t _Common_count) {
+    const uintptr_t _First_val  = reinterpret_cast<uintptr_t>(_First);
+    const uintptr_t _Second_val = reinterpret_cast<uintptr_t>(_Second);
+    const size_t Size_bytes     = _Common_count * sizeof(_Ty);
+    return _First_val + Size_bytes > _Second_val && _Second_val + Size_bytes > _First_val;
+}
+
+template <class _Ty, class _BinOp>
+_CONSTEXPR20 void _Adjacent_difference_no_overlap(
+    _Ty* __restrict _Dest, const _Ty* __restrict _Src, const size_t _Count, _BinOp _Func) {
+    _Dest[0] = _Src[0];
+    for (size_t _Ix = 1; _Ix != _Count; ++_Ix) {
+        _Dest[_Ix] = _Func(_Src[_Ix], _Src[_Ix - 1]);
+    }
+}
+
 _EXPORT_STD template <class _InIt, class _OutIt, class _BinOp>
 _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _OutIt _Dest, _BinOp _Func) {
     // compute adjacent differences into _Dest
@@ -469,6 +486,24 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     if (_UFirst != _ULast) {
+        if constexpr (_Iterators_are_contiguous<_InIt, _OutIt> && !_Iterator_is_volatile<_InIt>
+                      && is_trivially_copyable_v<_Iter_value_t<_InIt>>) {
+            // Go with pointers and without loop-carried dependency to enable vectorization
+            const auto _Count    = _ULast - _UFirst;
+            const auto _Src_ptr  = _To_address(_UFirst);
+            const auto _Dest_ptr = _To_address(_Dest);
+            // Need to perform aliasing analysis.
+            // The vectorizer is generally able to do that on its own, and would guard the vectorized code with that,
+            // but when we elimniate loop-carried dependency we change the semantic of the unvectorized code too.
+            // So we need to perform this check manually, and after that can tell the compiler that there's no aliasing,
+            // to avoid it checking for that again.
+            if (!_Arrays_overlap(_Dest_ptr, _Src_ptr, static_cast<size_t>(_Count))) {
+                _Adjacent_difference_no_overlap(_Dest_ptr, _Src_ptr, static_cast<size_t>(_Count), _Func);
+                _STD _Seek_wrapped(_Dest, _UDest + _Count);
+                return _Dest;
+            }
+        }
+
         _Iter_value_t<_InIt> _Val(*_UFirst);
         *_UDest = _Val;
         while (++_UFirst != _ULast) { // compute another difference
