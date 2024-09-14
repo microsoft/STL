@@ -12,6 +12,7 @@
 #include <functional>
 #include <limits>
 #include <list>
+#include <numeric>
 #include <random>
 #include <string>
 #include <type_traits>
@@ -32,6 +33,66 @@ using namespace std;
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
 #endif // __clang__
+
+template <class InIt, class OutIt>
+OutIt last_known_good_adj_diff(InIt first, InIt last, OutIt dest) {
+    if (first == last) {
+        return dest;
+    }
+
+    auto val = *first;
+    *dest    = val;
+
+    for (++first, ++dest; first != last; ++first, ++dest) {
+        auto tmp = *first;
+        *dest    = tmp - val;
+        val      = tmp;
+    }
+
+    return dest;
+}
+
+template <class T>
+void test_case_adj_diff(const vector<T>& input, vector<T>& output_expected, vector<T>& output_actual) {
+    auto actual   = adjacent_difference(input.begin(), input.end(), output_actual.begin());
+    auto expected = last_known_good_adj_diff(input.begin(), input.end(), output_expected.begin());
+
+    assert(actual - output_actual.begin() == expected - output_expected.begin());
+    assert(output_actual == output_expected);
+}
+
+template <class T>
+void test_adjacent_difference(mt19937_64& gen) {
+    using Limits = numeric_limits<T>;
+
+    uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(
+        is_signed_v<T> ? static_cast<T>(Limits::min() / 2) : Limits::min(),
+        is_signed_v<T> ? static_cast<T>(Limits::max() / 2) : Limits::max());
+
+    vector<T> input;
+    vector<T> output_actual;
+    vector<T> output_expected;
+
+    vector<T>* const all__output_vectors[] = {&output_actual, &output_expected};
+    vector<T>* const all_vectors[]         = {&input, &output_actual, &output_expected};
+
+    for (auto v : all_vectors) {
+        v->reserve(dataCount);
+    }
+
+    test_case_adj_diff(input, output_expected, output_actual);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        for (auto v : all__output_vectors) {
+            generate(v->begin(), v->end(), [&] { return static_cast<T>(dis(gen)); });
+        }
+
+        for (auto v : all_vectors) {
+            v->push_back(static_cast<T>(dis(gen)));
+        }
+
+        test_case_adj_diff(input, output_expected, output_actual);
+    }
+}
 
 template <class FwdIt, class T>
 ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
@@ -776,6 +837,11 @@ void test_swap_ranges(mt19937_64& gen) {
 }
 
 void test_vector_algorithms(mt19937_64& gen) {
+    test_adjacent_difference<int>(gen);
+    test_adjacent_difference<unsigned int>(gen);
+    test_adjacent_difference<long long>(gen);
+    test_adjacent_difference<unsigned long long>(gen);
+
     test_count<char>(gen);
     test_count<signed char>(gen);
     test_count<unsigned char>(gen);
