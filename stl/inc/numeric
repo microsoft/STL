@@ -474,7 +474,8 @@ void _Adjacent_difference_no_overlap(
     _Ty* __restrict _Dest, const _Ty* __restrict _Src, const size_t _Count, _BinOp _Func) {
     _Dest[0] = _Src[0];
     for (size_t _Ix = 1; _Ix != _Count; ++_Ix) {
-        _Dest[_Ix] = _Func(_Src[_Ix], _Src[_Ix - 1]);
+        _Ty _Tmp   = _Src[_Ix - 1];
+        _Dest[_Ix] = _Func(_Src[_Ix], _STD move(_Tmp));
     }
 }
 
