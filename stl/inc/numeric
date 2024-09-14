@@ -461,22 +461,22 @@ _FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _
     _UnaryOp _Transform_op) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _Ty>
-bool _Arrays_overlap(const _Ty* const _First, const _Ty* const _Second, const size_t _Common_count) {
+template <class _Ty1, class _Ty2>
+bool _Arrays_overlap(const _Ty1* const _First, const _Ty2* const _Second, const size_t _Common_count) {
     const uintptr_t _First_val  = reinterpret_cast<uintptr_t>(_First);
     const uintptr_t _Second_val = reinterpret_cast<uintptr_t>(_Second);
-    const size_t Size_bytes     = _Common_count * sizeof(_Ty);
-    return _First_val + Size_bytes > _Second_val && _Second_val + Size_bytes > _First_val;
+    return _First_val + _Common_count * sizeof(_Ty1) > _Second_val
+        && _Second_val + _Common_count * sizeof(_Ty2) > _First_val;
 }
 
-template <class _Ty, class _BinOp>
+template <class _TyDest, class _TySrc, class _BinOp>
 void _Adjacent_difference_no_overlap(
-    _Ty* const __restrict _Dest, _Ty* const __restrict _Src, const size_t _Count, _BinOp _Func) {
+    _TyDest* const __restrict _Dest, _TySrc* const __restrict _Src, const size_t _Count, _BinOp _Func) {
     _Dest[0] = _Src[0];
     for (size_t _Ix = 1; _Ix != _Count; ++_Ix) {
 #if _HAS_CXX20
-        _Ty _Tmp   = _Src[_Ix - 1];
-        _Dest[_Ix] = _Func(_Src[_Ix], _STD move(_Tmp));
+        _TySrc _Tmp = _Src[_Ix - 1];
+        _Dest[_Ix]  = _Func(_Src[_Ix], _STD move(_Tmp));
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         _Dest[_Ix] = _Func(_Src[_Ix], _Src[_Ix - 1]);
 #endif // ^^^ !_HAS_CXX20 ^^^
