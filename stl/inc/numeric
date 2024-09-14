@@ -498,7 +498,7 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
             // So we need to perform this check manually, and after that can tell the compiler that there's no aliasing,
             // to avoid it checking for that again.
             if (!_Arrays_overlap(_Dest_ptr, _Src_ptr, static_cast<size_t>(_Count))) {
-                _Adjacent_difference_no_overlap(_Dest_ptr, _Src_ptr, static_cast<size_t>(_Count), _Func);
+                _Adjacent_difference_no_overlap(_Dest_ptr, _Src_ptr, static_cast<size_t>(_Count), _STD _Pass_fn(_Func));
                 _STD _Seek_wrapped(_Dest, _UDest + _Count);
                 return _Dest;
             }
