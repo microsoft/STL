@@ -2602,7 +2602,7 @@ namespace ranges {
 
 #if defined(__cpp_lib_byte)
     template <class _Rng, class _Alloc = allocator<byte>>
-    elements_of(_Rng&&, _Alloc = {}) -> elements_of<_Rng&&, _Alloc>;
+    elements_of(_Rng&&, _Alloc = _Alloc()) -> elements_of<_Rng&&, _Alloc>;
 #else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
     template <class _Rng, class _Alloc>
     elements_of(_Rng&&, _Alloc) -> elements_of<_Rng&&, _Alloc>;
