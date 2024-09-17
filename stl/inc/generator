@@ -234,7 +234,7 @@ namespace _Gen_detail {
     template <class _Rty, class _Vty>
     using _Value_t = conditional_t<is_void_v<_Vty>, remove_cvref_t<_Rty>, _Vty>;
     template <class _Rty, class _Vty>
-    using _Gen_reference_t = conditional_t<is_void_v<_Vty>, _Rty&&, _Rty>;
+    using _Reference_t = conditional_t<is_void_v<_Vty>, _Rty&&, _Rty>;
     template <class _Ref>
     using _Gen_yield_t = conditional_t<is_reference_v<_Ref>, _Ref, const _Ref&>;
 
@@ -274,7 +274,7 @@ namespace _Gen_detail {
         }
 
         template <class _Rty, class _Vty, class _Alloc, class _Unused>
-            requires same_as<_Gen_yield_t<_Gen_reference_t<_Rty, _Vty>>, _Yielded>
+            requires same_as<_Gen_yield_t<_Reference_t<_Rty, _Vty>>, _Yielded>
         _NODISCARD auto yield_value(_RANGES elements_of<generator<_Rty, _Vty, _Alloc>&&, _Unused> _Elem) noexcept {
             using _Nested_awaitable = _Nested_awaitable_provider<_Rty, _Vty, _Alloc>::_Awaitable;
             return _Nested_awaitable{_STD move(_Elem.range)};
@@ -384,7 +384,7 @@ namespace _Gen_detail {
         template <class _Rty, class _Vty, class _Alloc>
         struct _Nested_awaitable_provider {
             struct _Awaitable {
-                _STL_INTERNAL_STATIC_ASSERT(same_as<_Gen_yield_t<_Gen_reference_t<_Rty, _Vty>>, _Yielded>);
+                _STL_INTERNAL_STATIC_ASSERT(same_as<_Gen_yield_t<_Reference_t<_Rty, _Vty>>, _Yielded>);
 
                 _Nest_info _Nested;
                 generator<_Rty, _Vty, _Alloc> _Gen;
@@ -515,7 +515,7 @@ private:
     static_assert(same_as<remove_cvref_t<_Value>, _Value> && is_object_v<_Value>,
         "generator's value type must be a cv-unqualified object type (N4988 [coro.generator.class]/1.2)");
 
-    using _Ref = _Gen_detail::_Gen_reference_t<_Rty, _Vty>;
+    using _Ref = _Gen_detail::_Reference_t<_Rty, _Vty>;
     static_assert(
         is_reference_v<_Ref> || (is_object_v<_Ref> && same_as<remove_cv_t<_Ref>, _Ref> && copy_constructible<_Ref>),
         "generator's selected reference type must be an actual reference type "
