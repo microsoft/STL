@@ -454,7 +454,7 @@ namespace _Gen_detail {
         add_pointer_t<_Yielded> _Ptr = nullptr;
     };
 
-    struct _Gen_secret_tag {};
+    struct _Secret_tag {};
 
     template <class _Value, class _Ref>
     class _Iter_provider<_Value, _Ref>::_Iterator {
@@ -498,7 +498,7 @@ namespace _Gen_detail {
         template <class, class, class>
         friend class _STD generator;
 
-        explicit _Iterator(_Gen_secret_tag, coroutine_handle<_Promise_base<_Yield_t<_Ref>>> _Coro_) noexcept
+        explicit _Iterator(_Secret_tag, coroutine_handle<_Promise_base<_Yield_t<_Ref>>> _Coro_) noexcept
             : _Coro{_Coro_} {}
 
         coroutine_handle<_Promise_base<_Yield_t<_Ref>>> _Coro;
@@ -536,7 +536,7 @@ public:
     struct __declspec(empty_bases) promise_type : _Gen_detail::_Promise_allocator<_Alloc>,
                                                   _Gen_detail::_Promise_base<yielded> {
         _NODISCARD generator get_return_object() noexcept {
-            return generator{_Gen_detail::_Gen_secret_tag{}, coroutine_handle<promise_type>::from_promise(*this)};
+            return generator{_Gen_detail::_Secret_tag{}, coroutine_handle<promise_type>::from_promise(*this)};
         }
     };
     _STL_INTERNAL_STATIC_ASSERT(is_standard_layout_v<promise_type>);
@@ -563,7 +563,7 @@ public:
         _STL_VERIFY(_Coro, "Can't call begin on moved-from generator");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         _Coro.resume();
-        return typename _Gen_detail::_Iter_provider<_Value, _Ref>::_Iterator{_Gen_detail::_Gen_secret_tag{},
+        return typename _Gen_detail::_Iter_provider<_Value, _Ref>::_Iterator{_Gen_detail::_Secret_tag{},
             coroutine_handle<_Gen_detail::_Promise_base<yielded>>::from_address(_Coro.address())};
     }
 
@@ -577,7 +577,7 @@ private:
     // awaitable objects, so all necessary storage is allocated in coroutine frames. See the description in the body of
     // _Promise_base.
 
-    explicit generator(_Gen_detail::_Gen_secret_tag, coroutine_handle<promise_type> _Coro_) noexcept : _Coro(_Coro_) {}
+    explicit generator(_Gen_detail::_Secret_tag, coroutine_handle<promise_type> _Coro_) noexcept : _Coro(_Coro_) {}
 };
 
 #ifdef __cpp_lib_byte
