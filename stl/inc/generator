@@ -191,12 +191,12 @@ namespace _Gen_detail {
             if constexpr (_Stateless_allocator<_Alloc>) {
                 // don't store stateless allocator
                 const _Dealloc_fn _Dealloc = _Dealloc_stateless<_Alloc>;
-                _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
+                _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc_fn));
                 return _Ptr;
             } else {
                 // store stateful allocator
                 const _Dealloc_fn _Dealloc = _Dealloc_stateful<_Alloc>;
-                _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
+                _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc_fn));
 
                 const auto _Al_address = _Get_allocator_address<_Alloc>(_Ptr, _Size + sizeof(_Dealloc_fn));
                 _STD construct_at(_Al_address, _STD move(_Al));
