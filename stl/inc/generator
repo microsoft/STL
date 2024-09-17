@@ -49,7 +49,7 @@ namespace _Gen_detail {
     concept _Valid_allocator = same_as<_Alloc, void> || is_pointer_v<typename allocator_traits<_Alloc>::pointer>;
 
     template <class _Proto_allocator>
-    class _Coro_promise_allocator { // statically specified allocator type
+    class _Promise_allocator { // statically specified allocator type
     private:
         using _Alloc           = _Rebind_alloc_t<_Proto_allocator, _Aligned_block>;
         using _Alloc_size_type = allocator_traits<_Alloc>::size_type;
@@ -126,7 +126,7 @@ namespace _Gen_detail {
     };
 
     template <>
-    class _Coro_promise_allocator<void> { // type-erased allocator
+    class _Promise_allocator<void> { // type-erased allocator
     private:
         using _Dealloc_fn = void(__stdcall*)(void*, size_t) _NOEXCEPT_FNPTR;
 
@@ -533,7 +533,7 @@ public:
 
     friend _Gen_detail::_Gen_promise_base<yielded>;
 
-    struct __declspec(empty_bases) promise_type : _Gen_detail::_Coro_promise_allocator<_Alloc>,
+    struct __declspec(empty_bases) promise_type : _Gen_detail::_Promise_allocator<_Alloc>,
                                                   _Gen_detail::_Gen_promise_base<yielded> {
         _NODISCARD generator get_return_object() noexcept {
             return generator{_Gen_detail::_Gen_secret_tag{}, coroutine_handle<promise_type>::from_promise(*this)};
