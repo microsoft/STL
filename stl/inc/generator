@@ -52,7 +52,7 @@ namespace _Gen_detail {
         using _Alloc           = _Rebind_alloc_t<_Proto_allocator, _Aligned_block>;
         using _Alloc_size_type = allocator_traits<_Alloc>::size_type;
 
-        static size_t _Allocation_block_size(const size_t _Size) noexcept {
+        _NODISCARD static size_t _Allocation_block_size(const size_t _Size) noexcept {
             // Compute the number of _Aligned_blocks needed to store a coroutine
             // frame of _Size bytes and, if necessary, an _Alloc.
             if constexpr (_Stateless_allocator<_Alloc>) {
@@ -65,7 +65,7 @@ namespace _Gen_detail {
             }
         }
 
-        static void* _Allocate(_Alloc _Al, const size_t _Size) {
+        _NODISCARD_RAW_PTR_ALLOC static void* _Allocate(_Alloc _Al, const size_t _Size) {
             // memory layout:
             // |--- coroutine frame --|- alignment padding -|---- _Alloc -----|
             // |--- always present ---|----------- stateful only -------------|
@@ -97,7 +97,7 @@ namespace _Gen_detail {
         }
 
     public:
-        static void* operator new(const size_t _Size)
+        _NODISCARD_RAW_PTR_ALLOC static void* operator new(const size_t _Size)
             requires default_initializable<_Alloc>
         {
             return _Allocate(_Alloc{}, _Size);
@@ -105,13 +105,14 @@ namespace _Gen_detail {
 
         template <class _Alloc2, class... _Args>
             requires convertible_to<const _Alloc2&, _Proto_allocator>
-        static void* operator new(const size_t _Size, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
+        _NODISCARD_RAW_PTR_ALLOC static void* operator new(
+            const size_t _Size, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
             return _Allocate(static_cast<_Alloc>(static_cast<_Proto_allocator>(_Al)), _Size);
         }
 
         template <class _This, class _Alloc2, class... _Args>
             requires convertible_to<const _Alloc2&, _Proto_allocator>
-        static void* operator new(
+        _NODISCARD_RAW_PTR_ALLOC static void* operator new(
             const size_t _Size, const _This&, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
             return _Allocate(static_cast<_Alloc>(static_cast<_Proto_allocator>(_Al)), _Size);
         }
@@ -129,7 +130,7 @@ namespace _Gen_detail {
         using _Dealloc_fn = void(__stdcall*)(void*, size_t) _NOEXCEPT_FNPTR;
 
         template <class _Alloc>
-        static size_t _Allocation_block_size(const size_t _Size) noexcept {
+        _NODISCARD static size_t _Allocation_block_size(const size_t _Size) noexcept {
             size_t _Bytes = _Size + sizeof(_Dealloc_fn);
             if constexpr (_Stateless_allocator<_Alloc>) {
                 _Bytes += sizeof(_Aligned_block) - 1;
@@ -167,7 +168,7 @@ namespace _Gen_detail {
         }
 
         template <class _ProtoAlloc>
-        static void* _Allocate(const _ProtoAlloc& _Proto, size_t _Size) {
+        _NODISCARD_RAW_PTR_ALLOC static void* _Allocate(const _ProtoAlloc& _Proto, size_t _Size) {
             // memory layout:
             // |--- coroutine frame (_Size bytes) ---|--- _Dealloc_fn ---|-- alignment padding --|--- _Alloc ---|
             // |-------------------- always present -----(not aligned)---|------------ stateful only -----------|
@@ -200,7 +201,7 @@ namespace _Gen_detail {
         }
 
     public:
-        static void* operator new(const size_t _Size) {
+        _NODISCARD_RAW_PTR_ALLOC static void* operator new(const size_t _Size) {
             void* const _Ptr           = ::operator new(_Size + sizeof(_Dealloc_fn));
             const _Dealloc_fn _Dealloc = _Dealloc_default;
             _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc_fn));
@@ -208,14 +209,15 @@ namespace _Gen_detail {
         }
 
         template <class _Alloc, class... _Args>
-        static void* operator new(const size_t _Size, allocator_arg_t, const _Alloc& _Al, const _Args&...) {
+        _NODISCARD_RAW_PTR_ALLOC static void* operator new(
+            const size_t _Size, allocator_arg_t, const _Alloc& _Al, const _Args&...) {
             static_assert(_Valid_allocator<_Alloc>, "generator allocators must use raw pointers "
                                                     "(N4988 [coro.generator.class]/1.1)");
             return _Allocate(_Al, _Size);
         }
 
         template <class _This, class _Alloc, class... _Args>
-        static void* operator new(
+        _NODISCARD_RAW_PTR_ALLOC static void* operator new(
             const size_t _Size, const _This&, allocator_arg_t, const _Alloc& _Al, const _Args&...) {
             static_assert(_Valid_allocator<_Alloc>, "generator allocators must use raw pointers "
                                                     "(N4988 [coro.generator.class]/1.1)");
