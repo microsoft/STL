@@ -457,7 +457,9 @@ namespace _Gen_detail {
         add_pointer_t<_Yielded> _Ptr = nullptr;
     };
 
-    struct _Secret_tag {};
+    struct _Secret_tag {
+        explicit _Secret_tag() = default;
+    };
 
     template <class _Value, class _Ref>
     class _Iter_provider<_Value, _Ref>::_Iterator {
