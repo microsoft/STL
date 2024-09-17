@@ -38,7 +38,7 @@ struct alignas(__STDCPP_DEFAULT_NEW_ALIGNMENT__) _Aligned_block {
 };
 
 template <class _Alloc>
-constexpr bool _Allocator_is_stateless =
+constexpr bool _Stateless_allocator =
     default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value;
 
 _EXPORT_STD template <class _Rty, class _Vty = void, class _Alloc = void>
@@ -57,7 +57,7 @@ namespace _Gen_detail {
         static size_t _Allocation_block_size(const size_t _Size) noexcept {
             // Compute the number of _Aligned_blocks needed to store a coroutine
             // frame of _Size bytes and, if necessary, an _Alloc.
-            if constexpr (_Allocator_is_stateless<_Alloc>) {
+            if constexpr (_Stateless_allocator<_Alloc>) {
                 // allocator is stateless, we need no additional space
                 return (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
             } else {
@@ -76,7 +76,7 @@ namespace _Gen_detail {
             const size_t _Size_in_blocks = _Allocation_block_size(_Size);
             void* const _Ptr             = _Al.allocate(_Convert_size<_Alloc_size_type>(_Size_in_blocks));
 
-            if constexpr (!_Allocator_is_stateless<_Alloc>) {
+            if constexpr (!_Stateless_allocator<_Alloc>) {
                 // store only stateful allocators
                 const auto _Al_address =
                     (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
@@ -89,7 +89,7 @@ namespace _Gen_detail {
         _NODISCARD static _Alloc _Get_allocator(
             [[maybe_unused]] void* const _Ptr, [[maybe_unused]] const size_t _Size) noexcept {
             // recreate or retrieve a copy of the allocator used to allocate _Ptr
-            if constexpr (_Allocator_is_stateless<_Alloc>) {
+            if constexpr (_Stateless_allocator<_Alloc>) {
                 return _Alloc{};
             } else {
                 const auto _Al_address =
@@ -133,7 +133,7 @@ namespace _Gen_detail {
         template <class _Alloc>
         static size_t _Allocation_block_size(const size_t _Size) noexcept {
             size_t _Bytes = _Size + sizeof(_Dealloc_fn);
-            if constexpr (_Allocator_is_stateless<_Alloc>) {
+            if constexpr (_Stateless_allocator<_Alloc>) {
                 _Bytes += sizeof(_Aligned_block) - 1;
             } else {
                 constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
@@ -183,7 +183,7 @@ namespace _Gen_detail {
             const auto _Alloc_size       = _Convert_size<_Alloc_size_type>(_Size_in_blocks);
             void* const _Ptr             = _Al.allocate(_Alloc_size);
 
-            if constexpr (_Allocator_is_stateless<_Alloc>) {
+            if constexpr (_Stateless_allocator<_Alloc>) {
                 // don't store stateless allocator
                 const _Dealloc_fn _Dealloc = _Dealloc_stateless<_Alloc>;
                 _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
