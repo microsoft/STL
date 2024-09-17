@@ -58,10 +58,10 @@ namespace _Gen_detail {
             // Compute the number of _Aligned_blocks needed to store a coroutine
             // frame of _Size bytes and, if necessary, an _Alloc.
             if constexpr (_Stateless_allocator<_Alloc>) {
-                // allocator is stateless, we need no additional space
+                // allocator is stateless, we need not store it
                 return (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
             } else {
-                // allocator is stateful, we need space for it
+                // allocator is stateful, we need storage for it
                 constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
                 return (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
             }
@@ -575,7 +575,7 @@ private:
     coroutine_handle<promise_type> _Coro = nullptr;
     // The stack of coroutine handles depicted in the Standard is realized by a linked structure of promises and
     // awaitable objects, so all necessary storage is allocated in coroutine frames. See the description in the body of
-    // _Promise_base.
+    // _Gen_detail::_Promise_base.
 
     explicit generator(_Gen_detail::_Secret_tag, coroutine_handle<promise_type> _Coro_) noexcept : _Coro(_Coro_) {}
 };
