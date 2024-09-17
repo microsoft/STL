@@ -239,7 +239,7 @@ namespace _Gen_detail {
     using _Yield_t = conditional_t<is_reference_v<_Ref>, _Ref, const _Ref&>;
 
     template <class, class>
-    struct _Gen_iter_provider {
+    struct _Iter_provider {
         class _Iterator;
     };
 
@@ -444,7 +444,7 @@ namespace _Gen_detail {
         }
 
         template <class, class>
-        friend struct _Gen_iter_provider;
+        friend struct _Iter_provider;
 
         // Least significant bit of `_Data` indicates stored information:
         // LSB 0: `_Data` is a top coroutine handle,
@@ -457,7 +457,7 @@ namespace _Gen_detail {
     struct _Gen_secret_tag {};
 
     template <class _Value, class _Ref>
-    class _Gen_iter_provider<_Value, _Ref>::_Iterator {
+    class _Iter_provider<_Value, _Ref>::_Iterator {
     public:
         using value_type      = _Value;
         using difference_type = ptrdiff_t;
@@ -557,13 +557,13 @@ public:
         return *this;
     }
 
-    _NODISCARD _Gen_detail::_Gen_iter_provider<_Value, _Ref>::_Iterator begin() {
+    _NODISCARD _Gen_detail::_Iter_provider<_Value, _Ref>::_Iterator begin() {
         // Pre: _Coro is suspended at its initial suspend point
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Coro, "Can't call begin on moved-from generator");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         _Coro.resume();
-        return typename _Gen_detail::_Gen_iter_provider<_Value, _Ref>::_Iterator{_Gen_detail::_Gen_secret_tag{},
+        return typename _Gen_detail::_Iter_provider<_Value, _Ref>::_Iterator{_Gen_detail::_Gen_secret_tag{},
             coroutine_handle<_Gen_detail::_Gen_promise_base<yielded>>::from_address(_Coro.address())};
     }
 
