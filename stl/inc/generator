@@ -232,7 +232,7 @@ namespace _Gen_detail {
     };
 
     template <class _Rty, class _Vty>
-    using _Gen_value_t = conditional_t<is_void_v<_Vty>, remove_cvref_t<_Rty>, _Vty>;
+    using _Value_t = conditional_t<is_void_v<_Vty>, remove_cvref_t<_Rty>, _Vty>;
     template <class _Rty, class _Vty>
     using _Gen_reference_t = conditional_t<is_void_v<_Vty>, _Rty&&, _Rty>;
     template <class _Ref>
@@ -511,7 +511,7 @@ private:
     static_assert(_Gen_detail::_Valid_allocator<_Alloc>,
         "generator allocators must use raw pointers (N4988 [coro.generator.class]/1.1)");
 
-    using _Value = _Gen_detail::_Gen_value_t<_Rty, _Vty>;
+    using _Value = _Gen_detail::_Value_t<_Rty, _Vty>;
     static_assert(same_as<remove_cvref_t<_Value>, _Value> && is_object_v<_Value>,
         "generator's value type must be a cv-unqualified object type (N4988 [coro.generator.class]/1.2)");
 
