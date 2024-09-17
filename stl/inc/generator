@@ -38,8 +38,7 @@ struct alignas(__STDCPP_DEFAULT_NEW_ALIGNMENT__) _Aligned_block {
 };
 
 template <class _Alloc>
-constexpr bool _Stateless_allocator =
-    default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value;
+constexpr bool _Stateless_allocator = default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value;
 
 _EXPORT_STD template <class _Rty, class _Vty = void, class _Alloc = void>
 class generator;
@@ -212,7 +211,7 @@ namespace _Gen_detail {
         template <class _Alloc, class... _Args>
         static void* operator new(const size_t _Size, allocator_arg_t, const _Alloc& _Al, const _Args&...) {
             static_assert(_Valid_allocator<_Alloc>, "generator allocators must use raw pointers "
-                                                      "(N4988 [coro.generator.class]/1.1)");
+                                                    "(N4988 [coro.generator.class]/1.1)");
             return _Allocate(_Al, _Size);
         }
 
@@ -220,7 +219,7 @@ namespace _Gen_detail {
         static void* operator new(
             const size_t _Size, const _This&, allocator_arg_t, const _Alloc& _Al, const _Args&...) {
             static_assert(_Valid_allocator<_Alloc>, "generator allocators must use raw pointers "
-                                                      "(N4988 [coro.generator.class]/1.1)");
+                                                    "(N4988 [coro.generator.class]/1.1)");
             return _Allocate(_Al, _Size);
         }
 
@@ -327,7 +326,7 @@ namespace _Gen_detail {
 #endif // ^^^ no workaround ^^^
 
                 _Promise_base& _Current = _Handle.promise();
-                _Current._Ptr               = _STD addressof(_Val);
+                _Current._Ptr           = _STD addressof(_Val);
             }
 
             constexpr void await_resume() const noexcept {}
@@ -449,8 +448,7 @@ namespace _Gen_detail {
         // Least significant bit of `_Data` indicates stored information:
         // LSB 0: `_Data` is a top coroutine handle,
         // LSB 1: `_Data ^ 1U` is a pointer to an object of type `_Nest_info`.
-        uintptr_t _Data =
-            reinterpret_cast<uintptr_t>(coroutine_handle<_Promise_base>::from_promise(*this).address());
+        uintptr_t _Data = reinterpret_cast<uintptr_t>(coroutine_handle<_Promise_base>::from_promise(*this).address());
         add_pointer_t<_Yielded> _Ptr = nullptr;
     };
 
@@ -518,15 +516,15 @@ private:
     using _Ref = _Gen_detail::_Reference_t<_Rty, _Vty>;
     static_assert(
         is_reference_v<_Ref> || (is_object_v<_Ref> && same_as<remove_cv_t<_Ref>, _Ref> && copy_constructible<_Ref>),
-        "generator's selected reference type must be an actual reference type "
-        "or a cv-unqualified copy-constructible object type (N4988 [coro.generator.class]/1.3)");
+        "generator's selected reference type must be an actual reference type or a cv-unqualified copy-constructible "
+        "object type (N4988 [coro.generator.class]/1.3)");
 
     using _RRef = conditional_t<is_reference_v<_Ref>, remove_reference_t<_Ref>&&, _Ref>;
 
     static_assert(common_reference_with<_Ref&&, _Value&> && common_reference_with<_Ref&&, _RRef&&>
                       && common_reference_with<_RRef&&, const _Value&>,
-        "generator's iterator type must model indirectly_readable, "
-        "but that's impossible with the selected value and reference types (N4988 [coro.generator.class]/1.4)");
+        "generator's iterator type must model indirectly_readable, but that's impossible with the selected value and "
+        "reference types (N4988 [coro.generator.class]/1.4)");
 
 public:
     using yielded = _Gen_detail::_Yield_t<_Ref>;
@@ -541,7 +539,8 @@ public:
     };
     _STL_INTERNAL_STATIC_ASSERT(is_standard_layout_v<promise_type>);
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
-    _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Gen_detail::_Promise_base<yielded>, promise_type>);
+    _STL_INTERNAL_STATIC_ASSERT(
+        is_pointer_interconvertible_base_of_v<_Gen_detail::_Promise_base<yielded>, promise_type>);
 #endif // ^^^ no workaround ^^^
 
     generator(generator&& _That) noexcept : _Coro(_STD exchange(_That._Coro, {})) {}
