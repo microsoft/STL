@@ -981,7 +981,7 @@ public:
     }
 
     template <class... _Valty>
-    decltype(auto) emplace_front(_Valty&&... _Val) { // insert element at beginning
+    _CONTAINER_EMPLACE_RETURN emplace_front(_Valty&&... _Val) { // insert element at beginning
         reference _Result = _Emplace(_Mypair._Myval2._Myhead->_Next, _STD forward<_Valty>(_Val)...)->_Myval;
 
 #if _HAS_CXX17
@@ -992,7 +992,7 @@ public:
     }
 
     template <class... _Valty>
-    decltype(auto) emplace_back(_Valty&&... _Val) { // insert element at end
+    _CONTAINER_EMPLACE_RETURN emplace_back(_Valty&&... _Val) { // insert element at end
         reference _Result = _Emplace(_Mypair._Myval2._Myhead, _STD forward<_Valty>(_Val)...)->_Myval;
 
 #if _HAS_CXX17
