@@ -143,6 +143,7 @@ namespace _Gen_detail {
 
         template <class _Alloc>
         static void __stdcall _Dealloc_stateless(void* const _Ptr, const size_t _Size) noexcept {
+            _STL_INTERNAL_STATIC_ASSERT(_Stateless_allocator<_Alloc>);
             _Alloc _Al{};
             const size_t _Size_in_blocks = _Allocation_block_size<_Alloc>(_Size);
             const auto _Alloc_size       = static_cast<allocator_traits<_Alloc>::size_type>(_Size_in_blocks);
@@ -151,6 +152,7 @@ namespace _Gen_detail {
 
         template <class _Alloc>
         static void __stdcall _Dealloc_stateful(void* const _Ptr, const size_t _Size) noexcept {
+            _STL_INTERNAL_STATIC_ASSERT(!_Stateless_allocator<_Alloc>);
             const auto _Al_address =
                 (reinterpret_cast<uintptr_t>(_Ptr) + _Size + sizeof(_Dealloc_fn) + alignof(_Alloc) - 1)
                 & ~(alignof(_Alloc) - 1);
