@@ -362,12 +362,12 @@ namespace _Gen_detail {
         };
 
         struct _Final_awaiter {
-            _NODISCARD bool await_ready() noexcept {
+            _NODISCARD bool await_ready() const noexcept {
                 return false;
             }
 
             template <class _CoroPromise>
-            _NODISCARD coroutine_handle<> await_suspend(coroutine_handle<_CoroPromise> _Handle) noexcept {
+            _NODISCARD coroutine_handle<> await_suspend(coroutine_handle<_CoroPromise> _Handle) const noexcept {
                 // Resume _Handle's parent coroutine, if any.
 #ifdef __cpp_lib_is_pointer_interconvertible // TRANSITION, LLVM-48860
                 _STL_INTERNAL_STATIC_ASSERT(is_pointer_interconvertible_base_of_v<_Promise_base, _CoroPromise>);
@@ -382,7 +382,7 @@ namespace _Gen_detail {
                 return _STD noop_coroutine();
             }
 
-            void await_resume() noexcept {}
+            void await_resume() const noexcept {}
         };
 
         template <class _Rty, class _Vty, class _Alloc>
@@ -395,7 +395,7 @@ namespace _Gen_detail {
 
                 explicit _Awaitable(generator<_Rty, _Vty, _Alloc>&& _Gen_) noexcept : _Gen(_STD move(_Gen_)) {}
 
-                _NODISCARD bool await_ready() noexcept {
+                _NODISCARD bool await_ready() const noexcept {
                     return !_Gen._Coro;
                 }
 
@@ -475,7 +475,7 @@ namespace _Gen_detail {
         }
 
         _NODISCARD _Ref operator*() const
-            noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr))) {
+            noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr))) /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(!_Coro.done(), "Can't dereference generator end iterator");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
