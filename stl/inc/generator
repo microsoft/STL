@@ -85,7 +85,7 @@ namespace _Gen_detail {
             if constexpr (!_Stateless_allocator<_Alloc>) {
                 // store only stateful allocators
                 const auto _Al_address = _Get_allocator_address<_Alloc>(_Ptr, _Size);
-                ::new (static_cast<void*>(_Al_address)) _Alloc(_STD move(_Al));
+                _STD construct_at(_Al_address, _STD move(_Al));
             }
 
             return _Ptr;
@@ -199,7 +199,7 @@ namespace _Gen_detail {
                 _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
 
                 const auto _Al_address = _Get_allocator_address<_Alloc>(_Ptr, _Size + sizeof(_Dealloc_fn));
-                ::new (static_cast<void*>(_Al_address)) _Alloc{_STD move(_Al)};
+                _STD construct_at(_Al_address, _STD move(_Al));
                 return _Ptr;
             }
         }
