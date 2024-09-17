@@ -46,6 +46,14 @@ namespace _Gen_detail {
     template <class _Alloc>
     concept _Valid_allocator = same_as<_Alloc, void> || is_pointer_v<typename allocator_traits<_Alloc>::pointer>;
 
+    template <class _Alloc>
+    _NODISCARD _Alloc* _Get_allocator_address(void* const _Ptr, const size_t _Size) noexcept {
+        _STL_INTERNAL_STATIC_ASSERT(!_Stateless_allocator<_Alloc>);
+        const auto _Al_address =
+            (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
+        return reinterpret_cast<_Alloc*>(_Al_address);
+    }
+
     template <class _Proto_allocator>
     class _Promise_allocator { // statically specified allocator type
     private:
@@ -76,9 +84,8 @@ namespace _Gen_detail {
 
             if constexpr (!_Stateless_allocator<_Alloc>) {
                 // store only stateful allocators
-                const auto _Al_address =
-                    (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
-                ::new (reinterpret_cast<void*>(_Al_address)) _Alloc(_STD move(_Al));
+                const auto _Al_address = _Get_allocator_address<_Alloc>(_Ptr, _Size);
+                ::new (static_cast<void*>(_Al_address)) _Alloc(_STD move(_Al));
             }
 
             return _Ptr;
@@ -90,9 +97,8 @@ namespace _Gen_detail {
             if constexpr (_Stateless_allocator<_Alloc>) {
                 return _Alloc{};
             } else {
-                const auto _Al_address =
-                    (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
-                return *reinterpret_cast<_Alloc*>(_Al_address);
+                const auto _Al_address = _Get_allocator_address<_Alloc>(_Ptr, _Size);
+                return *_Al_address;
             }
         }
 
@@ -153,10 +159,8 @@ namespace _Gen_detail {
         template <class _Alloc>
         static void __stdcall _Dealloc_stateful(void* const _Ptr, const size_t _Size) noexcept {
             _STL_INTERNAL_STATIC_ASSERT(!_Stateless_allocator<_Alloc>);
-            const auto _Al_address =
-                (reinterpret_cast<uintptr_t>(_Ptr) + _Size + sizeof(_Dealloc_fn) + alignof(_Alloc) - 1)
-                & ~(alignof(_Alloc) - 1);
-            auto& _Stored_al = *reinterpret_cast<_Alloc*>(_Al_address);
+            const auto _Al_address = _Get_allocator_address<_Alloc>(_Ptr, _Size + sizeof(_Dealloc_fn));
+            auto& _Stored_al       = *_Al_address;
             _Alloc _Al{_STD move(_Stored_al)};
             _Stored_al.~_Alloc();
 
@@ -170,7 +174,7 @@ namespace _Gen_detail {
         }
 
         template <class _ProtoAlloc>
-        _NODISCARD_RAW_PTR_ALLOC static void* _Allocate(const _ProtoAlloc& _Proto, size_t _Size) {
+        _NODISCARD_RAW_PTR_ALLOC static void* _Allocate(const _ProtoAlloc& _Proto, const size_t _Size) {
             // memory layout:
             // |--- coroutine frame (_Size bytes) ---|--- _Dealloc_fn ---|-- alignment padding --|--- _Alloc ---|
             // |-------------------- always present -----(not aligned)---|------------ stateful only -----------|
@@ -193,11 +197,9 @@ namespace _Gen_detail {
                 // store stateful allocator
                 const _Dealloc_fn _Dealloc = _Dealloc_stateful<_Alloc>;
                 _CSTD memcpy(static_cast<char*>(_Ptr) + _Size, &_Dealloc, sizeof(_Dealloc));
-                _Size += sizeof(_Dealloc_fn);
 
-                const auto _Al_address =
-                    (reinterpret_cast<uintptr_t>(_Ptr) + _Size + alignof(_Alloc) - 1) & ~(alignof(_Alloc) - 1);
-                ::new (reinterpret_cast<void*>(_Al_address)) _Alloc{_STD move(_Al)};
+                const auto _Al_address = _Get_allocator_address<_Alloc>(_Ptr, _Size + sizeof(_Dealloc_fn));
+                ::new (static_cast<void*>(_Al_address)) _Alloc{_STD move(_Al)};
                 return _Ptr;
             }
         }
