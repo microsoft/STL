@@ -2625,7 +2625,7 @@ _STD_END
 #define _CONTAINER_EMPLACE_RETURN reference
 #else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
 #define _CONTAINER_EMPLACE_RETURN void
-#endif // ^^^ _HAS_CXX17 ^^^
+#endif // ^^^ !_HAS_CXX17 ^^^
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
