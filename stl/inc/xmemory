@@ -92,36 +92,32 @@ _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
 template <class _Ty>
 constexpr size_t _New_alignof = (_STD max)(alignof(_Ty), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 
-struct _Default_allocate_traits {
-    __declspec(allocator) static
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
-        _CONSTEXPR20
-#endif // defined(__clang__)
-        void*
-        _Allocate(const size_t _Bytes) {
+#define _CLANG_CONSTEXPR20 _CONSTEXPR20
+#else // ^^^ Clang / Other vvv
+#define _CLANG_CONSTEXPR20
+#endif // ^^^ Other ^^^
+
+struct _Default_allocate_traits {
+    __declspec(allocator) static _CLANG_CONSTEXPR20 void* _Allocate(const size_t _Bytes) {
         return ::operator new(_Bytes);
     }
 
 #ifdef __cpp_aligned_new
-    __declspec(allocator) static
-#ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
-        _CONSTEXPR20
-#endif // defined(__clang__)
-        void*
-        _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
-#ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
-#if _HAS_CXX20
+    __declspec(allocator) static _CLANG_CONSTEXPR20 void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
+#if defined(__clang__) && _HAS_CXX20 // Ditto, "Clang and MSVC implement P0784R7 differently"
         if (_STD is_constant_evaluated()) {
             return ::operator new(_Bytes);
         } else
-#endif // _HAS_CXX20
-#endif // defined(__clang__)
+#endif // ^^^ defined(__clang__) && _HAS_CXX20 ^^^
         {
             return ::operator new(_Bytes, align_val_t{_Align});
         }
     }
 #endif // defined(__cpp_aligned_new)
 };
+
+#undef _CLANG_CONSTEXPR20
 
 constexpr bool _Is_pow_2(const size_t _Value) noexcept {
     return _Value != 0 && (_Value & (_Value - 1)) == 0;
