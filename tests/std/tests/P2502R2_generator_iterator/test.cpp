@@ -3,11 +3,14 @@
 
 #include <cassert>
 #include <concepts>
+#include <cstddef>
 #include <generator>
 #include <memory>
 #include <memory_resource>
 #include <ranges>
+#include <string>
 #include <type_traits>
+#include <utility>
 
 #include "test_generator_support.hpp"
 

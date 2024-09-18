@@ -15,6 +15,7 @@
 #include <random>
 #include <ranges>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <typeinfo>
@@ -153,31 +154,20 @@ void test_weird_reference_types() {
     }
 
 #if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
-    { // Test with mutable xvalue reference type
-        auto woof = [](size_t size, size_t count) -> generator<vector<int>&&> {
-            random_device rd{};
-            uniform_int_distribution dist{0, 99};
-            vector<int> vec;
-            while (count-- > 0) {
-                vec.resize(size);
-                ranges::generate(vec, [&] { return dist(rd); });
-                co_yield move(vec);
-                assert(vec.empty()); // when we yield an rvalue, the caller moves from it
-            }
+    { // Test with mutable rvalue reference type
+        constexpr size_t segment_size = 16;
+        auto woof                     = []() -> generator<vector<int>&&> {
+            vector<int> vec(segment_size);
 
-            // Test yielding lvalue
-            vec.resize(size);
-            ranges::generate(vec, [&] { return dist(rd); });
-            const auto tmp = vec;
-            co_yield vec;
-            assert(tmp == vec); // when we yield an lvalue, the caller moves from a copy
+            co_yield vec; // When we yield an lvalue...
+            assert(vec.size() == segment_size); // ... the caller moves from a copy.
+
+            co_yield move(vec); // When we yield an rvalue...
+            assert(vec.size() == 0); // ... the caller moves from it.
         };
 
-        constexpr size_t size = 16;
-        auto r                = woof(size, 4);
-        for (auto i = r.begin(); i != r.end(); ++i) {
-            vector<int> vec = *i;
-            assert(vec.size() == size);
+        for (auto vec : woof()) { // Intentionally by value
+            assert(vec.size() == segment_size);
         }
     }
 #endif // ^^^ no workaround ^^^
@@ -194,12 +184,12 @@ generator<int> iota_repeater(const int hi, const int depth) {
 }
 
 void recursive_test() {
-    static constexpr auto might_throw = []() -> generator<int> {
+    constexpr auto might_throw = []() -> generator<int> {
         co_yield 0;
         throw runtime_error{"error"};
     };
 
-    static constexpr auto nested_ints = []() -> generator<int> {
+    constexpr auto nested_ints = [=]() -> generator<int> {
         try {
             co_yield ranges::elements_of(might_throw());
         } catch (const runtime_error& e) {
@@ -366,7 +356,7 @@ private:
             bytes = 1;
         }
 
-        if (void* result = malloc(bytes)) {
+        if (void* const result = malloc(bytes)) {
             return result;
         }
         throw bad_alloc{};

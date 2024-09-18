@@ -73,7 +73,7 @@ void test_operator_new(typename Gen::promise_type& p, const Alloc2& alloc2 = {})
     if constexpr (has_op_new1) {
         const size_t size = __STDCPP_DEFAULT_NEW_ALIGNMENT__;
         void* const mem   = p.operator new(size);
-        assert(reinterpret_cast<intptr_t>(mem) % __STDCPP_DEFAULT_NEW_ALIGNMENT__ == 0);
+        assert(reinterpret_cast<uintptr_t>(mem) % __STDCPP_DEFAULT_NEW_ALIGNMENT__ == 0);
         p.operator delete(mem, size);
     }
 
@@ -83,7 +83,7 @@ void test_operator_new(typename Gen::promise_type& p, const Alloc2& alloc2 = {})
     if constexpr (has_op_new2) {
         const size_t size = __STDCPP_DEFAULT_NEW_ALIGNMENT__;
         void* const mem   = p.operator new(size, allocator_arg, alloc2, 0, 0);
-        assert(reinterpret_cast<intptr_t>(mem) % __STDCPP_DEFAULT_NEW_ALIGNMENT__ == 0);
+        assert(reinterpret_cast<uintptr_t>(mem) % __STDCPP_DEFAULT_NEW_ALIGNMENT__ == 0);
         p.operator delete(mem, size);
     }
 
@@ -95,7 +95,7 @@ void test_operator_new(typename Gen::promise_type& p, const Alloc2& alloc2 = {})
         const size_t size = __STDCPP_DEFAULT_NEW_ALIGNMENT__;
         const S s;
         void* const mem = p.operator new(size, s, allocator_arg, alloc2, 0, 0);
-        assert(reinterpret_cast<intptr_t>(mem) % __STDCPP_DEFAULT_NEW_ALIGNMENT__ == 0);
+        assert(reinterpret_cast<uintptr_t>(mem) % __STDCPP_DEFAULT_NEW_ALIGNMENT__ == 0);
         p.operator delete(mem, size);
     }
 }
@@ -141,8 +141,7 @@ void test_one() {
         static_assert(convertible_to<decltype(declval<Awaitable&>().await_ready()), bool>);
         static_assert(is_void_v<decltype(declval<Awaitable&>().await_resume())>);
         static_assert(noexcept(p.yield_value(declval<Lval>()))
-                      == is_nothrow_constructible_v<remove_cvref_t<Yielded>,
-                          const remove_reference_t<Yielded>&>); // strengthened
+                      == is_nothrow_constructible_v<remove_cvref_t<Yielded>, Lval>); // strengthened
     }
 
     { // Test 'yield_value(elements_of<generator>)'
