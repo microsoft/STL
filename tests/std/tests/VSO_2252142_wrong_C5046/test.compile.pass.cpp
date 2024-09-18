@@ -43,8 +43,8 @@ namespace {
     struct S2 {};
 } // namespace
 
-// Was emitting "C5046 Symbol involving type with internal linkage not defined" as a consequence of our use of return
-// type deduction for the pertinent container functions.
+// Was emitting "warning C5046: Symbol involving type with internal linkage not defined"
+// as a consequence of our use of return type deduction for the pertinent container functions.
 STATIC_ASSERT(has_emplace_back<vector<S2>>);
 STATIC_ASSERT(has_emplace_back<deque<S2>>);
 STATIC_ASSERT(has_emplace_front<deque<S2>>);
