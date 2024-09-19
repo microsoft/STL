@@ -753,8 +753,6 @@
 #define _MSVC_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
 #elif __has_cpp_attribute(no_unique_address) // TRANSITION, DevCom-10747012, EDG recognizes [[no_unique_address]].
 #define _MSVC_NO_UNIQUE_ADDRESS [[no_unique_address]]
-#elif defined(__INTEL_COMPILER) // ICC is not properly supported.
-#define _MSVC_NO_UNIQUE_ADDRESS
 #else
 #error Either [[msvc::no_unique_address]] or [[no_unique_address]] must be supported because this is ABI-critical.
 #endif
