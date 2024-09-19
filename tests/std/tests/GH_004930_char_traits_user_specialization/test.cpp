@@ -141,7 +141,7 @@ public:
     }
 
     static constexpr char_type to_char_type(const int_type i) noexcept {
-        return char_type(static_cast<unsigned char>(i));
+        return static_cast<char_type>(static_cast<unsigned char>(i));
     }
 
     static constexpr int_type to_int_type(const char_type i) noexcept {
