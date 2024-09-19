@@ -243,6 +243,9 @@ CONSTEXPR20 bool test_gh_4930() {
     assert(s.find_first_not_of(s2) == 0);
     assert(s2.find_first_not_of(s) == s2.npos);
 
+    assert(s.find_last_not_of(s2) == 4);
+    assert(s2.find_last_not_of(s) == s2.npos);
+
 #if _HAS_CXX17
     assert(s.compare(sv2) > 0);
 #if _HAS_CXX20
