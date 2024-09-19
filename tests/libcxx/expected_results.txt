@@ -1225,9 +1225,6 @@ std/numerics/c.math/hermite.pass.cpp FAIL
 # Not analyzed. Test coverage for LLVM-104496 uses span<Incomplete>.
 std/containers/views/views.span/span.cons/copy.pass.cpp FAIL
 
-# Not analyzed. LLVM-103409 added a test to verify that std::optional's internal constructors aren't visible to users.
-std/utilities/optional/optional.object/optional.object.ctor/gh_101960_internal_ctor.compile.pass.cpp FAIL
-
 
 # *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
