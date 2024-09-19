@@ -120,7 +120,7 @@ public:
 #endif // _HAS_CXX23
 
     template <class... _Valty>
-    decltype(auto) emplace(_Valty&&... _Val) {
+    _CONTAINER_EMPLACE_RETURN emplace(_Valty&&... _Val) {
 #if _HAS_CXX17
         return c.emplace_back(_STD forward<_Valty>(_Val)...);
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv

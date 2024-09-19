@@ -2643,6 +2643,12 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 }
 _STD_END
 
+#if _HAS_CXX17
+#define _CONTAINER_EMPLACE_RETURN reference
+#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#define _CONTAINER_EMPLACE_RETURN void
+#endif // ^^^ !_HAS_CXX17 ^^^
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
