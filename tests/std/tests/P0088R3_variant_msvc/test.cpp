@@ -11,6 +11,7 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -909,6 +910,33 @@ namespace msvc {
             }
         }
     } // namespace assign_cv
+
+    namespace gh4959 {
+        // Test GH-4959 "P0608R3 breaks flang build with Clang"
+        // Constraints on variant's converting constructor and assignment operator templates reject arguments of the
+        // variant's type, but did not short-circuit to avoid evaluating the constructibility constraint. For this
+        // program, the constructibility constraint is ill-formed outside the immediate context when determing if
+        // variant<optional<GenericSpec>> can be initialized from an rvalue of the same type.
+
+        template <typename... RVREF>
+        using NoLvalue = std::enable_if_t<(... && !std::is_lvalue_reference_v<RVREF>)>;
+
+        struct Name {};
+
+        struct GenericSpec {
+            template <typename A, typename = NoLvalue<A>>
+            GenericSpec(A&& x) : u(std::move(x)) {}
+            GenericSpec(GenericSpec&&) = default;
+            std::variant<Name> u;
+        };
+
+        struct InterfaceStmt {
+            template <typename A, typename = NoLvalue<A>>
+            InterfaceStmt(A&& x) : u(std::move(x)) {}
+            InterfaceStmt(InterfaceStmt&&) = default;
+            std::variant<std::optional<GenericSpec>> u;
+        };
+    } // namespace gh4959
 } // namespace msvc
 
 int main() {
