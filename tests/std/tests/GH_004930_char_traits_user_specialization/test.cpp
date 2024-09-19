@@ -66,7 +66,7 @@ public:
         return static_cast<size_t>(c - p);
     }
 
-    static constexpr const char_type* find(const char_type* p, const size_t n, const char_type c) noexcept {
+    static constexpr const char_type* find(const char_type* const p, const size_t n, const char_type c) noexcept {
         for (size_t i = 0; i != n; ++i) {
             if (eq(p[i], c)) {
                 return p + i;
@@ -76,7 +76,7 @@ public:
         return nullptr;
     }
 
-    static CONSTEXPR20 char_type* move(char_type* s, const char_type* p, const size_t n) noexcept {
+    static CONSTEXPR20 char_type* move(char_type* const s, const char_type* const p, const size_t n) noexcept {
 #if _HAS_CXX20
         if (is_constant_evaluated()) {
             bool is_dst_in_src_range = false;
@@ -105,7 +105,7 @@ public:
         return s;
     }
 
-    static CONSTEXPR20 char_type* copy(char_type* s, const char_type* p, const size_t n) noexcept {
+    static CONSTEXPR20 char_type* copy(char_type* const s, const char_type* const p, const size_t n) noexcept {
 #if _HAS_CXX20
         if (is_constant_evaluated()) {
             for (size_t i = 0; i != n; ++i) {
