@@ -193,19 +193,29 @@ struct _Char_traits_lt {
     }
 };
 
+// signed char and other unsigned integral types are supported as an extension.
+template <class _Ty>
+constexpr bool _Is_predefined_char_like_type = _Is_character<_Ty>::value || is_unsigned_v<_Ty>;
+
 // library-provided char_traits::eq behaves like equal_to<_Elem>
-// TRANSITION: This should not be activated for user-defined specializations of char_traits
 template <class _Elem>
 constexpr bool _Can_memcmp_elements_with_pred<_Elem, _Elem, _Char_traits_eq<char_traits<_Elem>>> =
-    _Can_memcmp_elements<_Elem, _Elem>;
+    _Is_predefined_char_like_type<_Elem> && _Can_memcmp_elements<_Elem, _Elem>;
 
-// library-provided char_traits::lt behaves like less<make_unsigned_t<_Elem>>
-// TRANSITION: This should not be activated for user-defined specializations of char_traits
-template <class _Elem>
-struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Char_traits_lt<char_traits<_Elem>>> {
+template <class _Elem, bool = _Is_predefined_char_like_type<_Elem>>
+struct _Lex_compare_memcmp_classify_pred_for_char_traits_lt {
     using _UElem = make_unsigned_t<_Elem>;
     using _Pred  = conditional_t<_Lex_compare_memcmp_classify_elements<_UElem, _UElem>, less<int>, void>;
 };
+template <class _Elem>
+struct _Lex_compare_memcmp_classify_pred_for_char_traits_lt<_Elem, false> {
+    using _Pred = void;
+};
+
+// library-provided char_traits::lt behaves like less<make_unsigned_t<_Elem>>
+template <class _Elem>
+struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Char_traits_lt<char_traits<_Elem>>>
+    : _Lex_compare_memcmp_classify_pred_for_char_traits_lt<_Elem> {};
 
 template <class _RxTraits>
 struct _Cmp_cs { // functor to compare two character values for equality
