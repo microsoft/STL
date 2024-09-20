@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <bitset>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
 #include <cwchar>
 #include <ios>
 #include <iosfwd>
+#include <sstream>
 #include <string>
 #include <type_traits>
 
@@ -22,15 +24,13 @@
 
 using namespace std;
 
-enum odd_char : unsigned char {};
-
-template <>
-class std::char_traits<odd_char> {
+template <class T>
+class odd_char_traits {
 private:
     static constexpr unsigned char odd_mask = 0xF;
 
 public:
-    using char_type  = odd_char;
+    using char_type  = T;
     using int_type   = int;
     using off_type   = streamoff;
     using pos_type   = streampos;
@@ -161,6 +161,11 @@ public:
     }
 };
 
+enum odd_char : unsigned char {};
+
+template <>
+class char_traits<odd_char> : public odd_char_traits<odd_char> {};
+
 CONSTEXPR20 bool test_gh_4930() {
     constexpr odd_char s_init[]{static_cast<odd_char>(0x55), static_cast<odd_char>(0x44), static_cast<odd_char>(0x33),
         static_cast<odd_char>(0x22), static_cast<odd_char>(0x11), static_cast<odd_char>(0)};
@@ -280,6 +285,16 @@ CONSTEXPR20 bool test_gh_4930() {
 static_assert(test_gh_4930());
 #endif // _HAS_CXX20
 
+void test_gh_4956() {
+    basic_string<char, odd_char_traits<char>> s("QQPPQ", 5);
+
+    bitset<7> bs;
+    std::basic_stringstream<char, odd_char_traits<char>>(s) >> bs;
+
+    assert(bs.to_ulong() == 0b11001);
+}
+
 int main() {
     assert(test_gh_4930());
+    test_gh_4956();
 }
