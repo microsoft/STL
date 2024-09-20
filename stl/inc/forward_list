@@ -700,7 +700,7 @@ public:
     }
 
     template <class... _Valty>
-    decltype(auto) emplace_front(_Valty&&... _Val) { // insert element at beginning
+    _CONTAINER_EMPLACE_RETURN emplace_front(_Valty&&... _Val) { // insert element at beginning
         _Insert_after(_Mypair._Myval2._Before_head(), _STD forward<_Valty>(_Val)...);
 
 #if _HAS_CXX17
