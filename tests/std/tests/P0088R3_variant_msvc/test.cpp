@@ -915,11 +915,11 @@ namespace msvc {
         // Test GH-4959 "P0608R3 breaks flang build with Clang"
         // Constraints on variant's converting constructor and assignment operator templates reject arguments of the
         // variant's type, but did not short-circuit to avoid evaluating the constructibility constraint. For this
-        // program, the constructibility constraint is ill-formed outside the immediate context when determing if
+        // program, the constructibility constraint is ill-formed outside the immediate context when determining if
         // variant<optional<GenericSpec>> can be initialized from an rvalue of the same type.
 
-        template <typename... RVREF>
-        using NoLvalue = std::enable_if_t<(... && !std::is_lvalue_reference_v<RVREF>)>;
+        template <typename... RvRef>
+        using NoLvalue = std::enable_if_t<(... && !std::is_lvalue_reference_v<RvRef>)>;
 
         struct Name {};
 
