@@ -126,7 +126,7 @@ private:
 #if _USE_STD_VECTOR_ALGORITHMS
         constexpr size_t _Bitset_from_string_vector_threshold = 16;
         if constexpr (_Bits >= _Bitset_from_string_vector_threshold
-                      && _Is_specialization_v<_Traits, char_traits> && sizeof(_Elem) <= 2) {
+                      && _Is_implementation_handled_char_traits<_Traits> && sizeof(_Elem) <= 2) {
             if (!_STD _Is_constant_evaluated()) {
                 bool _Result;
 
