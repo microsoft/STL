@@ -28,16 +28,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-_EXPORT_STD struct sorted_unique_t {
-    explicit sorted_unique_t() = default;
-};
-_EXPORT_STD inline constexpr sorted_unique_t sorted_unique{};
-
-_EXPORT_STD struct sorted_equivalent_t {
-    explicit sorted_equivalent_t() = default;
-};
-_EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
-
 template <class _Alloc, class _Key_container, class _Mapped_container>
 concept _Valid_allocator_for_flat_map =
     uses_allocator_v<_Key_container, _Alloc> && uses_allocator_v<_Mapped_container, _Alloc>;

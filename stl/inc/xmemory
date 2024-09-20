@@ -2619,6 +2619,18 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
     } while (_UVal_trunc != 0);
     return _RNext;
 }
+
+#if _HAS_CXX23
+_EXPORT_STD struct sorted_unique_t {
+    explicit sorted_unique_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_unique_t sorted_unique{};
+
+_EXPORT_STD struct sorted_equivalent_t {
+    explicit sorted_equivalent_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
+#endif // ^^^ _HAS_CXX23 ^^^
 _STD_END
 
 #pragma pop_macro("new")
