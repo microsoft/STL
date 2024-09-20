@@ -264,6 +264,13 @@ void test_flat_map() {
     assert(erase_if(fmm, simple_truth) == 2);
     assert(fmm.empty());
 }
+
+void test_flat_set() {
+    using namespace std;
+    puts("Testing <flat_set>.");
+
+    // FIXME! ADD TEST COVERAGE HERE!
+}
 #endif // TEST_STANDARD >= 23
 
 void test_format() {
@@ -1205,6 +1212,7 @@ void all_cpp_header_tests() {
     test_filesystem();
 #if TEST_STANDARD >= 23
     test_flat_map();
+    test_flat_set();
 #endif // TEST_STANDARD >= 23
     test_format();
     test_forward_list();
