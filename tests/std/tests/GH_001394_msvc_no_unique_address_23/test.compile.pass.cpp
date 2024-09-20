@@ -98,5 +98,5 @@ static_assert(sizeof(ranges::elements_of<ranges::empty_view<int>, pmr::polymorph
 static_assert(sizeof(ranges::elements_of<ranges::empty_view<int>, allocator<int>>) == 1);
 
 #ifndef __EDG__ // TRANSITION, DevCom-10747012
-static_assert(is_empty_v<elements_of<ranges::empty_view<int>, allocator<int>>>);
+static_assert(is_empty_v<ranges::elements_of<ranges::empty_view<int>, allocator<int>>>);
 #endif // ^^^ no workaround ^^^
