@@ -331,6 +331,17 @@ template <>
 struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
 #endif // defined(_CRTBLD)
 
+// signed char and other unsigned integral types are supported as an extension.
+// Use of other arithmetic types and nullptr_t should be rejected.
+template <class _Ty>
+constexpr bool _Is_implementation_handled_char_like_type = is_arithmetic_v<_Ty> || is_null_pointer_v<_Ty>;
+
+template <class>
+constexpr bool _Is_implementation_handled_char_traits = false;
+template <class _Elem>
+constexpr bool _Is_implementation_handled_char_traits<char_traits<_Elem>> =
+    _Is_implementation_handled_char_like_type<_Elem>;
+
 #if defined(__cpp_char8_t) && !defined(__clang__) && !defined(__EDG__)
 #define _HAS_U8_INTRINSICS 1
 #else // ^^^ Use intrinsics for char8_t / don't use said intrinsics vvv
@@ -675,9 +686,9 @@ private:
 template <class _Elem>
 class _String_bitmap<_Elem, false> { // _String_bitmap for wchar_t/unsigned short/char16_t/char32_t/etc. types
 public:
-    static_assert(is_unsigned_v<_Elem>,
-        "Standard char_traits is only provided for char, wchar_t, char16_t, and char32_t. See N4950 [char.traits]. "
-        "Visual C++ accepts other unsigned integral types as an extension.");
+    static_assert(is_unsigned_v<_Elem>, "Standard char_traits is only provided for char, wchar_t, char8_t, char16_t, "
+                                        "and char32_t. See N4988 [char.traits]. "
+                                        "Visual C++ accepts other unsigned integral types as an extension.");
 
     constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) noexcept {
         // mark this bitmap such that the characters in [_First, _Last) are intended to match
@@ -702,7 +713,7 @@ private:
     bool _Matches[256] = {};
 };
 
-template <class _Traits, bool _Special = _Is_specialization_v<_Traits, char_traits>>
+template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
 constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
@@ -764,7 +775,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
     return static_cast<size_t>(-1); // no match
 }
 
-template <class _Traits, bool _Special = _Is_specialization_v<_Traits, char_traits>>
+template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
 constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
@@ -802,7 +813,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
     return static_cast<size_t>(-1); // no match
 }
 
-template <class _Traits, bool _Special = _Is_specialization_v<_Traits, char_traits>>
+template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
 constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
@@ -851,7 +862,7 @@ constexpr size_t _Traits_find_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_
     return static_cast<size_t>(-1); // no match
 }
 
-template <class _Traits, bool _Special = _Is_specialization_v<_Traits, char_traits>>
+template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
 constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {

@@ -2588,6 +2588,28 @@ template <class _Ty>
 concept _Transparent = _Is_transparent_v<_Ty>;
 #endif // _HAS_CXX20
 
+#if _HAS_CXX23
+namespace ranges {
+#if defined(__cpp_lib_byte)
+    _EXPORT_STD template <range _Rng, class _Alloc = allocator<byte>>
+#else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
+    _EXPORT_STD template <range _Rng, class _Alloc>
+#endif // ^^^ !defined(__cpp_lib_byte) ^^^
+    struct elements_of {
+        /* [[no_unique_address]] */ _Rng range;
+        /* [[no_unique_address]] */ _Alloc allocator{};
+    };
+
+#if defined(__cpp_lib_byte)
+    template <class _Rng, class _Alloc = allocator<byte>>
+    elements_of(_Rng&&, _Alloc = _Alloc()) -> elements_of<_Rng&&, _Alloc>;
+#else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
+    template <class _Rng, class _Alloc>
+    elements_of(_Rng&&, _Alloc) -> elements_of<_Rng&&, _Alloc>;
+#endif // ^^^ !defined(__cpp_lib_byte) ^^^
+} // namespace ranges
+#endif // _HAS_CXX23
+
 template <class _Elem, class _UTy>
 _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by both to_string and thread::id output
     // format _UVal into buffer *ending at* _RNext
@@ -2620,6 +2642,12 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
     return _RNext;
 }
 _STD_END
+
+#if _HAS_CXX17
+#define _CONTAINER_EMPLACE_RETURN reference
+#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#define _CONTAINER_EMPLACE_RETURN void
+#endif // ^^^ !_HAS_CXX17 ^^^
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
