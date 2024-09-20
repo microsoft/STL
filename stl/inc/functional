@@ -1100,8 +1100,9 @@ public:
         this->_Reset(_STD forward<_Fx>(_Func));
     }
 
-    template <class _SecretTag, class _Fx, typename _Mybase::template _Enable_if_callable_t<_Fx, function> = 0,
-        enable_if_t<is_same_v<_SecretTag, _Secret_copyability_ignoring_tag>, int> = 0>
+    template <class _SecretTag, class _Fx,
+        enable_if_t<is_same_v<_SecretTag, _Secret_copyability_ignoring_tag>, int> = 0,
+        typename _Mybase::template _Enable_if_callable_t<_Fx, function>           = 0>
     explicit function(_SecretTag, _Fx&& _Func) { // used exclusively for packaged_task
         this->_Reset(_STD forward<_Fx>(_Func));
     }
@@ -1126,8 +1127,8 @@ public:
     }
 
     template <class _SecretTag, class _Fx, class _Alloc,
-        typename _Mybase::template _Enable_if_callable_t<_Fx, function>           = 0,
-        enable_if_t<is_same_v<_SecretTag, _Secret_copyability_ignoring_tag>, int> = 0>
+        enable_if_t<is_same_v<_SecretTag, _Secret_copyability_ignoring_tag>, int> = 0,
+        typename _Mybase::template _Enable_if_callable_t<_Fx, function>           = 0>
     explicit function(_SecretTag, allocator_arg_t, const _Alloc& _Ax, _Fx&& _Func) {
         // used exclusively for packaged_task
         this->_Reset_alloc(_STD forward<_Fx>(_Func), _Ax);
