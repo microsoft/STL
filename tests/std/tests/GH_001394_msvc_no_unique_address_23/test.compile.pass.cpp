@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <functional>
+#include <memory>
+#include <memory_resource>
 #include <ranges>
 #include <type_traits>
 
@@ -87,4 +89,14 @@ static_assert(sizeof((stateless_fwd_common_range{} | views::chunk_by(ranges::les
 
 #ifndef __EDG__ // TRANSITION, DevCom-10747012
 static_assert(is_empty_v<decltype((test_range{} | views::slide(42)).end())>);
+#endif // ^^^ no workaround ^^^
+
+static_assert(sizeof(elements_of<int[1], allocator<int>>) == sizeof(int[1]));
+static_assert(sizeof(elements_of<int (&)[1], allocator<int>>) == sizeof(int (*)[1]));
+static_assert(sizeof(elements_of<ranges::empty_view<int>, pmr::polymorphic_allocator<int>>)
+              == sizeof(pmr::polymorphic_allocator<int>));
+static_assert(sizeof(elements_of<ranges::empty_view<int>, allocator<int>>) == 1);
+
+#ifndef __EDG__ // TRANSITION, DevCom-10747012
+static_assert(is_empty_v<elements_of<ranges::empty_view<int>, allocator<int>>>);
 #endif // ^^^ no workaround ^^^
