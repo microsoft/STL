@@ -997,7 +997,8 @@ public:
 
         const auto _Mask = static_cast<size_type>(_Mapsize() - 1);
 
-        const auto _First_used_block_idx = static_cast<size_type>(_Myoff() / _Block_size);
+        const auto _Unmasked_first_used_block_idx = static_cast<size_type>(_Myoff() / _Block_size);
+        const auto _First_used_block_idx          = static_cast<size_type>(_Unmasked_first_used_block_idx & _Mask);
 
         // (_Myoff() + _Mysize() - 1) is for the last element, i.e. the back() of the deque.
         // Divide by _Block_size to get the unmasked index of the last used block.
@@ -1017,7 +1018,8 @@ public:
             }
         }
 
-        const auto _Used_block_count = static_cast<size_type>(_Unmasked_first_unused_block_idx - _First_used_block_idx);
+        const auto _Used_block_count =
+            static_cast<size_type>(_Unmasked_first_unused_block_idx - _Unmasked_first_used_block_idx);
 
         size_type _New_block_count = _Minimum_map_size; // should be power of 2
 
@@ -1160,7 +1162,7 @@ private:
 
 public:
     template <class... _Valty>
-    decltype(auto) emplace_front(_Valty&&... _Val) {
+    _CONTAINER_EMPLACE_RETURN emplace_front(_Valty&&... _Val) {
         _Orphan_all();
         _Emplace_front_internal(_STD forward<_Valty>(_Val)...);
 #if _HAS_CXX17
@@ -1169,7 +1171,7 @@ public:
     }
 
     template <class... _Valty>
-    decltype(auto) emplace_back(_Valty&&... _Val) {
+    _CONTAINER_EMPLACE_RETURN emplace_back(_Valty&&... _Val) {
         _Orphan_all();
         _Emplace_back_internal(_STD forward<_Valty>(_Val)...);
 

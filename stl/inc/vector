@@ -853,7 +853,7 @@ private:
 
 public:
     template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) emplace_back(_Valty&&... _Val) {
+    _CONSTEXPR20 _CONTAINER_EMPLACE_RETURN emplace_back(_Valty&&... _Val) {
         // insert by perfectly forwarding into element at end, provide strong guarantee
         _Ty& _Result = _Emplace_one_at_back(_STD forward<_Valty>(_Val)...);
 #if _HAS_CXX17
@@ -2979,7 +2979,7 @@ public:
     }
 
     template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) emplace_back(_Valty&&... _Val) {
+    _CONSTEXPR20 _CONTAINER_EMPLACE_RETURN emplace_back(_Valty&&... _Val) {
         bool _Tmp(_STD forward<_Valty>(_Val)...);
         push_back(_Tmp);
 
