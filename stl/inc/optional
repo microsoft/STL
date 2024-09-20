@@ -214,6 +214,16 @@ class optional : private _SMF_control<_Optional_construct_base<_Ty>, _Ty> {
 private:
     using _Mybase = _SMF_control<_Optional_construct_base<_Ty>, _Ty>;
 
+    template <class>
+    friend class optional;
+
+#if _HAS_CXX23
+    template <class _Fn, class _Ux>
+    constexpr optional(_Construct_from_invoke_result_tag _Tag, _Fn&& _Func, _Ux&& _Arg)
+        noexcept(noexcept(static_cast<_Ty>(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)))))
+        : _Mybase(_Tag, _STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)) {}
+#endif // _HAS_CXX23
+
 public:
     static_assert(!_Is_any_of_v<remove_cv_t<_Ty>, nullopt_t, in_place_t>,
         "T in optional<T> must be a type other than nullopt_t or in_place_t (N4950 [optional.optional.general]/3).");
@@ -272,13 +282,6 @@ public:
             this->_Construct(_STD move(*_Right));
         }
     }
-
-#if _HAS_CXX23
-    template <class _Fn, class _Ux>
-    constexpr optional(_Construct_from_invoke_result_tag _Tag, _Fn&& _Func, _Ux&& _Arg)
-        noexcept(noexcept(static_cast<_Ty>(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)))))
-        : _Mybase(_Tag, _STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg)) {}
-#endif // _HAS_CXX23
 
     _CONSTEXPR20 optional& operator=(nullopt_t) noexcept {
         reset();

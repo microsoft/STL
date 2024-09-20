@@ -30,6 +30,7 @@
     "fstream",
     "functional",
     "future",
+    "generator",
     "initializer_list",
     "iomanip",
     "ios",

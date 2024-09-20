@@ -853,7 +853,7 @@ private:
 
 public:
     template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) emplace_back(_Valty&&... _Val) {
+    _CONSTEXPR20 _CONTAINER_EMPLACE_RETURN emplace_back(_Valty&&... _Val) {
         // insert by perfectly forwarding into element at end, provide strong guarantee
         _Ty& _Result = _Emplace_one_at_back(_STD forward<_Valty>(_Val)...);
 #if _HAS_CXX17
@@ -2979,7 +2979,7 @@ public:
     }
 
     template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) emplace_back(_Valty&&... _Val) {
+    _CONSTEXPR20 _CONTAINER_EMPLACE_RETURN emplace_back(_Valty&&... _Val) {
         bool _Tmp(_STD forward<_Valty>(_Val)...);
         push_back(_Tmp);
 
@@ -3922,6 +3922,18 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
 #undef _ASAN_VECTOR_EXTEND_GUARD
 #undef _ASAN_VECTOR_RELEASE_GUARD
 #undef _INSERT_VECTOR_ANNOTATION
+
+#if _HAS_CXX23
+_EXPORT_STD struct sorted_unique_t {
+    explicit sorted_unique_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_unique_t sorted_unique{};
+
+_EXPORT_STD struct sorted_equivalent_t {
+    explicit sorted_equivalent_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
+#endif // ^^^ _HAS_CXX23 ^^^
 _STD_END
 
 #pragma pop_macro("new")
