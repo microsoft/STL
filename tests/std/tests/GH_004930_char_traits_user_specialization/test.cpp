@@ -166,6 +166,8 @@ enum odd_char : unsigned char {};
 template <>
 class char_traits<odd_char> : public odd_char_traits<odd_char> {};
 
+// GH-4930 "<string>: basic_string<unicorn>::find_meow_of family
+// with std::char_traits<unicorn> specialization are not supported"
 CONSTEXPR20 bool test_gh_4930() {
     constexpr odd_char s_init[]{static_cast<odd_char>(0x55), static_cast<odd_char>(0x44), static_cast<odd_char>(0x33),
         static_cast<odd_char>(0x22), static_cast<odd_char>(0x11), static_cast<odd_char>(0)};
@@ -285,7 +287,9 @@ CONSTEXPR20 bool test_gh_4930() {
 static_assert(test_gh_4930());
 #endif // _HAS_CXX20
 
+// GH-4956 "<bitset>: streaming operator >> does not use character traits"
 void test_gh_4956() {
+    // bitset's stream extraction operator was using `!=` to compare characters instead of `traits::eq`
     basic_string<char, odd_char_traits<char>> s("QQPPQ", 5);
 
     bitset<7> bs;
