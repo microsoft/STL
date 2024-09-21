@@ -291,9 +291,10 @@ static_assert(test_gh_4930());
 void test_gh_4956() {
     // bitset's stream extraction operator was using `!=` to compare characters instead of `traits::eq`
     basic_string<char, odd_char_traits<char>> s("QQPPQ", 5);
+    basic_istringstream<char, odd_char_traits<char>> iss(s);
 
     bitset<7> bs;
-    std::basic_stringstream<char, odd_char_traits<char>>(s) >> bs;
+    iss >> bs;
 
     assert(bs.to_ulong() == 0b11001);
 }
