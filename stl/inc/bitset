@@ -589,15 +589,20 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
             if (_Tr::eq_int_type(_Tr::eof(), _Meta)) { // end of file, quit
                 _State |= _Istr_t::eofbit;
                 break;
-            } else if (!_Tr::eq((_Char = _Tr::to_char_type(_Meta)), _Elem0) && !_Tr::eq(_Char, _Elem1)) {
+            }
+
+            if (!_Tr::eq((_Char = _Tr::to_char_type(_Meta)), _Elem0) && !_Tr::eq(_Char, _Elem1)) {
                 break; // invalid element
-            } else if (_Str.max_size() <= _Str.size()) { // no room in string, give up (unlikely)
+            }
+
+            if (_Str.max_size() <= _Str.size()) { // no room in string, give up (unlikely)
                 _State |= _Istr_t::failbit;
                 break;
-            } else { // valid, append '0' or '1'
-                _Str.push_back('0' + _Tr::eq(_Char, _Elem1));
-                _Changed = true;
             }
+
+            // valid, append '0' or '1'
+            _Str.push_back('0' + _Tr::eq(_Char, _Elem1));
+            _Changed = true;
         }
         _CATCH_IO_(_Istr_t, _Istr)
     }
