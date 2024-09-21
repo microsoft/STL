@@ -368,12 +368,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/has_unique_object_representations.
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
-# Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?
-std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.pass.cpp:2 SKIPPED
-std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array14.pass.cpp:2 SKIPPED
-std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_fsizeddeallocation.pass.cpp:2 SKIPPED
-std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete14.pass.cpp:2 SKIPPED
-
 # Not analyzed. Clang apparently defines platform macros differently from C1XX.
 std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:2 FAIL
 
