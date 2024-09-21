@@ -2649,6 +2649,12 @@ _STD_END
 #define _CONTAINER_EMPLACE_RETURN void
 #endif // ^^^ !_HAS_CXX17 ^^^
 
+#if _HAS_CXX20
+#define _LIST_REMOVE_RETURN size_type
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#define _LIST_REMOVE_RETURN void
+#endif // ^^^ !_HAS_CXX20 ^^^
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

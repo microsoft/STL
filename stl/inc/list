@@ -1662,12 +1662,12 @@ public:
         _Nodeptr* _Tail;
     };
 
-    auto remove(const _Ty& _Val) { // erase each element matching _Val
+    _LIST_REMOVE_RETURN remove(const _Ty& _Val) { // erase each element matching _Val
         return remove_if([&](const _Ty& _Other) -> bool { return _Other == _Val; });
     }
 
     template <class _Pr1>
-    auto remove_if(_Pr1 _Pred) { // erase each element satisfying _Pred
+    _LIST_REMOVE_RETURN remove_if(_Pr1 _Pred) { // erase each element satisfying _Pred
         auto& _My_data = _Mypair._Myval2;
         _List_node_remove_op _Op(*this);
         const auto _Last         = _My_data._Myhead;
@@ -1688,12 +1688,12 @@ public:
 #endif
     }
 
-    auto unique() { // erase each element matching previous
+    _LIST_REMOVE_RETURN unique() { // erase each element matching previous
         return unique(equal_to<>{});
     }
 
     template <class _Pr2>
-    auto unique(_Pr2 _Pred) { // erase each element satisfying _Pred with previous
+    _LIST_REMOVE_RETURN unique(_Pr2 _Pred) { // erase each element satisfying _Pred with previous
         _List_node_remove_op _Op(*this);
         const _Nodeptr _Phead    = _Mypair._Myval2._Myhead;
         _Nodeptr _Pprev          = _Phead->_Next;
