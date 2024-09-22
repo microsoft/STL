@@ -1535,10 +1535,6 @@ public:
     }
 };
 
-struct _Move_allocator_tag {
-    explicit _Move_allocator_tag() = default;
-};
-
 template <class _Ty>
 pair<_Ty*, ptrdiff_t> _Get_temporary_buffer(ptrdiff_t _Count) noexcept {
     if (static_cast<size_t>(_Count) <= static_cast<size_t>(-1) / sizeof(_Ty)) {

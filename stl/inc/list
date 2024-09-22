@@ -804,11 +804,6 @@ public:
     }
 
 private:
-    template <class _Any_alloc>
-    explicit list(_Move_allocator_tag, _Any_alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Al)) {
-        _Alloc_sentinel_and_proxy();
-    }
-
     void _Construct_n(_CRT_GUARDOVERFLOW size_type _Count) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
