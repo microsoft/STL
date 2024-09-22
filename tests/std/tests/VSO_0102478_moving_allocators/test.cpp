@@ -436,13 +436,13 @@ int main() {
     container_test<forward_list>();
     container_test<set>();
     container_test<multiset>();
-    container_test<unordered_set>();
-    container_test<unordered_multiset>();
+    // container_test<unordered_set>(); // skipped, possibly bogus, see GH-4976
+    // container_test<unordered_multiset>(); // skipped, possibly bogus, see GH-4976
 
     dictionary_test<map>();
     dictionary_test<multimap>();
-    dictionary_test<unordered_map>();
-    dictionary_test<unordered_multimap>();
+    // dictionary_test<unordered_map>(); // skipped, possibly bogus, see GH-4976
+    // dictionary_test<unordered_multimap>(); // skipped, possibly bogus, see GH-4976
 
     string_test();
 

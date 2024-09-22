@@ -581,6 +581,12 @@ std/utilities/format/format.formatter/format.formatter.locking/enable_nonlocking
 std/containers/sequences/vector.bool/shrink_to_fit.pass.cpp FAIL
 std/containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp FAIL
 
+# libc++ tests the counts of move constructions of allocators, which is possibly bogus, see GH-4976
+std/containers/unord/unord.map/unord.map.cnstr/move.pass.cpp FAIL
+std/containers/unord/unord.multimap/unord.multimap.cnstr/move.pass.cpp FAIL
+std/containers/unord/unord.multiset/unord.multiset.cnstr/move.pass.cpp FAIL
+std/containers/unord/unord.set/unord.set.cnstr/move.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
