@@ -315,16 +315,9 @@ struct pair { // store a pair of values
     }
 #endif // _HAS_CXX23
 
-    template <class _Tuple1, class _Tuple2, size_t... _Indices1, size_t... _Indices2>
-    constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indices1...>, index_sequence<_Indices2...>)
-        : first(_STD _Tuple_get<_Indices1>(_STD move(_Val1))...),
-          second(_STD _Tuple_get<_Indices2>(_STD move(_Val2))...) {}
-
     template <class... _Types1, class... _Types2>
     _CONSTEXPR20 pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2)
         : pair(_Val1, _Val2, index_sequence_for<_Types1...>{}, index_sequence_for<_Types2...>{}) {}
-
-    pair& operator=(const volatile pair&) = delete;
 
     template <class _Myself = pair,
         enable_if_t<conjunction_v<_Is_copy_assignable_no_precondition_check<typename _Myself::first_type>,
@@ -466,6 +459,14 @@ struct pair { // store a pair of values
 
     _Ty1 first; // the first stored value
     _Ty2 second; // the second stored value
+
+private:
+    template <class _Tuple1, class _Tuple2, size_t... _Indices1, size_t... _Indices2>
+    constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indices1...>, index_sequence<_Indices2...>)
+        : first(_STD _Tuple_get<_Indices1>(_STD move(_Val1))...),
+          second(_STD _Tuple_get<_Indices2>(_STD move(_Val2))...) {}
+
+    pair& operator=(const volatile pair&) = delete;
 };
 
 #if _HAS_CXX17
