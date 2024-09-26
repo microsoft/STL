@@ -2435,7 +2435,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
 _EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, _Usable_for_pair_like_overload _Uty>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
 #if _HAS_CXX23
-    if constexpr (_Pair_like<_Uty> && !_Is_subrange_v<remove_cvref_t<_Uty>>) {
+    if constexpr (_Pair_like_non_subrange<_Uty>) {
         // equivalent to
         // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
         //     _STD forward_as_tuple(_STD get<0>(_STD forward<_Uty>(_Ux)),
