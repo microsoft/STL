@@ -3626,6 +3626,279 @@ __declspec(noalias) void __stdcall __std_replace_8(
 
 } // extern "C"
 
+namespace {
+    template <class _Ty>
+    void* _Remove_fallback(void* const _First, void* const _Last, void* const _Out, const _Ty _Val) noexcept {
+        _Ty* _Src  = reinterpret_cast<_Ty*>(_First);
+        _Ty* _Dest = reinterpret_cast<_Ty*>(_Out);
+
+        while (_Src != _Last) {
+            if (*_Src != _Val) {
+                *_Dest = *_Src;
+                ++_Dest;
+            }
+
+            ++_Src;
+        }
+
+        return _Dest;
+    }
+
+    struct _Remove_patterns_1_2_t {
+        using _Byte_shuffle = uint8_t[16];
+
+        _Byte_shuffle _Data[256];
+        uint8_t _Count[256];
+    };
+
+    constexpr _Remove_patterns_1_2_t _Make_remove_patterns_1() {
+        _Remove_patterns_1_2_t _Result;
+
+        for (unsigned _Vx = 0; _Vx != 256; ++_Vx) {
+            unsigned _Nx = 0;
+
+            // Compact the source according to bitmap
+            for (unsigned _Hx = 0; _Hx != 8; ++_Hx) {
+                if ((_Vx & (1 << _Hx)) == 0) {
+                    _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Hx);
+                    ++_Nx;
+                }
+            }
+
+            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx);
+
+            // Fill the remaining as if not touched
+            for (; _Nx != 8; ++_Nx) {
+                _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Nx);
+            }
+
+            // Unused high part, fill with 0xFF for cernainity
+            for (; _Nx != 16; ++_Nx) {
+                _Result._Data[_Vx][_Nx] = 0xFF;
+            }
+        }
+
+        return _Result;
+    }
+
+    constexpr auto _Remove_patterns_1 = _Make_remove_patterns_1();
+
+    constexpr _Remove_patterns_1_2_t _Make_remove_patterns_2() {
+        _Remove_patterns_1_2_t _Result;
+
+        for (unsigned _Vx = 0; _Vx != 256; ++_Vx) {
+            unsigned _Nx = 0;
+
+            // Compact the source according to bitmap
+            for (unsigned _Hx = 0; _Hx != 8; ++_Hx) {
+                if ((_Vx & (1 << _Hx)) == 0) {
+                    _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Hx * 2 + 0);
+                    _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Hx * 2 + 1);
+                    ++_Nx;
+                }
+            }
+
+            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * 2);
+
+            // Fill the remaining as if not touched
+            for (; _Nx != 8; ++_Nx) {
+                _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Nx * 2 + 0);
+                _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Nx * 2 + 1);
+            }
+        }
+
+        return _Result;
+    }
+
+    constexpr auto _Remove_patterns_2 = _Make_remove_patterns_2();
+
+    struct _Remove_patterns_4_t {
+        using _Int_shuffle = uint32_t[8];
+
+        _Int_shuffle _Data[256];
+        uint8_t _Count[256];
+    };
+
+    constexpr _Remove_patterns_4_t _Make_remove_patterns_4() {
+        _Remove_patterns_4_t _Result;
+
+        for (unsigned _Vx = 0; _Vx != 256; ++_Vx) {
+            unsigned _Nx = 0;
+
+            // Compact the source according to bitmap
+            for (unsigned _Hx = 0; _Hx != 8; ++_Hx) {
+                if ((_Vx & (1 << _Hx)) == 0) {
+                    _Result._Data[_Vx][_Nx] = _Hx;
+                    ++_Nx;
+                }
+            }
+
+            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * 4);
+
+            // Fill the remaining as if not touched
+            for (; _Nx != 8; ++_Nx) {
+                _Result._Data[_Vx][_Nx] = _Nx;
+            }
+        }
+
+        return _Result;
+    }
+
+    constexpr auto _Remove_patterns_4 = _Make_remove_patterns_4();
+
+    struct _Remove_patterns_8_t {
+        using _Int_shuffle = uint32_t[8];
+
+        _Int_shuffle _Data[16];
+        uint8_t _Count[16];
+    };
+
+    constexpr _Remove_patterns_8_t _Make_remove_patterns_8() {
+        _Remove_patterns_8_t _Result;
+
+        for (unsigned _Vx = 0; _Vx != 16; ++_Vx) {
+            unsigned _Nx = 0;
+
+            // Compact the source according to bitmap
+            for (unsigned _Hx = 0; _Hx != 4; ++_Hx) {
+                if ((_Vx & (1 << _Hx)) == 0) {
+                    _Result._Data[_Vx][_Nx * 2 + 0] = _Hx * 2 + 0;
+                    _Result._Data[_Vx][_Nx * 2 + 1] = _Hx * 2 + 1;
+                    ++_Nx;
+                }
+            }
+
+            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * 8);
+
+            // Fill the remaining as if not touched
+            for (; _Nx != 4; ++_Nx) {
+                _Result._Data[_Vx][_Nx * 2 + 0] = _Nx * 2 + 0;
+                _Result._Data[_Vx][_Nx * 2 + 1] = _Nx * 2 + 1;
+            }
+        }
+
+        return _Result;
+    }
+
+    constexpr auto _Remove_patterns_8 = _Make_remove_patterns_8();
+
+
+} // unnamed namespace
+
+extern "C" {
+
+void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _Val) noexcept {
+    _First     = const_cast<void*>(__std_find_trivial_1(_First, _Last, _Val));
+    void* _Out = _First;
+
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes > 8) {
+        const __m128i _Match = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
+
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
+        do {
+            const __m128i _Src    = _mm_loadu_si64(_First);
+            const unsigned _Bingo = _mm_movemask_epi8(_mm_cmpeq_epi8(_Src, _Match)) & 0xFF;
+            const __m128i _Shuf   = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_patterns_1._Data[_Bingo]));
+            const __m128i _Dest   = _mm_shuffle_epi8(_Src, _Shuf);
+            _mm_storeu_si64(_Out, _Dest);
+            _Advance_bytes(_Out, _Remove_patterns_1._Count[_Bingo]);
+            _Advance_bytes(_First, 8);
+        } while (_First != _Stop);
+    }
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _Val) noexcept {
+    _First     = const_cast<void*>(__std_find_trivial_2(_First, _Last, _Val));
+    void* _Out = _First;
+
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes > 16) {
+        const __m128i _Match      = _mm_set1_epi16(_Val);
+        const __m128i _Dense_shuf = _mm_set_epi8(-1, -1, -1, -1, -1, -1, -1, -1, 14, 12, 10, 8, 6, 4, 2, 0);
+
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        do {
+            const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
+            const __m128i _Mask   = _mm_cmpeq_epi16(_Src, _Match);
+            const unsigned _Bingo = _mm_movemask_epi8(_mm_shuffle_epi8(_Mask, _Dense_shuf));
+            const __m128i _Shuf   = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_patterns_2._Data[_Bingo]));
+            const __m128i _Dest   = _mm_shuffle_epi8(_Src, _Shuf);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
+            _Advance_bytes(_Out, _Remove_patterns_2._Count[_Bingo]);
+            _Advance_bytes(_First, 16);
+        } while (_First != _Stop);
+    }
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _Val) noexcept {
+    _First     = const_cast<void*>(__std_find_trivial_4(_First, _Last, _Val));
+    void* _Out = _First;
+
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes > 32) {
+        const __m256i _Match      = _mm256_set1_epi32(_Val);
+        const __m256i _Dense_shuf = _mm256_set_epi8( //
+            12, 8, 4, 0, -1, -1, -1, -1, //
+            -1, -1, -1, -1, -1, -1, -1, -1, //
+            -1, -1, -1, -1, -1, -1, -1, -1, //
+            -1, -1, -1, -1, 12, 8, 4, 0);
+
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        do {
+            const __m256i _Src            = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
+            const __m256i _Mask           = _mm256_cmpeq_epi32(_Src, _Match);
+            const unsigned _Bingo_swapped = _rotl(_mm256_movemask_epi8(_mm256_shuffle_epi8(_Mask, _Dense_shuf)), 4);
+            const unsigned _Bingo         = _rotl8(static_cast<uint8_t>(_Bingo_swapped), 4);
+            const __m256i _Shuf =
+                _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Remove_patterns_4._Data[_Bingo]));
+            const __m256i _Dest = _mm256_permutevar8x32_epi32(_Src, _Shuf);
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
+            _Advance_bytes(_Out, _Remove_patterns_4._Count[_Bingo]);
+            _Advance_bytes(_First, 32);
+        } while (_First != _Stop);
+    }
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _Val) noexcept {
+    _First     = const_cast<void*>(__std_find_trivial_8(_First, _Last, _Val));
+    void* _Out = _First;
+
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes > 32) {
+        const __m256i _Match      = _mm256_set1_epi64x(_Val);
+        const __m256i _Dense_shuf = _mm256_set_epi8( //
+            8, 0, -1, -1, -1, -1, -1, -1, //
+            -1, -1, -1, -1, -1, -1, -1, -1, //
+            -1, -1, -1, -1, -1, -1, -1, -1, //
+            -1, -1, -1, -1, -1, -1, 8, 0);
+
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        do {
+            const __m256i _Src            = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
+            const __m256i _Mask           = _mm256_cmpeq_epi32(_Src, _Match);
+            const unsigned _Bingo_swapped = _mm256_movemask_epi8(_mm256_shuffle_epi8(_Mask, _Dense_shuf));
+            const unsigned _Bingo         = (_Bingo_swapped | (_Bingo_swapped >> 28)) & 0xF;
+            const __m256i _Shuf =
+                _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Remove_patterns_8._Data[_Bingo]));
+            const __m256i _Dest = _mm256_permutevar8x32_epi32(_Src, _Shuf);
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
+            _Advance_bytes(_Out, _Remove_patterns_8._Count[_Bingo]);
+            _Advance_bytes(_First, 32);
+        } while (_First != _Stop);
+    }
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+} // extern "C"
+
 #ifndef _M_ARM64EC
 namespace {
     __m256i __forceinline _Bitset_to_string_1_step_avx(const uint32_t _Val, const __m256i _Px0, const __m256i _Px1) {
