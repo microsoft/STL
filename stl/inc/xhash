@@ -398,7 +398,7 @@ protected:
     }
 
     _Hash(_Hash&& _Right)
-        : _Traitsobj(_Right._Traitsobj), _List(_Right._List._Getal()),
+        : _Traitsobj(_Right._Traitsobj), _List(_Move_allocator_tag{}, _Right._List._Getal()),
           _Vec(_STD move(_Right._Vec._Mypair._Get_first())) {
         _Vec._Assign_grow(_Min_buckets * 2, _Unchecked_end());
         _List._Swap_val(_Right._List);

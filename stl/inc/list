@@ -751,6 +751,10 @@ private:
 template <class _Traits>
 class _Hash;
 
+struct _Move_allocator_tag {
+    explicit _Move_allocator_tag() = default;
+};
+
 _EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class list { // bidirectional linked list
 private:
@@ -804,6 +808,11 @@ public:
     }
 
 private:
+    template <class _Tag, class _Any_alloc, enable_if_t<is_same_v<_Tag, _Move_allocator_tag>, int> = 0>
+    explicit list(_Tag, _Any_alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Al)) {
+        _Alloc_sentinel_and_proxy();
+    }
+
     void _Construct_n(_CRT_GUARDOVERFLOW size_type _Count) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
