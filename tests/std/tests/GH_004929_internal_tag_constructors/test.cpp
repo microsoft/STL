@@ -50,12 +50,10 @@ struct nasty_string_source {
 };
 
 CONSTEXPR20 bool test_nasty_conversion_to_basic_string() {
-    using namespace std::literals;
-
     assert(string(nasty_string_source{}, allocator<char>{}) == "42"s);
 #ifdef __cpp_char8_t
     assert(u8string(nasty_string_source{}, allocator<char8_t>{}) == u8"42"s);
-#endif // defined (__cpp_char8_t)
+#endif // defined(__cpp_char8_t)
     assert(u16string(nasty_string_source{}, allocator<char16_t>{}) == u"42"s);
     assert(u32string(nasty_string_source{}, allocator<char32_t>{}) == U"42"s);
     assert(wstring(nasty_string_source{}, allocator<wchar_t>{}) == L"42"s);
