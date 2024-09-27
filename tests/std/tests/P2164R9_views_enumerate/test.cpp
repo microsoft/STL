@@ -427,9 +427,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
 
         using IterMoveResult = tuple<range_difference_t<const Rng>, range_rvalue_reference_t<const Rng>>;
-        [[maybe_unused]] same_as<IterMoveResult> decltype(auto) moved = ranges::iter_move(i);
-        static_assert(noexcept(ranges::iter_move(i))
-                      == (noexcept(ranges::iter_move(i.base()))
+        [[maybe_unused]] same_as<IterMoveResult> decltype(auto) moved = ranges::_Woof_iter_move(i);
+        static_assert(noexcept(ranges::_Woof_iter_move(i))
+                      == (noexcept(ranges::_Woof_iter_move(i.base()))
                           && is_nothrow_move_constructible_v<range_rvalue_reference_t<const Rng>>) );
 
         [[maybe_unused]] same_as<const iterator_t<V>&> decltype(auto) i_base = as_const(i).base();
@@ -558,9 +558,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
 
         using IterMoveResult = tuple<range_difference_t<const Rng>, range_rvalue_reference_t<const Rng>>;
-        [[maybe_unused]] same_as<IterMoveResult> decltype(auto) moved = ranges::iter_move(ci);
-        static_assert(noexcept(ranges::iter_move(ci))
-                      == (noexcept(ranges::iter_move(ci.base()))
+        [[maybe_unused]] same_as<IterMoveResult> decltype(auto) moved = ranges::_Woof_iter_move(ci);
+        static_assert(noexcept(ranges::_Woof_iter_move(ci))
+                      == (noexcept(ranges::_Woof_iter_move(ci.base()))
                           && is_nothrow_move_constructible_v<range_rvalue_reference_t<const Rng>>) );
 
         [[maybe_unused]] same_as<const iterator_t<const V>&> decltype(auto) ci_base = as_const(ci).base();

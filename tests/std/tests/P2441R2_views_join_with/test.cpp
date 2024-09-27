@@ -564,7 +564,7 @@ void test_valueless_iterator() {
     } catch (const bad_variant_access&) {
     }
     try {
-        (void) ranges::iter_move(it2);
+        (void) ranges::_Woof_iter_move(it2);
         assert(false);
     } catch (const bad_variant_access&) {
     }

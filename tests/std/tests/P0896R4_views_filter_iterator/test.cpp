@@ -91,18 +91,18 @@ struct iterator_instantiator {
             assert(*i0 == 0);
             static_assert(noexcept(*i0));
 
-            assert(ranges::iter_move(i0) == 0); // NB: moving from int leaves it unchanged
-            static_assert(noexcept(ranges::iter_move(i0)) == noexcept(ranges::iter_move(declval<Iter>())));
+            assert(ranges::_Woof_iter_move(i0) == 0); // NB: moving from int leaves it unchanged
+            static_assert(noexcept(ranges::_Woof_iter_move(i0)) == noexcept(ranges::_Woof_iter_move(declval<Iter>())));
 
             if constexpr (forward_iterator<Iter>) {
                 auto i1 = ranges::next(i0);
-                ranges::iter_swap(i0, i1);
+                ranges::_Meow_iter_swap(i0, i1);
                 assert(mutable_ints[0] == 2);
                 assert(mutable_ints[2] == 0);
-                ranges::iter_swap(i1, i0);
+                ranges::_Meow_iter_swap(i1, i0);
                 assert(mutable_ints[0] == 0);
                 assert(mutable_ints[2] == 2);
-                static_assert(noexcept(ranges::iter_swap(i0, i1)));
+                static_assert(noexcept(ranges::_Meow_iter_swap(i0, i1)));
             }
         }
 

@@ -1694,22 +1694,22 @@ namespace ranges {
             }
 
             _NODISCARD friend constexpr range_rvalue_reference_t<_Vw> iter_move(const _Iterator& _It)
-                noexcept(noexcept(_RANGES iter_move(_It._Current))) {
+                noexcept(noexcept(_RANGES _Woof_iter_move(_It._Current))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _It._Check_dereference();
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                return _RANGES iter_move(_It._Current);
+                return _RANGES _Woof_iter_move(_It._Current);
             }
 
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right)
-                noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right._Current)))
+                noexcept(noexcept(_RANGES _Meow_iter_swap(_Left._Current, _Right._Current)))
                 requires indirectly_swappable<iterator_t<_Vw>>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Left._Check_dereference();
                 _Right._Check_dereference();
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                return _RANGES iter_swap(_Left._Current, _Right._Current);
+                return _RANGES _Meow_iter_swap(_Left._Current, _Right._Current);
             }
 
             _NODISCARD constexpr bool _Equal(const sentinel_t<_Vw>& _Last) const
@@ -2890,22 +2890,22 @@ namespace ranges {
             }
 
             _NODISCARD friend constexpr decltype(auto) iter_move(const _Iterator& _It)
-                noexcept(noexcept(_RANGES iter_move(*_It._Inner))) {
+                noexcept(noexcept(_RANGES _Woof_iter_move(*_It._Inner))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _It._Check_dereference();
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                return _RANGES iter_move(*_It._Inner);
+                return _RANGES _Woof_iter_move(*_It._Inner);
             }
 
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right)
-                noexcept(noexcept(_RANGES iter_swap(*_Left._Inner, *_Right._Inner)))
+                noexcept(noexcept(_RANGES _Meow_iter_swap(*_Left._Inner, *_Right._Inner)))
                 requires indirectly_swappable<_InnerIter>
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Left._Check_dereference();
                 _Right._Check_dereference();
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                _RANGES iter_swap(*_Left._Inner, *_Right._Inner);
+                _RANGES _Meow_iter_swap(*_Left._Inner, *_Right._Inner);
             }
         };
 
@@ -3056,7 +3056,7 @@ namespace ranges {
     template <class _Ref, class _RRef, class _It>
     concept _Concat_indirectly_readable_impl = requires(const _It __i) {
         { *__i } -> convertible_to<_Ref>;
-        { _RANGES iter_move(__i) } -> convertible_to<_RRef>;
+        { _RANGES _Woof_iter_move(__i) } -> convertible_to<_RRef>;
     };
 
     template <class... _Rngs>
@@ -3410,7 +3410,7 @@ namespace ranges {
             _NODISCARD friend constexpr decltype(auto) iter_move(const _Iterator& _It) {
                 using _Rvalue_ref =
                     common_reference_t<iter_rvalue_reference_t<_InnerIter>, iter_rvalue_reference_t<_PatternIter>>;
-                return _It._Visit_inner_it<_Rvalue_ref>(_RANGES iter_move);
+                return _It._Visit_inner_it<_Rvalue_ref>(_RANGES _Woof_iter_move);
             }
 
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right)
@@ -3420,9 +3420,9 @@ namespace ranges {
                 case _Variantish_state::_Holds_first:
                     switch (_Right._Inner_it._Contains) {
                     case _Variantish_state::_Holds_first:
-                        return _RANGES iter_swap(_Left._Inner_it._Get_first(), _Right._Inner_it._Get_first());
+                        return _RANGES _Meow_iter_swap(_Left._Inner_it._Get_first(), _Right._Inner_it._Get_first());
                     case _Variantish_state::_Holds_second:
-                        return _RANGES iter_swap(_Left._Inner_it._Get_first(), _Right._Inner_it._Get_second());
+                        return _RANGES _Meow_iter_swap(_Left._Inner_it._Get_first(), _Right._Inner_it._Get_second());
                     case _Variantish_state::_Nothing:
                         break;
                     }
@@ -3430,9 +3430,9 @@ namespace ranges {
                 case _Variantish_state::_Holds_second:
                     switch (_Right._Inner_it._Contains) {
                     case _Variantish_state::_Holds_first:
-                        return _RANGES iter_swap(_Left._Inner_it._Get_second(), _Right._Inner_it._Get_first());
+                        return _RANGES _Meow_iter_swap(_Left._Inner_it._Get_second(), _Right._Inner_it._Get_first());
                     case _Variantish_state::_Holds_second:
-                        return _RANGES iter_swap(_Left._Inner_it._Get_second(), _Right._Inner_it._Get_second());
+                        return _RANGES _Meow_iter_swap(_Left._Inner_it._Get_second(), _Right._Inner_it._Get_second());
                     case _Variantish_state::_Nothing:
                         break;
                     }
@@ -3915,15 +3915,15 @@ namespace ranges {
             }
 
             _NODISCARD friend constexpr decltype(auto) iter_move(const _Inner_iter& _Iter)
-                noexcept(noexcept(_RANGES iter_move(_Iter._Get_current()))) {
-                return _RANGES iter_move(_Iter._Get_current());
+                noexcept(noexcept(_RANGES _Woof_iter_move(_Iter._Get_current()))) {
+                return _RANGES _Woof_iter_move(_Iter._Get_current());
             }
 
             friend constexpr void iter_swap(const _Inner_iter& _Left, const _Inner_iter& _Right)
-                noexcept(noexcept(_RANGES iter_swap(_Left._Get_current(), _Right._Get_current())))
+                noexcept(noexcept(_RANGES _Meow_iter_swap(_Left._Get_current(), _Right._Get_current())))
                 requires indirectly_swappable<iterator_t<_BaseTy>>
             {
-                _RANGES iter_swap(_Left._Get_current(), _Right._Get_current());
+                _RANGES _Meow_iter_swap(_Left._Get_current(), _Right._Get_current());
             }
         };
 
@@ -5275,10 +5275,10 @@ namespace ranges {
             }
 
             _NODISCARD friend constexpr auto iter_move(const _Iterator& _It)
-                noexcept(noexcept(_RANGES iter_move(_It._Current))
+                noexcept(noexcept(_RANGES _Woof_iter_move(_It._Current))
                          && is_nothrow_move_constructible_v<range_rvalue_reference_t<_Base_t>>) {
                 return tuple<difference_type, range_rvalue_reference_t<_Base_t>>{
-                    _It._Pos, _RANGES iter_move(_It._Current)};
+                    _It._Pos, _RANGES _Woof_iter_move(_It._Current)};
             }
         };
 
@@ -5557,15 +5557,15 @@ namespace ranges {
             }
 
             _NODISCARD friend constexpr range_rvalue_reference_t<_Vw> iter_move(const _Inner_iterator& _It)
-                noexcept(noexcept(_RANGES iter_move(_It._Get_current()))) {
-                return _RANGES iter_move(_It._Get_current());
+                noexcept(noexcept(_RANGES _Woof_iter_move(_It._Get_current()))) {
+                return _RANGES _Woof_iter_move(_It._Get_current());
             }
 
             friend constexpr void iter_swap(const _Inner_iterator& _Left, const _Inner_iterator& _Right)
-                noexcept(noexcept(_RANGES iter_swap(_Left._Get_current(), _Right._Get_current())))
+                noexcept(noexcept(_RANGES _Meow_iter_swap(_Left._Get_current(), _Right._Get_current())))
                 requires indirectly_swappable<iterator_t<_Vw>>
             {
-                _RANGES iter_swap(_Left._Get_current(), _Right._Get_current());
+                _RANGES _Meow_iter_swap(_Left._Get_current(), _Right._Get_current());
             }
         };
 
@@ -6912,15 +6912,15 @@ namespace ranges {
             }
 
             _NODISCARD friend constexpr range_rvalue_reference_t<_Base> iter_move(const _Iterator& _It)
-                noexcept(noexcept(_RANGES iter_move(_It._Current))) {
-                return _RANGES iter_move(_It._Current);
+                noexcept(noexcept(_RANGES _Woof_iter_move(_It._Current))) {
+                return _RANGES _Woof_iter_move(_It._Current);
             }
 
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right)
-                noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right._Current)))
+                noexcept(noexcept(_RANGES _Meow_iter_swap(_Left._Current, _Right._Current)))
                 requires indirectly_swappable<_Base_iterator>
             {
-                return _RANGES iter_swap(_Left._Current, _Right._Current);
+                return _RANGES _Meow_iter_swap(_Left._Current, _Right._Current);
             }
         };
 
@@ -7341,24 +7341,24 @@ namespace ranges {
             }
 
             _NODISCARD friend constexpr auto iter_move(const _Iterator& _Itr) noexcept(
-                (noexcept(_RANGES iter_move(_STD declval<const iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>()))
+                (noexcept(_RANGES _Woof_iter_move(_STD declval<const iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>()))
                     && ...)
                 && (is_nothrow_move_constructible_v<range_rvalue_reference_t<_Maybe_const<_IsConst, _ViewTypes>>>
                     && ...)) {
-                return _Tuple_transform(_RANGES iter_move, _Itr._Current);
+                return _Tuple_transform(_RANGES _Woof_iter_move, _Itr._Current);
             }
 
             friend constexpr void iter_swap(const _Iterator& _Lhs, const _Iterator& _Rhs)
-                noexcept((noexcept(_RANGES iter_swap(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>(),
+                noexcept((noexcept(_RANGES _Meow_iter_swap(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>(),
                               _STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>()))
                           && ...))
                 requires (indirectly_swappable<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...)
             {
                 const auto _Swap_every_pair_closure =
                     [&_Lhs, &_Rhs]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(noexcept(
-                        ((_RANGES iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))),
+                        ((_RANGES _Meow_iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))),
                             ...))) {
-                        ((_RANGES iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))),
+                        ((_RANGES _Meow_iter_swap(_STD get<_Indices>(_Lhs._Current), _STD get<_Indices>(_Rhs._Current))),
                             ...);
                     };
 
@@ -8178,17 +8178,17 @@ namespace ranges {
             }
 
             _NODISCARD friend constexpr auto iter_move(const _Iterator& _It)
-                noexcept(noexcept(_RANGES iter_move(_STD declval<const _Base_iterator&>()))
+                noexcept(noexcept(_RANGES _Woof_iter_move(_STD declval<const _Base_iterator&>()))
                          && is_nothrow_move_constructible_v<range_rvalue_reference_t<_Base>>) {
-                return _RANGES _Tuple_transform(_RANGES iter_move, _It._Current);
+                return _RANGES _Tuple_transform(_RANGES _Woof_iter_move, _It._Current);
             }
 
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right)
-                noexcept(noexcept(_RANGES iter_swap(_STD declval<_Base_iterator>(), _STD declval<_Base_iterator>())))
+                noexcept(noexcept(_RANGES _Meow_iter_swap(_STD declval<_Base_iterator>(), _STD declval<_Base_iterator>())))
                 requires indirectly_swappable<_Base_iterator>
             {
                 for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
-                    _RANGES iter_swap(_Left._Current[_Ix], _Right._Current[_Ix]);
+                    _RANGES _Meow_iter_swap(_Left._Current[_Ix], _Right._Current[_Ix]);
                 }
             }
         };
@@ -8925,13 +8925,13 @@ namespace ranges {
                 return conjunction_v<
                            is_nothrow_move_constructible<range_rvalue_reference_t<_Maybe_const<_Const, _First>>>,
                            is_nothrow_move_constructible<range_rvalue_reference_t<_Maybe_const<_Const, _Rest>>>...>
-                    && (noexcept(_RANGES iter_move(_STD get<_Indices>(_STD declval<const _Iterator&>()._Current)))
+                    && (noexcept(_RANGES _Woof_iter_move(_STD get<_Indices>(_STD declval<const _Iterator&>()._Current)))
                         && ...);
             }
 
             template <size_t... _Indices>
             _NODISCARD static consteval bool _Is_iter_swap_nothrow(index_sequence<_Indices...>) noexcept {
-                return (noexcept(_RANGES iter_swap(_STD get<_Indices>(_STD declval<const _Iterator&>()._Current),
+                return (noexcept(_RANGES _Meow_iter_swap(_STD get<_Indices>(_STD declval<const _Iterator&>()._Current),
                             _STD get<_Indices>(_STD declval<const _Iterator&>()._Current)))
                         && ...);
             }
@@ -9074,7 +9074,7 @@ namespace ranges {
 
             _NODISCARD friend constexpr auto iter_move(const _Iterator& _It)
                 noexcept(_Is_iter_move_nothrow(make_index_sequence<1 + sizeof...(_Rest)>{})) {
-                return _RANGES _Tuple_transform(_RANGES iter_move, _It._Current);
+                return _RANGES _Tuple_transform(_RANGES _Woof_iter_move, _It._Current);
             }
 
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right)
@@ -9083,7 +9083,7 @@ namespace ranges {
                           && indirectly_swappable<iterator_t<_Maybe_const<_Const, _Rest>>>)
             {
                 [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-                    (_RANGES iter_swap(_STD get<_Indices>(_Left._Current), _STD get<_Indices>(_Right._Current)), ...);
+                    (_RANGES _Meow_iter_swap(_STD get<_Indices>(_Left._Current), _STD get<_Indices>(_Right._Current)), ...);
                 }(make_index_sequence<1 + sizeof...(_Rest)>{});
             }
         };

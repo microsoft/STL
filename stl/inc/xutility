@@ -850,7 +850,7 @@ namespace ranges {
     } // namespace _Iter_move
 
     inline namespace _Cpos {
-        _EXPORT_STD inline constexpr _Iter_move::_Cpo iter_move;
+        _EXPORT_STD inline constexpr _Iter_move::_Cpo _Woof_iter_move;
     }
 } // namespace ranges
 
@@ -858,9 +858,9 @@ namespace ranges {
 
 _EXPORT_STD template <class _Ty>
     requires _Dereferenceable<_Ty> && requires(_Ty& __t) {
-        { _RANGES iter_move(__t) } -> _Can_reference;
+        { _RANGES _Woof_iter_move(__t) } -> _Can_reference;
     }
-using iter_rvalue_reference_t = decltype(_RANGES iter_move(_STD declval<_Ty&>()));
+using iter_rvalue_reference_t = decltype(_RANGES _Woof_iter_move(_STD declval<_Ty&>()));
 
 template <class _It>
 concept _Indirectly_readable_impl =
@@ -869,7 +869,7 @@ concept _Indirectly_readable_impl =
         typename iter_reference_t<_It>;
         typename iter_rvalue_reference_t<_It>;
         { *__i } -> same_as<iter_reference_t<_It>>;
-        { _RANGES iter_move(__i) } -> same_as<iter_rvalue_reference_t<_It>>;
+        { _RANGES _Woof_iter_move(__i) } -> same_as<iter_rvalue_reference_t<_It>>;
     } && common_reference_with<iter_reference_t<_It>&&, iter_value_t<_It>&>
     && common_reference_with<iter_reference_t<_It>&&, iter_rvalue_reference_t<_It>&&>
     && common_reference_with<iter_rvalue_reference_t<_It>&&, const iter_value_t<_It>&>;
@@ -1122,9 +1122,9 @@ namespace ranges {
 
         template <class _Xty, class _Yty>
         _NODISCARD constexpr iter_value_t<remove_reference_t<_Xty>> _Iter_exchange_move(_Xty&& _XVal, _Yty&& _YVal)
-            noexcept(noexcept(iter_value_t<remove_reference_t<_Xty>>(_RANGES iter_move(_XVal)))) {
-            iter_value_t<remove_reference_t<_Xty>> _Tmp(_RANGES iter_move(_XVal));
-            *_XVal = _RANGES iter_move(_YVal);
+            noexcept(noexcept(iter_value_t<remove_reference_t<_Xty>>(_RANGES _Woof_iter_move(_XVal)))) {
+            iter_value_t<remove_reference_t<_Xty>> _Tmp(_RANGES _Woof_iter_move(_XVal));
+            *_XVal = _RANGES _Woof_iter_move(_YVal);
             return _Tmp;
         }
 
@@ -1173,17 +1173,17 @@ namespace ranges {
     } // namespace _Iter_swap
 
     inline namespace _Cpos {
-        _EXPORT_STD inline constexpr _Iter_swap::_Cpo iter_swap;
+        _EXPORT_STD inline constexpr _Iter_swap::_Cpo _Meow_iter_swap;
     }
 } // namespace ranges
 
 _EXPORT_STD template <class _It1, class _It2 = _It1>
 concept indirectly_swappable =
     indirectly_readable<_It1> && indirectly_readable<_It2> && requires(const _It1 __i1, const _It2 __i2) {
-        _RANGES iter_swap(__i1, __i1);
-        _RANGES iter_swap(__i2, __i2);
-        _RANGES iter_swap(__i1, __i2);
-        _RANGES iter_swap(__i2, __i1);
+        _RANGES _Meow_iter_swap(__i1, __i1);
+        _RANGES _Meow_iter_swap(__i2, __i2);
+        _RANGES _Meow_iter_swap(__i1, __i2);
+        _RANGES _Meow_iter_swap(__i2, __i1);
     };
 
 _EXPORT_STD template <class _It1, class _It2, class _Rel, class _Proj1 = identity, class _Proj2 = identity>
@@ -1813,22 +1813,22 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD friend constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It)
-        noexcept(is_nothrow_copy_constructible_v<_BidIt> && noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
+    _NODISCARD friend constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
+        is_nothrow_copy_constructible_v<_BidIt> && noexcept(_RANGES _Woof_iter_move(--_STD declval<_BidIt&>()))) {
         auto _Tmp = _It.current;
         --_Tmp;
-        return _RANGES iter_move(_Tmp);
+        return _RANGES _Woof_iter_move(_Tmp);
     }
 
     template <indirectly_swappable<_BidIt> _BidIt2>
     friend constexpr void iter_swap(const reverse_iterator& _Left, const reverse_iterator<_BidIt2>& _Right)
         noexcept(is_nothrow_copy_constructible_v<_BidIt> && is_nothrow_copy_constructible_v<_BidIt2>
-                 && noexcept(_RANGES iter_swap(--_STD declval<_BidIt&>(), --_STD declval<_BidIt2&>()))) {
+                 && noexcept(_RANGES _Meow_iter_swap(--_STD declval<_BidIt&>(), --_STD declval<_BidIt2&>()))) {
         auto _LTmp = _Left.current;
         auto _RTmp = _Right.base();
         --_LTmp;
         --_RTmp;
-        _RANGES iter_swap(_LTmp, _RTmp);
+        _RANGES _Meow_iter_swap(_LTmp, _RTmp);
     }
 #endif // _HAS_CXX20
 
@@ -2468,8 +2468,8 @@ public:
     }
 
     _NODISCARD friend constexpr _Rvalue_reference iter_move(const basic_const_iterator& _It)
-        noexcept(noexcept(static_cast<_Rvalue_reference>(_RANGES iter_move(_It._Current)))) {
-        return static_cast<_Rvalue_reference>(_RANGES iter_move(_It._Current));
+        noexcept(noexcept(static_cast<_Rvalue_reference>(_RANGES _Woof_iter_move(_It._Current)))) {
+        return static_cast<_Rvalue_reference>(_RANGES _Woof_iter_move(_It._Current));
     }
 };
 
@@ -4249,8 +4249,8 @@ public:
 
     _NODISCARD _CONSTEXPR17 reference operator*() const
 #if _HAS_CXX20
-        noexcept(noexcept(_RANGES iter_move(_Current))) /* strengthened */ {
-        return _RANGES iter_move(_Current);
+        noexcept(noexcept(_RANGES _Woof_iter_move(_Current))) /* strengthened */ {
+        return _RANGES _Woof_iter_move(_Current);
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         noexcept(noexcept(static_cast<reference>(*_Current))) /* strengthened */ {
@@ -4331,8 +4331,8 @@ public:
 
     _NODISCARD _CONSTEXPR17 reference operator[](const difference_type _Off) const
 #if _HAS_CXX20
-        noexcept(noexcept(_RANGES iter_move(_Current + _Off))) /* strengthened */ {
-        return _RANGES iter_move(_Current + _Off);
+        noexcept(noexcept(_RANGES _Woof_iter_move(_Current + _Off))) /* strengthened */ {
+        return _RANGES _Woof_iter_move(_Current + _Off);
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         noexcept(noexcept(_STD move(_Current[_Off]))) /* strengthened */ {
         return _STD move(_Current[_Off]);
@@ -4359,14 +4359,14 @@ public:
     }
 
     _NODISCARD friend constexpr reference iter_move(const move_iterator& _It)
-        noexcept(noexcept(_RANGES iter_move(_It._Current))) {
-        return _RANGES iter_move(_It._Current);
+        noexcept(noexcept(_RANGES _Woof_iter_move(_It._Current))) {
+        return _RANGES _Woof_iter_move(_It._Current);
     }
 
     template <indirectly_swappable<_Iter> _Iter2>
     friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right)
-        noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right.base()))) {
-        _RANGES iter_swap(_Left._Current, _Right.base());
+        noexcept(noexcept(_RANGES _Meow_iter_swap(_Left._Current, _Right.base()))) {
+        _RANGES _Meow_iter_swap(_Left._Current, _Right.base());
     }
 #endif // _HAS_CXX20
 

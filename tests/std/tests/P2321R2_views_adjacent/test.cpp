@@ -500,14 +500,14 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             same_as<repeated_tuple<iter_rvalue_reference_t<BI>, N>> decltype(auto) rval = iter_move(as_const(i));
             assert(rval == expected[0]);
             static_assert(noexcept(iter_move(i))
-                          == (noexcept(ranges::iter_move(declval<BI>()))
+                          == (noexcept(ranges::_Woof_iter_move(declval<BI>()))
                               && is_nothrow_move_constructible_v<iter_rvalue_reference_t<BI>>) );
         }
 
         if constexpr (indirectly_swappable<BI>) { // Check iter_swap
-            static_assert(is_void_v<decltype(ranges::iter_swap(as_const(i), as_const(i)))>);
-            static_assert(
-                noexcept(iter_swap(i, i)) == noexcept(ranges::iter_swap(declval<const BI&>(), declval<const BI&>())));
+            static_assert(is_void_v<decltype(ranges::_Meow_iter_swap(as_const(i), as_const(i)))>);
+            static_assert(noexcept(iter_swap(i, i))
+                          == noexcept(ranges::_Meow_iter_swap(declval<const BI&>(), declval<const BI&>())));
             // Note: other tests are defined in 'test_iter_swap' function
         }
     }
@@ -729,14 +729,14 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             same_as<repeated_tuple<iter_rvalue_reference_t<CBI>, N>> decltype(auto) rval = iter_move(as_const(ci));
             assert(rval == expected[0]);
             static_assert(noexcept(iter_move(ci))
-                          == (noexcept(ranges::iter_move(declval<CBI>()))
+                          == (noexcept(ranges::_Woof_iter_move(declval<CBI>()))
                               && is_nothrow_move_constructible_v<iter_rvalue_reference_t<CBI>>) );
         }
 
         if constexpr (indirectly_swappable<CBI>) { // Check iter_swap
-            static_assert(is_void_v<decltype(ranges::iter_swap(as_const(ci), as_const(ci)))>);
+            static_assert(is_void_v<decltype(ranges::_Meow_iter_swap(as_const(ci), as_const(ci)))>);
             static_assert(noexcept(iter_swap(ci, ci))
-                          == noexcept(ranges::iter_swap(declval<const CBI&>(), declval<const CBI&>())));
+                          == noexcept(ranges::_Meow_iter_swap(declval<const CBI&>(), declval<const CBI&>())));
             // Note: other tests are defined in 'test_iter_swap' function
         }
     }
@@ -822,7 +822,7 @@ constexpr void test_iter_swap(Rng& rng) {
         for ([[maybe_unused]] size_t _ : views::iota(0u, N)) {
             iter_swap(as_const(i), as_const(j));
         }
-        ranges::iter_swap(as_const(i), as_const(j));
+        ranges::_Meow_iter_swap(as_const(i), as_const(j));
 
         assert(*i == first);
         assert(*j == second);
@@ -839,7 +839,7 @@ constexpr void test_iter_swap(Rng& rng) {
         for ([[maybe_unused]] size_t _ : views::iota(0u, N)) {
             iter_swap(as_const(i), as_const(j));
         }
-        ranges::iter_swap(as_const(i), as_const(j));
+        ranges::_Meow_iter_swap(as_const(i), as_const(j));
 
         assert(*i == first);
         assert(*j == second);

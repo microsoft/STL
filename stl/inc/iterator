@@ -1042,26 +1042,26 @@ public:
     }
 
     _NODISCARD friend constexpr decltype(auto) iter_move(const common_iterator& _Right)
-        noexcept(noexcept(_RANGES iter_move(_Right._Val._Get_first())))
+        noexcept(noexcept(_RANGES _Woof_iter_move(_Right._Val._Get_first())))
         requires input_iterator<_Iter>
     {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_first,
             "can only iter_move from common_iterator if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return _RANGES iter_move(_Right._Val._Get_first());
+        return _RANGES _Woof_iter_move(_Right._Val._Get_first());
     }
 
     template <indirectly_swappable<_Iter> _OIter, class _OSe>
     friend constexpr void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right)
-        noexcept(noexcept(_RANGES iter_swap(_Left._Val._Get_first(), _Right._Get_val()._Get_first()))) {
+        noexcept(noexcept(_RANGES _Meow_iter_swap(_Left._Val._Get_first(), _Right._Get_val()._Get_first()))) {
         auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Left._Val._Contains == _Variantish_state::_Holds_first
                         && _Right_val._Contains == _Variantish_state::_Holds_first,
             "can only iter_swap common_iterators if both hold iterators");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return _RANGES iter_swap(_Left._Val._Get_first(), _Right_val._Get_first());
+        return _RANGES _Meow_iter_swap(_Left._Val._Get_first(), _Right_val._Get_first());
     }
 
     _NODISCARD constexpr _Variantish<_Iter, _Se>& _Get_val() noexcept {
@@ -1358,16 +1358,16 @@ public:
 
     // [counted.iter.cust]
     _NODISCARD friend constexpr decltype(auto) iter_move(const counted_iterator& _Right)
-        noexcept(noexcept(_RANGES iter_move(_Right._Current)))
+        noexcept(noexcept(_RANGES _Woof_iter_move(_Right._Current)))
         requires input_iterator<_Iter>
     {
-        return _RANGES iter_move(_Right._Current);
+        return _RANGES _Woof_iter_move(_Right._Current);
     }
 
     template <indirectly_swappable<_Iter> _Other>
     friend constexpr void iter_swap(const counted_iterator& _Left, const counted_iterator<_Other>& _Right)
-        noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right.base()))) {
-        _RANGES iter_swap(_Left._Current, _Right.base());
+        noexcept(noexcept(_RANGES _Meow_iter_swap(_Left._Current, _Right.base()))) {
+        _RANGES _Meow_iter_swap(_Left._Current, _Right.base());
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0

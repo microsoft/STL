@@ -123,36 +123,36 @@ void test_case_difference_right_valueless() {
 
 void test_case_iter_move_sentinel() {
     CIT cit{default_sentinel};
-    (void) ranges::iter_move(cit); // can only iter_move from common_iterator if it holds an iterator
+    (void) ranges::_Woof_iter_move(cit); // can only iter_move from common_iterator if it holds an iterator
 }
 
 void test_case_iter_move_valueless() {
     CIT cit{_Variantish_empty_tag{}};
-    (void) ranges::iter_move(cit); // can only iter_move from common_iterator if it holds an iterator
+    (void) ranges::_Woof_iter_move(cit); // can only iter_move from common_iterator if it holds an iterator
 }
 
 void test_case_iter_swap_sentinel_left_sentinel() {
     CIT cit1{default_sentinel};
     CIT cit2{};
-    (void) ranges::iter_swap(cit1, cit2); // can only iter_swap common_iterators if both hold iterators
+    (void) ranges::_Meow_iter_swap(cit1, cit2); // can only iter_swap common_iterators if both hold iterators
 }
 
 void test_case_iter_swap_sentinel_left_valueless() {
     CIT cit1{_Variantish_empty_tag{}};
     CIT cit2{};
-    (void) ranges::iter_swap(cit1, cit2); // can only iter_swap common_iterators if both hold iterators
+    (void) ranges::_Meow_iter_swap(cit1, cit2); // can only iter_swap common_iterators if both hold iterators
 }
 
 void test_case_iter_swap_sentinel_right_sentinel() {
     CIT cit1{};
     CIT cit2{default_sentinel};
-    (void) ranges::iter_swap(cit1, cit2); // can only iter_swap common_iterators if both hold iterators
+    (void) ranges::_Meow_iter_swap(cit1, cit2); // can only iter_swap common_iterators if both hold iterators
 }
 
 void test_case_iter_swap_sentinel_right_valueless() {
     CIT cit1{};
     CIT cit2{_Variantish_empty_tag{}};
-    (void) ranges::iter_swap(cit1, cit2); // can only iter_swap common_iterators if both hold iterators
+    (void) ranges::_Meow_iter_swap(cit1, cit2); // can only iter_swap common_iterators if both hold iterators
 }
 
 int main(int argc, char* argv[]) {

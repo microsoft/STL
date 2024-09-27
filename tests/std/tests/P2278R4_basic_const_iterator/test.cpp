@@ -242,9 +242,9 @@ constexpr void test_one(It iter) {
 
     { // Validate basic_const_iterator::iter_move()
         using Expected = common_reference_t<const iter_value_t<It>&&, iter_rvalue_reference_t<It>>;
-        [[maybe_unused]] same_as<Expected> decltype(auto) val = ranges::iter_move(citer);
-        static_assert(
-            noexcept(ranges::iter_move(citer)) == noexcept(static_cast<Expected>(ranges::iter_move(citer.base()))));
+        [[maybe_unused]] same_as<Expected> decltype(auto) val = ranges::_Woof_iter_move(citer);
+        static_assert(noexcept(ranges::_Woof_iter_move(citer))
+                      == noexcept(static_cast<Expected>(ranges::_Woof_iter_move(citer.base()))));
     }
 
     { // Validate basic_const_iterator::base() const&

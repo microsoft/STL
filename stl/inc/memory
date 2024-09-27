@@ -364,7 +364,7 @@ namespace ranges {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
                 for (; _Count > 0 && _Backout._Last != _OLast; --_Count, (void) ++_IFirst) {
-                    _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+                    _Backout._Emplace_back(_RANGES _Woof_iter_move(_IFirst));
                 }
 
                 _OFirst = _Backout._Release();

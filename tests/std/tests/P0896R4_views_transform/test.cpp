@@ -618,8 +618,8 @@ struct iterator_instantiator {
             assert(*i0 == add8(mutable_ints[0]));
             static_assert(noexcept(*i0));
 
-            assert(ranges::iter_move(i0) == add8(mutable_ints[0])); // NB: moving from int leaves it unchanged
-            static_assert(noexcept(ranges::iter_move(i0)));
+            assert(ranges::_Woof_iter_move(i0) == add8(mutable_ints[0])); // NB: moving from int leaves it unchanged
+            static_assert(noexcept(ranges::_Woof_iter_move(i0)));
 
             static_assert(!CanIterSwap<decltype(i0)>);
         }
@@ -942,7 +942,7 @@ int main() {
         assert(*i1 == 'h');
         assert(*i2 == 'e');
 
-        ranges::iter_swap(i1, i2);
+        ranges::_Meow_iter_swap(i1, i2);
 
         assert(*i1 == 'e');
         assert(*i2 == 'h');

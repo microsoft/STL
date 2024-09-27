@@ -534,19 +534,20 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... rngs)
 
             // Validate [ADL::]iter_move()
             if constexpr (is_const) {
-                static_assert(is_same_v<decltype(ranges::iter_move(itr)),
-                    tuple<decltype(ranges::iter_move(declval<ranges::iterator_t<const AllView<RangeTypes>>>()))...>>);
+                static_assert(is_same_v<decltype(ranges::_Woof_iter_move(itr)),
+                    tuple<decltype(ranges::_Woof_iter_move(
+                        declval<ranges::iterator_t<const AllView<RangeTypes>>>()))...>>);
             } else {
-                static_assert(is_same_v<decltype(ranges::iter_move(itr)),
-                    tuple<decltype(ranges::iter_move(declval<ranges::iterator_t<AllView<RangeTypes>>>()))...>>);
+                static_assert(is_same_v<decltype(ranges::_Woof_iter_move(itr)),
+                    tuple<decltype(ranges::_Woof_iter_move(declval<ranges::iterator_t<AllView<RangeTypes>>>()))...>>);
             }
 
             static_assert(
-                noexcept(ranges::iter_move(itr))
-                    == (noexcept(ranges::iter_move(declval<const ranges::iterator_t<LocalRangeTypes>&>())) && ...)
+                noexcept(ranges::_Woof_iter_move(itr))
+                    == (noexcept(ranges::_Woof_iter_move(declval<const ranges::iterator_t<LocalRangeTypes>&>())) && ...)
                 && (is_nothrow_move_constructible_v<ranges::range_rvalue_reference_t<LocalRangeTypes>> && ...));
 
-            assert(do_tuples_reference_same_objects(*itr, ranges::iter_move(itr)));
+            assert(do_tuples_reference_same_objects(*itr, ranges::_Woof_iter_move(itr)));
 
             // Validate [ADL::]iter_swap()
             if constexpr ((indirectly_swappable<ranges::iterator_t<LocalRangeTypes>> && ...)) {
@@ -560,7 +561,7 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... rngs)
 
                 const typename TestContainerType::element_tuple_type old_itr2_value = *itr2;
 
-                ranges::iter_swap(itr, itr2);
+                ranges::_Meow_iter_swap(itr, itr2);
 
                 assert(*itr == old_itr2_value);
                 assert(*itr2 == old_itr_value);

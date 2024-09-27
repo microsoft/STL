@@ -485,13 +485,13 @@ constexpr bool test_input(Rng&& rng, Expected&& expected) {
     { // Check iter_move (other tests are defined in 'test_lwg3851' function)
         same_as<ranges::range_rvalue_reference_t<Rng>> decltype(auto) rval = iter_move(as_const(inner_iter));
         assert(rval == expected[0][0]);
-        static_assert(noexcept(iter_move(inner_iter)) == noexcept(ranges::iter_move(declval<const BI&>())));
+        static_assert(noexcept(iter_move(inner_iter)) == noexcept(ranges::_Woof_iter_move(declval<const BI&>())));
     }
 
     if constexpr (indirectly_swappable<BI>) { // Check iter_swap (other tests are defined in 'test_lwg3851' function)
         static_assert(is_void_v<decltype(iter_swap(as_const(inner_iter), as_const(inner_iter)))>);
         static_assert(noexcept(iter_swap(inner_iter, inner_iter))
-                      == noexcept(ranges::iter_swap(declval<const BI&>(), declval<const BI&>())));
+                      == noexcept(ranges::_Meow_iter_swap(declval<const BI&>(), declval<const BI&>())));
     }
 
     assert(inner_iter != inner_sen);

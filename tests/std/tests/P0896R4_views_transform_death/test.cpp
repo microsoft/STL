@@ -285,7 +285,7 @@ void test_operator_minus_incompatible_value_initialized() {
 
 void test_iter_move_value_initialized_iterator() {
     ranges::iterator_t<TV> i{};
-    (void) ranges::iter_move(i); // cannot dereference value-initialized transform_view iterator
+    (void) ranges::_Woof_iter_move(i); // cannot dereference value-initialized transform_view iterator
 }
 
 void test_sentinel_compare_value_initialized() {

@@ -84,8 +84,8 @@ static_assert(test_cpo(std::compare_weak_order_fallback));
 static_assert(test_cpo(std::compare_partial_order_fallback));
 
 static_assert(test_cpo(ranges::swap));
-static_assert(test_cpo(ranges::iter_swap));
-static_assert(test_cpo(ranges::iter_move));
+static_assert(test_cpo(ranges::_Meow_iter_swap));
+static_assert(test_cpo(ranges::_Woof_iter_move));
 static_assert(test_cpo(ranges::begin));
 static_assert(test_cpo(ranges::end));
 static_assert(test_cpo(ranges::cbegin));

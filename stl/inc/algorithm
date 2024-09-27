@@ -1699,7 +1699,7 @@ namespace ranges {
         }
 
         for (; _First != _Last; ++_First, (void) ++_Output) {
-            *_Output = _RANGES iter_move(_First);
+            *_Output = _RANGES _Woof_iter_move(_First);
         }
 
         return {_STD move(_First), _STD move(_Output)};
@@ -1754,7 +1754,7 @@ namespace ranges {
         }
 
         while (_First != _Last) {
-            *--_Output = _RANGES iter_move(--_Last);
+            *--_Output = _RANGES _Woof_iter_move(--_Last);
         }
 
         return _Output;
@@ -3701,7 +3701,7 @@ namespace ranges {
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
             for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) {
-                _RANGES iter_swap(_First1, _First2);
+                _RANGES _Meow_iter_swap(_First1, _First2);
             }
 
             return {_STD move(_First1), _STD move(_First2)};
@@ -4615,7 +4615,7 @@ namespace ranges {
 
             while (++_First != _Last) {
                 if (_STD invoke(_Proj, *_First) != _Val) {
-                    *_Next = _RANGES iter_move(_First);
+                    *_Next = _RANGES _Woof_iter_move(_First);
                     ++_Next;
                 }
             }
@@ -4667,7 +4667,7 @@ namespace ranges {
 
             while (++_First != _Last) {
                 if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                    *_Next = _RANGES iter_move(_First);
+                    *_Next = _RANGES _Woof_iter_move(_First);
                     ++_Next;
                 }
             }
@@ -4898,7 +4898,7 @@ namespace ranges {
             while (++_First != _Last) {
                 if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Current), _STD invoke(_Proj, *_First))) {
                     ++_Current;
-                    *_Current = _RANGES iter_move(_First);
+                    *_Current = _RANGES _Woof_iter_move(_First);
                 }
             }
             ++_Current;
@@ -5124,7 +5124,7 @@ namespace ranges {
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
         for (; _First != _Last && _First != --_Last; ++_First) {
-            _RANGES iter_swap(_First, _Last);
+            _RANGES _Meow_iter_swap(_First, _Last);
         }
     }
 
@@ -5290,7 +5290,7 @@ namespace ranges {
         _STL_INTERNAL_CHECK(_Mid != _Last);
 
         do {
-            _RANGES iter_swap(_First, --_Last);
+            _RANGES _Meow_iter_swap(_First, --_Last);
         } while (++_First != _Mid && _Last != _Mid);
 
         return {_STD move(_First), _STD move(_Last)};
@@ -5335,7 +5335,7 @@ namespace ranges {
         } else {
             auto _Next = _Mid;
             do { // rotate the first cycle
-                _RANGES iter_swap(_First, _Next);
+                _RANGES _Meow_iter_swap(_First, _Next);
                 ++_First;
                 ++_Next;
                 if (_First == _Mid) {
@@ -5348,7 +5348,7 @@ namespace ranges {
             while (_Mid != _Last) { // rotate subsequent cycles
                 _Next = _Mid;
                 do {
-                    _RANGES iter_swap(_First, _Next);
+                    _RANGES _Meow_iter_swap(_First, _Next);
                     ++_First;
                     ++_Next;
                     if (_First == _Mid) {
@@ -5811,7 +5811,7 @@ namespace ranges {
                 const _Diff _Off = _Func(_Target_index + 1);
                 _STL_ASSERT(0 <= _Off && _Off <= _Target_index, "random value out of range");
                 if (_Off != _Target_index) { // avoid self-move-assignment
-                    _RANGES iter_swap(_Target, _First + _Off);
+                    _RANGES _Meow_iter_swap(_Target, _First + _Off);
                 }
             }
             return _Target;
@@ -6104,7 +6104,7 @@ namespace ranges {
             requires indirectly_movable<_It, _Out>
         _NODISCARD static constexpr _Out _Move_n_helper(_It _First, iter_difference_t<_It> _Count, _Out _Output) {
             for (; _Count > 0; ++_First, (void) --_Count, ++_Output) {
-                *_Output = _RANGES iter_move(_First);
+                *_Output = _RANGES _Woof_iter_move(_First);
             }
 
             return _Output;
@@ -6202,7 +6202,7 @@ namespace ranges {
                             return {_STD move(_Buf), _STD move(_Trail)};
                         }
 
-                        _RANGES iter_swap(_Mid, _Trail);
+                        _RANGES _Meow_iter_swap(_Mid, _Trail);
                     }
                 }
             }
@@ -6326,7 +6326,7 @@ namespace ranges {
                         }
                     } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last)));
 
-                    _RANGES iter_swap(_First, _Last); // out of place, swap and loop
+                    _RANGES _Meow_iter_swap(_First, _Last); // out of place, swap and loop
                 }
 
                 return {_STD move(_First), _STD move(_Saved_last)};
@@ -6344,7 +6344,7 @@ namespace ranges {
                 auto _Next = _First;
                 while (++_Next != _Last) {
                     if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next))) {
-                        _RANGES iter_swap(_First, _Next); // out of place, swap and loop
+                        _RANGES _Meow_iter_swap(_First, _Next); // out of place, swap and loop
                         ++_First;
                     }
                 }
@@ -6649,20 +6649,20 @@ namespace ranges {
             if (_Count - 1 <= _Capacity) { // - 1 since we never need to store *_Last
                 _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Temp_ptr};
                 _It _Next = _First;
-                _Backout._Emplace_back(_RANGES iter_move(_First));
+                _Backout._Emplace_back(_RANGES _Woof_iter_move(_First));
                 while (++_First != _Last) {
                     // test each element, moving into the temporary buffer if it's in the false range, or
                     // assigning backwards if it's in the true range
                     if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                        *_Next = _RANGES iter_move(_First);
+                        *_Next = _RANGES _Woof_iter_move(_First);
                         ++_Next;
                     } else {
-                        _Backout._Emplace_back(_RANGES iter_move(_First));
+                        _Backout._Emplace_back(_RANGES _Woof_iter_move(_First));
                     }
                 }
 
                 // move the last true element, *_Last, to the end of the true range
-                *_Next = _RANGES iter_move(_Last);
+                *_Next = _RANGES _Woof_iter_move(_Last);
                 ++_Next;
                 // copy back the false range
                 _RANGES _Move_unchecked(_Backout._First, _Backout._Last, _Next);
@@ -6741,7 +6741,7 @@ namespace ranges {
             }
 
             // move _Hole up to parent
-            *(_First + _Hole) = _RANGES iter_move(_First + _Idx);
+            *(_First + _Hole) = _RANGES _Woof_iter_move(_First + _Idx);
             _Hole             = _Idx;
         }
 
@@ -6788,7 +6788,7 @@ namespace ranges {
             }
 
             --_Last;
-            iter_value_t<_It> _Val(_RANGES iter_move(_Last));
+            iter_value_t<_It> _Val(_RANGES _Woof_iter_move(_Last));
             // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Push_heap_by_index
             _RANGES _Push_heap_by_index(_STD move(_First), _Count - 1, 0, _STD move(_Val), _Pred, _Proj, _Proj);
         }
@@ -6819,12 +6819,12 @@ namespace ranges {
                 --_Idx;
                 --_Mid;
             }
-            *(_First + _Hole) = _RANGES iter_move(_Mid);
+            *(_First + _Hole) = _RANGES _Woof_iter_move(_Mid);
             _Hole             = _Idx;
         }
 
         if (_Idx == _Max_sequence_non_leaf && _Bottom % 2 == 0) { // only child at bottom, move _Hole down to it
-            *(_First + _Hole) = _RANGES iter_move(_First + (_Bottom - 1));
+            *(_First + _Hole) = _RANGES _Woof_iter_move(_First + (_Bottom - 1));
             _Hole             = _Bottom - 1;
         }
 
@@ -6840,7 +6840,7 @@ namespace ranges {
         _STL_INTERNAL_CHECK(_First != _Last);
         _STL_INTERNAL_CHECK(_First != _Dest);
 
-        *_Dest            = _RANGES iter_move(_First);
+        *_Dest            = _RANGES _Woof_iter_move(_First);
         const auto _Count = _Last - _First;
         _RANGES _Pop_heap_hole_by_index(_STD move(_First), 0, _Count, _STD forward<_Ty>(_Val), _Pred, _Proj1, _Proj2);
     }
@@ -6854,7 +6854,7 @@ namespace ranges {
         }
 
         --_Last;
-        iter_value_t<_It> _Val(_RANGES iter_move(_Last));
+        iter_value_t<_It> _Val(_RANGES _Woof_iter_move(_Last));
         // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Pop_heap_hole_unchecked
         _RANGES _Pop_heap_hole_unchecked(_STD move(_First), _Last, _Last, _STD move(_Val), _Pred, _Proj, _Proj);
     }
@@ -6900,7 +6900,7 @@ namespace ranges {
         for (_Diff _Hole = _Bottom >> 1; _Hole > 0;) { // shift for codegen
             // reheap top half, bottom to top
             --_Hole;
-            iter_value_t<_It> _Val(_RANGES iter_move(_First + _Hole));
+            iter_value_t<_It> _Val(_RANGES _Woof_iter_move(_First + _Hole));
             // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Pop_heap_hole_by_index
             _RANGES _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred, _Proj, _Proj);
         }
@@ -7886,7 +7886,7 @@ namespace ranges {
     void _Rotate_one_right(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
         _STL_INTERNAL_CHECK(_RANGES next(_Mid) == _Last);
-        iter_value_t<_It> _Temp(_RANGES iter_move(_Mid));
+        iter_value_t<_It> _Temp(_RANGES _Woof_iter_move(_Mid));
         _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
         *_First = _STD move(_Temp);
     }
@@ -7895,7 +7895,7 @@ namespace ranges {
     void _Rotate_one_left(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
         _STL_INTERNAL_CHECK(_RANGES next(_First) == _Mid);
-        iter_value_t<_It> _Temp(_RANGES iter_move(_First));
+        iter_value_t<_It> _Temp(_RANGES _Woof_iter_move(_First));
         auto _Result = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First));
         *_Result.out = _STD move(_Temp);
     }
@@ -7915,13 +7915,13 @@ namespace ranges {
         --_Left_last;
 
         // We already know that _Mid points to the lowest element and that there is more than 1 element left.
-        *_First = _RANGES iter_move(_Mid);
+        *_First = _RANGES _Woof_iter_move(_Mid);
         ++_First;
         ++_Mid;
 
         for (;;) {
             if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_Left_first))) {
-                *_First = _RANGES iter_move(_Mid); // the lowest element is now in position
+                *_First = _RANGES _Woof_iter_move(_Mid); // the lowest element is now in position
                 ++_First;
                 ++_Mid;
                 if (_Mid == _Last) {
@@ -7930,13 +7930,13 @@ namespace ranges {
                     return;
                 }
             } else {
-                *_First = _RANGES iter_move(_Left_first);
+                *_First = _RANGES _Woof_iter_move(_Left_first);
                 ++_First;
                 ++_Left_first;
                 if (_Left_first == _Left_last) {
                     // move the remaining right partition and highest element, since *_Left_first is highest
                     const auto _Final = _RANGES _Move_unchecked(_Mid, _Last, _First);
-                    *_Final.out       = _RANGES iter_move(_Left_first);
+                    *_Final.out       = _RANGES _Woof_iter_move(_Left_first);
                     return;
                 }
             }
@@ -7956,14 +7956,14 @@ namespace ranges {
         _Uninitialized_backout<_Ty*> _Backout{_Right_first, _Right_last};
 
         // We already know that _Mid points to the next highest element and that there is more than 1 element left.
-        *--_Last = _RANGES iter_move(--_Mid);
+        *--_Last = _RANGES _Woof_iter_move(--_Mid);
 
         // We already know that _Backout._Last - 1 is the highest element, so do not compare against it again.
         --_Mid;
         --_Right_last;
         for (;;) {
             if (_STD invoke(_Pred, _STD invoke(_Proj, *_Right_last), _STD invoke(_Proj, *_Mid))) {
-                *--_Last = _RANGES iter_move(_Mid); // the lowest element is now in position
+                *--_Last = _RANGES _Woof_iter_move(_Mid); // the lowest element is now in position
                 if (_First == _Mid) {
                     ++_Right_last; // to make [_Right_first, _Right_last) a half-open range
                     _RANGES _Move_backward_common(_Right_first, _Right_last, _STD move(_Last));
@@ -7971,12 +7971,12 @@ namespace ranges {
                 }
                 --_Mid;
             } else {
-                *--_Last = _RANGES iter_move(_Right_last);
+                *--_Last = _RANGES _Woof_iter_move(_Right_last);
                 --_Right_last;
                 if (_Right_first == _Right_last) { // we can't compare with *_Right_first, but we know it is lowest
                     ++_Mid; // restore half-open range [_First, _Mid)
                     _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
-                    *_First = _RANGES iter_move(_Right_first);
+                    *_First = _RANGES _Woof_iter_move(_Right_first);
                     return;
                 }
             }
@@ -8379,7 +8379,7 @@ namespace ranges {
         }
 
         for (auto _Mid = _First; ++_Mid != _Last;) { // order next element
-            iter_value_t<_It> _Val(_RANGES iter_move(_Mid));
+            iter_value_t<_It> _Val(_RANGES _Woof_iter_move(_Mid));
             auto _Hole = _Mid;
 
             for (auto _Prev = _Hole;;) {
@@ -8387,7 +8387,7 @@ namespace ranges {
                 if (!_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, *_Prev))) {
                     break;
                 }
-                *_Hole = _RANGES iter_move(_Prev); // move hole down
+                *_Hole = _RANGES _Woof_iter_move(_Prev); // move hole down
                 if (--_Hole == _First) {
                     break;
                 }
@@ -8403,7 +8403,7 @@ namespace ranges {
     constexpr void _Med3_common(_It _First, _It _Mid, _It _Last, _Pr _Pred, _Pj _Proj) {
         // sort median of three elements to middle
         if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
-            _RANGES iter_swap(_Mid, _First);
+            _RANGES _Meow_iter_swap(_Mid, _First);
         }
 
         if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Mid))) {
@@ -8411,10 +8411,10 @@ namespace ranges {
         }
 
         // swap middle and last, then test first again
-        _RANGES iter_swap(_Last, _Mid);
+        _RANGES _Meow_iter_swap(_Last, _Mid);
 
         if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
-            _RANGES iter_swap(_Mid, _First);
+            _RANGES _Meow_iter_swap(_Mid, _First);
         }
     }
 
@@ -8468,7 +8468,7 @@ namespace ranges {
                 } else if (_STD invoke(_Pred, _STD invoke(_Proj, *_Gfirst), _STD invoke(_Proj, *_Pfirst))) {
                     break;
                 } else if (_Plast != _Gfirst) {
-                    _RANGES iter_swap(_Plast, _Gfirst);
+                    _RANGES _Meow_iter_swap(_Plast, _Gfirst);
                     ++_Plast;
                 } else {
                     ++_Plast;
@@ -8482,7 +8482,7 @@ namespace ranges {
                                _Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_RANGES prev(_Glast)))) {
                     break;
                 } else if (--_Pfirst != _RANGES prev(_Glast)) {
-                    _RANGES iter_swap(_Pfirst, _RANGES prev(_Glast));
+                    _RANGES _Meow_iter_swap(_Pfirst, _RANGES prev(_Glast));
                 }
             }
 
@@ -8492,21 +8492,21 @@ namespace ranges {
 
             if (_Glast == _First) { // no room at bottom, rotate pivot upward
                 if (_Plast != _Gfirst) {
-                    _RANGES iter_swap(_Pfirst, _Plast);
+                    _RANGES _Meow_iter_swap(_Pfirst, _Plast);
                 }
 
                 ++_Plast;
-                _RANGES iter_swap(_Pfirst, _Gfirst);
+                _RANGES _Meow_iter_swap(_Pfirst, _Gfirst);
                 ++_Pfirst;
                 ++_Gfirst;
             } else if (_Gfirst == _Last) { // no room at top, rotate pivot downward
                 if (--_Glast != --_Pfirst) {
-                    _RANGES iter_swap(_Glast, _Pfirst);
+                    _RANGES _Meow_iter_swap(_Glast, _Pfirst);
                 }
 
-                _RANGES iter_swap(_Pfirst, --_Plast);
+                _RANGES _Meow_iter_swap(_Pfirst, --_Plast);
             } else {
-                _RANGES iter_swap(_Gfirst, --_Glast);
+                _RANGES _Meow_iter_swap(_Gfirst, --_Glast);
                 ++_Gfirst;
             }
         }
@@ -8942,7 +8942,7 @@ namespace ranges {
             _It _Next = _Mid;
             for (;;) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_First))) {
-                    _Backout._Emplace_back(_RANGES iter_move(_Next));
+                    _Backout._Emplace_back(_RANGES _Woof_iter_move(_Next));
                     ++_Next;
 
                     if (_Next == _Last) {
@@ -8952,7 +8952,7 @@ namespace ranges {
                         return _Backout._Release();
                     }
                 } else {
-                    _Backout._Emplace_back(_RANGES iter_move(_First));
+                    _Backout._Emplace_back(_RANGES _Woof_iter_move(_First));
                     ++_First;
 
                     if (_First == _Mid) {
@@ -8977,7 +8977,7 @@ namespace ranges {
             _InIt _Next = _Mid;
             for (;;) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_First))) {
-                    *_Dest = _RANGES iter_move(_Next);
+                    *_Dest = _RANGES _Woof_iter_move(_Next);
                     ++_Dest;
                     ++_Next;
 
@@ -8985,7 +8985,7 @@ namespace ranges {
                         return _RANGES _Move_unchecked(_STD move(_First), _STD move(_Mid), _STD move(_Dest)).out;
                     }
                 } else {
-                    *_Dest = _RANGES iter_move(_First);
+                    *_Dest = _RANGES _Woof_iter_move(_First);
                     ++_Dest;
                     ++_First;
 
@@ -9134,7 +9134,7 @@ namespace ranges {
             for (auto _Next = _Mid; _Next != _Last; ++_Next) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_First))) {
                     // replace top with new largest
-                    iter_value_t<_It> _Val(_RANGES iter_move(_Next));
+                    iter_value_t<_It> _Val(_RANGES _Woof_iter_move(_Next));
                     _RANGES _Pop_heap_hole_unchecked(_First, _Mid, _Next, _STD move(_Val), _Pred, _Proj, _Proj);
                 }
             }
@@ -10613,7 +10613,7 @@ namespace ranges {
                         --_Mid;
                     } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_Mid)));
 
-                    _RANGES iter_swap(_Next, _Mid);
+                    _RANGES _Meow_iter_swap(_Next, _Mid);
                     _RANGES _Reverse_common(_STD move(_Next1), _STD move(_Last));
                     return true;
                 }
@@ -10717,7 +10717,7 @@ namespace ranges {
                         --_Mid;
                     } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_Next)));
 
-                    _RANGES iter_swap(_Next, _Mid);
+                    _RANGES _Meow_iter_swap(_Next, _Mid);
                     _RANGES _Reverse_common(_STD move(_Next1), _STD move(_Last));
                     return true;
                 }

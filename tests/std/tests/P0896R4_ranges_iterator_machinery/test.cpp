@@ -1028,7 +1028,7 @@ namespace iterator_cust_move_test {
     using std::iter_rvalue_reference_t, std::same_as;
 
     template <class T>
-    concept can_iter_move = requires(T&& t) { ranges::iter_move(std::forward<T>(t)); };
+    concept can_iter_move = requires(T&& t) { ranges::_Woof_iter_move(std::forward<T>(t)); };
     template <class T>
     concept can_iter_rvalue_ref = requires { typename iter_rvalue_reference_t<T>; };
 
@@ -1039,38 +1039,38 @@ namespace iterator_cust_move_test {
             return 3.14;
         }
     };
-    static_assert(same_as<decltype(ranges::iter_move(friend_hook{})), double>);
+    static_assert(same_as<decltype(ranges::_Woof_iter_move(friend_hook{})), double>);
     static_assert(!can_iter_rvalue_ref<friend_hook>);
-    static_assert(ranges::iter_move(friend_hook{}) == 3.14);
-    static_assert(noexcept(ranges::iter_move(friend_hook{})));
+    static_assert(ranges::_Woof_iter_move(friend_hook{}) == 3.14);
+    static_assert(noexcept(ranges::_Woof_iter_move(friend_hook{})));
 
     struct non_member_hook {};
     constexpr bool iter_move(non_member_hook) noexcept {
         return false;
     }
-    static_assert(same_as<decltype(ranges::iter_move(non_member_hook{})), bool>);
+    static_assert(same_as<decltype(ranges::_Woof_iter_move(non_member_hook{})), bool>);
     static_assert(!can_iter_rvalue_ref<non_member_hook>);
-    static_assert(ranges::iter_move(non_member_hook{}) == false);
-    static_assert(noexcept(ranges::iter_move(non_member_hook{})));
+    static_assert(ranges::_Woof_iter_move(non_member_hook{}) == false);
+    static_assert(noexcept(ranges::_Woof_iter_move(non_member_hook{})));
 
     enum class E1 { x };
     constexpr E1 iter_move(E1) noexcept {
         return E1::x;
     }
-    static_assert(same_as<decltype(ranges::iter_move(E1::x)), E1>);
+    static_assert(same_as<decltype(ranges::_Woof_iter_move(E1::x)), E1>);
     static_assert(!can_iter_rvalue_ref<E1>);
-    static_assert(static_cast<int>(ranges::iter_move(E1::x)) == 0);
-    static_assert(noexcept(ranges::iter_move(E1::x)));
+    static_assert(static_cast<int>(ranges::_Woof_iter_move(E1::x)) == 0);
+    static_assert(noexcept(ranges::_Woof_iter_move(E1::x)));
 
     // N4928 [iterator.cust.move]/1.2.1 "if *E is an lvalue, std::move(*E)"
     static constexpr int some_ints[] = {0, 1, 2, 3};
     static_assert(same_as<iter_rvalue_reference_t<int*>, int&&>);
-    static_assert(ranges::iter_move(&some_ints[1]) == 1);
-    static_assert(noexcept(ranges::iter_move(&some_ints[1])));
+    static_assert(ranges::_Woof_iter_move(&some_ints[1]) == 1);
+    static_assert(noexcept(ranges::_Woof_iter_move(&some_ints[1])));
 
     static_assert(same_as<iter_rvalue_reference_t<int const*>, int const&&>);
-    static_assert(ranges::iter_move(static_cast<int const*>(&some_ints[2])) == 2);
-    static_assert(noexcept(ranges::iter_move(static_cast<int const*>(&some_ints[2]))));
+    static_assert(ranges::_Woof_iter_move(static_cast<int const*>(&some_ints[2])) == 2);
+    static_assert(noexcept(ranges::_Woof_iter_move(static_cast<int const*>(&some_ints[2]))));
 
     static_assert(same_as<iter_rvalue_reference_t<int[]>, int&&>);
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1008447
@@ -1080,8 +1080,8 @@ namespace iterator_cust_move_test {
 #endif // ^^^ workaround ^^^
 
     static_assert(same_as<iter_rvalue_reference_t<int[4]>, int&&>);
-    static_assert(ranges::iter_move(some_ints) == 0);
-    static_assert(noexcept(ranges::iter_move(some_ints)));
+    static_assert(ranges::_Woof_iter_move(some_ints) == 0);
+    static_assert(noexcept(ranges::_Woof_iter_move(some_ints)));
 
     constexpr int f(int i) noexcept {
         return i + 1;
@@ -1091,8 +1091,8 @@ namespace iterator_cust_move_test {
 #else // ^^^ no workaround / workaround vvv
     static_assert(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&&)(int)>);
 #endif // ^^^ workaround ^^^
-    static_assert(ranges::iter_move(&f)(42) == 43);
-    static_assert(noexcept(ranges::iter_move(&f)));
+    static_assert(ranges::_Woof_iter_move(&f)(42) == 43);
+    static_assert(noexcept(ranges::_Woof_iter_move(&f)));
 
     struct ref_is_lvalue {
         constexpr int const& operator*() const {
@@ -1100,14 +1100,14 @@ namespace iterator_cust_move_test {
         }
     };
     static_assert(same_as<iter_rvalue_reference_t<ref_is_lvalue>, int const&&>);
-    static_assert(ranges::iter_move(ref_is_lvalue{}) == 1);
+    static_assert(ranges::_Woof_iter_move(ref_is_lvalue{}) == 1);
 
     struct with_bogus_typedefs : ref_is_lvalue {
         using value_type = void;
         using reference  = void;
     };
     static_assert(same_as<iter_rvalue_reference_t<with_bogus_typedefs>, int const&&>); // oblivious to nested types
-    static_assert(ranges::iter_move(with_bogus_typedefs{}) == 1);
+    static_assert(ranges::_Woof_iter_move(with_bogus_typedefs{}) == 1);
 
     // N4928 [iterator.cust.move]/1.2.2 "otherwise, *E."
     struct ref_is_prvalue {
@@ -1121,9 +1121,9 @@ namespace iterator_cust_move_test {
         int&& operator*() const;
     };
     static_assert(same_as<iter_rvalue_reference_t<ref_is_xvalue>, int&&>);
-    static_assert(!noexcept(ranges::iter_move(ref_is_xvalue{})));
+    static_assert(!noexcept(ranges::_Woof_iter_move(ref_is_xvalue{})));
 
-    // N4928 [iterator.cust.move]/1.3 "Otherwise, ranges::iter_move(E) is ill-formed."
+    // N4928 [iterator.cust.move]/1.3 "Otherwise, ranges::_Woof_iter_move(E) is ill-formed."
     static_assert(!can_iter_move<int>);
     static_assert(!can_iter_move<void>);
     static_assert(!can_iter_move<int(int) const>);
@@ -1138,7 +1138,7 @@ namespace iterator_cust_swap_test {
         std::same_as, std::swappable_with;
 
     template <class T, class U>
-    concept can_iter_swap = requires(T&& t, U&& u) { ranges::iter_swap(std::forward<T>(t), std::forward<U>(u)); };
+    concept can_iter_swap = requires(T&& t, U&& u) { ranges::_Meow_iter_swap(std::forward<T>(t), std::forward<U>(u)); };
 
     // N4928 [iterator.cust.swap]/4.1: "(void)iter_swap(E1, E2), if [...] iter_swap(E1, E2) is a
     // well-formed expression with overload resolution performed in a context [...]"
@@ -1157,23 +1157,23 @@ namespace iterator_cust_swap_test {
         }
     };
     static_assert(bullet1<friend_hook>);
-    static_assert(same_as<decltype(ranges::iter_swap(friend_hook{}, friend_hook{})), void>);
-    static_assert((ranges::iter_swap(friend_hook{}, friend_hook{}), true));
-    static_assert(noexcept(ranges::iter_swap(friend_hook{}, friend_hook{})));
+    static_assert(same_as<decltype(ranges::_Meow_iter_swap(friend_hook{}, friend_hook{})), void>);
+    static_assert((ranges::_Meow_iter_swap(friend_hook{}, friend_hook{}), true));
+    static_assert(noexcept(ranges::_Meow_iter_swap(friend_hook{}, friend_hook{})));
 
     struct non_member_hook {};
     constexpr char iter_swap(non_member_hook, non_member_hook) noexcept {
         return 'x';
     }
     static_assert(bullet1<non_member_hook>);
-    static_assert(same_as<decltype(ranges::iter_swap(non_member_hook{}, non_member_hook{})), void>);
-    static_assert((ranges::iter_swap(non_member_hook{}, non_member_hook{}), true));
-    static_assert(noexcept(ranges::iter_swap(non_member_hook{}, non_member_hook{})));
+    static_assert(same_as<decltype(ranges::_Meow_iter_swap(non_member_hook{}, non_member_hook{})), void>);
+    static_assert((ranges::_Meow_iter_swap(non_member_hook{}, non_member_hook{}), true));
+    static_assert(noexcept(ranges::_Meow_iter_swap(non_member_hook{}, non_member_hook{})));
 
     enum class E1 { x };
     constexpr void iter_swap(E1, E1) {}
     static_assert(bullet1<E1>);
-    static_assert((ranges::iter_swap(E1::x, E1::x), true));
+    static_assert((ranges::_Meow_iter_swap(E1::x, E1::x), true));
 
     // N4928 [iterator.cust.swap]/4.2: "Otherwise, if the types of E1 and E2 each model indirectly_readable,
     // and if the reference types of E1 and E2 model swappable_with, then ranges::swap(*E1, *E2)."
@@ -1187,11 +1187,11 @@ namespace iterator_cust_swap_test {
         static_assert(bullet2<int*>);
 
         int i0 = 42, i1 = 13;
-        static_assert(same_as<decltype(ranges::iter_swap(&i0, &i1)), void>);
-        ranges::iter_swap(&i0, &i1);
+        static_assert(same_as<decltype(ranges::_Meow_iter_swap(&i0, &i1)), void>);
+        ranges::_Meow_iter_swap(&i0, &i1);
         assert(i0 == 13);
         assert(i1 == 42);
-        static_assert(noexcept(ranges::iter_swap(&i0, &i1)));
+        static_assert(noexcept(ranges::_Meow_iter_swap(&i0, &i1)));
         return true;
     }
     static_assert(test());
@@ -1221,9 +1221,9 @@ struct std::common_type<iterator_cust_swap_test::swap_proxy_ref<X>, iterator_cus
 
 namespace iterator_cust_swap_test {
     static_assert(bullet2<swap_proxy_readable<0>, swap_proxy_readable<1>>);
-    static_assert(same_as<decltype(ranges::iter_swap(swap_proxy_readable<0>{}, swap_proxy_readable<1>{})), void>);
-    static_assert((ranges::iter_swap(swap_proxy_readable<0>{}, swap_proxy_readable<1>{}), true));
-    static_assert(noexcept(ranges::iter_swap(swap_proxy_readable<0>{}, swap_proxy_readable<1>{})));
+    static_assert(same_as<decltype(ranges::_Meow_iter_swap(swap_proxy_readable<0>{}, swap_proxy_readable<1>{})), void>);
+    static_assert((ranges::_Meow_iter_swap(swap_proxy_readable<0>{}, swap_proxy_readable<1>{}), true));
+    static_assert(noexcept(ranges::_Meow_iter_swap(swap_proxy_readable<0>{}, swap_proxy_readable<1>{})));
 
     // N4928 [iterator.cust.swap]/4.3: "Otherwise, if the types T1 and T2 of E1 and E2 model
     // indirectly_movable_storable<T1, T2> and indirectly_movable_storable<T2, T1>..."
@@ -1246,10 +1246,11 @@ namespace iterator_cust_swap_test {
         friend int&& iter_move(unswap_proxy_readable) noexcept;
     };
     static_assert(bullet3<unswap_proxy_readable<0>, unswap_proxy_readable<1>>);
-    static_assert(same_as<decltype(ranges::iter_swap(unswap_proxy_readable<0>{}, unswap_proxy_readable<1>{})), void>);
-    static_assert(noexcept(ranges::iter_swap(unswap_proxy_readable<0>{}, unswap_proxy_readable<1>{})));
+    static_assert(
+        same_as<decltype(ranges::_Meow_iter_swap(unswap_proxy_readable<0>{}, unswap_proxy_readable<1>{})), void>);
+    static_assert(noexcept(ranges::_Meow_iter_swap(unswap_proxy_readable<0>{}, unswap_proxy_readable<1>{})));
 
-    // N4928 [iterator.cust.swap]/4.4: "Otherwise, ranges::iter_swap(E1, E2) is ill-formed."
+    // N4928 [iterator.cust.swap]/4.4: "Otherwise, ranges::_Meow_iter_swap(E1, E2) is ill-formed."
     template <class T, class U>
     concept bullet4 = !can_iter_swap<T, U>;
 
@@ -1287,16 +1288,17 @@ namespace iterator_cust_swap_test {
                 int i1 = 13;
                 S s0{i0};
                 S s1{i1};
-                ranges::iter_swap(s0, s1);
+                ranges::_Meow_iter_swap(s0, s1);
                 assert(i0 == 13);
                 assert(i1 == 42);
             }
 
             {
-                // Validate iter_swap bullet 3 to defend against regression of GH-1067 "ranges::iter_swap is broken"
+                // Validate iter_swap bullet 3 to defend against regression of GH-1067 "ranges::_Meow_iter_swap is
+                // broken"
                 int i  = 42;
                 long l = 13;
-                ranges::iter_swap(&i, &l);
+                ranges::_Meow_iter_swap(&i, &l);
                 assert(i == 13);
                 assert(l == 42);
             }
@@ -3249,11 +3251,11 @@ namespace reverse_iterator_test {
         // Validate iter_move
         int count = 0;
         reverse_iterator i{proxy_iterator<0>{&count}};
-        assert(ranges::iter_move(i) == 42);
+        assert(ranges::_Woof_iter_move(i) == 42);
         assert(count == 1);
 
         // Validate iter_swap
-        ranges::iter_swap(i, reverse_iterator{proxy_iterator<2>{&count}});
+        ranges::_Meow_iter_swap(i, reverse_iterator{proxy_iterator<2>{&count}});
         assert(count == -1);
 
         // Validate <=>
@@ -3497,7 +3499,7 @@ namespace move_iterator_test {
         // Validate iter_move
         int count = 0;
         move_iterator i{proxy_iterator<0>{&count}};
-        assert(ranges::iter_move(i) == 42);
+        assert(ranges::_Woof_iter_move(i) == 42);
         assert(count == 1);
 
         // Validate that operator* and operator[] call iter_move
@@ -3507,7 +3509,7 @@ namespace move_iterator_test {
         assert(count == 3);
 
         // Validate iter_swap
-        ranges::iter_swap(i, move_iterator{proxy_iterator<2>{&count}});
+        ranges::_Meow_iter_swap(i, move_iterator{proxy_iterator<2>{&count}});
         assert(count == 1);
 
         // Validate <=>

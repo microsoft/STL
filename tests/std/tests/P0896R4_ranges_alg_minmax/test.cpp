@@ -376,7 +376,7 @@ public:
     explicit input_move_iterator(shared_ptr<int>* ptr) : m_ptr(ptr) {}
 
     reference operator*() const {
-        return ranges::iter_move(m_ptr);
+        return ranges::_Woof_iter_move(m_ptr);
     }
     pointer operator->() const {
         return m_ptr;
