@@ -398,9 +398,10 @@ protected:
     }
 
     _Hash(_Hash&& _Right)
-        : _Traitsobj(_Right._Traitsobj), _List(_STD move(_Right._List)),
+        : _Traitsobj(_Right._Traitsobj), _List(_Right._List._Getal()),
           _Vec(_STD move(_Right._Vec._Mypair._Get_first())) {
-        _Vec._Assign_grow(_Min_buckets * 2, _Right._Unchecked_end());
+        _Vec._Assign_grow(_Min_buckets * 2, _Unchecked_end());
+        _List._Swap_val(_Right._List);
         _Vec._Mypair._Myval2._Swap_val(_Right._Vec._Mypair._Myval2);
         _Mask   = _STD exchange(_Right._Mask, _Min_buckets - 1);
         _Maxidx = _STD exchange(_Right._Maxidx, _Min_buckets);
