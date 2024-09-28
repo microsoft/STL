@@ -3651,16 +3651,18 @@ namespace {
     };
 
     template <size_t _Size_v, size_t _Size_h>
-    constexpr auto _Make_remove_patterns_1_4(const uint8_t _Mul) {
+    constexpr auto _Make_remove_patterns(const unsigned _Mul, const unsigned _Ew) {
         _Remove_patterns_t<_Size_v, _Size_h> _Result;
 
         for (unsigned _Vx = 0; _Vx != _Size_v; ++_Vx) {
             unsigned _Nx = 0;
 
             // Compact the source according to bitmap
-            for (unsigned _Hx = 0; _Hx != _Size_h; ++_Hx) {
+            for (unsigned _Hx = 0; _Hx != _Size_h / _Ew; ++_Hx) {
                 if ((_Vx & (1 << _Hx)) == 0) {
-                    _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Hx);
+                    for (unsigned _Ex = 0; _Ex != _Ew; ++_Ex) {
+                        _Result._Data[_Vx][_Nx * _Ew + _Ex] = static_cast<uint8_t>(_Hx * _Ew + _Ex);
+                    }
                     ++_Nx;
                 }
             }
@@ -3668,48 +3670,20 @@ namespace {
             _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * _Mul);
 
             // Fill the remaining as if not touched
-            for (; _Nx != _Size_h; ++_Nx) {
-                _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Nx);
-            }
-        }
-
-        return _Result;
-    }
-
-    template <size_t _Size_v, size_t _Size_h>
-    constexpr auto _Make_remove_patterns_2_8(const uint8_t _Mul) {
-        _Remove_patterns_t<_Size_v, _Size_h> _Result;
-
-        for (unsigned _Vx = 0; _Vx != _Size_v; ++_Vx) {
-            unsigned _Nx = 0;
-
-            // Compact the source according to bitmap
-            for (unsigned _Hx = 0; _Hx != _Size_h / 2; ++_Hx) {
-                if ((_Vx & (1 << _Hx)) == 0) {
-                    _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Hx * 2 + 0);
-                    _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Hx * 2 + 1);
-                    ++_Nx;
+            for (; _Nx != _Size_h / _Ew; ++_Nx) {
+                for (unsigned _Ex = 0; _Ex != _Ew; ++_Ex) {
+                    _Result._Data[_Vx][_Nx * _Ew + _Ex] = static_cast<uint8_t>(_Nx * _Ew + _Ex);
                 }
             }
-
-            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * _Mul);
-
-            // Fill the remaining as if not touched
-            for (; _Nx != _Size_h / 2; ++_Nx) {
-                _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Nx * 2 + 0);
-                _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Nx * 2 + 1);
-            }
         }
 
         return _Result;
     }
 
-    constexpr auto _Remove_patterns_1 = _Make_remove_patterns_1_4<256, 8>(1);
-    constexpr auto _Remove_patterns_2 = _Make_remove_patterns_2_8<256, 16>(2);
-    constexpr auto _Remove_patterns_4 = _Make_remove_patterns_1_4<256, 8>(4);
-    constexpr auto _Remove_patterns_8 = _Make_remove_patterns_2_8<16, 8>(8);
-
-
+    constexpr auto _Remove_patterns_1 = _Make_remove_patterns<256, 8>(1, 1);
+    constexpr auto _Remove_patterns_2 = _Make_remove_patterns<256, 16>(2, 2);
+    constexpr auto _Remove_patterns_4 = _Make_remove_patterns<256, 8>(4, 1);
+    constexpr auto _Remove_patterns_8 = _Make_remove_patterns<16, 8>(8, 2);
 } // unnamed namespace
 
 extern "C" {
