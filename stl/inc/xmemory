@@ -2237,8 +2237,8 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
                     return _Last;
                 }
 
-                const auto _First_ptr = _To_address(_UFirst);
-                const auto _Result    = _STD _Remove_vectorized(_First_ptr, _To_address(_ULast), _Val);
+                const auto _First_ptr = _STD _To_address(_UFirst);
+                const auto _Result    = _STD _Remove_vectorized(_First_ptr, _STD _To_address(_ULast), _Val);
 
                 if constexpr (is_pointer_v<decltype(_UNext)>) {
                     _UNext = static_cast<decltype(_UNext)>(_Result);

@@ -4526,7 +4526,7 @@ namespace ranges {
                     if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
                         return {_First + _Size, _First + _Size};
                     }
-                    const auto _First_ptr = _To_address(_First);
+                    const auto _First_ptr = _STD _To_address(_First);
                     const auto _Last_ptr  = _First_ptr + static_cast<size_t>(_Size);
                     const auto _Result    = _STD _Remove_vectorized(_First_ptr, _Last_ptr, _Val);
 
