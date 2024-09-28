@@ -25,6 +25,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 _STD_BEGIN
 template <class _Ptrty>
 _NODISCARD constexpr auto _Unfancy(_Ptrty _Ptr) noexcept { // converts from a fancy pointer to a plain pointer
@@ -2592,8 +2596,8 @@ namespace ranges {
     _EXPORT_STD template <range _Rng, class _Alloc>
 #endif // ^^^ !defined(__cpp_lib_byte) ^^^
     struct elements_of {
-        /* [[no_unique_address]] */ _Rng range;
-        /* [[no_unique_address]] */ _Alloc allocator{};
+        _MSVC_NO_UNIQUE_ADDRESS _Rng range;
+        _MSVC_NO_UNIQUE_ADDRESS _Alloc allocator{};
     };
 
 #if defined(__cpp_lib_byte)
@@ -2656,6 +2660,9 @@ _STD_END
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
 #define _LIST_REMOVE_RETURN void
 #endif // ^^^ !_HAS_CXX20 ^^^
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
