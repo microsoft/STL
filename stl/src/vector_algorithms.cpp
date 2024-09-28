@@ -1837,7 +1837,9 @@ namespace {
                             unsigned long _H_pos;
 
                             // Find the smallest horizontal index
-                            _BitScanForward(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
+
+                            // CodeQL [SM02313] _H_pos is always initialized: element exists, so _Mask is non-zero.
+                            _BitScanForward(&_H_pos, _Mask);
 
                             const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_min, _H_pos); // Extract its vertical index
                             // Finally, compute the pointer
@@ -1869,7 +1871,9 @@ namespace {
                                 _Mask &= _Traits::_Mask(_Traits::_Cmp_eq_idx(_Idx_max, _Idx_max_val));
 
                                 // Find the largest horizontal index
-                                _BitScanReverse(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
+
+                                // CodeQL [SM02313] _H_pos is always initialized: element exists, so _Mask is non-zero.
+                                _BitScanReverse(&_H_pos, _Mask);
 
                                 _H_pos -= sizeof(_Cur_max_val) - 1; // Correct from highest val bit to lowest
                             } else {
@@ -1882,7 +1886,9 @@ namespace {
                                 _Mask &= _Traits::_Mask(_Traits::_Cmp_eq_idx(_Idx_max, _Idx_max_val));
 
                                 // Find the smallest horizontal index
-                                _BitScanForward(&_H_pos, _Mask); // lgtm [cpp/conditionallyuninitializedvariable]
+
+                                // CodeQL [SM02313] _H_pos is always initialized: element exists, so _Mask is non-zero.
+                                _BitScanForward(&_H_pos, _Mask);
                             }
 
                             const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_max, _H_pos); // Extract its vertical index
@@ -2495,7 +2501,8 @@ namespace {
 
                 if (_Bingo != 0) {
                     unsigned long _Offset;
-                    _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
+                    // CodeQL [SM02313] _Offset is always initialized: we just tested `if (_Bingo != 0)`.
+                    _BitScanForward(&_Offset, _Bingo);
                     _Advance_bytes(_First, _Offset);
                     return _First;
                 }
@@ -2565,7 +2572,8 @@ namespace {
 
                 if (_Bingo != 0) {
                     unsigned long _Offset;
-                    _BitScanReverse(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
+                    // CodeQL [SM02313] _Offset is always initialized: we just tested `if (_Bingo != 0)`.
+                    _BitScanReverse(&_Offset, _Bingo);
                     _Advance_bytes(_Last, _Offset - (sizeof(_Ty) - 1));
                     return _Last;
                 }
@@ -3242,7 +3250,8 @@ namespace {
                     static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Elem1, _Elem2))) ^ 0xFFFF;
                 if (_Bingo != 0) {
                     unsigned long _Offset;
-                    _BitScanForward(&_Offset, _Bingo); // lgtm [cpp/conditionallyuninitializedvariable]
+                    // CodeQL [SM02313] _Offset is always initialized: we just tested `if (_Bingo != 0)`.
+                    _BitScanForward(&_Offset, _Bingo);
                     return (_Result + _Offset) / sizeof(_Ty);
                 }
             }
