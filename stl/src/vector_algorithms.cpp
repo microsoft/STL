@@ -3644,15 +3644,15 @@ namespace {
         return _Dest;
     }
 
-    struct _Remove_patterns_1_2_t {
-        using _Byte_shuffle = uint8_t[16];
+    struct _Remove_patterns_1_t {
+        using _Byte_shuffle = uint8_t[8];
 
         _Byte_shuffle _Data[256];
         uint8_t _Count[256];
     };
 
-    constexpr _Remove_patterns_1_2_t _Make_remove_patterns_1() {
-        _Remove_patterns_1_2_t _Result;
+    constexpr _Remove_patterns_1_t _Make_remove_patterns_1() {
+        _Remove_patterns_1_t _Result;
 
         for (unsigned _Vx = 0; _Vx != 256; ++_Vx) {
             unsigned _Nx = 0;
@@ -3671,11 +3671,6 @@ namespace {
             for (; _Nx != 8; ++_Nx) {
                 _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Nx);
             }
-
-            // Unused high part, fill with 0xFF for cernainity
-            for (; _Nx != 16; ++_Nx) {
-                _Result._Data[_Vx][_Nx] = 0xFF;
-            }
         }
 
         return _Result;
@@ -3683,8 +3678,15 @@ namespace {
 
     constexpr auto _Remove_patterns_1 = _Make_remove_patterns_1();
 
-    constexpr _Remove_patterns_1_2_t _Make_remove_patterns_2() {
-        _Remove_patterns_1_2_t _Result;
+    struct _Remove_patterns_2_t {
+        using _Byte_shuffle = uint8_t[16];
+
+        _Byte_shuffle _Data[256];
+        uint8_t _Count[256];
+    };
+
+    constexpr _Remove_patterns_2_t _Make_remove_patterns_2() {
+        _Remove_patterns_2_t _Result;
 
         for (unsigned _Vx = 0; _Vx != 256; ++_Vx) {
             unsigned _Nx = 0;
@@ -3799,7 +3801,7 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
         do {
             const __m128i _Src    = _mm_loadu_si64(_First);
             const unsigned _Bingo = _mm_movemask_epi8(_mm_cmpeq_epi8(_Src, _Match)) & 0xFF;
-            const __m128i _Shuf   = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_patterns_1._Data[_Bingo]));
+            const __m128i _Shuf   = _mm_loadu_si64(_Remove_patterns_1._Data[_Bingo]);
             const __m128i _Dest   = _mm_shuffle_epi8(_Src, _Shuf);
             _mm_storeu_si64(_Out, _Dest);
             _Advance_bytes(_Out, _Remove_patterns_1._Count[_Bingo]);
