@@ -3645,9 +3645,7 @@ namespace {
     }
 
     struct _Remove_patterns_1_t {
-        using _Byte_shuffle = uint8_t[8];
-
-        _Byte_shuffle _Data[256];
+        uint8_t _Data[256][8];
         uint8_t _Count[256];
     };
 
@@ -3679,9 +3677,7 @@ namespace {
     constexpr auto _Remove_patterns_1 = _Make_remove_patterns_1();
 
     struct _Remove_patterns_2_t {
-        using _Byte_shuffle = uint8_t[16];
-
-        _Byte_shuffle _Data[256];
+        uint8_t _Data[256][16];
         uint8_t _Count[256];
     };
 
@@ -3715,9 +3711,7 @@ namespace {
     constexpr auto _Remove_patterns_2 = _Make_remove_patterns_2();
 
     struct _Remove_patterns_4_t {
-        using _Int_shuffle = uint32_t[8];
-
-        _Int_shuffle _Data[256];
+        uint8_t _Data[256][8];
         uint8_t _Count[256];
     };
 
@@ -3730,7 +3724,7 @@ namespace {
             // Compact the source according to bitmap
             for (unsigned _Hx = 0; _Hx != 8; ++_Hx) {
                 if ((_Vx & (1 << _Hx)) == 0) {
-                    _Result._Data[_Vx][_Nx] = _Hx;
+                    _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Hx);
                     ++_Nx;
                 }
             }
@@ -3739,7 +3733,7 @@ namespace {
 
             // Fill the remaining as if not touched
             for (; _Nx != 8; ++_Nx) {
-                _Result._Data[_Vx][_Nx] = _Nx;
+                _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Nx);
             }
         }
 
@@ -3749,9 +3743,7 @@ namespace {
     constexpr auto _Remove_patterns_4 = _Make_remove_patterns_4();
 
     struct _Remove_patterns_8_t {
-        using _Int_shuffle = uint32_t[8];
-
-        _Int_shuffle _Data[16];
+        uint8_t _Data[16][8];
         uint8_t _Count[16];
     };
 
@@ -3764,8 +3756,8 @@ namespace {
             // Compact the source according to bitmap
             for (unsigned _Hx = 0; _Hx != 4; ++_Hx) {
                 if ((_Vx & (1 << _Hx)) == 0) {
-                    _Result._Data[_Vx][_Nx * 2 + 0] = _Hx * 2 + 0;
-                    _Result._Data[_Vx][_Nx * 2 + 1] = _Hx * 2 + 1;
+                    _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Hx * 2 + 0);
+                    _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Hx * 2 + 1);
                     ++_Nx;
                 }
             }
@@ -3774,8 +3766,8 @@ namespace {
 
             // Fill the remaining as if not touched
             for (; _Nx != 4; ++_Nx) {
-                _Result._Data[_Vx][_Nx * 2 + 0] = _Nx * 2 + 0;
-                _Result._Data[_Vx][_Nx * 2 + 1] = _Nx * 2 + 1;
+                _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Nx * 2 + 0);
+                _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Nx * 2 + 1);
             }
         }
 
@@ -3856,9 +3848,8 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
             const __m256i _Mask           = _mm256_cmpeq_epi32(_Src, _Match);
             const unsigned _Bingo_swapped = _rotl(_mm256_movemask_epi8(_mm256_shuffle_epi8(_Mask, _Dense_shuf)), 4);
             const unsigned _Bingo         = _rotl8(static_cast<uint8_t>(_Bingo_swapped), 4);
-            const __m256i _Shuf =
-                _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Remove_patterns_4._Data[_Bingo]));
-            const __m256i _Dest = _mm256_permutevar8x32_epi32(_Src, _Shuf);
+            const __m256i _Shuf           = _mm256_cvtepi8_epi32(_mm_loadu_si64(_Remove_patterns_4._Data[_Bingo]));
+            const __m256i _Dest           = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
             _Advance_bytes(_Out, _Remove_patterns_4._Count[_Bingo]);
             _Advance_bytes(_First, 32);
@@ -3887,9 +3878,8 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
             const __m256i _Mask           = _mm256_cmpeq_epi32(_Src, _Match);
             const unsigned _Bingo_swapped = _mm256_movemask_epi8(_mm256_shuffle_epi8(_Mask, _Dense_shuf));
             const unsigned _Bingo         = (_Bingo_swapped | (_Bingo_swapped >> 28)) & 0xF;
-            const __m256i _Shuf =
-                _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Remove_patterns_8._Data[_Bingo]));
-            const __m256i _Dest = _mm256_permutevar8x32_epi32(_Src, _Shuf);
+            const __m256i _Shuf           = _mm256_cvtepi8_epi32(_mm_loadu_si64(_Remove_patterns_8._Data[_Bingo]));
+            const __m256i _Dest           = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
             _Advance_bytes(_Out, _Remove_patterns_8._Count[_Bingo]);
             _Advance_bytes(_First, 32);
