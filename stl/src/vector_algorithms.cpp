@@ -3644,29 +3644,31 @@ namespace {
         return _Dest;
     }
 
-    struct _Remove_patterns_1_t {
-        uint8_t _Data[256][8];
-        uint8_t _Count[256];
+    template <size_t _Size_v, size_t _Size_h>
+    struct _Remove_patterns_t {
+        uint8_t _Data[_Size_v][_Size_h];
+        uint8_t _Count[_Size_v];
     };
 
-    constexpr _Remove_patterns_1_t _Make_remove_patterns_1() {
-        _Remove_patterns_1_t _Result;
+    template <size_t _Size_v, size_t _Size_h>
+    constexpr auto _Make_remove_patterns_1_4(const uint8_t _Mul) {
+        _Remove_patterns_t<_Size_v, _Size_h> _Result;
 
-        for (unsigned _Vx = 0; _Vx != 256; ++_Vx) {
+        for (unsigned _Vx = 0; _Vx != _Size_v; ++_Vx) {
             unsigned _Nx = 0;
 
             // Compact the source according to bitmap
-            for (unsigned _Hx = 0; _Hx != 8; ++_Hx) {
+            for (unsigned _Hx = 0; _Hx != _Size_h; ++_Hx) {
                 if ((_Vx & (1 << _Hx)) == 0) {
                     _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Hx);
                     ++_Nx;
                 }
             }
 
-            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx);
+            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * _Mul);
 
             // Fill the remaining as if not touched
-            for (; _Nx != 8; ++_Nx) {
+            for (; _Nx != _Size_h; ++_Nx) {
                 _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Nx);
             }
         }
@@ -3674,107 +3676,56 @@ namespace {
         return _Result;
     }
 
-    constexpr auto _Remove_patterns_1 = _Make_remove_patterns_1();
+    template <size_t _Size_v, size_t _Size_h>
+    constexpr auto _Make_remove_patterns_2_8(const uint8_t _Mul) {
+        _Remove_patterns_t<_Size_v, _Size_h> _Result;
+
+        for (unsigned _Vx = 0; _Vx != _Size_v; ++_Vx) {
+            unsigned _Nx = 0;
+
+            // Compact the source according to bitmap
+            for (unsigned _Hx = 0; _Hx != _Size_h / 2; ++_Hx) {
+                if ((_Vx & (1 << _Hx)) == 0) {
+                    _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Hx * 2 + 0);
+                    _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Hx * 2 + 1);
+                    ++_Nx;
+                }
+            }
+
+            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * _Mul);
+
+            // Fill the remaining as if not touched
+            for (; _Nx != _Size_h / 2; ++_Nx) {
+                _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Nx * 2 + 0);
+                _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Nx * 2 + 1);
+            }
+        }
+
+        return _Result;
+    }
+
+    constexpr auto _Remove_patterns_1 = _Make_remove_patterns_1_4<256, 8>(1);
 
     struct _Remove_patterns_2_t {
         uint8_t _Data[256][16];
         uint8_t _Count[256];
     };
 
-    constexpr _Remove_patterns_2_t _Make_remove_patterns_2() {
-        _Remove_patterns_2_t _Result;
-
-        for (unsigned _Vx = 0; _Vx != 256; ++_Vx) {
-            unsigned _Nx = 0;
-
-            // Compact the source according to bitmap
-            for (unsigned _Hx = 0; _Hx != 8; ++_Hx) {
-                if ((_Vx & (1 << _Hx)) == 0) {
-                    _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Hx * 2 + 0);
-                    _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Hx * 2 + 1);
-                    ++_Nx;
-                }
-            }
-
-            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * 2);
-
-            // Fill the remaining as if not touched
-            for (; _Nx != 8; ++_Nx) {
-                _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Nx * 2 + 0);
-                _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Nx * 2 + 1);
-            }
-        }
-
-        return _Result;
-    }
-
-    constexpr auto _Remove_patterns_2 = _Make_remove_patterns_2();
+    constexpr auto _Remove_patterns_2 = _Make_remove_patterns_2_8<256, 16>(2);
 
     struct _Remove_patterns_4_t {
         uint8_t _Data[256][8];
         uint8_t _Count[256];
     };
 
-    constexpr _Remove_patterns_4_t _Make_remove_patterns_4() {
-        _Remove_patterns_4_t _Result;
-
-        for (unsigned _Vx = 0; _Vx != 256; ++_Vx) {
-            unsigned _Nx = 0;
-
-            // Compact the source according to bitmap
-            for (unsigned _Hx = 0; _Hx != 8; ++_Hx) {
-                if ((_Vx & (1 << _Hx)) == 0) {
-                    _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Hx);
-                    ++_Nx;
-                }
-            }
-
-            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * 4);
-
-            // Fill the remaining as if not touched
-            for (; _Nx != 8; ++_Nx) {
-                _Result._Data[_Vx][_Nx] = static_cast<uint8_t>(_Nx);
-            }
-        }
-
-        return _Result;
-    }
-
-    constexpr auto _Remove_patterns_4 = _Make_remove_patterns_4();
+    constexpr auto _Remove_patterns_4 = _Make_remove_patterns_1_4<256, 8>(4);
 
     struct _Remove_patterns_8_t {
         uint8_t _Data[16][8];
         uint8_t _Count[16];
     };
 
-    constexpr _Remove_patterns_8_t _Make_remove_patterns_8() {
-        _Remove_patterns_8_t _Result;
-
-        for (unsigned _Vx = 0; _Vx != 16; ++_Vx) {
-            unsigned _Nx = 0;
-
-            // Compact the source according to bitmap
-            for (unsigned _Hx = 0; _Hx != 4; ++_Hx) {
-                if ((_Vx & (1 << _Hx)) == 0) {
-                    _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Hx * 2 + 0);
-                    _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Hx * 2 + 1);
-                    ++_Nx;
-                }
-            }
-
-            _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * 8);
-
-            // Fill the remaining as if not touched
-            for (; _Nx != 4; ++_Nx) {
-                _Result._Data[_Vx][_Nx * 2 + 0] = static_cast<uint8_t>(_Nx * 2 + 0);
-                _Result._Data[_Vx][_Nx * 2 + 1] = static_cast<uint8_t>(_Nx * 2 + 1);
-            }
-        }
-
-        return _Result;
-    }
-
-    constexpr auto _Remove_patterns_8 = _Make_remove_patterns_8();
+    constexpr auto _Remove_patterns_8 = _Make_remove_patterns_2_8<16, 8>(8);
 
 
 } // unnamed namespace
