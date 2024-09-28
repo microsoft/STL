@@ -148,12 +148,9 @@ public:
 
 template <typename Func>
 nanoseconds time_execution(Func&& f) {
-    // system_clock currently powers mutex waits, so we're using system_clock
-    // rather than high_resolution_clock here for consistency. This should be
-    // fixed with VSO-133414, VSO-166543, VSO-189735.
-    const auto startTime = system_clock::now();
+    const auto startTime = steady_clock::now();
     forward<Func>(f)();
-    return duration_cast<nanoseconds>(system_clock::now() - startTime);
+    return duration_cast<nanoseconds>(steady_clock::now() - startTime);
 }
 
 template <typename Mutex>
@@ -298,7 +295,7 @@ struct mutex_test_fixture {
         // Test acquiring locks successfully
         assert(time_execution([this] { assert(mtx.try_lock_for(24h)); }) < 1h);
         mtx.unlock();
-        assert(time_execution([this] { assert(mtx.try_lock_until(system_clock::now() + 24h)); }) < 1h);
+        assert(time_execution([this] { assert(mtx.try_lock_until(steady_clock::now() + 24h)); }) < 1h);
         mtx.unlock();
         assert(time_execution([this] {
             unique_lock<Mutex> ul(mtx, defer_lock);
@@ -310,18 +307,17 @@ struct mutex_test_fixture {
         }) < 1h);
         assert(time_execution([this] {
             unique_lock<Mutex> ul(mtx, defer_lock);
-            assert(ul.try_lock_until(system_clock::now() + 24h));
+            assert(ul.try_lock_until(steady_clock::now() + 24h));
         }) < 1h);
         assert(time_execution([this] {
-            unique_lock<Mutex> ul(mtx, system_clock::now() + 24h);
+            unique_lock<Mutex> ul(mtx, steady_clock::now() + 24h);
             assert(ul.owns_lock());
         }) < 1h);
 
-#if 0 // TRANSITION, GH-1472
-      // Test failing to acquire locks on timeout
+        // Test failing to acquire locks on timeout
         ot.lock();
         assert(time_execution([this] { assert(!mtx.try_lock_for(50ms)); }) >= 50ms);
-        assert(time_execution([this] { assert(!mtx.try_lock_until(system_clock::now() + 50ms)); }) >= 50ms);
+        assert(time_execution([this] { assert(!mtx.try_lock_until(steady_clock::now() + 50ms)); }) >= 50ms);
         assert(time_execution([this] {
             unique_lock<Mutex> ul(mtx, defer_lock);
             assert(!ul.try_lock_for(50ms));
@@ -332,14 +328,13 @@ struct mutex_test_fixture {
         }) >= 50ms);
         assert(time_execution([this] {
             unique_lock<Mutex> ul(mtx, defer_lock);
-            assert(!ul.try_lock_until(system_clock::now() + 50ms));
+            assert(!ul.try_lock_until(steady_clock::now() + 50ms));
         }) >= 50ms);
         assert(time_execution([this] {
-            unique_lock<Mutex> ul(mtx, system_clock::now() + 50ms);
+            unique_lock<Mutex> ul(mtx, steady_clock::now() + 50ms);
             assert(!ul.owns_lock());
         }) >= 50ms);
         ot.unlock();
-#endif // TRANSITION, GH-1472
     }
 
     void test_recursive_lockable() {
