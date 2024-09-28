@@ -228,7 +228,9 @@ _STL_INTERNAL_STATIC_ASSERT(_STD size(_Digit_from_byte) == 256);
 
 _NODISCARD _CONSTEXPR23 unsigned char _Digit_from_char(const char _Ch) noexcept {
     // convert ['0', '9'] ['A', 'Z'] ['a', 'z'] to [0, 35], everything else to 255
-    return _Digit_from_byte[static_cast<unsigned char>(_Ch)]; // lgtm [cpp/unclear-array-index-validation]
+
+    // CodeQL [SM01954] This index is valid: we cast to unsigned char and the array has 256 elements.
+    return _Digit_from_byte[static_cast<unsigned char>(_Ch)];
 }
 
 template <class _RawTy>
@@ -456,7 +458,9 @@ _NODISCARD inline uint32_t _Bit_scan_reverse(const _Big_integer_flt& _Xval) noex
     unsigned long _Index; // Intentionally uninitialized for better codegen
 
     _STL_INTERNAL_CHECK(_Xval._Mydata[_Bx] != 0); // _Big_integer_flt should always be trimmed
-    _BitScanReverse(&_Index, _Xval._Mydata[_Bx]); // lgtm [cpp/conditionallyuninitializedvariable]
+
+    // CodeQL [SM02313] _Index is always initialized: we've guaranteed that _Xval._Mydata[_Bx] is non-zero.
+    _BitScanReverse(&_Index, _Xval._Mydata[_Bx]);
 
     return _Index + 1 + _Bx * _Big_integer_flt::_Element_bits;
 }

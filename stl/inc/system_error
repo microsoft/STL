@@ -573,13 +573,14 @@ public:
 
     _NODISCARD string message(int _Errcode) const override {
         const _System_error_message _Msg(static_cast<unsigned long>(_Errcode));
-        if (_Msg._Length == 0) {
+
+        if (_Msg._Str && _Msg._Length != 0) {
+            // CodeQL [SM02310] _Msg's ctor inits _Str(nullptr) before doing work, then we test _Msg._Str above.
+            return string{_Msg._Str, _Msg._Length};
+        } else {
             static constexpr char _Unknown_error[] = "unknown error";
             constexpr size_t _Unknown_error_length = sizeof(_Unknown_error) - 1; // TRANSITION, DevCom-906503
             return string{_Unknown_error, _Unknown_error_length};
-        } else {
-            _STL_INTERNAL_CHECK(_Msg._Str != nullptr);
-            return string{_Msg._Str, _Msg._Length}; // lgtm [cpp/uninitializedptrfield]
         }
     }
 
