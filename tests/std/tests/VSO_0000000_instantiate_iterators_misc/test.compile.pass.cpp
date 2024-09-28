@@ -554,9 +554,13 @@ void future_test() {
     swap_test(pv);
 
     packaged_task<void()> pt([]() {});
+    // GH-321: "<future>: packaged_task can't be constructed from a move-only lambda"
+    packaged_task<void()> pt2([uptr = unique_ptr<int>{}]() { (void) uptr; });
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     packaged_task<void()> pta(allocator_arg, allocator<double>{}, []() {});
+    // GH-321: "<future>: packaged_task can't be constructed from a move-only lambda"
+    packaged_task<void()> pta2(allocator_arg, allocator<double>{}, [uptr = unique_ptr<int>{}]() { (void) uptr; });
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     swap_test(pt);

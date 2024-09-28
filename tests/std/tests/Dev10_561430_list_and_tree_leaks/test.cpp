@@ -164,6 +164,17 @@ int main() {
         assert(f.get() == 1234);
     }
 
+    // Also test GH-321: "<future>: packaged_task can't be constructed from a move-only lambda"
+    {
+        packaged_task<int()> pt(allocator_arg, Mallocator<int>(), [uptr = make_unique<int>(172)] { return *uptr; });
+
+        future<int> f = pt.get_future();
+
+        pt();
+
+        assert(f.get() == 172);
+    }
+
     {
         int n = 4096;
 

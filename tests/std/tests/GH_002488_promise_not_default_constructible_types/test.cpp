@@ -176,6 +176,24 @@ void run_tests() {
 
         assert(f.get().x == 7);
     }
+
+    // Also test GH-321: "<future>: packaged_task can't be constructed from a move-only lambda"
+    {
+        struct MoveOnlyFunctor {
+            MoveOnlyFunctor()                             = default;
+            MoveOnlyFunctor(MoveOnlyFunctor&&)            = default;
+            MoveOnlyFunctor& operator=(MoveOnlyFunctor&&) = default;
+
+            T operator()() const {
+                return T{172};
+            }
+        };
+        std::packaged_task<T()> pt(MoveOnlyFunctor{});
+        Future f = pt.get_future();
+        pt();
+
+        assert(f.get().x == 172);
+    }
 }
 
 int main() {

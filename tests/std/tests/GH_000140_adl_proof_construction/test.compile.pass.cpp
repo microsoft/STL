@@ -122,7 +122,6 @@ void test_function() {
 
 void test_packaged_task() {
     packaged_task<void(validator)>{};
-    packaged_task<void(validator)>{nullptr};
     packaged_task<void(validator)>{simple_identity{}};
     packaged_task<void(validator)>{simple_large_identity{}};
 
