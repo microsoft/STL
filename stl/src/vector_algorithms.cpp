@@ -3705,26 +3705,8 @@ namespace {
     }
 
     constexpr auto _Remove_patterns_1 = _Make_remove_patterns_1_4<256, 8>(1);
-
-    struct _Remove_patterns_2_t {
-        uint8_t _Data[256][16];
-        uint8_t _Count[256];
-    };
-
     constexpr auto _Remove_patterns_2 = _Make_remove_patterns_2_8<256, 16>(2);
-
-    struct _Remove_patterns_4_t {
-        uint8_t _Data[256][8];
-        uint8_t _Count[256];
-    };
-
     constexpr auto _Remove_patterns_4 = _Make_remove_patterns_1_4<256, 8>(4);
-
-    struct _Remove_patterns_8_t {
-        uint8_t _Data[16][8];
-        uint8_t _Count[16];
-    };
-
     constexpr auto _Remove_patterns_8 = _Make_remove_patterns_2_8<16, 8>(8);
 
 
