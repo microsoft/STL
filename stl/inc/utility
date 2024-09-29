@@ -7,6 +7,7 @@
 #define _UTILITY_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <cstring>
 #include <initializer_list>
 #include <type_traits>
 
@@ -110,13 +111,53 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>); // implemented in <algorit
 
 _EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> /* = 0 */>
 _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
-    if (&_Left != &_Right) {
-        _Ty* _First1 = _Left;
-        _Ty* _Last1  = _First1 + _Size;
-        _Ty* _First2 = _Right;
-        for (; _First1 != _Last1; ++_First1, ++_First2) {
-            swap(*_First1, *_First2); // intentional ADL
+    _STL_ASSERT(&_Left != &_Right,
+        "Precondition violation. N4988 [utility.swap]/7: Effects: As if by swap_ranges. "
+        "N4988 [alg.swap]/2: Precondition: The two ranges [first1, last1) and [first2, last2) do not overlap.");
+
+    if constexpr (_Is_trivially_swappable_v<_Ty>) {
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            // Swap arrays using temporary buffers of 64 bytes, then doing tail
+            // In optimized build, stack usage would optimize away, and vector registers will be used
+            // 64 is enough to engage AVX-512, still not too much to use SSE2 (eight registers would be used then),
+            // and not too much stack consumption for debug builds where this will not be optimized
+            auto _Left_ptr  = reinterpret_cast<unsigned char*>(&_Left);
+            auto _Right_ptr = reinterpret_cast<unsigned char*>(&_Right);
+
+            constexpr size_t _Size_bytes = _Size * sizeof(_Ty);
+
+            if constexpr (constexpr size_t _Size_64 = _Size_bytes & ~size_t{0x3F}; _Size_64 != 0) {
+                auto _Stop = _Left_ptr + _Size_64;
+                do {
+                    unsigned char _Buf[64];
+                    _CSTD memcpy(_Buf, _Left_ptr, 64);
+                    _CSTD memcpy(_Left_ptr, _Right_ptr, 64);
+                    _CSTD memcpy(_Right_ptr, _Buf, 64);
+                    _Left_ptr += 64;
+                    _Right_ptr += 64;
+
+                } while (_Left_ptr != _Stop);
+            }
+
+            if constexpr (constexpr size_t _Size_tail = _Size_bytes & 0x3F; _Size_tail != 0) {
+                unsigned char _Buf[_Size_tail];
+                _CSTD memcpy(_Buf, _Left_ptr, _Size_tail);
+                _CSTD memcpy(_Left_ptr, _Right_ptr, _Size_tail);
+                _CSTD memcpy(_Right_ptr, _Buf, _Size_tail);
+            }
+
+            return;
         }
+    }
+
+    _Ty* _First1 = _Left;
+    _Ty* _Last1  = _First1 + _Size;
+    _Ty* _First2 = _Right;
+    for (; _First1 != _Last1; ++_First1, ++_First2) {
+        swap(*_First1, *_First2); // intentional ADL
     }
 }
 
