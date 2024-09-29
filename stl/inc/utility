@@ -111,9 +111,11 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>); // implemented in <algorit
 
 _EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> /* = 0 */>
 _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
-    _STL_ASSERT(&_Left != &_Right,
-        "Precondition violation. N4988 [utility.swap]/7: Effects: As if by swap_ranges. "
-        "N4988 [alg.swap]/2: Precondition: The two ranges [first1, last1) and [first2, last2) do not overlap.");
+    if (&_Left == &_Right) {
+        // Precondition violation. N4988 [utility.swap]/7: Effects: As if by swap_ranges.
+        // N4988 [alg.swap]/2: Precondition: The two ranges [first1, last1) and [first2, last2) do not overlap.
+        _CSTD abort();
+    }
 
     if constexpr (_Is_trivially_swappable_v<_Ty>) {
 #if _HAS_CXX20
@@ -128,8 +130,10 @@ _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_n
             auto _Right_ptr = reinterpret_cast<unsigned char*>(&_Right);
 
             constexpr size_t _Size_bytes = _Size * sizeof(_Ty);
+            constexpr size_t _Size_tail  = _Size_bytes % 64;
+            constexpr size_t _Size_64    = _Size_bytes - _Size_tail;
 
-            if constexpr (constexpr size_t _Size_64 = _Size_bytes & ~size_t{0x3F}; _Size_64 != 0) {
+            if constexpr (_Size_64 != 0) {
                 auto _Stop = _Left_ptr + _Size_64;
                 do {
                     unsigned char _Buf[64];
@@ -142,7 +146,7 @@ _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_n
                 } while (_Left_ptr != _Stop);
             }
 
-            if constexpr (constexpr size_t _Size_tail = _Size_bytes & 0x3F; _Size_tail != 0) {
+            if constexpr (_Size_tail != 0) {
                 unsigned char _Buf[_Size_tail];
                 _CSTD memcpy(_Buf, _Left_ptr, _Size_tail);
                 _CSTD memcpy(_Left_ptr, _Right_ptr, _Size_tail);
