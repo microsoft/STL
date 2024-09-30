@@ -875,6 +875,7 @@ public:
         return FLT_TRUE_MIN;
     }
 
+    _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
     _NODISCARD static constexpr float infinity() noexcept {
         return __builtin_huge_valf();
     }
@@ -886,6 +887,7 @@ public:
     _NODISCARD static constexpr float signaling_NaN() noexcept {
         return __builtin_nansf("1");
     }
+    _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
 
     static constexpr int digits         = FLT_MANT_DIG;
     static constexpr int digits10       = FLT_DIG;
@@ -923,6 +925,7 @@ public:
         return DBL_TRUE_MIN;
     }
 
+    _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
     _NODISCARD static constexpr double infinity() noexcept {
         return __builtin_huge_val();
     }
@@ -934,6 +937,7 @@ public:
     _NODISCARD static constexpr double signaling_NaN() noexcept {
         return __builtin_nans("1");
     }
+    _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
 
     static constexpr int digits         = DBL_MANT_DIG;
     static constexpr int digits10       = DBL_DIG;
@@ -971,6 +975,7 @@ public:
         return LDBL_TRUE_MIN;
     }
 
+    _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
     _NODISCARD static constexpr long double infinity() noexcept {
         return __builtin_huge_val();
     }
@@ -982,6 +987,7 @@ public:
     _NODISCARD static constexpr long double signaling_NaN() noexcept {
         return __builtin_nans("1");
     }
+    _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
 
     static constexpr int digits         = LDBL_MANT_DIG;
     static constexpr int digits10       = LDBL_DIG;
