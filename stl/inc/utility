@@ -121,7 +121,7 @@ _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_n
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _Swap_trivial_arrays(_Left, _Right);
+            _STD _Swap_trivial_arrays(_Left, _Right);
             return;
         }
     }
