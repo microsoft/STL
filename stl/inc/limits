@@ -848,15 +848,6 @@ public:
     static constexpr int digits10   = 19;
 };
 
-#ifdef __clang__
-#define _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED \
-    _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wnan-infinity-disabled\"")
-#define _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED _Pragma("clang diagnostic pop")
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
-#define _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
-#define _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
-#endif // ^^^ !defined(__clang__) ^^^
-
 template <>
 class numeric_limits<float> : public _Num_float_base {
 public:
@@ -1006,9 +997,6 @@ public:
     static constexpr int min_exponent   = LDBL_MIN_EXP;
     static constexpr int min_exponent10 = LDBL_MIN_10_EXP;
 };
-
-#undef _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
-#undef _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
 
 _STD_END
 #pragma pop_macro("new")
