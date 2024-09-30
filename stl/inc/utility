@@ -7,7 +7,6 @@
 #define _UTILITY_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <cstring>
 #include <initializer_list>
 #include <type_traits>
 
@@ -122,37 +121,7 @@ _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_n
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            // Swap arrays using temporary buffers of 64 bytes, then doing tail
-            // In optimized build, stack usage would optimize away, and vector registers will be used
-            // 64 is enough to engage AVX-512, still not too much to use SSE2 (eight registers would be used then),
-            // and not too much stack consumption for debug builds where this will not be optimized
-            auto _Left_ptr  = reinterpret_cast<unsigned char*>(&_Left);
-            auto _Right_ptr = reinterpret_cast<unsigned char*>(&_Right);
-
-            constexpr size_t _Size_bytes = _Size * sizeof(_Ty);
-            constexpr size_t _Size_tail  = _Size_bytes % 64;
-            constexpr size_t _Size_64    = _Size_bytes - _Size_tail;
-
-            if constexpr (_Size_64 != 0) {
-                auto _Stop = _Left_ptr + _Size_64;
-                do {
-                    unsigned char _Buf[64];
-                    _CSTD memcpy(_Buf, _Left_ptr, 64);
-                    _CSTD memcpy(_Left_ptr, _Right_ptr, 64);
-                    _CSTD memcpy(_Right_ptr, _Buf, 64);
-                    _Left_ptr += 64;
-                    _Right_ptr += 64;
-
-                } while (_Left_ptr != _Stop);
-            }
-
-            if constexpr (_Size_tail != 0) {
-                unsigned char _Buf[_Size_tail];
-                _CSTD memcpy(_Buf, _Left_ptr, _Size_tail);
-                _CSTD memcpy(_Left_ptr, _Right_ptr, _Size_tail);
-                _CSTD memcpy(_Right_ptr, _Buf, _Size_tail);
-            }
-
+            _Swap_trivial_arrays(_Left, _Right);
             return;
         }
     }
