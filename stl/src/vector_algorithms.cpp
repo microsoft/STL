@@ -3761,6 +3761,8 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
             _Advance_bytes(_Out, _Remove_patterns_4._Count[_Bingo]);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     return _Remove_fallback(_First, _Last, _Out, _Val);
@@ -3791,6 +3793,8 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
             _Advance_bytes(_Out, _Remove_patterns_8._Count[_Bingo]);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop);
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
 
     return _Remove_fallback(_First, _Last, _Out, _Val);
