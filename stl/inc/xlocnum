@@ -149,17 +149,6 @@ protected:
         _END_LOCINFO()
     }
 
-    template <class _Elem2>
-    void _Getvals(_Elem2, const lconv* _Ptr, _Locinfo::_Cvtvec _Cvt) { // get values
-        _Dp         = _Maklocchr(_Ptr->decimal_point[0], static_cast<_Elem2*>(nullptr), _Cvt);
-        _Kseparator = _Maklocchr(_Ptr->thousands_sep[0], static_cast<_Elem2*>(nullptr), _Cvt);
-    }
-
-    void _Getvals(wchar_t, const lconv* _Ptr, _Locinfo::_Cvtvec) { // get values
-        _Dp         = static_cast<_Elem>(_Ptr->_W_decimal_point[0]);
-        _Kseparator = static_cast<_Elem>(_Ptr->_W_thousands_sep[0]);
-    }
-
     void _Init(const _Locinfo& _Lobj, bool _Isdef = false) { // initialize from _Lobj
         const lconv* _Ptr      = _Lobj._Getlconv();
         _Locinfo::_Cvtvec _Cvt = _Lobj._Getcvt(); // conversion information
@@ -169,17 +158,22 @@ protected:
         _Truename  = nullptr;
 
         _Tidy_guard<numpunct> _Guard{this};
-        _Grouping      = _Maklocstr(_Isdef ? "" : _Ptr->grouping, static_cast<char*>(nullptr), _Lobj._Getcvt());
+        _Grouping      = _Maklocstr(_Isdef ? "" : _Ptr->grouping, static_cast<char*>(nullptr), _Cvt);
         _Falsename     = _Maklocstr(_Lobj._Getfalse(), static_cast<_Elem*>(nullptr), _Cvt);
         _Truename      = _Maklocstr(_Lobj._Gettrue(), static_cast<_Elem*>(nullptr), _Cvt);
         _Guard._Target = nullptr;
 
         if (_Isdef) { // apply defaults for required facets
-            // _Grouping = _Maklocstr("", static_cast<char *>(nullptr), _Cvt);
             _Dp         = _Maklocchr('.', static_cast<_Elem*>(nullptr), _Cvt);
             _Kseparator = _Maklocchr(',', static_cast<_Elem*>(nullptr), _Cvt);
         } else {
-            _Getvals(_Elem{}, _Ptr, _Cvt);
+            if constexpr (is_same_v<_Elem, wchar_t>) {
+                _Dp         = _Ptr->_W_decimal_point[0];
+                _Kseparator = _Ptr->_W_thousands_sep[0];
+            } else {
+                _Dp         = _Maklocchr(_Ptr->decimal_point[0], static_cast<_Elem*>(nullptr), _Cvt);
+                _Kseparator = _Maklocchr(_Ptr->thousands_sep[0], static_cast<_Elem*>(nullptr), _Cvt);
+            }
         }
     }
 

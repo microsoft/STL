@@ -106,29 +106,6 @@ protected:
         _Tidy();
     }
 
-    template <class _Elem2>
-    void _Getvals(_Elem2, const lconv* _Ptr) { // get values
-        _Currencysign = _Maklocstr(
-            _International ? _Ptr->int_curr_symbol : _Ptr->currency_symbol, static_cast<_Elem2*>(nullptr), _Cvt);
-        _Plussign = _Maklocstr(4 < static_cast<unsigned int>(_Ptr->p_sign_posn) ? "" : _Ptr->positive_sign,
-            static_cast<_Elem2*>(nullptr), _Cvt);
-        _Minussign = _Maklocstr(4 < static_cast<unsigned int>(_Ptr->n_sign_posn) ? "-" : _Ptr->negative_sign,
-            static_cast<_Elem2*>(nullptr), _Cvt);
-        _Decimalpoint = _Maklocchr(_Ptr->mon_decimal_point[0], static_cast<_Elem2*>(nullptr), _Cvt);
-        _Kseparator   = _Maklocchr(_Ptr->mon_thousands_sep[0], static_cast<_Elem2*>(nullptr), _Cvt);
-    }
-
-    void _Getvals(wchar_t, const lconv* _Ptr) { // get values
-        _Currencysign = reinterpret_cast<const _Elem*>(
-            _Maklocwcs(_International ? _Ptr->_W_int_curr_symbol : _Ptr->_W_currency_symbol));
-        _Plussign = reinterpret_cast<const _Elem*>(
-            _Maklocwcs(4 < static_cast<unsigned int>(_Ptr->p_sign_posn) ? L"" : _Ptr->_W_positive_sign));
-        _Minussign = reinterpret_cast<const _Elem*>(
-            _Maklocwcs(4 < static_cast<unsigned int>(_Ptr->n_sign_posn) ? L"-" : _Ptr->_W_negative_sign));
-        _Decimalpoint = static_cast<_Elem>(_Ptr->_W_mon_decimal_point[0]);
-        _Kseparator   = static_cast<_Elem>(_Ptr->_W_mon_thousands_sep[0]);
-    }
-
     void _Init(const _Locinfo& _Lobj, bool _Isdef = false) { // initialize from _Lobj
         _Cvt              = _Lobj._Getcvt();
         const lconv* _Ptr = _Lobj._Getlconv();
@@ -140,7 +117,23 @@ protected:
 
         _Tidy_guard<_Mpunct> _Guard{this};
         _Grouping = _Maklocstr(_Ptr->mon_grouping, static_cast<char*>(nullptr), _Cvt);
-        _Getvals(_Elem{}, _Ptr);
+        if constexpr (is_same_v<_Elem, wchar_t>) {
+            _Currencysign = _Maklocwcs(_International ? _Ptr->_W_int_curr_symbol : _Ptr->_W_currency_symbol);
+            _Plussign     = _Maklocwcs(4 < static_cast<unsigned int>(_Ptr->p_sign_posn) ? L"" : _Ptr->_W_positive_sign);
+            _Minussign = _Maklocwcs(4 < static_cast<unsigned int>(_Ptr->n_sign_posn) ? L"-" : _Ptr->_W_negative_sign);
+            _Decimalpoint = _Ptr->_W_mon_decimal_point[0];
+            _Kseparator   = _Ptr->_W_mon_thousands_sep[0];
+        } else {
+            _Currencysign = _Maklocstr(
+                _International ? _Ptr->int_curr_symbol : _Ptr->currency_symbol, static_cast<_Elem*>(nullptr), _Cvt);
+            _Plussign = _Maklocstr(4 < static_cast<unsigned int>(_Ptr->p_sign_posn) ? "" : _Ptr->positive_sign,
+                static_cast<_Elem*>(nullptr), _Cvt);
+            _Minussign = _Maklocstr(4 < static_cast<unsigned int>(_Ptr->n_sign_posn) ? "-" : _Ptr->negative_sign,
+                static_cast<_Elem*>(nullptr), _Cvt);
+            _Decimalpoint = _Maklocchr(_Ptr->mon_decimal_point[0], static_cast<_Elem*>(nullptr), _Cvt);
+            _Kseparator   = _Maklocchr(_Ptr->mon_thousands_sep[0], static_cast<_Elem*>(nullptr), _Cvt);
+        }
+
         _Guard._Target = nullptr;
 
         _Fracdigits = _International ? _Ptr->int_frac_digits : _Ptr->frac_digits;

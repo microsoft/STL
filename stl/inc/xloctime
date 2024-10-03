@@ -238,7 +238,7 @@ protected:
     void __CLR_OR_THIS_CALL _Getvals(_Elem2, const _Locinfo& _Lobj) { // get values
         _Cvt = _Lobj._Getcvt();
 
-        if (is_same_v<_Elem2, wchar_t>) {
+        if constexpr (is_same_v<_Elem2, wchar_t>) {
             _Days = reinterpret_cast<const _Elem*>(_Maklocwcs(reinterpret_cast<const wchar_t*>(_Lobj._W_Getdays())));
             _Months =
                 reinterpret_cast<const _Elem*>(_Maklocwcs(reinterpret_cast<const wchar_t*>(_Lobj._W_Getmonths())));
