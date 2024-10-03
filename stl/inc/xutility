@@ -4684,7 +4684,8 @@ _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     const auto _Count           = static_cast<size_t>(_Last_ch - _First_ch);
     _CSTD memmove(_Dest_ch, _First_ch, _Count);
     if constexpr (is_pointer_v<_OutCtgIt>) {
-        return reinterpret_cast<_OutCtgIt>(_Dest_ch + _Count); // lgtm [cpp/incorrect-string-type-conversion]
+        // CodeQL [SM02986] This cast is correct: we're bypassing pointer arithmetic for performance.
+        return reinterpret_cast<_OutCtgIt>(_Dest_ch + _Count);
     } else {
         return _Dest + static_cast<_Iter_diff_t<_OutCtgIt>>(_LastPtr - _FirstPtr);
     }

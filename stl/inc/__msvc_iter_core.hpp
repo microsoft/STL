@@ -283,7 +283,11 @@ struct _Iter_traits_category4<false> {
 
 template <class _It>
 concept _Cpp17_random_delta =
+#if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, CUDA 12.5
+    totally_ordered<_It> && requires(_It __i, typename incrementable_traits<_It>::difference_type __n) {
+#else // ^^^ workaround / no workaround vvv
     totally_ordered<_It> && requires(_It __i, incrementable_traits<_It>::difference_type __n) {
+#endif // ^^^ no workaround ^^^
         { __i += __n } -> same_as<_It&>;
         { __i -= __n } -> same_as<_It&>;
         { __i + __n } -> same_as<_It>;
