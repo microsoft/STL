@@ -168,8 +168,8 @@ protected:
             _Kseparator = _Maklocchr(',', static_cast<_Elem*>(nullptr), _Cvt);
         } else {
             if constexpr (is_same_v<_Elem, wchar_t>) {
-                _Dp         = static_cast<_Elem>(_Ptr->_W_decimal_point[0]);
-                _Kseparator = static_cast<_Elem>(_Ptr->_W_thousands_sep[0]);
+                _Dp         = _Ptr->_W_decimal_point[0];
+                _Kseparator = _Ptr->_W_thousands_sep[0];
             } else {
                 _Dp         = _Maklocchr(_Ptr->decimal_point[0], static_cast<_Elem*>(nullptr), _Cvt);
                 _Kseparator = _Maklocchr(_Ptr->thousands_sep[0], static_cast<_Elem*>(nullptr), _Cvt);
