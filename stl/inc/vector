@@ -595,9 +595,9 @@ private:
     struct _NODISCARD _Reallocation_guard {
         _Alloc& _Al;
         pointer _New_begin;
+        size_type _New_capacity;
         pointer _Constructed_first;
         pointer _Constructed_last;
-        size_type _New_capacity;
 
         _Reallocation_guard& operator=(const _Reallocation_guard&) = delete;
         _Reallocation_guard& operator=(_Reallocation_guard&&)      = delete;
@@ -879,7 +879,7 @@ private:
         const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Constructed_last = _Newvec + _Whereoff + 1;
 
-        _Reallocation_guard _Guard{_Al, _Newvec, _Constructed_last, _Constructed_last, _Newcapacity};
+        _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
         auto& _Constructed_first = _Guard._Constructed_first;
 
         _Alty_traits::construct(_Al, _STD _Unfancy(_Newvec + _Whereoff), _STD forward<_Valty>(_Val)...);
@@ -963,7 +963,7 @@ private:
             const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
             const pointer _Constructed_last = _Newvec + _Oldsize + _Count;
 
-            _Reallocation_guard _Guard{_Al, _Newvec, _Constructed_last, _Constructed_last, _Newcapacity};
+            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
             auto& _Constructed_first = _Guard._Constructed_first;
 
             _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Oldsize, _Al);
@@ -1081,7 +1081,7 @@ public:
             const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
 
-            _Reallocation_guard _Guard{_Al, _Newvec, _Constructed_last, _Constructed_last, _Newcapacity};
+            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
             auto& _Constructed_first = _Guard._Constructed_first;
 
             _Uninitialized_fill_n(_Newvec + _Whereoff, _Count, _Val, _Al);
@@ -1174,7 +1174,7 @@ private:
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
 
-            _Reallocation_guard _Guard{_Al, _Newvec, _Constructed_last, _Constructed_last, _Newcapacity};
+            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
             auto& _Constructed_first = _Guard._Constructed_first;
 
             _STD _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Whereoff, _Al);
@@ -1548,7 +1548,7 @@ private:
         const pointer _Newvec         = _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Appended_first = _Newvec + _Oldsize;
 
-        _Reallocation_guard _Guard{_Al, _Newvec, _Appended_first, _Appended_first, _Newcapacity};
+        _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Appended_first, _Appended_first};
         auto& _Appended_last = _Guard._Constructed_last;
 
         if constexpr (is_same_v<_Ty2, _Ty>) {
