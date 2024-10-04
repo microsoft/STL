@@ -3716,15 +3716,14 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
     void* _Out = _First;
 
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes > 16) {
-        const __m128i _Match      = _mm_set1_epi16(_Val);
-        const __m128i _Dense_shuf = _mm_set_epi8(-1, -1, -1, -1, -1, -1, -1, -1, 14, 12, 10, 8, 6, 4, 2, 0);
+        const __m128i _Match = _mm_set1_epi16(_Val);
 
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         do {
             const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
             const __m128i _Mask   = _mm_cmpeq_epi16(_Src, _Match);
-            const unsigned _Bingo = _mm_movemask_epi8(_mm_shuffle_epi8(_Mask, _Dense_shuf));
+            const unsigned _Bingo = _mm_movemask_epi8(_mm_packs_epi16(_Mask, _mm_setzero_si128()));
             const __m128i _Shuf   = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_patterns_2._Data[_Bingo]));
             const __m128i _Dest   = _mm_shuffle_epi8(_Src, _Shuf);
             _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
