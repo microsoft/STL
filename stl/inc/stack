@@ -11,7 +11,7 @@
 
 #if _HAS_CXX23
 #include <__msvc_ranges_to.hpp>
-#include <format>
+#include <__msvc_ranges_tuple_formatter.hpp>
 #include <iterator>
 #endif // _HAS_CXX23
 
