@@ -3754,7 +3754,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
             const __m256i _Src    = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
             const __m256i _Mask   = _mm256_cmpeq_epi32(_Src, _Match);
             const unsigned _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
-            const __m256i _Shuf   = _mm256_cvtepi8_epi32(_mm_loadu_si64(_Remove_patterns_4._Data[_Bingo]));
+            const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_patterns_4._Data[_Bingo]));
             const __m256i _Dest   = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
             _Advance_bytes(_Out, _Remove_patterns_4._Count[_Bingo]);
@@ -3780,7 +3780,7 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
             const __m256i _Src    = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
             const __m256i _Mask   = _mm256_cmpeq_epi64(_Src, _Match);
             const unsigned _Bingo = _mm256_movemask_pd(_mm256_castsi256_pd(_Mask));
-            const __m256i _Shuf   = _mm256_cvtepi8_epi32(_mm_loadu_si64(_Remove_patterns_8._Data[_Bingo]));
+            const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_patterns_8._Data[_Bingo]));
             const __m256i _Dest   = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
             _Advance_bytes(_Out, _Remove_patterns_8._Count[_Bingo]);
