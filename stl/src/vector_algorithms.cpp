@@ -3644,22 +3644,22 @@ namespace {
         return _Dest;
     }
 
-    template <size_t _Size_v, size_t _Size_h>
-    struct _Remove_patterns_t {
-        uint8_t _Data[_Size_v][_Size_h];
-        uint8_t _Count[_Size_v];
-    };
 
     template <size_t _Size_v, size_t _Size_h>
     constexpr auto _Make_remove_patterns(const unsigned _Mul, const unsigned _Ew) {
-        _Remove_patterns_t<_Size_v, _Size_h> _Result;
+        struct {
+            uint8_t _Data[_Size_v][_Size_h];
+            uint8_t _Count[_Size_v];
+        } _Result;
 
         for (unsigned _Vx = 0; _Vx != _Size_v; ++_Vx) {
             unsigned _Nx = 0;
 
-            // Compact the source according to bitmap
+            // Make shuffle mask for pshufb / vpermd corresponding to _Vx bit value.
+            // Every bit set corresponds to element skipped.
             for (unsigned _Hx = 0; _Hx != _Size_h / _Ew; ++_Hx) {
                 if ((_Vx & (1 << _Hx)) == 0) {
+                    // Inner loop needed for cases where shuffle mask operate on element pars rather than whole elements
                     for (unsigned _Ex = 0; _Ex != _Ew; ++_Ex) {
                         _Result._Data[_Vx][_Nx * _Ew + _Ex] = static_cast<uint8_t>(_Hx * _Ew + _Ex);
                     }
@@ -3667,10 +3667,16 @@ namespace {
                 }
             }
 
+            // Count of bytes for removed elements that are not removed
             _Result._Count[_Vx] = static_cast<uint8_t>(_Nx * _Mul);
 
-            // Fill the remaining as if not touched
+            // Fill the remaining with arbitrary elements.
+            // It is not possible to leave them untouched, while keeping this optimization efficient.
+            // This should not be a problem though, as they should be either overwritten by the next step,
+            // or left in the removed range. Still setting them to the values of some of existing elements,
+            // rather than zero, to reduce the surprising behavior.
             for (; _Nx != _Size_h / _Ew; ++_Nx) {
+                // Inner loop needed for cases where shuffle mask operate on element pars rather than whole elements
                 for (unsigned _Ex = 0; _Ex != _Ew; ++_Ex) {
                     _Result._Data[_Vx][_Nx * _Ew + _Ex] = static_cast<uint8_t>(_Nx * _Ew + _Ex);
                 }
