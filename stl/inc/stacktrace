@@ -341,7 +341,8 @@ ostream& operator<<(ostream& _Os, const basic_stacktrace<_Alloc>& _St) {
 
 template <>
 struct formatter<stacktrace_entry> {
-    constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
+    template <class _ParseContext = format_parse_context> // improves throughput, see GH-5003
+    constexpr _ParseContext::iterator parse(type_identity_t<_ParseContext&> _Parse_ctx) {
         return _Impl._Parse(_Parse_ctx);
     }
 

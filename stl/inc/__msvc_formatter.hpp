@@ -421,7 +421,8 @@ _NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(_Form
 template <class _CharT>
 struct _Fill_align_and_width_formatter {
 public:
-    _NODISCARD constexpr auto _Parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+    template <class _ParseContext = basic_format_parse_context<_CharT>> // improves throughput, see GH-5003
+    _NODISCARD constexpr _ParseContext::iterator _Parse(type_identity_t<_ParseContext&> _Parse_ctx) {
         return _STD _Fill_align_and_width_formatter_parse(_Specs, _Parse_ctx);
     }
 

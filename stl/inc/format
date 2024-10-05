@@ -3192,7 +3192,7 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
 
 // TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
 template <class _Ty, class _CharT, class _ParseContext>
-constexpr _ParseContext::iterator _Range_formatter_parse(formatter<_Ty, _CharT>& _Underlying,
+_NODISCARD constexpr _ParseContext::iterator _Range_formatter_parse(formatter<_Ty, _CharT>& _Underlying,
     basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
     basic_string_view<_CharT>& _Closing_bracket, _Range_specs<_CharT>& _Specs, _ParseContext& _Ctx) {
     _Range_specs_setter<_CharT> _Callback{_Specs, _Ctx};
@@ -3308,7 +3308,7 @@ void _Range_formatter_format_as_string(_Range&& _Rng, _FormatContext& _Ctx, cons
 }
 
 template <class _Ty, class _CharT, _RANGES input_range _Range, class _FormatContext>
-_FormatContext::iterator _Range_formatter_format(const formatter<_Ty, _CharT>& _Underlying,
+_NODISCARD _FormatContext::iterator _Range_formatter_format(const formatter<_Ty, _CharT>& _Underlying,
     const basic_string_view<_CharT> _Separator, const basic_string_view<_CharT> _Opening_bracket,
     const basic_string_view<_CharT> _Closing_bracket, _Range&& _Rng, const _Range_specs<_CharT>& _Specs,
     _FormatContext& _Ctx) {
@@ -3463,7 +3463,7 @@ constexpr void _Set_tuple_debug_format(_FormatterType& _Formatter, _ParseContext
 
 // TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
 template <class... _Types, class _CharT, class _ParseContext>
-constexpr _ParseContext::iterator _Tuple_formatter_parse(tuple<formatter<_Types, _CharT>...>& _Underlying,
+_NODISCARD constexpr _ParseContext::iterator _Tuple_formatter_parse(tuple<formatter<_Types, _CharT>...>& _Underlying,
     basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
     basic_string_view<_CharT>& _Closing_bracket, _Fill_align_and_width_specs<_CharT>& _Specs, _ParseContext& _Ctx) {
     _Fmt_tuple_type _Fmt_type = _Fmt_tuple_type::_None;
@@ -3508,7 +3508,7 @@ void _Tuple_formatter_format_to_context(const tuple<formatter<_Types, _CharT>...
 }
 
 template <class... _Types, class _CharT, class _FormatContext, class... _ArgTypes>
-_FormatContext::iterator _Tuple_formatter_format(const tuple<formatter<_Types, _CharT>...>& _Underlying,
+_NODISCARD _FormatContext::iterator _Tuple_formatter_format(const tuple<formatter<_Types, _CharT>...>& _Underlying,
     const basic_string_view<_CharT> _Separator, const basic_string_view<_CharT> _Opening_bracket,
     const basic_string_view<_CharT> _Closing_bracket, const _Fill_align_and_width_specs<_CharT>& _Specs,
     _FormatContext& _Fmt_ctx, _ArgTypes&... _Args) {
