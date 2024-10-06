@@ -3819,26 +3819,55 @@ namespace ranges {
         _STATIC_CALL_OPERATOR constexpr unary_transform_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Output, _Fn _Func, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
-            auto _UResult = _Transform_unary_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
-                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Output), _STD _Pass_fn(_Func),
-                _STD _Pass_fn(_Proj));
+            auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            auto _ULast  = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
 
-            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _STD move(_UResult.out)};
+            if constexpr (sized_sentinel_for<_Se, _It>) {
+                const auto _Count = _ULast - _UFirst;
+                auto _UResult     = _Transform_unary_n_unchecked(_STD move(_UFirst), _Count,
+                        _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj));
+
+                _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+                _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+                return {_STD move(_First), _STD move(_Output)};
+            } else {
+                auto _UResult = _Transform_unary_unchecked(_STD move(_UFirst), _STD move(_ULast),
+                    _STD _Get_unwrapped_unverified(_STD move(_Output)), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj));
+
+                _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+                _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+                return {_STD move(_First), _STD move(_Output)};
+            }
         }
 
         template <input_range _Rng, weakly_incrementable _Out, copy_constructible _Fn, class _Pj = identity>
             requires indirectly_writable<_Out, indirect_result_t<_Fn&, projected<iterator_t<_Rng>, _Pj>>>
         _STATIC_CALL_OPERATOR constexpr unary_transform_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Output, _Fn _Func, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
-            auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Transform_unary_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
-                _Uend(_Range), _STD move(_Output), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj));
+            if constexpr (sized_range<_Rng>) {
+                const auto _Count = _RANGES distance(_Range);
+                auto _First       = _RANGES begin(_Range);
+                auto _UResult =
+                    _Transform_unary_n_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Count,
+                        _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj));
 
-            _STD _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _STD move(_UResult.out)};
+                _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+                _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+                return {_STD move(_First), _STD move(_Output)};
+            } else {
+                auto _First = _RANGES begin(_Range);
+                auto _UResult =
+                    _Transform_unary_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                        _STD _Get_unwrapped_unverified(_STD move(_Output)), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj));
+
+                _STD _Seek_wrapped(_First, _STD move(_UResult.in));
+                _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+                return {_STD move(_First), _STD move(_Output)};
+            }
         }
 
+#pragma warning(push)
+#pragma warning(disable : 6287) // Redundant code
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             weakly_incrementable _Out, copy_constructible _Fn, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_writable<_Out, indirect_result_t<_Fn&, projected<_It1, _Pj1>, projected<_It2, _Pj2>>>
@@ -3847,14 +3876,37 @@ namespace ranges {
             _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First1, _Last1);
             _STD _Adl_verify_range(_First2, _Last2);
-            auto _UResult = _Transform_binary_unchecked(_RANGES _Unwrap_iter<_Se1>(_STD move(_First1)),
-                _RANGES _Unwrap_sent<_It1>(_STD move(_Last1)), _RANGES _Unwrap_iter<_Se2>(_STD move(_First2)),
-                _RANGES _Unwrap_sent<_It2>(_STD move(_Last2)), _STD move(_Output), _STD _Pass_fn(_Func),
-                _STD _Pass_fn(_Proj1), _STD _Pass_fn(_Proj2));
 
-            _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
-            _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
-            return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
+            constexpr bool _Min_size_determinable =
+                (sized_sentinel_for<_Se1, _It1> && _Sized_or_unreachable_sentinel_for<_Se2, _It2>)
+                || (sized_sentinel_for<_Se2, _It2> && _Sized_or_unreachable_sentinel_for<_Se1, _It1>);
+
+            if constexpr (_Min_size_determinable) {
+                auto _UFirst1      = _RANGES _Unwrap_iter<_Se1>(_STD move(_First1));
+                const auto _Count1 = _STD _Idl_distance<_It1>(_UFirst1, _RANGES _Unwrap_sent<_It1>(_STD move(_Last1)));
+                auto _UFirst2      = _RANGES _Unwrap_iter<_Se2>(_STD move(_First2));
+                const auto _Count2 = _STD _Idl_distance<_It2>(_UFirst2, _RANGES _Unwrap_sent<_It2>(_STD move(_Last2)));
+                const auto _Count  = _STD _Idl_dist_min(_Count1, _Count2);
+
+                auto _UResult = _Transform_binary_n_unchecked(_STD move(_UFirst1), _STD move(_UFirst2), _Count,
+                    _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj1),
+                    _STD _Pass_fn(_Proj2));
+
+                _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
+                _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
+                _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+                return {_STD move(_First1), _STD move(_First2), _STD move(_Output)};
+            } else {
+                auto _UResult = _Transform_binary_unchecked(_RANGES _Unwrap_iter<_Se1>(_STD move(_First1)),
+                    _RANGES _Unwrap_sent<_It1>(_STD move(_Last1)), _RANGES _Unwrap_iter<_Se2>(_STD move(_First2)),
+                    _RANGES _Unwrap_sent<_It2>(_STD move(_Last2)), _STD _Get_unwrapped_unverified(_STD move(_Output)),
+                    _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj1), _STD _Pass_fn(_Proj2));
+
+                _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
+                _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
+                _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+                return {_STD move(_First1), _STD move(_First2), _STD move(_Output)};
+            }
         }
 
         template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, copy_constructible _Fn,
@@ -3865,16 +3917,36 @@ namespace ranges {
             _Out>
             operator()(_Rng1&& _Range1, _Rng2&& _Range2, _Out _Output, _Fn _Func, _Pj1 _Proj1 = {},
                 _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
-            auto _First1  = _RANGES begin(_Range1);
-            auto _First2  = _RANGES begin(_Range2);
-            auto _UResult = _Transform_binary_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
-                _Uend(_Range1), _RANGES _Unwrap_range_iter<_Rng2>(_STD move(_First2)), _Uend(_Range2),
-                _STD move(_Output), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj1), _STD _Pass_fn(_Proj2));
+            constexpr bool _Min_size_determinable = (sized_range<_Rng1> && _Sized_or_infinite_range<_Rng2>)
+                                                 || (sized_range<_Rng2> && _Sized_or_infinite_range<_Rng1>);
+            if constexpr (_Min_size_determinable) {
+                const auto _Count = _STD _Idl_dist_min(_RANGES _Idl_distance(_Range1), _RANGES _Idl_distance(_Range2));
+                auto _First1      = _RANGES begin(_Range1);
+                auto _First2      = _RANGES begin(_Range2);
+                auto _UResult     = _Transform_binary_n_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
+                        _RANGES _Unwrap_range_iter<_Rng2>(_STD move(_First2)), _Count,
+                        _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj1),
+                        _STD _Pass_fn(_Proj2));
 
-            _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
-            _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
-            return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
+                _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
+                _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
+                _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+                return {_STD move(_First1), _STD move(_First2), _STD move(_Output)};
+            } else {
+                auto _First1  = _RANGES begin(_Range1);
+                auto _First2  = _RANGES begin(_Range2);
+                auto _UResult = _Transform_binary_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
+                    _Uend(_Range1), _RANGES _Unwrap_range_iter<_Rng2>(_STD move(_First2)), _Uend(_Range2),
+                    _STD _Get_unwrapped_unverified(_STD move(_Output)), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj1),
+                    _STD _Pass_fn(_Proj2));
+
+                _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
+                _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
+                _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+                return {_STD move(_First1), _STD move(_First2), _STD move(_Output)};
+            }
         }
+#pragma warning(pop)
 
     private:
         template <class _It, class _Se, class _Out, class _Fn, class _Pj>
@@ -3892,6 +3964,30 @@ namespace ranges {
             return {_STD move(_First), _STD move(_Output)};
         }
 
+        template <class _It, class _Out, class _Fn, class _Pj>
+        _NODISCARD static constexpr unary_transform_result<_It, _Out> _Transform_unary_n_unchecked(
+            _It _First, iter_difference_t<_It> _Count, _Out _Output, _Fn _Func, _Pj _Proj) {
+            // transform projected _First + [0, _Count) with _Func
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_writable<_Out, indirect_result_t<_Fn&, projected<_It, _Pj>>>);
+
+            if constexpr (random_access_iterator<_It>
+                          && random_access_iterator<_Out>) { // FIXME: justify this with benchmarks
+                for (iter_difference_t<_It> _Idx = 0; _Idx < _Count; ++_Idx) {
+                    _Output[_Idx] = _STD invoke(_Func, _STD invoke(_Proj, _First[_Idx]));
+                }
+
+                return {_First + _Count, _Output + _Count};
+            } else {
+                for (; _Count > 0; ++_First, (void) ++_Output, --_Count) {
+                    *_Output = _STD invoke(_Func, _STD invoke(_Proj, *_First));
+                }
+
+                return {_STD move(_First), _STD move(_Output)};
+            }
+        }
+
         template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Fn, class _Pj1, class _Pj2>
         _NODISCARD static constexpr binary_transform_result<_It1, _It2, _Out> _Transform_binary_unchecked(_It1 _First1,
             const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Out _Output, _Fn _Func, _Pj1 _Proj1, _Pj2 _Proj2) {
@@ -3907,6 +4003,34 @@ namespace ranges {
             }
 
             return {_STD move(_First1), _STD move(_First2), _STD move(_Output)};
+        }
+
+        template <class _It1, class _It2, class _Diff, class _Out, class _Fn, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr binary_transform_result<_It1, _It2, _Out> _Transform_binary_n_unchecked(
+            _It1 _First1, _It2 _First2, _Diff _Count, _Out _Output, _Fn _Func, _Pj1 _Proj1, _Pj2 _Proj2) {
+            // transform projected _First1 + [0, _Count) and projected _First2 + [0, _Count) with _Func
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(_Signed_integer_like<_Diff>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(
+                indirectly_writable<_Out, indirect_result_t<_Fn&, projected<_It1, _Pj1>, projected<_It2, _Pj2>>>);
+
+            if constexpr (random_access_iterator<_It1> && random_access_iterator<_It2>
+                          && random_access_iterator<_Out>) { // FIXME: justify this with benchmarks
+                for (_Diff _Idx = 0; _Idx < _Count; ++_Idx) {
+                    _Output[_Idx] =
+                        _STD invoke(_Func, _STD invoke(_Proj1, _First1[_Idx]), _STD invoke(_Proj2, _First2[_Idx]));
+                }
+
+                return {_First1 + _Count, _First2 + _Count, _Output + _Count};
+            } else {
+                for (; _Count > 0; ++_First1, (void) ++_First2, (void) ++_Output, --_Count) {
+                    *_Output = _STD invoke(_Func, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2));
+                }
+
+                return {_STD move(_First1), _STD move(_First2), _STD move(_Output)};
+            }
         }
     };
 
@@ -7388,7 +7512,7 @@ _NODISCARD constexpr auto _Idl_dist_add(_Diff1 _Lhs, _Diff2 _Rhs) {
     } else if constexpr (is_same_v<_Diff1, _Distance_unknown> || is_same_v<_Diff2, _Distance_unknown>) {
         return _Distance_unknown{};
     } else {
-    return _Lhs + _Rhs;
+        return _Lhs + _Rhs;
     }
 }
 
