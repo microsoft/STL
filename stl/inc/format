@@ -398,14 +398,14 @@ private:
     _GB11_LeftHand_regex _GB11_rx;
 
 public:
+    using value_type      = iter_value_t<_Wrapped_iter_type>;
+    using difference_type = ptrdiff_t;
+
     _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
         return _WrappedIter == default_sentinel;
     }
 
     _NODISCARD constexpr bool operator==(const _Grapheme_break_property_iterator&) const noexcept = default;
-
-    using difference_type = ptrdiff_t;
-    using value_type      = iter_value_t<_Wrapped_iter_type>;
 
     constexpr _Grapheme_break_property_iterator(const _CharT* _First, const _CharT* _Last)
         : _WrappedIter(_First, _Last) {}
@@ -2388,14 +2388,14 @@ private:
     _Grapheme_break_property_iterator<_CharT> _WrappedIter;
 
 public:
+    using value_type      = int;
+    using difference_type = ptrdiff_t;
+
     _NODISCARD constexpr bool operator==(const _Measure_string_prefix_iterator_utf&) const noexcept = default;
 
     _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
         return _WrappedIter == default_sentinel;
     }
-
-    using difference_type = ptrdiff_t;
-    using value_type      = int;
 
     constexpr _Measure_string_prefix_iterator_utf(const _CharT* _First, const _CharT* _Last)
         : _WrappedIter(_First, _Last) {}
@@ -2438,15 +2438,15 @@ private:
     }
 
 public:
+    using value_type      = int;
+    using difference_type = ptrdiff_t;
+
     _NODISCARD bool operator==(default_sentinel_t) const noexcept {
         return _First == _Last;
     }
     _NODISCARD bool operator==(const _Measure_string_prefix_iterator_legacy& _Rhs) const noexcept {
         return _First == _Rhs._First && _Last == _Rhs._Last;
     }
-
-    using difference_type = ptrdiff_t;
-    using value_type      = int;
 
     _Measure_string_prefix_iterator_legacy(const char* _First_val, const char* _Last_val)
         : _First(_First_val), _Last(_Last_val) {
