@@ -48,7 +48,8 @@ public:
 
     explicit _Print_to_stream_it(FILE* const _Stream_) noexcept : _Stream(_Stream_) {}
 
-    _Print_to_stream_it& operator=(char); // These members are intentionally not defined
+    // These member functions are never defined:
+    _Print_to_stream_it& operator=(char);
     _Print_to_stream_it& operator*();
     _Print_to_stream_it& operator++();
     _Print_to_stream_it operator++(int);
@@ -88,7 +89,8 @@ public:
     explicit _Print_to_unicode_console_it(const __std_unicode_console_handle _Console_handle_) noexcept
         : _Console_handle(_Console_handle_) {}
 
-    _Print_to_unicode_console_it& operator=(char); // These members are intentionally not defined
+    // These member functions are never defined:
+    _Print_to_unicode_console_it& operator=(char);
     _Print_to_unicode_console_it& operator*();
     _Print_to_unicode_console_it& operator++();
     _Print_to_unicode_console_it operator++(int);
