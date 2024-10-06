@@ -1409,6 +1409,12 @@ struct _Distance_unknown {
     }
 };
 
+struct _Distance_unbounded {
+    constexpr _Distance_unbounded operator-() const noexcept {
+        return {};
+    }
+};
+
 template <class _Diff>
 constexpr _Diff _Max_possible_v{static_cast<_Make_unsigned_like_t<_Diff>>(-1) >> 1};
 
@@ -1430,7 +1436,7 @@ template <class _Iter, class _Diff>
 _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _Off) {
     if constexpr (is_pointer_v<decay_t<_Iter>>) {
         return _It + 0;
-    } else if constexpr (_Unwrappable_for_offset_v<_Iter> && is_integral_v<_Diff>) {
+    } else if constexpr (_Unwrappable_for_offset_v<_Iter> && _Integer_like<_Diff>) {
         // ask an iterator to assert that the iterator moved _Off positions is valid, and unwrap
         using _IDiff     = _Iter_diff_t<_Remove_cvref_t<_Iter>>;
         using _CDiff     = common_type_t<_Diff, _IDiff>;
@@ -1533,15 +1539,35 @@ using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Stand
 
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+_EXPORT_STD struct unreachable_sentinel_t;
+
+template <class _Checked, class _Iter, class _Sent>
+_NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Sent& _Last) {
+    // Returns the distance between _First and _Last,
+    // an indicator that the distance is infinite, or
+    // an indicator that the distance cannot be determined in O(1).
+    _STL_INTERNAL_STATIC_ASSERT(same_as<_Unwrapped_t<_Checked>, _Iter>);
+
+    if constexpr (sized_sentinel_for<_Sent, _Iter>) {
+        return static_cast<iter_difference_t<_Checked>>(_Last - _First);
+    } else if constexpr (same_as<_Sent, unreachable_sentinel_t>) {
+        return _Distance_unbounded{};
+    } else {
+        return _Distance_unknown{};
+    }
+}
+#else // ^^^ C++20 or later / C++17 or earlier vvv
 template <class _Checked, class _Iter>
 _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
-    // tries to get the distance between _First and _Last if they are random-access iterators
-    if constexpr (_Is_ranges_random_iter_v<_Iter>) {
+    _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<_Checked>, _Iter>);
+    if constexpr (_Is_cpp17_random_iter_v<_Iter>) {
         return static_cast<_Iter_diff_t<_Checked>>(_Last - _First);
     } else {
         return _Distance_unknown{};
     }
 }
+#endif // ^^^ C++17 or earlier ^^^
 
 template <class _Elem, bool _Is_enum = is_enum_v<_Elem>>
 struct _Unwrap_enum { // if _Elem is an enum, gets its underlying type; otherwise leaves _Elem unchanged
@@ -3562,6 +3588,18 @@ namespace ranges {
     };
 
     _EXPORT_STD inline constexpr _Distance_fn distance;
+
+    template <range _Rng>
+    _NODISCARD constexpr auto _Idl_distance(_Rng& _Range) {
+        // returns _STD _Idl_distance<iterator_t<_Rng>>(begin(_Range), end(_Range))
+        if constexpr (sized_range<_Rng>) {
+            return _RANGES distance(_Range);
+        } else if constexpr (same_as<sentinel_t<_Rng>, unreachable_sentinel_t>) {
+            return _Distance_unbounded{};
+        } else {
+            return _Distance_unknown{};
+        }
+    }
 
     class _Ssize_fn {
     public:
