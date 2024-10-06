@@ -3763,6 +3763,24 @@ _FwdIt3 transform(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
+template <class _Diff1, class _Diff2>
+_NODISCARD constexpr auto _Idl_dist_min([[maybe_unused]] const _Diff1 _Lhs, [[maybe_unused]] const _Diff2 _Rhs) {
+    // returns the minumum of two results from _Idl_distance calls
+    if constexpr (is_same_v<_Diff1, _Distance_unknown> || is_same_v<_Diff2, _Distance_unknown>) {
+        return _Distance_unknown{};
+    } else if constexpr (is_same_v<_Diff1, _Distance_unbounded>) {
+        return _Rhs;
+    } else if constexpr (is_same_v<_Diff2, _Distance_unbounded>) {
+        return _Lhs;
+    } else {
+        if (_Rhs < _Lhs) {
+            return static_cast<_Diff1>(_Rhs);
+        } else {
+            return _Lhs;
+        }
+    }
+}
+
 namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using unary_transform_result = in_out_result<_In, _Out>;
@@ -7307,23 +7325,17 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
-_NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Distance_unknown) {
-    return {};
-}
-
-template <class _Diff1>
-_NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Diff1, _Distance_unknown) {
-    return {};
-}
-
-template <class _Diff2>
-_NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Diff2) {
-    return {};
-}
-
 template <class _Diff1, class _Diff2>
 _NODISCARD constexpr auto _Idl_dist_add(_Diff1 _Lhs, _Diff2 _Rhs) {
+    (void) _Lhs;
+    (void) _Rhs;
+    if constexpr (is_same_v<_Diff1, _Distance_unbounded> || is_same_v<_Diff2, _Distance_unbounded>) {
+        return _Distance_unbounded{};
+    } else if constexpr (is_same_v<_Diff1, _Distance_unknown> || is_same_v<_Diff2, _Distance_unknown>) {
+        return _Distance_unknown{};
+    } else {
     return _Lhs + _Rhs;
+    }
 }
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
