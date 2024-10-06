@@ -4523,16 +4523,11 @@ template <class _Iter1, class _Iter2>
     requires (!sized_sentinel_for<_Iter1, _Iter2>)
 constexpr bool disable_sized_sentinel_for<move_iterator<_Iter1>, move_iterator<_Iter2>> = true;
 
-_EXPORT_STD struct unreachable_sentinel_t;
-namespace _Unreachable_sentinel_detail {
-    struct _Base {
-        template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
-            return false;
-        }
-    };
-} // namespace _Unreachable_sentinel_detail
-_EXPORT_STD struct unreachable_sentinel_t : _Unreachable_sentinel_detail::_Base {}; // TRANSITION, /permissive-
+_EXPORT_STD struct unreachable_sentinel_t {
+    _NODISCARD constexpr bool operator==(const weakly_incrementable auto&) const noexcept {
+        return false;
+    }
+};
 
 _EXPORT_STD inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 #endif // _HAS_CXX20
