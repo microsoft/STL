@@ -3686,10 +3686,12 @@ namespace {
         return _Result;
     }
 
-    constexpr auto _Remove_patterns_1 = _Make_remove_patterns<256, 8>(1, 1);
-    constexpr auto _Remove_patterns_2 = _Make_remove_patterns<256, 16>(2, 2);
-    constexpr auto _Remove_patterns_4 = _Make_remove_patterns<256, 8>(4, 1);
-    constexpr auto _Remove_patterns_8 = _Make_remove_patterns<16, 8>(8, 2);
+    constexpr auto _Remove_patterns_1_sse = _Make_remove_patterns<256, 8>(1, 1);
+    constexpr auto _Remove_patterns_2_sse = _Make_remove_patterns<256, 16>(2, 2);
+    constexpr auto _Remove_patterns_4_sse = _Make_remove_patterns<16, 16>(4, 4);
+    constexpr auto _Remove_patterns_4_avx = _Make_remove_patterns<256, 8>(4, 1);
+    constexpr auto _Remove_patterns_8_sse = _Make_remove_patterns<4, 16>(8, 8);
+    constexpr auto _Remove_patterns_8_avx = _Make_remove_patterns<16, 8>(8, 2);
 } // unnamed namespace
 
 extern "C" {
@@ -3706,10 +3708,10 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
         do {
             const __m128i _Src    = _mm_loadu_si64(_First);
             const unsigned _Bingo = _mm_movemask_epi8(_mm_cmpeq_epi8(_Src, _Match)) & 0xFF;
-            const __m128i _Shuf   = _mm_loadu_si64(_Remove_patterns_1._Shuf[_Bingo]);
+            const __m128i _Shuf   = _mm_loadu_si64(_Remove_patterns_1_sse._Shuf[_Bingo]);
             const __m128i _Dest   = _mm_shuffle_epi8(_Src, _Shuf);
             _mm_storeu_si64(_Out, _Dest);
-            _Advance_bytes(_Out, _Remove_patterns_1._Size[_Bingo]);
+            _Advance_bytes(_Out, _Remove_patterns_1_sse._Size[_Bingo]);
             _Advance_bytes(_First, 8);
         } while (_First != _Stop);
     }
@@ -3730,10 +3732,11 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
             const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
             const __m128i _Mask   = _mm_cmpeq_epi16(_Src, _Match);
             const unsigned _Bingo = _mm_movemask_epi8(_mm_packs_epi16(_Mask, _mm_setzero_si128()));
-            const __m128i _Shuf   = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_patterns_2._Shuf[_Bingo]));
-            const __m128i _Dest   = _mm_shuffle_epi8(_Src, _Shuf);
+            const __m128i _Shuf =
+                _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_patterns_2_sse._Shuf[_Bingo]));
+            const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
             _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
-            _Advance_bytes(_Out, _Remove_patterns_2._Size[_Bingo]);
+            _Advance_bytes(_Out, _Remove_patterns_2_sse._Size[_Bingo]);
             _Advance_bytes(_First, 16);
         } while (_First != _Stop);
     }
@@ -3745,7 +3748,8 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
     _First     = const_cast<void*>(__std_find_trivial_4(_First, _Last, _Val));
     void* _Out = _First;
 
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+    if (_Use_avx2() && _Size_bytes >= 32) {
         const __m256i _Match = _mm256_set1_epi32(_Val);
 
         void* _Stop = _First;
@@ -3754,14 +3758,30 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
             const __m256i _Src    = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
             const __m256i _Mask   = _mm256_cmpeq_epi32(_Src, _Match);
             const unsigned _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
-            const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_patterns_4._Shuf[_Bingo]));
+            const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_patterns_4_avx._Shuf[_Bingo]));
             const __m256i _Dest   = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
-            _Advance_bytes(_Out, _Remove_patterns_4._Size[_Bingo]);
+            _Advance_bytes(_Out, _Remove_patterns_4_avx._Size[_Bingo]);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop);
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+    } else if (_Use_sse42() && _Size_bytes >= 16) {
+        const __m128i _Match = _mm_set1_epi32(_Val);
+
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        do {
+            const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
+            const __m128i _Mask   = _mm_cmpeq_epi32(_Src, _Match);
+            const unsigned _Bingo = _mm_movemask_ps(_mm_castsi128_ps(_Mask));
+            const __m128i _Shuf =
+                _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_patterns_4_sse._Shuf[_Bingo]));
+            const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
+            _Advance_bytes(_Out, _Remove_patterns_4_sse._Size[_Bingo]);
+            _Advance_bytes(_First, 16);
+        } while (_First != _Stop);
     }
 
     return _Remove_fallback(_First, _Last, _Out, _Val);
@@ -3780,14 +3800,30 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
             const __m256i _Src    = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
             const __m256i _Mask   = _mm256_cmpeq_epi64(_Src, _Match);
             const unsigned _Bingo = _mm256_movemask_pd(_mm256_castsi256_pd(_Mask));
-            const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_patterns_8._Shuf[_Bingo]));
+            const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_patterns_8_avx._Shuf[_Bingo]));
             const __m256i _Dest   = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
-            _Advance_bytes(_Out, _Remove_patterns_8._Size[_Bingo]);
+            _Advance_bytes(_Out, _Remove_patterns_8_avx._Size[_Bingo]);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop);
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+    } else if (_Use_sse42() && _Size_bytes >= 16) {
+        const __m128i _Match = _mm_set1_epi64x(_Val);
+
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        do {
+            const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
+            const __m128i _Mask   = _mm_cmpeq_epi64(_Src, _Match);
+            const unsigned _Bingo = _mm_movemask_pd(_mm_castsi128_pd(_Mask));
+            const __m128i _Shuf =
+                _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_patterns_8_sse._Shuf[_Bingo]));
+            const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
+            _Advance_bytes(_Out, _Remove_patterns_8_sse._Size[_Bingo]);
+            _Advance_bytes(_First, 16);
+        } while (_First != _Stop);
     }
 
     return _Remove_fallback(_First, _Last, _Out, _Val);
