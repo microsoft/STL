@@ -558,6 +558,13 @@ STATIC_ASSERT(!is_constructible_v<tuple<A>, allocator_arg_t, allocator<int>, pai
 STATIC_ASSERT(is_constructible_v<tuple<A, A>, allocator_arg_t, allocator<int>, pair<Ex, Ex>>);
 STATIC_ASSERT(!is_constructible_v<tuple<A, A, A>, allocator_arg_t, allocator<int>, pair<Ex, Ex>>);
 
+// Also test that the internal constructor used for the piecewise_construct_t constructor of pair is not public.
+STATIC_ASSERT(!is_constructible_v<pair<int, int>, tuple<>&, tuple<>&, make_index_sequence<0>, make_index_sequence<0>>);
+STATIC_ASSERT(
+    !is_constructible_v<pair<int, int>, tuple<int>&, tuple<>&, make_index_sequence<1>, make_index_sequence<0>>);
+STATIC_ASSERT(
+    !is_constructible_v<pair<int, int>, tuple<int>&, tuple<int>&, make_index_sequence<1>, make_index_sequence<1>>);
+
 
 pair<int, int> func1() {
     const int x = 17;

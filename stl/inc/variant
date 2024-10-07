@@ -934,12 +934,13 @@ public:
         : _Mybase(in_place_index<0>) {} // value-initialize alternative 0
 
     template <class _Ty,
-        enable_if_t<sizeof...(_Types) != 0 //
-                        && !is_same_v<_Remove_cvref_t<_Ty>, variant> //
-                        && !_Is_specialization_v<_Remove_cvref_t<_Ty>, in_place_type_t> //
-                        && !_Is_in_place_index_specialization<_Remove_cvref_t<_Ty>> //
-                        && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>, //
-            int> = 0>
+        enable_if_t<sizeof...(_Types) != 0 && !is_same_v<_Remove_cvref_t<_Ty>, variant>
+                        && !_Is_specialization_v<_Remove_cvref_t<_Ty>, in_place_type_t>
+                        && !_Is_in_place_index_specialization<_Remove_cvref_t<_Ty>>,
+            int> = 0,
+        // These enable_if_t constraints are distinct to enable short-circuiting and avoid
+        // substitution into _Variant_init_type when the first constraint is not satisfied.
+        enable_if_t<is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>, int> = 0>
     constexpr variant(_Ty&& _Obj) noexcept(is_nothrow_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>)
         : _Mybase(in_place_index<_Variant_init_index<_Ty, _Types...>::value>, static_cast<_Ty&&>(_Obj)) {
         // initialize to the type selected by passing _Obj to the overload set f(Types)...
@@ -976,10 +977,12 @@ public:
         // initialize alternative _Idx from _Ilist and _Args...
     }
 
-    template <class _Ty, enable_if_t<!is_same_v<_Remove_cvref_t<_Ty>, variant>
-                                         && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>
-                                         && is_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>,
-                             int> = 0>
+    template <class _Ty, enable_if_t<!is_same_v<_Remove_cvref_t<_Ty>, variant>, int> = 0,
+        // These enable_if_t constraints are distinct to enable short-circuiting and avoid
+        // substitution into _Variant_init_type when the first constraint is not satisfied.
+        enable_if_t<is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>
+                        && is_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>,
+            int> = 0>
     _CONSTEXPR20 variant& operator=(_Ty&& _Obj)
         noexcept(is_nothrow_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>
                  && is_nothrow_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>) {
