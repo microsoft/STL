@@ -4021,7 +4021,7 @@ namespace {
             if (_Size_chars > _Size_bits) {
                 _Size_convert = _Size_bits;
 
-                for (size_t _Ix = _Size_bits, _Mx = _Size_chars; _Ix < _Mx; ++_Ix) {
+                for (size_t _Ix = _Size_bits; _Ix < _Size_chars; ++_Ix) {
                     if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
                         return false;
                     }
