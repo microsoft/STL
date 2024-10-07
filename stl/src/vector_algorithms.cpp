@@ -1812,7 +1812,7 @@ namespace {
             auto _Cur_idx_max  = _Traits::_Zero(); // vector of vertical maximum indices
             auto _Cur_idx      = _Traits::_Zero(); // current vector of indices
 
-            const auto _Update_min_max = [&](const auto _Cur_vals, const auto _Blend_idx_0,
+            const auto _Update_min_max = [&](const auto _Cur_vals, [[maybe_unused]] const auto _Blend_idx_0,
                                              const auto _Blend_idx_1) noexcept {
                 if constexpr ((_Mode & _Mode_min) != 0) {
                     // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
@@ -1820,8 +1820,6 @@ namespace {
                     // Remember their vertical indices
                     _Cur_idx_min  = _Blend_idx_1(_Cur_idx_min, _Cur_idx, _Traits::_Mask_cast(_Is_less));
                     _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
-
-                    (void) _Blend_idx_0;
                 }
 
                 if constexpr (_Mode == _Mode_max) {
@@ -1830,8 +1828,6 @@ namespace {
                     // Remember their vertical indices
                     _Cur_idx_max  = _Blend_idx_1(_Cur_idx_max, _Cur_idx, _Traits::_Mask_cast(_Is_greater));
                     _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
-
-                    (void) _Blend_idx_0;
                 } else if constexpr (_Mode == _Mode_both) {
                     // Looking for the last occurrence of maximum, do overwrite with newly found occurrences
                     const auto _Is_less = _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
