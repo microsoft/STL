@@ -3976,8 +3976,8 @@ namespace {
         }
 
         template <class _Traits, class _Elem>
-        bool _Impl(void* _Dest, const _Elem* _Src, size_t _Size_bytes, size_t _Size_bits, size_t _Size_chars,
-            _Elem _Elem0, _Elem _Elem1) noexcept {
+        bool _Impl(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
+            const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
             const auto _Dx0 = _Traits::_Set(_Elem0);
             const auto _Dx1 = _Traits::_Set(_Elem1);
 
