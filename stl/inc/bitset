@@ -23,11 +23,19 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // !defined(_STD_BITSET_TO_STREAM_STACK_RESERVATION)
 
 #if _USE_STD_VECTOR_ALGORITHMS
+// These bitset functions sometimes assume that the bit array has zero padding to a multiple of 2 or 4 bytes.
+// The assumptions hold true even for the vNext suggestion to use smaller types for small bitsets (see GH-1498)
+// due to vectorization thresholds.
+
 extern "C" {
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* _Dest, const void* _Src, size_t _Size_bits, char _Elem0, char _Elem1) noexcept;
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     wchar_t* _Dest, const void* _Src, size_t _Size_bits, wchar_t _Elem0, wchar_t _Elem1) noexcept;
+__declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const char* _Src, size_t _Size_bytes,
+    size_t _Size_bits, size_t _Size_chars, char _Elem0, char _Elem1) noexcept;
+__declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const wchar_t* _Src, size_t _Size_bytes,
+    size_t _Size_bits, size_t _Size_chars, wchar_t _Elem0, wchar_t _Elem1) noexcept;
 } // extern "C"
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -115,6 +123,30 @@ public:
 private:
     template <class _Traits, class _Elem>
     _CONSTEXPR23 void _Construct(const _Elem* const _Ptr, size_t _Count, const _Elem _Elem0, const _Elem _Elem1) {
+#if _USE_STD_VECTOR_ALGORITHMS
+        constexpr size_t _Bitset_from_string_vector_threshold = 16;
+        if constexpr (_Bits >= _Bitset_from_string_vector_threshold
+                      && _Is_implementation_handled_char_traits<_Traits> && sizeof(_Elem) <= 2) {
+            if (!_STD _Is_constant_evaluated()) {
+                bool _Result;
+
+                if constexpr (sizeof(_Elem) == 1) {
+                    _Result = __std_bitset_from_string_1(_Array, reinterpret_cast<const char*>(_Ptr), sizeof(_Array),
+                        _Bits, _Count, static_cast<char>(_Elem0), static_cast<char>(_Elem1));
+                } else {
+                    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Elem) == 2);
+                    _Result = __std_bitset_from_string_2(_Array, reinterpret_cast<const wchar_t*>(_Ptr), sizeof(_Array),
+                        _Bits, _Count, static_cast<wchar_t>(_Elem0), static_cast<wchar_t>(_Elem1));
+                }
+
+                if (!_Result) {
+                    _Xinv();
+                }
+
+                return;
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
         if (_Count > _Bits) {
             for (size_t _Idx = _Bits; _Idx < _Count; ++_Idx) {
                 const auto _Ch = _Ptr[_Idx];
@@ -462,8 +494,8 @@ public:
     _CONSTEXPR23 void _To_string(
         _Elem* const _Buf, const size_t _Len, const _Elem _Elem0, const _Elem _Elem1) const noexcept {
 #if _USE_STD_VECTOR_ALGORITHMS
-        constexpr size_t _Bitset_vector_threshold = 32;
-        if constexpr (_Bits >= _Bitset_vector_threshold && is_integral_v<_Elem> && sizeof(_Elem) <= 2) {
+        constexpr size_t _Bitset_to_string_vector_threshold = 32;
+        if constexpr (_Bits >= _Bitset_to_string_vector_threshold && is_integral_v<_Elem> && sizeof(_Elem) <= 2) {
             if (!_Is_constant_evaluated()) {
                 if constexpr (sizeof(_Elem) == 1) {
                     __std_bitset_to_string_1(reinterpret_cast<char*>(_Buf), _Array, _Len, static_cast<char>(_Elem0),
