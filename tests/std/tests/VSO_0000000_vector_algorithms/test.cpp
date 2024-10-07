@@ -13,6 +13,7 @@
 #include <limits>
 #include <list>
 #include <random>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <utility>
