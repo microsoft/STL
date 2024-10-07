@@ -1056,12 +1056,10 @@ void test_bitset(mt19937_64& gen) {
     assert(bitset<45>("111").to_ullong() == 0x7);
     assert_throws_inv([] { (void) bitset<45>("11x11"); });
 
-    assert(bitset<64>(
-               "xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo", basic_string<char>::npos, 'o', 'x')
+    assert(bitset<64>("xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo", string::npos, 'o', 'x')
                .to_ullong()
            == 0xFEDCBA9876543210ULL);
-    assert(bitset<64>(L"xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo", basic_string<wchar_t>::npos,
-               L'o', L'x')
+    assert(bitset<64>(L"xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo", wstring::npos, L'o', L'x')
                .to_ullong()
            == 0xFEDCBA9876543210ULL);
 
