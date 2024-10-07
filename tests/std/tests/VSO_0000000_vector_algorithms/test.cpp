@@ -1002,7 +1002,7 @@ void assert_throws_inv(F f) {
     try {
         f();
         assert(false);
-    } catch (std::invalid_argument&) {
+    } catch (const invalid_argument&) {
     }
 }
 
