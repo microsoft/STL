@@ -23,8 +23,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // !defined(_STD_BITSET_TO_STREAM_STACK_RESERVATION)
 
 #if _USE_STD_VECTOR_ALGORITHMS
-// These bitset functions sometimes assume bit array has zero padding to multiple of 2 or 4 bytes
-// The assumptions hold true even for vNext suggestion to use smaller types for small bitsets
+// These bitset functions sometimes assume that the bit array has zero padding to a multiple of 2 or 4 bytes.
+// The assumptions hold true even for the vNext suggestion to use smaller types for small bitsets (see GH-1498)
 // due to vectorization thresholds.
 
 extern "C" {
