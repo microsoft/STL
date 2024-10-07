@@ -4045,7 +4045,7 @@ namespace {
 
         template <class _Avx, class _Sse, class _Elem>
         bool _Dispatch(void* _Dest, const _Elem* _Src, size_t _Size_bytes, size_t _Size_bits, size_t _Size_chars,
-            _Elem _Elem0, _Elem _Elem1) {
+            _Elem _Elem0, _Elem _Elem1) noexcept {
 #ifndef _M_ARM64EC
             if (_Use_avx2() && _Size_bits >= 256) {
                 _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
