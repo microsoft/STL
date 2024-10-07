@@ -2137,9 +2137,9 @@ namespace {
                             _Tail_vals = _Traits::_Blendval(_Cur_vals, _Tail_vals, _Tail_mask);
 
                             _Update_min_max(_Tail_vals);
-                        }
 
-                        _Advance_bytes(_First, _Tail_byte_size);
+                            _Advance_bytes(_First, _Tail_byte_size);
+                        }
                     }
 
                     // Reached end. Compute horizontal min and/or max.
