@@ -4,8 +4,6 @@
 #include <deque>
 #include <forward_list>
 #include <list>
-#include <queue>
-#include <stack>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -20,12 +18,6 @@ template <class T>
 struct convertible_to_any {
     operator T() &&; // not defined, only used in unevaluated context
 };
-
-template <class Cont, class = void>
-constexpr bool has_emplace = false;
-template <class Cont>
-constexpr bool has_emplace<Cont,
-    void_t<decltype(declval<Cont&>().emplace(declval<convertible_to_any<typename Cont::value_type>>()))>> = true;
 
 template <class Cont, class = void>
 constexpr bool has_emplace_back = false;
@@ -51,6 +43,7 @@ STATIC_ASSERT(has_emplace_front<deque<S2>>);
 STATIC_ASSERT(has_emplace_front<forward_list<S2>>);
 STATIC_ASSERT(has_emplace_back<list<S2>>);
 STATIC_ASSERT(has_emplace_front<list<S2>>);
-STATIC_ASSERT(has_emplace<queue<S2>>);
-STATIC_ASSERT(has_emplace<stack<S2>>);
 STATIC_ASSERT(has_emplace_back<vector<bool>>); // Cannot trigger this bug, but for consistency
+
+// N4988 [queue.defn] and [stack.defn] require the container adaptors to have `decltype(auto) emplace(Args&&... args)`,
+// allowing them to adapt both C++14-era and C++17-era containers.

@@ -37,9 +37,11 @@ _NODISCARD inline unsigned long _Floor_of_log_2(size_t _Value) noexcept { // ret
     }
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
 #ifdef _WIN64
-    _BitScanReverse64(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
+    // CodeQL [SM02313] _Result is always initialized: the code above guarantees that _Value is non-zero.
+    _BitScanReverse64(&_Result, _Value);
 #else // ^^^ 64-bit / 32-bit vvv
-    _BitScanReverse(&_Result, _Value); // lgtm [cpp/conditionallyuninitializedvariable]
+    // CodeQL [SM02313] _Result is always initialized: the code above guarantees that _Value is non-zero.
+    _BitScanReverse(&_Result, _Value);
 #endif // ^^^ 32-bit ^^^
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 

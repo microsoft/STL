@@ -508,11 +508,6 @@ struct _String_constructor_concat_tag {
     explicit _String_constructor_concat_tag() = default;
 };
 
-struct _String_constructor_rvalue_allocator_tag {
-    // tag to select constructors used by basic_stringbuf's rvalue str()
-    explicit _String_constructor_rvalue_allocator_tag() = default;
-};
-
 [[noreturn]] inline void _Xlen_string() {
     _Xlength_error("string too long");
 }
@@ -1145,12 +1140,6 @@ public:
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
-    basic_string(_String_constructor_rvalue_allocator_tag, _Alloc&& _Al)
-        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Al)) {
-        // Used exclusively by basic_stringbuf
-        _Construct_empty();
-    }
-
     _NODISCARD bool _Move_assign_from_buffer(
         _Elem* const _Right, const size_type _Size, const size_type _Actual_allocation_size) {
         // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_mode_engaged()

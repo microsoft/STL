@@ -1535,10 +1535,6 @@ public:
     }
 };
 
-struct _Move_allocator_tag {
-    explicit _Move_allocator_tag() = default;
-};
-
 template <class _Ty>
 pair<_Ty*, ptrdiff_t> _Get_temporary_buffer(ptrdiff_t _Count) noexcept {
     if (static_cast<size_t>(_Count) <= static_cast<size_t>(-1) / sizeof(_Ty)) {
@@ -2644,10 +2640,22 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 _STD_END
 
 #if _HAS_CXX17
+#define _ADAPTOR_EMPLACE_RETURN decltype(auto)
+#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+#define _ADAPTOR_EMPLACE_RETURN void
+#endif // ^^^ !_HAS_CXX17 ^^^
+
+#if _HAS_CXX17
 #define _CONTAINER_EMPLACE_RETURN reference
 #else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
 #define _CONTAINER_EMPLACE_RETURN void
 #endif // ^^^ !_HAS_CXX17 ^^^
+
+#if _HAS_CXX20
+#define _LIST_REMOVE_RETURN size_type
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+#define _LIST_REMOVE_RETURN void
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
