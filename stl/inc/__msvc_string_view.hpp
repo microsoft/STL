@@ -874,7 +874,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
             }
 
             if (_Match_try == _Haystack) {
-                break; // at beginning, no more chance for match
+                return static_cast<size_t>(-1); // at beginning, no more chance for match
             }
         }
     }
