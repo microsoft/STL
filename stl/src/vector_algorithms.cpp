@@ -3215,7 +3215,7 @@ namespace {
                 }
 
                 const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
-                const __m128i _Data1         = _mm_load_si128(reinterpret_cast<const __m128i*>(_Haystack));
+                const __m128i _Data1         = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
 
                 if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op)) {
                     return _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op);
@@ -3272,7 +3272,7 @@ namespace {
                 }
 
                 const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
-                const __m128i _Data1         = _mm_load_si128(reinterpret_cast<const __m128i*>(_Haystack));
+                const __m128i _Data1         = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
                 _Test_whole_needle(_Data1, _Last_part_size_el);
 
                 return static_cast<size_t>(_Found_pos);
