@@ -2914,7 +2914,7 @@ namespace {
                     };
 
 #pragma warning(push)
-#pragma warning(disable : 4324)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
                     const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1) noexcept {
                         const void* _Cur_needle = _First2;
                         do {
@@ -3247,7 +3247,7 @@ namespace {
                 };
 
 #pragma warning(push)
-#pragma warning(disable : 4324)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
                 const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1) noexcept {
                     const void* _Cur_needle = _Needle;
                     do {
