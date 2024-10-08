@@ -843,9 +843,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
 
                 if (_Use_bitmap) {
                     _String_bitmap<_Elem> _Matches;
-                    if (_Matches._Mark(
-                            _Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the
-                                                                // bitmap, fall back to the serial algorithm
+                    if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
                         for (auto _Match_try = _Haystack + _Hay_start;; --_Match_try) {
                             if (_Matches._Match(*_Match_try)) {
                                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
@@ -856,6 +854,8 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
                             }
                         }
                     }
+
+                    // couldn't put one of the characters into the bitmap, fall back to vectorized or serial algorithms
                 }
 
 #if _USE_STD_VECTOR_ALGORITHMS
