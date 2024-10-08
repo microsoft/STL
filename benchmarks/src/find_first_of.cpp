@@ -61,7 +61,7 @@ BENCHMARK(bm<AlgType::str_member_first, char>)->Apply(common_args);
 BENCHMARK(bm<AlgType::str_member_first, wchar_t>)->Apply(common_args);
 BENCHMARK(bm<AlgType::str_member_first, wchar_t, L'\x03B1'>)->Apply(common_args);
 BENCHMARK(bm<AlgType::str_member_first, char32_t>)->Apply(common_args);
-BENCHMARK(bm<AlgType::str_member_first, char32_t, L'\x03B1'>)->Apply(common_args);
+BENCHMARK(bm<AlgType::str_member_first, char32_t, U'\x03B1'>)->Apply(common_args);
 
 BENCHMARK(bm<AlgType::str_member_last, char>)->Apply(common_args);
 BENCHMARK(bm<AlgType::str_member_last, wchar_t>)->Apply(common_args);
