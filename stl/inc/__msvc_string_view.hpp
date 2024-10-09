@@ -822,19 +822,18 @@ constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_p
     if (_Start_at < _Hay_size) { // room for match, look for it
         if constexpr (_Special) {
             _String_bitmap<typename _Traits::char_type> _Matches;
-            if (!_Matches._Mark(_Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the
-                                                                    // bitmap, fall back to the serial algorithm
-                return _Traits_find_first_not_of<_Traits, false>(
-                    _Haystack, _Hay_size, _Start_at, _Needle, _Needle_size);
+            if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
+                const auto _End = _Haystack + _Hay_size;
+                for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
+                    if (!_Matches._Match(*_Match_try)) {
+                        return static_cast<size_t>(_Match_try - _Haystack); // found a match
+                    }
+                }
+                return static_cast<size_t>(-1); // no match
             }
 
-            const auto _End = _Haystack + _Hay_size;
-            for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
-                if (!_Matches._Match(*_Match_try)) {
-                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
-                }
-            }
-            return static_cast<size_t>(-1); // no match
+            // couldn't put one of the characters into the bitmap, fall back to the serial algorithm
+            return _Traits_find_first_not_of<_Traits, false>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size);
         } else {
             const auto _End = _Haystack + _Hay_size;
             for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
@@ -872,20 +871,20 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
     if (_Hay_size != 0) { // worth searching, do it
         if constexpr (_Special) {
             _String_bitmap<typename _Traits::char_type> _Matches;
-            if (!_Matches._Mark(_Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the
-                                                                    // bitmap, fall back to the serial algorithm
-                return _Traits_find_last_not_of<_Traits, false>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size);
-            }
+            if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
+                for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
+                    if (!_Matches._Match(*_Match_try)) {
+                        return static_cast<size_t>(_Match_try - _Haystack); // found a match
+                    }
 
-            for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
-                if (!_Matches._Match(*_Match_try)) {
-                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
-                }
-
-                if (_Match_try == _Haystack) {
-                    return static_cast<size_t>(-1); // at beginning, no more chance for match
+                    if (_Match_try == _Haystack) {
+                        return static_cast<size_t>(-1); // at beginning, no more chance for match
+                    }
                 }
             }
+
+            // couldn't put one of the characters into the bitmap, fall back to the serial algorithm
+            return _Traits_find_last_not_of<_Traits, false>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size);
         } else {
             for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
                 if (!_Traits::find(_Needle, _Needle_size, *_Match_try)) {
