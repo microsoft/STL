@@ -833,13 +833,12 @@ constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_p
             }
 
             // couldn't put one of the characters into the bitmap, fall back to the serial algorithm
-            return _Traits_find_first_not_of<_Traits, false>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size);
-        } else {
-            const auto _End = _Haystack + _Hay_size;
-            for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
-                if (!_Traits::find(_Needle, _Needle_size, *_Match_try)) {
-                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
-                }
+        }
+
+        const auto _End = _Haystack + _Hay_size;
+        for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
+            if (!_Traits::find(_Needle, _Needle_size, *_Match_try)) {
+                return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
         }
     }
@@ -884,16 +883,15 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
             }
 
             // couldn't put one of the characters into the bitmap, fall back to the serial algorithm
-            return _Traits_find_last_not_of<_Traits, false>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size);
-        } else {
-            for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
-                if (!_Traits::find(_Needle, _Needle_size, *_Match_try)) {
-                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
-                }
+        }
 
-                if (_Match_try == _Haystack) {
-                    return static_cast<size_t>(-1); // at beginning, no more chance for match
-                }
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
+            if (!_Traits::find(_Needle, _Needle_size, *_Match_try)) {
+                return static_cast<size_t>(_Match_try - _Haystack); // found a match
+            }
+
+            if (_Match_try == _Haystack) {
+                return static_cast<size_t>(-1); // at beginning, no more chance for match
             }
         }
     }
