@@ -821,7 +821,8 @@ constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_p
     // in [_Haystack, _Haystack + _Hay_size), look for none of [_Needle, _Needle + _Needle_size), at/after _Start_at
     if (_Start_at < _Hay_size) { // room for match, look for it
         if constexpr (_Special) {
-            _String_bitmap<typename _Traits::char_type> _Matches;
+            using _Elem = typename _Traits::char_type;
+            _String_bitmap<_Elem> _Matches;
             if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
                 const auto _End = _Haystack + _Hay_size;
                 for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
@@ -869,7 +870,8 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
     // in [_Haystack, _Haystack + _Hay_size), look for none of [_Needle, _Needle + _Needle_size), before _Start_at
     if (_Hay_size != 0) { // worth searching, do it
         if constexpr (_Special) {
-            _String_bitmap<typename _Traits::char_type> _Matches;
+            using _Elem = typename _Traits::char_type;
+            _String_bitmap<_Elem> _Matches;
             if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
                 for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
                     if (!_Matches._Match(*_Match_try)) {
