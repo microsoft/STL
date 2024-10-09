@@ -834,6 +834,7 @@ constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_p
                     return static_cast<size_t>(_Match_try - _Haystack); // found a match
                 }
             }
+            return static_cast<size_t>(-1); // no match
         } else {
             const auto _End = _Haystack + _Hay_size;
             for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
