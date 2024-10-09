@@ -635,7 +635,7 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
             }
 
             if (_Match_try == _Haystack) {
-                break; // at beginning, no more chance for match
+                return static_cast<size_t>(-1); // at beginning, no more chance for match
             }
         }
     }
@@ -654,7 +654,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
             }
 
             if (_Match_try == _Haystack) {
-                break; // at beginning, no more chance for match
+                return static_cast<size_t>(-1); // at beginning, no more chance for match
             }
         }
     }
@@ -882,7 +882,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
                 }
 
                 if (_Match_try == _Haystack) {
-                    break; // at beginning, no more chance for match
+                    return static_cast<size_t>(-1); // at beginning, no more chance for match
                 }
             }
         } else {
@@ -892,7 +892,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
                 }
 
                 if (_Match_try == _Haystack) {
-                    break; // at beginning, no more chance for match
+                    return static_cast<size_t>(-1); // at beginning, no more chance for match
                 }
             }
         }
@@ -912,7 +912,7 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
             }
 
             if (_Match_try == _Haystack) {
-                break; // at beginning, no more chance for match
+                return static_cast<size_t>(-1); // at beginning, no more chance for match
             }
         }
     }
