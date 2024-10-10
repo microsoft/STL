@@ -418,7 +418,7 @@ _NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter_parse(
 
 template <class _CharT, class _FormatContext, class _Func>
 _NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(_FormatContext& _Format_ctx,
-    const _Fill_align_and_width_specs<_CharT>& _Specs, const int _Width, _Fmt_align _Default_align, _Func&& _Fn);
+    const _Fill_align_and_width_specs<_CharT>& _Specs, int _Width, _Fmt_align _Default_align, _Func&& _Fn);
 
 template <class _CharT>
 struct _Fill_align_and_width_formatter {
