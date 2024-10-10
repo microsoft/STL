@@ -3263,9 +3263,9 @@ _NODISCARD constexpr _ParseContext::iterator _Range_formatter_parse(formatter<_T
 }
 
 template <class _Ty, class _CharT, _RANGES input_range _Range, class _FormatContext>
-void _Range_formatter_format_as_sequence(const formatter<_Ty, _CharT>& _Underlying, _Range&& _Rng,
+void _Range_formatter_format_as_sequence(const formatter<_Ty, _CharT>& _Underlying,
     const basic_string_view<_CharT> _Separator, const basic_string_view<_CharT> _Opening_bracket,
-    const basic_string_view<_CharT> _Closing_bracket, _FormatContext& _Ctx) {
+    const basic_string_view<_CharT> _Closing_bracket, _Range&& _Rng, _FormatContext& _Ctx) {
     _Ctx.advance_to(_STD _Fmt_write(_Ctx.out(), _Opening_bracket));
     bool _Separate = false;
     for (auto&& _Elem : _Rng) {
@@ -3310,7 +3310,7 @@ void _Range_formatter_format_as_string(_Range&& _Rng, _FormatContext& _Ctx, cons
 template <class _Ty, class _CharT, _RANGES input_range _Range, class _FormatContext>
 _NODISCARD _FormatContext::iterator _Range_formatter_format(const formatter<_Ty, _CharT>& _Underlying,
     const basic_string_view<_CharT> _Separator, const basic_string_view<_CharT> _Opening_bracket,
-    const basic_string_view<_CharT> _Closing_bracket, _Range&& _Rng, const _Range_specs<_CharT>& _Specs,
+    const basic_string_view<_CharT> _Closing_bracket, const _Range_specs<_CharT>& _Specs, _Range&& _Rng,
     _FormatContext& _Ctx) {
     auto _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
@@ -3331,12 +3331,12 @@ _NODISCARD _FormatContext::iterator _Range_formatter_format(const formatter<_Ty,
                 _STD _Range_formatter_format_as_string<_CharT>(
                     _STD forward<_Range>(_Rng), _Nested_context, _Specs._Type == '?');
             } else {
-                _STD _Range_formatter_format_as_sequence(_Underlying, _STD forward<_Range>(_Rng), _Separator,
-                    _Opening_bracket, _Closing_bracket, _Nested_context);
+                _STD _Range_formatter_format_as_sequence(_Underlying, _Separator, _Opening_bracket, _Closing_bracket,
+                    _STD forward<_Range>(_Rng), _Nested_context);
             }
         } else {
-            _STD _Range_formatter_format_as_sequence(_Underlying, _STD forward<_Range>(_Rng), _Separator,
-                _Opening_bracket, _Closing_bracket, _Nested_context);
+            _STD _Range_formatter_format_as_sequence(_Underlying, _Separator, _Opening_bracket, _Closing_bracket,
+                _STD forward<_Range>(_Rng), _Nested_context);
         }
     }
 
@@ -3619,8 +3619,9 @@ _NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter_parse(
 }
 
 template <class _CharT, class _FormatContext, class _Func>
-_NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(_FormatContext& _Format_ctx,
-    const _Fill_align_and_width_specs<_CharT>& _Specs, const int _Width, _Fmt_align _Default_align, _Func&& _Fn) {
+_NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(
+    const _Fill_align_and_width_specs<_CharT>& _Specs, _FormatContext& _Format_ctx, const int _Width,
+    _Fmt_align _Default_align, _Func&& _Fn) {
     _Fill_align_and_width_specs _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =

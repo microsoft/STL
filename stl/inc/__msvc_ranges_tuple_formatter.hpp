@@ -905,7 +905,7 @@ _NODISCARD constexpr _ParseContext::iterator _Range_formatter_parse(formatter<_T
 template <class _Ty, class _CharT, _RANGES input_range _Range, class _FormatContext>
 _NODISCARD _FormatContext::iterator _Range_formatter_format(const formatter<_Ty, _CharT>& _Underlying,
     basic_string_view<_CharT> _Separator, basic_string_view<_CharT> _Opening_bracket,
-    basic_string_view<_CharT> _Closing_bracket, _Range&& _Rng, const _Range_specs<_CharT>& _Specs,
+    basic_string_view<_CharT> _Closing_bracket, const _Range_specs<_CharT>& _Specs, _Range&& _Rng,
     _FormatContext& _Ctx);
 
 _EXPORT_STD template <class _Ty, class _CharT = char>
@@ -959,7 +959,7 @@ private:
               && derived_from<typename _FormatContext::iterator::container_type, _Fmt_buffer<_CharT>>
     _FormatContext::iterator _Format(_Range&& _Rng, _FormatContext& _Ctx) const {
         return _STD _Range_formatter_format(
-            _Underlying, _Separator, _Opening_bracket, _Closing_bracket, _STD forward<_Range>(_Rng), _Specs, _Ctx);
+            _Underlying, _Separator, _Opening_bracket, _Closing_bracket, _Specs, _STD forward<_Range>(_Rng), _Ctx);
     }
 };
 
