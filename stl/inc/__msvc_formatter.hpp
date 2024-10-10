@@ -123,6 +123,8 @@ struct _Dynamic_format_specs : _Basic_format_specs<_CharT> {
     int _Dynamic_precision_index = -1;
 };
 
+[[noreturn]] inline void _Throw_format_error(const char* _Message);
+
 _EXPORT_STD template <class _CharT>
 class basic_format_parse_context;
 
