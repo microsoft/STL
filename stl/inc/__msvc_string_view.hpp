@@ -816,7 +816,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
     return static_cast<size_t>(-1); // no match
 }
 
-template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
+template <class _Traits>
 constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
@@ -824,7 +824,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
     if (_Needle_size != 0 && _Hay_size != 0) { // worth searching, do it
         const auto _Hay_start = (_STD min)(_Start_at, _Hay_size - 1);
 
-        if constexpr (_Special) {
+        if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
             if (!_STD _Is_constant_evaluated()) {
                 using _Elem = typename _Traits::char_type;
 
