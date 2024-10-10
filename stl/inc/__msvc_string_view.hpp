@@ -714,7 +714,7 @@ private:
     bool _Matches[256] = {};
 };
 
-template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
+template <class _Traits>
 constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
@@ -723,7 +723,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
         const auto _Hay_start = _Haystack + _Start_at;
         const auto _Hay_end   = _Haystack + _Hay_size;
 
-        if constexpr (_Special) {
+        if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
             if (!_STD _Is_constant_evaluated()) {
                 using _Elem = typename _Traits::char_type;
 
@@ -814,7 +814,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
     return static_cast<size_t>(-1); // no match
 }
 
-template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
+template <class _Traits>
 constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
@@ -823,7 +823,7 @@ constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_p
         const auto _Hay_start = _Haystack + _Start_at;
         const auto _Hay_end   = _Haystack + _Hay_size;
 
-        if constexpr (_Special) {
+        if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
             using _Elem = typename _Traits::char_type;
             _String_bitmap<_Elem> _Matches;
             if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
@@ -864,7 +864,7 @@ constexpr size_t _Traits_find_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_
     return static_cast<size_t>(-1); // no match
 }
 
-template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
+template <class _Traits>
 constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
@@ -872,7 +872,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
     if (_Hay_size != 0) { // worth searching, do it
         const auto _Hay_start = (_STD min)(_Start_at, _Hay_size - 1);
 
-        if constexpr (_Special) {
+        if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
             using _Elem = typename _Traits::char_type;
             _String_bitmap<_Elem> _Matches;
             if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
