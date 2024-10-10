@@ -788,34 +788,32 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
     const size_t _Needle_size) noexcept {
     // in [_Haystack, _Haystack + _Hay_size), look for last of [_Needle, _Needle + _Needle_size), before _Start_at
-    if (_Needle_size == 0 || _Hay_size == 0) { // not worth searching
-        return static_cast<size_t>(-1);
-    }
-
-    if constexpr (_Special) {
-        _String_bitmap<typename _Traits::char_type> _Matches;
-        if (!_Matches._Mark(_Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the
-                                                                // bitmap, fall back to the serial algorithm
-            return _Traits_find_last_of<_Traits, false>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size);
-        }
-
-        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
-            if (_Matches._Match(*_Match_try)) {
-                return static_cast<size_t>(_Match_try - _Haystack); // found a match
+    if (_Needle_size != 0 && _Hay_size != 0) { // worth searching, do it
+        if constexpr (_Special) {
+            _String_bitmap<typename _Traits::char_type> _Matches;
+            if (!_Matches._Mark(_Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the
+                                                                    // bitmap, fall back to the serial algorithm
+                return _Traits_find_last_of<_Traits, false>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size);
             }
 
-            if (_Match_try == _Haystack) {
-                break; // at beginning, no more chance for match
-            }
-        }
-    } else {
-        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
-            if (_Traits::find(_Needle, _Needle_size, *_Match_try)) {
-                return static_cast<size_t>(_Match_try - _Haystack); // found a match
-            }
+            for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
+                if (_Matches._Match(*_Match_try)) {
+                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
+                }
 
-            if (_Match_try == _Haystack) {
-                break; // at beginning, no more chance for match
+                if (_Match_try == _Haystack) {
+                    break; // at beginning, no more chance for match
+                }
+            }
+        } else {
+            for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
+                if (_Traits::find(_Needle, _Needle_size, *_Match_try)) {
+                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
+                }
+
+                if (_Match_try == _Haystack) {
+                    break; // at beginning, no more chance for match
+                }
             }
         }
     }
