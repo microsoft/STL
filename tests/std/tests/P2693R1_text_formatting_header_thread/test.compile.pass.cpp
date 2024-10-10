@@ -15,9 +15,9 @@ void verify_semiregularity_for() {
 
     T x;
     T y = x;
-    T z = std::move(x);
+    T z = move(x);
     x   = y;
-    x   = std::move(z);
+    x   = move(z);
 }
 
 void verify_formatters() {
