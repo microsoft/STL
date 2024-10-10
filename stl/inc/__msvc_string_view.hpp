@@ -641,8 +641,6 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
             return static_cast<size_t>(-1); // at beginning, no more chance for match
         }
     }
-
-    return static_cast<size_t>(-1); // no match
 }
 
 template <class _Traits>
@@ -663,8 +661,6 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
             return static_cast<size_t>(-1); // at beginning, no more chance for match
         }
     }
-
-    return static_cast<size_t>(-1); // no match
 }
 
 template <class _Elem, bool = _Is_character<_Elem>::value>
@@ -911,8 +907,6 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
             return static_cast<size_t>(-1); // at beginning, no more chance for match
         }
     }
-
-    return static_cast<size_t>(-1); // no match
 }
 
 template <class _Traits>
@@ -932,8 +926,6 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
             return static_cast<size_t>(-1); // at beginning, no more chance for match
         }
     }
-
-    return static_cast<size_t>(-1); // no match
 }
 
 template <class _Ty>
