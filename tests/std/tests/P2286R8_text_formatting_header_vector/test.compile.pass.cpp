@@ -4,7 +4,6 @@
 // intentionally avoid including <format> to verify that the formatter specialization is defined in <vector>
 
 #include <concepts>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
