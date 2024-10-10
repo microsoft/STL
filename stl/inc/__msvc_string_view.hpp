@@ -880,8 +880,6 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
             return static_cast<size_t>(-1); // at beginning, no more chance for match
         }
     }
-
-    return static_cast<size_t>(-1); // no match
 }
 
 template <class _Traits, bool _Special = _Is_implementation_handled_char_traits<_Traits>>
