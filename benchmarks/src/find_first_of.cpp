@@ -5,7 +5,9 @@
 #include <benchmark/benchmark.h>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
+#include <limits>
 #include <numeric>
 #include <string>
 #include <type_traits>
@@ -15,7 +17,7 @@ using namespace std;
 
 enum class AlgType { std_func, str_member_first, str_member_last };
 
-template <AlgType Alg, class T, T Start = T{'a'}>
+template <AlgType Alg, class T, T Start = T{'!'}>
 void bm(benchmark::State& state) {
     const size_t Pos   = static_cast<size_t>(state.range(0));
     const size_t NSize = static_cast<size_t>(state.range(1));
@@ -24,8 +26,17 @@ void bm(benchmark::State& state) {
 
     using container = conditional_t<Alg == AlgType::std_func, vector<T>, basic_string<T>>;
 
-    container h(HSize, T{'.'});
+    constexpr T HaystackFiller{' '};
+    static_assert(HaystackFiller < Start, "The following iota() should not produce the haystack filler.");
+
+    container h(HSize, HaystackFiller);
     container n(NSize, T{0});
+
+    if (NSize - 1 > static_cast<size_t>(numeric_limits<T>::max()) - static_cast<size_t>(Start)) {
+        puts("ERROR: The following iota() would overflow.");
+        abort();
+    }
+
     iota(n.begin(), n.end(), Start);
 
     if (Pos >= HSize || Which >= NSize) {
