@@ -4256,12 +4256,16 @@ namespace ranges {
         _STATIC_CALL_OPERATOR constexpr replace_copy_if_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Output, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
-            auto _UResult = _Replace_copy_if_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
-                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Output), _STD _Pass_fn(_Pred), _Newval,
-                _STD _Pass_fn(_Proj));
+            auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
+            const auto _Count = _STD _Idl_distance<_It>(_UFirst, _ULast);
+
+            auto _UResult = _Replace_copy_if_unchecked(_STD move(_UFirst), _STD move(_ULast),
+                _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Pred), _Newval, _STD _Pass_fn(_Proj));
 
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _STD move(_UResult.out)};
+            _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+            return {_STD move(_First), _STD move(_Output)};
         }
 
         template <input_range _Rng, class _Ty, output_iterator<const _Ty&> _Out, class _Pj = identity,
@@ -4269,12 +4273,15 @@ namespace ranges {
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
         _STATIC_CALL_OPERATOR constexpr replace_copy_if_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Output, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
-            auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Replace_copy_if_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
-                _Uend(_Range), _STD move(_Output), _STD _Pass_fn(_Pred), _Newval, _STD _Pass_fn(_Proj));
+            const auto _Count = _RANGES _Idl_distance(_Range);
+            auto _First       = _RANGES begin(_Range);
+            auto _UResult     = _Replace_copy_if_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
+                    _Uend(_Range), _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Pred), _Newval,
+                    _STD _Pass_fn(_Proj));
 
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _STD move(_UResult.out)};
+            _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+            return {_STD move(_First), _STD move(_Output)};
         }
 
     private:
