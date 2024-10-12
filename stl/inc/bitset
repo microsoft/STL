@@ -666,7 +666,7 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
     constexpr bool _Has_bits = _Bits > 0;
 
     if constexpr (_Has_bits) {
-        if (_Count != 0) {
+        if (_Count == 0) {
             _State |= _Istr_t::failbit;
         }
     }
