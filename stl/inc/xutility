@@ -269,49 +269,6 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     }
 }
 
-template <class _Ty>
-auto _Min_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
-    constexpr bool _Signed = is_signed_v<_Ty>;
-
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
-        return reinterpret_cast<void*>(::__std_min_8u(_First, _Last));
-#else
-        return reinterpret_cast<void*>(::__std_min_4u(_First, _Last));
-#endif
-    } else if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
-        return ::__std_min_f(_First, _Last);
-    } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
-        return ::__std_min_d(_First, _Last);
-    } else if constexpr (sizeof(_Ty) == 1) {
-        if constexpr (_Signed) {
-            return ::__std_min_1i(_First, _Last);
-        } else {
-            return ::__std_min_1u(_First, _Last);
-        }
-    } else if constexpr (sizeof(_Ty) == 2) {
-        if constexpr (_Signed) {
-            return ::__std_min_2i(_First, _Last);
-        } else {
-            return ::__std_min_2u(_First, _Last);
-        }
-    } else if constexpr (sizeof(_Ty) == 4) {
-        if constexpr (_Signed) {
-            return ::__std_min_4i(_First, _Last);
-        } else {
-            return ::__std_min_4u(_First, _Last);
-        }
-    } else if constexpr (sizeof(_Ty) == 8) {
-        if constexpr (_Signed) {
-            return ::__std_min_8i(_First, _Last);
-        } else {
-            return ::__std_min_8u(_First, _Last);
-        }
-    } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
-    }
-}
-
 template <size_t _Element_size>
 inline size_t // TRANSITION, GH-4496
     _Mismatch_vectorized(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
