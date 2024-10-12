@@ -1639,10 +1639,11 @@ namespace ranges {
             _It _First, _Se _Last, _Out _Output, _Pr _Pred, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _Copy_if_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
-                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Output), _STD _Pass_fn(_Pred),
-                _STD _Pass_fn(_Proj));
+                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Get_unwrapped_unverified(_STD move(_Output)),
+                _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _STD move(_UResult.out)};
+            _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+            return {_STD move(_First), _STD move(_Output)};
         }
 
         template <input_range _Rng, weakly_incrementable _Out, class _Pj = identity,
@@ -1652,9 +1653,10 @@ namespace ranges {
             _Rng&& _Range, _Out _Output, _Pr _Pred, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _Copy_if_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _STD move(_Output), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
+                _STD _Get_unwrapped_unverified(_STD move(_Output)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _STD move(_UResult.out)};
+            _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+            return {_STD move(_First), _STD move(_Output)};
         }
 
     private:
