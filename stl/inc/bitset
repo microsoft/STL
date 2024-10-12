@@ -621,8 +621,9 @@ basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const bi
     const _Elem _Elem1       = _Ctype_fac.widen('1');
 
     _Buffer_for_bitset<_Elem, _Bits> _Buf;
-    _Right._To_string(_Buf, _Bits, _Elem0, _Elem1);
+    _Right._To_string(_Buf._Buf, _Bits, _Elem0, _Elem1);
     _Ostr.write(_Buf._Buf, _Bits);
+    return _Ostr;
 }
 
 _EXPORT_STD template <class _Elem, class _Tr, size_t _Bits>
