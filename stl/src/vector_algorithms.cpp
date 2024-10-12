@@ -2947,19 +2947,19 @@ namespace {
                 constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
                 const size_t _Needle_length = _Byte_length(_First2, _Last2);
 
+                const size_t _Haystack_length = _Byte_length(_First1, _Last1);
+                const void* _Stop_at          = _First1;
+                _Advance_bytes(_Stop_at, _Haystack_length & ~size_t{0xF});
+
                 if (_Needle_length <= 16) {
                     // Special handling of small needle
-                    // The generic branch could also handle it but with slightly worse performance
+                    // The generic branch could also be modified to handle it, but with slightly worse performance
 
                     const int _Needle_length_el = static_cast<int>(_Needle_length / sizeof(_Ty));
 
                     alignas(16) uint8_t _Tmp2[16];
                     memcpy(_Tmp2, _First2, _Needle_length);
                     const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
-
-                    const size_t _Haystack_length = _Byte_length(_First1, _Last1);
-                    const void* _Stop_at          = _First1;
-                    _Advance_bytes(_Stop_at, _Haystack_length & ~size_t{0xF});
 
                     while (_First1 != _Stop_at) {
                         const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
@@ -3002,33 +3002,34 @@ namespace {
 
                     int _Found_pos = _Not_found;
 
-                    const size_t _Haystack_length = _Byte_length(_First1, _Last1);
-                    const void* _Stop_at          = _First1;
-                    _Advance_bytes(_Stop_at, _Haystack_length & ~size_t{0xF});
+                    const auto _Step = [&_Found_pos](const __m128i _Data2, const int _Size2, const __m128i _Data1,
+                                           const int _Size1) noexcept {
+                        if (_mm_cmpestrc(_Data2, _Size2, _Data1, _Size1, _Op)) {
+                            const int _Pos = _mm_cmpestri(_Data2, _Size2, _Data1, _Size1, _Op);
+                            if (_Pos < _Found_pos) {
+                                _Found_pos = _Pos;
+                            }
+                        }
+                    };
+
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+                    const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1) noexcept {
+                        const void* _Cur_needle = _First2;
+                        do {
+                            const __m128i _Data2 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+                            _Step(_Data2, _Part_size_el, _Data1, _Size1);
+                            _Advance_bytes(_Cur_needle, 16);
+                        } while (_Cur_needle != _Last_needle);
+
+                        if (_Last_needle_length_el != 0) {
+                            _Step(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1);
+                        }
+                    };
+#pragma warning(pop)
 
                     while (_First1 != _Stop_at) {
-                        const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
-
-                        for (const void* _Cur_needle = _First2; _Cur_needle != _Last_needle;
-                             _Advance_bytes(_Cur_needle, 16)) {
-                            const __m128i _Data2 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
-                            if (_mm_cmpestrc(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op)) {
-                                const int _Pos = _mm_cmpestri(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
-                                if (_Pos < _Found_pos) {
-                                    _Found_pos = _Pos;
-                                }
-                            }
-                        }
-
-                        if (const int _Needle_length_el = _Last_needle_length_el; _Needle_length_el != 0) {
-                            const __m128i _Data2 = _Last_needle_val;
-                            if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Part_size_el, _Op)) {
-                                const int _Pos = _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Part_size_el, _Op);
-                                if (_Pos < _Found_pos) {
-                                    _Found_pos = _Pos;
-                                }
-                            }
-                        }
+                        _Test_whole_needle(_mm_loadu_si128(static_cast<const __m128i*>(_First1)), _Part_size_el);
 
                         if (_Found_pos != _Not_found) {
                             _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
@@ -3047,27 +3048,7 @@ namespace {
 
                     _Found_pos = _Last_part_size_el;
 
-                    for (const void* _Cur_needle = _First2; _Cur_needle != _Last_needle;
-                         _Advance_bytes(_Cur_needle, 16)) {
-                        const __m128i _Data2 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
-
-                        if (_mm_cmpestrc(_Data2, _Part_size_el, _Data1, _Last_part_size_el, _Op)) {
-                            const int _Pos = _mm_cmpestri(_Data2, _Part_size_el, _Data1, _Last_part_size_el, _Op);
-                            if (_Pos < _Found_pos) {
-                                _Found_pos = _Pos;
-                            }
-                        }
-                    }
-
-                    if (const int _Needle_length_el = _Last_needle_length_el; _Needle_length_el != 0) {
-                        const __m128i _Data2 = _Last_needle_val;
-                        if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op)) {
-                            const int _Pos = _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op);
-                            if (_Pos < _Found_pos) {
-                                _Found_pos = _Pos;
-                            }
-                        }
-                    }
+                    _Test_whole_needle(_Data1, _Last_part_size_el);
 
                     _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
                     return _First1;
@@ -3293,6 +3274,126 @@ namespace {
             return _Fallback<_Ty>(_First1, _Last1, _First2, _Last2);
         }
     } // namespace __std_find_first_of
+
+    template <class _Ty>
+    size_t __stdcall __std_find_last_of_pos_impl(const void* const _Haystack, const size_t _Haystack_length,
+        const void* const _Needle, const size_t _Needle_length) noexcept {
+#ifndef _M_ARM64EC
+        const size_t _Haystack_length_bytes = _Haystack_length * sizeof(_Ty);
+        if (_Use_sse42() && _Haystack_length_bytes >= 16) {
+            constexpr int _Op =
+                (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_MOST_SIGNIFICANT;
+            constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
+
+            const size_t _Last_part_size = _Haystack_length_bytes & 0xF;
+
+            const void* _Stop_at = _Haystack;
+            _Advance_bytes(_Stop_at, _Last_part_size);
+
+            const void* _Cur = _Haystack;
+            _Advance_bytes(_Cur, _Haystack_length_bytes);
+
+            const size_t _Needle_length_bytes = _Needle_length * sizeof(_Ty);
+
+            if (_Needle_length_bytes <= 16) {
+                // Special handling of small needle
+                // The generic branch could also be modified to handle it, but with slightly worse performance
+                const int _Needle_length_el = static_cast<int>(_Needle_length);
+
+                alignas(16) uint8_t _Tmp2[16];
+                memcpy(_Tmp2, _Needle, _Needle_length_bytes);
+                const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+
+                while (_Cur != _Stop_at) {
+                    _Rewind_bytes(_Cur, 16);
+                    const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur));
+                    if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Part_size_el, _Op)) {
+                        const int _Pos = _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Part_size_el, _Op);
+                        return _Byte_length(_Haystack, _Cur) / sizeof(_Ty) + _Pos;
+                    }
+                }
+
+                const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+                const __m128i _Data1         = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
+
+                if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op)) {
+                    return _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op);
+                }
+
+                return static_cast<size_t>(-1);
+            } else {
+                const void* _Last_needle = _Needle;
+                _Advance_bytes(_Last_needle, _Needle_length_bytes & ~size_t{0xF});
+
+                const int _Last_needle_length = static_cast<int>(_Needle_length_bytes & 0xF);
+
+                alignas(16) uint8_t _Tmp2[16];
+                memcpy(_Tmp2, _Last_needle, _Last_needle_length);
+                const __m128i _Last_needle_val   = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+                const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
+
+                constexpr int _Not_found = -1; // equal to npos when treated as size_t; also less than any found value
+                int _Found_pos           = _Not_found;
+
+                const auto _Step = [&_Found_pos](const __m128i _Data2, const int _Size2, const __m128i _Data1,
+                                       const int _Size1) noexcept {
+                    if (_mm_cmpestrc(_Data2, _Size2, _Data1, _Size1, _Op)) {
+                        const int _Pos = _mm_cmpestri(_Data2, _Size2, _Data1, _Size1, _Op);
+                        if (_Pos > _Found_pos) {
+                            _Found_pos = _Pos;
+                        }
+                    }
+                };
+
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+                const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1) noexcept {
+                    const void* _Cur_needle = _Needle;
+                    do {
+                        const __m128i _Data2 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+                        _Step(_Data2, _Part_size_el, _Data1, _Size1);
+                        _Advance_bytes(_Cur_needle, 16);
+                    } while (_Cur_needle != _Last_needle);
+
+                    if (_Last_needle_length_el != 0) {
+                        _Step(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1);
+                    }
+                };
+#pragma warning(pop)
+
+                while (_Cur != _Stop_at) {
+                    _Rewind_bytes(_Cur, 16);
+                    _Test_whole_needle(_mm_loadu_si128(static_cast<const __m128i*>(_Cur)), _Part_size_el);
+
+                    if (_Found_pos != _Not_found) {
+                        return _Byte_length(_Haystack, _Cur) / sizeof(_Ty) + _Found_pos;
+                    }
+                }
+
+                const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+                const __m128i _Data1         = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
+                _Test_whole_needle(_Data1, _Last_part_size_el);
+
+                return static_cast<size_t>(_Found_pos);
+            }
+        }
+#endif // !_M_ARM64EC
+        const auto _Ptr_haystack = static_cast<const _Ty*>(_Haystack);
+        size_t _Pos              = _Haystack_length;
+        const auto _Needle_end   = static_cast<const _Ty*>(_Needle) + _Needle_length;
+
+        while (_Pos != 0) {
+            --_Pos;
+
+            for (auto _Ptr = static_cast<const _Ty*>(_Needle); _Ptr != _Needle_end; ++_Ptr) {
+                if (_Ptr_haystack[_Pos] == *_Ptr) {
+                    return _Pos;
+                }
+            }
+        }
+
+        return static_cast<size_t>(-1);
+    }
 
     template <class _Traits, class _Ty>
     __declspec(noalias) size_t __stdcall __std_mismatch_impl(
@@ -3602,23 +3703,33 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(
 }
 
 const void* __stdcall __std_find_first_of_trivial_1(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
     return __std_find_first_of::_Impl_pcmpestri<uint8_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_2(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
     return __std_find_first_of::_Impl_pcmpestri<uint16_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_4(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
     return __std_find_first_of::_Impl_4_8<__std_find_first_of::_Traits_4>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_8(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept {
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
     return __std_find_first_of::_Impl_4_8<__std_find_first_of::_Traits_8>(_First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_1(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_last_of_pos_impl<uint8_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_last_of_pos_impl<uint16_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 const void* __stdcall __std_search_1(
