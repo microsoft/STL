@@ -10137,7 +10137,7 @@ constexpr _Rx _Minmax(const _Ty* _First, const _Ty* const _Last) {
     _Ty _Max_val = *_First;
 
     for (++_First; _First != _Last; ++_First) {
-        if (_Min_val < *_First) {
+        if (*_First < _Min_val) {
             _Min_val = *_First;
         }
 
