@@ -859,6 +859,30 @@
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // !defined(_STL_RESTORE_CLANG_WARNINGS)
 
+// warning: use of NaN is undefined behavior due to the currently enabled
+//     floating-point options [-Wnan-infinity-disabled]
+// warning: use of infinity is undefined behavior due to the currently enabled
+//     floating-point options [-Wnan-infinity-disabled]
+#ifndef _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
+#ifdef __clang__
+// clang-format off
+#define _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED \
+    _Pragma("clang diagnostic push")                \
+    _Pragma("clang diagnostic ignored \"-Wnan-infinity-disabled\"")
+// clang-format on
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#define _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
+#endif // ^^^ !defined(__clang__) ^^^
+#endif // !defined(_STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED)
+
+#ifndef _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
+#ifdef __clang__
+#define _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED _Pragma("clang diagnostic pop")
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#define _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
+#endif // ^^^ !defined(__clang__) ^^^
+#endif // !defined(_STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED)
+
 // clang-format off
 #ifndef _STL_DISABLE_DEPRECATED_WARNING
 #ifdef __clang__
@@ -889,7 +913,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202409L
+#define _MSVC_STL_UPDATE  202410L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)

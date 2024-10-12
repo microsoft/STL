@@ -13,6 +13,7 @@
 #include <limits>
 #include <list>
 #include <random>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -997,6 +998,15 @@ void test_randomized_bitset_base_count(mt19937_64& gen) {
     test_randomized_bitset_base<Base>(make_index_sequence<Count>{}, gen);
 }
 
+template <class F>
+void assert_throws_inv(F f) {
+    try {
+        f();
+        assert(false);
+    } catch (const invalid_argument&) {
+    }
+}
+
 void test_bitset(mt19937_64& gen) {
     assert(bitset<0>(0x0ULL).to_string() == "");
     assert(bitset<0>(0xFEDCBA9876543210ULL).to_string() == "");
@@ -1038,6 +1048,33 @@ void test_bitset(mt19937_64& gen) {
     assert(bitset<75>(0xFEDCBA9876543210ULL).to_string<char32_t>()
            == U"000000000001111111011011100101110101001100001110110010101000011001000010000"); // not vectorized
 
+    assert(bitset<0>("").to_ullong() == 0);
+    assert(bitset<0>("1").to_ullong() == 0);
+    assert_throws_inv([] { (void) bitset<0>("x"); });
+
+    assert(bitset<45>("101110000000111010001011100101001111111111111").to_ullong() == 0x1701D1729FFFULL);
+    assert(bitset<45>("110101001100001110110010101000011001000010000").to_ullong() == 0x1A9876543210ULL);
+    assert(bitset<45>("111").to_ullong() == 0x7);
+    assert_throws_inv([] { (void) bitset<45>("11x11"); });
+    assert_throws_inv([] { (void) bitset<45>("111111111111111111111111111111111111111111111x"); });
+    assert_throws_inv([] { (void) bitset<45>("x111111111111111111111111111111111111111111111"); });
+
+    assert(bitset<64>("xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo", string::npos, 'o', 'x')
+               .to_ullong()
+           == 0xFEDCBA9876543210ULL);
+    assert(bitset<64>(L"xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo", wstring::npos, L'o', L'x')
+               .to_ullong()
+           == 0xFEDCBA9876543210ULL);
+
+#ifdef __cpp_lib_char8_t
+    assert(bitset<75>(u8"000000000001111111011011100101110101001100001110110010101000011001000010000").to_ullong()
+           == 0xFEDCBA9876543210ULL);
+#endif // __cpp_lib_char8_t
+    assert(bitset<75>(u"000000000001111111011011100101110101001100001110110010101000011001000010000").to_ullong()
+           == 0xFEDCBA9876543210ULL);
+    assert(bitset<75>(U"000000000001111111011011100101110101001100001110110010101000011001000010000").to_ullong()
+           == 0xFEDCBA9876543210ULL); // not vectorized
+
     test_randomized_bitset_base_count<512 - 5, 32 + 10>(gen);
 }
 
@@ -1046,7 +1083,27 @@ void test_case_string_find_first_of(const basic_string<T>& input_haystack, const
     auto expected_iter = last_known_good_find_first_of(
         input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
     auto expected = (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
-    auto actual   = static_cast<ptrdiff_t>(input_haystack.find_first_of(input_needle.data(), 0, input_needle.size()));
+    auto actual   = static_cast<ptrdiff_t>(input_haystack.find_first_of(input_needle));
+    assert(expected == actual);
+}
+
+template <class T>
+size_t last_known_good_find_last_of(const basic_string<T>& h, const basic_string<T>& n) {
+    size_t pos = h.size();
+    while (pos != 0) {
+        --pos;
+        if (n.find(h[pos]) != basic_string<T>::npos) {
+            return pos;
+        }
+    }
+
+    return basic_string<T>::npos;
+}
+
+template <class T>
+void test_case_string_find_last_of(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
+    size_t expected = last_known_good_find_last_of(input_haystack, input_needle);
+    size_t actual   = input_haystack.find_last_of(input_needle);
     assert(expected == actual);
 }
 
@@ -1061,9 +1118,11 @@ void test_basic_string_dis(mt19937_64& gen, D& dis) {
         input_needle.clear();
 
         test_case_string_find_first_of(input_haystack, input_needle);
+        test_case_string_find_last_of(input_haystack, input_needle);
         for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
             input_needle.push_back(static_cast<T>(dis(gen)));
             test_case_string_find_first_of(input_haystack, input_needle);
+            test_case_string_find_last_of(input_haystack, input_needle);
         }
 
         if (input_haystack.size() == haystackDataCount) {
@@ -1094,6 +1153,7 @@ void test_string(mt19937_64& gen) {
 #endif // __cpp_lib_char8_t
     test_basic_string<char16_t>(gen);
     test_basic_string<char32_t>(gen);
+    test_basic_string<unsigned long long>(gen);
 }
 
 void test_various_containers() {

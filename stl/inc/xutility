@@ -3874,6 +3874,21 @@ namespace ranges {
     };
 } // namespace ranges
 
+#if _HAS_CXX23
+template <class _Ty>
+concept _Pair_like = _Tuple_like<_Ty> && tuple_size_v<remove_cvref_t<_Ty>> == 2;
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+template <class _Ty>
+concept _Pair_like = !is_reference_v<_Ty> && requires(_Ty __t) {
+    typename tuple_size<_Ty>::type;
+    requires derived_from<tuple_size<_Ty>, integral_constant<size_t, 2>>;
+    typename tuple_element_t<0, remove_const_t<_Ty>>;
+    typename tuple_element_t<1, remove_const_t<_Ty>>;
+    { _STD get<0>(__t) } -> convertible_to<const tuple_element_t<0, _Ty>&>;
+    { _STD get<1>(__t) } -> convertible_to<const tuple_element_t<1, _Ty>&>;
+};
+#endif // ^^^ !_HAS_CXX23 ^^^
+
 namespace ranges {
     template <class _From, class _To>
     concept _Uses_nonqualification_pointer_conversion =
@@ -3883,18 +3898,6 @@ namespace ranges {
     template <class _From, class _To>
     concept _Convertible_to_non_slicing =
         convertible_to<_From, _To> && !_Uses_nonqualification_pointer_conversion<decay_t<_From>, decay_t<_To>>;
-
-#if !_HAS_CXX23
-    template <class _Ty>
-    concept _Pair_like = !is_reference_v<_Ty> && requires(_Ty __t) {
-        typename tuple_size<_Ty>::type;
-        requires derived_from<tuple_size<_Ty>, integral_constant<size_t, 2>>;
-        typename tuple_element_t<0, remove_const_t<_Ty>>;
-        typename tuple_element_t<1, remove_const_t<_Ty>>;
-        { _STD get<0>(__t) } -> convertible_to<const tuple_element_t<0, _Ty>&>;
-        { _STD get<1>(__t) } -> convertible_to<const tuple_element_t<1, _Ty>&>;
-    };
-#endif // !_HAS_CXX23
 
     template <class _Ty, class _First, class _Second>
     concept _Pair_like_convertible_from = !range<_Ty>
@@ -3989,10 +3992,10 @@ namespace ranges {
             requires (_Ki == subrange_kind::sized)
             : subrange{_RANGES begin(_Val), _RANGES end(_Val), _Count} {}
 
-        template <_Different_from<subrange> _Pair_like>
-            requires _Pair_like_convertible_from<_Pair_like, const _It&, const _Se&>
-        constexpr operator _Pair_like() const {
-            return _Pair_like(_First, _Last);
+        template <_Different_from<subrange> _PairLike>
+            requires _Pair_like_convertible_from<_PairLike, const _It&, const _Se&>
+        constexpr operator _PairLike() const {
+            return _PairLike(_First, _Last);
         }
 
         _NODISCARD constexpr _It begin() const

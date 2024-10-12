@@ -681,7 +681,8 @@ struct _Default_allocator_traits { // traits for std::allocator
     }
 #endif // _HAS_CXX23
 
-    static _CONSTEXPR20 void deallocate(_Alloc& _Al, const pointer _Ptr, const size_type _Count) {
+    static _CONSTEXPR20 void deallocate(_Alloc& _Al, const pointer _Ptr, const size_type _Count) noexcept
+    /* strengthened */ {
         // no overflow check on the following multiply; we assume _Allocate did that check
 #if _HAS_CXX20 // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
@@ -945,7 +946,7 @@ public:
     _CONSTEXPR20 ~allocator()                           = default;
     _CONSTEXPR20 allocator& operator=(const allocator&) = default;
 
-    _CONSTEXPR20 void deallocate(_Ty* const _Ptr, const size_t _Count) {
+    _CONSTEXPR20 void deallocate(_Ty* const _Ptr, const size_t _Count) noexcept /* strengthened */ {
         _STL_ASSERT(_Ptr != nullptr || _Count == 0, "null pointer cannot point to a block of non-zero size");
         // no overflow check on the following multiply; we assume _Allocate did that check
         _STD _Deallocate<_New_alignof<_Ty>>(_Ptr, sizeof(_Ty) * _Count);
@@ -2431,7 +2432,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
 _EXPORT_STD template <_Cv_std_pair _Ty, class _Alloc, _Usable_for_pair_like_overload _Uty>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
 #if _HAS_CXX23
-    if constexpr (_Pair_like<_Uty> && !_Is_subrange_v<remove_cvref_t<_Uty>>) {
+    if constexpr (_Pair_like_non_subrange<_Uty>) {
         // equivalent to
         // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
         //     _STD forward_as_tuple(_STD get<0>(_STD forward<_Uty>(_Ux)),
