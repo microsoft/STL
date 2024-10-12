@@ -205,28 +205,31 @@ constexpr bool _Is_subrange_v = false;
 
 #if _HAS_CXX23
 template <class>
-constexpr bool _Tuple_like_impl = false;
+constexpr bool _Tuple_like_non_subrange_impl = false;
 
 template <class... _Types>
-constexpr bool _Tuple_like_impl<tuple<_Types...>> = true;
+constexpr bool _Tuple_like_non_subrange_impl<tuple<_Types...>> = true;
 
 template <class _Ty1, class _Ty2>
-constexpr bool _Tuple_like_impl<pair<_Ty1, _Ty2>> = true;
+constexpr bool _Tuple_like_non_subrange_impl<pair<_Ty1, _Ty2>> = true;
 
 template <class _Ty, size_t _Size>
-constexpr bool _Tuple_like_impl<array<_Ty, _Size>> = true;
+constexpr bool _Tuple_like_non_subrange_impl<array<_Ty, _Size>> = true;
 
 template <class _Ty>
-concept _Tuple_like = _Tuple_like_impl<remove_cvref_t<_Ty>>;
+concept _Tuple_like_non_subrange = _Tuple_like_non_subrange_impl<remove_cvref_t<_Ty>>;
 
 template <class _Ty>
-concept _Pair_like = _Tuple_like<_Ty> && tuple_size_v<remove_cvref_t<_Ty>> == 2;
+concept _Tuple_like = _Tuple_like_non_subrange<_Ty> || _Is_subrange_v<remove_cvref_t<_Ty>>;
+
+template <class _Ty>
+concept _Pair_like_non_subrange = _Tuple_like_non_subrange<_Ty> && tuple_size_v<remove_cvref_t<_Ty>> == 2;
 
 #ifdef __EDG__ // TRANSITION, VSO-1900279
 template <class _PairLike, class _Ty1, class _Ty2>
-concept _Can_construct_from_pair_like = _Pair_like<_PairLike> && !_Is_subrange_v<remove_cvref_t<_PairLike>>
-                                     && is_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_PairLike>()))>
-                                     && is_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_PairLike>()))>;
+concept _Can_construct_from_pair_like =
+    _Pair_like_non_subrange<_PairLike> && is_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_PairLike>()))>
+    && is_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_PairLike>()))>;
 #endif // ^^^ workaround ^^^
 #endif // _HAS_CXX23
 #endif // _HAS_CXX20
@@ -302,9 +305,8 @@ struct pair { // store a pair of values
 #ifdef __EDG__ // TRANSITION, VSO-1900279
     template <class _Other, enable_if_t<_Can_construct_from_pair_like<_Other, _Ty1, _Ty2>, int> = 0>
 #else // ^^^ workaround / no workaround vvv
-    template <_Pair_like _Other>
-        requires conjunction_v<bool_constant<!_Is_subrange_v<remove_cvref_t<_Other>>>,
-                     is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
+    template <_Pair_like_non_subrange _Other>
+        requires conjunction_v<is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
                      is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
 #endif // ^^^ no workaround ^^^
     constexpr explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
@@ -417,9 +419,8 @@ struct pair { // store a pair of values
         return *this;
     }
 
-    template <_Pair_like _Other>
-        requires _Different_from<_Other, pair> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
-              && is_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
+    template <_Pair_like_non_subrange _Other>
+        requires _Different_from<_Other, pair> && is_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
               && is_assignable_v<_Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>
     constexpr pair& operator=(_Other&& _Right)
         noexcept(is_nothrow_assignable_v<_Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
@@ -429,8 +430,8 @@ struct pair { // store a pair of values
         return *this;
     }
 
-    template <_Pair_like _Other>
-        requires _Different_from<_Other, pair> && (!_Is_subrange_v<remove_cvref_t<_Other>>)
+    template <_Pair_like_non_subrange _Other>
+        requires _Different_from<_Other, pair>
               && is_assignable_v<const _Ty1&, decltype(_STD get<0>(_STD declval<_Other>()))>
               && is_assignable_v<const _Ty2&, decltype(_STD get<1>(_STD declval<_Other>()))>
     constexpr const pair& operator=(_Other&& _Right) const noexcept(
