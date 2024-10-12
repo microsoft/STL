@@ -40,7 +40,7 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
-template <class _Ty, size_t _Size, bool _Dynamic = (_Size > _STD_BITSET_TO_STREAM_STACK_RESERVATION)>
+template <class _Ty, size_t _Size, bool _Dynamic = (_Size * sizeof(_Ty) > _STD_BITSET_TO_STREAM_STACK_RESERVATION)>
 class _Buffer_for_bitset {
 public:
     _Buffer_for_bitset()                                     = default;
