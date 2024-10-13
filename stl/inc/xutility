@@ -3591,7 +3591,9 @@ namespace ranges {
 
     template <range _Rng>
     _NODISCARD constexpr auto _Idl_distance(_Rng& _Range) {
-        // returns _STD _Idl_distance<iterator_t<_Rng>>(begin(_Range), end(_Range))
+        // Returns the length of _Range if it is finite and can be determined in O(1), or
+        // an indicator that the length is infinite, or
+        // an indicator that the length cannot be determined in O(1).
         if constexpr (sized_range<_Rng>) {
             return _RANGES distance(_Range);
         } else if constexpr (same_as<sentinel_t<_Rng>, unreachable_sentinel_t>) {
