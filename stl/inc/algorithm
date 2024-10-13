@@ -8487,7 +8487,7 @@ _Ty* _Uninitialized_merge_move(_FwdIt _First, const _FwdIt _Mid, const _FwdIt _L
 }
 
 template <class _InIt, class _OutIt, class _Pr>
-_OutIt _Merge_move(_InIt _First, const _InIt _Mid, const _InIt _Last, _OutIt _Dest, _Pr _Pred) {
+_OutIt _Merge_move_unchecked(_InIt _First, const _InIt _Mid, const _InIt _Last, _OutIt _Dest, _Pr _Pred) {
     // move merging adjacent ranges [_First, _Mid) and [_Mid, _Last) to _Dest
     // pre: _First != _Mid && _Mid != _Last
     _InIt _Next = _Mid;
@@ -8545,7 +8545,7 @@ void _Chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _OutIt _Dest, c
         const auto _Chunk2 = (_STD min)(_Chunk, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
-        _Dest              = _STD _Merge_move(_First, _Mid1, _Mid2, _Dest, _Pred);
+        _Dest              = _STD _Merge_move_unchecked(_First, _Mid1, _Mid2, _Dest, _Pred);
         _First             = _Mid2;
     }
 
