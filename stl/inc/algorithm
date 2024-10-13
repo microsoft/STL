@@ -5603,9 +5603,9 @@ namespace ranges {
             if constexpr (forward_iterator<_It>) {
                 auto _UFirst   = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
                 auto _Pop_size = _RANGES distance(_UFirst, _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
-                return _Sample_selection_unchecked(_STD move(_UFirst), _Pop_size, _STD move(_Output), _Count, _RngFunc);
+                return _Selection_sample(_STD move(_UFirst), _Pop_size, _STD move(_Output), _Count, _RngFunc);
             } else {
-                return _Sample_reservoir_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                return _Reservoir_sample(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
                     _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Output), _Count, _RngFunc);
             }
         }
@@ -5624,18 +5624,18 @@ namespace ranges {
             if constexpr (forward_range<_Rng>) {
                 auto _UFirst   = _Ubegin(_Range);
                 auto _Pop_size = _RANGES distance(_UFirst, _Uend(_Range));
-                return _Sample_selection_unchecked(_STD move(_UFirst), _Pop_size, _STD move(_Output), _Count, _RngFunc);
+                return _Selection_sample(_STD move(_UFirst), _Pop_size, _STD move(_Output), _Count, _RngFunc);
             } else {
-                return _Sample_reservoir_unchecked(
-                    _Ubegin(_Range), _Uend(_Range), _STD move(_Output), _Count, _RngFunc);
+                return _Reservoir_sample(_Ubegin(_Range), _Uend(_Range), _STD move(_Output), _Count, _RngFunc);
             }
         }
 
     private:
         template <class _It, class _Out, class _Rng>
-        _NODISCARD static _Out _Sample_selection_unchecked(
+        _NODISCARD static _Out _Selection_sample(
             _It _First, iter_difference_t<_It> _Pop_size, _Out _Output, iter_difference_t<_It> _Count, _Rng& _RngFunc) {
-            // randomly select _Count elements from [_First, _First + _Pop_size) into _Output
+            // Randomly select _Count elements from _First + [0, _Pop_size) into _Output.
+            // _First should be already unwrapped, _Output will be unwrapped locally.
             _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
@@ -5643,45 +5643,53 @@ namespace ranges {
             if (_Count > _Pop_size) {
                 _Count = _Pop_size;
             }
+            auto _UOutput = _STD _Get_unwrapped_n(_STD move(_Output), _Count);
 
             for (; _Pop_size > 0; ++_First, (void) --_Pop_size) {
                 if (_RngFunc(_Pop_size) < _Count) {
-                    *_Output = *_First;
-                    ++_Output;
+                    *_UOutput = *_First;
+                    ++_UOutput;
                     if (--_Count == 0) {
                         break;
                     }
                 }
             }
 
+            _STD _Seek_wrapped(_Output, _STD move(_UOutput));
             return _Output;
         }
 
         template <class _It, class _Se, class _Out, class _Rng>
-        _NODISCARD static _Out _Sample_reservoir_unchecked(
+        _NODISCARD static _Out _Reservoir_sample(
             _It _First, const _Se _Last, _Out _Output, const iter_difference_t<_It> _Count, _Rng& _RngFunc) {
-            // randomly select _Count elements from [_First, _Last) into _Output
+            // Randomly select _Count elements from [_First, _Last) into _Output.
+            // _First should be already unwrapped, _Output will be unwrapped locally.
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_Out>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
 
+            auto _UOutput = _STD _Get_unwrapped_unverified(_STD move(_Output));
             iter_difference_t<_It> _Pop_size{};
             for (; _Pop_size < _Count; ++_Pop_size, (void) ++_First) {
                 if (_First == _Last) {
-                    return _Output + _Pop_size;
+                    _UOutput += _Pop_size;
+                    _STD _Seek_wrapped(_Output, _STD move(_UOutput));
+                    return _Output;
                 }
 
-                *(_Output + _Pop_size) = *_First;
+                *(_UOutput + _Pop_size) = *_First;
             }
             for (; _First != _Last; ++_First) {
                 const auto _Idx = _RngFunc(++_Pop_size);
                 if (_Idx < _Count) {
-                    *(_Output + _Idx) = *_First;
+                    *(_UOutput + _Idx) = *_First;
                 }
             }
 
-            return _Output + _Count;
+            _UOutput += _Count;
+            _STD _Seek_wrapped(_Output, _STD move(_UOutput));
+            return _Output;
         }
     };
 
