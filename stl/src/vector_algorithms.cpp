@@ -3857,8 +3857,6 @@ namespace {
         struct _Traits_1_avx {
             using _Value_type = uint32_t;
 
-            static const size_t _Step_size_bits = 32;
-
             static __m256i _Set(const char _Val) noexcept {
                 return _mm256_broadcastb_epi8(_mm_cvtsi32_si128(_Val));
             }
@@ -3883,8 +3881,6 @@ namespace {
         struct _Traits_1_sse {
             using _Value_type = uint16_t;
 
-            static const size_t _Step_size_bits = 16;
-
             static __m128i _Set(const char _Val) noexcept {
                 return _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
             }
@@ -3906,8 +3902,6 @@ namespace {
 
         struct _Traits_2_avx {
             using _Value_type = uint16_t;
-
-            static const size_t _Step_size_bits = 16;
 
             static __m256i _Set(const wchar_t _Val) noexcept {
                 return _mm256_broadcastw_epi16(_mm_cvtsi32_si128(_Val));
@@ -3934,8 +3928,6 @@ namespace {
         struct _Traits_2_sse {
             using _Value_type = uint8_t;
 
-            static const size_t _Step_size_bits = 8;
-
             static __m128i _Set(const wchar_t _Val) noexcept {
                 return _mm_set1_epi16(_Val);
             }
@@ -3957,18 +3949,19 @@ namespace {
         template <class _Traits, class _Elem>
         void __stdcall _Impl(
             _Elem* const _Dest, const void* _Src, size_t _Size_bits, const _Elem _Elem0, const _Elem _Elem1) noexcept {
+            constexpr size_t _Step_size_bits = sizeof(_Traits::_Value_type) * 8;
 
             const auto _Px0 = _Traits::_Set(_Elem0);
             const auto _Px1 = _Traits::_Set(_Elem1);
-            if (_Size_bits >= _Traits::_Step_size_bits) {
+            if (_Size_bits >= _Step_size_bits) {
                 _Elem* _Pos = _Dest + _Size_bits;
-                _Size_bits &= (_Traits::_Step_size_bits - 1);
+                _Size_bits &= (_Step_size_bits - 1);
                 _Elem* const _Stop_at = _Dest + _Size_bits;
                 do {
                     typename _Traits::_Value_type _Val;
                     memcpy(&_Val, _Src, sizeof(_Val));
                     const auto _Elems = _Traits::_Step(_Val, _Px0, _Px1);
-                    _Pos -= _Traits::_Step_size_bits;
+                    _Pos -= _Step_size_bits;
                     _Traits::_Out(_Pos, _Elems);
                     _Advance_bytes(_Src, sizeof(_Val));
                 } while (_Pos != _Stop_at);
@@ -3979,9 +3972,9 @@ namespace {
                 typename _Traits::_Value_type _Val;
                 memcpy(&_Val, _Src, sizeof(_Val));
                 const auto _Elems = _Traits::_Step(_Val, _Px0, _Px1);
-                _Elem _Tmp[_Traits::_Step_size_bits];
+                _Elem _Tmp[_Step_size_bits];
                 _Traits::_Out(_Tmp, _Elems);
-                const _Elem* const _Tmpd = _Tmp + (_Traits::_Step_size_bits - _Size_bits);
+                const _Elem* const _Tmpd = _Tmp + (_Step_size_bits - _Size_bits);
                 memcpy(_Dest, _Tmpd, _Size_bits * sizeof(_Elem));
             }
         }
