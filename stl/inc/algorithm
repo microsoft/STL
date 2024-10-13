@@ -5178,7 +5178,10 @@ namespace ranges {
             auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
             _STD _Seek_wrapped(_First, _ULast);
-            _Output = _Reverse_copy_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Output));
+            const auto _Count = _STD _Idl_distance<_It>(_UFirst, _ULast);
+            auto _UOutput     = _Reverse_copy_common(
+                _STD move(_UFirst), _STD move(_ULast), _STD _Get_unwrapped_n(_STD move(_Output), _Count));
+            _STD _Seek_wrapped(_Output, _STD move(_UOutput));
             return {_STD move(_First), _STD move(_Output)};
         }
 
@@ -5186,12 +5189,16 @@ namespace ranges {
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
         _STATIC_CALL_OPERATOR constexpr reverse_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Output) _CONST_CALL_OPERATOR {
+            const auto _Count = _RANGES _Idl_distance(_Range);
+            auto _UOutput     = _STD _Get_unwrapped_n(_STD move(_Output), _Count);
             if constexpr (common_range<_Rng>) {
-                _Output = _Reverse_copy_common(_Ubegin(_Range), _Uend(_Range), _STD move(_Output));
+                _UOutput = _Reverse_copy_common(_Ubegin(_Range), _Uend(_Range), _STD move(_UOutput));
+                _STD _Seek_wrapped(_Output, _STD move(_UOutput));
                 return {_RANGES end(_Range), _STD move(_Output)};
             } else {
                 auto _ULast = _RANGES _Get_final_iterator_unwrapped(_Range);
-                _Output     = _Reverse_copy_common(_Ubegin(_Range), _ULast, _STD move(_Output));
+                _UOutput    = _Reverse_copy_common(_Ubegin(_Range), _ULast, _STD move(_UOutput));
+                _STD _Seek_wrapped(_Output, _STD move(_UOutput));
                 return {_RANGES _Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Output)};
             }
         }
