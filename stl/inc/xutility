@@ -3959,12 +3959,15 @@ namespace ranges {
         template <_Convertible_to_non_slicing<_It> _It2>
         constexpr subrange(_It2 _First_, _Se _Last_)
             requires (!_Store_size<_It, _Se, _Ki>)
-            : _First(_STD move(_First_)), _Last(_STD move(_Last_)) {}
+            : _First(_STD move(_First_)), _Last(_STD move(_Last_)) {
+            _STD _Adl_verify_range(_First, _Last);
+        }
 
         template <_Convertible_to_non_slicing<_It> _It2>
         constexpr subrange(_It2 _First_, _Se _Last_, const _Size_type _Size_)
             requires (_Ki == subrange_kind::sized)
             : _Subrange_base<_It, _Se, _Ki>(_Size_), _First(_STD move(_First_)), _Last(_STD move(_Last_)) {
+            _STD _Adl_verify_range(_First, _Last);
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 _STL_ASSERT(_Size_ == static_cast<_Size_type>(_Last - _First),
                     "This constructor's third argument should be equal to the distance "
