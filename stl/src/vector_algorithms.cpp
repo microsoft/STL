@@ -2222,11 +2222,23 @@ namespace {
         }
     }
 
+    // TRNSITION, DevCom-10767462
+    template <_Min_max_mode _Mode, class _Traits, bool _Sign>
+    auto __std_minmax_impl_wrap(const void* const _First, const void* const _Last) {
+        auto _Rx = __std_minmax_impl<_Mode, _Traits, _Sign>(_First, _Last);
+        _mm256_zeroupper();
+        return _Rx;
+    }
+
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __std_minmax_disp(const void* const _First, const void* const _Last) noexcept {
 #ifndef _M_ARM64EC
         if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
-            return __std_minmax_impl<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
+            if constexpr (_Traits::_Avx::_Is_floating && _Mode == _Min_max_mode::_Mode_both) {
+                return __std_minmax_impl_wrap<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
+            } else {
+                return __std_minmax_impl<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
+            }
         }
 
         if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
