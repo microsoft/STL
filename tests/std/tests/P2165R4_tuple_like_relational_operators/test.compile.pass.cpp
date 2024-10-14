@@ -76,7 +76,7 @@ constexpr bool test() {
         int a    = 0;
         int b    = 1;
         int c[2] = {2, 3};
-#ifdef __EDG__ // VSO-2283373
+#ifdef __EDG__ // TRANSITION, VSO-2283373
         assert((tuple{&c[0], &c[1]} == subrange{&c[0], &c[1]}));
         assert((tuple{&c[1], &c[0]} != subrange{&c[0], &c[1]}));
 #else // ^^^ workaround / no workaround vvv

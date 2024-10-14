@@ -4520,7 +4520,8 @@ template <class _Iter1, class _Iter2>
 constexpr bool disable_sized_sentinel_for<move_iterator<_Iter1>, move_iterator<_Iter2>> = true;
 
 _EXPORT_STD struct unreachable_sentinel_t {
-    _NODISCARD constexpr bool operator==(const weakly_incrementable auto&) const noexcept {
+    template <weakly_incrementable _Ty>
+    _NODISCARD constexpr bool operator==(const _Ty&) const noexcept {
         return false;
     }
 };
