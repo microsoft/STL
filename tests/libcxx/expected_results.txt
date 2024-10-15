@@ -224,9 +224,6 @@ std/atomics/atomics.types.generic/atomics.types.float/compare_exchange_strong.pa
 std/atomics/atomics.types.generic/atomics.types.float/compare_exchange_weak.pass.cpp:1 SKIPPED
 std/input.output/syncstream/osyncstream/thread/several_threads.pass.cpp:1 SKIPPED
 
-# VSO-2164191 "[ASan][STL] Interception breaks strtoll"
-std/strings/string.conversions/stoll.pass.cpp:1 FAIL
-
 
 # *** MISSING STL FEATURES ***
 # Missing mbrtoc8 and c8rtomb
