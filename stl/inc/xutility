@@ -1410,7 +1410,7 @@ struct _Distance_unknown {
 };
 
 struct _Distance_unbounded {
-    constexpr _Distance_unbounded operator-() const noexcept {
+    _NODISCARD constexpr _Distance_unbounded operator-() const noexcept {
         return {};
     }
 };
@@ -1557,7 +1557,7 @@ _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Sent& _Last)
         return _Distance_unknown{};
     }
 }
-#else // ^^^ C++20 or later / C++17 or earlier vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Checked, class _Iter>
 _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
     _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<_Checked>, _Iter>);
@@ -1567,7 +1567,7 @@ _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last)
         return _Distance_unknown{};
     }
 }
-#endif // ^^^ C++17 or earlier ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Elem, bool _Is_enum = is_enum_v<_Elem>>
 struct _Unwrap_enum { // if _Elem is an enum, gets its underlying type; otherwise leaves _Elem unchanged
