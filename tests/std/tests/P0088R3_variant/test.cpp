@@ -285,9 +285,7 @@ void test_const_lvalue_get() {
   {
     using V = std::variant<int, const long>;
     constexpr V v(42);
-#if defined(_MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, vs17.12p3
     ASSERT_NOT_NOEXCEPT(std::get<0>(v));
-#endif // ^^^ no workaround ^^^
     ASSERT_SAME_TYPE(decltype(std::get<0>(v)), const int &);
     static_assert(std::get<0>(v) == 42, "");
   }
@@ -301,9 +299,7 @@ void test_const_lvalue_get() {
   {
     using V = std::variant<int, const long>;
     constexpr V v(42l);
-#if defined(_MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, vs17.12p3
     ASSERT_NOT_NOEXCEPT(std::get<1>(v));
-#endif // ^^^ no workaround ^^^
     ASSERT_SAME_TYPE(decltype(std::get<1>(v)), const long &);
     static_assert(std::get<1>(v) == 42, "");
   }
@@ -451,9 +447,7 @@ void test_const_lvalue_get() {
   {
     using V = std::variant<int, const long>;
     constexpr V v(42);
-#if defined(_MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, vs17.12p3
     ASSERT_NOT_NOEXCEPT(std::get<int>(v));
-#endif // ^^^ no workaround ^^^
     ASSERT_SAME_TYPE(decltype(std::get<int>(v)), const int &);
     static_assert(std::get<int>(v) == 42, "");
   }
@@ -467,9 +461,7 @@ void test_const_lvalue_get() {
   {
     using V = std::variant<int, const long>;
     constexpr V v(42l);
-#if defined(_MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, vs17.12p3
     ASSERT_NOT_NOEXCEPT(std::get<const long>(v));
-#endif // ^^^ no workaround ^^^
     ASSERT_SAME_TYPE(decltype(std::get<const long>(v)), const long &);
     static_assert(std::get<const long>(v) == 42, "");
   }
