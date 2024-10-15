@@ -861,12 +861,6 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass
 # Not analyzed. Checking whether packaged_task is constructible from an allocator and a packaged_task of a different type.
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 
-# Not analyzed. Possible MSVC compiler bug, this is inspecting type trait behavior.
-std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_copy_assignable.pass.cpp:1 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_move_assignable.pass.cpp:1 FAIL
-
 # Not analyzed.
 # MSVC error C2131: expression did not evaluate to a constant
 # MSVC note: failure was caused by a read of an uninitialized symbol
