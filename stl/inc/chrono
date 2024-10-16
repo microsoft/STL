@@ -2209,9 +2209,8 @@ namespace chrono {
             auto [_Icu_version, _Zones, _Links] = _Tzdb_generate_time_zones();
             auto [_Leap_sec, _All_ls_positive]  = _Tzdb_generate_leap_seconds(0);
             auto _Version                       = _Icu_version + "." + _STD to_string(_Leap_sec.size());
-            // TRANSITION, VSO-2228186, should call emplace_front with construction arguments
-            _Tzdb_list.emplace_front(tzdb{
-                _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
+            _Tzdb_list.emplace_front(
+                _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive);
         }
 
         _NODISCARD const tzdb& front() const noexcept {
@@ -2267,9 +2266,8 @@ namespace chrono {
                 }
 
                 auto _Version = _Tzdb_update_version(_Tzdb.version, _Leap_sec.size());
-                // TRANSITION, VSO-2228186, should call emplace_front with construction arguments
-                _Tzdb_list.emplace_front(tzdb{
-                    _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
+                _Tzdb_list.emplace_front(
+                    _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive);
             }
             return _Tzdb_list.front();
         }
