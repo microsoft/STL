@@ -59,7 +59,7 @@ struct _Buffer_for_bitset {
 
 template <class _Ty, size_t _Size>
 struct _Buffer_for_bitset<_Ty, _Size, false> {
-    _Buffer_for_bitset() { /* not initializing _Buf intentionally */ }
+    _Buffer_for_bitset() { /* intentionally not initializing _Buf */ }
     _Buffer_for_bitset(const _Buffer_for_bitset&)            = delete;
     _Buffer_for_bitset& operator=(const _Buffer_for_bitset&) = delete;
 
