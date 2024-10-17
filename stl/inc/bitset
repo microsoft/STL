@@ -40,7 +40,7 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
-template <class _Ty, size_t _Size, bool _Dynamic = (_Size * sizeof(_Ty) > _STD_BITSET_TO_STREAM_STACK_RESERVATION)>
+template <class _Elem, size_t _Bits, bool _Dynamic = (_Bits * sizeof(_Elem) > _STD_BITSET_TO_STREAM_STACK_RESERVATION)>
 struct _Buffer_for_bitset {
     _Buffer_for_bitset()                                     = default;
     _Buffer_for_bitset(const _Buffer_for_bitset&)            = delete;
@@ -51,21 +51,21 @@ struct _Buffer_for_bitset {
     }
 
     void _Allocate() {
-        _Buf = new _Ty[_Size];
+        _Buf = new _Elem[_Bits];
     }
 
-    _Ty* _Buf = nullptr;
+    _Elem* _Buf = nullptr;
 };
 
-template <class _Ty, size_t _Size>
-struct _Buffer_for_bitset<_Ty, _Size, false> {
+template <class _Elem, size_t _Bits>
+struct _Buffer_for_bitset<_Elem, _Bits, false> {
     _Buffer_for_bitset() { /* intentionally not initializing _Buf */ }
     _Buffer_for_bitset(const _Buffer_for_bitset&)            = delete;
     _Buffer_for_bitset& operator=(const _Buffer_for_bitset&) = delete;
 
     void _Allocate() {}
 
-    _Ty _Buf[_STD_BITSET_TO_STREAM_STACK_RESERVATION];
+    _Elem _Buf[_STD_BITSET_TO_STREAM_STACK_RESERVATION];
 };
 
 _EXPORT_STD template <size_t _Bits>
