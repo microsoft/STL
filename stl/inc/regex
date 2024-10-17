@@ -499,7 +499,7 @@ private:
                    "contained mismatched { and }.";
         case regex_constants::error_badbrace:
             return "regex_error(error_badbrace): The expression "
-                   "contained an invalid range in a { expression }.";
+                   "contained an invalid range in a {} expression.";
         case regex_constants::error_range:
             return "regex_error(error_range): The expression "
                    "contained an invalid character range, "
