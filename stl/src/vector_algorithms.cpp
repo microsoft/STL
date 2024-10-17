@@ -3979,8 +3979,8 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _Avx_traits, class _Sse_traits, class _Elem>
-        void __stdcall _Dispatch(_Elem* const _Dest, const void* const _Src, size_t _Size_bits, const _Elem _Elem0,
-            const _Elem _Elem1) noexcept {
+        void __stdcall _Dispatch(_Elem* const _Dest, const void* const _Src, const size_t _Size_bits,
+            const _Elem _Elem0, const _Elem _Elem1) noexcept {
 #ifndef _M_ARM64EC
             if (_Use_avx2() && _Size_bits >= 256) {
                 _Impl<_Avx_traits>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
@@ -4002,13 +4002,13 @@ namespace {
 extern "C" {
 
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
-    char* const _Dest, const void* _Src, size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
+    char* const _Dest, const void* const _Src, const size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
     using namespace __std_bitset_to_string;
     _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
 }
 
-__declspec(noalias) void __stdcall __std_bitset_to_string_2(
-    wchar_t* const _Dest, const void* _Src, size_t _Size_bits, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
+__declspec(noalias) void __stdcall __std_bitset_to_string_2(wchar_t* const _Dest, const void* const _Src,
+    const size_t _Size_bits, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
     using namespace __std_bitset_to_string;
     _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
 }
