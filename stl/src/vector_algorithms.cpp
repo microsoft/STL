@@ -2222,7 +2222,7 @@ namespace {
         }
     }
 
-    // TRNSITION, DevCom-10767462
+    // TRANSITION, DevCom-10767462
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __std_minmax_impl_wrap(const void* const _First, const void* const _Last) {
         auto _Rx = __std_minmax_impl<_Mode, _Traits, _Sign>(_First, _Last);
