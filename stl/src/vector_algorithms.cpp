@@ -2222,6 +2222,7 @@ namespace {
         }
     }
 
+#ifndef _M_ARM64EC
     // TRANSITION, DevCom-10767462
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __std_minmax_impl_wrap(const void* const _First, const void* const _Last) noexcept {
@@ -2229,6 +2230,7 @@ namespace {
         _mm256_zeroupper();
         return _Rx;
     }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     template <_Min_max_mode _Mode, class _Traits, bool _Sign>
     auto __std_minmax_disp(const void* const _First, const void* const _Last) noexcept {
