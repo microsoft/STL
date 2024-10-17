@@ -1402,6 +1402,12 @@ struct _Distance_unknown {
     }
 };
 
+struct _Distance_unbounded {
+    _NODISCARD constexpr _Distance_unbounded operator-() const noexcept {
+        return {};
+    }
+};
+
 template <class _Diff>
 constexpr _Diff _Max_possible_v{static_cast<_Make_unsigned_like_t<_Diff>>(-1) >> 1};
 
@@ -1423,7 +1429,7 @@ template <class _Iter, class _Diff>
 _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _Off) {
     if constexpr (is_pointer_v<decay_t<_Iter>>) {
         return _It + 0;
-    } else if constexpr (_Unwrappable_for_offset_v<_Iter> && is_integral_v<_Diff>) {
+    } else if constexpr (_Unwrappable_for_offset_v<_Iter> && _Integer_like<_Diff>) {
         // ask an iterator to assert that the iterator moved _Off positions is valid, and unwrap
         using _IDiff     = _Iter_diff_t<_Remove_cvref_t<_Iter>>;
         using _CDiff     = common_type_t<_Diff, _IDiff>;
@@ -1526,15 +1532,35 @@ using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Stand
 
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+_EXPORT_STD struct unreachable_sentinel_t;
+
+template <class _Checked, class _Iter, class _Sent>
+_NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Sent& _Last) {
+    // Returns the distance between _First and _Last,
+    // an indicator that the distance is infinite, or
+    // an indicator that the distance cannot be determined in O(1).
+    _STL_INTERNAL_STATIC_ASSERT(same_as<_Unwrapped_t<_Checked>, _Iter>);
+
+    if constexpr (sized_sentinel_for<_Sent, _Iter>) {
+        return static_cast<iter_difference_t<_Checked>>(_Last - _First);
+    } else if constexpr (same_as<_Sent, unreachable_sentinel_t>) {
+        return _Distance_unbounded{};
+    } else {
+        return _Distance_unknown{};
+    }
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Checked, class _Iter>
 _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
-    // tries to get the distance between _First and _Last if they are random-access iterators
-    if constexpr (_Is_ranges_random_iter_v<_Iter>) {
+    _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<_Checked>, _Iter>);
+    if constexpr (_Is_cpp17_random_iter_v<_Iter>) {
         return static_cast<_Iter_diff_t<_Checked>>(_Last - _First);
     } else {
         return _Distance_unknown{};
     }
 }
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Elem, bool _Is_enum = is_enum_v<_Elem>>
 struct _Unwrap_enum { // if _Elem is an enum, gets its underlying type; otherwise leaves _Elem unchanged
@@ -3556,6 +3582,20 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Distance_fn distance;
 
+    template <range _Rng>
+    _NODISCARD constexpr auto _Idl_distance(_Rng& _Range) {
+        // Returns the length of _Range if it is finite and can be determined in O(1), or
+        // an indicator that the length is infinite, or
+        // an indicator that the length cannot be determined in O(1).
+        if constexpr (sized_range<_Rng>) {
+            return _RANGES distance(_Range);
+        } else if constexpr (same_as<sentinel_t<_Rng>, unreachable_sentinel_t>) {
+            return _Distance_unbounded{};
+        } else {
+            return _Distance_unknown{};
+        }
+    }
+
     class _Ssize_fn {
     public:
         template <class _Rng>
@@ -4891,50 +4931,55 @@ namespace ranges {
 
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_copyable<_It, _Out>
-    _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, _Se _Last, _Out _Result) {
+    _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, _Se _Last, _Out _Output) {
         if constexpr (_Sent_copy_cat<_It, _Se, _Out>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
                 if constexpr (is_same_v<_It, _Se>) {
-                    _Result = _STD _Copy_memmove(_STD move(_First), _Last, _STD move(_Result));
-                    return {_STD move(_Last), _STD move(_Result)};
+                    _Output = _STD _Copy_memmove(_STD move(_First), _Last, _STD move(_Output));
+                    return {_STD move(_Last), _STD move(_Output)};
                 } else {
                     const auto _Count = static_cast<size_t>(_Last - _First);
-                    _Result           = _STD _Copy_memmove_n(_First, _Count, _STD move(_Result));
+                    _Output           = _STD _Copy_memmove_n(_First, _Count, _STD move(_Output));
                     _First += _Count;
-                    return {_STD move(_First), _STD move(_Result)};
+                    return {_STD move(_First), _STD move(_Output)};
                 }
             }
         }
 
-        for (; _First != _Last; ++_First, (void) ++_Result) {
-            *_Result = *_First;
+        for (; _First != _Last; ++_First, (void) ++_Output) {
+            *_Output = *_First;
         }
 
-        return {_STD move(_First), _STD move(_Result)};
+        return {_STD move(_First), _STD move(_Output)};
     }
 
-    class _Copy_fn {
-    public:
+    struct _Copy_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_copyable<_It, _Out>
         _STATIC_CALL_OPERATOR constexpr copy_result<_It, _Out> operator()(
-            _It _First, _Se _Last, _Out _Result) _CONST_CALL_OPERATOR {
+            _It _First, _Se _Last, _Out _Output) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
-            auto _UResult = _RANGES _Copy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
-                _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result));
+            auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+            auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
+            const auto _Count = _STD _Idl_distance<_It>(_UFirst, _ULast);
+            auto _UResult     = _RANGES _Copy_unchecked(
+                    _STD move(_UFirst), _STD move(_ULast), _STD _Get_unwrapped_n(_STD move(_Output), _Count));
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _STD move(_UResult.out)};
+            _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+            return {_STD move(_First), _STD move(_Output)};
         }
 
         template <input_range _Rng, weakly_incrementable _Out>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
         _STATIC_CALL_OPERATOR constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
-            _Rng&& _Range, _Out _Result) _CONST_CALL_OPERATOR {
-            auto _First   = _RANGES begin(_Range);
-            auto _UResult = _RANGES _Copy_unchecked(
-                _RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _STD move(_Result));
+            _Rng&& _Range, _Out _Output) _CONST_CALL_OPERATOR {
+            const auto _Count = _RANGES _Idl_distance(_Range);
+            auto _First       = _RANGES begin(_Range);
+            auto _UResult = _RANGES _Copy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                _STD _Get_unwrapped_n(_STD move(_Output), _Count));
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _STD move(_UResult.out)};
+            _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
+            return {_STD move(_First), _STD move(_Output)};
         }
     };
 
