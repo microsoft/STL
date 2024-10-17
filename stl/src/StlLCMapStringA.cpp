@@ -82,7 +82,8 @@ extern "C" _CRTIMP2 int __cdecl __crtLCMapStringA(_In_opt_z_ LPCWSTR LocaleName,
                 return retval;
             }
 
-            const auto wide_dest = reinterpret_cast<LPWSTR>(lpDestStr); // lgtm [cpp/incorrect-string-type-conversion]
+            // CodeQL [SM02986] This cast is correct: LCMAP_SORTKEY stores "an opaque array of bytes".
+            const auto wide_dest = reinterpret_cast<LPWSTR>(lpDestStr);
 
             // do string mapping
             if (0

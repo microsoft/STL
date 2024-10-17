@@ -367,9 +367,8 @@ namespace test {
 
     template <class T>
     struct init_list_not_constructible_iterator {
-        using iterator_category = std::forward_iterator_tag;
-        using difference_type   = int;
-        using value_type        = T;
+        using value_type      = T;
+        using difference_type = int;
 
         init_list_not_constructible_iterator() = default;
         init_list_not_constructible_iterator(T*) {}

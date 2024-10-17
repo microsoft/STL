@@ -1180,18 +1180,14 @@ namespace ranges {
 
     template <input_range _Rng>
     struct _Phony_input_iterator {
-        using iterator_category = input_iterator_tag;
-        using value_type        = range_value_t<_Rng>;
-        using difference_type   = ptrdiff_t;
-        using pointer           = add_pointer_t<range_reference_t<_Rng>>;
-        using reference         = range_reference_t<_Rng>;
+        using value_type      = range_value_t<_Rng>;
+        using difference_type = ptrdiff_t;
 
-        reference operator*() const;
-        pointer operator->() const;
-
+        // These member functions are never defined:
+        range_reference_t<_Rng> operator*() const;
+        add_pointer_t<range_reference_t<_Rng>> operator->() const;
         _Phony_input_iterator& operator++();
         _Phony_input_iterator operator++(int);
-
         bool operator==(const _Phony_input_iterator&) const;
     };
 

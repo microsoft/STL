@@ -592,6 +592,60 @@ private:
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer>>>;
 
+    struct _NODISCARD _Reallocation_guard {
+        _Alloc& _Al;
+        pointer _New_begin;
+        size_type _New_capacity;
+        pointer _Constructed_first;
+        pointer _Constructed_last;
+
+        _Reallocation_guard& operator=(const _Reallocation_guard&) = delete;
+        _Reallocation_guard& operator=(_Reallocation_guard&&)      = delete;
+
+        _CONSTEXPR20 ~_Reallocation_guard() noexcept {
+            if (_New_begin != nullptr) {
+                _STD _Destroy_range(_Constructed_first, _Constructed_last, _Al);
+                _Al.deallocate(_New_begin, _New_capacity);
+            }
+        }
+    };
+
+    struct _NODISCARD _Simple_reallocation_guard {
+        _Alloc& _Al;
+        pointer _New_begin;
+        size_type _New_capacity;
+
+        _Simple_reallocation_guard& operator=(const _Simple_reallocation_guard&) = delete;
+        _Simple_reallocation_guard& operator=(_Simple_reallocation_guard&&)      = delete;
+
+        _CONSTEXPR20 ~_Simple_reallocation_guard() noexcept {
+            if (_New_begin != nullptr) {
+                _Al.deallocate(_New_begin, _New_capacity);
+            }
+        }
+    };
+
+    struct _NODISCARD _Vaporization_guard { // vaporize the detached piece
+        vector* _Target;
+        pointer _Vaporized_first;
+        pointer _Vaporized_last;
+        pointer _Destroyed_first;
+
+        _Vaporization_guard& operator=(const _Vaporization_guard&) = delete;
+        _Vaporization_guard& operator=(_Vaporization_guard&&)      = delete;
+
+        ~_Vaporization_guard() noexcept {
+            if (_Target != nullptr) {
+                auto& _Al     = _Target->_Getal();
+                auto& _Mylast = _Target->_Mypair._Myval2._Mylast;
+
+                _Target->_Orphan_range(_Vaporized_first, _Vaporized_last);
+                _STD _Destroy_range(_Destroyed_first, _Mylast, _Al);
+                _Mylast = _Vaporized_first;
+            }
+        }
+    };
+
 public:
     using iterator               = _Vector_iterator<_Scary_val>;
     using const_iterator         = _Vector_const_iterator<_Scary_val>;
@@ -824,9 +878,10 @@ private:
 
         const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Constructed_last = _Newvec + _Whereoff + 1;
-        pointer _Constructed_first      = _Constructed_last;
 
-        _TRY_BEGIN
+        _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+        auto& _Constructed_first = _Guard._Constructed_first;
+
         _Alty_traits::construct(_Al, _STD _Unfancy(_Newvec + _Whereoff), _STD forward<_Valty>(_Val)...);
         _Constructed_first = _Newvec + _Whereoff;
 
@@ -841,12 +896,8 @@ private:
             _Constructed_first = _Newvec;
             _STD _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Al);
         }
-        _CATCH_ALL
-        _STD _Destroy_range(_Constructed_first, _Constructed_last, _Al);
-        _Al.deallocate(_Newvec, _Newcapacity);
-        _RERAISE;
-        _CATCH_END
 
+        _Guard._New_begin = nullptr;
         _Change_array(_Newvec, _Newsize, _Newcapacity);
         return _Newvec + _Whereoff;
     }
@@ -911,9 +962,10 @@ private:
 
             const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
             const pointer _Constructed_last = _Newvec + _Oldsize + _Count;
-            pointer _Constructed_first      = _Constructed_last;
 
-            _TRY_BEGIN
+            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+            auto& _Constructed_first = _Guard._Constructed_first;
+
             _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Oldsize, _Al);
             _Constructed_first = _Newvec + _Oldsize;
 
@@ -926,12 +978,8 @@ private:
             } else { // provide basic guarantee
                 _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Al);
             }
-            _CATCH_ALL
-            _Destroy_range(_Constructed_first, _Constructed_last, _Al);
-            _Al.deallocate(_Newvec, _Newcapacity);
-            _RERAISE;
-            _CATCH_END
 
+            _Guard._New_begin = nullptr;
             _Change_array(_Newvec, _Newsize, _Newcapacity);
         } else { // Provide the strong guarantee.
                  // Performance note: except for one-at-back, the strong guarantee is unnecessary here.
@@ -1032,9 +1080,10 @@ public:
 
             const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
-            pointer _Constructed_first      = _Constructed_last;
 
-            _TRY_BEGIN
+            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+            auto& _Constructed_first = _Guard._Constructed_first;
+
             _Uninitialized_fill_n(_Newvec + _Whereoff, _Count, _Val, _Al);
             _Constructed_first = _Newvec + _Whereoff;
 
@@ -1049,12 +1098,8 @@ public:
                 _Constructed_first = _Newvec;
                 _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Al);
             }
-            _CATCH_ALL
-            _Destroy_range(_Constructed_first, _Constructed_last, _Al);
-            _Al.deallocate(_Newvec, _Newcapacity);
-            _RERAISE;
-            _CATCH_END
 
+            _Guard._New_begin = nullptr;
             _Change_array(_Newvec, _Newsize, _Newcapacity);
         } else if (_One_at_back) { // provide strong guarantee
             _Emplace_back_with_unused_capacity(_Val);
@@ -1128,9 +1173,10 @@ private:
             const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
-            pointer _Constructed_first      = _Constructed_last;
 
-            _TRY_BEGIN
+            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+            auto& _Constructed_first = _Guard._Constructed_first;
+
             _STD _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Whereoff, _Al);
             _Constructed_first = _Newvec + _Whereoff;
 
@@ -1145,12 +1191,8 @@ private:
                 _Constructed_first = _Newvec;
                 _STD _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Al);
             }
-            _CATCH_ALL
-            _STD _Destroy_range(_Constructed_first, _Constructed_last, _Al);
-            _Al.deallocate(_Newvec, _Newcapacity);
-            _RERAISE;
-            _CATCH_END
 
+            _Guard._New_begin = nullptr;
             _Change_array(_Newvec, _Newsize, _Newcapacity);
         } else { // Attempt to provide the strong guarantee for EmplaceConstructible failure.
                  // If we encounter copy/move construction/assignment failure, provide the basic guarantee.
@@ -1169,15 +1211,9 @@ private:
                 _CATCH_ALL
                 // glue the broken pieces back together
 
-                _TRY_BEGIN
+                _Vaporization_guard _Guard{this, _Whereptr, _Oldlast, _Whereptr + _Count};
                 _STD _Uninitialized_move(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr, _Al);
-                _CATCH_ALL
-                // vaporize the detached piece
-                _Orphan_range(_Whereptr, _Oldlast);
-                _STD _Destroy_range(_Whereptr + _Count, _Mylast, _Al);
-                _Mylast = _Whereptr;
-                _RERAISE;
-                _CATCH_END
+                _Guard._Target = nullptr;
 
                 _STD _Move_unchecked(_Whereptr + 2 * _Count, _Mylast, _Whereptr + _Count);
                 _STD _Destroy_range(_Oldlast, _Mylast, _Al);
@@ -1194,15 +1230,9 @@ private:
                 _CATCH_ALL
                 // glue the broken pieces back together
 
-                _TRY_BEGIN
+                _Vaporization_guard _Guard{this, _Whereptr, _Oldlast, _Relocated};
                 _STD _Uninitialized_move(_Relocated, _Mylast, _Whereptr, _Al);
-                _CATCH_ALL
-                // vaporize the detached piece
-                _Orphan_range(_Whereptr, _Oldlast);
-                _STD _Destroy_range(_Relocated, _Mylast, _Al);
-                _Mylast = _Whereptr;
-                _RERAISE;
-                _CATCH_END
+                _Guard._Target = nullptr;
 
                 _STD _Destroy_range(_Relocated, _Mylast, _Al);
                 _Mylast = _Oldlast;
@@ -1517,9 +1547,10 @@ private:
 
         const pointer _Newvec         = _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Appended_first = _Newvec + _Oldsize;
-        pointer _Appended_last        = _Appended_first;
 
-        _TRY_BEGIN
+        _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Appended_first, _Appended_first};
+        auto& _Appended_last = _Guard._Constructed_last;
+
         if constexpr (is_same_v<_Ty2, _Ty>) {
             _Appended_last = _Uninitialized_fill_n(_Appended_first, _Newsize - _Oldsize, _Val, _Al);
         } else {
@@ -1532,12 +1563,8 @@ private:
         } else {
             _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
         }
-        _CATCH_ALL
-        _Destroy_range(_Appended_first, _Appended_last, _Al);
-        _Al.deallocate(_Newvec, _Newcapacity);
-        _RERAISE;
-        _CATCH_END
 
+        _Guard._New_begin = nullptr;
         _Change_array(_Newvec, _Newsize, _Newcapacity);
     }
 
@@ -1612,17 +1639,15 @@ private:
             _Newvec = _Al.allocate(_Newcapacity);
         }
 
-        _TRY_BEGIN
+        _Simple_reallocation_guard _Guard{_Al, _Newvec, _Newcapacity};
+
         if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
             _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
         } else {
             _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
         }
-        _CATCH_ALL
-        _Al.deallocate(_Newvec, _Newcapacity);
-        _RERAISE;
-        _CATCH_END
 
+        _Guard._New_begin = nullptr;
         _Change_array(_Newvec, _Size, _Newcapacity);
     }
 
@@ -2013,7 +2038,8 @@ private:
         _Buy_raw(_Newcapacity);
     }
 
-    _CONSTEXPR20 void _Change_array(const pointer _Newvec, const size_type _Newsize, const size_type _Newcapacity) {
+    _CONSTEXPR20 void _Change_array(
+        const pointer _Newvec, const size_type _Newsize, const size_type _Newcapacity) noexcept {
         // orphan all iterators, discard old array, acquire new array
         auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;

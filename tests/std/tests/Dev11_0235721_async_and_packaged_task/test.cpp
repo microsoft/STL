@@ -78,6 +78,9 @@ void test_DevDiv_725337() {
     int i           = 1729;
     auto ref_lambda = [&]() -> int& { return i; };
 
+    // GH-321: "<future>: packaged_task can't be constructed from a move-only lambda"
+    auto move_only_lambda = [uptr = make_unique<int>(42)] { return *uptr; };
+
     {
         packaged_task<int()> pt1([] { return 19937; });
         future<int> f = pt1.get_future();
@@ -88,6 +91,18 @@ void test_DevDiv_725337() {
         pt3();
         assert(f.wait_for(0s) == future_status::ready);
         assert(f.get() == 19937);
+    }
+
+    {
+        packaged_task<int()> pt1(move(move_only_lambda));
+        future<int> f = pt1.get_future();
+        packaged_task<int()> pt2(move(pt1));
+        packaged_task<int()> pt3;
+        pt3 = move(pt2);
+        assert(f.wait_for(0s) == future_status::timeout);
+        pt3();
+        assert(f.wait_for(0s) == future_status::ready);
+        assert(f.get() == 42);
     }
 
     {
