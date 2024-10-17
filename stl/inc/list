@@ -921,7 +921,7 @@ public:
     }
 
     list& operator=(list&& _Right)
-        noexcept(_Choose_pocma_v<_Alnode> == _Pocma_values::_Equal_allocators) /* strengthened */ {
+        noexcept(_Choose_pocma_v<_Alnode> == _Pocma_values::_Equal_allocators) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
