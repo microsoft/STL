@@ -2234,7 +2234,7 @@ namespace {
     auto __std_minmax_disp(const void* const _First, const void* const _Last) noexcept {
 #ifndef _M_ARM64EC
         if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
-            if constexpr (_Traits::_Avx::_Is_floating && _Mode == _Min_max_mode::_Mode_both) {
+            if constexpr (_Traits::_Avx::_Is_floating) {
                 return __std_minmax_impl_wrap<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
             } else {
                 return __std_minmax_impl<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
