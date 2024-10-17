@@ -41,8 +41,7 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const
 
 _STD_BEGIN
 template <class _Ty, size_t _Size, bool _Dynamic = (_Size * sizeof(_Ty) > _STD_BITSET_TO_STREAM_STACK_RESERVATION)>
-class _Buffer_for_bitset {
-public:
+struct _Buffer_for_bitset {
     _Buffer_for_bitset()                                     = default;
     _Buffer_for_bitset(const _Buffer_for_bitset&)            = delete;
     _Buffer_for_bitset& operator=(const _Buffer_for_bitset&) = delete;
@@ -59,8 +58,7 @@ public:
 };
 
 template <class _Ty, size_t _Size>
-class _Buffer_for_bitset<_Ty, _Size, false> {
-public:
+struct _Buffer_for_bitset<_Ty, _Size, false> {
     _Buffer_for_bitset() { /* not initializing _Buf intentionally */ }
     _Buffer_for_bitset(const _Buffer_for_bitset&)            = delete;
     _Buffer_for_bitset& operator=(const _Buffer_for_bitset&) = delete;
