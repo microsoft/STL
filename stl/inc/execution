@@ -2945,7 +2945,7 @@ struct _Static_partitioned_stable_sort3 {
                     const size_t _Base = _Visitor._Base;
                     const size_t _Mid  = _Base + _Visitor._Shift;
                     const size_t _End  = _Mid + _Visitor._Shift;
-                    _STD _Merge_move(_Temp_buf._Get_first(_Base), _Temp_buf._Get_first(_Mid),
+                    _STD _Merge_move_unchecked(_Temp_buf._Get_first(_Base), _Temp_buf._Get_first(_Mid),
                         _Temp_buf._Get_first(_End), _Basis._Get_first(_Base, _Team._Get_chunk_offset(_Base)), _Pred);
                 }
 
@@ -2963,7 +2963,7 @@ struct _Static_partitioned_stable_sort3 {
                     const size_t _Base = _Visitor._Base;
                     const size_t _Mid  = _Base + _Visitor._Shift;
                     const size_t _End  = _Mid + _Visitor._Shift;
-                    _STD _Merge_move(_Basis._Get_first(_Base, _Team._Get_chunk_offset(_Base)),
+                    _STD _Merge_move_unchecked(_Basis._Get_first(_Base, _Team._Get_chunk_offset(_Base)),
                         _Basis._Get_first(_Mid, _Team._Get_chunk_offset(_Mid)),
                         _Basis._Get_first(_End, _Team._Get_chunk_offset(_End)), _Temp_buf._Get_first(_Base), _Pred);
                 }
