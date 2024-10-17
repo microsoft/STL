@@ -880,8 +880,8 @@ template <class _CharT>
 struct _Phony_fmt_iter_for {
     using difference_type = ptrdiff_t;
 
+    // These member functions are never defined:
     _CharT& operator*() const;
-
     _Phony_fmt_iter_for& operator++();
     _Phony_fmt_iter_for operator++(int);
 };
