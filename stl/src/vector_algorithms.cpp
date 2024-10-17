@@ -3953,7 +3953,7 @@ namespace {
             const auto _Px1 = _Traits::_Set(_Elem1);
             if (_Size_bits >= _Step_size_bits) {
                 _Elem* _Pos = _Dest + _Size_bits;
-                _Size_bits &= (_Step_size_bits - 1);
+                _Size_bits &= _Step_size_bits - 1;
                 _Elem* const _Stop_at = _Dest + _Size_bits;
                 do {
                     typename _Traits::_Value_type _Val;
