@@ -18,6 +18,7 @@
         "__msvc_ostream.hpp",
         "__msvc_print.hpp",
         "__msvc_ranges_to.hpp",
+        "__msvc_ranges_tuple_formatter.hpp",
         "__msvc_sanitizer_annotate_container.hpp",
         "__msvc_string_view.hpp",
         "__msvc_system_error_abi.hpp",

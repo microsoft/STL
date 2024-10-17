@@ -48,10 +48,8 @@ constexpr bool test_invoke_r() {
     static_assert(is_same_v<decltype(v2), double>);
     static_assert(is_void_v<decltype(invoke_r<void>(square, 1))>);
 
-#if defined(_MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, vs17.12p3
     static_assert(!noexcept(invoke_r<int>(square, 3)));
     static_assert(!noexcept(invoke(square, 3)));
-#endif // ^^^ no workaround ^^^
 
     constexpr bool has_noexcept_in_type =
 #ifdef __cpp_noexcept_function_type

@@ -123,6 +123,8 @@ struct _Dynamic_format_specs : _Basic_format_specs<_CharT> {
     int _Dynamic_precision_index = -1;
 };
 
+[[noreturn]] inline void _Throw_format_error(const char* _Message);
+
 _EXPORT_STD template <class _CharT>
 class basic_format_parse_context;
 
@@ -398,6 +400,45 @@ constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
 template <class... _Ts>
 constexpr bool enable_nonlocking_formatter_optimization<tuple<_Ts...>> =
     (enable_nonlocking_formatter_optimization<_Ts> && ...);
+
+template <class _CharT>
+struct _Fill_align_and_width_specs {
+    int _Width               = -1;
+    int _Dynamic_width_index = -1;
+    _Fmt_align _Alignment    = _Fmt_align::_None;
+    uint8_t _Fill_length     = 1;
+    // At most one codepoint (so one char32_t or four utf-8 char8_t).
+    _CharT _Fill[4 / sizeof(_CharT)]{' '};
+};
+
+// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
+template <class _CharT, class _Pc>
+_NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter_parse(
+    _Fill_align_and_width_specs<_CharT>& _Specs, _Pc& _Parse_ctx);
+
+template <class _CharT, class _FormatContext, class _Func>
+_NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(
+    const _Fill_align_and_width_specs<_CharT>& _Specs, _FormatContext& _Format_ctx, int _Width,
+    _Fmt_align _Default_align, _Func&& _Fn);
+
+template <class _CharT>
+struct _Fill_align_and_width_formatter {
+public:
+    template <class _ParseContext = basic_format_parse_context<_CharT>> // improves throughput, see GH-5003
+    _NODISCARD constexpr _ParseContext::iterator _Parse(type_identity_t<_ParseContext&> _Parse_ctx) {
+        return _STD _Fill_align_and_width_formatter_parse(_Specs, _Parse_ctx);
+    }
+
+    template <class _FormatContext, class _Func>
+    _NODISCARD constexpr auto _Format(
+        _FormatContext& _Format_ctx, const int _Width, _Fmt_align _Default_align, _Func&& _Fn) const {
+        return _STD _Fill_align_and_width_formatter_format(
+            _Specs, _Format_ctx, _Width, _Default_align, _STD forward<_Func>(_Fn));
+    }
+
+private:
+    _Fill_align_and_width_specs<_CharT> _Specs;
+};
 #endif // _HAS_CXX23
 _STD_END
 

@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <bitset>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
 #include <cwchar>
 #include <ios>
 #include <iosfwd>
+#include <sstream>
 #include <string>
 #include <type_traits>
 
@@ -22,15 +24,13 @@
 
 using namespace std;
 
-enum odd_char : unsigned char {};
-
-template <>
-class std::char_traits<odd_char> {
+template <class T>
+class odd_char_traits {
 private:
     static constexpr unsigned char odd_mask = 0xF;
 
 public:
-    using char_type  = odd_char;
+    using char_type  = T;
     using int_type   = int;
     using off_type   = streamoff;
     using pos_type   = streampos;
@@ -161,6 +161,13 @@ public:
     }
 };
 
+enum odd_char : unsigned char {};
+
+template <>
+class char_traits<odd_char> : public odd_char_traits<odd_char> {};
+
+// GH-4930 "<string>: basic_string<unicorn>::find_meow_of family
+// with std::char_traits<unicorn> specialization are not supported"
 CONSTEXPR20 bool test_gh_4930() {
     constexpr odd_char s_init[]{static_cast<odd_char>(0x55), static_cast<odd_char>(0x44), static_cast<odd_char>(0x33),
         static_cast<odd_char>(0x22), static_cast<odd_char>(0x11), static_cast<odd_char>(0)};
@@ -280,6 +287,19 @@ CONSTEXPR20 bool test_gh_4930() {
 static_assert(test_gh_4930());
 #endif // _HAS_CXX20
 
+// GH-4956 "<bitset>: streaming operator >> does not use character traits"
+void test_gh_4956() {
+    // bitset's stream extraction operator was using `!=` to compare characters instead of `traits::eq`
+    basic_string<char, odd_char_traits<char>> s("QQPPQ", 5);
+    basic_istringstream<char, odd_char_traits<char>> iss(s);
+
+    bitset<7> bs;
+    iss >> bs;
+
+    assert(bs.to_ulong() == 0b11001);
+}
+
 int main() {
     assert(test_gh_4930());
+    test_gh_4956();
 }
