@@ -3845,7 +3845,6 @@ __declspec(noalias) void __stdcall __std_replace_8(
 
 } // extern "C"
 
-#ifndef _M_ARM64EC
 namespace {
     namespace __std_bitset_to_string {
 #ifdef _M_ARM64EC
@@ -3944,7 +3943,6 @@ namespace {
                 _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Elems);
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _Traits, class _Elem>
         void __stdcall _Impl(
@@ -3978,6 +3976,7 @@ namespace {
                 memcpy(_Dest, _Tmpd, _Size_bits * sizeof(_Elem));
             }
         }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _Avx_traits, class _Sse_traits, class _Elem>
         void __stdcall _Dispatch(_Elem* const _Dest, const void* const _Src, size_t _Size_bits, const _Elem _Elem0,
@@ -3999,7 +3998,6 @@ namespace {
         }
     } // namespace __std_bitset_to_string
 } // unnamed namespace
-#endif // !defined(_M_ARM64EC)
 
 extern "C" {
 
