@@ -59,7 +59,7 @@ namespace {
     }
 
     template <class charT, size_t Length>
-    basic_string<charT> random_digits_contigous_string_init() {
+    basic_string<charT> random_digits_contiguous_string_init() {
         mt19937_64 rnd{};
         uniform_int_distribution<> dis('0', '1');
 
@@ -74,13 +74,13 @@ namespace {
     }
 
     template <class charT, size_t Length>
-    const auto random_digits_contigous_string = random_digits_contigous_string_init<charT, Length>();
+    const auto random_digits_contiguous_string = random_digits_contiguous_string_init<charT, Length>();
 
     template <size_t N, class charT>
     void bitset_from_stream(benchmark::State& state) {
         constexpr size_t string_length = 2048;
         constexpr size_t count         = string_length / N;
-        basic_istringstream<charT> stream(random_digits_contigous_string<charT, string_length>);
+        basic_istringstream<charT> stream(random_digits_contiguous_string<charT, string_length>);
         bitset<N> bs;
         for (auto _ : state) {
             benchmark::DoNotOptimize(stream);
