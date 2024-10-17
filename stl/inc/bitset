@@ -641,7 +641,7 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
         _TRY_IO_BEGIN
         _Buf._Allocate();
         typename _Tr::int_type _Meta = _Istr.rdbuf()->sgetc();
-        for (; _Count < _Bits; (void) ++_Count, _Meta = _Istr.rdbuf()->snextc()) {
+        for (; _Count < _Bits; ++_Count, _Meta = _Istr.rdbuf()->snextc()) {
             // test _Meta
             if (_Tr::eq_int_type(_Tr::eof(), _Meta)) { // end of file, quit
                 _State |= _Istr_t::eofbit;
