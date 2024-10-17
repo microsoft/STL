@@ -398,14 +398,14 @@ private:
     _GB11_LeftHand_regex _GB11_rx;
 
 public:
+    using value_type      = iter_value_t<_Wrapped_iter_type>;
+    using difference_type = ptrdiff_t;
+
     _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
         return _WrappedIter == default_sentinel;
     }
 
     _NODISCARD constexpr bool operator==(const _Grapheme_break_property_iterator&) const noexcept = default;
-
-    using difference_type = ptrdiff_t;
-    using value_type      = iter_value_t<_Wrapped_iter_type>;
 
     constexpr _Grapheme_break_property_iterator(const _CharT* _First, const _CharT* _Last)
         : _WrappedIter(_First, _Last) {}
@@ -1795,16 +1795,16 @@ template <integral _Integral>
 _NODISCARD constexpr string_view _Get_integral_prefix(const char _Type, const _Integral _Value) noexcept {
     switch (_Type) {
     case 'b':
-        return string_view{"0b", 2}; // TRANSITION, VSO-1775715 (should use UDLs in this function)
+        return "0b"sv;
     case 'B':
-        return string_view{"0B", 2};
+        return "0B"sv;
     case 'x':
-        return string_view{"0x", 2};
+        return "0x"sv;
     case 'X':
-        return string_view{"0X", 2};
+        return "0X"sv;
     case 'o':
         if (_Value != _Integral{0}) {
-            return string_view{"0", 1};
+            return "0"sv;
         }
         return {};
     default:
@@ -2388,14 +2388,14 @@ private:
     _Grapheme_break_property_iterator<_CharT> _WrappedIter;
 
 public:
+    using value_type      = int;
+    using difference_type = ptrdiff_t;
+
     _NODISCARD constexpr bool operator==(const _Measure_string_prefix_iterator_utf&) const noexcept = default;
 
     _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
         return _WrappedIter == default_sentinel;
     }
-
-    using difference_type = ptrdiff_t;
-    using value_type      = int;
 
     constexpr _Measure_string_prefix_iterator_utf(const _CharT* _First, const _CharT* _Last)
         : _WrappedIter(_First, _Last) {}
@@ -2438,15 +2438,15 @@ private:
     }
 
 public:
+    using value_type      = int;
+    using difference_type = ptrdiff_t;
+
     _NODISCARD bool operator==(default_sentinel_t) const noexcept {
         return _First == _Last;
     }
     _NODISCARD bool operator==(const _Measure_string_prefix_iterator_legacy& _Rhs) const noexcept {
         return _First == _Rhs._First && _Last == _Rhs._Last;
     }
-
-    using difference_type = ptrdiff_t;
-    using value_type      = int;
 
     _Measure_string_prefix_iterator_legacy(const char* _First_val, const char* _Last_val)
         : _First(_First_val), _Last(_Last_val) {

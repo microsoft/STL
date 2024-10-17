@@ -385,7 +385,7 @@ constexpr bool _Integer_class = requires {
 };
 
 template <class _Ty>
-concept _Integer_like = _Is_nonbool_integral<remove_cv_t<_Ty>> || _Integer_class<_Ty>;
+concept _Integer_like = _Is_nonbool_integral<_Ty> || _Integer_class<_Ty>;
 
 template <class _Ty>
 concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
@@ -497,6 +497,9 @@ struct iterator_traits : _Iterator_traits_base<_Iter> {}; // get traits from ite
 
 template <class _Ty>
 struct iterator_traits<_Ty*> : _Iterator_traits_pointer_base<_Ty> {}; // get traits from pointer, if possible
+
+template <class _Ty>
+constexpr bool _Integer_like = _Is_nonbool_integral<_Ty>;
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 _INLINE_VAR constexpr auto _Meta_npos = ~size_t{0};
