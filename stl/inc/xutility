@@ -1402,12 +1402,6 @@ struct _Distance_unknown {
     }
 };
 
-struct _Distance_unbounded {
-    _NODISCARD constexpr _Distance_unbounded operator-() const noexcept {
-        return {};
-    }
-};
-
 template <class _Diff>
 constexpr _Diff _Max_possible_v{static_cast<_Make_unsigned_like_t<_Diff>>(-1) >> 1};
 
@@ -1532,35 +1526,17 @@ using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Stand
 
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-_EXPORT_STD struct unreachable_sentinel_t;
-
-template <class _Checked, class _Iter, class _Sent>
-_NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Sent& _Last) {
-    // Returns the distance between _First and _Last,
-    // an indicator that the distance is infinite, or
-    // an indicator that the distance cannot be determined in O(1).
-    _STL_INTERNAL_STATIC_ASSERT(same_as<_Unwrapped_t<_Checked>, _Iter>);
-
-    if constexpr (sized_sentinel_for<_Sent, _Iter>) {
-        return static_cast<iter_difference_t<_Checked>>(_Last - _First);
-    } else if constexpr (same_as<_Sent, unreachable_sentinel_t>) {
-        return _Distance_unbounded{};
-    } else {
-        return _Distance_unknown{};
-    }
-}
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Checked, class _Iter>
 _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
+    // Returns the distance between _First and _Last or
+    // an indicator that the distance cannot be determined in O(1).
     _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped_t<_Checked>, _Iter>);
-    if constexpr (_Is_cpp17_random_iter_v<_Iter>) {
+    if constexpr (_Is_ranges_random_iter_v<_Iter>) {
         return static_cast<_Iter_diff_t<_Checked>>(_Last - _First);
     } else {
         return _Distance_unknown{};
     }
 }
-#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Elem, bool _Is_enum = is_enum_v<_Elem>>
 struct _Unwrap_enum { // if _Elem is an enum, gets its underlying type; otherwise leaves _Elem unchanged
@@ -3582,20 +3558,6 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Distance_fn distance;
 
-    template <range _Rng>
-    _NODISCARD constexpr auto _Idl_distance(_Rng& _Range) {
-        // Returns the length of _Range if it is finite and can be determined in O(1), or
-        // an indicator that the length is infinite, or
-        // an indicator that the length cannot be determined in O(1).
-        if constexpr (sized_range<_Rng>) {
-            return _RANGES distance(_Range);
-        } else if constexpr (same_as<sentinel_t<_Rng>, unreachable_sentinel_t>) {
-            return _Distance_unbounded{};
-        } else {
-            return _Distance_unknown{};
-        }
-    }
-
     class _Ssize_fn {
     public:
         template <class _Rng>
@@ -4567,6 +4529,44 @@ _EXPORT_STD struct unreachable_sentinel_t {
 };
 
 _EXPORT_STD inline constexpr unreachable_sentinel_t unreachable_sentinel{};
+
+namespace ranges {
+    struct _Distance_unbounded {
+        _NODISCARD constexpr _Distance_unbounded operator-() const noexcept {
+            return {};
+        }
+    };
+
+    template <class _Checked, class _Iter, class _Sent>
+    _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Sent& _Last) {
+        // Returns the distance between _First and _Last,
+        // an indicator that the distance is infinite, or
+        // an indicator that the distance cannot be determined in O(1).
+        _STL_INTERNAL_STATIC_ASSERT(same_as<_Unwrapped_t<_Checked>, _Iter>);
+
+        if constexpr (sized_sentinel_for<_Sent, _Iter>) {
+            return static_cast<iter_difference_t<_Checked>>(_Last - _First);
+        } else if constexpr (same_as<_Sent, unreachable_sentinel_t>) {
+            return _Distance_unbounded{};
+        } else {
+            return _Distance_unknown{};
+        }
+    }
+
+    template <range _Rng>
+    _NODISCARD constexpr auto _Idl_distance(_Rng& _Range) {
+        // Returns the length of _Range if it is finite and can be determined in O(1), or
+        // an indicator that the length is infinite, or
+        // an indicator that the length cannot be determined in O(1).
+        if constexpr (sized_range<_Rng>) {
+            return _RANGES distance(_Range);
+        } else if constexpr (same_as<sentinel_t<_Rng>, unreachable_sentinel_t>) {
+            return _Distance_unbounded{};
+        } else {
+            return _Distance_unknown{};
+        }
+    }
+} // namespace ranges
 #endif // _HAS_CXX20
 
 // _Iterator_is_contiguous<_Iter> reports whether an iterator is known to be contiguous.
@@ -4961,7 +4961,7 @@ namespace ranges {
             _STD _Adl_verify_range(_First, _Last);
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
-            const auto _Count = _STD _Idl_distance<_It>(_UFirst, _ULast);
+            const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
             auto _UResult     = _RANGES _Copy_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Get_unwrapped_n(_STD move(_Output), _Count));
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));

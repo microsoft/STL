@@ -1576,7 +1576,7 @@ namespace ranges {
             auto _UFirst = _RANGES _Unwrap_iter<_Se1>(_STD move(_First));
             auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
             _STD _Seek_wrapped(_First, _ULast);
-            const auto _Count = _STD _Idl_distance<_It1>(_UFirst, _ULast);
+            const auto _Count = _RANGES _Idl_distance<_It1>(_UFirst, _ULast);
             auto _UOutput     = _STD _Copy_backward_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Get_unwrapped_n(_STD move(_Output), -_Count));
             _STD _Seek_wrapped(_Output, _STD move(_UOutput));
@@ -1714,7 +1714,7 @@ namespace ranges {
             _STD _Adl_verify_range(_First, _Last);
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
-            const auto _Count = _STD _Idl_distance<_It>(_UFirst, _ULast);
+            const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
             auto _UResult     = _RANGES _Move_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Get_unwrapped_n(_STD move(_Output), _Count));
 
@@ -1770,7 +1770,7 @@ namespace ranges {
             auto _UFirst = _RANGES _Unwrap_iter<_Se1>(_STD move(_First));
             auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
             _STD _Seek_wrapped(_First, _ULast);
-            const auto _Count = _STD _Idl_distance<_It1>(_UFirst, _ULast);
+            const auto _Count = _RANGES _Idl_distance<_It1>(_UFirst, _ULast);
             auto _UOutput     = _RANGES _Move_backward_common(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Get_unwrapped_n(_STD move(_Output), -_Count));
             _STD _Seek_wrapped(_Output, _STD move(_UOutput));
@@ -3786,25 +3786,25 @@ _FwdIt3 transform(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
-template <class _Diff1, class _Diff2>
-_NODISCARD constexpr auto _Idl_dist_min([[maybe_unused]] const _Diff1 _Lhs, [[maybe_unused]] const _Diff2 _Rhs) {
-    // returns the minimum of two results from _Idl_distance calls
-    if constexpr (is_same_v<_Diff1, _Distance_unknown> || is_same_v<_Diff2, _Distance_unknown>) {
-        return _Distance_unknown{};
-    } else if constexpr (is_same_v<_Diff1, _Distance_unbounded>) {
-        return _Rhs;
-    } else if constexpr (is_same_v<_Diff2, _Distance_unbounded>) {
-        return _Lhs;
-    } else {
-        if (_Rhs < _Lhs) {
-            return static_cast<_Diff1>(_Rhs);
-        } else {
+namespace ranges {
+    template <class _Diff1, class _Diff2>
+    _NODISCARD constexpr auto _Idl_dist_min([[maybe_unused]] const _Diff1 _Lhs, [[maybe_unused]] const _Diff2 _Rhs) {
+        // returns the minimum of two results from _Idl_distance calls
+        if constexpr (is_same_v<_Diff1, _Distance_unknown> || is_same_v<_Diff2, _Distance_unknown>) {
+            return _Distance_unknown{};
+        } else if constexpr (is_same_v<_Diff1, _Distance_unbounded>) {
+            return _Rhs;
+        } else if constexpr (is_same_v<_Diff2, _Distance_unbounded>) {
             return _Lhs;
+        } else {
+            if (_Rhs < _Lhs) {
+                return static_cast<_Diff1>(_Rhs);
+            } else {
+                return _Lhs;
+            }
         }
     }
-}
 
-namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using unary_transform_result = in_out_result<_In, _Out>;
 
@@ -3821,7 +3821,7 @@ namespace ranges {
             _STD _Adl_verify_range(_First, _Last);
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
-            const auto _Count = _STD _Idl_distance<_It>(_UFirst, _ULast);
+            const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
 
             auto _UResult = _Transform_unary_unchecked(_STD move(_UFirst), _STD move(_ULast),
                 _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Func), _STD _Pass_fn(_Proj));
@@ -3858,11 +3858,11 @@ namespace ranges {
 
             auto _UFirst1      = _RANGES _Unwrap_iter<_Se1>(_STD move(_First1));
             auto _ULast1       = _RANGES _Unwrap_sent<_It1>(_STD move(_Last1));
-            const auto _Count1 = _STD _Idl_distance<_It1>(_UFirst1, _ULast1);
+            const auto _Count1 = _RANGES _Idl_distance<_It1>(_UFirst1, _ULast1);
             auto _UFirst2      = _RANGES _Unwrap_iter<_Se2>(_STD move(_First2));
             auto _ULast2       = _RANGES _Unwrap_sent<_It2>(_STD move(_Last2));
-            const auto _Count2 = _STD _Idl_distance<_It2>(_UFirst2, _ULast2);
-            const auto _Count  = _STD _Idl_dist_min(_Count1, _Count2);
+            const auto _Count2 = _RANGES _Idl_distance<_It2>(_UFirst2, _ULast2);
+            const auto _Count  = _RANGES _Idl_dist_min(_Count1, _Count2);
 
             auto _UResult = _Transform_binary_unchecked(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
                 _STD move(_ULast2), _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Func),
@@ -3882,7 +3882,7 @@ namespace ranges {
             _Out>
             operator()(_Rng1&& _Range1, _Rng2&& _Range2, _Out _Output, _Fn _Func, _Pj1 _Proj1 = {},
                 _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
-            const auto _Count = _STD _Idl_dist_min(_RANGES _Idl_distance(_Range1), _RANGES _Idl_distance(_Range2));
+            const auto _Count = _RANGES _Idl_dist_min(_RANGES _Idl_distance(_Range1), _RANGES _Idl_distance(_Range2));
             auto _First1      = _RANGES begin(_Range1);
             auto _First2      = _RANGES begin(_Range2);
 
@@ -4173,7 +4173,7 @@ namespace ranges {
             _STD _Adl_verify_range(_First, _Last);
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
-            const auto _Count = _STD _Idl_distance<_It>(_UFirst, _ULast);
+            const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
             auto _UResult     = _Replace_copy_unchecked(_STD move(_UFirst), _STD move(_ULast),
                     _STD _Get_unwrapped_n(_STD move(_Output), _Count), _Oldval, _Newval, _STD _Pass_fn(_Proj));
 
@@ -4279,7 +4279,7 @@ namespace ranges {
             _STD _Adl_verify_range(_First, _Last);
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
-            const auto _Count = _STD _Idl_distance<_It>(_UFirst, _ULast);
+            const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
 
             auto _UResult = _Replace_copy_if_unchecked(_STD move(_UFirst), _STD move(_ULast),
                 _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Pred), _Newval, _STD _Pass_fn(_Proj));
@@ -5199,7 +5199,7 @@ namespace ranges {
             auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast  = _RANGES _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
             _STD _Seek_wrapped(_First, _ULast);
-            const auto _Count = _STD _Idl_distance<_It>(_UFirst, _ULast);
+            const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
             auto _UOutput     = _Reverse_copy_common(
                 _STD move(_UFirst), _STD move(_ULast), _STD _Get_unwrapped_n(_STD move(_Output), _Count));
             _STD _Seek_wrapped(_Output, _STD move(_UOutput));
@@ -5410,7 +5410,7 @@ namespace ranges {
             _STD _Adl_verify_range(_Mid, _Last);
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
-            const auto _Count = _STD _Idl_distance<_It>(_UFirst, _ULast);
+            const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
             auto _UResult     = _Rotate_copy_unchecked(_STD move(_UFirst), _RANGES _Unwrap_iter<_Se>(_STD move(_Mid)),
                     _STD move(_ULast), _STD _Get_unwrapped_n(_STD move(_Output), _Count));
 
@@ -7404,13 +7404,16 @@ template <class _Diff1, class _Diff2>
 _NODISCARD constexpr auto _Idl_dist_add(_Diff1 _Lhs, _Diff2 _Rhs) {
     (void) _Lhs;
     (void) _Rhs;
-    if constexpr (is_same_v<_Diff1, _Distance_unbounded> || is_same_v<_Diff2, _Distance_unbounded>) {
-        return _Distance_unbounded{};
-    } else if constexpr (is_same_v<_Diff1, _Distance_unknown> || is_same_v<_Diff2, _Distance_unknown>) {
-        return _Distance_unknown{};
-    } else {
-        return _Lhs + _Rhs;
-    }
+#if _HAS_CXX20
+    if constexpr (is_same_v<_Diff1, ranges::_Distance_unbounded> || is_same_v<_Diff2, ranges::_Distance_unbounded>) {
+        return ranges::_Distance_unbounded{};
+    } else
+#endif // _HAS_CXX20
+        if constexpr (is_same_v<_Diff1, _Distance_unknown> || is_same_v<_Diff2, _Distance_unknown>) {
+            return _Distance_unknown{};
+        } else {
+            return _Lhs + _Rhs;
+        }
 }
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
@@ -7502,10 +7505,10 @@ namespace ranges {
             _STD _Adl_verify_range(_First2, _Last2);
             auto _UFirst1      = _RANGES _Unwrap_iter<_Se1>(_STD move(_First1));
             auto _ULast1       = _RANGES _Unwrap_sent<_It1>(_STD move(_Last1));
-            const auto _Count1 = _STD _Idl_distance<_It1>(_UFirst1, _ULast1);
+            const auto _Count1 = _RANGES _Idl_distance<_It1>(_UFirst1, _ULast1);
             auto _UFirst2      = _RANGES _Unwrap_iter<_Se2>(_STD move(_First2));
             auto _ULast2       = _RANGES _Unwrap_sent<_It2>(_STD move(_Last2));
-            const auto _Count2 = _STD _Idl_distance<_It2>(_UFirst2, _ULast2);
+            const auto _Count2 = _RANGES _Idl_distance<_It2>(_UFirst2, _ULast2);
             const auto _Count  = _STD _Idl_dist_add(_Count1, _Count2);
             auto _UResult      = _Merge_unchecked(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
                      _STD move(_ULast2), _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Pred),
