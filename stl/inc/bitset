@@ -40,6 +40,34 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
+template <class _Elem, size_t _Bits, bool _Dynamic = (_Bits * sizeof(_Elem) > _STD_BITSET_TO_STREAM_STACK_RESERVATION)>
+struct _Buffer_for_bitset {
+    _Buffer_for_bitset() noexcept                            = default;
+    _Buffer_for_bitset(const _Buffer_for_bitset&)            = delete;
+    _Buffer_for_bitset& operator=(const _Buffer_for_bitset&) = delete;
+
+    ~_Buffer_for_bitset() {
+        delete[] _Buf;
+    }
+
+    void _Allocate() {
+        _Buf = new _Elem[_Bits];
+    }
+
+    _Elem* _Buf = nullptr;
+};
+
+template <class _Elem, size_t _Bits>
+struct _Buffer_for_bitset<_Elem, _Bits, false> {
+    _Buffer_for_bitset() noexcept { /* intentionally not initializing _Buf */ }
+    _Buffer_for_bitset(const _Buffer_for_bitset&)            = delete;
+    _Buffer_for_bitset& operator=(const _Buffer_for_bitset&) = delete;
+
+    void _Allocate() noexcept {}
+
+    _Elem _Buf[(_Bits != 0) ? _Bits : 1];
+};
+
 _EXPORT_STD template <size_t _Bits>
 class bitset { // store fixed-length sequence of Boolean elements
 private:
@@ -590,14 +618,11 @@ basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const bi
     const _Elem _Elem0       = _Ctype_fac.widen('0');
     const _Elem _Elem1       = _Ctype_fac.widen('1');
 
-    if constexpr (_Bits * sizeof(_Elem) <= _STD_BITSET_TO_STREAM_STACK_RESERVATION) {
-        _Elem _Buf[_Bits + 1];
-        _Right._To_string(_Buf, _Bits, _Elem0, _Elem1);
-        _Buf[_Bits] = _Elem{'\0'};
-        return _Ostr << _Buf;
-    } else {
-        return _Ostr << _Right.template to_string<_Elem, _Tr, allocator<_Elem>>(_Elem0, _Elem1);
-    }
+    _Buffer_for_bitset<_Elem, _Bits> _Buf;
+    _Buf._Allocate();
+    _Right._To_string(_Buf._Buf, _Bits, _Elem0, _Elem1);
+    _Ostr.write(_Buf._Buf, _Bits);
+    return _Ostr;
 }
 
 _EXPORT_STD template <class _Elem, class _Tr, size_t _Bits>
@@ -608,14 +633,15 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
     const _Elem _Elem0               = _Ctype_fac.widen('0');
     const _Elem _Elem1               = _Ctype_fac.widen('1');
     typename _Istr_t::iostate _State = _Istr_t::goodbit;
-    bool _Changed                    = false;
-    string _Str;
+    size_t _Count                    = 0;
+    _Buffer_for_bitset<_Elem, _Bits> _Buf;
     const typename _Istr_t::sentry _Ok(_Istr);
 
     if (_Ok) { // valid stream, extract elements
         _TRY_IO_BEGIN
+        _Buf._Allocate();
         typename _Tr::int_type _Meta = _Istr.rdbuf()->sgetc();
-        for (size_t _Count = _Right.size(); 0 < _Count; _Meta = _Istr.rdbuf()->snextc(), (void) --_Count) {
+        for (; _Count < _Bits; ++_Count, _Meta = _Istr.rdbuf()->snextc()) {
             // test _Meta
             if (_Tr::eq_int_type(_Tr::eof(), _Meta)) { // end of file, quit
                 _State |= _Istr_t::eofbit;
@@ -628,28 +654,23 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
                 break; // invalid element
             }
 
-            if (_Str.max_size() <= _Str.size()) { // no room in string, give up (unlikely)
-                _State |= _Istr_t::failbit;
-                break;
-            }
-
             // valid, append '0' or '1'
-            _Str.push_back('0' + _Tr::eq(_Char, _Elem1));
-            _Changed = true;
+            _Buf._Buf[_Count] = '0' + _Tr::eq(_Char, _Elem1);
         }
+
         _CATCH_IO_(_Istr_t, _Istr)
     }
 
     constexpr bool _Has_bits = _Bits > 0;
 
     if constexpr (_Has_bits) {
-        if (!_Changed) {
+        if (_Count == 0) {
             _State |= _Istr_t::failbit;
         }
     }
 
     _Istr.setstate(_State);
-    _Right = bitset<_Bits>(_Str); // convert string and store
+    _Right = bitset<_Bits>(_Buf._Buf, _Count); // convert string and store
     return _Istr;
 }
 
