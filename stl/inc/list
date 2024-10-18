@@ -920,8 +920,7 @@ public:
         _Swap_val(_Right);
     }
 
-    list& operator=(list&& _Right)
-        noexcept(_Choose_pocma_v<_Alnode> == _Pocma_values::_Equal_allocators) /* strengthened */ {
+    list& operator=(list&& _Right) noexcept(_Alnode_traits::is_always_equal::value) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
