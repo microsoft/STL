@@ -7158,7 +7158,7 @@ namespace ranges {
         private:
             friend zip_view;
 
-#ifdef __clang__ // TRANSITION, need to reduce and report (was thought to be LLVM-61763)
+#if defined(__clang__) && __clang_major__ <= 18 // TRANSITION, Clang 19 (was thought to be LLVM-61763)
         public:
 #else // ^^^ workaround / no workaround vvv
             template <class _Func, class... _OtherViews>
@@ -7983,7 +7983,7 @@ namespace ranges {
         private:
             friend adjacent_view;
 
-#ifdef __clang__ // TRANSITION, need to reduce and report (was thought to be LLVM-61763)
+#if defined(__clang__) && __clang_major__ <= 18 // TRANSITION, Clang 19 (was thought to be LLVM-61763)
         public:
 #else // ^^^ workaround / no workaround vvv
             template <class _Vw2, class _Fn, size_t _Nx2>
