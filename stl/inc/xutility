@@ -4566,7 +4566,7 @@ namespace ranges {
             return _Distance_unknown{};
         }
     }
-}
+} // namespace ranges
 #endif // _HAS_CXX20
 
 // _Iterator_is_contiguous<_Iter> reports whether an iterator is known to be contiguous.
