@@ -2526,19 +2526,20 @@ void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
     auto _Left_ptr  = reinterpret_cast<unsigned char*>(&_Left);
     auto _Right_ptr = reinterpret_cast<unsigned char*>(&_Right);
 
-    constexpr size_t _Size_bytes = _Size * sizeof(_Ty);
-    constexpr size_t _Size_tail  = _Size_bytes % 64;
-    constexpr size_t _Size_64    = _Size_bytes - _Size_tail;
+    constexpr size_t _Part_size_bytes = 64;
+    constexpr size_t _Size_bytes      = _Size * sizeof(_Ty);
+    constexpr size_t _Size_tail       = _Size_bytes % _Part_size_bytes;
+    constexpr size_t _Size_parts      = _Size_bytes - _Size_tail;
 
-    if constexpr (_Size_64 != 0) {
-        auto _Stop = _Left_ptr + _Size_64;
+    if constexpr (_Size_parts != 0) {
+        auto _Stop = _Left_ptr + _Size_parts;
         do {
-            unsigned char _Buf[64];
-            _CSTD memcpy(_Buf, _Left_ptr, 64);
-            _CSTD memcpy(_Left_ptr, _Right_ptr, 64);
-            _CSTD memcpy(_Right_ptr, _Buf, 64);
-            _Left_ptr += 64;
-            _Right_ptr += 64;
+            unsigned char _Buf[_Part_size_bytes];
+            _CSTD memcpy(_Buf, _Left_ptr, _Part_size_bytes);
+            _CSTD memcpy(_Left_ptr, _Right_ptr, _Part_size_bytes);
+            _CSTD memcpy(_Right_ptr, _Buf, _Part_size_bytes);
+            _Left_ptr += _Part_size_bytes;
+            _Right_ptr += _Part_size_bytes;
 
         } while (_Left_ptr != _Stop);
     }
