@@ -111,9 +111,11 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>); // implemented in <algorit
 _EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> /* = 0 */>
 _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
     if (&_Left == &_Right) {
-        // Precondition violation. N4988 [utility.swap]/7: Effects: As if by swap_ranges.
+        // Indirect precondiition:
+        // N4988 [utility.swap]/7: Effects: As if by swap_ranges.
         // N4988 [alg.swap]/2: Precondition: The two ranges [first1, last1) and [first2, last2) do not overlap.
-        _CSTD abort();
+
+        return; // Loosening this precondition and allow self-swap; see LWG-4165
     }
 
     if constexpr (_Is_trivially_swappable_v<_Ty>) {
