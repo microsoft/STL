@@ -59,6 +59,11 @@ const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* 
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
+const void* __stdcall __std_find_end_1(
+    const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+const void* __stdcall __std_find_end_2(
+    const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_2i __stdcall __std_minmax_2i(const void* _First, const void* _Last) noexcept;
@@ -184,6 +189,19 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+    }
+}
+
+template <class _Ty1, class _Ty2>
+_Ty1* _Find_end_vectorized(
+    _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, const size_t _Count2) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Ty1) == sizeof(_Ty2));
+    if constexpr (sizeof(_Ty1) == 1) {
+        return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_find_end_1(_First1, _Last1, _First2, _Count2)));
+    } else if constexpr (sizeof(_Ty1) == 2) {
+        return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_find_end_2(_First1, _Last1, _First2, _Count2)));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -3194,6 +3212,26 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     if constexpr (_Is_ranges_random_iter_v<_FwdIt1> && _Is_ranges_random_iter_v<_FwdIt2>) {
         const _Iter_diff_t<_FwdIt2> _Count2 = _ULast2 - _UFirst2;
         if (_Count2 > 0 && _Count2 <= _ULast1 - _UFirst1) {
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+                if (!_STD _Is_constant_evaluated()) {
+                    const auto _Ptr1 = _STD _To_address(_UFirst1);
+
+                    const auto _Ptr_res1 = _STD _Find_end_vectorized(
+                        _Ptr1, _STD _To_address(_ULast1), _STD _To_address(_UFirst2), static_cast<size_t>(_Count2));
+
+                    if constexpr (is_pointer_v<decltype(_UFirst1)>) {
+                        _UFirst1 = _Ptr_res1;
+                    } else {
+                        _UFirst1 += _Ptr_res1 - _Ptr1;
+                    }
+
+                    _STD _Seek_wrapped(_First1, _UFirst1);
+                    return _First1;
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
             for (auto _UCandidate = _ULast1 - static_cast<_Iter_diff_t<_FwdIt1>>(_Count2);; --_UCandidate) {
                 if (_STD _Equal_rev_pred_unchecked(_UCandidate, _UFirst2, _ULast2, _STD _Pass_fn(_Pred))) {
                     _STD _Seek_wrapped(_First1, _UCandidate);
@@ -3297,6 +3335,34 @@ namespace ranges {
 
             if (_Count2 > 0 && _Count2 <= _Count1) {
                 const auto _Count2_as1 = static_cast<iter_difference_t<_It1>>(_Count2);
+#if _USE_STD_VECTOR_ALGORITHMS
+                if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
+                              && is_same_v<_Pj2, identity>) {
+                    if (!_STD is_constant_evaluated()) {
+                        const auto _Ptr1      = _STD to_address(_First1);
+                        const auto _Ptr2      = _STD to_address(_First2);
+                        const auto _Ptr_last1 = _Ptr1 + _Count1;
+
+                        const auto _Ptr_res1 =
+                            _STD _Find_end_vectorized(_Ptr1, _Ptr_last1, _Ptr2, static_cast<size_t>(_Count2));
+
+                        if constexpr (is_pointer_v<_It1>) {
+                            if (_Ptr_res1 != _Ptr_last1) {
+                                return {_Ptr_res1, _Ptr_res1 + _Count2};
+                            } else {
+                                return {_Ptr_res1, _Ptr_res1};
+                            }
+                        } else {
+                            _First1 += _Ptr_res1 - _Ptr1;
+                            if (_Ptr_res1 != _Ptr_last1) {
+                                return {_First1, _First1 + _Count2_as1};
+                            } else {
+                                return {_First1, _First1};
+                            }
+                        }
+                    }
+                }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
                 for (auto _Candidate = _First1 + (_Count1 - _Count2_as1);; --_Candidate) {
                     auto _Match_and_mid1 =
