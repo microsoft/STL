@@ -239,7 +239,7 @@ public:
     // the buffer may already be full, and the terminating char is not '\0'.
     // In that case, copy the string as usual.
     _NODISCARD _Mystr str() && {
-        _Mystr _Result{_String_constructor_rvalue_allocator_tag{}, _STD move(_Al)};
+        _Mystr _Result{_Al};
         const auto _View = _Get_buffer_view();
         // _Size cannot be larger than _Res, but it could be equal,
         // because basic_stringbuf doesn't allocate for the terminating '\0'.
