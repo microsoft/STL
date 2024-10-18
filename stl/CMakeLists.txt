@@ -20,6 +20,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_ostream.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_print.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_ranges_to.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_ranges_tuple_formatter.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_sanitizer_annotate_container.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_string_view.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
@@ -81,6 +82,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/fstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/functional
     ${CMAKE_CURRENT_LIST_DIR}/inc/future
+    ${CMAKE_CURRENT_LIST_DIR}/inc/generator
     ${CMAKE_CURRENT_LIST_DIR}/inc/hash_map
     ${CMAKE_CURRENT_LIST_DIR}/inc/hash_set
     ${CMAKE_CURRENT_LIST_DIR}/inc/header-units.json

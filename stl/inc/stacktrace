@@ -12,8 +12,8 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <stacktrace> are available only with C++23 or later.");
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
+#include <__msvc_formatter.hpp>
 #include <cstdint>
-#include <format>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -341,7 +341,8 @@ ostream& operator<<(ostream& _Os, const basic_stacktrace<_Alloc>& _St) {
 
 template <>
 struct formatter<stacktrace_entry> {
-    constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
+    template <class _ParseContext = basic_format_parse_context<char>> // improves throughput, see GH-5003
+    constexpr _ParseContext::iterator parse(type_identity_t<_ParseContext&> _Parse_ctx) {
         return _Impl._Parse(_Parse_ctx);
     }
 
@@ -361,7 +362,8 @@ inline constexpr bool enable_nonlocking_formatter_optimization<stacktrace_entry>
 
 template <class _Alloc>
 struct formatter<basic_stacktrace<_Alloc>> {
-    constexpr format_parse_context::iterator parse(format_parse_context& _Parse_ctx) {
+    template <class _ParseContext = basic_format_parse_context<char>> // improves throughput, see GH-5003
+    constexpr _ParseContext::iterator parse(type_identity_t<_ParseContext&> _Parse_ctx) {
         const auto _First = _Parse_ctx.begin();
         if (_First != _Parse_ctx.end() && *_First != '}') {
             _Throw_format_error("For formatter<basic_stacktrace<Allocator>>, format-spec must be empty.");

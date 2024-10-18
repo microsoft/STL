@@ -283,7 +283,11 @@ struct _Iter_traits_category4<false> {
 
 template <class _It>
 concept _Cpp17_random_delta =
+#if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, CUDA 12.5
+    totally_ordered<_It> && requires(_It __i, typename incrementable_traits<_It>::difference_type __n) {
+#else // ^^^ workaround / no workaround vvv
     totally_ordered<_It> && requires(_It __i, incrementable_traits<_It>::difference_type __n) {
+#endif // ^^^ no workaround ^^^
         { __i += __n } -> same_as<_It&>;
         { __i -= __n } -> same_as<_It&>;
         { __i + __n } -> same_as<_It>;
@@ -381,7 +385,7 @@ constexpr bool _Integer_class = requires {
 };
 
 template <class _Ty>
-concept _Integer_like = _Is_nonbool_integral<remove_cv_t<_Ty>> || _Integer_class<_Ty>;
+concept _Integer_like = _Is_nonbool_integral<_Ty> || _Integer_class<_Ty>;
 
 template <class _Ty>
 concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
@@ -438,11 +442,6 @@ _EXPORT_STD using ranges::get;
 template <class _It, class _Se, ranges::subrange_kind _Ki>
 constexpr bool _Is_subrange_v<ranges::subrange<_It, _Se, _Ki>> = true;
 
-#if _HAS_CXX23
-template <class _It, class _Se, ranges::subrange_kind _Ki>
-constexpr bool _Tuple_like_impl<ranges::subrange<_It, _Se, _Ki>> = true;
-#endif // _HAS_CXX23
-
 template <class _It, class _Se, ranges::subrange_kind _Ki>
 struct tuple_size<ranges::subrange<_It, _Se, _Ki>> : integral_constant<size_t, 2> {};
 
@@ -498,6 +497,9 @@ struct iterator_traits : _Iterator_traits_base<_Iter> {}; // get traits from ite
 
 template <class _Ty>
 struct iterator_traits<_Ty*> : _Iterator_traits_pointer_base<_Ty> {}; // get traits from pointer, if possible
+
+template <class _Ty>
+constexpr bool _Integer_like = _Is_nonbool_integral<_Ty>;
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 _INLINE_VAR constexpr auto _Meta_npos = ~size_t{0};

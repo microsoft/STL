@@ -24,7 +24,7 @@
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
-#include <format>
+#include <__msvc_formatter.hpp>
 #endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
@@ -309,11 +309,8 @@ basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _I
 // constrained to character types supported by `format`.
 template <_Format_supported_charT _CharT>
 struct formatter<thread::id, _CharT> {
-private:
-    using _Pc = basic_format_parse_context<_CharT>;
-
-public:
-    constexpr _Pc::iterator parse(_Pc& _Parse_ctx) {
+    template <class _Pc = basic_format_parse_context<_CharT>> // improves throughput, see GH-5003
+    constexpr _Pc::iterator parse(type_identity_t<_Pc&> _Parse_ctx) {
         return _Impl._Parse(_Parse_ctx);
     }
 

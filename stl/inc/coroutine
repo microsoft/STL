@@ -92,12 +92,12 @@ private:
     void* _Ptr = nullptr;
 };
 
-_EXPORT_STD template <class _Promise>
+_EXPORT_STD template <class _CoroPromise>
 struct coroutine_handle {
     constexpr coroutine_handle() noexcept = default;
     constexpr coroutine_handle(nullptr_t) noexcept {}
 
-    _NODISCARD static coroutine_handle from_promise(_Promise& _Prom) noexcept { // strengthened
+    _NODISCARD static coroutine_handle from_promise(_CoroPromise& _Prom) noexcept { // strengthened
         const auto _Prom_ptr  = const_cast<void*>(static_cast<const volatile void*>(_STD addressof(_Prom)));
         const auto _Frame_ptr = __builtin_coro_promise(_Prom_ptr, 0, true);
         coroutine_handle _Result;
@@ -144,8 +144,8 @@ struct coroutine_handle {
         __builtin_coro_destroy(_Ptr);
     }
 
-    _NODISCARD _Promise& promise() const noexcept { // strengthened
-        return *reinterpret_cast<_Promise*>(__builtin_coro_promise(_Ptr, 0, false));
+    _NODISCARD _CoroPromise& promise() const noexcept { // strengthened
+        return *reinterpret_cast<_CoroPromise*>(__builtin_coro_promise(_Ptr, 0, false));
     }
 
 private:
@@ -184,10 +184,10 @@ _NODISCARD constexpr bool operator>=(const coroutine_handle<> _Left, const corou
 }
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-template <class _Promise>
-struct hash<coroutine_handle<_Promise>> {
+template <class _CoroPromise>
+struct hash<coroutine_handle<_CoroPromise>> {
     _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(
-        const coroutine_handle<_Promise>& _Coro) _CONST_CALL_OPERATOR noexcept {
+        const coroutine_handle<_CoroPromise>& _Coro) _CONST_CALL_OPERATOR noexcept {
         return _Hash_representation(_Coro.address());
     }
 };
