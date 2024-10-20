@@ -2948,17 +2948,24 @@ namespace {
                 } else {
                     return _Strategy::_Scalar_bitmap;
                 }
-            } else {
-                if (_Count1 <= 8) {
+            } else if constexpr (sizeof(_Ty) == 4) {
+                if (_Count2 <= 7 || _Product_fits_threshold((_Count1 + 7) / 8, (_Count2 + 7) / 8, 25)) {
                     return _Strategy::_No_bitmap;
-                }
-                if (_Count1 > 400) {
+                } else if (_Count1 * 4ull > _Count2 * 5ull) {
                     return _Strategy::_Vector_bitmap;
-                }
-                if (_Count2 * 2 > _Count1) {
+                } else {
                     return _Strategy::_Scalar_bitmap;
                 }
-                return _Strategy::_Vector_bitmap;
+            } else if constexpr (sizeof(_Ty) == 8) {
+                if (_Count2 <= 3 || _Product_fits_threshold((_Count1 + 3) / 4, (_Count2 + 3) / 4, 25)) {
+                    return _Strategy::_No_bitmap;
+                } else if (_Count1 > _Count2) {
+                    return _Strategy::_Vector_bitmap;
+                } else {
+                    return _Strategy::_Scalar_bitmap;
+                }
+            } else {
+                static_assert(false, "unexpected size");
             }
         }
     } // namespace __std_find_meow_of
