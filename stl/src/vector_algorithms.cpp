@@ -3569,8 +3569,8 @@ namespace {
 #endif // !_M_ARM64EC
 
         template <class _Ty>
-        const void* _Dispatch_ptr(
-            const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) {
+        const void* _Dispatch_ptr(const void* const _First1, const void* const _Last1, const void* const _First2,
+            const void* const _Last2) noexcept {
 #ifndef _M_ARM64EC
             if constexpr (sizeof(_Ty) <= 2) {
                 if (_Use_sse42()) {
@@ -3589,7 +3589,8 @@ namespace {
         }
 
         template <class _Ty>
-        const size_t _Pos_from_ptr(const void* const _Result, const void* const _First1, const void* const _Last1) {
+        const size_t _Pos_from_ptr(
+            const void* const _Result, const void* const _First1, const void* const _Last1) noexcept {
             if (_Result != _Last1) {
                 return _Byte_length(_First1, _Result) / sizeof(_Ty);
             } else {
