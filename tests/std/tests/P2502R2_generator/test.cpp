@@ -183,12 +183,12 @@ generator<int> iota_repeater(const int hi, const int depth) {
 }
 
 void recursive_test() {
-    constexpr auto might_throw = []() -> generator<int> {
+    auto might_throw = []() -> generator<int> {
         co_yield 0;
         throw runtime_error{"error"};
     };
 
-    constexpr auto nested_ints = [=]() -> generator<int> {
+    auto nested_ints = [=]() -> generator<int> {
         try {
             co_yield ranges::elements_of(might_throw());
         } catch (const runtime_error& e) {

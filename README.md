@@ -141,7 +141,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.12 Preview 2 or later.
+1. Install Visual Studio 2022 17.12 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
@@ -150,7 +150,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.29.0 or later, and [Ninja][] 1.12.1 or later.
-    * Make sure [Python][] 3.12 or later is available to CMake.
+    * Make sure [Python][] 3.13 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
@@ -160,7 +160,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.12 Preview 2 or later.
+1. Install Visual Studio 2022 17.12 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
@@ -169,7 +169,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.29.0 or later, and [Ninja][] 1.12.1 or later.
-    * Make sure [Python][] 3.12 or later is available to CMake.
+    * Make sure [Python][] 3.13 or later is available to CMake.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
 4. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
@@ -262,7 +262,7 @@ C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
 # How To Run The Tests With A Native Tools Command Prompt
 
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
-2. Acquire [Python][] 3.12 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
+2. Acquire [Python][] 3.13 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
 3. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
     * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
     `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.

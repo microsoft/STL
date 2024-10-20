@@ -145,13 +145,11 @@ struct sequence_instantiator {
             assert(c5.get_allocator().state == 13);
             assert(ranges::equal(c5, meow));
         }
-#if defined(_MSVC_INTERNAL_TESTING) || !defined(__EDG__) // TRANSITION, VS 17.12p3
         {
             std::same_as<T> auto c6 = R{meow} | ranges::to<T>(Alloc{13});
             assert(c6.get_allocator().state == 13);
             assert(ranges::equal(c6, meow));
         }
-#endif // ^^^ no workaround ^^^
         {
             std::same_as<T> auto c7 = R{meow} | ranges::to<C>(Alloc{13});
             assert(c7.get_allocator().state == 13);

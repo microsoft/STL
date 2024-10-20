@@ -767,7 +767,10 @@ public:
 private:
     _Mybase* _Copy(void* _Where) const override {
         auto& _Myax = _Mypair._Get_first();
-        if constexpr (_Is_large<_Func_impl>) {
+        if constexpr (!is_copy_constructible_v<_Callable>) { // used exclusively for packaged_task
+            (void) _Myax;
+            _CSTD abort(); // shouldn't be called, see GH-3888
+        } else if constexpr (_Is_large<_Func_impl>) {
             _Myalty _Rebound(_Myax);
             _Alloc_construct_ptr<_Myalty> _Constructor{_Rebound};
             _Constructor._Allocate();
@@ -854,7 +857,9 @@ public:
 
 private:
     _Mybase* _Copy(void* _Where) const override {
-        if constexpr (_Is_large<_Func_impl_no_alloc>) {
+        if constexpr (!is_copy_constructible_v<_Callable>) { // used exclusively for packaged_task
+            _CSTD abort(); // shouldn't be called, see GH-3888
+        } else if constexpr (_Is_large<_Func_impl_no_alloc>) {
             return _STD _Global_new<_Func_impl_no_alloc>(_Callee);
         } else {
             return ::new (_Where) _Func_impl_no_alloc(_Callee);
@@ -1070,6 +1075,10 @@ _NON_MEMBER_CALL(_GET_FUNCTION_IMPL_NOEXCEPT, X1, X2, X3)
 #undef _GET_FUNCTION_IMPL_NOEXCEPT
 #endif // defined(__cpp_noexcept_function_type)
 
+struct _Secret_copyability_ignoring_tag { // used exclusively for packaged_task
+    explicit _Secret_copyability_ignoring_tag() = default;
+};
+
 _EXPORT_STD template <class _Fty>
 class function : public _Get_function_impl<_Fty>::type { // wrapper for callable objects
 private:
@@ -1086,6 +1095,15 @@ public:
 
     template <class _Fx, typename _Mybase::template _Enable_if_callable_t<_Fx, function> = 0>
     function(_Fx&& _Func) {
+        static_assert(is_copy_constructible_v<decay_t<_Fx>>,
+            "The target function object type must be copy constructible (N4988 [func.wrap.func.con]/10.1).");
+        this->_Reset(_STD forward<_Fx>(_Func));
+    }
+
+    template <class _SecretTag, class _Fx,
+        enable_if_t<is_same_v<_SecretTag, _Secret_copyability_ignoring_tag>, int> = 0,
+        typename _Mybase::template _Enable_if_callable_t<_Fx, function>           = 0>
+    explicit function(_SecretTag, _Fx&& _Func) { // used exclusively for packaged_task
         this->_Reset(_STD forward<_Fx>(_Func));
     }
 
@@ -1103,6 +1121,16 @@ public:
 
     template <class _Fx, class _Alloc, typename _Mybase::template _Enable_if_callable_t<_Fx, function> = 0>
     function(allocator_arg_t, const _Alloc& _Ax, _Fx&& _Func) {
+        static_assert(is_copy_constructible_v<decay_t<_Fx>>,
+            "The target function object type must be copy constructible (N4140 [func.wrap.func.con]/7).");
+        this->_Reset_alloc(_STD forward<_Fx>(_Func), _Ax);
+    }
+
+    template <class _SecretTag, class _Fx, class _Alloc,
+        enable_if_t<is_same_v<_SecretTag, _Secret_copyability_ignoring_tag>, int> = 0,
+        typename _Mybase::template _Enable_if_callable_t<_Fx, function>           = 0>
+    explicit function(_SecretTag, allocator_arg_t, const _Alloc& _Ax, _Fx&& _Func) {
+        // used exclusively for packaged_task
         this->_Reset_alloc(_STD forward<_Fx>(_Func), _Ax);
     }
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT

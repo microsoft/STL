@@ -127,7 +127,7 @@ namespace test_make_from_tuple {
             assert(make_from_tuple<S>(tuple{&a, &b}) == expected_val);
             assert(make_from_tuple<S>(pair{&a, &b}) == expected_val);
             assert(make_from_tuple<S>(array{&a, &b}) == expected_val);
-            assert(make_from_tuple<S>(subrange{&a, &b}) == expected_val);
+            assert(make_from_tuple<S>(subrange{&a, &a + 1}) == (S{&a, &a + 1}));
         }
 
         { // Test make_from_tuple with big tuple-like types
@@ -180,9 +180,8 @@ namespace test_tuple_cat {
 
         { // Test tuple_cat with pair-like types
             int a = 0;
-            int b = 1;
-            assert(
-                (tuple_cat(tuple{1, 2}, array{3, 4}, pair{5, 6}, subrange{&a, &b}) == tuple{1, 2, 3, 4, 5, 6, &a, &b}));
+            assert((tuple_cat(tuple{1, 2}, array{3, 4}, pair{5, 6}, subrange{&a, &a + 1})
+                    == tuple{1, 2, 3, 4, 5, 6, &a, &a + 1}));
         }
 
         // Test tuple_cat with big tuple-like types
