@@ -59,8 +59,9 @@ void bm(benchmark::State& state) {
 }
 
 void common_args(auto bm) {
-    bm->Args({2, 3})->Args({7, 4})->Args({9, 3})->Args({22, 5})->Args({58, 2})->Args({75, 85})->Args({102, 4});
-    bm->Args({325, 1})->Args({400, 50})->Args({1011, 11})->Args({1502, 23})->Args({3056, 7});
+    bm->Args({2, 3})->Args({7, 4})->Args({9, 3})->Args({22, 5})->Args({58, 2});
+    bm->Args({75, 85})->Args({102, 4})->Args({200, 46})->Args({325, 1})->Args({400, 50});
+    bm->Args({1011, 11})->Args({1280, 46})->Args({1502, 23})->Args({2203, 54})->Args({3056, 7});
 }
 
 BENCHMARK(bm<AlgType::std_func, uint8_t>)->Apply(common_args);
