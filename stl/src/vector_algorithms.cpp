@@ -2916,6 +2916,7 @@ namespace {
         return _Result;
     }
 
+#ifndef _M_ARM64EC
     namespace __std_find_meow_of {
         enum class _Strategy { _No_bitmap, _Scalar_bitmap, _Vector_bitmap };
 
@@ -2969,8 +2970,10 @@ namespace {
             }
         }
     } // namespace __std_find_meow_of
+#endif // ! _M_ARM64EC
 
     namespace __std_find_meow_of::_Bitmap {
+#ifndef _M_ARM64EC
         template <class _Ty>
         bool _Can_fit_256_bits_sse(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
             if constexpr (sizeof(_Ty) == 1) {
@@ -3135,6 +3138,7 @@ namespace {
 
             return static_cast<size_t>(-1);
         }
+#endif // ! _M_ARM64EC
 
         using _Scalar_table_t = bool[256];
 
@@ -3158,6 +3162,7 @@ namespace {
             return true;
         }
 
+#ifndef _M_ARM64EC
         template <class _Ty>
         void _Build_scalar_table_no_check(
             bool* _Table, const void* const _Needle, const size_t _Needle_length) noexcept {
@@ -3168,7 +3173,7 @@ namespace {
                 _Table[*_Ptr] = true;
             }
         }
-
+#endif // ! _M_ARM64EC
 
         template <class _Ty>
         size_t _Impl_first_scalar(
