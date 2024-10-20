@@ -59,7 +59,7 @@ void bm(benchmark::State& state) {
 }
 
 void common_args(auto bm) {
-    bm->Args({2, 3})->Args({7, 4})->Args({9, 3})->Args({22, 5})->Args({58, 2})->Args({102, 4});
+    bm->Args({2, 3})->Args({7, 4})->Args({9, 3})->Args({22, 5})->Args({58, 2})->Args({75, 85})->Args({102, 4});
     bm->Args({325, 1})->Args({400, 50})->Args({1011, 11})->Args({1502, 23})->Args({3056, 7});
 }
 
