@@ -2934,7 +2934,7 @@ namespace {
         template <class _Ty>
         _Strategy _Pick_strategy_avx(const size_t _Count1, const size_t _Count2) noexcept {
             if constexpr (sizeof(_Ty) == 1) {
-                if (_Count2 <= 15 || _Product_fits_threshold((_Count1 + 15) / 16, (_Count2 + 15) / 16, 60)) {
+                if (_Count1 <= 15 || _Product_fits_threshold((_Count1 + 15) / 16, (_Count2 + 15) / 16, 60)) {
                     return _Strategy::_No_bitmap;
                 } else if (_Count1 * 1ull > _Count2 * 5ull) {
                     return _Strategy::_Vector_bitmap;
@@ -2942,7 +2942,7 @@ namespace {
                     return _Strategy::_Scalar_bitmap;
                 }
             } else if constexpr (sizeof(_Ty) == 2) {
-                if (_Count2 <= 7 || _Product_fits_threshold((_Count1 + 7) / 8, (_Count2 + 7) / 8, 60)) {
+                if (_Count1 <= 7 || _Product_fits_threshold((_Count1 + 7) / 8, (_Count2 + 7) / 8, 60)) {
                     return _Strategy::_No_bitmap;
                 } else if (_Count1 * 2ull > _Count2 * 5ull) {
                     return _Strategy::_Vector_bitmap;
@@ -2950,7 +2950,7 @@ namespace {
                     return _Strategy::_Scalar_bitmap;
                 }
             } else if constexpr (sizeof(_Ty) == 4) {
-                if (_Count2 <= 7 || _Product_fits_threshold((_Count1 + 7) / 8, (_Count2 + 7) / 8, 25)) {
+                if (_Count1 <= 7 || _Product_fits_threshold((_Count1 + 7) / 8, (_Count2 + 7) / 8, 25)) {
                     return _Strategy::_No_bitmap;
                 } else if (_Count1 * 4ull > _Count2 * 5ull) {
                     return _Strategy::_Vector_bitmap;
@@ -2958,7 +2958,7 @@ namespace {
                     return _Strategy::_Scalar_bitmap;
                 }
             } else if constexpr (sizeof(_Ty) == 8) {
-                if (_Count2 <= 3 || _Product_fits_threshold((_Count1 + 3) / 4, (_Count2 + 3) / 4, 25)) {
+                if (_Count1 <= 3 || _Product_fits_threshold((_Count1 + 3) / 4, (_Count2 + 3) / 4, 25)) {
                     return _Strategy::_No_bitmap;
                 } else if (_Count1 > _Count2) {
                     return _Strategy::_Vector_bitmap;
