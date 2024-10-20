@@ -793,7 +793,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
 #if _USE_STD_VECTOR_ALGORITHMS
         if (!_STD _Is_constant_evaluated()) {
             const size_t _Remaining_size = _Hay_size - _Start_at;
-            if (_Remaining_size >= _Threshold_find_first_of) {
+            if (_Remaining_size + _Needle_size >= _Threshold_find_first_of) {
                 size_t _Pos = _Find_first_of_pos_vectorized(_Hay_start, _Remaining_size, _Needle, _Needle_size);
                 if (_Pos != static_cast<size_t>(-1)) {
                     _Pos += _Start_at;
@@ -843,7 +843,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
         if constexpr (sizeof(_Elem) <= 2) {
             if (!_STD _Is_constant_evaluated()) {
                 const size_t _Remaining_size = _Hay_start + 1;
-                if (_Remaining_size >= _Threshold_find_first_of) {
+                if (_Remaining_size + _Needle_size >= _Threshold_find_first_of) {
                     return _Find_last_of_pos_vectorized(_Haystack, _Remaining_size, _Needle, _Needle_size);
                 }
             }
