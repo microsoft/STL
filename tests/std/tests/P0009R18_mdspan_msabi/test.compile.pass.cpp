@@ -11,28 +11,6 @@
 
 using namespace std;
 
-template <class ElementType>
-struct TrivialAccessor {
-    using offset_policy    = TrivialAccessor;
-    using element_type     = ElementType;
-    using reference        = ElementType&;
-    using data_handle_type = ElementType*;
-
-    constexpr reference access(data_handle_type handle, size_t off) const noexcept {
-        return handle[off];
-    }
-
-    constexpr data_handle_type offset(data_handle_type handle, size_t off) const noexcept {
-        return handle + off;
-    }
-
-    int member;
-};
-
-static_assert(check_accessor_policy_requirements<TrivialAccessor<int>>());
-static_assert(is_trivial_v<TrivialAccessor<int>>);
-
-
 // When 'E::rank_dynamic()' is equal to 0 then 'is_empty_v<E>' should be true
 static_assert(!is_empty_v<dextents<int, 2>>);
 static_assert(!is_empty_v<extents<int, 3, dynamic_extent>>);

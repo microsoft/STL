@@ -318,27 +318,6 @@ private:
 
 static_assert(check_accessor_policy_requirements<AccessorWithCustomOffsetPolicy<int>>());
 
-template <class ElementType>
-struct TrivialAccessor {
-    using offset_policy    = TrivialAccessor;
-    using element_type     = ElementType;
-    using reference        = ElementType&;
-    using data_handle_type = ElementType*;
-
-    constexpr reference access(data_handle_type handle, size_t off) const noexcept {
-        return handle[off];
-    }
-
-    constexpr data_handle_type offset(data_handle_type handle, size_t off) const noexcept {
-        return handle + off;
-    }
-
-    int member;
-};
-
-static_assert(check_accessor_policy_requirements<TrivialAccessor<int>>());
-static_assert(is_trivial_v<TrivialAccessor<int>>);
-
 template <class Ext, class Layout, template <class> class AccessorTemplate>
 constexpr void check_modeled_concepts_and_member_types() {
     using Accessor = AccessorTemplate<float>;

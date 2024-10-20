@@ -175,6 +175,27 @@ constexpr bool check_accessor_policy_requirements() {
     return true;
 }
 
+template <class ElementType>
+struct TrivialAccessor {
+    using offset_policy    = TrivialAccessor;
+    using element_type     = ElementType;
+    using reference        = ElementType&;
+    using data_handle_type = ElementType*;
+
+    constexpr reference access(data_handle_type handle, std::size_t off) const noexcept {
+        return handle[off];
+    }
+
+    constexpr data_handle_type offset(data_handle_type handle, std::size_t off) const noexcept {
+        return handle + off;
+    }
+
+    int member;
+};
+
+static_assert(check_accessor_policy_requirements<TrivialAccessor<int>>());
+static_assert(std::is_trivial_v<TrivialAccessor<int>>);
+
 namespace detail {
     template <size_t... Extents, class Fn>
     constexpr void check_members_with_mixed_extents(Fn&& fn) {
