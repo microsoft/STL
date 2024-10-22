@@ -19,10 +19,6 @@
 #include <utility>
 #include <vector>
 
-#ifdef __cpp_lib_concepts
-#include <concepts>
-#endif // __cpp_lib_concepts
-
 #if _HAS_CXX20
 #include <compare>
 #include <ranges>
@@ -797,12 +793,12 @@ void test_swap_arrays(mt19937_64& gen) {
     assert(equal(begin(left), end(left), origRight.begin(), origRight.end()));
     assert(equal(begin(right), end(right), origLeft.begin(), origLeft.end()));
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX20
     ranges::swap(left, right);
 
     assert(equal(begin(left), end(left), origLeft.begin(), origLeft.end()));
     assert(equal(begin(right), end(right), origRight.begin(), origRight.end()));
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 }
 
 void test_vector_algorithms(mt19937_64& gen) {
