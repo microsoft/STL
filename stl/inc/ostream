@@ -135,8 +135,9 @@ void _Vprint_nonunicode_impl(
     _Ostr.setstate(_State);
 }
 
-template <class _Filebuf_type = filebuf>
-ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str) {
+template <class _UnicodeConsoleFn, class _FallbackFn, class _Filebuf_type = filebuf>
+ios_base::iostate _Do_on_maybe_unicode_console(
+    ostream& _Ostr, _UnicodeConsoleFn _Unicode_console_func, _FallbackFn _Fallback_func) {
     // *LOCKED*
     //
     // This function is called from a context in which an ostream::sentry has been
@@ -154,7 +155,7 @@ ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str
 
     // If we got nullptr, then it probably isn't being used for a unicode console...
     if (_Filebuf == nullptr) {
-        _State |= _STD _Print_noformat_nonunicode(_Ostr, _Str);
+        _State |= _Fallback_func();
         return _State;
     }
 
@@ -193,86 +194,38 @@ ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str
         }
 
         const __std_win_error _Unicode_console_print_result =
-            __std_print_to_unicode_console(_Unicode_console_retrieval_result._Console_handle, _Str.data(), _Str.size());
+            _Unicode_console_func(_Unicode_console_retrieval_result._Console_handle);
         if (_Unicode_console_print_result != __std_win_error::_Success) [[unlikely]] {
             _State |= ios_base::badbit;
         }
         _CATCH_IO_(ios_base, _Ostr)
     } else {
-        _State |= _STD _Print_noformat_nonunicode(_Ostr, _Str);
+        _State |= _Fallback_func();
     }
 
     return _State;
 }
 
-template <class _Filebuf_type = filebuf>
+template <int = 0>
+ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str) {
+    const auto _Unicode_console = [&](const __std_unicode_console_handle _Console_handle) {
+        return __std_print_to_unicode_console(_Console_handle, _Str.data(), _Str.size());
+    };
+
+    const auto _Fallback = [&] { return _STD _Print_noformat_nonunicode(_Ostr, _Str); };
+
+    return _STD _Do_on_maybe_unicode_console(_Ostr, _Unicode_console, _Fallback);
+}
+
+template <int = 0>
 ios_base::iostate _Print_newline_only_unicode(ostream& _Ostr) {
-    // *LOCKED*
-    //
-    // This function is called from a context in which an ostream::sentry has been
-    // constructed.
-    ios_base::iostate _State = ios_base::goodbit;
+    const auto _Unicode_console = [](const __std_unicode_console_handle _Console_handle) {
+        return __std_print_newline_only_to_unicode_console(_Console_handle);
+    };
 
-    // The std::ostream& overload of vprint_unicode() expects you to determine whether the stream refers
-    // to a unicode console or not based solely on the std::ostream& provided. That class simply doesn't
-    // provide enough information to know this in every case. The best we can do (without breaking ABI)
-    // is check if the underlying std::streambuf object of the std::ostream& actually refers to a std::filebuf
-    // object. This requires the use of a dynamic_cast. (This is also why the std::ostream& overloads of
-    // std::print() et al. are deleted when RTTI is disabled.)
-    streambuf* const _Streambuf = _Ostr.rdbuf();
-    const auto _Filebuf         = dynamic_cast<_Filebuf_type*>(_Streambuf);
+    const auto _Fallback = [&] { return _STD _Print_newline_only_nonunicode(_Ostr); };
 
-    // If we got nullptr, then it probably isn't being used for a unicode console...
-    if (_Filebuf == nullptr) {
-        _State |= _STD _Print_newline_only_nonunicode(_Ostr);
-        return _State;
-    }
-
-    FILE* const _File_stream = _Filebuf->_Myfile;
-    const __std_unicode_console_retrieval_result _Unicode_console_retrieval_result{
-        __std_get_unicode_console_handle_from_file_stream(_File_stream)};
-
-    // See the documentation for __std_unicode_console_retrieval_result to understand why we do this.
-    bool _Is_unicode_console;
-
-#pragma warning(push)
-#pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
-    switch (_Unicode_console_retrieval_result._Error) {
-    case __std_win_error::_Success:
-        _Is_unicode_console = true;
-        break;
-
-    case __std_win_error::_File_not_found:
-        _Is_unicode_console = false;
-        break;
-
-    case __std_win_error::_Not_supported:
-        [[unlikely]] return _State;
-
-    default:
-        [[unlikely]] return ios_base::failbit;
-    }
-#pragma warning(pop)
-
-    if (_Is_unicode_console) {
-        _TRY_IO_BEGIN
-        const bool _Was_flush_successful = _Ostr.rdbuf()->pubsync() != -1;
-        if (!_Was_flush_successful) [[unlikely]] {
-            _State |= ios_base::badbit;
-            return _State;
-        }
-
-        const __std_win_error _Unicode_console_print_result =
-            __std_print_newline_only_to_unicode_console(_Unicode_console_retrieval_result._Console_handle);
-        if (_Unicode_console_print_result != __std_win_error::_Success) [[unlikely]] {
-            _State |= ios_base::badbit;
-        }
-        _CATCH_IO_(ios_base, _Ostr)
-    } else {
-        _State |= _STD _Print_newline_only_nonunicode(_Ostr);
-    }
-
-    return _State;
+    return _STD _Do_on_maybe_unicode_console(_Ostr, _Unicode_console, _Fallback);
 }
 
 template <int = 0>
