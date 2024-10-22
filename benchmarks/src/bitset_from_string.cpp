@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <array>
 #include <benchmark/benchmark.h>
 #include <bitset>
 #include <cstddef>
 #include <random>
+#include <sstream>
+#include <string>
 
 using namespace std;
 
@@ -39,7 +42,7 @@ namespace {
     const auto random_digits = random_digits_init<N, charT, 2048>();
 
     template <length_type Length, size_t N, class charT>
-    void BM_bitset_from_string(benchmark::State& state) {
+    void bitset_from_string(benchmark::State& state) {
         const auto& digit_array = random_digits<N, charT>;
         for (auto _ : state) {
             benchmark::DoNotOptimize(digit_array);
@@ -56,34 +59,83 @@ namespace {
             }
         }
     }
+
+    template <class charT, size_t Length>
+    basic_string<charT> random_digits_contiguous_string_init() {
+        mt19937_64 rnd{};
+        uniform_int_distribution<> dis('0', '1');
+
+        basic_string<charT> result;
+
+        result.resize_and_overwrite(Length, [&](charT* ptr, size_t) {
+            generate_n(ptr, Length, [&] { return static_cast<charT>(dis(rnd)); });
+            return Length;
+        });
+
+        return result;
+    }
+
+    template <class charT, size_t Length>
+    const auto random_digits_contiguous_string = random_digits_contiguous_string_init<charT, Length>();
+
+    template <size_t N, class charT>
+    void bitset_from_stream(benchmark::State& state) {
+        constexpr size_t string_length = 2048;
+        constexpr size_t count         = string_length / N;
+        basic_istringstream<charT> stream(random_digits_contiguous_string<charT, string_length>);
+        bitset<N> bs;
+        for (auto _ : state) {
+            benchmark::DoNotOptimize(stream);
+            for (size_t i = 0; i != count; ++i) {
+                stream >> bs;
+            }
+            benchmark::DoNotOptimize(bs);
+            stream.seekg(0);
+        }
+    }
+
 } // namespace
 
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 15, char>);
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 16, char>);
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 36, char>);
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 64, char>);
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 512, char>);
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 2048, char>);
+BENCHMARK(bitset_from_string<length_type::char_count, 15, char>);
+BENCHMARK(bitset_from_string<length_type::char_count, 16, char>);
+BENCHMARK(bitset_from_string<length_type::char_count, 36, char>);
+BENCHMARK(bitset_from_string<length_type::char_count, 64, char>);
+BENCHMARK(bitset_from_string<length_type::char_count, 512, char>);
+BENCHMARK(bitset_from_string<length_type::char_count, 2048, char>);
 
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 15, wchar_t>);
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 16, wchar_t>);
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 36, wchar_t>);
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 64, wchar_t>);
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 512, wchar_t>);
-BENCHMARK(BM_bitset_from_string<length_type::char_count, 2048, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::char_count, 15, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::char_count, 16, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::char_count, 36, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::char_count, 64, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::char_count, 512, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::char_count, 2048, wchar_t>);
 
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 15, char>);
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 16, char>);
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 36, char>);
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 64, char>);
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 512, char>);
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 2048, char>);
+BENCHMARK(bitset_from_string<length_type::null_term, 15, char>);
+BENCHMARK(bitset_from_string<length_type::null_term, 16, char>);
+BENCHMARK(bitset_from_string<length_type::null_term, 36, char>);
+BENCHMARK(bitset_from_string<length_type::null_term, 64, char>);
+BENCHMARK(bitset_from_string<length_type::null_term, 512, char>);
+BENCHMARK(bitset_from_string<length_type::null_term, 2048, char>);
 
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 15, wchar_t>);
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 16, wchar_t>);
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 36, wchar_t>);
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 64, wchar_t>);
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 512, wchar_t>);
-BENCHMARK(BM_bitset_from_string<length_type::null_term, 2048, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::null_term, 15, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::null_term, 16, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::null_term, 36, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::null_term, 64, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::null_term, 512, wchar_t>);
+BENCHMARK(bitset_from_string<length_type::null_term, 2048, wchar_t>);
+
+BENCHMARK(bitset_from_stream<15, char>);
+BENCHMARK(bitset_from_stream<16, char>);
+BENCHMARK(bitset_from_stream<36, char>);
+BENCHMARK(bitset_from_stream<64, char>);
+BENCHMARK(bitset_from_stream<512, char>);
+BENCHMARK(bitset_from_stream<2048, char>);
+
+BENCHMARK(bitset_from_stream<15, wchar_t>);
+BENCHMARK(bitset_from_stream<16, wchar_t>);
+BENCHMARK(bitset_from_stream<36, wchar_t>);
+BENCHMARK(bitset_from_stream<64, wchar_t>);
+BENCHMARK(bitset_from_stream<512, wchar_t>);
+BENCHMARK(bitset_from_stream<2048, wchar_t>);
 
 BENCHMARK_MAIN();
