@@ -2519,10 +2519,12 @@ using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
 
 template <class _Ty, size_t _Size>
 void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
-    // Swap arrays using temporary buffers of 64 bytes, then doing tail
-    // In optimized build, stack usage would optimize away, and vector registers will be used
-    // 64 is enough to engage AVX-512, still not too much to use SSE2 (eight registers would be used then),
-    // and not too much stack consumption for debug builds where this will not be optimized
+    // Swap arrays using temporary buffers of 64 bytes, followed by the tail.
+    // In optimized builds, the stack usage optimizes away, and vector registers are used.
+    // The 64-byte size has desirable properties:
+    // * Big enough to engage AVX-512.
+    // * Small enough to be handled by SSE2 (using eight registers).
+    // * Avoids excessive stack consumption for non-optimized builds.
     auto _Left_ptr  = reinterpret_cast<unsigned char*>(&_Left);
     auto _Right_ptr = reinterpret_cast<unsigned char*>(&_Right);
 
