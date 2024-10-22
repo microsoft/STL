@@ -104,7 +104,7 @@ ios_base::iostate _Print_newline_only_nonunicode(ostream& _Ostr) {
     ios_base::iostate _State = ios_base::goodbit;
 
     _TRY_IO_BEGIN
-    const auto _Was_insertion_successful = _Ostr.rdbuf()->sputc('\n') == '\n';
+    const bool _Was_insertion_successful = _Ostr.rdbuf()->sputc('\n') == '\n';
     if (!_Was_insertion_successful) [[unlikely]] {
         _State |= ios_base::badbit;
     }
