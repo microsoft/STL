@@ -3638,7 +3638,7 @@ namespace {
     const void* __stdcall __std_find_end_impl(
         const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
         if (_Count2 == 0) {
-            return _First1;
+            return _Last1;
         }
 
         if (_Count2 == 1) {
