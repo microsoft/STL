@@ -645,8 +645,7 @@ namespace ranges {
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _First, const iter_difference_t<_It> _Count_raw) _CONST_CALL_OPERATOR noexcept {
-            _Algorithm_int_t<iter_difference_t<_It>> _Count = _Count_raw;
+            _It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR noexcept {
             if (_Count <= 0) {
                 return _First;
             }

@@ -40,15 +40,12 @@ struct _NODISCARD _Stream_lock_guard {
 
 class _Print_to_stream_it {
 public:
-    using iterator_category = output_iterator_tag;
-    using value_type        = void;
-    using difference_type   = ptrdiff_t;
-    using pointer           = void;
-    using reference         = void;
+    using difference_type = ptrdiff_t;
 
     explicit _Print_to_stream_it(FILE* const _Stream_) noexcept : _Stream(_Stream_) {}
 
-    _Print_to_stream_it& operator=(char); // These members are intentionally not defined
+    // These member functions are never defined:
+    _Print_to_stream_it& operator=(char);
     _Print_to_stream_it& operator*();
     _Print_to_stream_it& operator++();
     _Print_to_stream_it operator++(int);
@@ -79,16 +76,13 @@ struct _Fmt_iterator_flush<_Print_to_stream_it> {
 
 class _Print_to_unicode_console_it {
 public:
-    using iterator_category = output_iterator_tag;
-    using value_type        = void;
-    using difference_type   = ptrdiff_t;
-    using pointer           = void;
-    using reference         = void;
+    using difference_type = ptrdiff_t;
 
     explicit _Print_to_unicode_console_it(const __std_unicode_console_handle _Console_handle_) noexcept
         : _Console_handle(_Console_handle_) {}
 
-    _Print_to_unicode_console_it& operator=(char); // These members are intentionally not defined
+    // These member functions are never defined:
+    _Print_to_unicode_console_it& operator=(char);
     _Print_to_unicode_console_it& operator*();
     _Print_to_unicode_console_it& operator++();
     _Print_to_unicode_console_it operator++(int);
