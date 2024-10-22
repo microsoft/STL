@@ -3662,9 +3662,9 @@ namespace {
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
             if (_Size_bytes_2 <= 16) {
-                constexpr unsigned _Whole_mask    = (1 << _Part_size_el) - 1;
-                const unsigned _Needle_fit_mask   = (1 << (_Part_size_el - _Size_el_2 + 1)) - 1;
-                const unsigned _Needle_unfit_mask = _Whole_mask ^ _Needle_fit_mask;
+                constexpr unsigned int _Whole_mask    = (1 << _Part_size_el) - 1;
+                const unsigned int _Needle_fit_mask   = (1 << (_Part_size_el - _Size_el_2 + 1)) - 1;
+                const unsigned int _Needle_unfit_mask = _Whole_mask ^ _Needle_fit_mask;
 
                 const void* _Stop1 = _First1;
                 _Advance_bytes(_Stop1, _Size_bytes_1 & 0xF);
@@ -3676,8 +3676,8 @@ namespace {
                 const void* _Mid1 = _Last1;
                 _Rewind_bytes(_Mid1, 16);
 
-                const auto _Check_fit = [&_Mid1, _Needle_fit_mask](const unsigned _Match) noexcept {
-                    const unsigned _Fit_match = _Match & _Needle_fit_mask;
+                const auto _Check_fit = [&_Mid1, _Needle_fit_mask](const unsigned int _Match) noexcept {
+                    const unsigned int _Fit_match = _Match & _Needle_fit_mask;
                     if (_Fit_match != 0) {
                         unsigned long _Match_last_pos;
 
@@ -3693,7 +3693,7 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                const auto _Check_unfit = [=, &_Mid1](const unsigned _Match) noexcept {
+                const auto _Check_unfit = [=, &_Mid1](const unsigned int _Match) noexcept {
                     long _Unfit_match = _Match & _Needle_unfit_mask;
                     while (_Unfit_match != 0) {
                         const void* _Tmp1 = _Mid1;
@@ -3725,9 +3725,9 @@ namespace {
                 // if it has been fused with _mm_cmpestrm.
 
                 // The very last part, for any match needle should fit, otherwise false match
-                __m128i _Data1_last            = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                const auto _Match_last         = _mm_cmpestrm(_Data2, _Size_el_2, _Data1_last, _Part_size_el, _Op);
-                const unsigned _Match_last_val = _mm_cvtsi128_si32(_Match_last);
+                __m128i _Data1_last                = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                const auto _Match_last             = _mm_cmpestrm(_Data2, _Size_el_2, _Data1_last, _Part_size_el, _Op);
+                const unsigned int _Match_last_val = _mm_cvtsi128_si32(_Match_last);
                 if (_Check_fit(_Match_last_val)) {
                     return _Mid1;
                 }
@@ -3735,9 +3735,9 @@ namespace {
                 // The middle part, fit and unfit needle
                 while (_Mid1 != _Stop1) {
                     _Rewind_bytes(_Mid1, 16);
-                    const __m128i _Data1      = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                    const auto _Match         = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
-                    const unsigned _Match_val = _mm_cvtsi128_si32(_Match);
+                    const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                    const auto _Match             = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                    const unsigned int _Match_val = _mm_cvtsi128_si32(_Match);
                     if (_Match_val != 0 && (_Check_unfit(_Match_val) || _Check_fit(_Match_val))) {
                         return _Mid1;
                     }
@@ -3745,10 +3745,10 @@ namespace {
 
                 // The first part, fit and unfit needle, mask out already processed positions
                 if (const size_t _Tail_bytes_1 = _Size_bytes_1 & 0xF; _Tail_bytes_1 != 0) {
-                    _Mid1                     = _First1;
-                    const __m128i _Data1      = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                    const auto _Match         = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
-                    const unsigned _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_bytes_1) - 1);
+                    _Mid1                         = _First1;
+                    const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                    const auto _Match             = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                    const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_bytes_1) - 1);
                     if (_Match_val != 0 && (_Check_unfit(_Match_val) || _Check_fit(_Match_val))) {
                         return _Mid1;
                     }
@@ -3812,9 +3812,9 @@ namespace {
 
                 // The main part, match all characters
                 for (;;) {
-                    const __m128i _Data1      = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                    const auto _Match         = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
-                    const unsigned _Match_val = _mm_cvtsi128_si32(_Match);
+                    const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                    const auto _Match             = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+                    const unsigned int _Match_val = _mm_cvtsi128_si32(_Match);
                     if (_Match_val != 0 && _Check(_Match_val)) {
                         return _Mid1;
                     }
@@ -3828,10 +3828,10 @@ namespace {
 
                 // The first part, mask out already processed positions
                 if (const size_t _Tail_bytes_1 = _Size_diff_bytes & 0xF; _Tail_bytes_1 != 0) {
-                    _Mid1                     = _First1;
-                    const __m128i _Data1      = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                    const auto _Match         = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
-                    const unsigned _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_bytes_1) - 1);
+                    _Mid1                         = _First1;
+                    const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                    const auto _Match             = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+                    const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_bytes_1) - 1);
                     if (_Match_val != 0 && _Check(_Match_val)) {
                         return _Mid1;
                     }
