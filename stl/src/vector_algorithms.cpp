@@ -3652,6 +3652,7 @@ namespace {
             return _Last1;
         }
 
+#ifndef _M_ARM64EC
         if (_Use_sse42() && _Size_bytes_1 >= 16) {
             constexpr int _Op = ((sizeof(_Ty) == 1) ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
             constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
@@ -3839,7 +3840,9 @@ namespace {
 
                 return _Last1;
             }
-        } else {
+        } else
+#endif // !defined(_M_ARM64EC)
+        {
             auto _Ptr1       = static_cast<const _Ty*>(_Last1) - _Count2;
             const auto _Ptr2 = static_cast<const _Ty*>(_First2);
 
