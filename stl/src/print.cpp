@@ -306,7 +306,7 @@ extern "C" {
 
     const auto _Actual_console_handle = reinterpret_cast<HANDLE>(_Console_handle);
 
-    const BOOL _Write_result = WriteConsoleW(_Actual_console_handle, L"\n", static_cast<DWORD>(1), nullptr, nullptr);
+    const BOOL _Write_result = WriteConsoleW(_Actual_console_handle, L"\n", 1, nullptr, nullptr);
 
     if (!_Write_result) [[unlikely]] {
         return static_cast<__std_win_error>(GetLastError());
