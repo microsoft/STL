@@ -192,6 +192,14 @@ inline void _Vprint_unicode_noformat_impl(FILE* const _Stream, const string_view
     _STD _Do_on_maybe_unicode_console(_Stream, _Unicode_console, _Fallback);
 }
 
+inline void _Fputc_newline(FILE* const _Stream) {
+    const bool _Was_write_successful = _CSTD fputc('\n', _Stream) == '\n';
+
+    if (!_Was_write_successful) [[unlikely]] {
+        _Throw_system_error(static_cast<errc>(errno));
+    }
+}
+
 inline void _Print_newline_only_unicode(FILE* const _Stream) {
     const auto _Unicode_console = [&](const __std_unicode_console_handle _Console_handle) {
         const bool _Was_flush_successful = _CSTD fflush(_Stream) == 0;
@@ -205,13 +213,7 @@ inline void _Print_newline_only_unicode(FILE* const _Stream) {
         }
     };
 
-    const auto _Fallback = [&] {
-        const bool _Was_write_successful = _CSTD fputc('\n', _Stream) == '\n';
-
-        if (!_Was_write_successful) [[unlikely]] {
-            _Throw_system_error(static_cast<errc>(errno));
-        }
-    };
+    const auto _Fallback = [&] { _STD _Fputc_newline(_Stream); };
 
     _STD _Do_on_maybe_unicode_console(_Stream, _Unicode_console, _Fallback);
 }
@@ -298,11 +300,7 @@ void println(FILE* _Stream) {
     if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
         _STD _Print_newline_only_unicode(_Stream);
     } else {
-        const bool _Was_write_successful = _CSTD fputc('\n', _Stream) == '\n';
-
-        if (!_Was_write_successful) [[unlikely]] {
-            _Throw_system_error(static_cast<errc>(errno));
-        }
+        _STD _Fputc_newline(_Stream);
     }
 }
 
