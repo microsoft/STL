@@ -3656,13 +3656,13 @@ namespace {
         if (_Use_sse42() && _Size_bytes_1 >= 16) {
             constexpr int _Op = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
             constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
-            const int _Size_el_2        = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
 
             static constexpr int8_t _Low_part_mask[] = {//
                 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, //
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
             if (_Size_bytes_2 <= 16) {
+                const int _Size_el_2                  = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
                 constexpr unsigned int _Whole_mask    = (1 << _Part_size_el) - 1;
                 const unsigned int _Needle_fit_mask   = (1 << (_Part_size_el - _Size_el_2 + 1)) - 1;
                 const unsigned int _Needle_unfit_mask = _Whole_mask ^ _Needle_fit_mask;
