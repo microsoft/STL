@@ -3662,7 +3662,7 @@ namespace {
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
             if (_Size_bytes_2 <= 16) {
-                const int _Size_el_2                  = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
+                const int _Size_el_2                  = static_cast<int>(_Count2);
                 constexpr unsigned int _Whole_mask    = (1 << _Part_size_el) - 1;
                 const unsigned int _Needle_fit_mask   = (1 << (_Part_size_el - _Size_el_2 + 1)) - 1;
                 const unsigned int _Needle_unfit_mask = _Whole_mask ^ _Needle_fit_mask;
