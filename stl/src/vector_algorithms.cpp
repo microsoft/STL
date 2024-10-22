@@ -3654,7 +3654,7 @@ namespace {
 
 #ifndef _M_ARM64EC
         if (_Use_sse42() && _Size_bytes_1 >= 16) {
-            constexpr int _Op = ((sizeof(_Ty) == 1) ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
+            constexpr int _Op = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
             constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
             const int _Size_el_2        = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
 
