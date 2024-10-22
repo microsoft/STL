@@ -3680,7 +3680,10 @@ namespace {
                     const unsigned _Fit_match = _Match & _Needle_fit_mask;
                     if (_Fit_match != 0) {
                         unsigned long _Match_last_pos;
-                        _BitScanReverse(&_Match_last_pos, _Fit_match); // lgtm [cpp/conditionallyuninitializedvariable]
+
+                        // CodeQL [SM02313] Result is always initialized: we just tested that _Fit_match is non-zero.
+                        _BitScanReverse(&_Match_last_pos, _Fit_match);
+
                         _Advance_bytes(_Mid1, _Match_last_pos * sizeof(_Ty));
                         return true;
                     }
@@ -3695,8 +3698,10 @@ namespace {
                     while (_Unfit_match != 0) {
                         const void* _Tmp1 = _Mid1;
                         unsigned long _Match_last_pos;
-                        _BitScanReverse(
-                            &_Match_last_pos, _Unfit_match); // lgtm [cpp/conditionallyuninitializedvariable]
+
+                        // CodeQL [SM02313] Result is always initialized: we just tested that _Unfit_match is non-zero.
+                        _BitScanReverse(&_Match_last_pos, _Unfit_match);
+
                         _Advance_bytes(_Tmp1, _Match_last_pos * sizeof(_Ty));
 
                         const __m128i _Match_data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp1));
@@ -3769,7 +3774,9 @@ namespace {
                     while (_Match != 0) {
                         const void* _Tmp1 = _Mid1;
                         unsigned long _Match_last_pos;
-                        _BitScanReverse(&_Match_last_pos, _Match); // lgtm [cpp/conditionallyuninitializedvariable]
+
+                        // CodeQL [SM02313] Result is always initialized: we just tested that _Match is non-zero.
+                        _BitScanReverse(&_Match_last_pos, _Match);
 
                         bool _Match_1st_16 = true;
 
