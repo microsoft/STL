@@ -74,7 +74,7 @@ constexpr data_and_pattern patterns[] = {
     /* 3. Large, closer to begin */ {common_src_data, "dapibus elit interdum"sv},
 
     /* 4. Small, evil */ {fill_pattern_view<3000, false>, fill_pattern_view<7, true>},
-    /* 5. Large, evli */ {fill_pattern_view<3000, false>, fill_pattern_view<20, true>},
+    /* 5. Large, evil */ {fill_pattern_view<3000, false>, fill_pattern_view<20, true>},
 };
 
 void c_strstr(benchmark::State& state) {
