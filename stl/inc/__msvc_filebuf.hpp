@@ -389,7 +389,7 @@ public:
 
     template <class _Filebuf_type>
     friend ios_base::iostate _Print_newline_only_unicode(ostream&);
-#endif
+#endif // ^^^ _HAS_CXX23 && defined(_CPPRTTI) ^^^
 
 protected:
     int_type __CLR_OR_THIS_CALL overflow(int_type _Meta = _Traits::eof()) override { // put an element to stream
