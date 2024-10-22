@@ -2532,7 +2532,7 @@ void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
     constexpr size_t _Size_parts      = _Size_bytes - _Size_tail;
 
     if constexpr (_Size_parts != 0) {
-        auto _Stop = _Left_ptr + _Size_parts;
+        const auto _Stop = _Left_ptr + _Size_parts;
         do {
             unsigned char _Buf[_Part_size_bytes];
             _CSTD memcpy(_Buf, _Left_ptr, _Part_size_bytes);
