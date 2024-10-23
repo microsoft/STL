@@ -3879,21 +3879,21 @@ namespace {
 
 
     template <size_t _Size_v, size_t _Size_h>
-    constexpr auto _Make_remove_tables(const unsigned _Mul, const unsigned _Ew) {
+    constexpr auto _Make_remove_tables(const uint32_t _Mul, const uint32_t _Ew) {
         struct {
             uint8_t _Shuf[_Size_v][_Size_h];
             uint8_t _Size[_Size_v];
         } _Result;
 
-        for (unsigned _Vx = 0; _Vx != _Size_v; ++_Vx) {
-            unsigned _Nx = 0;
+        for (uint32_t _Vx = 0; _Vx != _Size_v; ++_Vx) {
+            uint32_t _Nx = 0;
 
             // Make shuffle mask for pshufb / vpermd corresponding to _Vx bit value.
             // Every bit set corresponds to element skipped.
-            for (unsigned _Hx = 0; _Hx != _Size_h / _Ew; ++_Hx) {
+            for (uint32_t _Hx = 0; _Hx != _Size_h / _Ew; ++_Hx) {
                 if ((_Vx & (1 << _Hx)) == 0) {
                     // Inner loop needed for cases where shuffle mask operate on element pars rather than whole elements
-                    for (unsigned _Ex = 0; _Ex != _Ew; ++_Ex) {
+                    for (uint32_t _Ex = 0; _Ex != _Ew; ++_Ex) {
                         _Result._Shuf[_Vx][_Nx * _Ew + _Ex] = static_cast<uint8_t>(_Hx * _Ew + _Ex);
                     }
                     ++_Nx;
@@ -3910,7 +3910,7 @@ namespace {
             // rather than zero, to reduce the surprising behavior.
             for (; _Nx != _Size_h / _Ew; ++_Nx) {
                 // Inner loop needed for cases where shuffle mask operate on element pars rather than whole elements
-                for (unsigned _Ex = 0; _Ex != _Ew; ++_Ex) {
+                for (uint32_t _Ex = 0; _Ex != _Ew; ++_Ex) {
                     _Result._Shuf[_Vx][_Nx * _Ew + _Ex] = static_cast<uint8_t>(_Nx * _Ew + _Ex);
                 }
             }
@@ -3940,7 +3940,7 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         do {
             const __m128i _Src    = _mm_loadu_si64(_First);
-            const unsigned _Bingo = _mm_movemask_epi8(_mm_cmpeq_epi8(_Src, _Match)) & 0xFF;
+            const uint32_t _Bingo = _mm_movemask_epi8(_mm_cmpeq_epi8(_Src, _Match)) & 0xFF;
             const __m128i _Shuf   = _mm_loadu_si64(_Remove_tables_1_sse._Shuf[_Bingo]);
             const __m128i _Dest   = _mm_shuffle_epi8(_Src, _Shuf);
             _mm_storeu_si64(_Out, _Dest);
@@ -3964,7 +3964,7 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
         do {
             const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
             const __m128i _Mask   = _mm_cmpeq_epi16(_Src, _Match);
-            const unsigned _Bingo = _mm_movemask_epi8(_mm_packs_epi16(_Mask, _mm_setzero_si128()));
+            const uint32_t _Bingo = _mm_movemask_epi8(_mm_packs_epi16(_Mask, _mm_setzero_si128()));
             const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_2_sse._Shuf[_Bingo]));
             const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
             _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
@@ -3989,7 +3989,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
         do {
             const __m256i _Src    = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
             const __m256i _Mask   = _mm256_cmpeq_epi32(_Src, _Match);
-            const unsigned _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
+            const uint32_t _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
             const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_4_avx._Shuf[_Bingo]));
             const __m256i _Dest   = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
@@ -4006,7 +4006,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
         do {
             const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
             const __m128i _Mask   = _mm_cmpeq_epi32(_Src, _Match);
-            const unsigned _Bingo = _mm_movemask_ps(_mm_castsi128_ps(_Mask));
+            const uint32_t _Bingo = _mm_movemask_ps(_mm_castsi128_ps(_Mask));
             const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_4_sse._Shuf[_Bingo]));
             const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
             _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
@@ -4030,7 +4030,7 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
         do {
             const __m256i _Src    = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
             const __m256i _Mask   = _mm256_cmpeq_epi64(_Src, _Match);
-            const unsigned _Bingo = _mm256_movemask_pd(_mm256_castsi256_pd(_Mask));
+            const uint32_t _Bingo = _mm256_movemask_pd(_mm256_castsi256_pd(_Mask));
             const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_8_avx._Shuf[_Bingo]));
             const __m256i _Dest   = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
@@ -4047,7 +4047,7 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
         do {
             const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
             const __m128i _Mask   = _mm_cmpeq_epi64(_Src, _Match);
-            const unsigned _Bingo = _mm_movemask_pd(_mm_castsi128_pd(_Mask));
+            const uint32_t _Bingo = _mm_movemask_pd(_mm_castsi128_pd(_Mask));
             const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_8_sse._Shuf[_Bingo]));
             const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
             _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
