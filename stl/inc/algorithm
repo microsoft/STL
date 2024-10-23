@@ -4605,7 +4605,7 @@ namespace ranges {
                     const auto _Result    = _STD _Remove_vectorized(_First_ptr, _Last_ptr, _Val);
 
                     if constexpr (is_pointer_v<_It>) {
-                        return {static_cast<_It>(_Result), static_cast<_It>(_Last_ptr)};
+                        return {_Result, _Last_ptr};
                     } else {
                         return {_First + (_Result - _First_ptr), _First + _Size};
                     }
