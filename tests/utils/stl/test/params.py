@@ -49,7 +49,8 @@ def beNice(prio: str) -> list[ConfigAction]:
     }
     psutil.Process().nice(priority_map[prio])
   except ImportError:
-    pass
+    import sys
+    print(f'NOTE: Module "psutil" is not installed, so the priority setting "{prio}" has no effect.', file=sys.stderr)
   return []
 
 
