@@ -35,7 +35,7 @@ void* __stdcall __std_remove_8(void* _First, void* _Last, uint64_t _Val) noexcep
 
 _STD_BEGIN
 template <class _Ty, class _TVal>
-_Ty* _Remove_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) {
+_Ty* _Remove_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (is_pointer_v<_Ty>) {
 #ifdef _WIN64
         return reinterpret_cast<_Ty*>(::__std_remove_8(_First, _Last, reinterpret_cast<uint64_t>(_Val)));

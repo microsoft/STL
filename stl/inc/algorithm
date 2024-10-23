@@ -79,7 +79,7 @@ __declspec(noalias) void __stdcall __std_replace_8(
 
 _STD_BEGIN
 template <size_t _Nx>
-__declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void* _Last, void* _Dest) {
+__declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void* _Last, void* _Dest) noexcept {
     if constexpr (_Nx == 1) {
         ::__std_reverse_copy_trivially_copyable_1(_First, _Last, _Dest);
     } else if constexpr (_Nx == 2) {
