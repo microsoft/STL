@@ -3892,7 +3892,8 @@ namespace {
             // Every bit set corresponds to element skipped.
             for (uint32_t _Hx = 0; _Hx != _Size_h / _Ew; ++_Hx) {
                 if ((_Vx & (1 << _Hx)) == 0) {
-                    // Inner loop needed for cases where shuffle mask operate on element pars rather than whole elements
+                    // Inner loop needed for cases where shuffle mask operate on element parts rather than whole
+                    // elements; for whole elements there would be one iteration
                     for (uint32_t _Ex = 0; _Ex != _Ew; ++_Ex) {
                         _Result._Shuf[_Vx][_Nx * _Ew + _Ex] = static_cast<uint8_t>(_Hx * _Ew + _Ex);
                     }
