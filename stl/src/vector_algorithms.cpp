@@ -3877,7 +3877,7 @@ namespace {
         return _Dest;
     }
 
-
+#ifndef _M_ARM64EC
     template <size_t _Size_v, size_t _Size_h>
     constexpr auto _Make_remove_tables(const uint32_t _Mul, const uint32_t _Ew) {
         struct {
@@ -3926,6 +3926,7 @@ namespace {
     constexpr auto _Remove_tables_4_avx = _Make_remove_tables<256, 8>(4, 1);
     constexpr auto _Remove_tables_8_sse = _Make_remove_tables<4, 16>(8, 8);
     constexpr auto _Remove_tables_8_avx = _Make_remove_tables<16, 8>(8, 2);
+#endif // !defined(_M_ARM64EC)
 } // unnamed namespace
 
 extern "C" {
@@ -3934,6 +3935,7 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
     _First     = const_cast<void*>(__std_find_trivial_1(_First, _Last, _Val));
     void* _Out = _First;
 
+#ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
         const __m128i _Match = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
 
@@ -3949,6 +3951,7 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
             _Advance_bytes(_First, 8);
         } while (_First != _Stop);
     }
+#endif // !defined(_M_ARM64EC)
 
     return _Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -3957,6 +3960,7 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
     _First     = const_cast<void*>(__std_find_trivial_2(_First, _Last, _Val));
     void* _Out = _First;
 
+#ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
         const __m128i _Match = _mm_set1_epi16(_Val);
 
@@ -3973,6 +3977,7 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
             _Advance_bytes(_First, 16);
         } while (_First != _Stop);
     }
+#endif // !defined(_M_ARM64EC)
 
     return _Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -3981,6 +3986,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
     _First     = const_cast<void*>(__std_find_trivial_4(_First, _Last, _Val));
     void* _Out = _First;
 
+#ifndef _M_ARM64EC
     const size_t _Size_bytes = _Byte_length(_First, _Last);
     if (_Use_avx2() && _Size_bytes >= 32) {
         const __m256i _Match = _mm256_set1_epi32(_Val);
@@ -4015,6 +4021,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
             _Advance_bytes(_First, 16);
         } while (_First != _Stop);
     }
+#endif // !defined(_M_ARM64EC)
 
     return _Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -4023,6 +4030,7 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
     _First     = const_cast<void*>(__std_find_trivial_8(_First, _Last, _Val));
     void* _Out = _First;
 
+#ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const __m256i _Match = _mm256_set1_epi64x(_Val);
 
@@ -4056,6 +4064,7 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
             _Advance_bytes(_First, 16);
         } while (_First != _Stop);
     }
+#endif // !defined(_M_ARM64EC)
 
     return _Remove_fallback(_First, _Last, _Out, _Val);
 }
