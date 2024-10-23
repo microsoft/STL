@@ -3987,8 +3987,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
     void* _Out = _First;
 
 #ifndef _M_ARM64EC
-    const size_t _Size_bytes = _Byte_length(_First, _Last);
-    if (_Use_avx2() && _Size_bytes >= 32) {
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const __m256i _Match = _mm256_set1_epi32(_Val);
 
         void* _Stop = _First;
