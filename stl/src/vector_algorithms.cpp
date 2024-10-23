@@ -3932,7 +3932,6 @@ namespace {
 extern "C" {
 
 void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _Val) noexcept {
-    _First     = const_cast<void*>(__std_find_trivial_1(_First, _Last, _Val));
     void* _Out = _First;
 
 #ifndef _M_ARM64EC
@@ -3957,7 +3956,6 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
 }
 
 void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _Val) noexcept {
-    _First     = const_cast<void*>(__std_find_trivial_2(_First, _Last, _Val));
     void* _Out = _First;
 
 #ifndef _M_ARM64EC
@@ -3983,7 +3981,6 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
 }
 
 void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _Val) noexcept {
-    _First     = const_cast<void*>(__std_find_trivial_4(_First, _Last, _Val));
     void* _Out = _First;
 
 #ifndef _M_ARM64EC
@@ -4027,7 +4024,6 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
 }
 
 void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _Val) noexcept {
-    _First     = const_cast<void*>(__std_find_trivial_8(_First, _Last, _Val));
     void* _Out = _First;
 
 #ifndef _M_ARM64EC
