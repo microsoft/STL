@@ -66,7 +66,7 @@ def getDefaultParameters(config, litConfig):
                 actions=lambda tags: [AddRunPLNotags(tags)]),
       Parameter(name="priority", choices=["idle", "low", "normal"], default="idle", type=str,
                 help='Process priority to run tests with: "idle" (the default), "low", or "normal". ' +
-                  'Module "psutil" must be installed for to have any effect.',
+                  'Module "psutil" must be installed for this to have any effect.',
                 actions=lambda prio: be_nice(prio)),
     ]
 
