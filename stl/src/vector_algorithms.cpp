@@ -3879,11 +3879,14 @@ namespace {
 
 #ifndef _M_ARM64EC
     template <size_t _Size_v, size_t _Size_h>
+    struct _Remove_tables {
+        uint8_t _Shuf[_Size_v][_Size_h];
+        uint8_t _Size[_Size_v];
+    };
+
+    template <size_t _Size_v, size_t _Size_h>
     constexpr auto _Make_remove_tables(const uint32_t _Mul, const uint32_t _Ew) {
-        struct {
-            uint8_t _Shuf[_Size_v][_Size_h];
-            uint8_t _Size[_Size_v];
-        } _Result;
+        _Remove_tables<_Size_v, _Size_h> _Result;
 
         for (uint32_t _Vx = 0; _Vx != _Size_v; ++_Vx) {
             uint32_t _Nx = 0;
