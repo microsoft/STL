@@ -36,6 +36,23 @@ class AddRunPLNotags(ConfigAction):
     return 'exclude run.pl tags {}'.format(str(self._taglist))
 
 
+def be_nice(prio: str) -> list[ConfigAction]:
+  """
+  Set the process priority to run tests with.
+  """
+  try:
+    import psutil
+    priority_map = {
+      'normal': psutil.NORMAL_PRIORITY_CLASS,
+      'low': psutil.BELOW_NORMAL_PRIORITY_CLASS,
+      'idle': psutil.IDLE_PRIORITY_CLASS,
+    }
+    psutil.Process().nice(priority_map[prio])
+  except ImportError:
+    pass
+  return []
+
+
 def getDefaultParameters(config, litConfig):
     DEFAULT_PARAMETERS = [
       Parameter(name='long_tests', choices=[True, False], type=bool, default=True,
@@ -47,6 +64,10 @@ def getDefaultParameters(config, litConfig):
       Parameter(name="notags", type=list, default=[],
                 help="Comma-separated list of run.pl tags to exclude tests",
                 actions=lambda tags: [AddRunPLNotags(tags)]),
+      Parameter(name="priority", choices=["idle", "low", "normal"], default="idle", type=str,
+                help='Process priority to run tests with: "idle" (the default), "low", or "normal". ' +
+                  'Module "psutil" must be installed for to have any effect.',
+                actions=lambda prio: be_nice(prio)),
     ]
 
     return DEFAULT_PARAMETERS
