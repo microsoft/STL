@@ -4590,12 +4590,9 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-#if _HAS_CXX20
             if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && sized_sentinel_for<_Se, _It>
                           && is_same_v<_Pj, identity>) {
-                if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-                {
+                if (!_STD is_constant_evaluated()) {
                     const auto _Size = _Last - _First;
                     if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
                         return {_First + _Size, _First + _Size};
