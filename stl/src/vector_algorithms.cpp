@@ -3889,11 +3889,11 @@ namespace {
             uint32_t _Nx = 0;
 
             // Make shuffle mask for pshufb / vpermd corresponding to _Vx bit value.
-            // Every bit set corresponds to element skipped.
+            // Every bit set corresponds to an element skipped.
             for (uint32_t _Hx = 0; _Hx != _Size_h / _Ew; ++_Hx) {
                 if ((_Vx & (1 << _Hx)) == 0) {
-                    // Inner loop needed for cases where shuffle mask operate on element parts rather than whole
-                    // elements; for whole elements there would be one iteration
+                    // Inner loop needed for cases where the shuffle mask operates on element parts rather than whole
+                    // elements; for whole elements there would be one iteration.
                     for (uint32_t _Ex = 0; _Ex != _Ew; ++_Ex) {
                         _Result._Shuf[_Vx][_Nx * _Ew + _Ex] = static_cast<uint8_t>(_Hx * _Ew + _Ex);
                     }
@@ -3901,16 +3901,16 @@ namespace {
                 }
             }
 
-            // Size of elements that are not removed in bytes
+            // Size of elements that are not removed in bytes.
             _Result._Size[_Vx] = static_cast<uint8_t>(_Nx * _Mul);
 
             // Fill the remaining with arbitrary elements.
-            // It is not possible to leave them untouched, while keeping this optimization efficient.
+            // It is not possible to leave them untouched while keeping this optimization efficient.
             // This should not be a problem though, as they should be either overwritten by the next step,
-            // or left in the removed range. Still setting them to the values of some of existing elements,
-            // rather than zero, to reduce the surprising behavior.
+            // or left in the removed range.
             for (; _Nx != _Size_h / _Ew; ++_Nx) {
-                // Inner loop needed for cases where shuffle mask operate on element pars rather than whole elements
+                // Inner loop needed for cases where the shuffle mask operates on element parts rather than whole
+                // elements; for whole elements there would be one iteration.
                 for (uint32_t _Ex = 0; _Ex != _Ew; ++_Ex) {
                     _Result._Shuf[_Vx][_Nx * _Ew + _Ex] = static_cast<uint8_t>(_Nx * _Ew + _Ex);
                 }
