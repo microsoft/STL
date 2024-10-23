@@ -12,7 +12,7 @@ enum class alg_type { std_fn, rng };
 
 template <alg_type Type, class T>
 void r(benchmark::State& state) {
-    std::vector<T> src(lorem_ipsum.begin(), lorem_ipsum.end());
+    const std::vector<T> src(lorem_ipsum.begin(), lorem_ipsum.end());
     std::vector<T> v;
     v.reserve(lorem_ipsum.size());
     for (auto _ : state) {
