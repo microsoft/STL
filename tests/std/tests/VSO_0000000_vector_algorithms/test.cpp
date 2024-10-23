@@ -793,7 +793,7 @@ void test_remove(mt19937_64& gen) {
         v->reserve(dataCount);
     }
 
-    test_case_remove(in_out_actual, in_out_expected, in_out_actual_r, static_cast<T>(dis(gen)));
+    test_case_remove(in_out_expected, in_out_actual, in_out_actual_r, static_cast<T>(dis(gen)));
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         source.push_back(static_cast<T>(dis(gen)));
 
