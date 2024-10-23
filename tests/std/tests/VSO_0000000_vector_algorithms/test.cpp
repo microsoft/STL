@@ -749,33 +749,6 @@ FwdIt2 last_known_good_swap_ranges(FwdIt1 first1, const FwdIt1 last1, FwdIt2 des
     return dest;
 }
 
-template <class T>
-void test_swap_ranges(mt19937_64& gen) {
-    const auto fn = [&]() { return static_cast<T>(gen()); };
-    vector<T> left(dataCount);
-    vector<T> right(dataCount);
-    generate(left.begin(), left.end(), fn);
-    generate(right.begin(), right.end(), fn);
-
-    auto leftCopy  = left;
-    auto rightCopy = right;
-
-    for (ptrdiff_t attempts = 0; attempts < static_cast<ptrdiff_t>(dataCount); ++attempts) {
-        assert(right.begin() + attempts == swap_ranges(left.begin(), left.begin() + attempts, right.begin()));
-        last_known_good_swap_ranges(leftCopy.begin(), leftCopy.begin() + attempts, rightCopy.begin());
-        assert(left == leftCopy);
-        assert(right == rightCopy);
-
-        // also test unaligned input
-        const auto endOffset = min(static_cast<ptrdiff_t>(dataCount), attempts + 1);
-        assert(
-            right.begin() + (endOffset - 1) == swap_ranges(left.begin() + 1, left.begin() + endOffset, right.begin()));
-        last_known_good_swap_ranges(leftCopy.begin() + 1, leftCopy.begin() + endOffset, rightCopy.begin());
-        assert(left == leftCopy);
-        assert(right == rightCopy);
-    }
-}
-
 template <class FwdIt, class T>
 FwdIt last_known_good_remove(FwdIt first, FwdIt last, T val) {
     FwdIt dest = first;
@@ -816,7 +789,7 @@ void test_remove(mt19937_64& gen) {
     vector<T> in_out_actual;
     vector<T> in_out_actual_r;
 
-    for (auto v : {&source, &in_out_expected, &in_out_actual, &in_out_actual_r}) {
+    for (const auto& v : {&source, &in_out_expected, &in_out_actual, &in_out_actual_r}) {
         v->reserve(dataCount);
     }
 
@@ -824,11 +797,38 @@ void test_remove(mt19937_64& gen) {
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         source.push_back(static_cast<T>(dis(gen)));
 
-        for (auto v : {&in_out_expected, &in_out_actual, &in_out_actual_r}) {
+        for (const auto& v : {&in_out_expected, &in_out_actual, &in_out_actual_r}) {
             *v = source;
         }
 
         test_case_remove(in_out_expected, in_out_actual, in_out_actual_r, static_cast<T>(dis(gen)));
+    }
+}
+
+template <class T>
+void test_swap_ranges(mt19937_64& gen) {
+    const auto fn = [&]() { return static_cast<T>(gen()); };
+    vector<T> left(dataCount);
+    vector<T> right(dataCount);
+    generate(left.begin(), left.end(), fn);
+    generate(right.begin(), right.end(), fn);
+
+    auto leftCopy  = left;
+    auto rightCopy = right;
+
+    for (ptrdiff_t attempts = 0; attempts < static_cast<ptrdiff_t>(dataCount); ++attempts) {
+        assert(right.begin() + attempts == swap_ranges(left.begin(), left.begin() + attempts, right.begin()));
+        last_known_good_swap_ranges(leftCopy.begin(), leftCopy.begin() + attempts, rightCopy.begin());
+        assert(left == leftCopy);
+        assert(right == rightCopy);
+
+        // also test unaligned input
+        const auto endOffset = min(static_cast<ptrdiff_t>(dataCount), attempts + 1);
+        assert(
+            right.begin() + (endOffset - 1) == swap_ranges(left.begin() + 1, left.begin() + endOffset, right.begin()));
+        last_known_good_swap_ranges(leftCopy.begin() + 1, leftCopy.begin() + endOffset, rightCopy.begin());
+        assert(left == leftCopy);
+        assert(right == rightCopy);
     }
 }
 
