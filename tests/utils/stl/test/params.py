@@ -36,7 +36,7 @@ class AddRunPLNotags(ConfigAction):
     return 'exclude run.pl tags {}'.format(str(self._taglist))
 
 
-def be_nice(prio: str) -> list[ConfigAction]:
+def beNice(prio: str) -> list[ConfigAction]:
   """
   Set the process priority to run tests with.
   """
@@ -67,7 +67,7 @@ def getDefaultParameters(config, litConfig):
       Parameter(name="priority", choices=["idle", "low", "normal"], default="idle", type=str,
                 help='Process priority to run tests with: "idle" (the default), "low", or "normal". ' +
                   'Module "psutil" must be installed for this to have any effect.',
-                actions=lambda prio: be_nice(prio)),
+                actions=lambda prio: beNice(prio)),
     ]
 
     return DEFAULT_PARAMETERS
