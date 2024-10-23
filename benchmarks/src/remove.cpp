@@ -12,9 +12,9 @@ enum class alg_type { std_fn, rng };
 
 template <alg_type Type, class T>
 void r(benchmark::State& state) {
-    std::vector<T> src(std::begin(lorem_ipsum), std::end(lorem_ipsum));
+    std::vector<T> src(lorem_ipsum.begin(), lorem_ipsum.end());
     std::vector<T> v;
-    v.reserve(std::size(lorem_ipsum));
+    v.reserve(lorem_ipsum.size());
     for (auto _ : state) {
         v = src;
         benchmark::DoNotOptimize(v);

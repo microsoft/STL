@@ -3,7 +3,9 @@
 
 #pragma once
 
-const char lorem_ipsum[] =
+#include <string_view>
+
+inline constexpr std::string_view lorem_ipsum =
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mollis imperdiet massa, at dapibus elit interdum "
     "ac. In eget sollicitudin mi. Nam at tellus at sapien tincidunt sollicitudin vel non eros. Pellentesque nunc nunc, "
     "ullamcorper eu accumsan at, pulvinar non turpis. Quisque vel mauris pulvinar, pretium purus vel, ultricies erat. "

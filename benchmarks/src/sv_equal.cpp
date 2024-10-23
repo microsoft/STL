@@ -10,7 +10,7 @@
 
 #include "lorem.hpp"
 
-constexpr std::string_view haystack(lorem_ipsum, lorem_ipsum + 2048);
+constexpr std::string_view haystack = lorem_ipsum.substr(0, 2048);
 
 constexpr std::size_t Count = 8u;
 

@@ -23,7 +23,7 @@ constexpr std::array patterns = {
 void c_strstr(benchmark::State& state) {
     const auto& src_needle = patterns[static_cast<size_t>(state.range())];
 
-    const std::string haystack(std::begin(lorem_ipsum), std::end(lorem_ipsum));
+    const std::string haystack(lorem_ipsum);
     const std::string needle(std::begin(src_needle), std::end(src_needle));
 
     for (auto _ : state) {
@@ -38,7 +38,7 @@ template <class T>
 void classic_search(benchmark::State& state) {
     const auto& src_needle = patterns[static_cast<size_t>(state.range())];
 
-    const std::vector<T> haystack(std::begin(lorem_ipsum), std::end(lorem_ipsum));
+    const std::vector<T> haystack(lorem_ipsum.begin(), lorem_ipsum.end());
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
 
     for (auto _ : state) {
@@ -53,7 +53,7 @@ template <class T>
 void ranges_search(benchmark::State& state) {
     const auto& src_needle = patterns[static_cast<size_t>(state.range())];
 
-    const std::vector<T> haystack(std::begin(lorem_ipsum), std::end(lorem_ipsum));
+    const std::vector<T> haystack(lorem_ipsum.begin(), lorem_ipsum.end());
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
 
     for (auto _ : state) {
@@ -68,7 +68,7 @@ template <class T>
 void search_default_searcher(benchmark::State& state) {
     const auto& src_needle = patterns[static_cast<size_t>(state.range())];
 
-    const std::vector<T> haystack(std::begin(lorem_ipsum), std::end(lorem_ipsum));
+    const std::vector<T> haystack(lorem_ipsum.begin(), lorem_ipsum.end());
     const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
 
     for (auto _ : state) {

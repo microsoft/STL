@@ -10,8 +10,8 @@
 
 template <class T>
 void r(benchmark::State& state) {
-    const std::vector<T> a(std::begin(lorem_ipsum), std::end(lorem_ipsum));
-    std::vector<T> b(std::size(lorem_ipsum));
+    const std::vector<T> a(lorem_ipsum.begin(), lorem_ipsum.end());
+    std::vector<T> b(lorem_ipsum.size());
 
     for (auto _ : state) {
         b = a;
@@ -21,8 +21,8 @@ void r(benchmark::State& state) {
 
 template <class T>
 void rc(benchmark::State& state) {
-    const std::vector<T> a(std::begin(lorem_ipsum), std::end(lorem_ipsum));
-    std::vector<T> b(std::size(lorem_ipsum));
+    const std::vector<T> a(lorem_ipsum.begin(), lorem_ipsum.end());
+    std::vector<T> b(lorem_ipsum.size());
 
     for (auto _ : state) {
         std::replace_copy(std::begin(a), std::end(a), std::begin(b), T{'m'}, T{'w'});
@@ -31,8 +31,8 @@ void rc(benchmark::State& state) {
 
 template <class T>
 void rc_if(benchmark::State& state) {
-    const std::vector<T> a(std::begin(lorem_ipsum), std::end(lorem_ipsum));
-    std::vector<T> b(std::size(lorem_ipsum));
+    const std::vector<T> a(lorem_ipsum.begin(), lorem_ipsum.end());
+    std::vector<T> b(lorem_ipsum.size());
 
     for (auto _ : state) {
         (void) std::replace_copy_if(
