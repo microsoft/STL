@@ -72,7 +72,8 @@ std/numerics/rand/rand.util/rand.util.canonical/generate_canonical.pass.cpp FAIL
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 std/language.support/support.limits/support.limits.general/chrono.version.compile.pass.cpp FAIL
 
-# Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
+# Test expects __cpp_lib_freestanding_algorithm to not be defined before C++26; we define it unconditionally.
+# Test expects __cpp_lib_shift to have the C++20 value 201806L for P0769R2; we define the C++23 value 202202L for P2440R1.
 std/language.support/support.limits/support.limits.general/algorithm.version.compile.pass.cpp FAIL
 
 # Test expects __cpp_lib_print to have the old value 202207L for P2093R14; we define the C++23 value 202406L for P3235R3.
