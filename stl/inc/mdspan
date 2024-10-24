@@ -81,7 +81,7 @@ private:
         rank_type _Counter = 0;
         for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
             if (_Static_extents[_Idx] == dynamic_extent) {
-                _Analysis_assume_(_Counter < _Rank_dynamic); // TRANSITION, DevCom-923103
+                _Analysis_assume_(_Counter < _Rank_dynamic); // guaranteed by how _Rank_dynamic is calculated
                 _Result[_Counter] = _Idx;
                 ++_Counter;
             }
@@ -174,7 +174,7 @@ private:
     }
 
 public:
-    _NODISCARD static constexpr rank_type rank() noexcept {
+    _NODISCARD _Ret_range_(==, _Rank) static constexpr rank_type rank() noexcept {
         return _Rank;
     }
 
@@ -182,14 +182,14 @@ public:
         return _Rank_dynamic;
     }
 
-    _NODISCARD static constexpr size_t static_extent(const rank_type _Idx) noexcept {
+    _NODISCARD static constexpr size_t static_extent(_In_range_(<, _Rank) const rank_type _Idx) noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < _Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/1)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _Static_extents[_Idx];
     }
 
-    _NODISCARD constexpr index_type extent(const rank_type _Idx) const noexcept {
+    _NODISCARD constexpr index_type extent(_In_range_(<, _Rank) const rank_type _Idx) const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < _Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/3)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -591,7 +591,7 @@ public:
         return true;
     }
 
-    _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept
+    _NODISCARD constexpr index_type stride(_In_range_(<, extents_type::_Rank) const rank_type _Idx) const noexcept
         requires (extents_type::rank() > 0)
     {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -744,7 +744,7 @@ public:
         return true;
     }
 
-    _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept
+    _NODISCARD constexpr index_type stride(_In_range_(<, extents_type::_Rank) const rank_type _Idx) const noexcept
         requires (extents_type::rank() > 0)
     {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -975,10 +975,14 @@ public:
         return true;
     }
 
-    _NODISCARD constexpr index_type stride(const rank_type _Idx) const noexcept {
+    _NODISCARD constexpr index_type stride(_In_range_(<, extents_type::_Rank) const rank_type _Idx) const noexcept {
         if constexpr (extents_type::rank() == 0) {
             _STL_VERIFY(false, "The argument to stride must be nonnegative and less than extents_type::rank().");
         } else {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Idx < extents_type::_Rank,
+                "The argument to stride must be nonnegative and less than extents_type::rank().");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
             return this->_Array[_Idx];
         }
     }
@@ -1139,8 +1143,8 @@ struct _Mdspan_accessor_base<_AccessorPolicy> {
 
 #if _CONTAINER_DEBUG_LEVEL > 0
 template <class _IndexType, class _OtherIndexType>
-_NODISCARD constexpr _IndexType _Mdspan_checked_index_cast(_OtherIndexType&& _Idx) noexcept(
-    is_nothrow_constructible_v<_IndexType, _OtherIndexType>) {
+_NODISCARD constexpr _IndexType _Mdspan_checked_index_cast(_OtherIndexType&& _Idx)
+    noexcept(is_nothrow_constructible_v<_IndexType, _OtherIndexType>) {
     _STL_INTERNAL_STATIC_ASSERT(is_integral_v<_IndexType> && is_constructible_v<_IndexType, _OtherIndexType>);
 
     using _Arg_value_t = remove_cvref_t<_OtherIndexType>;
@@ -1187,7 +1191,7 @@ private:
         "[mdspan.mdspan.overview]/2.3).");
 
 public:
-    _NODISCARD static constexpr rank_type rank() noexcept {
+    _NODISCARD _Ret_range_(==, extents_type::_Rank) static constexpr rank_type rank() noexcept {
         return extents_type::_Rank;
     }
 
@@ -1195,14 +1199,14 @@ public:
         return extents_type::_Rank_dynamic;
     }
 
-    _NODISCARD static constexpr size_t static_extent(const rank_type _Idx) noexcept {
+    _NODISCARD static constexpr size_t static_extent(_In_range_(<, extents_type::_Rank) const rank_type _Idx) noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < extents_type::_Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/1)");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return extents_type::_Static_extents[_Idx];
     }
 
-    _NODISCARD constexpr index_type extent(const rank_type _Idx) const noexcept {
+    _NODISCARD constexpr index_type extent(_In_range_(<, extents_type::_Rank) const rank_type _Idx) const noexcept {
         return this->_Map.extents().extent(_Idx);
     }
 
@@ -1221,9 +1225,9 @@ public:
                      is_nothrow_constructible<index_type, _OtherIndexTypes>...>
                   && (sizeof...(_OtherIndexTypes) == rank() || sizeof...(_OtherIndexTypes) == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
-    constexpr explicit mdspan(data_handle_type _Ptr_, _OtherIndexTypes... _Exts) noexcept(
-        is_nothrow_constructible_v<mapping_type, extents_type>
-        && is_nothrow_default_constructible_v<accessor_type>) // strengthened
+    constexpr explicit mdspan(data_handle_type _Ptr_, _OtherIndexTypes... _Exts)
+        noexcept(is_nothrow_constructible_v<mapping_type, extents_type>
+                 && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         : _Mapping_base(extents_type{static_cast<index_type>(_STD move(_Exts))...}), _Accessor_base(),
           _Ptr(_STD move(_Ptr_)) {}
 
@@ -1232,10 +1236,9 @@ public:
                   && is_nothrow_constructible_v<index_type, const _OtherIndexType&>
                   && (_Size == rank() || _Size == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
-    constexpr explicit(_Size != rank_dynamic())
-        mdspan(data_handle_type _Ptr_, span<_OtherIndexType, _Size> _Exts) noexcept(
-            is_nothrow_constructible_v<mapping_type, extents_type>
-            && is_nothrow_default_constructible_v<accessor_type>) // strengthened
+    constexpr explicit(_Size != rank_dynamic()) mdspan(data_handle_type _Ptr_, span<_OtherIndexType, _Size> _Exts)
+        noexcept(is_nothrow_constructible_v<mapping_type, extents_type>
+                 && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         : _Mapping_base(extents_type{_Exts}), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
     template <class _OtherIndexType, size_t _Size>
@@ -1244,20 +1247,20 @@ public:
                   && (_Size == rank() || _Size == rank_dynamic())
                   && is_constructible_v<mapping_type, extents_type> && is_default_constructible_v<accessor_type>
     constexpr explicit(_Size != rank_dynamic())
-        mdspan(data_handle_type _Ptr_, const array<_OtherIndexType, _Size>& _Exts) noexcept(
-            is_nothrow_constructible_v<mapping_type, extents_type>
-            && is_nothrow_default_constructible_v<accessor_type>) // strengthened
+        mdspan(data_handle_type _Ptr_, const array<_OtherIndexType, _Size>& _Exts)
+            noexcept(is_nothrow_constructible_v<mapping_type, extents_type>
+                     && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         : _Mapping_base(extents_type{_Exts}), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
-    constexpr mdspan(data_handle_type _Ptr_, const extents_type& _Exts) noexcept(
-        is_nothrow_constructible_v<mapping_type, const extents_type&>
-        && is_nothrow_default_constructible_v<accessor_type>) // strengthened
+    constexpr mdspan(data_handle_type _Ptr_, const extents_type& _Exts)
+        noexcept(is_nothrow_constructible_v<mapping_type, const extents_type&>
+                 && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         requires is_constructible_v<mapping_type, const extents_type&> && is_default_constructible_v<accessor_type>
         : _Mapping_base(_Exts), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
-    constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_) noexcept(
-        is_nothrow_copy_constructible_v<mapping_type>
-        && is_nothrow_default_constructible_v<accessor_type>) // strengthened
+    constexpr mdspan(data_handle_type _Ptr_, const mapping_type& _Map_)
+        noexcept(is_nothrow_copy_constructible_v<mapping_type>
+                 && is_nothrow_default_constructible_v<accessor_type>) // strengthened
         requires is_default_constructible_v<accessor_type>
         : _Mapping_base(_Map_), _Accessor_base(), _Ptr(_STD move(_Ptr_)) {}
 
@@ -1271,11 +1274,11 @@ public:
     constexpr explicit(
         !is_convertible_v<const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&, mapping_type>
         || !is_convertible_v<const _OtherAccessor&, accessor_type>)
-        mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other) noexcept(
-            is_nothrow_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>
-            && is_nothrow_constructible_v<mapping_type,
-                const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&>
-            && is_nothrow_constructible_v<accessor_type, const _OtherAccessor&>) // strengthened
+        mdspan(const mdspan<_OtherElementType, _OtherExtents, _OtherLayoutPolicy, _OtherAccessor>& _Other)
+            noexcept(is_nothrow_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>
+                     && is_nothrow_constructible_v<mapping_type,
+                         const typename _OtherLayoutPolicy::template mapping<_OtherExtents>&>
+                     && is_nothrow_constructible_v<accessor_type, const _OtherAccessor&>) // strengthened
         : _Mapping_base(_Other.mapping()), _Accessor_base(_Other.accessor()), _Ptr(_Other.data_handle()) {
         static_assert(is_constructible_v<data_handle_type, const typename _OtherAccessor::data_handle_type&>,
             "The data_handle_type must be constructible from const typename OtherAccessor::data_handle_type& (N4950 "
@@ -1460,17 +1463,17 @@ template <class _ElementType, class _OtherIndexType, size_t _Nx>
 mdspan(_ElementType*, const array<_OtherIndexType, _Nx>&) -> mdspan<_ElementType, dextents<size_t, _Nx>>;
 
 template <class _ElementType, class _IndexType, size_t... _ExtentsPack>
-mdspan(_ElementType*, const extents<_IndexType, _ExtentsPack...>&)
-    -> mdspan<_ElementType, extents<_IndexType, _ExtentsPack...>>;
+mdspan(_ElementType*,
+    const extents<_IndexType, _ExtentsPack...>&) -> mdspan<_ElementType, extents<_IndexType, _ExtentsPack...>>;
 
 template <class _ElementType, class _MappingType>
 mdspan(_ElementType*, const _MappingType&)
     -> mdspan<_ElementType, typename _MappingType::extents_type, typename _MappingType::layout_type>;
 
 template <class _MappingType, class _AccessorType>
-mdspan(const typename _AccessorType::data_handle_type&, const _MappingType&, const _AccessorType&)
-    -> mdspan<typename _AccessorType::element_type, typename _MappingType::extents_type,
-        typename _MappingType::layout_type, _AccessorType>;
+mdspan(const typename _AccessorType::data_handle_type&, const _MappingType&,
+    const _AccessorType&) -> mdspan<typename _AccessorType::element_type, typename _MappingType::extents_type,
+                              typename _MappingType::layout_type, _AccessorType>;
 
 _STD_END
 

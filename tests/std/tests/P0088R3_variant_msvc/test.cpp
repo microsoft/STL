@@ -11,6 +11,7 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -741,6 +742,89 @@ namespace msvc {
         }
     } // namespace gh2770
 
+    namespace gh4901 {
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEXPR20 inline
+#endif // ^^^ !_HAS_CXX20  ^^^
+        struct X {
+            CONSTEXPR20 ~X() {}
+        };
+
+        struct Y {
+            X _;
+        };
+
+        struct ZA {
+            std::variant<Y, int> z;
+        };
+
+        struct ZB {
+            std::variant<int, Y> z;
+        };
+
+#if _HAS_CXX20
+        static_assert(ZA{0}.z.index() == 1);
+        static_assert(ZA{Y{}}.z.index() == 0);
+        static_assert(ZB{0}.z.index() == 0);
+        static_assert(ZB{Y{}}.z.index() == 1);
+#endif // _HAS_CXX20
+
+        static_assert(std::is_nothrow_destructible_v<X>);
+        static_assert(std::is_nothrow_destructible_v<Y>);
+        static_assert(std::is_nothrow_destructible_v<std::variant<Y, int>>);
+        static_assert(std::is_nothrow_destructible_v<std::variant<int, Y>>);
+        static_assert(std::is_nothrow_destructible_v<ZA>);
+        static_assert(std::is_nothrow_destructible_v<ZB>);
+
+        // Verify that variant::~variant is noexcept even when an alternative has a potentially-throwing destructor,
+        // per N4988 [res.on.exception.handling]/3.
+        struct X2 {
+            CONSTEXPR20 ~X2() noexcept(false) {}
+        };
+
+        struct Y2 {
+            X2 _;
+        };
+
+        struct ZA2 {
+            std::variant<Y2, int> z;
+        };
+
+        struct ZB2 {
+            std::variant<int, Y2> z;
+        };
+
+#if _HAS_CXX20
+        static_assert(ZA2{0}.z.index() == 1);
+        static_assert(ZA2{Y2{}}.z.index() == 0);
+        static_assert(ZB2{0}.z.index() == 0);
+        static_assert(ZB2{Y2{}}.z.index() == 1);
+#endif // _HAS_CXX20
+
+        static_assert(!std::is_nothrow_destructible_v<X2>);
+        static_assert(!std::is_nothrow_destructible_v<Y2>);
+        static_assert(std::is_nothrow_destructible_v<std::variant<Y2, int>>);
+        static_assert(std::is_nothrow_destructible_v<std::variant<int, Y2>>);
+        static_assert(std::is_nothrow_destructible_v<ZA2>);
+        static_assert(std::is_nothrow_destructible_v<ZB2>);
+
+        struct ZC {
+            std::variant<Y, int, Y2> z;
+        };
+
+#if _HAS_CXX20
+        static_assert(ZC{Y{}}.z.index() == 0);
+        static_assert(ZC{0}.z.index() == 1);
+        static_assert(ZC{Y2{}}.z.index() == 2);
+#endif // _HAS_CXX20
+
+        static_assert(std::is_nothrow_destructible_v<std::variant<Y, int, Y2>>);
+        static_assert(std::is_nothrow_destructible_v<ZC>);
+#undef CONSTEXPR20
+    } // namespace gh4901
+
     namespace assign_cv {
         template <class T>
         struct TypeIdentityImpl {
@@ -826,6 +910,33 @@ namespace msvc {
             }
         }
     } // namespace assign_cv
+
+    namespace gh4959 {
+        // Test GH-4959 "P0608R3 breaks flang build with Clang"
+        // Constraints on variant's converting constructor and assignment operator templates reject arguments of the
+        // variant's type, but did not short-circuit to avoid evaluating the constructibility constraint. For this
+        // program, the constructibility constraint is ill-formed outside the immediate context when determining if
+        // variant<optional<GenericSpec>> can be initialized from an rvalue of the same type.
+
+        template <typename... RvRef>
+        using NoLvalue = std::enable_if_t<(... && !std::is_lvalue_reference_v<RvRef>)>;
+
+        struct Name {};
+
+        struct GenericSpec {
+            template <typename A, typename = NoLvalue<A>>
+            GenericSpec(A&& x) : u(std::move(x)) {}
+            GenericSpec(GenericSpec&&) = default;
+            std::variant<Name> u;
+        };
+
+        struct InterfaceStmt {
+            template <typename A, typename = NoLvalue<A>>
+            InterfaceStmt(A&& x) : u(std::move(x)) {}
+            InterfaceStmt(InterfaceStmt&&) = default;
+            std::variant<std::optional<GenericSpec>> u;
+        };
+    } // namespace gh4959
 } // namespace msvc
 
 int main() {

@@ -53,6 +53,7 @@ _NODISCARD inline bool __std_is_file_not_found(const __std_win_error _Error) noe
     case __std_win_error::_Path_not_found:
     case __std_win_error::_Error_bad_netpath:
     case __std_win_error::_Invalid_name:
+    case __std_win_error::_Directory_name_is_invalid: // Windows 11 24H2
         return true;
     default:
         return false;

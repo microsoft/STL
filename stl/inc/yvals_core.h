@@ -339,6 +339,7 @@
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
 // P1206R7 Conversions From Ranges To Containers
+// P1222R4 <flat_set>
 // P1223R5 ranges::find_last, ranges::find_last_if, ranges::find_last_if_not
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
@@ -361,7 +362,6 @@
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
 // P2286R8 Formatting Ranges
-//     (only the '?' format specifier for strings and characters)
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
@@ -381,10 +381,12 @@
 // P2474R2 views::repeat
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
+// P2502R2 <generator>: Synchronous Coroutine Generator For Ranges
 // P2505R5 Monadic Functions For expected
 // P2539R4 Synchronizing print() With The Underlying Stream
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
+// P2585R1 Improve Default Container Formatting
 // P2599R2 mdspan: index_type, size_type
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
 // P2613R1 mdspan: empty()
@@ -392,10 +394,14 @@
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
+// P2787R1 pmr::generator
 // P2833R2 Freestanding Library: inout expected span
 //     (except for __cpp_lib_span which also covers C++26 span::at)
 // P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
+// P3107R5 Permit An Efficient Implementation Of <print>
 // P3142R0 Printing Blank Lines With println()
+// P3235R3 std::print More Types Faster With Less Memory
+//     (partial implementation; see GH-4924)
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -855,6 +861,30 @@
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // !defined(_STL_RESTORE_CLANG_WARNINGS)
 
+// warning: use of NaN is undefined behavior due to the currently enabled
+//     floating-point options [-Wnan-infinity-disabled]
+// warning: use of infinity is undefined behavior due to the currently enabled
+//     floating-point options [-Wnan-infinity-disabled]
+#ifndef _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
+#ifdef __clang__
+// clang-format off
+#define _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED \
+    _Pragma("clang diagnostic push")                \
+    _Pragma("clang diagnostic ignored \"-Wnan-infinity-disabled\"")
+// clang-format on
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#define _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
+#endif // ^^^ !defined(__clang__) ^^^
+#endif // !defined(_STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED)
+
+#ifndef _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
+#ifdef __clang__
+#define _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED _Pragma("clang diagnostic pop")
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#define _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
+#endif // ^^^ !defined(__clang__) ^^^
+#endif // !defined(_STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED)
+
 // clang-format off
 #ifndef _STL_DISABLE_DEPRECATED_WARNING
 #ifdef __clang__
@@ -885,7 +915,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202407L
+#define _MSVC_STL_UPDATE  202410L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -895,12 +925,12 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 17
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 17.0.0 or newer.");
+#if __clang_major__ < 18
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 18.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1941 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.41 or newer.");
+#if _MSC_VER < 1942 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.42 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1758,17 +1788,20 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_containers_ranges                 202202L
 #define __cpp_lib_expected                          202211L
 #define __cpp_lib_flat_map                          202207L
+#define __cpp_lib_flat_set                          202207L
+#define __cpp_lib_format_ranges                     202207L
 #define __cpp_lib_formatters                        202302L
 #define __cpp_lib_forward_like                      202207L
 #define __cpp_lib_freestanding_expected             202311L
 #define __cpp_lib_freestanding_mdspan               202311L
+#define __cpp_lib_generator                         202207L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_ios_noreplace                     202207L
 #define __cpp_lib_is_scoped_enum                    202011L
 #define __cpp_lib_mdspan                            202207L
 #define __cpp_lib_move_only_function                202110L
 #define __cpp_lib_out_ptr                           202311L
-#define __cpp_lib_print                             202207L
+#define __cpp_lib_print                             202406L
 #define __cpp_lib_ranges_as_const                   202311L
 #define __cpp_lib_ranges_as_rvalue                  202207L
 #define __cpp_lib_ranges_cartesian_product          202207L
@@ -1941,6 +1974,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
 #define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN7  0x0601 // _WIN32_WINNT_WIN7 from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN8  0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN10 0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
 
@@ -1949,10 +1983,13 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #if defined(_M_ARM64)
 // The first ARM64 Windows was Windows 10
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN10
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-// The earliest Windows supported by this implementation is Windows 8
+#elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
+// The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#else // ^^^ default to Win8 / default to Win7 vvv
+// The earliest Windows supported by this implementation is Windows 7
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN7
+#endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
 #endif // !defined(_STL_WIN32_WINNT)
 
 #ifdef __cpp_noexcept_function_type

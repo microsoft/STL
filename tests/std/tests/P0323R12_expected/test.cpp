@@ -409,9 +409,9 @@ namespace test_expected {
     template <IsTriviallyDestructible triviallyDestructible>
     struct payload_destructor {
         constexpr payload_destructor(bool& destructor_called) : _destructor_called(destructor_called) {}
-        // clang-format off
-        constexpr ~payload_destructor() requires (IsYes(triviallyDestructible)) = default;
-        // clang-format on
+        constexpr ~payload_destructor()
+            requires (IsYes(triviallyDestructible))
+        = default;
         constexpr ~payload_destructor() {
             _destructor_called = true;
         }
@@ -475,14 +475,14 @@ namespace test_expected {
         struct payload_constructors {
             payload_constructors() = default;
             // Note clang does not accept local variables in explicit
-            constexpr explicit(IsYes(explicitConstructible))
-                payload_constructors(const convertible&) noexcept(should_be_noexcept)
+            constexpr explicit(IsYes(explicitConstructible)) payload_constructors(const convertible&)
+                noexcept(should_be_noexcept)
                 : _val(3) {}
-            constexpr explicit(IsYes(explicitConstructible))
-                payload_constructors(convertible&&) noexcept(should_be_noexcept)
+            constexpr explicit(IsYes(explicitConstructible)) payload_constructors(convertible&&)
+                noexcept(should_be_noexcept)
                 : _val(42) {}
-            constexpr explicit(IsYes(explicitConstructible))
-                payload_constructors(initializer_list<int>&, convertible) noexcept(should_be_noexcept)
+            constexpr explicit(IsYes(explicitConstructible)) payload_constructors(initializer_list<int>&, convertible)
+                noexcept(should_be_noexcept)
                 : _val(1337) {}
 
             [[nodiscard]] constexpr bool operator==(const int val) const noexcept {
@@ -2232,8 +2232,8 @@ void test_reinit_regression() {
     }
 }
 
-// Defend against regression of llvm-project#59854, in which clang is confused
-// by the explicit `noexcept` on `expected`'s destructors.
+// Defend against regression of LLVM-59854, in which clang is confused by the
+// explicit `noexcept` on `expected`'s destructors.
 struct Data {
     vector<int> vec_;
     constexpr Data(initializer_list<int> il) : vec_(il) {}
@@ -2342,6 +2342,53 @@ constexpr bool test_inherited_constructors() {
 }
 
 static_assert(test_inherited_constructors());
+
+// Test GH-4279 "Add deleted function overloads to expected"
+
+template <class T, class E>
+struct ambiguating_expected_copy_constructor_caller {
+    struct const_lvalue_taker {
+        const_lvalue_taker(const expected<T, E>&) {}
+    };
+
+    void operator()(expected<T, E>) {}
+    void operator()(const_lvalue_taker) {}
+};
+
+template <class T, class E>
+struct ambiguating_expected_assignment_source {
+    operator const expected<T, E>&() && {
+        return ex;
+    }
+
+    operator expected<T, E>&&() && {
+        return move(ex);
+    }
+
+    expected<T, E> ex;
+};
+
+struct move_only {
+    move_only()                       = default;
+    move_only(move_only&&)            = default;
+    move_only& operator=(move_only&&) = default;
+};
+
+static_assert(is_invocable_v<ambiguating_expected_copy_constructor_caller<int, char>, const expected<int, char>&>);
+static_assert(is_invocable_v<ambiguating_expected_copy_constructor_caller<void, int>, const expected<void, int>&>);
+static_assert(
+    !is_invocable_v<ambiguating_expected_copy_constructor_caller<move_only, char>, const expected<move_only, char>&>);
+static_assert(
+    !is_invocable_v<ambiguating_expected_copy_constructor_caller<void, move_only>, const expected<void, move_only>&>);
+
+#ifndef __EDG__ // TRANSITION, VSO-1601179
+static_assert(!is_assignable_v<expected<int, char>&, ambiguating_expected_assignment_source<int, char>>);
+static_assert(!is_assignable_v<expected<void, int>&, ambiguating_expected_assignment_source<void, int>>);
+#endif // ^^^ no workaround ^^^
+#ifndef __EDG__ // TRANSITION, VSO-2188364
+static_assert(!is_assignable_v<expected<move_only, char>&, ambiguating_expected_assignment_source<move_only, char>>);
+static_assert(!is_assignable_v<expected<void, move_only>&, ambiguating_expected_assignment_source<void, move_only>>);
+#endif // ^^^ no workaround ^^^
 
 int main() {
     test_unexpected::test_all();

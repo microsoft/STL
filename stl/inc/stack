@@ -11,6 +11,7 @@
 
 #if _HAS_CXX23
 #include <__msvc_ranges_to.hpp>
+#include <__msvc_ranges_tuple_formatter.hpp>
 #include <iterator>
 #endif // _HAS_CXX23
 
@@ -59,23 +60,23 @@ public:
     stack(const _Container& _Cont, const _Alloc& _Al) : c(_Cont, _Al) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    stack(_Container&& _Cont, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
+    stack(_Container&& _Cont, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
         : c(_STD move(_Cont), _Al) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
     stack(const stack& _Right, const _Alloc& _Al) : c(_Right.c, _Al) {}
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
-    stack(stack&& _Right, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
+    stack(stack&& _Right, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
         : c(_STD move(_Right.c), _Al) {}
 
 #if _HAS_CXX23
     template <_Iterator_for_container _InIt, class _Alloc>
         requires uses_allocator_v<_Container, _Alloc>
-    stack(_InIt _First, _InIt _Last, const _Alloc& _Al) noexcept(
-        is_nothrow_constructible_v<_Container, _InIt, _InIt, const _Alloc&>) // strengthened
+    stack(_InIt _First, _InIt _Last, const _Alloc& _Al)
+        noexcept(is_nothrow_constructible_v<_Container, _InIt, _InIt, const _Alloc&>) // strengthened
         : c(_STD move(_First), _STD move(_Last), _Al) {}
 
     template <_Container_compatible_range<_Ty> _Rng, class _Alloc>
@@ -119,7 +120,7 @@ public:
 #endif // _HAS_CXX23
 
     template <class... _Valty>
-    decltype(auto) emplace(_Valty&&... _Val) {
+    _ADAPTOR_EMPLACE_RETURN emplace(_Valty&&... _Val) {
 #if _HAS_CXX17
         return c.emplace_back(_STD forward<_Valty>(_Val)...);
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
@@ -209,6 +210,14 @@ void swap(stack<_Ty, _Container>& _Left, stack<_Ty, _Container>& _Right) noexcep
 
 template <class _Ty, class _Container, class _Alloc>
 struct uses_allocator<stack<_Ty, _Container>, _Alloc> : uses_allocator<_Container, _Alloc>::type {};
+
+#if _HAS_CXX23
+// Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
+// constrained to character types supported by `format`.
+template <_Format_supported_charT _CharT, class _Ty, formattable<_CharT> _Container>
+struct formatter<stack<_Ty, _Container>, _CharT>
+    : _Adaptor_formatter_base<stack<_Ty, _Container>, _CharT, _RANGES ref_view> {};
+#endif // _HAS_CXX23
 _STD_END
 
 #pragma pop_macro("new")

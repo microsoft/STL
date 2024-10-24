@@ -24,7 +24,10 @@
 #include <mbctype.h>
 #endif // !defined(_MSVC_TESTING_NVCC)
 
+#ifndef _SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING
 #define _SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING
+#endif // !defined(_SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING)
+
 #define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
@@ -83,10 +86,12 @@
 #include <expected>
 #include <filesystem>
 #include <flat_map>
+#include <flat_set>
 #include <format>
 #include <forward_list>
 #include <fstream>
 #include <functional>
+#include <generator>
 #include <hash_map>
 #include <hash_set>
 #include <iomanip>

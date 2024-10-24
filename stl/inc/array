@@ -422,6 +422,8 @@ public:
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
+    using _Library_defined = array;
+
 #if _HAS_TR1_NAMESPACE
     _DEPRECATE_TR1_NAMESPACE void assign(const _Ty& _Value) {
         _STD fill_n(_Elems, _Size, _Value);
@@ -500,7 +502,7 @@ public:
         return _Elems + _Size;
     }
 
-    _NODISCARD constexpr size_type size() const noexcept {
+    _NODISCARD _Ret_range_(==, _Size) constexpr size_type size() const noexcept {
         return _Size;
     }
 
@@ -528,7 +530,7 @@ public:
         return _Elems[_Pos];
     }
 
-    _NODISCARD _CONSTEXPR17 reference operator[](_In_range_(0, _Size - 1) size_type _Pos) noexcept /* strengthened */ {
+    _NODISCARD _CONSTEXPR17 reference operator[](_In_range_(<, _Size) size_type _Pos) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Size, "array subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -536,7 +538,7 @@ public:
         return _Elems[_Pos];
     }
 
-    _NODISCARD constexpr const_reference operator[](_In_range_(0, _Size - 1) size_type _Pos) const noexcept
+    _NODISCARD constexpr const_reference operator[](_In_range_(<, _Size) size_type _Pos) const noexcept
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Size, "array subscript out of range");
@@ -609,6 +611,8 @@ public:
     using const_iterator         = _Array_const_iterator<_Ty, 0>;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+
+    using _Library_defined = array;
 
 #if _HAS_TR1_NAMESPACE
     _DEPRECATE_TR1_NAMESPACE void assign(const _Ty&) {}
@@ -844,10 +848,15 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty (&&_Array)[_Siz
 }
 #endif // _HAS_CXX20
 
+template <class _Ty, class _Enable = void>
+constexpr bool _Is_library_defined = false;
+template <class _Ty>
+constexpr bool _Is_library_defined<_Ty, enable_if_t<is_same_v<typename _Ty::_Library_defined, _Ty>>> = true;
+
 _EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty& get(array<_Ty, _Size>& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
-    if constexpr (_Has_unchecked_begin_end<array<_Ty, _Size>>) {
+    if constexpr (_Is_library_defined<array<_Ty, _Size>>) {
         return _Arr._Elems[_Idx];
     } else {
 #if _HAS_CXX17
@@ -861,7 +870,7 @@ _NODISCARD constexpr _Ty& get(array<_Ty, _Size>& _Arr) noexcept {
 _EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty& get(const array<_Ty, _Size>& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
-    if constexpr (_Has_unchecked_begin_end<array<_Ty, _Size>>) {
+    if constexpr (_Is_library_defined<array<_Ty, _Size>>) {
         return _Arr._Elems[_Idx];
     } else {
         return _Arr[_Idx];
@@ -871,7 +880,7 @@ _NODISCARD constexpr const _Ty& get(const array<_Ty, _Size>& _Arr) noexcept {
 _EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
-    if constexpr (_Has_unchecked_begin_end<array<_Ty, _Size>>) {
+    if constexpr (_Is_library_defined<array<_Ty, _Size>>) {
         return _STD move(_Arr._Elems[_Idx]);
     } else {
 #if _HAS_CXX17
@@ -885,7 +894,7 @@ _NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept {
 _EXPORT_STD template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");
-    if constexpr (_Has_unchecked_begin_end<array<_Ty, _Size>>) {
+    if constexpr (_Is_library_defined<array<_Ty, _Size>>) {
         return _STD move(_Arr._Elems[_Idx]);
     } else {
         return _STD move(_Arr[_Idx]);

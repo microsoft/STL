@@ -1520,9 +1520,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 
   <Type Name="std::move_iterator&lt;*&gt;">
-      <DisplayString>move_iterator {current}</DisplayString>
+      <DisplayString>move_iterator {_Current}</DisplayString>
       <Expand>
-          <Item Name="current">current</Item>
+          <Item Name="[current]">_Current</Item>
       </Expand>
   </Type>
 
@@ -1998,16 +1998,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString>{*_Value}</DisplayString>
     <Expand>
       <Item Name="[ptr]">_Value</Item>
-    </Expand>
-  </Type>
-
-  <Type Name="std::ranges::view_interface&lt;*&gt;">
-    <DisplayString>{{ size={size()} }}</DisplayString>
-    <Expand>
-      <Item Optional="true" Name="empty">empty()</Item>
-      <Item Optional="true" Name="front">front()</Item>
-      <Item Optional="true" Name="back">back()</Item>
-      <Item Optional="true" Name="data">data()</Item>
     </Expand>
   </Type>
 

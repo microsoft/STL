@@ -24,8 +24,8 @@ struct _Non_trivial_copy : _Base { // non-trivial copy construction facade
     using _Base::_Base;
 
     _Non_trivial_copy() = default;
-    _CONSTEXPR20 _Non_trivial_copy(const _Non_trivial_copy& _That) noexcept(
-        noexcept(_Base::_Construct_from(static_cast<const _Base&>(_That)))) {
+    _CONSTEXPR20 _Non_trivial_copy(const _Non_trivial_copy& _That)
+        noexcept(noexcept(_Base::_Construct_from(static_cast<const _Base&>(_That)))) {
         _Base::_Construct_from(static_cast<const _Base&>(_That));
     }
     _Non_trivial_copy(_Non_trivial_copy&&)                 = default;
@@ -55,8 +55,8 @@ struct _Non_trivial_move : _SMF_control_copy<_Base, _Types...> { // non-trivial 
 
     _Non_trivial_move()                         = default;
     _Non_trivial_move(const _Non_trivial_move&) = default;
-    _CONSTEXPR20 _Non_trivial_move(_Non_trivial_move&& _That) noexcept(
-        noexcept(_Mybase::_Construct_from(static_cast<_Base&&>(_That)))) {
+    _CONSTEXPR20 _Non_trivial_move(_Non_trivial_move&& _That)
+        noexcept(noexcept(_Mybase::_Construct_from(static_cast<_Base&&>(_That)))) {
         _Mybase::_Construct_from(static_cast<_Base&&>(_That));
     }
     _Non_trivial_move& operator=(const _Non_trivial_move&) = default;
@@ -90,8 +90,8 @@ struct _Non_trivial_copy_assign : _SMF_control_move<_Base, _Types...> { // non-t
     _Non_trivial_copy_assign(const _Non_trivial_copy_assign&) = default;
     _Non_trivial_copy_assign(_Non_trivial_copy_assign&&)      = default;
 
-    _CONSTEXPR20 _Non_trivial_copy_assign& operator=(const _Non_trivial_copy_assign& _That) noexcept(
-        noexcept(_Mybase::_Assign_from(static_cast<const _Base&>(_That)))) {
+    _CONSTEXPR20 _Non_trivial_copy_assign& operator=(const _Non_trivial_copy_assign& _That)
+        noexcept(noexcept(_Mybase::_Assign_from(static_cast<const _Base&>(_That)))) {
         _Mybase::_Assign_from(static_cast<const _Base&>(_That));
         return *this;
     }
@@ -128,8 +128,8 @@ struct _Non_trivial_move_assign : _SMF_control_copy_assign<_Base, _Types...> { /
     _Non_trivial_move_assign(_Non_trivial_move_assign&&)                 = default;
     _Non_trivial_move_assign& operator=(const _Non_trivial_move_assign&) = default;
 
-    _CONSTEXPR20 _Non_trivial_move_assign& operator=(_Non_trivial_move_assign&& _That) noexcept(
-        noexcept(_Mybase::_Assign_from(static_cast<_Base&&>(_That)))) {
+    _CONSTEXPR20 _Non_trivial_move_assign& operator=(_Non_trivial_move_assign&& _That)
+        noexcept(noexcept(_Mybase::_Assign_from(static_cast<_Base&&>(_That)))) {
         _Mybase::_Assign_from(static_cast<_Base&&>(_That));
         return *this;
     }

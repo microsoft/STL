@@ -33,12 +33,16 @@ import <expected>;
 import <filesystem>;
 #if TEST_STANDARD >= 23
 import <flat_map>;
+import <flat_set>;
 #endif // TEST_STANDARD >= 23
 import <format>;
 import <forward_list>;
 import <fstream>;
 import <functional>;
 import <future>;
+#if TEST_STANDARD >= 23
+import <generator>;
+#endif // TEST_STANDARD >= 23
 import <initializer_list>;
 import <iomanip>;
 import <ios>;

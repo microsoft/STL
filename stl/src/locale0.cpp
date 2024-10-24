@@ -30,7 +30,6 @@ struct _Fac_node { // node for lazy facet recording
         delete _Facptr->_Decref();
     }
 
-#ifdef _DEBUG
     void* operator new(size_t _Size) { // replace operator new
         void* _Ptr = _malloc_dbg(_Size > 0 ? _Size : 1, _CRT_BLOCK, __FILE__, __LINE__);
         if (!_Ptr) {
@@ -43,7 +42,6 @@ struct _Fac_node { // node for lazy facet recording
     void operator delete(void* _Ptr) noexcept { // replace operator delete
         _free_dbg(_Ptr, _CRT_BLOCK);
     }
-#endif // defined(_DEBUG)
 
     _Fac_node* _Next;
     _Facet_base* _Facptr;
