@@ -24,10 +24,6 @@ std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:1 FAIL
 
-# LLVM-74756: [libc++][test] overload_compare_iterator doesn't support its claimed iterator_category
-std/utilities/memory/specialized.algorithms/uninitialized.copy/uninitialized_copy.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.move/uninitialized_move.pass.cpp FAIL
-
 # LLVM-90196: [libc++][format] Formatting range with m range-type is incorrect
 std/utilities/format/format.range/format.range.formatter/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/format.functions.vformat.pass.cpp FAIL
@@ -36,10 +32,6 @@ std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.p
 
 # LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
-
-# LLVM-105878: [libc++][test] fp_compare.h includes non-portable <__config>
-std/numerics/c.math/cmath.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp FAIL
 
 # LLVM-105966: [libc++][test] Fix is_always_lock_free test
 std/atomics/atomics.lockfree/is_always_lock_free.cpp FAIL
@@ -82,8 +74,6 @@ std/language.support/support.limits/support.limits.general/chrono.version.compil
 
 # Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
 std/language.support/support.limits/support.limits.general/algorithm.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/functional.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/iterator.version.compile.pass.cpp FAIL
 
 # Test expects __cpp_lib_print to have the old value 202207L for P2093R14; we define the C++23 value 202406L for P3235R3.
 std/language.support/support.limits/support.limits.general/ostream.version.compile.pass.cpp FAIL
@@ -156,19 +146,6 @@ std/language.support/support.limits/support.limits.general/format.version.compil
 
 # libc++ doesn't implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
-
-# libc++ doesn't implement LWG-3870
-std/utilities/memory/specialized.algorithms/specialized.construct/ranges_construct_at.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.construct.default/ranges_uninitialized_default_construct.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.construct.default/ranges_uninitialized_default_construct_n.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.construct.value/ranges_uninitialized_value_construct.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.construct.value/ranges_uninitialized_value_construct_n.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy_n.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.fill/ranges_uninitialized_fill.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.fill.n/ranges_uninitialized_fill_n.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-4013
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.default.pass.cpp FAIL
@@ -253,9 +230,6 @@ std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
-# LWG-2192 "Validity and return type of std::abs(0u) is unclear" (resolution is missing in UCRT, DevCom-10331466)
-std/depr/depr.c.headers/stdlib_h.pass.cpp FAIL
-
 # LWG-2503 "multiline option should be added to syntax_option_type"
 std/re/re.const/re.matchflag/match_multiline.pass.cpp FAIL
 std/re/re.const/re.matchflag/match_not_eol.pass.cpp FAIL
@@ -276,11 +250,6 @@ std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
 
 
 # *** C1XX COMPILER BUGS ***
-# DevCom-409222 VSO-752709 "Constructing rvalue reference from non-reference-related lvalue reference"
-# Reportedly fixed in VS 2019 16.10, test is still failing, need to investigate.
-std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:1 FAIL
-
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 # Note: The :1 (ASan) configuration doesn't run static analysis.
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
@@ -747,9 +716,6 @@ std/re/re.alg/re.alg.search/basic.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.search/ecma.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.search/extended.locale.pass.cpp FAIL
 
-# Not analyzed. Error mentions allocator<const T>.
-std/utilities/memory/specialized.algorithms/specialized.construct/construct_at.pass.cpp FAIL
-
 # Not analyzed. Seems to force a sign conversion error?
 std/iterators/iterator.primitives/iterator.operations/advance.pass.cpp SKIPPED
 
@@ -857,9 +823,6 @@ std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op
 # Not analyzed. error C2280: 'std::ranges::lazy_split_view<InputView,ForwardTinyView>::lazy_split_view(const std::ranges::lazy_split_view<InputView,ForwardTinyView> &)': attempting to reference a deleted function
 std/ranges/range.adaptors/range.lazy.split/ctor.copy_move.pass.cpp FAIL
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass.cpp FAIL
-
-# Not analyzed. Checking whether packaged_task is constructible from an allocator and a packaged_task of a different type.
-std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 
 # Not analyzed.
 # MSVC error C2131: expression did not evaluate to a constant
