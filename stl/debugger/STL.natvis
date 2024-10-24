@@ -2325,6 +2325,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
 
+    <DisplayString>{{ size={size()} }}</DisplayString>
+
     <Expand>
       <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
       <Item Name="[size]">size()</Item>
@@ -2352,6 +2354,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       Expression="&amp;_Data.values._Mypair._Myval2._Myfirst[index]">
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
+
+    <DisplayString>{{ size={size()} }}</DisplayString>
 
     <Expand>
       <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
@@ -2381,6 +2385,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
 
+    <DisplayString>{{ size={size()} }}</DisplayString>
+
     <Expand>
       <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
       <Item Name="[size]">size()</Item>
@@ -2409,6 +2415,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
           _Data.values._Mypair._Myval2._Mapsize][(index + _Data.values._Mypair._Myval2._Myoff) % _Data.values._EEN_DS]">
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
+
+    <DisplayString>{{ size={size()} }}</DisplayString>
 
     <Expand>
       <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
