@@ -215,6 +215,9 @@ std/language.support/support.limits/support.limits.general/cstdlib.version.compi
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 
+# P2674R1 is_implicit_lifetime
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
+
 
 # *** MISSING COMPILER FEATURES ***
 # P1169R4 static operator()
