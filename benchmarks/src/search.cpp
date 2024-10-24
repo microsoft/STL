@@ -52,8 +52,8 @@ void c_strstr(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::string haystack(lorem_ipsum);
-    const std::string needle(std::begin(src_needle), std::end(src_needle));
+    const std::string haystack(src_haystack);
+    const std::string needle(src_needle);
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
@@ -68,8 +68,8 @@ void classic_search(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::vector<T> haystack(lorem_ipsum.begin(), lorem_ipsum.end());
-    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
+    const std::vector<T> haystack(src_haystack.begin(), src_haystack.end());
+    const std::vector<T> needle(src_needle.begin(), src_needle.end());
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
@@ -84,8 +84,8 @@ void ranges_search(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::vector<T> haystack(lorem_ipsum.begin(), lorem_ipsum.end());
-    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
+    const std::vector<T> haystack(src_haystack.begin(), src_haystack.end());
+    const std::vector<T> needle(src_needle.begin(), src_needle.end());
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
@@ -100,8 +100,8 @@ void search_default_searcher(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::vector<T> haystack(lorem_ipsum.begin(), lorem_ipsum.end());
-    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
+    const std::vector<T> haystack(src_haystack.begin(), src_haystack.end());
+    const std::vector<T> needle(src_needle.begin(), src_needle.end());
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
@@ -116,8 +116,8 @@ void classic_find_end(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
-    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
+    const std::vector<T> haystack(src_haystack.begin(), src_haystack.end());
+    const std::vector<T> needle(src_needle.begin(), src_needle.end());
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
@@ -132,8 +132,8 @@ void ranges_find_end(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::vector<T> haystack(std::begin(src_haystack), std::end(src_haystack));
-    const std::vector<T> needle(std::begin(src_needle), std::end(src_needle));
+    const std::vector<T> haystack(src_haystack.begin(), src_haystack.end());
+    const std::vector<T> needle(src_needle.begin(), src_needle.end());
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
