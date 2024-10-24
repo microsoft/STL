@@ -33,8 +33,9 @@ std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.p
 # LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
-# LLVM-105966: [libc++][test] Fix is_always_lock_free test
-std/atomics/atomics.lockfree/is_always_lock_free.cpp FAIL
+# LLVM-113608: [libc++][test] Use ADDITIONAL_COMPILE_FLAGS(gcc-style-warnings) for -Wno-psabi
+std/atomics/atomics.lockfree/is_always_lock_free.pass.cpp:0 FAIL
+std/atomics/atomics.lockfree/is_always_lock_free.pass.cpp:1 FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
