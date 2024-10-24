@@ -192,6 +192,32 @@ inline void _Vprint_unicode_noformat_impl(FILE* const _Stream, const string_view
     _STD _Do_on_maybe_unicode_console(_Stream, _Unicode_console, _Fallback);
 }
 
+inline void _Fputc_newline(FILE* const _Stream) {
+    const bool _Was_write_successful = _CSTD fputc('\n', _Stream) == '\n';
+
+    if (!_Was_write_successful) [[unlikely]] {
+        _Throw_system_error(static_cast<errc>(errno));
+    }
+}
+
+inline void _Print_newline_only_unicode(FILE* const _Stream) {
+    const auto _Unicode_console = [&](const __std_unicode_console_handle _Console_handle) {
+        const bool _Was_flush_successful = _CSTD fflush(_Stream) == 0;
+        if (!_Was_flush_successful) [[unlikely]] {
+            _Throw_system_error(static_cast<errc>(errno));
+        }
+
+        const __std_win_error _Console_print_result = __std_print_newline_only_to_unicode_console(_Console_handle);
+        if (_Console_print_result != __std_win_error::_Success) [[unlikely]] {
+            _STD _Throw_system_error_from_std_win_error(_Console_print_result);
+        }
+    };
+
+    const auto _Fallback = [&] { _STD _Fputc_newline(_Stream); };
+
+    _STD _Do_on_maybe_unicode_console(_Stream, _Unicode_console, _Fallback);
+}
+
 // Format to intermediate string buffer, then print to unicode console/file
 inline void _Vprint_unicode_buffered_impl(
     const _Add_newline _Add_nl, FILE* const _Stream, const string_view _Fmt_str, const format_args _Fmt_args) {
@@ -271,7 +297,11 @@ void println(FILE* const _Stream, const format_string<_Types...> _Fmt, _Types&&.
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void println(FILE* _Stream) {
-    _STD print(_Stream, "\n");
+    if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
+        _STD _Print_newline_only_unicode(_Stream);
+    } else {
+        _STD _Fputc_newline(_Stream);
+    }
 }
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329

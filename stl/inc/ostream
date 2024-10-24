@@ -96,6 +96,24 @@ ios_base::iostate _Print_noformat_nonunicode(ostream& _Ostr, const string_view _
 }
 
 template <int = 0>
+ios_base::iostate _Print_newline_only_nonunicode(ostream& _Ostr) {
+    // *LOCKED*
+    //
+    // This function is called from a context in which an ostream::sentry has been
+    // constructed.
+    ios_base::iostate _State = ios_base::goodbit;
+
+    _TRY_IO_BEGIN
+    const bool _Was_insertion_successful = _Ostr.rdbuf()->sputc('\n') == '\n';
+    if (!_Was_insertion_successful) [[unlikely]] {
+        _State |= ios_base::badbit;
+    }
+    _CATCH_IO_(ios_base, _Ostr)
+
+    return _State;
+}
+
+template <int = 0>
 void _Vprint_nonunicode_impl(
     const _Add_newline _Add_nl, ostream& _Ostr, const string_view _Fmt_str, const format_args _Fmt_args) {
     const ostream::sentry _Ok(_Ostr);
@@ -117,8 +135,9 @@ void _Vprint_nonunicode_impl(
     _Ostr.setstate(_State);
 }
 
-template <class _Filebuf_type = filebuf>
-ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str) {
+template <class _UnicodeConsoleFn, class _FallbackFn, class _Filebuf_type = filebuf>
+ios_base::iostate _Do_on_maybe_unicode_console(
+    ostream& _Ostr, _UnicodeConsoleFn _Unicode_console_func, _FallbackFn _Fallback_func) {
     // *LOCKED*
     //
     // This function is called from a context in which an ostream::sentry has been
@@ -136,7 +155,7 @@ ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str
 
     // If we got nullptr, then it probably isn't being used for a unicode console...
     if (_Filebuf == nullptr) {
-        _State |= _STD _Print_noformat_nonunicode(_Ostr, _Str);
+        _State |= _Fallback_func();
         return _State;
     }
 
@@ -175,16 +194,38 @@ ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str
         }
 
         const __std_win_error _Unicode_console_print_result =
-            __std_print_to_unicode_console(_Unicode_console_retrieval_result._Console_handle, _Str.data(), _Str.size());
+            _Unicode_console_func(_Unicode_console_retrieval_result._Console_handle);
         if (_Unicode_console_print_result != __std_win_error::_Success) [[unlikely]] {
             _State |= ios_base::badbit;
         }
         _CATCH_IO_(ios_base, _Ostr)
     } else {
-        _State |= _STD _Print_noformat_nonunicode(_Ostr, _Str);
+        _State |= _Fallback_func();
     }
 
     return _State;
+}
+
+template <int = 0>
+ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str) {
+    const auto _Unicode_console = [&](const __std_unicode_console_handle _Console_handle) {
+        return __std_print_to_unicode_console(_Console_handle, _Str.data(), _Str.size());
+    };
+
+    const auto _Fallback = [&] { return _STD _Print_noformat_nonunicode(_Ostr, _Str); };
+
+    return _STD _Do_on_maybe_unicode_console(_Ostr, _Unicode_console, _Fallback);
+}
+
+template <int = 0>
+ios_base::iostate _Print_newline_only_unicode(ostream& _Ostr) {
+    const auto _Unicode_console = [](const __std_unicode_console_handle _Console_handle) {
+        return __std_print_newline_only_to_unicode_console(_Console_handle);
+    };
+
+    const auto _Fallback = [&] { return _STD _Print_newline_only_nonunicode(_Ostr); };
+
+    return _STD _Do_on_maybe_unicode_console(_Ostr, _Unicode_console, _Fallback);
 }
 
 template <int = 0>
@@ -258,7 +299,20 @@ void println(ostream& _Ostr, const format_string<_Types...> _Fmt, _Types&&... _A
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
 void println(ostream& _Ostr) {
-    _STD print(_Ostr, "\n");
+    const ostream::sentry _Ok(_Ostr);
+    ios_base::iostate _State = ios_base::goodbit;
+
+    if (!_Ok) [[unlikely]] {
+        _State |= ios_base::badbit;
+    } else [[likely]] {
+        if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
+            _State |= _STD _Print_newline_only_unicode(_Ostr);
+        } else {
+            _State |= _STD _Print_newline_only_nonunicode(_Ostr);
+        }
+    }
+
+    _Ostr.setstate(_State);
 }
 
 _EXPORT_STD template <int = 0> // improves throughput, see GH-2329
