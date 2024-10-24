@@ -2318,10 +2318,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       Name="size"
       Expression="(size_t)(_Data.keys._Mypair._Myval2._Mylast - _Data.keys._Mypair._Myval2._Myfirst)"
     />
-    <Intrinsic Name="key_at" Expression="($T1*)(&amp;_Data.keys._Mypair._Myval2._Myfirst[index])">
+    <Intrinsic Name="key_at" Expression="&amp;_Data.keys._Mypair._Myval2._Myfirst[index]">
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
-    <Intrinsic Name="value_at" Expression="($T2*)(&amp;_Data.values._Mypair._Myval2._Myfirst[index])">
+    <Intrinsic Name="value_at" Expression="&amp;_Data.values._Mypair._Myval2._Myfirst[index]">
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
 
@@ -2344,12 +2344,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Intrinsic Name="size"
       Expression="_Data.keys._Mypair._Myval2._Mysize" />
     <Intrinsic Name="key_at"
-      Expression="($T1*)(&amp;_Data.keys._Mypair._Myval2._Map[((index + _Data.keys._Mypair._Myval2._Myoff) / _Data.keys._EEN_DS) %
-          _Data.keys._Mypair._Myval2._Mapsize][(index + _Data.keys._Mypair._Myval2._Myoff) % _Data.keys._EEN_DS])">
+      Expression="&amp;_Data.keys._Mypair._Myval2._Map[((index + _Data.keys._Mypair._Myval2._Myoff) / _Data.keys._EEN_DS) %
+          _Data.keys._Mypair._Myval2._Mapsize][(index + _Data.keys._Mypair._Myval2._Myoff) % _Data.keys._EEN_DS]">
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
     <Intrinsic Name="value_at"
-      Expression="($T2*)(&amp;_Data.values._Mypair._Myval2._Myfirst[index])">
+      Expression="&amp;_Data.values._Mypair._Myval2._Myfirst[index]">
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
 
@@ -2372,12 +2372,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Intrinsic Name="size"
       Expression="(size_t)(_Data.keys._Mypair._Myval2._Mylast - _Data.keys._Mypair._Myval2._Myfirst)" />
     <Intrinsic Name="key_at"
-      Expression="($T1*)(&amp;_Data.keys._Mypair._Myval2._Myfirst[index])">
+      Expression="&amp;_Data.keys._Mypair._Myval2._Myfirst[index]">
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
     <Intrinsic Name="value_at"
-      Expression="($T2*)(&amp;_Data.values._Mypair._Myval2._Map[((index + _Data.values._Mypair._Myval2._Myoff) / _Data.values._EEN_DS) %
-          _Data.values._Mypair._Myval2._Mapsize][(index + _Data.values._Mypair._Myval2._Myoff) % _Data.values._EEN_DS])">
+      Expression="&amp;_Data.values._Mypair._Myval2._Map[((index + _Data.values._Mypair._Myval2._Myoff) / _Data.values._EEN_DS) %
+          _Data.values._Mypair._Myval2._Mapsize][(index + _Data.values._Mypair._Myval2._Myoff) % _Data.values._EEN_DS]">
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
 
@@ -2400,13 +2400,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Intrinsic Name="size"
       Expression="_Data.keys._Mypair._Myval2._Mysize" />
     <Intrinsic Name="key_at"
-      Expression="($T1*)(&amp;_Data.keys._Mypair._Myval2._Map[((index + _Data.keys._Mypair._Myval2._Myoff) / _Data.keys._EEN_DS) %
-          _Data.keys._Mypair._Myval2._Mapsize][(index + _Data.keys._Mypair._Myval2._Myoff) % _Data.keys._EEN_DS])">
+      Expression="&amp;_Data.keys._Mypair._Myval2._Map[((index + _Data.keys._Mypair._Myval2._Myoff) / _Data.keys._EEN_DS) %
+          _Data.keys._Mypair._Myval2._Mapsize][(index + _Data.keys._Mypair._Myval2._Myoff) % _Data.keys._EEN_DS]">
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
     <Intrinsic Name="value_at"
-      Expression="($T2*)(&amp;_Data.values._Mypair._Myval2._Map[((index + _Data.values._Mypair._Myval2._Myoff) / _Data.values._EEN_DS) %
-          _Data.values._Mypair._Myval2._Mapsize][(index + _Data.values._Mypair._Myval2._Myoff) % _Data.values._EEN_DS])">
+      Expression="&amp;_Data.values._Mypair._Myval2._Map[((index + _Data.values._Mypair._Myval2._Myoff) / _Data.values._EEN_DS) %
+          _Data.values._Mypair._Myval2._Mapsize][(index + _Data.values._Mypair._Myval2._Myoff) % _Data.values._EEN_DS]">
       <Parameter Name="index" Type="size_t" />
     </Intrinsic>
 
