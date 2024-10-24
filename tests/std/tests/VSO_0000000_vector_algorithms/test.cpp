@@ -786,6 +786,62 @@ FwdIt2 last_known_good_swap_ranges(FwdIt1 first1, const FwdIt1 last1, FwdIt2 des
     return dest;
 }
 
+template <class FwdIt, class T>
+FwdIt last_known_good_remove(FwdIt first, FwdIt last, T val) {
+    FwdIt dest = first;
+
+    while (first != last) {
+        if (*first != val) {
+            *dest = *first;
+            ++dest;
+        }
+
+        ++first;
+    }
+
+    return dest;
+}
+
+template <class T>
+void test_case_remove(vector<T>& in_out_expected, vector<T>& in_out_actual, vector<T>& in_out_actual_r, const T val) {
+    auto rem_expected = last_known_good_remove(in_out_expected.begin(), in_out_expected.end(), val);
+    auto rem_actual   = remove(in_out_actual.begin(), in_out_actual.end(), val);
+    assert(equal(in_out_expected.begin(), rem_expected, in_out_actual.begin(), rem_actual));
+
+#if _HAS_CXX20
+    auto rem_actual_r = ranges::remove(in_out_actual_r, val);
+    assert(equal(in_out_expected.begin(), rem_expected, begin(in_out_actual_r), begin(rem_actual_r)));
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) in_out_actual_r;
+#endif // ^^^ !_HAS_CXX20 ^^^
+}
+
+template <class T>
+void test_remove(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    binomial_distribution<TD> dis(10);
+
+    vector<T> source;
+    vector<T> in_out_expected;
+    vector<T> in_out_actual;
+    vector<T> in_out_actual_r;
+
+    for (const auto& v : {&source, &in_out_expected, &in_out_actual, &in_out_actual_r}) {
+        v->reserve(dataCount);
+    }
+
+    test_case_remove(in_out_expected, in_out_actual, in_out_actual_r, static_cast<T>(dis(gen)));
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        source.push_back(static_cast<T>(dis(gen)));
+
+        for (const auto& v : {&in_out_expected, &in_out_actual, &in_out_actual_r}) {
+            *v = source;
+        }
+
+        test_case_remove(in_out_expected, in_out_actual, in_out_actual_r, static_cast<T>(dis(gen)));
+    }
+}
+
 template <class T>
 void test_swap_ranges(mt19937_64& gen) {
     const auto fn = [&]() { return static_cast<T>(gen()); };
@@ -955,6 +1011,16 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_reverse_copy<float>(gen);
     test_reverse_copy<double>(gen);
     test_reverse_copy<long double>(gen);
+
+    test_remove<char>(gen);
+    test_remove<signed char>(gen);
+    test_remove<unsigned char>(gen);
+    test_remove<short>(gen);
+    test_remove<unsigned short>(gen);
+    test_remove<int>(gen);
+    test_remove<unsigned int>(gen);
+    test_remove<long long>(gen);
+    test_remove<unsigned long long>(gen);
 
     test_swap_ranges<char>(gen);
     test_swap_ranges<short>(gen);

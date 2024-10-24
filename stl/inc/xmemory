@@ -25,6 +25,39 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#if _USE_STD_VECTOR_ALGORITHMS
+extern "C" {
+void* __stdcall __std_remove_1(void* _First, void* _Last, uint8_t _Val) noexcept;
+void* __stdcall __std_remove_2(void* _First, void* _Last, uint16_t _Val) noexcept;
+void* __stdcall __std_remove_4(void* _First, void* _Last, uint32_t _Val) noexcept;
+void* __stdcall __std_remove_8(void* _First, void* _Last, uint64_t _Val) noexcept;
+} // extern "C"
+
+_STD_BEGIN
+template <class _Ty, class _TVal>
+_Ty* _Remove_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
+    if constexpr (is_pointer_v<_Ty>) {
+#ifdef _WIN64
+        return reinterpret_cast<_Ty*>(::__std_remove_8(_First, _Last, reinterpret_cast<uint64_t>(_Val)));
+#else
+        return reinterpret_cast<_Ty*>(::__std_remove_4(_First, _Last, reinterpret_cast<uint32_t>(_Val)));
+#endif
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return reinterpret_cast<_Ty*>(::__std_remove_1(_First, _Last, static_cast<uint8_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return reinterpret_cast<_Ty*>(::__std_remove_2(_First, _Last, static_cast<uint16_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return reinterpret_cast<_Ty*>(::__std_remove_4(_First, _Last, static_cast<uint32_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return reinterpret_cast<_Ty*>(::__std_remove_8(_First, _Last, static_cast<uint64_t>(_Val)));
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+    }
+}
+_STD_END
+
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
 _STD_BEGIN
 template <class _Ptrty>
 _NODISCARD constexpr auto _Unfancy(_Ptrty _Ptr) noexcept { // converts from a fancy pointer to a plain pointer
@@ -2198,6 +2231,27 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
     _UFirst           = _STD _Find_unchecked(_UFirst, _ULast, _Val);
     auto _UNext       = _UFirst;
     if (_UFirst != _ULast) {
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>) {
+#if _HAS_CXX20
+            if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+            {
+                const auto _First_ptr = _STD _To_address(_UFirst);
+                const auto _Result    = _STD _Remove_vectorized(_First_ptr, _STD _To_address(_ULast), _Val);
+
+                if constexpr (is_pointer_v<decltype(_UNext)>) {
+                    _UNext = _Result;
+                } else {
+                    _UNext += _Result - _First_ptr;
+                }
+
+                _STD _Seek_wrapped(_First, _UNext);
+                return _First;
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
         while (++_UFirst != _ULast) {
             if (!(*_UFirst == _Val)) {
                 *_UNext = _STD move(*_UFirst);
