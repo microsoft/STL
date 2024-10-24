@@ -80,8 +80,10 @@ void test_adjacent_difference(mt19937_64& gen) {
 
     test_case_adj_diff(input, output_expected, output_actual);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+
         for (const auto& v : {&output_actual, &output_expected}) {
-            generate(v->begin(), v->end(), [&] { return static_cast<T>(dis(gen)); });
+            v->assign(input.size(), 0);
         }
 
         for (const auto& v : {&input, &output_actual, &output_expected}) {
