@@ -228,10 +228,6 @@ std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cp
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp:0 FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp:1 FAIL
 
-# P2128R6 Multidimensional Subscript Operator
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
-
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
 # LWG-2503 "multiline option should be added to syntax_option_type"
@@ -802,6 +798,8 @@ std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:0 FAIL
 std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:1 FAIL
 std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:0 FAIL
 std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:1 FAIL
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
 
 # Not analyzed. Looks like a test bug, assuming that hash<vector<bool>> is constexpr.
 std/containers/sequences/vector.bool/enabled_hash.pass.cpp FAIL
