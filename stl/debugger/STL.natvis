@@ -2333,7 +2333,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <Size>size()</Size>
         <Loop>
           <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
-          <Exec>i++</Exec>
+          <Exec>++i</Exec>
         </Loop>
       </CustomListItems>
     </Expand>
@@ -2361,7 +2361,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <Size>size()</Size>
         <Loop>
           <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
-          <Exec>i++</Exec>
+          <Exec>++i</Exec>
         </Loop>
       </CustomListItems>
     </Expand>
@@ -2389,7 +2389,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <Size>size()</Size>
         <Loop>
           <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
-          <Exec>i++</Exec>
+          <Exec>++i</Exec>
         </Loop>
       </CustomListItems>
     </Expand>
@@ -2418,7 +2418,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <Size>size()</Size>
         <Loop>
           <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
-          <Exec>i++</Exec>
+          <Exec>++i</Exec>
         </Loop>
       </CustomListItems>
     </Expand>
