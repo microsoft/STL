@@ -493,7 +493,7 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
                 const auto _Count         = _ULast - _UFirst;
                 const auto _Count_as_size = static_cast<size_t>(_Count);
                 const auto _Src_ptr       = _STD _To_address(_UFirst);
-                const auto _Dest_ptr      = _STD _To_address(_Dest);
+                const auto _Dest_ptr      = _STD _To_address(_UDest);
                 // Need to perform aliasing analysis.
                 // The vectorizer is generally able to do that on its own, and would guard the vectorized code with
                 // that, but when we elimniate loop-carried dependency we change the semantic of the unvectorized code
