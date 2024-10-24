@@ -16,8 +16,8 @@ void bm(benchmark::State& state) {
 
     const size_t size = static_cast<size_t>(state.range(0));
 
-    std::vector<T> input(size);
-    std::vector<T> output(size);
+    vector<T> input(size);
+    vector<T> output(size);
 
     if constexpr (is_floating_point_v<T>) {
         normal_distribution<T> dis(-100.0, 100.0);
