@@ -149,6 +149,29 @@ auto last_known_good_search(RanItH h_first, RanItH h_last, RanItN n_first, RanIt
     return h_last;
 }
 
+template <class RanItH, class RanItN>
+auto last_known_good_find_end(RanItH h_first, RanItH h_last, RanItN n_first, RanItN n_last) {
+    const auto n_len = n_last - n_first;
+
+    if (n_len > h_last - h_first) {
+        return h_last;
+    }
+
+    auto h_mid = h_last - n_len;
+
+    for (;;) {
+        if (equal(h_mid, h_mid + n_len, n_first, n_last)) {
+            return h_mid;
+        }
+
+        if (h_mid == h_first) {
+            return h_last;
+        }
+
+        --h_mid;
+    }
+}
+
 template <class T>
 void test_case_find(const vector<T>& input, T v) {
     auto expected = last_known_good_find(input.begin(), input.end(), v);
@@ -295,22 +318,36 @@ void test_find_first_of_containers() {
 
 template <class T>
 void test_case_search(const vector<T>& input_haystack, const vector<T>& input_needle) {
-    auto expected =
+    auto expected_search =
         last_known_good_search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
-    auto actual = search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
-    assert(expected == actual);
+    auto actual_search = search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    assert(expected_search == actual_search);
+
+    auto expected_find_end = last_known_good_find_end(
+        input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    auto actual_find_end =
+        find_end(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    assert(expected_find_end == actual_find_end);
 #if _HAS_CXX17
     auto searcher_actual = search(
         input_haystack.begin(), input_haystack.end(), default_searcher{input_needle.begin(), input_needle.end()});
-    assert(expected == searcher_actual);
+    assert(expected_search == searcher_actual);
 #endif // _HAS_CXX17
 #if _HAS_CXX20
-    auto ranges_actual = ranges::search(input_haystack, input_needle);
-    assert(expected == begin(ranges_actual));
-    if (expected != input_haystack.end()) {
-        assert(expected + static_cast<ptrdiff_t>(input_needle.size()) == end(ranges_actual));
+    auto ranges_actual_search = ranges::search(input_haystack, input_needle);
+    assert(expected_search == begin(ranges_actual_search));
+    if (expected_search != input_haystack.end()) {
+        assert(expected_search + static_cast<ptrdiff_t>(input_needle.size()) == end(ranges_actual_search));
     } else {
-        assert(expected == end(ranges_actual));
+        assert(expected_search == end(ranges_actual_search));
+    }
+
+    auto ranges_actual_find_end = ranges::find_end(input_haystack, input_needle);
+    assert(expected_find_end == begin(ranges_actual_find_end));
+    if (expected_find_end != input_haystack.end()) {
+        assert(expected_find_end + static_cast<ptrdiff_t>(input_needle.size()) == end(ranges_actual_find_end));
+    } else {
+        assert(expected_find_end == end(ranges_actual_find_end));
     }
 #endif // _HAS_CXX20
 }
@@ -895,10 +932,7 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_search<unsigned char>(gen);
     test_search<short>(gen);
     test_search<unsigned short>(gen);
-    test_search<int>(gen);
-    test_search<unsigned int>(gen);
-    test_search<long long>(gen);
-    test_search<unsigned long long>(gen);
+    // search() and find_end() are vectorized for 1 and 2 bytes only.
 
     test_min_max_element<char>(gen);
     test_min_max_element<signed char>(gen);
