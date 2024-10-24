@@ -74,20 +74,17 @@ void test_adjacent_difference(mt19937_64& gen) {
     vector<T> output_actual;
     vector<T> output_expected;
 
-    vector<T>* const all__output_vectors[] = {&output_actual, &output_expected};
-    vector<T>* const all_vectors[]         = {&input, &output_actual, &output_expected};
-
-    for (auto v : all_vectors) {
+    for (const auto& v : {&input, &output_actual, &output_expected}) {
         v->reserve(dataCount);
     }
 
     test_case_adj_diff(input, output_expected, output_actual);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        for (auto v : all__output_vectors) {
+        for (const auto& v : {&output_actual, &output_expected}) {
             generate(v->begin(), v->end(), [&] { return static_cast<T>(dis(gen)); });
         }
 
-        for (auto v : all_vectors) {
+        for (const auto& v : {&input, &output_actual, &output_expected}) {
             v->push_back(static_cast<T>(dis(gen)));
         }
 
