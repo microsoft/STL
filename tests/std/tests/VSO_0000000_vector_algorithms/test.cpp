@@ -869,6 +869,31 @@ void test_swap_ranges(mt19937_64& gen) {
     }
 }
 
+// GH-2683 "std::swap of arrays, why is there no specialization for trivial types"
+template <class T, size_t N>
+void test_swap_arrays(mt19937_64& gen) {
+    const auto fn = [&]() { return static_cast<T>(gen()); };
+    T left[N];
+    T right[N];
+    generate(begin(left), end(left), fn);
+    generate(begin(right), end(right), fn);
+
+    const vector<T> origLeft(begin(left), end(left));
+    const vector<T> origRight(begin(right), end(right));
+
+    swap(left, right);
+
+    assert(equal(begin(left), end(left), origRight.begin(), origRight.end()));
+    assert(equal(begin(right), end(right), origLeft.begin(), origLeft.end()));
+
+#if _HAS_CXX20
+    ranges::swap(left, right);
+
+    assert(equal(begin(left), end(left), origLeft.begin(), origLeft.end()));
+    assert(equal(begin(right), end(right), origRight.begin(), origRight.end()));
+#endif // _HAS_CXX20
+}
+
 void test_vector_algorithms(mt19937_64& gen) {
     test_count<char>(gen);
     test_count<signed char>(gen);
@@ -1027,6 +1052,21 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_swap_ranges<int>(gen);
     test_swap_ranges<unsigned int>(gen);
     test_swap_ranges<unsigned long long>(gen);
+
+    test_swap_arrays<uint8_t, 1>(gen);
+    test_swap_arrays<uint16_t, 1>(gen);
+    test_swap_arrays<uint32_t, 1>(gen);
+    test_swap_arrays<uint64_t, 1>(gen);
+
+    test_swap_arrays<uint8_t, 47>(gen);
+    test_swap_arrays<uint16_t, 47>(gen);
+    test_swap_arrays<uint32_t, 47>(gen);
+    test_swap_arrays<uint64_t, 47>(gen);
+
+    test_swap_arrays<uint8_t, 512>(gen);
+    test_swap_arrays<uint16_t, 512>(gen);
+    test_swap_arrays<uint32_t, 512>(gen);
+    test_swap_arrays<uint64_t, 512>(gen);
 }
 
 template <typename Container1, typename Container2>
