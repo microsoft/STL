@@ -55,8 +55,8 @@ OutIt last_known_good_adj_diff(InIt first, InIt last, OutIt dest) {
 
 template <class T>
 void test_case_adj_diff(const vector<T>& input, vector<T>& output_expected, vector<T>& output_actual) {
-    auto actual   = adjacent_difference(input.begin(), input.end(), output_actual.begin());
-    auto expected = last_known_good_adj_diff(input.begin(), input.end(), output_expected.begin());
+    const auto actual   = adjacent_difference(input.begin(), input.end(), output_actual.begin());
+    const auto expected = last_known_good_adj_diff(input.begin(), input.end(), output_expected.begin());
 
     assert(actual - output_actual.begin() == expected - output_expected.begin());
     assert(output_actual == output_expected);
