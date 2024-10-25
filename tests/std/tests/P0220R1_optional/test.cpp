@@ -862,18 +862,18 @@ int run_test()
     }
     {
 #ifndef __EDG__ // TRANSITION, DevCom-10107834
-      test_hash_enabled_for_type<std::optional<int> >();
-      test_hash_enabled_for_type<std::optional<int*> >();
-      test_hash_enabled_for_type<std::optional<const int> >();
-      test_hash_enabled_for_type<std::optional<int* const> >();
+      test_hash_enabled<std::optional<int> >();
+      test_hash_enabled<std::optional<int*> >();
+      test_hash_enabled<std::optional<const int> >();
+      test_hash_enabled<std::optional<int* const> >();
 #endif // ^^^ no workaround ^^^
 
-      test_hash_disabled_for_type<std::optional<A>>();
-      test_hash_disabled_for_type<std::optional<const A>>();
+      test_hash_disabled<std::optional<A>>();
+      test_hash_disabled<std::optional<const A>>();
 
 #ifndef __EDG__ // TRANSITION, DevCom-10107834
-      test_hash_enabled_for_type<std::optional<B>>();
-      test_hash_enabled_for_type<std::optional<const B>>();
+      test_hash_enabled<std::optional<B>>();
+      test_hash_enabled<std::optional<const B>>();
 #endif // ^^^ no workaround ^^^
     }
 
