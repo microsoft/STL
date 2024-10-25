@@ -28,6 +28,11 @@
 // Yes, this is an awkward hand process; notably the required headers can change without notice. We should investigate
 // running the libc++ tests directly in all of our configurations so we needn't replicate this subset of files.
 
+#ifndef __clang__ // TRANSITION, LLVM-113633
+#define __SIZEOF_DOUBLE__      8
+#define __SIZEOF_LONG_DOUBLE__ 8
+#endif // ^^^ workaround ^^^
+
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 #include <stdlib.h>
