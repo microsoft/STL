@@ -4,7 +4,7 @@
 # This file maps author and committer email addresses to canonical names and email
 # addresses for display in the output of `git log` and `git blame`.
 # Format:
-# Canonical Name <canonical@address.dns> <actual@address.dns>
+# Canonical Name <canonical@example.com> <actual@example.com>
 
 Amy Wishnousky <amyw@microsoft.com> <stwish@microsoft.com>
 Anju del Moral Gonzalez <delMoralGonzalez.Anju@microsoft.com> <judelmor@microsoft.com>
