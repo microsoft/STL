@@ -32,11 +32,6 @@
 
 #if !defined(_PREFAST_) || !defined(_M_IX86) // TRANSITION, VSO-1639191
 
-#ifndef __clang__ // TRANSITION, LLVM-113633
-#define __SIZEOF_DOUBLE__      8
-#define __SIZEOF_LONG_DOUBLE__ 8
-#endif // ^^^ workaround ^^^
-
 #define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers

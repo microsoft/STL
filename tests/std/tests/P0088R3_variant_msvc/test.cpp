@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef __clang__ // TRANSITION, LLVM-113633
-#define __SIZEOF_DOUBLE__      8
-#define __SIZEOF_LONG_DOUBLE__ 8
-#endif // ^^^ workaround ^^^
-
 #define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
