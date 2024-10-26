@@ -79,7 +79,7 @@ __declspec(noalias) void __stdcall __std_replace_8(
 
 _STD_BEGIN
 template <size_t _Nx>
-__declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void* _Last, void* _Dest) {
+__declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void* _Last, void* _Dest) noexcept {
     if constexpr (_Nx == 1) {
         ::__std_reverse_copy_trivially_copyable_1(_First, _Last, _Dest);
     } else if constexpr (_Nx == 2) {
@@ -4594,6 +4594,24 @@ namespace ranges {
             if (_First == _Last) {
                 return {_STD move(_Next), _STD move(_First)};
             }
+
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && sized_sentinel_for<_Se, _It>
+                          && is_same_v<_Pj, identity>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _Size      = _Last - _First;
+                    const auto _First_ptr = _STD to_address(_First);
+                    const auto _Last_ptr  = _First_ptr + static_cast<size_t>(_Size);
+                    const auto _Result    = _STD _Remove_vectorized(_First_ptr, _Last_ptr, _Val);
+
+                    if constexpr (is_pointer_v<_It>) {
+                        return {_Result, _Last_ptr};
+                    } else {
+                        return {_First + (_Result - _First_ptr), _First + _Size};
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
             while (++_First != _Last) {
                 if (_STD invoke(_Proj, *_First) != _Val) {

@@ -384,9 +384,9 @@ public:
     }
 
 #if _HAS_CXX23 && defined(_CPPRTTI)
-    template <class _Filebuf_type>
-    friend ios_base::iostate _Print_noformat_unicode(ostream&, string_view);
-#endif
+    template <class _UnicodeConsoleFn, class _FallbackFn, class _Filebuf_type>
+    friend ios_base::iostate _Do_on_maybe_unicode_console(ostream&, _UnicodeConsoleFn, _FallbackFn);
+#endif // ^^^ _HAS_CXX23 && defined(_CPPRTTI) ^^^
 
 protected:
     int_type __CLR_OR_THIS_CALL overflow(int_type _Meta = _Traits::eof()) override { // put an element to stream
