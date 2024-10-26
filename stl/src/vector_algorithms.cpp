@@ -3808,23 +3808,32 @@ namespace {
                     return false;
                 };
 #pragma warning(pop)
+                // The very last part, just compare, as true match must start with first symbol
+                const __m128i _Data1_last = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                const __m128i _Match_last = _mm_xor_si128(_Data2, _Data1_last);
+                if (_mm_testz_si128(_Match_last, _Match_last)) {
+                    // Matched 16 bytes, check the rest
+                    const void* _Tail1 = _Mid1;
+                    _Advance_bytes(_Tail1, 16);
+
+                    if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
+                        return _Mid1;
+                    }
+                }
+
                 // TRANSITION, DevCom-10689455, the code below could test with _mm_cmpestrc,
                 // if it has been fused with _mm_cmpestrm.
 
                 // The main part, match all characters
-                for (;;) {
+                while (_Mid1 != _Stop1) {
+                    _Rewind_bytes(_Mid1, 16);
+
                     const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
                     const auto _Match             = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
                     const unsigned int _Match_val = _mm_cvtsi128_si32(_Match);
                     if (_Match_val != 0 && _Check(_Match_val)) {
                         return _Mid1;
                     }
-
-                    if (_Mid1 == _Stop1) {
-                        break;
-                    }
-
-                    _Rewind_bytes(_Mid1, 16);
                 }
 
                 // The first part, mask out already processed positions
