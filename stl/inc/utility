@@ -110,13 +110,22 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>); // implemented in <algorit
 
 _EXPORT_STD template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> /* = 0 */>
 _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
-    if (&_Left != &_Right) {
-        _Ty* _First1 = _Left;
-        _Ty* _Last1  = _First1 + _Size;
-        _Ty* _First2 = _Right;
-        for (; _First1 != _Last1; ++_First1, ++_First2) {
-            swap(*_First1, *_First2); // intentional ADL
+    if (&_Left == &_Right) {
+        return; // Handle self-swap as a no-op; see LWG-4165
+    }
+
+    if constexpr (_Is_trivially_swappable_v<_Ty>) {
+        if (!_STD _Is_constant_evaluated()) {
+            _STD _Swap_trivial_arrays(_Left, _Right);
+            return;
         }
+    }
+
+    _Ty* _First1 = _Left;
+    _Ty* _Last1  = _First1 + _Size;
+    _Ty* _First2 = _Right;
+    for (; _First1 != _Last1; ++_First1, ++_First2) {
+        swap(*_First1, *_First2); // intentional ADL
     }
 }
 
