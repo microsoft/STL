@@ -26,6 +26,7 @@ void bm(benchmark::State& state) {
         normal_distribution<T> dis(-100.0, 100.0);
         ranges::generate(input, [&] { return dis(gen); });
     } else {
+        static_assert(is_unsigned_v<T>, "This avoids signed integers to avoid UB; they shouldn't perform differently");
         uniform_int_distribution<conditional_t<sizeof(T) != 1, T, unsigned int>> dis(0, numeric_limits<T>::max());
         ranges::generate(input, [&] { return static_cast<T>(dis(gen)); });
     }
@@ -40,8 +41,6 @@ void bm(benchmark::State& state) {
 void common_args(auto bm) {
     bm->Arg(2255);
 }
-
-// Avoid signed integers to avoid UB; they shouldn't perform differently from the unsigned
 
 #pragma warning(push)
 #pragma warning(disable : 4244) // warning C4244: '=': conversion from 'int' to 'unsigned char', possible loss of data
