@@ -3726,7 +3726,7 @@ namespace {
                 // if it has been fused with _mm_cmpestrm.
 
                 // The very last part, for any match needle should fit, otherwise false match
-                __m128i _Data1_last                = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                const __m128i _Data1_last          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
                 const auto _Match_last             = _mm_cmpestrm(_Data2, _Size_el_2, _Data1_last, _Part_size_el, _Op);
                 const unsigned int _Match_last_val = _mm_cvtsi128_si32(_Match_last);
                 if (_Check_fit(_Match_last_val)) {
