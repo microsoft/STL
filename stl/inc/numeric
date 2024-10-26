@@ -483,7 +483,7 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     if (_UFirst != _ULast) {
-        if constexpr (_Iterators_are_contiguous<_InIt, _OutIt> && !_Iterator_is_volatile<_InIt>
+        if constexpr (_Iterators_are_contiguous<decltype(_UFirst), decltype(_UDest)> && !_Iterator_is_volatile<_InIt>
                       && is_trivially_copyable_v<_Iter_value_t<_InIt>>) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
