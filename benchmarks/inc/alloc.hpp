@@ -21,7 +21,7 @@ struct skewed_allocator {
 
     void deallocate(T* p, size_t) {
         if (p) {
-            _aligned_free(static_cast<unsigned char*>(p) - Skew);
+            _aligned_free(reinterpret_cast<unsigned char*>(p) - Skew);
         }
     }
 };
