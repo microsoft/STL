@@ -57,8 +57,8 @@ template <class T>
 void test_case_adj_diff(const vector<T>& input, vector<T>& output_expected, vector<T>& output_actual) {
     // Avoid truncation warnings:
     const auto subtract = [](const T& left, const T& right) { return static_cast<T>(left - right); };
-    const auto actual   = adjacent_difference(input.begin(), input.end(), output_actual.begin(), subtract);
     const auto expected = last_known_good_adj_diff(input.begin(), input.end(), output_expected.begin(), subtract);
+    const auto actual   = adjacent_difference(input.begin(), input.end(), output_actual.begin(), subtract);
 
     assert(actual - output_actual.begin() == expected - output_expected.begin());
     assert(output_actual == output_expected);
@@ -73,10 +73,10 @@ void test_adjacent_difference(mt19937_64& gen) {
         is_signed_v<T> ? static_cast<T>(Limits::max() / 2) : Limits::max());
 
     vector<T> input;
-    vector<T> output_actual;
     vector<T> output_expected;
+    vector<T> output_actual;
 
-    for (const auto& v : {&input, &output_actual, &output_expected}) {
+    for (const auto& v : {&input, &output_expected, &output_actual}) {
         v->reserve(dataCount);
     }
 
@@ -84,7 +84,7 @@ void test_adjacent_difference(mt19937_64& gen) {
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         input.push_back(static_cast<T>(dis(gen)));
 
-        for (const auto& v : {&output_actual, &output_expected}) {
+        for (const auto& v : {&output_expected, &output_actual}) {
             v->assign(input.size(), 0);
         }
 
