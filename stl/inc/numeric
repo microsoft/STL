@@ -496,9 +496,9 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
                 const auto _Dest_ptr      = _STD _To_address(_UDest);
                 // Need to perform aliasing analysis.
                 // The vectorizer is generally able to do that on its own, and would guard the vectorized code with
-                // that, but when we eliminate loop-carried dependency we change the semantics of the unvectorized code
-                // too. So we need to perform this check manually, and after that can tell the compiler that there's no
-                // aliasing, to avoid it checking for that again.
+                // that, but when we eliminate the loop-carried dependency we change the semantics of the unvectorized
+                // code too. So we need to perform this check manually, and after that we can tell the compiler that
+                // there's no aliasing, to avoid it checking for that again.
                 if (_Dest_ptr + _Count_as_size <= _Src_ptr || _Src_ptr + _Count_as_size <= _Dest_ptr) {
                     _STD _Adjacent_difference_no_overlap(_Dest_ptr, _Src_ptr, _Count_as_size, _STD _Pass_fn(_Func));
                     _STD _Seek_wrapped(_Dest, _UDest + _Count);
