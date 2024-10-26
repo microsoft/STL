@@ -35,8 +35,8 @@ using namespace std;
 #pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
 #endif // __clang__
 
-template <class InIt, class OutIt>
-OutIt last_known_good_adj_diff(InIt first, InIt last, OutIt dest) {
+template <class InIt, class OutIt, class BinOp>
+OutIt last_known_good_adj_diff(InIt first, InIt last, OutIt dest, BinOp binop) {
     if (first == last) {
         return dest;
     }
@@ -46,7 +46,7 @@ OutIt last_known_good_adj_diff(InIt first, InIt last, OutIt dest) {
 
     for (++first, ++dest; first != last; ++first, ++dest) {
         auto tmp = *first;
-        *dest    = tmp - val;
+        *dest    = binop(tmp, val);
         val      = tmp;
     }
 
@@ -55,8 +55,10 @@ OutIt last_known_good_adj_diff(InIt first, InIt last, OutIt dest) {
 
 template <class T>
 void test_case_adj_diff(const vector<T>& input, vector<T>& output_expected, vector<T>& output_actual) {
-    const auto actual   = adjacent_difference(input.begin(), input.end(), output_actual.begin());
-    const auto expected = last_known_good_adj_diff(input.begin(), input.end(), output_expected.begin());
+    // Avoid truncation warnings:
+    const auto subtract = [](const T& left, const T& right) { return static_cast<T>(left - right); };
+    const auto actual   = adjacent_difference(input.begin(), input.end(), output_actual.begin(), subtract);
+    const auto expected = last_known_good_adj_diff(input.begin(), input.end(), output_expected.begin(), subtract);
 
     assert(actual - output_actual.begin() == expected - output_expected.begin());
     assert(output_actual == output_expected);
@@ -951,6 +953,11 @@ void test_swap_arrays(mt19937_64& gen) {
 }
 
 void test_vector_algorithms(mt19937_64& gen) {
+    test_adjacent_difference<char>(gen);
+    test_adjacent_difference<signed char>(gen);
+    test_adjacent_difference<unsigned char>(gen);
+    test_adjacent_difference<short>(gen);
+    test_adjacent_difference<unsigned short>(gen);
     test_adjacent_difference<int>(gen);
     test_adjacent_difference<unsigned int>(gen);
     test_adjacent_difference<long long>(gen);
