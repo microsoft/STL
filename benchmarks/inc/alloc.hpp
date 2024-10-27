@@ -10,6 +10,7 @@
 template <class T, size_t Alignment, size_t Skew>
 struct skewed_allocator {
     using value_type = T;
+    static_assert(Alignment % alignof(T) == 0 && Skew % alignof(T) == 0, "Chosen parameters will produce unaligned T objects");
 
     T* allocate(size_t n) {
         const auto p = static_cast<unsigned char*>(_aligned_malloc(n * sizeof(T) + Skew, Alignment));
