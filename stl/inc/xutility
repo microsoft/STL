@@ -4763,9 +4763,8 @@ template <class _InIt, class _SizeTy, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_n_unchecked4(_InIt _First, _SizeTy _Count, _OutIt _Dest) {
     // copy _First + [0, _Count) to _Dest + [0, _Count), returning _Dest + _Count
     // note: has callers outside the copy family
-#if _HAS_CXX20
     _STL_INTERNAL_STATIC_ASSERT(_Integer_like<_SizeTy>);
-#endif // _HAS_CXX20
+    _STL_INTERNAL_CHECK(_Count >= 0);
 
     if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
