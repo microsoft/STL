@@ -628,6 +628,21 @@ constexpr size_t _Traits_find(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits>
         return _Start_at;
     }
 
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Is_implementation_handled_char_traits<_Traits> && sizeof(_Traits::char_type) <= 2) {
+        if (!_STD _Is_constant_evaluated()) {
+            const auto _End = _Haystack + _Hay_size;
+            const auto _Ptr = _STD _Search_vectorized(_Haystack + _Start_at, _End, _Needle, _Needle_size);
+
+            if (_Ptr != _End) {
+                return static_cast<size_t>(_Ptr - _Haystack);
+            } else {
+                return static_cast<size_t>(-1);
+            }
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
     const auto _Possible_matches_end = _Haystack + (_Hay_size - _Needle_size) + 1;
     for (auto _Match_try = _Haystack + _Start_at;; ++_Match_try) {
         _Match_try = _Traits::find(_Match_try, static_cast<size_t>(_Possible_matches_end - _Match_try), *_Needle);
@@ -687,6 +702,21 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
     if (_Hay_size == 0) { // no room for match
         return static_cast<size_t>(-1);
     }
+
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Is_implementation_handled_char_traits<_Traits> && sizeof(_Traits::char_type) <= 2) {
+        if (!_STD _Is_constant_evaluated()) {
+            const auto _End = _Haystack + _Hay_size;
+            const auto _Ptr = _STD _Find_last_vectorized(_Haystack + _Start_at, _End, _Ch);
+
+            if (_Ptr != _End) {
+                return static_cast<size_t>(_Ptr - _Haystack);
+            } else {
+                return static_cast<size_t>(-1);
+            }
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
     for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
         if (_Traits::eq(*_Match_try, _Ch)) {
