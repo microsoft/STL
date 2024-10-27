@@ -39,29 +39,29 @@ void std_swap_ranges(benchmark::State& state) {
     }
 }
 
-BENCHMARK(std_swap<1, uint8_t, aligner>);
-BENCHMARK(std_swap<5, uint8_t, aligner>);
-BENCHMARK(std_swap<15, uint8_t, aligner>);
-BENCHMARK(std_swap<26, uint8_t, aligner>);
-BENCHMARK(std_swap<38, uint8_t, aligner>);
-BENCHMARK(std_swap<60, uint8_t, aligner>);
-BENCHMARK(std_swap<125, uint8_t, aligner>);
-BENCHMARK(std_swap<800, uint8_t, aligner>);
-BENCHMARK(std_swap<3000, uint8_t, aligner>);
-BENCHMARK(std_swap<9000, uint8_t, aligner>);
+BENCHMARK(std_swap<1, uint8_t, highly_aligned>);
+BENCHMARK(std_swap<5, uint8_t, highly_aligned>);
+BENCHMARK(std_swap<15, uint8_t, highly_aligned>);
+BENCHMARK(std_swap<26, uint8_t, highly_aligned>);
+BENCHMARK(std_swap<38, uint8_t, highly_aligned>);
+BENCHMARK(std_swap<60, uint8_t, highly_aligned>);
+BENCHMARK(std_swap<125, uint8_t, highly_aligned>);
+BENCHMARK(std_swap<800, uint8_t, highly_aligned>);
+BENCHMARK(std_swap<3000, uint8_t, highly_aligned>);
+BENCHMARK(std_swap<9000, uint8_t, highly_aligned>);
 
-BENCHMARK(std_swap<1, uint8_t, unaligner>);
-BENCHMARK(std_swap<5, uint8_t, unaligner>);
-BENCHMARK(std_swap<15, uint8_t, unaligner>);
-BENCHMARK(std_swap<26, uint8_t, unaligner>);
-BENCHMARK(std_swap<38, uint8_t, unaligner>);
-BENCHMARK(std_swap<60, uint8_t, unaligner>);
-BENCHMARK(std_swap<125, uint8_t, unaligner>);
-BENCHMARK(std_swap<800, uint8_t, unaligner>);
-BENCHMARK(std_swap<3000, uint8_t, unaligner>);
-BENCHMARK(std_swap<9000, uint8_t, unaligner>);
+BENCHMARK(std_swap<1, uint8_t, not_highly_aligned>);
+BENCHMARK(std_swap<5, uint8_t, not_highly_aligned>);
+BENCHMARK(std_swap<15, uint8_t, not_highly_aligned>);
+BENCHMARK(std_swap<26, uint8_t, not_highly_aligned>);
+BENCHMARK(std_swap<38, uint8_t, not_highly_aligned>);
+BENCHMARK(std_swap<60, uint8_t, not_highly_aligned>);
+BENCHMARK(std_swap<125, uint8_t, not_highly_aligned>);
+BENCHMARK(std_swap<800, uint8_t, not_highly_aligned>);
+BENCHMARK(std_swap<3000, uint8_t, not_highly_aligned>);
+BENCHMARK(std_swap<9000, uint8_t, not_highly_aligned>);
 
-BENCHMARK(std_swap_ranges<uint8_t, aligned_allocator>)
+BENCHMARK(std_swap_ranges<uint8_t, highly_aligned_allocator>)
     ->Arg(1)
     ->Arg(5)
     ->Arg(15)
@@ -73,7 +73,7 @@ BENCHMARK(std_swap_ranges<uint8_t, aligned_allocator>)
     ->Arg(3000)
     ->Arg(9000);
 
-BENCHMARK(std_swap_ranges<uint8_t, unaligned_allocator>)
+BENCHMARK(std_swap_ranges<uint8_t, not_highly_aligned_allocator>)
     ->Arg(1)
     ->Arg(5)
     ->Arg(15)

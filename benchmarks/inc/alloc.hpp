@@ -53,21 +53,21 @@ constexpr size_t page_size = 4096;
 constexpr size_t skew = 8;
 
 template <class T>
-struct aligned_allocator : skewed_allocator<T, page_size, 0> {};
+struct highly_aligned_allocator : skewed_allocator<T, page_size, 0> {};
 
 template <class T>
-struct unaligned_allocator : skewed_allocator<T, page_size, skew> {};
+struct not_highly_aligned_allocator : skewed_allocator<T, page_size, skew> {};
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
 
 template <class T>
-struct alignas(page_size) aligner {
+struct alignas(page_size) highly_aligned {
     T value;
 };
 
 template <class T>
-struct alignas(page_size) unaligner {
+struct alignas(page_size) not_highly_aligned {
     char pad[skew];
     T value;
 };
