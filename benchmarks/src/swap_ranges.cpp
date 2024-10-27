@@ -13,15 +13,17 @@ using namespace std;
 
 template <size_t N, class T, template <class> class Padder>
 void std_swap(benchmark::State& state) {
-    Padder<T[N]> a;
-    memset(a.value, 'a', sizeof(a.value));
-    Padder<T[N]> b;
-    memset(b.value, 'b', sizeof(b.value));
+    Padder<T[N]> padded_a;
+    auto& a = padded_a.value;
+    memset(a, 'a', sizeof(a));
+    Padder<T[N]> padded_b;
+    auto& b = padded_b.value;
+    memset(b, 'b', sizeof(b));
 
     for (auto _ : state) {
-        swap(a.value, b.value);
-        benchmark::DoNotOptimize(a.value);
-        benchmark::DoNotOptimize(b.value);
+        swap(a, b);
+        benchmark::DoNotOptimize(a);
+        benchmark::DoNotOptimize(b);
     }
 }
 
