@@ -54,6 +54,11 @@ _Min_max_element_t __stdcall __std_minmax_element_8(const void* _First, const vo
 _Min_max_element_t __stdcall __std_minmax_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 
+const void* __stdcall __std_find_last_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
+const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
+const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
+const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_2i __stdcall __std_minmax_2i(const void* _First, const void* _Last) noexcept;
@@ -152,6 +157,33 @@ auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         } else {
             return ::__std_minmax_8u(_First, _Last);
         }
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+    }
+}
+
+template <class _Ty, class _TVal>
+_Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
+    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
+#ifdef _WIN64
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, reinterpret_cast<uint64_t>(_Val))));
+#else
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_4(_First, _Last, reinterpret_cast<uint32_t>(_Val))));
+#endif
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_1(_First, _Last, static_cast<uint8_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_2(_First, _Last, static_cast<uint16_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_4(_First, _Last, static_cast<uint32_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
