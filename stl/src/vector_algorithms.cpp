@@ -2930,9 +2930,64 @@ namespace {
         return _Result;
     }
 
+    namespace __std_find_meow_of::_Bitmap {
 #ifndef _M_ARM64EC
-    namespace __std_find_meow_of {
-        enum class _Strategy { _No_bitmap, _Scalar_bitmap, _Vector_bitmap };
+        template <class _Ty>
+        bool _Use_bitmap_avx(const size_t _Count1, const size_t _Count2) {
+            if constexpr (sizeof(_Ty) == 1) {
+                if (_Count2 <= 16) {
+                    return _Count1 >= 1000;
+                } else if (_Count2 <= 48) {
+                    return _Count1 >= 80;
+                } else if (_Count2 <= 240) {
+                    return _Count1 >= 40;
+                } else if (_Count2 <= 1000) {
+                    return _Count1 >= 32;
+                } else {
+                    return _Count1 >= 16;
+                }
+            } else if constexpr (sizeof(_Ty) == 2) {
+                if (_Count2 <= 8) {
+                    return _Count1 >= 128;
+                } else if (_Count2 <= 48) {
+                    return _Count1 >= 128;
+                } else if (_Count2 <= 72) {
+                    return _Count1 >= 23;
+                } else if (_Count2 <= 144) {
+                    return _Count1 >= 15;
+                } else {
+                    return _Count1 >= 7;
+                }
+            } else if constexpr (sizeof(_Ty) == 4) {
+                if (_Count2 <= 8) {
+                    return _Count1 > 64;
+                } else if (_Count2 <= 24) {
+                    return _Count1 > 40;
+                } else if (_Count2 <= 44) {
+                    return _Count1 > 24;
+                } else if (_Count2 <= 112) {
+                    return _Count1 > 16;
+                } else {
+                    return _Count1 > 8;
+                }
+            } else if constexpr (sizeof(_Ty) == 8) {
+                if (_Count2 <= 8) {
+                    return _Count1 > 40;
+                } else if (_Count2 <= 12) {
+                    return _Count1 > 20;
+                } else if (_Count2 <= 48) {
+                    return _Count1 > 16;
+                } else if (_Count2 <= 64) {
+                    return _Count1 > 12;
+                } else if (_Count2 <= 192) {
+                    return _Count1 > 8;
+                } else {
+                    return _Count1 > 4;
+                }
+            } else {
+                static_assert(false, "unexpected size");
+            }
+        }
 
         bool _Product_fits_threshold(const size_t _Px1, const size_t _Px2, const size_t _Tx) noexcept {
 #ifdef _WIN64
@@ -2946,48 +3001,16 @@ namespace {
         }
 
         template <class _Ty>
-        _Strategy _Pick_strategy_avx(const size_t _Count1, const size_t _Count2) noexcept {
+        bool _Use_bitmap_sse(const size_t _Count1, const size_t _Count2) noexcept {
             if constexpr (sizeof(_Ty) == 1) {
-                if (_Count1 <= 15 || _Product_fits_threshold((_Count1 + 15) / 16, (_Count2 + 15) / 16, 60)) {
-                    return _Strategy::_No_bitmap;
-                } else if (_Count1 * 1ull > _Count2 * 5ull) {
-                    return _Strategy::_Vector_bitmap;
-                } else {
-                    return _Strategy::_Scalar_bitmap;
-                }
+                return _Count1 >= 16 && !_Product_fits_threshold((_Count1 + 15) / 16, _Count2 / 16, 60);
             } else if constexpr (sizeof(_Ty) == 2) {
-                if (_Count1 <= 7 || _Product_fits_threshold((_Count1 + 7) / 8, (_Count2 + 7) / 8, 60)) {
-                    return _Strategy::_No_bitmap;
-                } else if (_Count1 * 2ull > _Count2 * 5ull) {
-                    return _Strategy::_Vector_bitmap;
-                } else {
-                    return _Strategy::_Scalar_bitmap;
-                }
-            } else if constexpr (sizeof(_Ty) == 4) {
-                if (_Count1 <= 7 || _Product_fits_threshold((_Count1 + 7) / 8, (_Count2 + 7) / 8, 25)) {
-                    return _Strategy::_No_bitmap;
-                } else if (_Count1 * 4ull > _Count2 * 5ull) {
-                    return _Strategy::_Vector_bitmap;
-                } else {
-                    return _Strategy::_Scalar_bitmap;
-                }
-            } else if constexpr (sizeof(_Ty) == 8) {
-                if (_Count1 <= 3 || _Product_fits_threshold((_Count1 + 3) / 4, (_Count2 + 3) / 4, 25)) {
-                    return _Strategy::_No_bitmap;
-                } else if (_Count1 > _Count2) {
-                    return _Strategy::_Vector_bitmap;
-                } else {
-                    return _Strategy::_Scalar_bitmap;
-                }
+                return _Count1 >= 8 && !_Product_fits_threshold((_Count1 + 7) / 8, _Count2 / 8, 60);
             } else {
                 static_assert(false, "unexpected size");
             }
         }
-    } // namespace __std_find_meow_of
-#endif // ! _M_ARM64EC
 
-    namespace __std_find_meow_of::_Bitmap {
-#ifndef _M_ARM64EC
         template <class _Ty>
         bool _Can_fit_256_bits_sse(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
             if constexpr (sizeof(_Ty) == 1) {
@@ -3186,7 +3209,7 @@ namespace {
         using _Scalar_table_t = bool[256];
 
         template <class _Ty>
-        bool _Build_scalar_table(bool* _Table, const void* const _Needle, const size_t _Needle_length) noexcept {
+        bool _Build_scalar_table(const void* const _Needle, const size_t _Needle_length, bool* _Table) noexcept {
             auto _Ptr       = static_cast<const _Ty*>(_Needle);
             const auto _End = _Ptr + _Needle_length;
 
@@ -3208,7 +3231,7 @@ namespace {
 #ifndef _M_ARM64EC
         template <class _Ty>
         void _Build_scalar_table_no_check(
-            bool* _Table, const void* const _Needle, const size_t _Needle_length) noexcept {
+            const void* const _Needle, const size_t _Needle_length, bool* _Table) noexcept {
             auto _Ptr       = static_cast<const _Ty*>(_Needle);
             const auto _End = _Ptr + _Needle_length;
 
@@ -3645,16 +3668,16 @@ namespace {
         template <class _Ty>
         const size_t _Dispatch_pos_sse_1_2(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
-            const _Strategy _Strat = _Pick_strategy_avx<_Ty>(_Count1, _Count2);
-
-            if (_Strat == _Strategy::_Vector_bitmap && _Use_avx2()) {
-                if (_Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+            if (_Use_avx2()) {
+                if (_Bitmap::_Use_bitmap_avx<_Ty>(_Count2, _Count1)
+                    && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
                     return _Bitmap::_Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
                 }
-            } else if (_Strat != _Strategy::_No_bitmap) {
-                if (_Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+            } else {
+                if (_Bitmap::_Use_bitmap_sse<_Ty>(_Count2, _Count1)
+                    && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
                     _Bitmap::_Scalar_table_t _Table = {};
-                    _Bitmap::_Build_scalar_table_no_check<_Ty>(_Table, _First2, _Count2);
+                    _Bitmap::_Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
                     return _Bitmap::_Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
                 }
             }
@@ -3670,18 +3693,9 @@ namespace {
         template <class _Ty>
         const size_t _Dispatch_pos_avx_4_8(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
-            const _Strategy _Strat = _Pick_strategy_avx<_Ty>(_Count1, _Count2);
-
-            if (_Strat == _Strategy::_Vector_bitmap) {
-                if (_Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
-                    return _Bitmap::_Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
-                }
-            } else if (_Strat != _Strategy::_No_bitmap) {
-                if (_Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
-                    _Bitmap::_Scalar_table_t _Table = {};
-                    _Bitmap::_Build_scalar_table_no_check<_Ty>(_Table, _First2, _Count2);
-                    return _Bitmap::_Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
-                }
+            if (_Bitmap::_Use_bitmap_avx<_Ty>(_Count2, _Count1)
+                && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                return _Bitmap::_Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
             }
 
             const void* _Last1         = static_cast<const _Ty*>(_First1) + _Count1;
@@ -3698,7 +3712,7 @@ namespace {
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
 
             _Bitmap::_Scalar_table_t _Table = {};
-            if (_Bitmap::_Build_scalar_table<_Ty>(_Table, _First2, _Count2)) {
+            if (_Bitmap::_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
                 return _Bitmap::_Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
             }
 
@@ -3858,16 +3872,16 @@ namespace {
             const size_t _Needle_length) noexcept {
 #ifndef _M_ARM64EC
             if (_Use_sse42()) {
-                const _Strategy _Strat = _Pick_strategy_avx<_Ty>(_Haystack_length, _Needle_length);
-
-                if (_Strat == _Strategy::_Vector_bitmap && _Use_avx2()) {
-                    if (_Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_Needle), _Needle_length)) {
+                if (_Use_avx2()) {
+                    if (_Bitmap::_Use_bitmap_avx<_Ty>(_Haystack_length, _Needle_length)
+                        && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_Needle), _Needle_length)) {
                         return _Bitmap::_Impl_last_avx<_Ty>(_Haystack, _Haystack_length, _Needle, _Needle_length);
                     }
-                } else if (_Strat != _Strategy::_No_bitmap) {
-                    if (_Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_Needle), _Needle_length)) {
+                } else {
+                    if (_Bitmap::_Use_bitmap_sse<_Ty>(_Haystack_length, _Needle_length)
+                        && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_Needle), _Needle_length)) {
                         _Bitmap::_Scalar_table_t _Table = {};
-                        _Bitmap::_Build_scalar_table_no_check<_Ty>(_Table, _Needle, _Needle_length);
+                        _Bitmap::_Build_scalar_table_no_check<_Ty>(_Needle, _Needle_length, _Table);
                         return _Bitmap::_Impl_last_scalar<_Ty>(_Haystack, _Haystack_length, _Table);
                     }
                 }
@@ -3877,7 +3891,7 @@ namespace {
 #endif // !_M_ARM64EC
             {
                 _Bitmap::_Scalar_table_t _Table = {};
-                if (_Bitmap::_Build_scalar_table<_Ty>(_Table, _Needle, _Needle_length)) {
+                if (_Bitmap::_Build_scalar_table<_Ty>(_Needle, _Needle_length, _Table)) {
                     return _Bitmap::_Impl_last_scalar<_Ty>(_Haystack, _Haystack_length, _Table);
                 }
 
