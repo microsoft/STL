@@ -1756,13 +1756,14 @@ _NODISCARD constexpr bool operator==(const basic_string_view<_Elem, _Traits> _Lh
     return _Lhs._Equal(_Rhs);
 }
 
-template <class _Traits, class = void>
+template <class _Traits>
 struct _Get_comparison_category {
     using type = weak_ordering;
 };
 
 template <class _Traits>
-struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_category>> {
+    requires requires { typename _Traits::comparison_category; }
+struct _Get_comparison_category<_Traits> {
     using type = _Traits::comparison_category;
 
     static_assert(_Is_any_of_v<type, partial_ordering, weak_ordering, strong_ordering>,
