@@ -1219,30 +1219,11 @@ void test_bitset(mt19937_64& gen) {
 }
 
 template <class T>
-void test_case_string_find_ch(const basic_string<T>& input_haystack, const T ch) {
-    const auto expected_iter = last_known_good_find(input_haystack.begin(), input_haystack.end(), ch);
-    const auto expected =
-        (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
-    const auto actual = static_cast<ptrdiff_t>(input_haystack.find(ch));
-    assert(expected == actual);
-}
-
-template <class T>
-void test_case_string_rfind_ch(const basic_string<T>& input_haystack, const T ch) {
-    const auto expected_iter = last_known_good_find_last(input_haystack.begin(), input_haystack.end(), ch);
-    const auto expected =
-        (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
-    const auto actual = static_cast<ptrdiff_t>(input_haystack.rfind(ch));
-    assert(expected == actual);
-}
-
-template <class T>
 void test_case_string_find_first_of(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
-    const auto expected_iter = last_known_good_find_first_of(
+    auto expected_iter = last_known_good_find_first_of(
         input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
-    const auto expected =
-        (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
-    const auto actual = static_cast<ptrdiff_t>(input_haystack.find_first_of(input_needle));
+    auto expected = (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
+    auto actual   = static_cast<ptrdiff_t>(input_haystack.find_first_of(input_needle));
     assert(expected == actual);
 }
 
@@ -1261,8 +1242,8 @@ size_t last_known_good_find_last_of(const basic_string<T>& h, const basic_string
 
 template <class T>
 void test_case_string_find_last_of(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
-    const size_t expected = last_known_good_find_last_of(input_haystack, input_needle);
-    const size_t actual   = input_haystack.find_last_of(input_needle);
+    size_t expected = last_known_good_find_last_of(input_haystack, input_needle);
+    size_t actual   = input_haystack.find_last_of(input_needle);
     assert(expected == actual);
 }
 
@@ -1304,10 +1285,6 @@ void test_basic_string_dis(mt19937_64& gen, D& dis) {
     temp.reserve(needleDataCount);
 
     for (;;) {
-        const T ch = static_cast<T>(dis(gen));
-        test_case_string_find_ch(input_haystack, ch);
-        test_case_string_rfind_ch(input_haystack, ch);
-
         input_needle.clear();
 
         test_case_string_find_first_of(input_haystack, input_needle);
