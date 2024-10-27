@@ -10,19 +10,20 @@
 template <class T, size_t Alignment, size_t Skew>
 struct skewed_allocator {
     using value_type = T;
-    static_assert(Alignment % alignof(T) == 0 && Skew % alignof(T) == 0, "Chosen parameters will produce unaligned T objects");
+    static_assert(
+        Alignment % alignof(T) == 0 && Skew % alignof(T) == 0, "Chosen parameters will produce unaligned T objects");
 
     template <class U>
     struct rebind {
         using type = skewed_allocator<U, Alignment, Skew>;
     };
-    
+
     skewed_allocator() = default;
     template <class U>
-    skewed_allocator(const skewed_allocator<U>&) {}
-    
+    skewed_allocator(const skewed_allocator<U, Alignment, Skew>&) {}
+
     template <class U>
-    bool operator==(const skewed_allocator<U>&) const {
+    bool operator==(const skewed_allocator<U, Alignment, Skew>&) const {
         return true;
     }
     T* allocate(size_t n) {
