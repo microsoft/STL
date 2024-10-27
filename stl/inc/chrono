@@ -4635,7 +4635,7 @@ namespace chrono {
     }
 
     _EXPORT_STD template <class _CharT, class _Traits, class _Alloc,
-        _Can_from_stream<_CharT, _Traits, basic_string<_CharT, _Traits, _Alloc>> _Parsable>
+        _Can_from_stream<_CharT, _Traits, basic_string<_CharT, _Traits, _Alloc>*> _Parsable>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev) {
         return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev)};
