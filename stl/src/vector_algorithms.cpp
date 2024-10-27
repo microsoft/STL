@@ -3068,7 +3068,7 @@ namespace {
         }
 
         template <class _Ty>
-        __m256i _Make_bitmap(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+        __m256i _Make_bitmap_small(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
             __m256i _Bitmap = _mm256_setzero_si256();
 
             const _Ty* const _Stop = _Needle_ptr + _Needle_length;
@@ -3083,6 +3083,35 @@ namespace {
             }
 
             return _Bitmap;
+        }
+
+        template <class _Ty>
+        __m256i _Make_bitmap_large(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+            alignas(32) uint8_t _Table[256] = {};
+
+            const _Ty* const _Stop = _Needle_ptr + _Needle_length;
+
+            for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
+                _Table[*_Needle_ptr] = 0xFF;
+            }
+
+            auto _Table_as_avx = reinterpret_cast<const __m256i*>(_Table);
+
+            return _mm256_setr_epi32( //
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 0)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 1)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 2)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 3)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 4)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 5)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 6)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 7)));
+        }
+
+        template <class _Ty>
+        __m256i _Make_bitmap(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+            return _Needle_length <= 20 ? _Make_bitmap_small(_Needle_ptr, _Needle_length)
+                                        : _Make_bitmap_large(_Needle_ptr, _Needle_length);
         }
 
         template <class _Ty>
