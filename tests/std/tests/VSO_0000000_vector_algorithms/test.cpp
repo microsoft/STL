@@ -1219,7 +1219,7 @@ void test_bitset(mt19937_64& gen) {
 }
 
 template <class T>
-void test_case_string_find(const basic_string<T>& input_haystack, const T ch) {
+void test_case_string_find_ch(const basic_string<T>& input_haystack, const T ch) {
     const auto expected_iter = last_known_good_find(input_haystack.begin(), input_haystack.end(), ch);
     const auto expected =
         (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
@@ -1228,7 +1228,7 @@ void test_case_string_find(const basic_string<T>& input_haystack, const T ch) {
 }
 
 template <class T>
-void test_case_string_rfind(const basic_string<T>& input_haystack, const T ch) {
+void test_case_string_rfind_ch(const basic_string<T>& input_haystack, const T ch) {
     const auto expected_iter = last_known_good_find_last(input_haystack.begin(), input_haystack.end(), ch);
     const auto expected =
         (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
@@ -1266,26 +1266,73 @@ void test_case_string_find_last_of(const basic_string<T>& input_haystack, const 
     assert(expected == actual);
 }
 
+template <class T>
+void test_case_string_find_str(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
+    ptrdiff_t expected;
+    if (input_needle.empty()) {
+        expected = 0;
+    } else {
+        const auto expected_iter = last_known_good_search(
+            input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+        expected = (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
+    }
+    const auto actual = static_cast<ptrdiff_t>(input_haystack.find(input_needle));
+    assert(expected == actual);
+}
+
+template <class T>
+void test_case_string_rfind_str(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
+    ptrdiff_t expected;
+    if (input_needle.empty()) {
+        expected = static_cast<ptrdiff_t>(input_haystack.size());
+    } else {
+        const auto expected_iter = last_known_good_find_end(
+            input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+        expected = (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
+    }
+    const auto actual = static_cast<ptrdiff_t>(input_haystack.rfind(input_needle));
+    assert(expected == actual);
+}
+
 template <class T, class D>
 void test_basic_string_dis(mt19937_64& gen, D& dis) {
     basic_string<T> input_haystack;
     basic_string<T> input_needle;
+    basic_string<T> temp;
     input_haystack.reserve(haystackDataCount);
     input_needle.reserve(needleDataCount);
+    temp.reserve(needleDataCount);
 
     for (;;) {
         const T ch = static_cast<T>(dis(gen));
-        test_case_string_find(input_haystack, ch);
-        test_case_string_rfind(input_haystack, ch);
+        test_case_string_find_ch(input_haystack, ch);
+        test_case_string_rfind_ch(input_haystack, ch);
 
         input_needle.clear();
 
         test_case_string_find_first_of(input_haystack, input_needle);
         test_case_string_find_last_of(input_haystack, input_needle);
+        test_case_string_find_str(input_haystack, input_needle);
+        test_case_string_rfind_str(input_haystack, input_needle);
+
         for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
             input_needle.push_back(static_cast<T>(dis(gen)));
             test_case_string_find_first_of(input_haystack, input_needle);
             test_case_string_find_last_of(input_haystack, input_needle);
+            test_case_string_find_str(input_haystack, input_needle);
+            test_case_string_rfind_str(input_haystack, input_needle);
+
+            // For large needles the chance of a match is low, so test a guaranteed match
+            if (input_haystack.size() > input_needle.size() * 2) {
+                uniform_int_distribution<size_t> pos_dis(0, input_haystack.size() - input_needle.size());
+                const size_t pos             = pos_dis(gen);
+                const auto overwritten_first = input_haystack.begin() + static_cast<ptrdiff_t>(pos);
+                temp.assign(overwritten_first, overwritten_first + static_cast<ptrdiff_t>(input_needle.size()));
+                copy(input_needle.begin(), input_needle.end(), overwritten_first);
+                test_case_string_find_str(input_haystack, input_needle);
+                test_case_string_rfind_str(input_haystack, input_needle);
+                copy(temp.begin(), temp.end(), overwritten_first);
+            }
         }
 
         if (input_haystack.size() == haystackDataCount) {
