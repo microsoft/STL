@@ -2989,23 +2989,30 @@ namespace {
             }
         }
 
-        bool _Product_fits_threshold(const size_t _Px1, const size_t _Px2, const size_t _Tx) noexcept {
-#ifdef _WIN64
-            long long _Rx;
-            return _mul_overflow_i64(_Px1, _Px2, &_Rx) && static_cast<size_t>(_Rx) < _Tx;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64)
-            unsigned int _Rx0;
-            unsigned int _Rx1;
-            return _mul_full_overflow_u32(_Px1, _Px2, &_Rx0, &_Rx1) && _Rx0 < _Tx;
-#endif
-        }
-
         template <class _Ty>
         bool _Use_bitmap_sse(const size_t _Count1, const size_t _Count2) noexcept {
             if constexpr (sizeof(_Ty) == 1) {
-                return _Count1 >= 16 && !_Product_fits_threshold((_Count1 + 15) / 16, _Count2 / 16, 60);
+                if (_Count2 <= 32) {
+                    return false;
+                } else if (_Count2 <= 48) {
+                    return _Count1 >= 415;
+                } else if (_Count2 <= 64) {
+                    return _Count1 >= 223;
+                } else if (_Count2 <= 80) {
+                    return _Count1 >= 127;
+                } else if (_Count2 <= 540) {
+                    return _Count1 >= 47;
+                } else {
+                    return _Count1 >= 31;
+                }
             } else if constexpr (sizeof(_Ty) == 2) {
-                return _Count1 >= 8 && !_Product_fits_threshold((_Count1 + 7) / 8, _Count2 / 8, 60);
+                if (_Count2 <= 8) {
+                    return false;
+                } else if (_Count2 <= 80) {
+                    return _Count1 >= 15;
+                } else {
+                    return _Count1 >= 7;
+                }
             } else {
                 static_assert(false, "unexpected size");
             }
