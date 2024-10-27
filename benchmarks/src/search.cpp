@@ -159,23 +159,6 @@ void ranges_find_end(benchmark::State& state) {
     }
 }
 
-template <class T>
-void member_rfind(benchmark::State& state) {
-    const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
-    const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
-
-    const T haystack(src_haystack.begin(), src_haystack.end());
-    const T needle(src_needle.begin(), src_needle.end());
-
-    for (auto _ : state) {
-        benchmark::DoNotOptimize(haystack);
-        benchmark::DoNotOptimize(needle);
-        auto res = haystack.rfind(needle);
-        benchmark::DoNotOptimize(res);
-    }
-}
-
-
 void common_args(auto bm) {
     bm->DenseRange(0, std::size(patterns) - 1, 1);
 }
@@ -199,8 +182,5 @@ BENCHMARK(classic_find_end<std::uint16_t>)->Apply(common_args);
 
 BENCHMARK(ranges_find_end<std::uint8_t>)->Apply(common_args);
 BENCHMARK(ranges_find_end<std::uint16_t>)->Apply(common_args);
-
-BENCHMARK(member_rfind<std::string>)->Apply(common_args);
-BENCHMARK(member_rfind<std::wstring>)->Apply(common_args);
 
 BENCHMARK_MAIN();
