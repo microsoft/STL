@@ -22,6 +22,23 @@ template <class T, size_t Alignment, size_t Skew>
 struct skewed_allocator {
     using value_type = T;
 
+    static_assert(
+        Alignment % alignof(T) == 0 && Skew % alignof(T) == 0, "Chosen parameters will produce unaligned T objects");
+
+    template <class U>
+    struct rebind {
+        using type = skewed_allocator<U, Alignment, Skew>;
+    };
+
+    skewed_allocator() = default;
+    template <class U>
+    skewed_allocator(const skewed_allocator<U, Alignment, Skew>&) {}
+
+    template <class U>
+    bool operator==(const skewed_allocator<U, Alignment, Skew>&) const {
+        return true;
+    }
+
     T* allocate(size_t n) {
         const auto p = static_cast<unsigned char*>(_aligned_malloc(n * sizeof(T) + Skew, Alignment));
         if (!p) {
@@ -49,7 +66,7 @@ constexpr size_t page_size = 4096;
 constexpr size_t skew = 8;
 
 template <class T>
-struct unaligned_allocator : skewed_allocator<T, page_size, skew> {};
+struct not_highly_aligned_allocator : skewed_allocator<T, page_size, skew> {};
 
 #endif // ^^^ TRANSITION, GH-5043 ^^^
 
@@ -62,8 +79,8 @@ void bm(benchmark::State& state) {
     const size_t HSize = Pos * 2;
     const size_t Which = 0;
 
-    using container = conditional_t<Alg == AlgType::std_func, vector<T, unaligned_allocator<T>>,
-        basic_string<T, char_traits<T>, unaligned_allocator<T>>>;
+    using container = conditional_t<Alg == AlgType::std_func, vector<T, not_highly_aligned_allocator<T>>,
+        basic_string<T, char_traits<T>, not_highly_aligned_allocator<T>>>;
 
     constexpr T HaystackFiller{' '};
     static_assert(HaystackFiller < Start, "The following iota() should not produce the haystack filler.");
