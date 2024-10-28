@@ -438,7 +438,7 @@ set PATH=C:\STL\out\x64\out\bin\amd64;%PATH%
 You don't need to do any extra steps to run the test code and the code in STL headers with [ASan]. 
 Test matrices include ASan configurations, they are run along with non-ASan configurations.
 
-However, to test with ASan separately-compiled code (the DLL, the satellites, the Import Library -- everything that's in `.cpp` 
+However, to test with ASan separately-compiled code (the DLL, the satellites, the [Import Library] -- everything that's in `.cpp` 
 files and headers used by them only), you'll need to build the STL with ASan. Change the build steps to add `-DSTL_ASAN_BUILD=ON`:
 
 ```
@@ -611,3 +611,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [redistributables]: https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist
 [natvis documentation]: https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
 [ASan]: https://learn.microsoft.com/en-us/cpp/sanitizers/asan
+[Import Library]: /docs/import_library.md
