@@ -438,8 +438,9 @@ set PATH=C:\STL\out\x64\out\bin\amd64;%PATH%
 You don't need to do any extra steps to run the test code and the code in STL headers with [ASan]. 
 Test matrices include ASan configurations, they are run along with non-ASan configurations.
 
-However, to test with ASan separately-compiled code (the DLL, the satellites, the [Import Library] -- everything that's in `.cpp` 
-files and headers used by them only), you'll need to build the STL with ASan. Change the build steps to add `-DSTL_ASAN_BUILD=ON`:
+However, to test with ASan separately-compiled code (the DLL, the satellites, the [Import Library] -- everything that's
+in `.cpp` files and headers used by them only), you'll need to build the STL with ASan. Change the build steps to add 
+`-DSTL_ASAN_BUILD=ON`:
 
 ```
 cmake --preset x64 -DSTL_ASAN_BUILD=ON
