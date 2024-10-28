@@ -9,6 +9,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <xtr1common>
 
 #pragma pack(push, _CRT_PACKING)
@@ -2515,6 +2516,43 @@ _NODISCARD constexpr bool _Is_finite(const _Ty _Xx) noexcept { // constexpr isfi
 
 template <bool _IsConst, class _Ty>
 using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
+
+template <class _Ty, size_t _Size>
+void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
+    // Swap arrays using temporary buffers of 64 bytes, followed by the tail.
+    // In optimized builds, the stack usage optimizes away, and vector registers are used.
+    // The 64-byte size has desirable properties:
+    // * Big enough to engage AVX-512.
+    // * Small enough to be handled by SSE2 (using eight registers).
+    // * Avoids excessive stack consumption for non-optimized builds.
+    auto _Left_ptr  = reinterpret_cast<unsigned char*>(&_Left);
+    auto _Right_ptr = reinterpret_cast<unsigned char*>(&_Right);
+
+    constexpr size_t _Part_size_bytes = 64;
+    constexpr size_t _Size_bytes      = _Size * sizeof(_Ty);
+    constexpr size_t _Size_tail       = _Size_bytes % _Part_size_bytes;
+    constexpr size_t _Size_parts      = _Size_bytes - _Size_tail;
+
+    if constexpr (_Size_parts != 0) {
+        const auto _Stop = _Left_ptr + _Size_parts;
+        do {
+            unsigned char _Buf[_Part_size_bytes];
+            _CSTD memcpy(_Buf, _Left_ptr, _Part_size_bytes);
+            _CSTD memcpy(_Left_ptr, _Right_ptr, _Part_size_bytes);
+            _CSTD memcpy(_Right_ptr, _Buf, _Part_size_bytes);
+            _Left_ptr += _Part_size_bytes;
+            _Right_ptr += _Part_size_bytes;
+
+        } while (_Left_ptr != _Stop);
+    }
+
+    if constexpr (_Size_tail != 0) {
+        unsigned char _Buf[_Size_tail];
+        _CSTD memcpy(_Buf, _Left_ptr, _Size_tail);
+        _CSTD memcpy(_Left_ptr, _Right_ptr, _Size_tail);
+        _CSTD memcpy(_Right_ptr, _Buf, _Size_tail);
+    }
+}
 
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING
