@@ -433,7 +433,7 @@ build folder to your path:
 set PATH=C:\STL\out\x64\out\bin\amd64;%PATH%
 ```
 
-## Running tests with Address Sanitizer (ASan)
+## Running Tests With Address Sanitizer (ASan)
 
 You don't need any extra steps to run with test code and the code in STL headers instrumented with [ASan][].
 The test matrices include both ASan and non-ASan configurations.
