@@ -2936,27 +2936,27 @@ namespace {
         bool _Use_bitmap_avx(const size_t _Count1, const size_t _Count2) {
             if constexpr (sizeof(_Ty) == 1) {
                 if (_Count2 <= 16) {
-                    return _Count1 >= 1000;
+                    return _Count1 > 1000;
                 } else if (_Count2 <= 48) {
-                    return _Count1 >= 80;
+                    return _Count1 > 80;
                 } else if (_Count2 <= 240) {
-                    return _Count1 >= 40;
+                    return _Count1 > 40;
                 } else if (_Count2 <= 1000) {
-                    return _Count1 >= 32;
+                    return _Count1 > 32;
                 } else {
-                    return _Count1 >= 16;
+                    return _Count1 > 16;
                 }
             } else if constexpr (sizeof(_Ty) == 2) {
                 if (_Count2 <= 8) {
-                    return _Count1 >= 128;
+                    return _Count1 > 128;
                 } else if (_Count2 <= 48) {
-                    return _Count1 >= 128;
+                    return _Count1 > 128;
                 } else if (_Count2 <= 72) {
-                    return _Count1 >= 23;
+                    return _Count1 > 24;
                 } else if (_Count2 <= 144) {
-                    return _Count1 >= 15;
+                    return _Count1 > 16;
                 } else {
-                    return _Count1 >= 7;
+                    return _Count1 > 8;
                 }
             } else if constexpr (sizeof(_Ty) == 4) {
                 if (_Count2 <= 8) {
@@ -2995,23 +2995,23 @@ namespace {
                 if (_Count2 <= 32) {
                     return false;
                 } else if (_Count2 <= 48) {
-                    return _Count1 >= 415;
+                    return _Count1 > 416;
                 } else if (_Count2 <= 64) {
-                    return _Count1 >= 223;
+                    return _Count1 > 224;
                 } else if (_Count2 <= 80) {
-                    return _Count1 >= 127;
+                    return _Count1 > 128;
                 } else if (_Count2 <= 540) {
-                    return _Count1 >= 47;
+                    return _Count1 > 48;
                 } else {
-                    return _Count1 >= 31;
+                    return _Count1 > 32;
                 }
             } else if constexpr (sizeof(_Ty) == 2) {
                 if (_Count2 <= 8) {
                     return false;
                 } else if (_Count2 <= 80) {
-                    return _Count1 >= 15;
+                    return _Count1 > 16;
                 } else {
-                    return _Count1 >= 7;
+                    return _Count1 > 8;
                 }
             } else {
                 static_assert(false, "unexpected size");
@@ -3348,20 +3348,22 @@ namespace {
                     _Advance_bytes(_First1, 16);
                 }
 
-                const size_t _Last_part_size = _Haystack_length & 0xF;
-                const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+                if (const size_t _Last_part_size = _Haystack_length & 0xF; _Last_part_size != 0) {
+                    const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
 
-                alignas(16) uint8_t _Tmp1[16];
-                memcpy(_Tmp1, _First1, _Last_part_size);
-                const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    alignas(16) uint8_t _Tmp1[16];
+                    memcpy(_Tmp1, _First1, _Last_part_size);
+                    const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
 
-                if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op)) {
-                    const int _Pos = _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op);
-                    _Advance_bytes(_First1, _Pos * sizeof(_Ty));
-                    return _First1;
+                    if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op)) {
+                        const int _Pos = _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op);
+                        _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                        return _First1;
+                    }
+
+                    _Advance_bytes(_First1, _Last_part_size);
                 }
 
-                _Advance_bytes(_First1, _Last_part_size);
                 return _First1;
             } else {
                 const void* _Last_needle = _First2;
@@ -3415,18 +3417,20 @@ namespace {
                     _Advance_bytes(_First1, 16);
                 }
 
-                const size_t _Last_part_size = _Haystack_length & 0xF;
-                const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+                if (const size_t _Last_part_size = _Haystack_length & 0xF; _Last_part_size != 0) {
+                    const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
 
-                alignas(16) uint8_t _Tmp1[16];
-                memcpy(_Tmp1, _First1, _Last_part_size);
-                const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    alignas(16) uint8_t _Tmp1[16];
+                    memcpy(_Tmp1, _First1, _Last_part_size);
+                    const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
 
-                _Found_pos = _Last_part_size_el;
+                    _Found_pos = _Last_part_size_el;
 
-                _Test_whole_needle(_Data1, _Last_part_size_el);
+                    _Test_whole_needle(_Data1, _Last_part_size_el);
 
-                _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
+                    _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
+                }
+
                 return _First1;
             }
         }
@@ -3808,19 +3812,21 @@ namespace {
                     }
                 }
 
-                const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
-                __m128i _Data1;
+                if (_Last_part_size != 0) {
+                    const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+                    __m128i _Data1;
 
-                if (_Haystack_length_bytes >= 16) {
-                    _Data1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
-                } else {
-                    alignas(16) uint8_t _Tmp1[16];
-                    memcpy(_Tmp1, _Haystack, _Haystack_length_bytes);
-                    _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
-                }
+                    if (_Haystack_length_bytes >= 16) {
+                        _Data1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
+                    } else {
+                        alignas(16) uint8_t _Tmp1[16];
+                        memcpy(_Tmp1, _Haystack, _Haystack_length_bytes);
+                        _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    }
 
-                if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op)) {
-                    return _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op);
+                    if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op)) {
+                        return _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op);
+                    }
                 }
 
                 return static_cast<size_t>(-1);
@@ -3873,18 +3879,20 @@ namespace {
                     }
                 }
 
-                const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
-                __m128i _Data1;
+                if (_Last_part_size != 0) {
+                    const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+                    __m128i _Data1;
 
-                if (_Haystack_length_bytes >= 16) {
-                    _Data1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
-                } else {
-                    alignas(16) uint8_t _Tmp1[16];
-                    memcpy(_Tmp1, _Haystack, _Haystack_length_bytes);
-                    _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    if (_Haystack_length_bytes >= 16) {
+                        _Data1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
+                    } else {
+                        alignas(16) uint8_t _Tmp1[16];
+                        memcpy(_Tmp1, _Haystack, _Haystack_length_bytes);
+                        _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    }
+
+                    _Test_whole_needle(_Data1, _Last_part_size_el);
                 }
-
-                _Test_whole_needle(_Data1, _Last_part_size_el);
 
                 return static_cast<size_t>(_Found_pos);
             }
