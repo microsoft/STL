@@ -8,8 +8,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <limits>
+#include <new>
 #include <numeric>
-#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -21,13 +21,12 @@ using namespace std;
 template <class T, size_t Alignment, size_t Skew>
 struct skewed_allocator {
     using value_type = T;
-
-    static_assert(
-        Alignment % alignof(T) == 0 && Skew % alignof(T) == 0, "Chosen parameters will produce unaligned T objects");
+    static_assert(Alignment % alignof(T) == 0, "Chosen Alignment will produce unaligned T objects");
+    static_assert(Skew % alignof(T) == 0, "Chosen Skew will produce unaligned T objects");
 
     template <class U>
     struct rebind {
-        using type = skewed_allocator<U, Alignment, Skew>;
+        using other = skewed_allocator<U, Alignment, Skew>;
     };
 
     skewed_allocator() = default;
@@ -39,7 +38,7 @@ struct skewed_allocator {
         return true;
     }
 
-    T* allocate(size_t n) {
+    T* allocate(const size_t n) {
         const auto p = static_cast<unsigned char*>(_aligned_malloc(n * sizeof(T) + Skew, Alignment));
         if (!p) {
             throw std::bad_alloc{};
@@ -47,7 +46,7 @@ struct skewed_allocator {
         return reinterpret_cast<T*>(p + Skew);
     }
 
-    void deallocate(T* p, size_t) {
+    void deallocate(T* const p, size_t) {
         if (p) {
             _aligned_free(reinterpret_cast<unsigned char*>(p) - Skew);
         }
@@ -55,18 +54,18 @@ struct skewed_allocator {
 };
 
 // The purpose is to provide consistent behavior for benchmarks.
-// 64 seems to be reasonable alignment for practical perf uses,
-// as it is both cache line size and maximum vector instruction size (on x64).
-// However to provide even more consistency, aligning to page,
-// to make sure the same number of page boundaries is crossed each time.
-constexpr size_t page_size = 4096;
+// 64 would be a reasonable alignment for practical perf uses,
+// as it is both the cache line size and the maximum vector instruction size (on x64).
+// However, aligning to the page size will provide even more consistency
+// by ensuring that the same number of page boundaries is crossed each time.
+inline constexpr size_t page_size = 4096;
 
 // A realistic skew relative to allocation granularity, when a variable is placed
-// next to a pointer in a structure or on stack. Also corresponds to the default packing.
-constexpr size_t skew = 8;
+// next to a pointer in a structure or on the stack. Also corresponds to the default packing.
+inline constexpr size_t realistic_skew = 8;
 
 template <class T>
-struct not_highly_aligned_allocator : skewed_allocator<T, page_size, skew> {};
+using not_highly_aligned_allocator = skewed_allocator<T, page_size, realistic_skew>;
 
 #endif // ^^^ TRANSITION, GH-5043 ^^^
 
