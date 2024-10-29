@@ -51,13 +51,13 @@ inline constexpr size_t page_size = 4096;
 
 // A realistic skew relative to allocation granularity, when a variable is placed
 // next to a pointer in a structure or on stack. Also corresponds to the default packing.
-inline constexpr size_t skew = 8;
+inline constexpr size_t realistic_skew = 8;
 
 template <class T>
 struct highly_aligned_allocator : skewed_allocator<T, page_size, 0> {};
 
 template <class T>
-struct not_highly_aligned_allocator : skewed_allocator<T, page_size, skew> {};
+struct not_highly_aligned_allocator : skewed_allocator<T, page_size, realistic_skew> {};
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
@@ -69,7 +69,7 @@ struct alignas(page_size) highly_aligned {
 
 template <class T>
 struct alignas(page_size) not_highly_aligned {
-    char pad[skew];
+    char pad[realistic_skew];
     T value;
 };
 
