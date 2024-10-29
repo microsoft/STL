@@ -2950,7 +2950,7 @@ namespace {
                 if (_Count2 <= 8) {
                     return _Count1 > 128;
                 } else if (_Count2 <= 48) {
-                    return _Count1 > 128;
+                    return _Count1 > 32;
                 } else if (_Count2 <= 72) {
                     return _Count1 > 24;
                 } else if (_Count2 <= 144) {
