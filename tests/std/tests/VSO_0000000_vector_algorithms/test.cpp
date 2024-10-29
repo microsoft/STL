@@ -92,6 +92,17 @@ void test_adjacent_difference(mt19937_64& gen) {
     }
 }
 
+void test_adjacent_difference_with_heterogeneous_types() {
+    const vector<unsigned char> input = {10, 70, 20, 90};
+    vector<int> output(4);
+
+    const auto result = adjacent_difference(input.begin(), input.end(), output.begin());
+    assert(result == output.end());
+
+    const vector<int> expected = {10, 60, -50, 70};
+    assert(output == expected);
+}
+
 template <class FwdIt, class T>
 ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
     ptrdiff_t result = 0;
@@ -962,6 +973,8 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_adjacent_difference<unsigned int>(gen);
     test_adjacent_difference<long long>(gen);
     test_adjacent_difference<unsigned long long>(gen);
+
+    test_adjacent_difference_with_heterogeneous_types();
 
     test_count<char>(gen);
     test_count<signed char>(gen);

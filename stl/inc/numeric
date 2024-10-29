@@ -463,9 +463,9 @@ _FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _
 
 template <class _TyDest, class _TySrc, class _BinOp>
 void _Adjacent_difference_no_overlap(
-    _TyDest* const __restrict _Dest, _TySrc* const __restrict _Src, const size_t _Count, _BinOp _Func) {
+    _TyDest* const __restrict _Dest, _TySrc* const __restrict _Src, const ptrdiff_t _Count, _BinOp _Func) {
     _Dest[0] = _Src[0];
-    for (size_t _Ix = 1; _Ix != _Count; ++_Ix) {
+    for (ptrdiff_t _Ix = 1; _Ix != _Count; ++_Ix) {
 #if _HAS_CXX20
         _TySrc _Tmp = _Src[_Ix - 1];
         _Dest[_Ix]  = _Func(_Src[_Ix], _STD move(_Tmp));
@@ -490,17 +490,19 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
 #endif
             {
                 // Go with pointers and without loop-carried dependency to enable vectorization
-                const auto _Count         = _ULast - _UFirst;
-                const auto _Count_as_size = static_cast<size_t>(_Count);
-                const auto _Src_ptr       = _STD _To_address(_UFirst);
-                const auto _Dest_ptr      = _STD _To_address(_UDest);
+                const auto _First_ptr = _STD _To_address(_UFirst);
+                const auto _Last_ptr  = _STD _To_address(_ULast);
+                const auto _Dest_ptr  = _STD _To_address(_UDest);
+                const auto _Count     = _Last_ptr - _First_ptr;
+
                 // Need to perform aliasing analysis.
                 // The vectorizer is generally able to do that on its own, and would guard the vectorized code with
                 // that, but when we eliminate the loop-carried dependency we change the semantics of the unvectorized
                 // code too. So we need to perform this check manually, and after that we can tell the compiler that
                 // there's no aliasing, to avoid it checking for that again.
-                if (_Dest_ptr + _Count_as_size <= _Src_ptr || _Src_ptr + _Count_as_size <= _Dest_ptr) {
-                    _STD _Adjacent_difference_no_overlap(_Dest_ptr, _Src_ptr, _Count_as_size, _STD _Pass_fn(_Func));
+                if (reinterpret_cast<uintptr_t>(_Dest_ptr + _Count) <= reinterpret_cast<uintptr_t>(_First_ptr)
+                    || reinterpret_cast<uintptr_t>(_Last_ptr) <= reinterpret_cast<uintptr_t>(_Dest_ptr)) {
+                    _STD _Adjacent_difference_no_overlap(_Dest_ptr, _First_ptr, _Count, _STD _Pass_fn(_Func));
                     _STD _Seek_wrapped(_Dest, _UDest + _Count);
                     return _Dest;
                 }
