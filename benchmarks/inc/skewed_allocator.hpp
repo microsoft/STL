@@ -26,6 +26,7 @@ struct skewed_allocator {
     bool operator==(const skewed_allocator<U, Alignment, Skew>&) const {
         return true;
     }
+
     T* allocate(size_t n) {
         const auto p = static_cast<unsigned char*>(_aligned_malloc(n * sizeof(T) + Skew, Alignment));
         if (!p) {
