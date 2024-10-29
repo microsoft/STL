@@ -5,7 +5,7 @@
 
 #include <cstddef>
 #include <cstdlib>
-#include <stdexcept>
+#include <new>
 
 template <class T, size_t Alignment, size_t Skew>
 struct skewed_allocator {
