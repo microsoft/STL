@@ -54,10 +54,10 @@ inline constexpr size_t page_size = 4096;
 inline constexpr size_t realistic_skew = 8;
 
 template <class T>
-struct highly_aligned_allocator : skewed_allocator<T, page_size, 0> {};
+using highly_aligned_allocator = skewed_allocator<T, page_size, 0>;
 
 template <class T>
-struct not_highly_aligned_allocator : skewed_allocator<T, page_size, realistic_skew> {};
+using not_highly_aligned_allocator = skewed_allocator<T, page_size, realistic_skew>;
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
