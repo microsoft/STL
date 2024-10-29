@@ -435,10 +435,10 @@ set PATH=C:\STL\out\x64\out\bin\amd64;%PATH%
 
 ## Running tests with Address Sanitizer (ASan)
 
-You don't need any extra steps to run with test code and the code in STL headers instrumented with [ASan]. 
+You don't need any extra steps to run with test code and the code in STL headers instrumented with [ASan][].
 Test matrices include ASan configurations, they are run alongside non-ASan configurations.
 
-However, to instrument the separately-compiled code (the DLL, the satellites, the [Import Library] — everything that's
+However, to instrument the separately-compiled code (the DLL, the satellites, the [Import Library][] — everything that's
 in `/stl/src`), you need to build the STL with ASan. Change the build steps to add `-DSTL_ASAN_BUILD=ON`:
 
 ```
