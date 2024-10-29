@@ -940,8 +940,8 @@ public:
         _Swap_val_excluding_comp(_Right);
     }
 
-    _Tree& operator=(_Tree&& _Right) noexcept(
-        _Choose_pocma_v<_Alnode> == _Pocma_values::_Equal_allocators && is_nothrow_move_assignable_v<key_compare>) {
+    _Tree& operator=(_Tree&& _Right)
+        noexcept(_Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<key_compare>) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }

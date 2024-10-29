@@ -138,6 +138,13 @@ namespace ranges {
                 noexcept(noexcept(operator()(__t[0], __u[0])))
                 requires requires(_Cpo __fn) { __fn(__t[0], __u[0]); }
             {
+                if constexpr (is_same_v<_Ty1, _Ty2> && _Is_trivially_swappable_v<_Ty1>) {
+                    if (!_STD is_constant_evaluated()) {
+                        _STD _Swap_trivial_arrays(__t, __u);
+                        return;
+                    }
+                }
+
                 for (size_t __i = 0; __i < _Size; ++__i) {
                     operator()(__t[__i], __u[__i]);
                 }
