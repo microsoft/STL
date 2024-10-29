@@ -2093,9 +2093,9 @@ _CXX17_DEPRECATE_TEMPORARY_BUFFER void return_temporary_buffer(_Ty* _Pbuf) {
 // the construction from a volatile glvalue, so generally we can't perform this optimization for them.
 // See N4993 [container.alloc.reqmts]/2.3, /2.4.
 template <class _Ty>
-using _Remove_cref_t = remove_const_t<remove_reference_t<_Ty>>;
+using _Remove_const_ref_t = remove_const_t<remove_reference_t<_Ty>>;
 
-// assumes _Args have already been _Remove_cref_t'd
+// assumes _Args have already been _Remove_const_ref_t'd
 template <class _Key, class... _Args>
 struct _In_place_key_extract_set {
     // by default we can't extract the key in the emplace family and must construct a node we might not use
@@ -2111,7 +2111,7 @@ struct _In_place_key_extract_set<_Key, _Key> {
     }
 };
 
-// assumes _Args have already been _Remove_cref_t'd
+// assumes _Args have already been _Remove_const_ref_t'd
 template <class _Key, class... _Args>
 struct _In_place_key_extract_map {
     // by default we can't extract the key in the emplace family and must construct a node we might not use
@@ -2130,7 +2130,7 @@ struct _In_place_key_extract_map<_Key, _Key, _Second> {
 template <class _Key, class _First, class _Second>
 struct _In_place_key_extract_map<_Key, pair<_First, _Second>> {
     // if we would call the pair(pair<other, other>) constructor family, we can use the pair.first member as the key
-    static constexpr bool _Extractable = is_same_v<_Key, _Remove_cref_t<_First>>;
+    static constexpr bool _Extractable = is_same_v<_Key, _Remove_const_ref_t<_First>>;
     static const _Key& _Extract(const pair<_First, _Second>& _Val) noexcept {
         return _Val.first;
     }
@@ -2150,7 +2150,7 @@ struct _In_place_key_extract_map<_Key, array<_Elem, 2>> {
 
 template <class _Key, class _First, class _Second>
 struct _In_place_key_extract_map<_Key, tuple<_First, _Second>> {
-    static constexpr bool _Extractable = is_same_v<_Key, _Remove_cref_t<_First>>;
+    static constexpr bool _Extractable = is_same_v<_Key, _Remove_const_ref_t<_First>>;
     static const _Key& _Extract(const tuple<_First, _Second>& _Val) noexcept {
         return _STD get<0>(_Val);
     }
@@ -2161,7 +2161,7 @@ template <class _Key, class _First, class... _RestTypes>
 struct _In_place_key_extract_map<_Key, piecewise_construct_t, tuple<_First>, tuple<_RestTypes...>> {
     // if we would call the piecewise_construct_t constructor and the first argument is a 1-tuple,
     // we can use get<0>(first_tuple) as the key
-    static constexpr bool _Extractable = is_same_v<_Key, _Remove_cref_t<_First>>;
+    static constexpr bool _Extractable = is_same_v<_Key, _Remove_const_ref_t<_First>>;
     static const _Key& _Extract(
         const piecewise_construct_t&, const tuple<_First>& _Tup_val, const tuple<_RestTypes...>&) noexcept {
         return _STD get<0>(_Tup_val);
