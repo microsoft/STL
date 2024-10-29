@@ -24,20 +24,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-
-template <class _Ty>
-struct _NODISCARD _Clear_guard {
-    _Ty* _Target;
-    ~_Clear_guard() {
-        if (_Target) {
-            _Target->clear();
-        }
-    }
-};
-
-template <class _Alloc, class _Container>
-concept _Allocator_for = uses_allocator_v<_Container, _Alloc>;
-
 template <class _Kty, class _Keylt, class _Container, bool _Multi, class _Deriv, class _Tsorted>
 class _Base_flat_set {
 private:
@@ -47,6 +33,8 @@ public:
     static_assert(same_as<_Kty, typename _Container::value_type>,
         "The C++ Standard dictates that the Key type must be the "
         "same as the container's value type [flatset.overview]");
+    static_assert(
+        !_Is_vector_bool<_Container>, "vector<bool, A> cannot be adapted because it is not a sequence container.");
 
     using key_type               = _Kty;
     using value_type             = _Kty;
@@ -67,10 +55,10 @@ public:
 
     _Base_flat_set() : _Mycont(), _Mycomp() {}
 
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(const _Deriv& _Set, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Set._Mycont)), _Mycomp(_Set._Mycomp) {}
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(_Deriv&& _Set, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _STD move(_Set).extract())),
           _Mycomp(_Set._Mycomp) // intentionally copy comparator, see LWG-2227
@@ -80,10 +68,10 @@ public:
         : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(const container_type& _Cont, const _Alloc& _Al)
         : _Base_flat_set(_STD make_obj_using_allocator<container_type>(_Al, _Cont)) {}
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(_STD make_obj_using_allocator<container_type>(_Al, _Cont), _Comp) {}
 
@@ -91,31 +79,31 @@ public:
         : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
         _STL_ASSERT(_Is_sorted(_Mycont), _Msg_not_sorted);
     }
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, _STD make_obj_using_allocator<container_type>(_Al, _Cont)) {}
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, _STD make_obj_using_allocator<container_type>(_Al, _Cont), _Comp) {}
 
     explicit _Base_flat_set(const key_compare& _Comp) : _Mycont(), _Mycomp(_Comp) {}
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(const key_compare& _Comp, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {}
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     explicit _Base_flat_set(const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {}
 
     template <input_iterator _Iter>
     _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
         : _Base_flat_set(container_type(_First, _Last), _Comp) {}
-    template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
+    template <input_iterator _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {
         _Mycont.assign(_First, _Last);
         _Make_invariants_fulfilled();
     }
-    template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
+    template <input_iterator _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(_Iter _First, _Iter _Last, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {
         _Mycont.assign(_First, _Last);
@@ -125,7 +113,7 @@ public:
     template <_Container_compatible_range<_Kty> _Rng>
     _Base_flat_set(from_range_t, _Rng&& _Range)
         : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range))) {}
-    template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
+    template <_Container_compatible_range<_Kty> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(from_range_t, _Rng&& _Range, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {
         _Mycont.assign_range(_STD forward<_Rng>(_Range));
@@ -134,7 +122,7 @@ public:
     template <_Container_compatible_range<_Kty> _Rng>
     _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp)
         : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range)), _Comp) {}
-    template <_Container_compatible_range<_Kty> _Rng, _Allocator_for<container_type> _Alloc>
+    template <_Container_compatible_range<_Kty> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {
         _Mycont.assign_range(_STD forward<_Rng>(_Range));
@@ -144,28 +132,28 @@ public:
     template <input_iterator _Iter>
     _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
         : _Base_flat_set(_Tsort, container_type(_First, _Last), _Comp) {}
-    template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
+    template <input_iterator _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, _STD make_obj_using_allocator<container_type>(_Al, _First, _Last), _Comp) {}
-    template <input_iterator _Iter, _Allocator_for<container_type> _Alloc>
+    template <input_iterator _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, _STD make_obj_using_allocator<container_type>(_Al, _First, _Last)) {}
 
     _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
         : _Base_flat_set(container_type(_Ilist), _Comp) {}
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(_Ilist.begin(), _Ilist.end(), _Comp, _Al) {}
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(initializer_list<_Kty> _Ilist, const _Alloc& _Al)
         : _Base_flat_set(_Ilist.begin(), _Ilist.end(), _Al) {}
 
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
         : _Base_flat_set(_Tsort, container_type(_Ilist), _Comp) {}
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, _Ilist.begin(), _Ilist.end(), _Comp, _Al) {}
-    template <_Allocator_for<container_type> _Alloc>
+    template <_Usable_allocator_for<container_type> _Alloc>
     _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const _Alloc& _Al)
         : _Base_flat_set(_Tsort, _Ilist.begin(), _Ilist.end(), _Al) {}
 

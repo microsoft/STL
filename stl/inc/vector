@@ -3950,6 +3950,8 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
 #undef _INSERT_VECTOR_ANNOTATION
 
 #if _HAS_CXX23
+// This `flat_meow` machinery is here because `vector` is the leaf-most header included by both `flat_meow` headers.
+
 _EXPORT_STD struct sorted_unique_t {
     explicit sorted_unique_t() = default;
 };
@@ -3959,6 +3961,28 @@ _EXPORT_STD struct sorted_equivalent_t {
     explicit sorted_equivalent_t() = default;
 };
 _EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
+
+template <class>
+constexpr bool _Is_vector_bool = false;
+template <class _Alloc>
+constexpr bool _Is_vector_bool<vector<bool, _Alloc>> = true;
+
+template <class _Alloc, class... _Containers>
+concept _Usable_allocator_for = (uses_allocator_v<_Containers, _Alloc> && ...);
+
+template <class _Ty>
+struct _NODISCARD _Clear_guard {
+    _Ty* _Target;
+
+    _Clear_guard& operator=(const _Clear_guard&) = delete;
+    _Clear_guard& operator=(_Clear_guard&&)      = delete;
+
+    ~_Clear_guard() {
+        if (_Target) {
+            _Target->clear();
+        }
+    }
+};
 #endif // ^^^ _HAS_CXX23 ^^^
 _STD_END
 
