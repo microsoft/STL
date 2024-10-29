@@ -10,8 +10,8 @@
 template <class T, size_t Alignment, size_t Skew>
 struct skewed_allocator {
     using value_type = T;
-    static_assert(
-        Alignment % alignof(T) == 0 && Skew % alignof(T) == 0, "Chosen parameters will produce unaligned T objects");
+    static_assert(Alignment % alignof(T) == 0, "Chosen Alignment will produce unaligned T objects");
+    static_assert(Skew % alignof(T) == 0, "Chosen Skew will produce unaligned T objects");
 
     template <class U>
     struct rebind {
