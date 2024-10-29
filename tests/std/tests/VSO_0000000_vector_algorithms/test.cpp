@@ -1255,7 +1255,12 @@ void test_case_string_find_str(const basic_string<T>& input_haystack, const basi
     } else {
         const auto expected_iter = last_known_good_search(
             input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
-        expected = (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
+
+        if (expected_iter != input_haystack.end()) {
+            expected = expected_iter - input_haystack.begin();
+        } else {
+            expected = -1;
+        }
     }
     const auto actual = static_cast<ptrdiff_t>(input_haystack.find(input_needle));
     assert(expected == actual);
