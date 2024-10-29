@@ -15,7 +15,7 @@ struct skewed_allocator {
 
     template <class U>
     struct rebind {
-        using type = skewed_allocator<U, Alignment, Skew>;
+        using other = skewed_allocator<U, Alignment, Skew>;
     };
 
     skewed_allocator() = default;
