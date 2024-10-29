@@ -27,7 +27,7 @@ struct skewed_allocator {
         return true;
     }
 
-    T* allocate(size_t n) {
+    T* allocate(const size_t n) {
         const auto p = static_cast<unsigned char*>(_aligned_malloc(n * sizeof(T) + Skew, Alignment));
         if (!p) {
             throw std::bad_alloc{};
@@ -35,7 +35,7 @@ struct skewed_allocator {
         return reinterpret_cast<T*>(p + Skew);
     }
 
-    void deallocate(T* p, size_t) {
+    void deallocate(T* const p, size_t) {
         if (p) {
             _aligned_free(reinterpret_cast<unsigned char*>(p) - Skew);
         }
