@@ -2088,15 +2088,22 @@ _CXX17_DEPRECATE_TEMPORARY_BUFFER void return_temporary_buffer(_Ty* _Pbuf) {
 }
 #endif // _HAS_DEPRECATED_TEMPORARY_BUFFER
 
-// assumes _Args have already been _Remove_cvref_t'd
+// The key_type of an (unordered) associative container is cv-unqualified, and we can't bind const Key& to a
+// volatile glvalue. Also, Cpp17CopyInsertable and Cpp17MoveInsertable don't require value-preservation for
+// the construction from a volatile glvalue, so generally we can't perform this optimization for them.
+// See N4993 [container.alloc.reqmts]/2.3, /2.4.
+template <class _Ty>
+using _Remove_const_ref_t = remove_const_t<remove_reference_t<_Ty>>;
+
+// assumes _Args have already been _Remove_const_ref_t'd
 template <class _Key, class... _Args>
-struct _In_place_key_extract_set {
+struct _In_place_key_extract_set_impl {
     // by default we can't extract the key in the emplace family and must construct a node we might not use
     static constexpr bool _Extractable = false;
 };
 
 template <class _Key>
-struct _In_place_key_extract_set<_Key, _Key> {
+struct _In_place_key_extract_set_impl<_Key, _Key> {
     // we can extract the key in emplace if the emplaced type is identical to the key type
     static constexpr bool _Extractable = true;
     static const _Key& _Extract(const _Key& _Val) noexcept {
@@ -2104,15 +2111,18 @@ struct _In_place_key_extract_set<_Key, _Key> {
     }
 };
 
-// assumes _Args have already been _Remove_cvref_t'd
+template <class... _Valtys>
+using _In_place_key_extract_set = _In_place_key_extract_set_impl<_Remove_const_ref_t<_Valtys>...>;
+
+// assumes _Args have already been _Remove_const_ref_t'd
 template <class _Key, class... _Args>
-struct _In_place_key_extract_map {
+struct _In_place_key_extract_map_impl {
     // by default we can't extract the key in the emplace family and must construct a node we might not use
     static constexpr bool _Extractable = false;
 };
 
 template <class _Key, class _Second>
-struct _In_place_key_extract_map<_Key, _Key, _Second> {
+struct _In_place_key_extract_map_impl<_Key, _Key, _Second> {
     // if we would call the pair(key, value) constructor family, we can use the first parameter as the key
     static constexpr bool _Extractable = true;
     static const _Key& _Extract(const _Key& _Val, const _Second&) noexcept {
@@ -2121,13 +2131,48 @@ struct _In_place_key_extract_map<_Key, _Key, _Second> {
 };
 
 template <class _Key, class _First, class _Second>
-struct _In_place_key_extract_map<_Key, pair<_First, _Second>> {
+struct _In_place_key_extract_map_impl<_Key, pair<_First, _Second>> {
     // if we would call the pair(pair<other, other>) constructor family, we can use the pair.first member as the key
-    static constexpr bool _Extractable = is_same_v<_Key, _Remove_cvref_t<_First>>;
-    static const _Key& _Extract(const pair<_First, _Second>& _Val) {
+    static constexpr bool _Extractable = is_same_v<_Key, _Remove_const_ref_t<_First>>;
+    static const _Key& _Extract(const pair<_First, _Second>& _Val) noexcept {
         return _Val.first;
     }
 };
+
+#if _HAS_CXX23
+// if we would call the pair(pair-like) constructor family and the argument is not a subrange,
+// we can use get<0>(pair-like) as the key
+
+template <class _Key, class _Elem>
+struct _In_place_key_extract_map_impl<_Key, array<_Elem, 2>> {
+    static constexpr bool _Extractable = is_same_v<_Key, remove_const_t<_Elem>>;
+    static const _Key& _Extract(const array<_Elem, 2>& _Val) noexcept {
+        return _Val[0];
+    }
+};
+
+template <class _Key, class _First, class _Second>
+struct _In_place_key_extract_map_impl<_Key, tuple<_First, _Second>> {
+    static constexpr bool _Extractable = is_same_v<_Key, _Remove_const_ref_t<_First>>;
+    static const _Key& _Extract(const tuple<_First, _Second>& _Val) noexcept {
+        return _STD get<0>(_Val);
+    }
+};
+#endif // _HAS_CXX23
+
+template <class _Key, class _First, class... _RestTypes>
+struct _In_place_key_extract_map_impl<_Key, piecewise_construct_t, tuple<_First>, tuple<_RestTypes...>> {
+    // if we would call the piecewise_construct_t constructor and the first argument is a 1-tuple,
+    // we can use get<0>(first_tuple) as the key
+    static constexpr bool _Extractable = is_same_v<_Key, _Remove_const_ref_t<_First>>;
+    static const _Key& _Extract(
+        const piecewise_construct_t&, const tuple<_First>& _Tup_val, const tuple<_RestTypes...>&) noexcept {
+        return _STD get<0>(_Tup_val);
+    }
+};
+
+template <class... _Valtys>
+using _In_place_key_extract_map = _In_place_key_extract_map_impl<_Remove_const_ref_t<_Valtys>...>;
 
 #pragma warning(push)
 #pragma warning(disable : 4624) // '%s': destructor was implicitly defined as deleted
