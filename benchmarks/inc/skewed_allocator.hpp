@@ -47,11 +47,11 @@ struct skewed_allocator {
 // as it is both cache line size and maximum vector instruction size (on x64).
 // However to provide even more consistency, aligning to page,
 // to make sure the same number of page boundaries is crossed each time.
-constexpr size_t page_size = 4096;
+inline constexpr size_t page_size = 4096;
 
 // A realistic skew relative to allocation granularity, when a variable is placed
 // next to a pointer in a structure or on stack. Also corresponds to the default packing.
-constexpr size_t skew = 8;
+inline constexpr size_t skew = 8;
 
 template <class T>
 struct highly_aligned_allocator : skewed_allocator<T, page_size, 0> {};
