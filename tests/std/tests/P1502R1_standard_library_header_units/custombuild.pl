@@ -6,11 +6,12 @@ use warnings;
 
 use JSON::PP;
 use Run;
+use Try::Tiny;
 
 sub readFile
 {
     my $filename = $_[0];
-    open(my $handle, "<", $filename) or die("Couldn't open $filename: $!");
+    open(my $handle, "<", $filename) or Run::PrintError(__FILE__, __LINE__, "Couldn't open $filename: $!");
     read($handle, my $string, -s $handle);
     return $string;
 }
@@ -19,14 +20,22 @@ sub loadJson
 {
     my $filename = $_[0];
     my $jsonStr = readFile($filename);
-    return JSON::PP->new->utf8->decode($jsonStr);
+    try {
+        return JSON::PP->new->utf8->decode($jsonStr);
+    } catch {
+        Run::PrintError(__FILE__, __LINE__, "Caught exception in loadJson.");
+    };
 }
 
 sub loadJsonWithComments
 {
     my $filename = $_[0];
     my $jsonStr = readFile($filename);
-    return JSON::PP->new->relaxed->utf8->decode($jsonStr);
+    try {
+        return JSON::PP->new->relaxed->utf8->decode($jsonStr);
+    } catch {
+        Run::PrintError(__FILE__, __LINE__, "Caught exception in loadJsonWithComments.");
+    };
 }
 
 sub getAllHeaders
