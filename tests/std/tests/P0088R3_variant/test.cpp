@@ -760,7 +760,7 @@ void test_hash_monostate() {
     static_assert(std::is_copy_constructible<H>::value, "");
   }
   {
-    test_hash_enabled_for_type<std::monostate>();
+    test_hash_enabled<std::monostate>();
   }
 }
 
@@ -795,18 +795,18 @@ namespace hash {
 void test_hash_variant_enabled() {
   {
 #ifndef __EDG__ // TRANSITION, DevCom-10107834
-    test_hash_enabled_for_type<std::variant<int> >();
-    test_hash_enabled_for_type<std::variant<int*, long, double, const int> >();
+    test_hash_enabled<std::variant<int> >();
+    test_hash_enabled<std::variant<int*, long, double, const int> >();
 #endif // ^^^ no workaround ^^^
   }
   {
-    test_hash_disabled_for_type<std::variant<int, A>>();
-    test_hash_disabled_for_type<std::variant<const A, void*>>();
+    test_hash_disabled<std::variant<int, A>>();
+    test_hash_disabled<std::variant<const A, void*>>();
   }
   {
 #ifndef __EDG__ // TRANSITION, DevCom-10107834
-    test_hash_enabled_for_type<std::variant<int, B>>();
-    test_hash_enabled_for_type<std::variant<const B, int>>();
+    test_hash_enabled<std::variant<int, B>>();
+    test_hash_enabled<std::variant<const B, int>>();
 #endif // ^^^ no workaround ^^^
   }
 }

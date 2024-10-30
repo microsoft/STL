@@ -12,6 +12,7 @@
 #include <functional>
 #include <limits>
 #include <list>
+#include <numeric>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -33,6 +34,74 @@ using namespace std;
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
 #endif // __clang__
+
+template <class InIt, class OutIt, class BinOp>
+OutIt last_known_good_adj_diff(InIt first, InIt last, OutIt dest, BinOp binop) {
+    if (first == last) {
+        return dest;
+    }
+
+    auto val = *first;
+    *dest    = val;
+
+    for (++first, ++dest; first != last; ++first, ++dest) {
+        auto tmp = *first;
+        *dest    = binop(tmp, val);
+        val      = tmp;
+    }
+
+    return dest;
+}
+
+template <class T>
+void test_case_adj_diff(const vector<T>& input, vector<T>& output_expected, vector<T>& output_actual) {
+    // Avoid truncation warnings:
+    const auto subtract = [](const T& left, const T& right) { return static_cast<T>(left - right); };
+    const auto expected = last_known_good_adj_diff(input.begin(), input.end(), output_expected.begin(), subtract);
+    const auto actual   = adjacent_difference(input.begin(), input.end(), output_actual.begin(), subtract);
+
+    assert(actual - output_actual.begin() == expected - output_expected.begin());
+    assert(output_actual == output_expected);
+}
+
+template <class T>
+void test_adjacent_difference(mt19937_64& gen) {
+    using Limits = numeric_limits<T>;
+
+    uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(
+        is_signed_v<T> ? static_cast<T>(Limits::min() / 2) : Limits::min(),
+        is_signed_v<T> ? static_cast<T>(Limits::max() / 2) : Limits::max());
+
+    vector<T> input;
+    vector<T> output_expected;
+    vector<T> output_actual;
+
+    for (const auto& v : {&input, &output_expected, &output_actual}) {
+        v->reserve(dataCount);
+    }
+
+    test_case_adj_diff(input, output_expected, output_actual);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+
+        for (const auto& v : {&output_expected, &output_actual}) {
+            v->assign(input.size(), 0);
+        }
+
+        test_case_adj_diff(input, output_expected, output_actual);
+    }
+}
+
+void test_adjacent_difference_with_heterogeneous_types() {
+    const vector<unsigned char> input = {10, 70, 20, 90};
+    vector<int> output(4);
+
+    const auto result = adjacent_difference(input.begin(), input.end(), output.begin());
+    assert(result == output.end());
+
+    const vector<int> expected = {10, 60, -50, 70};
+    assert(output == expected);
+}
 
 template <class FwdIt, class T>
 ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
@@ -895,6 +964,18 @@ void test_swap_arrays(mt19937_64& gen) {
 }
 
 void test_vector_algorithms(mt19937_64& gen) {
+    test_adjacent_difference<char>(gen);
+    test_adjacent_difference<signed char>(gen);
+    test_adjacent_difference<unsigned char>(gen);
+    test_adjacent_difference<short>(gen);
+    test_adjacent_difference<unsigned short>(gen);
+    test_adjacent_difference<int>(gen);
+    test_adjacent_difference<unsigned int>(gen);
+    test_adjacent_difference<long long>(gen);
+    test_adjacent_difference<unsigned long long>(gen);
+
+    test_adjacent_difference_with_heterogeneous_types();
+
     test_count<char>(gen);
     test_count<signed char>(gen);
     test_count<unsigned char>(gen);
@@ -1247,22 +1328,57 @@ void test_case_string_find_last_of(const basic_string<T>& input_haystack, const 
     assert(expected == actual);
 }
 
+template <class T>
+void test_case_string_find_str(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
+    ptrdiff_t expected;
+    if (input_needle.empty()) {
+        expected = 0;
+    } else {
+        const auto expected_iter = last_known_good_search(
+            input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+
+        if (expected_iter != input_haystack.end()) {
+            expected = expected_iter - input_haystack.begin();
+        } else {
+            expected = -1;
+        }
+    }
+    const auto actual = static_cast<ptrdiff_t>(input_haystack.find(input_needle));
+    assert(expected == actual);
+}
+
 template <class T, class D>
 void test_basic_string_dis(mt19937_64& gen, D& dis) {
     basic_string<T> input_haystack;
     basic_string<T> input_needle;
+    basic_string<T> temp;
     input_haystack.reserve(haystackDataCount);
     input_needle.reserve(needleDataCount);
+    temp.reserve(needleDataCount);
 
     for (;;) {
         input_needle.clear();
 
         test_case_string_find_first_of(input_haystack, input_needle);
         test_case_string_find_last_of(input_haystack, input_needle);
+        test_case_string_find_str(input_haystack, input_needle);
+
         for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
             input_needle.push_back(static_cast<T>(dis(gen)));
             test_case_string_find_first_of(input_haystack, input_needle);
             test_case_string_find_last_of(input_haystack, input_needle);
+            test_case_string_find_str(input_haystack, input_needle);
+
+            // For large needles the chance of a match is low, so test a guaranteed match
+            if (input_haystack.size() > input_needle.size() * 2) {
+                uniform_int_distribution<size_t> pos_dis(0, input_haystack.size() - input_needle.size());
+                const size_t pos             = pos_dis(gen);
+                const auto overwritten_first = input_haystack.begin() + static_cast<ptrdiff_t>(pos);
+                temp.assign(overwritten_first, overwritten_first + static_cast<ptrdiff_t>(input_needle.size()));
+                copy(input_needle.begin(), input_needle.end(), overwritten_first);
+                test_case_string_find_str(input_haystack, input_needle);
+                copy(temp.begin(), temp.end(), overwritten_first);
+            }
         }
 
         if (input_haystack.size() == haystackDataCount) {

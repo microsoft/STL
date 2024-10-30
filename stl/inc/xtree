@@ -998,7 +998,7 @@ private:
 protected:
     template <class... _Valtys>
     pair<_Nodeptr, bool> _Emplace(_Valtys&&... _Vals) {
-        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
+        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Valtys...>;
         const auto _Scary             = _Get_scary();
         _Tree_find_result<_Nodeptr> _Loc;
         _Nodeptr _Inserted;
@@ -1042,7 +1042,7 @@ public:
 protected:
     template <class... _Valtys>
     _Nodeptr _Emplace_hint(const _Nodeptr _Hint, _Valtys&&... _Vals) {
-        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
+        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Valtys...>;
         const auto _Scary             = _Get_scary();
         _Tree_find_hint_result<_Nodeptr> _Loc;
         _Nodeptr _Inserted;
