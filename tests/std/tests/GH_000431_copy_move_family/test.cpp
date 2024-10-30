@@ -17,6 +17,7 @@
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
+#include <compare>
 #include <span>
 #endif // _HAS_CXX20
 
@@ -641,6 +642,85 @@ void test_algorithms(CopyFn copy_fn) {
     }
 }
 
+#if _HAS_CXX20
+struct MyIterator { // A contiguous iterator with a weirdly narrow difference type
+    using iterator_concept = std::contiguous_iterator_tag;
+    using value_type       = int;
+    using difference_type  = short;
+
+    int* ptr = nullptr;
+
+    MyIterator() = default;
+    explicit MyIterator(int* p) : ptr{p} {}
+
+    value_type& operator*() const {
+        return *ptr;
+    }
+    value_type* operator->() const {
+        return ptr;
+    }
+
+    MyIterator& operator++() {
+        ++ptr;
+        return *this;
+    }
+    MyIterator operator++(int) {
+        auto tmp = *this;
+        ++ptr;
+        return tmp;
+    }
+
+    MyIterator& operator--() {
+        --ptr;
+        return *this;
+    }
+    MyIterator operator--(int) {
+        auto tmp = *this;
+        --ptr;
+        return tmp;
+    }
+
+    bool operator==(const MyIterator&) const  = default;
+    auto operator<=>(const MyIterator&) const = default;
+
+    value_type& operator[](difference_type i) const {
+        return ptr[i];
+    }
+
+    MyIterator& operator+=(difference_type n) {
+        ptr += n;
+        return *this;
+    }
+    MyIterator& operator-=(difference_type n) {
+        ptr -= n;
+        return *this;
+    }
+    difference_type operator-(const MyIterator& that) const {
+        return ptr - that.ptr;
+    }
+    MyIterator operator+(difference_type n) const {
+        return MyIterator{ptr + n};
+    }
+    MyIterator operator-(difference_type n) const {
+        return MyIterator{ptr - n};
+    }
+    friend MyIterator operator+(difference_type n, const MyIterator& i) {
+        return i + n;
+    }
+};
+static_assert(std::contiguous_iterator<MyIterator>);
+
+void test_copy_n_regressions() {
+    // _Copy_memmove_n was adding a size_t to an iterator without converting to its difference_type:
+    //  warning C4267: 'argument': conversion from 'size_t' to 'MyIterator::difference_type', possible loss of data
+    std::copy_n(MyIterator{}, -42, MyIterator{});
+
+    // ranges::copy_n wasn't guarding against negative n when calling the memmove optimization
+    int x = 42;
+    std::ranges::copy_n(&x, -42, &x);
+}
+#endif // _HAS_CXX20
+
 int main() {
     test_algorithms([](auto begin, auto end, auto out) { copy(begin, end, out); });
     test_algorithms([](auto begin, auto end, auto out) { copy_n(begin, distance(begin, end), out); });
@@ -710,5 +790,7 @@ int main() {
     test_algorithms([](auto begin, auto end, auto out) {
         ranges::uninitialized_move_n(begin, distance(begin, end), out, unreachable_sentinel);
     });
+
+    test_copy_n_regressions();
 #endif // _HAS_CXX20
 }
