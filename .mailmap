@@ -1,0 +1,11 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# This file maps author and committer email addresses to canonical names and email
+# addresses for display in the output of `git log` and `git blame`.
+# Format:
+# Canonical Name <canonical@example.com> <commit@example.com>
+
+
+Amy Wishnousky <amyw@microsoft.com> <stwish@microsoft.com>
+Anju del Moral Gonzalez <delMoralGonzalez.Anju@microsoft.com> <judelmor@microsoft.com>
