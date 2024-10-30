@@ -605,18 +605,6 @@ bool _Is_word(_Elem _Ch) {
     return _UCh <= static_cast<_UElem>('z') && _Is_word(static_cast<unsigned char>(_UCh));
 }
 
-#if _HAS_CXX20
-template <class _Ty, class = void>
-struct _Get_member_comparison_category {
-    using type = weak_ordering;
-};
-
-template <class _Ty>
-struct _Get_member_comparison_category<_Ty, void_t<typename _Ty::comparison_category>> {
-    using type = _Ty::comparison_category;
-};
-#endif // _HAS_CXX20
-
 _EXPORT_STD template <class _BidIt>
 class sub_match : public pair<_BidIt, _BidIt> { // class to hold contents of a capture group
 public:
@@ -629,10 +617,6 @@ public:
     using _Traits = typename string_type::traits_type;
     // Note that _Size_type should always be std::size_t
     using _Size_type = typename string_type::size_type;
-
-#if _HAS_CXX20
-    using _Comparison_category = _Get_member_comparison_category<_Traits>::type;
-#endif // _HAS_CXX20
 
     constexpr sub_match() : _Mybase(), matched(false) {}
 
@@ -744,7 +728,8 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const sub_match<_BidI
 #if _HAS_CXX20
 _EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
-    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
+    using _Comparison_category = _Get_comparison_category_t<char_traits<_Iter_value_t<_BidIt>>>;
+    return static_cast<_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
@@ -781,7 +766,8 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 #if _HAS_CXX20
 _EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
-    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
+    using _Comparison_category = _Get_comparison_category_t<char_traits<_Iter_value_t<_BidIt>>>;
+    return static_cast<_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
@@ -848,7 +834,8 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 #if _HAS_CXX20
 _EXPORT_STD template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
-    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left._Compare(_STD addressof(_Right), 1) <=> 0);
+    using _Comparison_category = _Get_comparison_category_t<char_traits<_Iter_value_t<_BidIt>>>;
+    return static_cast<_Comparison_category>(_Left._Compare(_STD addressof(_Right), 1) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt>
@@ -917,7 +904,8 @@ _NODISCARD bool operator==(
 _EXPORT_STD template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD auto operator<=>(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
-    return static_cast<sub_match<_BidIt>::_Comparison_category>(_Left._Compare(_Right.data(), _Right.size()) <=> 0);
+    using _Comparison_category = _Get_comparison_category_t<char_traits<_Iter_value_t<_BidIt>>>;
+    return static_cast<_Comparison_category>(_Left._Compare(_Right.data(), _Right.size()) <=> 0);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _BidIt, class _Traits, class _Alloc>
