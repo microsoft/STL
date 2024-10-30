@@ -20,22 +20,26 @@ sub loadJson
 {
     my $filename = $_[0];
     my $jsonStr = readFile($filename);
+    my $decoded = "";
     try {
-        return JSON::PP->new->utf8->decode($jsonStr);
+        $decoded = JSON::PP->new->utf8->decode($jsonStr);
     } catch {
         Run::PrintError(__FILE__, __LINE__, "Caught exception in loadJson.");
     };
+    return $decoded;
 }
 
 sub loadJsonWithComments
 {
     my $filename = $_[0];
     my $jsonStr = readFile($filename);
+    my $decoded = "";
     try {
-        return JSON::PP->new->relaxed->utf8->decode($jsonStr);
+        $decoded = JSON::PP->new->relaxed->utf8->decode($jsonStr);
     } catch {
         Run::PrintError(__FILE__, __LINE__, "Caught exception in loadJsonWithComments.");
     };
+    return $decoded;
 }
 
 sub getAllHeaders
