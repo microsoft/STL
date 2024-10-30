@@ -4612,57 +4612,56 @@ namespace chrono {
         minutes* _Offset;
     };
 
-    template <class _CharT, class _Traits, class _Parsable, class... _Rest>
-    using _Has_from_stream =
-        decltype(static_cast<void>(from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
-                     _STD declval<const _CharT*>(), _STD declval<_Parsable&>(), _STD declval<_Rest>()...)),
-            0); // intentional ADL
+    template <class _Parsable, class _CharT, class _Traits, class... _Rest>
+    concept _Can_from_stream = requires(
+        basic_istream<_CharT, _Traits>& __istr, const _CharT* __s, _Parsable& __parsed, _Rest&&... __rest_args) {
+        from_stream(__istr, +__s, __parsed, _STD forward<_Rest>(__rest_args)...); // intentional ADL
+    };
 
-    _EXPORT_STD template <class _CharT, class _Parsable, _Has_from_stream<_CharT, char_traits<_CharT>, _Parsable> = 0>
+    _EXPORT_STD template <class _CharT, _Can_from_stream<_CharT, char_traits<_CharT>> _Parsable>
     _NODISCARD auto parse(const _CharT* _Fmt, _Parsable& _Tp) {
         return _Time_parse_iomanip_c_str<_CharT, char_traits<_CharT>, allocator<_CharT>, _Parsable>{_Fmt, _Tp};
     }
 
-    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        _Has_from_stream<_CharT, _Traits, _Parsable> = 0>
+    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc, _Can_from_stream<_CharT, _Traits> _Parsable>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp) {
         return _Time_parse_iomanip{_Fmt, _Tp};
     }
 
-    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        _Has_from_stream<_CharT, _Traits, _Parsable, basic_string<_CharT, _Traits, _Alloc>*> = 0>
+    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc,
+        _Can_from_stream<_CharT, _Traits, basic_string<_CharT, _Traits, _Alloc>*> _Parsable>
     _NODISCARD auto parse(const _CharT* _Fmt, _Parsable& _Tp, basic_string<_CharT, _Traits, _Alloc>& _Abbrev) {
         return _Time_parse_iomanip_c_str{_Fmt, _Tp, _STD addressof(_Abbrev)};
     }
 
-    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        _Has_from_stream<_CharT, _Traits, _Parsable, basic_string<_CharT, _Traits, _Alloc>*> = 0>
+    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc,
+        _Can_from_stream<_CharT, _Traits, basic_string<_CharT, _Traits, _Alloc>*> _Parsable>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev) {
         return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev)};
     }
 
-    _EXPORT_STD template <class _CharT, class _Parsable,
-        _Has_from_stream<_CharT, char_traits<_CharT>, _Parsable, basic_string<_CharT>*, minutes*> = 0>
+    _EXPORT_STD template <class _CharT,
+        _Can_from_stream<_CharT, char_traits<_CharT>, basic_string<_CharT>*, minutes*> _Parsable>
     _NODISCARD auto parse(const _CharT* _Fmt, _Parsable& _Tp, minutes& _Offset) {
         return _Time_parse_iomanip_c_str{_Fmt, _Tp, static_cast<basic_string<_CharT>*>(nullptr), &_Offset};
     }
 
-    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        _Has_from_stream<_CharT, _Traits, _Parsable, basic_string<_CharT, _Traits, _Alloc>*, minutes*> = 0>
+    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc,
+        _Can_from_stream<_CharT, _Traits, basic_string<_CharT, _Traits, _Alloc>*, minutes*> _Parsable>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp, minutes& _Offset) {
         return _Time_parse_iomanip{_Fmt, _Tp, static_cast<basic_string<_CharT, _Traits, _Alloc>*>(nullptr), &_Offset};
     }
 
-    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        _Has_from_stream<_CharT, _Traits, _Parsable, basic_string<_CharT, _Traits, _Alloc>*, minutes*> = 0>
+    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc,
+        _Can_from_stream<_CharT, _Traits, basic_string<_CharT, _Traits, _Alloc>*, minutes*> _Parsable>
     _NODISCARD auto parse(
         const _CharT* _Fmt, _Parsable& _Tp, basic_string<_CharT, _Traits, _Alloc>& _Abbrev, minutes& _Offset) {
         return _Time_parse_iomanip_c_str{_Fmt, _Tp, _STD addressof(_Abbrev), &_Offset};
     }
 
-    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        _Has_from_stream<_CharT, _Traits, _Parsable, basic_string<_CharT, _Traits, _Alloc>*, minutes*> = 0>
+    _EXPORT_STD template <class _CharT, class _Traits, class _Alloc,
+        _Can_from_stream<_CharT, _Traits, basic_string<_CharT, _Traits, _Alloc>*, minutes*> _Parsable>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev, minutes& _Offset) {
         return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev), &_Offset};
