@@ -628,6 +628,21 @@ constexpr size_t _Traits_find(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits>
         return _Start_at;
     }
 
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Is_implementation_handled_char_traits<_Traits> && sizeof(typename _Traits::char_type) <= 2) {
+        if (!_STD _Is_constant_evaluated()) {
+            const auto _End = _Haystack + _Hay_size;
+            const auto _Ptr = _STD _Search_vectorized(_Haystack + _Start_at, _End, _Needle, _Needle_size);
+
+            if (_Ptr != _End) {
+                return static_cast<size_t>(_Ptr - _Haystack);
+            } else {
+                return static_cast<size_t>(-1);
+            }
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
     const auto _Possible_matches_end = _Haystack + (_Hay_size - _Needle_size) + 1;
     for (auto _Match_try = _Haystack + _Start_at;; ++_Match_try) {
         _Match_try = _Traits::find(_Match_try, static_cast<size_t>(_Possible_matches_end - _Match_try), *_Needle);
@@ -1756,13 +1771,14 @@ _NODISCARD constexpr bool operator==(const basic_string_view<_Elem, _Traits> _Lh
     return _Lhs._Equal(_Rhs);
 }
 
-template <class _Traits, class = void>
+template <class _Traits>
 struct _Get_comparison_category {
     using type = weak_ordering;
 };
 
 template <class _Traits>
-struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_category>> {
+    requires requires { typename _Traits::comparison_category; }
+struct _Get_comparison_category<_Traits> {
     using type = _Traits::comparison_category;
 
     static_assert(_Is_any_of_v<type, partial_ordering, weak_ordering, strong_ordering>,

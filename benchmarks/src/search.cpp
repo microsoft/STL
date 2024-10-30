@@ -112,6 +112,22 @@ void search_default_searcher(benchmark::State& state) {
 }
 
 template <class T>
+void member_find(benchmark::State& state) {
+    const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
+    const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
+
+    const T haystack(src_haystack.begin(), src_haystack.end());
+    const T needle(src_needle.begin(), src_needle.end());
+
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = haystack.find(needle);
+        benchmark::DoNotOptimize(res);
+    }
+}
+
+template <class T>
 void classic_find_end(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
@@ -157,6 +173,9 @@ BENCHMARK(ranges_search<std::uint16_t>)->Apply(common_args);
 
 BENCHMARK(search_default_searcher<std::uint8_t>)->Apply(common_args);
 BENCHMARK(search_default_searcher<std::uint16_t>)->Apply(common_args);
+
+BENCHMARK(member_find<std::string>)->Apply(common_args);
+BENCHMARK(member_find<std::wstring>)->Apply(common_args);
 
 BENCHMARK(classic_find_end<std::uint8_t>)->Apply(common_args);
 BENCHMARK(classic_find_end<std::uint16_t>)->Apply(common_args);

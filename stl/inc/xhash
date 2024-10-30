@@ -590,7 +590,7 @@ public:
     template <class... _Valtys>
     conditional_t<_Multi, iterator, pair<iterator, bool>> emplace(_Valtys&&... _Vals) {
         // try to insert value_type(_Vals...)
-        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
+        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Valtys...>;
         if constexpr (_Multi) {
             _Check_max_size();
             _List_node_emplace_op2<_Alnode> _Newnode(_List._Getal(), _STD forward<_Valtys>(_Vals)...);
@@ -642,7 +642,7 @@ public:
 
     template <class... _Valtys>
     iterator emplace_hint(const_iterator _Hint, _Valtys&&... _Vals) { // try to insert value_type(_Vals...)
-        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
+        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Valtys...>;
         if constexpr (_Multi) {
             _Check_max_size();
             _List_node_emplace_op2<_Alnode> _Newnode(_List._Getal(), _STD forward<_Valtys>(_Vals)...);
