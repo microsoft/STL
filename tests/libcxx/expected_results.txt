@@ -1266,3 +1266,8 @@ std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
 # This test is marked as `REQUIRES: has-unix-headers, libcpp-has-abi-bounded-iterators-in-vector`.
 # Listing these on separate lines would allow magic_comments.txt to recognize it.
 std/containers/sequences/vector/vector.modifiers/assert.push_back.invalidation.pass.cpp:9 SKIPPED
+
+# Per VSO-2110093, this test is timing out (taking more than ten minutes to compile) in Libs-ASan-x86 (the
+# MSVC-internal equivalent of the GitHub STL-ASan-CI pipeline). Disable it in the internal test harness while
+# we investigate.
+std/utilities/format/format.functions/vformat.pass.cpp:9 SKIPPED
