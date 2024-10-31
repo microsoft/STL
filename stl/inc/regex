@@ -1920,7 +1920,7 @@ public:
         return _Rep ? _Rep->_Loops : 0;
     }
 
-    _NODISCARD unsigned int mark_count() const noexcept {
+    _NODISCARD unsigned int mark_count() const noexcept /* strengthened */ {
         return _Rep ? _Rep->_Marks - 1 : 0;
     }
 
