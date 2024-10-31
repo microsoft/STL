@@ -1319,7 +1319,7 @@ struct _Sequence { // holds sequences of _Sz elements
 
     unsigned int _Sz;
     _Buf<_Elem> _Data;
-    _Sequence* _Next;
+    _Sequence* _Next = nullptr;
 };
 
 class _Node_base { // base class for all nfa nodes
