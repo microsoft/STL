@@ -2445,12 +2445,12 @@ public:
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX20
-    _NODISCARD bool operator==(default_sentinel_t) const noexcept /* strengthend */ {
+    _NODISCARD bool operator==(default_sentinel_t) const noexcept /* strengthened */ {
         return !_MyRe;
     }
 #endif // _HAS_CXX20
 
-    _NODISCARD const value_type& operator*() const noexcept /* strengthend */ {
+    _NODISCARD const value_type& operator*() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_MyRe, "regex_iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -2458,7 +2458,7 @@ public:
         return _MyVal;
     }
 
-    _NODISCARD const value_type* operator->() const noexcept /* strengthend */ {
+    _NODISCARD const value_type* operator->() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_MyRe, "regex_iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -2638,12 +2638,12 @@ public:
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX20
-    _NODISCARD bool operator==(default_sentinel_t) const noexcept /* strengthend */ {
+    _NODISCARD bool operator==(default_sentinel_t) const noexcept /* strengthened */ {
         return !_Res;
     }
 #endif // _HAS_CXX20
 
-    _NODISCARD const value_type& operator*() const noexcept /* strengthend */ {
+    _NODISCARD const value_type& operator*() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Res, "regex_token_iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -2652,7 +2652,7 @@ public:
         return *_Res;
     }
 
-    _NODISCARD const value_type* operator->() const noexcept /* strengthend */ {
+    _NODISCARD const value_type* operator->() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Res, "regex_token_iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
