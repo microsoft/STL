@@ -227,7 +227,7 @@ struct _Cmp_icase { // functor to compare for case-insensitive equality
 
     explicit _Cmp_icase(const _RxTraits& _Tr) : _Traits(_Tr) {}
 
-    bool operator()(_Elem _Ex1, _Elem _Ex2) {
+    bool operator()(_Elem _Ex1, _Elem _Ex2) const {
         return _Traits.translate_nocase(_Ex1) == _Traits.translate_nocase(_Ex2);
     }
 
@@ -240,7 +240,7 @@ struct _Cmp_collate { // functor to compare for locale-specific equality
 
     explicit _Cmp_collate(const _RxTraits& _Tr) : _Traits(_Tr) {}
 
-    bool operator()(_Elem _Ex1, _Elem _Ex2) {
+    bool operator()(_Elem _Ex1, _Elem _Ex2) const {
         return _Traits.translate(_Ex1) == _Traits.translate(_Ex2);
     }
 
