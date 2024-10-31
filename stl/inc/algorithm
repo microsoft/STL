@@ -47,6 +47,11 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept;
 
+void* __stdcall __std_remove_copy_1(const void* _First, const void* _Last, void* _Dest, uint8_t _Val) noexcept;
+void* __stdcall __std_remove_copy_2(const void* _First, const void* _Last, void* _Dest, uint16_t _Val) noexcept;
+void* __stdcall __std_remove_copy_4(const void* _First, const void* _Last, void* _Dest, uint32_t _Val) noexcept;
+void* __stdcall __std_remove_copy_8(const void* _First, const void* _Last, void* _Dest, uint64_t _Val) noexcept;
+
 _Min_max_element_t __stdcall __std_minmax_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
@@ -95,6 +100,30 @@ __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void
         ::__std_reverse_copy_trivially_copyable_8(_First, _Last, _Dest);
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+    }
+}
+
+template <class _InTy, class _OutTy, class _TVal>
+_OutTy* _Remove_copy_vectorized(
+    const _InTy* const _First, const _InTy* const _Last, _OutTy* const _Dest, const _TVal _Val) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(_InTy) == sizeof(_OutTy));
+
+    if constexpr (is_pointer_v<_InTy>) {
+#ifdef _WIN64
+        return reinterpret_cast<_OutTy*>(::__std_remove_copy_8(_First, _Last, _Dest, reinterpret_cast<uint64_t>(_Val)));
+#else
+        return reinterpret_cast<_OutTy*>(::__std_remove_copy_4(_First, _Last, _Dest, reinterpret_cast<uint32_t>(_Val)));
+#endif
+    } else if constexpr (sizeof(_InTy) == 1) {
+        return reinterpret_cast<_OutTy*>(::__std_remove_copy_1(_First, _Last, _Dest, static_cast<uint8_t>(_Val)));
+    } else if constexpr (sizeof(_InTy) == 2) {
+        return reinterpret_cast<_OutTy*>(::__std_remove_copy_2(_First, _Last, _Dest, static_cast<uint16_t>(_Val)));
+    } else if constexpr (sizeof(_InTy) == 4) {
+        return reinterpret_cast<_OutTy*>(::__std_remove_copy_4(_First, _Last, _Dest, static_cast<uint32_t>(_Val)));
+    } else if constexpr (sizeof(_InTy) == 8) {
+        return reinterpret_cast<_OutTy*>(::__std_remove_copy_8(_First, _Last, _Dest, static_cast<uint64_t>(_Val)));
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
     }
 }
 
