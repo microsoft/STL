@@ -175,21 +175,17 @@ struct _Cl_names { // structure to associate class name with mask value
     }
 };
 
-template <class _Traits>
-struct _Char_traits_eq {
-    using _Elem = typename _Traits::char_type;
-
-    _STATIC_CALL_OPERATOR bool operator()(_Elem _Left, _Elem _Right) _CONST_CALL_OPERATOR noexcept {
-        return _Traits::eq(_Left, _Right);
+template <class _CharT>
+struct _Std_char_traits_eq {
+    _STATIC_CALL_OPERATOR bool operator()(_CharT _Left, _CharT _Right) _CONST_CALL_OPERATOR noexcept {
+        return char_traits<_CharT>::eq(_Left, _Right);
     }
 };
 
-template <class _Traits>
-struct _Char_traits_lt {
-    using _Elem = typename _Traits::char_type;
-
-    _STATIC_CALL_OPERATOR bool operator()(_Elem _Left, _Elem _Right) _CONST_CALL_OPERATOR noexcept {
-        return _Traits::lt(_Left, _Right);
+template <class _CharT>
+struct _Std_char_traits_lt {
+    _STATIC_CALL_OPERATOR bool operator()(_CharT _Left, _CharT _Right) _CONST_CALL_OPERATOR noexcept {
+        return char_traits<_CharT>::lt(_Left, _Right);
     }
 };
 
@@ -199,23 +195,23 @@ constexpr bool _Is_predefined_char_like_type = _Is_character<_Ty>::value || is_u
 
 // library-provided char_traits::eq behaves like equal_to<_Elem>
 template <class _Elem>
-constexpr bool _Can_memcmp_elements_with_pred<_Elem, _Elem, _Char_traits_eq<char_traits<_Elem>>> =
+constexpr bool _Can_memcmp_elements_with_pred<_Elem, _Elem, _Std_char_traits_eq<_Elem>> =
     _Is_predefined_char_like_type<_Elem> && _Can_memcmp_elements<_Elem, _Elem>;
 
 template <class _Elem, bool = _Is_predefined_char_like_type<_Elem>>
-struct _Lex_compare_memcmp_classify_pred_for_char_traits_lt {
+struct _Lex_compare_memcmp_classify_pred_for_std_char_traits_lt {
     using _UElem = make_unsigned_t<_Elem>;
     using _Pred  = conditional_t<_Lex_compare_memcmp_classify_elements<_UElem, _UElem>, less<int>, void>;
 };
 template <class _Elem>
-struct _Lex_compare_memcmp_classify_pred_for_char_traits_lt<_Elem, false> {
+struct _Lex_compare_memcmp_classify_pred_for_std_char_traits_lt<_Elem, false> {
     using _Pred = void;
 };
 
 // library-provided char_traits::lt behaves like less<make_unsigned_t<_Elem>>
 template <class _Elem>
-struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Char_traits_lt<char_traits<_Elem>>>
-    : _Lex_compare_memcmp_classify_pred_for_char_traits_lt<_Elem> {};
+struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Std_char_traits_lt<_Elem>>
+    : _Lex_compare_memcmp_classify_pred_for_std_char_traits_lt<_Elem> {};
 
 template <class _RxTraits>
 struct _Cmp_cs { // functor to compare two character values for equality
@@ -531,50 +527,6 @@ private:
     regex_constants::error_type _Err;
 };
 
-template <class _Traits, class _FwdIt1, class _FwdIt2>
-int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
-    // compare two iterator ranges:
-    // if [_First1, _Last1) is lexicographically less than [_First2, _Last2), a negative value
-    // if [_First2, _Last2) is lexicographically less than [_First1, _Last1), a positive value
-    // otherwise, zero
-    using _Elem = typename _Traits::char_type;
-    static_assert(is_same_v<_Iter_value_t<_FwdIt1>, _Elem>, "bad _FwdIt1 to _Iter_compare");
-    static_assert(is_same_v<_Iter_value_t<_FwdIt2>, _Elem>, "bad _FwdIt2 to _Iter_compare");
-
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-
-    auto _UFirst1 = _Get_unwrapped(_First1);
-    auto _ULast1  = _Get_unwrapped(_Last1);
-    auto _UFirst2 = _Get_unwrapped(_First2);
-    auto _ULast2  = _Get_unwrapped(_Last2);
-
-    if constexpr (is_pointer_v<decltype(_UFirst1)> && is_pointer_v<decltype(_UFirst2)>) {
-        return _Traits_compare<_Traits>(
-            _UFirst1, static_cast<size_t>(_ULast1 - _UFirst1), _UFirst2, static_cast<size_t>(_ULast2 - _UFirst2));
-    } else {
-        const auto _Cmp = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _ULast2, _Char_traits_eq<_Traits>{});
-
-        if (_Cmp.first == _ULast1) {
-            if (_Cmp.second == _ULast2) {
-                return 0;
-            } else {
-                return -1;
-            }
-        }
-
-        if (_Cmp.second == _ULast2) {
-            return 1;
-        }
-
-        if (_Traits::lt(*_Cmp.first, *_Cmp.second)) {
-            return -1;
-        } else {
-            return 1;
-        }
-    }
-}
-
 inline bool _Is_word(unsigned char _UCh) {
     // special casing char to avoid branches for std::regex in this path
     static constexpr bool _Is_word_table[_STD _Max_limit<unsigned char>() + 1] = {
@@ -613,10 +565,6 @@ public:
     using difference_type = typename iterator_traits<_BidIt>::difference_type;
     using iterator        = _BidIt;
     using string_type     = basic_string<value_type>;
-    // Note that _Traits should always be std::char_traits<value_type>
-    using _Traits = typename string_type::traits_type;
-    // Note that _Size_type should always be std::size_t
-    using _Size_type = typename string_type::size_type;
 
     constexpr sub_match() : _Mybase(), matched(false) {}
 
@@ -639,7 +587,7 @@ public:
     _NODISCARD int compare(const sub_match& _Right) const { // compare *this to _Right
         const _Mybase _LRange(_Effective_range());
         const _Mybase _RRange(_Right._Effective_range());
-        return _Iter_compare<_Traits>(_LRange.first, _LRange.second, _RRange.first, _RRange.second);
+        return _Iter_compare(_LRange.first, _LRange.second, _RRange.first, _RRange.second);
     }
 
     _NODISCARD int compare(const string_type& _Right) const { // compare *this to _Right
@@ -647,7 +595,7 @@ public:
     }
 
     _NODISCARD int compare(_In_z_ const value_type* _Ptr) const { // compare *this to array pointed to by _Ptr
-        return _Compare(_Ptr, _Traits::length(_Ptr));
+        return _Compare(_Ptr, char_traits<value_type>::length(_Ptr));
     }
 
     void swap(sub_match& _Other) noexcept(_Is_nothrow_swappable<_BidIt>::value) {
@@ -655,55 +603,98 @@ public:
         _STD swap(matched, _Other.matched);
     }
 
-    int _Compare(const value_type* const _Ptr, const _Size_type _Count) const {
+    template <class _FwdIt2>
+    static int _Iter_compare(_BidIt _First1, _BidIt _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
+        // compare two iterator ranges:
+        // if [_First1, _Last1) is lexicographically less than [_First2, _Last2), a negative value
+        // if [_First2, _Last2) is lexicographically less than [_First1, _Last1), a positive value
+        // otherwise, zero
+        static_assert(is_same_v<_Iter_value_t<_FwdIt2>, value_type>, "bad _FwdIt2 to _Iter_compare");
+
+        _Adl_verify_range(_First1, _Last1);
+        _Adl_verify_range(_First2, _Last2);
+
+        auto _UFirst1 = _Get_unwrapped(_First1);
+        auto _ULast1  = _Get_unwrapped(_Last1);
+        auto _UFirst2 = _Get_unwrapped(_First2);
+        auto _ULast2  = _Get_unwrapped(_Last2);
+
+        if constexpr (is_pointer_v<decltype(_UFirst1)> && is_pointer_v<decltype(_UFirst2)>) {
+            return _Traits_compare<char_traits<value_type>>(
+                _UFirst1, static_cast<size_t>(_ULast1 - _UFirst1), _UFirst2, static_cast<size_t>(_ULast2 - _UFirst2));
+        } else {
+            const auto _Cmp = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _ULast2, _Std_char_traits_eq<value_type>{});
+
+            if (_Cmp.first == _ULast1) {
+                if (_Cmp.second == _ULast2) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            }
+
+            if (_Cmp.second == _ULast2) {
+                return 1;
+            }
+
+            if (char_traits<value_type>::lt(*_Cmp.first, *_Cmp.second)) {
+                return -1;
+            } else {
+                return 1;
+            }
+        }
+    }
+
+    int _Compare(const value_type* const _Ptr, const size_t _Count) const {
         // compare *this to array [_Ptr, _Ptr + _Count)
         const _Mybase _Range(_Effective_range());
-        return _Iter_compare<_Traits>(_Range.first, _Range.second, _Ptr, _Ptr + _Count);
+        return _Iter_compare(_Range.first, _Range.second, _Ptr, _Ptr + _Count);
     }
 
     bool _Match_equal(const sub_match& _Right) const { // check *this to _Right for equality
         const _Mybase _LRange(_Effective_range());
         const _Mybase _RRange(_Right._Effective_range());
-        return _STD equal(_LRange.first, _LRange.second, _RRange.first, _RRange.second, _Char_traits_eq<_Traits>{});
+        return _STD equal(
+            _LRange.first, _LRange.second, _RRange.first, _RRange.second, _Std_char_traits_eq<value_type>{});
     }
 
-    bool _Match_equal(const value_type* const _Ptr, const _Size_type _Count) const {
+    bool _Match_equal(const value_type* const _Ptr, const size_t _Count) const {
         // check *this to array [_Ptr, _Ptr + _Count) for equality
         const _Mybase _Range(_Effective_range());
-        return _STD equal(_Range.first, _Range.second, _Ptr, _Ptr + _Count, _Char_traits_eq<_Traits>{});
+        return _STD equal(_Range.first, _Range.second, _Ptr, _Ptr + _Count, _Std_char_traits_eq<value_type>{});
     }
 
     bool _Match_equal(const value_type* const _Ptr) const { // check *this to C-string _Ptr for equality
-        return _Match_equal(_Ptr, _Traits::length(_Ptr));
+        return _Match_equal(_Ptr, char_traits<value_type>::length(_Ptr));
     }
 
     bool _Less(const sub_match& _Right) const { // check whether *this is less than _Right
         const _Mybase _LRange(_Effective_range());
         const _Mybase _RRange(_Right._Effective_range());
         return _STD lexicographical_compare(
-            _LRange.first, _LRange.second, _RRange.first, _RRange.second, _Char_traits_lt<_Traits>{});
+            _LRange.first, _LRange.second, _RRange.first, _RRange.second, _Std_char_traits_lt<value_type>{});
     }
 
-    bool _Less(const value_type* const _Ptr, const _Size_type _Count) const {
+    bool _Less(const value_type* const _Ptr, const size_t _Count) const {
         // check whether *this is less than [_Ptr, _Ptr + _Count)
         const _Mybase _Range(_Effective_range());
         return _STD lexicographical_compare(
-            _Range.first, _Range.second, _Ptr, _Ptr + _Count, _Char_traits_lt<_Traits>{});
+            _Range.first, _Range.second, _Ptr, _Ptr + _Count, _Std_char_traits_lt<value_type>{});
     }
 
     bool _Less(const value_type* const _Ptr) const { // check whether *this is less than C-string _Ptr
-        return _Less(_Ptr, _Traits::length(_Ptr));
+        return _Less(_Ptr, char_traits<value_type>::length(_Ptr));
     }
 
-    bool _Greater(const value_type* const _Ptr, const _Size_type _Count) const {
+    bool _Greater(const value_type* const _Ptr, const size_t _Count) const {
         // check whether *this is greater than [_Ptr, _Ptr + _Count)
         const _Mybase _Range(_Effective_range());
         return _STD lexicographical_compare(
-            _Ptr, _Ptr + _Count, _Range.first, _Range.second, _Char_traits_lt<_Traits>{});
+            _Ptr, _Ptr + _Count, _Range.first, _Range.second, _Std_char_traits_lt<value_type>{});
     }
 
     bool _Greater(const value_type* const _Ptr) const { // check whether *this is greater than C-string _Ptr
-        return _Greater(_Ptr, _Traits::length(_Ptr));
+        return _Greater(_Ptr, char_traits<value_type>::length(_Ptr));
     }
 
     _Mybase _Effective_range() const { // if matched, returns *this; otherwise returns an empty range
