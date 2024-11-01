@@ -871,6 +871,20 @@ FwdIt last_known_good_remove(FwdIt first, FwdIt last, T val) {
     return dest;
 }
 
+template <class InFwdIt, class OutFwdIt, class T>
+OutFwdIt last_known_good_remove_copy(InFwdIt first, InFwdIt last, OutFwdIt dest, T val) {
+    while (first != last) {
+        if (*first != val) {
+            *dest = *first;
+            ++dest;
+        }
+
+        ++first;
+    }
+
+    return dest;
+}
+
 template <class T>
 void test_case_remove(vector<T>& in_out_expected, vector<T>& in_out_actual, vector<T>& in_out_actual_r, const T val) {
     auto rem_expected = last_known_good_remove(in_out_expected.begin(), in_out_expected.end(), val);
@@ -908,6 +922,49 @@ void test_remove(mt19937_64& gen) {
         }
 
         test_case_remove(in_out_expected, in_out_actual, in_out_actual_r, static_cast<T>(dis(gen)));
+    }
+}
+
+template <class T>
+void test_case_remove_copy(
+    const vector<T>& input, vector<T>& out_expected, vector<T>& out_actual, vector<T>& out_actual_r, const T val) {
+
+    auto rem_expected = last_known_good_remove_copy(input.begin(), input.end(), out_expected.begin(), val);
+    auto rem_actual   = remove_copy(input.begin(), input.end(), out_actual.begin(), val);
+    assert(equal(out_expected.begin(), rem_expected, out_actual.begin(), rem_actual));
+
+#if _HAS_CXX20
+    auto rem_actual_r = ranges::remove_copy(input, out_actual_r.begin(), val);
+    assert(equal(out_expected.begin(), rem_expected, begin(out_actual_r), rem_actual_r.out));
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) out_actual_r;
+#endif // ^^^ !_HAS_CXX20 ^^^
+}
+
+template <class T>
+void test_remove_copy(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    binomial_distribution<TD> dis(10);
+
+    vector<T> source;
+    vector<T> out_expected;
+    vector<T> out_actual;
+    vector<T> out_actual_r;
+
+    for (const auto& v : {&source, &out_expected, &out_actual, &out_actual_r}) {
+        v->reserve(dataCount);
+    }
+
+    test_case_remove_copy(source, out_expected, out_actual, out_actual_r, static_cast<T>(dis(gen)));
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        source.push_back(static_cast<T>(dis(gen)));
+
+        for (const auto& v : {&out_expected, &out_actual, &out_actual_r}) {
+            v->clear();
+            v->resize(source.size());
+        }
+
+        test_case_remove_copy(source, out_expected, out_actual, out_actual_r, static_cast<T>(dis(gen)));
     }
 }
 
@@ -1127,6 +1184,11 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_remove<unsigned int>(gen);
     test_remove<long long>(gen);
     test_remove<unsigned long long>(gen);
+
+    test_remove_copy<int>(gen);
+    test_remove_copy<unsigned int>(gen);
+    test_remove_copy<long long>(gen);
+    test_remove_copy<unsigned long long>(gen);
 
     test_swap_ranges<char>(gen);
     test_swap_ranges<short>(gen);
