@@ -264,19 +264,14 @@ constexpr bool _Vector_alg_in_ranges_replace_is_safe =
     && _Vector_alg_in_find_is_safe_elem<_Ty2, _Iter_value_t<_Iter>>; // replacement fits
 
 // Can we activate the vector algorithms for find/count?
-template <class _InIt, class _OutIt, class _Ty>
+template <class _InIt, class _Sent, class _OutIt, class _Ty>
 constexpr bool _Vector_alg_in_remove_copy_is_safe =
-    // The iterators must be contiguous so we can get raw pointers.
-    _Iterators_are_contiguous<_InIt, _OutIt>
-    // The iterators must not be volatile.
-    && !_Iterator_is_volatile<_InIt>
-    && !_Iterator_is_volatile<_OutIt>
-    // Same value types
-    && is_same_v<remove_const_t<_Iter_value_t<_InIt>>, _Iter_value_t<_OutIt>>
-    // AVX2 mask compatible size
-    && sizeof(_Iter_value_t<_InIt>) >= 4
+    // Can copy values bitwise
+    _Sent_copy_cat<_InIt, _Sent, _OutIt>::_Bitcopy_assignable
     // The type of the value to find must be compatible with the type of the elements.
-    && _Vector_alg_in_find_is_safe_elem<_Ty, _Iter_value_t<_InIt>>;
+    && _Vector_alg_in_find_is_safe_elem<_Ty, _Iter_value_t<_InIt>>
+    // AVX2 mask compatible size
+    && sizeof(_Iter_value_t<_InIt>) >= 4;
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -4604,7 +4599,7 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
     auto _UDest       = _STD _Get_unwrapped_unverified(_Dest);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Vector_alg_in_remove_copy_is_safe<decltype(_UFirst), decltype(_UDest), _Ty>) {
+    if constexpr (_Vector_alg_in_remove_copy_is_safe<decltype(_UFirst), decltype(_UFirst), decltype(_UDest), _Ty>) {
         if (!_STD _Is_constant_evaluated()) {
             if (!_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Val)) {
                 _STD _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst, _ULast, _UDest));
@@ -4852,8 +4847,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (_Vector_alg_in_remove_copy_is_safe<_It, _Out, _Ty> && sized_sentinel_for<_Se, _It>
-                          && is_same_v<_Pj, identity>) {
+            if constexpr (_Vector_alg_in_remove_copy_is_safe<_It, _Se, _Out, _Ty> && is_same_v<_Pj, identity>) {
                 if (!_STD _Is_constant_evaluated()) {
                     if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
                         return _RANGES _Copy_unchecked(_First, _Last, _Output);
