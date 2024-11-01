@@ -4326,6 +4326,7 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
 }
 
 void* __stdcall __std_remove_copy_4(const void* _First, const void* _Last, void* _Dest, uint32_t _Val) noexcept {
+#ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const __m256i _Match = _mm256_set1_epi32(_Val);
 
@@ -4345,11 +4346,13 @@ void* __stdcall __std_remove_copy_4(const void* _First, const void* _Last, void*
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
+#endif // !defined(_M_ARM64EC)
 
     return _Remove_fallback(_First, _Last, _Dest, _Val);
 }
 
 void* __stdcall __std_remove_copy_8(const void* _First, const void* _Last, void* _Dest, uint64_t _Val) noexcept {
+#ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const __m256i _Match = _mm256_set1_epi64x(_Val);
 
@@ -4369,6 +4372,7 @@ void* __stdcall __std_remove_copy_8(const void* _First, const void* _Last, void*
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     }
+#endif // !defined(_M_ARM64EC)
 
     return _Remove_fallback(_First, _Last, _Dest, _Val);
 }
