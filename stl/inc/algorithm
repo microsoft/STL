@@ -4865,7 +4865,7 @@ namespace ranges {
                     const auto _Dest_ptr  = _STD to_address(_Output);
                     const auto _Result    = _STD _Remove_copy_vectorized(_First_ptr, _Last_ptr, _Dest_ptr, _Val);
 
-                    if constexpr (is_pointer_v<_It>) {
+                    if constexpr (is_pointer_v<_It> && is_pointer_v<_Out>) {
                         return {_Last_ptr, _Result};
                     } else {
                         return {_First + _Size, _Output + (_Result - _Dest_ptr)};
