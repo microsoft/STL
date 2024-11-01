@@ -4851,6 +4851,29 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (_Vector_alg_in_remove_copy_is_safe<_It, _Out, _Ty> && sized_sentinel_for<_Se, _It>
+                          && is_same_v<_Pj, identity>) {
+                if (!_STD _Is_constant_evaluated()) {
+                    if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
+                        return _RANGES _Copy_unchecked(_First, _Last, _Output);
+                    }
+
+                    const auto _Size      = _Last - _First;
+                    const auto _First_ptr = _STD to_address(_First);
+                    const auto _Last_ptr  = _First_ptr + static_cast<size_t>(_Size);
+                    const auto _Dest_ptr  = _STD to_address(_Output);
+                    const auto _Result    = _STD _Remove_copy_vectorized(_First_ptr, _Last_ptr, _Dest_ptr, _Val);
+
+                    if constexpr (is_pointer_v<_It>) {
+                        return {_Last_ptr, _Result};
+                    } else {
+                        return {_First + _Size, _Output + (_Result - _Dest_ptr)};
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
             for (; _First != _Last; ++_First) {
                 if (_STD invoke(_Proj, *_First) != _Val) {
                     *_Output = *_First;
