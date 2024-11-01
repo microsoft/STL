@@ -4360,9 +4360,9 @@ void* __stdcall __std_remove_copy_8(const void* _First, const void* _Last, void*
             const __m256i _Mask   = _mm256_cmpeq_epi64(_Src, _Match);
             const uint32_t _Bingo = _mm256_movemask_pd(_mm256_castsi256_pd(_Mask));
             const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_8_avx._Shuf[_Bingo]));
-            const __m256i _Val    = _mm256_permutevar8x32_epi32(_Src, _Shuf);
+            const __m256i _Vec    = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             const size_t _Left    = _Remove_tables_8_avx._Size[_Bingo];
-            _mm256_maskstore_epi64(reinterpret_cast<long long*>(_Dest), _Avx2_tail_mask_32(_Left >> 2), _Val);
+            _mm256_maskstore_epi64(reinterpret_cast<long long*>(_Dest), _Avx2_tail_mask_32(_Left >> 2), _Vec);
             _Advance_bytes(_Dest, _Left);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop);
