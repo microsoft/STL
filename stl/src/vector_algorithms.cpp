@@ -4338,7 +4338,7 @@ void* __stdcall __std_remove_copy_4(const void* _First, const void* _Last, void*
             const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_4_avx._Shuf[_Bingo]));
             const __m256i _Val    = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             const size_t _Left    = _Remove_tables_4_avx._Size[_Bingo];
-            _mm256_maskstore_epi32(reinterpret_cast<int*>(_Dest), _Avx2_tail_mask_32(_Left << 2), _Val);
+            _mm256_maskstore_epi32(reinterpret_cast<int*>(_Dest), _Avx2_tail_mask_32(_Left >> 2), _Val);
             _Advance_bytes(_Dest, _Left);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop);
@@ -4362,7 +4362,7 @@ void* __stdcall __std_remove_copy_8(const void* _First, const void* _Last, void*
             const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_8_avx._Shuf[_Bingo]));
             const __m256i _Val    = _mm256_permutevar8x32_epi32(_Src, _Shuf);
             const size_t _Left    = _Remove_tables_8_avx._Size[_Bingo];
-            _mm256_maskstore_epi64(reinterpret_cast<long long*>(_Dest), _Avx2_tail_mask_32(_Left << 2), _Val);
+            _mm256_maskstore_epi64(reinterpret_cast<long long*>(_Dest), _Avx2_tail_mask_32(_Left >> 2), _Val);
             _Advance_bytes(_Dest, _Left);
             _Advance_bytes(_First, 32);
         } while (_First != _Stop);
