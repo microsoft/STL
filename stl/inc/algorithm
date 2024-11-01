@@ -263,12 +263,12 @@ constexpr bool _Vector_alg_in_ranges_replace_is_safe =
     _Vector_alg_in_replace_is_safe<_Iter, _Ty1> // can search and replace
     && _Vector_alg_in_find_is_safe_elem<_Ty2, _Iter_value_t<_Iter>>; // replacement fits
 
-// Can we activate the vector algorithms for find/count?
+// Can we activate the vector algorithms for remove_copy_if?
 template <class _InIt, class _Sent, class _OutIt, class _Ty>
 constexpr bool _Vector_alg_in_remove_copy_is_safe =
     // Can copy values bitwise
     _Sent_copy_cat<_InIt, _Sent, _OutIt>::_Bitcopy_assignable
-    // The type of the value to find must be compatible with the type of the elements.
+    // The type of the value to remove must be compatible with the type of the elements.
     && _Vector_alg_in_find_is_safe_elem<_Ty, _Iter_value_t<_InIt>>
     // AVX2 mask compatible size
     && sizeof(_Iter_value_t<_InIt>) >= 4;
