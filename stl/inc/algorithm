@@ -4607,7 +4607,7 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
     if constexpr (_Vector_alg_in_remove_copy_is_safe<decltype(_UFirst), decltype(_UDest), _Ty>) {
         if (!_STD _Is_constant_evaluated()) {
             if (!_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Val)) {
-                _STD _Seek_wrapped(_Dest, _Copy_unchecked(_UFirst, _ULast, _UDest));
+                _STD _Seek_wrapped(_Dest, _STD _Copy_unchecked(_UFirst, _ULast, _UDest));
                 return _Dest;
             }
 
