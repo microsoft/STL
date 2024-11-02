@@ -644,7 +644,7 @@ void test_algorithms(CopyFn copy_fn) {
 
 #if _HAS_CXX20
 struct MyIterator { // A contiguous iterator with a weirdly narrow difference type
-    using iterator_concept = std::contiguous_iterator_tag;
+    using iterator_concept = contiguous_iterator_tag;
     using value_type       = int;
     using difference_type  = short;
 
@@ -708,16 +708,16 @@ struct MyIterator { // A contiguous iterator with a weirdly narrow difference ty
         return i + n;
     }
 };
-static_assert(std::contiguous_iterator<MyIterator>);
+static_assert(contiguous_iterator<MyIterator>);
 
 void test_copy_n_regressions() {
     // _Copy_memmove_n was adding a size_t to an iterator without converting to its difference_type:
     //  warning C4267: 'argument': conversion from 'size_t' to 'MyIterator::difference_type', possible loss of data
-    std::copy_n(MyIterator{}, -42, MyIterator{});
+    copy_n(MyIterator{}, -42, MyIterator{});
 
     // ranges::copy_n wasn't guarding against negative n when calling the memmove optimization
     int x = 42;
-    std::ranges::copy_n(&x, -42, &x);
+    ranges::copy_n(&x, -42, &x);
 }
 #endif // _HAS_CXX20
 
