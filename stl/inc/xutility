@@ -4710,7 +4710,7 @@ _CONSTEXPR20 void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Se
 
 template <class _OutCtgIt>
 _OutCtgIt _Copy_memmove_tail(
-    const char* const _First_ch, _OutCtgIt const _Dest, const size_t _Byte_count, const size_t _Object_count) {
+    const char* const _First_ch, const _OutCtgIt _Dest, const size_t _Byte_count, const size_t _Object_count) {
     _STL_INTERNAL_CHECK(_Byte_count == _Object_count * sizeof(*_Dest));
     const auto _DestPtr  = _STD _To_address(_Dest);
     char* const _Dest_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_DestPtr));
