@@ -682,8 +682,8 @@ struct MyIterator { // A contiguous iterator with a weirdly narrow difference ty
 
     auto operator<=>(const MyIterator&) const = default;
 
-    value_type& operator[](difference_type i) const {
-        return ptr[i];
+    value_type& operator[](difference_type n) const {
+        return ptr[n];
     }
 
     MyIterator& operator+=(difference_type n) {
