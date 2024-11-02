@@ -648,10 +648,10 @@ struct MyIterator { // A contiguous iterator with a weirdly narrow difference ty
     using value_type       = int;
     using difference_type  = short;
 
-    int* ptr = nullptr;
+    value_type* ptr = nullptr;
 
     MyIterator() = default;
-    explicit MyIterator(int* p) : ptr{p} {}
+    explicit MyIterator(value_type* p) : ptr{p} {}
 
     value_type& operator*() const {
         return *ptr;
