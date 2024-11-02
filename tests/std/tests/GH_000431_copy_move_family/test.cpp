@@ -680,7 +680,6 @@ struct MyIterator { // A contiguous iterator with a weirdly narrow difference ty
         return tmp;
     }
 
-    bool operator==(const MyIterator&) const  = default;
     auto operator<=>(const MyIterator&) const = default;
 
     value_type& operator[](difference_type i) const {
