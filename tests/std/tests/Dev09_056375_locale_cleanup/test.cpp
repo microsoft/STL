@@ -6,7 +6,9 @@
 
 #include <cassert>
 #include <cstdio>
+#include <cwchar>
 #include <locale>
+#include <type_traits>
 
 #pragma warning(push) // TRANSITION, OS-23694920
 #pragma warning(disable : 4668) // 'MEOW' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
@@ -46,6 +48,22 @@ STATIC_ASSERT(is_implicitly_default_constructible<messages_base>);
 STATIC_ASSERT(!is_implicitly_default_constructible<locale::facet>);
 STATIC_ASSERT(!is_implicitly_default_constructible<ctype<char>>);
 STATIC_ASSERT(!is_implicitly_default_constructible<ctype<wchar_t>>);
+
+// Test mandatory locale::id properties and strengthend exception specification.
+STATIC_ASSERT(is_nothrow_default_constructible_v<locale::id>); // strengthened
+STATIC_ASSERT(!is_copy_constructible_v<locale::id>);
+STATIC_ASSERT(!is_move_constructible_v<locale::id>);
+STATIC_ASSERT(!is_copy_assignable_v<locale::id>);
+STATIC_ASSERT(!is_move_assignable_v<locale::id>);
+STATIC_ASSERT(is_nothrow_destructible_v<locale::id>);
+
+// Test that non-Standard locale::id constructor and conversion function are not user-visible.
+STATIC_ASSERT(!is_constructible_v<locale::id, size_t>);
+STATIC_ASSERT(!is_constructible_v<size_t, locale::id>);
+STATIC_ASSERT(!is_constructible_v<size_t, locale::id&>);
+STATIC_ASSERT(!is_convertible_v<size_t, locale::id>);
+STATIC_ASSERT(!is_convertible_v<locale::id, size_t>);
+STATIC_ASSERT(!is_convertible_v<locale::id&, size_t>);
 
 void test_dll() {
     puts("Calling dll");

@@ -15,11 +15,11 @@ _STD_BEGIN
     if ((_CATMASK(Facet::_Getcat()) & cat) == 0) {                                                          \
         ;                                                                                                   \
     } else if (ptrloc == nullptr) {                                                                         \
-        ptrimp->_Addfac(new Facet(lobj), Facet::id);                                                        \
+        ptrimp->_Addfac(new Facet(lobj), Facet::id._Get_index());                                           \
     } else {                                                                                                \
         ptrimp->_Addfac(                                                                                    \
             const_cast<locale::facet*>(static_cast<const locale::facet*>(&_STD use_facet<Facet>(*ptrloc))), \
-            Facet::id);                                                                                     \
+            Facet::id._Get_index());                                                                        \
     }
 
 // moved from locale to ease subsetting

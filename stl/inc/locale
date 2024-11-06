@@ -157,7 +157,7 @@ protected:
 _EXPORT_STD template <class _Facet>
 _NODISCARD bool has_facet(const locale& _Loc) noexcept {
     _BEGIN_LOCK(_LOCK_LOCALE) // the thread lock, make get atomic
-    size_t _Id = _Facet::id;
+    size_t _Id = _Facet::id._Get_index();
     return _Loc._Getfacet(_Id) || _Facet::_Getcat() != static_cast<size_t>(-1);
     _END_LOCK()
 }
