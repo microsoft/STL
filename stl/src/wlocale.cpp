@@ -36,7 +36,7 @@ using _Tw10 = moneypunct<wchar_t, true>;
 using _Tw11 = time_get<wchar_t>;
 using _Tw12 = time_put<wchar_t>;
 using _Tw13 = codecvt<wchar_t, char, _Mbstatet>;
-__PURE_APPDOMAIN_GLOBAL locale::id time_put<wchar_t>::id(0);
+__PURE_APPDOMAIN_GLOBAL locale::id time_put<wchar_t>::id{};
 
 void __CLRCALL_OR_CDECL locale::_Locimp::_Makewloc(const _Locinfo& lobj, locale::category cat, _Locimp* ptrimp,
     const locale* ptrloc) { // setup wide part of a new locale
