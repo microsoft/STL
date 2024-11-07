@@ -49,7 +49,7 @@ STATIC_ASSERT(!is_implicitly_default_constructible<locale::facet>);
 STATIC_ASSERT(!is_implicitly_default_constructible<ctype<char>>);
 STATIC_ASSERT(!is_implicitly_default_constructible<ctype<wchar_t>>);
 
-// Test mandatory locale::id properties and strengthend exception specification.
+// Test mandatory locale::id properties and strengthened exception specification.
 STATIC_ASSERT(is_nothrow_default_constructible_v<locale::id>); // strengthened
 STATIC_ASSERT(!is_copy_constructible_v<locale::id>);
 STATIC_ASSERT(!is_move_constructible_v<locale::id>);
