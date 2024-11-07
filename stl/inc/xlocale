@@ -74,12 +74,12 @@ public:
 
     class _CRTIMP2_PURE_IMPORT id { // identifier stamp, unique for each distinct kind of facet
     public:
+#ifdef _CRTBLD // TRANSITION, ABI: preserved for binary compatibility
+        __CLR_OR_THIS_CALL id(size_t _Val = 0) : _Id(_Val) {}
+#else // ^^^ defined(_CRTBLD) / !defined(_CRTBLD) vvv
         template <int = 0> // TRANSITION, ABI
         id() noexcept /* strengthened */ {}
-
-#ifdef _CRTBLD // TRANSITION, ABI: preserved for binary compatibility
-        __CLR_OR_THIS_CALL id(size_t _Val) : _Id(_Val) {}
-#endif // defined(_CRTBLD)
+#endif // ^^^ !defined(_CRTBLD) ^^^
 
         id(const id&)            = delete;
         id& operator=(const id&) = delete;
