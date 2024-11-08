@@ -349,10 +349,12 @@ public:
 
     _CONSTEXPR20 void swap(optional& _Right)
         noexcept(is_nothrow_move_constructible_v<_Ty> && is_nothrow_swappable_v<_Ty>) {
-        static_assert(is_move_constructible_v<_Ty>,
-            "optional<T>::swap requires T to be move constructible (N4950 [optional.swap]/1).");
-        static_assert(!is_move_constructible_v<_Ty> || is_swappable_v<_Ty>,
-            "optional<T>::swap requires T to be swappable (N4950 [optional.swap]/2).");
+        if constexpr (is_move_constructible_v<_Ty>) {
+            static_assert(
+                is_swappable_v<_Ty>, "optional<T>::swap requires T to be swappable (N4993 [optional.swap]/2).");
+        } else {
+            static_assert(false, "optional<T>::swap requires T to be move constructible (N4993 [optional.swap]/1).");
+        }
         using _STD swap;
         if constexpr (_Is_trivially_swappable_v<_Ty>) {
             using _TrivialBaseTy = _Optional_destruct_base<_Ty>;
