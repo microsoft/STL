@@ -15,11 +15,11 @@ _STD_BEGIN
     if ((_CATMASK(Facet::_Getcat()) & cat) == 0) {                                                          \
         ;                                                                                                   \
     } else if (ptrloc == nullptr) {                                                                         \
-        ptrimp->_Addfac(new Facet(lobj), Facet::id);                                                        \
+        ptrimp->_Addfac(new Facet(lobj), Facet::id._Get_index());                                           \
     } else {                                                                                                \
         ptrimp->_Addfac(                                                                                    \
             const_cast<locale::facet*>(static_cast<const locale::facet*>(&_STD use_facet<Facet>(*ptrloc))), \
-            Facet::id);                                                                                     \
+            Facet::id._Get_index());                                                                        \
     }
 
 // moved from locale to ease subsetting
@@ -36,7 +36,7 @@ using _Tw10 = moneypunct<wchar_t, true>;
 using _Tw11 = time_get<wchar_t>;
 using _Tw12 = time_put<wchar_t>;
 using _Tw13 = codecvt<wchar_t, char, _Mbstatet>;
-__PURE_APPDOMAIN_GLOBAL locale::id time_put<wchar_t>::id(0);
+__PURE_APPDOMAIN_GLOBAL locale::id time_put<wchar_t>::id{};
 
 void __CLRCALL_OR_CDECL locale::_Locimp::_Makewloc(const _Locinfo& lobj, locale::category cat, _Locimp* ptrimp,
     const locale* ptrloc) { // setup wide part of a new locale
