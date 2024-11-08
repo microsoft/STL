@@ -3164,7 +3164,7 @@ namespace {
 
             const size_t _Haystack_length_tail = _Haystack_length & 7;
             if (_Haystack_length_tail != 0) {
-                const unsigned int _Tail_bingo_mask = ((1 << _Haystack_length_tail) - 1);
+                const unsigned int _Tail_bingo_mask = (1 << _Haystack_length_tail) - 1;
                 _Ty _Buf[8];
                 memcpy(_Buf, _Haystack_ptr + _Haystack_length_vec, _Haystack_length_tail * sizeof(_Ty));
                 const __m256i _Data       = _Load_avx_256_8(_Buf);
@@ -3198,7 +3198,7 @@ namespace {
 
             const size_t _Haystack_length_tail = _Haystack_length & 7;
             if (_Haystack_length_tail != 0) {
-                const unsigned int _Tail_bingo_mask = ((1 << _Haystack_length_tail) - 1);
+                const unsigned int _Tail_bingo_mask = (1 << _Haystack_length_tail) - 1;
                 _Ty _Buf[8];
                 memcpy(_Buf, _Haystack_ptr, _Haystack_length_tail * sizeof(_Ty));
                 const __m256i _Data       = _Load_avx_256_8(_Buf);
