@@ -175,21 +175,17 @@ struct _Cl_names { // structure to associate class name with mask value
     }
 };
 
-template <class _Traits>
-struct _Char_traits_eq {
-    using _Elem = typename _Traits::char_type;
-
-    _STATIC_CALL_OPERATOR bool operator()(_Elem _Left, _Elem _Right) _CONST_CALL_OPERATOR noexcept {
-        return _Traits::eq(_Left, _Right);
+template <class _CharT>
+struct _Std_char_traits_eq {
+    _STATIC_CALL_OPERATOR bool operator()(_CharT _Left, _CharT _Right) _CONST_CALL_OPERATOR noexcept {
+        return char_traits<_CharT>::eq(_Left, _Right);
     }
 };
 
-template <class _Traits>
-struct _Char_traits_lt {
-    using _Elem = typename _Traits::char_type;
-
-    _STATIC_CALL_OPERATOR bool operator()(_Elem _Left, _Elem _Right) _CONST_CALL_OPERATOR noexcept {
-        return _Traits::lt(_Left, _Right);
+template <class _CharT>
+struct _Std_char_traits_lt {
+    _STATIC_CALL_OPERATOR bool operator()(_CharT _Left, _CharT _Right) _CONST_CALL_OPERATOR noexcept {
+        return char_traits<_CharT>::lt(_Left, _Right);
     }
 };
 
@@ -199,23 +195,23 @@ constexpr bool _Is_predefined_char_like_type = _Is_character<_Ty>::value || is_u
 
 // library-provided char_traits::eq behaves like equal_to<_Elem>
 template <class _Elem>
-constexpr bool _Can_memcmp_elements_with_pred<_Elem, _Elem, _Char_traits_eq<char_traits<_Elem>>> =
+constexpr bool _Can_memcmp_elements_with_pred<_Elem, _Elem, _Std_char_traits_eq<_Elem>> =
     _Is_predefined_char_like_type<_Elem> && _Can_memcmp_elements<_Elem, _Elem>;
 
 template <class _Elem, bool = _Is_predefined_char_like_type<_Elem>>
-struct _Lex_compare_memcmp_classify_pred_for_char_traits_lt {
+struct _Lex_compare_memcmp_classify_pred_for_std_char_traits_lt {
     using _UElem = make_unsigned_t<_Elem>;
     using _Pred  = conditional_t<_Lex_compare_memcmp_classify_elements<_UElem, _UElem>, less<int>, void>;
 };
 template <class _Elem>
-struct _Lex_compare_memcmp_classify_pred_for_char_traits_lt<_Elem, false> {
+struct _Lex_compare_memcmp_classify_pred_for_std_char_traits_lt<_Elem, false> {
     using _Pred = void;
 };
 
 // library-provided char_traits::lt behaves like less<make_unsigned_t<_Elem>>
 template <class _Elem>
-struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Char_traits_lt<char_traits<_Elem>>>
-    : _Lex_compare_memcmp_classify_pred_for_char_traits_lt<_Elem> {};
+struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Std_char_traits_lt<_Elem>>
+    : _Lex_compare_memcmp_classify_pred_for_std_char_traits_lt<_Elem> {};
 
 template <class _RxTraits>
 struct _Cmp_cs { // functor to compare two character values for equality
@@ -229,9 +225,9 @@ template <class _RxTraits>
 struct _Cmp_icase { // functor to compare for case-insensitive equality
     using _Elem = typename _RxTraits::char_type;
 
-    explicit _Cmp_icase(const _RxTraits& _Tr) : _Traits(_Tr) {}
+    explicit _Cmp_icase(const _RxTraits& _Tr) noexcept : _Traits(_Tr) {}
 
-    bool operator()(_Elem _Ex1, _Elem _Ex2) {
+    bool operator()(_Elem _Ex1, _Elem _Ex2) const {
         return _Traits.translate_nocase(_Ex1) == _Traits.translate_nocase(_Ex2);
     }
 
@@ -242,9 +238,9 @@ template <class _RxTraits>
 struct _Cmp_collate { // functor to compare for locale-specific equality
     using _Elem = typename _RxTraits::char_type;
 
-    explicit _Cmp_collate(const _RxTraits& _Tr) : _Traits(_Tr) {}
+    explicit _Cmp_collate(const _RxTraits& _Tr) noexcept : _Traits(_Tr) {}
 
-    bool operator()(_Elem _Ex1, _Elem _Ex2) {
+    bool operator()(_Elem _Ex1, _Elem _Ex2) const {
         return _Traits.translate(_Ex1) == _Traits.translate(_Ex2);
     }
 
@@ -393,15 +389,15 @@ public:
         return _Tmp;
     }
 
-    locale_type getloc() const {
+    locale_type getloc() const noexcept /* strengthened */ {
         return _Loc;
     }
 
-    const collate<_Elem>* _Getcoll() const { // get collate facet pointer
+    const collate<_Elem>* _Getcoll() const noexcept { // get collate facet pointer
         return _Pcoll;
     }
 
-    const ctype<_Elem>* _Getctype() const { // get ctype facet pointer
+    const ctype<_Elem>* _Getctype() const noexcept { // get ctype facet pointer
         return _Pctype;
     }
 
@@ -531,50 +527,6 @@ private:
     regex_constants::error_type _Err;
 };
 
-template <class _Traits, class _FwdIt1, class _FwdIt2>
-int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
-    // compare two iterator ranges:
-    // if [_First1, _Last1) is lexicographically less than [_First2, _Last2), a negative value
-    // if [_First2, _Last2) is lexicographically less than [_First1, _Last1), a positive value
-    // otherwise, zero
-    using _Elem = typename _Traits::char_type;
-    static_assert(is_same_v<_Iter_value_t<_FwdIt1>, _Elem>, "bad _FwdIt1 to _Iter_compare");
-    static_assert(is_same_v<_Iter_value_t<_FwdIt2>, _Elem>, "bad _FwdIt2 to _Iter_compare");
-
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-
-    auto _UFirst1 = _Get_unwrapped(_First1);
-    auto _ULast1  = _Get_unwrapped(_Last1);
-    auto _UFirst2 = _Get_unwrapped(_First2);
-    auto _ULast2  = _Get_unwrapped(_Last2);
-
-    if constexpr (is_pointer_v<decltype(_UFirst1)> && is_pointer_v<decltype(_UFirst2)>) {
-        return _Traits_compare<_Traits>(
-            _UFirst1, static_cast<size_t>(_ULast1 - _UFirst1), _UFirst2, static_cast<size_t>(_ULast2 - _UFirst2));
-    } else {
-        const auto _Cmp = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _ULast2, _Char_traits_eq<_Traits>{});
-
-        if (_Cmp.first == _ULast1) {
-            if (_Cmp.second == _ULast2) {
-                return 0;
-            } else {
-                return -1;
-            }
-        }
-
-        if (_Cmp.second == _ULast2) {
-            return 1;
-        }
-
-        if (_Traits::lt(*_Cmp.first, *_Cmp.second)) {
-            return -1;
-        } else {
-            return 1;
-        }
-    }
-}
-
 inline bool _Is_word(unsigned char _UCh) {
     // special casing char to avoid branches for std::regex in this path
     static constexpr bool _Is_word_table[_STD _Max_limit<unsigned char>() + 1] = {
@@ -613,14 +565,10 @@ public:
     using difference_type = typename iterator_traits<_BidIt>::difference_type;
     using iterator        = _BidIt;
     using string_type     = basic_string<value_type>;
-    // Note that _Traits should always be std::char_traits<value_type>
-    using _Traits = typename string_type::traits_type;
-    // Note that _Size_type should always be std::size_t
-    using _Size_type = typename string_type::size_type;
 
-    constexpr sub_match() : _Mybase(), matched(false) {}
+    constexpr sub_match() = default;
 
-    bool matched;
+    bool matched = false;
 
     _NODISCARD difference_type length() const {
         const _Mybase _Range(_Effective_range());
@@ -639,7 +587,7 @@ public:
     _NODISCARD int compare(const sub_match& _Right) const { // compare *this to _Right
         const _Mybase _LRange(_Effective_range());
         const _Mybase _RRange(_Right._Effective_range());
-        return _Iter_compare<_Traits>(_LRange.first, _LRange.second, _RRange.first, _RRange.second);
+        return _Iter_compare(_LRange.first, _LRange.second, _RRange.first, _RRange.second);
     }
 
     _NODISCARD int compare(const string_type& _Right) const { // compare *this to _Right
@@ -647,7 +595,7 @@ public:
     }
 
     _NODISCARD int compare(_In_z_ const value_type* _Ptr) const { // compare *this to array pointed to by _Ptr
-        return _Compare(_Ptr, _Traits::length(_Ptr));
+        return _Compare(_Ptr, char_traits<value_type>::length(_Ptr));
     }
 
     void swap(sub_match& _Other) noexcept(_Is_nothrow_swappable<_BidIt>::value) {
@@ -655,55 +603,98 @@ public:
         _STD swap(matched, _Other.matched);
     }
 
-    int _Compare(const value_type* const _Ptr, const _Size_type _Count) const {
+    template <class _FwdIt2>
+    static int _Iter_compare(_BidIt _First1, _BidIt _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
+        // compare two iterator ranges:
+        // if [_First1, _Last1) is lexicographically less than [_First2, _Last2), a negative value
+        // if [_First2, _Last2) is lexicographically less than [_First1, _Last1), a positive value
+        // otherwise, zero
+        static_assert(is_same_v<_Iter_value_t<_FwdIt2>, value_type>, "bad _FwdIt2 to _Iter_compare");
+
+        _Adl_verify_range(_First1, _Last1);
+        _Adl_verify_range(_First2, _Last2);
+
+        auto _UFirst1 = _Get_unwrapped(_First1);
+        auto _ULast1  = _Get_unwrapped(_Last1);
+        auto _UFirst2 = _Get_unwrapped(_First2);
+        auto _ULast2  = _Get_unwrapped(_Last2);
+
+        if constexpr (is_pointer_v<decltype(_UFirst1)> && is_pointer_v<decltype(_UFirst2)>) {
+            return _Traits_compare<char_traits<value_type>>(
+                _UFirst1, static_cast<size_t>(_ULast1 - _UFirst1), _UFirst2, static_cast<size_t>(_ULast2 - _UFirst2));
+        } else {
+            const auto _Cmp = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _ULast2, _Std_char_traits_eq<value_type>{});
+
+            if (_Cmp.first == _ULast1) {
+                if (_Cmp.second == _ULast2) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            }
+
+            if (_Cmp.second == _ULast2) {
+                return 1;
+            }
+
+            if (char_traits<value_type>::lt(*_Cmp.first, *_Cmp.second)) {
+                return -1;
+            } else {
+                return 1;
+            }
+        }
+    }
+
+    int _Compare(const value_type* const _Ptr, const size_t _Count) const {
         // compare *this to array [_Ptr, _Ptr + _Count)
         const _Mybase _Range(_Effective_range());
-        return _Iter_compare<_Traits>(_Range.first, _Range.second, _Ptr, _Ptr + _Count);
+        return _Iter_compare(_Range.first, _Range.second, _Ptr, _Ptr + _Count);
     }
 
     bool _Match_equal(const sub_match& _Right) const { // check *this to _Right for equality
         const _Mybase _LRange(_Effective_range());
         const _Mybase _RRange(_Right._Effective_range());
-        return _STD equal(_LRange.first, _LRange.second, _RRange.first, _RRange.second, _Char_traits_eq<_Traits>{});
+        return _STD equal(
+            _LRange.first, _LRange.second, _RRange.first, _RRange.second, _Std_char_traits_eq<value_type>{});
     }
 
-    bool _Match_equal(const value_type* const _Ptr, const _Size_type _Count) const {
+    bool _Match_equal(const value_type* const _Ptr, const size_t _Count) const {
         // check *this to array [_Ptr, _Ptr + _Count) for equality
         const _Mybase _Range(_Effective_range());
-        return _STD equal(_Range.first, _Range.second, _Ptr, _Ptr + _Count, _Char_traits_eq<_Traits>{});
+        return _STD equal(_Range.first, _Range.second, _Ptr, _Ptr + _Count, _Std_char_traits_eq<value_type>{});
     }
 
     bool _Match_equal(const value_type* const _Ptr) const { // check *this to C-string _Ptr for equality
-        return _Match_equal(_Ptr, _Traits::length(_Ptr));
+        return _Match_equal(_Ptr, char_traits<value_type>::length(_Ptr));
     }
 
     bool _Less(const sub_match& _Right) const { // check whether *this is less than _Right
         const _Mybase _LRange(_Effective_range());
         const _Mybase _RRange(_Right._Effective_range());
         return _STD lexicographical_compare(
-            _LRange.first, _LRange.second, _RRange.first, _RRange.second, _Char_traits_lt<_Traits>{});
+            _LRange.first, _LRange.second, _RRange.first, _RRange.second, _Std_char_traits_lt<value_type>{});
     }
 
-    bool _Less(const value_type* const _Ptr, const _Size_type _Count) const {
+    bool _Less(const value_type* const _Ptr, const size_t _Count) const {
         // check whether *this is less than [_Ptr, _Ptr + _Count)
         const _Mybase _Range(_Effective_range());
         return _STD lexicographical_compare(
-            _Range.first, _Range.second, _Ptr, _Ptr + _Count, _Char_traits_lt<_Traits>{});
+            _Range.first, _Range.second, _Ptr, _Ptr + _Count, _Std_char_traits_lt<value_type>{});
     }
 
     bool _Less(const value_type* const _Ptr) const { // check whether *this is less than C-string _Ptr
-        return _Less(_Ptr, _Traits::length(_Ptr));
+        return _Less(_Ptr, char_traits<value_type>::length(_Ptr));
     }
 
-    bool _Greater(const value_type* const _Ptr, const _Size_type _Count) const {
+    bool _Greater(const value_type* const _Ptr, const size_t _Count) const {
         // check whether *this is greater than [_Ptr, _Ptr + _Count)
         const _Mybase _Range(_Effective_range());
         return _STD lexicographical_compare(
-            _Ptr, _Ptr + _Count, _Range.first, _Range.second, _Char_traits_lt<_Traits>{});
+            _Ptr, _Ptr + _Count, _Range.first, _Range.second, _Std_char_traits_lt<value_type>{});
     }
 
     bool _Greater(const value_type* const _Ptr) const { // check whether *this is greater than C-string _Ptr
-        return _Greater(_Ptr, _Traits::length(_Ptr));
+        return _Greater(_Ptr, char_traits<value_type>::length(_Ptr));
     }
 
     _Mybase _Effective_range() const { // if matched, returns *this; otherwise returns an empty range
@@ -1031,7 +1022,7 @@ public:
         return _Matches.size();
     }
 
-    _NODISCARD size_type max_size() const {
+    _NODISCARD size_type max_size() const noexcept /* strengthened */ {
         return _Matches.max_size();
     }
 
@@ -1244,13 +1235,13 @@ enum _Node_type { // type flag for nfa nodes
 
 template <class _Elem>
 struct _Buf { // character buffer
-    _Buf() : _Sz(0), _Nchrs(0), _Chrs(nullptr) {}
+    _Buf() = default;
 
     ~_Buf() noexcept {
         _CSTD free(_Chrs);
     }
 
-    unsigned int _Size() const {
+    unsigned int _Size() const noexcept {
         return _Nchrs;
     }
 
@@ -1274,7 +1265,7 @@ struct _Buf { // character buffer
         _Chrs[_Nchrs++] = _Ch;
     }
 
-    _Elem _Del() { // remove and return last character
+    _Elem _Del() noexcept { // remove and return last character
         return _Chrs[--_Nchrs];
     }
 
@@ -1296,52 +1287,49 @@ private:
         _Sz   = _Len;
     }
 
-    unsigned int _Sz;
-    unsigned int _Nchrs;
-    _Elem* _Chrs;
+    unsigned int _Sz    = 0;
+    unsigned int _Nchrs = 0;
+    _Elem* _Chrs        = nullptr;
 };
 
 struct _Bitmap { // accelerator table for small character values
-    _Bitmap() {
-        _CSTD memset(_Chrs, '\0', _Bmp_size);
-    }
+    _Bitmap() = default;
 
     template <class _Elem>
-    void _Mark(_Elem _Ch) { // mark character _Ch
+    void _Mark(_Elem _Ch) noexcept { // mark character _Ch
         static_assert(is_unsigned_v<_Elem>, "_Elem must be unsigned");
         unsigned int _Wide = _Ch;
         _Chrs[_Wide >> _Bmp_shift] |= (1 << (_Wide & _Bmp_mask));
     }
 
     template <class _Elem>
-    bool _Find(_Elem _Ch) const {
+    bool _Find(_Elem _Ch) const noexcept {
         static_assert(is_unsigned_v<_Elem>, "_Elem must be unsigned");
         unsigned int _Wide = _Ch;
         return (_Chrs[_Wide >> _Bmp_shift] & (1 << (_Wide & _Bmp_mask))) != 0;
     }
 
 private:
-    unsigned char _Chrs[_Bmp_size];
+    unsigned char _Chrs[_Bmp_size]{};
 };
 
 template <class _Elem>
 struct _Sequence { // holds sequences of _Sz elements
-    explicit _Sequence(unsigned int _Len) : _Sz(_Len) {}
+    explicit _Sequence(unsigned int _Len) noexcept : _Sz(_Len) {}
 
     unsigned int _Sz;
     _Buf<_Elem> _Data;
-    _Sequence* _Next;
+    _Sequence* _Next = nullptr;
 };
 
 class _Node_base { // base class for all nfa nodes
 public:
-    explicit _Node_base(_Node_type _Ty, _Node_flags _Fl = _Fl_none)
-        : _Kind(_Ty), _Flags(_Fl), _Next(nullptr), _Prev(nullptr) {}
+    explicit _Node_base(_Node_type _Ty, _Node_flags _Fl = _Fl_none) noexcept : _Kind(_Ty), _Flags(_Fl) {}
 
     _Node_type _Kind;
     _Node_flags _Flags;
-    _Node_base* _Next;
-    _Node_base* _Prev;
+    _Node_base* _Next = nullptr;
+    _Node_base* _Prev = nullptr;
 
     virtual ~_Node_base() noexcept {}
 };
@@ -1357,44 +1345,44 @@ inline void _Destroy_node(_Node_base* _Nx, _Node_base* _Ne = nullptr) noexcept {
 
 class _Root_node : public _Node_base { // root of parse tree
 public:
-    _Root_node() : _Node_base(_N_begin), _Loops(0), _Marks(0), _Refs(0) {
+    _Root_node() noexcept : _Node_base(_N_begin) {
         static_assert(sizeof(_Refs) == sizeof(_Atomic_counter_t), "invalid _Refs size");
     }
 
     regex_constants::syntax_option_type _Fl{};
-    unsigned int _Loops;
-    unsigned int _Marks;
-    unsigned int _Refs;
+    unsigned int _Loops = 0;
+    unsigned int _Marks = 0;
+    unsigned int _Refs  = 0;
 };
 
 class _Node_end_group : public _Node_base { // node that marks end of a group
 public:
-    _Node_end_group(_Node_type _Ty, _Node_flags _Fl, _Node_base* _Bx) : _Node_base(_Ty, _Fl), _Back(_Bx) {}
+    _Node_end_group(_Node_type _Ty, _Node_flags _Fl, _Node_base* _Bx) noexcept : _Node_base(_Ty, _Fl), _Back(_Bx) {}
 
     _Node_base* _Back;
 };
 
 class _Node_assert : public _Node_base { // node that holds an ECMAScript assertion
 public:
-    explicit _Node_assert(_Node_type _Ty, _Node_flags _Fl = _Fl_none) : _Node_base(_Ty, _Fl), _Child(nullptr) {}
+    explicit _Node_assert(_Node_type _Ty, _Node_flags _Fl = _Fl_none) noexcept : _Node_base(_Ty, _Fl) {}
 
     ~_Node_assert() noexcept {
         _Destroy_node(_Child);
     }
 
-    _Node_base* _Child;
+    _Node_base* _Child = nullptr;
 };
 
 class _Node_capture : public _Node_base { // node that marks beginning of a capture group
 public:
-    explicit _Node_capture(unsigned int _Ix) : _Node_base(_N_capture, _Fl_none), _Idx(_Ix) {}
+    explicit _Node_capture(unsigned int _Ix) noexcept : _Node_base(_N_capture, _Fl_none), _Idx(_Ix) {}
 
     unsigned int _Idx;
 };
 
 class _Node_back : public _Node_base { // node that holds a back reference
 public:
-    explicit _Node_back(unsigned int _Ix) : _Node_base(_N_back, _Fl_none), _Idx(_Ix) {}
+    explicit _Node_back(unsigned int _Ix) noexcept : _Node_base(_N_back, _Fl_none), _Idx(_Ix) {}
 
     unsigned int _Idx;
 };
@@ -1402,7 +1390,7 @@ public:
 template <class _Elem>
 class _Node_str : public _Node_base { // node that holds text
 public:
-    explicit _Node_str(_Node_flags _Fl = _Fl_none) : _Node_base(_N_str, _Fl) {}
+    explicit _Node_str(_Node_flags _Fl = _Fl_none) noexcept : _Node_base(_N_str, _Fl) {}
 
     _Buf<_Elem> _Data;
 };
@@ -1410,9 +1398,7 @@ public:
 template <class _Elem, class _RxTraits>
 class _Node_class : public _Node_base { // node that holds a character class (POSIX bracket expression)
 public:
-    explicit _Node_class(_Node_type _Ty = _N_class, _Node_flags _Fl = _Fl_none)
-        : _Node_base(_Ty, _Fl), _Coll(nullptr), _Small(nullptr), _Large(nullptr), _Ranges(nullptr), _Classes{},
-          _Equiv(nullptr) {}
+    explicit _Node_class(_Node_type _Ty = _N_class, _Node_flags _Fl = _Fl_none) noexcept : _Node_base(_Ty, _Fl) {}
 
     ~_Node_class() noexcept {
         _Tidy(_Coll);
@@ -1430,23 +1416,23 @@ public:
         }
     }
 
-    _Sequence<_Elem>* _Coll;
-    _Bitmap* _Small;
-    _Buf<_Elem>* _Large;
-    _Buf<_Elem>* _Ranges;
-    typename _RxTraits::char_class_type _Classes;
-    _Sequence<_Elem>* _Equiv;
+    _Sequence<_Elem>* _Coll = nullptr;
+    _Bitmap* _Small         = nullptr;
+    _Buf<_Elem>* _Large     = nullptr;
+    _Buf<_Elem>* _Ranges    = nullptr;
+    typename _RxTraits::char_class_type _Classes{};
+    _Sequence<_Elem>* _Equiv = nullptr;
 };
 
 class _Node_endif : public _Node_base { // node that marks the end of an alternative
 public:
-    _Node_endif() : _Node_base(_N_endif, _Fl_none) {}
+    _Node_endif() noexcept : _Node_base(_N_endif, _Fl_none) {}
 };
 
 class _Node_if : public _Node_base { // node that marks the beginning of an alternative
 public:
-    explicit _Node_if(_Node_base* _End)
-        : _Node_base(_N_if, _Fl_none), _Endif(static_cast<_Node_endif*>(_End)), _Child(nullptr) {}
+    explicit _Node_if(_Node_base* _End) noexcept
+        : _Node_base(_N_if, _Fl_none), _Endif(static_cast<_Node_endif*>(_End)) {}
 
     ~_Node_if() noexcept {
         _Node_if* _Cur = _Child;
@@ -1459,16 +1445,16 @@ public:
     }
 
     _Node_endif* _Endif;
-    _Node_if* _Child;
+    _Node_if* _Child = nullptr;
 };
 
 class _Node_rep;
 
 class _Node_end_rep : public _Node_base { // node that marks the end of a repetition
 public:
-    _Node_end_rep() : _Node_base(_N_end_rep), _Begin_rep(nullptr) {}
+    _Node_end_rep() noexcept : _Node_base(_N_end_rep) {}
 
-    _Node_rep* _Begin_rep;
+    _Node_rep* _Begin_rep = nullptr;
 
     _Node_end_rep& operator=(const _Node_end_rep&) = delete;
 };
@@ -1480,15 +1466,15 @@ struct _Loop_vals_t { // storage for loop administration
 
 class _Node_rep : public _Node_base { // node that marks the beginning of a repetition
 public:
-    _Node_rep(bool _Greedy, int _Min_, int _Max_, _Node_end_rep* _End, unsigned int _Number)
+    _Node_rep(bool _Greedy, int _Min_, int _Max_, _Node_end_rep* _End, unsigned int _Number) noexcept
         : _Node_base(_N_rep, _Greedy ? _Fl_greedy : _Fl_none), _Min(_Min_), _Max(_Max_), _End_rep(_End),
-          _Loop_number(_Number), _Simple_loop(-1) {}
+          _Loop_number(_Number) {}
 
     const int _Min;
     const int _Max;
     _Node_end_rep* _End_rep;
     unsigned int _Loop_number;
-    int _Simple_loop; // -1 undetermined, 0 contains if/do, 1 simple
+    int _Simple_loop = -1; // -1 undetermined, 0 contains if/do, 1 simple
 
     _Node_rep& operator=(const _Node_rep&) = delete;
 };
@@ -1582,9 +1568,8 @@ class _Matcher { // provides ways to match a regular expression to a text sequen
 public:
     _Matcher(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
         regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf)
-        : _End(_Plast), _First(_Pfirst), _Rep(_Re), _Sflags(_Sf), _Mflags(_Mf), _Matched(false),
-          _Ncap(static_cast<int>(_Nx)), _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)),
-          _Traits(_Tr) {
+        : _End(_Plast), _First(_Pfirst), _Rep(_Re), _Sflags(_Sf), _Mflags(_Mf), _Ncap(static_cast<int>(_Nx)),
+          _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
         _Loop_vals.resize(_Re->_Loops);
         _Adl_verify_range(_Pfirst, _Plast);
     }
@@ -1678,7 +1663,7 @@ private:
     _Node_base* _Rep;
     regex_constants::syntax_option_type _Sflags;
     regex_constants::match_flag_type _Mflags;
-    bool _Matched;
+    bool _Matched = false;
     bool _Cap;
     int _Ncap; // Do not use. Use _Get_ncap instead.
     bool _Longest;
@@ -1705,7 +1690,7 @@ public:
     _Parser(const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx);
     _Root_node* _Compile();
 
-    unsigned int _Mark_count() const {
+    unsigned int _Mark_count() const noexcept {
         return _Grp_idx + 1;
     }
 
@@ -1746,8 +1731,8 @@ private:
     _FwdIt _Pat;
     _FwdIt _Begin;
     _FwdIt _End;
-    unsigned int _Grp_idx;
-    int _Disj_count;
+    unsigned int _Grp_idx = 0;
+    int _Disj_count       = 0;
     vector<bool> _Finished_grps;
     _Builder<_FwdIt, _Elem, _RxTraits> _Nfa;
     const _RxTraits& _Traits;
@@ -1828,14 +1813,13 @@ public:
     static constexpr flag_type grep       = regex_constants::grep;
     static constexpr flag_type egrep      = regex_constants::egrep;
 
-    basic_regex() : _Rep(nullptr) {} // construct empty object
+    basic_regex() = default; // construct empty object
 
-    explicit basic_regex(_In_z_ const _Elem* _Ptr, flag_type _Flags = regex_constants::ECMAScript) : _Rep(nullptr) {
+    explicit basic_regex(_In_z_ const _Elem* _Ptr, flag_type _Flags = regex_constants::ECMAScript) {
         _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), _Flags);
     }
 
-    basic_regex(_In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript)
-        : _Rep(nullptr) {
+    basic_regex(_In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript) {
         if (_Ptr) {
             _Reset(_Ptr, _Ptr + _Count, _Flags);
             return;
@@ -1846,34 +1830,33 @@ public:
 
     template <class _STtraits, class _STalloc>
     explicit basic_regex(
-        const basic_string<_Elem, _STtraits, _STalloc>& _Str, flag_type _Flags = regex_constants::ECMAScript)
-        : _Rep(nullptr) {
+        const basic_string<_Elem, _STtraits, _STalloc>& _Str, flag_type _Flags = regex_constants::ECMAScript) {
         _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags);
     }
 
     template <class _InIt>
-    basic_regex(_InIt _First, _InIt _Last, flag_type _Flags) : _Rep(nullptr) {
+    basic_regex(_InIt _First, _InIt _Last, flag_type _Flags) {
         _Adl_verify_range(_First, _Last);
         _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Flags);
     }
 
     template <class _InIt>
-    basic_regex(_InIt _First, _InIt _Last) : _Rep(nullptr) {
+    basic_regex(_InIt _First, _InIt _Last) {
         _Adl_verify_range(_First, _Last);
         _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), regex_constants::ECMAScript);
     }
 
     basic_regex(const basic_regex& _Right)
 #if _ENHANCED_REGEX_VISUALIZER
-        : _Rep(nullptr), _Traits(_Right._Traits), _Visualization(_Right._Visualization)
+        : _Traits(_Right._Traits), _Visualization(_Right._Visualization)
 #else
-        : _Rep(nullptr), _Traits(_Right._Traits)
+        : _Traits(_Right._Traits)
 #endif
     { // construct copy of _Right
         _Reset(_Right._Rep);
     }
 
-    basic_regex(initializer_list<_Elem> _Ilist, flag_type _Flags = regex_constants::ECMAScript) : _Rep(nullptr) {
+    basic_regex(initializer_list<_Elem> _Ilist, flag_type _Flags = regex_constants::ECMAScript) {
         _Reset(_Ilist.begin(), _Ilist.end(), _Flags);
     }
 
@@ -1887,7 +1870,7 @@ public:
         return *this;
     }
 
-    basic_regex(basic_regex&& _Right) noexcept : _Rep(nullptr) {
+    basic_regex(basic_regex&& _Right) noexcept {
         _Assign_rv(_STD move(_Right));
     }
 
@@ -1933,11 +1916,11 @@ public:
         return *this;
     }
 
-    unsigned int _Loop_count() const {
+    unsigned int _Loop_count() const noexcept {
         return _Rep ? _Rep->_Loops : 0;
     }
 
-    _NODISCARD unsigned int mark_count() const {
+    _NODISCARD unsigned int mark_count() const noexcept /* strengthened */ {
         return _Rep ? _Rep->_Marks - 1 : 0;
     }
 
@@ -1974,7 +1957,7 @@ public:
         return *this;
     }
 
-    _NODISCARD flag_type flags() const {
+    _NODISCARD flag_type flags() const noexcept /* strengthened */ {
         return _Rep ? _Rep->_Fl : flag_type{};
     }
 
@@ -1995,20 +1978,20 @@ public:
 #endif // _ENHANCED_REGEX_VISUALIZER
     }
 
-    _Root_node* _Get() const {
+    _Root_node* _Get() const noexcept {
         return _Rep;
     }
 
-    bool _Empty() const {
+    bool _Empty() const noexcept {
         return _Rep == nullptr;
     }
 
-    const _RxTraits& _Get_traits() const {
+    const _RxTraits& _Get_traits() const noexcept {
         return _Traits;
     }
 
 private:
-    _Root_node* _Rep;
+    _Root_node* _Rep = nullptr;
     _RxTraits _Traits;
 
 #if _ENHANCED_REGEX_VISUALIZER
@@ -2428,7 +2411,7 @@ public:
     using iterator_concept = input_iterator_tag;
 #endif // _HAS_CXX20
 
-    regex_iterator() : _MyRe(nullptr) {} // construct end of sequence iterator
+    regex_iterator() = default; // construct end of sequence iterator
 
     regex_iterator(_BidIt _First, _BidIt _Last, const regex_type& _Re,
         regex_constants::match_flag_type _Fl = regex_constants::match_default)
@@ -2462,12 +2445,12 @@ public:
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX20
-    _NODISCARD bool operator==(default_sentinel_t) const {
+    _NODISCARD bool operator==(default_sentinel_t) const noexcept /* strengthened */ {
         return !_MyRe;
     }
 #endif // _HAS_CXX20
 
-    _NODISCARD const value_type& operator*() const {
+    _NODISCARD const value_type& operator*() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_MyRe, "regex_iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -2475,7 +2458,7 @@ public:
         return _MyVal;
     }
 
-    _NODISCARD const value_type* operator->() const {
+    _NODISCARD const value_type* operator->() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_MyRe, "regex_iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -2536,15 +2519,15 @@ public:
         return _Tmp;
     }
 
-    bool _Atend() const { // test for end iterator
+    bool _Atend() const noexcept { // test for end iterator
         return !_MyRe;
     }
 
 private:
-    _BidIt _Begin; // input sequence
-    _BidIt _End; // input sequence
-    const regex_type* _MyRe; // pointer to basic_regex object
-    regex_constants::match_flag_type _Flags;
+    _BidIt _Begin{}; // input sequence
+    _BidIt _End{}; // input sequence
+    const regex_type* _MyRe = nullptr; // pointer to basic_regex object
+    regex_constants::match_flag_type _Flags{};
     match_results<_BidIt> _MyVal; // lookahead value (if _MyRe not null)
 };
 
@@ -2567,7 +2550,7 @@ public:
     using iterator_concept = input_iterator_tag;
 #endif // _HAS_CXX20
 
-    regex_token_iterator() : _Res(nullptr) {} // construct end of sequence iterator
+    regex_token_iterator() = default; // construct end of sequence iterator
 
     regex_token_iterator(_BidIt _First, _BidIt _Last, const regex_type& _Re, int _Sub = 0,
         regex_constants::match_flag_type _Fl = regex_constants::match_default)
@@ -2655,12 +2638,12 @@ public:
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX20
-    _NODISCARD bool operator==(default_sentinel_t) const {
+    _NODISCARD bool operator==(default_sentinel_t) const noexcept /* strengthened */ {
         return !_Res;
     }
 #endif // _HAS_CXX20
 
-    _NODISCARD const value_type& operator*() const {
+    _NODISCARD const value_type& operator*() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Res, "regex_token_iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -2669,7 +2652,7 @@ public:
         return *_Res;
     }
 
-    _NODISCARD const value_type* operator->() const {
+    _NODISCARD const value_type* operator->() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Res, "regex_token_iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -2713,9 +2696,9 @@ public:
 
 private:
     _Position _Pos;
-    const value_type* _Res;
+    const value_type* _Res = nullptr;
     value_type _Suffix;
-    size_t _Cur;
+    size_t _Cur = 0;
     vector<int> _Subs;
 
     bool _Has_suffix() const { // check for suffix specifier
@@ -2736,7 +2719,7 @@ private:
         }
     }
 
-    const value_type* _Current() const {
+    const value_type* _Current() const noexcept {
         return &(_Subs[_Cur] == -1 ? _Pos->prefix() : (*_Pos)[static_cast<size_t>(_Subs[_Cur])]);
     }
 };
@@ -4581,8 +4564,7 @@ _Root_node* _Parser<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular e
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Parser<_FwdIt, _Elem, _RxTraits>::_Parser(
     const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx)
-    : _Pat(_Pfirst), _Begin(_Pfirst), _End(_Plast), _Grp_idx(0), _Disj_count(0), _Finished_grps(0), _Nfa(_Tr, _Fx),
-      _Traits(_Tr), _Flags(_Fx) {
+    : _Pat(_Pfirst), _Begin(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx) {
 
     constexpr unsigned int _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_grp | _L_asrt_gen
                                        | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni | _L_esc_hex | _L_esc_bsl

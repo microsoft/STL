@@ -4708,32 +4708,40 @@ _CONSTEXPR20 void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Se
 #endif // _ITERATOR_DEBUG_LEVEL != 2 ^^^
 }
 
-template <class _CtgIt, class _OutCtgIt>
-_OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
-    auto _FirstPtr              = _STD _To_address(_First);
-    auto _LastPtr               = _STD _To_address(_Last);
-    auto _DestPtr               = _STD _To_address(_Dest);
-    const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_FirstPtr));
-    const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_LastPtr));
-    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<const volatile char*>(_DestPtr));
-    const auto _Count           = static_cast<size_t>(_Last_ch - _First_ch);
-    _CSTD memmove(_Dest_ch, _First_ch, _Count);
+template <class _OutCtgIt>
+_OutCtgIt _Copy_memmove_tail(
+    const char* const _First_ch, const _OutCtgIt _Dest, const size_t _Byte_count, const size_t _Object_count) {
+    _STL_INTERNAL_CHECK(_Byte_count == _Object_count * sizeof(*_Dest));
+    const auto _Dest_ptr = _STD _To_address(_Dest);
+    const auto _Dest_ch  = const_cast<char*>(reinterpret_cast<const volatile char*>(_Dest_ptr));
+    _CSTD memmove(_Dest_ch, _First_ch, _Byte_count);
     if constexpr (is_pointer_v<_OutCtgIt>) {
+        (void) _Object_count;
         // CodeQL [SM02986] This cast is correct: we're bypassing pointer arithmetic for performance.
-        return reinterpret_cast<_OutCtgIt>(_Dest_ch + _Count);
+        return reinterpret_cast<_OutCtgIt>(_Dest_ch + _Byte_count);
     } else {
-        return _Dest + static_cast<_Iter_diff_t<_OutCtgIt>>(_LastPtr - _FirstPtr);
+        return _Dest + static_cast<_Iter_diff_t<_OutCtgIt>>(_Object_count);
     }
 }
 
 template <class _CtgIt, class _OutCtgIt>
-_OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Count, _OutCtgIt _Dest) {
-    const auto _Result = _STD _Copy_memmove(_First, _First + _Count, _Dest);
-    if constexpr (is_pointer_v<_OutCtgIt>) {
-        return _Result;
-    } else { // _Result is unused so the compiler can optimize it away
-        return _Dest + static_cast<_Iter_diff_t<_OutCtgIt>>(_Count);
-    }
+_OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
+    _STL_INTERNAL_CHECK(_First <= _Last);
+    const auto _First_ptr    = _STD _To_address(_First);
+    const auto _Last_ptr     = _STD _To_address(_Last);
+    const auto _Object_count = static_cast<size_t>(_Last_ptr - _First_ptr);
+    const auto _First_ch     = const_cast<const char*>(reinterpret_cast<const volatile char*>(_First_ptr));
+    const auto _Last_ch      = const_cast<const char*>(reinterpret_cast<const volatile char*>(_Last_ptr));
+    const auto _Byte_count   = static_cast<size_t>(_Last_ch - _First_ch);
+    return _STD _Copy_memmove_tail(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
+}
+
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Object_count, _OutCtgIt _Dest) {
+    const auto _First_ptr  = _STD _To_address(_First);
+    const auto _First_ch   = const_cast<const char*>(reinterpret_cast<const volatile char*>(_First_ptr));
+    const auto _Byte_count = _Object_count * sizeof(*_First_ptr);
+    return _STD _Copy_memmove_tail(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
 }
 
 template <class _It, bool _RequiresMutable = false>
@@ -4755,9 +4763,8 @@ template <class _InIt, class _SizeTy, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_n_unchecked4(_InIt _First, _SizeTy _Count, _OutIt _Dest) {
     // copy _First + [0, _Count) to _Dest + [0, _Count), returning _Dest + _Count
     // note: has callers outside the copy family
-#if _HAS_CXX20
     _STL_INTERNAL_STATIC_ASSERT(_Integer_like<_SizeTy>);
-#endif // _HAS_CXX20
+    _STL_INTERNAL_CHECK(_Count >= 0);
 
     if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
@@ -5041,18 +5048,18 @@ _FwdIt2 copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _FwdIt2 _Dest) noexcep
 template <class _CtgIt1, class _CtgIt2>
 _CtgIt2 _Copy_backward_memmove(_CtgIt1 _First, _CtgIt1 _Last, _CtgIt2 _Dest) {
     // implement copy_backward-like function as memmove
-    auto _FirstPtr              = _STD _To_address(_First);
-    auto _LastPtr               = _STD _To_address(_Last);
-    auto _DestPtr               = _STD _To_address(_Dest);
-    const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_FirstPtr));
-    const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_LastPtr));
-    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<const volatile char*>(_DestPtr));
-    const auto _Count           = static_cast<size_t>(_Last_ch - _First_ch);
-    auto _Result                = _CSTD memmove(_Dest_ch - _Count, _First_ch, _Count);
+    const auto _First_ptr = _STD _To_address(_First);
+    const auto _Last_ptr  = _STD _To_address(_Last);
+    const auto _Dest_ptr  = _STD _To_address(_Dest);
+    const auto _First_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_First_ptr));
+    const auto _Last_ch   = const_cast<const char*>(reinterpret_cast<const volatile char*>(_Last_ptr));
+    const auto _Dest_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_Dest_ptr));
+    const auto _Count     = static_cast<size_t>(_Last_ch - _First_ch);
+    const auto _Result    = _CSTD memmove(_Dest_ch - _Count, _First_ch, _Count);
     if constexpr (is_pointer_v<_CtgIt2>) {
         return static_cast<_CtgIt2>(_Result);
     } else {
-        return _Dest - static_cast<_Iter_diff_t<_CtgIt2>>(_LastPtr - _FirstPtr);
+        return _Dest - static_cast<_Iter_diff_t<_CtgIt2>>(_Last_ptr - _First_ptr);
     }
 }
 
