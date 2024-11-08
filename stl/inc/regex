@@ -2524,10 +2524,10 @@ public:
     }
 
 private:
-    _BidIt _Begin; // input sequence
-    _BidIt _End; // input sequence
+    _BidIt _Begin{}; // input sequence
+    _BidIt _End{}; // input sequence
     const regex_type* _MyRe = nullptr; // pointer to basic_regex object
-    regex_constants::match_flag_type _Flags;
+    regex_constants::match_flag_type _Flags{};
     match_results<_BidIt> _MyVal; // lookahead value (if _MyRe not null)
 };
 
@@ -2698,7 +2698,7 @@ private:
     _Position _Pos;
     const value_type* _Res = nullptr;
     value_type _Suffix;
-    size_t _Cur;
+    size_t _Cur = 0;
     vector<int> _Subs;
 
     bool _Has_suffix() const { // check for suffix specifier
