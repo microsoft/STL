@@ -3669,8 +3669,7 @@ namespace {
         }
 
         template <class _Ty>
-        const size_t _Pos_from_ptr(
-            const void* const _Result, const void* const _First1, const void* const _Last1) noexcept {
+        size_t _Pos_from_ptr(const void* const _Result, const void* const _First1, const void* const _Last1) noexcept {
             if (_Result != _Last1) {
                 return _Byte_length(_First1, _Result) / sizeof(_Ty);
             } else {
@@ -3680,7 +3679,7 @@ namespace {
 
 #ifndef _M_ARM64EC
         template <class _Ty>
-        const size_t _Dispatch_pos_sse_1_2(
+        size_t _Dispatch_pos_sse_1_2(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
             if (_Use_avx2()) {
                 if (_Bitmap::_Use_bitmap_avx<_Ty>(_Count2, _Count1)
@@ -3705,7 +3704,7 @@ namespace {
         }
 
         template <class _Ty>
-        const size_t _Dispatch_pos_avx_4_8(
+        size_t _Dispatch_pos_avx_4_8(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
             if (_Bitmap::_Use_bitmap_avx<_Ty>(_Count2, _Count1)
                 && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
@@ -3722,7 +3721,7 @@ namespace {
 #endif // !_M_ARM64EC
 
         template <class _Ty>
-        const size_t _Dispatch_pos_fallback(
+        size_t _Dispatch_pos_fallback(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
 
             _Bitmap::_Scalar_table_t _Table = {};
@@ -3737,7 +3736,7 @@ namespace {
         }
 
         template <class _Ty>
-        const size_t _Dispatch_pos(
+        size_t _Dispatch_pos(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
 #ifndef _M_ARM64EC
             if constexpr (sizeof(_Ty) <= 2) {
