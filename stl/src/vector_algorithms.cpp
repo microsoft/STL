@@ -2933,7 +2933,7 @@ namespace {
     namespace __std_find_meow_of::_Bitmap {
 #ifndef _M_ARM64EC
         template <class _Ty>
-        bool _Use_bitmap_avx(const size_t _Count1, const size_t _Count2) {
+        bool _Use_bitmap_avx(const size_t _Count1, const size_t _Count2) noexcept {
             if constexpr (sizeof(_Ty) == 1) {
                 if (_Count2 <= 16) {
                     return _Count1 > 1000;
