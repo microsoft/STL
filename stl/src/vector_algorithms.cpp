@@ -3140,8 +3140,11 @@ namespace {
 
         template <class _Ty>
         __m256i _Make_bitmap(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
-            return _Needle_length <= 20 ? _Make_bitmap_small(_Needle_ptr, _Needle_length)
-                                        : _Make_bitmap_large(_Needle_ptr, _Needle_length);
+            if (_Needle_length <= 20) {
+                return _Make_bitmap_small(_Needle_ptr, _Needle_length);
+            } else {
+                return _Make_bitmap_large(_Needle_ptr, _Needle_length);
+            }
         }
 
         template <class _Ty>
