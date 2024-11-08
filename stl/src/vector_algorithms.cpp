@@ -3106,7 +3106,7 @@ namespace {
             for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
                 const _Ty _Val                = *_Needle_ptr;
                 const __m256i _Count_low      = _mm256_broadcastq_epi64(_mm_cvtsi32_si128(_Val & 0x3F));
-                const uint32_t _One_1_high    = 1u << uint32_t((_Val >> 3) & 0x18);
+                const uint32_t _One_1_high    = 1u << static_cast<uint32_t>((_Val >> 3) & 0x18);
                 const __m256i _One_1_high_unp = _mm256_cvtepu8_epi64(_mm_cvtsi32_si128(_One_1_high));
                 const __m256i _One_1          = _mm256_sllv_epi64(_One_1_high_unp, _Count_low);
                 _Bitmap                       = _mm256_or_si256(_Bitmap, _One_1);
