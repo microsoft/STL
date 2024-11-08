@@ -3061,10 +3061,10 @@ namespace {
         }
 
         __m256i __vectorcall _Step(const __m256i _Bitmap, const __m256i _Data) noexcept {
-            __m256i _Data_high    = _mm256_srli_epi32(_Data, 5);
-            __m256i _Bitmap_parts = _mm256_permutevar8x32_epi32(_Bitmap, _Data_high);
-            __m256i _Data_low_inv = _mm256_andnot_si256(_Data, _mm256_set1_epi32(0x1F));
-            __m256i _Mask         = _mm256_sllv_epi32(_Bitmap_parts, _Data_low_inv);
+            const __m256i _Data_high    = _mm256_srli_epi32(_Data, 5);
+            const __m256i _Bitmap_parts = _mm256_permutevar8x32_epi32(_Bitmap, _Data_high);
+            const __m256i _Data_low_inv = _mm256_andnot_si256(_Data, _mm256_set1_epi32(0x1F));
+            const __m256i _Mask         = _mm256_sllv_epi32(_Bitmap_parts, _Data_low_inv);
             return _Mask;
         }
 
@@ -3125,7 +3125,7 @@ namespace {
                 _Table[*_Needle_ptr] = 0xFF;
             }
 
-            auto _Table_as_avx = reinterpret_cast<const __m256i*>(_Table);
+            const auto _Table_as_avx = reinterpret_cast<const __m256i*>(_Table);
 
             return _mm256_setr_epi32( //
                 _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 0)),
@@ -3139,7 +3139,7 @@ namespace {
         }
 
         template <class _Ty>
-        __m256i _Make_bitmap(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+        __m256i _Make_bitmap(const _Ty* const _Needle_ptr, const size_t _Needle_length) noexcept {
             if (_Needle_length <= 20) {
                 return _Make_bitmap_small(_Needle_ptr, _Needle_length);
             } else {
@@ -3696,7 +3696,7 @@ namespace {
                 }
             }
 
-            const void* _Last1         = static_cast<const _Ty*>(_First1) + _Count1;
+            const void* const _Last1   = static_cast<const _Ty*>(_First1) + _Count1;
             const size_t _Size_bytes_1 = _Count1 * sizeof(_Ty);
             const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
 
@@ -3712,7 +3712,7 @@ namespace {
                 return _Bitmap::_Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
             }
 
-            const void* _Last1         = static_cast<const _Ty*>(_First1) + _Count1;
+            const void* const _Last1   = static_cast<const _Ty*>(_First1) + _Count1;
             const size_t _Size_bytes_1 = _Count1 * sizeof(_Ty);
             const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
 
@@ -3730,8 +3730,8 @@ namespace {
                 return _Bitmap::_Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
             }
 
-            const void* _Last1 = static_cast<const _Ty*>(_First1) + _Count1;
-            const void* _Last2 = static_cast<const _Ty*>(_First2) + _Count2;
+            const void* const _Last1 = static_cast<const _Ty*>(_First1) + _Count1;
+            const void* const _Last2 = static_cast<const _Ty*>(_First2) + _Count2;
 
             return _Pos_from_ptr<_Ty>(_Fallback<_Ty>(_First1, _Last1, _First2, _Last2), _First1, _Last1);
         }
