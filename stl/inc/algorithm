@@ -1557,24 +1557,26 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         _STATIC_CALL_OPERATOR constexpr copy_n_result<_It, _Out> operator()(
             _It _First, iter_difference_t<_It> _Count, _Out _Output) _CONST_CALL_OPERATOR {
-            auto _UFirst  = _STD _Get_unwrapped_n(_STD move(_First), _Count);
-            auto _UOutput = _STD _Get_unwrapped_n(_STD move(_Output), _Count);
-            if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UOutput)>::_Bitcopy_assignable) {
-                if (!_STD is_constant_evaluated()) {
-                    _UOutput = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _STD move(_UOutput));
-                    _UFirst += _Count;
-                    _STD _Seek_wrapped(_First, _STD move(_UFirst));
-                    _STD _Seek_wrapped(_Output, _STD move(_UOutput));
-                    return {_STD move(_First), _STD move(_Output)};
+            if (_Count > 0) {
+                auto _UFirst  = _STD _Get_unwrapped_n(_STD move(_First), _Count);
+                auto _UOutput = _STD _Get_unwrapped_n(_STD move(_Output), _Count);
+                if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UOutput)>::_Bitcopy_assignable) {
+                    if (!_STD is_constant_evaluated()) {
+                        _UOutput = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _STD move(_UOutput));
+                        _UFirst += _Count;
+                        _STD _Seek_wrapped(_First, _STD move(_UFirst));
+                        _STD _Seek_wrapped(_Output, _STD move(_UOutput));
+                        return {_STD move(_First), _STD move(_Output)};
+                    }
                 }
-            }
 
-            for (; _Count > 0; ++_UFirst, (void) ++_UOutput, --_Count) {
-                *_UOutput = *_UFirst;
-            }
+                for (; _Count > 0; ++_UFirst, (void) ++_UOutput, --_Count) {
+                    *_UOutput = *_UFirst;
+                }
 
-            _STD _Seek_wrapped(_First, _STD move(_UFirst));
-            _STD _Seek_wrapped(_Output, _STD move(_UOutput));
+                _STD _Seek_wrapped(_First, _STD move(_UFirst));
+                _STD _Seek_wrapped(_Output, _STD move(_UOutput));
+            }
             return {_STD move(_First), _STD move(_Output)};
         }
     };
