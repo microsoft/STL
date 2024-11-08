@@ -463,7 +463,7 @@ _FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _
 
 template <class _TyDest, class _TySrc, class _BinOp>
 void _Adjacent_difference_no_overlap(
-    _TyDest* const __restrict _Dest, _TySrc* const __restrict _Src, const ptrdiff_t _Count, _BinOp _Func) {
+    _TyDest* const _RESTRICT _Dest, _TySrc* const _RESTRICT _Src, const ptrdiff_t _Count, _BinOp _Func) {
     _Dest[0] = _Src[0];
     for (ptrdiff_t _Ix = 1; _Ix != _Count; ++_Ix) {
 #if _HAS_CXX20
