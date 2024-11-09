@@ -2932,6 +2932,93 @@ namespace {
 
     namespace __std_find_meow_of::_Bitmap {
 #ifndef _M_ARM64EC
+        __m256i _Step(const __m256i _Bitmap, const __m256i _Data) noexcept {
+            const __m256i _Data_high    = _mm256_srli_epi32(_Data, 5);
+            const __m256i _Bitmap_parts = _mm256_permutevar8x32_epi32(_Bitmap, _Data_high);
+            const __m256i _Data_low_inv = _mm256_andnot_si256(_Data, _mm256_set1_epi32(0x1F));
+            const __m256i _Mask         = _mm256_sllv_epi32(_Bitmap_parts, _Data_low_inv);
+            return _Mask;
+        }
+
+        template <class _Ty>
+        __m256i _Load_avx_256_8(const _Ty* const _Src) noexcept {
+            if constexpr (sizeof(_Ty) == 1) {
+                return _mm256_cvtepu8_epi32(_mm_loadu_si64(_Src));
+            } else if constexpr (sizeof(_Ty) == 2) {
+                return _mm256_cvtepu16_epi32(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src)));
+            } else if constexpr (sizeof(_Ty) == 4) {
+                return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
+            } else if constexpr (sizeof(_Ty) == 8) {
+                const __m256i _Low  = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
+                const __m256i _High = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src) + 1);
+                const __m256i _Pack = _mm256_packs_epi32(_Low, _High);
+                return _mm256_permutex_epi64(_Pack, _MM_SHUFFLE(3, 1, 2, 0));
+            } else {
+                static_assert(false, "Unexpected size");
+            }
+        }
+
+        template <class _Ty>
+        __m256i _Mask_out_oveflow(const __m256i _Mask, const __m256i _Data) noexcept {
+            if constexpr (sizeof(_Ty) == 1) {
+                return _Mask;
+            } else {
+                const __m256i _Data_high = _mm256_and_si256(_Data, _mm256_set1_epi32(static_cast<int>(0xFFFF'FF00)));
+                const __m256i _Fit_mask  = _mm256_cmpeq_epi32(_Data_high, _mm256_setzero_si256());
+                return _mm256_and_si256(_Mask, _Fit_mask);
+            }
+        }
+
+        template <class _Ty>
+        __m256i _Make_bitmap_small(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+            __m256i _Bitmap = _mm256_setzero_si256();
+
+            const _Ty* const _Stop = _Needle_ptr + _Needle_length;
+
+            for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
+                const _Ty _Val            = *_Needle_ptr;
+                const __m128i _Count_low  = _mm_cvtsi32_si128(_Val & 0x3F);
+                const auto _Count_high_x8 = static_cast<uint32_t>((_Val >> 3) & 0x18);
+                const __m256i _One_1_high = _mm256_cvtepu8_epi64(_mm_cvtsi32_si128(1u << _Count_high_x8));
+                const __m256i _One_1      = _mm256_sll_epi64(_One_1_high, _Count_low);
+                _Bitmap                   = _mm256_or_si256(_Bitmap, _One_1);
+            }
+
+            return _Bitmap;
+        }
+
+        template <class _Ty>
+        __m256i _Make_bitmap_large(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+            alignas(32) uint8_t _Table[256] = {};
+
+            const _Ty* const _Stop = _Needle_ptr + _Needle_length;
+
+            for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
+                _Table[*_Needle_ptr] = 0xFF;
+            }
+
+            const auto _Table_as_avx = reinterpret_cast<const __m256i*>(_Table);
+
+            return _mm256_setr_epi32( //
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 0)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 1)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 2)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 3)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 4)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 5)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 6)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 7)));
+        }
+
+        template <class _Ty>
+        __m256i _Make_bitmap(const _Ty* const _Needle_ptr, const size_t _Needle_length) noexcept {
+            if (_Needle_length <= 20) {
+                return _Make_bitmap_small(_Needle_ptr, _Needle_length);
+            } else {
+                return _Make_bitmap_large(_Needle_ptr, _Needle_length);
+            }
+        }
+
         template <class _Ty>
         bool _Use_bitmap_avx(const size_t _Count1, const size_t _Count2) noexcept {
             if constexpr (sizeof(_Ty) == 1) {
@@ -3057,93 +3144,6 @@ namespace {
                 }
 
                 return true;
-            }
-        }
-
-        __m256i _Step(const __m256i _Bitmap, const __m256i _Data) noexcept {
-            const __m256i _Data_high    = _mm256_srli_epi32(_Data, 5);
-            const __m256i _Bitmap_parts = _mm256_permutevar8x32_epi32(_Bitmap, _Data_high);
-            const __m256i _Data_low_inv = _mm256_andnot_si256(_Data, _mm256_set1_epi32(0x1F));
-            const __m256i _Mask         = _mm256_sllv_epi32(_Bitmap_parts, _Data_low_inv);
-            return _Mask;
-        }
-
-        template <class _Ty>
-        __m256i _Load_avx_256_8(const _Ty* const _Src) noexcept {
-            if constexpr (sizeof(_Ty) == 1) {
-                return _mm256_cvtepu8_epi32(_mm_loadu_si64(_Src));
-            } else if constexpr (sizeof(_Ty) == 2) {
-                return _mm256_cvtepu16_epi32(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src)));
-            } else if constexpr (sizeof(_Ty) == 4) {
-                return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
-            } else if constexpr (sizeof(_Ty) == 8) {
-                const __m256i _Low  = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
-                const __m256i _High = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src) + 1);
-                const __m256i _Pack = _mm256_packs_epi32(_Low, _High);
-                return _mm256_permutex_epi64(_Pack, _MM_SHUFFLE(3, 1, 2, 0));
-            } else {
-                static_assert(false, "Unexpected size");
-            }
-        }
-
-        template <class _Ty>
-        __m256i _Mask_out_oveflow(const __m256i _Mask, const __m256i _Data) noexcept {
-            if constexpr (sizeof(_Ty) == 1) {
-                return _Mask;
-            } else {
-                const __m256i _Data_high = _mm256_and_si256(_Data, _mm256_set1_epi32(static_cast<int>(0xFFFF'FF00)));
-                const __m256i _Fit_mask  = _mm256_cmpeq_epi32(_Data_high, _mm256_setzero_si256());
-                return _mm256_and_si256(_Mask, _Fit_mask);
-            }
-        }
-
-        template <class _Ty>
-        __m256i _Make_bitmap_small(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
-            __m256i _Bitmap = _mm256_setzero_si256();
-
-            const _Ty* const _Stop = _Needle_ptr + _Needle_length;
-
-            for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
-                const _Ty _Val            = *_Needle_ptr;
-                const __m128i _Count_low  = _mm_cvtsi32_si128(_Val & 0x3F);
-                const auto _Count_high_x8 = static_cast<uint32_t>((_Val >> 3) & 0x18);
-                const __m256i _One_1_high = _mm256_cvtepu8_epi64(_mm_cvtsi32_si128(1u << _Count_high_x8));
-                const __m256i _One_1      = _mm256_sll_epi64(_One_1_high, _Count_low);
-                _Bitmap                   = _mm256_or_si256(_Bitmap, _One_1);
-            }
-
-            return _Bitmap;
-        }
-
-        template <class _Ty>
-        __m256i _Make_bitmap_large(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
-            alignas(32) uint8_t _Table[256] = {};
-
-            const _Ty* const _Stop = _Needle_ptr + _Needle_length;
-
-            for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
-                _Table[*_Needle_ptr] = 0xFF;
-            }
-
-            const auto _Table_as_avx = reinterpret_cast<const __m256i*>(_Table);
-
-            return _mm256_setr_epi32( //
-                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 0)),
-                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 1)),
-                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 2)),
-                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 3)),
-                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 4)),
-                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 5)),
-                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 6)),
-                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 7)));
-        }
-
-        template <class _Ty>
-        __m256i _Make_bitmap(const _Ty* const _Needle_ptr, const size_t _Needle_length) noexcept {
-            if (_Needle_length <= 20) {
-                return _Make_bitmap_small(_Needle_ptr, _Needle_length);
-            } else {
-                return _Make_bitmap_large(_Needle_ptr, _Needle_length);
             }
         }
 
