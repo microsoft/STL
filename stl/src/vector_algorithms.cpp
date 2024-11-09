@@ -3219,7 +3219,8 @@ namespace {
         using _Scalar_table_t = bool[256];
 
         template <class _Ty>
-        bool _Build_scalar_table(const void* const _Needle, const size_t _Needle_length, bool* _Table) noexcept {
+        bool _Build_scalar_table(
+            const void* const _Needle, const size_t _Needle_length, _Scalar_table_t& _Table) noexcept {
             auto _Ptr       = static_cast<const _Ty*>(_Needle);
             const auto _End = _Ptr + _Needle_length;
 
@@ -3241,7 +3242,7 @@ namespace {
 #ifndef _M_ARM64EC
         template <class _Ty>
         void _Build_scalar_table_no_check(
-            const void* const _Needle, const size_t _Needle_length, bool* _Table) noexcept {
+            const void* const _Needle, const size_t _Needle_length, _Scalar_table_t& _Table) noexcept {
             auto _Ptr       = static_cast<const _Ty*>(_Needle);
             const auto _End = _Ptr + _Needle_length;
 
@@ -3253,7 +3254,7 @@ namespace {
 
         template <class _Ty>
         size_t _Impl_first_scalar(
-            const void* const _Haystack, const size_t _Haystack_length, const bool* const _Table) noexcept {
+            const void* const _Haystack, const size_t _Haystack_length, const _Scalar_table_t& _Table) noexcept {
             const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
 
             for (size_t _Ix = 0; _Ix != _Haystack_length; ++_Ix) {
@@ -3275,7 +3276,7 @@ namespace {
 
         template <class _Ty>
         size_t _Impl_last_scalar(
-            const void* const _Haystack, size_t _Haystack_length, const bool* const _Table) noexcept {
+            const void* const _Haystack, size_t _Haystack_length, const _Scalar_table_t& _Table) noexcept {
             const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
 
             while (_Haystack_length != 0) {
