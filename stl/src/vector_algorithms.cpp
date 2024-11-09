@@ -3108,7 +3108,7 @@ namespace {
                 const __m128i _Count_low  = _mm_cvtsi32_si128(_Val & 0x3F);
                 const auto _Count_high_x8 = static_cast<uint32_t>((_Val >> 3) & 0x18);
                 const __m256i _One_1_high = _mm256_cvtepu8_epi64(_mm_cvtsi32_si128(1u << _Count_high_x8));
-                const __m256i _One_1      = _mm256_sllv_epi64(_One_1_high, _mm256_broadcastq_epi64(_Count_low));
+                const __m256i _One_1      = _mm256_sll_epi64(_One_1_high, _Count_low);
                 _Bitmap                   = _mm256_or_si256(_Bitmap, _One_1);
             }
 
