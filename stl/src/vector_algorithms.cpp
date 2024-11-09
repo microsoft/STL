@@ -3299,8 +3299,7 @@ namespace {
         }
     } // namespace __std_find_meow_of::_Bitmap
 
-    namespace __std_find_meow_of::_First {
-
+    namespace __std_find_first_of {
         template <class _Ty>
         const void* _Fallback(const void* _First1, const void* const _Last1, const void* const _First2,
             const void* const _Last2) noexcept {
@@ -3682,6 +3681,8 @@ namespace {
         template <class _Ty>
         size_t _Dispatch_pos_sse_1_2(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
+            namespace _Bitmap = __std_find_meow_of::_Bitmap;
+
             if (_Use_avx2()) {
                 if (_Bitmap::_Use_bitmap_avx<_Ty>(_Count2, _Count1)
                     && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
@@ -3707,6 +3708,8 @@ namespace {
         template <class _Ty>
         size_t _Dispatch_pos_avx_4_8(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
+            namespace _Bitmap = __std_find_meow_of::_Bitmap;
+
             if (_Bitmap::_Use_bitmap_avx<_Ty>(_Count2, _Count1)
                 && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
                 return _Bitmap::_Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
@@ -3724,6 +3727,7 @@ namespace {
         template <class _Ty>
         size_t _Dispatch_pos_fallback(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
+            namespace _Bitmap = __std_find_meow_of::_Bitmap;
 
             _Bitmap::_Scalar_table_t _Table = {};
             if (_Bitmap::_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
@@ -3752,10 +3756,9 @@ namespace {
 #endif // !_M_ARM64EC
             return _Dispatch_pos_fallback<_Ty>(_First1, _Count1, _First2, _Count2);
         }
-    } // namespace __std_find_meow_of::_First
+    } // namespace __std_find_first_of
 
-    namespace __std_find_meow_of::_Last {
-
+    namespace __std_find_last_of {
         template <class _Ty>
         size_t __stdcall _Fallback(const void* const _Haystack, const size_t _Haystack_length,
             const void* const _Needle, const size_t _Needle_length) noexcept {
@@ -3905,6 +3908,8 @@ namespace {
         template <class _Ty>
         size_t _Dispatch_pos(const void* const _Haystack, const size_t _Haystack_length, const void* const _Needle,
             const size_t _Needle_length) noexcept {
+            namespace _Bitmap = __std_find_meow_of::_Bitmap;
+
 #ifndef _M_ARM64EC
             if (_Use_sse42()) {
                 if (_Use_avx2()) {
@@ -3934,7 +3939,7 @@ namespace {
             }
         }
 
-    } // namespace __std_find_meow_of::_Last
+    } // namespace __std_find_last_of
 
     template <class _Traits, class _Ty>
     __declspec(noalias) size_t __stdcall __std_mismatch_impl(
@@ -4492,52 +4497,52 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(
 
 const void* __stdcall __std_find_first_of_trivial_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_meow_of::_First::_Dispatch_ptr<uint8_t>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Dispatch_ptr<uint8_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_meow_of::_First::_Dispatch_ptr<uint16_t>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Dispatch_ptr<uint16_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_4(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_meow_of::_First::_Dispatch_ptr<uint32_t>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Dispatch_ptr<uint32_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_8(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_meow_of::_First::_Dispatch_ptr<uint64_t>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Dispatch_ptr<uint64_t>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_1(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
-    return __std_find_meow_of::_First::_Dispatch_pos<uint8_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_first_of::_Dispatch_pos<uint8_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_2(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
-    return __std_find_meow_of::_First::_Dispatch_pos<uint16_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_first_of::_Dispatch_pos<uint16_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_4(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
-    return __std_find_meow_of::_First::_Dispatch_pos<uint32_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_first_of::_Dispatch_pos<uint32_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_8(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
-    return __std_find_meow_of::_First::_Dispatch_pos<uint64_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_first_of::_Dispatch_pos<uint64_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_1(const void* const _Haystack,
     const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_meow_of::_Last::_Dispatch_pos<uint8_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_last_of::_Dispatch_pos<uint8_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(const void* const _Haystack,
     const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_meow_of::_Last::_Dispatch_pos<uint16_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_last_of::_Dispatch_pos<uint16_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 const void* __stdcall __std_search_1(
