@@ -898,11 +898,12 @@ namespace {
                     _Merge_to_ull(_Data.ftLastWriteTime.dwHighDateTime, _Data.ftLastWriteTime.dwLowDateTime));
 
                 _Flags &= ~_Get_file_attributes_data;
+            }
 
-                if (_STD _Bitmask_includes_any(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
-                    _Stats->_Reparse_point_tag = __std_fs_reparse_tag::_None;
-                    _Flags &= ~__std_fs_stats_flags::_Reparse_tag;
-                }
+            if (!_STD _Bitmask_includes_any(_Attributes, __std_fs_file_attr::_Reparse_point)
+                && _STD _Bitmask_includes_any(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
+                _Stats->_Reparse_point_tag = __std_fs_reparse_tag::_None;
+                _Flags &= ~__std_fs_stats_flags::_Reparse_tag;
             }
         }
     }
