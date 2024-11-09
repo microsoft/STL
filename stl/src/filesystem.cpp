@@ -902,6 +902,7 @@ namespace {
 
             if (!_STD _Bitmask_includes_any(_Attributes, __std_fs_file_attr::_Reparse_point)
                 && _STD _Bitmask_includes_any(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
+                // if reparse tag is requested by caller but the file is not a reparse point, set tag to _None
                 _Stats->_Reparse_point_tag = __std_fs_reparse_tag::_None;
                 _Flags &= ~__std_fs_stats_flags::_Reparse_tag;
             }
