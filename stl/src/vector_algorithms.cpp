@@ -3060,7 +3060,7 @@ namespace {
             }
         }
 
-        __m256i __vectorcall _Step(const __m256i _Bitmap, const __m256i _Data) noexcept {
+        __m256i _Step(const __m256i _Bitmap, const __m256i _Data) noexcept {
             const __m256i _Data_high    = _mm256_srli_epi32(_Data, 5);
             const __m256i _Bitmap_parts = _mm256_permutevar8x32_epi32(_Bitmap, _Data_high);
             const __m256i _Data_low_inv = _mm256_andnot_si256(_Data, _mm256_set1_epi32(0x1F));
