@@ -121,6 +121,7 @@ add_benchmark(random_integer_generation src/random_integer_generation.cpp)
 add_benchmark(replace src/replace.cpp)
 add_benchmark(std_copy src/std_copy.cpp)
 add_benchmark(swap_ranges src/swap_ranges.cpp)
+add_benchmark(filesystem src/filesystem.cpp)
 
 add_benchmark(vector_bool_copy src/std/containers/sequences/vector.bool/copy/test.cpp)
 add_benchmark(vector_bool_copy_n src/std/containers/sequences/vector.bool/copy_n/test.cpp)
