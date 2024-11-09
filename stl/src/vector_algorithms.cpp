@@ -2930,8 +2930,8 @@ namespace {
         return _Result;
     }
 
-    namespace __std_find_meow_of::_Bitmap {
 #ifndef _M_ARM64EC
+    namespace __std_find_meow_of_bitmap_details {
         __m256i _Step(const __m256i _Bitmap, const __m256i _Data) noexcept {
             const __m256i _Data_high    = _mm256_srli_epi32(_Data, 5);
             const __m256i _Bitmap_parts = _mm256_permutevar8x32_epi32(_Bitmap, _Data_high);
@@ -3018,7 +3018,11 @@ namespace {
                 return _Make_bitmap_large(_Needle_ptr, _Needle_length);
             }
         }
+    } // namespace __std_find_meow_of_bitmap_details
+#endif // !_M_ARM64EC
 
+    namespace __std_find_meow_of_bitmap {
+#ifndef _M_ARM64EC
         template <class _Ty>
         bool _Use_bitmap_avx(const size_t _Count1, const size_t _Count2) noexcept {
             if constexpr (sizeof(_Ty) == 1) {
@@ -3150,6 +3154,8 @@ namespace {
         template <class _Ty>
         size_t _Impl_first_avx(const void* const _Haystack, const size_t _Haystack_length, const void* const _Needle,
             const size_t _Needle_length) noexcept {
+            using namespace __std_find_meow_of_bitmap_details;
+
             const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
             const auto _Needle_ptr   = static_cast<const _Ty*>(_Needle);
 
@@ -3184,6 +3190,8 @@ namespace {
         template <class _Ty>
         size_t _Impl_last_avx(const void* const _Haystack, size_t _Haystack_length, const void* const _Needle,
             const size_t _Needle_length) noexcept {
+            using namespace __std_find_meow_of_bitmap_details;
+
             const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
             const auto _Needle_ptr   = static_cast<const _Ty*>(_Needle);
 
@@ -3297,7 +3305,7 @@ namespace {
 
             return static_cast<size_t>(-1);
         }
-    } // namespace __std_find_meow_of::_Bitmap
+    } // namespace __std_find_meow_of_bitmap
 
     namespace __std_find_first_of {
         template <class _Ty>
@@ -3681,19 +3689,19 @@ namespace {
         template <class _Ty>
         size_t _Dispatch_pos_sse_1_2(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
-            namespace _Bitmap = __std_find_meow_of::_Bitmap;
+            using namespace __std_find_meow_of_bitmap;
 
             if (_Use_avx2()) {
-                if (_Bitmap::_Use_bitmap_avx<_Ty>(_Count2, _Count1)
-                    && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
-                    return _Bitmap::_Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
+                if (_Use_bitmap_avx<_Ty>(_Count2, _Count1)
+                    && _Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                    return _Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
                 }
             } else {
-                if (_Bitmap::_Use_bitmap_sse<_Ty>(_Count2, _Count1)
-                    && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
-                    _Bitmap::_Scalar_table_t _Table = {};
-                    _Bitmap::_Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
-                    return _Bitmap::_Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
+                if (_Use_bitmap_sse<_Ty>(_Count2, _Count1)
+                    && _Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                    _Scalar_table_t _Table = {};
+                    _Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
+                    return _Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
                 }
             }
 
@@ -3708,11 +3716,11 @@ namespace {
         template <class _Ty>
         size_t _Dispatch_pos_avx_4_8(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
-            namespace _Bitmap = __std_find_meow_of::_Bitmap;
+            using namespace __std_find_meow_of_bitmap;
 
-            if (_Bitmap::_Use_bitmap_avx<_Ty>(_Count2, _Count1)
-                && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
-                return _Bitmap::_Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
+            if (_Use_bitmap_avx<_Ty>(_Count2, _Count1)
+                && _Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                return _Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
             }
 
             const void* const _Last1   = static_cast<const _Ty*>(_First1) + _Count1;
@@ -3727,11 +3735,11 @@ namespace {
         template <class _Ty>
         size_t _Dispatch_pos_fallback(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
-            namespace _Bitmap = __std_find_meow_of::_Bitmap;
+            using namespace __std_find_meow_of_bitmap;
 
-            _Bitmap::_Scalar_table_t _Table = {};
-            if (_Bitmap::_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
-                return _Bitmap::_Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
+            _Scalar_table_t _Table = {};
+            if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
+                return _Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
             }
 
             const void* const _Last1 = static_cast<const _Ty*>(_First1) + _Count1;
@@ -3908,21 +3916,21 @@ namespace {
         template <class _Ty>
         size_t _Dispatch_pos(const void* const _Haystack, const size_t _Haystack_length, const void* const _Needle,
             const size_t _Needle_length) noexcept {
-            namespace _Bitmap = __std_find_meow_of::_Bitmap;
+            using namespace __std_find_meow_of_bitmap;
 
 #ifndef _M_ARM64EC
             if (_Use_sse42()) {
                 if (_Use_avx2()) {
-                    if (_Bitmap::_Use_bitmap_avx<_Ty>(_Haystack_length, _Needle_length)
-                        && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_Needle), _Needle_length)) {
-                        return _Bitmap::_Impl_last_avx<_Ty>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+                    if (_Use_bitmap_avx<_Ty>(_Haystack_length, _Needle_length)
+                        && _Can_fit_256_bits_sse(static_cast<const _Ty*>(_Needle), _Needle_length)) {
+                        return _Impl_last_avx<_Ty>(_Haystack, _Haystack_length, _Needle, _Needle_length);
                     }
                 } else {
-                    if (_Bitmap::_Use_bitmap_sse<_Ty>(_Haystack_length, _Needle_length)
-                        && _Bitmap::_Can_fit_256_bits_sse(static_cast<const _Ty*>(_Needle), _Needle_length)) {
-                        _Bitmap::_Scalar_table_t _Table = {};
-                        _Bitmap::_Build_scalar_table_no_check<_Ty>(_Needle, _Needle_length, _Table);
-                        return _Bitmap::_Impl_last_scalar<_Ty>(_Haystack, _Haystack_length, _Table);
+                    if (_Use_bitmap_sse<_Ty>(_Haystack_length, _Needle_length)
+                        && _Can_fit_256_bits_sse(static_cast<const _Ty*>(_Needle), _Needle_length)) {
+                        _Scalar_table_t _Table = {};
+                        _Build_scalar_table_no_check<_Ty>(_Needle, _Needle_length, _Table);
+                        return _Impl_last_scalar<_Ty>(_Haystack, _Haystack_length, _Table);
                     }
                 }
 
@@ -3930,9 +3938,9 @@ namespace {
             } else
 #endif // !_M_ARM64EC
             {
-                _Bitmap::_Scalar_table_t _Table = {};
-                if (_Bitmap::_Build_scalar_table<_Ty>(_Needle, _Needle_length, _Table)) {
-                    return _Bitmap::_Impl_last_scalar<_Ty>(_Haystack, _Haystack_length, _Table);
+                _Scalar_table_t _Table = {};
+                if (_Build_scalar_table<_Ty>(_Needle, _Needle_length, _Table)) {
+                    return _Impl_last_scalar<_Ty>(_Haystack, _Haystack_length, _Table);
                 }
 
                 return _Fallback<_Ty>(_Haystack, _Haystack_length, _Needle, _Needle_length);
