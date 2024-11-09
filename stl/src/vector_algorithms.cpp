@@ -3222,7 +3222,7 @@ namespace {
 
             return static_cast<size_t>(-1);
         }
-#endif // ! _M_ARM64EC
+#endif // !_M_ARM64EC
 
         using _Scalar_table_t = bool[256];
 
@@ -3258,7 +3258,7 @@ namespace {
                 _Table[*_Ptr] = true;
             }
         }
-#endif // ! _M_ARM64EC
+#endif // !_M_ARM64EC
 
         template <class _Ty>
         size_t _Impl_first_scalar(
