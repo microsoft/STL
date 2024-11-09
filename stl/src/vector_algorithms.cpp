@@ -2952,7 +2952,7 @@ namespace {
                 const __m256i _Low  = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
                 const __m256i _High = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src) + 1);
                 const __m256i _Pack = _mm256_packs_epi32(_Low, _High);
-                return _mm256_permutex_epi64(_Pack, _MM_SHUFFLE(3, 1, 2, 0));
+                return _mm256_permute4x64_epi64(_Pack, _MM_SHUFFLE(3, 1, 2, 0));
             } else {
                 static_assert(false, "Unexpected size");
             }
