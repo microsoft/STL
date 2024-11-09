@@ -3156,6 +3156,8 @@ namespace {
             const size_t _Needle_length) noexcept {
             using namespace __std_find_meow_of_bitmap_details;
 
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
             const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
             const auto _Needle_ptr   = static_cast<const _Ty*>(_Needle);
 
@@ -3191,6 +3193,8 @@ namespace {
         size_t _Impl_last_avx(const void* const _Haystack, size_t _Haystack_length, const void* const _Needle,
             const size_t _Needle_length) noexcept {
             using namespace __std_find_meow_of_bitmap_details;
+
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
             const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
             const auto _Needle_ptr   = static_cast<const _Ty*>(_Needle);
