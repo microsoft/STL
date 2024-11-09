@@ -3219,7 +3219,7 @@ namespace {
         using _Scalar_table_t = bool[256];
 
         template <class _Ty>
-        bool _Build_scalar_table(
+        [[nodiscard]] bool _Build_scalar_table(
             const void* const _Needle, const size_t _Needle_length, _Scalar_table_t& _Table) noexcept {
             auto _Ptr       = static_cast<const _Ty*>(_Needle);
             const auto _End = _Ptr + _Needle_length;
