@@ -2959,6 +2959,30 @@ namespace {
         }
 
         template <class _Ty>
+        __m256i _Load_avx_256_8_last(const _Ty* const _Src, const size_t _Count) noexcept {
+            if constexpr (sizeof(_Ty) == 1) {
+                uint8_t _Buf[8];
+                memcpy(_Buf, _Src, _Count);
+                return _mm256_cvtepu8_epi32(_mm_loadu_si64(_Buf));
+            } else if constexpr (sizeof(_Ty) == 2) {
+                uint8_t _Buf[16];
+                memcpy(_Buf, _Src, _Count * 2);
+                return _mm256_cvtepu16_epi32(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_Buf)));
+            } else if constexpr (sizeof(_Ty) == 4) {
+                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Avx2_tail_mask_32(_Count));
+            } else if constexpr (sizeof(_Ty) == 8) {
+                const __m256i _Mask_low  = _Avx2_tail_mask_32(((_Count > 4) ? 4 : _Count) << 1);
+                const __m256i _Low       = _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src) + 0, _Mask_low);
+                const __m256i _Mask_high = _Avx2_tail_mask_32(((_Count > 4) ? _Count - 4 : 0) << 1);
+                const __m256i _High      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src) + 8, _Mask_high);
+                const __m256i _Pack      = _mm256_packs_epi32(_Low, _High);
+                return _mm256_permute4x64_epi64(_Pack, _MM_SHUFFLE(3, 1, 2, 0));
+            } else {
+                static_assert(false, "Unexpected size");
+            }
+        }
+
+        template <class _Ty>
         __m256i _Mask_out_overflow(const __m256i _Mask, const __m256i _Data) noexcept {
             if constexpr (sizeof(_Ty) == 1) {
                 return _Mask;
@@ -3176,10 +3200,8 @@ namespace {
             const size_t _Haystack_length_tail = _Haystack_length & 7;
             if (_Haystack_length_tail != 0) {
                 const unsigned int _Tail_bingo_mask = (1 << _Haystack_length_tail) - 1;
-                _Ty _Buf[8];
-                memcpy(_Buf, _Haystack_ptr + _Haystack_length_vec, _Haystack_length_tail * sizeof(_Ty));
-                const __m256i _Data       = _Load_avx_256_8(_Buf);
-                const __m256i _Mask       = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
+                const __m256i _Data = _Load_avx_256_8_last(_Haystack_ptr + _Haystack_length_vec, _Haystack_length_tail);
+                const __m256i _Mask = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
                 const unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask)) & _Tail_bingo_mask;
                 if (_Bingo != 0) {
                     return _Haystack_length_vec + _tzcnt_u32(_Bingo);
@@ -3214,11 +3236,9 @@ namespace {
             const size_t _Haystack_length_tail = _Haystack_length & 7;
             if (_Haystack_length_tail != 0) {
                 const unsigned int _Tail_bingo_mask = (1 << _Haystack_length_tail) - 1;
-                _Ty _Buf[8];
-                memcpy(_Buf, _Haystack_ptr, _Haystack_length_tail * sizeof(_Ty));
-                const __m256i _Data       = _Load_avx_256_8(_Buf);
-                const __m256i _Mask       = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
-                const unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask)) & _Tail_bingo_mask;
+                const __m256i _Data                 = _Load_avx_256_8_last(_Haystack_ptr, _Haystack_length_tail);
+                const __m256i _Mask                 = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
+                const unsigned int _Bingo           = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask)) & _Tail_bingo_mask;
                 if (_Bingo != 0) {
                     return 31 - _lzcnt_u32(_Bingo);
                 }
