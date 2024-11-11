@@ -323,6 +323,7 @@ void test_gh5070_istream_get_null_termination_under_exceptions() {
         assert(!is.bad());
         try {
             is.getline(buf.data(), 0);
+            assert(false);
         } catch (const ios_base::failure&) {
             // Expected case
         }
