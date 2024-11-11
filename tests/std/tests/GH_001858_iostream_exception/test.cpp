@@ -160,7 +160,7 @@ constexpr array<wchar_t, 5> meow_array<wchar_t> = {L"meow"};
 // testing GH-5070: basic_istream::get[line](char_type* s, std::streamsize n, char_type delim)
 // do not null-terminate the output buffer correctly
 template <class CharT>
-void test_gh5070_istream_get_nulltermination_under_exceptions() {
+void test_gh5070_istream_get_null_termination_under_exceptions() {
     throwing_buffer<CharT> buffer;
     const basic_string<CharT> stream_content(1U, meow_array<CharT>[2]);
 
@@ -731,8 +731,8 @@ int main() {
     test_istream_exceptions<char>();
     test_istream_exceptions<wchar_t>();
 
-    test_gh5070_istream_get_nulltermination_under_exceptions<char>();
-    test_gh5070_istream_get_nulltermination_under_exceptions<wchar_t>();
+    test_gh5070_istream_get_null_termination_under_exceptions<char>();
+    test_gh5070_istream_get_null_termination_under_exceptions<wchar_t>();
 
     test_ostream_exceptions<char>();
     test_ostream_exceptions<wchar_t>();
