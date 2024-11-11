@@ -164,7 +164,7 @@ void test_gh5070_istream_get_null_termination_under_exceptions() {
     throwing_buffer<CharT> buffer;
     const basic_string<CharT> stream_content(1U, meow_array<CharT>[2]);
 
-    { // get, exception during input extraction
+    { // get, exception during input extraction, no exception rethrow
         basic_istream<CharT> is(buffer.to_buf());
         auto buf = meow_array<CharT>;
         assert(!is.bad());
@@ -173,7 +173,7 @@ void test_gh5070_istream_get_null_termination_under_exceptions() {
         assert(buf[0] == CharT());
     }
 
-    { // get, exception during input extraction, rethrow enabled
+    { // get, exception during input extraction, exception rethrow enabled
         basic_istream<CharT> is(buffer.to_buf());
         auto buf = meow_array<CharT>;
         is.exceptions(ios_base::badbit);
