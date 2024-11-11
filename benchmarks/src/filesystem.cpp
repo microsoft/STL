@@ -10,6 +10,7 @@ void symlink_status(benchmark::State& state) {
 
     for (auto _ : state) {
         std::error_code ec;
+        benchmark::DoNotOptimize(path);
         const auto status = std::filesystem::symlink_status(path, ec);
         benchmark::DoNotOptimize(status);
         benchmark::DoNotOptimize(ec);
