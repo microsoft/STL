@@ -12,6 +12,7 @@
 #include <ostream>
 #include <sstream>
 #include <streambuf>
+#include <string>
 #include <strstream>
 #include <type_traits>
 #include <utility>
