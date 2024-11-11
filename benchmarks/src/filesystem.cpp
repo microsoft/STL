@@ -3,6 +3,7 @@
 
 #include <benchmark/benchmark.h>
 #include <filesystem>
+#include <system_error>
 
 void symlink_status(benchmark::State& state) {
     const auto path = std::filesystem::temp_directory_path();
