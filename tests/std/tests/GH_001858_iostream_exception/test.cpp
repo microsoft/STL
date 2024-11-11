@@ -150,7 +150,7 @@ void test_istream_exceptions() {
     }
 }
 
-template <typename CharT>
+template <class CharT>
 CharT meow_array;
 template <>
 constexpr array<char, 5> meow_array<char> = {"meow"};
