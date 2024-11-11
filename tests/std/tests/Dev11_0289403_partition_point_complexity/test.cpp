@@ -77,10 +77,8 @@ int main() {
         forward_list<int> fl(v.begin(), v.end());
 
         for (int x = 0; x <= k; ++x) {
-            test_partition_point(
-                v, [x](int e) { return e < x; }, x);
-            test_partition_point(
-                fl, [x](int e) { return e < x; }, x);
+            test_partition_point(v, [x](int e) { return e < x; }, x);
+            test_partition_point(fl, [x](int e) { return e < x; }, x);
         }
     }
 

@@ -433,6 +433,20 @@ public:
     using _Unchecked_const_iterator = _Tree_unchecked_const_iterator<_Tree_val>;
     using const_iterator            = _Tree_const_iterator<_Tree_val>;
 
+    template <class _AllocNode>
+    struct _NODISCARD _Erase_tree_and_orphan_guard {
+        _Tree_val* _Val_ptr;
+        _AllocNode& _Al;
+        _Nodeptr _New_root;
+
+        _Erase_tree_and_orphan_guard& operator=(const _Erase_tree_and_orphan_guard&) = delete;
+        ~_Erase_tree_and_orphan_guard() noexcept {
+            if (_Val_ptr != nullptr) {
+                _Val_ptr->_Erase_tree_and_orphan(_Al, _New_root); // subtree copy failed, bail out
+            }
+        }
+    };
+
     _Tree_val() noexcept : _Myhead(), _Mysize(0) {}
 
     enum _Redbl { // colors for link to parent
@@ -889,7 +903,7 @@ public:
     template <class _Any_alloc>
     _Tree(const _Tree& _Right, _Any_alloc&& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{},
-            _STD forward<_Any_alloc>(_Al)) {
+              _STD forward<_Any_alloc>(_Al)) {
         auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
@@ -901,14 +915,14 @@ public:
 
     _Tree(_Tree&& _Right)
         : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
-            _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
+              _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
         _Swap_val_excluding_comp(_Right);
     }
 
     _Tree(_Tree&& _Right, const allocator_type& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
-            _One_then_variadic_args_t{}, _Al) {
+              _One_then_variadic_args_t{}, _Al) {
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
@@ -926,8 +940,8 @@ public:
         _Swap_val_excluding_comp(_Right);
     }
 
-    _Tree& operator=(_Tree&& _Right) noexcept(
-        _Choose_pocma_v<_Alnode> == _Pocma_values::_Equal_allocators && is_nothrow_move_assignable_v<key_compare>) {
+    _Tree& operator=(_Tree&& _Right)
+        noexcept(_Alnode_traits::is_always_equal::value && is_nothrow_move_assignable_v<key_compare>) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
@@ -984,7 +998,7 @@ private:
 protected:
     template <class... _Valtys>
     pair<_Nodeptr, bool> _Emplace(_Valtys&&... _Vals) {
-        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
+        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Valtys...>;
         const auto _Scary             = _Get_scary();
         _Tree_find_result<_Nodeptr> _Loc;
         _Nodeptr _Inserted;
@@ -1028,7 +1042,7 @@ public:
 protected:
     template <class... _Valtys>
     _Nodeptr _Emplace_hint(const _Nodeptr _Hint, _Valtys&&... _Vals) {
-        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
+        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Valtys...>;
         const auto _Scary             = _Get_scary();
         _Tree_find_hint_result<_Nodeptr> _Loc;
         _Nodeptr _Inserted;
@@ -1335,10 +1349,9 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Kx, class _Mycomp = key_compare,
-        enable_if_t<conjunction_v<_Is_transparent<_Mycomp>,
-                        negation<disjunction<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>>>,
-            int> = 0>
+    template <class _Kx>
+        requires _Is_transparent_v<key_compare> && (!is_convertible_v<_Kx, const_iterator>)
+              && (!is_convertible_v<_Kx, iterator>)
     size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Eqrange(_Keyval))) /* strengthened */ {
         return _Erase(_Eqrange(_Keyval));
     }
@@ -1390,7 +1403,8 @@ public:
         return _Lower_bound_duplicate(_Find_lower_bound(_Keyval)._Bound, _Keyval);
     }
 
-    template <class _Other, class _Mycomp = key_compare, enable_if_t<_Is_transparent_v<_Mycomp>, int> = 0>
+    template <class _Other>
+        requires _Is_transparent_v<key_compare>
     _NODISCARD bool contains(const _Other& _Keyval) const {
         return _Lower_bound_duplicate(_Find_lower_bound(_Keyval)._Bound, _Keyval);
     }
@@ -1661,20 +1675,16 @@ protected:
         _Nodeptr _Newroot = _Scary->_Myhead; // point at nil node
 
         if (!_Rootnode->_Isnil) { // copy or move a node, then any subtrees
-            _Nodeptr _Pnode = _Copy_or_move<_Strat>(_Rootnode->_Myval);
-            _Pnode->_Parent = _Wherenode;
-            _Pnode->_Color  = _Rootnode->_Color;
-            if (_Newroot->_Isnil) {
-                _Newroot = _Pnode; // memorize new root
-            }
+            _Newroot          = _Copy_or_move<_Strat>(_Rootnode->_Myval); // memorize new root
+            _Newroot->_Parent = _Wherenode;
+            _Newroot->_Color  = _Rootnode->_Color;
 
-            _TRY_BEGIN
-            _Pnode->_Left  = _Copy_nodes<_Strat>(_Rootnode->_Left, _Pnode);
-            _Pnode->_Right = _Copy_nodes<_Strat>(_Rootnode->_Right, _Pnode);
-            _CATCH_ALL
-            _Scary->_Erase_tree_and_orphan(_Getal(), _Newroot); // subtree copy failed, bail out
-            _RERAISE;
-            _CATCH_END
+            typename _Scary_val::template _Erase_tree_and_orphan_guard<_Alnode> _Guard{_Scary, _Getal(), _Newroot};
+
+            _Newroot->_Left  = _Copy_nodes<_Strat>(_Rootnode->_Left, _Newroot);
+            _Newroot->_Right = _Copy_nodes<_Strat>(_Rootnode->_Right, _Newroot);
+
+            _Guard._Val_ptr = nullptr;
         }
 
         return _Newroot; // return newly constructed tree
@@ -1743,10 +1753,9 @@ public:
     }
 
 #if _HAS_CXX23
-    template <class _Kx, class _Mycomp = key_compare,
-        enable_if_t<conjunction_v<_Is_transparent<_Mycomp>,
-                        negation<disjunction<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>>>,
-            int> = 0>
+    template <class _Kx>
+        requires _Is_transparent_v<key_compare> && (!is_convertible_v<_Kx, const_iterator>)
+              && (!is_convertible_v<_Kx, iterator>)
     node_type extract(_Kx&& _Keyval) {
         const const_iterator _Where = find(_Keyval);
         if (_Where == end()) {

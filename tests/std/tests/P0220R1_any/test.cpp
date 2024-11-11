@@ -4,7 +4,7 @@
 // Organization of this file:
 // * a short header (including this comment)
 // * `// LLVM SOURCES BEGIN`
-// * The contents of several libc++ `test/std/utilities/any` test files, each delimited by `// -- BEGIN/END: <filename>`
+// * The contents of several libc++ test files, each delimited by `// -- BEGIN/END: <filename>`
 //   comments. These contents have been modified to merge many tests into one by:
 //     (1) changing `int main(int, char**)` to `int run_test()`, and
 //     (2) wrapping everything other than comments and includes in a unique namespace per-file, using namespace nesting
@@ -15,23 +15,17 @@
 //   the MSVC-specific test cases.
 //
 // The LLVM sources are updated manually:
-// 1. Navigate a bash prompt to `libcxx` in an LLVM monorepo.
-// 2. Redirect the output of the bash loop:
-//      for f in $(find test/std/utilities/any -name '*.pass.cpp');
-//        do echo "// -- BEGIN: $f";
-//        sed -e 's/int main(int, char\*\*)/int run_test()/; s/FIXME/TODO/g' < $f;
-//        echo -e "// -- END: $f\n";
-//      done
+// 1. Navigate a bash prompt to `llvm-project/libcxx`.
+// 2. Redirect the output of:
+//      ../../tools/scripts/transform_llvm.sh test/std/utilities/any
 //    into a file.
 // 3. Replicate the namespace structure from here into that file, use its content to replace everything between the
 //    "LLVM SOURCES BEGIN"/"END" delimiters, and ensure that `main` properly calls each of the `run_test` functions.
+// 4. Restore the TRANSITION-commented workarounds.
 //
 // Yes, this is an awkward hand process; notably the required headers can change without notice. We should investigate
 // running the libc++ tests directly in all of our configurations so we needn't replicate this subset of files.
 
-#define _HAS_DEPRECATED_IS_LITERAL_TYPE 1
-#define _SILENCE_CXX17_IS_LITERAL_TYPE_DEPRECATION_WARNING
-#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 #include <stdlib.h>
@@ -40,6 +34,9 @@
 #pragma warning(disable : 4365) // 'initializing': conversion from 'int' to 'const size_t', signed/unsigned mismatch
 #include "count_new.h"
 #pragma warning(pop)
+
+// Silence a warning emitted by test/std/utilities/any/any.class/any.cons/default.pass.cpp below.
+#pragma warning(disable : 4640) // construction of local static object is not thread-safe
 
 // clang-format off
 // LLVM SOURCES BEGIN
@@ -53,7 +50,6 @@
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -255,7 +251,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -364,7 +359,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -577,7 +571,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -681,6 +674,7 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
+
 // <any>
 
 // any() noexcept;
@@ -702,15 +696,15 @@ int run_test()
           , "Must be default constructible"
           );
     }
+#ifndef _M_CEE // TRANSITION, VSO-1664382
     {
         struct TestConstexpr : public std::any {
           constexpr TestConstexpr() : std::any() {}
         };
-#ifdef _LIBCPP_SAFE_STATIC
-        _LIBCPP_SAFE_STATIC static std::any a;
-        ((void)a);
-#endif
+        TEST_CONSTINIT static std::any a;
+        (void)a;
     }
+#endif // ^^^ no workaround ^^^
     {
         DisableAllocationGuard g; ((void)g);
         const std::any a;
@@ -732,7 +726,6 @@ int run_test()
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -755,7 +748,7 @@ int run_test()
 #include "test_macros.h"
 #include "test_convertible.h"
 
-namespace ctor::in_place {
+namespace ctor::in_place_type {
 template <class Type>
 void test_in_place_type() {
     // constructing from a small type should perform no allocations.
@@ -917,7 +910,7 @@ int run_test() {
 
   return 0;
 }
-} // namespace ctor::in_place
+} // namespace ctor::in_place_type
 // -- END: test/std/utilities/any/any.class/any.cons/in_place_type.pass.cpp
 
 // -- BEGIN: test/std/utilities/any/any.class/any.cons/move.pass.cpp
@@ -930,7 +923,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -1034,7 +1026,6 @@ int run_test()
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -1192,7 +1183,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -1209,11 +1199,11 @@ int run_test() {
 
 namespace modifiers::emplace {
 struct Tracked {
-  static int count;
-  Tracked()  {++count;}
-  Tracked(Tracked const&) noexcept {++count;}
-  Tracked& operator=(Tracked const&) = default;
-  ~Tracked() { --count; }
+    static int count;
+    Tracked() { ++count; }
+    Tracked(Tracked const&) noexcept { ++count; }
+    Tracked& operator=(Tracked const&) = default;
+    ~Tracked() { --count; }
 };
 int Tracked::count = 0;
 
@@ -1482,7 +1472,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -1546,7 +1535,6 @@ int run_test()
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -1681,6 +1669,7 @@ int run_test()
 //===----------------------------------------------------------------------===//
 
 
+
 // <any>
 
 // any::has_value() noexcept
@@ -1694,7 +1683,6 @@ int run_test()
 namespace observers::has_value {
 int run_test()
 {
-    // noexcept test
     {
         std::any a;
         ASSERT_NOEXCEPT(a.has_value());
@@ -1748,7 +1736,8 @@ int run_test()
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: libcpp-no-rtti
+
+
 
 // <any>
 
@@ -1787,34 +1776,6 @@ int run_test()
 } // namespace observers::type
 // -- END: test/std/utilities/any/any.class/any.observers/type.pass.cpp
 
-// -- BEGIN: test/std/utilities/any/any.class/not_literal_type.pass.cpp
-//===----------------------------------------------------------------------===//
-//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===----------------------------------------------------------------------===//
-
-
-// <any>
-
-// [Note any is a not a literal type --end note]
-
-#include <any>
-#include <type_traits>
-
-#include "test_macros.h"
-
-namespace not_literal {
-int run_test() {
-    static_assert(!std::is_literal_type<std::any>::value, "");
-
-  return 0;
-}
-} // namespace not_literal
-// -- END: test/std/utilities/any/any.class/not_literal_type.pass.cpp
-
 // -- BEGIN: test/std/utilities/any/any.nonmembers/any.cast/any_cast_pointer.pass.cpp
 //===----------------------------------------------------------------------===//
 //
@@ -1825,7 +1786,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -2011,7 +1971,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -2323,7 +2282,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -2466,7 +2424,6 @@ int run_test() {
 //===----------------------------------------------------------------------===//
 
 
-// XFAIL: dylib-has-no-bad_any_cast && !libcpp-no-exceptions
 
 // <any>
 
@@ -3222,7 +3179,7 @@ int main() {
 
     ctor::copy::run_test();
     ctor::default_::run_test();
-    ctor::in_place::run_test();
+    ctor::in_place_type::run_test();
     ctor::move::run_test();
     ctor::value::run_test();
 
@@ -3232,8 +3189,6 @@ int main() {
 
     observers::has_value::run_test();
     observers::type::run_test();
-
-    not_literal::run_test();
 
     nonmembers::cast::pointer::run_test();
     nonmembers::cast::reference::run_test();

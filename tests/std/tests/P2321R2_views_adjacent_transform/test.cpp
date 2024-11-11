@@ -73,7 +73,7 @@ using invoke_result_with_repeated_type = invoke_result_with_repeated_type_impl<F
 static_assert(same_as<invoke_result_with_repeated_type<plus<int>, int, 2>, int>);
 static_assert(same_as<invoke_result_with_repeated_type<equal_to<int>, int, 2>, bool>);
 
-template <size_t N, ranges::input_range Rng, class Expected, class Fn>
+template <size_t N, ranges::forward_range Rng, class Expected, class Fn>
 constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     using ranges::adjacent_transform_view, ranges::adjacent_view, ranges::forward_range, ranges::bidirectional_range,
         ranges::random_access_range, ranges::sized_range, ranges::common_range, ranges::iterator_t,
@@ -86,7 +86,6 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     using R = adjacent_transform_view<V, decay_t<Fn>, N>;
 
     static_assert(ranges::view<R>);
-    static_assert(ranges::input_range<R>);
     static_assert(forward_range<R>);
     static_assert(bidirectional_range<R> == bidirectional_range<Rng>);
     static_assert(random_access_range<R> == random_access_range<Rng>);
@@ -428,8 +427,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             same_as<I&> decltype(auto) i2 = ++i;
             assert(&i2 == &i);
             if (i != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                 assert(*i == expected_rng[1]);
+#pragma warning(pop)
             }
             i = r.begin();
         }
@@ -438,8 +439,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             same_as<I> decltype(auto) i2 = i++;
             assert(*i2 == expected_rng[0]);
             if (i != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                 assert(*i == expected_rng[1]);
+#pragma warning(pop)
             }
             i = r.begin();
         }
@@ -467,8 +470,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
 
                 same_as<I> decltype(auto) i2 = i--;
                 if (i2 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*i2 == expected_rng[1]);
+#pragma warning(pop)
                 }
                 assert(*i == expected_rng[0]);
             }
@@ -479,8 +484,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
                 same_as<I&> decltype(auto) i2 = (i += 1);
                 assert(&i2 == &i);
                 if (i != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*i == expected_rng[1]);
+#pragma warning(pop)
                 }
 
                 same_as<I&> decltype(auto) i3 = (i -= 1);
@@ -518,14 +525,18 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             { // Check operator+
                 same_as<I> auto i2 = i + 1;
                 if (i2 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*i2 == expected_rng[1]);
+#pragma warning(pop)
                 }
 
                 same_as<I> auto i3 = 1 + i;
                 if (i3 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*i3 == expected_rng[1]);
+#pragma warning(pop)
                 }
             }
 
@@ -610,8 +621,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             same_as<CI&> decltype(auto) ci2 = ++ci;
             assert(&ci2 == &ci);
             if (ci != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                 assert(*ci == expected_rng[1]);
+#pragma warning(pop)
             }
             ci = r.begin();
         }
@@ -620,8 +633,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             same_as<CI> decltype(auto) ci2 = ci++;
             assert(*ci2 == expected_rng[0]);
             if (ci != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                 assert(*ci == expected_rng[1]);
+#pragma warning(pop)
             }
             ci = r.begin();
         }
@@ -658,8 +673,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
 
                 same_as<CI> decltype(auto) ci2 = ci--;
                 if (ci2 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*ci2 == expected_rng[1]);
+#pragma warning(pop)
                 }
                 assert(*ci == expected_rng[0]);
             }
@@ -670,8 +687,10 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
                 same_as<CI&> decltype(auto) ci2 = (ci += 1);
                 assert(&ci2 == &ci);
                 if (ci != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*ci == expected_rng[1]);
+#pragma warning(pop)
                 }
 
                 same_as<CI&> decltype(auto) ci3 = (ci -= 1);
@@ -733,14 +752,18 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
             { // Check operator+
                 same_as<CI> auto ci2 = ci + 1;
                 if (ci2 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*ci2 == expected_rng[1]);
+#pragma warning(pop)
                 }
 
                 same_as<CI> auto ci3 = 1 + ci;
                 if (ci3 != r.end()) {
-#pragma warning(suppress : 28020) // The expression '0<=_Param_(1)&&_Param_(1)<=1-1' is not true at this call
+#pragma warning(push)
+#pragma warning(disable : 28020) // The expression '_Param_(1)<1' is not true at this call.
                     assert(*ci3 == expected_rng[1]);
+#pragma warning(pop)
                 }
             }
 
@@ -790,7 +813,7 @@ constexpr bool test_one(Rng&& rng, Fn func, Expected&& expected_rng) {
     return true;
 }
 
-template <ranges::input_range Rng>
+template <ranges::forward_range Rng>
 constexpr void test_adjacent0(Rng&& rng) {
     auto func = [] { return 602; };
     using Fn  = decltype(func);
@@ -884,7 +907,7 @@ using test_range =
         test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}>;
 
 struct instantiator {
-    template <ranges::input_range R>
+    template <ranges::forward_range R>
     static constexpr void call() {
         R r{some_ints};
         test_one<1>(r, adjacent1_fn, adjacent1_result);
@@ -923,6 +946,60 @@ constexpr void instantiation_test() {
     instantiator::call<test_range<contiguous_iterator_tag, Common::no, Sized::no>>();
     instantiator::call<test_range<contiguous_iterator_tag, Common::yes, Sized::yes>>();
     instantiator::call<test_range<contiguous_iterator_tag, Common::yes, Sized::no>>();
+#endif // TEST_EVERYTHING
+}
+
+// LWG-4098 views::adjacent<0> should reject non-forward ranges
+template <size_t N, ranges::input_range Rng, class Fn>
+constexpr void test_input_only(Rng&&, Fn&&) {
+    if constexpr (!ranges::forward_range<Rng>) {
+        static_assert(!CanViewAdjacentTransform<Rng&, Fn, N>);
+        static_assert(!CanViewAdjacentTransform<Rng, Fn, N>);
+    }
+
+    if constexpr (!ranges::forward_range<const Rng>) {
+        static_assert(!CanViewAdjacentTransform<const Rng&, Fn, N>);
+        static_assert(!CanViewAdjacentTransform<const Rng, Fn, N>);
+    }
+}
+
+struct input_only_instantiator {
+#ifdef TEST_EVERYTHING
+    template <ranges::input_range R>
+    static constexpr void call() {
+        R r{some_ints};
+        auto nullary_fn = [] { return 1729; };
+        test_input_only<0>(r, nullary_fn);
+        test_input_only<1>(r, adjacent1_fn);
+        test_input_only<2>(r, pairwise_fn);
+        test_input_only<4>(r, adjacent4_fn);
+        test_input_only<7>(r, adjacent7_fn);
+    }
+#else // ^^^ test all input range permutations / test only "interesting" permutations vvv
+    template <class Tag, test::Common IsCommon, test::Sized IsSized>
+    static constexpr void call() {
+        test_range<Tag, IsCommon, IsSized> r{some_ints};
+        auto nullary_fn = [] { return 1729; };
+        test_input_only<0>(r, nullary_fn);
+        test_input_only<1>(r, adjacent1_fn);
+        test_input_only<2>(r, pairwise_fn);
+        test_input_only<4>(r, adjacent4_fn);
+        test_input_only<7>(r, adjacent7_fn);
+    }
+#endif // TEST_EVERYTHING
+};
+
+constexpr void instantiation_input_only_test() {
+#ifdef TEST_EVERYTHING
+    test_in<input_only_instantiator, const int>();
+#else // ^^^ test all input range permutations / test only "interesting" permutations vvv
+    using test::Common, test::Sized;
+
+    // The view is sensitive to category, commonality, and size, but oblivious to proxyness and differencing
+    input_only_instantiator::call<input_iterator_tag, Common::no, Sized::yes>();
+    input_only_instantiator::call<input_iterator_tag, Common::no, Sized::no>();
+    input_only_instantiator::call<input_iterator_tag, Common::yes, Sized::yes>();
+    input_only_instantiator::call<input_iterator_tag, Common::yes, Sized::no>();
 #endif // TEST_EVERYTHING
 }
 
@@ -988,4 +1065,7 @@ int main() {
 
     static_assert((instantiation_test(), true));
     instantiation_test();
+
+    static_assert((instantiation_input_only_test(), true));
+    instantiation_input_only_test();
 }

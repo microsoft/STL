@@ -635,8 +635,8 @@ public:
         _Take_head(_Right);
     }
 
-    forward_list(forward_list&& _Right, const _Identity_t<_Alloc>& _Al) noexcept(
-        _Alnode_traits::is_always_equal::value) // strengthened
+    forward_list(forward_list&& _Right, const _Identity_t<_Alloc>& _Al)
+        noexcept(_Alnode_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
@@ -653,8 +653,8 @@ public:
         _Take_head(_Right);
     }
 
-    forward_list& operator=(forward_list&& _Right) noexcept(
-        _Choose_pocma_v<_Alnode> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
+    forward_list& operator=(forward_list&& _Right)
+        noexcept(_Choose_pocma_v<_Alnode> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
@@ -700,7 +700,7 @@ public:
     }
 
     template <class... _Valty>
-    decltype(auto) emplace_front(_Valty&&... _Val) { // insert element at beginning
+    _CONTAINER_EMPLACE_RETURN emplace_front(_Valty&&... _Val) { // insert element at beginning
         _Insert_after(_Mypair._Myval2._Before_head(), _STD forward<_Valty>(_Val)...);
 
 #if _HAS_CXX17
@@ -1208,12 +1208,12 @@ public:
         _Nodeptr* _Tail;
     };
 
-    auto remove(const _Ty& _Val) { // erase each element matching _Val
-        return remove_if([&](const _Ty& _Other) { return _Other == _Val; });
+    _LIST_REMOVE_RETURN remove(const _Ty& _Val) { // erase each element matching _Val
+        return remove_if([&](const _Ty& _Other) -> bool { return _Other == _Val; });
     }
 
     template <class _Pr1>
-    auto remove_if(_Pr1 _Pred) { // erase each element satisfying _Pr1
+    _LIST_REMOVE_RETURN remove_if(_Pr1 _Pred) { // erase each element satisfying _Pr1
         _Flist_node_remove_op _Op(*this);
         auto _Firstb       = _Unchecked_before_begin();
         size_type _Removed = 0;
@@ -1235,12 +1235,12 @@ public:
 #endif
     }
 
-    auto unique() { // erase each element matching previous
+    _LIST_REMOVE_RETURN unique() { // erase each element matching previous
         return unique(equal_to<>{});
     }
 
     template <class _Pr2>
-    auto unique(_Pr2 _Pred) { // erase each element satisfying _Pred with previous
+    _LIST_REMOVE_RETURN unique(_Pr2 _Pred) { // erase each element satisfying _Pred with previous
         _Flist_node_remove_op _Op(*this);
         auto _First        = _Unchecked_begin();
         size_type _Removed = 0;
@@ -1561,8 +1561,7 @@ forward_list(_Iter, _Iter, _Alloc = _Alloc()) -> forward_list<_Iter_value_t<_Ite
 #endif // _HAS_CXX17
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
-    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
 forward_list(from_range_t, _Rng&&, _Alloc = _Alloc()) -> forward_list<_RANGES range_value_t<_Rng>, _Alloc>;
 #endif // _HAS_CXX23
 
@@ -1615,7 +1614,7 @@ _NODISCARD bool operator>=(const forward_list<_Ty, _Alloc>& _Left, const forward
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
 forward_list<_Ty, _Alloc>::size_type erase(forward_list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    return _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
+    return _Cont.remove_if([&](_Ty& _Elem) -> bool { return _Elem == _Val; });
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>

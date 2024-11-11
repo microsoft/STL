@@ -213,6 +213,26 @@ void test_P2286_vector_bool() {
 // Tests for P2286 Formatting ranges
 template <class CharT>
 void test_P2286() {
+    assert_is_formattable<array<int, 42>, CharT>();
+    assert_is_formattable<vector<int>, CharT>();
+    assert_is_formattable<deque<int>, CharT>();
+    assert_is_formattable<forward_list<int>, CharT>();
+    assert_is_formattable<list<int>, CharT>();
+
+    assert_is_formattable<set<int>, CharT>();
+    assert_is_formattable<map<int, int>, CharT>();
+    assert_is_formattable<multiset<int>, CharT>();
+    assert_is_formattable<multimap<int, int>, CharT>();
+
+    assert_is_formattable<unordered_set<int>, CharT>();
+    assert_is_formattable<unordered_map<int, int>, CharT>();
+    assert_is_formattable<unordered_multiset<int>, CharT>();
+    assert_is_formattable<unordered_multimap<int, int>, CharT>();
+
+    assert_is_formattable<span<int>, CharT>();
+
+    assert_is_formattable<valarray<int>, CharT>();
+
     assert_is_formattable<pair<int, int>, CharT>();
     assert_is_formattable<tuple<int>, CharT>();
 
@@ -249,7 +269,11 @@ enum class ec { a };
 template <class CharT>
 void test_disabled() {
     if constexpr (!same_as<CharT, char>) {
+        assert_is_not_formattable<char*, CharT>();
         assert_is_not_formattable<const char*, CharT>();
+        assert_is_not_formattable<char[42], CharT>();
+        assert_is_not_formattable<string, CharT>();
+        assert_is_not_formattable<string_view, CharT>();
     }
 
     assert_is_not_formattable<c, CharT>();

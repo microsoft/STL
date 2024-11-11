@@ -5,7 +5,9 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -116,6 +118,17 @@ void test_case_min_max_element(const std::vector<T>& input) {
         assert(*expected_max == actual_max_value);
         assert(*expected_minmax.first == actual_minmax_value.min);
         assert(*expected_minmax.second == actual_minmax_value.max);
+
+#ifndef _M_FP_FAST
+        // With /fp:fast mode the compiler does not try to produce the code that correctly
+        // distinguishes +0.0 and -0.0, so the algorithms are not expected to either.
+        if constexpr (std::is_floating_point_v<T>) {
+            assert(std::signbit(*expected_min) == std::signbit(actual_min_value));
+            assert(std::signbit(*expected_max) == std::signbit(actual_max_value));
+            assert(std::signbit(*expected_minmax.first) == std::signbit(actual_minmax_value.min));
+            assert(std::signbit(*expected_minmax.second) == std::signbit(actual_minmax_value.max));
+        }
+#endif // !defined(_M_FP_FAST)
     }
 #endif // _HAS_CXX20
 }

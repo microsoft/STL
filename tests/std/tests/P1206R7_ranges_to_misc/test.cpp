@@ -233,8 +233,8 @@ public:
     constexpr restricted_vector(const size_type n, const T& val, const A& alloc = A()) : base_type(n, val, alloc) {}
     constexpr restricted_vector(const std::initializer_list<T> il, const A& alloc = A()) : base_type(il, alloc) {}
     constexpr restricted_vector(const restricted_vector& other, const A& alloc) : base_type(other, alloc) {}
-    constexpr restricted_vector(restricted_vector&& other, const A& alloc) noexcept(
-        std::allocator_traits<A>::is_always_equal::value)
+    constexpr restricted_vector(restricted_vector&& other, const A& alloc)
+        noexcept(std::allocator_traits<A>::is_always_equal::value)
         : base_type(std::move(other), alloc) {}
 
     using base_type::begin;

@@ -79,6 +79,17 @@ void assert_throws_future_error(F f, std::error_code expected_code) {
 }
 
 template <class T>
+struct MoveOnlyFunctor {
+    MoveOnlyFunctor()                             = default;
+    MoveOnlyFunctor(MoveOnlyFunctor&&)            = default;
+    MoveOnlyFunctor& operator=(MoveOnlyFunctor&&) = default;
+
+    T operator()() const {
+        return T{172};
+    }
+};
+
+template <class T>
 void run_tests() {
     using Promise = std::promise<T>;
     using Future  = std::future<T>;
@@ -175,6 +186,15 @@ void run_tests() {
         pt();
 
         assert(f.get().x == 7);
+    }
+
+    // Also test GH-321: "<future>: packaged_task can't be constructed from a move-only lambda"
+    {
+        std::packaged_task<T()> pt(MoveOnlyFunctor<T>{});
+        Future f = pt.get_future();
+        pt();
+
+        assert(f.get().x == 172);
     }
 }
 

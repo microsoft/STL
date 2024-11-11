@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CRT_SECURE_NO_WARNINGS
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -21,8 +20,10 @@ constexpr size_t max_line_length = 120;
 
 class BinaryFile {
 public:
-    explicit BinaryFile(const filesystem::path& filepath) : m_file(_wfopen(filepath.c_str(), L"rb")) {
-        if (!m_file) {
+    explicit BinaryFile(const filesystem::path& filepath) {
+        const auto err = _wfopen_s(&m_file, filepath.c_str(), L"rb");
+
+        if (err != 0 || !m_file) {
             println(stderr, "Validation failed: {} couldn't be opened.", filepath.string());
         }
     }
@@ -40,7 +41,7 @@ public:
     }
 
     ~BinaryFile() {
-        if (fclose(m_file) != 0) {
+        if (m_file && fclose(m_file) != 0) {
             println(stderr, "fclose() failed.");
             abort();
         }

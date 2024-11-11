@@ -33,13 +33,12 @@ struct _Stl_critical_section {
 };
 
 struct _Mtx_internal_imp_t {
-#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT) // for Windows-internal code
-    static constexpr size_t _Critical_section_size = 2 * sizeof(void*);
-#elif defined(_WIN64) // ordinary 64-bit code
+// TRANSITION, ABI: We should directly store _M_srw_lock above.
+#ifdef _WIN64
     static constexpr size_t _Critical_section_size = 64;
-#else // vvv ordinary 32-bit code vvv
+#else // ^^^ 64-bit / 32-bit vvv
     static constexpr size_t _Critical_section_size = 36;
-#endif // ^^^ ordinary 32-bit code ^^^
+#endif // ^^^ 32-bit ^^^
 
     int _Type{};
     union {
@@ -52,17 +51,27 @@ struct _Mtx_internal_imp_t {
 
 using _Mtx_t = _Mtx_internal_imp_t*;
 
-struct _Cnd_internal_imp_t {
-#if defined(_CRT_WINDOWS) // for Windows-internal code
-    static constexpr size_t _Cnd_internal_imp_size = 2 * sizeof(void*);
-#elif defined(_WIN64) // ordinary 64-bit code
-    static constexpr size_t _Cnd_internal_imp_size = 72;
-#else // vvv ordinary 32-bit code vvv
-    static constexpr size_t _Cnd_internal_imp_size = 40;
-#endif // ^^^ ordinary 32-bit code ^^^
-
-    _STD _Aligned_storage_t<_Cnd_internal_imp_size, alignof(void*)> _Cv_storage;
+struct _Stl_condition_variable {
+    void* _Unused = nullptr; // TRANSITION, ABI: was the vptr
+    void* _Win_cv = nullptr;
 };
+
+#pragma warning(push)
+#pragma warning(disable : 26495) // Variable 'meow' is uninitialized. Always initialize a member variable (type.6).
+struct _Cnd_internal_imp_t {
+// TRANSITION, ABI: We should directly store _Win_cv above.
+#ifdef _WIN64
+    static constexpr size_t _Cnd_internal_imp_size = 72;
+#else // ^^^ 64-bit / 32-bit vvv
+    static constexpr size_t _Cnd_internal_imp_size = 40;
+#endif // ^^^ 32-bit ^^^
+
+    union {
+        _Stl_condition_variable _Stl_cv{};
+        _STD _Aligned_storage_t<_Cnd_internal_imp_size, alignof(void*)> _Cv_storage;
+    };
+};
+#pragma warning(pop)
 
 using _Cnd_t = _Cnd_internal_imp_t*;
 } // extern "C"

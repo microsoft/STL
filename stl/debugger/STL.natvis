@@ -1520,9 +1520,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 
   <Type Name="std::move_iterator&lt;*&gt;">
-      <DisplayString>move_iterator {current}</DisplayString>
+      <DisplayString>move_iterator {_Current}</DisplayString>
       <Expand>
-          <Item Name="current">current</Item>
+          <Item Name="[current]">_Current</Item>
       </Expand>
   </Type>
 
@@ -2001,16 +2001,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::ranges::view_interface&lt;*&gt;">
-    <DisplayString>{{ size={size()} }}</DisplayString>
-    <Expand>
-      <Item Optional="true" Name="empty">empty()</Item>
-      <Item Optional="true" Name="front">front()</Item>
-      <Item Optional="true" Name="back">back()</Item>
-      <Item Optional="true" Name="data">data()</Item>
-    </Expand>
-  </Type>
-
   <Type Name="std::ranges::dangling">
     <DisplayString>dangling</DisplayString>
   </Type>
@@ -2319,6 +2309,59 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Synthetic Name="[representation]" Condition="_Is_big()">
         <DisplayString>(Dynamic Allocation)</DisplayString>
       </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="std::chrono::time_point&lt;std::chrono::system_clock,std::chrono::duration&lt;__int64,std::ratio&lt;1,10000000&gt; &gt; &gt;">
+    <!--
+      Same computation as in std::chrono::year_month_day::_Civil_from_days
+      and https://howardhinnant.github.io/date_algorithms.html#civil_from_days.
+    -->
+    <Intrinsic Name="z"     Expression="(_MyDur._MyRep / (24 * 60 * 60 * 10000000ull)) + 719468"/>
+    <Intrinsic Name="era"   Expression="(z() &gt;= 0 ? z() : z() - 146096) / 146097"/>
+    <Intrinsic Name="doe"   Expression="(unsigned)(z() - era() * 146097)"/>
+    <Intrinsic Name="yoe"   Expression="(doe() - doe()/1460 + doe()/36524 - doe()/146096) / 365"/>
+    <Intrinsic Name="doy"   Expression="doe() - (365*yoe() + yoe()/4 - yoe()/100)"/>
+    <Intrinsic Name="mp"    Expression="(5*doy() + 2)/153"/>
+    <Intrinsic Name="day"   Expression="doy() - (153*mp()+2)/5 + 1"/>
+    <Intrinsic Name="month" Expression="mp() &lt; 10 ? mp()+3 : mp()-9"/>
+    <Intrinsic Name="year"  Expression="((long long)yoe()) + era() * 400 + (month() &lt; 2)"/>
+
+    <DisplayString Condition="_MyDur._MyRep &gt;= 0">
+      {year(),d}-{month()/10,d}{month()%10,d}-{day()/10,d}{day()%10,d} {
+        (_MyDur._MyRep % (24 * 60 * 60 * 10000000ull))/(10 * 60 * 60 * 10000000ull),d
+      }{
+        ((_MyDur._MyRep % (24 * 60 * 60 * 10000000ull))/(60 * 60 * 10000000ull)) % 10,d
+      }:{
+        (_MyDur._MyRep % (60 * 60 * 10000000ull))/(10 * 60 * 10000000ull),d
+      }{
+        (_MyDur._MyRep % (10 * 60 * 10000000ull)) / (60 * 10000000ull),d
+      }:{
+        (_MyDur._MyRep % (60 * 10000000ull)) / (10 * 10000000ull),d
+      }{
+        (_MyDur._MyRep % (10 * 10000000ull)) / 10000000ull,d
+      }.{
+        (_MyDur._MyRep % 10000000) / 1000000,d
+      }{
+        (_MyDur._MyRep % 1000000) / 100000,d
+      }{
+        (_MyDur._MyRep % 100000) / 10000,d
+      }{
+        (_MyDur._MyRep % 10000) / 1000,d
+      }{
+        (_MyDur._MyRep % 1000) / 100,d
+      }{
+        (_MyDur._MyRep % 100) / 10,d
+      }{
+        _MyDur._MyRep % 10,d
+      }
+    </DisplayString>
+    <Expand>
+      <Item Name="[ns/100]">_MyDur._MyRep</Item>
+      <Item Name="[us]">_MyDur._MyRep/10</Item>
+      <Item Name="[ms]">_MyDur._MyRep/(10 * 1000)</Item>
+      <Item Name="[s]">_MyDur._MyRep/(10 * 1000 * 1000)</Item>
+      <Synthetic Name="[clock]"><DisplayString>UTC</DisplayString></Synthetic>
     </Expand>
   </Type>
 

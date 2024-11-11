@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <ranges>
 #include <span>
 #include <string_view>
@@ -111,7 +112,7 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
     static_assert(CanViewJoinWith<Outer&, Delimiter&> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewJoinWith<Outer&, Delimiter&>) {
         constexpr bool is_noexcept =
-            (!is_view || is_nothrow_copy_constructible_v<V>) &&is_nothrow_copy_constructible_v<DV>;
+            (!is_view || is_nothrow_copy_constructible_v<V>) && is_nothrow_copy_constructible_v<DV>;
 
         static_assert(same_as<decltype(views::join_with(rng, delimiter)), R>);
         static_assert(noexcept(views::join_with(rng, delimiter)) == is_noexcept);
@@ -126,7 +127,7 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
     if constexpr (CanViewJoinWith<const remove_reference_t<Outer>&, Delimiter&>) {
         using RC = join_with_view<views::all_t<const remove_reference_t<Outer>&>, DV>;
         constexpr bool is_noexcept =
-            (!is_view || is_nothrow_copy_constructible_v<V>) &&is_nothrow_copy_constructible_v<DV>;
+            (!is_view || is_nothrow_copy_constructible_v<V>) && is_nothrow_copy_constructible_v<DV>;
 
         static_assert(same_as<decltype(views::join_with(as_const(rng), delimiter)), RC>);
         static_assert(noexcept(views::join_with(as_const(rng), delimiter)) == is_noexcept);
@@ -673,6 +674,106 @@ void test_lwg3700() { // COMPILE-ONLY
     static_assert(!CanMemberBegin<const J>);
     static_assert(!CanMemberEnd<const J>);
 }
+
+// LWG-4074 "compatible-joinable-ranges is underconstrained"
+
+template <bool CanCommonRead>
+struct ValCommon;
+
+template <bool CanCommonRead>
+struct RefCommon;
+
+template <bool CanCommonRead>
+struct ValX {
+    operator ValCommon<CanCommonRead>() const;
+};
+
+template <bool CanCommonRead>
+struct RefX {
+    operator ValX<CanCommonRead>() const;
+    operator RefCommon<CanCommonRead>() const;
+};
+
+template <bool CanCommonRead>
+struct IterX {
+    using value_type      = ValX<CanCommonRead>;
+    using difference_type = ptrdiff_t;
+
+    RefX<CanCommonRead> operator*() const;
+    IterX& operator++();
+    IterX operator++(int);
+
+    friend bool operator==(const IterX&, const IterX&);
+};
+
+template <bool CanCommonRead>
+struct ValY {
+    operator ValCommon<CanCommonRead>() const;
+};
+
+template <bool CanCommonRead>
+struct RefY {
+    operator ValY<CanCommonRead>() const;
+    operator RefCommon<CanCommonRead>() const;
+};
+
+template <bool CanCommonRead>
+struct IterY {
+    using value_type      = ValY<CanCommonRead>;
+    using difference_type = ptrdiff_t;
+
+    RefY<CanCommonRead> operator*() const;
+    IterY& operator++();
+    IterY operator++(int);
+
+    friend bool operator==(const IterY&, const IterY&);
+};
+
+template <bool CanCommonRead>
+struct ValCommon {};
+
+template <bool CanCommonRead>
+struct std::common_type<ValX<CanCommonRead>, ValY<CanCommonRead>> {
+    using type = ValCommon<CanCommonRead>;
+};
+template <bool CanCommonRead>
+struct std::common_type<ValY<CanCommonRead>, ValX<CanCommonRead>> {
+    using type = ValCommon<CanCommonRead>;
+};
+
+template <bool CanCommonRead>
+struct RefCommon {
+    operator ValCommon<CanCommonRead>() const
+        requires CanCommonRead;
+};
+
+template <bool CanCommonRead, template <class> class XQual, template <class> class YQual>
+    requires convertible_to<XQual<RefX<CanCommonRead>>, RefCommon<CanCommonRead>>
+          && convertible_to<YQual<RefY<CanCommonRead>>, RefCommon<CanCommonRead>>
+struct std::basic_common_reference<RefX<CanCommonRead>, RefY<CanCommonRead>, XQual, YQual> {
+    using type = RefCommon<CanCommonRead>;
+};
+
+template <bool CanCommonRead, template <class> class YQual, template <class> class XQual>
+    requires convertible_to<YQual<RefY<CanCommonRead>>, RefCommon<CanCommonRead>>
+          && convertible_to<XQual<RefX<CanCommonRead>>, RefCommon<CanCommonRead>>
+struct std::basic_common_reference<RefY<CanCommonRead>, RefX<CanCommonRead>, YQual, XQual> {
+    using type = RefCommon<CanCommonRead>;
+};
+
+static_assert(!CanViewJoinWith<span<ranges::subrange<IterX<false>>>, ranges::subrange<IterY<false>>>);
+static_assert(CanViewJoinWith<span<ranges::subrange<IterX<true>>>, ranges::subrange<IterY<true>>>);
+
+struct NonConstReadableRange {
+    const ranges::subrange<IterX<true>>* begin();
+    const ranges::subrange<IterX<true>>* end();
+
+    const ranges::subrange<IterX<false>>* begin() const;
+    const ranges::subrange<IterX<false>>* end() const;
+};
+
+static_assert(CanViewJoinWith<NonConstReadableRange&, ranges::subrange<IterY<true>>>);
+static_assert(!CanViewJoinWith<const NonConstReadableRange&, ranges::subrange<IterY<false>>>);
 
 int main() {
     {

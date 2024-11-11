@@ -142,7 +142,8 @@ namespace {
         BY_HANDLE_FILE_INFORMATION _Info;
         if (GetFileInformationByHandle(_Handle, &_Info)) {
             _Id->VolumeSerialNumber = _Info.dwVolumeSerialNumber;
-            _CSTD memcpy(&_Id->FileId.Identifier[0], &_Info.nFileIndexHigh, 8); // copying from 2 consecutive DWORDs
+            _CSTD memcpy(&_Id->FileId.Identifier[0], &_Info.nFileIndexHigh, 4);
+            _CSTD memcpy(&_Id->FileId.Identifier[4], &_Info.nFileIndexLow, 4);
             _CSTD memset(&_Id->FileId.Identifier[8], 0, 8);
             return __std_win_error::_Success;
         }

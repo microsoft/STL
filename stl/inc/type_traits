@@ -9,6 +9,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <xtr1common>
 
 #pragma pack(push, _CRT_PACKING)
@@ -28,7 +29,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 template <class>
-constexpr bool _Always_false = false; // TRANSITION, VSO-2016422 (EDG)
+constexpr bool _Always_false = false; // TRANSITION, needed by CUDA 12.4 in classes; see CWG-2518, VSO-2016422 (EDG)
 
 template <bool _First_value, class _First, class... _Rest>
 struct _Conjunction { // handle false trait or last trait
@@ -37,14 +38,14 @@ struct _Conjunction { // handle false trait or last trait
 
 template <class _True, class _Next, class... _Rest>
 struct _Conjunction<true, _True, _Next, _Rest...> { // the first trait is true, try the next one
-    using type = typename _Conjunction<_Next::value, _Next, _Rest...>::type;
+    using type = typename _Conjunction<static_cast<bool>(_Next::value), _Next, _Rest...>::type;
 };
 
 _EXPORT_STD template <class... _Traits>
 struct conjunction : true_type {}; // If _Traits is empty, true_type
 
 template <class _First, class... _Rest>
-struct conjunction<_First, _Rest...> : _Conjunction<_First::value, _First, _Rest...>::type {
+struct conjunction<_First, _Rest...> : _Conjunction<static_cast<bool>(_First::value), _First, _Rest...>::type {
     // the first false trait in _Traits, or the last trait if none are false
 };
 
@@ -1295,23 +1296,14 @@ template <class _Ty1, class _Ty2>
 using _Conditional_type = decltype(false ? _STD declval<_Ty1>() : _STD declval<_Ty2>());
 
 #if _HAS_CXX20
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10648215
 template <class _Ty1, class _Ty2>
-#else // ^^^ no workaround / workaround vvv
-template <class _Ty1, class _Ty2, class = void>
-#endif // ^^^ workaround ^^^
-struct _Const_lvalue_cond_oper {
-};
+struct _Const_lvalue_cond_oper {};
 
 // N4950 [meta.trans.other]/3.3.4 (per the proposed resolution of LWG-3205): "Otherwise, if remove_cvref_t</**/> denotes
 // a type..."
 template <class _Ty1, class _Ty2>
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10648215
     requires requires { typename _Conditional_type<const _Ty1&, const _Ty2&>; }
 struct _Const_lvalue_cond_oper<_Ty1, _Ty2> {
-#else // ^^^ no workaround / workaround vvv
-struct _Const_lvalue_cond_oper<_Ty1, _Ty2, void_t<_Conditional_type<const _Ty1&, const _Ty2&>>> {
-#endif // ^^^ workaround ^^^
     using type = remove_cvref_t<_Conditional_type<const _Ty1&, const _Ty2&>>;
 };
 
@@ -1605,8 +1597,8 @@ struct _Invoker_functor {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Functor;
 
     template <class _Callable, class... _Types>
-    static constexpr auto _Call(_Callable&& _Obj, _Types&&... _Args) noexcept(
-        noexcept(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)))
+    static constexpr auto _Call(_Callable&& _Obj, _Types&&... _Args)
+        noexcept(noexcept(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...))) //
         -> decltype(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)) {
         return static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...);
     }
@@ -1616,8 +1608,8 @@ struct _Invoker_pmf_object {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_object;
 
     template <class _Decayed, class _Ty1, class... _Types2>
-    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-        noexcept((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2)
+        noexcept(noexcept((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...))) //
         -> decltype((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
         return (static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
@@ -1627,8 +1619,8 @@ struct _Invoker_pmf_refwrap {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_refwrap;
 
     template <class _Decayed, class _Refwrap, class... _Types2>
-    static constexpr auto _Call(_Decayed _Pmf, _Refwrap _Rw, _Types2&&... _Args2) noexcept(
-        noexcept((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+    static constexpr auto _Call(_Decayed _Pmf, _Refwrap _Rw, _Types2&&... _Args2)
+        noexcept(noexcept((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...))) //
         -> decltype((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
         return (_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
@@ -1638,8 +1630,8 @@ struct _Invoker_pmf_pointer {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmf_pointer;
 
     template <class _Decayed, class _Ty1, class... _Types2>
-    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-        noexcept(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+    static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2)
+        noexcept(noexcept(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...))) //
         -> decltype(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
         return ((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
@@ -1667,8 +1659,8 @@ struct _Invoker_pmd_pointer {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_pointer;
 
     template <class _Decayed, class _Ty1>
-    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept((*static_cast<_Ty1&&>(_Arg1)).*_Pmd))
-        -> decltype((*static_cast<_Ty1&&>(_Arg1)).*_Pmd) {
+    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1)
+        noexcept(noexcept((*static_cast<_Ty1&&>(_Arg1)).*_Pmd)) -> decltype((*static_cast<_Ty1&&>(_Arg1)).*_Pmd) {
         return (*static_cast<_Ty1&&>(_Arg1)).*_Pmd;
     }
 };
@@ -1699,15 +1691,15 @@ template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
 
 _EXPORT_STD template <class _Callable>
-constexpr auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
-    -> decltype(static_cast<_Callable&&>(_Obj)()) {
+constexpr auto invoke(_Callable&& _Obj)
+    noexcept(noexcept(static_cast<_Callable&&>(_Obj)())) -> decltype(static_cast<_Callable&&>(_Obj)()) {
     return static_cast<_Callable&&>(_Obj)();
 }
 
 _EXPORT_STD template <class _Callable, class _Ty1, class... _Types2>
-constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
-    noexcept(_Invoker1<_Callable, _Ty1>::_Call(
-        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
+constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2)
+    noexcept(noexcept(_Invoker1<_Callable, _Ty1>::_Call(
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...))) //
     -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)) {
     if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Functor) {
@@ -2037,8 +2029,8 @@ private:
 public:
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) const
-        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)))
-            -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
+        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...))) //
+        -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
         return _STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...);
     }
 };
@@ -2524,6 +2516,43 @@ _NODISCARD constexpr bool _Is_finite(const _Ty _Xx) noexcept { // constexpr isfi
 
 template <bool _IsConst, class _Ty>
 using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
+
+template <class _Ty, size_t _Size>
+void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
+    // Swap arrays using temporary buffers of 64 bytes, followed by the tail.
+    // In optimized builds, the stack usage optimizes away, and vector registers are used.
+    // The 64-byte size has desirable properties:
+    // * Big enough to engage AVX-512.
+    // * Small enough to be handled by SSE2 (using eight registers).
+    // * Avoids excessive stack consumption for non-optimized builds.
+    auto _Left_ptr  = reinterpret_cast<unsigned char*>(&_Left);
+    auto _Right_ptr = reinterpret_cast<unsigned char*>(&_Right);
+
+    constexpr size_t _Part_size_bytes = 64;
+    constexpr size_t _Size_bytes      = _Size * sizeof(_Ty);
+    constexpr size_t _Size_tail       = _Size_bytes % _Part_size_bytes;
+    constexpr size_t _Size_parts      = _Size_bytes - _Size_tail;
+
+    if constexpr (_Size_parts != 0) {
+        const auto _Stop = _Left_ptr + _Size_parts;
+        do {
+            unsigned char _Buf[_Part_size_bytes];
+            _CSTD memcpy(_Buf, _Left_ptr, _Part_size_bytes);
+            _CSTD memcpy(_Left_ptr, _Right_ptr, _Part_size_bytes);
+            _CSTD memcpy(_Right_ptr, _Buf, _Part_size_bytes);
+            _Left_ptr += _Part_size_bytes;
+            _Right_ptr += _Part_size_bytes;
+
+        } while (_Left_ptr != _Stop);
+    }
+
+    if constexpr (_Size_tail != 0) {
+        unsigned char _Buf[_Size_tail];
+        _CSTD memcpy(_Buf, _Left_ptr, _Size_tail);
+        _CSTD memcpy(_Left_ptr, _Right_ptr, _Size_tail);
+        _CSTD memcpy(_Right_ptr, _Buf, _Size_tail);
+    }
+}
 
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING

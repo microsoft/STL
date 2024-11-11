@@ -4,16 +4,17 @@
 #include <algorithm>
 #include <bitset>
 #include <cassert>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
-#include <cstdio>
 #include <cstdlib>
 #include <deque>
 #include <functional>
-#include <isa_availability.h>
 #include <limits>
 #include <list>
+#include <numeric>
 #include <random>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -25,6 +26,7 @@
 #endif // _HAS_CXX20
 
 #include "test_min_max_element_support.hpp"
+#include "test_vector_algorithms_support.hpp"
 
 using namespace std;
 
@@ -33,40 +35,73 @@ using namespace std;
 #pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
 #endif // __clang__
 
-void initialize_randomness(mt19937_64& gen) {
-    constexpr size_t n = mt19937_64::state_size;
-    constexpr size_t w = mt19937_64::word_size;
-    static_assert(w % 32 == 0, "w should be evenly divisible by 32");
-    constexpr size_t k = w / 32;
-
-    vector<uint32_t> vec(n * k);
-
-    random_device rd;
-    generate(vec.begin(), vec.end(), ref(rd));
-
-    printf("This is a randomized test.\n");
-    printf("DO NOT IGNORE/RERUN ANY FAILURES.\n");
-    printf("You must report them to the STL maintainers.\n\n");
-
-    printf("Seed vector: ");
-    for (const auto& e : vec) {
-        printf("%u,", e);
+template <class InIt, class OutIt, class BinOp>
+OutIt last_known_good_adj_diff(InIt first, InIt last, OutIt dest, BinOp binop) {
+    if (first == last) {
+        return dest;
     }
-    printf("\n");
 
-    seed_seq seq(vec.cbegin(), vec.cend());
-    gen.seed(seq);
+    auto val = *first;
+    *dest    = val;
+
+    for (++first, ++dest; first != last; ++first, ++dest) {
+        auto tmp = *first;
+        *dest    = binop(tmp, val);
+        val      = tmp;
+    }
+
+    return dest;
 }
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
-extern "C" long __isa_enabled;
+template <class T>
+void test_case_adj_diff(const vector<T>& input, vector<T>& output_expected, vector<T>& output_actual) {
+    // Avoid truncation warnings:
+    const auto subtract = [](const T& left, const T& right) { return static_cast<T>(left - right); };
+    const auto expected = last_known_good_adj_diff(input.begin(), input.end(), output_expected.begin(), subtract);
+    const auto actual   = adjacent_difference(input.begin(), input.end(), output_actual.begin(), subtract);
 
-void disable_instructions(ISA_AVAILABILITY isa) {
-    __isa_enabled &= ~(1UL << static_cast<unsigned long>(isa));
+    assert(actual - output_actual.begin() == expected - output_expected.begin());
+    assert(output_actual == output_expected);
 }
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
 
-constexpr size_t dataCount = 1024;
+template <class T>
+void test_adjacent_difference(mt19937_64& gen) {
+    using Limits = numeric_limits<T>;
+
+    uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(
+        is_signed_v<T> ? static_cast<T>(Limits::min() / 2) : Limits::min(),
+        is_signed_v<T> ? static_cast<T>(Limits::max() / 2) : Limits::max());
+
+    vector<T> input;
+    vector<T> output_expected;
+    vector<T> output_actual;
+
+    for (const auto& v : {&input, &output_expected, &output_actual}) {
+        v->reserve(dataCount);
+    }
+
+    test_case_adj_diff(input, output_expected, output_actual);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+
+        for (const auto& v : {&output_expected, &output_actual}) {
+            v->assign(input.size(), 0);
+        }
+
+        test_case_adj_diff(input, output_expected, output_actual);
+    }
+}
+
+void test_adjacent_difference_with_heterogeneous_types() {
+    const vector<unsigned char> input = {10, 70, 20, 90};
+    vector<int> output(4);
+
+    const auto result = adjacent_difference(input.begin(), input.end(), output.begin());
+    assert(result == output.end());
+
+    const vector<int> expected = {10, 60, -50, 70};
+    assert(output == expected);
+}
 
 template <class FwdIt, class T>
 ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
@@ -168,6 +203,42 @@ auto last_known_good_find_first_of(FwdItH h_first, FwdItH h_last, FwdItN n_first
         }
     }
     return h_first;
+}
+
+template <class RanItH, class RanItN>
+auto last_known_good_search(RanItH h_first, RanItH h_last, RanItN n_first, RanItN n_last) {
+    const auto n_len = n_last - n_first;
+
+    for (; h_last - h_first >= n_len; ++h_first) {
+        if (equal(h_first, h_first + n_len, n_first, n_last)) {
+            return h_first;
+        }
+    }
+
+    return h_last;
+}
+
+template <class RanItH, class RanItN>
+auto last_known_good_find_end(RanItH h_first, RanItH h_last, RanItN n_first, RanItN n_last) {
+    const auto n_len = n_last - n_first;
+
+    if (n_len > h_last - h_first) {
+        return h_last;
+    }
+
+    auto h_mid = h_last - n_len;
+
+    for (;;) {
+        if (equal(h_mid, h_mid + n_len, n_first, n_last)) {
+            return h_mid;
+        }
+
+        if (h_mid == h_first) {
+            return h_last;
+        }
+
+        --h_mid;
+    }
 }
 
 template <class T>
@@ -273,14 +344,16 @@ void test_case_find_first_of(const vector<T>& input_haystack, const vector<T>& i
 #endif // _HAS_CXX20
 }
 
+constexpr size_t haystackDataCount = 200;
+constexpr size_t needleDataCount   = 35;
+
 template <class T>
 void test_find_first_of(mt19937_64& gen) {
-    constexpr size_t needleDataCount = 50;
-    using TD                         = conditional_t<sizeof(T) == 1, int, T>;
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis('a', 'z');
     vector<T> input_haystack;
     vector<T> input_needle;
-    input_haystack.reserve(dataCount);
+    input_haystack.reserve(haystackDataCount);
     input_needle.reserve(needleDataCount);
 
     for (;;) {
@@ -292,7 +365,7 @@ void test_find_first_of(mt19937_64& gen) {
             test_case_find_first_of(input_haystack, input_needle);
         }
 
-        if (input_haystack.size() == dataCount) {
+        if (input_haystack.size() == haystackDataCount) {
             break;
         }
 
@@ -313,6 +386,81 @@ void test_find_first_of_containers() {
 }
 
 template <class T>
+void test_case_search(const vector<T>& input_haystack, const vector<T>& input_needle) {
+    auto expected_search =
+        last_known_good_search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    auto actual_search = search(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    assert(expected_search == actual_search);
+
+    auto expected_find_end = last_known_good_find_end(
+        input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    auto actual_find_end =
+        find_end(input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    assert(expected_find_end == actual_find_end);
+#if _HAS_CXX17
+    auto searcher_actual = search(
+        input_haystack.begin(), input_haystack.end(), default_searcher{input_needle.begin(), input_needle.end()});
+    assert(expected_search == searcher_actual);
+#endif // _HAS_CXX17
+#if _HAS_CXX20
+    auto ranges_actual_search = ranges::search(input_haystack, input_needle);
+    assert(expected_search == begin(ranges_actual_search));
+    if (expected_search != input_haystack.end()) {
+        assert(expected_search + static_cast<ptrdiff_t>(input_needle.size()) == end(ranges_actual_search));
+    } else {
+        assert(expected_search == end(ranges_actual_search));
+    }
+
+    auto ranges_actual_find_end = ranges::find_end(input_haystack, input_needle);
+    assert(expected_find_end == begin(ranges_actual_find_end));
+    if (expected_find_end != input_haystack.end()) {
+        assert(expected_find_end + static_cast<ptrdiff_t>(input_needle.size()) == end(ranges_actual_find_end));
+    } else {
+        assert(expected_find_end == end(ranges_actual_find_end));
+    }
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_search(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    uniform_int_distribution<TD> dis('0', '9');
+    vector<T> input_haystack;
+    vector<T> input_needle;
+    vector<T> temp;
+    input_haystack.reserve(haystackDataCount);
+    input_needle.reserve(needleDataCount);
+    temp.reserve(needleDataCount);
+
+    for (;;) {
+        input_needle.clear();
+
+        test_case_search(input_haystack, input_needle);
+        for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
+            input_needle.push_back(static_cast<T>(dis(gen)));
+            test_case_search(input_haystack, input_needle);
+
+            // For large needles the chance of a match is low, so test a guaranteed match
+            if (input_haystack.size() > input_needle.size() * 2) {
+                uniform_int_distribution<size_t> pos_dis(0, input_haystack.size() - input_needle.size());
+                const size_t pos             = pos_dis(gen);
+                const auto overwritten_first = input_haystack.begin() + static_cast<ptrdiff_t>(pos);
+                temp.assign(overwritten_first, overwritten_first + static_cast<ptrdiff_t>(input_needle.size()));
+                copy(input_needle.begin(), input_needle.end(), overwritten_first);
+                test_case_search(input_haystack, input_needle);
+                copy(temp.begin(), temp.end(), overwritten_first);
+            }
+        }
+
+        if (input_haystack.size() == haystackDataCount) {
+            break;
+        }
+
+        input_haystack.push_back(static_cast<T>(dis(gen)));
+    }
+}
+
+template <class T>
 void test_min_max_element(mt19937_64& gen) {
     using Limits = numeric_limits<T>;
 
@@ -323,31 +471,6 @@ void test_min_max_element(mt19937_64& gen) {
     test_case_min_max_element(input);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         input.push_back(static_cast<T>(dis(gen)));
-        test_case_min_max_element(input);
-    }
-}
-
-template <class T>
-void test_min_max_element_floating(mt19937_64& gen) {
-    normal_distribution<T> dis(-100000.0, 100000.0);
-
-    constexpr auto input_of_input_size = dataCount / 2;
-    vector<T> input_of_input(input_of_input_size);
-    input_of_input[0] = -numeric_limits<T>::infinity();
-    input_of_input[1] = +numeric_limits<T>::infinity();
-    input_of_input[2] = -0.0;
-    input_of_input[3] = +0.0;
-    for (size_t i = 4; i < input_of_input_size; ++i) {
-        input_of_input[i] = dis(gen);
-    }
-
-    uniform_int_distribution<size_t> idx_dis(0, input_of_input_size - 1);
-
-    vector<T> input;
-    input.reserve(dataCount);
-    test_case_min_max_element(input);
-    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        input.push_back(input_of_input[idx_dis(gen)]);
         test_case_min_max_element(input);
     }
 }
@@ -413,221 +536,6 @@ void test_min_max_element_special_cases() {
     assert(minmax_element(v.begin(), v.end()).second
            == v.begin() + 2 * block_size_in_elements + last_vector_first_elem + 9);
 }
-
-template <class FwdIt>
-auto last_known_good_mismatch(FwdIt first1, FwdIt last1, FwdIt first2, FwdIt last2) {
-    for (; first1 != last1 && first2 != last2; ++first1, ++first2) {
-        if (*first1 != *first2) {
-            break;
-        }
-    }
-
-    return make_pair(first1, first2);
-}
-
-template <class FwdIt>
-bool last_known_good_lex_compare(pair<FwdIt, FwdIt> expected_mismatch, FwdIt last1, FwdIt last2) {
-    if (expected_mismatch.second == last2) {
-        return false;
-    } else if (expected_mismatch.first == last1) {
-        return true;
-    } else if (*expected_mismatch.first < *expected_mismatch.second) {
-        return true;
-    } else {
-        assert(*expected_mismatch.second < *expected_mismatch.first);
-        return false;
-    }
-}
-
-#if _HAS_CXX20
-template <class FwdIt>
-auto last_known_good_lex_compare_3way(pair<FwdIt, FwdIt> expected_mismatch, FwdIt last1, FwdIt last2) {
-    if (expected_mismatch.second == last2) {
-        if (expected_mismatch.first == last1) {
-            return strong_ordering::equal;
-        } else {
-            return strong_ordering::greater;
-        }
-    } else if (expected_mismatch.first == last1) {
-        return strong_ordering::less;
-    } else {
-        auto order = *expected_mismatch.first <=> *expected_mismatch.second;
-        assert(order != 0);
-        return order;
-    }
-}
-#endif // _HAS_CXX20
-
-template <class T>
-void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<T>& b) {
-    auto expected_mismatch = last_known_good_mismatch(a.begin(), a.end(), b.begin(), b.end());
-    auto actual_mismatch   = mismatch(a.begin(), a.end(), b.begin(), b.end());
-    assert(expected_mismatch == actual_mismatch);
-
-    auto expected_lex = last_known_good_lex_compare(expected_mismatch, a.end(), b.end());
-    auto actual_lex   = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
-    assert(expected_lex == actual_lex);
-
-#if _HAS_CXX20
-    auto ranges_actual_mismatch = ranges::mismatch(a, b);
-    assert(get<0>(expected_mismatch) == ranges_actual_mismatch.in1);
-    assert(get<1>(expected_mismatch) == ranges_actual_mismatch.in2);
-
-    auto ranges_actual_lex = ranges::lexicographical_compare(a, b);
-    assert(expected_lex == ranges_actual_lex);
-
-    auto expected_lex_3way = last_known_good_lex_compare_3way(expected_mismatch, a.end(), b.end());
-    auto actual_lex_3way   = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
-    assert(expected_lex_3way == actual_lex_3way);
-#endif // _HAS_CXX20
-}
-
-template <class T>
-void test_mismatch_and_lex_compare_family(mt19937_64& gen) {
-    constexpr size_t shrinkCount   = 4;
-    constexpr size_t mismatchCount = 10;
-    using TD                       = conditional_t<sizeof(T) == 1, int, T>;
-    uniform_int_distribution<TD> dis('a', 'z');
-    vector<T> input_a;
-    vector<T> input_b;
-    input_a.reserve(dataCount);
-    input_b.reserve(dataCount);
-
-    for (;;) {
-        // equal
-        test_case_mismatch_and_lex_compare_family(input_a, input_b);
-
-        // different sizes
-        for (size_t i = 0; i != shrinkCount && !input_b.empty(); ++i) {
-            input_b.pop_back();
-            test_case_mismatch_and_lex_compare_family(input_a, input_b);
-            test_case_mismatch_and_lex_compare_family(input_b, input_a);
-        }
-
-        // actual mismatch (or maybe not, depending on random)
-        if (!input_b.empty()) {
-            uniform_int_distribution<size_t> mismatch_dis(0, input_a.size() - 1);
-
-            for (size_t attempts = 0; attempts < mismatchCount; ++attempts) {
-                const size_t possible_mismatch_pos = mismatch_dis(gen);
-                input_a[possible_mismatch_pos]     = static_cast<T>(dis(gen));
-                test_case_mismatch_and_lex_compare_family(input_a, input_b);
-                test_case_mismatch_and_lex_compare_family(input_b, input_a);
-            }
-        }
-
-        if (input_a.size() == dataCount) {
-            break;
-        }
-
-        input_a.push_back(static_cast<T>(dis(gen)));
-        input_b = input_a;
-    }
-}
-
-template <class C1, class C2>
-void test_mismatch_and_lex_compare_family_containers() {
-    C1 a{'m', 'e', 'o', 'w', ' ', 'C', 'A', 'T', 'S'};
-    C2 b{'m', 'e', 'o', 'w', ' ', 'K', 'I', 'T', 'T', 'E', 'N', 'S'};
-
-    const auto result_mismatch_4 = mismatch(a.begin(), a.end(), b.begin(), b.end());
-    const auto result_mismatch_3 = mismatch(a.begin(), a.end(), b.begin());
-    assert(get<0>(result_mismatch_4) == a.begin() + 5);
-    assert(get<1>(result_mismatch_4) == b.begin() + 5);
-    assert(get<0>(result_mismatch_3) == a.begin() + 5);
-    assert(get<1>(result_mismatch_3) == b.begin() + 5);
-
-    const auto result_lex = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
-    assert(result_lex == true);
-
-#if _HAS_CXX20
-    const auto result_mismatch_r = ranges::mismatch(a, b);
-    assert(result_mismatch_r.in1 == a.begin() + 5);
-    assert(result_mismatch_r.in2 == b.begin() + 5);
-
-    const auto result_lex_r = ranges::lexicographical_compare(a, b);
-    assert(result_lex_r == true);
-
-    const auto result_lex_3way = lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
-    assert(result_lex_3way == strong_ordering::less);
-#endif // _HAS_CXX20
-}
-
-namespace test_mismatch_sizes_and_alignments {
-    constexpr size_t range     = 33;
-    constexpr size_t alignment = 32;
-
-#pragma pack(push, 1)
-    template <class T, size_t Size, size_t PadSize>
-    struct with_pad {
-        char p[PadSize];
-        T v[Size];
-    };
-#pragma pack(pop)
-
-    template <class T, size_t Size, size_t PadSize>
-    char stack_array_various_alignments_impl() {
-        with_pad<T, Size + 1, PadSize + 1> a = {};
-        with_pad<T, Size + 1, PadSize + 1> b = {};
-        assert(mismatch(begin(a.v), end(a.v), begin(b.v), end(b.v)) == make_pair(end(a.v), end(b.v)));
-        return 0;
-    }
-
-    template <class T, size_t Size, size_t... PadSizes>
-    void stack_array_various_alignments(index_sequence<PadSizes...>) {
-        char ignored[] = {stack_array_various_alignments_impl<T, Size, PadSizes>()...};
-        (void) ignored;
-    }
-
-    template <class T, size_t Size>
-    char stack_array_impl() {
-        T a[Size + 1] = {};
-        T b[Size + 1] = {};
-        assert(mismatch(begin(a), end(a), begin(b), end(b)) == make_pair(end(a), end(b)));
-        stack_array_various_alignments<T, Size>(make_index_sequence<alignment>{});
-        return 0;
-    }
-
-    template <class T, size_t... Sizes>
-    void stack_array(index_sequence<Sizes...>) {
-        char ignored[] = {stack_array_impl<T, Sizes>()...};
-        (void) ignored;
-    }
-
-    template <class T>
-    void test() {
-        // stack with different sizes and alignments. ASan would catch out-of-range reads
-        stack_array<T>(make_index_sequence<range>{});
-
-        // vector with different sizes. ASan vector annotations would catch out-of-range reads
-        for (size_t i = 0; i != range; ++i) {
-            vector<T> a(i, 0);
-            vector<T> b(i, 0);
-            assert(mismatch(begin(a), end(a), begin(b), end(b)) == make_pair(end(a), end(b)));
-        }
-
-        // heap with different sizes. ASan would catch out-of-range reads
-        for (size_t i = 0; i != range; ++i) {
-            T* a = static_cast<T*>(calloc(i, sizeof(T)));
-            T* b = static_cast<T*>(calloc(i, sizeof(T)));
-            assert(mismatch(a, a + i, b, b + i) == make_pair(a + i, b + i));
-            free(a);
-            free(b);
-        }
-
-        // subarray from stack array. We would have wrong results if we run out of the range.
-        T a[range + 1] = {};
-        T b[range + 1] = {};
-        for (size_t i = 0; i != range; ++i) {
-            a[i + 1] = 1;
-            // whole range mismatch finds mismatch after past-the-end of the subarray
-            assert(mismatch(a, a + range + 1, b, b + range + 1) == make_pair(a + i + 1, b + i + 1));
-            // limited range mismatch gets to past-the-end of the subarray
-            assert(mismatch(a, a + i, b, b + i) == make_pair(a + i, b + i));
-            a[i + 1] = 0;
-        }
-    }
-} // namespace test_mismatch_sizes_and_alignments
 
 template <class FwdIt, class T>
 void last_known_good_replace(FwdIt first, FwdIt last, const T old_val, const T new_val) {
@@ -732,6 +640,62 @@ FwdIt2 last_known_good_swap_ranges(FwdIt1 first1, const FwdIt1 last1, FwdIt2 des
     return dest;
 }
 
+template <class FwdIt, class T>
+FwdIt last_known_good_remove(FwdIt first, FwdIt last, T val) {
+    FwdIt dest = first;
+
+    while (first != last) {
+        if (*first != val) {
+            *dest = *first;
+            ++dest;
+        }
+
+        ++first;
+    }
+
+    return dest;
+}
+
+template <class T>
+void test_case_remove(vector<T>& in_out_expected, vector<T>& in_out_actual, vector<T>& in_out_actual_r, const T val) {
+    auto rem_expected = last_known_good_remove(in_out_expected.begin(), in_out_expected.end(), val);
+    auto rem_actual   = remove(in_out_actual.begin(), in_out_actual.end(), val);
+    assert(equal(in_out_expected.begin(), rem_expected, in_out_actual.begin(), rem_actual));
+
+#if _HAS_CXX20
+    auto rem_actual_r = ranges::remove(in_out_actual_r, val);
+    assert(equal(in_out_expected.begin(), rem_expected, begin(in_out_actual_r), begin(rem_actual_r)));
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) in_out_actual_r;
+#endif // ^^^ !_HAS_CXX20 ^^^
+}
+
+template <class T>
+void test_remove(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    binomial_distribution<TD> dis(10);
+
+    vector<T> source;
+    vector<T> in_out_expected;
+    vector<T> in_out_actual;
+    vector<T> in_out_actual_r;
+
+    for (const auto& v : {&source, &in_out_expected, &in_out_actual, &in_out_actual_r}) {
+        v->reserve(dataCount);
+    }
+
+    test_case_remove(in_out_expected, in_out_actual, in_out_actual_r, static_cast<T>(dis(gen)));
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        source.push_back(static_cast<T>(dis(gen)));
+
+        for (const auto& v : {&in_out_expected, &in_out_actual, &in_out_actual_r}) {
+            *v = source;
+        }
+
+        test_case_remove(in_out_expected, in_out_actual, in_out_actual_r, static_cast<T>(dis(gen)));
+    }
+}
+
 template <class T>
 void test_swap_ranges(mt19937_64& gen) {
     const auto fn = [&]() { return static_cast<T>(gen()); };
@@ -759,7 +723,44 @@ void test_swap_ranges(mt19937_64& gen) {
     }
 }
 
+// GH-2683 "std::swap of arrays, why is there no specialization for trivial types"
+template <class T, size_t N>
+void test_swap_arrays(mt19937_64& gen) {
+    const auto fn = [&]() { return static_cast<T>(gen()); };
+    T left[N];
+    T right[N];
+    generate(begin(left), end(left), fn);
+    generate(begin(right), end(right), fn);
+
+    const vector<T> origLeft(begin(left), end(left));
+    const vector<T> origRight(begin(right), end(right));
+
+    swap(left, right);
+
+    assert(equal(begin(left), end(left), origRight.begin(), origRight.end()));
+    assert(equal(begin(right), end(right), origLeft.begin(), origLeft.end()));
+
+#if _HAS_CXX20
+    ranges::swap(left, right);
+
+    assert(equal(begin(left), end(left), origLeft.begin(), origLeft.end()));
+    assert(equal(begin(right), end(right), origRight.begin(), origRight.end()));
+#endif // _HAS_CXX20
+}
+
 void test_vector_algorithms(mt19937_64& gen) {
+    test_adjacent_difference<char>(gen);
+    test_adjacent_difference<signed char>(gen);
+    test_adjacent_difference<unsigned char>(gen);
+    test_adjacent_difference<short>(gen);
+    test_adjacent_difference<unsigned short>(gen);
+    test_adjacent_difference<int>(gen);
+    test_adjacent_difference<unsigned int>(gen);
+    test_adjacent_difference<long long>(gen);
+    test_adjacent_difference<unsigned long long>(gen);
+
+    test_adjacent_difference_with_heterogeneous_types();
+
     test_count<char>(gen);
     test_count<signed char>(gen);
     test_count<unsigned char>(gen);
@@ -817,6 +818,13 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_find_first_of_containers<const vector<wchar_t>, vector<wchar_t>>();
     test_find_first_of_containers<vector<char>, vector<int>>();
 
+    test_search<char>(gen);
+    test_search<signed char>(gen);
+    test_search<unsigned char>(gen);
+    test_search<short>(gen);
+    test_search<unsigned short>(gen);
+    // search() and find_end() are vectorized for 1 and 2 bytes only.
+
     test_min_max_element<char>(gen);
     test_min_max_element<signed char>(gen);
     test_min_max_element<unsigned char>(gen);
@@ -826,10 +834,6 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_min_max_element<unsigned int>(gen);
     test_min_max_element<long long>(gen);
     test_min_max_element<unsigned long long>(gen);
-
-    test_min_max_element_floating<float>(gen);
-    test_min_max_element_floating<double>(gen);
-    test_min_max_element_floating<long double>(gen);
 
     test_min_max_element_pointers(gen);
 
@@ -843,29 +847,6 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_case_min_max_element(vector<int64_t>{10, 0x8000'0000LL, 20, 30});
     test_case_min_max_element(
         vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
-
-    test_mismatch_and_lex_compare_family<char>(gen);
-    test_mismatch_and_lex_compare_family<signed char>(gen);
-    test_mismatch_and_lex_compare_family<unsigned char>(gen);
-    test_mismatch_and_lex_compare_family<short>(gen);
-    test_mismatch_and_lex_compare_family<unsigned short>(gen);
-    test_mismatch_and_lex_compare_family<int>(gen);
-    test_mismatch_and_lex_compare_family<unsigned int>(gen);
-    test_mismatch_and_lex_compare_family<long long>(gen);
-    test_mismatch_and_lex_compare_family<unsigned long long>(gen);
-
-    test_mismatch_and_lex_compare_family_containers<vector<char>, vector<signed char>>();
-    test_mismatch_and_lex_compare_family_containers<vector<char>, vector<unsigned char>>();
-    test_mismatch_and_lex_compare_family_containers<vector<wchar_t>, vector<char>>();
-    test_mismatch_and_lex_compare_family_containers<const vector<char>, const vector<char>>();
-    test_mismatch_and_lex_compare_family_containers<vector<char>, const vector<char>>();
-    test_mismatch_and_lex_compare_family_containers<const vector<wchar_t>, vector<wchar_t>>();
-    test_mismatch_and_lex_compare_family_containers<vector<char>, vector<int>>();
-
-    test_mismatch_sizes_and_alignments::test<char>();
-    test_mismatch_sizes_and_alignments::test<short>();
-    test_mismatch_sizes_and_alignments::test<int>();
-    test_mismatch_sizes_and_alignments::test<long long>();
 
     // replace() is vectorized for 4 and 8 bytes only.
     test_replace<int>(gen);
@@ -899,11 +880,36 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_reverse_copy<double>(gen);
     test_reverse_copy<long double>(gen);
 
+    test_remove<char>(gen);
+    test_remove<signed char>(gen);
+    test_remove<unsigned char>(gen);
+    test_remove<short>(gen);
+    test_remove<unsigned short>(gen);
+    test_remove<int>(gen);
+    test_remove<unsigned int>(gen);
+    test_remove<long long>(gen);
+    test_remove<unsigned long long>(gen);
+
     test_swap_ranges<char>(gen);
     test_swap_ranges<short>(gen);
     test_swap_ranges<int>(gen);
     test_swap_ranges<unsigned int>(gen);
     test_swap_ranges<unsigned long long>(gen);
+
+    test_swap_arrays<uint8_t, 1>(gen);
+    test_swap_arrays<uint16_t, 1>(gen);
+    test_swap_arrays<uint32_t, 1>(gen);
+    test_swap_arrays<uint64_t, 1>(gen);
+
+    test_swap_arrays<uint8_t, 47>(gen);
+    test_swap_arrays<uint16_t, 47>(gen);
+    test_swap_arrays<uint32_t, 47>(gen);
+    test_swap_arrays<uint64_t, 47>(gen);
+
+    test_swap_arrays<uint8_t, 512>(gen);
+    test_swap_arrays<uint16_t, 512>(gen);
+    test_swap_arrays<uint32_t, 512>(gen);
+    test_swap_arrays<uint64_t, 512>(gen);
 }
 
 template <typename Container1, typename Container2>
@@ -975,6 +981,15 @@ void test_randomized_bitset_base_count(mt19937_64& gen) {
     test_randomized_bitset_base<Base>(make_index_sequence<Count>{}, gen);
 }
 
+template <class F>
+void assert_throws_inv(F f) {
+    try {
+        f();
+        assert(false);
+    } catch (const invalid_argument&) {
+    }
+}
+
 void test_bitset(mt19937_64& gen) {
     assert(bitset<0>(0x0ULL).to_string() == "");
     assert(bitset<0>(0xFEDCBA9876543210ULL).to_string() == "");
@@ -1016,7 +1031,147 @@ void test_bitset(mt19937_64& gen) {
     assert(bitset<75>(0xFEDCBA9876543210ULL).to_string<char32_t>()
            == U"000000000001111111011011100101110101001100001110110010101000011001000010000"); // not vectorized
 
+    assert(bitset<0>("").to_ullong() == 0);
+    assert(bitset<0>("1").to_ullong() == 0);
+    assert_throws_inv([] { (void) bitset<0>("x"); });
+
+    assert(bitset<45>("101110000000111010001011100101001111111111111").to_ullong() == 0x1701D1729FFFULL);
+    assert(bitset<45>("110101001100001110110010101000011001000010000").to_ullong() == 0x1A9876543210ULL);
+    assert(bitset<45>("111").to_ullong() == 0x7);
+    assert_throws_inv([] { (void) bitset<45>("11x11"); });
+    assert_throws_inv([] { (void) bitset<45>("111111111111111111111111111111111111111111111x"); });
+    assert_throws_inv([] { (void) bitset<45>("x111111111111111111111111111111111111111111111"); });
+
+    assert(bitset<64>("xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo", string::npos, 'o', 'x')
+               .to_ullong()
+           == 0xFEDCBA9876543210ULL);
+    assert(bitset<64>(L"xxxxxxxoxxoxxxooxoxxxoxoxooxxooooxxxoxxooxoxoxooooxxooxooooxoooo", wstring::npos, L'o', L'x')
+               .to_ullong()
+           == 0xFEDCBA9876543210ULL);
+
+#ifdef __cpp_lib_char8_t
+    assert(bitset<75>(u8"000000000001111111011011100101110101001100001110110010101000011001000010000").to_ullong()
+           == 0xFEDCBA9876543210ULL);
+#endif // __cpp_lib_char8_t
+    assert(bitset<75>(u"000000000001111111011011100101110101001100001110110010101000011001000010000").to_ullong()
+           == 0xFEDCBA9876543210ULL);
+    assert(bitset<75>(U"000000000001111111011011100101110101001100001110110010101000011001000010000").to_ullong()
+           == 0xFEDCBA9876543210ULL); // not vectorized
+
     test_randomized_bitset_base_count<512 - 5, 32 + 10>(gen);
+}
+
+template <class T>
+void test_case_string_find_first_of(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
+    auto expected_iter = last_known_good_find_first_of(
+        input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+    auto expected = (expected_iter != input_haystack.end()) ? expected_iter - input_haystack.begin() : ptrdiff_t{-1};
+    auto actual   = static_cast<ptrdiff_t>(input_haystack.find_first_of(input_needle));
+    assert(expected == actual);
+}
+
+template <class T>
+size_t last_known_good_find_last_of(const basic_string<T>& h, const basic_string<T>& n) {
+    size_t pos = h.size();
+    while (pos != 0) {
+        --pos;
+        if (n.find(h[pos]) != basic_string<T>::npos) {
+            return pos;
+        }
+    }
+
+    return basic_string<T>::npos;
+}
+
+template <class T>
+void test_case_string_find_last_of(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
+    size_t expected = last_known_good_find_last_of(input_haystack, input_needle);
+    size_t actual   = input_haystack.find_last_of(input_needle);
+    assert(expected == actual);
+}
+
+template <class T>
+void test_case_string_find_str(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
+    ptrdiff_t expected;
+    if (input_needle.empty()) {
+        expected = 0;
+    } else {
+        const auto expected_iter = last_known_good_search(
+            input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+
+        if (expected_iter != input_haystack.end()) {
+            expected = expected_iter - input_haystack.begin();
+        } else {
+            expected = -1;
+        }
+    }
+    const auto actual = static_cast<ptrdiff_t>(input_haystack.find(input_needle));
+    assert(expected == actual);
+}
+
+template <class T, class D>
+void test_basic_string_dis(mt19937_64& gen, D& dis) {
+    basic_string<T> input_haystack;
+    basic_string<T> input_needle;
+    basic_string<T> temp;
+    input_haystack.reserve(haystackDataCount);
+    input_needle.reserve(needleDataCount);
+    temp.reserve(needleDataCount);
+
+    for (;;) {
+        input_needle.clear();
+
+        test_case_string_find_first_of(input_haystack, input_needle);
+        test_case_string_find_last_of(input_haystack, input_needle);
+        test_case_string_find_str(input_haystack, input_needle);
+
+        for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
+            input_needle.push_back(static_cast<T>(dis(gen)));
+            test_case_string_find_first_of(input_haystack, input_needle);
+            test_case_string_find_last_of(input_haystack, input_needle);
+            test_case_string_find_str(input_haystack, input_needle);
+
+            // For large needles the chance of a match is low, so test a guaranteed match
+            if (input_haystack.size() > input_needle.size() * 2) {
+                uniform_int_distribution<size_t> pos_dis(0, input_haystack.size() - input_needle.size());
+                const size_t pos             = pos_dis(gen);
+                const auto overwritten_first = input_haystack.begin() + static_cast<ptrdiff_t>(pos);
+                temp.assign(overwritten_first, overwritten_first + static_cast<ptrdiff_t>(input_needle.size()));
+                copy(input_needle.begin(), input_needle.end(), overwritten_first);
+                test_case_string_find_str(input_haystack, input_needle);
+                copy(temp.begin(), temp.end(), overwritten_first);
+            }
+        }
+
+        if (input_haystack.size() == haystackDataCount) {
+            break;
+        }
+
+        input_haystack.push_back(static_cast<T>(dis(gen)));
+    }
+}
+
+template <class T>
+void test_basic_string(mt19937_64& gen) {
+    using dis_int_type = conditional_t<is_signed_v<T>, int32_t, uint32_t>;
+
+    uniform_int_distribution<dis_int_type> dis_latin('a', 'z');
+    test_basic_string_dis<T>(gen, dis_latin);
+    if constexpr (sizeof(T) >= 2) {
+        uniform_int_distribution<dis_int_type> dis_greek(0x391, 0x3C9);
+        test_basic_string_dis<T>(gen, dis_greek);
+    }
+}
+
+void test_string(mt19937_64& gen) {
+    test_basic_string<char>(gen);
+    test_basic_string<wchar_t>(gen);
+#ifdef __cpp_lib_char8_t
+    test_basic_string<char8_t>(gen);
+#endif // __cpp_lib_char8_t
+    test_basic_string<char16_t>(gen);
+    test_basic_string<char32_t>(gen);
+    test_basic_string<unsigned long long>(gen);
 }
 
 void test_various_containers() {
@@ -1087,30 +1242,10 @@ int main() {
 #if _HAS_CXX20
     assert(test_constexpr());
 #endif // _HAS_CXX20
-
-    mt19937_64 gen;
-    initialize_randomness(gen);
-
-    test_vector_algorithms(gen);
-    test_various_containers();
-    test_bitset(gen);
-#ifndef _M_CEE_PURE
-#if defined(_M_IX86) || defined(_M_X64)
-    disable_instructions(__ISA_AVAILABLE_AVX2);
-    test_vector_algorithms(gen);
-    test_various_containers();
-    test_bitset(gen);
-
-    disable_instructions(__ISA_AVAILABLE_SSE42);
-    test_vector_algorithms(gen);
-    test_various_containers();
-    test_bitset(gen);
-#endif // defined(_M_IX86) || defined(_M_X64)
-#if defined(_M_IX86)
-    disable_instructions(__ISA_AVAILABLE_SSE2);
-    test_vector_algorithms(gen);
-    test_various_containers();
-    test_bitset(gen);
-#endif // defined(_M_IX86)
-#endif // _M_CEE_PURE
+    run_randomized_tests_with_different_isa_levels([](mt19937_64& gen) {
+        test_vector_algorithms(gen);
+        test_various_containers();
+        test_bitset(gen);
+        test_string(gen);
+    });
 }

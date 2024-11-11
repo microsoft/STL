@@ -47,6 +47,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+#if _HAS_CXX23
+#include <xutility>
+#endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -87,6 +90,9 @@ enum class _Basic_format_arg_type : uint8_t {
 static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must fit in 4-bit bitfield");
 
 #if _HAS_CXX23
+_EXPORT_STD template <class _Ty>
+constexpr bool enable_nonlocking_formatter_optimization = false;
+
 _NODISCARD consteval bool _Is_debug_enabled_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty == _Basic_format_arg_type::_Char_type || _Ty == _Basic_format_arg_type::_CString_type
         || _Ty == _Basic_format_arg_type::_String_type;
@@ -117,14 +123,14 @@ struct _Dynamic_format_specs : _Basic_format_specs<_CharT> {
     int _Dynamic_precision_index = -1;
 };
 
+[[noreturn]] inline void _Throw_format_error(const char* _Message);
+
 _EXPORT_STD template <class _CharT>
 class basic_format_parse_context;
 
 template <class _CharT>
 concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
 
-// Generic formatter definition, the deleted default constructor
-// makes it "disabled" as per N4950 [format.formatter.spec]/5
 _EXPORT_STD template <class _Ty, class _CharT = char>
 struct formatter {
     formatter()                            = delete;
@@ -167,7 +173,16 @@ private:
 };
 _FMT_P2286_END
 
+#if _HAS_CXX23
+#define _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type) \
+    template <>                                  \
+    inline constexpr bool enable_nonlocking_formatter_optimization<_Type> = true;
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+#define _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type)
+#endif // ^^^ !_HAS_CXX23 ^^^
+
 #define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
+    _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type)    \
     template <_Format_supported_charT _CharT>   \
     struct formatter<_Type, _CharT> : _Formatter_base<_Type, _CharT, _ArgType> {}
 
@@ -190,6 +205,7 @@ _FORMAT_SPECIALIZE_FOR(signed char, _Basic_format_arg_type::_Int_type);
 _FORMAT_SPECIALIZE_FOR(unsigned char, _Basic_format_arg_type::_UInt_type);
 
 #undef _FORMAT_SPECIALIZE_FOR
+#undef _FORMAT_SPECIALIZE_NONLOCKING_FOR
 
 // not using the macro because we'd like to add 'set_debug_format' member function in C++23 mode
 template <_Format_supported_charT _CharT>
@@ -268,22 +284,161 @@ struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
 };
 
 #if _HAS_CXX23
-_EXPORT_STD template <class, class>
-struct pair;
+template <>
+struct formatter<char*, wchar_t> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
 
-_EXPORT_STD template <class...>
-class tuple;
+template <>
+struct formatter<const char*, wchar_t> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
 
-// Specializations for pairs and tuples are forward-declared to avoid any risk of using the disabled primary template.
+template <size_t _Size>
+struct formatter<char[_Size], wchar_t> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
+
+template <class _Traits, class _Allocator>
+struct formatter<basic_string<char, _Traits, _Allocator>, wchar_t> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
+
+template <class _Traits>
+struct formatter<basic_string_view<char, _Traits>, wchar_t> {
+    formatter()                            = delete;
+    formatter(const formatter&)            = delete;
+    formatter& operator=(const formatter&) = delete;
+};
+
+_EXPORT_STD enum class range_format { disabled, map, set, sequence, string, debug_string };
+
+template <class _Ty>
+struct _Invalid_format_kind {
+    static_assert(_Always_false<_Ty>, "A program that instantiates the primary template of format_kind is ill-formed. "
+                                      "(N4981 [format.range.fmtkind]/1)");
+};
+
+_EXPORT_STD template <class _Ty>
+constexpr _Invalid_format_kind<_Ty> format_kind;
+
+template <class _Ty>
+constexpr bool _Is_two_tuple = false;
+
+template <class _Ty, class _Uty>
+constexpr bool _Is_two_tuple<pair<_Ty, _Uty>> = true;
+
+template <class _Ty, class _Uty>
+constexpr bool _Is_two_tuple<tuple<_Ty, _Uty>> = true;
+
+template <_RANGES input_range _Rng>
+    requires same_as<_Rng, remove_cvref_t<_Rng>>
+constexpr range_format format_kind<_Rng> = []() consteval {
+    using _Ref_value_t = remove_cvref_t<_RANGES range_reference_t<_Rng>>;
+    if constexpr (same_as<_Ref_value_t, _Rng>) {
+        return range_format::disabled;
+    } else if constexpr (requires { typename _Rng::key_type; }) {
+        if constexpr (requires { typename _Rng::mapped_type; } && _Is_two_tuple<_Ref_value_t>) {
+            return range_format::map;
+        } else {
+            return range_format::set;
+        }
+    } else {
+        return range_format::sequence;
+    }
+}();
+
+// Specializations for pairs, tuples, and ranges are forward-declared to avoid any risk of using the disabled primary
+// template.
 
 // Per LWG-3997, `_CharT` in library-provided `formatter` specializations is
 // constrained to character types supported by `format`.
+
+template <class _Rng>
+concept _Formatting_enabled_range = format_kind<_Rng> != range_format::disabled;
+
+template <_RANGES input_range _Rng, _Format_supported_charT _CharT>
+    requires _Formatting_enabled_range<_Rng>
+struct formatter<_Rng, _CharT>;
 
 template <_Format_supported_charT _CharT, class _Ty1, class _Ty2>
 struct formatter<pair<_Ty1, _Ty2>, _CharT>;
 
 template <_Format_supported_charT _CharT, class... _Types>
 struct formatter<tuple<_Types...>, _CharT>;
+
+template <_Format_supported_charT _CharT>
+constexpr bool enable_nonlocking_formatter_optimization<_CharT> = true;
+
+template <_Format_supported_charT _CharT>
+constexpr bool enable_nonlocking_formatter_optimization<_CharT*> = true;
+
+template <_Format_supported_charT _CharT>
+constexpr bool enable_nonlocking_formatter_optimization<const _CharT*> = true;
+
+template <_Format_supported_charT _CharT, size_t _Nx>
+constexpr bool enable_nonlocking_formatter_optimization<_CharT[_Nx]> = true;
+
+template <_Format_supported_charT _CharT, class _Traits, class _Allocator>
+constexpr bool enable_nonlocking_formatter_optimization<basic_string<_CharT, _Traits, _Allocator>> = true;
+
+template <_Format_supported_charT _CharT, class _Traits>
+constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<_CharT, _Traits>> = true;
+
+template <class _Ty1, class _Ty2>
+constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
+    enable_nonlocking_formatter_optimization<_Ty1> && enable_nonlocking_formatter_optimization<_Ty2>;
+
+template <class... _Ts>
+constexpr bool enable_nonlocking_formatter_optimization<tuple<_Ts...>> =
+    (enable_nonlocking_formatter_optimization<_Ts> && ...);
+
+template <class _CharT>
+struct _Fill_align_and_width_specs {
+    int _Width               = -1;
+    int _Dynamic_width_index = -1;
+    _Fmt_align _Alignment    = _Fmt_align::_None;
+    uint8_t _Fill_length     = 1;
+    // At most one codepoint (so one char32_t or four utf-8 char8_t).
+    _CharT _Fill[4 / sizeof(_CharT)]{' '};
+};
+
+// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
+template <class _CharT, class _Pc>
+_NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter_parse(
+    _Fill_align_and_width_specs<_CharT>& _Specs, _Pc& _Parse_ctx);
+
+template <class _CharT, class _FormatContext, class _Func>
+_NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(
+    const _Fill_align_and_width_specs<_CharT>& _Specs, _FormatContext& _Format_ctx, int _Width,
+    _Fmt_align _Default_align, _Func&& _Fn);
+
+template <class _CharT>
+struct _Fill_align_and_width_formatter {
+public:
+    template <class _ParseContext = basic_format_parse_context<_CharT>> // improves throughput, see GH-5003
+    _NODISCARD constexpr _ParseContext::iterator _Parse(type_identity_t<_ParseContext&> _Parse_ctx) {
+        return _STD _Fill_align_and_width_formatter_parse(_Specs, _Parse_ctx);
+    }
+
+    template <class _FormatContext, class _Func>
+    _NODISCARD constexpr auto _Format(
+        _FormatContext& _Format_ctx, const int _Width, _Fmt_align _Default_align, _Func&& _Fn) const {
+        return _STD _Fill_align_and_width_formatter_format(
+            _Specs, _Format_ctx, _Width, _Default_align, _STD forward<_Func>(_Fn));
+    }
+
+private:
+    _Fill_align_and_width_specs<_CharT> _Specs;
+};
 #endif // _HAS_CXX23
 _STD_END
 

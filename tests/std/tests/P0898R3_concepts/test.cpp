@@ -29,15 +29,12 @@ constexpr bool is_trait = false;
 template <class T>
 constexpr bool is_trait<T, std::void_t<typename T::type>> = true;
 
-template <class>
-constexpr bool always_false = false; // TRANSITION, VSO-2016422 (EDG)
-
 struct IncompleteClass;
 union IncompleteUnion;
 
 template <class T>
 struct DoNotInstantiate {
-    static_assert(always_false<T>);
+    static_assert(false);
 };
 
 struct Immobile {
@@ -3326,7 +3323,7 @@ namespace test_relation {
 
     struct Equivalent {
         template <class T, class U>
-        constexpr decltype(auto) operator()(T && t, U && u) const
+        constexpr decltype(auto) operator()(T&& t, U&& u) const
             requires requires { static_cast<T&&>(t) == static_cast<U&&>(u); }
         {
             return static_cast<T&&>(t) == static_cast<U&&>(u);

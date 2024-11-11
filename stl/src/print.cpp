@@ -57,27 +57,64 @@ extern "C" {
 namespace {
     class _Allocated_string {
     public:
-        _Allocated_string() = default;
+        _Allocated_string() noexcept {
+            _Buffer[0] = L'\0'; // Activate _Buffer
+        }
 
-        explicit _Allocated_string(__crt_unique_heap_ptr<wchar_t>&& _Other_str, const size_t _Other_capacity) noexcept
-            : _Str(_STD move(_Other_str)), _Str_capacity(_Other_capacity) {}
+        ~_Allocated_string() {
+            if (_Using_heap()) {
+                _Str.~_Heap_string();
+            }
+        }
 
-        [[nodiscard]] wchar_t* _Data() const noexcept {
-            return _Str.get();
+        [[nodiscard]] wchar_t* _Data() noexcept {
+            return _Using_heap() ? _Str.get() : _Buffer;
         }
 
         [[nodiscard]] size_t _Capacity() const noexcept {
             return _Str_capacity;
         }
 
-        void _Reset() noexcept {
-            _Str.release();
-            _Str_capacity = 0;
+        [[nodiscard]] bool _Grow(const size_t _Capacity) noexcept {
+            if (_Capacity <= _Str_capacity) {
+                return true;
+            }
+
+            if (_Using_heap()) {
+                _Str.~_Heap_string();
+                // We must not throw until restoring the invariant that:
+                // (_Str_capacity == _Buffer_size && _Buffer is active) ||
+                // (_Str_capacity > _Buffer_size && _Str is active)
+            }
+
+            ::new (&_Str) _Heap_string(_malloc_crt_t(wchar_t, _Capacity)); // Activate _Str
+
+            if (!_Str) [[unlikely]] {
+                _Str_capacity = _Buffer_size;
+                _Buffer[0]    = L'\0'; // Activate _Buffer
+                return false;
+            }
+
+            _Str_capacity = _Capacity;
+            return true;
         }
 
     private:
-        __crt_unique_heap_ptr<wchar_t> _Str;
-        size_t _Str_capacity = 0;
+        using _Heap_string = __crt_unique_heap_ptr<wchar_t>;
+
+        // Allows small formatted strings, such as those from _Print_to_unicode_console_it, to not allocate any extra
+        // internal transcoding buffer
+        static constexpr size_t _Buffer_size = 2048;
+
+        [[nodiscard]] bool _Using_heap() const noexcept {
+            return _Str_capacity > _Buffer_size;
+        }
+
+        size_t _Str_capacity = _Buffer_size;
+        union {
+            wchar_t _Buffer[_Buffer_size];
+            _Heap_string _Str;
+        };
     };
 
     template <class _Char_type>
@@ -187,15 +224,9 @@ namespace {
             return static_cast<__std_win_error>(GetLastError());
         }
 
-        if (static_cast<size_t>(_Num_chars_required) > _Dst_str._Capacity()) {
-            _Dst_str._Reset();
-
-            __crt_unique_heap_ptr<wchar_t> _Wide_str{_malloc_crt_t(wchar_t, _Num_chars_required)};
-            if (!_Wide_str) [[unlikely]] {
-                return __std_win_error::_Not_enough_memory;
-            }
-
-            _Dst_str = _Allocated_string{_STD move(_Wide_str), static_cast<size_t>(_Num_chars_required)};
+        const bool _Has_space = _Dst_str._Grow(static_cast<size_t>(_Num_chars_required));
+        if (!_Has_space) [[unlikely]] {
+            return __std_win_error::_Not_enough_memory;
         }
 
         const int32_t _Conversion_result = MultiByteToWideChar(CP_UTF8, 0, _Src_str._Data(),
@@ -264,6 +295,24 @@ extern "C" {
 
         _Remaining_str += _Curr_str_segment._Size();
     }
+}
+
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_print_newline_only_to_unicode_console(
+        _In_ const __std_unicode_console_handle _Console_handle) noexcept {
+    if (_Console_handle == __std_unicode_console_handle::_Invalid) [[unlikely]] {
+        return __std_win_error::_Invalid_parameter;
+    }
+
+    const auto _Actual_console_handle = reinterpret_cast<HANDLE>(_Console_handle);
+
+    const BOOL _Write_result = WriteConsoleW(_Actual_console_handle, L"\n", 1, nullptr, nullptr);
+
+    if (!_Write_result) [[unlikely]] {
+        return static_cast<__std_win_error>(GetLastError());
+    }
+
+    return __std_win_error::_Success;
 }
 
 } // extern "C"

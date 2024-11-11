@@ -62,6 +62,7 @@
 // P0883R2 Fixing Atomic Initialization
 // P0935R0 Eradicating Unnecessarily Explicit Default Constructors
 // P0941R2 Feature-Test Macros
+// P0952R2 A New Specification For generate_canonical()
 // P0972R0 noexcept For <chrono> zero(), min(), max()
 // P1065R2 constexpr INVOKE
 //     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
@@ -75,7 +76,10 @@
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (except for __cpp_lib_freestanding_charconv)
 // P2401R0 Conditional noexcept For exchange()
+// P2407R5 Freestanding Library: Partial Classes
+//     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
 // P2937R0 Freestanding Library: Remove strtok
+// P2968R2 Make std::ignore A First-Class Object
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -121,6 +125,7 @@
 // P0602R4 Propagating Copy/Move Triviality In variant/optional
 // P0604R0 invoke_result, is_invocable, is_nothrow_invocable
 // P0607R0 Inline Variables For The STL
+// P0608R3 Improving variant's Converting Constructor/Assignment
 // P0682R1 Repairing Elementary String Conversions
 // P0739R0 Improving Class Template Argument Deduction For The STL
 // P0858R0 Constexpr Iterator Requirements
@@ -131,6 +136,9 @@
 //     (basic_string_view always provides this behavior)
 // P2338R4 Freestanding Library: Character Primitives And The C Library
 //     (including __cpp_lib_freestanding_charconv)
+// P2407R5 Freestanding Library: Partial Classes
+//     (including __cpp_lib_freestanding_optional, __cpp_lib_freestanding_string_view, and
+//     __cpp_lib_freestanding_variant)
 // P2517R1 Conditional noexcept For apply()
 // P2875R4 Undeprecate polymorphic_allocator::destroy
 
@@ -185,7 +193,6 @@
 // P0586R2 Integer Comparison Functions
 // P0591R4 Utility Functions For Uses-Allocator Construction
 // P0595R2 is_constant_evaluated()
-// P0608R3 Improving variant's Converting Constructor/Assignment
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
 // P0645R10 <format> Text Formatting
@@ -306,6 +313,7 @@
 // P2770R0 Stashing Stashing Iterators For Proper Flattening
 // P2905R2 Runtime Format Strings
 // P2909R4 Fix Formatting Of Code Units As Integers
+// P2997R1 Removing The Common Reference Requirement From The Indirectly Invocable Concepts
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -352,7 +360,6 @@
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
 // P2286R8 Formatting Ranges
-//     (only the '?' format specifier for strings and characters)
 // P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
@@ -372,10 +379,12 @@
 // P2474R2 views::repeat
 // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
+// P2502R2 <generator>: Synchronous Coroutine Generator For Ranges
 // P2505R5 Monadic Functions For expected
 // P2539R4 Synchronizing print() With The Underlying Stream
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
+// P2585R1 Improve Default Container Formatting
 // P2599R2 mdspan: index_type, size_type
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
 // P2613R1 mdspan: empty()
@@ -383,8 +392,14 @@
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
+// P2787R1 pmr::generator
+// P2833R2 Freestanding Library: inout expected span
+//     (except for __cpp_lib_span which also covers C++26 span::at)
 // P2836R1 basic_const_iterator Should Follow Its Underlying Type's Convertibility
+// P3107R5 Permit An Efficient Implementation Of <print>
 // P3142R0 Printing Blank Lines With println()
+// P3235R3 std::print More Types Faster With Less Memory
+//     (partial implementation; see GH-4924)
 
 // _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -582,12 +597,6 @@
 #define _NODISCARD_CTOR
 #define _NODISCARD_CTOR_MSG(_Msg)
 #endif // ^^^ defined(__has_cpp_attribute) && __has_cpp_attribute(nodiscard) < 201907L ^^^
-
-#if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, VSO-568006
-#define _NODISCARD_FRIEND friend
-#else // ^^^ workaround / no workaround vvv
-#define _NODISCARD_FRIEND _NODISCARD friend
-#endif // ^^^ no workaround ^^^
 
 #define _NODISCARD_REMOVE_ALG                                                                                    \
     _NODISCARD_MSG("The 'remove' and 'remove_if' algorithms return the iterator past the last element "          \
@@ -850,6 +859,30 @@
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // !defined(_STL_RESTORE_CLANG_WARNINGS)
 
+// warning: use of NaN is undefined behavior due to the currently enabled
+//     floating-point options [-Wnan-infinity-disabled]
+// warning: use of infinity is undefined behavior due to the currently enabled
+//     floating-point options [-Wnan-infinity-disabled]
+#ifndef _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
+#ifdef __clang__
+// clang-format off
+#define _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED \
+    _Pragma("clang diagnostic push")                \
+    _Pragma("clang diagnostic ignored \"-Wnan-infinity-disabled\"")
+// clang-format on
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#define _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
+#endif // ^^^ !defined(__clang__) ^^^
+#endif // !defined(_STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED)
+
+#ifndef _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
+#ifdef __clang__
+#define _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED _Pragma("clang diagnostic pop")
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#define _STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED
+#endif // ^^^ !defined(__clang__) ^^^
+#endif // !defined(_STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED)
+
 // clang-format off
 #ifndef _STL_DISABLE_DEPRECATED_WARNING
 #ifdef __clang__
@@ -880,7 +913,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202405L
+#define _MSVC_STL_UPDATE  202411L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -890,12 +923,12 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 17
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 17.0.0 or newer.");
+#if __clang_major__ < 18
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 18.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1940 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.40 or newer.");
+#if _MSC_VER < 1942 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.42 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1562,6 +1595,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono_udls                      201304L
 #define __cpp_lib_complex_udls                     201309L
 #define __cpp_lib_exchange_function                201304L
+#define __cpp_lib_freestanding_algorithm           202311L
+#define __cpp_lib_freestanding_array               202311L
 #define __cpp_lib_freestanding_char_traits         202306L
 #define __cpp_lib_freestanding_cstdlib             202306L
 #define __cpp_lib_freestanding_cstring             202311L
@@ -1625,6 +1660,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_clamp                             201603L
 #define __cpp_lib_filesystem                        201703L
 #define __cpp_lib_freestanding_charconv             202306L
+#define __cpp_lib_freestanding_optional             202311L
+#define __cpp_lib_freestanding_string_view          202311L
+#define __cpp_lib_freestanding_variant              202311L
 #define __cpp_lib_gcd_lcm                           201606L
 #define __cpp_lib_hardware_interference_size        201703L
 #define __cpp_lib_has_unique_object_representations 201606L
@@ -1747,15 +1785,19 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_constexpr_typeinfo                202106L
 #define __cpp_lib_containers_ranges                 202202L
 #define __cpp_lib_expected                          202211L
+#define __cpp_lib_format_ranges                     202207L
 #define __cpp_lib_formatters                        202302L
 #define __cpp_lib_forward_like                      202207L
+#define __cpp_lib_freestanding_expected             202311L
+#define __cpp_lib_freestanding_mdspan               202311L
+#define __cpp_lib_generator                         202207L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_ios_noreplace                     202207L
 #define __cpp_lib_is_scoped_enum                    202011L
 #define __cpp_lib_mdspan                            202207L
 #define __cpp_lib_move_only_function                202110L
-#define __cpp_lib_out_ptr                           202106L
-#define __cpp_lib_print                             202207L
+#define __cpp_lib_out_ptr                           202311L
+#define __cpp_lib_print                             202406L
 #define __cpp_lib_ranges_as_const                   202311L
 #define __cpp_lib_ranges_as_rvalue                  202207L
 #define __cpp_lib_ranges_cartesian_product          202207L
@@ -1827,7 +1869,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif
 
 #if _HAS_CXX23
-#define __cpp_lib_ranges 202302L // P2609R3 Relaxing Ranges Just A Smidge
+// P2997R1 Removing The Common Reference Requirement From The Indirectly Invocable Concepts
+#define __cpp_lib_ranges 202406L
 #elif _HAS_CXX20
 #define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
 #endif
@@ -1926,11 +1969,10 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
-#define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
-#define _STL_WIN32_WINNT_WIN7    0x0601 // _WIN32_WINNT_WIN7 from sdkddkver.h
-#define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
-#define _STL_WIN32_WINNT_WINBLUE 0x0603 // _WIN32_WINNT_WINBLUE from sdkddkver.h
-#define _STL_WIN32_WINNT_WIN10   0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
+#define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN7  0x0601 // _WIN32_WINNT_WIN7 from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN8  0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN10 0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
 
 // Note that the STL DLL builds will set this to XP for ABI compatibility with VS2015 which supported XP.
 #ifndef _STL_WIN32_WINNT
@@ -1973,6 +2015,12 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
 #endif // ^^^ !defined(__cpp_static_call_operator) ^^^
+
+#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize __restrict
+#define _RESTRICT
+#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
+#define _RESTRICT __restrict
+#endif // ^^^ !defined(__CUDACC__) ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

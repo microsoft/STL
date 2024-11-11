@@ -10,13 +10,9 @@
 
 using namespace std;
 
-// clang-format off
 template <class I>
 concept Countable = requires { typename iter_difference_t<remove_cvref_t<I>>; }
-    && requires(I&& i, iter_difference_t<remove_cvref_t<I>> n) {
-        views::counted(forward<I>(i), n);
-    };
-// clang-format on
+                 && requires(I&& i, iter_difference_t<remove_cvref_t<I>> n) { views::counted(forward<I>(i), n); };
 
 template <input_or_output_iterator Iter>
 struct convertible_difference {

@@ -40,12 +40,12 @@ struct Val {
 
 struct I {
     using iterator_category = random_access_iterator_tag;
-    using pointer           = Val*;
     using value_type        = Val;
-    using reference         = Val&;
     using difference_type   = int;
-    Val& operator*() const;
-    Val& operator[](int) const;
+    using pointer           = void;
+    using reference         = Val&;
+    reference operator*() const;
+    reference operator[](int) const;
     I& operator++();
     I operator++(int);
     I& operator--();
@@ -58,10 +58,10 @@ struct I {
     friend bool operator<=(const I&, const I&);
     friend bool operator>(const I&, const I&);
     friend bool operator>=(const I&, const I&);
-    friend int operator-(I, I);
-    friend I operator+(I, int);
-    friend I operator-(I, int);
-    friend I operator+(int, I);
+    friend difference_type operator-(I, I);
+    friend I operator+(I, difference_type);
+    friend I operator-(I, difference_type);
+    friend I operator+(difference_type, I);
     friend RRef iter_move(const I&);
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1941943
