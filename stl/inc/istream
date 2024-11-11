@@ -17,6 +17,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+template <class _Elem>
+struct _NODISCARD _Null_terminator_guard {
+    _Elem** _StrRef;
+    ~_Null_terminator_guard() {
+        if (_StrRef) {
+            **_StrRef = _Elem(); // add terminating null character
+        }
+    }
+};
+
 #pragma vtordisp(push, 2) // compiler bug workaround
 
 _EXPORT_STD extern "C++" template <class _Elem, class _Traits>
@@ -365,20 +375,11 @@ public:
 
     basic_istream& __CLR_OR_THIS_CALL get(_Elem* _Str, streamsize _Count, _Elem _Delim) {
         // get up to _Count characters into NTCS, stop before _Delim
-        struct _NODISCARD _Get_guard {
-            _Elem** _StrRef;
-            ~_Get_guard() {
-                if (_StrRef) {
-                    **_StrRef = _Elem(); // add terminating null character
-                }
-            }
-        };
-
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
 
         // ensure null termination of buffer with nonzero length
-        const _Get_guard _Guard{0 < _Count ? &_Str : nullptr};
+        const _Null_terminator_guard<_Elem> _Guard{0 < _Count ? &_Str : nullptr};
 
         const sentry _Ok(*this, true);
 
@@ -460,20 +461,11 @@ public:
 
     basic_istream& __CLR_OR_THIS_CALL getline(_Elem* _Str, streamsize _Count, _Elem _Delim) {
         // get up to _Count characters into NTCS, discard _Delim
-        struct _NODISCARD _Getline_guard {
-            _Elem** _StrRef;
-            ~_Getline_guard() {
-                if (_StrRef) {
-                    **_StrRef = _Elem(); // add terminating null character
-                }
-            }
-        };
-
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
 
         // ensure null termination of buffer with nonzero length
-        const _Getline_guard _Guard{0 < _Count ? &_Str : nullptr};
+        const _Null_terminator_guard<_Elem> _Guard{0 < _Count ? &_Str : nullptr};
 
         const sentry _Ok(*this, true);
 
