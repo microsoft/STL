@@ -19,10 +19,10 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 template <class _Elem>
 struct _NODISCARD _Null_terminator_guard {
-    _Elem** _StrRef;
+    _Elem** _Str_ref;
     ~_Null_terminator_guard() {
-        if (_StrRef) {
-            **_StrRef = _Elem(); // add terminating null character
+        if (_Str_ref) {
+            **_Str_ref = _Elem(); // add terminating null character
         }
     }
 };
