@@ -33,6 +33,7 @@ enum class __std_win_error : unsigned long {
     _Sharing_violation         = 32, // #define ERROR_SHARING_VIOLATION          32L
     _Not_supported             = 50, // #define ERROR_NOT_SUPPORTED              50L
     _Error_bad_netpath         = 53, // #define ERROR_BAD_NETPATH                53L
+    _Error_netname_deleted     = 64, // #define ERROR_NETNAME_DELETED            64L
     _File_exists               = 80, // #define ERROR_FILE_EXISTS                80L
     _Invalid_parameter         = 87, // #define ERROR_INVALID_PARAMETER          87L
     _Insufficient_buffer       = 122, // #define ERROR_INSUFFICIENT_BUFFER        122L
@@ -54,6 +55,7 @@ _NODISCARD inline bool __std_is_file_not_found(const __std_win_error _Error) noe
     case __std_win_error::_Error_bad_netpath:
     case __std_win_error::_Invalid_name:
     case __std_win_error::_Directory_name_is_invalid: // Windows 11 24H2
+    case __std_win_error::_Error_netname_deleted: // Windows 11 24H2
         return true;
     default:
         return false;
