@@ -5878,6 +5878,13 @@ struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, compare_three
 };
 
 template <class _Elem1, class _Elem2>
+struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, _Synth_three_way> {
+    using _Comp = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>
+                                    && three_way_comparable_with<const _Elem1&, const _Elem2&>,
+        _Synth_three_way, void>;
+};
+
+template <class _Elem1, class _Elem2>
 struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, _Strong_order::_Cpo> {
     using _Comp =
         conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2> && _Can_strong_order<_Elem1, _Elem2>,
