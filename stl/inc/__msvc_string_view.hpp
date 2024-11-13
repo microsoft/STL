@@ -688,9 +688,9 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_implementation_handled_char_traits<_Traits> && sizeof(typename _Traits::char_type) <= 2) {
         if (!_STD _Is_constant_evaluated()) {
-            // _Find_end_vectorized takes into accout the needle length when locates search start.
-            // As a potentially eearlier start position can be specified, need to take it into account,
-            // and pick between the maximum possible start position, and the specified one,
+            // _Find_end_vectorized takes into account the needle length when locating the search start.
+            // As a potentially earlier start position can be specified, we need to take it into account,
+            // and pick between the maximum possible start position and the specified one,
             // and then add _Needle_size, so that it is subtracted back in _Find_end_vectorized.
             const auto _End = _Haystack + _Actual_start_at + _Needle_size;
             const auto _Ptr = _STD _Find_end_vectorized(_Haystack, _End, _Needle, _Needle_size);
