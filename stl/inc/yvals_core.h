@@ -915,7 +915,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202410L
+#define _MSVC_STL_UPDATE  202411L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -2019,6 +2019,12 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
 #endif // ^^^ !defined(__cpp_static_call_operator) ^^^
+
+#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize __restrict
+#define _RESTRICT __restrict__
+#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
+#define _RESTRICT __restrict
+#endif // ^^^ !defined(__CUDACC__) ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

@@ -3,6 +3,7 @@
 
 #define _SILENCE_CXX17_STRSTREAM_DEPRECATION_WARNING
 
+#include <array>
 #include <cassert>
 #include <fstream>
 #include <ios>
@@ -11,6 +12,7 @@
 #include <ostream>
 #include <sstream>
 #include <streambuf>
+#include <string>
 #include <strstream>
 #include <type_traits>
 #include <utility>
@@ -145,6 +147,255 @@ void test_istream_exceptions() {
         } catch (const test_exception&) {
             // Expected case
         }
+    }
+}
+
+template <class CharT>
+CharT meow_array;
+template <>
+constexpr array<char, 5> meow_array<char> = {"meow"};
+template <>
+constexpr array<wchar_t, 5> meow_array<wchar_t> = {L"meow"};
+
+// testing GH-5070: basic_istream::get[line](char_type* s, std::streamsize n, char_type delim)
+// do not null-terminate the output buffer correctly
+template <class CharT>
+void test_gh5070_istream_get_null_termination_under_exceptions() {
+    throwing_buffer<CharT> buffer;
+    const basic_string<CharT> stream_content(1U, meow_array<CharT>[2]);
+
+    { // get, exception during input extraction, no exception rethrow
+        basic_istream<CharT> is(buffer.to_buf());
+        auto buf = meow_array<CharT>;
+        assert(!is.bad());
+        is.get(buf.data(), static_cast<streamsize>(buf.size()));
+        assert(is.bad());
+        assert(buf[0] == CharT());
+    }
+
+    { // get, exception during input extraction, exception rethrow enabled
+        basic_istream<CharT> is(buffer.to_buf());
+        auto buf = meow_array<CharT>;
+        is.exceptions(ios_base::badbit);
+        assert(!is.bad());
+        try {
+            is.get(buf.data(), static_cast<streamsize>(buf.size()));
+            assert(false);
+        } catch (const ios_base::failure&) {
+            assert(false);
+        } catch (const test_exception&) {
+            // Expected case
+        }
+        assert(is.bad());
+        assert(buf[0] == CharT());
+    }
+
+    { // get, empty output buffer, no exception raised
+        basic_istream<CharT> is(buffer.to_buf());
+        auto buf = meow_array<CharT>;
+        assert(!is.bad());
+        is.get(buf.data(), 0);
+        assert(is.fail());
+        assert(buf[0] == meow_array<CharT>[0]);
+    }
+
+    { // get, empty output buffer, exception raised on failbit
+        basic_istream<CharT> is(buffer.to_buf());
+        auto buf = meow_array<CharT>;
+        is.exceptions(ios_base::failbit);
+        assert(!is.bad());
+        try {
+            is.get(buf.data(), 0);
+            assert(false);
+        } catch (const ios_base::failure&) {
+            // Expected case
+        }
+        assert(is.fail());
+        assert(buf[0] == meow_array<CharT>[0]);
+    }
+
+    { // get, sentry construction fails, no exception raised
+        basic_stringbuf<CharT> strbuf{stream_content};
+        basic_istream<CharT> is(&strbuf);
+        assert(!is.bad());
+
+        // tests null termination on eof and
+        // sets eofbit, preparing sentry failure
+        auto buf1 = meow_array<CharT>;
+        is.get(buf1.data(), static_cast<streamsize>(buf1.size()));
+        assert(is.eof());
+        assert(!is.fail());
+        assert(buf1[0] == meow_array<CharT>[2]);
+        assert(buf1[1] == CharT());
+
+        // actually tests sentry construction failure
+        auto buf2 = meow_array<CharT>;
+        is.get(buf2.data(), static_cast<streamsize>(buf2.size()));
+        assert(is.fail());
+        assert(buf2[0] == CharT());
+    }
+
+    { // get, sentry construction fails, exception raised on failbit
+        basic_stringbuf<CharT> strbuf{stream_content};
+        basic_istream<CharT> is(&strbuf);
+        is.exceptions(ios_base::failbit);
+        assert(!is.bad());
+
+        // tests null termination on eof and
+        // sets eofbit, preparing sentry failure
+        auto buf1 = meow_array<CharT>;
+        is.get(buf1.data(), static_cast<streamsize>(buf1.size()));
+        assert(is.eof());
+        assert(!is.fail());
+        assert(buf1[0] == meow_array<CharT>[2]);
+        assert(buf1[1] == CharT());
+
+        // actually tests sentry construction failure
+        auto buf2 = meow_array<CharT>;
+        try {
+            is.get(buf2.data(), static_cast<streamsize>(buf2.size()));
+            assert(false);
+        } catch (const ios_base::failure&) {
+            // Expected case
+        }
+        assert(is.fail());
+        assert(buf2[0] == CharT());
+    }
+
+    { // get, exception raised on eofbit
+        basic_stringbuf<CharT> strbuf{stream_content};
+        basic_istream<CharT> is(&strbuf);
+        is.exceptions(ios_base::eofbit);
+        assert(!is.bad());
+
+        auto buf = meow_array<CharT>;
+        try {
+            is.get(buf.data(), static_cast<streamsize>(buf.size()));
+            assert(false);
+        } catch (const ios_base::failure&) {
+            // Expected case
+        }
+        assert(is.eof());
+        assert(!is.fail());
+        assert(buf[0] == meow_array<CharT>[2]);
+        assert(buf[1] == CharT());
+    }
+
+    { // getline, exception during input extraction, no exception rethrow
+        basic_istream<CharT> is(buffer.to_buf());
+        auto buf = meow_array<CharT>;
+        assert(!is.bad());
+        is.getline(buf.data(), static_cast<streamsize>(buf.size()));
+        assert(is.bad());
+        assert(buf[0] == CharT());
+    }
+
+    { // getline, exception during input extraction, exception rethrow enabled
+        basic_istream<CharT> is(buffer.to_buf());
+        auto buf = meow_array<CharT>;
+        is.exceptions(ios_base::badbit);
+        assert(!is.bad());
+        try {
+            is.getline(buf.data(), static_cast<streamsize>(buf.size()));
+            assert(false);
+        } catch (const ios_base::failure&) {
+            assert(false);
+        } catch (const test_exception&) {
+            // Expected case
+        }
+        assert(is.bad());
+        assert(buf[0] == CharT());
+    }
+
+    { // getline, empty output buffer, no exception raised
+        basic_istream<CharT> is(buffer.to_buf());
+        auto buf = meow_array<CharT>;
+        assert(!is.bad());
+        is.getline(buf.data(), 0);
+        assert(is.fail());
+        assert(buf[0] == meow_array<CharT>[0]);
+    }
+
+    { // getline, empty output buffer, exception raised on failbit
+        basic_istream<CharT> is(buffer.to_buf());
+        auto buf = meow_array<CharT>;
+        is.exceptions(ios_base::failbit);
+        assert(!is.bad());
+        try {
+            is.getline(buf.data(), 0);
+            assert(false);
+        } catch (const ios_base::failure&) {
+            // Expected case
+        }
+        assert(is.fail());
+        assert(buf[0] == meow_array<CharT>[0]);
+    }
+
+    { // getline, sentry construction fails, no exception raised
+        basic_stringbuf<CharT> strbuf{stream_content};
+        basic_istream<CharT> is(&strbuf);
+        assert(!is.bad());
+
+        // tests null termination on eof and
+        // sets eofbit, preparing sentry failure
+        auto buf1 = meow_array<CharT>;
+        is.getline(buf1.data(), static_cast<streamsize>(buf1.size()));
+        assert(is.eof());
+        assert(!is.fail());
+        assert(buf1[0] == meow_array<CharT>[2]);
+        assert(buf1[1] == CharT());
+
+        // actually tests sentry construction failure
+        auto buf2 = meow_array<CharT>;
+        is.getline(buf2.data(), static_cast<streamsize>(buf2.size()));
+        assert(is.fail());
+        assert(buf2[0] == CharT());
+    }
+
+    { // getline, sentry construction fails, exception raised on failbit
+        basic_stringbuf<CharT> strbuf{stream_content};
+        basic_istream<CharT> is(&strbuf);
+        is.exceptions(ios_base::failbit);
+        assert(!is.bad());
+
+        // tests null termination on eof and
+        // sets eofbit, preparing sentry failure
+        auto buf1 = meow_array<CharT>;
+        is.getline(buf1.data(), static_cast<streamsize>(buf1.size()));
+        assert(is.eof());
+        assert(!is.fail());
+        assert(buf1[0] == meow_array<CharT>[2]);
+        assert(buf1[1] == CharT());
+
+        // actually tests sentry construction failure
+        auto buf2 = meow_array<CharT>;
+        try {
+            is.getline(buf2.data(), static_cast<streamsize>(buf2.size()));
+            assert(false);
+        } catch (const ios_base::failure&) {
+            // Expected case
+        }
+        assert(is.fail());
+        assert(buf2[0] == CharT());
+    }
+
+    { // getline, exception raised on eofbit
+        basic_stringbuf<CharT> strbuf{stream_content};
+        basic_istream<CharT> is(&strbuf);
+        is.exceptions(ios_base::eofbit);
+        assert(!is.bad());
+
+        auto buf = meow_array<CharT>;
+        try {
+            is.getline(buf.data(), static_cast<streamsize>(buf.size()));
+            assert(false);
+        } catch (const ios_base::failure&) {
+            // Expected case
+        }
+        assert(is.eof());
+        assert(!is.fail());
+        assert(buf[0] == meow_array<CharT>[2]);
+        assert(buf[1] == CharT());
     }
 }
 
@@ -480,6 +731,9 @@ static_assert(has_nothrow_rdbuf<wspanstream>); // mandatory
 int main() {
     test_istream_exceptions<char>();
     test_istream_exceptions<wchar_t>();
+
+    test_gh5070_istream_get_null_termination_under_exceptions<char>();
+    test_gh5070_istream_get_null_termination_under_exceptions<wchar_t>();
 
     test_ostream_exceptions<char>();
     test_ostream_exceptions<wchar_t>();

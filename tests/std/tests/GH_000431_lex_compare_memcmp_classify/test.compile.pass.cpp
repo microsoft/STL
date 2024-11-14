@@ -296,17 +296,17 @@ void lex_compare_memcmp_classify_test_cases() {
     // Don't allow user-defined types
     test_lex_compare_memcmp_classify_for_types<false, user_struct, user_struct>();
 
-    // Test _Char_traits_lt
-    test_lex_compare_memcmp_classify_for_pred<less<int>, char, char, _Char_traits_lt<char_traits<char>>>();
+    // Test _Std_char_traits_lt
+    test_lex_compare_memcmp_classify_for_pred<less<int>, char, char, _Std_char_traits_lt<char>>();
 #ifdef __cpp_lib_char8_t
-    test_lex_compare_memcmp_classify_for_pred<less<int>, char8_t, char8_t, _Char_traits_lt<char_traits<char8_t>>>();
+    test_lex_compare_memcmp_classify_for_pred<less<int>, char8_t, char8_t, _Std_char_traits_lt<char8_t>>();
 #endif // __cpp_lib_char8_t
 
     using vless = conditional_t<vec_alg, less<int>, void>;
 
-    test_lex_compare_memcmp_classify_for_pred<vless, wchar_t, wchar_t, _Char_traits_lt<char_traits<wchar_t>>>();
-    test_lex_compare_memcmp_classify_for_pred<vless, char16_t, char16_t, _Char_traits_lt<char_traits<char16_t>>>();
-    test_lex_compare_memcmp_classify_for_pred<vless, char32_t, char32_t, _Char_traits_lt<char_traits<char32_t>>>();
+    test_lex_compare_memcmp_classify_for_pred<vless, wchar_t, wchar_t, _Std_char_traits_lt<wchar_t>>();
+    test_lex_compare_memcmp_classify_for_pred<vless, char16_t, char16_t, _Std_char_traits_lt<char16_t>>();
+    test_lex_compare_memcmp_classify_for_pred<vless, char32_t, char32_t, _Std_char_traits_lt<char32_t>>();
 
     // Test different containers
 #if _HAS_CXX20

@@ -18,7 +18,7 @@ $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
-$ImageSku = '2022-datacenter-g2'
+$ImageSku = '2025-datacenter-g2'
 
 $ProgressActivity = 'Preparing STL CI pool'
 $TotalProgress = 26
