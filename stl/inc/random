@@ -402,12 +402,12 @@ bool _Nrand_for_tr1(
 }
 
 template <class _Gen, class = void>
-struct _Has_static_min_max : false_type {};
+constexpr bool _Has_static_min_max = false;
 
 // This checks a requirement of N4981 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
 // to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
 template <class _Gen>
-struct _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> : true_type {};
+constexpr bool _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> = true;
 
 template <class _Real, class _Gen>
 _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
@@ -415,7 +415,7 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
 
     constexpr auto _Digits = static_cast<size_t>(numeric_limits<_Real>::digits);
 
-    if constexpr (_Has_static_min_max<_Gen>::value) {
+    if constexpr (_Has_static_min_max<_Gen>) {
         return _STD generate_canonical<_Real, _Digits>(_Gx);
     } else if constexpr (is_integral_v<typename _Gen::result_type>) {
         // TRANSITION, for integral tr1 machinery only; Standard machinery can call generate_canonical directly
@@ -2301,8 +2301,7 @@ private:
 
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, _Ty _Min, _Ty _Max) const { // compute next value in range [_Min, _Max]
-        conditional_t<_Has_static_min_max<_Engine>::value, _Rng_from_urng_v2<_Uty, _Engine>,
-            _Rng_from_urng<_Uty, _Engine>>
+        conditional_t<_Has_static_min_max<_Engine>, _Rng_from_urng_v2<_Uty, _Engine>, _Rng_from_urng<_Uty, _Engine>>
             _Generator(_Eng);
 
         const _Uty _Umin = _Adjust(static_cast<_Uty>(_Min));
