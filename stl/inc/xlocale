@@ -74,12 +74,18 @@ public:
 
     class _CRTIMP2_PURE_IMPORT id { // identifier stamp, unique for each distinct kind of facet
     public:
+#ifdef _CRTBLD // TRANSITION, ABI: preserved for binary compatibility
         __CLR_OR_THIS_CALL id(size_t _Val = 0) : _Id(_Val) {}
+#else // ^^^ defined(_CRTBLD) / !defined(_CRTBLD) vvv
+        template <int = 0> // TRANSITION, ABI
+        id() noexcept /* strengthened */ {}
+#endif // ^^^ !defined(_CRTBLD) ^^^
 
         id(const id&)            = delete;
         id& operator=(const id&) = delete;
 
-        __CLR_OR_THIS_CALL operator size_t() { // get stamp, with lazy allocation
+        template <int = 0> // TRANSITION, ABI
+        size_t _Get_index() { // get stamp, with lazy allocation
             if (_Id == 0) { // still zero, allocate stamp
                 _BEGIN_LOCK(_LOCK_LOCALE)
                 if (_Id == 0) {
@@ -90,8 +96,14 @@ public:
             return _Id;
         }
 
+#ifdef _CRTBLD // TRANSITION, ABI: preserved for binary compatibility
+        __CLR_OR_THIS_CALL operator size_t() {
+            return _Get_index();
+        }
+#endif // defined(_CRTBLD)
+
     private:
-        size_t _Id; // the identifier stamp
+        size_t _Id = 0; // the identifier stamp
 
         __PURE_APPDOMAIN_GLOBAL static int _Id_cnt;
     };
@@ -223,7 +235,7 @@ public:
         _CATCH_END
 
         _Locimp* _Newimp = _Locimp::_New_Locimp(*_Ptr);
-        _Newimp->_Addfac(_Facptr, _Facet::id);
+        _Newimp->_Addfac(_Facptr, _Facet::id._Get_index());
         _Newimp->_Catmask = none;
         _Newimp->_Name    = "*";
         return locale{_Secret_locale_construct_tag{}, _Newimp};
@@ -232,7 +244,7 @@ public:
     template <class _Facet>
     locale(const locale& _Loc, const _Facet* _Facptr) : _Ptr(_Locimp::_New_Locimp(*_Loc._Ptr)) {
         if (_Facptr) { // replace facet
-            _Ptr->_Addfac(const_cast<_Facet*>(_Facptr), _Facet::id);
+            _Ptr->_Addfac(const_cast<_Facet*>(_Facptr), _Facet::id._Get_index());
             _Ptr->_Catmask = none;
             _Ptr->_Name    = "*";
         }
@@ -421,7 +433,7 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
     _BEGIN_LOCK(_LOCK_LOCALE) // the thread lock, make get atomic
     const locale::facet* _Psave = _Facetptr<_Facet>::_Psave; // static pointer to lazy facet
 
-    const size_t _Id         = _Facet::id;
+    const size_t _Id         = _Facet::id._Get_index();
     const locale::facet* _Pf = _Loc._Getfacet(_Id);
 
     if (!_Pf) {

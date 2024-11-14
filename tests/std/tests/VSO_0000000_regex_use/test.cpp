@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <regex>
@@ -581,6 +582,53 @@ void test_gh_993() {
     }
 }
 
+void test_gh_5058() {
+    // GH-5058 "<regex>: Small cleanups" changed some default constructors to be defaulted.
+    // Verify that <regex> types are still const-default-constructible (N4993 [dcl.init.general]/8).
+    {
+        const regex r;
+        assert(!regex_match("cats", r));
+    }
+    {
+        const csub_match csm;
+        assert(!csm.matched);
+        assert(csm.first == nullptr);
+        assert(csm.second == nullptr);
+    }
+    {
+        const ssub_match ssm;
+        assert(!ssm.matched);
+        assert(ssm.first == string::const_iterator{});
+        assert(ssm.second == string::const_iterator{});
+    }
+    {
+        const cmatch cmr;
+        assert(!cmr.ready());
+        assert(cmr.size() == 0);
+    }
+    {
+        const smatch smr;
+        assert(!smr.ready());
+        assert(smr.size() == 0);
+    }
+    {
+        const cregex_iterator cri;
+        assert(cri == cregex_iterator{});
+    }
+    {
+        const sregex_iterator sri;
+        assert(sri == sregex_iterator{});
+    }
+    {
+        const cregex_token_iterator crti;
+        assert(crti == cregex_token_iterator{});
+    }
+    {
+        const sregex_token_iterator srti;
+        assert(srti == sregex_token_iterator{});
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -608,6 +656,7 @@ int main() {
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
     test_gh_993();
+    test_gh_5058();
 
     return g_regexTester.result();
 }

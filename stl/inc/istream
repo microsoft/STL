@@ -17,6 +17,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+template <class _Elem>
+struct _NODISCARD _Null_terminator_guard {
+    _Elem** _Str_ref;
+    ~_Null_terminator_guard() {
+        if (_Str_ref) {
+            **_Str_ref = _Elem(); // add terminating null character
+        }
+    }
+};
+
 #pragma vtordisp(push, 2) // compiler bug workaround
 
 _EXPORT_STD extern "C++" template <class _Elem, class _Traits>
@@ -367,6 +377,10 @@ public:
         // get up to _Count characters into NTCS, stop before _Delim
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
+
+        // ensure null termination of buffer with nonzero length
+        const _Null_terminator_guard<_Elem> _Guard{0 < _Count ? &_Str : nullptr};
+
         const sentry _Ok(*this, true);
 
         if (_Ok && 0 < _Count) { // state okay, extract characters
@@ -388,7 +402,6 @@ public:
         }
 
         _Myios::setstate(_Chcount == 0 ? _State | ios_base::failbit : _State);
-        *_Str = _Elem(); // add terminating null character
         return *this;
     }
 
@@ -450,6 +463,10 @@ public:
         // get up to _Count characters into NTCS, discard _Delim
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
+
+        // ensure null termination of buffer with nonzero length
+        const _Null_terminator_guard<_Elem> _Guard{0 < _Count ? &_Str : nullptr};
+
         const sentry _Ok(*this, true);
 
         if (_Ok && 0 < _Count) { // state okay, use facet to extract
@@ -477,7 +494,6 @@ public:
             _CATCH_IO_END
         }
 
-        *_Str = _Elem(); // add terminating null character
         _Myios::setstate(_Chcount == 0 ? _State | ios_base::failbit : _State);
         return *this;
     }

@@ -488,10 +488,6 @@ std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_catego
 std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category_string.pass.cpp FAIL
 std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_int_error_category.pass.cpp FAIL
 
-# libc++ disagrees with libstdc++ and MSVC on whether setstate calls during I/O that throw set failbit; see open issue LWG-2349
-std/input.output/iostream.format/input.streams/istream.unformatted/get_pointer_size_chart.pass.cpp FAIL
-std/input.output/iostream.format/input.streams/istream.unformatted/get_pointer_size.pass.cpp FAIL
-
 # Sensitive to implementation details. Assertion failed: test_alloc_base::count == expected_num_allocs
 std/containers/container.requirements/container.requirements.general/allocator_move.pass.cpp FAIL
 

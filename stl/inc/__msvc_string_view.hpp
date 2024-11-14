@@ -683,7 +683,28 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
         return static_cast<size_t>(-1);
     }
 
-    for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - _Needle_size);; --_Match_try) {
+    const size_t _Actual_start_at = (_STD min)(_Start_at, _Hay_size - _Needle_size);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Is_implementation_handled_char_traits<_Traits> && sizeof(typename _Traits::char_type) <= 2) {
+        if (!_STD _Is_constant_evaluated()) {
+            // _Find_end_vectorized takes into account the needle length when locating the search start.
+            // As a potentially earlier start position can be specified, we need to take it into account,
+            // and pick between the maximum possible start position and the specified one,
+            // and then add _Needle_size, so that it is subtracted back in _Find_end_vectorized.
+            const auto _End = _Haystack + _Actual_start_at + _Needle_size;
+            const auto _Ptr = _STD _Find_end_vectorized(_Haystack, _End, _Needle, _Needle_size);
+
+            if (_Ptr != _End) {
+                return static_cast<size_t>(_Ptr - _Haystack);
+            } else {
+                return static_cast<size_t>(-1);
+            }
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+    for (auto _Match_try = _Haystack + _Actual_start_at;; --_Match_try) {
         if (_Traits::eq(*_Match_try, *_Needle) && _Traits::compare(_Match_try, _Needle, _Needle_size) == 0) {
             return static_cast<size_t>(_Match_try - _Haystack); // found a match
         }
