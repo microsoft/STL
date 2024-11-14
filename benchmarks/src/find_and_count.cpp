@@ -9,23 +9,34 @@
 #include <ranges>
 #include <vector>
 
+#include "skewed_allocator.hpp"
+
 enum class Op {
     FindSized,
     FindUnsized,
     Count,
+    StringFind,
+    StringRFind,
 };
 
 using namespace std;
 
-template <class T, Op Operation>
+template <class T, template <class> class Alloc, Op Operation>
 void bm(benchmark::State& state) {
     const auto size = static_cast<size_t>(state.range(0));
     const auto pos  = static_cast<size_t>(state.range(1));
 
-    vector<T> a(size, T{'0'});
+    using Containter = conditional_t<Operation == Op::StringFind || Operation == Op::StringRFind,
+        basic_string<T, char_traits<T>, Alloc<T>>, vector<T, Alloc<T>>>;
+
+    Containter a(size, T{'0'});
 
     if (pos < size) {
-        a[pos] = T{'1'};
+        if constexpr (Operation == Op::StringRFind) {
+            a[size - pos - 1] = T{'1'};
+        } else {
+            a[pos] = T{'1'};
+        }
     } else {
         if constexpr (Operation == Op::FindUnsized) {
             abort();
@@ -37,6 +48,10 @@ void bm(benchmark::State& state) {
             benchmark::DoNotOptimize(ranges::find(a.begin(), a.end(), T{'1'}));
         } else if constexpr (Operation == Op::FindUnsized) {
             benchmark::DoNotOptimize(ranges::find(a.begin(), unreachable_sentinel, T{'1'}));
+        } else if constexpr (Operation == Op::StringFind) {
+            benchmark::DoNotOptimize(a.find(T{'1'}));
+        } else if constexpr (Operation == Op::StringRFind) {
+            benchmark::DoNotOptimize(a.rfind(T{'1'}));
         } else if constexpr (Operation == Op::Count) {
             benchmark::DoNotOptimize(ranges::count(a.begin(), a.end(), T{'1'}));
         }
@@ -50,17 +65,28 @@ void common_args(auto bm) {
 }
 
 
-BENCHMARK(bm<uint8_t, Op::FindSized>)->Apply(common_args);
-BENCHMARK(bm<uint8_t, Op::FindUnsized>)->Apply(common_args);
-BENCHMARK(bm<uint8_t, Op::Count>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, not_highly_aligned_allocator, Op::FindSized>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, highly_aligned_allocator, Op::FindSized>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, not_highly_aligned_allocator, Op::FindUnsized>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, highly_aligned_allocator, Op::FindUnsized>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, not_highly_aligned_allocator, Op::Count>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, highly_aligned_allocator, Op::Count>)->Apply(common_args);
+BENCHMARK(bm<char, not_highly_aligned_allocator, Op::StringFind>)->Apply(common_args);
+BENCHMARK(bm<char, highly_aligned_allocator, Op::StringFind>)->Apply(common_args);
+BENCHMARK(bm<char, not_highly_aligned_allocator, Op::StringRFind>)->Apply(common_args);
+BENCHMARK(bm<char, highly_aligned_allocator, Op::StringRFind>)->Apply(common_args);
 
-BENCHMARK(bm<uint16_t, Op::FindSized>)->Apply(common_args);
-BENCHMARK(bm<uint16_t, Op::Count>)->Apply(common_args);
+BENCHMARK(bm<uint16_t, not_highly_aligned_allocator, Op::FindSized>)->Apply(common_args);
+BENCHMARK(bm<uint16_t, not_highly_aligned_allocator, Op::Count>)->Apply(common_args);
+BENCHMARK(bm<wchar_t, not_highly_aligned_allocator, Op::StringFind>)->Apply(common_args);
+BENCHMARK(bm<wchar_t, not_highly_aligned_allocator, Op::StringRFind>)->Apply(common_args);
 
-BENCHMARK(bm<uint32_t, Op::FindSized>)->Apply(common_args);
-BENCHMARK(bm<uint32_t, Op::Count>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, not_highly_aligned_allocator, Op::FindSized>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, not_highly_aligned_allocator, Op::Count>)->Apply(common_args);
+BENCHMARK(bm<char32_t, not_highly_aligned_allocator, Op::StringFind>)->Apply(common_args);
+BENCHMARK(bm<char32_t, not_highly_aligned_allocator, Op::StringRFind>)->Apply(common_args);
 
-BENCHMARK(bm<uint64_t, Op::FindSized>)->Apply(common_args);
-BENCHMARK(bm<uint64_t, Op::Count>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, not_highly_aligned_allocator, Op::FindSized>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, not_highly_aligned_allocator, Op::Count>)->Apply(common_args);
 
 BENCHMARK_MAIN();
