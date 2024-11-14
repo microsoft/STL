@@ -747,7 +747,7 @@ namespace msvc {
 #define CONSTEXPR20 constexpr
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 #define CONSTEXPR20 inline
-#endif // ^^^ !_HAS_CXX20  ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
         struct X {
             CONSTEXPR20 ~X() {}
         };
