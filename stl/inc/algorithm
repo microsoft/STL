@@ -7477,11 +7477,13 @@ _NODISCARD constexpr auto _Idl_dist_add(_Diff1 _Lhs, _Diff2 _Rhs) {
         return ranges::_Distance_unbounded{};
     } else
 #endif // _HAS_CXX20
+    {
         if constexpr (is_same_v<_Diff1, _Distance_unknown> || is_same_v<_Diff2, _Distance_unknown>) {
             return _Distance_unknown{};
         } else {
             return _Lhs + _Rhs;
         }
+    }
 }
 
 _EXPORT_STD template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
