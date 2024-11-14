@@ -461,8 +461,6 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
     }
 }
 
-#define _NRAND(eng, resty) (_Nrand_impl<resty>(eng))
-
 _INLINE_VAR constexpr int _MP_len = 5;
 using _MP_arr                     = uint64_t[_MP_len];
 
@@ -2539,7 +2537,7 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        return _NRAND(_Eng, double) < _Par0._Px;
+        return _Nrand_impl<double>(_Eng) < _Par0._Px;
     }
 
     param_type _Par;
@@ -2706,7 +2704,7 @@ private:
 
         _Ty1 _Val;
         do {
-            _Val = _CSTD log(_NRAND(_Eng, _Ty1)) / _Par0._Log_1_p;
+            _Val = _CSTD log(_Nrand_impl<_Ty1>(_Eng)) / _Par0._Log_1_p;
         } while (_Val >= _Ty1_max);
         return static_cast<_Ty>(_Val);
     }
@@ -2723,7 +2721,7 @@ public:
     _NODISCARD _Ty operator()(_Engine& _Eng) const {
         _Ty1 _Val = 1.0;
         for (_Ty _Res = 0;; ++_Res) { // count repetitions
-            _Val *= _NRAND(_Eng, _Ty1);
+            _Val *= _Nrand_impl<_Ty1>(_Eng);
             if (_Val <= _Gx0) {
                 return _Res;
             }
@@ -2875,7 +2873,7 @@ private:
             _Ty _Res;
             _Ty1 _Yx;
             for (;;) { // generate a tentative value
-                _Yx = static_cast<_Ty1>(_CSTD tan(_Pi_val * _NRAND(_Eng, _Ty1)));
+                _Yx = static_cast<_Ty1>(_CSTD tan(_Pi_val * _Nrand_impl<_Ty1>(_Eng)));
                 const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
                 if (0.0 <= _Mx && _Mx < _Ty1_max) {
                     _Res = static_cast<_Ty>(_Mx);
@@ -2883,7 +2881,7 @@ private:
                 }
             }
 
-            if (_NRAND(_Eng, _Ty1)
+            if (_Nrand_impl<_Ty1>(_Eng)
                 <= 0.9 * (1.0 + _Yx * _Yx) * _CSTD exp(_Res * _Par0._Logm - _XLgamma(_Res + 1.0) - _Par0._Gx1)) {
                 return _Res;
             }
@@ -3043,7 +3041,7 @@ private:
         if (_Par0._Tx < 25) { // generate directly
             _Res = 0;
             for (_Ty _Ix = 0; _Ix < _Par0._Tx; ++_Ix) {
-                if (_NRAND(_Eng, _Ty1) < _Par0._Px) {
+                if (_Nrand_impl<_Ty1>(_Eng) < _Par0._Px) {
                     ++_Res;
                 }
             }
@@ -3051,7 +3049,7 @@ private:
             return _Res;
         } else if (_Par0._Mean < 1.0) {
             // Events are rare, use waiting time method (Luc Devroye, Non-Uniform Random Variate Generation, p. 525).
-            const _Ty1 _Rand = _NRAND(_Eng, _Ty1);
+            const _Ty1 _Rand = _Nrand_impl<_Ty1>(_Eng);
 
             // The exit condition is log(1 - _Rand)/t < log(1-p), which is equivalent to _Rand > 1 - (1-p)^t. If
             // we have a cheap upper bound for 1-(1-p)^t, we can exit early without having to call log. We use two
@@ -3066,7 +3064,7 @@ private:
                 _Ty _Denom = _Par0._Tx;
                 _Ty1 _Sum  = _CSTD log(_Ty1{1.0} - _Rand) / _Denom;
                 while (_Sum >= _Par0._Logp1 && --_Denom != 0) {
-                    _Sum += _CSTD log(_Ty1{1.0} - _NRAND(_Eng, _Ty1)) / _Denom;
+                    _Sum += _CSTD log(_Ty1{1.0} - _Nrand_impl<_Ty1>(_Eng)) / _Denom;
                 }
                 _Res = static_cast<_Ty>(_Par0._Tx - _Denom);
             }
@@ -3077,14 +3075,14 @@ private:
             for (;;) { // generate and reject
                 _Ty1 _Yx;
                 for (;;) { // generate a tentative value
-                    _Yx = static_cast<_Ty1>(_CSTD tan(_Pi_val * _NRAND(_Eng, _Ty1)));
+                    _Yx = static_cast<_Ty1>(_CSTD tan(_Pi_val * _Nrand_impl<_Ty1>(_Eng)));
                     const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
                     if (0.0 <= _Mx && _Mx < _Ty1_Tx) {
                         _Res = static_cast<_Ty>(_Mx);
                         break;
                     }
                 }
-                if (_NRAND(_Eng, _Ty1)
+                if (_Nrand_impl<_Ty1>(_Eng)
                     <= 1.2 * _Par0._Sqrt * (1.0 + _Yx * _Yx)
                            * _CSTD exp(_Par0._Gx1 - _XLgamma(_Res + 1.0) - _XLgamma(_Par0._Tx - _Res + 1.0)
                                        + _Res * _Par0._Logp + (_Par0._Tx - _Res) * _Par0._Logp1)) {
@@ -3219,7 +3217,7 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        return _NRAND(_Eng, _Ty) * (_Par0._Max - _Par0._Min) + _Par0._Min;
+        return _Nrand_impl<_Ty>(_Eng) * (_Par0._Max - _Par0._Min) + _Par0._Min;
     }
 
     param_type _Par;
@@ -3432,7 +3430,7 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        return -_CSTD log(_Ty{1} - _NRAND(_Eng, _Ty)) / _Par0._Lambda;
+        return -_CSTD log(_Ty{1} - _Nrand_impl<_Ty>(_Eng)) / _Par0._Lambda;
     }
 
     param_type _Par;
@@ -3593,8 +3591,8 @@ private:
             _Ty _Vx2;
             _Ty _Sx;
             for (;;) { // reject bad values to avoid generating NaN/Inf on the next calculations
-                _Vx1 = 2 * _NRAND(_Eng, _Ty) - 1;
-                _Vx2 = 2 * _NRAND(_Eng, _Ty) - 1;
+                _Vx1 = 2 * _Nrand_impl<_Ty>(_Eng) - 1;
+                _Vx2 = 2 * _Nrand_impl<_Ty>(_Eng) - 1;
                 _Sx  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
                 if (_Sx < _Ty{1} && _Vx1 != _Ty{0} && _Vx2 != _Ty{0}) {
                     // good values!
@@ -3772,9 +3770,9 @@ private:
         if (_Par0._Alpha < 1) { // small values of alpha
                                 // from Knuth
             for (;;) { // generate and reject
-                _Ux = _NRAND(_Eng, _Ty);
+                _Ux = _Nrand_impl<_Ty>(_Eng);
                 do {
-                    _Vx = _NRAND(_Eng, _Ty);
+                    _Vx = _Nrand_impl<_Ty>(_Eng);
                 } while (_Vx == 0);
 
                 if (_Ux < _Par0._Px) { // small _Ux
@@ -3785,7 +3783,7 @@ private:
                     _Qx = _CSTD pow(_Xx, _Par0._Alpha - 1);
                 }
 
-                if (_NRAND(_Eng, _Ty) < _Qx) {
+                if (_Nrand_impl<_Ty>(_Eng) < _Qx) {
                     return _Par0._Beta * _Xx;
                 }
             }
@@ -3797,10 +3795,10 @@ private:
 
         if (_Par0._Alpha < 20.0 && (_Count = static_cast<int>(_Par0._Alpha)) == _Par0._Alpha) {
             // _Alpha is small integer, compute directly
-            _Yx = _NRAND(_Eng, _Ty);
+            _Yx = _Nrand_impl<_Ty>(_Eng);
             while (--_Count) { // adjust result
                 do {
-                    _Ux = _NRAND(_Eng, _Ty);
+                    _Ux = _Nrand_impl<_Ty>(_Eng);
                 } while (_Ux == 0);
 
                 _Yx *= _Ux;
@@ -3810,12 +3808,12 @@ private:
 
         // no shortcuts
         for (;;) { // generate and reject
-            _Yx = static_cast<_Ty>(_CSTD tan(_Pi_val * _NRAND(_Eng, _Ty)));
+            _Yx = static_cast<_Ty>(_CSTD tan(_Pi_val * _Nrand_impl<_Ty>(_Eng)));
             _Xx = _Par0._Sqrt * _Yx + _Par0._Alpha - 1;
             if (0 < _Xx
-                && _NRAND(_Eng, _Ty) <= (1 + _Yx * _Yx)
-                                            * _CSTD exp((_Par0._Alpha - 1) * _CSTD log(_Xx / (_Par0._Alpha - 1))
-                                                        - _Par0._Sqrt * _Yx)) {
+                && _Nrand_impl<_Ty>(_Eng) <= (1 + _Yx * _Yx)
+                                                 * _CSTD exp((_Par0._Alpha - 1) * _CSTD log(_Xx / (_Par0._Alpha - 1))
+                                                             - _Par0._Sqrt * _Yx)) {
                 return _Par0._Beta * _Xx;
             }
         }
@@ -3952,7 +3950,7 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const { // generate pseudo-random value
-        _Ty _Px = (_Ty{1} - _NRAND(_Eng, _Ty));
+        _Ty _Px = (_Ty{1} - _Nrand_impl<_Ty>(_Eng));
         return _Par0._Bx * _CSTD pow(-_CSTD log(_Px), _Ty{1} / _Par0._Ax);
     }
 
@@ -4086,7 +4084,7 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const { // generate pseudo-random value
-        _Ty _Px = _NRAND(_Eng, _Ty);
+        _Ty _Px = _Nrand_impl<_Ty>(_Eng);
         return _Par0._Ax - _Par0._Bx * _CSTD log(-_CSTD log(_Px));
     }
 
@@ -4474,7 +4472,7 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const { // generate pseudo-random value
-        _Ty Px = _NRAND(_Eng, _Ty);
+        _Ty Px = _Nrand_impl<_Ty>(_Eng);
         return static_cast<_Ty>(_Par0._Ax + _Par0._Bx * _CSTD tan(_Pi_val * (Px - static_cast<_Ty>(0.5))));
     }
 
@@ -4497,8 +4495,8 @@ public:
             _Ty _Px1;
             _Ty _Px2;
             for (;;) { // reject large values
-                _Px1 = _NRAND(_Eng, _Ty);
-                _Px2 = _NRAND(_Eng, _Ty);
+                _Px1 = _Nrand_impl<_Ty>(_Eng);
+                _Px2 = _Nrand_impl<_Ty>(_Eng);
                 _Px1 = _CSTD pow(_Px1, _Ty{1} / _Ax);
                 _Px2 = _CSTD pow(_Px2, _Ty{1} / _Bx);
                 _Wx  = _Px1 + _Px2;
@@ -5146,7 +5144,7 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        double _Px           = _NRAND(_Eng, double);
+        double _Px           = _Nrand_impl<double>(_Eng);
         const auto _First    = _Par0._Pcdf.begin();
         const auto _Position = _STD lower_bound(_First, _Prev_iter(_Par0._Pcdf.end()), _Px);
         return static_cast<result_type>(_Position - _First);
@@ -5699,7 +5697,6 @@ _STL_RESTORE_DEPRECATED_WARNING
 #endif // _HAS_TR1_NAMESPACE
 _STD_END
 
-#undef _NRAND
 #undef _DISTRIBUTION_CONST
 
 // TRANSITION, GH-183
