@@ -48,12 +48,12 @@ void bm(benchmark::State& state) {
             benchmark::DoNotOptimize(ranges::find(a.begin(), a.end(), T{'1'}));
         } else if constexpr (Operation == Op::FindUnsized) {
             benchmark::DoNotOptimize(ranges::find(a.begin(), unreachable_sentinel, T{'1'}));
+        } else if constexpr (Operation == Op::Count) {
+            benchmark::DoNotOptimize(ranges::count(a.begin(), a.end(), T{'1'}));
         } else if constexpr (Operation == Op::StringFind) {
             benchmark::DoNotOptimize(a.find(T{'1'}));
         } else if constexpr (Operation == Op::StringRFind) {
             benchmark::DoNotOptimize(a.rfind(T{'1'}));
-        } else if constexpr (Operation == Op::Count) {
-            benchmark::DoNotOptimize(ranges::count(a.begin(), a.end(), T{'1'}));
         }
     }
 }
