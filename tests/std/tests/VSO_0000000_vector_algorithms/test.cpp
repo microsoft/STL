@@ -12,6 +12,7 @@
 #include <functional>
 #include <limits>
 #include <list>
+#include <memory>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -734,8 +735,16 @@ void test_case_unique(vector<T>& in_out_expected, vector<T>& in_out_actual, vect
 
 template <class T>
 void test_unique(mt19937_64& gen) {
-    using TD = conditional_t<sizeof(T) == 1, int, T>;
-    binomial_distribution<TD> dis(5);
+    shared_ptr<void> tmp_array;
+
+    constexpr int number_of_values = 5;
+
+    using TD = conditional_t<sizeof(T) == 1 || is_pointer_v<T>, int, T>;
+    binomial_distribution<TD> dis(number_of_values);
+
+    if constexpr (is_pointer_v<T>) {
+        tmp_array = std::make_unique<remove_pointer<T>[]>(5);
+    }
 
     vector<T> source;
     vector<T> in_out_expected;
@@ -748,7 +757,12 @@ void test_unique(mt19937_64& gen) {
 
     test_case_unique(in_out_expected, in_out_actual, in_out_actual_r);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        source.push_back(static_cast<T>(dis(gen)));
+        if constexpr (is_pointer_v<T>) {
+            const auto pos = static_cast<int>(dis(gen));
+            source.push_back(static_cast<T>(tmp_array.get()) + pos);
+        } else {
+            source.push_back(static_cast<T>(dis(gen)));
+        }
 
         for (const auto& v : {&in_out_expected, &in_out_actual, &in_out_actual_r}) {
             *v = source;
@@ -961,6 +975,8 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_unique<unsigned int>(gen);
     test_unique<long long>(gen);
     test_unique<unsigned long long>(gen);
+
+    test_unique<long*>(gen);
 
     test_swap_ranges<char>(gen);
     test_swap_ranges<short>(gen);
