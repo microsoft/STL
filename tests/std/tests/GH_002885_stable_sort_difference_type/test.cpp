@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <ranges>
 
@@ -16,7 +17,8 @@ template <class I>
 void test_iota_transform() {
     constexpr int orig[]{42, 1729};
     int a[]{42, 1729};
-    auto vw = views::iota(I{}, static_cast<I>(ranges::size(a))) | views::transform([&a](I i) -> auto& { return a[i]; });
+    auto vw = views::iota(I{}, static_cast<I>(ranges::size(a)))
+            | views::transform([&a](I i) -> auto& { return a[static_cast<size_t>(i)]; });
 
     ranges::stable_sort(vw);
     assert(ranges::equal(a, orig));
