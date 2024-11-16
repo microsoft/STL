@@ -4204,6 +4204,195 @@ namespace {
     constexpr auto _Remove_tables_4_avx = _Make_remove_tables<256, 8>(4, 1);
     constexpr auto _Remove_tables_8_sse = _Make_remove_tables<4, 16>(8, 8);
     constexpr auto _Remove_tables_8_avx = _Make_remove_tables<16, 8>(8, 2);
+
+    struct _Remove_sse_1 {
+        static constexpr size_t _Elem_size = 1;
+        static constexpr size_t _Step      = 8;
+
+        static __m128i _Set(const uint8_t _Val) noexcept {
+            return _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
+        }
+
+        static __m128i _Load(const void* const _Ptr) noexcept {
+            return _mm_loadu_si64(_Ptr);
+        }
+
+        static uint32_t _Mask(const __m128i _First, const __m128i _Second) noexcept {
+            return _mm_movemask_epi8(_mm_cmpeq_epi8(_First, _Second)) & 0xFF;
+        }
+
+        static void* _Store_masked(void* _Out, const __m128i _Src, const uint32_t _Bingo) noexcept {
+            const __m128i _Shuf = _mm_loadu_si64(_Remove_tables_1_sse._Shuf[_Bingo]);
+            const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
+            _mm_storeu_si64(_Out, _Dest);
+            _Advance_bytes(_Out, _Remove_tables_1_sse._Size[_Bingo]);
+            return _Out;
+        }
+    };
+
+    struct _Remove_sse_2 {
+        static constexpr size_t _Elem_size = 2;
+        static constexpr size_t _Step      = 16;
+
+        static __m128i _Set(const uint16_t _Val) noexcept {
+            return _mm_set1_epi16(_Val);
+        }
+
+        static __m128i _Load(const void* const _Ptr) noexcept {
+            return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Ptr));
+        }
+
+        static uint32_t _Mask(const __m128i _First, const __m128i _Second) noexcept {
+            const __m128i _Mask = _mm_cmpeq_epi16(_First, _Second);
+            return _mm_movemask_epi8(_mm_packs_epi16(_Mask, _mm_setzero_si128()));
+        }
+
+        static void* _Store_masked(void* _Out, const __m128i _Src, const uint32_t _Bingo) noexcept {
+            const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_2_sse._Shuf[_Bingo]));
+            const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
+            _Advance_bytes(_Out, _Remove_tables_2_sse._Size[_Bingo]);
+            return _Out;
+        }
+    };
+
+    struct _Remove_avx_4 {
+        static constexpr size_t _Elem_size = 4;
+        static constexpr size_t _Step      = 32;
+
+        static __m256i _Set(const uint32_t _Val) noexcept {
+            return _mm256_set1_epi32(_Val);
+        }
+
+        static __m256i _Load(const void* const _Ptr) noexcept {
+            return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Ptr));
+        }
+
+        static uint32_t _Mask(const __m256i _First, const __m256i _Second) noexcept {
+            const __m256i _Mask = _mm256_cmpeq_epi32(_First, _Second);
+            return _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
+        }
+
+        static void* _Store_masked(void* _Out, const __m256i _Src, const uint32_t _Bingo) noexcept {
+            const __m256i _Shuf = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_4_avx._Shuf[_Bingo]));
+            const __m256i _Dest = _mm256_permutevar8x32_epi32(_Src, _Shuf);
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
+            _Advance_bytes(_Out, _Remove_tables_4_avx._Size[_Bingo]);
+            return _Out;
+        }
+    };
+
+    struct _Remove_sse_4 {
+        static constexpr size_t _Elem_size = 4;
+        static constexpr size_t _Step      = 16;
+
+        static __m128i _Set(const uint32_t _Val) noexcept {
+            return _mm_set1_epi32(_Val);
+        }
+
+        static __m128i _Load(const void* const _Ptr) noexcept {
+            return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Ptr));
+        }
+
+        static uint32_t _Mask(const __m128i _First, const __m128i _Second) noexcept {
+            const __m128i _Mask = _mm_cmpeq_epi32(_First, _Second);
+            return _mm_movemask_ps(_mm_castsi128_ps(_Mask));
+        }
+
+        static void* _Store_masked(void* _Out, const __m128i _Src, const uint32_t _Bingo) noexcept {
+            const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_4_sse._Shuf[_Bingo]));
+            const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
+            _Advance_bytes(_Out, _Remove_tables_4_sse._Size[_Bingo]);
+            return _Out;
+        }
+    };
+
+    struct _Remove_avx_8 {
+        static constexpr size_t _Elem_size = 8;
+        static constexpr size_t _Step      = 32;
+
+        static __m256i _Set(const uint64_t _Val) noexcept {
+            return _mm256_set1_epi64x(_Val);
+        }
+
+        static __m256i _Load(const void* const _Ptr) noexcept {
+            return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Ptr));
+        }
+
+        static uint32_t _Mask(const __m256i _First, const __m256i _Second) noexcept {
+            const __m256i _Mask = _mm256_cmpeq_epi64(_First, _Second);
+            return _mm256_movemask_pd(_mm256_castsi256_pd(_Mask));
+        }
+
+        static void* _Store_masked(void* _Out, const __m256i _Src, const uint32_t _Bingo) noexcept {
+            const __m256i _Shuf = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_8_avx._Shuf[_Bingo]));
+            const __m256i _Dest = _mm256_permutevar8x32_epi32(_Src, _Shuf);
+            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
+            _Advance_bytes(_Out, _Remove_tables_8_avx._Size[_Bingo]);
+            return _Out;
+        }
+    };
+
+    struct _Remove_sse_8 {
+        static constexpr size_t _Elem_size = 8;
+        static constexpr size_t _Step      = 16;
+
+        static __m128i _Set(const uint64_t _Val) noexcept {
+            return _mm_set1_epi64x(_Val);
+        }
+
+        static __m128i _Load(const void* const _Ptr) noexcept {
+            return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Ptr));
+        }
+
+        static uint32_t _Mask(const __m128i _First, const __m128i _Second) noexcept {
+            const __m128i _Mask = _mm_cmpeq_epi64(_First, _Second);
+            return _mm_movemask_pd(_mm_castsi128_pd(_Mask));
+        }
+
+        static void* _Store_masked(void* _Out, const __m128i _Src, const uint32_t _Bingo) noexcept {
+            const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_8_sse._Shuf[_Bingo]));
+            const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
+            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
+            _Advance_bytes(_Out, _Remove_tables_8_sse._Size[_Bingo]);
+            return _Out;
+        }
+    };
+
+    template <class _Traits>
+    void* _Remove_impl(void* _First, const void* _Stop, const auto _Val) noexcept {
+        void* _Out        = _First;
+        const auto _Match = _Traits::_Set(_Val);
+
+        do {
+            const auto _Src       = _Traits::_Load(_First);
+            const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
+            _Out                  = _Traits::_Store_masked(_Out, _Src, _Bingo);
+            _Advance_bytes(_First, _Traits::_Step);
+        } while (_First != _Stop);
+
+        return _Out;
+    }
+
+    template <class _Traits>
+    void* _Unique_impl(void* _First, const void* _Stop) noexcept {
+        void* _Out = _First;
+
+        do {
+            const auto _Src = _Traits::_Load(_First);
+            void* _First_d  = _First;
+            _Rewind_bytes(_First_d, _Traits::_Elem_size);
+            const auto _Match     = _Traits::_Load(_First_d);
+            const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
+            _Out                  = _Traits::_Store_masked(_Out, _Src, _Bingo);
+            _Advance_bytes(_First, _Traits::_Step);
+        } while (_First != _Stop);
+
+        _Rewind_bytes(_Out, _Traits::_Elem_size);
+        return _Out;
+    }
+
 #endif // !defined(_M_ARM64EC)
 } // unnamed namespace
 
@@ -4214,19 +4403,10 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
 
 #ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
-        const __m128i _Match = _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
-        do {
-            const __m128i _Src    = _mm_loadu_si64(_First);
-            const uint32_t _Bingo = _mm_movemask_epi8(_mm_cmpeq_epi8(_Src, _Match)) & 0xFF;
-            const __m128i _Shuf   = _mm_loadu_si64(_Remove_tables_1_sse._Shuf[_Bingo]);
-            const __m128i _Dest   = _mm_shuffle_epi8(_Src, _Shuf);
-            _mm_storeu_si64(_Out, _Dest);
-            _Advance_bytes(_Out, _Remove_tables_1_sse._Size[_Bingo]);
-            _Advance_bytes(_First, 8);
-        } while (_First != _Stop);
+        _Out   = _Remove_impl<_Remove_sse_1>(_First, _Stop, _Val);
+        _First = _Stop;
     }
 #endif // !defined(_M_ARM64EC)
 
@@ -4238,20 +4418,10 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
 
 #ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
-        const __m128i _Match = _mm_set1_epi16(_Val);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
-        do {
-            const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
-            const __m128i _Mask   = _mm_cmpeq_epi16(_Src, _Match);
-            const uint32_t _Bingo = _mm_movemask_epi8(_mm_packs_epi16(_Mask, _mm_setzero_si128()));
-            const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_2_sse._Shuf[_Bingo]));
-            const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
-            _Advance_bytes(_Out, _Remove_tables_2_sse._Size[_Bingo]);
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop);
+        _Out   = _Remove_impl<_Remove_sse_2>(_First, _Stop, _Val);
+        _First = _Stop;
     }
 #endif // !defined(_M_ARM64EC)
 
@@ -4263,37 +4433,17 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
 
 #ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
-        const __m256i _Match = _mm256_set1_epi32(_Val);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
-        do {
-            const __m256i _Src    = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
-            const __m256i _Mask   = _mm256_cmpeq_epi32(_Src, _Match);
-            const uint32_t _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
-            const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_4_avx._Shuf[_Bingo]));
-            const __m256i _Dest   = _mm256_permutevar8x32_epi32(_Src, _Shuf);
-            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
-            _Advance_bytes(_Out, _Remove_tables_4_avx._Size[_Bingo]);
-            _Advance_bytes(_First, 32);
-        } while (_First != _Stop);
+        _Out   = _Remove_impl<_Remove_avx_4>(_First, _Stop, _Val);
+        _First = _Stop;
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     } else if (_Use_sse42() && _Size_bytes >= 16) {
-        const __m128i _Match = _mm_set1_epi32(_Val);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
-        do {
-            const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
-            const __m128i _Mask   = _mm_cmpeq_epi32(_Src, _Match);
-            const uint32_t _Bingo = _mm_movemask_ps(_mm_castsi128_ps(_Mask));
-            const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_4_sse._Shuf[_Bingo]));
-            const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
-            _Advance_bytes(_Out, _Remove_tables_4_sse._Size[_Bingo]);
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop);
+        _Out   = _Remove_impl<_Remove_sse_4>(_First, _Stop, _Val);
+        _First = _Stop;
     }
 #endif // !defined(_M_ARM64EC)
 
@@ -4305,37 +4455,17 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
 
 #ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
-        const __m256i _Match = _mm256_set1_epi64x(_Val);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
-        do {
-            const __m256i _Src    = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
-            const __m256i _Mask   = _mm256_cmpeq_epi64(_Src, _Match);
-            const uint32_t _Bingo = _mm256_movemask_pd(_mm256_castsi256_pd(_Mask));
-            const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_8_avx._Shuf[_Bingo]));
-            const __m256i _Dest   = _mm256_permutevar8x32_epi32(_Src, _Shuf);
-            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Out), _Dest);
-            _Advance_bytes(_Out, _Remove_tables_8_avx._Size[_Bingo]);
-            _Advance_bytes(_First, 32);
-        } while (_First != _Stop);
+        _Out   = _Remove_impl<_Remove_avx_8>(_First, _Stop, _Val);
+        _First = _Stop;
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     } else if (_Use_sse42() && _Size_bytes >= 16) {
-        const __m128i _Match = _mm_set1_epi64x(_Val);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
-        do {
-            const __m128i _Src    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
-            const __m128i _Mask   = _mm_cmpeq_epi64(_Src, _Match);
-            const uint32_t _Bingo = _mm_movemask_pd(_mm_castsi128_pd(_Mask));
-            const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_8_sse._Shuf[_Bingo]));
-            const __m128i _Dest = _mm_shuffle_epi8(_Src, _Shuf);
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Out), _Dest);
-            _Advance_bytes(_Out, _Remove_tables_8_sse._Size[_Bingo]);
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop);
+        _Out   = _Remove_impl<_Remove_sse_8>(_First, _Stop, _Val);
+        _First = _Stop;
     }
 #endif // !defined(_M_ARM64EC)
 
@@ -4352,24 +4482,10 @@ void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept {
 
 #ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
-        _Advance_bytes(_Dest, 1);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
-        do {
-            const __m128i _Src = _mm_loadu_si64(_First);
-            void* _First_d     = _First;
-            _Rewind_bytes(_First_d, 1);
-            const __m128i _Match  = _mm_loadu_si64(_First_d);
-            const uint32_t _Bingo = _mm_movemask_epi8(_mm_cmpeq_epi8(_Src, _Match)) & 0xFF;
-            const __m128i _Shuf   = _mm_loadu_si64(_Remove_tables_1_sse._Shuf[_Bingo]);
-            const __m128i _Out    = _mm_shuffle_epi8(_Src, _Shuf);
-            _mm_storeu_si64(_Dest, _Out);
-            _Advance_bytes(_Dest, _Remove_tables_1_sse._Size[_Bingo]);
-            _Advance_bytes(_First, 8);
-        } while (_First != _Stop);
-
-        _Rewind_bytes(_Dest, 1);
+        _Dest  = _Unique_impl<_Remove_sse_1>(_First, _Stop);
+        _First = _Stop;
     }
 #endif // !defined(_M_ARM64EC)
 
@@ -4386,25 +4502,10 @@ void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept {
 
 #ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
-        _Advance_bytes(_Dest, 2);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
-        do {
-            const __m128i _Src = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
-            void* _First_d     = _First;
-            _Rewind_bytes(_First_d, 2);
-            const __m128i _Match  = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First_d));
-            const __m128i _Mask   = _mm_cmpeq_epi16(_Src, _Match);
-            const uint32_t _Bingo = _mm_movemask_epi8(_mm_packs_epi16(_Mask, _mm_setzero_si128()));
-            const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_2_sse._Shuf[_Bingo]));
-            const __m128i _Out  = _mm_shuffle_epi8(_Src, _Shuf);
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Dest), _Out);
-            _Advance_bytes(_Dest, _Remove_tables_2_sse._Size[_Bingo]);
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop);
-
-        _Rewind_bytes(_Dest, 2);
+        _Dest  = _Unique_impl<_Remove_sse_2>(_First, _Stop);
+        _First = _Stop;
     }
 #endif // !defined(_M_ARM64EC)
 
@@ -4421,47 +4522,17 @@ void* __stdcall __std_unique_4(void* _First, void* _Last) noexcept {
 
 #ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
-        _Advance_bytes(_Dest, 4);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        _Dest  = _Unique_impl<_Remove_avx_4>(_First, _Stop);
+        _First = _Stop;
 
-        do {
-            const __m256i _Src = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
-            void* _First_d     = _First;
-            _Rewind_bytes(_First_d, 4);
-            const __m256i _Match  = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First_d));
-            const __m256i _Mask   = _mm256_cmpeq_epi32(_Src, _Match);
-            const uint32_t _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
-            const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_4_avx._Shuf[_Bingo]));
-            const __m256i _Out    = _mm256_permutevar8x32_epi32(_Src, _Shuf);
-            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Dest), _Out);
-            _Advance_bytes(_Dest, _Remove_tables_4_avx._Size[_Bingo]);
-            _Advance_bytes(_First, 32);
-        } while (_First != _Stop);
-
-        _Rewind_bytes(_Dest, 4);
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     } else if (_Use_sse42() && _Size_bytes >= 16) {
-        _Advance_bytes(_Dest, 4);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
-        do {
-            const __m128i _Src = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
-            void* _First_d     = _First;
-            _Rewind_bytes(_First_d, 4);
-            const __m128i _Match  = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First_d));
-            const __m128i _Mask   = _mm_cmpeq_epi32(_Src, _Match);
-            const uint32_t _Bingo = _mm_movemask_ps(_mm_castsi128_ps(_Mask));
-            const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_4_sse._Shuf[_Bingo]));
-            const __m128i _Out  = _mm_shuffle_epi8(_Src, _Shuf);
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Dest), _Out);
-            _Advance_bytes(_Dest, _Remove_tables_4_sse._Size[_Bingo]);
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop);
-
-        _Rewind_bytes(_Dest, 4);
+        _Dest  = _Unique_impl<_Remove_sse_4>(_First, _Stop);
+        _First = _Stop;
     }
 #endif // !defined(_M_ARM64EC)
 
@@ -4478,46 +4549,17 @@ void* __stdcall __std_unique_8(void* _First, void* _Last) noexcept {
 
 #ifndef _M_ARM64EC
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
-        _Advance_bytes(_Dest, 8);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
-        do {
-            const __m256i _Src = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
-            void* _First_d     = _First;
-            _Rewind_bytes(_First_d, 8);
-            const __m256i _Match  = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First_d));
-            const __m256i _Mask   = _mm256_cmpeq_epi64(_Src, _Match);
-            const uint32_t _Bingo = _mm256_movemask_pd(_mm256_castsi256_pd(_Mask));
-            const __m256i _Shuf   = _mm256_cvtepu8_epi32(_mm_loadu_si64(_Remove_tables_8_avx._Shuf[_Bingo]));
-            const __m256i _Out    = _mm256_permutevar8x32_epi32(_Src, _Shuf);
-            _mm256_storeu_si256(reinterpret_cast<__m256i*>(_Dest), _Out);
-            _Advance_bytes(_Dest, _Remove_tables_8_avx._Size[_Bingo]);
-            _Advance_bytes(_First, 32);
-        } while (_First != _Stop);
+        _Dest  = _Unique_impl<_Remove_avx_8>(_First, _Stop);
+        _First = _Stop;
 
-        _Rewind_bytes(_Dest, 8);
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     } else if (_Use_sse42() && _Size_bytes >= 16) {
-        _Advance_bytes(_Dest, 8);
-
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
-        do {
-            const __m128i _Src = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
-            void* _First_d     = _First;
-            _Rewind_bytes(_First_d, 8);
-            const __m128i _Match  = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First_d));
-            const __m128i _Mask   = _mm_cmpeq_epi64(_Src, _Match);
-            const uint32_t _Bingo = _mm_movemask_pd(_mm_castsi128_pd(_Mask));
-            const __m128i _Shuf = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Remove_tables_8_sse._Shuf[_Bingo]));
-            const __m128i _Out  = _mm_shuffle_epi8(_Src, _Shuf);
-            _mm_storeu_si128(reinterpret_cast<__m128i*>(_Dest), _Out);
-            _Advance_bytes(_Dest, _Remove_tables_8_sse._Size[_Bingo]);
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop);
-
-        _Rewind_bytes(_Dest, 8);
+        _Dest  = _Unique_impl<_Remove_sse_8>(_First, _Stop);
+        _First = _Stop;
     }
 #endif // !defined(_M_ARM64EC)
 
