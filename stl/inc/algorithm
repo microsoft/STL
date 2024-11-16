@@ -244,14 +244,7 @@ constexpr bool _Vector_alg_in_ranges_replace_is_safe =
 
 // Can we activate the vector algorithms for unique?
 template <class _Iter, class _Pr>
-constexpr bool _Vector_alg_in_unique_is_safe =
-    _Iterator_is_contiguous<_Iter> && !_Iterator_is_volatile<_Iter> // Contiguous nonvolatile iterator
-    && _Is_any_of_v<_Pr,
-#if _HAS_CXX20
-        _RANGES equal_to,
-#endif // _HAS_CXX20
-        _STD equal_to<>> // default comparison
-    && disjunction_v<is_arithmetic<_Iter_value_t<_Iter>>, is_pointer<_Iter_value_t<_Iter>>>; // bitwise comparable
+constexpr bool _Vector_alg_in_unique_is_safe = _Equal_memcmp_is_safe<_Iter, _Iter, _Pr>;
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
