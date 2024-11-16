@@ -214,13 +214,7 @@ __declspec(noalias) void _Replace_vectorized(
 
 template <class _Ty>
 _Ty* _Unique_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
-        return reinterpret_cast<_Ty*>(::__std_unique_8(_First, _Last));
-#else
-        return reinterpret_cast<_Ty*>(::__std_unique_4(_First, _Last));
-#endif
-    } else if constexpr (sizeof(_Ty) == 1) {
+    if constexpr (sizeof(_Ty) == 1) {
         return reinterpret_cast<_Ty*>(::__std_unique_1(_First, _Last));
     } else if constexpr (sizeof(_Ty) == 2) {
         return reinterpret_cast<_Ty*>(::__std_unique_2(_First, _Last));
