@@ -20,6 +20,8 @@ void test_iota_transform() {
     auto vw = views::iota(I{}, static_cast<I>(ranges::size(a)))
             | views::transform([&a](I i) -> auto& { return a[static_cast<size_t>(i)]; });
 
+    static_assert(three_way_comparable<ranges::iterator_t<ranges::iota_view<I>>>); // TRANSITION, /permissive
+
     ranges::stable_sort(vw);
     assert(ranges::equal(a, orig));
 
