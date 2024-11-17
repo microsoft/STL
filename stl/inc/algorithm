@@ -8907,10 +8907,10 @@ namespace ranges {
         }
 
         template <class _It, class _Pr, class _Pj>
-        static void _Buffered_merge_sort_common(const _It _First, const _It _Last, ptrdiff_t _Count,
+        static void _Buffered_merge_sort_common(const _It _First, const _It _Last, const ptrdiff_t _Count,
             iter_value_t<_It>* const _Temp_ptr, _Pr _Pred, _Pj _Proj) {
             // sort using temp buffer for merges
-            // pre: _Count <= capacity of buffer at _Temp_ptr; also allows safe narrowing to ptrdiff_t
+            // pre: _Count <= capacity of buffer at _Temp_ptr
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
             _STL_INTERNAL_CHECK(_Last - _First == _Count);
