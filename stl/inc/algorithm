@@ -8265,12 +8265,10 @@ _CONSTEXPR20 void _Guess_median_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _La
 }
 
 template <class _RanIt, class _Pr>
-_CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+_CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_pivot_unchecked(
+    _RanIt _First, _RanIt _Pfirst, _RanIt _Last, _Pr _Pred) {
     // partition [_First, _Last)
-    _RanIt _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
-    _STD _Guess_median_unchecked(_First, _Mid, _STD _Prev_iter(_Last), _Pred);
-    _RanIt _Pfirst = _Mid;
-    _RanIt _Plast  = _STD _Next_iter(_Pfirst);
+    _RanIt _Plast = _STD _Next_iter(_Pfirst);
 
     while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *_STD _Prev_iter(_Pfirst), *_Pfirst)
            && !_Pred(*_Pfirst, *_STD _Prev_iter(_Pfirst))) {
@@ -8333,6 +8331,14 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
             ++_Gfirst;
         }
     }
+}
+
+template <class _RanIt, class _Pr>
+_CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+    _RanIt _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
+    _STD _Guess_median_unchecked(_First, _Mid, _STD _Prev_iter(_Last), _Pred);
+
+    return _STD _Partition_by_pivot_unchecked(_First, _Mid, _Last, _Pred);
 }
 
 template <class _RanIt, class _Pr>
@@ -9320,6 +9326,114 @@ namespace ranges {
 #endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
+template <class _RanIt, class _Pr>
+_CONSTEXPR20 void _Swap_med5_unchecked(_RanIt _First, _RanIt _Dest, _Pr _Pred) {
+    _RanIt _Guess = _First;
+    ++_Guess;
+    _RanIt _Third = _Guess;
+    ++_Third;
+    _STD _Med3_unchecked(_First, _Guess, _Third, _Pred);
+
+    _RanIt _Fourth = _Third;
+    ++_Fourth;
+    _RanIt _Fifth = _Fourth;
+    ++_Fifth;
+    if (_DEBUG_LT_PRED(_Pred, *_Fifth, *_Fourth)) {
+        swap(*_Fourth, *_Fifth); // intentional ADL
+    }
+
+    // we have _First <= _Guess (second) <= _Third and _Fourth <= _Fifth
+    if (_DEBUG_LT_PRED(_Pred, *_Fifth, *_Guess)) {
+        if (_DEBUG_LT_PRED(_Pred, *_First, *_Fifth)) {
+            _Guess = _Fifth;
+        } else {
+            _Guess = _First;
+        }
+    } else if (_DEBUG_LT_PRED(_Pred, *_Guess, *_Fourth)) {
+        if (_DEBUG_LT_PRED(_Pred, *_Third, *_Fourth)) {
+            _Guess = _Third;
+        } else {
+            _Guess = _Fourth;
+        }
+    }
+
+    swap(*_Dest, *_Guess); // intentional ADL
+}
+
+template <class _RanIt, class _Pr>
+_CONSTEXPR20 void _Nth_element_median_of_medians(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
+    using _Diff = _Iter_diff_t<_RanIt>;
+    for (;;) {
+        auto _Length = _Last - _First;
+        if (_Length <= _ISORT_MAX) {
+            _STD _Insertion_sort_unchecked(_First, _Last, _Pred); // sort any remainder
+            return;
+        }
+
+        _Diff _MedianCount = _Length / static_cast<_Diff>(5);
+        auto _MedianLast   = _First + _MedianCount;
+        auto _Current      = _First;
+        for (auto _MedianDest = _First; _MedianDest != _MedianLast; ++_MedianDest) {
+            _STD _Swap_med5_unchecked(_Current, _MedianDest, _Pred);
+            _Current += static_cast<_Diff>(5);
+        }
+
+        auto _MedianMid = _First + (_MedianCount >> 1);
+        _STD _Nth_element_median_of_medians(_First, _MedianMid, _MedianLast, _Pred);
+
+        // the medians before and after _MedianMid are
+        // less equal and greater equal _MedianMid, respectively.
+        // move the ones after _MedianMid near _Last and then partition
+        // the elements between the medians at front and back by the pivot _MedianMid
+        _Diff _MedianGreaterCount = (_MedianLast - _MedianMid) - 1;
+        auto _MedianGreaterFirst  = _Last - _MedianGreaterCount;
+        _STD _Swap_ranges_unchecked(_MedianMid + static_cast<_Diff>(1), _MedianLast, _MedianGreaterFirst);
+        auto _Middle = _First + ((_Last - _First) >> 1);
+        swap(*_MedianMid, *_Middle);
+
+        auto _Mid = _STD _Partition_by_pivot_unchecked(_MedianMid, _Middle, _MedianGreaterFirst, _Pred);
+
+        if (_Mid.second <= _Nth) {
+            _First = _Mid.second;
+        } else if (_Mid.first <= _Nth) {
+            return; // _Nth is in the subrange of elements equal to the pivot; done
+        } else {
+            _Last = _Mid.first;
+        }
+    }
+}
+
+template <class _RanIt, class _Pr>
+_CONSTEXPR20 void _Nth_element_unchecked(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
+    auto _Ideal = _Last - _First;
+
+    for (;;) {
+        auto _Length = _Last - _First;
+        if (_Length <= _ISORT_MAX) {
+            _STD _Insertion_sort_unchecked(_First, _Last, _Pred); // sort any remainder
+            return;
+        }
+
+        if (_Ideal < (_Length >> 1)) {
+            _STD _Nth_element_median_of_medians(_First, _Nth, _Last, _Pred);
+            return;
+        }
+
+        auto _Mid = _STD _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
+
+        if (_Mid.second <= _Nth) {
+            _First = _Mid.second;
+        } else if (_Mid.first <= _Nth) {
+            return; // _Nth is in the subrange of elements equal to the pivot; done
+        } else {
+            _Last = _Mid.first;
+        }
+
+        // processed range should be reduced by 25 % per iteration on average
+        _Ideal = (_Ideal >> 1) + (_Ideal >> 2);
+    }
+}
+
 _EXPORT_STD template <class _RanIt, class _Pr>
 _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
     // order Nth element
@@ -9332,19 +9446,7 @@ _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pre
         return; // nothing to do
     }
 
-    while (_ISORT_MAX < _ULast - _UFirst) { // divide and conquer, ordering partition containing Nth
-        auto _UMid = _STD _Partition_by_median_guess_unchecked(_UFirst, _ULast, _STD _Pass_fn(_Pred));
-
-        if (_UMid.second <= _UNth) {
-            _UFirst = _UMid.second;
-        } else if (_UMid.first <= _UNth) {
-            return; // _Nth is in the subrange of elements equal to the pivot; done
-        } else {
-            _ULast = _UMid.first;
-        }
-    }
-
-    _STD _Insertion_sort_unchecked(_UFirst, _ULast, _STD _Pass_fn(_Pred)); // sort any remainder
+    _STD _Nth_element_unchecked(_UFirst, _UNth, _ULast, _STD _Pass_fn(_Pred));
 }
 
 _EXPORT_STD template <class _RanIt>
