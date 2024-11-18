@@ -3641,6 +3641,55 @@ namespace ranges {
     _EXPORT_STD template <class _In1, class _In2>
     using swap_ranges_result = in_in_result<_In1, _In2>;
 
+    template <class _It1, class _Se1, class _It2, class _Se2>
+    _NODISCARD constexpr swap_ranges_result<_It1, _It2> _Swap_ranges_common(
+        _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2) {
+        _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+        _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+        _STL_INTERNAL_STATIC_ASSERT(indirectly_swappable<_It1, _It2>);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+        using _Elem1 = remove_reference_t<iter_reference_t<_It1>>;
+        using _Elem2 = remove_reference_t<iter_reference_t<_It2>>;
+        if constexpr (same_as<_Elem1, _Elem2> && _Is_trivially_ranges_swappable_v<_Elem1> //
+                      && contiguous_iterator<_It1> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> //
+                      && contiguous_iterator<_It2> && _Sized_or_unreachable_sentinel_for<_Se2, _It2>) {
+            if (!_STD is_constant_evaluated()) {
+                constexpr bool _Is_sized1 = sized_sentinel_for<_Se1, _It1>;
+                constexpr bool _Is_sized2 = sized_sentinel_for<_Se2, _It2>;
+                const auto _First1_addr   = _STD to_address(_First1);
+                const auto _First2_addr   = _STD to_address(_First2);
+                if constexpr (_Is_sized1 && _Is_sized2) {
+                    const size_t _Count =
+                        (_STD min)(static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
+                    const auto _Last1_addr = _First1_addr + _Count;
+                    ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
+                    return {_First1 + _Count, _First2 + _Count};
+                } else if constexpr (_Is_sized1) {
+                    const auto _Final1     = _RANGES next(_First1, _Last1);
+                    const auto _Last1_addr = _STD to_address(_Final1);
+                    ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
+                    return {_Final1, _First2 + (_Last1 - _First1)};
+                } else if constexpr (_Is_sized2) {
+                    const auto _Final2     = _RANGES next(_First2, _Last2);
+                    const auto _Last2_addr = _STD to_address(_Final2);
+                    ::__std_swap_ranges_trivially_swappable_noalias(_First2_addr, _Last2_addr, _First1_addr);
+                    return {_First1 + (_Last2 - _First2), _Final2};
+                } else {
+                    _STL_ASSERT(false, "Tried to swap_ranges with two unreachable sentinels");
+                }
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+        for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) {
+            _RANGES iter_swap(_First1, _First2);
+        }
+
+        return {_STD move(_First1), _STD move(_First2)};
+    }
     class _Swap_ranges_fn {
     public:
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2>
@@ -3650,7 +3699,7 @@ namespace ranges {
             _STD _Adl_verify_range(_First1, _Last1);
             _STD _Adl_verify_range(_First2, _Last2);
 
-            auto _UResult = _Swap_ranges_unchecked(_RANGES _Unwrap_iter<_Se1>(_STD move(_First1)),
+            auto _UResult = _RANGES _Swap_ranges_common(_RANGES _Unwrap_iter<_Se1>(_STD move(_First1)),
                 _RANGES _Unwrap_sent<_It1>(_STD move(_Last1)), _RANGES _Unwrap_iter<_Se2>(_STD move(_First2)),
                 _RANGES _Unwrap_sent<_It2>(_STD move(_Last2)));
 
@@ -3666,62 +3715,11 @@ namespace ranges {
             auto _First1 = _RANGES begin(_Range1);
             auto _First2 = _RANGES begin(_Range2);
 
-            auto _UResult = _Swap_ranges_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
+            auto _UResult = _RANGES _Swap_ranges_common(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
                 _Uend(_Range1), _RANGES _Unwrap_range_iter<_Rng2>(_STD move(_First2)), _Uend(_Range2));
 
             _STD _Seek_wrapped(_First1, _STD move(_UResult.in1));
             _STD _Seek_wrapped(_First2, _STD move(_UResult.in2));
-            return {_STD move(_First1), _STD move(_First2)};
-        }
-
-    private:
-        template <class _It1, class _Se1, class _It2, class _Se2>
-        _NODISCARD static constexpr swap_ranges_result<_It1, _It2> _Swap_ranges_unchecked(
-            _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2) {
-            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
-            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
-            _STL_INTERNAL_STATIC_ASSERT(indirectly_swappable<_It1, _It2>);
-
-#if _USE_STD_VECTOR_ALGORITHMS
-            using _Elem1 = remove_reference_t<iter_reference_t<_It1>>;
-            using _Elem2 = remove_reference_t<iter_reference_t<_It2>>;
-            if constexpr (same_as<_Elem1, _Elem2> && _Is_trivially_ranges_swappable_v<_Elem1> //
-                          && contiguous_iterator<_It1> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> //
-                          && contiguous_iterator<_It2> && _Sized_or_unreachable_sentinel_for<_Se2, _It2>) {
-                if (!_STD is_constant_evaluated()) {
-                    constexpr bool _Is_sized1 = sized_sentinel_for<_Se1, _It1>;
-                    constexpr bool _Is_sized2 = sized_sentinel_for<_Se2, _It2>;
-                    const auto _First1_addr   = _STD to_address(_First1);
-                    const auto _First2_addr   = _STD to_address(_First2);
-                    if constexpr (_Is_sized1 && _Is_sized2) {
-                        const size_t _Count =
-                            (_STD min)(static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
-                        const auto _Last1_addr = _First1_addr + _Count;
-                        ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
-                        return {_First1 + _Count, _First2 + _Count};
-                    } else if constexpr (_Is_sized1) {
-                        const auto _Final1     = _RANGES next(_First1, _Last1);
-                        const auto _Last1_addr = _STD to_address(_Final1);
-                        ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
-                        return {_Final1, _First2 + (_Last1 - _First1)};
-                    } else if constexpr (_Is_sized2) {
-                        const auto _Final2     = _RANGES next(_First2, _Last2);
-                        const auto _Last2_addr = _STD to_address(_Final2);
-                        ::__std_swap_ranges_trivially_swappable_noalias(_First2_addr, _Last2_addr, _First1_addr);
-                        return {_First1 + (_Last2 - _First2), _Final2};
-                    } else {
-                        _STL_ASSERT(false, "Tried to swap_ranges with two unreachable sentinels");
-                    }
-                }
-            }
-#endif // _USE_STD_VECTOR_ALGORITHMS
-
-            for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) {
-                _RANGES iter_swap(_First1, _First2);
-            }
-
             return {_STD move(_First1), _STD move(_First2)};
         }
     };
@@ -8466,14 +8464,12 @@ namespace ranges {
 
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
-    _NODISCARD constexpr subrange<_It> _Partition_by_median_guess_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
-        // Choose a pivot, partition [_First, _Last) into elements less than pivot, elements equal to pivot, and
+    _NODISCARD constexpr subrange<_It> _Partition_by_pivot_common(
+        _It _First, _It _Pfirst, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // Partition [_First, _Last) into elements less than pivot, elements equal to pivot, and
         // elements greater than pivot; return the equal partition as a subrange.
 
-        _It _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
-        _RANGES _Guess_median_common(_First, _Mid, _RANGES prev(_Last), _Pred, _Proj);
-        _It _Pfirst = _Mid;
-        _It _Plast  = _RANGES next(_Pfirst);
+        _It _Plast = _RANGES next(_Pfirst);
 
         while (_First < _Pfirst
                && !_STD invoke(_Pred, _STD invoke(_Proj, *_RANGES prev(_Pfirst)), _STD invoke(_Proj, *_Pfirst))
@@ -8538,6 +8534,17 @@ namespace ranges {
                 ++_Gfirst;
             }
         }
+    }
+
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    _NODISCARD constexpr subrange<_It> _Partition_by_median_guess_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // Choose a pivot, partition [_First, _Last) into elements less than pivot, elements equal to pivot, and
+        // elements greater than pivot; return the equal partition as a subrange.
+
+        _It _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
+        _RANGES _Guess_median_common(_First, _Mid, _RANGES prev(_Last), _Pred, _Proj);
+        return _RANGES _Partition_by_pivot_common(_First, _Mid, _Last, _Pred, _Proj);
     }
 
     class _Sort_fn {
@@ -9515,16 +9522,76 @@ namespace ranges {
 
     private:
         template <class _It, class _Pr, class _Pj>
-        static constexpr void _Nth_element_common(_It _First, _It _Nth, _It _Last, _Pr _Pred, _Pj _Proj) {
-            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+        static constexpr void _Swap_med5(_It _First, _It _Dest, _Pr _Pred, _Pj _Proj) {
+            _It _Guess = _First;
+            ++_Guess;
+            _It _Third = _Guess;
+            ++_Third;
+            _RANGES _Med3_common(_First, _Guess, _Third, _Pred, _Proj);
 
-            if (_Nth == _Last) {
-                return; // nothing to do
+            _It _Fourth = _Third;
+            ++_Fourth;
+            _It _Fifth = _Fourth;
+            ++_Fifth;
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Fifth), _STD invoke(_Proj, *_Fourth))) {
+                _RANGES iter_swap(_Fourth, _Fifth);
             }
 
-            while (_ISORT_MAX < _Last - _First) { // divide and conquer, ordering partition containing Nth
-                subrange<_It> _Mid = _RANGES _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+            // we have _First <= _Guess (second) <= _Third and _Fourth <= _Fifth
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Fifth), _STD invoke(_Proj, *_Guess))) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Fifth))) {
+                    _Guess = _STD move(_Fifth);
+                } else {
+                    _Guess = _STD move(_First);
+                }
+            } else if (_STD invoke(_Pred, _STD invoke(_Proj, *_Guess), _STD invoke(_Proj, *_Fourth))) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Third), _STD invoke(_Proj, *_Fourth))) {
+                    _Guess = _STD move(_Third);
+                } else {
+                    _Guess = _STD move(_Fourth);
+                }
+            }
+
+            _RANGES iter_swap(_Dest, _Guess);
+        }
+
+        template <class _It, class _Pr, class _Pj>
+        static constexpr void _Nth_element_median_of_medians_unchecked(
+            _It _First, _It _Nth, _It _Last, _Pr _Pred, _Pj _Proj) {
+
+            using _Diff = iter_difference_t<_It>;
+            for (;;) {
+                auto _Length = _Last - _First;
+                if (_Length <= _ISORT_MAX) {
+                    // sort any remainder
+                    _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
+                    return;
+                }
+
+                _Diff _MedianCount = _Length / static_cast<_Diff>(5);
+                auto _MedianLast   = _First + _MedianCount;
+                auto _Current      = _First;
+                for (auto _MedianDest = _First; _MedianDest != _MedianLast; ++_MedianDest) {
+                    _Swap_med5(_Current, _MedianDest, _Pred, _Proj);
+                    _Current += static_cast<_Diff>(5);
+                }
+
+                auto _MedianMid = _First + (_MedianCount >> 1);
+                _Nth_element_median_of_medians_unchecked(_First, _MedianMid, _MedianLast, _Pred, _Proj);
+
+                // the medians before and after _MedianMid are
+                // less equal and greater equal _MedianMid, respectively.
+                // move the ones after _MedianMid near _Last and then partition
+                // the elements between the medians at front and back by the pivot _MedianMid
+                _Diff _MedianGreaterCount = (_MedianLast - _MedianMid) - 1;
+                auto _MedianGreaterFirst  = _Last - _MedianGreaterCount;
+                (void) _RANGES _Swap_ranges_common(
+                    _MedianMid + static_cast<_Diff>(1), _STD move(_MedianLast), _MedianGreaterFirst, _Last);
+                auto _Middle = _First + ((_Last - _First) >> 1);
+                _RANGES iter_swap(_MedianMid, _Middle);
+
+                subrange<_It> _Mid = _RANGES _Partition_by_pivot_common(
+                    _STD move(_MedianMid), _STD move(_Middle), _STD move(_MedianGreaterFirst), _Pred, _Proj);
 
                 if (_Mid.end() <= _Nth) {
                     _First = _Mid.end();
@@ -9534,9 +9601,46 @@ namespace ranges {
                     _Last = _Mid.begin();
                 }
             }
+        }
 
-            // sort any remainder
-            _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
+        template <class _It, class _Pr, class _Pj>
+        static constexpr void _Nth_element_common(_It _First, _It _Nth, _It _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            if (_Nth == _Last) {
+                return; // nothing to do
+            }
+
+            auto _Ideal = _Last - _First;
+
+            for (;;) {
+                auto _Length = _Last - _First;
+                if (_Length <= _ISORT_MAX) {
+                    // sort any remainder
+                    _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
+                    return;
+                }
+
+                if (_Ideal < (_Length >> 1)) {
+                    _Nth_element_median_of_medians_unchecked(
+                        _STD move(_First), _STD move(_Nth), _STD move(_Last), _Pred, _Proj);
+                    return;
+                }
+
+                subrange<_It> _Mid = _RANGES _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+
+                if (_Mid.end() <= _Nth) {
+                    _First = _Mid.end();
+                } else if (_Mid.begin() <= _Nth) {
+                    return; // _Nth is in the subrange of elements equal to the pivot; done
+                } else {
+                    _Last = _Mid.begin();
+                }
+
+                // processed range should be reduced by 25 % per iteration on average
+                _Ideal = (_Ideal >> 1) + (_Ideal >> 2);
+            }
         }
     };
 
