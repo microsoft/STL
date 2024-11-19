@@ -668,7 +668,7 @@ constexpr size_t _Traits_find_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Trai
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _End = _Haystack + _Hay_size;
-            const auto _Ptr = _STD _Find_vectorized(_Haystack, _End, _Ch);
+            const auto _Ptr = _STD _Find_vectorized(_Haystack + _Start_at, _End, _Ch);
 
             if (_Ptr != _End) {
                 return static_cast<size_t>(_Ptr - _Haystack);
