@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <ranges>
+#include <string>
+#include <type_traits>
 #include <vector>
 
 #include "skewed_allocator.hpp"
