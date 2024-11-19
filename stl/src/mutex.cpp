@@ -147,7 +147,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) noexcept 
 }
 
 _CRTIMP2_PURE _Thrd_result __cdecl _Mtx_unlock(_Mtx_t mtx) noexcept { // unlock mutex
-    _THREAD_ASSERT(1 <= mtx->_Count, "unlock of unowned mutex");
+    _THREAD_ASSERT(mtx->_Count > 0, "unlock of unowned mutex");
     _THREAD_ASSERT(
         mtx->_Thread_id == static_cast<long>(GetCurrentThreadId()), "unlock of mutex not owned by the current thread");
 
