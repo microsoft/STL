@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <benchmark/benchmark.h>
+#include <cstddef>
 #include <random>
 #include <ranges>
 #include <vector>
@@ -75,7 +76,7 @@ enum class alg_type { std_fn, rng };
 
 template <alg_type Type>
 void bm_uniform(benchmark::State& state) {
-    vector<int> src(state.range());
+    vector<int> src(static_cast<size_t>(state.range()));
     mt19937 gen(84710);
     uniform_int_distribution<int> dis(1, 580);
     ranges::generate(src, [&] { return dis(gen); });
