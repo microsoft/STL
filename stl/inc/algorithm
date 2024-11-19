@@ -6568,7 +6568,9 @@ namespace ranges {
 
         if (_Count1 <= _Count2 && _Count1 <= _Capacity) { // buffer left range, then move parts
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{
-                _Temp_ptr, _RANGES _Uninitialized_move_unchecked(_First, _Mid, _Temp_ptr, _Temp_ptr + _Count1).out};
+                _Temp_ptr, _RANGES _Uninitialized_move_unchecked(
+                               _First, _Mid, _Temp_ptr, _Temp_ptr + static_cast<ptrdiff_t>(_Count1))
+                               .out};
             const _It _New_mid = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First)).out;
             _RANGES _Move_unchecked(_Backout._First, _Backout._Last, _New_mid);
             return _New_mid;
@@ -6576,7 +6578,9 @@ namespace ranges {
 
         if (_Count2 <= _Capacity) { // buffer right range, then move parts
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{
-                _Temp_ptr, _RANGES _Uninitialized_move_unchecked(_Mid, _Last, _Temp_ptr, _Temp_ptr + _Count2).out};
+                _Temp_ptr, _RANGES _Uninitialized_move_unchecked(
+                               _Mid, _Last, _Temp_ptr, _Temp_ptr + static_cast<ptrdiff_t>(_Count2))
+                               .out};
             _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
             return _RANGES _Move_unchecked(_Backout._First, _Backout._Last, _STD move(_First)).out;
         }
@@ -8856,8 +8860,10 @@ namespace ranges {
                 const iter_difference_t<_It> _Half_count_ceil = _Count - _Half_count;
                 const _It _Mid                                = _First + _Half_count_ceil;
                 if (_Half_count_ceil <= _Capacity) { // temp buffer big enough, sort each half using buffer
-                    _Buffered_merge_sort_common(_First, _Mid, _Half_count_ceil, _Temp_ptr, _Pred, _Proj);
-                    _Buffered_merge_sort_common(_Mid, _Last, _Half_count, _Temp_ptr, _Pred, _Proj);
+                    _Buffered_merge_sort_common(
+                        _First, _Mid, static_cast<ptrdiff_t>(_Half_count_ceil), _Temp_ptr, _Pred, _Proj);
+                    _Buffered_merge_sort_common(
+                        _Mid, _Last, static_cast<ptrdiff_t>(_Half_count), _Temp_ptr, _Pred, _Proj);
                 } else { // temp buffer not big enough, divide and conquer
                     _Stable_sort_common_buffered(_First, _Mid, _Half_count_ceil, _Temp_ptr, _Capacity, _Pred, _Proj);
                     _Stable_sort_common_buffered(_Mid, _Last, _Half_count, _Temp_ptr, _Capacity, _Pred, _Proj);
@@ -8869,24 +8875,24 @@ namespace ranges {
         }
 
         template <class _It, class _Pr, class _Pj>
-        static void _Buffered_merge_sort_common(const _It _First, const _It _Last, const iter_difference_t<_It> _Count,
+        static void _Buffered_merge_sort_common(const _It _First, const _It _Last, const ptrdiff_t _Count,
             iter_value_t<_It>* const _Temp_ptr, _Pr _Pred, _Pj _Proj) {
             // sort using temp buffer for merges
-            // pre: _Count <= capacity of buffer at _Temp_ptr; also allows safe narrowing to ptrdiff_t
+            // pre: _Count <= capacity of buffer at _Temp_ptr
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
             _STL_INTERNAL_CHECK(_Last - _First == _Count);
 
             _Insertion_sort_isort_max_chunks(_First, _Last, _Count, _Pred, _Proj);
             // merge adjacent pairs of chunks to and from temp buffer
-            if (_Count <= _Isort_max<_It>) {
+            if (_Count <= _ISORT_MAX) {
                 return;
             }
 
             // do the first merge, constructing elements in the temporary buffer
             _Uninitialized_chunked_merge_common(_First, _Last, _Temp_ptr, _Count, _Pred, _Proj);
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Temp_ptr, _Temp_ptr + _Count};
-            iter_difference_t<_It> _Chunk_size = _Isort_max<_It>;
+            ptrdiff_t _Chunk_size = _ISORT_MAX;
             for (;;) {
                 // unconditionally merge elements back into the source buffer
                 _Chunk_size <<= 1;
@@ -8902,14 +8908,13 @@ namespace ranges {
         }
 
         template <class _It, class _Pr, class _Pj>
-        static void _Insertion_sort_isort_max_chunks(
-            _It _First, _It _Last, iter_difference_t<_It> _Count, _Pr _Pred, _Pj _Proj) {
+        static void _Insertion_sort_isort_max_chunks(_It _First, _It _Last, ptrdiff_t _Count, _Pr _Pred, _Pj _Proj) {
             // insertion sort every chunk of distance _Isort_max<_It> in [_First, _Last)
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
             _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
 
-            for (; _Isort_max<_It> < _Count; _Count -= _Isort_max<_It>) { // sort chunks
+            for (; _ISORT_MAX < _Count; _Count -= _ISORT_MAX) { // sort chunks
                 _First = _RANGES _Insertion_sort_common(_First, _First + _Isort_max<_It>, _Pred, _Proj);
             }
 
@@ -8918,8 +8923,8 @@ namespace ranges {
         }
 
         template <class _It, class _Pr, class _Pj>
-        static void _Uninitialized_chunked_merge_common(_It _First, const _It _Last, iter_value_t<_It>* const _Dest,
-            iter_difference_t<_It> _Count, _Pr _Pred, _Pj _Proj) {
+        static void _Uninitialized_chunked_merge_common(
+            _It _First, const _It _Last, iter_value_t<_It>* const _Dest, ptrdiff_t _Count, _Pr _Pred, _Pj _Proj) {
             // move to uninitialized merging adjacent chunks of distance _Isort_max<_It>
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
@@ -8928,14 +8933,14 @@ namespace ranges {
 
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Dest};
             const auto _Backout_end = _Dest + _Count;
-            while (_Isort_max<_It> < _Count) {
-                _Count -= _Isort_max<_It>;
-                const auto _Chunk2 = (_STD min)(_Isort_max<_It>, _Count);
+            while (_ISORT_MAX < _Count) {
+                _Count -= _ISORT_MAX;
+                const auto _Chunk2 = (_STD min)(static_cast<ptrdiff_t>(_ISORT_MAX), _Count);
                 _Count -= _Chunk2;
 
                 auto _Mid1     = _First + _Isort_max<_It>;
-                auto _Last1    = _Mid1 + _Chunk2;
-                auto _Last2    = _Backout._Last + _Isort_max<_It> + _Chunk2;
+                auto _Last1    = _Mid1 + static_cast<iter_difference_t<_It>>(_Chunk2);
+                auto _Last2    = _Backout._Last + _ISORT_MAX + _Chunk2;
                 _Backout._Last = _Uninitialized_merge_move(
                     _STD move(_First), _STD move(_Mid1), _Last1, _Backout._Last, _Last2, _Pred, _Proj);
                 _First = _STD move(_Last1);
@@ -9015,8 +9020,8 @@ namespace ranges {
         }
 
         template <class _It1, class _It2, class _Pr, class _Pj>
-        static void _Chunked_merge_common(_It1 _First, const _It1 _Last, _It2 _Dest,
-            const iter_difference_t<_It1> _Chunk_size, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj _Proj) {
+        static void _Chunked_merge_common(_It1 _First, const _It1 _Last, _It2 _Dest, const ptrdiff_t _Chunk_size,
+            ptrdiff_t _Count, _Pr _Pred, _Pj _Proj) {
             // move merging adjacent chunks of distance _Chunk_size
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It1>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It1, _Pr, _Pj>);
@@ -9029,8 +9034,8 @@ namespace ranges {
                 const auto _Right_chunk_size = (_STD min)(_Chunk_size, _Count);
                 _Count -= _Right_chunk_size;
 
-                auto _Mid1  = _First + _Chunk_size;
-                auto _Last1 = _Mid1 + _Right_chunk_size;
+                auto _Mid1  = _First + static_cast<iter_difference_t<_It1>>(_Chunk_size);
+                auto _Last1 = _Mid1 + static_cast<iter_difference_t<_It1>>(_Right_chunk_size);
                 _Dest       = _Merge_move_common(_STD move(_First), _STD move(_Mid1), _Last1, _Dest, _Pred, _Proj);
                 _First      = _STD move(_Last1);
             }

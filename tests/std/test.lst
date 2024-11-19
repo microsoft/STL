@@ -221,6 +221,7 @@ tests\GH_002711_Zc_alignedNew-
 tests\GH_002760_syncstream_memory_leak
 tests\GH_002769_handle_deque_block_pointers
 tests\GH_002789_Hash_vec_Tidy
+tests\GH_002885_stable_sort_difference_type
 tests\GH_002989_nothrow_unwrappable
 tests\GH_002992_unwrappable_iter_sent_pairs
 tests\GH_003003_format_decimal_point
