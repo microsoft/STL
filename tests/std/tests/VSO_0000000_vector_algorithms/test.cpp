@@ -1156,11 +1156,11 @@ void test_basic_string_dis(mt19937_64& gen, D& dis) {
     for (;;) {
         input_needle.clear();
 
-        test_case_string_rfind_ch(input_haystack, static_cast<T>(dis(gen)));
         test_case_string_find_first_of(input_haystack, input_needle);
         test_case_string_find_last_of(input_haystack, input_needle);
         test_case_string_find_str(input_haystack, input_needle);
         test_case_string_rfind_str(input_haystack, input_needle);
+        test_case_string_rfind_ch(input_haystack, static_cast<T>(dis(gen)));
 
         for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
             input_needle.push_back(static_cast<T>(dis(gen)));
