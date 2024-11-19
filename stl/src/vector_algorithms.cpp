@@ -2597,7 +2597,7 @@ namespace {
                 int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
 
                 if constexpr (_Pred == _Find_one_predicate::_Not_equal) {
-                    _Bingo ^= 0xFFFF'FFFF;
+                    _Bingo ^= (1 << _Avx_tail_size) - 1;
                 }
 
                 if (_Bingo != 0) {
@@ -2686,7 +2686,7 @@ namespace {
                 int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
 
                 if constexpr (_Pred == _Find_one_predicate::_Not_equal) {
-                    _Bingo ^= 0xFFFF'FFFF;
+                    _Bingo ^= (1 << _Avx_tail_size) - 1;
                 }
 
                 if (_Bingo != 0) {
