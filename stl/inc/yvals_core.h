@@ -2016,8 +2016,8 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _CONST_CALL_OPERATOR const
 #endif // ^^^ !defined(__cpp_static_call_operator) ^^^
 
-#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize __restrict
-#define _RESTRICT __restrict__
+#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize MSVC __restrict; CUDA __restrict__ is not usable in C++
+#define _RESTRICT
 #else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
 #define _RESTRICT __restrict
 #endif // ^^^ !defined(__CUDACC__) ^^^
