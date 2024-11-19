@@ -26,10 +26,10 @@ void bm(benchmark::State& state) {
     const auto size = static_cast<size_t>(state.range(0));
     const auto pos  = static_cast<size_t>(state.range(1));
 
-    using Containter = conditional_t<Operation == Op::StringFind || Operation == Op::StringRFind,
+    using Container = conditional_t<Operation == Op::StringFind || Operation == Op::StringRFind,
         basic_string<T, char_traits<T>, Alloc<T>>, vector<T, Alloc<T>>>;
 
-    Containter a(size, T{'0'});
+    Container a(size, T{'0'});
 
     if (pos < size) {
         if constexpr (Operation == Op::StringRFind) {
