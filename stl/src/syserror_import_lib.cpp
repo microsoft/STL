@@ -40,13 +40,8 @@ extern "C" {
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars in buffer
     // __std_system_error_deallocate_message should be called even if 0 is returned
     // pre: *_Ptr_str == nullptr
-    DWORD _Lang_id;
-    const int _Ret = GetLocaleInfoEx(LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_ILANGUAGE | LOCALE_RETURN_NUMBER,
-        reinterpret_cast<LPWSTR>(&_Lang_id), sizeof(_Lang_id) / sizeof(wchar_t));
-    if (_Ret == 0) {
-        _Lang_id = 0;
-    }
     constexpr auto _Flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+    constexpr auto _Lang_id = 0x0409; // 1033 decimal, "en-US" locale
     const unsigned long _Chars =
         FormatMessageA(_Flags, nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
 
