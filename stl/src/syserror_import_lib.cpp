@@ -46,9 +46,9 @@ extern "C" {
     if (_Ret == 0) {
         _Lang_id = 0;
     }
+    constexpr auto _Flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
     const unsigned long _Chars =
-        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
+        FormatMessageA(_Flags, nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
 
     return _CSTD __std_get_string_size_without_trailing_whitespace(*_Ptr_str, _Chars);
 }
