@@ -40,8 +40,22 @@ extern "C" {
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars in buffer
     // __std_system_error_deallocate_message should be called even if 0 is returned
     // pre: *_Ptr_str == nullptr
+
+    // We always request US English for system_category() messages.
+    // This is consistent with generic_category(), which uses a table of US English strings in the STL.
+    // See GH-2451 and GH-3254 for the history here - we previously tried to localize system_category() messages,
+    // but attempting to use FormatMessageA's behavior for language ID 0 and attempting to use the system locale
+    // had various failure scenarios.
+    // Using US English (which is FormatMessageA's final fallback for language ID 0)
+    // is likely to succeed with whatever the end-user's system configuration is.
+    // In general, system_error messages aren't directly useful to end-users - they're meant for programmer-users.
+    // Of course, the programmer-user might not speak US English, but machine translation of the message
+    // (and the numeric value of the error code) should help them understand the error.
+    // The previous failure scenarios of "unknown error" or a string of question marks were completely unhelpful.
+
     constexpr auto _Flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
     constexpr auto _Lang_id = 0x0409; // 1033 decimal, "en-US" locale
+
     const unsigned long _Chars =
         FormatMessageA(_Flags, nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
 
