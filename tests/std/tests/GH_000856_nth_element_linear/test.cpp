@@ -10,7 +10,7 @@
 #endif // _HAS_CXX20
 
 // clang-format off
-constexpr int tunkey_ninther_adversary[] = {
+constexpr int tukey_ninther_adversary[] = {
     0, 6, 12, 18, 22, 28, 34, 38, 44, 50, 54, 60, 66, 70, 76, 82, 86, 92, 98, 102, 108,
     114, 118, 124, 130, 134, 140, 146, 150, 156, 162, 166, 172, 178, 182, 188, 194, 198,
     204, 210, 214, 220, 226, 230, 236, 242, 246, 252, 258, 262, 268, 274, 278, 284, 290,
@@ -87,8 +87,8 @@ void check_result(const vector<int>& expected, const vector<int>& computed, Diff
 }
 
 template <class Algorithm>
-void test_nth_element_tunkey_adversary(Algorithm alg) {
-    vector<int> src(begin(tunkey_ninther_adversary), end(tunkey_ninther_adversary));
+void test_nth_element_tukey_adversary(Algorithm alg) {
+    vector<int> src(begin(tukey_ninther_adversary), end(tukey_ninther_adversary));
 
     vector<int> sorted = src;
     sort(sorted.begin(), sorted.end());
@@ -107,11 +107,11 @@ void test_nth_element_tunkey_adversary(Algorithm alg) {
 }
 
 int main() {
-    test_nth_element_tunkey_adversary(
+    test_nth_element_tukey_adversary(
         [](vector<int>& v, vector<int>::difference_type nth) { nth_element(v.begin(), v.begin() + nth, v.end()); });
 
 #if _HAS_CXX20
-    test_nth_element_tunkey_adversary([](vector<int>& v, vector<int>::difference_type nth) {
+    test_nth_element_tukey_adversary([](vector<int>& v, vector<int>::difference_type nth) {
         ranges::nth_element(v.begin(), v.begin() + nth, v.end());
     });
 #endif

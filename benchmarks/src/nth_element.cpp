@@ -9,7 +9,7 @@
 #include <vector>
 
 // clang-format off
-constexpr int tunkey_ninther_adversary[] = {
+constexpr int tukey_ninther_adversary[] = {
     0, 6, 12, 18, 22, 28, 34, 38, 44, 50, 54, 60, 66, 70, 76, 82, 86, 92, 98, 102, 108,
     114, 118, 124, 130, 134, 140, 146, 150, 156, 162, 166, 172, 178, 182, 188, 194, 198,
     204, 210, 214, 220, 226, 230, 236, 242, 246, 252, 258, 262, 268, 274, 278, 284, 290,
@@ -97,8 +97,8 @@ void bm_uniform(benchmark::State& state) {
 }
 
 template <alg_type Type>
-void bm_tunkey_adversary(benchmark::State& state) {
-    vector<int> src(begin(tunkey_ninther_adversary), end(tunkey_ninther_adversary));
+void bm_tukey_adversary(benchmark::State& state) {
+    vector<int> src(begin(tukey_ninther_adversary), end(tukey_ninther_adversary));
 
     vector<int> v;
     v.reserve(src.size());
@@ -118,7 +118,7 @@ void bm_tunkey_adversary(benchmark::State& state) {
 BENCHMARK(bm_uniform<alg_type::std_fn>)->Arg(1024)->Arg(2048)->Arg(4096)->Arg(8192);
 BENCHMARK(bm_uniform<alg_type::rng>)->Arg(1024)->Arg(2048)->Arg(4096)->Arg(8192);
 
-BENCHMARK(bm_tunkey_adversary<alg_type::std_fn>);
-BENCHMARK(bm_tunkey_adversary<alg_type::rng>);
+BENCHMARK(bm_tukey_adversary<alg_type::std_fn>);
+BENCHMARK(bm_tukey_adversary<alg_type::rng>);
 
 BENCHMARK_MAIN();
