@@ -1219,6 +1219,7 @@ void test_basic_string_dis(mt19937_64& gen, D& dis) {
         }
 
         const auto input_not_ch = static_cast<T>(dis(gen));
+        input_haystack_not.clear();
         input_haystack_not.resize(input_haystack.size(), input_not_ch);
 
         test_case_string_find_not_ch(input_haystack_not, input_not_ch);
