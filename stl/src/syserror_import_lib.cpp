@@ -47,6 +47,19 @@ extern "C" {
 
     auto _Chars = FormatMessageA(_Flags, nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
 
+    if (_Chars == 0) {
+        LocalFree(*_Ptr_str);
+        *_Ptr_str = nullptr;
+
+        const int _Ret = GetLocaleInfoEx(LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_ILANGUAGE | LOCALE_RETURN_NUMBER,
+            reinterpret_cast<LPWSTR>(&_Lang_id), sizeof(_Lang_id) / sizeof(wchar_t));
+        if (_Ret == 0) {
+            _Lang_id = 0;
+        }
+
+        _Chars = FormatMessageA(_Flags, nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
+    }
+
     return _CSTD __std_get_string_size_without_trailing_whitespace(*_Ptr_str, _Chars);
 }
 
