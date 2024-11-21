@@ -1317,6 +1317,30 @@ public:
         return _Make_iterator_offset(_Whereoff);
     }
 
+    _CONSTEXPR20 void _Fill_reallocate(const size_type _Newsize, const _Ty& _Val) {
+        if (_Newsize > max_size()) {
+            _Xlength();
+        }
+
+        auto& _Al              = _Getal();
+        size_type _Newcapacity = _Calculate_growth(_Newsize);
+        const pointer _Newvec  = _Allocate_at_least_helper(_Al, _Newcapacity);
+
+        constexpr bool _Nothrow_construct =
+            conjunction_v<is_nothrow_copy_constructible<_Ty>, _Uses_default_construct<_Alloc, _Ty*, const _Ty&>>;
+
+        _Simple_reallocation_guard _Guard{_Al, _Newvec, _Newcapacity};
+
+        if constexpr (_Nothrow_construct) {
+            _Uninitialized_fill_n(_Newvec, _Newsize, _Val, _Al);
+        } else {
+            _Uninitialized_fill_n(_Newvec, _Newsize, _Val, _Al);
+        }
+
+        _Guard._New_begin = nullptr;
+        _Change_array(_Newvec, _Newsize, _Newcapacity);
+    }
+
     _CONSTEXPR20 void assign(_CRT_GUARDOVERFLOW const size_type _Newsize, const _Ty& _Val) {
         // assign _Newsize * _Val
         auto& _Al         = _Getal();
@@ -1341,15 +1365,7 @@ public:
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) { // reallocate
-            _Clear_and_reserve_geometric(_Newsize);
-            if constexpr (_Nothrow_construct) {
-                _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
-                _ASAN_VECTOR_CREATE;
-            } else {
-                _ASAN_VECTOR_CREATE_GUARD;
-                _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
-            }
-
+            _Fill_reallocate(_Newsize, _Val);
             return;
         }
 
@@ -1402,6 +1418,31 @@ private:
     }
 
     template <class _Iter>
+    _CONSTEXPR20 void _Assign_reallocate(_Iter _First, const size_type _Newsize) {
+        if (_Newsize > max_size()) {
+            _Xlength();
+        }
+
+        auto& _Al              = _Getal();
+        size_type _Newcapacity = _Calculate_growth(_Newsize);
+        const pointer _Newvec  = _Allocate_at_least_helper(_Al, _Newcapacity);
+
+        constexpr bool _Nothrow_construct = conjunction_v<is_nothrow_constructible<_Ty, _Iter_ref_t<_Iter>>,
+            _Uses_default_construct<_Alloc, _Ty*, _Iter_ref_t<_Iter>>>;
+
+        _Simple_reallocation_guard _Guard{_Al, _Newvec, _Newcapacity};
+
+        if constexpr (_Nothrow_construct) {
+            _Uninitialized_copy_n(_STD move(_First), _Newsize, _Newvec, _Al);
+        } else {
+            _Uninitialized_copy_n(_STD move(_First), _Newsize, _Newvec, _Al);
+        }
+
+        _Guard._New_begin = nullptr;
+        _Change_array(_Newvec, _Newsize, _Newcapacity);
+    }
+
+    template <class _Iter>
     _CONSTEXPR20 void _Assign_counted_range(_Iter _First, const size_type _Newsize) {
         // assign elements from counted range _First + [0, _Newsize)
         auto& _Al         = _Getal();
@@ -1416,14 +1457,7 @@ private:
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
-            _Clear_and_reserve_geometric(_Newsize);
-            if constexpr (_Nothrow_construct) {
-                _Mylast = _STD _Uninitialized_copy_n(_STD move(_First), _Newsize, _Myfirst, _Al);
-                _ASAN_VECTOR_CREATE;
-            } else {
-                _ASAN_VECTOR_CREATE_GUARD;
-                _Mylast = _STD _Uninitialized_copy_n(_STD move(_First), _Newsize, _Myfirst, _Al);
-            }
+            _Assign_reallocate(_STD move(_First), _Newsize);
             return;
         }
 
@@ -1672,37 +1706,6 @@ private:
         }
     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0 && defined(_ENABLE_STL_INTERNAL_CHECK)
-
-    _CONSTEXPR20 void _Clear_and_reserve_geometric(const size_type _Newsize) {
-        auto& _Al         = _Getal();
-        auto& _My_data    = _Mypair._Myval2;
-        pointer& _Myfirst = _My_data._Myfirst;
-        pointer& _Mylast  = _My_data._Mylast;
-        pointer& _Myend   = _My_data._Myend;
-
-#if _ITERATOR_DEBUG_LEVEL != 0 && defined(_ENABLE_STL_INTERNAL_CHECK)
-        _STL_INTERNAL_CHECK(_Newsize != 0);
-        _Check_all_orphaned();
-#endif // _ITERATOR_DEBUG_LEVEL != 0 && defined(_ENABLE_STL_INTERNAL_CHECK)
-
-        if (_Newsize > max_size()) {
-            _Xlength();
-        }
-
-        const size_type _Newcapacity = _Calculate_growth(_Newsize);
-
-        if (_Myfirst) { // destroy and deallocate old array
-            _Destroy_range(_Myfirst, _Mylast, _Al);
-            _ASAN_VECTOR_REMOVE;
-            _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
-
-            _Myfirst = nullptr;
-            _Mylast  = nullptr;
-            _Myend   = nullptr;
-        }
-
-        _Buy_raw(_Newcapacity);
-    }
 
 public:
     _CONSTEXPR20 void reserve(_CRT_GUARDOVERFLOW size_type _Newcapacity) {
@@ -2131,15 +2134,7 @@ private:
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
-            _Clear_and_reserve_geometric(_Newsize);
-            if constexpr (_Nothrow_construct) {
-                _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
-                _ASAN_VECTOR_CREATE;
-            } else {
-                _ASAN_VECTOR_CREATE_GUARD;
-                _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
-            }
-
+            _Assign_reallocate(make_move_iterator(_First), _Newsize);
             return;
         }
 
