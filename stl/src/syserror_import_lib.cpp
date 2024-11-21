@@ -49,21 +49,19 @@ extern "C" {
 
     constexpr auto _Flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
 
-    DWORD _Lang_id = 0x0409; // 1033 decimal, "en-US" locale
+    DWORD _Lang_id = 0;
+    DWORD _Chars   = 0;
 
-    auto _Chars = FormatMessageA(_Flags, nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
-
-    if (_Chars == 0) {
-        // If FormatMessageA() failed for any reason, cleanup and restore this function's precondition.
-        LocalFree(*_Ptr_str);
-        *_Ptr_str = nullptr;
-
-        // Attempt to get the system locale's language ID.
-        const int _Ret = GetLocaleInfoEx(LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_ILANGUAGE | LOCALE_RETURN_NUMBER,
-            reinterpret_cast<LPWSTR>(&_Lang_id), sizeof(_Lang_id) / sizeof(wchar_t));
-
-        // If we can't get the system locale, the final fallback is FormatMessageA()'s behavior for language ID 0.
-        if (_Ret == 0) {
+    for (int _Attempt = 0; _Attempt < 3 && _Chars == 0; ++_Attempt) {
+        if (_Attempt == 0) {
+            _Lang_id = 0x0409; // 1033 decimal, "en-US" locale
+        } else if (_Attempt == 1) {
+            const int _Ret = GetLocaleInfoEx(LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_ILANGUAGE | LOCALE_RETURN_NUMBER,
+                reinterpret_cast<LPWSTR>(&_Lang_id), sizeof(_Lang_id) / sizeof(wchar_t));
+            if (_Ret == 0) {
+                continue; // If we can't get the system locale's language ID, skip this attempt
+            }
+        } else {
             _Lang_id = 0;
         }
 
