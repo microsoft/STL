@@ -1332,9 +1332,9 @@ public:
         _Simple_reallocation_guard _Guard{_Al, _Newvec, _Newcapacity};
 
         if constexpr (_Nothrow_construct) {
-            _Uninitialized_fill_n(_Newvec, _Newsize, _Val, _Al);
+            _STD _Uninitialized_fill_n(_Newvec, _Newsize, _Val, _Al);
         } else {
-            _Uninitialized_fill_n(_Newvec, _Newsize, _Val, _Al);
+            _STD _Uninitialized_fill_n(_Newvec, _Newsize, _Val, _Al);
         }
 
         _Guard._New_begin = nullptr;
@@ -1433,9 +1433,9 @@ private:
         _Simple_reallocation_guard _Guard{_Al, _Newvec, _Newcapacity};
 
         if constexpr (_Nothrow_construct) {
-            _Uninitialized_copy_n(_STD move(_First), _Newsize, _Newvec, _Al);
+            _STD _Uninitialized_copy_n(_STD move(_First), _Newsize, _Newvec, _Al);
         } else {
-            _Uninitialized_copy_n(_STD move(_First), _Newsize, _Newvec, _Al);
+            _STD _Uninitialized_copy_n(_STD move(_First), _Newsize, _Newvec, _Al);
         }
 
         _Guard._New_begin = nullptr;
