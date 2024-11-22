@@ -77,8 +77,37 @@ _NODISCARD basic_string<typename _Traits::char_type, _Traits, _Alloc> _Convert_w
 }
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
 namespace chrono {
+    _EXPORT_STD struct system_clock { // wraps GetSystemTimePreciseAsFileTime
+        using rep                       = long long;
+        using period                    = ratio<1, 10'000'000>; // 100 nanoseconds
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<system_clock>;
+        static constexpr bool is_steady = false;
+
+        _NODISCARD static time_point now() noexcept { // get current time
+            return time_point(duration(_Xtime_get_ticks()));
+        }
+
+        _NODISCARD static __time64_t to_time_t(const time_point& _Time) noexcept { // convert to __time64_t
+            return duration_cast<seconds>(_Time.time_since_epoch()).count();
+        }
+
+        _NODISCARD static time_point from_time_t(__time64_t _Tm) noexcept { // convert from __time64_t
+            return time_point{seconds{_Tm}};
+        }
+    };
+
+#if _HAS_CXX20
+    _EXPORT_STD template <class _Duration>
+    using sys_time                = time_point<system_clock, _Duration>;
+    _EXPORT_STD using sys_seconds = sys_time<seconds>;
+    _EXPORT_STD using sys_days    = sys_time<days>;
+#endif // _HAS_CXX20
+
+    _EXPORT_STD using high_resolution_clock = steady_clock;
+
+#if _HAS_CXX20
     // [time.duration.io]
 
 #define _IF_PERIOD_RETURN_SUFFIX_ELSE(_TYPE, _SUFFIX) \
@@ -2758,8 +2787,10 @@ namespace chrono {
             return gps_time<common_type_t<_Duration, seconds>>{_Time.time_since_epoch()} + _Gps_epoch_adjust;
         }
     };
+#endif // _HAS_CXX20
 } // namespace chrono
 
+#if _HAS_CXX20
 namespace filesystem {
     struct _File_time_clock;
 } // namespace filesystem
@@ -6119,19 +6150,84 @@ namespace chrono {
         return _STD move(_Os).str();
     }
 } // namespace chrono
+#endif // _HAS_CXX20
 
 inline namespace literals {
     inline namespace chrono_literals {
+        _EXPORT_STD _NODISCARD constexpr _CHRONO hours operator""h(unsigned long long _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO hours(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<3600>> operator""h(long double _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO duration<double, ratio<3600>>(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO minutes operator""min(unsigned long long _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO minutes(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<60>> operator""min(long double _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO duration<double, ratio<60>>(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO seconds operator""s(unsigned long long _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO seconds(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double> operator""s(long double _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO duration<double>(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO milliseconds operator""ms(unsigned long long _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO milliseconds(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, milli> operator""ms(long double _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO duration<double, milli>(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO microseconds operator""us(unsigned long long _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO microseconds(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, micro> operator""us(long double _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO duration<double, micro>(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO nanoseconds operator""ns(unsigned long long _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO nanoseconds(_Val);
+        }
+
+        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, nano> operator""ns(long double _Val) noexcept
+        /* strengthened */ {
+            return _CHRONO duration<double, nano>(_Val);
+        }
+
+#if _HAS_CXX20
         _EXPORT_STD _NODISCARD constexpr _CHRONO day operator""d(unsigned long long _Day) noexcept {
             return _CHRONO day{static_cast<unsigned int>(_Day)};
         }
         _EXPORT_STD _NODISCARD constexpr _CHRONO year operator""y(unsigned long long _Year) noexcept {
             return _CHRONO year{static_cast<int>(_Year)};
         }
+#endif // _HAS_CXX20
     } // namespace chrono_literals
 } // namespace literals
-#endif // _HAS_CXX20
 
+namespace chrono {
+    _EXPORT_STD using namespace literals::chrono_literals;
+} // namespace chrono
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
