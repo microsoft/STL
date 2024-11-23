@@ -967,6 +967,8 @@ public:
 #if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     void assign_range(_Rng&& _Range) {
+        static_assert(assignable_from<_Ty&, _RANGES range_reference_t<_Rng>>,
+            "Elements must be assignable from the range's reference type (N4993 [sequence.reqmts]/60).");
         _Assign_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
 #endif // _HAS_CXX23

@@ -1488,6 +1488,8 @@ public:
 #if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr void assign_range(_Rng&& _Range) {
+        static_assert(assignable_from<_Ty&, _RANGES range_reference_t<_Rng>>,
+            "Elements must be assignable from the range's reference type (N4993 [sequence.reqmts]/60).");
         if constexpr (_RANGES sized_range<_Rng> || _RANGES forward_range<_Rng>) {
             const auto _Length = _To_unsigned_like(_RANGES distance(_Range));
             const auto _Count  = _Convert_size<size_type>(_Length);
@@ -3329,6 +3331,8 @@ public:
 
     template <_Container_compatible_range<bool> _Rng>
     constexpr void assign_range(_Rng&& _Range) {
+        static_assert(assignable_from<bool&, _RANGES range_reference_t<_Rng>>,
+            "Elements must be assignable from the range's reference type (N4993 [sequence.reqmts]/60).");
         clear();
         if constexpr (_RANGES forward_range<_Rng> || _RANGES sized_range<_Rng>) {
             const auto _Length = _To_unsigned_like(_RANGES distance(_Range));

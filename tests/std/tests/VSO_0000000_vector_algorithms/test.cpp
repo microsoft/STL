@@ -1109,6 +1109,41 @@ void test_case_string_find_str(const basic_string<T>& input_haystack, const basi
     assert(expected == actual);
 }
 
+template <class T>
+void test_case_string_rfind_str(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
+    ptrdiff_t expected;
+    if (input_needle.empty()) {
+        expected = static_cast<ptrdiff_t>(input_haystack.size());
+    } else {
+        const auto expected_iter = last_known_good_find_end(
+            input_haystack.begin(), input_haystack.end(), input_needle.begin(), input_needle.end());
+
+        if (expected_iter != input_haystack.end()) {
+            expected = expected_iter - input_haystack.begin();
+        } else {
+            expected = -1;
+        }
+    }
+    const auto actual = static_cast<ptrdiff_t>(input_haystack.rfind(input_needle));
+    assert(expected == actual);
+}
+
+template <class T>
+void test_case_string_rfind_ch(const basic_string<T>& input_haystack, const T value) {
+    ptrdiff_t expected;
+
+    const auto expected_iter = last_known_good_find_last(input_haystack.begin(), input_haystack.end(), value);
+
+    if (expected_iter != input_haystack.end()) {
+        expected = expected_iter - input_haystack.begin();
+    } else {
+        expected = -1;
+    }
+
+    const auto actual = static_cast<ptrdiff_t>(input_haystack.rfind(value));
+    assert(expected == actual);
+}
+
 template <class T, class D>
 void test_basic_string_dis(mt19937_64& gen, D& dis) {
     basic_string<T> input_haystack;
@@ -1124,12 +1159,15 @@ void test_basic_string_dis(mt19937_64& gen, D& dis) {
         test_case_string_find_first_of(input_haystack, input_needle);
         test_case_string_find_last_of(input_haystack, input_needle);
         test_case_string_find_str(input_haystack, input_needle);
+        test_case_string_rfind_str(input_haystack, input_needle);
+        test_case_string_rfind_ch(input_haystack, static_cast<T>(dis(gen)));
 
         for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
             input_needle.push_back(static_cast<T>(dis(gen)));
             test_case_string_find_first_of(input_haystack, input_needle);
             test_case_string_find_last_of(input_haystack, input_needle);
             test_case_string_find_str(input_haystack, input_needle);
+            test_case_string_rfind_str(input_haystack, input_needle);
 
             // For large needles the chance of a match is low, so test a guaranteed match
             if (input_haystack.size() > input_needle.size() * 2) {
@@ -1139,6 +1177,7 @@ void test_basic_string_dis(mt19937_64& gen, D& dis) {
                 temp.assign(overwritten_first, overwritten_first + static_cast<ptrdiff_t>(input_needle.size()));
                 copy(input_needle.begin(), input_needle.end(), overwritten_first);
                 test_case_string_find_str(input_haystack, input_needle);
+                test_case_string_rfind_str(input_haystack, input_needle);
                 copy(temp.begin(), temp.end(), overwritten_first);
             }
         }

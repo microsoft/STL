@@ -3567,6 +3567,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
             { // record current position
                 _Node_capture* _Node                 = static_cast<_Node_capture*>(_Nx);
                 _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
+                // CodeQL [SM02323] Comparing unchanging unsigned int _Node->_Idx to decreasing size_t _Idx is safe.
                 for (size_t _Idx = _Tgt_state._Grp_valid.size(); _Node->_Idx < _Idx;) {
                     _Tgt_state._Grp_valid[--_Idx] = false;
                 }
