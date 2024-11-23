@@ -3105,7 +3105,7 @@ namespace {
         }
 
         template <class _Ty>
-        bool _Use_bitmap_sse(const size_t _Count1, const size_t _Count2) noexcept {
+        bool _Use_bitmap_scalar(const size_t _Count1, const size_t _Count2) noexcept {
             if constexpr (sizeof(_Ty) == 1) {
                 if (_Count2 <= 32) {
                     return false;
@@ -3128,8 +3128,37 @@ namespace {
                 } else {
                     return _Count1 > 8;
                 }
+            } else if constexpr (sizeof(_Ty) == 4) {
+                if (_Count2 <= 32) {
+                    return false;
+                } else if (_Count2 <= 112) {
+                    return _Count1 > 16;
+                } else {
+                    return _Count1 > 8;
+                }
+            } else if constexpr (sizeof(_Ty) == 8) {
+                if (_Count2 <= 16) {
+                    return false;
+                } else if (_Count2 <= 32) {
+                    return _Count1 > 16;
+                } else if (_Count2 <= 112) {
+                    return _Count1 > 8;
+                } else {
+                    return _Count1 > 4;
+                }
             } else {
                 static_assert(false, "unexpected size");
+            }
+        }
+
+        enum class _Strategy { _No_bitmap, _Scalar_bitmap, _Vector_bitmap };
+
+        template <class _Ty>
+        _Strategy _Pick_strategy(const size_t _Count1, const size_t _Count2, const bool _Use_avx2_) noexcept {
+            if (_Use_avx2_ && _Count1 > 48) {
+                return _Use_bitmap_avx<_Ty>(_Count1, _Count2) ? _Strategy::_Vector_bitmap : _Strategy::_No_bitmap;
+            } else {
+                return _Use_bitmap_scalar<_Ty>(_Count1, _Count2) ? _Strategy::_Scalar_bitmap : _Strategy::_No_bitmap;
             }
         }
 
@@ -3715,15 +3744,15 @@ namespace {
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
             using namespace __std_find_meow_of_bitmap;
 
-            if (_Use_avx2()) {
-                if (_Use_bitmap_avx<_Ty>(_Count2, _Count1)
-                    && _Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+            const _Strategy _Strat = _Pick_strategy<_Ty>(_Count1, _Count2, _Use_avx2());
+
+            if (_Strat == _Strategy::_Vector_bitmap) {
+                if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
                     return _Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
                 }
-            } else {
-                if (_Use_bitmap_sse<_Ty>(_Count2, _Count1)
-                    && _Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
-                    _Scalar_table_t _Table = {};
+            } else if (_Strat == _Strategy::_Scalar_bitmap) {
+                if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                    alignas(32) _Scalar_table_t _Table = {};
                     _Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
                     return _Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
                 }
@@ -3742,9 +3771,18 @@ namespace {
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
             using namespace __std_find_meow_of_bitmap;
 
-            if (_Use_bitmap_avx<_Ty>(_Count2, _Count1)
-                && _Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
-                return _Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
+            const auto _Strat = _Pick_strategy<_Ty>(_Count1, _Count2, true);
+
+            if (_Strat == _Strategy::_Vector_bitmap) {
+                if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                    return _Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
+                }
+            } else if (_Strat == _Strategy::_Scalar_bitmap) {
+                if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                    alignas(32) _Scalar_table_t _Table = {};
+                    _Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
+                    return _Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
+                }
             }
 
             const void* const _Last1   = static_cast<const _Ty*>(_First1) + _Count1;
@@ -3938,39 +3976,38 @@ namespace {
 #endif // !_M_ARM64EC
 
         template <class _Ty>
-        size_t _Dispatch_pos(const void* const _Haystack, const size_t _Haystack_length, const void* const _Needle,
-            const size_t _Needle_length) noexcept {
+        size_t _Dispatch_pos(
+            const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
             using namespace __std_find_meow_of_bitmap;
 
 #ifndef _M_ARM64EC
             if (_Use_sse42()) {
-                if (_Use_avx2()) {
-                    if (_Use_bitmap_avx<_Ty>(_Haystack_length, _Needle_length)
-                        && _Can_fit_256_bits_sse(static_cast<const _Ty*>(_Needle), _Needle_length)) {
-                        return _Impl_last_avx<_Ty>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+                const auto _Strat = _Pick_strategy<_Ty>(_Count1, _Count2, _Use_avx2());
+
+                if (_Strat == _Strategy::_Vector_bitmap) {
+                    if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                        return _Impl_last_avx<_Ty>(_First1, _Count1, _First2, _Count2);
                     }
-                } else {
-                    if (_Use_bitmap_sse<_Ty>(_Haystack_length, _Needle_length)
-                        && _Can_fit_256_bits_sse(static_cast<const _Ty*>(_Needle), _Needle_length)) {
-                        _Scalar_table_t _Table = {};
-                        _Build_scalar_table_no_check<_Ty>(_Needle, _Needle_length, _Table);
-                        return _Impl_last_scalar<_Ty>(_Haystack, _Haystack_length, _Table);
+                } else if (_Strat == _Strategy::_Scalar_bitmap) {
+                    if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                        alignas(32) _Scalar_table_t _Table = {};
+                        _Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
+                        return _Impl_last_scalar<_Ty>(_First1, _Count1, _Table);
                     }
                 }
 
-                return _Impl<_Ty>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+                return _Impl<_Ty>(_First1, _Count1, _First2, _Count2);
             } else
 #endif // !_M_ARM64EC
             {
-                _Scalar_table_t _Table = {};
-                if (_Build_scalar_table<_Ty>(_Needle, _Needle_length, _Table)) {
-                    return _Impl_last_scalar<_Ty>(_Haystack, _Haystack_length, _Table);
+                alignas(32) _Scalar_table_t _Table = {};
+                if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
+                    return _Impl_last_scalar<_Ty>(_First1, _Count1, _Table);
                 }
 
-                return _Fallback<_Ty>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+                return _Fallback<_Ty>(_First1, _Count1, _First2, _Count2);
             }
         }
-
     } // namespace __std_find_last_of
 
     template <class _Traits, class _Ty>
