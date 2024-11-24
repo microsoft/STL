@@ -434,18 +434,35 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
     return __vcp_Copyfile(_Source, _Target, /* _Fail_if_exists = */ false);
 }
 
-_Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_fs_get_file_id(_Out_ __std_fs_file_id* const _Id, _In_z_ const wchar_t* const _Path) noexcept {
+_NODISCARD __std_fs_equivalent_result __stdcall __std_fs_equivalent(
+    _In_z_ const wchar_t* _Left_path, _In_z_ const wchar_t* _Right_path) noexcept {
+    // See GH-3571: File IDs are only guaranteed to be unique and stable while handles remain open
     __std_win_error _Last_error;
-    const _STD _Fs_file _Handle(
-        _Path, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics, &_Last_error);
+    const _STD _Fs_file _Left_handle(
+        _Left_path, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics, &_Last_error);
     if (_Last_error != __std_win_error::_Success) {
-        return _Last_error;
+        return {false, _Last_error};
     }
 
-    static_assert(sizeof(FILE_ID_INFO) == sizeof(__std_fs_file_id));
-    static_assert(alignof(FILE_ID_INFO) == alignof(__std_fs_file_id));
-    return _Get_file_id_by_handle(_Handle._Get(), reinterpret_cast<FILE_ID_INFO*>(_Id));
+    FILE_ID_INFO _Left_info;
+    _Last_error = _Get_file_id_by_handle(_Left_handle._Get(), &_Left_info);
+    if (_Last_error != __std_win_error::_Success) {
+        return {false, _Last_error};
+    }
+
+    const _STD _Fs_file _Right_handle(
+        _Right_path, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics, &_Last_error);
+    if (_Last_error != __std_win_error::_Success) {
+        return {false, _Last_error};
+    }
+
+    FILE_ID_INFO _Right_info;
+    _Last_error = _Get_file_id_by_handle(_Right_handle._Get(), &_Right_info);
+    if (_Last_error != __std_win_error::_Success) {
+        return {false, _Last_error};
+    }
+
+    return {_CSTD memcmp(&_Left_info, &_Right_info, sizeof(FILE_ID_INFO)) == 0, _Last_error};
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_directory_symbolic_link(
