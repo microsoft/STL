@@ -2444,9 +2444,6 @@ private:
     using _Mycont          = typename _Mybase::_Mycont;
     using _Difference_type = typename _Mybase::_Difference_type;
 
-    // TRANSITION, ABI: non-trivial constructor
-    _CONSTEXPR20 _Vb_reference() = default;
-
 public:
     _CONSTEXPR20 _Vb_reference(const _Vb_reference&) = default;
 
