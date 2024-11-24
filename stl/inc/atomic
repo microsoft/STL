@@ -2123,6 +2123,7 @@ public:
 
     using _Base::_Base;
 
+    template <class _Uty = _Ty, enable_if_t<is_default_constructible_v<_Uty>, int> = 0>
     constexpr atomic() noexcept(is_nothrow_default_constructible_v<_Ty>) : _Base() {}
 
     atomic(const atomic&)                     = delete;
