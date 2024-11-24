@@ -9377,28 +9377,28 @@ _CONSTEXPR20 void _Nth_element_median_of_medians(_RanIt _First, _RanIt _Nth, _Ra
             return;
         }
 
-        _Diff _MedianCount = _Length / static_cast<_Diff>(5);
-        auto _MedianLast   = _First + _MedianCount;
-        auto _Current      = _First;
-        for (auto _MedianDest = _First; _MedianDest != _MedianLast; ++_MedianDest) {
-            _STD _Swap_med5_unchecked(_Current, _MedianDest, _Pred);
+        _Diff _Median_count = _Length / static_cast<_Diff>(5);
+        auto _Median_last   = _First + _Median_count;
+        auto _Current       = _First;
+        for (auto _Median_dest = _First; _Median_dest != _Median_last; ++_Median_dest) {
+            _STD _Swap_med5_unchecked(_Current, _Median_dest, _Pred);
             _Current += static_cast<_Diff>(5);
         }
 
-        auto _MedianMid = _First + (_MedianCount >> 1);
-        _STD _Nth_element_median_of_medians(_First, _MedianMid, _MedianLast, _Pred);
+        auto _Median_mid = _First + (_Median_count >> 1);
+        _STD _Nth_element_median_of_medians(_First, _Median_mid, _Median_last, _Pred);
 
-        // the medians before and after _MedianMid are
-        // less equal and greater equal _MedianMid, respectively.
-        // move the ones after _MedianMid near _Last and then partition
-        // the elements between the medians at front and back by the pivot _MedianMid
-        _Diff _MedianGreaterCount = (_MedianLast - _MedianMid) - 1;
-        auto _MedianGreaterFirst  = _Last - _MedianGreaterCount;
-        _STD _Swap_ranges_unchecked(_MedianMid + static_cast<_Diff>(1), _MedianLast, _MedianGreaterFirst);
+        // the medians before and after _Median_mid are
+        // less equal and greater equal _Median_mid, respectively.
+        // move the ones after _Median_mid near _Last and then partition
+        // the elements between the medians at front and back by the pivot _Median_mid
+        _Diff _Median_greater_count = (_Median_last - _Median_mid) - 1;
+        auto _Median_greater_first  = _Last - _Median_greater_count;
+        _STD _Swap_ranges_unchecked(_Median_mid + static_cast<_Diff>(1), _Median_last, _Median_greater_first);
         auto _Middle = _First + ((_Last - _First) >> 1);
-        swap(*_MedianMid, *_Middle);
+        swap(*_Median_mid, *_Middle);
 
-        auto _Mid = _STD _Partition_by_pivot_unchecked(_MedianMid, _Middle, _MedianGreaterFirst, _Pred);
+        auto _Mid = _STD _Partition_by_pivot_unchecked(_Median_mid, _Middle, _Median_greater_first, _Pred);
 
         if (_Mid.second <= _Nth) {
             _First = _Mid.second;
@@ -9568,30 +9568,30 @@ namespace ranges {
                     return;
                 }
 
-                _Diff _MedianCount = _Length / static_cast<_Diff>(5);
-                auto _MedianLast   = _First + _MedianCount;
-                auto _Current      = _First;
-                for (auto _MedianDest = _First; _MedianDest != _MedianLast; ++_MedianDest) {
-                    _Swap_med5(_Current, _MedianDest, _Pred, _Proj);
+                _Diff _Median_count = _Length / static_cast<_Diff>(5);
+                auto _Median_last   = _First + _Median_count;
+                auto _Current       = _First;
+                for (auto _Median_dest = _First; _Median_dest != _Median_last; ++_Median_dest) {
+                    _Swap_med5(_Current, _Median_dest, _Pred, _Proj);
                     _Current += static_cast<_Diff>(5);
                 }
 
-                auto _MedianMid = _First + (_MedianCount >> 1);
-                _Nth_element_median_of_medians_unchecked(_First, _MedianMid, _MedianLast, _Pred, _Proj);
+                auto _Median_mid = _First + (_Median_count >> 1);
+                _Nth_element_median_of_medians_unchecked(_First, _Median_mid, _Median_last, _Pred, _Proj);
 
-                // the medians before and after _MedianMid are
-                // less equal and greater equal _MedianMid, respectively.
-                // move the ones after _MedianMid near _Last and then partition
-                // the elements between the medians at front and back by the pivot _MedianMid
-                _Diff _MedianGreaterCount = (_MedianLast - _MedianMid) - 1;
-                auto _MedianGreaterFirst  = _Last - _MedianGreaterCount;
+                // the medians before and after _Median_mid are
+                // less equal and greater equal _Median_mid, respectively.
+                // move the ones after _Median_mid near _Last and then partition
+                // the elements between the medians at front and back by the pivot _Median_mid
+                _Diff _Median_greater_count = (_Median_last - _Median_mid) - 1;
+                auto _Median_greater_first  = _Last - _Median_greater_count;
                 (void) _RANGES _Swap_ranges_common(
-                    _MedianMid + static_cast<_Diff>(1), _STD move(_MedianLast), _MedianGreaterFirst, _Last);
+                    _Median_mid + static_cast<_Diff>(1), _STD move(_Median_last), _Median_greater_first, _Last);
                 auto _Middle = _First + ((_Last - _First) >> 1);
-                _RANGES iter_swap(_MedianMid, _Middle);
+                _RANGES iter_swap(_Median_mid, _Middle);
 
                 subrange<_It> _Mid = _RANGES _Partition_by_pivot_common(
-                    _STD move(_MedianMid), _STD move(_Middle), _STD move(_MedianGreaterFirst), _Pred, _Proj);
+                    _STD move(_Median_mid), _STD move(_Middle), _STD move(_Median_greater_first), _Pred, _Proj);
 
                 if (_Mid.end() <= _Nth) {
                     _First = _Mid.end();
