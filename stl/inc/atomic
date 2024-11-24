@@ -2804,9 +2804,17 @@ _EXPORT_STD struct atomic_flag { // flag with test-and-set semantics
 #endif // _HAS_CXX20
 
 #if 1 // TRANSITION, ABI
-    atomic<long> _Storage;
+    atomic<long> _Storage
+#if !_HAS_CXX20 && defined(__EDG__)
+        {0L}
+#endif // ^^^ workaround ^^^
+    ;
 #else // ^^^ don't break ABI / break ABI vvv
-    atomic<bool> _Storage;
+    atomic<bool> _Storage
+#if !_HAS_CXX20 && defined(__EDG__)
+        {false}
+#endif // ^^^ workaround ^^^
+    ;
 #endif // ^^^ break ABI ^^^
 };
 
