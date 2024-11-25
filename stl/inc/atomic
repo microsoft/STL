@@ -586,7 +586,7 @@ struct _Atomic_storage {
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal> _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal&> _Value) noexcept
         : _Storage(_Value) {
         // non-atomically initialize this atomic
     }
@@ -719,7 +719,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal> _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal&> _Value) noexcept
         : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
@@ -822,7 +822,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal> _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal&> _Value) noexcept
         : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
@@ -924,7 +924,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal> _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal&> _Value) noexcept
         : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
@@ -1026,7 +1026,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal> _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal&> _Value) noexcept
         : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
@@ -1148,7 +1148,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty&>, _Ty&, const _TVal> _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty&>, _Ty&, const _TVal&> _Value) noexcept
         : _Storage{_Value} {} // non-atomically initialize this atomic
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
@@ -2121,10 +2121,10 @@ public:
 
     using value_type = _Ty;
 
-    using _Base::_Base;
-
     template <class _Uty = _Ty, enable_if_t<is_default_constructible_v<_Uty>, int> = 0>
     constexpr atomic() noexcept(is_nothrow_default_constructible_v<_Ty>) : _Base() {}
+
+    /* implicit */ constexpr atomic(const _Ty _Value) noexcept : _Base(_Value) {}
 
     atomic(const atomic&)                     = delete;
     atomic& operator=(const atomic&)          = delete;
@@ -2804,17 +2804,9 @@ _EXPORT_STD struct atomic_flag { // flag with test-and-set semantics
 #endif // _HAS_CXX20
 
 #if 1 // TRANSITION, ABI
-    atomic<long> _Storage
-#if !_HAS_CXX20 && defined(__EDG__)
-        {0L}
-#endif // ^^^ workaround ^^^
-    ;
+    atomic<long> _Storage;
 #else // ^^^ don't break ABI / break ABI vvv
-    atomic<bool> _Storage
-#if !_HAS_CXX20 && defined(__EDG__)
-        {false}
-#endif // ^^^ workaround ^^^
-    ;
+    atomic<bool> _Storage;
 #endif // ^^^ break ABI ^^^
 };
 
