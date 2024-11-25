@@ -1616,7 +1616,7 @@ _NODISCARD bool operator>=(const forward_list<_Ty, _Alloc>& _Left, const forward
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
 forward_list<_Ty, _Alloc>::size_type erase(forward_list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
-    return _Cont.remove_if([&](_Ty& _Elem) -> bool { return _Elem == _Val; });
+    return _Cont.remove_if([&](const _Ty& _Elem) -> bool { return _Elem == _Val; });
 }
 
 _EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
