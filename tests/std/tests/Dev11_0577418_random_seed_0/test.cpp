@@ -24,7 +24,7 @@ int main() {
     // Also test VSO-214595 "subtract_with_carry_engine::seed should accept result_type"
     subtract_with_carry_engine<unsigned long long, 64, 10, 24> ull_swc;
     ull_swc.seed(0x12341234'00000000ULL);
-    assert(run_10k(ull_swc) == 0x1DD6C263'C41EEED0ULL); // value changed by LWG-3809
+    assert(run_10k(ull_swc) == 0x01316AEA'3646F686ULL); // libstdc++ and libc++ agree (boost 1.60.0 disagrees)
 
     assert(minstd_rand0(0) == minstd_rand0()); // N4964 [rand.eng.lcong]/5
     assert(mt19937(0) != mt19937()); // N4964 [rand.eng.mers]/6
