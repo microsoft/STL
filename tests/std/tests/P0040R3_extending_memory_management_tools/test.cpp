@@ -222,11 +222,11 @@ private:
     };
 
 public:
-    using value_type        = pinned;
-    using difference_type   = int;
-    using reference         = pinned;
-    using pointer           = arrow_proxy;
     using iterator_category = std::input_iterator_tag;
+    using difference_type   = int;
+    using value_type        = pinned;
+    using pointer           = arrow_proxy;
+    using reference         = pinned;
 
     explicit pinned_ioterator(int n) : n_{n} {}
 
@@ -261,7 +261,6 @@ private:
 };
 
 struct copy_elision_dest {
-public:
     copy_elision_dest() = default;
     explicit copy_elision_dest(pinned x) : n_{x.n_} {}
 
