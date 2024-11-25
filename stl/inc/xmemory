@@ -1601,6 +1601,11 @@ void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
     }
 }
 
+template <class _Ty, class _InIt>
+void _Construct_in_place_by_deref(_Ty& _Val, const _InIt& _Iter) {
+    ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter);
+}
+
 template <class _NoThrowFwdIt>
 struct _NODISCARD _Uninitialized_backout {
     // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
@@ -1625,6 +1630,29 @@ struct _NODISCARD _Uninitialized_backout {
         ++_Last;
     }
 
+    template <class _InIt>
+    _CONSTEXPR20 void _Emplace_back_deref(const _InIt& _Iter) {
+        // construct a new element at *_Last from the result of dereferencing _Iter and increment.
+        if constexpr (is_reference_v<decltype(*_Iter)>) {
+            _STD _Construct_in_place(*_Last, *_Iter);
+        } else {
+            _STD _Construct_in_place_by_deref(*_Last, _Iter);
+        }
+        ++_Last;
+    }
+
+    template <class _InIt>
+    _CONSTEXPR20 void _Emplace_back_deref_move(const _InIt& _Iter) {
+        // construct a new element at *_Last from the result of dereferencing _Iter and increment,
+        // with lvalue cast to xvalue if necessary for uninitialized_move(_n).
+        if constexpr (is_reference_v<decltype(*_Iter)>) {
+            _STD _Construct_in_place(*_Last, _STD move(*_Iter));
+        } else {
+            _STD _Construct_in_place_by_deref(*_Last, _Iter);
+        }
+        ++_Last;
+    }
+
     constexpr _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
@@ -1644,7 +1672,7 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _In
     }
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
     for (; _First != _Last; ++_First) {
-        _Backout._Emplace_back(_STD move(*_First));
+        _Backout._Emplace_back_deref_move(_First);
     }
 
     return _Backout._Release();
@@ -1918,7 +1946,7 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _In
 
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
     for (; _First != _Last; ++_First) {
-        _Backout._Emplace_back(*_First);
+        _Backout._Emplace_back_deref(_First);
     }
 
     return _Backout._Release();

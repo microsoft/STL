@@ -141,7 +141,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
 
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
-            _Backout._Emplace_back(*_UFirst);
+            _Backout._Emplace_back_deref(_UFirst);
         }
 
         _UDest = _Backout._Release();
@@ -294,7 +294,7 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
 
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
-            _Backout._Emplace_back(_STD move(*_UFirst));
+            _Backout._Emplace_back_deref_move(_UFirst);
         }
 
         _UDest = _Backout._Release();

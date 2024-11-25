@@ -137,11 +137,6 @@ template <>
 struct is_execution_policy<execution::unsequenced_policy> : true_type {};
 #endif // _HAS_CXX20
 
-template <class _Ty, class _FwdIt>
-void _Construct_in_place_by_deref(_Ty& _Val, const _FwdIt& _Iter) {
-    ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter);
-}
-
 template <class _Ty, class _UnaryOp, class _FwdIt>
 void _Construct_in_place_by_transform_deref(_Ty& _Val, _UnaryOp _Transform_op, const _FwdIt& _Iter) {
     ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(_Transform_op(*_Iter));

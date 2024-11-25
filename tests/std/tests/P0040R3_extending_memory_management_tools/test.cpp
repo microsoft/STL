@@ -196,6 +196,120 @@ void test_destroy_n() {
     assert(g_alive == 0);
 }
 
+struct copy_elision_dest;
+
+class pinned {
+public:
+    explicit pinned(int n) : n_{n} {}
+
+    pinned(const pinned&)            = delete;
+    pinned& operator=(const pinned&) = delete;
+
+private:
+    friend copy_elision_dest;
+
+    int n_;
+};
+
+class pinned_ioterator {
+private:
+    struct arrow_proxy {
+        pinned val_;
+
+        pinned* operator->() {
+            return &val_;
+        }
+    };
+
+public:
+    using value_type        = pinned;
+    using difference_type   = int;
+    using reference         = pinned;
+    using pointer           = arrow_proxy;
+    using iterator_category = std::input_iterator_tag;
+
+    explicit pinned_ioterator(int n) : n_{n} {}
+
+    pinned operator*() const {
+        return pinned{n_};
+    }
+    pinned_ioterator& operator++() {
+        ++n_;
+        return *this;
+    }
+    pinned_ioterator operator++(int) {
+        auto old = *this;
+        ++*this;
+        return old;
+    }
+
+    arrow_proxy operator->() const {
+        return arrow_proxy{pinned{n_}};
+    }
+
+    friend bool operator==(pinned_ioterator i, pinned_ioterator j) {
+        return i.n_ == j.n_;
+    }
+#if !_HAS_CXX20
+    friend bool operator!=(pinned_ioterator i, pinned_ioterator j) {
+        return !(i == j);
+    }
+#endif // !_HAS_CXX20
+
+private:
+    int n_;
+};
+
+struct copy_elision_dest {
+public:
+    copy_elision_dest() = default;
+    explicit copy_elision_dest(pinned x) : n_{x.n_} {}
+
+    int n_;
+};
+
+// std::uninitialized_copy/_n are required to perform guaranteed copy elision since C++17.
+void test_guaranteed_copy_elision_uninitialized_copy() {
+    constexpr int len = 42;
+
+    copy_elision_dest d[len];
+    uninitialized_copy(pinned_ioterator{0}, pinned_ioterator{len}, d);
+    for (int i = 0; i != len; ++i) {
+        assert(d[i].n_ == i);
+    }
+}
+
+void test_guaranteed_copy_elision_uninitialized_copy_n() {
+    constexpr int len = 42;
+
+    copy_elision_dest d[len];
+    uninitialized_copy_n(pinned_ioterator{0}, len, d);
+    for (int i = 0; i != len; ++i) {
+        assert(d[i].n_ == i);
+    }
+}
+
+// Also test LWG-3918 "std::uninitialized_move/_n and guaranteed copy elision".
+void test_guaranteed_copy_elision_uninitialized_move() {
+    constexpr int len = 42;
+
+    copy_elision_dest d[len];
+    uninitialized_move(pinned_ioterator{0}, pinned_ioterator{len}, d);
+    for (int i = 0; i != len; ++i) {
+        assert(d[i].n_ == i);
+    }
+}
+
+void test_guaranteed_copy_elision_uninitialized_move_n() {
+    constexpr int len = 42;
+
+    copy_elision_dest d[len];
+    uninitialized_move_n(pinned_ioterator{0}, len, d);
+    for (int i = 0; i != len; ++i) {
+        assert(d[i].n_ == i);
+    }
+}
+
 int main() {
     test_uninitialized_move();
     test_uninitialized_move_n();
@@ -206,4 +320,9 @@ int main() {
     test_destroy_at();
     test_destroy();
     test_destroy_n();
+
+    test_guaranteed_copy_elision_uninitialized_copy();
+    test_guaranteed_copy_elision_uninitialized_copy_n();
+    test_guaranteed_copy_elision_uninitialized_move();
+    test_guaranteed_copy_elision_uninitialized_move_n();
 }
