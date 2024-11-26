@@ -265,7 +265,6 @@ private:
 };
 
 struct copy_elision_dest {
-    copy_elision_dest() = default;
     explicit copy_elision_dest(pinned x) : n_{x.n_} {}
 
     int n_;
@@ -275,42 +274,46 @@ struct copy_elision_dest {
 void test_guaranteed_copy_elision_uninitialized_copy() {
     constexpr int len = 42;
 
-    copy_elision_dest d[len];
-    uninitialized_copy(pinned_ioterator{0}, pinned_ioterator{len}, d);
+    uninitialized_storage<copy_elision_dest, len> us;
+    uninitialized_copy(pinned_ioterator{0}, pinned_ioterator{len}, us.begin());
     for (int i = 0; i != len; ++i) {
-        assert(d[i].n_ == i);
+        assert(us.begin()[i].n_ == i);
     }
+    destroy(us.begin(), us.end());
 }
 
 void test_guaranteed_copy_elision_uninitialized_copy_n() {
     constexpr int len = 42;
 
-    copy_elision_dest d[len];
-    uninitialized_copy_n(pinned_ioterator{0}, len, d);
+    uninitialized_storage<copy_elision_dest, len> us;
+    uninitialized_copy_n(pinned_ioterator{0}, len, us.begin());
     for (int i = 0; i != len; ++i) {
-        assert(d[i].n_ == i);
+        assert(us.begin()[i].n_ == i);
     }
+    destroy(us.begin(), us.end());
 }
 
 // Also test LWG-3918 "std::uninitialized_move/_n and guaranteed copy elision".
 void test_guaranteed_copy_elision_uninitialized_move() {
     constexpr int len = 42;
 
-    copy_elision_dest d[len];
-    uninitialized_move(pinned_ioterator{0}, pinned_ioterator{len}, d);
+    uninitialized_storage<copy_elision_dest, len> us;
+    uninitialized_move(pinned_ioterator{0}, pinned_ioterator{len}, us.begin());
     for (int i = 0; i != len; ++i) {
-        assert(d[i].n_ == i);
+        assert(us.begin()[i].n_ == i);
     }
+    destroy(us.begin(), us.end());
 }
 
 void test_guaranteed_copy_elision_uninitialized_move_n() {
     constexpr int len = 42;
 
-    copy_elision_dest d[len];
-    uninitialized_move_n(pinned_ioterator{0}, len, d);
+    uninitialized_storage<copy_elision_dest, len> us;
+    uninitialized_move_n(pinned_ioterator{0}, len, us.begin());
     for (int i = 0; i != len; ++i) {
-        assert(d[i].n_ == i);
+        assert(us.begin()[i].n_ == i);
     }
+    destroy(us.begin(), us.end());
 }
 
 int main() {
