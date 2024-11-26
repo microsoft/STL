@@ -1602,7 +1602,8 @@ void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
 }
 
 template <class _Ty, class _InIt>
-void _Construct_in_place_by_deref(_Ty& _Val, const _InIt& _Iter) {
+void _Construct_in_place_by_deref(_Ty& _Val, const _InIt& _Iter)
+    noexcept(noexcept(::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter))) {
     ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter);
 }
 
