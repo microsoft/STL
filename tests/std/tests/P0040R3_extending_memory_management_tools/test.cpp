@@ -226,7 +226,7 @@ private:
     };
 
 public:
-    using iterator_category = std::input_iterator_tag;
+    using iterator_category = input_iterator_tag;
     using difference_type   = int;
     using value_type        = pinned;
     using pointer           = arrow_proxy;
