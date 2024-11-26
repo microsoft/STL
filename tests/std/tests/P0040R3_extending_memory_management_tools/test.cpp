@@ -58,6 +58,10 @@ template <typename T, size_t Count>
 struct uninitialized_storage {
     alignas(T) char storage[sizeof(T) * Count];
 
+    uninitialized_storage() {
+        fill(std::begin(storage), std::end(storage), fillChar);
+    }
+
     T* begin() {
         return &reinterpret_cast<T&>(storage);
     }
