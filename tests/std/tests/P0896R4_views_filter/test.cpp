@@ -348,7 +348,7 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
     IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
 
-// LWG-4112 "possibly-const-range should prefer returning const R&"
+// LWG-4112 "has-arrow should require operator->() to be const-qualified"
 
 template <class T>
 concept CanArrow = requires(T&& t) { forward<T>(t).operator->(); };

@@ -689,7 +689,7 @@ constexpr bool test_lwg3791() {
     return true;
 }
 
-// LWG-4112 "possibly-const-range should prefer returning const R&"
+// LWG-4112 "has-arrow should require operator->() to be const-qualified"
 
 template <class T>
 concept CanArrow = requires(T&& t) { forward<T>(t).operator->(); };
