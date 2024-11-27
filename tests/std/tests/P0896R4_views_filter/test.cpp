@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <forward_list>
 #include <ranges>
 #include <span>
@@ -346,6 +347,53 @@ template <class Category, test::Common IsCommon, bool is_random = derived_from<C
 using move_only_view = test::range<Category, const int, test::Sized{is_random}, test::CanDifference{is_random},
     IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
+
+// LWG-4112 "possibly-const-range should prefer returning const R&"
+
+template <class T>
+concept CanArrow = requires(T&& t) { forward<T>(t).operator->(); };
+
+enum class arrow_status : bool { bad, good };
+
+template <arrow_status S>
+struct arrowed_iterator {
+    using value_type      = int;
+    using difference_type = ptrdiff_t;
+
+    int& operator*() const {
+        return *p_;
+    }
+
+    int* operator->()
+        requires (S == arrow_status::bad)
+    {
+        return p_;
+    }
+    int* operator->() const
+        requires (S == arrow_status::good)
+    {
+        return p_;
+    }
+
+    arrowed_iterator& operator++() {
+        ++p_;
+        return *this;
+    }
+    arrowed_iterator operator++(int) {
+        auto old = *this;
+        ++*this;
+        return old;
+    }
+
+    friend bool operator==(arrowed_iterator, arrowed_iterator) = default;
+
+    int* p_;
+};
+
+static_assert(CanArrow<ranges::iterator_t<decltype(ranges::subrange<arrowed_iterator<arrow_status::good>>{} //
+                                                   | views::filter(is_even))>>);
+static_assert(!CanArrow<ranges::iterator_t<decltype(ranges::subrange<arrowed_iterator<arrow_status::bad>>{} //
+                                                    | views::filter(is_even))>>);
 
 int main() {
     // Validate views

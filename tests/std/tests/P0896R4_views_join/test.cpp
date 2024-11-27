@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cstddef>
 #include <forward_list>
 #include <list>
 #include <ranges>
@@ -686,6 +687,60 @@ constexpr bool test_lwg3791() {
     instantiator::call<inner, outer>();
 
     return true;
+}
+
+// LWG-4112 "possibly-const-range should prefer returning const R&"
+
+template <class T>
+concept CanArrow = requires(T&& t) { forward<T>(t).operator->(); };
+
+enum class arrow_status : bool { bad, good };
+
+template <arrow_status S>
+struct arrowed_iterator {
+    using value_type      = int;
+    using difference_type = ptrdiff_t;
+
+    int& operator*() const {
+        return *p_;
+    }
+
+    int* operator->()
+        requires (S == arrow_status::bad)
+    {
+        return p_;
+    }
+    int* operator->() const
+        requires (S == arrow_status::good)
+    {
+        return p_;
+    }
+
+    arrowed_iterator& operator++() {
+        ++p_;
+        return *this;
+    }
+    arrowed_iterator operator++(int) {
+        auto old = *this;
+        ++*this;
+        return old;
+    }
+
+    friend bool operator==(arrowed_iterator, arrowed_iterator) = default;
+
+    int* p_;
+};
+
+void test_lwg_4112() { // COMPILE-ONLY
+    using good_inner_range  = ranges::subrange<arrowed_iterator<arrow_status::good>>;
+    using good_nested_range = span<const good_inner_range>;
+    using good_joined_range = decltype(good_nested_range{} | views::join);
+    static_assert(CanArrow<ranges::iterator_t<good_joined_range>>);
+
+    using bad_inner_range  = ranges::subrange<arrowed_iterator<arrow_status::bad>>;
+    using bad_nested_range = span<const bad_inner_range>;
+    using bad_joined_range = decltype(bad_nested_range{} | views::join);
+    static_assert(!CanArrow<ranges::iterator_t<bad_joined_range>>);
 }
 
 int main() {
