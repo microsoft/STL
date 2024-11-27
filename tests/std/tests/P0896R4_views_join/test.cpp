@@ -698,37 +698,17 @@ enum class arrow_status : bool { bad, good };
 
 template <arrow_status S>
 struct arrowed_iterator {
-    using value_type      = int;
     using difference_type = ptrdiff_t;
+    using value_type      = int;
 
-    int& operator*() const {
-        return *p_;
-    }
-
+    int& operator*() const;
     int* operator->()
-        requires (S == arrow_status::bad)
-    {
-        return p_;
-    }
+        requires (S == arrow_status::bad);
     int* operator->() const
-        requires (S == arrow_status::good)
-    {
-        return p_;
-    }
-
-    arrowed_iterator& operator++() {
-        ++p_;
-        return *this;
-    }
-    arrowed_iterator operator++(int) {
-        auto old = *this;
-        ++*this;
-        return old;
-    }
-
-    friend bool operator==(arrowed_iterator, arrowed_iterator) = default;
-
-    int* p_;
+        requires (S == arrow_status::good);
+    arrowed_iterator& operator++();
+    arrowed_iterator operator++(int);
+    friend bool operator==(arrowed_iterator, arrowed_iterator);
 };
 
 void test_lwg_4112() { // COMPILE-ONLY
