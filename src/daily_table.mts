@@ -1920,9 +1920,10 @@ export const daily_table: DailyRow[] = [
     { date: '2024-11-19', merged: 40.89, pr: 10, cxx20: null, cxx23: 6, cxx26: 49, lwg: 2, issue: 408, bug: 139, sum_age: 27.32, } as DailyRow,
     { date: '2024-11-20', merged: 38.94, pr: 10, cxx20: null, cxx23: 6, cxx26: 49, lwg: 2, issue: 407, bug: 139, sum_age: 3.73, } as DailyRow,
     { date: '2024-11-21', merged: 37.48, pr: 11, cxx20: null, cxx23: 6, cxx26: 49, lwg: 2, issue: 407, bug: 139, sum_age: 4.08, } as DailyRow,
-    { date: '2024-11-22', merged: 39.03, pr: 8, cxx20: null, cxx23: 6, cxx26: 49, lwg: 2, issue: 408, bug: 139, sum_age: 4.15, } as DailyRow,
-    { date: '2024-11-23', merged: 37.58, pr: 8, cxx20: null, cxx23: 6, cxx26: 49, lwg: 19, issue: 410, bug: 139, sum_age: 4.42, } as DailyRow,
-    { date: '2024-11-24', merged: 36.13, pr: 13, cxx20: null, cxx23: 6, cxx26: 49, lwg: 20, issue: 410, bug: 139, sum_age: 4.75, } as DailyRow,
-    { date: '2024-11-25', merged: 34.69, pr: 14, cxx20: null, cxx23: 6, cxx26: 62, lwg: 19, issue: 409, bug: 139, sum_age: 5.21, } as DailyRow,
+    { date: '2024-11-22', merged: 39.03, pr: 8, cxx20: null, cxx23: 6, cxx26: 49, lwg: 2, issue: 408, bug: 140, sum_age: 4.15, } as DailyRow,
+    { date: '2024-11-23', merged: 37.58, pr: 8, cxx20: null, cxx23: 6, cxx26: 49, lwg: 19, issue: 410, bug: 140, sum_age: 4.42, } as DailyRow,
+    { date: '2024-11-24', merged: 36.13, pr: 13, cxx20: null, cxx23: 6, cxx26: 49, lwg: 20, issue: 410, bug: 140, sum_age: 4.75, } as DailyRow,
+    { date: '2024-11-25', merged: 34.69, pr: 14, cxx20: null, cxx23: 6, cxx26: 62, lwg: 19, issue: 409, bug: 140, sum_age: 5.21, } as DailyRow,
+    { date: '2024-11-26', merged: 33.39, pr: 16, cxx20: null, cxx23: 6, cxx26: 62, lwg: 19, issue: 410, bug: 140, sum_age: 5.71, } as DailyRow,
 ];
 // Generated file - DO NOT EDIT manually!
