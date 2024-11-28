@@ -580,14 +580,14 @@ template <class _Ty, size_t /* = ... */>
 struct _Atomic_storage {
     // Provides operations common to all specializations of std::atomic, load, store, exchange, and CAS.
     // Locking version used when hardware has no atomic operations for sizeof(_Ty).
+    _STL_INTERNAL_STATIC_ASSERT(!is_rvalue_reference_v<_Ty>);
 
     using _TVal  = remove_reference_t<_Ty>;
     using _Guard = _Atomic_lock_guard<typename _Atomic_storage_types<_Ty>::_Spinlock>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal&> _Value) noexcept
-        : _Storage(_Value) {
+    /* implicit */ constexpr _Atomic_storage(const _Ty& _Value) noexcept : _Storage(_Value) {
         // non-atomically initialize this atomic
     }
 
@@ -714,13 +714,13 @@ public:
 
 template <class _Ty>
 struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
+    _STL_INTERNAL_STATIC_ASSERT(!is_rvalue_reference_v<_Ty>);
 
     using _TVal = remove_reference_t<_Ty>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal&> _Value) noexcept
-        : _Storage{_Value} {
+    /* implicit */ constexpr _Atomic_storage(const _Ty& _Value) noexcept : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
 
@@ -817,13 +817,13 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
 template <class _Ty>
 struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
+    _STL_INTERNAL_STATIC_ASSERT(!is_rvalue_reference_v<_Ty>);
 
     using _TVal = remove_reference_t<_Ty>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal&> _Value) noexcept
-        : _Storage{_Value} {
+    /* implicit */ constexpr _Atomic_storage(const _Ty& _Value) noexcept : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
 
@@ -919,13 +919,13 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
 template <class _Ty>
 struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
+    _STL_INTERNAL_STATIC_ASSERT(!is_rvalue_reference_v<_Ty>);
 
     using _TVal = remove_reference_t<_Ty>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal&> _Value) noexcept
-        : _Storage{_Value} {
+    /* implicit */ constexpr _Atomic_storage(const _Ty& _Value) noexcept : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
 
@@ -1021,13 +1021,13 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
 template <class _Ty>
 struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
+    _STL_INTERNAL_STATIC_ASSERT(!is_rvalue_reference_v<_Ty>);
 
     using _TVal = remove_reference_t<_Ty>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal&> _Value) noexcept
-        : _Storage{_Value} {
+    /* implicit */ constexpr _Atomic_storage(const _Ty& _Value) noexcept : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
 
@@ -1143,12 +1143,15 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #ifdef _WIN64
 template <class _Ty>
 struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
+    _STL_INTERNAL_STATIC_ASSERT(!is_rvalue_reference_v<_Ty>);
+
     // TRANSITION, ABI: replace '_Ty&' with '_Ty' in this specialization
     using _TVal = remove_reference_t<_Ty&>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty&>, _Ty&, const _TVal&> _Value) noexcept
+    // TRANSITION, ABI: replace _this_ occurrence of '_Ty&' with 'const _Ty&'
+    /* implicit */ constexpr _Atomic_storage(_Ty& _Value) noexcept
         : _Storage{_Value} {} // non-atomically initialize this atomic
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
