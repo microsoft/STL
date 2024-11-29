@@ -160,9 +160,10 @@ public:
         }
     }
 
-    void should_throw(const std::string& pattern, const std::regex_constants::error_type expectedCode) {
+    void should_throw(const std::string& pattern, const std::regex_constants::error_type expectedCode,
+        const std::regex_constants::syntax_option_type syntax = std::regex_constants::ECMAScript) {
         try {
-            const std::regex r(pattern);
+            const std::regex r(pattern, syntax);
             printf(R"(regex r("%s") succeeded (which is bad).)"
                    "\n",
                 pattern.c_str());
