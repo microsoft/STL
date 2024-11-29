@@ -6,6 +6,7 @@
 #include <future>
 #include <memory>
 #include <type_traits>
+#include <valarray>
 #if _HAS_CXX17
 #include <optional>
 #endif // _HAS_CXX17
@@ -143,6 +144,25 @@ void test_promise() {
 
     promise<validator&>{};
     promise<validator&>{allocator_arg, adl_proof_allocator<unsigned char>{}};
+}
+
+void test_valarray() {
+    using validator_class = holder<validator>;
+
+    valarray<validator_class> valarr1(42);
+
+    validator_class a[1]{};
+    valarray<validator_class> valarr2(a, 1);
+    valarr2.resize(172, a[0]);
+
+    valarray<validator_class> valarr3(a[0], 1);
+    valarr3 = valarr2[slice{0, 1, 1}];
+
+    auto valarr4 = valarr1;
+    valarr4      = valarr1;
+
+    auto valarr5 = static_cast<valarray<validator_class>&&>(valarr2);
+    valarr5      = static_cast<valarray<validator_class>&&>(valarr3);
 }
 
 #if _HAS_CXX17

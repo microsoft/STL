@@ -80,7 +80,7 @@ public:
     }
 
     valarray(const _Ty& _Val, size_t _Count) { // construct with _Count * _Val
-        _Grow(_Count, &_Val);
+        _Grow(_Count, _STD addressof(_Val));
     }
 
     valarray(const _Ty* _Ptr, size_t _Count) { // construct with [_Ptr, _Ptr + _Count)
@@ -162,7 +162,7 @@ public:
 
     void resize(size_t _Newsize, _Ty _Val) { // determine new length, filling with _Val elements
         _Tidy_deallocate();
-        _Grow(_Newsize, &_Val, 0);
+        _Grow(_Newsize, _STD addressof(_Val), 0);
     }
 
     valarray& operator=(const slice_array<_Ty>& _Slicearr); // defined below
@@ -538,7 +538,7 @@ private:
             _Myptr = _Allocate_for_op_delete<_Ty>(_Newsize);
             _Tidy_deallocate_guard<valarray> _Guard{this};
             for (size_t _Idx = 0; _Idx < _Newsize; ++_Idx) {
-                _Construct_in_place(_Myptr[_Idx]);
+                _STD _Construct_in_place(_Myptr[_Idx]);
             }
 
             _Guard._Target = nullptr;
@@ -552,7 +552,7 @@ private:
             _Myptr = _Allocate_for_op_delete<_Ty>(_Newsize);
             _Tidy_deallocate_guard<valarray> _Guard{this};
             for (size_t _Idx = 0; _Idx < _Newsize; ++_Idx, _Ptr += _Inc) {
-                _Construct_in_place(_Myptr[_Idx], *_Ptr);
+                _STD _Construct_in_place(_Myptr[_Idx], *_Ptr);
             }
 
             _Guard._Target = nullptr;
@@ -562,7 +562,7 @@ private:
 
     void _Tidy_deallocate() noexcept {
         if (_Myptr) { // destroy elements
-            _Destroy_range(_Myptr, _Myptr + _Mysize);
+            _STD _Destroy_range(_Myptr, _Myptr + _Mysize);
 #ifdef __cpp_aligned_new
             constexpr bool _Extended_alignment = alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
             if constexpr (_Extended_alignment) {
@@ -2028,7 +2028,7 @@ private:
 template <class _Ty>
 valarray<_Ty>& valarray<_Ty>::operator=(const slice_array<_Ty>& _Slicearr) {
     _Tidy_deallocate();
-    _Grow(_Slicearr.size(), &_Slicearr._Data(_Slicearr.start()), _Slicearr.stride());
+    _Grow(_Slicearr.size(), _STD addressof(_Slicearr._Data(_Slicearr.start())), _Slicearr.stride());
     return *this;
 }
 
