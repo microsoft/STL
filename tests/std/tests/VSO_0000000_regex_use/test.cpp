@@ -582,6 +582,19 @@ void test_gh_993() {
     }
 }
 
+void test_gh_4995() {
+    // GH-4995: R"([\d-e])" should be rejected
+    g_regexTester.should_throw("[\\d-e]", error_range);
+    g_regexTester.should_throw("[e-\\d]", error_range);
+    g_regexTester.should_throw("[\\w-\\d]", error_range);
+    g_regexTester.should_throw("[[:digit:]-e]", error_range);
+    g_regexTester.should_throw("[e-[:digit:]]", error_range);
+    g_regexTester.should_throw("[[:alpha:]-[:digit:]]", error_range);
+    g_regexTester.should_throw("[[=a=]-e]", error_range, ECMAScript | regex::collate);
+    g_regexTester.should_throw("[e-[=a=]]", error_range, ECMAScript | regex::collate);
+    g_regexTester.should_throw("[[=a=]-[=b=]]", error_range, ECMAScript | regex::collate);
+}
+
 void test_gh_5058() {
     // GH-5058 "<regex>: Small cleanups" changed some default constructors to be defaulted.
     // Verify that <regex> types are still const-default-constructible (N4993 [dcl.init.general]/8).
@@ -656,6 +669,7 @@ int main() {
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
     test_gh_993();
+    test_gh_4995();
     test_gh_5058();
 
     return g_regexTester.result();
