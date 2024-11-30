@@ -282,7 +282,7 @@ constexpr void weekday_test() {
     assert(Sunday - Tuesday == days{5});
     assert(Wednesday - Thursday == days{6});
 
-    // GH-5153 "<chrono>: Undefined behaviour in weekday::weekday(const sys_days&)."
+    // GH-5153 "<chrono>: integer overflow in weekday::weekday(sys_days::max())"
     assert(weekday{sys_days::max()} == weekday{sys_days::max() - days{7}});
     assert(weekday{local_days::max()} == weekday{local_days::max() - days{7}});
 }

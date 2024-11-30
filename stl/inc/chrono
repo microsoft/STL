@@ -476,8 +476,9 @@ namespace chrono {
         // courtesy of Howard Hinnant (modified to avoid overflow)
         // https://howardhinnant.github.io/date_algorithms.html#weekday_from_days
         _NODISCARD static constexpr unsigned int _Weekday_from_days(int _Tp) noexcept {
+            _STL_INTERNAL_STATIC_ASSERT(~0u % 7u == 3u); // offset for `_Tp < 0` needs to change
             const auto _Before_modulo = static_cast<unsigned int>(_Tp) + (_Tp >= 0 ? 4u : 0u);
-            return _Before_modulo % 7u; // for codegen by MSVC on x86/ARM64, see GH-5153
+            return _Before_modulo % 7u; // separate expression for MSVC codegen, see GH-5153
         }
     };
 
