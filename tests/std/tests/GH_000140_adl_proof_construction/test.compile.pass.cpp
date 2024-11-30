@@ -6,6 +6,7 @@
 #include <future>
 #include <memory>
 #include <type_traits>
+#include <utility>
 #include <valarray>
 #if _HAS_CXX17
 #include <optional>
@@ -80,7 +81,7 @@ template <class Tag>
 struct tagged_identity {
     template <class U>
     constexpr U&& operator()(U&& u) const noexcept {
-        return static_cast<U&&>(u);
+        return std::forward<U>(u);
     }
 };
 
@@ -88,7 +89,7 @@ template <class Tag>
 struct tagged_large_identity {
     template <class U>
     constexpr U&& operator()(U&& u) const noexcept {
-        return static_cast<U&&>(u);
+        return std::forward<U>(u);
     }
 
     alignas(64) unsigned char unused[64]{};
@@ -161,8 +162,8 @@ void test_valarray() {
     auto valarr4 = valarr1;
     valarr4      = valarr1;
 
-    auto valarr5 = static_cast<valarray<validator_class>&&>(valarr2);
-    valarr5      = static_cast<valarray<validator_class>&&>(valarr3);
+    auto valarr5 = std::move(valarr2);
+    valarr5      = std::move(valarr3);
 }
 
 #if _HAS_CXX17
