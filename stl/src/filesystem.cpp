@@ -440,7 +440,7 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
 }; // } FILE_ID_INFO, ...;
 
 // TRANSITION, ABI: preserved for binary compatibility
-_Success_(return == __std_win_error::_Success) __std_win_error
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_get_file_id(_Out_ __std_fs_file_id* const _Id, _In_z_ const wchar_t* const _Path) noexcept {
     __std_win_error _Last_error;
     const _STD _Fs_file _Handle(
@@ -454,7 +454,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     return _Get_file_id_by_handle(_Handle._Get(), reinterpret_cast<FILE_ID_INFO*>(_Id));
 }
 
-_NODISCARD __std_fs_equivalent_result __stdcall __std_fs_equivalent(
+[[nodiscard]] __std_fs_equivalent_result __stdcall __std_fs_equivalent(
     _In_z_ const wchar_t* _Left_path, _In_z_ const wchar_t* _Right_path) noexcept {
     // See GH-3571: File IDs are only guaranteed to be unique and stable while handles remain open
     __std_win_error _Last_error;
