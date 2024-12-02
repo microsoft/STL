@@ -9,12 +9,12 @@
 
 using namespace std;
 
-template <class CharT, size_t NChar, size_t NWChar, enable_if_t<is_same_v<CharT, char>, int> = 0>
-constexpr const auto& choose_literal(const char (&s)[NChar], const wchar_t (&)[NWChar]) noexcept {
+template <class CharT, size_t N, enable_if_t<is_same_v<CharT, char>, int> = 0>
+constexpr const auto& choose_literal(const char (&s)[N], const wchar_t (&)[N]) noexcept {
     return s;
 }
-template <class CharT, size_t NChar, size_t NWChar, enable_if_t<is_same_v<CharT, wchar_t>, int> = 0>
-constexpr const auto& choose_literal(const char (&)[NChar], const wchar_t (&ws)[NWChar]) noexcept {
+template <class CharT, size_t N, enable_if_t<is_same_v<CharT, wchar_t>, int> = 0>
+constexpr const auto& choose_literal(const char (&)[N], const wchar_t (&ws)[N]) noexcept {
     return ws;
 }
 
