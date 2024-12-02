@@ -482,7 +482,7 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
         return {false, _Last_error};
     }
 
-    return {_CSTD memcmp(&_Left_info, &_Right_info, sizeof(FILE_ID_INFO)) == 0, _Last_error};
+    return {_CSTD memcmp(&_Left_info, &_Right_info, sizeof(FILE_ID_INFO)) == 0, __std_win_error::_Success};
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_directory_symbolic_link(
