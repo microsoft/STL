@@ -4092,8 +4092,8 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
 
         if (_Mchar == _Meta_dash) { // check for valid range
             _Next();
-            _Elem _Chr1         = static_cast<_Elem>(_Val);
-            bool _Set_preceding = _Ret == _Prs_set;
+            _Elem _Chr1               = static_cast<_Elem>(_Val);
+            const bool _Set_preceding = _Ret == _Prs_set;
             if ((_Ret = _ClassAtom()) == _Prs_none) { // treat - as ordinary character
                 if (!_Set_preceding) {
                     _Nfa._Add_char_to_class(_Chr1);
