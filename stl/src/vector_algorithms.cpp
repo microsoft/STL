@@ -3182,22 +3182,18 @@ namespace {
 
                 const void* _Stop = _Needle_ptr;
                 _Advance_bytes(_Stop, _Byte_size & ~size_t{0x1F});
-                while (_Needle_ptr != _Stop) {
+                for (; _Needle_ptr != _Stop; _Needle_ptr += 32 / sizeof(_Ty)) {
                     const __m128i _Data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Needle_ptr));
                     if (!_mm_testz_si128(_Mask, _Data)) {
                         return false;
                     }
-
-                    _Needle_ptr += 32 / sizeof(_Ty);
                 }
 
                 _Advance_bytes(_Stop, _Byte_size & 0x1E);
-                while (_Needle_ptr != _Stop) {
+                for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
                     if ((*_Needle_ptr & ~_Ty{0xFF}) != 0) {
                         return false;
                     }
-
-                    ++_Needle_ptr;
                 }
 
                 return true;
