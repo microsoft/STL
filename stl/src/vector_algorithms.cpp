@@ -3787,7 +3787,6 @@ namespace {
 
             return _Pos_from_ptr<_Ty>(_Impl_4_8<_Ty>(_First1, _Size_bytes_1, _First2, _Size_bytes_2), _First1, _Last1);
         }
-
 #endif // !_M_ARM64EC
 
         template <class _Ty>
