@@ -593,6 +593,23 @@ void test_gh_4995() {
     g_regexTester.should_throw("[[=a=]-e]", error_range, ECMAScript | regex::collate);
     g_regexTester.should_throw("[e-[=a=]]", error_range, ECMAScript | regex::collate);
     g_regexTester.should_throw("[[=a=]-[=b=]]", error_range, ECMAScript | regex::collate);
+
+    // Test valid cases:
+    g_regexTester.should_not_match("b", R"([\d-])");
+    g_regexTester.should_match("5", R"([\d-])");
+    g_regexTester.should_match("-", R"([\d-])");
+
+    g_regexTester.should_not_match("b", R"([-\d])");
+    g_regexTester.should_match("5", R"([-\d])");
+    g_regexTester.should_match("-", R"([-\d])");
+
+    g_regexTester.should_match("b", R"([a-c\d])");
+    g_regexTester.should_match("5", R"([a-c\d])");
+    g_regexTester.should_not_match("-", R"([a-c\d])");
+
+    g_regexTester.should_match("b", R"([\da-c])");
+    g_regexTester.should_match("5", R"([\da-c])");
+    g_regexTester.should_not_match("-", R"([\da-c])");
 }
 
 void test_gh_5058() {
