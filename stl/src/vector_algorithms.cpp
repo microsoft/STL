@@ -3497,10 +3497,10 @@ namespace {
 #endif // !_M_ARM64EC
 
         template <class _Ty>
-        struct _Traits;
+        struct _Find_first_of_traits;
 
         template <>
-        struct _Traits<uint32_t> : _Find_traits_4 {
+        struct _Find_first_of_traits<uint32_t> : _Find_traits_4 {
 #ifndef _M_ARM64EC
             template <size_t _Amount>
             static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
@@ -3546,7 +3546,7 @@ namespace {
         };
 
         template <>
-        struct _Traits<uint64_t> : _Find_traits_8 {
+        struct _Find_first_of_traits<uint64_t> : _Find_traits_8 {
 #ifndef _M_ARM64EC
             template <size_t _Amount>
             static __m256i _Spread_avx(const __m256i _Val, const size_t _Needle_length_el) noexcept {
@@ -3613,7 +3613,7 @@ namespace {
         template <class _Ty, bool _Large, size_t _Last2_length_el_magnitude>
         const void* _Shuffle_impl(const void* _First1, const size_t _Haystack_length, const void* const _First2,
             const void* const _Stop2, const size_t _Last2_length_el) noexcept {
-            using _Traits               = _Traits<_Ty>;
+            using _Traits               = _Find_first_of_traits<_Ty>;
             constexpr size_t _Length_el = 32 / sizeof(_Ty);
 
             const __m256i _Last2val = _mm256_maskload_epi32(
