@@ -584,9 +584,9 @@ void test_gh_993() {
 
 void test_gh_4995() {
     // GH-4995: R"([\d-e])" should be rejected
-    g_regexTester.should_throw("[\\d-e]", error_range);
-    g_regexTester.should_throw("[e-\\d]", error_range);
-    g_regexTester.should_throw("[\\w-\\d]", error_range);
+    g_regexTester.should_throw(R"([\d-e])", error_range);
+    g_regexTester.should_throw(R"([e-\d])", error_range);
+    g_regexTester.should_throw(R"([\w-\d])", error_range);
     g_regexTester.should_throw("[[:digit:]-e]", error_range);
     g_regexTester.should_throw("[e-[:digit:]]", error_range);
     g_regexTester.should_throw("[[:alpha:]-[:digit:]]", error_range);
