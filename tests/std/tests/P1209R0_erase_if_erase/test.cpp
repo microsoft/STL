@@ -13,11 +13,6 @@
 #include <utility>
 #include <vector>
 
-template <class>
-constexpr bool is_unsized_container = false;
-template <class T, class A>
-constexpr bool is_unsized_container<std::forward_list<T, A>> = true;
-
 // Note that the standard actually requires these to be copyable. As an extension, we want to ensure we don't copy them,
 // because copying some functors (e.g. std::function) is comparatively expensive, and even for relatively cheap to copy
 // function objects we care (somewhat) about debug mode perf.
@@ -63,21 +58,22 @@ constexpr bool test_string() {
 
 template <class SequenceContainer>
 constexpr bool test_sequence_container() {
-    SequenceContainer cont1{42, 1729};
-    const auto cont1_removed = std::erase(cont1, 42);
-    if constexpr (!is_unsized_container<SequenceContainer>) {
-        assert(cont1.size() == 1);
-    }
-    assert(cont1.front() == 1729);
-    assert(cont1_removed == 1);
+    SequenceContainer c{3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4, 3, 3, 8, 3, 2, 7, 9, 5,
+        0, 2, 8, 8, 4, 1, 9, 7, 1, 6, 9, 3, 9, 9, 3, 7, 5, 1, 0};
 
-    SequenceContainer cont2{17, 42, 29};
-    const auto cont2_removed = std::erase_if(cont2, is_odd{});
-    if constexpr (!is_unsized_container<SequenceContainer>) {
-        assert(cont2.size() == 1);
+    {
+        const auto removed1 = std::erase_if(c, is_odd{});
+        assert(removed1 == 31);
+        const SequenceContainer expected1{4, 2, 6, 8, 2, 8, 4, 6, 2, 6, 4, 8, 2, 0, 2, 8, 8, 4, 6, 0};
+        assert(c == expected1);
     }
-    assert(cont2.front() == 42);
-    assert(cont2_removed == 2);
+
+    {
+        const auto removed2 = std::erase(c, 8);
+        assert(removed2 == 5);
+        const SequenceContainer expected2{4, 2, 6, 2, 4, 6, 2, 6, 4, 2, 0, 2, 4, 6, 0};
+        assert(c == expected2);
+    }
 
     return true;
 }
