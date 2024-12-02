@@ -455,7 +455,7 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
 }
 
 [[nodiscard]] __std_fs_equivalent_result __stdcall __std_fs_equivalent(
-    _In_z_ const wchar_t* _Left_path, _In_z_ const wchar_t* _Right_path) noexcept {
+    _In_z_ const wchar_t* const _Left_path, _In_z_ const wchar_t* const _Right_path) noexcept {
     // See GH-3571: File IDs are only guaranteed to be unique and stable while handles remain open
     __std_win_error _Last_error;
     const _STD _Fs_file _Left_handle(
