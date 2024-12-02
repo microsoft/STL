@@ -82,7 +82,7 @@ constexpr bool test_sequence_container() {
 
 template <bool B>
 struct pinned_condition {
-    pinned_condition()                                   = default;
+    explicit pinned_condition()                          = default;
     pinned_condition(const pinned_condition&)            = delete;
     pinned_condition& operator=(const pinned_condition&) = delete;
 
