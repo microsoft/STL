@@ -101,11 +101,11 @@ struct lwg_4135_src {
     friend void operator==(int&, const lwg_4135_src&) = delete;
     friend void operator==(const lwg_4135_src&, int&) = delete;
 
-    friend pinned_condition<true>& operator==(const lwg_4135_src&, const int&) {
-        return const_cast<pinned_condition<true>&>(result);
+    friend const pinned_condition<true>& operator==(const lwg_4135_src&, const int&) {
+        return result;
     }
-    friend pinned_condition<true>& operator==(const int&, const lwg_4135_src&) {
-        return const_cast<pinned_condition<true>&>(result);
+    friend const pinned_condition<true>& operator==(const int&, const lwg_4135_src&) {
+        return result;
     }
 };
 
