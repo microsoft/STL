@@ -2971,9 +2971,9 @@ namespace {
             } else if constexpr (sizeof(_Ty) == 4) {
                 return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Avx2_tail_mask_32(_Count));
             } else if constexpr (sizeof(_Ty) == 8) {
-                const __m256i _Mask_low  = _Avx2_tail_mask_32(((_Count > 4) ? 4 : _Count) << 1);
+                const __m256i _Mask_low  = _Avx2_tail_mask_32((_Count > 4 ? 4 : _Count) << 1);
                 const __m256i _Low       = _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src) + 0, _Mask_low);
-                const __m256i _Mask_high = _Avx2_tail_mask_32(((_Count > 4) ? _Count - 4 : 0) << 1);
+                const __m256i _Mask_high = _Avx2_tail_mask_32((_Count > 4 ? _Count - 4 : 0) << 1);
                 const __m256i _High      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src) + 8, _Mask_high);
                 const __m256i _Pack      = _mm256_packs_epi32(_Low, _High);
                 return _mm256_permute4x64_epi64(_Pack, _MM_SHUFFLE(3, 1, 2, 0));
