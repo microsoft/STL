@@ -633,10 +633,10 @@ void test_gh_5160() {
     // GH-5160 fixed mishandled negated character class escapes
     // outside character class definitions
     const test_wregex neg_regex(&g_regexTester, LR"(Y\S*Z)");
-    neg_regex.should_search_match(L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // 0078 is small Latin X
-    neg_regex.should_search_match(L"xxxYxx\xCF87xxxZxxx", L"Yxx\xCF87xxxZ"); // CF87 is small Greek Chi
+    neg_regex.should_search_match(L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // U+0078 LATIN SMALL LETTER X
+    neg_regex.should_search_match(L"xxxYxx\x03C7xxxZxxx", L"Yxx\x03C7xxxZ"); // U+03C7 GREEK SMALL LETTER CHI
     neg_regex.should_search_fail(L"xxxYxx xxxZxxx");
-    neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // 2009 is Thin Space
+    neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
 }
 
 int main() {
