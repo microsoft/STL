@@ -4021,8 +4021,8 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { // 
     if (_Addit) {
         _Nfa._Add_class();
         // GH-992: Outside character class definitions, _Cls completely defines the character class
-        // so negating _Cls and negating the entire character class is equivalent
-        // since the former negation is defective, do the latter instead
+        // so negating _Cls and negating the entire character class are equivalent.
+        // Since the former negation is defective, do the latter instead.
         if (_Negated) {
             _Nfa._Negate();
         }
