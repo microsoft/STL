@@ -659,6 +659,16 @@ void test_gh_5058() {
     }
 }
 
+void test_gh_5160() {
+    // GH-5160 fixed mishandled negated character class escapes
+    // outside character class definitions
+    const test_wregex neg_regex(&g_regexTester, LR"(Y\S*Z)");
+    neg_regex.should_search_match(L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // U+0078 LATIN SMALL LETTER X
+    neg_regex.should_search_match(L"xxxYxx\x03C7xxxZxxx", L"Yxx\x03C7xxxZ"); // U+03C7 GREEK SMALL LETTER CHI
+    neg_regex.should_search_fail(L"xxxYxx xxxZxxx");
+    neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -688,6 +698,7 @@ int main() {
     test_gh_993();
     test_gh_4995();
     test_gh_5058();
+    test_gh_5160();
 
     return g_regexTester.result();
 }
