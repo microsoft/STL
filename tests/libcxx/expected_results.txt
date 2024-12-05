@@ -561,7 +561,6 @@ std/re/re.alg/re.alg.search/no_update_pos.pass.cpp FAIL
 std/re/re.const/re.synopt/syntax_option_type.pass.cpp FAIL
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
-std/re/re.regex/re.regex.construct/bad_range.pass.cpp FAIL
 std/re/re.regex/re.regex.construct/default.pass.cpp FAIL
 std/re/re.regex/re.regex.nonmemb/re.regex.nmswap/swap.pass.cpp FAIL
 std/re/re.regex/re.regex.swap/swap.pass.cpp FAIL
