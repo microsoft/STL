@@ -1699,8 +1699,8 @@ private:
     void _Error(regex_constants::error_type);
 
     bool _Is_esc() const;
-    void _Trans();
-    void _Next();
+    void _Trans(bool _Beg_char_class);
+    void _Next(bool _Beg_char_class = false);
     void _Expect(_Meta_type, regex_constants::error_type);
 
     // parsing
@@ -3823,7 +3823,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc() const { // assumes _Pat != _En
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-character
+void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans(const bool _Beg_char_class) { // map character to meta-character
     static constexpr char _Meta_map[] = {_Meta_lpar, _Meta_rpar, _Meta_dlr, _Meta_caret, _Meta_dot, _Meta_star,
         _Meta_plus, _Meta_query, _Meta_lsq, _Meta_rsq, _Meta_bar, _Meta_esc, _Meta_dash, _Meta_lbr, _Meta_rbr,
         _Meta_comma, _Meta_colon, _Meta_equal, _Meta_exc, _Meta_nl, _Meta_cr, _Meta_bsp, 0}; // array of meta chars
@@ -3874,7 +3874,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
         break;
 
     case _Meta_caret:
-        if ((_L_flags & _L_anch_rstr) && !_Nfa._Beg_expr()) {
+        if (!_Beg_char_class && (_L_flags & _L_anch_rstr) && !_Nfa._Beg_expr()) {
             _Mchar = _Meta_chr;
         }
 
@@ -3911,7 +3911,8 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input character
+void _Parser<_FwdIt, _Elem, _RxTraits>::_Next(
+    const bool _Beg_char_class /* = false */) { // advance to next input character
     if (_Pat != _End) { // advance
         if (*_Pat == _Meta_esc && _Is_esc()) {
             ++_Pat;
@@ -3919,7 +3920,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input chara
 
         ++_Pat;
     }
-    _Trans();
+    _Trans(_Beg_char_class);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -4428,7 +4429,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
                 _AtomEscape();
             }
         } else if (_Mchar == _Meta_lsq) { // add bracket expression
-            _Next();
+            _Next(true);
             _CharacterClass();
             _Expect(_Meta_rsq, regex_constants::error_brack);
         } else if (_Mchar == _Meta_lpar) { // check for valid group
@@ -4614,7 +4615,7 @@ _Parser<_FwdIt, _Elem, _RxTraits>::_Parser(
         _Nfa._Setlong();
     }
 
-    _Trans();
+    _Trans(false);
 }
 
 #if _HAS_TR1_NAMESPACE

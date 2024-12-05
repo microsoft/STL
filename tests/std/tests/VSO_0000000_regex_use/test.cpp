@@ -669,6 +669,18 @@ void test_gh_5160() {
     neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
 }
 
+void test_gh_5165() {
+    // GH-5165: circumflex ^ should negate character classes in basic regular expressions
+    g_regexTester.should_match("yz", "y[^x]", basic);
+    g_regexTester.should_match("yz", "y[^x]", grep);
+    g_regexTester.should_match("y^", "y[^x]", basic);
+    g_regexTester.should_match("y^", "y[^x]", grep);
+    g_regexTester.should_not_match("yx", "y[^x]", basic);
+    g_regexTester.should_not_match("yx", "y[^x]", grep);
+    g_regexTester.should_not_match("y^", "y[^x^]", basic);
+    g_regexTester.should_not_match("y^", "y[^x^]", grep);
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -699,6 +711,7 @@ int main() {
     test_gh_4995();
     test_gh_5058();
     test_gh_5160();
+    test_gh_5165();
 
     return g_regexTester.result();
 }
