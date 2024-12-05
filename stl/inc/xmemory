@@ -1601,6 +1601,12 @@ void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
     }
 }
 
+template <class _Ty, class _InIt>
+void _Construct_in_place_by_deref(_Ty& _Val, const _InIt& _Iter)
+    noexcept(noexcept(::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter))) {
+    ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter);
+}
+
 template <class _NoThrowFwdIt>
 struct _NODISCARD _Uninitialized_backout {
     // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
@@ -1625,6 +1631,25 @@ struct _NODISCARD _Uninitialized_backout {
         ++_Last;
     }
 
+    template <class _InIt>
+    void _Emplace_back_deref(const _InIt& _Iter) {
+        // construct a new element at *_Last from the result of dereferencing _Iter and increment.
+        _STD _Construct_in_place_by_deref(*_Last, _Iter);
+        ++_Last;
+    }
+
+    template <class _InIt>
+    void _Emplace_back_deref_move(const _InIt& _Iter) {
+        // construct a new element at *_Last from the result of dereferencing _Iter and increment,
+        // with lvalue cast to xvalue if necessary for uninitialized_move(_n).
+        if constexpr (is_lvalue_reference_v<decltype(*_Iter)>) {
+            _STD _Construct_in_place(*_Last, _STD move(*_Iter));
+        } else {
+            _STD _Construct_in_place_by_deref(*_Last, _Iter);
+        }
+        ++_Last;
+    }
+
     constexpr _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
@@ -1632,19 +1657,17 @@ struct _NODISCARD _Uninitialized_backout {
 };
 
 template <class _InIt, class _NoThrowFwdIt>
-_CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
+_NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
     if constexpr (_Iter_move_cat<_InIt, _NoThrowFwdIt>::_Bitcopy_constructible) {
-#if _HAS_CXX20
+#if 0 // TRANSITION, _HAS_CXX26
         if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
-            return _STD _Copy_memmove(_First, _Last, _Dest);
-        }
+#endif // _HAS_CXX26
+        { return _STD _Copy_memmove(_First, _Last, _Dest); }
     }
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
     for (; _First != _Last; ++_First) {
-        _Backout._Emplace_back(_STD move(*_First));
+        _Backout._Emplace_back_deref_move(_First);
     }
 
     return _Backout._Release();
@@ -1905,20 +1928,18 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
 }
 
 template <class _InIt, class _NoThrowFwdIt>
-_CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
+_NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
     if constexpr (_Iter_copy_cat<_InIt, _NoThrowFwdIt>::_Bitcopy_constructible) {
-#if _HAS_CXX20
+#if 0 // TRANSITION, _HAS_CXX26
         if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
-            return _STD _Copy_memmove(_First, _Last, _Dest);
-        }
+#endif // _HAS_CXX26
+        { return _STD _Copy_memmove(_First, _Last, _Dest); }
     }
 
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
     for (; _First != _Last; ++_First) {
-        _Backout._Emplace_back(*_First);
+        _Backout._Emplace_back_deref(_First);
     }
 
     return _Backout._Release();
