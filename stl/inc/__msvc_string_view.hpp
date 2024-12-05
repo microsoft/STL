@@ -660,11 +660,28 @@ template <class _Traits>
 constexpr size_t _Traits_find_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack, const size_t _Hay_size,
     const size_t _Start_at, const _Traits_ch_t<_Traits> _Ch) noexcept {
     // search [_Haystack, _Haystack + _Hay_size) for _Ch, at/after _Start_at
-    if (_Start_at < _Hay_size) {
-        const auto _Found_at = _Traits::find(_Haystack + _Start_at, _Hay_size - _Start_at, _Ch);
-        if (_Found_at) {
-            return static_cast<size_t>(_Found_at - _Haystack);
+    if (_Start_at >= _Hay_size) {
+        return static_cast<size_t>(-1); // (npos) no room for match
+    }
+
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
+        if (!_STD _Is_constant_evaluated()) {
+            const auto _End = _Haystack + _Hay_size;
+            const auto _Ptr = _STD _Find_vectorized(_Haystack + _Start_at, _End, _Ch);
+
+            if (_Ptr != _End) {
+                return static_cast<size_t>(_Ptr - _Haystack);
+            } else {
+                return static_cast<size_t>(-1); // (npos) no match
+            }
         }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+    const auto _Found_at = _Traits::find(_Haystack + _Start_at, _Hay_size - _Start_at, _Ch);
+    if (_Found_at) {
+        return static_cast<size_t>(_Found_at - _Haystack);
     }
 
     return static_cast<size_t>(-1); // (npos) no match
