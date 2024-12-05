@@ -3431,38 +3431,21 @@ namespace filesystem {
         return _STD filesystem::copy_file(_From, _To, copy_options::none);
     }
 
-    _NODISCARD inline pair<__std_win_error, bool> _Equivalent(
-        const wchar_t* const _Lhs, const wchar_t* const _Rhs) noexcept {
-        __std_fs_file_id _Left_id;
-        __std_fs_file_id _Right_id;
-        auto _Last_error = __std_fs_get_file_id(&_Left_id, _Lhs);
-        if (_Last_error != __std_win_error::_Success) {
-            return {_Last_error, false};
-        }
-
-        _Last_error = __std_fs_get_file_id(&_Right_id, _Rhs);
-        if (_Last_error != __std_win_error::_Success) {
-            return {_Last_error, false};
-        }
-
-        return {__std_win_error::_Success, _CSTD memcmp(&_Left_id, &_Right_id, sizeof(__std_fs_file_id)) == 0};
-    }
-
     _EXPORT_STD _NODISCARD inline bool equivalent(const path& _Lhs, const path& _Rhs) {
         // test if the paths _Lhs and _Rhs refer to the same file
-        const auto _Result = _Equivalent(_Lhs.c_str(), _Rhs.c_str());
-        if (_Result.first != __std_win_error::_Success) {
-            _Throw_fs_error("equivalent", _Result.first, _Lhs, _Rhs);
+        const auto _Result = __std_fs_equivalent(_Lhs.c_str(), _Rhs.c_str());
+        if (_Result._Error != __std_win_error::_Success) {
+            _Throw_fs_error("equivalent", _Result._Error, _Lhs, _Rhs);
         }
 
-        return _Result.second;
+        return _Result._Equivalent;
     }
 
     _EXPORT_STD _NODISCARD inline bool equivalent(const path& _Lhs, const path& _Rhs, error_code& _Ec) noexcept {
         // test if the paths _Lhs and _Rhs refer to the same file
-        const auto _Result = _Equivalent(_Lhs.c_str(), _Rhs.c_str());
-        _Ec                = _Make_ec(_Result.first);
-        return _Result.second;
+        const auto _Result = __std_fs_equivalent(_Lhs.c_str(), _Rhs.c_str());
+        _Ec                = _Make_ec(_Result._Error);
+        return _Result._Equivalent;
     }
 
     _EXPORT_STD _NODISCARD inline file_status status(const path& _Path);
