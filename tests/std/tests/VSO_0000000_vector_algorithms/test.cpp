@@ -1161,22 +1161,6 @@ void test_case_string_rfind_str(const basic_string<T>& input_haystack, const bas
 }
 
 template <class T>
-void test_case_string_rfind_ch(const basic_string<T>& input_haystack, const T value) {
-    ptrdiff_t expected;
-
-    const auto expected_iter = last_known_good_find_last(input_haystack.begin(), input_haystack.end(), value);
-
-    if (expected_iter != input_haystack.end()) {
-        expected = expected_iter - input_haystack.begin();
-    } else {
-        expected = -1;
-    }
-
-    const auto actual = static_cast<ptrdiff_t>(input_haystack.rfind(value));
-    assert(expected == actual);
-}
-
-template <class T>
 void test_case_string_find_not_ch(const basic_string<T>& input_haystack, const T value) {
     ptrdiff_t expected;
 
