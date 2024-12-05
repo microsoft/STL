@@ -1020,6 +1020,12 @@ void test_zoned_time_formatter() {
            == STR("04/19/21 2021-04-19, 2021 20 21, Apr April Apr 04, 19 19, Mon Monday 1 1"));
     assert(format(STR("{:%H %I %M %S, %r, %R %T %p}"), zt) == STR("08 08 16 17, 08:16:17 AM, 08:16 08:16:17 AM"));
     assert(format(STR("{:%g %G %U %V %W}"), zt) == STR("21 2021 16 16 16"));
+
+    // LWG-4124 "Cannot format zoned_time with resolution coarser than seconds"
+
+    const zoned_time<minutes> zoned_minutes_epoch{};
+
+    empty_braces_helper(zoned_minutes_epoch, STR("1970-01-01 00:00:00 UTC"));
 }
 
 template <typename CharT>
