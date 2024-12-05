@@ -160,18 +160,20 @@ public:
         }
     }
 
-    void should_throw(const std::string& pattern, const std::regex_constants::error_type expectedCode) {
+    void should_throw(const std::string& pattern, const std::regex_constants::error_type expectedCode,
+        const std::regex_constants::syntax_option_type syntax = std::regex_constants::ECMAScript) {
         try {
-            const std::regex r(pattern);
-            printf(R"(regex r("%s") succeeded (which is bad).)"
+            const std::regex r(pattern, syntax);
+            printf(R"(regex r("%s", 0x%X) succeeded (which is bad).)"
                    "\n",
-                pattern.c_str());
+                pattern.c_str(), static_cast<unsigned int>(syntax));
             fail_regex();
         } catch (const std::regex_error& e) {
             if (e.code() != expectedCode) {
-                printf(R"(regex r("%s") threw 0x%X; expected 0x%X)"
+                printf(R"(regex r("%s", 0x%X) threw 0x%X; expected 0x%X)"
                        "\n",
-                    pattern.c_str(), static_cast<unsigned int>(e.code()), static_cast<unsigned int>(expectedCode));
+                    pattern.c_str(), static_cast<unsigned int>(syntax), static_cast<unsigned int>(e.code()),
+                    static_cast<unsigned int>(expectedCode));
                 fail_regex();
             }
         }

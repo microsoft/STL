@@ -1435,7 +1435,7 @@ private:
         ios_base::fmtflags _Ffl = _Flags & ios_base::floatfield;
         if (_Flags & ios_base::uppercase) {
             if (_Ffl == ios_base::fixed) {
-                _Ch = 'f';
+                _Ch = 'F';
             } else if (_Ffl == (ios_base::scientific | ios_base::fixed)) {
                 _Ch = 'A';
             } else if (_Ffl == ios_base::scientific) {

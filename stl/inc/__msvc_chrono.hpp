@@ -646,33 +646,6 @@ namespace chrono {
         return time_point<_Clock, _To>(_CHRONO round<_To>(_Time.time_since_epoch()));
     }
 
-    _EXPORT_STD struct system_clock { // wraps GetSystemTimePreciseAsFileTime
-        using rep                       = long long;
-        using period                    = ratio<1, 10'000'000>; // 100 nanoseconds
-        using duration                  = _CHRONO duration<rep, period>;
-        using time_point                = _CHRONO time_point<system_clock>;
-        static constexpr bool is_steady = false;
-
-        _NODISCARD static time_point now() noexcept { // get current time
-            return time_point(duration(_Xtime_get_ticks()));
-        }
-
-        _NODISCARD static __time64_t to_time_t(const time_point& _Time) noexcept { // convert to __time64_t
-            return duration_cast<seconds>(_Time.time_since_epoch()).count();
-        }
-
-        _NODISCARD static time_point from_time_t(__time64_t _Tm) noexcept { // convert from __time64_t
-            return time_point{seconds{_Tm}};
-        }
-    };
-
-#if _HAS_CXX20
-    _EXPORT_STD template <class _Duration>
-    using sys_time                = time_point<system_clock, _Duration>;
-    _EXPORT_STD using sys_seconds = sys_time<seconds>;
-    _EXPORT_STD using sys_days    = sys_time<days>;
-#endif // _HAS_CXX20
-
     _EXPORT_STD struct steady_clock { // wraps QueryPerformanceCounter
         using rep                       = long long;
         using period                    = nano;
@@ -726,76 +699,6 @@ namespace chrono {
 #undef _LIKELY_ARM_ARM64
 #undef _LIKELY_X86_X64
     };
-
-    _EXPORT_STD using high_resolution_clock = steady_clock;
-} // namespace chrono
-
-inline namespace literals {
-    inline namespace chrono_literals {
-        _EXPORT_STD _NODISCARD constexpr _CHRONO hours operator""h(unsigned long long _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO hours(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<3600>> operator""h(long double _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO duration<double, ratio<3600>>(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO minutes operator""min(unsigned long long _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO minutes(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, ratio<60>> operator""min(long double _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO duration<double, ratio<60>>(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO seconds operator""s(unsigned long long _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO seconds(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double> operator""s(long double _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO duration<double>(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO milliseconds operator""ms(unsigned long long _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO milliseconds(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, milli> operator""ms(long double _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO duration<double, milli>(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO microseconds operator""us(unsigned long long _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO microseconds(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, micro> operator""us(long double _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO duration<double, micro>(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO nanoseconds operator""ns(unsigned long long _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO nanoseconds(_Val);
-        }
-
-        _EXPORT_STD _NODISCARD constexpr _CHRONO duration<double, nano> operator""ns(long double _Val) noexcept
-        /* strengthened */ {
-            return _CHRONO duration<double, nano>(_Val);
-        }
-    } // namespace chrono_literals
-} // namespace literals
-
-namespace chrono {
-    _EXPORT_STD using namespace literals::chrono_literals;
 } // namespace chrono
 _STD_END
 

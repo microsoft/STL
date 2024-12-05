@@ -582,6 +582,36 @@ void test_gh_993() {
     }
 }
 
+void test_gh_4995() {
+    // GH-4995: R"([\d-e])" should be rejected
+    g_regexTester.should_throw(R"([\d-e])", error_range);
+    g_regexTester.should_throw(R"([e-\d])", error_range);
+    g_regexTester.should_throw(R"([\w-\d])", error_range);
+    g_regexTester.should_throw("[[:digit:]-e]", error_range);
+    g_regexTester.should_throw("[e-[:digit:]]", error_range);
+    g_regexTester.should_throw("[[:alpha:]-[:digit:]]", error_range);
+    g_regexTester.should_throw("[[=a=]-e]", error_range, ECMAScript | regex::collate);
+    g_regexTester.should_throw("[e-[=a=]]", error_range, ECMAScript | regex::collate);
+    g_regexTester.should_throw("[[=a=]-[=b=]]", error_range, ECMAScript | regex::collate);
+
+    // Test valid cases:
+    g_regexTester.should_not_match("b", R"([\d-])");
+    g_regexTester.should_match("5", R"([\d-])");
+    g_regexTester.should_match("-", R"([\d-])");
+
+    g_regexTester.should_not_match("b", R"([-\d])");
+    g_regexTester.should_match("5", R"([-\d])");
+    g_regexTester.should_match("-", R"([-\d])");
+
+    g_regexTester.should_match("b", R"([a-c\d])");
+    g_regexTester.should_match("5", R"([a-c\d])");
+    g_regexTester.should_not_match("-", R"([a-c\d])");
+
+    g_regexTester.should_match("b", R"([\da-c])");
+    g_regexTester.should_match("5", R"([\da-c])");
+    g_regexTester.should_not_match("-", R"([\da-c])");
+}
+
 void test_gh_5058() {
     // GH-5058 "<regex>: Small cleanups" changed some default constructors to be defaulted.
     // Verify that <regex> types are still const-default-constructible (N4993 [dcl.init.general]/8).
@@ -629,6 +659,16 @@ void test_gh_5058() {
     }
 }
 
+void test_gh_5160() {
+    // GH-5160 fixed mishandled negated character class escapes
+    // outside character class definitions
+    const test_wregex neg_regex(&g_regexTester, LR"(Y\S*Z)");
+    neg_regex.should_search_match(L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // U+0078 LATIN SMALL LETTER X
+    neg_regex.should_search_match(L"xxxYxx\x03C7xxxZxxx", L"Yxx\x03C7xxxZ"); // U+03C7 GREEK SMALL LETTER CHI
+    neg_regex.should_search_fail(L"xxxYxx xxxZxxx");
+    neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -656,7 +696,9 @@ int main() {
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
     test_gh_993();
+    test_gh_4995();
     test_gh_5058();
+    test_gh_5160();
 
     return g_regexTester.result();
 }

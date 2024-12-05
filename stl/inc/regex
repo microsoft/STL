@@ -1710,7 +1710,7 @@ private:
     bool _OctalDigits();
     void _Do_ex_class(_Meta_type);
     bool _CharacterClassEscape(bool);
-    _Prs_ret _ClassEscape(bool);
+    _Prs_ret _ClassEscape2();
     _Prs_ret _ClassAtom();
     void _ClassRanges();
     void _CharacterClass();
@@ -4017,22 +4017,29 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { // 
         return false;
     }
 
+    const bool _Negated = _Traits.isctype(_Char, _RxTraits::_Ch_upper);
     if (_Addit) {
         _Nfa._Add_class();
+        // GH-992: Outside character class definitions, _Cls completely defines the character class
+        // so negating _Cls and negating the entire character class are equivalent.
+        // Since the former negation is defective, do the latter instead.
+        if (_Negated) {
+            _Nfa._Negate();
+        }
     }
 
-    _Nfa._Add_named_class(_Cls, _Traits.isctype(_Char, _RxTraits::_Ch_upper));
+    _Nfa._Add_named_class(_Cls, _Negated && !_Addit);
     _Next();
     return true;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape(bool _Addit) { // check for class escape
+_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape2() { // check for class escape
     if ((_L_flags & _L_esc_bsl) && _Char == _Esc_bsl) { // handle escape backslash if allowed
         _Val = _Esc_bsl;
         _Next();
         return _Prs_chr;
-    } else if ((_L_flags & _L_esc_wsd) && _CharacterClassEscape(_Addit)) {
+    } else if ((_L_flags & _L_esc_wsd) && _CharacterClassEscape(false)) {
         return _Prs_set;
     } else if (_DecimalDigits(regex_constants::error_escape)) { // check for invalid value
         if (_Val != 0) {
@@ -4049,7 +4056,7 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom() { // check for class at
     if (_Mchar == _Meta_esc) { // check for valid escape sequence
         _Next();
         if (_L_flags & _L_grp_esc) {
-            return _ClassEscape(false);
+            return _ClassEscape2();
         } else if ((_L_flags & _L_esc_ffn && _Do_ffn(_Char))
                    || (_L_flags & _L_esc_ffnx && _Do_ffnx(_Char))) { // advance to next character
             _Next();
@@ -4086,37 +4093,38 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
             return;
         }
 
-        if (_Ret != _Prs_set) {
-            if (_Val == 0 && !(_L_flags & _L_bzr_chr)) {
-                _Error(regex_constants::error_escape);
+        if (_Ret == _Prs_chr && _Val == 0 && !(_L_flags & _L_bzr_chr)) {
+            _Error(regex_constants::error_escape);
+        }
+
+        if (_Mchar == _Meta_dash) { // check for valid range
+            _Next();
+            _Elem _Chr1               = static_cast<_Elem>(_Val);
+            const bool _Set_preceding = _Ret == _Prs_set;
+            if ((_Ret = _ClassAtom()) == _Prs_none) { // treat - as ordinary character
+                if (!_Set_preceding) {
+                    _Nfa._Add_char_to_class(_Chr1);
+                }
+                _Nfa._Add_char_to_class(_Meta_dash);
+                return;
             }
 
-            if (_Mchar == _Meta_dash) { // check for valid range
-                _Next();
-                _Elem _Chr1 = static_cast<_Elem>(_Val);
-                if ((_Ret = _ClassAtom()) == _Prs_none) { // treat - as ordinary character
-                    _Nfa._Add_char_to_class(static_cast<_Elem>(_Val));
-                    _Nfa._Add_char_to_class(_Meta_dash);
-                    return;
-                }
-
-                if (_Ret == _Prs_set) {
-                    _Error(regex_constants::error_range); // set follows dash
-                }
-
-                if (_Flags & regex_constants::collate) { // translate ends of range
-                    _Val  = _Traits.translate(static_cast<_Elem>(_Val));
-                    _Chr1 = _Traits.translate(_Chr1);
-                }
-
-                if (static_cast<typename _RxTraits::_Uelem>(_Val) < static_cast<typename _RxTraits::_Uelem>(_Chr1)) {
-                    _Error(regex_constants::error_range);
-                }
-
-                _Nfa._Add_range(_Chr1, static_cast<_Elem>(_Val));
-            } else {
-                _Nfa._Add_char_to_class(static_cast<_Elem>(_Val));
+            if (_Set_preceding || _Ret == _Prs_set) {
+                _Error(regex_constants::error_range); // set precedes or follows dash
             }
+
+            if (_Flags & regex_constants::collate) { // translate ends of range
+                _Val  = _Traits.translate(static_cast<_Elem>(_Val));
+                _Chr1 = _Traits.translate(_Chr1);
+            }
+
+            if (static_cast<typename _RxTraits::_Uelem>(_Val) < static_cast<typename _RxTraits::_Uelem>(_Chr1)) {
+                _Error(regex_constants::error_range);
+            }
+
+            _Nfa._Add_range(_Chr1, static_cast<_Elem>(_Val));
+        } else if (_Ret == _Prs_chr) {
+            _Nfa._Add_char_to_class(static_cast<_Elem>(_Val));
         }
     }
 }

@@ -3031,6 +3031,23 @@ void assert_vector_bool_noexcept() {
     assert_vector_bool_noexcept_impl<non_pocma_allocator<bool>>();
 }
 
+// Also test LWG-4140 "Useless default constructors for bit reference types" for vector<bool, Alloc>::reference.
+namespace lwg_4140 {
+    struct default_constructible_type {};
+
+    void test_default_constructor(default_constructible_type) {}
+    void test_default_constructor(std::vector<bool>::reference) {}
+    void test_default_constructor(std::vector<bool, pocma_allocator<bool>>::reference) {}
+    void test_default_constructor(std::vector<bool, non_pocma_allocator<bool>>::reference) {}
+#if _HAS_CXX17
+    void test_default_constructor(std::pmr::vector<bool>::reference) {}
+#endif // _HAS_CXX17
+
+    void test() {
+        test_default_constructor({});
+    }
+} // namespace lwg_4140
+
 template <container_tag Tag>
 void assert_container() {
     check_all_container_requirements<Tag>();

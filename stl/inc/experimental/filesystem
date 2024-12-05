@@ -8,8 +8,8 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <__msvc_chrono.hpp> // for chrono::time_point
 #include <algorithm> // for replace
+#include <chrono> // for chrono::time_point
 #include <codecvt> // for codecvt_utf8_*
 #include <list> // for recursive_directory_iterator stack
 #include <locale> // for wstring_convert
