@@ -27,7 +27,7 @@ stages:
           hostArch: x64
           targetArch: x64
           asanBuild: true
-          ctestOptions: '--tests-regex stlasan'
+          testTargets: extra-asan-tests
 
   - stage: Build_And_Test_x86
     displayName: 'Build and Test x86'
@@ -41,6 +41,6 @@ stages:
           hostArch: x86
           targetArch: x86
           asanBuild: true
-          ctestOptions: '--tests-regex stlasan'
+          testTargets: extra-asan-tests
 
   # no coverage for ARM and ARM64
