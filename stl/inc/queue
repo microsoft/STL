@@ -126,8 +126,8 @@ public:
 #if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     void push_range(_Rng&& _Range) {
-        if constexpr (requires { c.append_range(_Range); }) {
-            c.append_range(_Range);
+        if constexpr (requires { c.append_range(_STD forward<_Rng>(_Range)); }) {
+            c.append_range(_STD forward<_Rng>(_Range));
         } else {
             _RANGES copy(_Range, back_insert_iterator{c});
         }
@@ -394,8 +394,8 @@ public:
     void push_range(_Rng&& _Range) {
         const size_type _Old_size = c.size();
 
-        if constexpr (requires { c.append_range(_Range); }) {
-            c.append_range(_Range);
+        if constexpr (requires { c.append_range(_STD forward<_Rng>(_Range)); }) {
+            c.append_range(_STD forward<_Rng>(_Range));
         } else {
             _RANGES copy(_Range, back_insert_iterator{c});
         }
