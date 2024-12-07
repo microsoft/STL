@@ -1602,7 +1602,7 @@ void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
 }
 
 template <class _Ty, class _InIt>
-void _Construct_in_place_by_deref(_Ty& _Val, const _InIt& _Iter)
+void _Construct_in_place_by_deref(_Ty& _Val, _InIt& _Iter)
     noexcept(noexcept(::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter))) {
     ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter);
 }
@@ -1632,14 +1632,14 @@ struct _NODISCARD _Uninitialized_backout {
     }
 
     template <class _InIt>
-    void _Emplace_back_deref(const _InIt& _Iter) {
+    void _Emplace_back_deref(_InIt& _Iter) {
         // construct a new element at *_Last from the result of dereferencing _Iter and increment.
         _STD _Construct_in_place_by_deref(*_Last, _Iter);
         ++_Last;
     }
 
     template <class _InIt>
-    void _Emplace_back_deref_move(const _InIt& _Iter) {
+    void _Emplace_back_deref_move(_InIt& _Iter) {
         // construct a new element at *_Last from the result of dereferencing _Iter and increment,
         // with lvalue cast to xvalue if necessary for uninitialized_move(_n).
         if constexpr (is_lvalue_reference_v<decltype(*_Iter)>) {
