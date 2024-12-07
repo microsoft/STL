@@ -271,9 +271,12 @@ C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
 
 ## Running All The Tests
 
-After configuring and building the project, running `ctest` from the build output directory will run all the tests.
-CTest will only display the standard error output of tests that failed. In order to get more details from CTest's
-`lit` invocations, run the tests with `ctest -V`.
+The CMake build defines a few test targets that provide the simplest mechanism for running lots of tests.
+After configuring and building the project, you can build:
+* the plain `test` target to run the "normal" set of tests (the tests run by the
+  [STL-CI][STL-CI-link] pipeline), and/or
+* the `extra-asan-tests` target to run the tests with ASan coverage (as run by the
+  [STL-ASan-CI][STL-ASan-CI-link] pipeline).
 
 ## Running A Subset Of The Tests
 
@@ -286,13 +289,13 @@ under a category in libcxx, or running a single test in `std` and `tr1`.
 These examples assume that your current directory is `C:\Dev\STL\out\x64`.
 
 * This command will run all of the test suites with verbose output.
-  + `ctest -V`
-* This command will also run all of the test suites.
+  + `ninja test extra-asan-tests`
+* This command will run all of the test suites.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test ..\..\tests\std ..\..\tests\tr1`
 * This command will run all of the std test suite.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\tests\std`
 * If you want to run a subset of a test suite, you need to point it to the right place in the sources. The following
-will run the single test found under VSO_0000000_any_calling_conventions.
+will run the single test found under `VSO_0000000_any_calling_conventions`.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
 * You can invoke `stl-lit` with any arbitrary subdirectory of a test suite. In libcxx this allows you to have finer
 control over what category of tests you would like to run. The following will run all the libcxx map tests.
@@ -305,31 +308,9 @@ control over what category of tests you would like to run. The following will ru
 
 ## Interpreting The Results Of Tests
 
-### CTest
-
-When running the tests via CTest, all of the test suites are considered to be a single test. If any single test in a
-test suite fails, CTest will simply report that the `stl` test failed.
-
-Example:
-```
-0% tests passed, 1 tests failed out of 1
-
-Total Test time (real) = 2441.55 sec
-
-The following tests FAILED:
-      1 - stl (Failed)
-```
-
-The primary utility of CTest in this case is to conveniently invoke `stl-lit.py` with the correct set of arguments.
-
-CTest will output everything that was sent to stderr for each of the failed test suites, which can be used to identify
-which individual test within the test suite failed. It can sometimes be helpful to run CTest with the `-V` option in
-order to see the stdout of the tests.
-
-### stl-lit
-
-When running the tests directly via the generated `stl-lit.py` script the result of each test will be printed. The
-format of each result is `{Result Code}: {Test Suite Name} :: {Test Name}:{Configuration Number}`.
+Whether running the tests via building the cmake test targets or directly via the generated `stl-lit.py` script, the
+result of each test will be printed. The format of each result is
+`{Result Code}: {Test Suite Name} :: {Test Name}:{Configuration Number}`.
 
 Example:
 ```

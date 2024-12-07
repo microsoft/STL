@@ -26,19 +26,12 @@ add_subdirectory(utils/stl-lit)
 find_package(Python "3.13" REQUIRED COMPONENTS Interpreter)
 
 if(NOT DEFINED LIT_FLAGS)
-    list(APPEND LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json")
+    set(LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json")
 endif()
 
+set(STL_LIT_COMMAND ${Python_EXECUTABLE} ${STL_LIT_OUTPUT} ${LIT_FLAGS})
 get_property(STL_LIT_TEST_DIRS GLOBAL PROPERTY STL_LIT_TEST_DIRS)
-list(APPEND STL_LIT_COMMAND "${STL_LIT_OUTPUT}"
-                            "${LIT_FLAGS}"
-                            "-D" "notags=ASAN"
-                            "${STL_LIT_TEST_DIRS}")
-list(APPEND STLASAN_LIT_COMMAND "${STL_LIT_OUTPUT}"
-                                "${LIT_FLAGS}"
-                                "-D" "tags=ASAN"
-                                "${STL_LIT_TEST_DIRS}")
 
-add_test(NAME stl COMMAND ${Python_EXECUTABLE} ${STL_LIT_COMMAND} COMMAND_EXPAND_LISTS)
-add_test(NAME stlasan COMMAND ${Python_EXECUTABLE} ${STLASAN_LIT_COMMAND} COMMAND_EXPAND_LISTS)
-set_tests_properties(stl stlasan PROPERTIES RUN_SERIAL ON)
+add_custom_target(test COMMAND ${STL_LIT_COMMAND} -Dnotags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
+add_custom_target(extra-asan-tests COMMAND ${STL_LIT_COMMAND} -Dtags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
+# add_custom_target(only-edg-tests COMMAND ${STL_LIT_COMMAND} -Dnotags=ASAN --just-BE-things ${STL_LIT_TEST_DIRS} USES_TERMINAL)
