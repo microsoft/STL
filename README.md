@@ -279,8 +279,8 @@ and `tr1`.
 
 Some useful `stl-lit.py` options:
 * `-v` (verbose) tells `stl-lit.py` to show us output from failed test cases.
-* `-Dnotags=ASAN` disables the "extra ASAn configs" that we typically run only in CI. This is useful to limit runtime
-  for full validation runs, but often omitted when running just a few test cases to enable the extra ASAn coverage.
+* `-Dnotags=ASAN` disables the "extra ASan configs" that we typically run only in CI. This is useful to limit runtime
+  for full validation runs, but often omitted when running just a few test cases to enable the extra ASan coverage.
 
 ## Examples
 
