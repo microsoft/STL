@@ -28,7 +28,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-_EXPORT_STD class bad_any_cast : public bad_cast { // thrown by failed any_cast
+_EXPORT_STD class _NODISCARD bad_any_cast : public bad_cast { // thrown by failed any_cast
 public:
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad any_cast";

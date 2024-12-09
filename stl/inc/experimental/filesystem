@@ -1284,7 +1284,7 @@ _NODISCARD path u8path(const basic_string<char, _Traits, _Alloc>& _Str) { // mak
     return path{_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
 }
 
-class filesystem_error : public system_error { // base of all filesystem-error exceptions
+class _NODISCARD filesystem_error : public system_error { // base of all filesystem-error exceptions
 public:
     explicit filesystem_error(
         const string& _Message, error_code _Errcode = make_error_code(errc::operation_not_permitted))

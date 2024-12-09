@@ -1790,7 +1790,7 @@ namespace filesystem {
         return iterator(_Text.cend(), this);
     }
 
-    _EXPORT_STD class filesystem_error : public system_error { // base of all filesystem-error exceptions
+    _EXPORT_STD class _NODISCARD filesystem_error : public system_error { // base of all filesystem-error exceptions
     public:
         filesystem_error(const string& _Message, const error_code _Errcode)
             : system_error(_Errcode, _Message), _What(runtime_error::what()) {}

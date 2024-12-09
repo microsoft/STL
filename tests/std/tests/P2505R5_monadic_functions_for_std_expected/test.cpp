@@ -217,8 +217,6 @@ constexpr void test_impl(Expected&& engaged, Expected&& unengaged) {
             assert(result.value().x == 77);
         }
     }
-
-    engaged.transform([](auto...) { return ""; });
 }
 
 template <IsNothrowConstructible nothrowConstructible, IsNothrowConvertible nothrowConvertible>

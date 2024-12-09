@@ -161,7 +161,7 @@ void _Implicitly_construct_in_place_by_binary_op_transform_deref_rhs(
         _Ty([&]() -> _Ty { return _Reduce_op(_STD forward<_LeftTy>(_Left), _Transform_op(*_Iter)); }());
 }
 
-struct _Parallelism_resources_exhausted : exception {
+struct _NODISCARD _Parallelism_resources_exhausted : exception {
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
         return "Insufficient resources were available to use additional parallelism.";

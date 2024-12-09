@@ -690,7 +690,8 @@ _NODISCARD _CONSTEXPR20 _Not_fn<decay_t<_Callable>> not_fn(_Callable&& _Obj)
 }
 #endif // _HAS_CXX17
 
-_EXPORT_STD class bad_function_call : public exception { // exception thrown when an empty std::function is called
+_EXPORT_STD class _NODISCARD bad_function_call : public exception {
+    // exception thrown when an empty std::function is called
 public:
     bad_function_call() noexcept {}
 

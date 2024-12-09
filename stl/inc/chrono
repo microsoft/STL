@@ -1720,7 +1720,7 @@ namespace chrono {
         sys_info second;
     };
 
-    _EXPORT_STD class nonexistent_local_time : public runtime_error {
+    _EXPORT_STD class _NODISCARD nonexistent_local_time : public runtime_error {
     public:
         template <class _Duration>
         nonexistent_local_time(const local_time<_Duration>& _Tp, const local_info& _Info)
@@ -1736,7 +1736,7 @@ namespace chrono {
         _THROW(nonexistent_local_time{_Tp, _Info});
     }
 
-    _EXPORT_STD class ambiguous_local_time : public runtime_error {
+    _EXPORT_STD class _NODISCARD ambiguous_local_time : public runtime_error {
     public:
         template <class _Duration>
         ambiguous_local_time(const local_time<_Duration>& _Tp, const local_info& _Info)
