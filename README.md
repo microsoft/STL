@@ -269,37 +269,33 @@ C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
     * Otherwise, use [LLVM's installer][] and choose to add LLVM to your `PATH` during installation.
 4. Follow the instructions below.
 
-## Running All The Tests
+## Running The Tests
 
-The CMake build defines a few test targets that provide the simplest mechanism for running lots of tests.
-After configuring and building the project, you can build:
-* the plain `test` target to run the "normal" set of tests (the tests run by the
-  [STL-CI][STL-CI-link] pipeline), and/or
-* the `extra-asan-tests` target to run the tests with ASan coverage (as run by the
-  [STL-ASan-CI][STL-ASan-CI-link] pipeline).
+Our tests are currently split across three test suites that are located at `tests\std`, `tests\tr1`, and
+`llvm-project\libcxx\test\std`. The test runner `${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` accepts paths to
+directories in the test suites and runs all tests located in the subtree rooted at those paths. This can mean executing
+the entirety of a single test suite, running all tests under a category in `libcxx`, or running a single test in `std`
+and `tr1`.
 
-## Running A Subset Of The Tests
-
-`${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` can be invoked on a subdirectory of a test suite and will execute
-all the tests under that subdirectory. This can mean executing the entirety of a single test suite, running all tests
-under a category in libcxx, or running a single test in `std` and `tr1`.
+Some useful `stl-lit.py` options:
+* `-v` (verbose) tells `stl-lit.py` to show us output from failed test cases.
+* `-Dnotags=ASAN` disables the "extra ASAn configs" that we typically run only in CI. This is useful to limit runtime
+  for full validation runs, but often omitted when running just a few test cases to enable the extra ASAn coverage.
 
 ## Examples
 
 These examples assume that your current directory is `C:\Dev\STL\out\x64`.
 
-* This command will run all of the test suites with verbose output.
-  + `ninja test extra-asan-tests`
-* This command will run all of the test suites.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test ..\..\tests\std ..\..\tests\tr1`
-* This command will run all of the std test suite.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\tests\std`
+* This command will run all of the test suites:
+  + `python tests\utils\stl-lit\stl-lit.py -Dnotags=ASAN ..\..\llvm-project\libcxx\test ..\..\tests\std ..\..\tests\tr1`
+* This command will run only the std test suite.
+  + `python tests\utils\stl-lit\stl-lit.py -Dnotags=ASAN ..\..\tests\std`
 * If you want to run a subset of a test suite, you need to point it to the right place in the sources. The following
 will run the single test found under `VSO_0000000_any_calling_conventions`.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
+  + `python tests\utils\stl-lit\stl-lit.py -Dnotags=ASAN ..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
 * You can invoke `stl-lit` with any arbitrary subdirectory of a test suite. In libcxx this allows you to have finer
 control over what category of tests you would like to run. The following will run all the libcxx map tests.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test\std\containers\associative\map`
+  + `python tests\utils\stl-lit\stl-lit.py -Dnotags=ASAN ..\..\llvm-project\libcxx\test\std\containers\associative\map`
 * You can also use the `--filter` option to include tests whose names match a regular expression. The following
   command will run tests with "atomic_wait" in their names in both the std and libcxx test suites.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test ..\..\tests\std --filter=atomic_wait`
@@ -308,8 +304,7 @@ control over what category of tests you would like to run. The following will ru
 
 ## Interpreting The Results Of Tests
 
-Whether running the tests via building the cmake test targets or directly via the generated `stl-lit.py` script, the
-result of each test will be printed. The format of each result is
+`stl-lit.py` prints the result of each test. The format of each result is
 `{Result Code}: {Test Suite Name} :: {Test Name}:{Configuration Number}`.
 
 Example:

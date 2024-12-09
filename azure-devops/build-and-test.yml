@@ -17,7 +17,7 @@ parameters:
   default: false
 - name: testTargets
   type: string
-  default: 'test'
+  default: 'STL-CI'
 - name: numShards
   type: number
   default: 8
