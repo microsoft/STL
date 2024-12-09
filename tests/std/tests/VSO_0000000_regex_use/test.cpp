@@ -670,7 +670,7 @@ void test_gh_5160() {
 }
 
 void test_gh_5165() {
-    // GH-5165: circumflex ^ should negate character classes in basic regular expressions
+    // GH-5165: Caret ^ should negate character classes in basic regular expressions
     g_regexTester.should_match("yz", "y[^x]", basic);
     g_regexTester.should_match("yz", "y[^x]", grep);
     g_regexTester.should_match("y^", "y[^x]", basic);
