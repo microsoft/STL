@@ -107,10 +107,10 @@ template <class _Err>
 unexpected(_Err) -> unexpected<_Err>;
 
 _EXPORT_STD template <class _Err>
-class bad_expected_access;
+class _NODISCARD bad_expected_access;
 
 template <>
-class bad_expected_access<void> : public exception {
+class _NODISCARD bad_expected_access<void> : public exception {
 public:
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad expected access";
@@ -131,7 +131,7 @@ protected:
 };
 
 _EXPORT_STD template <class _Err>
-class bad_expected_access : public bad_expected_access<void> {
+class _NODISCARD bad_expected_access : public bad_expected_access<void> {
 public:
     explicit bad_expected_access(_Err _Unex) noexcept(is_nothrow_move_constructible_v<_Err>) // strengthened
         : _Unexpected(_STD move(_Unex)) {}
