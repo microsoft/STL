@@ -669,16 +669,41 @@ void test_gh_5160() {
     neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
 }
 
+void test_gh_5165_syntax_option(const syntax_option_type basic_or_grep) {
+    g_regexTester.should_not_match("yx", "y[^x]", basic_or_grep);
+    g_regexTester.should_match("yz", "y[^x]", basic_or_grep);
+    g_regexTester.should_match("y^", "y[^x]", basic_or_grep);
+
+    g_regexTester.should_match("yx", "y[x^]", basic_or_grep);
+    g_regexTester.should_not_match("yz", "y[x^]", basic_or_grep);
+    g_regexTester.should_match("y^", "y[x^]", basic_or_grep);
+
+    g_regexTester.should_not_match("yx", "y[^x^]", basic_or_grep);
+    g_regexTester.should_match("yz", "y[^x^]", basic_or_grep);
+    g_regexTester.should_not_match("y^", "y[^x^]", basic_or_grep);
+
+    {
+        const test_regex no_anchor(&g_regexTester, "meo[wW]", basic_or_grep);
+        no_anchor.should_search_match("meow_machine", "meow");
+        no_anchor.should_search_match("homeowner", "meow");
+    }
+    {
+        const test_regex beginning_anchor(&g_regexTester, "^meo[wW]", basic_or_grep);
+        beginning_anchor.should_search_match("meow_machine", "meow");
+        beginning_anchor.should_search_fail("homeowner");
+    }
+    {
+        const test_regex middle_anchor(&g_regexTester, "me^o[wW]", basic_or_grep);
+        middle_anchor.should_search_fail("meow_machine");
+        middle_anchor.should_search_fail("homeowner");
+        middle_anchor.should_search_match("home^owner", "me^ow");
+    }
+}
+
 void test_gh_5165() {
     // GH-5165: Caret ^ should negate character classes in basic regular expressions
-    g_regexTester.should_match("yz", "y[^x]", basic);
-    g_regexTester.should_match("yz", "y[^x]", grep);
-    g_regexTester.should_match("y^", "y[^x]", basic);
-    g_regexTester.should_match("y^", "y[^x]", grep);
-    g_regexTester.should_not_match("yx", "y[^x]", basic);
-    g_regexTester.should_not_match("yx", "y[^x]", grep);
-    g_regexTester.should_not_match("y^", "y[^x^]", basic);
-    g_regexTester.should_not_match("y^", "y[^x^]", grep);
+    test_gh_5165_syntax_option(basic);
+    test_gh_5165_syntax_option(grep);
 }
 
 int main() {
