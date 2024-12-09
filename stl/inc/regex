@@ -3874,10 +3874,9 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
         break;
 
     case _Meta_caret:
-        if ((_L_flags & _L_anch_rstr) && !_Nfa._Beg_expr()) {
-            _Mchar = _Meta_chr;
-        }
-
+        // A caret can always negate a bracket expression,
+        // but _L_anch_rstr (used by basic/grep) restricts caret anchors to the beginning.
+        // We'll handle that restriction when we're about to add a bol node.
         break;
 
     case _Meta_dlr:
@@ -4435,7 +4434,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
             _Next();
             _Quant = _Wrapped_disjunction();
             _Expect(_Meta_rpar, regex_constants::error_paren);
-        } else if (_Mchar == _Meta_caret) { // add bol node
+        } else if (_Mchar == _Meta_caret && (!(_L_flags & _L_anch_rstr) || _Nfa._Beg_expr())) { // add bol node
             _Nfa._Add_bol();
             _Next();
             _Quant = false;
