@@ -3271,7 +3271,7 @@ void _Range_formatter_format_as_sequence(const formatter<_Ty, _CharT>& _Underlyi
     auto _Iter       = _RANGES begin(_Rng);
     const auto _Sent = _RANGES end(_Rng);
     for (; _Iter != _Sent; ++_Iter) {
-        auto&& _Elem  = *_Iter;
+        auto&& _Elem = *_Iter;
         if (_Separate) {
             _Ctx.advance_to(_STD _Fmt_write(_Ctx.out(), _Separator));
         }
