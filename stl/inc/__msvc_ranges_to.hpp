@@ -1122,8 +1122,8 @@ namespace ranges {
                     _Cont.reserve(static_cast<range_size_t<_Container>>(_RANGES size(_Range)));
                 }
 
-                auto _Iter = _RANGES begin(_Range);
-                auto _Sent = _RANGES end(_Range);
+                auto _Iter       = _RANGES begin(_Range);
+                const auto _Sent = _RANGES end(_Range);
                 for (; _Iter != _Sent; ++_Iter) {
                     auto&& _Elem  = *_Iter;
                     using _ElemTy = decltype(_Elem);
