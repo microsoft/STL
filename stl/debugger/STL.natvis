@@ -1112,8 +1112,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <Type Name="std::basic_string_view&lt;*,*&gt;">
     <Intrinsic Name="size" Expression="_Mysize" />
     <Intrinsic Name="data" Expression="_Mydata" />
-    <DisplayString>{_Mydata,[_Mysize]}</DisplayString>
-    <StringView>_Mydata,[_Mysize]</StringView>
+    <DisplayString>{_Mydata,[_Mysize]na}</DisplayString>
+    <StringView>_Mydata,[_Mysize]na</StringView>
     <Expand>
       <Item Name="[size]" ExcludeView="simple">size()</Item>
       <ArrayItems>
@@ -1137,7 +1137,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Expand>
       <Item Name="[ptr]">_Mydata + _Myoff</Item>
       <Item Name="[offset]">_Myoff</Item>
-      <Item Name="[string_view]">_Mydata,[_Mysize]</Item>
+      <Item Name="[string_view]">_Mydata,[_Mysize]na</Item>
     </Expand>
   </Type>
 
