@@ -1137,7 +1137,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Expand>
       <Item Name="[ptr]">_Mydata + _Myoff</Item>
       <Item Name="[offset]">_Myoff</Item>
-      <Item Name="[string_view]">_Mydata,[_Mysize]</Item>
+      <Item Name="[string_view]">_Mydata,[_Mysize]na</Item>
     </Expand>
   </Type>
 
