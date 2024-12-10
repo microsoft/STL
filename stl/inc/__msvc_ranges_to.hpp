@@ -1121,7 +1121,11 @@ namespace ranges {
                 if constexpr (_Sized_and_reservable<_Rng, _Container>) {
                     _Cont.reserve(static_cast<range_size_t<_Container>>(_RANGES size(_Range)));
                 }
-                for (auto&& _Elem : _Range) {
+
+                auto _Iter       = _RANGES begin(_Range);
+                const auto _Sent = _RANGES end(_Range);
+                for (; _Iter != _Sent; ++_Iter) {
+                    auto&& _Elem  = *_Iter;
                     using _ElemTy = decltype(_Elem);
                     if constexpr (_Can_emplace_back<_Container, _ElemTy>) {
                         _Cont.emplace_back(_STD forward<_ElemTy>(_Elem));
