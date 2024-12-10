@@ -1187,7 +1187,6 @@ _NODISCARD bool operator!=(const match_results<_BidIt, _Alloc>& _Left, const mat
 }
 #endif // !_HAS_CXX20
 
-_INLINE_VAR constexpr unsigned int _BRE_MAX_GRP   = 9U;
 _INLINE_VAR constexpr int _BRE_MAX_BACKREF_DIGITS = 1;
 
 _INLINE_VAR constexpr unsigned int _Bmp_max   = 256U; // must fit in an unsigned int
@@ -4343,8 +4342,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom 
             } else {
                 _Nfa._Add_char(static_cast<_Elem>(_Val));
             }
-        } else if (((_L_flags & _L_lim_bckr) && _BRE_MAX_GRP < static_cast<size_t>(_Val))
-                   || _Grp_idx < static_cast<size_t>(_Val) || _Finished_grps.size() <= static_cast<size_t>(_Val)
+        } else if (_Grp_idx < static_cast<size_t>(_Val) || _Finished_grps.size() <= static_cast<size_t>(_Val)
                    || !_Finished_grps[static_cast<size_t>(_Val)]) {
             _Error(regex_constants::error_backref);
         } else {
