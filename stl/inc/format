@@ -3267,8 +3267,11 @@ void _Range_formatter_format_as_sequence(const formatter<_Ty, _CharT>& _Underlyi
     const basic_string_view<_CharT> _Separator, const basic_string_view<_CharT> _Opening_bracket,
     const basic_string_view<_CharT> _Closing_bracket, _Range&& _Rng, _FormatContext& _Ctx) {
     _Ctx.advance_to(_STD _Fmt_write(_Ctx.out(), _Opening_bracket));
-    bool _Separate = false;
-    for (auto&& _Elem : _Rng) {
+    bool _Separate   = false;
+    auto _Iter       = _RANGES begin(_Rng);
+    const auto _Sent = _RANGES end(_Rng);
+    for (; _Iter != _Sent; ++_Iter) {
+        auto&& _Elem = *_Iter;
         if (_Separate) {
             _Ctx.advance_to(_STD _Fmt_write(_Ctx.out(), _Separator));
         }
