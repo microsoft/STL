@@ -11,16 +11,16 @@ variables:
   value: 'EnableSpotVM -equals false'
   readonly: true
 - name: tmpDir
-  value: 'D:\Temp'
+  value: 'C:\stlTemp'
   readonly: true
 - name: buildOutputLocation
-  value: 'D:\build'
+  value: 'C:\stlBuild'
   readonly: true
 - name: benchmarkBuildOutputLocation
-  value: 'D:\benchmark'
+  value: 'C:\stlBenchmark'
   readonly: true
 - name: validationBuildOutputLocation
-  value: 'D:\validation'
+  value: 'C:\stlValidation'
   readonly: true
 - name: Codeql.SkipTaskAutoInjection
   value: true

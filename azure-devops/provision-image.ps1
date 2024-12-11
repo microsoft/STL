@@ -75,7 +75,7 @@ Function DownloadAndInstall {
 
   try {
     Write-Host "Downloading $Name..."
-    $tempPath = 'D:\installerTemp'
+    $tempPath = 'C:\installerTemp'
     mkdir $tempPath -Force | Out-Null
     $fileName = [uri]::new($Url).Segments[-1]
     $installerPath = Join-Path $tempPath $fileName
