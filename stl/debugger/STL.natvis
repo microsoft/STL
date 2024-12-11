@@ -1004,7 +1004,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
    * The `na` format specifier means "no address". For more info, see:
    * https://learn.microsoft.com/en-us/visualstudio/debugger/format-specifiers-in-cpp?view=vs-2022
    -->
-  <Type Name="std::basic_string&lt;*,*&gt;">
+  <Type Name="std::basic_string&lt;*&gt;">
     <Intrinsic Name="size" Expression="_Mypair._Myval2._Mysize" />
     <Intrinsic Name="capacity" Expression="_Mypair._Myval2._Myres" />
     <!-- _BUF_SIZE = 16 / sizeof($T1) &lt; 1 ? 1 : 16 / sizeof($T1) -->
