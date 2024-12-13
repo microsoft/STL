@@ -109,8 +109,6 @@ public:
         }
 
     private:
-        _CONSTEXPR23 reference() noexcept : _Pbitset(nullptr), _Mypos(0) {}
-
         _CONSTEXPR23 reference(bitset<_Bits>& _Bitset, const size_t _Pos) noexcept : _Pbitset(&_Bitset), _Mypos(_Pos) {}
 
         bitset<_Bits>* _Pbitset;

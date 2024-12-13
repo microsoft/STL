@@ -83,9 +83,7 @@ void test_dll() {
     TheFuncProc pFunc = reinterpret_cast<TheFuncProc>(GetProcAddress(hLibrary, "DllTest"));
     assert(pFunc != nullptr);
     pFunc();
-#if defined(_DLL) || !defined(__SANITIZE_ADDRESS__) // TRANSITION, VSO-2046190
     FreeLibrary(hLibrary);
-#endif // defined(_DLL) || !defined(__SANITIZE_ADDRESS__)
 #endif // ^^^ !defined(_M_CEE) ^^^
 }
 
