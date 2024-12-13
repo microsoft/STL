@@ -83,9 +83,7 @@ void test_dll() {
     TheFuncProc pFunc = reinterpret_cast<TheFuncProc>(GetProcAddress(hLibrary, "DllTest"));
     assert(pFunc != nullptr);
     pFunc();
-#if defined(_MSVC_INTERNAL_TESTING) || defined(_DLL) || !defined(__SANITIZE_ADDRESS__) // TRANSITION, vs17.13p2
     FreeLibrary(hLibrary);
-#endif // ^^^ no workaround ^^^
 #endif // ^^^ !defined(_M_CEE) ^^^
 }
 

@@ -14,7 +14,7 @@ $ErrorActionPreference = 'Stop'
 $CurrentDate = Get-Date
 
 $Location = 'eastus2'
-$VMSize = 'Standard_D32ads_v5'
+$VMSize = 'Standard_F32as_v6'
 $ProtoVMName = 'PROTOTYPE'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
@@ -141,6 +141,7 @@ Display-ProgressBar -Status 'Creating prototype VM'
 $VM = New-AzVMConfig `
   -VMName $ProtoVMName `
   -VMSize $VMSize `
+  -DiskControllerType 'NVMe' `
   -Priority 'Regular'
 
 $VM = Set-AzVMOperatingSystem `
@@ -261,6 +262,9 @@ New-AzRoleAssignment `
 Display-ProgressBar -Status 'Creating image definition'
 
 $ImageDefinitionName = $ResourceGroupName + '-ImageDefinition'
+$FeatureTrustedLaunch = @{ Name = 'SecurityType'; Value = 'TrustedLaunch'; }
+$FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI, NVMe'; }
+$ImageDefinitionFeatures = @($FeatureTrustedLaunch, $FeatureNVMe)
 New-AzGalleryImageDefinition `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
@@ -271,7 +275,7 @@ New-AzGalleryImageDefinition `
   -Publisher $ImagePublisher `
   -Offer $ImageOffer `
   -Sku $ImageSku `
-  -Feature @(@{ Name = 'SecurityType'; Value = 'TrustedLaunch'; }) `
+  -Feature $ImageDefinitionFeatures `
   -HyperVGeneration 'V2' | Out-Null
 
 ####################################################################################################
