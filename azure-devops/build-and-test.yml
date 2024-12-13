@@ -15,9 +15,9 @@ parameters:
 - name: buildBenchmarks
   type: boolean
   default: false
-- name: ctestOptions
+- name: testTargets
   type: string
-  default: '--exclude-regex stlasan'
+  default: 'STL-CI'
 - name: numShards
   type: number
   default: 8
@@ -61,5 +61,5 @@ jobs:
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
-      ctestOptions: ${{ parameters.ctestOptions }}
+      testTargets: ${{ parameters.testTargets }}
       skipTesting: ${{ parameters.skipTesting }}
