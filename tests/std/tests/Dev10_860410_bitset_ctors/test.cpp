@@ -12,6 +12,25 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
+// Also test LWG-4140 "Useless default constructors for bit reference types" for bitset<N>::reference.
+namespace lwg_4140 {
+    struct default_constructible_type {};
+
+    void test_default_constructor(default_constructible_type) {}
+    void test_default_constructor(bitset<0>::reference) {}
+    void test_default_constructor(bitset<1>::reference) {}
+    void test_default_constructor(bitset<8>::reference) {}
+    void test_default_constructor(bitset<16>::reference) {}
+    void test_default_constructor(bitset<32>::reference) {}
+    void test_default_constructor(bitset<48>::reference) {}
+    void test_default_constructor(bitset<64>::reference) {}
+    void test_default_constructor(bitset<96>::reference) {}
+
+    void test() { // COMPILE-ONLY
+        test_default_constructor({});
+    }
+} // namespace lwg_4140
+
 const char parsedStr[] = "1000110111110011110111111111111111010111110111100101010100001001"
                          "1111111111111111111111111111111111111111111111111111111111111111"
                          "0111111111111111111111111111111111111111111111111111111111111111"

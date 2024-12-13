@@ -1163,10 +1163,10 @@ namespace test {
         if constexpr (is_sized) {
             const auto sz = to_unsigned(static_cast<Diff>(ranges::distance(r)));
             return ranges::subrange<rediff_iter, rediff_sent, ranges::subrange_kind::sized>{
-                rediff_iter{r.begin()}, rediff_sent{r.end()}, sz};
+                rediff_iter{ranges::begin(r)}, rediff_sent{ranges::end(r)}, sz};
         } else {
             return ranges::subrange<rediff_iter, rediff_sent, ranges::subrange_kind::unsized>{
-                rediff_iter{r.begin()}, rediff_sent{r.end()}};
+                rediff_iter{ranges::begin(r)}, rediff_sent{ranges::end(r)}};
         }
     }
 } // namespace test

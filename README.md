@@ -141,7 +141,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.13 Preview 1 or later.
+1. Install Visual Studio 2022 17.13 Preview 2 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
@@ -160,7 +160,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.13 Preview 1 or later.
+1. Install Visual Studio 2022 17.13 Preview 2 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
@@ -269,34 +269,33 @@ C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
     * Otherwise, use [LLVM's installer][] and choose to add LLVM to your `PATH` during installation.
 4. Follow the instructions below.
 
-## Running All The Tests
+## Running The Tests
 
-After configuring and building the project, running `ctest` from the build output directory will run all the tests.
-CTest will only display the standard error output of tests that failed. In order to get more details from CTest's
-`lit` invocations, run the tests with `ctest -V`.
+Our tests are currently split across three test suites that are located at `tests\std`, `tests\tr1`, and
+`llvm-project\libcxx\test\std`. The test runner `${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` accepts paths to
+directories in the test suites and runs all tests located in the subtree rooted at those paths. This can mean executing
+the entirety of a single test suite, running all tests under a category in `libcxx`, or running a single test in `std`
+and `tr1`.
 
-## Running A Subset Of The Tests
-
-`${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` can be invoked on a subdirectory of a test suite and will execute
-all the tests under that subdirectory. This can mean executing the entirety of a single test suite, running all tests
-under a category in libcxx, or running a single test in `std` and `tr1`.
+Some useful `stl-lit.py` options:
+* `-v` (verbose) tells `stl-lit.py` to show us output from failed test cases.
+* `-Dnotags=ASAN` disables the "extra ASan configs" that we typically run only in CI. This is useful to limit runtime
+  for full validation runs, but often omitted when running just a few test cases to enable the extra ASan coverage.
 
 ## Examples
 
 These examples assume that your current directory is `C:\Dev\STL\out\x64`.
 
-* This command will run all of the test suites with verbose output.
-  + `ctest -V`
-* This command will also run all of the test suites.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test ..\..\tests\std ..\..\tests\tr1`
-* This command will run all of the std test suite.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\tests\std`
+* This command will run all of the test suites:
+  + `python tests\utils\stl-lit\stl-lit.py -Dnotags=ASAN ..\..\llvm-project\libcxx\test ..\..\tests\std ..\..\tests\tr1`
+* This command will run only the std test suite.
+  + `python tests\utils\stl-lit\stl-lit.py -Dnotags=ASAN ..\..\tests\std`
 * If you want to run a subset of a test suite, you need to point it to the right place in the sources. The following
-will run the single test found under VSO_0000000_any_calling_conventions.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
+will run the single test found under `VSO_0000000_any_calling_conventions`.
+  + `python tests\utils\stl-lit\stl-lit.py -Dnotags=ASAN ..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
 * You can invoke `stl-lit` with any arbitrary subdirectory of a test suite. In libcxx this allows you to have finer
 control over what category of tests you would like to run. The following will run all the libcxx map tests.
-  + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test\std\containers\associative\map`
+  + `python tests\utils\stl-lit\stl-lit.py -Dnotags=ASAN ..\..\llvm-project\libcxx\test\std\containers\associative\map`
 * You can also use the `--filter` option to include tests whose names match a regular expression. The following
   command will run tests with "atomic_wait" in their names in both the std and libcxx test suites.
   + `python tests\utils\stl-lit\stl-lit.py ..\..\llvm-project\libcxx\test ..\..\tests\std --filter=atomic_wait`
@@ -305,31 +304,8 @@ control over what category of tests you would like to run. The following will ru
 
 ## Interpreting The Results Of Tests
 
-### CTest
-
-When running the tests via CTest, all of the test suites are considered to be a single test. If any single test in a
-test suite fails, CTest will simply report that the `stl` test failed.
-
-Example:
-```
-0% tests passed, 1 tests failed out of 1
-
-Total Test time (real) = 2441.55 sec
-
-The following tests FAILED:
-      1 - stl (Failed)
-```
-
-The primary utility of CTest in this case is to conveniently invoke `stl-lit.py` with the correct set of arguments.
-
-CTest will output everything that was sent to stderr for each of the failed test suites, which can be used to identify
-which individual test within the test suite failed. It can sometimes be helpful to run CTest with the `-V` option in
-order to see the stdout of the tests.
-
-### stl-lit
-
-When running the tests directly via the generated `stl-lit.py` script the result of each test will be printed. The
-format of each result is `{Result Code}: {Test Suite Name} :: {Test Name}:{Configuration Number}`.
+`stl-lit.py` prints the result of each test. The format of each result is
+`{Result Code}: {Test Suite Name} :: {Test Name}:{Configuration Number}`.
 
 Example:
 ```

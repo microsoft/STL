@@ -137,11 +137,6 @@ template <>
 struct is_execution_policy<execution::unsequenced_policy> : true_type {};
 #endif // _HAS_CXX20
 
-template <class _Ty, class _FwdIt>
-void _Construct_in_place_by_deref(_Ty& _Val, const _FwdIt& _Iter) {
-    ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter);
-}
-
 template <class _Ty, class _UnaryOp, class _FwdIt>
 void _Construct_in_place_by_transform_deref(_Ty& _Val, _UnaryOp _Transform_op, const _FwdIt& _Iter) {
     ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(_Transform_op(*_Iter));
@@ -166,7 +161,7 @@ void _Implicitly_construct_in_place_by_binary_op_transform_deref_rhs(
         _Ty([&]() -> _Ty { return _Reduce_op(_STD forward<_LeftTy>(_Left), _Transform_op(*_Iter)); }());
 }
 
-struct _Parallelism_resources_exhausted : exception {
+struct _NODISCARD _Parallelism_resources_exhausted : exception {
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
         return "Insufficient resources were available to use additional parallelism.";
