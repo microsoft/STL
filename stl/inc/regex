@@ -4424,7 +4424,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
         } else if (_Mchar == _Meta_caret && (!(_L_flags & _L_anch_rstr) || !_Found)) { // add bol node
             _Nfa._Add_bol();
             _Next();
-            if ((_L_flags & _L_star_beg) && _Mchar == _Meta_star) {
+            if ((_L_flags & _L_star_beg) && _Mchar == _Meta_star && !_Found) {
                 _Nfa._Add_char(_Char);
                 _Next();
             } else {
