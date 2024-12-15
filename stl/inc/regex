@@ -4434,7 +4434,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
             _Nfa._Add_eol();
             _Next();
             _Quant = false;
-        } else if ((_Mchar == _Meta_star && (!(_L_flags & _L_star_beg) || !_Found)) || _Mchar == _Meta_plus
+        } else if ((_Mchar == _Meta_star && (!(_L_flags & _L_star_beg) || _Found)) || _Mchar == _Meta_plus
                    || _Mchar == _Meta_query || _Mchar == _Meta_lbr) {
             _Error(regex_constants::error_badrepeat);
         } else if (_Mchar == _Meta_rbr && !(_L_flags & _L_paren_bal)) {
