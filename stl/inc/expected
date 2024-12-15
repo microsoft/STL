@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 _EXPORT_STD template <class _Err>
-class unexpected;
+class _NODISCARD unexpected;
 
 template <class _Err>
 struct _Check_unexpected_argument : true_type {
@@ -39,7 +39,7 @@ struct _Check_unexpected_argument : true_type {
 
 // [expected.un.general]
 _EXPORT_STD template <class _Err>
-class unexpected {
+class _NODISCARD unexpected {
     static_assert(_Check_unexpected_argument<_Err>::value);
 
     template <class _Ty, class _Err2>
@@ -107,10 +107,10 @@ template <class _Err>
 unexpected(_Err) -> unexpected<_Err>;
 
 _EXPORT_STD template <class _Err>
-class bad_expected_access;
+class _NODISCARD bad_expected_access;
 
 template <>
-class bad_expected_access<void> : public exception {
+class _NODISCARD bad_expected_access<void> : public exception {
 public:
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad expected access";
@@ -131,7 +131,7 @@ protected:
 };
 
 _EXPORT_STD template <class _Err>
-class bad_expected_access : public bad_expected_access<void> {
+class _NODISCARD bad_expected_access : public bad_expected_access<void> {
 public:
     explicit bad_expected_access(_Err _Unex) noexcept(is_nothrow_move_constructible_v<_Err>) // strengthened
         : _Unexpected(_STD move(_Unex)) {}
@@ -205,7 +205,7 @@ concept _Trivially_move_constructible_assignable_destructible =
     && is_trivially_destructible_v<_Type>;
 
 _EXPORT_STD template <class _Ty, class _Err>
-class expected {
+class _NODISCARD expected {
 private:
     static_assert(_Check_expected_argument<_Ty>::value);
     static_assert(_Check_unexpected_argument<_Err>::value);
@@ -1210,7 +1210,7 @@ concept _Expected_unary_move_assignable = is_move_assignable_v<_Err> && is_move_
 
 template <class _Ty, class _Err>
     requires is_void_v<_Ty>
-class expected<_Ty, _Err> {
+class _NODISCARD expected<_Ty, _Err> {
 private:
     static_assert(_Check_unexpected_argument<_Err>::value);
 

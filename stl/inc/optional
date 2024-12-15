@@ -35,7 +35,7 @@ _EXPORT_STD struct nullopt_t { // no-value state indicator
 };
 _EXPORT_STD inline constexpr nullopt_t nullopt{nullopt_t::_Tag{}};
 
-_EXPORT_STD class bad_optional_access : public exception {
+_EXPORT_STD class _NODISCARD bad_optional_access : public exception {
 public:
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad optional access";

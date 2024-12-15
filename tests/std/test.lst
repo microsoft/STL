@@ -782,3 +782,4 @@ tests\VSO_1775715_user_defined_modules
 tests\VSO_1804139_static_analysis_warning_with_single_element_array
 tests\VSO_1925201_iter_traits
 tests\VSO_2252142_wrong_C5046
+tests\VSO_2318081_bogus_const_overloading

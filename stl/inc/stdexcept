@@ -17,7 +17,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 _STD_BEGIN
-_EXPORT_STD class logic_error : public exception { // base of all logic-error exceptions
+_EXPORT_STD class _NODISCARD logic_error : public exception { // base of all logic-error exceptions
 public:
     using _Mybase = exception;
 
@@ -33,7 +33,7 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-_EXPORT_STD class domain_error : public logic_error { // base of all domain-error exceptions
+_EXPORT_STD class _NODISCARD domain_error : public logic_error { // base of all domain-error exceptions
 public:
     using _Mybase = logic_error;
 
@@ -49,7 +49,7 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-_EXPORT_STD class invalid_argument : public logic_error { // base of all invalid-argument exceptions
+_EXPORT_STD class _NODISCARD invalid_argument : public logic_error { // base of all invalid-argument exceptions
 public:
     using _Mybase = logic_error;
 
@@ -65,7 +65,7 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-_EXPORT_STD class length_error : public logic_error { // base of all length-error exceptions
+_EXPORT_STD class _NODISCARD length_error : public logic_error { // base of all length-error exceptions
 public:
     using _Mybase = logic_error;
 
@@ -81,7 +81,7 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-_EXPORT_STD class out_of_range : public logic_error { // base of all out-of-range exceptions
+_EXPORT_STD class _NODISCARD out_of_range : public logic_error { // base of all out-of-range exceptions
 public:
     using _Mybase = logic_error;
 
@@ -97,7 +97,7 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-_EXPORT_STD class runtime_error : public exception { // base of all runtime-error exceptions
+_EXPORT_STD class _NODISCARD runtime_error : public exception { // base of all runtime-error exceptions
 public:
     using _Mybase = exception;
 
@@ -113,7 +113,7 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-_EXPORT_STD class overflow_error : public runtime_error { // base of all overflow-error exceptions
+_EXPORT_STD class _NODISCARD overflow_error : public runtime_error { // base of all overflow-error exceptions
 public:
     using _Mybase = runtime_error;
 
@@ -129,7 +129,7 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-_EXPORT_STD class underflow_error : public runtime_error { // base of all underflow-error exceptions
+_EXPORT_STD class _NODISCARD underflow_error : public runtime_error { // base of all underflow-error exceptions
 public:
     using _Mybase = runtime_error;
 
@@ -145,7 +145,7 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-_EXPORT_STD class range_error : public runtime_error { // base of all range-error exceptions
+_EXPORT_STD class _NODISCARD range_error : public runtime_error { // base of all range-error exceptions
 public:
     using _Mybase = runtime_error;
 

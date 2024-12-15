@@ -49,8 +49,10 @@ def beNice(prio: str) -> list[ConfigAction]:
     }
     psutil.Process().nice(priority_map[prio])
   except ImportError:
-    import sys
-    print(f'NOTE: Module "psutil" is not installed, so the priority setting "{prio}" has no effect.', file=sys.stderr)
+    if not hasattr(beNice, 'suppress'):
+      import sys
+      print(f'NOTE: Module "psutil" is not installed, so the priority setting "{prio}" has no effect.', file=sys.stderr)
+      beNice.suppress = True
   return []
 
 
