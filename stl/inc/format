@@ -3285,11 +3285,11 @@ void _Range_formatter_format_as_string(_Range&& _Rng, _FormatContext& _Ctx, cons
     if constexpr (_RANGES contiguous_range<_Range>) {
         const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rng));
 
-#if _CONTAINER_DEBUG_LEVEL > 0
+#ifdef _DEBUG
         if constexpr (sizeof(_Size) > sizeof(size_t)) {
-            _STL_VERIFY(_Size <= SIZE_MAX, "The size of the formatted range is too large for a valid range.");
+            _STL_VERIFY(_Size <= size_t{PTRDIFF_MAX}, "contiguous range has impossible size.");
         }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // defined(_DEBUG)
 
         formatter<basic_string_view<_CharT>, _CharT> _String_view_formatter;
         if (_Debug) {

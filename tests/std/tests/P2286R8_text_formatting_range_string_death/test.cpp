@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <cstddef>
 #include <cstdint>
 #include <format>
@@ -74,6 +72,7 @@ struct based_huge_iterator {
         return {i.base_, i.offset_ - n};
     }
     friend difference_type operator-(based_huge_iterator i, based_huge_iterator j) noexcept {
+        assert(i.base_ == j.base_);
         return i.offset_ - j.offset_;
     }
 
@@ -96,16 +95,18 @@ struct based_huge_view : ranges::view_interface<based_huge_view> {
 static_assert(ranges::contiguous_range<based_huge_view>);
 
 void test_case_invalid_range_size() {
-    based_huge_view v{.base_ = "", .size_ = SIZE_MAX};
+    based_huge_view v{.base_ = "", .size_ = static_cast<size_t>(PTRDIFF_MAX) + 1};
     (void) format("{:s}", v);
 }
 
 int main(int argc, char** argv) {
     std_testing::death_test_executive exec;
 
+#ifdef _DEBUG
     exec.add_death_tests({
         test_case_invalid_range_size,
     });
+#endif // defined(_DEBUG)
 
     return exec.run(argc, argv);
 }
