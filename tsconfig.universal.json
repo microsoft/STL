@@ -7,6 +7,5 @@
         "allowUnusedLabels": false,
         "exactOptionalPropertyTypes": true,
         "strict": true,
-        "forceConsistentCasingInFileNames": true,
     },
 }
