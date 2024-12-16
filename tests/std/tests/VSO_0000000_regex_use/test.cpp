@@ -774,7 +774,7 @@ void test_gh_5165_syntax_option(const syntax_option_type basic_or_grep) {
 }
 
 void test_gh_5165() {
-    // GH-5165: Caret ^ should negate character classes in basic regular expressions
+    // GH-5165: Revise caret parsing in basic and grep mode
     test_gh_5165_syntax_option(basic);
     test_gh_5165_syntax_option(grep);
 
