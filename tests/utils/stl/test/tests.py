@@ -72,7 +72,7 @@ class STLTest(Test):
                           msg)
 
         if 'test-only-edg' in self.config.available_features and 'edg' not in self.requires:
-            return Result(UNSUPPORTED, 'We run only /BE tests with the edg_only flag')
+            return Result(UNSUPPORTED, 'We run only /BE tests with the test-only-edg flag')
 
         if 'edg_drop' in self.config.available_features:
             if 'edg' not in self.requires:
