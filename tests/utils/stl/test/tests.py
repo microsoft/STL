@@ -71,6 +71,10 @@ class STLTest(Test):
             return Result(UNSUPPORTED, "Test does not require any of the features specified in limit_to_features: %s" %
                           msg)
 
+        if 'edg_only' in self.config.available_features:
+            if not 'edg' in self.requires:
+                return Result(UNSUPPORTED, 'We only run /BE tests with the edg_only flag')
+
         if 'edg_drop' in self.config.available_features:
             if not 'edg' in self.requires:
                 return Result(UNSUPPORTED, 'We only run /BE tests with the edg drop')
