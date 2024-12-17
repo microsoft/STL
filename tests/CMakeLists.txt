@@ -34,4 +34,4 @@ get_property(STL_LIT_TEST_DIRS GLOBAL PROPERTY STL_LIT_TEST_DIRS)
 
 add_custom_target(STL-CI COMMAND ${STL_LIT_COMMAND} -Dnotags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
 add_custom_target(STL-ASan-CI COMMAND ${STL_LIT_COMMAND} -Dtags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
-add_custom_target(STL-only-edg-tests COMMAND ${STL_LIT_COMMAND} -Dnotags=ASAN -Dedg_only=True --xunit-xml-output test-results.xml ${STL_LIT_TEST_DIRS} USES_TERMINAL)
+add_custom_target(test-only-edg COMMAND ${STL_LIT_COMMAND} -Dnotags=ASAN -Dtest-only-edg=True --xunit-xml-output test-results.xml ${STL_LIT_TEST_DIRS} USES_TERMINAL)

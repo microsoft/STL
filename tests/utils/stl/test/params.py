@@ -58,9 +58,9 @@ def beNice(prio: str) -> list[ConfigAction]:
 
 def getDefaultParameters(config, litConfig):
     DEFAULT_PARAMETERS = [
-      Parameter(name='edg_only', choices=[True, False], type=bool, default=False,
+      Parameter(name='test-only-edg', choices=[True, False], type=bool, default=False,
                 help="Whether to only run edg tests (those that use the /BE flag).",
-                actions=lambda enabled: [AddFeature(name='edg_only')] if enabled else []),
+                actions=lambda enabled: [AddFeature(name='test-only-edg')] if enabled else []),
       Parameter(name='long_tests', choices=[True, False], type=bool, default=True,
                 help="Whether to run tests that take a long time. This can be useful when running on a slow device.",
                 actions=lambda enabled: [AddFeature(name='long_tests')] if enabled else []),
