@@ -78,9 +78,8 @@ void test_operator_new(typename Gen::promise_type& p, const Alloc2& alloc2 = {})
     }
 
     // Test 'operator new(size_t, allocator_arg_t, const Alloc2&, const Args&...)'
-    constexpr bool has_op_new2 = HasOperatorNew<Promise, size_t, allocator_arg_t, const Alloc2&, int, int>;
-    static_assert(has_op_new2 == (same_as<Alloc, void> || convertible_to<const Alloc2&, Alloc>) );
-    if constexpr (has_op_new2) {
+    // This operator new is unconstrained.
+    if constexpr (same_as<Alloc, void> || convertible_to<const Alloc2&, Alloc>) {
         const size_t size = __STDCPP_DEFAULT_NEW_ALIGNMENT__;
         void* const mem   = p.operator new(size, allocator_arg, alloc2, 0, 0);
         assert(reinterpret_cast<uintptr_t>(mem) % __STDCPP_DEFAULT_NEW_ALIGNMENT__ == 0);
@@ -88,10 +87,9 @@ void test_operator_new(typename Gen::promise_type& p, const Alloc2& alloc2 = {})
     }
 
     // Test 'operator new(size_t, const This&, allocator_arg_t, const Alloc2&, const Args&...)'
+    // This operator new is unconstrained.
     struct S {};
-    constexpr bool has_op_new3 = HasOperatorNew<Promise, size_t, const S&, allocator_arg_t, const Alloc2&, int, int>;
-    static_assert(has_op_new3 == (same_as<Alloc, void> || convertible_to<const Alloc2&, Alloc>) );
-    if constexpr (has_op_new3) {
+    if constexpr (same_as<Alloc, void> || convertible_to<const Alloc2&, Alloc>) {
         const size_t size = __STDCPP_DEFAULT_NEW_ALIGNMENT__;
         const S s;
         void* const mem = p.operator new(size, s, allocator_arg, alloc2, 0, 0);
