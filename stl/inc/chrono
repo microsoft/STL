@@ -473,10 +473,12 @@ namespace chrono {
     private:
         unsigned char _Weekday;
 
-        // courtesy of Howard Hinnant
+        // courtesy of Howard Hinnant (modified to avoid overflow)
         // https://howardhinnant.github.io/date_algorithms.html#weekday_from_days
         _NODISCARD static constexpr unsigned int _Weekday_from_days(int _Tp) noexcept {
-            return static_cast<unsigned int>(_Tp >= -4 ? (_Tp + 4) % 7 : (_Tp + 5) % 7 + 6);
+            _STL_INTERNAL_STATIC_ASSERT(~0u % 7u == 3u); // offset for `_Tp < 0` needs to change
+            const auto _Before_modulo = static_cast<unsigned int>(_Tp) + (_Tp >= 0 ? 4u : 0u);
+            return _Before_modulo % 7u; // separate expression for MSVC codegen, see GH-5153
         }
     };
 
@@ -1718,7 +1720,7 @@ namespace chrono {
         sys_info second;
     };
 
-    _EXPORT_STD class nonexistent_local_time : public runtime_error {
+    _EXPORT_STD class _NODISCARD nonexistent_local_time : public runtime_error {
     public:
         template <class _Duration>
         nonexistent_local_time(const local_time<_Duration>& _Tp, const local_info& _Info)
@@ -1734,7 +1736,7 @@ namespace chrono {
         _THROW(nonexistent_local_time{_Tp, _Info});
     }
 
-    _EXPORT_STD class ambiguous_local_time : public runtime_error {
+    _EXPORT_STD class _NODISCARD ambiguous_local_time : public runtime_error {
     public:
         template <class _Duration>
         ambiguous_local_time(const local_time<_Duration>& _Tp, const local_info& _Info)
@@ -5270,7 +5272,7 @@ namespace chrono {
     basic_ostream<_CharT, _Traits>& operator<<(
         basic_ostream<_CharT, _Traits>& _Os, const zoned_time<_Duration, _TimeZonePtr>& _Val) {
         const auto _Info = _Val.get_info();
-        return _Os << _Local_time_format_t<_Duration>{_Val.get_local_time(), &_Info.abbrev};
+        return _Os << _Local_time_format_t<common_type_t<_Duration, seconds>>{_Val.get_local_time(), &_Info.abbrev};
     }
 
     template <class _CharT>
@@ -6113,11 +6115,10 @@ constexpr bool enable_nonlocking_formatter_optimization<_CHRONO _Local_time_form
 
 template <class _Duration, class _TimeZonePtr, _Format_supported_charT _CharT>
 struct formatter<_CHRONO zoned_time<_Duration, _TimeZonePtr>, _CharT>
-    : formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT> {
-
+    : formatter<_CHRONO _Local_time_format_t<common_type_t<_Duration, _CHRONO seconds>>, _CharT> {
     template <class _FormatContext>
     auto format(const _CHRONO zoned_time<_Duration, _TimeZonePtr>& _Val, _FormatContext& _FormatCtx) const {
-        using _Mybase    = formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>;
+        using _Mybase    = formatter<_CHRONO _Local_time_format_t<common_type_t<_Duration, _CHRONO seconds>>, _CharT>;
         const auto _Info = _Val.get_info();
         return _Mybase::format({_Val.get_local_time(), &_Info.abbrev, &_Info.offset}, _FormatCtx);
     }

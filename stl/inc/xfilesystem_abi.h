@@ -232,11 +232,6 @@ struct __std_fs_convert_result {
     __std_win_error _Err;
 };
 
-struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
-    unsigned long long _Volume_serial_number; //    ULONGLONG VolumeSerialNumber;
-    unsigned char _Id[16]; //    FILE_ID_128 FileId;
-}; // } FILE_ID_INFO, ...;
-
 enum class __std_fs_copy_options {
     _None = 0x0,
 
@@ -303,8 +298,13 @@ _NODISCARD __std_fs_convert_result __stdcall __std_fs_convert_wide_to_narrow_rep
     _In_ __std_code_page _Code_page, _In_reads_(_Input_len) const wchar_t* _Input_str, _In_ int _Input_len,
     _Out_writes_opt_(_Output_len) char* _Output_str, _In_ int _Output_len) noexcept;
 
-_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_fs_get_file_id(_Out_ __std_fs_file_id* _Id, _In_z_ const wchar_t* _Path) noexcept;
+struct __std_fs_equivalent_result {
+    bool _Equivalent;
+    __std_win_error _Error;
+};
+
+_NODISCARD __std_fs_equivalent_result __stdcall __std_fs_equivalent(
+    _In_z_ const wchar_t* _Path1, _In_z_ const wchar_t* _Path2) noexcept;
 
 _NODISCARD __std_win_error __stdcall __std_fs_set_last_write_time(
     _In_ long long _Last_write_filetime, _In_z_ const wchar_t* _Path) noexcept;

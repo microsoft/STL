@@ -36,6 +36,12 @@ std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp
 # LLVM-113609: [libc++][test] Non-rebindable test_alloc in string.capacity/deallocate_size.pass.cpp
 std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
 
+# LLVM-119174: [libcxx][test] Silence nodiscard warnings for std::expected
+std/utilities/expected/expected.expected/monadic/and_then.pass.cpp FAIL
+std/utilities/expected/expected.expected/monadic/or_else.pass.cpp FAIL
+std/utilities/expected/expected.expected/monadic/transform.pass.cpp FAIL
+std/utilities/expected/expected.expected/monadic/transform_error.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -151,6 +157,9 @@ std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass
 # libc++ doesn't implement LWG-4013
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.default.pass.cpp FAIL
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.iter.pass.cpp FAIL
+
+# libc++ doesn't implement LWG-4112
+std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
 
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
@@ -558,7 +567,6 @@ std/re/re.alg/re.alg.search/no_update_pos.pass.cpp FAIL
 std/re/re.const/re.synopt/syntax_option_type.pass.cpp FAIL
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
-std/re/re.regex/re.regex.construct/bad_range.pass.cpp FAIL
 std/re/re.regex/re.regex.construct/default.pass.cpp FAIL
 std/re/re.regex/re.regex.nonmemb/re.regex.nmswap/swap.pass.cpp FAIL
 std/re/re.regex/re.regex.swap/swap.pass.cpp FAIL

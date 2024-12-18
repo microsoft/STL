@@ -71,9 +71,12 @@ class STLTest(Test):
             return Result(UNSUPPORTED, "Test does not require any of the features specified in limit_to_features: %s" %
                           msg)
 
+        if 'test-only-edg' in self.config.available_features and 'edg' not in self.requires:
+            return Result(UNSUPPORTED, 'We run only /BE tests with the test-only-edg flag')
+
         if 'edg_drop' in self.config.available_features:
-            if not 'edg' in self.requires:
-                return Result(UNSUPPORTED, 'We only run /BE tests with the edg drop')
+            if 'edg' not in self.requires:
+                return Result(UNSUPPORTED, 'We run only /BE tests with the edg drop')
 
             _, tmpBase = self.getTempPaths()
             self.isenseRspPath = tmpBase + '.isense.rsp'

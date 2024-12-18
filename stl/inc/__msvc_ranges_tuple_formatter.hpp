@@ -78,7 +78,7 @@ _NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const
 // It's defined here, so that both headers can use this definition.
 #define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
 
-_EXPORT_STD class format_error : public runtime_error {
+_EXPORT_STD class _NODISCARD format_error : public runtime_error {
     using runtime_error::runtime_error;
 };
 

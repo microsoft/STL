@@ -265,6 +265,7 @@ tests\LWG3528_make_from_tuple_impl
 tests\LWG3545_pointer_traits_sfinae
 tests\LWG3561_discard_block_engine_counter
 tests\LWG3610_iota_view_size_and_integer_class
+tests\LWG4084_iostream_uppercase_inf_nan
 tests\LWG4105_ranges_ends_with_and_integer_class
 tests\P0009R18_mdspan_default_accessor
 tests\P0009R18_mdspan_extents
@@ -588,6 +589,7 @@ tests\P1206R7_vector_assign_range
 tests\P1206R7_vector_from_range
 tests\P1206R7_vector_insert_range
 tests\P1208R6_source_location
+tests\P1209R0_erase_if_erase
 tests\P1223R5_ranges_alg_find_last
 tests\P1223R5_ranges_alg_find_last_if
 tests\P1223R5_ranges_alg_find_last_if_not
@@ -780,3 +782,4 @@ tests\VSO_1775715_user_defined_modules
 tests\VSO_1804139_static_analysis_warning_with_single_element_array
 tests\VSO_1925201_iter_traits
 tests\VSO_2252142_wrong_C5046
+tests\VSO_2318081_bogus_const_overloading
