@@ -669,6 +669,43 @@ void test_gh_5160() {
     neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
 }
 
+void test_gh_5192() {
+    // GH-5192: Correct characters not matched by special character dot
+    using namespace string_literals;
+    for (const syntax_option_type option : {
+             regex_constants::basic,
+             regex_constants::extended,
+             regex_constants::awk,
+             regex_constants::grep,
+             regex_constants::egrep,
+         }) {
+        const test_regex regex(&g_regexTester, "^.*", option);
+        regex.should_search_match("abc\nd\re\0f"s, "abc\nd\re"s);
+        regex.should_search_match("abcd\re\ngh\0i"s, "abcd\re\ngh"s);
+
+        const test_wregex wregex(&g_regexTester, L"^.*", option);
+        wregex.should_search_match(L"abc\nd\re\0f"s, L"abc\nd\re"s);
+        wregex.should_search_match(L"abcd\re\ngh\0i"s, L"abcd\re\ngh"s);
+        wregex.should_search_match(L"abc\u2028d\ne\0f"s, L"abc\u2028d\ne"s); // U+2028 LINE SEPARATOR
+        wregex.should_search_match(L"abc\u2029d\ne\0f"s, L"abc\u2029d\ne"s); // U+2029 PARAGRAPH SEPARATOR
+    }
+
+    for (const syntax_option_type option : {
+             regex_constants::ECMAScript,
+             syntax_option_type(),
+         }) {
+        const test_regex regex(&g_regexTester, "^.*", option);
+        regex.should_search_match("ab\0c\nd\re\0f"s, "ab\0c"s);
+        regex.should_search_match("ab\0cd\re\ngh\0i"s, "ab\0cd"s);
+
+        const test_wregex wregex(&g_regexTester, L"^.*", option);
+        wregex.should_search_match(L"abc\0\nd\re\0f"s, L"abc\0"s);
+        wregex.should_search_match(L"ab\0cd\re\ngh\0i"s, L"ab\0cd"s);
+        wregex.should_search_match(L"ab\0c\u2028d\ne\0f"s, L"ab\0c"s); // U+2028 LINE SEPARATOR
+        wregex.should_search_match(L"a\0bc\u2029d\ne\0f"s, L"a\0bc"s); // U+2029 PARAGRAPH SEPARATOR
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -699,6 +736,7 @@ int main() {
     test_gh_4995();
     test_gh_5058();
     test_gh_5160();
+    test_gh_5192();
 
     return g_regexTester.result();
 }

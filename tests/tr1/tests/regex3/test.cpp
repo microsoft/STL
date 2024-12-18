@@ -321,17 +321,12 @@ static void test_uncoveredgrammar() {
     STDString str2(T("Prime number"));
     STDString str3(T("aaaqxzbbb"));
     STDString str4(T("aaa\nxzbbb"));
-    static const STD regex_constants::syntax_option_type flag[6] = {
-        STD regex_constants::ECMAScript,
-        STD regex_constants::basic,
-        STD regex_constants::extended,
-        STD regex_constants::awk,
-        STD regex_constants::grep,
-        STD regex_constants::egrep,
-    };
-    for (int i = 0; i <= 5; i++) {
-        rx1.assign(T(".*"), flag[i]);
-        rx2.assign(T("aaa...bbb"), flag[i]);
+    for (const STD regex_constants::syntax_option_type flag : {
+             STD regex_constants::ECMAScript,
+             STD regex_constants::syntax_option_type(),
+         }) {
+        rx1.assign(T(".*"), flag);
+        rx2.assign(T("aaa...bbb"), flag);
         CHECK(!STD regex_match(str1, rx1));
         CHECK(STD regex_match(str2, rx1));
         CHECK(STD regex_match(str3, rx2));
