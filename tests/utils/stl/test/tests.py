@@ -30,6 +30,8 @@ class TestType(Flag):
 
 
 class STLTest(Test):
+    compilerNotFound = set()
+
     def __init__(self, suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum):
         self.envNum = envNum
         self.envlstEntry = envlstEntry
@@ -217,7 +219,9 @@ class STLTest(Test):
                 _compilerPathCache[envCompiler] = cxx
 
         if not cxx:
-            litConfig.warning('Could not find: %r' % envCompiler)
+            if envCompiler not in self.compilerNotFound:
+                self.compilerNotFound.add(envCompiler)
+                litConfig.warning('Could not find: %r' % envCompiler)
             return Result(SKIPPED, 'This test was skipped because the compiler, "' +
                                    envCompiler + '", could not be found')
 
