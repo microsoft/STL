@@ -173,7 +173,8 @@ namespace test_unexpected {
 namespace test_unexpect {
     auto copy = unexpect;
     static_assert(is_same_v<decltype(copy), unexpect_t>);
-    static_assert(is_trivial_v<unexpect_t>);
+    static_assert(is_trivially_copyable_v<unexpect_t>);
+    static_assert(is_trivially_default_constructible_v<unexpect_t>);
     static_assert(is_empty_v<unexpect_t>);
 } // namespace test_unexpect
 

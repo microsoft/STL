@@ -337,7 +337,8 @@ struct TrivialAccessor {
 };
 
 static_assert(check_accessor_policy_requirements<TrivialAccessor<int>>());
-static_assert(is_trivial_v<TrivialAccessor<int>>);
+static_assert(is_trivially_copyable_v<TrivialAccessor<int>>);
+static_assert(is_trivially_default_constructible_v<TrivialAccessor<int>>);
 
 template <class Ext, class Layout, template <class> class AccessorTemplate>
 constexpr void check_modeled_concepts_and_member_types() {
