@@ -3329,9 +3329,17 @@ template <class _Dx2>
 using _Unique_ptr_enable_default_t =
     enable_if_t<conjunction_v<negation<is_pointer<_Dx2>>, is_default_constructible<_Dx2>>, int>;
 
+template <class, class = void>
+constexpr bool _Can_form_pointer = false;
+template <class _Ty>
+constexpr bool _Can_form_pointer<_Ty, void_t<_Ty*>> = true;
+
 _EXPORT_STD template <class _Ty, class _Dx /* = default_delete<_Ty> */>
 class unique_ptr { // non-copyable pointer to an object
 public:
+    static_assert(_Can_form_pointer<_Ty>,
+        "unique_ptr<T, D> requires T* to be a valid type (N5001 [unique.ptr.single.general]/1).");
+
     using pointer      = typename _Get_deleter_pointer_type<_Ty, remove_reference_t<_Dx>>::type;
     using element_type = _Ty;
     using deleter_type = _Dx;
