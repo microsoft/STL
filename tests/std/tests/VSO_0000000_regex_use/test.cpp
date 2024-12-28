@@ -547,6 +547,17 @@ void test_VSO_226914_word_boundaries() {
     aWordAny.should_search_fail("aa", match_not_bow | match_not_eow);
 }
 
+void test_construction_from_nullptr_and_zero() {
+    {
+        regex re(nullptr, 0);
+        assert(re.mark_count() == 0);
+    }
+    {
+        wregex re(nullptr, 0);
+        assert(re.mark_count() == 0);
+    }
+}
+
 void test_gh_993() {
     // GH-993 regex::icase is not handled correctly for some input.
     {
@@ -695,6 +706,7 @@ int main() {
     test_VSO_225160_match_bol_flag();
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
+    test_construction_from_nullptr_and_zero();
     test_gh_993();
     test_gh_4995();
     test_gh_5058();
