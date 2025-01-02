@@ -547,6 +547,86 @@ void test_VSO_226914_word_boundaries() {
     aWordAny.should_search_fail("aa", match_not_bow | match_not_eow);
 }
 
+void test_gh_731() {
+    // GH-731 <regex>: Incorrect behavior for capture groups
+    // Several bugs fixed in ECMAScript (depth-first) and POSIX (leftmost-longest) matching rules
+    {
+        const test_regex ecma_regex(&g_regexTester, R"((A+)\s*(B+)?\s*B*)", ECMAScript);
+        ecma_regex.should_search_match_capture_groups(
+            "AAA BBB", "AAA BBB", regex_constants::match_default, {{0, 3}, {4, 7}});
+    }
+    for (syntax_option_type option : {extended, egrep, awk}) {
+        const test_regex posix_regex(&g_regexTester, R"((A+)[[:space:]]*(B+)?[[:space:]]*B*)", option);
+        posix_regex.should_search_match_capture_groups(
+            "AAA BBB", "AAA BBB", regex_constants::match_default, {{0, 3}, {4, 7}});
+    }
+
+    {
+        const test_regex ecma_regex(&g_regexTester, ".*(cat|concatenate)", ECMAScript);
+        ecma_regex.should_search_match_capture_groups(
+            "WXconcatenateYZ", "WXconcat", regex_constants::match_default, {{5, 8}});
+    }
+    for (syntax_option_type option : {extended, egrep, awk}) {
+        const test_regex posix_regex(&g_regexTester, ".*(cat|concatenate)", option);
+        posix_regex.should_search_match_capture_groups(
+            "WXconcatenateYZ", "WXconcatenate", regex_constants::match_default, {{2, 13}});
+    }
+
+    {
+        const test_regex ecma_regex(&g_regexTester, "(aa|aabaac|ba|b|c)*", ECMAScript);
+        ecma_regex.should_search_match_capture_groups("aabaac", "aaba", regex_constants::match_default, {{2, 4}});
+    }
+    for (syntax_option_type option : {extended, egrep, awk}) {
+        const test_regex posix_regex(&g_regexTester, "(aa|aabaac|ba|b|c)*", option);
+        posix_regex.should_search_match_capture_groups("aabaac", "aabaac", regex_constants::match_default, {{0, 6}});
+    }
+
+    {
+        const test_regex ecma_regex(&g_regexTester, ".*(a|bacc|baccc)", ECMAScript);
+        ecma_regex.should_search_match_capture_groups("ddbacccd", "ddba", regex_constants::match_default, {{3, 4}});
+    }
+    {
+        const test_regex ecma_regex(&g_regexTester, ".*?(a|bacc|baccc)", ECMAScript);
+        ecma_regex.should_search_match_capture_groups("ddbacccd", "ddbacc", regex_constants::match_default, {{2, 6}});
+    }
+    for (syntax_option_type option : {extended, egrep, awk}) {
+        const test_regex ecma_regex(&g_regexTester, ".*(a|bacc|baccc)", option);
+        ecma_regex.should_search_match_capture_groups("ddbacccd", "ddbaccc", regex_constants::match_default, {{2, 7}});
+    }
+
+    for (syntax_option_type option : {extended, egrep, awk}) {
+        const test_regex posix_regex(&g_regexTester, "(aa|aabaac|ba|b|c)*", option);
+        posix_regex.should_search_match_capture_groups("aabaac", "aabaac", regex_constants::match_default, {{0, 6}});
+    }
+
+    {
+        const test_regex ecma_regex(&g_regexTester, "^[[:blank:]]*#([^\\n]*\\\\[[:space:]]+)*[^\\n]*", ECMAScript);
+        ecma_regex.should_search_match_capture_groups("#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);",
+            "#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);", regex_constants::match_default, {{30, 42}});
+    }
+    {
+        const test_regex awk_regex(&g_regexTester, "^[[:blank:]]*#([^\\n]*\\\\[[:space:]]+)*[^\\n]*", awk);
+        awk_regex.should_search_match_capture_groups("#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);",
+            "#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);", regex_constants::match_default, {{28, 42}});
+    }
+    {
+        const test_regex extended_regex(&g_regexTester, "^[[:blank:]]*#([^\n]*\\\\[[:space:]]+)*[^\n]*", extended);
+        extended_regex.should_search_match_capture_groups("#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);",
+            "#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);", regex_constants::match_default, {{28, 42}});
+    }
+
+    {
+        const test_regex ecma_regex(&g_regexTester, "(ab*)*(ce|bbceef)", ECMAScript);
+        ecma_regex.should_search_match_capture_groups(
+            "aababbbceef", "aababbbce", regex_constants::match_default, {{3, 7}, {7, 9}});
+    }
+    for (syntax_option_type option : {extended, egrep, awk}) {
+        const test_regex posix_regex(&g_regexTester, "(ab*)*(ce|bbceef)", option);
+        posix_regex.should_search_match_capture_groups(
+            "aababbbceef", "aababbbceef", regex_constants::match_default, {{3, 5}, {5, 11}});
+    }
+}
+
 void test_gh_993() {
     // GH-993 regex::icase is not handled correctly for some input.
     {
@@ -695,6 +775,7 @@ int main() {
     test_VSO_225160_match_bol_flag();
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
+    test_gh_731();
     test_gh_993();
     test_gh_4995();
     test_gh_5058();

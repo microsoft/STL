@@ -1614,11 +1614,12 @@ public:
 
         if (_Matches) { // copy results to _Matches
             _Matches->_Resize(_Get_ncap());
+            const auto& _Result = _Longest ? _Res : _Tgt_state;
             for (unsigned int _Idx = 0; _Idx < _Get_ncap(); ++_Idx) { // copy submatch _Idx
-                if (_Res._Grp_valid[_Idx]) { // copy successful match
+                if (_Result._Grp_valid[_Idx]) { // copy successful match
                     _Matches->_At(_Idx).matched = true;
-                    _Matches->_At(_Idx).first   = _Res._Grps[_Idx]._Begin;
-                    _Matches->_At(_Idx).second  = _Res._Grps[_Idx]._End;
+                    _Matches->_At(_Idx).first   = _Result._Grps[_Idx]._Begin;
+                    _Matches->_At(_Idx).second  = _Result._Grps[_Idx]._End;
                 } else { // copy failed match
                     _Matches->_At(_Idx).matched = false;
                     _Matches->_At(_Idx).first   = _End;
@@ -3268,6 +3269,17 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_rep(_Node_rep* _Node, bool _Gr
             _Psav->_Loop_iter = _STD addressof(_Cur_iter);
             _Matched0         = _Match_pat(_Node->_Next);
         }
+    } else if (_Longest) { // longest, try any number of repetitions
+
+        // match with no further repetition
+        _Matched0 = _Match_pat(_Node->_End_rep->_Next);
+        // match with at least one more repetition if last repetition made progress
+        if (_Progress) {
+            _Tgt_state        = _St;
+            _Psav->_Loop_idx  = _Init_idx + 1;
+            _Psav->_Loop_iter = _STD addressof(_Cur_iter);
+            _Matched0 |= _Match_pat(_Node->_Next);
+        }
     } else if (!_Greedy) { // not greedy, favor minimum number of reps
         _Matched0 = _Match_pat(_Node->_End_rep->_Next);
         if (!_Matched0 && _Progress) { // tail failed, try another rep
@@ -3428,16 +3440,23 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
-bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for better match under UNIX rules
+bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for better match under leftmost-longest rule
     for (unsigned int _Ix = 0; _Ix < _Get_ncap(); ++_Ix) { // check each capture group
+        // any match (even an empty one) is better than no match at all
+        if (_Res._Grp_valid[_Ix] != _Tgt_state._Grp_valid[_Ix]) {
+            return _Tgt_state._Grp_valid[_Ix];
+        }
         if (_Res._Grp_valid[_Ix] && _Tgt_state._Grp_valid[_Ix]) {
+            // if both groups are matched, prefer the leftmost one
             if (_Res._Grps[_Ix]._Begin != _Tgt_state._Grps[_Ix]._Begin) {
                 return _STD distance(_Begin, _Res._Grps[_Ix]._Begin)
-                     < _STD distance(_Begin, _Tgt_state._Grps[_Ix]._Begin);
+                     > _STD distance(_Begin, _Tgt_state._Grps[_Ix]._Begin);
             }
 
+            // if both groups start at the same position, prefer the longer one
             if (_Res._Grps[_Ix]._End != _Tgt_state._Grps[_Ix]._End) {
-                return _STD distance(_Begin, _Res._Grps[_Ix]._End) < _STD distance(_Begin, _Tgt_state._Grps[_Ix]._End);
+                return _STD distance(_Res._Grps[_Ix]._Begin, _Res._Grps[_Ix]._End)
+                     < _STD distance(_Tgt_state._Grps[_Ix]._Begin, _Tgt_state._Grps[_Ix]._End);
             }
         }
     }
@@ -3643,7 +3662,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
                     && _Begin == _Tgt_state._Cur)
                 || (_Full && _Tgt_state._Cur != _End)) {
                 _Failed = true;
-            } else if (!_Matched || _Better_match()) { // record successful match
+            } else if (_Longest && (!_Matched || _Better_match())) { // record successful match
                 _Res     = _Tgt_state;
                 _Matched = true;
             }
