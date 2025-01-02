@@ -136,6 +136,29 @@ template <class _Ty, int _Enabled /* = 0 */>
 #endif // ^^^ !_HAS_CXX17 ^^^
 _CONSTEXPR20 void swap(_Ty& _Left, _Ty& _Right)
     noexcept(is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_assignable_v<_Ty>) {
+    if (_STD addressof(_Left) == _STD addressof(_Right)) {
+        return; // Handle self-swap as a no-op; see LWG-4165
+    }
+
+    if constexpr (_STD is_integral_v<_Ty>) {
+#if defined(_M_IX86)
+        if constexpr (sizeof(_Ty) == 4) {
+            __asm
+                {
+                xchg eax, dword ptr [_Left]
+                xchg eax, dword ptr [_Right]
+                xchg dword ptr [_Left], eax
+                }
+            ;
+            return;
+        }
+#endif
+        _Left ^= _Right;
+        _Right ^= _Left;
+        _Left ^= _Right;
+        return;
+    }
+
     _Ty _Tmp = _STD move(_Left);
     _Left    = _STD move(_Right);
     _Right   = _STD move(_Tmp);
