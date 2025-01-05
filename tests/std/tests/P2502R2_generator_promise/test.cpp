@@ -13,6 +13,7 @@
 #include <memory_resource>
 #include <new>
 #include <ranges>
+#include <span>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -227,6 +228,14 @@ struct Holder {
 
 struct Incomplete;
 #endif // ^^^ no workaround ^^^
+
+// Also test LWG-4119:
+// "generator::promise_type::yield_value(ranges::elements_of<R, Alloc>)'s nested generator may be ill-formed"
+
+generator<span<int>> test_lwg_4119() {
+    vector<vector<int>> v;
+    co_yield ranges::elements_of(v);
+}
 
 int main() {
     test_with_type<int>();
