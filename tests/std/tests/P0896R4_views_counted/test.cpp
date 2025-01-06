@@ -48,7 +48,7 @@ struct instantiator {
             static_assert(same_as<decltype(result), span<remove_reference_t<iter_reference_t<Iter>>, dynamic_extent>>);
 
             const test::redifference_iterator<_Signed128, Iter> rediff_it{Iter{input}};
-            ranges::contiguous_range auto rediff_result = ranges::views::counted(Iter{input}, _Signed128{4});
+            ranges::contiguous_range auto rediff_result = ranges::views::counted(rediff_it, _Signed128{4});
             assert(size(rediff_result) == 4);
         } else if constexpr (random_access_iterator<Iter>) {
             static_assert(same_as<decltype(result), subrange<Iter, Iter>>);
