@@ -969,19 +969,11 @@ namespace test {
     template <std::_Signed_integer_like Diff, std::input_iterator It>
     class redifference_iterator : public redifference_iterator_category_base<Diff, It> {
     public:
-        using iterator_concept = decltype([] {
-            if constexpr (std::contiguous_iterator<It>) {
-                return std::contiguous_iterator_tag{};
-            } else if constexpr (std::random_access_iterator<It>) {
-                return std::random_access_iterator_tag{};
-            } else if constexpr (std::bidirectional_iterator<It>) {
-                return std::bidirectional_iterator_tag{};
-            } else if constexpr (std::forward_iterator<It>) {
-                return std::forward_iterator_tag{};
-            } else {
-                return std::input_iterator_tag{};
-            }
-        }());
+        using iterator_concept = std::conditional_t<std::contiguous_iterator<It>, std::contiguous_iterator_tag,
+            std::conditional_t<std::random_access_iterator<It>, std::random_access_iterator_tag,
+                std::conditional_t<std::bidirectional_iterator<It>, std::bidirectional_iterator_tag,
+                    std::conditional_t<std::forward_iterator<It>, std::forward_iterator_tag,
+                        std::input_iterator_tag>>>>;
         using value_type       = std::iter_value_t<It>;
         using difference_type  = Diff;
 
