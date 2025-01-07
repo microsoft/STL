@@ -110,16 +110,18 @@ namespace _Gen_detail {
         }
 
         template <class _Alloc2, class... _Args>
-            requires convertible_to<const _Alloc2&, _Proto_allocator>
         _NODISCARD_RAW_PTR_ALLOC static void* operator new(
             const size_t _Size, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
+            static_assert(convertible_to<const _Alloc2&, _Proto_allocator>,
+                "Allocator argument must be convertible to the allocator type (N5001 [coro.generator.promise]/18)");
             return _Allocate(static_cast<_Alloc>(static_cast<_Proto_allocator>(_Al)), _Size);
         }
 
         template <class _This, class _Alloc2, class... _Args>
-            requires convertible_to<const _Alloc2&, _Proto_allocator>
         _NODISCARD_RAW_PTR_ALLOC static void* operator new(
             const size_t _Size, const _This&, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
+            static_assert(convertible_to<const _Alloc2&, _Proto_allocator>,
+                "Allocator argument must be convertible to the allocator type (N5001 [coro.generator.promise]/18)");
             return _Allocate(static_cast<_Alloc>(static_cast<_Proto_allocator>(_Al)), _Size);
         }
 
