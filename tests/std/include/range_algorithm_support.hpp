@@ -969,11 +969,19 @@ namespace test {
     template <std::_Signed_integer_like Diff, std::input_iterator It>
     class redifference_iterator : public redifference_iterator_category_base<Diff, It> {
     public:
-        using iterator_concept = std::conditional_t<std::contiguous_iterator<It>, std::contiguous_iterator_tag,
-            std::conditional_t<std::random_access_iterator<It>, std::random_access_iterator_tag,
-                std::conditional_t<std::bidirectional_iterator<It>, std::bidirectional_iterator_tag,
-                    std::conditional_t<std::forward_iterator<It>, std::forward_iterator_tag,
-                        std::input_iterator_tag>>>>;
+        using iterator_concept = decltype([] {
+            if constexpr (std::contiguous_iterator<It>) {
+                return std::contiguous_iterator_tag{};
+            } else if constexpr (std::random_access_iterator<It>) {
+                return std::random_access_iterator_tag{};
+            } else if constexpr (std::bidirectional_iterator<It>) {
+                return std::bidirectional_iterator_tag{};
+            } else if constexpr (std::forward_iterator<It>) {
+                return std::forward_iterator_tag{};
+            } else {
+                return std::input_iterator_tag{};
+            }
+        }());
         using value_type       = std::iter_value_t<It>;
         using difference_type  = Diff;
 
@@ -1044,22 +1052,22 @@ namespace test {
             return i.i_ == j.i_;
         }
 
-        [[nodiscard]] friend constexpr redifference_iterator operator+(
-            const redifference_iterator& it, std::same_as<difference_type> auto n)
+        template <std::same_as<difference_type> I> // TRANSITION, DevCom-10735214, should be abbreviated
+        [[nodiscard]] friend constexpr redifference_iterator operator+(const redifference_iterator& it, I n)
             requires std::random_access_iterator<It>
         {
             return redifference_iterator{it.i_ + static_cast<std::iter_difference_t<It>>(n)};
         }
 
-        [[nodiscard]] friend constexpr redifference_iterator operator+(
-            std::same_as<difference_type> auto n, const redifference_iterator& it)
+        template <std::same_as<difference_type> I> // TRANSITION, DevCom-10735214, should be abbreviated
+        [[nodiscard]] friend constexpr redifference_iterator operator+(I n, const redifference_iterator& it)
             requires std::random_access_iterator<It>
         {
             return redifference_iterator{it.i_ + static_cast<std::iter_difference_t<It>>(n)};
         }
 
-        [[nodiscard]] friend constexpr redifference_iterator operator-(
-            const redifference_iterator& it, std::same_as<difference_type> auto n)
+        template <std::same_as<difference_type> I> // TRANSITION, DevCom-10735214, should be abbreviated
+        [[nodiscard]] friend constexpr redifference_iterator operator-(const redifference_iterator& it, I n)
             requires std::random_access_iterator<It>
         {
             return redifference_iterator{it.i_ - static_cast<std::iter_difference_t<It>>(n)};
