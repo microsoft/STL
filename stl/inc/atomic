@@ -468,7 +468,8 @@ struct _Atomic_storage;
 template <class _Ty, class _Value_type>
 void _Atomic_wait_direct(
     const _Atomic_storage<_Ty>* const _This, _Value_type _Expected_bytes, const memory_order _Order) noexcept {
-    const auto _Storage_ptr = _STD addressof(_This->_Storage);
+    const auto _Storage_ptr =
+        const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_This->_Storage)));
     for (;;) {
         const _Value_type _Observed_bytes = _STD _Atomic_reinterpret_as<_Value_type>(_This->load(_Order));
         if (_Expected_bytes != _Observed_bytes) {
@@ -801,11 +802,13 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     }
 
     void notify_one() noexcept {
-        ::__std_atomic_notify_one_direct(_STD addressof(_Storage));
+        const auto _Storage_ptr = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
+        ::__std_atomic_notify_one_direct(_Storage_ptr);
     }
 
     void notify_all() noexcept {
-        ::__std_atomic_notify_all_direct(_STD addressof(_Storage));
+        const auto _Storage_ptr = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
+        ::__std_atomic_notify_all_direct(_Storage_ptr);
     }
 #endif // _HAS_CXX20
 
@@ -901,11 +904,13 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     }
 
     void notify_one() noexcept {
-        ::__std_atomic_notify_one_direct(_STD addressof(_Storage));
+        const auto _Storage_ptr = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
+        ::__std_atomic_notify_one_direct(_Storage_ptr);
     }
 
     void notify_all() noexcept {
-        ::__std_atomic_notify_all_direct(_STD addressof(_Storage));
+        const auto _Storage_ptr = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
+        ::__std_atomic_notify_all_direct(_Storage_ptr);
     }
 #endif // _HAS_CXX20
 
@@ -1001,11 +1006,13 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     }
 
     void notify_one() noexcept {
-        ::__std_atomic_notify_one_direct(_STD addressof(_Storage));
+        const auto _Storage_ptr = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
+        ::__std_atomic_notify_one_direct(_Storage_ptr);
     }
 
     void notify_all() noexcept {
-        ::__std_atomic_notify_all_direct(_STD addressof(_Storage));
+        const auto _Storage_ptr = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
+        ::__std_atomic_notify_all_direct(_Storage_ptr);
     }
 #endif // _HAS_CXX20
 
@@ -1120,11 +1127,13 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     }
 
     void notify_one() noexcept {
-        ::__std_atomic_notify_one_direct(_STD addressof(_Storage));
+        const auto _Storage_ptr = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
+        ::__std_atomic_notify_one_direct(_Storage_ptr);
     }
 
     void notify_all() noexcept {
-        ::__std_atomic_notify_all_direct(_STD addressof(_Storage));
+        const auto _Storage_ptr = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
+        ::__std_atomic_notify_all_direct(_Storage_ptr);
     }
 #endif // _HAS_CXX20
 
@@ -1252,8 +1261,8 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
             &_Expected_temp._Low);
 #else // ^^^ _M_ARM64, _M_ARM64EC / _M_X64 vvv
         (void) _Order;
-        _Result = _InterlockedCompareExchange128(
-            &reinterpret_cast<long long&>(_Storage), _Desired_bytes._High, _Desired_bytes._Low, &_Expected_temp._Low);
+        _Result = _InterlockedCompareExchange128(&reinterpret_cast<volatile long long&>(_Storage), _Desired_bytes._High,
+            _Desired_bytes._Low, &_Expected_temp._Low);
 #endif // ^^^ _M_X64 ^^^
         if (_Result == 0) {
             _CSTD memcpy(_STD addressof(_Expected), &_Expected_temp, sizeof(_TVal));
@@ -1264,7 +1273,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
 
 #if _HAS_CXX20
     void wait(_TVal _Expected, memory_order _Order = memory_order_seq_cst) const noexcept {
-        const auto _Storage_ptr  = _STD addressof(_Storage);
+        const auto _Storage_ptr  = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
         const auto _Expected_ptr = _STD addressof(_Expected);
         _Int128 _Expected_bytes  = reinterpret_cast<const _Int128&>(_Expected);
 
@@ -1294,11 +1303,13 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
     }
 
     void notify_one() noexcept {
-        ::__std_atomic_notify_one_indirect(_STD addressof(_Storage));
+        const auto _Storage_ptr = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
+        ::__std_atomic_notify_one_indirect(_Storage_ptr);
     }
 
     void notify_all() noexcept {
-        ::__std_atomic_notify_all_indirect(_STD addressof(_Storage));
+        const auto _Storage_ptr = const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_Storage)));
+        ::__std_atomic_notify_all_indirect(_Storage_ptr);
     }
 #endif // _HAS_CXX20
 

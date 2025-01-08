@@ -43,11 +43,22 @@ void test_atomic_ref_constraints_single() { // COMPILE-ONLY
     using AR = std::atomic_ref<T>;
 
     static_assert(std::is_same_v<typename AR::value_type, TD>);
-    static_assert(requires(const AR& r, std::memory_order ord) {
+    static_assert(requires(const AR& r, TD v, std::memory_order ord) {
         r.operator TD();
         { r.load() } -> std::same_as<TD>;
         { r.load(ord) } -> std::same_as<TD>;
+        { r.wait(v) } -> std::same_as<void>;
+        { r.wait(v, ord) } -> std::same_as<void>;
     });
+    {
+        [[maybe_unused]] auto instantiator = [](const AR& r, TD v, std::memory_order ord) {
+            (void) r.operator TD();
+            (void) r.load();
+            (void) r.load(ord);
+            r.wait(v);
+            r.wait(v, ord);
+        };
+    }
 
     if constexpr (!std::is_const_v<T>) {
         static_assert(requires(const AR& r, TD v, TD& vx, std::memory_order ord1, std::memory_order ord2) {
@@ -65,6 +76,23 @@ void test_atomic_ref_constraints_single() { // COMPILE-ONLY
             { r.notify_one() } -> std::same_as<void>;
             { r.notify_all() } -> std::same_as<void>;
         });
+
+        [[maybe_unused]] auto instantiator = [](const AR& r, TD v, TD& vx, std::memory_order ord1,
+                                                 std::memory_order ord2) {
+            (void) r.store(v);
+            (void) r.store(v, ord1);
+            (void) (r = v);
+            (void) r.exchange(v);
+            (void) r.exchange(v, ord1);
+            (void) r.compare_exchange_weak(vx, v);
+            (void) r.compare_exchange_weak(vx, v, ord1);
+            (void) r.compare_exchange_weak(vx, v, ord1, ord2);
+            (void) r.compare_exchange_strong(vx, v);
+            (void) r.compare_exchange_strong(vx, v, ord1);
+            (void) r.compare_exchange_strong(vx, v, ord1, ord2);
+            r.notify_one();
+            r.notify_all();
+        };
     } else {
         static_assert(!requires(const AR& r, TD v) { r.store(v); });
         static_assert(!requires(const AR& r, TD v, std::memory_order ord) { r.store(v, ord); });
@@ -109,6 +137,15 @@ void test_atomic_ref_constraints_single() { // COMPILE-ONLY
             { r += d } -> std::same_as<TD>;
             { r -= d } -> std::same_as<TD>;
         });
+
+        [[maybe_unused]] auto instantiator = [](const AR& r, AR::difference_type d, std::memory_order ord) {
+            (void) r.fetch_add(d);
+            (void) r.fetch_add(d, ord);
+            (void) r.fetch_sub(d);
+            (void) r.fetch_sub(d, ord);
+            (void) (r += d);
+            (void) (r -= d);
+        };
     } else {
         static_assert(!requires(const AR& r, AR::difference_type d) { r.fetch_add(d); });
         static_assert(!requires(const AR& r, AR::difference_type d, std::memory_order ord) { r.fetch_add(d, ord); });
@@ -125,6 +162,13 @@ void test_atomic_ref_constraints_single() { // COMPILE-ONLY
             { --r } -> std::same_as<TD>;
             { r-- } -> std::same_as<TD>;
         });
+
+        [[maybe_unused]] auto instantiator = [](const AR& r) {
+            (void) ++r;
+            (void) r++;
+            (void) --r;
+            (void) r--;
+        };
     } else {
         static_assert(!requires(const AR& r) { ++r; });
         static_assert(!requires(const AR& r) { r++; });
@@ -144,6 +188,18 @@ void test_atomic_ref_constraints_single() { // COMPILE-ONLY
             { r |= v } -> std::same_as<TD>;
             { r ^= v } -> std::same_as<TD>;
         });
+
+        [[maybe_unused]] auto instantiator = [](const AR& r, TD v, std::memory_order ord) {
+            (void) r.fetch_and(v);
+            (void) r.fetch_and(v, ord);
+            (void) r.fetch_or(v);
+            (void) r.fetch_or(v, ord);
+            (void) r.fetch_xor(v);
+            (void) r.fetch_xor(v, ord);
+            (void) (r &= v);
+            (void) (r |= v);
+            (void) (r ^= v);
+        };
     } else {
         static_assert(!requires(const AR& r, TD v) { r.fetch_and(v); });
         static_assert(!requires(const AR& r, TD v, std::memory_order ord) { r.fetch_and(v, ord); });
