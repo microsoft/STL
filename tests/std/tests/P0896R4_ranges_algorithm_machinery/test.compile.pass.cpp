@@ -569,7 +569,7 @@ namespace result_test {
     static_assert(is_trivially_copyable_v<in_out_out_result<int, int, int>>);
     static_assert(is_trivially_copyable_v<min_max_result<int>>);
 
-    // * trivially default construtible when parameter types are trivially default construtible
+    // * trivially default constructible when parameter types are trivially default constructible
     static_assert(is_trivially_default_constructible_v<in_found_result<int>>);
     static_assert(is_trivially_default_constructible_v<in_fun_result<int, int>>);
     static_assert(is_trivially_default_constructible_v<in_in_result<int, int>>);
