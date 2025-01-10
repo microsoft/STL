@@ -2066,7 +2066,7 @@ struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd64,
             _STD _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
 #endif // ^^^ 64 bits ^^^
-        return reinterpret_cast<_Ty>(_Result);
+        return reinterpret_cast<_TVal>(_Result);
     }
 
     _TVal fetch_sub(const ptrdiff_t _Diff) const noexcept _REQUIRES_CLAUSE(!is_const_v<_Ty>) {
