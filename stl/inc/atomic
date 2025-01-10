@@ -1806,11 +1806,11 @@ struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
     }
 
     _TVal operator+=(const _TVal _Operand) const noexcept _REQUIRES_CLAUSE(!is_const_v<_Ty>) {
-        return static_cast<_Ty>(fetch_add(_Operand) + _Operand);
+        return static_cast<_TVal>(fetch_add(_Operand) + _Operand);
     }
 
     _TVal operator-=(const _TVal _Operand) const noexcept _REQUIRES_CLAUSE(!is_const_v<_Ty>) {
-        return static_cast<_Ty>(fetch_sub(_Operand) - _Operand);
+        return static_cast<_TVal>(fetch_sub(_Operand) - _Operand);
     }
 
     _TVal fetch_and(const _TVal _Operand) const noexcept _REQUIRES_CLAUSE(!is_const_v<_Ty>) {
@@ -1838,15 +1838,15 @@ struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
     }
 
     _TVal operator&=(const _TVal _Operand) const noexcept _REQUIRES_CLAUSE(!is_const_v<_Ty>) {
-        return static_cast<_Ty>(fetch_and(_Operand) & _Operand);
+        return static_cast<_TVal>(fetch_and(_Operand) & _Operand);
     }
 
     _TVal operator|=(const _TVal _Operand) const noexcept _REQUIRES_CLAUSE(!is_const_v<_Ty>) {
-        return static_cast<_Ty>(fetch_or(_Operand) | _Operand);
+        return static_cast<_TVal>(fetch_or(_Operand) | _Operand);
     }
 
     _TVal operator^=(const _TVal _Operand) const noexcept _REQUIRES_CLAUSE(!is_const_v<_Ty>) {
-        return static_cast<_Ty>(fetch_xor(_Operand) ^ _Operand);
+        return static_cast<_TVal>(fetch_xor(_Operand) ^ _Operand);
     }
 };
 
