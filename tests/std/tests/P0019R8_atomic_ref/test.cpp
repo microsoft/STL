@@ -177,7 +177,7 @@ void test_atomic_ref_constraints_single() { // COMPILE-ONLY
         static_assert(!requires(const AR& r) { r--; });
     }
 
-    if constexpr (std::is_integral_v<TD> && !std::is_same_v<bool, TD> && !std::is_const_v<T>) {
+    if constexpr (std::is_integral_v<TD> && !std::is_same_v<TD, bool> && !std::is_const_v<T>) {
         static_assert(requires(const AR& r, TD v, std::memory_order ord) {
             { r.fetch_and(v) } -> std::same_as<TD>;
             { r.fetch_and(v, ord) } -> std::same_as<TD>;
