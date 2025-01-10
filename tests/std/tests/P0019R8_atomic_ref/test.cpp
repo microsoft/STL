@@ -80,8 +80,8 @@ void test_atomic_ref_constraints_single() { // COMPILE-ONLY
 
         [[maybe_unused]] auto instantiator = [](const AR& r, TD v, TD& vx, std::memory_order ord1,
                                                  std::memory_order ord2) {
-            (void) r.store(v);
-            (void) r.store(v, ord1);
+            r.store(v);
+            r.store(v, ord1);
             (void) (r = v);
             (void) r.exchange(v);
             (void) r.exchange(v, ord1);
