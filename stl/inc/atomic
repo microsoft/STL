@@ -1635,8 +1635,11 @@ _CXX20_DEPRECATE_VOLATILE constexpr bool _Deprecate_non_lock_free_volatile<_Ty, 
 template <class _Ty>
 struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     // provides operator overloads and other support for atomic integral specializations
+    _STL_INTERNAL_STATIC_ASSERT(!is_const_v<_Ty>);
+    _STL_INTERNAL_STATIC_ASSERT(!is_volatile_v<_Ty>);
+
     using _Base           = _Atomic_integral<_Ty>;
-    using difference_type = remove_cv_t<_Ty>;
+    using difference_type = _Ty;
 
     using _Base::_Base;
 
@@ -1854,8 +1857,11 @@ struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
 template <class _Ty>
 struct _Atomic_floating : _Atomic_storage<_Ty> {
     // provides atomic floating-point operations
+    _STL_INTERNAL_STATIC_ASSERT(!is_const_v<_Ty>);
+    _STL_INTERNAL_STATIC_ASSERT(!is_volatile_v<_Ty>);
+
     using _Base           = _Atomic_storage<_Ty>;
-    using difference_type = remove_cv_t<_Ty>;
+    using difference_type = _Ty;
 
     using _Base::_Base;
 
