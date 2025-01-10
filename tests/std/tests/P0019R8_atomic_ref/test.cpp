@@ -253,10 +253,10 @@ void test_atomic_ref_constraints() { // COMPILE-ONLY
     test_atomic_ref_constraints_cv<volatile char*>();
     test_atomic_ref_constraints_cv<const volatile char*>();
 
-    test_atomic_ref_constraints_cv<char*>();
-    test_atomic_ref_constraints_cv<const char*>();
-    test_atomic_ref_constraints_cv<volatile char*>();
-    test_atomic_ref_constraints_cv<const volatile char*>();
+    test_atomic_ref_constraints_cv<int*>();
+    test_atomic_ref_constraints_cv<const int*>();
+    test_atomic_ref_constraints_cv<volatile int*>();
+    test_atomic_ref_constraints_cv<const volatile int*>();
 
     test_atomic_ref_constraints_cv<int128*>();
     test_atomic_ref_constraints_cv<const int128*>();
