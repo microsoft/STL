@@ -1245,9 +1245,7 @@ public:
     _NODISCARD const_iterator find(const _KeyTy& _Keyval) const {
         return _List._Make_const_iter(_Find(_Keyval, _Traitsobj(_Keyval)));
     }
-#endif // _HAS_CXX20
 
-#if _HAS_CXX20
     _NODISCARD bool contains(const key_type& _Keyval) const {
         return static_cast<bool>(_Find_last(_Keyval, _Traitsobj(_Keyval))._Duplicate);
     }
