@@ -238,10 +238,10 @@ void test_atomic_ref_constraints() { // COMPILE-ONLY
     test_atomic_ref_constraints_cv<unsigned long long>();
     test_atomic_ref_constraints_cv<bool>();
     test_atomic_ref_constraints_cv<char>();
+    test_atomic_ref_constraints_cv<wchar_t>();
 #ifdef __cpp_char8_t
     test_atomic_ref_constraints_cv<char8_t>();
 #endif // defined(__cpp_char8_t)
-    test_atomic_ref_constraints_cv<bool>();
     test_atomic_ref_constraints_cv<char16_t>();
     test_atomic_ref_constraints_cv<char32_t>();
     test_atomic_ref_constraints_cv<float>();
