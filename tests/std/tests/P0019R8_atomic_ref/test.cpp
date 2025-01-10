@@ -34,7 +34,7 @@ struct int128 {
     }
 };
 
-// Also test constraints and conditional existance of difference_type specified by
+// Also test constraints and conditional existence of difference_type specified by
 // P3323R1 "Forbid atomic<cv T>, Specify atomic_ref<cv T>".
 
 template <class T>
