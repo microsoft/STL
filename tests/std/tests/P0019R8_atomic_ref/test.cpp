@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <execution>
