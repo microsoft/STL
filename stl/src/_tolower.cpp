@@ -51,7 +51,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
 
     if (locale_name == nullptr) {
         if (c >= 'A' && c <= 'Z') {
-            c = c + ('a' - 'A');
+            c = c + ' ';
         }
 
         return c;
