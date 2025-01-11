@@ -671,16 +671,16 @@ void test_gh_5160() {
 
 void test_gh_5167() {
     // GH-5167: Limit backreference parsing to single digit for basic regular expressions
-    g_regexTester.should_match("abab0", R"x(\(ab*\)\10)x", basic);
-    g_regexTester.should_match("abab0", R"x(\(ab*\)\10)x", grep);
-    g_regexTester.should_match("abbcdccdc5abb8", R"x(\(ab*\)\([cd]*\)\25\18)x", basic);
-    g_regexTester.should_match("abbcdccdc5abb8", R"x(\(ab*\)\([cd]*\)\25\18)x", grep);
-    g_regexTester.should_not_match("abbcdccdc5abb8", R"x(\(ab*\)\([cd]*\)\15\28)x", basic);
-    g_regexTester.should_not_match("abbcdccdc5abb8", R"x(\(ab*\)\([cd]*\)\15\28)x", grep);
-    g_regexTester.should_throw(R"x(abc\1d)x", error_backref, basic);
-    g_regexTester.should_throw(R"x(abc\1d)x", error_backref, grep);
-    g_regexTester.should_throw(R"x(abc\10)x", error_backref, basic);
-    g_regexTester.should_throw(R"x(abc\10)x", error_backref, grep);
+    g_regexTester.should_match("abab0", R"(\(ab*\)\10)", basic);
+    g_regexTester.should_match("abab0", R"(\(ab*\)\10)", grep);
+    g_regexTester.should_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\25\18)", basic);
+    g_regexTester.should_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\25\18)", grep);
+    g_regexTester.should_not_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\15\28)", basic);
+    g_regexTester.should_not_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\15\28)", grep);
+    g_regexTester.should_throw(R"(abc\1d)", error_backref, basic);
+    g_regexTester.should_throw(R"(abc\1d)", error_backref, grep);
+    g_regexTester.should_throw(R"(abc\10)", error_backref, basic);
+    g_regexTester.should_throw(R"(abc\10)", error_backref, grep);
 }
 
 int main() {
