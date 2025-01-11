@@ -1187,8 +1187,6 @@ _NODISCARD bool operator!=(const match_results<_BidIt, _Alloc>& _Left, const mat
 }
 #endif // !_HAS_CXX20
 
-_INLINE_VAR constexpr int _BRE_MAX_BACKREF_DIGITS = 1;
-
 _INLINE_VAR constexpr unsigned int _Bmp_max   = 256U; // must fit in an unsigned int
 _INLINE_VAR constexpr unsigned int _Bmp_shift = 3U;
 _INLINE_VAR constexpr unsigned int _Bmp_chrs  = 1U << _Bmp_shift; // # of bits to be stored in each char
@@ -4333,9 +4331,10 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape() { // check for valid 
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom escape
+    constexpr int _Bre_max_backref_digits = 1;
     if ((_L_flags & _L_bckr)
         && _DecimalDigits2(regex_constants::error_backref,
-            (_L_flags & _L_lim_bckr) ? _BRE_MAX_BACKREF_DIGITS : INT_MAX)) { // check for valid back reference
+            (_L_flags & _L_lim_bckr) ? _Bre_max_backref_digits : INT_MAX)) { // check for valid back reference
         if (_Val == 0) { // handle \0
             if (!(_L_flags & _L_bzr_chr)) {
                 _Error(regex_constants::error_escape);
