@@ -3949,7 +3949,7 @@ int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits2(
-    const regex_constants::error_type _Error_type, const int _Count /*= INT_MAX */) { // check for decimal value
+    const regex_constants::error_type _Error_type, const int _Count /* = INT_MAX */) { // check for decimal value
     return _Do_digits(10, _Count, _Error_type) != _Count;
 }
 
