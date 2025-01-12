@@ -1195,7 +1195,6 @@ _INLINE_VAR constexpr unsigned int _Bmp_chrs  = 1U << _Bmp_shift; // # of bits t
 _INLINE_VAR constexpr unsigned int _Bmp_mask  = _Bmp_chrs - 1U;
 _INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _Bmp_chrs;
 
-_INLINE_VAR constexpr unsigned int _Buf_incr        = 16U;
 _INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
@@ -1281,6 +1280,8 @@ private:
         constexpr size_t _Max_elems      = static_cast<size_t>(-1) / sizeof(_Elem);
         constexpr unsigned int _Max_uint = static_cast<unsigned int>(-1);
         constexpr unsigned int _Max      = _Max_elems < _Max_uint ? static_cast<unsigned int>(_Max_elems) : _Max_uint;
+
+        constexpr unsigned int _Buf_incr = 16U;
 
         if (_Increase < _Buf_incr) {
             _Increase = _Buf_incr;
