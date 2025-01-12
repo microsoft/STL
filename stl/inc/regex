@@ -1278,9 +1278,9 @@ struct _Buf { // character buffer
 
 private:
     unsigned int _Calculate_expansion(unsigned int _Increase) const {
-        constexpr size_t _Max_size_t     = static_cast<size_t>(-1) / sizeof(_Elem);
+        constexpr size_t _Max_elems      = static_cast<size_t>(-1) / sizeof(_Elem);
         constexpr unsigned int _Max_uint = static_cast<unsigned int>(-1);
-        constexpr unsigned int _Max      = _Max_size_t < _Max_uint ? static_cast<unsigned int>(_Max_size_t) : _Max_uint;
+        constexpr unsigned int _Max      = _Max_elems < _Max_uint ? static_cast<unsigned int>(_Max_elems) : _Max_uint;
 
         if (_Increase < _Buf_incr) {
             _Increase = _Buf_incr;
