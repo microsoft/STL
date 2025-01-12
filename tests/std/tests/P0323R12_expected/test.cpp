@@ -2395,7 +2395,8 @@ constexpr bool test_lwg_3886() {
         assert(ex.value_or({}).qual_ == Qualification::None);
     }
 #if 0 // TRANSITION, LWG-3891
-    assert((expected<const QualDistinction, char>{unexpect} = {QualDistinction{}}).value().qual_ == Qualification::None);
+    assert(
+        (expected<const QualDistinction, char>{unexpect} = {QualDistinction{}}).value().qual_ == Qualification::None);
     {
         expected<const QualDistinction, char> ex{in_place};
         assert((ex = {QualDistinction{}}).value().qual_ == Qualification::None);
@@ -2414,7 +2415,8 @@ void test_lwg_3886_volatile() {
         assert(ex.value_or({}).qual_ == Qualification::None);
     }
 #if 0 // TRANSITION, LWG-3891
-    assert((expected<volatile QualDistinction, char>{unexpect} = {QualDistinction{}}).value().qual_ == Qualification::None);
+    assert((expected<volatile QualDistinction, char>{unexpect} = {QualDistinction{}}).value().qual_
+           == Qualification::None);
     {
         expected<volatile QualDistinction, char> ex{in_place};
         assert((ex = {QualDistinction{}}).value().qual_ == Qualification::None);
