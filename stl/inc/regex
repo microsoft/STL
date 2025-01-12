@@ -1822,11 +1822,7 @@ public:
     basic_regex(_In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript) {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Ptr != nullptr || _Count == 0, "constructing basic_regex from an invalid range");
-#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
-        if (_Ptr == nullptr && _Count != 0) {
-            return;
-        }
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
         _Reset(_Ptr, _Ptr + _Count, _Flags);
     }
 
