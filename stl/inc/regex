@@ -460,7 +460,7 @@ public:
     }
 };
 
-_EXPORT_STD class regex_error : public runtime_error { // type of all regular expression exceptions
+_EXPORT_STD class _NODISCARD regex_error : public runtime_error { // type of all regular expression exceptions
 public:
     explicit regex_error(regex_constants::error_type _Ex) : runtime_error(_Stringify(_Ex)), _Err(_Ex) {}
 

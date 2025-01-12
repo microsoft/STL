@@ -1086,7 +1086,8 @@ public:
 };
 #endif // _HAS_AUTO_PTR_ETC
 
-_EXPORT_STD class bad_weak_ptr : public exception { // exception type for invalid use of expired weak_ptr object
+_EXPORT_STD class _NODISCARD bad_weak_ptr : public exception {
+    // exception type for invalid use of expired weak_ptr object
 public:
     bad_weak_ptr() noexcept {}
 

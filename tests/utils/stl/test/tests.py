@@ -30,6 +30,8 @@ class TestType(Flag):
 
 
 class STLTest(Test):
+    compilerNotFound = set()
+
     def __init__(self, suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum):
         self.envNum = envNum
         self.envlstEntry = envlstEntry
@@ -71,9 +73,12 @@ class STLTest(Test):
             return Result(UNSUPPORTED, "Test does not require any of the features specified in limit_to_features: %s" %
                           msg)
 
+        if 'test-only-edg' in self.config.available_features and 'edg' not in self.requires:
+            return Result(UNSUPPORTED, 'We run only /BE tests with the test-only-edg flag')
+
         if 'edg_drop' in self.config.available_features:
-            if not 'edg' in self.requires:
-                return Result(UNSUPPORTED, 'We only run /BE tests with the edg drop')
+            if 'edg' not in self.requires:
+                return Result(UNSUPPORTED, 'We run only /BE tests with the edg drop')
 
             _, tmpBase = self.getTempPaths()
             self.isenseRspPath = tmpBase + '.isense.rsp'
@@ -214,7 +219,9 @@ class STLTest(Test):
                 _compilerPathCache[envCompiler] = cxx
 
         if not cxx:
-            litConfig.warning('Could not find: %r' % envCompiler)
+            if envCompiler not in self.compilerNotFound:
+                self.compilerNotFound.add(envCompiler)
+                litConfig.warning('Could not find: %r' % envCompiler)
             return Result(SKIPPED, 'This test was skipped because the compiler, "' +
                                    envCompiler + '", could not be found')
 

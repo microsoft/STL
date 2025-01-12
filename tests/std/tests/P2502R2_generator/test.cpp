@@ -152,7 +152,7 @@ void test_weird_reference_types() {
         assert(pos == r.end());
     }
 
-#if !(defined(__EDG__) || (defined(__clang__) && defined(_M_IX86))) // TRANSITION, VSO-2254804 and LLVM-56507
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     { // Test with mutable rvalue reference type
         constexpr size_t segment_size = 16;
         auto woof                     = []() -> generator<vector<int>&&> {
@@ -172,7 +172,7 @@ void test_weird_reference_types() {
 #endif // ^^^ no workaround ^^^
 }
 
-#if !(defined(__EDG__) || (defined(__clang__) && defined(_M_IX86))) // TRANSITION, VSO-2254804 and LLVM-56507
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
 generator<int> iota_repeater(const int hi, const int depth) {
     if (depth > 0) {
         co_yield ranges::elements_of(iota_repeater(hi, depth - 1));
@@ -401,7 +401,7 @@ int main() {
     assert(ranges::equal(co_upto(6), views::iota(0, 6)));
     zip_example();
     test_weird_reference_types();
-#if !(defined(__EDG__) || (defined(__clang__) && defined(_M_IX86))) // TRANSITION, VSO-2254804 and LLVM-56507
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     recursive_test();
     arbitrary_range_test();
 

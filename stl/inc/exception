@@ -69,7 +69,7 @@ _STD_END
 #undef stdext
 
 _STDEXT_BEGIN
-class exception;
+class _NODISCARD exception;
 _STDEXT_END
 
 _STD_BEGIN
@@ -83,7 +83,7 @@ extern _CRTIMP2_PURE_IMPORT _Prhand _Raise_handler; // pointer to raise handler
 _STD_END
 
 _STDEXT_BEGIN
-class exception { // base of all library exceptions
+class _NODISCARD exception { // base of all library exceptions
 public:
     static _STD _Prhand _Set_raise_handler(_STD _Prhand _Pnew) { // register a handler for _Raise calls
         const _STD _Prhand _Pold = _STD _Raise_handler;
@@ -123,7 +123,7 @@ protected:
     const char* _Ptr; // the message pointer
 };
 
-class bad_exception : public exception { // base of all bad exceptions
+class _NODISCARD bad_exception : public exception { // base of all bad exceptions
 public:
     __CLR_OR_THIS_CALL bad_exception(const char* _Message = "bad exception") noexcept : exception(_Message) {}
 
@@ -135,9 +135,9 @@ protected:
     }
 };
 
-class bad_array_new_length;
+class _NODISCARD bad_array_new_length;
 
-class bad_alloc : public exception { // base of all bad allocation exceptions
+class _NODISCARD bad_alloc : public exception { // base of all bad allocation exceptions
 public:
     __CLR_OR_THIS_CALL bad_alloc() noexcept
         : exception("bad allocation", 1) {} // construct from message string with no memory allocation
@@ -156,7 +156,7 @@ protected:
     }
 };
 
-class bad_array_new_length : public bad_alloc {
+class _NODISCARD bad_array_new_length : public bad_alloc {
 public:
     bad_array_new_length() noexcept : bad_alloc("bad array new length") {}
 };
@@ -390,8 +390,8 @@ _EXPORT_STD template <class _Ty>
 void rethrow_if_nested(const _Ty&) = delete; // requires /GR option
 #endif // ^^^ !defined(_CPPRTTI) ^^^
 
-_EXPORT_STD class bad_variant_access
-    : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
+_EXPORT_STD class _NODISCARD bad_variant_access : public exception {
+    // exception for visit of a valueless variant or get<I> on a variant with index() != I
 public:
     bad_variant_access() noexcept = default;
 
