@@ -3522,6 +3522,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
                 } else if (_Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps) { // ECMAScript
                     _Failed = true;
                 }
+
                 if (!_Failed) {
                     ++_Tgt_state._Cur;
                 }
