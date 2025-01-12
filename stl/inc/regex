@@ -1285,6 +1285,7 @@ private:
         if (_Increase < _Buf_incr) {
             _Increase = _Buf_incr;
         }
+
         if (_Increase < (_Sz >> 1)) {
             _Increase = _Sz >> 1;
         }
