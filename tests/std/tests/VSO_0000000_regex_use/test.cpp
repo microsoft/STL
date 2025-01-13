@@ -671,7 +671,6 @@ void test_gh_5160() {
 
 void test_gh_5192() {
     // GH-5192: Correct characters not matched by special character dot
-    using namespace string_literals;
     for (const syntax_option_type option : {
              regex_constants::basic,
              regex_constants::extended,
