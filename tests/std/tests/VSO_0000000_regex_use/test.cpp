@@ -678,30 +678,30 @@ void test_gh_5192() {
              regex_constants::grep,
              regex_constants::egrep,
          }) {
-        const test_regex regex(&g_regexTester, "^.*", option);
-        regex.should_search_match("abc\nd\re\0f"s, "abc\nd\re"s);
-        regex.should_search_match("abcd\re\ngh\0i"s, "abcd\re\ngh"s);
+        const test_regex caretDotStar(&g_regexTester, "^.*", option);
+        caretDotStar.should_search_match("abc\nd\re\0f"s, "abc\nd\re"s);
+        caretDotStar.should_search_match("abcd\re\ngh\0i"s, "abcd\re\ngh"s);
 
-        const test_wregex wregex(&g_regexTester, L"^.*", option);
-        wregex.should_search_match(L"abc\nd\re\0f"s, L"abc\nd\re"s);
-        wregex.should_search_match(L"abcd\re\ngh\0i"s, L"abcd\re\ngh"s);
-        wregex.should_search_match(L"abc\u2028d\ne\0f"s, L"abc\u2028d\ne"s); // U+2028 LINE SEPARATOR
-        wregex.should_search_match(L"abc\u2029d\ne\0f"s, L"abc\u2029d\ne"s); // U+2029 PARAGRAPH SEPARATOR
+        const test_wregex wCaretDotStar(&g_regexTester, L"^.*", option);
+        wCaretDotStar.should_search_match(L"abc\nd\re\0f"s, L"abc\nd\re"s);
+        wCaretDotStar.should_search_match(L"abcd\re\ngh\0i"s, L"abcd\re\ngh"s);
+        wCaretDotStar.should_search_match(L"abc\u2028d\ne\0f"s, L"abc\u2028d\ne"s); // U+2028 LINE SEPARATOR
+        wCaretDotStar.should_search_match(L"abc\u2029d\ne\0f"s, L"abc\u2029d\ne"s); // U+2029 PARAGRAPH SEPARATOR
     }
 
     for (const syntax_option_type option : {
              regex_constants::ECMAScript,
              syntax_option_type(),
          }) {
-        const test_regex regex(&g_regexTester, "^.*", option);
-        regex.should_search_match("ab\0c\nd\re\0f"s, "ab\0c"s);
-        regex.should_search_match("ab\0cd\re\ngh\0i"s, "ab\0cd"s);
+        const test_regex caretDotStar(&g_regexTester, "^.*", option);
+        caretDotStar.should_search_match("ab\0c\nd\re\0f"s, "ab\0c"s);
+        caretDotStar.should_search_match("ab\0cd\re\ngh\0i"s, "ab\0cd"s);
 
-        const test_wregex wregex(&g_regexTester, L"^.*", option);
-        wregex.should_search_match(L"abc\0\nd\re\0f"s, L"abc\0"s);
-        wregex.should_search_match(L"ab\0cd\re\ngh\0i"s, L"ab\0cd"s);
-        wregex.should_search_match(L"ab\0c\u2028d\ne\0f"s, L"ab\0c"s); // U+2028 LINE SEPARATOR
-        wregex.should_search_match(L"a\0bc\u2029d\ne\0f"s, L"a\0bc"s); // U+2029 PARAGRAPH SEPARATOR
+        const test_wregex wCaretDotStar(&g_regexTester, L"^.*", option);
+        wCaretDotStar.should_search_match(L"abc\0\nd\re\0f"s, L"abc\0"s);
+        wCaretDotStar.should_search_match(L"ab\0cd\re\ngh\0i"s, L"ab\0cd"s);
+        wCaretDotStar.should_search_match(L"ab\0c\u2028d\ne\0f"s, L"ab\0c"s); // U+2028 LINE SEPARATOR
+        wCaretDotStar.should_search_match(L"a\0bc\u2029d\ne\0f"s, L"a\0bc"s); // U+2029 PARAGRAPH SEPARATOR
     }
 }
 
