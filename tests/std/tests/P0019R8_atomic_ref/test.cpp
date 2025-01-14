@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <execution>
@@ -34,50 +35,256 @@ struct int128 {
     }
 };
 
-// Also test GH-4688 "<atomic>: atomic_ref<void*> and atomic<void*> lack difference_type"
+// Also test constraints and conditional existence of difference_type specified by
+// P3323R1 "Forbid atomic<cv T>, Specify atomic_ref<cv T>".
+
 template <class T>
-constexpr bool atomic_ref_has_member_difference_type = requires { typename std::atomic_ref<T>::difference_type; };
+void test_atomic_ref_constraints_single() { // COMPILE-ONLY
+    using TD = std::remove_cv_t<T>;
+    using AR = std::atomic_ref<T>;
 
-static_assert(std::is_same_v<std::atomic_ref<signed char>::difference_type, signed char>);
-static_assert(std::is_same_v<std::atomic_ref<short>::difference_type, short>);
-static_assert(std::is_same_v<std::atomic_ref<int>::difference_type, int>);
-static_assert(std::is_same_v<std::atomic_ref<long>::difference_type, long>);
-static_assert(std::is_same_v<std::atomic_ref<long long>::difference_type, long long>);
-static_assert(std::is_same_v<std::atomic_ref<unsigned char>::difference_type, unsigned char>);
-static_assert(std::is_same_v<std::atomic_ref<unsigned short>::difference_type, unsigned short>);
-static_assert(std::is_same_v<std::atomic_ref<unsigned int>::difference_type, unsigned int>);
-static_assert(std::is_same_v<std::atomic_ref<unsigned long>::difference_type, unsigned long>);
-static_assert(std::is_same_v<std::atomic_ref<unsigned long long>::difference_type, unsigned long long>);
-static_assert(std::is_same_v<std::atomic_ref<char>::difference_type, char>);
+    static_assert(std::is_same_v<typename AR::value_type, TD>);
+    static_assert(requires(const AR& r, TD v, std::memory_order ord) {
+        r.operator TD();
+        { r.load() } -> std::same_as<TD>;
+        { r.load(ord) } -> std::same_as<TD>;
+        { r.wait(v) } -> std::same_as<void>;
+        { r.wait(v, ord) } -> std::same_as<void>;
+    });
+    {
+        [[maybe_unused]] auto instantiator = [](const AR& r, TD v, std::memory_order ord) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2343282
+            (void) r.operator TD();
+#else // ^^^ no workaround / workaround vvv
+            [[maybe_unused]] TD td = r;
+#endif // ^^^ workaround ^^^
+            (void) r.load();
+            (void) r.load(ord);
+            r.wait(v);
+            r.wait(v, ord);
+        };
+    }
+
+    if constexpr (!std::is_const_v<T>) {
+        static_assert(requires(const AR& r, TD v, TD& vx, std::memory_order ord1, std::memory_order ord2) {
+            { r.store(v) } -> std::same_as<void>;
+            { r.store(v, ord1) } -> std::same_as<void>;
+            { r = v } -> std::same_as<TD>;
+            { r.exchange(v) } -> std::same_as<TD>;
+            { r.exchange(v, ord1) } -> std::same_as<TD>;
+            { r.compare_exchange_weak(vx, v) } -> std::same_as<bool>;
+            { r.compare_exchange_weak(vx, v, ord1) } -> std::same_as<bool>;
+            { r.compare_exchange_weak(vx, v, ord1, ord2) } -> std::same_as<bool>;
+            { r.compare_exchange_strong(vx, v) } -> std::same_as<bool>;
+            { r.compare_exchange_strong(vx, v, ord1) } -> std::same_as<bool>;
+            { r.compare_exchange_strong(vx, v, ord1, ord2) } -> std::same_as<bool>;
+            { r.notify_one() } -> std::same_as<void>;
+            { r.notify_all() } -> std::same_as<void>;
+        });
+
+        [[maybe_unused]] auto instantiator = [](const AR& r, TD v, TD& vx, std::memory_order ord1,
+                                                 std::memory_order ord2) {
+            r.store(v);
+            r.store(v, ord1);
+            (void) (r = v);
+            (void) r.exchange(v);
+            (void) r.exchange(v, ord1);
+            (void) r.compare_exchange_weak(vx, v);
+            (void) r.compare_exchange_weak(vx, v, ord1);
+            (void) r.compare_exchange_weak(vx, v, ord1, ord2);
+            (void) r.compare_exchange_strong(vx, v);
+            (void) r.compare_exchange_strong(vx, v, ord1);
+            (void) r.compare_exchange_strong(vx, v, ord1, ord2);
+            r.notify_one();
+            r.notify_all();
+        };
+    } else {
+        static_assert(!requires(const AR& r, TD v) { r.store(v); });
+        static_assert(!requires(const AR& r, TD v, std::memory_order ord) { r.store(v, ord); });
+        static_assert(!requires(const AR& r, TD v) { r = v; });
+        static_assert(!requires(const AR& r, TD v) { r.exchange(v); });
+        static_assert(!requires(const AR& r, TD v, std::memory_order ord) { r.exchange(v, ord); });
+        static_assert(!requires(const AR& r, TD& v1, TD v2) { r.compare_exchange_weak(v1, v2); });
+        static_assert(
+            !requires(const AR& r, TD& v1, TD v2, std::memory_order ord) { r.compare_exchange_weak(v1, v2, ord); });
+        static_assert(!requires(const AR& r, TD& v1, TD v2, std::memory_order ord1, std::memory_order ord2) {
+            r.compare_exchange_weak(v1, v2, ord1, ord2);
+        });
+        static_assert(!requires(const AR& r, TD& v1, TD v2) { r.compare_exchange_strong(v1, v2); });
+        static_assert(
+            !requires(const AR& r, TD& v1, TD v2, std::memory_order ord) { r.compare_exchange_strong(v1, v2, ord); });
+        static_assert(!requires(const AR& r, TD& v1, TD v2, std::memory_order ord1, std::memory_order ord2) {
+            r.compare_exchange_strong(v1, v2, ord1, ord2);
+        });
+        static_assert(!requires(const AR& r) { r.notify_one(); });
+        static_assert(!requires(const AR& r) { r.notify_all(); });
+    }
+
+    constexpr bool has_difference_type = (std::is_arithmetic_v<TD> && !std::is_same_v<TD, bool>)
+                                      || (std::is_pointer_v<TD> && std::is_object_v<std::remove_pointer_t<TD>>);
+
+    if constexpr (has_difference_type) {
+        if constexpr (std::is_arithmetic_v<TD>) {
+            static_assert(std::is_same_v<typename AR::difference_type, TD>);
+        } else {
+            static_assert(std::is_same_v<typename AR::difference_type, std::ptrdiff_t>);
+        }
+    } else {
+        static_assert(!requires { typename AR::difference_type; });
+    }
+
+    if constexpr (has_difference_type && !std::is_const_v<T>) {
+        static_assert(requires(const AR& r, AR::difference_type d, std::memory_order ord) {
+            { r.fetch_add(d) } -> std::same_as<TD>;
+            { r.fetch_add(d, ord) } -> std::same_as<TD>;
+            { r.fetch_sub(d) } -> std::same_as<TD>;
+            { r.fetch_sub(d, ord) } -> std::same_as<TD>;
+            { r += d } -> std::same_as<TD>;
+            { r -= d } -> std::same_as<TD>;
+        });
+
+        [[maybe_unused]] auto instantiator = [](const AR& r, AR::difference_type d, std::memory_order ord) {
+            (void) r.fetch_add(d);
+            (void) r.fetch_add(d, ord);
+            (void) r.fetch_sub(d);
+            (void) r.fetch_sub(d, ord);
+            (void) (r += d);
+            (void) (r -= d);
+        };
+    } else {
+        static_assert(!requires(const AR& r, AR::difference_type d) { r.fetch_add(d); });
+        static_assert(!requires(const AR& r, AR::difference_type d, std::memory_order ord) { r.fetch_add(d, ord); });
+        static_assert(!requires(const AR& r, AR::difference_type d) { r.fetch_sub(d); });
+        static_assert(!requires(const AR& r, AR::difference_type d, std::memory_order ord) { r.fetch_sub(d, ord); });
+        static_assert(!requires(const AR& r, AR::difference_type d) { r += d; });
+        static_assert(!requires(const AR& r, AR::difference_type d) { r -= d; });
+    }
+
+    if constexpr (has_difference_type && !std::is_floating_point_v<TD> && !std::is_const_v<T>) {
+        static_assert(requires(const AR& r) {
+            { ++r } -> std::same_as<TD>;
+            { r++ } -> std::same_as<TD>;
+            { --r } -> std::same_as<TD>;
+            { r-- } -> std::same_as<TD>;
+        });
+
+        [[maybe_unused]] auto instantiator = [](const AR& r) {
+            (void) ++r;
+            (void) r++;
+            (void) --r;
+            (void) r--;
+        };
+    } else {
+        static_assert(!requires(const AR& r) { ++r; });
+        static_assert(!requires(const AR& r) { r++; });
+        static_assert(!requires(const AR& r) { --r; });
+        static_assert(!requires(const AR& r) { r--; });
+    }
+
+    if constexpr (std::is_integral_v<TD> && !std::is_same_v<TD, bool> && !std::is_const_v<T>) {
+        static_assert(requires(const AR& r, TD v, std::memory_order ord) {
+            { r.fetch_and(v) } -> std::same_as<TD>;
+            { r.fetch_and(v, ord) } -> std::same_as<TD>;
+            { r.fetch_or(v) } -> std::same_as<TD>;
+            { r.fetch_or(v, ord) } -> std::same_as<TD>;
+            { r.fetch_xor(v) } -> std::same_as<TD>;
+            { r.fetch_xor(v, ord) } -> std::same_as<TD>;
+            { r &= v } -> std::same_as<TD>;
+            { r |= v } -> std::same_as<TD>;
+            { r ^= v } -> std::same_as<TD>;
+        });
+
+        [[maybe_unused]] auto instantiator = [](const AR& r, TD v, std::memory_order ord) {
+            (void) r.fetch_and(v);
+            (void) r.fetch_and(v, ord);
+            (void) r.fetch_or(v);
+            (void) r.fetch_or(v, ord);
+            (void) r.fetch_xor(v);
+            (void) r.fetch_xor(v, ord);
+            (void) (r &= v);
+            (void) (r |= v);
+            (void) (r ^= v);
+        };
+    } else {
+        static_assert(!requires(const AR& r, TD v) { r.fetch_and(v); });
+        static_assert(!requires(const AR& r, TD v, std::memory_order ord) { r.fetch_and(v, ord); });
+        static_assert(!requires(const AR& r, TD v) { r.fetch_or(v); });
+        static_assert(!requires(const AR& r, TD v, std::memory_order ord) { r.fetch_or(v, ord); });
+        static_assert(!requires(const AR& r, TD v) { r.fetch_xor(v); });
+        static_assert(!requires(const AR& r, TD v, std::memory_order ord) { r.fetch_xor(v, ord); });
+        static_assert(!requires(const AR& r, TD v) { r &= v; });
+        static_assert(!requires(const AR& r, TD v) { r |= v; });
+        static_assert(!requires(const AR& r, TD v) { r ^= v; });
+    }
+}
+
+template <class T>
+void test_atomic_ref_constraints_cv() { // COMPILE-ONLY
+    static_assert(!std::is_const_v<T> && !std::is_volatile_v<T>);
+    test_atomic_ref_constraints_single<T>();
+    test_atomic_ref_constraints_single<const T>();
+    if constexpr (std::atomic_ref<T>::is_always_lock_free) {
+        test_atomic_ref_constraints_single<volatile T>();
+        test_atomic_ref_constraints_single<const volatile T>();
+    }
+}
+
+void test_atomic_ref_constraints() { // COMPILE-ONLY
+    test_atomic_ref_constraints_cv<signed char>();
+    test_atomic_ref_constraints_cv<short>();
+    test_atomic_ref_constraints_cv<int>();
+    test_atomic_ref_constraints_cv<long>();
+    test_atomic_ref_constraints_cv<long long>();
+    test_atomic_ref_constraints_cv<unsigned char>();
+    test_atomic_ref_constraints_cv<unsigned short>();
+    test_atomic_ref_constraints_cv<unsigned int>();
+    test_atomic_ref_constraints_cv<unsigned long>();
+    test_atomic_ref_constraints_cv<unsigned long long>();
+    test_atomic_ref_constraints_cv<bool>();
+    test_atomic_ref_constraints_cv<char>();
+    test_atomic_ref_constraints_cv<wchar_t>();
 #ifdef __cpp_char8_t
-static_assert(std::is_same_v<std::atomic_ref<char8_t>::difference_type, char8_t>);
+    test_atomic_ref_constraints_cv<char8_t>();
 #endif // defined(__cpp_char8_t)
-static_assert(std::is_same_v<std::atomic_ref<char16_t>::difference_type, char16_t>);
-static_assert(std::is_same_v<std::atomic_ref<char32_t>::difference_type, char32_t>);
-static_assert(std::is_same_v<std::atomic_ref<wchar_t>::difference_type, wchar_t>);
+    test_atomic_ref_constraints_cv<char16_t>();
+    test_atomic_ref_constraints_cv<char32_t>();
+    test_atomic_ref_constraints_cv<float>();
+    test_atomic_ref_constraints_cv<double>();
+    test_atomic_ref_constraints_cv<long double>();
 
-static_assert(std::is_same_v<std::atomic_ref<float>::difference_type, float>);
-static_assert(std::is_same_v<std::atomic_ref<double>::difference_type, double>);
-static_assert(std::is_same_v<std::atomic_ref<long double>::difference_type, long double>);
+    test_atomic_ref_constraints_cv<void*>();
+    test_atomic_ref_constraints_cv<const void*>();
+    test_atomic_ref_constraints_cv<volatile void*>();
+    test_atomic_ref_constraints_cv<const volatile void*>();
 
-static_assert(std::is_same_v<std::atomic_ref<int*>::difference_type, std::ptrdiff_t>);
-static_assert(std::is_same_v<std::atomic_ref<bool*>::difference_type, std::ptrdiff_t>);
-static_assert(std::is_same_v<std::atomic_ref<const int*>::difference_type, std::ptrdiff_t>);
-static_assert(std::is_same_v<std::atomic_ref<volatile bool*>::difference_type, std::ptrdiff_t>);
-static_assert(std::is_same_v<std::atomic_ref<bigint*>::difference_type, std::ptrdiff_t>);
-static_assert(std::is_same_v<std::atomic_ref<const volatile int128*>::difference_type, std::ptrdiff_t>);
+    test_atomic_ref_constraints_cv<char*>();
+    test_atomic_ref_constraints_cv<const char*>();
+    test_atomic_ref_constraints_cv<volatile char*>();
+    test_atomic_ref_constraints_cv<const volatile char*>();
 
-static_assert(std::is_same_v<std::atomic_ref<void*>::difference_type, std::ptrdiff_t>);
-static_assert(std::is_same_v<std::atomic_ref<const void*>::difference_type, std::ptrdiff_t>);
-static_assert(std::is_same_v<std::atomic_ref<volatile void*>::difference_type, std::ptrdiff_t>);
-static_assert(std::is_same_v<std::atomic_ref<const volatile void*>::difference_type, std::ptrdiff_t>);
-static_assert(std::is_same_v<std::atomic_ref<void (*)()>::difference_type, std::ptrdiff_t>);
-static_assert(std::is_same_v<std::atomic_ref<bigint (*)(int128)>::difference_type, std::ptrdiff_t>);
+    test_atomic_ref_constraints_cv<int*>();
+    test_atomic_ref_constraints_cv<const int*>();
+    test_atomic_ref_constraints_cv<volatile int*>();
+    test_atomic_ref_constraints_cv<const volatile int*>();
 
-static_assert(!atomic_ref_has_member_difference_type<bool>);
-static_assert(!atomic_ref_has_member_difference_type<std::nullptr_t>);
-static_assert(!atomic_ref_has_member_difference_type<bigint>);
-static_assert(!atomic_ref_has_member_difference_type<int128>);
+    test_atomic_ref_constraints_cv<int128*>();
+    test_atomic_ref_constraints_cv<const int128*>();
+    test_atomic_ref_constraints_cv<volatile int128*>();
+    test_atomic_ref_constraints_cv<const volatile int128*>();
+
+    test_atomic_ref_constraints_cv<bigint*>();
+    test_atomic_ref_constraints_cv<const bigint*>();
+    test_atomic_ref_constraints_cv<volatile bigint*>();
+    test_atomic_ref_constraints_cv<const volatile bigint*>();
+
+    test_atomic_ref_constraints_cv<int (*)()>();
+    test_atomic_ref_constraints_cv<bigint (*)(int128)>();
+
+    test_atomic_ref_constraints_cv<std::nullptr_t>();
+
+    test_atomic_ref_constraints_cv<bigint>();
+    test_atomic_ref_constraints_cv<int128>();
+}
 
 
 // code reuse of ../P1135R6_atomic_flag_test/test.cpp

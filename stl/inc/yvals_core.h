@@ -80,6 +80,8 @@
 //     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
 // P2937R0 Freestanding Library: Remove strtok
 // P2968R2 Make std::ignore A First-Class Object
+// P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
+//     (for atomic<cv T>)
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -315,6 +317,8 @@
 // P2909R4 Fix Formatting Of Code Units As Integers
 // P2997R1 Removing The Common Reference Requirement From The Indirectly Invocable Concepts
 // P3136R1 Retiring Niebloids
+// P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
+//     (for atomic_ref<cv T>)
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
