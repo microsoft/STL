@@ -547,6 +547,17 @@ void test_VSO_226914_word_boundaries() {
     aWordAny.should_search_fail("aa", match_not_bow | match_not_eow);
 }
 
+void test_construction_from_nullptr_and_zero() {
+    {
+        regex re(nullptr, 0);
+        assert(re.mark_count() == 0);
+    }
+    {
+        wregex re(nullptr, 0);
+        assert(re.mark_count() == 0);
+    }
+}
+
 void test_gh_993() {
     // GH-993 regex::icase is not handled correctly for some input.
     {
@@ -669,6 +680,56 @@ void test_gh_5160() {
     neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
 }
 
+void test_gh_5167() {
+    // GH-5167: Limit backreference parsing to single digit for basic regular expressions
+    g_regexTester.should_match("abab0", R"(\(ab*\)\10)", basic);
+    g_regexTester.should_match("abab0", R"(\(ab*\)\10)", grep);
+    g_regexTester.should_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\25\18)", basic);
+    g_regexTester.should_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\25\18)", grep);
+    g_regexTester.should_not_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\15\28)", basic);
+    g_regexTester.should_not_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\15\28)", grep);
+    g_regexTester.should_throw(R"(abc\1d)", error_backref, basic);
+    g_regexTester.should_throw(R"(abc\1d)", error_backref, grep);
+    g_regexTester.should_throw(R"(abc\10)", error_backref, basic);
+    g_regexTester.should_throw(R"(abc\10)", error_backref, grep);
+}
+
+void test_gh_5192() {
+    // GH-5192: Correct characters not matched by special character dot
+    for (const syntax_option_type option : {
+             regex_constants::basic,
+             regex_constants::extended,
+             regex_constants::awk,
+             regex_constants::grep,
+             regex_constants::egrep,
+         }) {
+        const test_regex caretDotStar(&g_regexTester, "^.*", option);
+        caretDotStar.should_search_match("abc\nd\re\0f"s, "abc\nd\re"s);
+        caretDotStar.should_search_match("abcd\re\ngh\0i"s, "abcd\re\ngh"s);
+
+        const test_wregex wCaretDotStar(&g_regexTester, L"^.*", option);
+        wCaretDotStar.should_search_match(L"abc\nd\re\0f"s, L"abc\nd\re"s);
+        wCaretDotStar.should_search_match(L"abcd\re\ngh\0i"s, L"abcd\re\ngh"s);
+        wCaretDotStar.should_search_match(L"abc\u2028d\ne\0f"s, L"abc\u2028d\ne"s); // U+2028 LINE SEPARATOR
+        wCaretDotStar.should_search_match(L"abc\u2029d\ne\0f"s, L"abc\u2029d\ne"s); // U+2029 PARAGRAPH SEPARATOR
+    }
+
+    for (const syntax_option_type option : {
+             regex_constants::ECMAScript,
+             syntax_option_type(),
+         }) {
+        const test_regex caretDotStar(&g_regexTester, "^.*", option);
+        caretDotStar.should_search_match("ab\0c\nd\re\0f"s, "ab\0c"s);
+        caretDotStar.should_search_match("ab\0cd\re\ngh\0i"s, "ab\0cd"s);
+
+        const test_wregex wCaretDotStar(&g_regexTester, L"^.*", option);
+        wCaretDotStar.should_search_match(L"abc\0\nd\re\0f"s, L"abc\0"s);
+        wCaretDotStar.should_search_match(L"ab\0cd\re\ngh\0i"s, L"ab\0cd"s);
+        wCaretDotStar.should_search_match(L"ab\0c\u2028d\ne\0f"s, L"ab\0c"s); // U+2028 LINE SEPARATOR
+        wCaretDotStar.should_search_match(L"a\0bc\u2029d\ne\0f"s, L"a\0bc"s); // U+2029 PARAGRAPH SEPARATOR
+    }
+}
+
 void test_gh_5214() {
     // GH-5214 makes negated character class escapes not match characters not included in the negated character class
     {
@@ -713,10 +774,13 @@ int main() {
     test_VSO_225160_match_bol_flag();
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
+    test_construction_from_nullptr_and_zero();
     test_gh_993();
     test_gh_4995();
     test_gh_5058();
     test_gh_5160();
+    test_gh_5167();
+    test_gh_5192();
     test_gh_5214();
 
     return g_regexTester.result();
