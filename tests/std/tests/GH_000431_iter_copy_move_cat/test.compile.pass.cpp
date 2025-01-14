@@ -170,14 +170,15 @@ void test_iter_cat_for_containers() {
 struct TrivialStruct {
     int i;
 };
-STATIC_ASSERT(is_trivial_v<TrivialStruct>);
+STATIC_ASSERT(is_trivially_copyable_v<TrivialStruct>);
+STATIC_ASSERT(is_trivially_default_constructible_v<TrivialStruct>);
 
 struct TriviallyCopyableStruct {
     int i;
     TriviallyCopyableStruct();
 };
 STATIC_ASSERT(is_trivially_copyable_v<TriviallyCopyableStruct>);
-STATIC_ASSERT(!is_trivial_v<TriviallyCopyableStruct>);
+STATIC_ASSERT(!is_trivially_default_constructible_v<TriviallyCopyableStruct>);
 
 struct TriviallyMovableStruct {
     int i;
@@ -188,7 +189,7 @@ struct TriviallyMovableStruct {
     TriviallyMovableStruct& operator=(TriviallyMovableStruct&&)      = default;
 };
 STATIC_ASSERT(is_trivially_copyable_v<TriviallyMovableStruct>);
-STATIC_ASSERT(!is_trivial_v<TriviallyMovableStruct>);
+STATIC_ASSERT(!is_trivially_default_constructible_v<TriviallyMovableStruct>);
 
 struct TriviallyConstructibleStruct {
     int i;
@@ -204,7 +205,7 @@ STATIC_ASSERT(is_trivially_move_constructible_v<TriviallyConstructibleStruct>);
 STATIC_ASSERT(!is_trivially_copy_assignable_v<TriviallyConstructibleStruct>);
 STATIC_ASSERT(!is_trivially_move_assignable_v<TriviallyConstructibleStruct>);
 STATIC_ASSERT(!is_trivially_copyable_v<TriviallyConstructibleStruct>);
-STATIC_ASSERT(!is_trivial_v<TriviallyConstructibleStruct>);
+STATIC_ASSERT(!is_trivially_default_constructible_v<TriviallyConstructibleStruct>);
 
 struct TriviallyAssignableStruct {
     int i;
@@ -220,7 +221,7 @@ STATIC_ASSERT(!is_trivially_move_constructible_v<TriviallyAssignableStruct>);
 STATIC_ASSERT(is_trivially_copy_assignable_v<TriviallyAssignableStruct>);
 STATIC_ASSERT(is_trivially_move_assignable_v<TriviallyAssignableStruct>);
 STATIC_ASSERT(!is_trivially_copyable_v<TriviallyAssignableStruct>);
-STATIC_ASSERT(!is_trivial_v<TriviallyAssignableStruct>);
+STATIC_ASSERT(!is_trivially_default_constructible_v<TriviallyAssignableStruct>);
 
 struct TriviallyCopyConstructibleStruct {
     int i;
@@ -236,7 +237,7 @@ STATIC_ASSERT(!is_trivially_move_constructible_v<TriviallyCopyConstructibleStruc
 STATIC_ASSERT(!is_trivially_copy_assignable_v<TriviallyCopyConstructibleStruct>);
 STATIC_ASSERT(!is_trivially_move_assignable_v<TriviallyCopyConstructibleStruct>);
 STATIC_ASSERT(!is_trivially_copyable_v<TriviallyCopyConstructibleStruct>);
-STATIC_ASSERT(!is_trivial_v<TriviallyCopyConstructibleStruct>);
+STATIC_ASSERT(!is_trivially_default_constructible_v<TriviallyCopyConstructibleStruct>);
 
 struct TriviallyCopyAssignableStruct {
     int i;
@@ -253,7 +254,7 @@ STATIC_ASSERT(!is_trivially_move_constructible_v<TriviallyCopyAssignableStruct>)
 STATIC_ASSERT(is_trivially_copy_assignable_v<TriviallyCopyAssignableStruct>);
 STATIC_ASSERT(!is_trivially_move_assignable_v<TriviallyCopyAssignableStruct>);
 STATIC_ASSERT(!is_trivially_copyable_v<TriviallyCopyAssignableStruct>);
-STATIC_ASSERT(!is_trivial_v<TriviallyCopyAssignableStruct>);
+STATIC_ASSERT(!is_trivially_default_constructible_v<TriviallyCopyAssignableStruct>);
 
 struct TriviallyMoveConstructibleStruct {
     int i;
@@ -269,7 +270,7 @@ STATIC_ASSERT(is_trivially_move_constructible_v<TriviallyMoveConstructibleStruct
 STATIC_ASSERT(!is_trivially_copy_assignable_v<TriviallyMoveConstructibleStruct>);
 STATIC_ASSERT(!is_trivially_move_assignable_v<TriviallyMoveConstructibleStruct>);
 STATIC_ASSERT(!is_trivially_copyable_v<TriviallyMoveConstructibleStruct>);
-STATIC_ASSERT(!is_trivial_v<TriviallyMoveConstructibleStruct>);
+STATIC_ASSERT(!is_trivially_default_constructible_v<TriviallyMoveConstructibleStruct>);
 
 struct TriviallyMoveAssignableStruct {
     int i;
@@ -285,7 +286,7 @@ STATIC_ASSERT(!is_trivially_move_constructible_v<TriviallyMoveAssignableStruct>)
 STATIC_ASSERT(!is_trivially_copy_assignable_v<TriviallyMoveAssignableStruct>);
 STATIC_ASSERT(is_trivially_move_assignable_v<TriviallyMoveAssignableStruct>);
 STATIC_ASSERT(!is_trivially_copyable_v<TriviallyMoveAssignableStruct>);
-STATIC_ASSERT(!is_trivial_v<TriviallyMoveAssignableStruct>);
+STATIC_ASSERT(!is_trivially_default_constructible_v<TriviallyMoveAssignableStruct>);
 
 struct EmptyBase {};
 

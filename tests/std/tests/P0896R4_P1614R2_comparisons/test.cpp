@@ -52,7 +52,8 @@ constexpr bool is_trivially_constexpr() {
 
     // Not required, but likely portable nonetheless:
     STATIC_ASSERT(std::is_empty_v<T>);
-    STATIC_ASSERT(std::is_trivial_v<T>);
+    STATIC_ASSERT(std::is_trivially_copyable_v<T>);
+    STATIC_ASSERT(std::is_trivially_default_constructible_v<T>);
     STATIC_ASSERT(std::is_trivially_copy_constructible_v<T>);
     STATIC_ASSERT(std::is_trivially_move_constructible_v<T>);
     STATIC_ASSERT(std::is_trivially_copy_assignable_v<T>);

@@ -500,7 +500,8 @@ struct _Parallel_choose_max_chunk {
 
 template <class _Ty>
 struct alignas(_Ty) alignas(size_t) alignas(_Atomic_counter_t) _Circular_buffer { // work stealing deque extent type
-    static_assert(is_trivial_v<_Ty>, "Work stealing deques work only with trivial operations");
+    static_assert(is_trivially_copyable_v<_Ty> && is_trivially_default_constructible_v<_Ty>,
+        "Work stealing deques work only with trivial operations");
 
     size_t _Log_size;
     _Atomic_counter_t _Ref_count;

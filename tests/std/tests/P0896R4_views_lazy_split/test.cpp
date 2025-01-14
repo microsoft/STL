@@ -359,6 +359,14 @@ constexpr bool test_lwg_3904() {
     return j != r.end();
 }
 
+void test_lwg_4027() { // COMPILE-ONLY
+    auto r   = views::single(0) | views::lazy_split(0);
+    using R1 = decltype((*ranges::cbegin(r)).front());
+    using R2 = decltype((*cbegin(r)).front());
+    static_assert(same_as<R1, R2>);
+    static_assert(is_const_v<remove_reference_t<R1>>);
+}
+
 int main() {
     static_assert(instantiation_test());
     instantiation_test();

@@ -36,11 +36,19 @@ std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp
 # LLVM-113609: [libc++][test] Non-rebindable test_alloc in string.capacity/deallocate_size.pass.cpp
 std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
 
+# LLVM-116054: [libc++] vprint_[non]unicode(ostream &, string_view, Args&&...) should not pad the output
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/print.pass.cpp FAIL
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_nonunicode.pass.cpp FAIL
+std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_unicode.pass.cpp FAIL
+
 # LLVM-119174: [libcxx][test] Silence nodiscard warnings for std::expected
 std/utilities/expected/expected.expected/monadic/and_then.pass.cpp FAIL
 std/utilities/expected/expected.expected/monadic/or_else.pass.cpp FAIL
 std/utilities/expected/expected.expected/monadic/transform.pass.cpp FAIL
 std/utilities/expected/expected.expected/monadic/transform_error.pass.cpp FAIL
+
+# LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
+std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
@@ -126,6 +134,9 @@ std/language.support/support.limits/support.limits.general/mdspan.version.compil
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
 
+# libc++ has not implemented P3323R1: "Forbid atomic<cv T>, Specify atomic_ref<cv T>"
+std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
+
 # Various bogosity (LLVM-D141004), warning C6011: Dereferencing NULL pointer
 # Note: The :1 (ASan) configuration doesn't run static analysis.
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
@@ -150,6 +161,9 @@ std/language.support/support.limits/support.limits.general/ranges.version.compil
 
 # libc++ is missing various <format> DRs
 std/language.support/support.limits/support.limits.general/format.version.compile.pass.cpp FAIL
+
+# libc++ doesn't implement LWG-2584 (LLVM-99976)
+std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
@@ -240,8 +254,10 @@ std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
 # LWG-2503 "multiline option should be added to syntax_option_type"
+std/re/re.alg/re.alg.search/no_update_pos.pass.cpp FAIL
 std/re/re.const/re.matchflag/match_multiline.pass.cpp FAIL
 std/re/re.const/re.matchflag/match_not_eol.pass.cpp FAIL
+std/re/re.const/re.synopt/syntax_option_type.pass.cpp FAIL
 
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
 # WCFB02 implements the proposed resolution for this issue
@@ -552,6 +568,12 @@ std/utilities/format/format.formatter/format.formatter.locking/enable_nonlocking
 std/containers/sequences/vector.bool/shrink_to_fit.pass.cpp FAIL
 std/containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp FAIL
 
+# We disagree on the syntax flags set by the default basic_regex constructor: we set 0, libc++ sets ECMAScript.
+# Relates to LWG-3604.
+std/re/re.regex/re.regex.construct/default.pass.cpp FAIL
+std/re/re.regex/re.regex.nonmemb/re.regex.nmswap/swap.pass.cpp FAIL
+std/re/re.regex/re.regex.swap/swap.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
@@ -563,13 +585,6 @@ std/re/re.alg/re.alg.search/awk.pass.cpp FAIL
 std/re/re.alg/re.alg.search/basic.pass.cpp FAIL
 std/re/re.alg/re.alg.search/ecma.pass.cpp FAIL
 std/re/re.alg/re.alg.search/extended.pass.cpp FAIL
-std/re/re.alg/re.alg.search/no_update_pos.pass.cpp FAIL
-std/re/re.const/re.synopt/syntax_option_type.pass.cpp FAIL
-std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
-std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
-std/re/re.regex/re.regex.construct/default.pass.cpp FAIL
-std/re/re.regex/re.regex.nonmemb/re.regex.nmswap/swap.pass.cpp FAIL
-std/re/re.regex/re.regex.swap/swap.pass.cpp FAIL
 std/re/re.traits/lookup_collatename.pass.cpp FAIL
 std/re/re.traits/transform_primary.pass.cpp FAIL
 
@@ -1111,11 +1126,6 @@ std/input.output/filesystems/fs.op.funcs/fs.op.weakly_canonical/weakly_canonical
 # MSVC error C2719: '_Fun_': formal parameter with requested alignment of 128 won't be aligned
 # Clang error: unknown attribute 'no_unique_address' ignored [-Werror,-Wunknown-attributes]
 std/ranges/ranges_robust_against_no_unique_address.pass.cpp FAIL
-
-# Not analyzed. Runtime assertion, we appear to be ignoring stream width.
-std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/print.pass.cpp FAIL
-std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_nonunicode.pass.cpp FAIL
-std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_unicode.pass.cpp FAIL
 
 # Not analyzed. test_chrono_leap_second.h wants us to provide a vendor-specific version of
 # test_leap_second_create(), but it's unclear how to adapt their parameters to our implementation.

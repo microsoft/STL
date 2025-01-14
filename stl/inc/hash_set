@@ -49,9 +49,10 @@ namespace stdext {
 
         template <class... _Args>
         using _In_place_key_extractor = _STD _In_place_key_extract_set<_Kty, _Args...>;
-        template <class>
-        using _Deduce_key = const _Kty&;
-        using key_equal   = _Tr;
+
+        using key_equal = _Tr;
+
+        static constexpr bool _Has_transparent_overloads = false;
 
 #if _HAS_CXX20 && defined(__EDG__) // TRANSITION, DevCom-10678753
         template <class, class>

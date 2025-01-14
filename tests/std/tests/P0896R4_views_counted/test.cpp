@@ -14,6 +14,12 @@ template <class I>
 concept Countable = requires { typename iter_difference_t<remove_cvref_t<I>>; }
                  && requires(I&& i, iter_difference_t<remove_cvref_t<I>> n) { views::counted(forward<I>(i), n); };
 
+template <class I>
+concept CanConstructCountedSubrange = requires { typename iter_difference_t<remove_cvref_t<I>>; }
+                                   && requires(I&& i, iter_difference_t<remove_cvref_t<I>> n) {
+                                          ranges::subrange(counted_iterator(forward<I>(i), n), default_sentinel);
+                                      };
+
 template <input_or_output_iterator Iter>
 struct convertible_difference {
     constexpr convertible_difference(const int _val_) noexcept : _val(_val_) {}
@@ -31,8 +37,7 @@ struct instantiator {
 
     template <input_or_output_iterator Iter>
     static constexpr void call() {
-        using ranges::contiguous_range, ranges::equal, ranges::iterator_t, ranges::random_access_range, ranges::size,
-            ranges::subrange;
+        using ranges::equal, ranges::size, ranges::subrange;
         int input[] = {13, 42, 1729, -1, -1};
 
         static_assert(Countable<Iter>);
@@ -41,6 +46,10 @@ struct instantiator {
         auto result = ranges::views::counted(Iter{input}, convertible_difference<Iter>{3});
         if constexpr (contiguous_iterator<Iter>) {
             static_assert(same_as<decltype(result), span<remove_reference_t<iter_reference_t<Iter>>, dynamic_extent>>);
+
+            const test::redifference_iterator<_Signed128, Iter> rediff_it{Iter{input}};
+            ranges::contiguous_range auto rediff_result = ranges::views::counted(rediff_it, _Signed128{4});
+            assert(size(rediff_result) == 4);
         } else if constexpr (random_access_iterator<Iter>) {
             static_assert(same_as<decltype(result), subrange<Iter, Iter>>);
         } else {
@@ -52,6 +61,37 @@ struct instantiator {
         }
     }
 };
+
+// Also test GH-5183: "<ranges>: views::counted::_Choose() misses difference casting for contiguous_iterator case"
+struct ExplicitCopyCtorIter {
+    using difference_type = int;
+
+    ExplicitCopyCtorIter()                                     = default;
+    ExplicitCopyCtorIter(ExplicitCopyCtorIter&&)               = default;
+    ExplicitCopyCtorIter& operator=(ExplicitCopyCtorIter&&)    = default;
+    explicit ExplicitCopyCtorIter(const ExplicitCopyCtorIter&) = default;
+    int operator*();
+    ExplicitCopyCtorIter& operator++();
+    void operator++(int);
+};
+static_assert(!Countable<ExplicitCopyCtorIter&>);
+static_assert(!CanConstructCountedSubrange<ExplicitCopyCtorIter&>);
+
+struct ImplicitCopyOnlyIter {
+    using difference_type = int;
+
+    ImplicitCopyOnlyIter()                                     = default;
+    ImplicitCopyOnlyIter(ImplicitCopyOnlyIter&&)               = default;
+    ImplicitCopyOnlyIter& operator=(ImplicitCopyOnlyIter&&)    = default;
+    explicit ImplicitCopyOnlyIter(const ImplicitCopyOnlyIter&) = delete;
+    template <int = 0>
+    ImplicitCopyOnlyIter(const ImplicitCopyOnlyIter&);
+    int operator*();
+    ImplicitCopyOnlyIter& operator++();
+    void operator++(int);
+};
+static_assert(Countable<ImplicitCopyOnlyIter&>);
+static_assert(CanConstructCountedSubrange<ImplicitCopyOnlyIter&>);
 
 int main() {
     static_assert(with_writable_iterators<instantiator, int>::call());
