@@ -558,10 +558,6 @@ std/utilities/memory/pointer.conversion/to_address_without_pointer_traits.pass.c
 # We disagree about whether various chrono types should be optimized, and the test is clearly wrong about vector<bool>::reference.
 std/utilities/format/format.formatter/format.formatter.locking/enable_nonlocking_formatter_optimization.compile.pass.cpp FAIL
 
-# `increasing_allocator` calls `std::allocator::deallocate` with the wrong size
-std/containers/sequences/vector.bool/shrink_to_fit.pass.cpp FAIL
-std/containers/sequences/vector/vector.capacity/shrink_to_fit.pass.cpp FAIL
-
 # We disagree on the syntax flags set by the default basic_regex constructor: we set 0, libc++ sets ECMAScript.
 # Relates to LWG-3604.
 std/re/re.regex/re.regex.construct/default.pass.cpp FAIL
