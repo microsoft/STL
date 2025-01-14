@@ -683,6 +683,42 @@ void test_gh_5167() {
     g_regexTester.should_throw(R"(abc\10)", error_backref, grep);
 }
 
+void test_gh_5192() {
+    // GH-5192: Correct characters not matched by special character dot
+    for (const syntax_option_type option : {
+             regex_constants::basic,
+             regex_constants::extended,
+             regex_constants::awk,
+             regex_constants::grep,
+             regex_constants::egrep,
+         }) {
+        const test_regex caretDotStar(&g_regexTester, "^.*", option);
+        caretDotStar.should_search_match("abc\nd\re\0f"s, "abc\nd\re"s);
+        caretDotStar.should_search_match("abcd\re\ngh\0i"s, "abcd\re\ngh"s);
+
+        const test_wregex wCaretDotStar(&g_regexTester, L"^.*", option);
+        wCaretDotStar.should_search_match(L"abc\nd\re\0f"s, L"abc\nd\re"s);
+        wCaretDotStar.should_search_match(L"abcd\re\ngh\0i"s, L"abcd\re\ngh"s);
+        wCaretDotStar.should_search_match(L"abc\u2028d\ne\0f"s, L"abc\u2028d\ne"s); // U+2028 LINE SEPARATOR
+        wCaretDotStar.should_search_match(L"abc\u2029d\ne\0f"s, L"abc\u2029d\ne"s); // U+2029 PARAGRAPH SEPARATOR
+    }
+
+    for (const syntax_option_type option : {
+             regex_constants::ECMAScript,
+             syntax_option_type(),
+         }) {
+        const test_regex caretDotStar(&g_regexTester, "^.*", option);
+        caretDotStar.should_search_match("ab\0c\nd\re\0f"s, "ab\0c"s);
+        caretDotStar.should_search_match("ab\0cd\re\ngh\0i"s, "ab\0cd"s);
+
+        const test_wregex wCaretDotStar(&g_regexTester, L"^.*", option);
+        wCaretDotStar.should_search_match(L"abc\0\nd\re\0f"s, L"abc\0"s);
+        wCaretDotStar.should_search_match(L"ab\0cd\re\ngh\0i"s, L"ab\0cd"s);
+        wCaretDotStar.should_search_match(L"ab\0c\u2028d\ne\0f"s, L"ab\0c"s); // U+2028 LINE SEPARATOR
+        wCaretDotStar.should_search_match(L"a\0bc\u2029d\ne\0f"s, L"a\0bc"s); // U+2029 PARAGRAPH SEPARATOR
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -714,6 +750,7 @@ int main() {
     test_gh_5058();
     test_gh_5160();
     test_gh_5167();
+    test_gh_5192();
 
     return g_regexTester.result();
 }
