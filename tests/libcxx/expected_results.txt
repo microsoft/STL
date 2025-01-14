@@ -447,6 +447,10 @@ std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp
 std/utilities/expected/expected.expected/equality/equality.other_expected.pass.cpp:2 FAIL
 std/utilities/expected/expected.void/equality/equality.other_expected.pass.cpp:2 FAIL
 
+# Not analyzed. __cpp_sized_deallocation isn't being defined by Clang.
+std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array.pass.cpp:2 FAIL
+std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete.pass.cpp:2 FAIL
+
 
 # *** STL BUGS ***
 # GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
@@ -645,6 +649,23 @@ std/re/re.regex/re.regex.construct/default.pass.cpp FAIL
 std/re/re.regex/re.regex.nonmemb/re.regex.nmswap/swap.pass.cpp FAIL
 std/re/re.regex/re.regex.swap/swap.pass.cpp FAIL
 
+# Test emits a Clang -Wself-move warning, so it should avoid the self-move or suppress the warning.
+std/containers/sequences/vector/addressof.compile.pass.cpp:2 FAIL
+
+# throwing_allocator appears to be totally non-Standard.
+std/containers/sequences/vector.bool/ctor_exceptions.pass.cpp FAIL
+
+# The test is checking _LIBCPP_HAS_THREADS, which we don't have.
+std/language.support/support.limits/support.limits.general/shared_mutex.version.compile.pass.cpp FAIL
+
+# x64 truncation warnings caused by allocators.
+std/containers/sequences/vector/vector.capacity/reserve_exceptions.pass.cpp:0 SKIPPED
+std/containers/sequences/vector/vector.capacity/reserve_exceptions.pass.cpp:1 SKIPPED
+std/containers/sequences/vector/vector.capacity/resize_size_exceptions.pass.cpp:0 SKIPPED
+std/containers/sequences/vector/vector.capacity/resize_size_exceptions.pass.cpp:1 SKIPPED
+std/containers/sequences/vector/vector.capacity/resize_size_value_exceptions.pass.cpp:0 SKIPPED
+std/containers/sequences/vector/vector.capacity/resize_size_value_exceptions.pass.cpp:1 SKIPPED
+
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
@@ -748,6 +769,10 @@ std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.
 
 # Likely STL bug in layout_stride::mapping::is_exhaustive().
 std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
+
+# Possible STL bug caused by the order of our declarations.
+# error: incomplete type 'std::char_traits<char>' named in nested name specifier
+std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirectly_readable_traits.compile.pass.cpp FAIL
 
 
 # *** NOT YET ANALYZED ***
@@ -957,6 +982,7 @@ std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp FAIL
 std/containers/sequences/vector.bool/append_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/assign_range.pass.cpp FAIL
+std/containers/sequences/vector.bool/flip.pass.cpp FAIL
 std/containers/sequences/vector.bool/insert_range.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/destroy_elements.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/insert_range.pass.cpp FAIL
@@ -1265,6 +1291,14 @@ std/numerics/c.math/hermite.pass.cpp FAIL
 
 # Not analyzed. Test coverage for LLVM-104496 uses span<Incomplete>.
 std/containers/views/views.span/span.cons/copy.pass.cpp FAIL
+
+# Not analyzed. These tests disable or limit allocations, which interferes with our proxy objects.
+std/algorithms/alg.sorting/alg.sort/stable.sort/stable_sort.pass.cpp FAIL
+std/containers/sequences/vector/vector.capacity/shrink_to_fit_exceptions.pass.cpp FAIL
+
+# Not analyzed. Our stdalign.h doesn't define __alignas_is_defined in C++ mode.
+std/depr/depr.c.headers/stdalign_h.compile.pass.cpp:0 FAIL
+std/depr/depr.c.headers/stdalign_h.compile.pass.cpp:1 FAIL
 
 
 # *** XFAILS WHICH PASS ***
