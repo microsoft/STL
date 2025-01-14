@@ -54,9 +54,10 @@ constexpr bool test_cpo(T const& obj) {
 
     // Not required, but likely portable nonetheless:
     static_assert(std::is_empty_v<T>);
-    static_assert(std::is_trivial_v<T>);
+    static_assert(std::is_trivially_copyable_v<T>);
     static_assert(std::is_nothrow_destructible_v<T>);
     static_assert(std::is_nothrow_default_constructible_v<T>);
+    static_assert(std::is_trivially_default_constructible_v<T>);
     static_assert(std::is_nothrow_copy_constructible_v<T>);
     static_assert(std::is_trivially_copy_constructible_v<T>);
     static_assert(std::is_nothrow_move_constructible_v<T>);

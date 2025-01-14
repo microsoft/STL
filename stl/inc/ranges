@@ -4216,12 +4216,11 @@ namespace ranges {
                 using _Decayed = decay_t<_It>;
                 _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_Decayed>);
                 if constexpr (contiguous_iterator<_Decayed>) {
-                    return {_St::_Span,
-                        noexcept(span(_STD to_address(_STD declval<_It>()), iter_difference_t<_Decayed>{}))};
+                    return {_St::_Span, true};
                 } else if constexpr (random_access_iterator<_Decayed>) {
                     return {_St::_Subrange,
                         noexcept(subrange(_STD declval<_It>(), _STD declval<_It>() + iter_difference_t<_Decayed>{}))};
-                } else if constexpr (constructible_from<_Decayed, _It>) {
+                } else if constexpr (is_convertible_v<_It, _Decayed>) {
                     return {_St::_Subrange_counted,
                         noexcept(subrange(
                             counted_iterator(_STD declval<_It>(), iter_difference_t<_Decayed>{}), default_sentinel))};

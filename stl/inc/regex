@@ -79,6 +79,8 @@ enum _Meta_type : int { // meta character representations for parser
     _Meta_nl    = '\n',
     _Meta_cr    = '\r',
     _Meta_bsp   = '\b',
+    _Meta_ls    = L'\u2028',
+    _Meta_ps    = L'\u2029',
     _Meta_chr   = 0,
 
     _Esc_bsl      = '\\',
@@ -149,7 +151,7 @@ namespace regex_constants {
         error_badrepeat,
         error_complexity,
         error_stack,
-        error_parse,
+        _Error_parse, // TRANSITION, was error_parse, keeping behavior
         error_syntax
     };
 } // namespace regex_constants
@@ -293,8 +295,7 @@ public:
     }
 
     _Elem translate(_Elem _Ch) const { // provide locale-sensitive mapping
-        string_type _Res = _Getcoll()->transform(_STD addressof(_Ch), _STD addressof(_Ch) + 1);
-        return _Res.size() == 1 ? _Res[0] : _Ch;
+        return _Ch;
     }
 
     _Elem translate_nocase(_Elem _Ch) const { // provide case-insensitive mapping
@@ -464,12 +465,12 @@ _EXPORT_STD class _NODISCARD regex_error : public runtime_error { // type of all
 public:
     explicit regex_error(regex_constants::error_type _Ex) : runtime_error(_Stringify(_Ex)), _Err(_Ex) {}
 
-    _NODISCARD regex_constants::error_type code() const {
+    _NODISCARD regex_constants::error_type code() const noexcept /* strengthened */ {
         return _Err;
     }
 
 private:
-    static const char* _Stringify(regex_constants::error_type _Ex) { // map error code to string
+    static const char* _Stringify(regex_constants::error_type _Ex) noexcept { // map error code to string
         switch (_Ex) { // select known error_type message
         case regex_constants::error_collate:
             return "regex_error(error_collate): The expression "
@@ -515,7 +516,7 @@ private:
             return "regex_error(error_stack): There was insufficient "
                    "memory to determine whether the regular expression "
                    "could match the specified character sequence.";
-        case regex_constants::error_parse:
+        case regex_constants::_Error_parse: // TRANSITION, keeping behavior
             return "regex_error(error_parse)";
         case regex_constants::error_syntax:
             return "regex_error(error_syntax)";
@@ -1187,15 +1188,12 @@ _NODISCARD bool operator!=(const match_results<_BidIt, _Alloc>& _Left, const mat
 }
 #endif // !_HAS_CXX20
 
-_INLINE_VAR constexpr unsigned int _BRE_MAX_GRP = 9U;
-
 _INLINE_VAR constexpr unsigned int _Bmp_max   = 256U; // must fit in an unsigned int
 _INLINE_VAR constexpr unsigned int _Bmp_shift = 3U;
 _INLINE_VAR constexpr unsigned int _Bmp_chrs  = 1U << _Bmp_shift; // # of bits to be stored in each char
 _INLINE_VAR constexpr unsigned int _Bmp_mask  = _Bmp_chrs - 1U;
 _INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _Bmp_chrs;
 
-_INLINE_VAR constexpr unsigned int _Buf_incr        = 16U;
 _INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
@@ -1257,9 +1255,9 @@ struct _Buf { // character buffer
         return _Chrs;
     }
 
-    void _Insert(_Elem _Ch) { // append _Ch
+    void _Insert2(_Elem _Ch) { // append _Ch
         if (_Sz <= _Nchrs) {
-            _Expand(_Nchrs + _Buf_incr);
+            _Expand2(1U);
         }
 
         _Chrs[_Nchrs++] = _Ch;
@@ -1270,17 +1268,43 @@ struct _Buf { // character buffer
     }
 
     template <class _FwdIt>
-    void _Insert(_FwdIt _First, _FwdIt _Last) { // append multiple characters
+    void _Insert2(_FwdIt _First, _FwdIt _Last) { // append multiple characters
         while (_First != _Last) {
-            _Insert(*_First++);
+            _Insert2(*_First++);
         }
     }
 
 private:
-    void _Expand(unsigned int _Len) { // expand buffer to hold _Len characters
-        _Elem* _Tmp = static_cast<_Elem*>(_CSTD realloc(_Chrs, _Get_size_of_n<sizeof(_Elem)>(_Len)));
+    unsigned int _Calculate_expansion(unsigned int _Increase) const {
+        constexpr size_t _Max_elems      = static_cast<size_t>(-1) / sizeof(_Elem);
+        constexpr unsigned int _Max_uint = static_cast<unsigned int>(-1);
+        constexpr unsigned int _Max      = _Max_elems < _Max_uint ? static_cast<unsigned int>(_Max_elems) : _Max_uint;
+
+        constexpr unsigned int _Buf_incr = 16U;
+
+        if (_Increase < _Buf_incr) {
+            _Increase = _Buf_incr;
+        }
+
+        if (_Increase < (_Sz >> 1)) {
+            _Increase = _Sz >> 1;
+        }
+
+        if (_Max <= _Increase || _Max - _Increase <= _Sz) {
+            return _Max;
+        }
+
+        return _Sz + _Increase;
+    }
+
+    void _Expand2(const unsigned int _Min_increase) { // expand buffer by at least _Min_increase
+        const unsigned int _Len = _Calculate_expansion(_Min_increase);
+        if (_Len - _Sz < _Min_increase) {
+            _Xregex_error(regex_constants::error_space);
+        }
+        _Elem* _Tmp = static_cast<_Elem*>(_CSTD realloc(_Chrs, sizeof(_Elem) * static_cast<size_t>(_Len)));
         if (!_Tmp) {
-            _Xbad_alloc();
+            _Xregex_error(regex_constants::error_space);
         }
 
         _Chrs = _Tmp;
@@ -1498,8 +1522,8 @@ public:
     void _Add_char(_Elem _Ch);
     void _Add_class();
     void _Add_char_to_class(_Elem _Ch);
-    void _Add_range(_Elem _Ex0, _Elem _Ex1);
-    void _Add_named_class(_Regex_traits_base::char_class_type, bool = false);
+    void _Add_range2(_Elem, _Elem);
+    void _Add_named_class(typename _RxTraits::char_class_type, bool);
     void _Add_equiv(_FwdIt, _FwdIt, _Difft);
     void _Add_coll(_FwdIt, _FwdIt, _Difft);
     _Node_base* _Begin_group();
@@ -1522,7 +1546,7 @@ private:
     void _Add_str_node();
     void _Add_char_to_bitmap(_Elem _Ch);
     void _Add_char_to_array(_Elem _Ch);
-    void _Add_elts(_Node_class<_Elem, _RxTraits>*, _Regex_traits_base::char_class_type, bool);
+    void _Add_elts(_Node_class<_Elem, _RxTraits>*, typename _RxTraits::char_class_type, bool);
     void _Char_to_elts(_FwdIt, _FwdIt, _Difft, _Sequence<_Elem>**);
 
     _Root_node* _Root;
@@ -1703,7 +1727,7 @@ private:
 
     // parsing
     int _Do_digits(int _Base, int _Count, regex_constants::error_type _Error_type);
-    bool _DecimalDigits(regex_constants::error_type _Error_type);
+    bool _DecimalDigits2(regex_constants::error_type _Error_type, int _Count = INT_MAX);
     void _HexDigits(int);
     bool _OctalDigits();
     void _Do_ex_class(_Meta_type);
@@ -1818,12 +1842,10 @@ public:
     }
 
     basic_regex(_In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript) {
-        if (_Ptr) {
-            _Reset(_Ptr, _Ptr + _Count, _Flags);
-            return;
-        }
-
-        _Xregex_error(regex_constants::error_parse);
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Ptr != nullptr || _Count == 0, "constructing basic_regex from an invalid range");
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
+        _Reset(_Ptr, _Ptr + _Count, _Flags);
     }
 
     template <class _STtraits, class _STalloc>
@@ -2822,7 +2844,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char(_Elem _Ch) { // append charac
     }
 
     _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Current);
-    _Node->_Data._Insert(_Ch);
+    _Node->_Data._Insert2(_Ch);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -2856,7 +2878,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // appe
         _Node->_Large = new _Buf<_Elem>;
     }
 
-    _Node->_Large->_Insert(_Ch);
+    _Node->_Large->_Insert2(_Ch);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -2869,19 +2891,12 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _Arg0, _Elem _Arg1) {
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range2(const _Elem _Arg0, const _Elem _Arg1) {
     // add character range to set
-    unsigned int _Ex0;
-    unsigned int _Ex1;
-    if (_Flags & regex_constants::icase) { // change to lowercase range
-        _Ex0 = static_cast<unsigned int>(_Traits.translate_nocase(_Arg0));
-        _Ex1 = static_cast<unsigned int>(_Traits.translate_nocase(_Arg1));
-    } else {
-        _Ex0 = static_cast<typename _RxTraits::_Uelem>(_Arg0);
-        _Ex1 = static_cast<typename _RxTraits::_Uelem>(_Arg1);
-    }
-
+    unsigned int _Ex0                    = static_cast<typename _RxTraits::_Uelem>(_Arg0);
+    const unsigned int _Ex1              = static_cast<typename _RxTraits::_Uelem>(_Arg1);
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
+
     for (; _Ex0 <= _Ex1 && _Ex1 < _Get_bmax(); ++_Ex0) { // set a bit
         if (!_Node->_Small) {
             _Node->_Small = new _Bitmap;
@@ -2899,15 +2914,15 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _Arg0, _Elem _Arg1) {
                 _Node->_Ranges = new _Buf<_Elem>;
             }
 
-            _Node->_Ranges->_Insert(static_cast<_Elem>(_Ex0));
-            _Node->_Ranges->_Insert(static_cast<_Elem>(_Ex1));
+            _Node->_Ranges->_Insert2(static_cast<_Elem>(_Ex0));
+            _Node->_Ranges->_Insert2(_Arg1);
         }
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_elts(
-    _Node_class<_Elem, _RxTraits>* _Node, _Regex_traits_base::char_class_type _Cl, bool _Negate) {
+    _Node_class<_Elem, _RxTraits>* _Node, typename _RxTraits::char_class_type _Cl, bool _Negate) {
     // add characters in named class to set
     for (unsigned int _Ch = 0; _Ch < _Bmp_max; ++_Ch) { // add elements or their inverse
         bool _Matches = _Traits.isctype(static_cast<_Elem>(_Ch), _Cl);
@@ -2922,12 +2937,12 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_elts(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(typename _Regex_traits_base::char_class_type _Cl,
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(typename _RxTraits::char_class_type _Cl,
     bool _Negate) { // add contents of named class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Add_elts(_Node, _Cl, _Negate);
-    if (_Bmp_max < static_cast<unsigned int>(_STD _Max_limit<_Elem>())) {
-        _Node->_Classes = static_cast<_Regex_traits_base::char_class_type>(_Node->_Classes | _Cl);
+    if (_Bmp_max <= _STD _Max_limit<typename _RxTraits::_Uelem>() && !_Negate) {
+        _Node->_Classes = static_cast<typename _RxTraits::char_class_type>(_Node->_Classes | _Cl);
     }
 }
 
@@ -2944,7 +2959,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Char_to_elts(_FwdIt _First, _FwdIt _La
         *_Cur                   = new _Sequence<_Elem>(static_cast<unsigned int>(_Diff));
         (*_Cur)->_Next          = _Node;
     }
-    (*_Cur)->_Data._Insert(_First, _Last);
+    (*_Cur)->_Data._Insert2(_First, _Last);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3494,10 +3509,23 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
             break;
 
         case _N_dot:
-            if (_Tgt_state._Cur == _End || *_Tgt_state._Cur == _Meta_nl || *_Tgt_state._Cur == _Meta_cr) {
+            if (_Tgt_state._Cur == _End) {
                 _Failed = true;
             } else {
-                ++_Tgt_state._Cur;
+                const _Elem _Ch = *_Tgt_state._Cur;
+                if (_Sflags
+                    & (regex_constants::basic | regex_constants::extended | regex_constants::grep
+                        | regex_constants::egrep | regex_constants::awk)) {
+                    if (_Ch == _Elem()) {
+                        _Failed = true;
+                    }
+                } else if (_Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps) { // ECMAScript
+                    _Failed = true;
+                }
+
+                if (!_Failed) {
+                    ++_Tgt_state._Cur;
+                }
             }
 
             break;
@@ -3639,7 +3667,11 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
 
         case _N_none:
         default:
-            _Xregex_error(regex_constants::error_parse);
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(false, "internal data of regex node corrupted");
+#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
+            return false;
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
         }
 
         if (_Failed) {
@@ -3936,9 +3968,9 @@ int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits(
-    regex_constants::error_type _Error_type) { // check for decimal value
-    return _Do_digits(10, INT_MAX, _Error_type) != INT_MAX;
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits2(
+    const regex_constants::error_type _Error_type, const int _Count /* = INT_MAX */) { // check for decimal value
+    return _Do_digits(10, _Count, _Error_type) != _Count;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3977,7 +4009,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ex_class(
             _Error(regex_constants::error_ctype);
         }
 
-        _Nfa._Add_named_class(_Cls);
+        _Nfa._Add_named_class(_Cls, false);
     } else if (_End_arg == _Meta_equal) { // process =
         if (_Beg == _Pat) {
             _Error(regex_constants::error_collate);
@@ -4027,7 +4059,7 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape2() { // check for class
         return _Prs_chr;
     } else if ((_L_flags & _L_esc_wsd) && _CharacterClassEscape(false)) {
         return _Prs_set;
-    } else if (_DecimalDigits(regex_constants::error_escape)) { // check for invalid value
+    } else if (_DecimalDigits2(regex_constants::error_escape)) { // check for invalid value
         if (_Val != 0) {
             _Error(regex_constants::error_escape);
         }
@@ -4099,16 +4131,22 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
                 _Error(regex_constants::error_range); // set precedes or follows dash
             }
 
-            if (_Flags & regex_constants::collate) { // translate ends of range
-                _Val  = _Traits.translate(static_cast<_Elem>(_Val));
+            _Elem _Chr2 = static_cast<_Elem>(_Val);
+
+            // translate ends of range
+            if (_Flags & regex_constants::icase) {
+                _Chr1 = _Traits.translate_nocase(_Chr1);
+                _Chr2 = _Traits.translate_nocase(_Chr2);
+            } else if (_Flags & regex_constants::collate) {
                 _Chr1 = _Traits.translate(_Chr1);
+                _Chr2 = _Traits.translate(_Chr2);
             }
 
-            if (static_cast<typename _RxTraits::_Uelem>(_Val) < static_cast<typename _RxTraits::_Uelem>(_Chr1)) {
+            if (static_cast<typename _RxTraits::_Uelem>(_Chr2) < static_cast<typename _RxTraits::_Uelem>(_Chr1)) {
                 _Error(regex_constants::error_range);
             }
 
-            _Nfa._Add_range(_Chr1, static_cast<_Elem>(_Val));
+            _Nfa._Add_range2(_Chr1, _Chr2);
         } else if (_Ret == _Prs_chr) {
             _Nfa._Add_char_to_class(static_cast<_Elem>(_Val));
         }
@@ -4319,15 +4357,17 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape() { // check for valid 
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom escape
-    if ((_L_flags & _L_bckr) && _DecimalDigits(regex_constants::error_backref)) { // check for valid back reference
+    constexpr int _Bre_max_backref_digits = 1;
+    if ((_L_flags & _L_bckr)
+        && _DecimalDigits2(regex_constants::error_backref,
+            (_L_flags & _L_lim_bckr) ? _Bre_max_backref_digits : INT_MAX)) { // check for valid back reference
         if (_Val == 0) { // handle \0
             if (!(_L_flags & _L_bzr_chr)) {
                 _Error(regex_constants::error_escape);
             } else {
                 _Nfa._Add_char(static_cast<_Elem>(_Val));
             }
-        } else if (((_L_flags & _L_lim_bckr) && _BRE_MAX_GRP < static_cast<size_t>(_Val))
-                   || _Grp_idx < static_cast<size_t>(_Val) || _Finished_grps.size() <= static_cast<size_t>(_Val)
+        } else if (_Grp_idx < static_cast<size_t>(_Val) || _Finished_grps.size() <= static_cast<size_t>(_Val)
                    || !_Finished_grps[static_cast<size_t>(_Val)]) {
             _Error(regex_constants::error_backref);
         } else {
@@ -4351,7 +4391,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
             _Max = 1;
         } else if (_Mchar == _Meta_lbr) { // check for valid bracketed value
             _Next();
-            if (!_DecimalDigits(regex_constants::error_badbrace)) {
+            if (!_DecimalDigits2(regex_constants::error_badbrace)) {
                 _Error(regex_constants::error_badbrace);
             }
 
@@ -4361,7 +4401,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
             } else { // check for decimal constant following comma
                 _Next();
                 if (_Mchar != _Meta_rbr) {
-                    if (!_DecimalDigits(regex_constants::error_badbrace)) {
+                    if (!_DecimalDigits2(regex_constants::error_badbrace)) {
                         _Error(regex_constants::error_badbrace);
                     }
 

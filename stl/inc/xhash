@@ -96,8 +96,7 @@ _STD_BEGIN
 template <class _Kty, class _Hasher, class _Keyeq>
 struct _Uhash_choose_transparency {
     // transparency selector for non-transparent hashed containers
-    template <class>
-    using _Deduce_key = const _Kty&;
+    static constexpr bool _Has_transparent_overloads = false;
 
 #if _HAS_CXX20 && defined(__EDG__) // TRANSITION, DevCom-10678753
     template <class, class>
@@ -110,8 +109,7 @@ template <class _Kty, class _Hasher, class _Keyeq>
     requires _Is_transparent_v<_Hasher> && _Is_transparent_v<_Keyeq>
 struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq> {
     // transparency selector for transparent hashed containers
-    template <class _Keyty>
-    using _Deduce_key = const _Keyty&;
+    static constexpr bool _Has_transparent_overloads = true;
 
     template <class _Container, class _Kx>
     static constexpr bool _Supports_transparency =
@@ -1225,25 +1223,41 @@ private:
     }
 
 public:
-    template <class _Keyty = void>
-    _NODISCARD iterator find(typename _Traits::template _Deduce_key<_Keyty> _Keyval) {
+    _NODISCARD iterator find(const key_type& _Keyval) {
         return _List._Make_iter(_Find(_Keyval, _Traitsobj(_Keyval)));
     }
 
-    template <class _Keyty = void>
-    _NODISCARD const_iterator find(typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
+#if _HAS_CXX20
+    template <class _KeyTy>
+        requires _Traits::_Has_transparent_overloads
+    _NODISCARD iterator find(const _KeyTy& _Keyval) {
+        return _List._Make_iter(_Find(_Keyval, _Traitsobj(_Keyval)));
+    }
+#endif // _HAS_CXX20
+
+    _NODISCARD const_iterator find(const key_type& _Keyval) const {
         return _List._Make_const_iter(_Find(_Keyval, _Traitsobj(_Keyval)));
     }
 
 #if _HAS_CXX20
-    template <class _Keyty = void>
-    _NODISCARD bool contains(_Traits::template _Deduce_key<_Keyty> _Keyval) const {
+    template <class _KeyTy>
+        requires _Traits::_Has_transparent_overloads
+    _NODISCARD const_iterator find(const _KeyTy& _Keyval) const {
+        return _List._Make_const_iter(_Find(_Keyval, _Traitsobj(_Keyval)));
+    }
+
+    _NODISCARD bool contains(const key_type& _Keyval) const {
+        return static_cast<bool>(_Find_last(_Keyval, _Traitsobj(_Keyval))._Duplicate);
+    }
+
+    template <class _KeyTy>
+        requires _Traits::_Has_transparent_overloads
+    _NODISCARD bool contains(const _KeyTy& _Keyval) const {
         return static_cast<bool>(_Find_last(_Keyval, _Traitsobj(_Keyval))._Duplicate);
     }
 #endif // _HAS_CXX20
 
-    template <class _Keyty = void>
-    _NODISCARD size_type count(typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
+    _NODISCARD size_type count(const key_type& _Keyval) const {
         const size_t _Hashval = _Traitsobj(_Keyval);
         if constexpr (_Multi) {
             return _Equal_range(_Keyval, _Hashval)._Distance;
@@ -1251,6 +1265,19 @@ public:
             return static_cast<bool>(_Find_last(_Keyval, _Hashval)._Duplicate);
         }
     }
+
+#if _HAS_CXX20
+    template <class _KeyTy>
+        requires _Traits::_Has_transparent_overloads
+    _NODISCARD size_type count(const _KeyTy& _Keyval) const {
+        const size_t _Hashval = _Traitsobj(_Keyval);
+        if constexpr (_Multi) {
+            return _Equal_range(_Keyval, _Hashval)._Distance;
+        } else {
+            return static_cast<bool>(_Find_last(_Keyval, _Hashval)._Duplicate);
+        }
+    }
+#endif // _HAS_CXX20
 
 private:
     struct _Equal_range_result {
@@ -1307,18 +1334,33 @@ private:
     }
 
 public:
-    template <class _Keyty = void>
-    _NODISCARD pair<iterator, iterator> equal_range(typename _Traits::template _Deduce_key<_Keyty> _Keyval) {
+    _NODISCARD pair<iterator, iterator> equal_range(const key_type& _Keyval) {
         const auto _Result = _Equal_range(_Keyval, _Traitsobj(_Keyval));
         return {_List._Make_iter(_Result._First._Ptr), _List._Make_iter(_Result._Last._Ptr)};
     }
 
-    template <class _Keyty = void>
-    _NODISCARD pair<const_iterator, const_iterator> equal_range(
-        typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
+#if _HAS_CXX20
+    template <class _KeyTy>
+        requires _Traits::_Has_transparent_overloads
+    _NODISCARD pair<iterator, iterator> equal_range(const _KeyTy& _Keyval) {
+        const auto _Result = _Equal_range(_Keyval, _Traitsobj(_Keyval));
+        return {_List._Make_iter(_Result._First._Ptr), _List._Make_iter(_Result._Last._Ptr)};
+    }
+#endif // _HAS_CXX20
+
+    _NODISCARD pair<const_iterator, const_iterator> equal_range(const key_type& _Keyval) const {
         const auto _Result = _Equal_range(_Keyval, _Traitsobj(_Keyval));
         return {_List._Make_const_iter(_Result._First._Ptr), _List._Make_const_iter(_Result._Last._Ptr)};
     }
+
+#if _HAS_CXX20
+    template <class _KeyTy>
+        requires _Traits::_Has_transparent_overloads
+    _NODISCARD pair<const_iterator, const_iterator> equal_range(const _KeyTy& _Keyval) const {
+        const auto _Result = _Equal_range(_Keyval, _Traitsobj(_Keyval));
+        return {_List._Make_const_iter(_Result._First._Ptr), _List._Make_const_iter(_Result._Last._Ptr)};
+    }
+#endif // _HAS_CXX20
 
     void swap(_Hash& _Right) noexcept(noexcept(_Traitsobj.swap(_Right._Traitsobj))) /* strengthened */ {
         if (this != _STD addressof(_Right)) {
