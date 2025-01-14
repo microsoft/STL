@@ -151,7 +151,7 @@ namespace regex_constants {
         error_badrepeat,
         error_complexity,
         error_stack,
-        error_parse,
+        _Error_parse, // TRANSITION, was error_parse, keeping behavior
         error_syntax
     };
 } // namespace regex_constants
@@ -465,12 +465,12 @@ _EXPORT_STD class _NODISCARD regex_error : public runtime_error { // type of all
 public:
     explicit regex_error(regex_constants::error_type _Ex) : runtime_error(_Stringify(_Ex)), _Err(_Ex) {}
 
-    _NODISCARD regex_constants::error_type code() const {
+    _NODISCARD regex_constants::error_type code() const noexcept /* strengthened */ {
         return _Err;
     }
 
 private:
-    static const char* _Stringify(regex_constants::error_type _Ex) { // map error code to string
+    static const char* _Stringify(regex_constants::error_type _Ex) noexcept { // map error code to string
         switch (_Ex) { // select known error_type message
         case regex_constants::error_collate:
             return "regex_error(error_collate): The expression "
@@ -516,7 +516,7 @@ private:
             return "regex_error(error_stack): There was insufficient "
                    "memory to determine whether the regular expression "
                    "could match the specified character sequence.";
-        case regex_constants::error_parse:
+        case regex_constants::_Error_parse: // TRANSITION, keeping behavior
             return "regex_error(error_parse)";
         case regex_constants::error_syntax:
             return "regex_error(error_syntax)";
@@ -1844,12 +1844,10 @@ public:
     }
 
     basic_regex(_In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript) {
-        if (_Ptr) {
-            _Reset(_Ptr, _Ptr + _Count, _Flags);
-            return;
-        }
-
-        _Xregex_error(regex_constants::error_parse);
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Ptr != nullptr || _Count == 0, "constructing basic_regex from an invalid range");
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
+        _Reset(_Ptr, _Ptr + _Count, _Flags);
     }
 
     template <class _STtraits, class _STalloc>
@@ -3682,7 +3680,11 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
 
         case _N_none:
         default:
-            _Xregex_error(regex_constants::error_parse);
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(false, "internal data of regex node corrupted");
+#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
+            return false;
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
         }
 
         if (_Failed) {
