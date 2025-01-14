@@ -1499,7 +1499,7 @@ public:
     void _Add_char(_Elem _Ch);
     void _Add_class();
     void _Add_char_to_class(_Elem _Ch);
-    void _Add_range(_Elem _Ex0, _Elem _Ex1);
+    void _Add_range2(_Elem, _Elem);
     void _Add_named_class(_Regex_traits_base::char_class_type, bool = false);
     void _Add_equiv(_FwdIt, _FwdIt, _Difft);
     void _Add_coll(_FwdIt, _FwdIt, _Difft);
@@ -2882,19 +2882,12 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _Arg0, _Elem _Arg1) {
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range2(const _Elem _Arg0, const _Elem _Arg1) {
     // add character range to set
-    unsigned int _Ex0;
-    unsigned int _Ex1;
-    if (_Flags & regex_constants::icase) { // change to lowercase range
-        _Ex0 = static_cast<unsigned int>(_Traits.translate_nocase(_Arg0));
-        _Ex1 = static_cast<unsigned int>(_Traits.translate_nocase(_Arg1));
-    } else {
-        _Ex0 = static_cast<typename _RxTraits::_Uelem>(_Arg0);
-        _Ex1 = static_cast<typename _RxTraits::_Uelem>(_Arg1);
-    }
-
+    unsigned int _Ex0                    = static_cast<typename _RxTraits::_Uelem>(_Arg0);
+    const unsigned int _Ex1              = static_cast<typename _RxTraits::_Uelem>(_Arg1);
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
+
     for (; _Ex0 <= _Ex1 && _Ex1 < _Get_bmax(); ++_Ex0) { // set a bit
         if (!_Node->_Small) {
             _Node->_Small = new _Bitmap;
@@ -2913,7 +2906,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _Arg0, _Elem _Arg1) {
             }
 
             _Node->_Ranges->_Insert(static_cast<_Elem>(_Ex0));
-            _Node->_Ranges->_Insert(static_cast<_Elem>(_Ex1));
+            _Node->_Ranges->_Insert(_Arg1);
         }
     }
 }
@@ -4113,16 +4106,22 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
                 _Error(regex_constants::error_range); // set precedes or follows dash
             }
 
-            if (_Flags & regex_constants::collate) { // translate ends of range
-                _Val  = _Traits.translate(static_cast<_Elem>(_Val));
+            _Elem _Chr2 = static_cast<_Elem>(_Val);
+
+            // translate ends of range
+            if (_Flags & regex_constants::icase) {
+                _Chr1 = _Traits.translate_nocase(_Chr1);
+                _Chr2 = _Traits.translate_nocase(_Chr2);
+            } else if (_Flags & regex_constants::collate) {
                 _Chr1 = _Traits.translate(_Chr1);
+                _Chr2 = _Traits.translate(_Chr2);
             }
 
-            if (static_cast<typename _RxTraits::_Uelem>(_Val) < static_cast<typename _RxTraits::_Uelem>(_Chr1)) {
+            if (static_cast<typename _RxTraits::_Uelem>(_Chr2) < static_cast<typename _RxTraits::_Uelem>(_Chr1)) {
                 _Error(regex_constants::error_range);
             }
 
-            _Nfa._Add_range(_Chr1, static_cast<_Elem>(_Val));
+            _Nfa._Add_range2(_Chr1, _Chr2);
         } else if (_Ret == _Prs_chr) {
             _Nfa._Add_char_to_class(static_cast<_Elem>(_Val));
         }
