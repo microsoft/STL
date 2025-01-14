@@ -1193,7 +1193,6 @@ _INLINE_VAR constexpr unsigned int _Bmp_chrs  = 1U << _Bmp_shift; // # of bits t
 _INLINE_VAR constexpr unsigned int _Bmp_mask  = _Bmp_chrs - 1U;
 _INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _Bmp_chrs;
 
-_INLINE_VAR constexpr unsigned int _Buf_incr        = 16U;
 _INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
@@ -1255,9 +1254,9 @@ struct _Buf { // character buffer
         return _Chrs;
     }
 
-    void _Insert(_Elem _Ch) { // append _Ch
+    void _Insert2(_Elem _Ch) { // append _Ch
         if (_Sz <= _Nchrs) {
-            _Expand(_Nchrs + _Buf_incr);
+            _Expand2(1U);
         }
 
         _Chrs[_Nchrs++] = _Ch;
@@ -1268,17 +1267,43 @@ struct _Buf { // character buffer
     }
 
     template <class _FwdIt>
-    void _Insert(_FwdIt _First, _FwdIt _Last) { // append multiple characters
+    void _Insert2(_FwdIt _First, _FwdIt _Last) { // append multiple characters
         while (_First != _Last) {
-            _Insert(*_First++);
+            _Insert2(*_First++);
         }
     }
 
 private:
-    void _Expand(unsigned int _Len) { // expand buffer to hold _Len characters
-        _Elem* _Tmp = static_cast<_Elem*>(_CSTD realloc(_Chrs, _Get_size_of_n<sizeof(_Elem)>(_Len)));
+    unsigned int _Calculate_expansion(unsigned int _Increase) const {
+        constexpr size_t _Max_elems      = static_cast<size_t>(-1) / sizeof(_Elem);
+        constexpr unsigned int _Max_uint = static_cast<unsigned int>(-1);
+        constexpr unsigned int _Max      = _Max_elems < _Max_uint ? static_cast<unsigned int>(_Max_elems) : _Max_uint;
+
+        constexpr unsigned int _Buf_incr = 16U;
+
+        if (_Increase < _Buf_incr) {
+            _Increase = _Buf_incr;
+        }
+
+        if (_Increase < (_Sz >> 1)) {
+            _Increase = _Sz >> 1;
+        }
+
+        if (_Max <= _Increase || _Max - _Increase <= _Sz) {
+            return _Max;
+        }
+
+        return _Sz + _Increase;
+    }
+
+    void _Expand2(const unsigned int _Min_increase) { // expand buffer by at least _Min_increase
+        const unsigned int _Len = _Calculate_expansion(_Min_increase);
+        if (_Len - _Sz < _Min_increase) {
+            _Xregex_error(regex_constants::error_space);
+        }
+        _Elem* _Tmp = static_cast<_Elem*>(_CSTD realloc(_Chrs, sizeof(_Elem) * static_cast<size_t>(_Len)));
         if (!_Tmp) {
-            _Xbad_alloc();
+            _Xregex_error(regex_constants::error_space);
         }
 
         _Chrs = _Tmp;
@@ -2833,7 +2858,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char(_Elem _Ch) { // append charac
     }
 
     _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Current);
-    _Node->_Data._Insert(_Ch);
+    _Node->_Data._Insert2(_Ch);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -2867,7 +2892,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // appe
         _Node->_Large = new _Buf<_Elem>;
     }
 
-    _Node->_Large->_Insert(_Ch);
+    _Node->_Large->_Insert2(_Ch);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -2903,8 +2928,8 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range2(const _Elem _Arg0, const _E
                 _Node->_Ranges = new _Buf<_Elem>;
             }
 
-            _Node->_Ranges->_Insert(static_cast<_Elem>(_Ex0));
-            _Node->_Ranges->_Insert(_Arg1);
+            _Node->_Ranges->_Insert2(static_cast<_Elem>(_Ex0));
+            _Node->_Ranges->_Insert2(_Arg1);
         }
     }
 }
@@ -2948,7 +2973,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Char_to_elts(_FwdIt _First, _FwdIt _La
         *_Cur                   = new _Sequence<_Elem>(static_cast<unsigned int>(_Diff));
         (*_Cur)->_Next          = _Node;
     }
-    (*_Cur)->_Data._Insert(_First, _Last);
+    (*_Cur)->_Data._Insert2(_First, _Last);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
