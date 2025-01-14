@@ -105,9 +105,10 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     using Strides = array<IndexType, sizeof...(Extents)>;
     using Mapping = layout_stride::mapping<Ext>;
 
-    // layout_stride meets the layout mapping policy requirements and is a trivial type
+    // layout_stride meets the requirements of N5001 [mdspan.layout.policy.overview]/1
     static_assert(check_layout_mapping_policy_requirements<layout_stride, Ext>());
-    static_assert(is_trivial_v<layout_stride>);
+    static_assert(is_trivially_copyable_v<layout_stride>);
+    static_assert(is_trivially_default_constructible_v<layout_stride>);
 
     // layout_stride::mapping<Ext> is a trivially copyable type that models regular for each Ext
     static_assert(is_trivially_copyable_v<Mapping>);

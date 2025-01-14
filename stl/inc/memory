@@ -2246,7 +2246,8 @@ struct _NODISCARD _Reverse_destroy_multidimensional_n_guard {
 
 template <class _Ty, size_t _Size>
 void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size]) {
-    if constexpr (is_trivial_v<_Ty>) {
+    using _Item = remove_all_extents_t<_Ty>;
+    if constexpr (conjunction_v<is_trivially_copy_constructible<_Item>, is_trivially_destructible<_Item>>) {
         _STD _Copy_memmove_n(_In, _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
@@ -2610,7 +2611,8 @@ struct _NODISCARD _Reverse_destroy_multidimensional_n_al_guard {
 template <class _Ty, size_t _Size, class _Alloc>
 void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size], _Alloc& _Al) {
     using _Item = remove_all_extents_t<_Ty>;
-    if constexpr (conjunction_v<is_trivial<_Ty>, _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
+    if constexpr (conjunction_v<is_trivially_copy_constructible<_Item>, is_trivially_destructible<_Item>,
+                      _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
         _STD _Copy_memmove_n(_In, _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
