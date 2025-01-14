@@ -669,6 +669,20 @@ void test_gh_5160() {
     neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
 }
 
+void test_gh_5167() {
+    // GH-5167: Limit backreference parsing to single digit for basic regular expressions
+    g_regexTester.should_match("abab0", R"(\(ab*\)\10)", basic);
+    g_regexTester.should_match("abab0", R"(\(ab*\)\10)", grep);
+    g_regexTester.should_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\25\18)", basic);
+    g_regexTester.should_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\25\18)", grep);
+    g_regexTester.should_not_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\15\28)", basic);
+    g_regexTester.should_not_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\15\28)", grep);
+    g_regexTester.should_throw(R"(abc\1d)", error_backref, basic);
+    g_regexTester.should_throw(R"(abc\1d)", error_backref, grep);
+    g_regexTester.should_throw(R"(abc\10)", error_backref, basic);
+    g_regexTester.should_throw(R"(abc\10)", error_backref, grep);
+}
+
 void test_gh_5192() {
     // GH-5192: Correct characters not matched by special character dot
     for (const syntax_option_type option : {
@@ -735,6 +749,7 @@ int main() {
     test_gh_4995();
     test_gh_5058();
     test_gh_5160();
+    test_gh_5167();
     test_gh_5192();
 
     return g_regexTester.result();

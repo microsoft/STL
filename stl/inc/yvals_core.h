@@ -314,6 +314,7 @@
 // P2905R2 Runtime Format Strings
 // P2909R4 Fix Formatting Of Code Units As Integers
 // P2997R1 Removing The Common Reference Requirement From The Indirectly Invocable Concepts
+// P3136R1 Retiring Niebloids
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -914,7 +915,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202412L
+#define _MSVC_STL_UPDATE  202501L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
