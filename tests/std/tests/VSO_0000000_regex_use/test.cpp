@@ -730,6 +730,24 @@ void test_gh_5192() {
     }
 }
 
+void test_gh_5214() {
+    // GH-5214 makes negated character class escapes not match characters not included in the negated character class
+    {
+        const test_wregex neg_word_regex(&g_regexTester, LR"([\W])");
+        neg_word_regex.should_search_fail(L"\u0100"); // U+0100 LATIN CAPITAL LETTER A WITH MACRON
+    }
+
+    {
+        const test_wregex neg_space_regex(&g_regexTester, LR"([\S])");
+        neg_space_regex.should_search_fail(L"\u2028"); // U+2028 LINE SEPARATOR
+    }
+
+    {
+        const test_wregex neg_digit_regex(&g_regexTester, LR"([\D])");
+        neg_digit_regex.should_search_fail(L"\u0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -763,6 +781,7 @@ int main() {
     test_gh_5160();
     test_gh_5167();
     test_gh_5192();
+    test_gh_5214();
 
     return g_regexTester.result();
 }
