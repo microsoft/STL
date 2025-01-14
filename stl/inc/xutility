@@ -2893,7 +2893,7 @@ namespace ranges {
 
     template <input_range _Rng>
     _NODISCARD _MSVC_INTRINSIC constexpr auto& _Possibly_const_range(_Rng& _Range) noexcept {
-        if constexpr (constant_range<const _Rng> && !constant_range<_Rng>) {
+        if constexpr (input_range<const _Rng>) {
             return _STD as_const(_Range);
         } else {
             return _Range;
