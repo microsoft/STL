@@ -666,6 +666,12 @@ std/containers/sequences/vector/vector.capacity/resize_size_exceptions.pass.cpp:
 std/containers/sequences/vector/vector.capacity/resize_size_value_exceptions.pass.cpp:0 SKIPPED
 std/containers/sequences/vector/vector.capacity/resize_size_value_exceptions.pass.cpp:1 SKIPPED
 
+# Instantiating istreambuf_iterator requires _Traits to be complete.
+# However, when only <iterator> is included, char_traits is merely forward-declared in our implementation.
+# The definition of char_traits isn't required to be provided by <iterator>, so this test appears to be bogus.
+# error: incomplete type 'std::char_traits<char>' named in nested name specifier
+std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirectly_readable_traits.compile.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
@@ -769,10 +775,6 @@ std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.
 
 # Likely STL bug in layout_stride::mapping::is_exhaustive().
 std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
-
-# Possible STL bug caused by the order of our declarations.
-# error: incomplete type 'std::char_traits<char>' named in nested name specifier
-std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirectly_readable_traits.compile.pass.cpp FAIL
 
 
 # *** NOT YET ANALYZED ***
@@ -1180,6 +1182,7 @@ std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/recursion_pen
 std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.nonmembers/begin_end.pass.cpp SKIPPED
 std/input.output/filesystems/fs.op.funcs/fs.op.absolute/absolute.pass.cpp SKIPPED
 std/input.output/filesystems/fs.op.funcs/fs.op.canonical/canonical.pass.cpp SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file_procfs.pass.cpp SKIPPED
 std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file.pass.cpp SKIPPED
 std/input.output/filesystems/fs.op.funcs/fs.op.copy_symlink/copy_symlink.pass.cpp SKIPPED
 std/input.output/filesystems/fs.op.funcs/fs.op.copy/copy.pass.cpp SKIPPED
@@ -1385,3 +1388,7 @@ std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
 # This test is marked as `REQUIRES: has-unix-headers, libcpp-has-abi-bounded-iterators-in-vector`.
 # Listing these on separate lines would allow magic_comments.txt to recognize it.
 std/containers/sequences/vector/vector.modifiers/assert.push_back.invalidation.pass.cpp:9 SKIPPED
+
+# This test is marked as `REQUIRES: has-unix-headers, libcpp-has-abi-bounded-iterators-in-std-array`.
+# Listing these on separate lines would allow magic_comments.txt to recognize it.
+std/containers/sequences/array/assert.iterators.pass.cpp:9 SKIPPED
