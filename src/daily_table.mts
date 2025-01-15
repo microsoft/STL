@@ -1973,5 +1973,6 @@ export const daily_table: DailyRow[] = [
     { date: '2025-01-11', merged: 13.68, pr: 23, cxx20: null, cxx23: 6, cxx26: 59, lwg: 10, issue: 418, bug: 142, sum_age: 22.25, } as DailyRow,
     { date: '2025-01-12', merged: 12.18, pr: 25, cxx20: null, cxx23: 6, cxx26: 59, lwg: 10, issue: 418, bug: 142, sum_age: 23.04, } as DailyRow,
     { date: '2025-01-13', merged: 10.69, pr: 25, cxx20: null, cxx23: 6, cxx26: 59, lwg: 10, issue: 418, bug: 142, sum_age: 23.88, } as DailyRow,
+    { date: '2025-01-14', merged: 28.01, pr: 8, cxx20: null, cxx23: 6, cxx26: 58, lwg: 6, issue: 415, bug: 138, sum_age: 12.21, } as DailyRow,
 ];
 // Generated file - DO NOT EDIT manually!
