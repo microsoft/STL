@@ -73,9 +73,9 @@ public:
         wsmatch mr;
         try {
             if (regex_search(subject, mr, r, match_flags)) {
-                wprintf(
-                    LR"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to not match for locale "%hs", but it found "%s")"
-                    "\n",
+                wprintf(LR"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to not match )"
+                        LR"(for locale "%hs", but it found "%s")"
+                        "\n",
                     subject.c_str(), pattern.c_str(), static_cast<unsigned int>(syntax),
                     static_cast<unsigned int>(match_flags), locname.c_str(), mr.str().c_str());
                 fixture->fail_regex();
