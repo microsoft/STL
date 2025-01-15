@@ -3357,8 +3357,8 @@ bool _Lookup_range(unsigned int _Ch, const _Buf<_Elem>* _Bufptr) { // check whet
 }
 
 template <class _Elem, class _RxTraits>
-bool _Lookup_collating_range(_Elem _Ch, const _Buf<_Elem>* _Bufptr, const _RxTraits& _Traits) {
-    typename _RxTraits::string_type _Str = _Traits.transform(_STD addressof(_Ch), _STD addressof(_Ch) + 1);
+bool _Lookup_collating_range(const _Elem _Ch, const _Buf<_Elem>* const _Bufptr, const _RxTraits& _Traits) {
+    const typename _RxTraits::string_type _Str = _Traits.transform(_STD addressof(_Ch), _STD addressof(_Ch) + 1);
     for (unsigned int _Ix = 0; _Ix < _Bufptr->_Size(); _Ix += 2) { // check current position
         const _Elem _Left  = _Bufptr->_At(_Ix);
         const _Elem _Right = _Bufptr->_At(_Ix + 1);
@@ -3419,7 +3419,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
     } else if (_Sflags & regex_constants::collate) {
         _Ch = _Traits.translate(_Ch);
     }
-    auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
+    const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
 
     _It _Res0 = _Tgt_state._Cur;
     ++_Res0;
@@ -3769,7 +3769,7 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
                     } else if (_Sflags & regex_constants::collate) {
                         _Ch = _Traits.translate(_Ch);
                     }
-                    auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
+                    const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
 
                     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
                     _It _Next                            = _First_arg;
