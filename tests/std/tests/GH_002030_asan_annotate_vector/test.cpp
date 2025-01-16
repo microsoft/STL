@@ -274,6 +274,44 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, implicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<wchar_t, implicit_allocator<wchar_t>>> == 2);
 
+template <class T, class Pocma = true_type, class Stateless = true_type>
+struct arena_allocator : custom_test_allocator<T, Pocma, Stateless> {
+    arena_allocator() : arenaSize(arenaSize), arena(new char[arenaSize]), offset(0) {
+    }
+
+    T* allocate(size_t size) {
+        if (offset + size > arenaSize) {
+            // ran out of space in the arena
+            throw std::bad_alloc();
+        }
+        void* ptr = arena + offset;
+        offset += size;
+        return ptr;
+    }
+
+    void deallocate(T* pointer, size_t) noexcept {
+        // no-op - arena allocators do not deallocate individual items, they deallocate the arena all at once.
+    }
+
+    void reset() {
+        // reset offset to zero, and memset memory back to zero for re-use
+        offset = 0;
+        memset(arena, 0, arenaSize);
+    }
+
+    ~arena_allocator() {
+        delete[] arena;
+    }
+
+    const size_t arenaSize = 100; // chosen arbitrarily
+    char* arena;
+    size_t offset;
+};
+
+// Arena allocators don't play well with ASan, so we disable them
+template <class arena_allocator>
+constexpr bool _Is_ASan_enabled_for_allocator<arena_allocator> = false;
+
 template <class Alloc>
 void test_push_pop() {
     using T = typename Alloc::value_type;
@@ -1002,12 +1040,19 @@ void run_custom_allocator_matrix() {
     run_tests<AllocT<T, false_type, false_type>>();
 }
 
+void run_arena_allocator_test() {
+    // TODO: add test where  an allocator's arena is filled in, then reset,
+    // then continues to be used. ASan should not fire.
+}
+
 template <class T>
 void run_allocator_matrix() {
     run_tests<allocator<T>>();
     run_custom_allocator_matrix<T, aligned_allocator>();
     run_custom_allocator_matrix<T, explicit_allocator>();
     run_custom_allocator_matrix<T, implicit_allocator>();
+    run_custom_allocator_matrix<T, arena_allocator>();
+    run_arena_allocator_test();
 }
 
 int main() {
