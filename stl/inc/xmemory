@@ -805,6 +805,17 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
 _INLINE_VAR constexpr size_t _Asan_granularity      = 8;
 _INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
 
+// Represents whether ASan is enabled for allocator type 'T'.
+// By default, ASan is enabled.
+template<typename T>
+struct is_ASan_enabled_for_allocator {
+    static constexpr bool value = true;
+};
+
+// Convenience helper to determine if ASan is enabled for a given allocator type 'T'
+template <typename T>
+constexpr bool is_ASan_enabled_for_allocator_v = is_ASan_enabled_for_allocator<T>::value;
+
 struct _Asan_aligned_pointers {
     const void* _First;
     const void* _End;

@@ -493,6 +493,10 @@ private:
             return;
         }
 
+        if (!is_ASan_enabled_for_allocator_v<allocator_type>) {
+            return;
+        }
+
         const void* const _First    = _STD _Unfancy(_First_);
         const void* const _End      = _STD _Unfancy(_End_);
         const void* const _Old_last = _STD _Unfancy(_Old_last_);
