@@ -493,7 +493,7 @@ private:
             return;
         }
 
-        if (!is_ASan_enabled_for_allocator_v<allocator_type>) {
+        if constexpr (!_Is_ASan_enabled_for_allocator<allocator_type>) {
             return;
         }
 
