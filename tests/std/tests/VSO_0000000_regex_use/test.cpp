@@ -4,7 +4,6 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include <iostream>
 #include <regex>
 #include <string>
 
