@@ -426,8 +426,10 @@ cmake --build --preset x64
 ASan-instrumented STL binaries require that the executable be instrumented as well, so you'll have to skip the non-ASan
 configurations by passing `-Dtags=ASAN` to `stl-lit.py`:
 
+(This example assumes that your current directory is `C:\Dev\STL\out\x64`.)
+
 ```
-python out\x64\tests\utils\stl-lit\stl-lit.py tests\std\tests\VSO_0000000_vector_algorithms -Dtags=ASAN -v
+python tests\utils\stl-lit\stl-lit.py ..\..\tests\std\tests\VSO_0000000_vector_algorithms -Dtags=ASAN -v
 ```
 
 # Benchmarking
