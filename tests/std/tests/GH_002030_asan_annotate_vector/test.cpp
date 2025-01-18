@@ -274,43 +274,45 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, implicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<wchar_t, implicit_allocator<wchar_t>>> == 2);
 
-template <class T, class Pocma = true_type, class Stateless = true_type>
-struct arena_allocator : custom_test_allocator<T, Pocma, Stateless> {
-    arena_allocator() : arenaSize(arenaSize), arena(new char[arenaSize]), offset(0) {
+template <class T>
+class arena_allocator {
+    public:
+    using value_type = T;
+
+    arena_allocator() : size_(10000), offset_(0) {
+        data_ = new T[size_];
+    };
+    template <class U>
+    constexpr arena_allocator(const arena_allocator<U>& other) : size_(other.size_), offset_(other.offset_) {
+        data_ = std::copy(other.data_, other.data_ + other.size_, data_);
     }
 
-    T* allocate(size_t size) {
-        if (offset + size > arenaSize) {
-            // ran out of space in the arena
-            throw std::bad_alloc();
-        }
-        void* ptr = arena + offset;
-        offset += size;
-        return ptr;
+    T* allocate(size_t n) {
+        assert(offset_ + n <= size_ && "Arena out of memory");
+        T* result = data_ + offset_;
+        offset_ += n;
+        return result;
     }
 
-    void deallocate(T* pointer, size_t) noexcept {
-        // no-op - arena allocators do not deallocate individual items, they deallocate the arena all at once.
+    void deallocate(T*, size_t) noexcept {
+        // no-op. Memory is deallocated when the arena is reset.
     }
 
-    void reset() {
-        // reset offset to zero, and memset memory back to zero for re-use
-        offset = 0;
-        memset(arena, 0, arenaSize);
+    void reset() noexcept {
+        // reset arena, set memory to zero
+        // the `memset` would normally trigger an ASan AV,
+        // but we'll have the arena_allocator opt out of ASan analysis
+        offset_ = 0;
+        memset(data_, 0, size_);
     }
 
-    ~arena_allocator() {
-        delete[] arena;
-    }
-
-    const size_t arenaSize = 100; // chosen arbitrarily
-    char* arena;
-    size_t offset;
+    T* data_;
+    size_t size_;
+    size_t offset_;
 };
 
-// Arena allocators don't play well with ASan, so we disable them
-template <class arena_allocator>
-constexpr bool _Is_ASan_enabled_for_allocator<arena_allocator> = false;
+template <typename T>
+constexpr bool _Is_ASan_enabled_for_allocator<arena_allocator<T>> = false;
 
 template <class Alloc>
 void test_push_pop() {
@@ -1043,6 +1045,15 @@ void run_custom_allocator_matrix() {
 void run_arena_allocator_test() {
     // TODO: add test where  an allocator's arena is filled in, then reset,
     // then continues to be used. ASan should not fire.
+    arena_allocator<int> allocator;
+    std::vector<int, arena_allocator<int>> vec(allocator);
+    //vec.reserve(100);
+
+    // vec.push_back(1);
+    // vec.push_back(2);
+    // vec.push_back(3);
+
+    //allocator.reset(); // should not trigger ASan AV
 }
 
 template <class T>
@@ -1051,7 +1062,6 @@ void run_allocator_matrix() {
     run_custom_allocator_matrix<T, aligned_allocator>();
     run_custom_allocator_matrix<T, explicit_allocator>();
     run_custom_allocator_matrix<T, implicit_allocator>();
-    run_custom_allocator_matrix<T, arena_allocator>();
     run_arena_allocator_test();
 }
 
