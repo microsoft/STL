@@ -332,7 +332,6 @@ public:
 		return reinterpret_cast<T*>(ptr);
     }
 
-
     // no-op. Memory is deallocated in the `reset` method
     void deallocate(value_type*, size_t) noexcept {}
 
