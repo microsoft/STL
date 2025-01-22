@@ -274,45 +274,93 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, implicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<wchar_t, implicit_allocator<wchar_t>>> == 2);
 
-template <class T>
-class arena_allocator {
-    public:
-    using value_type = T;
+// Helper class for `ArenaAllocator`, where data is linearly allocated in a finite buffer.
+class Arena {
+public:
+    Arena(size_t allocation_size, size_t capacity):
+        data(new char[capacity* allocation_size]),
+        allocation_size(allocation_size),
+        capacity(capacity),
+        offset(0) {}
 
-    arena_allocator() : size_(10000), offset_(0) {
-        data_ = new T[size_];
-    };
-    template <class U>
-    constexpr arena_allocator(const arena_allocator<U>& other) : size_(other.size_), offset_(other.offset_) {
-        data_ = std::copy(other.data_, other.data_ + other.size_, data_);
-    }
+    Arena(const Arena& other):
+        data(other.data),
+        allocation_size(other.allocation_size),
+        capacity(other.capacity),
+        offset(other.offset) {}
 
-    T* allocate(size_t n) {
-        assert(offset_ + n <= size_ && "Arena out of memory");
-        T* result = data_ + offset_;
-        offset_ += n;
+    void* allocate(size_t n) {
+        assert(offset + n <= capacity && "Allocation failed: the arena is out of memory. You may call `reset` to free up space.");
+        void* result = data + (offset * allocation_size);
+        offset += n;
         return result;
     }
 
-    void deallocate(T*, size_t) noexcept {
-        // no-op. Memory is deallocated when the arena is reset.
-    }
-
+    // Deallocates memory in the arena, and `memset`s it all to zero
     void reset() noexcept {
-        // reset arena, set memory to zero
-        // the `memset` would normally trigger an ASan AV,
-        // but we'll have the arena_allocator opt out of ASan analysis
-        offset_ = 0;
-        memset(data_, 0, size_);
+        offset = 0;
+        memset(data, 0, capacity*allocation_size);
     }
 
-    T* data_;
-    size_t size_;
-    size_t offset_;
+    char* const data;
+    const size_t allocation_size;
+    const size_t capacity;
+    size_t offset;
 };
 
+// An allocator that allocates memory in a pre-allocated buffer (the arena).
 template <typename T>
-constexpr bool _Is_ASan_enabled_for_allocator<arena_allocator<T>> = false;
+class ArenaAllocator {
+public:
+
+    using value_type = T;
+    Arena* arena;
+
+    ArenaAllocator(size_t alloc_size, size_t capacity) {
+        assert(sizeof(T) <= alloc_size && "Constructor failed: allocation size is too small for target type.");
+        arena = new Arena(alloc_size, capacity);
+    }
+
+    template <class U>
+    ArenaAllocator(const ArenaAllocator<U>& other) {
+        assert(sizeof(U) <= arena->allocation_size && "Constructor failed: allocation size is too small for target type.");
+        arena = other.arena;
+    }
+
+    T* allocate(size_t n) {
+        void* ptr = arena->allocate(n);
+		return reinterpret_cast<T*>(ptr);
+    }
+
+
+    // no-op. Memory is deallocated in the `reset` method
+    void deallocate(value_type*, size_t) noexcept {}
+
+    // Deallocates memory in the arena, and `memset`s it all to zero.
+    // the `memset` would normally trigger an ASan AV,
+    // but we'll have the ArenaAllocator opt out of ASan analysis
+    void reset() noexcept {
+        arena->reset();
+    }
+
+    template <typename U>
+    bool operator==(ArenaAllocator<U> const& other)
+    {
+        return this->arena == other.arena;
+    }
+
+    template<typename U>
+    bool operator!=(ArenaAllocator<U> const other)
+    {
+        return !(this == other);
+    }
+};
+
+// Opt out of ASan analysis for the ArenaAllocator
+// FIXME: IntelliSense claims '_Is_ASan_enabled_for_allocator is not a templateC/C++(864)',
+//  but it works somehow.
+template <typename T>
+constexpr bool _Is_ASan_enabled_for_allocator<ArenaAllocator<T>> = false;
 
 template <class Alloc>
 void test_push_pop() {
@@ -1042,18 +1090,31 @@ void run_custom_allocator_matrix() {
     run_tests<AllocT<T, false_type, false_type>>();
 }
 
-void run_arena_allocator_test() {
-    // TODO: add test where  an allocator's arena is filled in, then reset,
-    // then continues to be used. ASan should not fire.
-    arena_allocator<int> allocator;
-    std::vector<int, arena_allocator<int>> vec(allocator);
-    //vec.reserve(100);
+// Tests that ASan analysis can be disabled for a vector with an arena allocator.
+void run_asan_disablement_test() {
 
-    // vec.push_back(1);
-    // vec.push_back(2);
-    // vec.push_back(3);
+    // The arena allocator stores integers in 32-bit alignment.
+    // It can hold up to 100 such allocations.
+    // The 32-bit alignment is a bit excessive for `int`s, but it ensures the allocator
+    // can be rebound to allocate larger types as well (up to 32-bit types).
+    const int size = 100;
+    const int alloc_size = 32;
+    ArenaAllocator<int> allocator(alloc_size, size);
 
-    //allocator.reset(); // should not trigger ASan AV
+    // We'll give the vector capacity 1, and allocate a single integer (99).
+    std::vector<int, ArenaAllocator<int>> vec(allocator);
+    vec.reserve(1);
+    vec.push_back(99);
+
+    // When calling reset, the arena would memset all 100 entries of it's buffer to zero.
+    // If the allocator was naively annotated by ASan, this would trigger an AV, because
+    // the arena is accessing memory not tracked by the vector's ASan annotations.
+
+    // However, the allocator is annotated to opt out of ASan analysis through,
+    // `_Is_ASan_enabled_for_allocator`, so this should not trigger an AV.
+    allocator.reset();
+
+    // TODO: is it possible to add a 'negative' test case here? One where ASan expectedly fails?
 }
 
 template <class T>
@@ -1062,7 +1123,7 @@ void run_allocator_matrix() {
     run_custom_allocator_matrix<T, aligned_allocator>();
     run_custom_allocator_matrix<T, explicit_allocator>();
     run_custom_allocator_matrix<T, implicit_allocator>();
-    run_arena_allocator_test();
+    run_asan_disablement_test();
 }
 
 int main() {
