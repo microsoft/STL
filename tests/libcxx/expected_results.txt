@@ -589,6 +589,7 @@ std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAI
 # *** VCRUNTIME BUGS ***
 # DevCom-10373274 VSO-1824997 "vcruntime nothrow array operator new falls back on the wrong function"
 # This passes for the :1 (ASan) configuration, surprisingly.
+# Fixed in VS 2022 17.14 Preview 1.
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:0 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:2 FAIL
 
