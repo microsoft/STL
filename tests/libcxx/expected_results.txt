@@ -450,6 +450,20 @@ std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.c
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:1 FAIL
 
+# VSO-2338880 constexpr error in vector::iterator's _Compat() check when using views::transform
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:1 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
@@ -1064,20 +1078,6 @@ std/time/time.syn/formatter.hh_mm_ss.pass.cpp:2 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:2 FAIL
-
-# Not analyzed. constexpr evaluation fails with "vector iterators incompatible".
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails with note: failure was caused by out of range index MEOW; allowed range is 0 <= index < 2
 std/ranges/range.adaptors/range.join/adaptor.pass.cpp:0 FAIL
