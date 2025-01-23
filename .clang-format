@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/18.1.8/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/19.1.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 # To update this .clang-format file for a new clang-format version:
 # 1. Update the documentation link above.
-# 2. Copy the output of `clang-format -dump-config` into a temporary file.
+# 2. Copy the output of `clang-format -dump-config --style=LLVM` into a temporary file.
 #    a. Comment out all of its lines.
-#    b. Uncomment `BasedOnStyle:  LLVM`.
 # 3. Compare that temporary file to this .clang-format file.
 # 4. Adjust this .clang-format file to record new and updated options.
 #    a. Read the new documentation to understand such changes.
@@ -56,7 +55,29 @@ AlignConsecutiveMacros: Consecutive
 #   Enabled:         false
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
+#   AlignCaseArrows: false
 #   AlignCaseColons: false
+# AlignConsecutiveTableGenBreakingDAGArgColons:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   AlignFunctionPointers: false
+#   PadOperators:    false
+# AlignConsecutiveTableGenCondOperatorColons:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   AlignFunctionPointers: false
+#   PadOperators:    false
+# AlignConsecutiveTableGenDefinitionColons:
+#   Enabled:         false
+#   AcrossEmptyLines: false
+#   AcrossComments:  false
+#   AlignCompound:   false
+#   AlignFunctionPointers: false
+#   PadOperators:    false
 # AlignEscapedNewlines: Right
 AlignEscapedNewlines: Left
 # AlignOperands:   Align
@@ -71,6 +92,7 @@ AlignTrailingComments:
 # AllowBreakBeforeNoexceptSpecifier: Never
 AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
 # AllowShortBlocksOnASingleLine: Never
+# AllowShortCaseExpressionOnASingleLine: true
 # AllowShortCaseLabelsOnASingleLine: false
 # AllowShortCompoundRequirementOnASingleLine: true
 # AllowShortEnumsOnASingleLine: true
@@ -80,10 +102,7 @@ AllowShortFunctionsOnASingleLine: Empty
 # AllowShortLambdasOnASingleLine: All
 # AllowShortLoopsOnASingleLine: false
 # AlwaysBreakAfterDefinitionReturnType: None
-# AlwaysBreakAfterReturnType: None
 # AlwaysBreakBeforeMultilineStrings: false
-# AlwaysBreakTemplateDeclarations: MultiLine
-AlwaysBreakTemplateDeclarations: Yes
 # AttributeMacros:
 #   - __capability
 # BinPackArguments: true
@@ -112,6 +131,7 @@ AlwaysBreakTemplateDeclarations: Yes
 # BreakAfterAttributes: Leave
 BreakAfterAttributes: Never
 # BreakAfterJavaFieldAnnotations: false
+# BreakAfterReturnType: None
 # BreakArrays:     true
 # BreakBeforeBinaryOperators: None
 BreakBeforeBinaryOperators: NonAssignment
@@ -120,8 +140,11 @@ BreakBeforeBinaryOperators: NonAssignment
 # BreakBeforeInlineASMColon: OnlyMultiline
 # BreakBeforeTernaryOperators: true
 # BreakConstructorInitializers: BeforeColon
+# BreakFunctionDefinitionParameters: false
 # BreakInheritanceList: BeforeColon
 # BreakStringLiterals: true
+# BreakTemplateDeclarations: MultiLine
+BreakTemplateDeclarations: Yes
 # ColumnLimit:     80
 ColumnLimit:     120
 # CommentPragmas:  '^ IWYU pragma:'
@@ -202,14 +225,17 @@ InsertNewlineAtEOF: true
 #   HexMinDigits:    0
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
-# KeepEmptyLinesAtTheStartOfBlocks: true
-# KeepEmptyLinesAtEOF: false
+# KeepEmptyLines:
+#   AtEndOfFile:     false
+#   AtStartOfBlock:  true
+#   AtStartOfFile:   true
 # LambdaBodyIndentation: Signature
 # LineEnding:      DeriveLF
 LineEnding:      CRLF
 # NOTE: MacroBlockBegin/MacroBlockEnd don't work with _CATCH_ALL.
 # MacroBlockBegin: ''
 # MacroBlockEnd:   ''
+# MainIncludeChar: Quote
 # MaxEmptyLinesToKeep: 1
 MaxEmptyLinesToKeep: 2
 # NamespaceIndentation: None
@@ -286,6 +312,7 @@ SpaceBeforeParensOptions:
 #   Maximum:         -1
 # SpacesInParens:  Never
 # SpacesInParensOptions:
+#   ExceptDoubleParentheses: false
 #   InCStyleCasts:   false
 #   InConditionalStatements: false
 #   InEmptyParentheses: false
@@ -310,6 +337,7 @@ StatementMacros:
   - _FMT_P2286_END
   - _EXTERN_C_UNLESS_PURE
   - _END_EXTERN_C_UNLESS_PURE
+# TableGenBreakInsideDAGArg: DontBreak
 # TabWidth:        8
 # UseTab:          Never
 # VerilogBreakBetweenInstancePorts: true
