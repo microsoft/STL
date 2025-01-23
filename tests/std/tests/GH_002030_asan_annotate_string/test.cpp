@@ -1952,7 +1952,7 @@ void run_asan_disablement_test() {
     const int alloc_size = 32;
     ArenaAllocator<char> allocator(alloc_size, size);
 
-	std::basic_string<char, std::char_traits<char>, ArenaAllocator<char>> myString(allocator);
+    std::basic_string<char, std::char_traits<char>, ArenaAllocator<char>> myString(allocator);
     myString.reserve(50);
     myString.push_back('A');
 
