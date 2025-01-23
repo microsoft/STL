@@ -229,6 +229,8 @@ InsertNewlineAtEOF: true
 #   AtEndOfFile:     false
 #   AtStartOfBlock:  true
 #   AtStartOfFile:   true
+KeepEmptyLines:
+  AtStartOfFile:   false
 # LambdaBodyIndentation: Signature
 # LineEnding:      DeriveLF
 LineEnding:      CRLF
