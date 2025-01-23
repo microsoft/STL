@@ -1071,7 +1071,7 @@ namespace special_memory_concepts {
     static_assert(
         _No_throw_sentinel_for<sentinel_archetype<sentinel_status::yes>, iterator_archetype<iterator_status::input>>);
     static_assert(!_No_throw_sentinel_for<iterator_archetype<iterator_status::input>,
-                  iterator_archetype<iterator_status::input>>);
+        iterator_archetype<iterator_status::input>>);
     static_assert(_No_throw_sentinel_for<iterator_archetype<iterator_status::forward>,
         iterator_archetype<iterator_status::forward>>);
 
