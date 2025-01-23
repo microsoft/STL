@@ -1025,8 +1025,8 @@ namespace ranges {
     };
 
     template <class _Wi, class _Bo>
-        requires (!_Integer_like<_Wi> || !_Integer_like<_Bo>
-                     || (_Signed_integer_like<_Wi> == _Signed_integer_like<_Bo>) )
+        requires (
+            !_Integer_like<_Wi> || !_Integer_like<_Bo> || (_Signed_integer_like<_Wi> == _Signed_integer_like<_Bo>) )
     iota_view(_Wi, _Bo) -> iota_view<_Wi, _Bo>;
 
     template <class _Wi, class _Bo>
