@@ -323,7 +323,7 @@ public:
 
     template <class U>
     ArenaAllocator(const ArenaAllocator<U>& other) {
-        assert(sizeof(U) <= arena->allocation_size && "Constructor failed: allocation size is too small for target type.");
+        assert(sizeof(T) <= other.arena->allocation_size && "Constructor failed: allocation size is too small for target type.");
         arena = other.arena;
     }
 
