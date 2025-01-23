@@ -3989,8 +3989,8 @@ namespace ranges {
     lazy_split_view(_Rng&&, _Pat&&) -> lazy_split_view<views::all_t<_Rng>, views::all_t<_Pat>>;
 
     template <input_range _Rng>
-    lazy_split_view(
-        _Rng&&, range_value_t<_Rng>) -> lazy_split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
+    lazy_split_view(_Rng&&, range_value_t<_Rng>)
+        -> lazy_split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
 
 #if _HAS_CXX23
     template <class _Rng, class _Pat>
