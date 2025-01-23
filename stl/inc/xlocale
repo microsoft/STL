@@ -28,6 +28,7 @@ class _Locbase {}; // TRANSITION, ABI, affects sizeof(locale)
 _EXPORT_STD template <class _Elem>
 class collate;
 
+// clang-format off: clang-format 19 doesn't understand _CRTIMP2_PURE_IMPORT and will poorly format the following code
 extern "C++" struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for marking allocations as CRT blocks
 #ifdef _DEBUG
     void* __CLRCALL_OR_CDECL operator new(size_t _Size) { // replace operator new
@@ -58,6 +59,7 @@ extern "C++" struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for mar
     void __CLRCALL_OR_CDECL operator delete(void*, void*) noexcept {} // imitate True Placement Delete
 #endif // _DEBUG
 };
+// clang-format on
 
 _EXPORT_STD extern "C++" class locale : public _Locbase<int>, public _Crt_new_delete {
 public:
