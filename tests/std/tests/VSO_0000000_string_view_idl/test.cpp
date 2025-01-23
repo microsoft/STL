@@ -187,13 +187,17 @@ void test_case_remove_suffix_incompatible() {
 void test_case_Copy_s() {
     string_view sv("text");
     char buffer[2];
-#pragma warning(suppress : 28020) // yay PREfast catches this mistake at compile time!
+#pragma warning(push)
+#pragma warning(disable : 28020) // yay PREfast catches this mistake at compile time!
     sv._Copy_s(buffer, 2, 4); // CRT invalid parameter handler (memcpy_s failed)
+#pragma warning(pop)
 }
 
 void test_case_null_constructor() {
-#pragma warning(suppress : 6387) // yay PREfast catches this mistake at compile time!
+#pragma warning(push)
+#pragma warning(disable : 6387) // yay PREfast catches this mistake at compile time!
     string_view sv(nullptr, 1); // non-zero size null string_view
+#pragma warning(pop)
     (void) sv;
 }
 

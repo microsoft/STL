@@ -163,8 +163,10 @@ struct TestCases {
 
     static void test_case_operator_subscript_out_of_range() {
         ContainerType a{false, true, false, true};
-#pragma warning(suppress : 28020) // Yay sometimes PREfast catches this one at compile time!
+#pragma warning(push)
+#pragma warning(disable : 28020) // Yay sometimes PREfast catches this one at compile time!
         (void) a[Traits::zero_offset + 4];
+#pragma warning(pop)
     }
 
     static void test_case_front_empty() {
