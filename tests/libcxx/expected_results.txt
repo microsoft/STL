@@ -428,6 +428,28 @@ std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:0 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
 
+# VSO-2338829 constexpr error "subtracting pointers to elements of different arrays" in _String_const_iterator::_Verify_offset()
+std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_erase/iter_iter.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_erase/iter_iter.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_insert/iter_iter_iter.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_insert/iter_iter_iter.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_insert/iter_size_char.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_insert/iter_size_char.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_iter_iter.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_iter_iter.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:1 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
@@ -939,28 +961,6 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass
 # MSVC note: failure was caused by a read of an uninitialized symbol
 # Clang error: non-type template argument is not a constant expression
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
-
-# Not analyzed, probably MSVC constexpr issue(s)
-std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_erase/iter_iter.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_erase/iter_iter.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_insert/iter_iter_iter.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_insert/iter_iter_iter.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_insert/iter_size_char.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_insert/iter_size_char.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_iter_iter.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_iter_iter.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:1 FAIL
 
 # Not analyzed, possible path length issue. With a repo root of D:\GitHub\STL (13 characters), fails with:
 # "error RC2136 : missing '=' in EXSTYLE=<flags>" followed by "LINK : fatal error LNK1327: failure during running rc.exe"
