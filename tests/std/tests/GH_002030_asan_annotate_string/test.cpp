@@ -1942,6 +1942,7 @@ void run_tests() {
 }
 
 // Tests that ASan analysis can be disabled for a vector with an arena allocator.
+template <class ChartType>
 void run_asan_disablement_test() {
 
     // The arena allocator stores integers in 32-bit alignment.
@@ -1950,11 +1951,10 @@ void run_asan_disablement_test() {
     // can be rebound to allocate larger types as well (up to 32-bit types).
     const int size = 100;
     const int alloc_size = 32;
-    ArenaAllocator<char> allocator(alloc_size, size);
+    ArenaAllocator<ChartType> allocator(alloc_size, size);
 
-    std::basic_string<char, std::char_traits<char>, ArenaAllocator<char>> myString(allocator);
+    std::basic_string<ChartType, std::char_traits<ChartType>, ArenaAllocator<ChartType>> myString(allocator);
     myString.reserve(50);
-    myString.push_back('A');
 
     // When calling reset, the arena would memset all 100 entries of it's buffer to zero.
     // If the allocator was naively annotated by ASan, this would trigger an AV, because
@@ -1981,7 +1981,7 @@ void run_allocator_matrix() {
     run_custom_allocator_matrix<CharType, aligned_allocator>();
     run_custom_allocator_matrix<CharType, explicit_allocator>();
     run_custom_allocator_matrix<CharType, implicit_allocator>();
-    run_asan_disablement_test();
+    run_asan_disablement_test<CharType>();
 }
 
 void test_DevCom_10116361() {

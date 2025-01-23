@@ -1090,6 +1090,7 @@ void run_custom_allocator_matrix() {
 }
 
 // Tests that ASan analysis can be disabled for a vector with an arena allocator.
+template <class T>
 void run_asan_disablement_test() {
 
     // The arena allocator stores integers in 32-bit alignment.
@@ -1098,12 +1099,11 @@ void run_asan_disablement_test() {
     // can be rebound to allocate larger types as well (up to 32-bit types).
     const int size = 100;
     const int alloc_size = 32;
-    ArenaAllocator<int> allocator(alloc_size, size);
+    ArenaAllocator<T> allocator(alloc_size, size);
 
-    // We'll give the vector capacity 1, and allocate a single integer (99).
-    std::vector<int, ArenaAllocator<int>> vec(allocator);
+    // We'll give the vector capacity 1
+    std::vector<T, ArenaAllocator<T>> vec(allocator);
     vec.reserve(1);
-    vec.push_back(99);
 
     // When calling reset, the arena would memset all 100 entries of it's buffer to zero.
     // If the allocator was naively annotated by ASan, this would trigger an AV, because
@@ -1122,7 +1122,7 @@ void run_allocator_matrix() {
     run_custom_allocator_matrix<T, aligned_allocator>();
     run_custom_allocator_matrix<T, explicit_allocator>();
     run_custom_allocator_matrix<T, implicit_allocator>();
-    run_asan_disablement_test();
+    run_asan_disablement_test<T>();
 }
 
 int main() {
