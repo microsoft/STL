@@ -334,8 +334,10 @@ public:
     template <class _Iter>
     char_class_type lookup_classname(_Iter _First, _Iter _Last, bool _Icase = false) const {
         // map [_First, _Last) to character class mask value
-#define _REGEX_CHAR_CLASS_NAME(n, c) \
-    { n, L##n, static_cast<unsigned int>(_STD size(n) - 1), c }
+#define _REGEX_CHAR_CLASS_NAME(n, c)                            \
+    {                                                           \
+        n, L##n, static_cast<unsigned int>(_STD size(n) - 1), c \
+    }
         static constexpr _Cl_names _Names[] = {
             // map class names to numeric constants
             _REGEX_CHAR_CLASS_NAME("alnum", _Ch_alnum),

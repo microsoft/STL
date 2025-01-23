@@ -332,8 +332,10 @@ int res[] = { // results
 
 #define RESULT(n, o) (res[n + o] - res[o])
 
-#define CALL0(fobj) \
-    { CHECK_INT(fobj(), 1); }
+#define CALL0(fobj)           \
+    {                         \
+        CHECK_INT(fobj(), 1); \
+    }
 #define CALL1x(fobj, funobj)                   \
     {                                          \
         for (int i = 0; i < 10; ++i) {         \
