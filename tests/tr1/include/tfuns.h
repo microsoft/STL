@@ -269,8 +269,8 @@ typedef int (funobj::*cvmf8)(int, int, int, int, int, int, int) const volatile;
 typedef int (funobj::*cvmf9)(int, int, int, int, int, int, int, int) const volatile;
 typedef int (funobj::*cvmf10)(int, int, int, int, int, int, int, int, int) const volatile;
 
-typedef int funobj::*md0;
-typedef int* funobj::*md1;
+typedef int funobj::* md0;
+typedef int* funobj::* md1;
 
 struct sp { // simplistic smart pointer
     sp(funobj& f) : ptr(&f) {}

@@ -580,7 +580,7 @@ public:
 };
 
 _EXPORT_STD template <class _Rx, class _Ty>
-_NODISCARD _CONSTEXPR20 _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::*_Pm) noexcept {
+_NODISCARD _CONSTEXPR20 _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::* _Pm) noexcept {
     return _Mem_fn<_Rx _Ty::*>(_Pm);
 }
 

@@ -35,7 +35,7 @@ int main() {
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     int (X::*pmf)(int) = nullptr;
-    int X::*pmd        = nullptr;
+    int X::* pmd       = nullptr;
 
     assert(!function<int(X, int)>(pmf));
     assert(!function<int(X)>(pmd));
