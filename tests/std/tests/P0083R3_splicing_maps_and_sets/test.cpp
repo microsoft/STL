@@ -387,7 +387,7 @@ void test_merge_single() {
             }
         }(1);
         auto const pos     = std::as_const(c1).find(key);
-        auto c2            = extended_merge_ctype<C2, Reverse == should_reverse::yes>{{0, 0}, {3, 3}};
+        auto c2            = extended_merge_ctype<C2, (Reverse == should_reverse::yes)>{{0, 0}, {3, 3}};
         allocation_allowed = false;
         assert(c1.get_allocator() == c2.get_allocator());
         if constexpr (Move == should_move::yes) {
