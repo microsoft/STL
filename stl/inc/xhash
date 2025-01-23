@@ -97,11 +97,6 @@ template <class _Kty, class _Hasher, class _Keyeq>
 struct _Uhash_choose_transparency {
     // transparency selector for non-transparent hashed containers
     static constexpr bool _Has_transparent_overloads = false;
-
-#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, DevCom-10678753
-    template <class, class>
-    static constexpr bool _Supports_transparency = false;
-#endif // ^^^ workaround ^^^
 };
 
 #if _HAS_CXX20
