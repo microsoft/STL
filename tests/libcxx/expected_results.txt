@@ -433,11 +433,6 @@ std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:2 FAIL
 
-# LLVM-95311 [clang] __has_unique_object_representations gives inconsistent answer based on instantiation order
-# A libc++ product code workaround (using `remove_all_extents_t`) and test coverage were added by LLVM-95314.
-# Fixed by LLVM-95432 in Clang 19.
-std/utilities/meta/meta.unary/meta.unary.prop/has_unique_object_representations.compile.pass.cpp:2 FAIL
-
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Not analyzed. Clang apparently defines platform macros differently from C1XX.
@@ -446,10 +441,6 @@ std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp
 # Not analyzed. Possibly C++20 equality operator rewrite issues.
 std/utilities/expected/expected.expected/equality/equality.other_expected.pass.cpp:2 FAIL
 std/utilities/expected/expected.void/equality/equality.other_expected.pass.cpp:2 FAIL
-
-# Not analyzed. __cpp_sized_deallocation isn't being defined by Clang.
-std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array.pass.cpp:2 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete.pass.cpp:2 FAIL
 
 
 # *** STL BUGS ***
@@ -1355,17 +1346,6 @@ std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPE
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
 std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
-
-# These tests also need ADDITIONAL_COMPILE_FLAGS to silence warnings, but only for Clang 18.
-# TRANSITION, Clang 19
-std/containers/associative/map/map.modifiers/insert_range.pass.cpp:9 SKIPPED
-std/containers/associative/multimap/multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
-std/containers/associative/multiset/insert_range.pass.cpp:9 SKIPPED
-std/containers/associative/set/insert_range.pass.cpp:9 SKIPPED
-std/containers/unord/unord.map/unord.map.modifiers/insert_range.pass.cpp:9 SKIPPED
-std/containers/unord/unord.multimap/unord.multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
-std/containers/unord/unord.multiset/insert_range.pass.cpp:9 SKIPPED
-std/containers/unord/unord.set/insert_range.pass.cpp:9 SKIPPED
 
 # This test is marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED
