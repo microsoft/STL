@@ -15,6 +15,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <test_death.hpp>
 #include <iterator>
 #include <memory>
 #include <new>
@@ -1924,21 +1925,25 @@ void test_gh_5251() {
     myString.reserve(100);
     char* data = &myString[0];
     data[50] = 'A';
-    // FIXME: How do I declare this as an expected failure?
 }
 
-int main() {
-    run_allocator_matrix<char>();
-#ifdef __cpp_char8_t
-    run_allocator_matrix<char8_t>();
-#endif // __cpp_char8_t
-    run_allocator_matrix<char16_t>();
-    run_allocator_matrix<char32_t>();
-    run_allocator_matrix<wchar_t>();
+int main(int argc, char* argv[]) {
+    std_testing::death_test_executive exec([] {
+        run_allocator_matrix<char>();
+    #ifdef __cpp_char8_t
+        run_allocator_matrix<char8_t>();
+    #endif // __cpp_char8_t
+        run_allocator_matrix<char16_t>();
+        run_allocator_matrix<char32_t>();
+        run_allocator_matrix<wchar_t>();
 
-    test_DevCom_10116361();
-    test_DevCom_10109507();
-    test_gh_3883();
-    test_gh_3955();
-    test_gh_5251();
+        test_DevCom_10116361();
+        test_DevCom_10109507();
+        test_gh_3883();
+        test_gh_3955();
+    });
+#ifdef __SANITIZE_ADDRESS__
+    exec.add_death_tests({test_gh_5251});
+#endif // ASan instrumentation enabled
+    return exec.run(argc, argv);
 }
