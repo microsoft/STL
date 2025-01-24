@@ -1924,7 +1924,7 @@ void test_gh_5251() {
     std::basic_string<char> myString;
     myString.reserve(100);
     char* data = &myString[0];
-    data[50] = 'A';
+    data[50] = 'A'; // ASan should fire!
 }
 
 int main(int argc, char* argv[]) {
