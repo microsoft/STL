@@ -305,7 +305,7 @@ struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Sta
 };
 
 template <typename T>
-constexpr bool _Is_ASan_enabled_for_allocator<implicit_allocator_no_asan_annotations<T>> = false;
+constexpr bool _Is_ASan_enabled_for_allocator<implicit_allocator_no_asan_annotations<T>> = true;
 
 template <class Alloc>
 void test_construction() {
@@ -1877,15 +1877,12 @@ void run_tests() {
 template <class CharType>
 void run_asan_disablement_test() {
 
-    // We'll give the vector capacity 100
+    // We'll give the string capacity 100
     std::basic_string<CharType, std::char_traits<CharType>, implicit_allocator_no_asan_annotations<CharType>> myString;
     myString.reserve(100);
 
-    // We access position (50) of the string, which is within the capacity of the vector
-    // but uninitialized. This would normally trigger an AV because of ASan annotations.
-    // However, the allocator has opted out of ASan analysis through,
-    // `_Is_ASan_enabled_for_allocator`, so this should succeed.
-    // myString.data()[50] = CharType{'A'}; // TODO< this does not compile. Need to investigate
+    CharType* data = &myString[0]; // Get a mutable pointer to the string's data
+    data[50] = CharType{'A'}; // TODO: this isn't failing in ASAn due to a newly found bug. Merge that bug fix first.
 
     // TODO: is it possible to add a 'negative' test case here? One where ASan expectedly fails?
 }
