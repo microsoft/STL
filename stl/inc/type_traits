@@ -1659,8 +1659,8 @@ struct _Invoker_pmd_pointer {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_pointer;
 
     template <class _Decayed, class _Ty1>
-    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1)
-        noexcept(noexcept((*static_cast<_Ty1&&>(_Arg1)).*_Pmd)) -> decltype((*static_cast<_Ty1&&>(_Arg1)).*_Pmd) {
+    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept((*static_cast<_Ty1&&>(_Arg1)).*_Pmd))
+        -> decltype((*static_cast<_Ty1&&>(_Arg1)).*_Pmd) {
         return (*static_cast<_Ty1&&>(_Arg1)).*_Pmd;
     }
 };
@@ -1691,8 +1691,8 @@ template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
 
 _EXPORT_STD template <class _Callable>
-constexpr auto invoke(_Callable&& _Obj)
-    noexcept(noexcept(static_cast<_Callable&&>(_Obj)())) -> decltype(static_cast<_Callable&&>(_Obj)()) {
+constexpr auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
+    -> decltype(static_cast<_Callable&&>(_Obj)()) {
     return static_cast<_Callable&&>(_Obj)();
 }
 
@@ -1912,12 +1912,12 @@ _EXPORT_STD template <class _Base, class _Derived>
 constexpr bool is_pointer_interconvertible_base_of_v = __is_pointer_interconvertible_base_of(_Base, _Derived);
 
 _EXPORT_STD template <class _ClassTy, class _MemberTy>
-_NODISCARD constexpr bool is_pointer_interconvertible_with_class(_MemberTy _ClassTy::*_Pm) noexcept {
+_NODISCARD constexpr bool is_pointer_interconvertible_with_class(_MemberTy _ClassTy::* _Pm) noexcept {
     return __is_pointer_interconvertible_with_class(_ClassTy, _Pm);
 }
 
 _EXPORT_STD template <class _ClassTy1, class _ClassTy2, class _MemberTy1, class _MemberTy2>
-_NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::*_Pm1, _MemberTy2 _ClassTy2::*_Pm2) noexcept {
+_NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::* _Pm1, _MemberTy2 _ClassTy2::* _Pm2) noexcept {
     return __is_corresponding_member(_ClassTy1, _ClassTy2, _Pm1, _Pm2);
 }
 #endif // ^^^ no workaround ^^^

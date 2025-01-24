@@ -134,8 +134,10 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
 
         unsigned long long rh = ((u[j + n] << shift) + u[j + n - 1]) % v[n - 1];
         for (;;) {
-#pragma warning(suppress : 6385) // TRANSITION, GH-1008
+#pragma warning(push)
+#pragma warning(disable : 6385) // TRANSITION, GH-1008
             if (qh < maxVal && qh * v[n - 2] <= (rh << shift) + u[j + n - 2]) {
+#pragma warning(pop)
                 break;
             } else { // reduce tentative value and retry
                 --qh;

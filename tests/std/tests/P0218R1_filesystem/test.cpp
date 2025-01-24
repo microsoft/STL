@@ -1267,7 +1267,9 @@ void test_directory_iterator_common_parts(const string_view typeName) {
 
     // DirectoryIterator() noexcept;
     // ~DirectoryIterator();
-    { DirectoryIterator default_ctor; }
+    {
+        DirectoryIterator default_ctor;
+    }
 
     // explicit DirectoryIterator(const path& _Path_arg);
     // DirectoryIterator(const path& _Path_arg, directory_options _Options_arg);

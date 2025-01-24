@@ -3083,13 +3083,13 @@ private:
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-basic_string(
-    _Iter, _Iter, _Alloc = _Alloc()) -> basic_string<_Iter_value_t<_Iter>, char_traits<_Iter_value_t<_Iter>>, _Alloc>;
+basic_string(_Iter, _Iter, _Alloc = _Alloc())
+    -> basic_string<_Iter_value_t<_Iter>, char_traits<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
-explicit basic_string(
-    basic_string_view<_Elem, _Traits>, const _Alloc& = _Alloc()) -> basic_string<_Elem, _Traits, _Alloc>;
+explicit basic_string(basic_string_view<_Elem, _Traits>, const _Alloc& = _Alloc())
+    -> basic_string<_Elem, _Traits, _Alloc>;
 
 template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
@@ -3098,8 +3098,8 @@ basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Gui
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
-basic_string(from_range_t, _Rng&&,
-    _Alloc = _Alloc()) -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
+basic_string(from_range_t, _Rng&&, _Alloc = _Alloc())
+    -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23
 #endif // _HAS_CXX17
 

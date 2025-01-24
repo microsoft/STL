@@ -47,7 +47,7 @@ $PythonUrl = 'https://www.python.org/ftp/python/3.13.1/python-3.13.1-amd64.exe'
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
 
 $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_551.61_windows.exe'
-$CudaArgs = @('-s')
+$CudaArgs = @('-s', '-n', 'nvcc_12.4')
 
 <#
 .SYNOPSIS

@@ -2817,7 +2817,8 @@ _EXPORT_STD using atomic_unsigned_lock_free = atomic_uintptr_t;
 #endif // _HAS_CXX20
 
 #define ATOMIC_FLAG_INIT \
-    {}
+    {                    \
+    }
 
 _EXPORT_STD struct atomic_flag { // flag with test-and-set semantics
 #if _HAS_CXX20

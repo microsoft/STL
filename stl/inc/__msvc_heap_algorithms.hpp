@@ -23,8 +23,8 @@ _CONSTEXPR20 void _Push_heap_by_index(
     _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Top, _Ty&& _Val, _Pr _Pred) {
     // percolate _Hole to _Top or where _Val belongs
     using _Diff = _Iter_diff_t<_RanIt>;
-    for (_Diff _Idx                                                          = (_Hole - 1) >> 1; // shift for codegen
-         _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val); _Idx = (_Hole - 1) >> 1) { // shift for codegen
+    for (_Diff _Idx                                                         = (_Hole - 1) >> 1; // shift for codegen
+        _Top < _Hole && _DEBUG_LT_PRED(_Pred, *(_First + _Idx), _Val); _Idx = (_Hole - 1) >> 1) { // shift for codegen
         // move _Hole up to parent
         *(_First + _Hole) = _STD move(*(_First + _Idx));
         _Hole             = _Idx;
