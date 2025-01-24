@@ -632,6 +632,10 @@ private:
             return;
         }
 
+        if constexpr (!_Is_ASan_enabled_for_allocator<allocator_type>) {
+            return;
+        }
+
         // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator
         const void* const _End      = _First + _Capacity + 1;
         const void* const _Old_last = _First + _Old_size + 1;

@@ -274,6 +274,26 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, implicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<wchar_t, implicit_allocator<wchar_t>>> == 2);
 
+// Simple implicit allocator that opts out of ASan annotations (via `_Is_ASan_enabled_for_allocator`)
+template <class T, class Pocma = true_type, class Stateless = true_type>
+struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Stateless> {
+    implicit_allocator_no_asan_annotations() = default;
+    template <class U>
+    constexpr implicit_allocator_no_asan_annotations(const implicit_allocator_no_asan_annotations<U, Pocma, Stateless>&) noexcept {}
+
+    T* allocate(size_t n) {
+        T* mem = new T[n + 1];
+        return mem + 1;
+    }
+
+    void deallocate(T* p, size_t) noexcept {
+        delete[] (p - 1);
+    }
+};
+
+template <typename T>
+constexpr bool _Is_ASan_enabled_for_allocator<implicit_allocator_no_asan_annotations<T>> = false;
+
 template <class Alloc>
 void test_push_pop() {
     using T = typename Alloc::value_type;
@@ -1002,12 +1022,30 @@ void run_custom_allocator_matrix() {
     run_tests<AllocT<T, false_type, false_type>>();
 }
 
+// Tests that ASan analysis can be disabled for a vector with an arena allocator.
+template <class T>
+void run_asan_disablement_test() {
+
+    // We'll give the vector capacity 100
+    std::vector<T, implicit_allocator_no_asan_annotations<T>> vec;
+    vec.reserve(100);
+
+    // We access position (50) of the vector, which is within the capacity of the vector
+    // but uninitialized. This would normally trigger an AV because of ASan annotations.
+    // However, the allocator has opted out of ASan analysis through,
+    // `_Is_ASan_enabled_for_allocator`, so this should succeed.
+    vec.data()[50] = T();
+
+    // TODO: is it possible to add a 'negative' test case here? One where ASan expectedly fails?
+}
+
 template <class T>
 void run_allocator_matrix() {
     run_tests<allocator<T>>();
     run_custom_allocator_matrix<T, aligned_allocator>();
     run_custom_allocator_matrix<T, explicit_allocator>();
     run_custom_allocator_matrix<T, implicit_allocator>();
+    run_asan_disablement_test<T>();
 }
 
 int main() {

@@ -287,6 +287,26 @@ STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, implicit_allocator<wchar_t>>>
               == 2);
 
+// Simple implicit allocator that opts out of ASan annotations (via `_Is_ASan_enabled_for_allocator`)
+template <class T, class Pocma = true_type, class Stateless = true_type>
+struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Stateless> {
+    implicit_allocator_no_asan_annotations() = default;
+    template <class U>
+    constexpr implicit_allocator_no_asan_annotations(const implicit_allocator_no_asan_annotations<U, Pocma, Stateless>&) noexcept {}
+
+    T* allocate(size_t n) {
+        T* mem = new T[n + 1];
+        return mem + 1;
+    }
+
+    void deallocate(T* p, size_t) noexcept {
+        delete[] (p - 1);
+    }
+};
+
+template <typename T>
+constexpr bool _Is_ASan_enabled_for_allocator<implicit_allocator_no_asan_annotations<T>> = true;
+
 template <class Alloc>
 void test_construction() {
     using CharType = typename Alloc::value_type;
@@ -1853,6 +1873,20 @@ void run_tests() {
 #endif // ^^^ no workaround ^^^
 }
 
+// Tests that ASan analysis can be disabled for a vector with an arena allocator.
+template <class CharType>
+void run_asan_disablement_test() {
+
+    // We'll give the string capacity 100
+    std::basic_string<CharType, std::char_traits<CharType>, implicit_allocator_no_asan_annotations<CharType>> myString;
+    myString.reserve(100);
+
+    CharType* data = &myString[0]; // Get a mutable pointer to the string's data
+    data[50] = CharType{'A'}; // TODO: this isn't failing due to bug: https://github.com/microsoft/STL/issues/5251
+
+    // TODO: is it possible to add a 'negative' test case here? One where ASan expectedly fails?
+}
+
 template <class CharType, template <class, class, class> class Alloc>
 void run_custom_allocator_matrix() {
     run_tests<Alloc<CharType, true_type, true_type>>();
@@ -1867,6 +1901,7 @@ void run_allocator_matrix() {
     run_custom_allocator_matrix<CharType, aligned_allocator>();
     run_custom_allocator_matrix<CharType, explicit_allocator>();
     run_custom_allocator_matrix<CharType, implicit_allocator>();
+    run_asan_disablement_test<CharType>();
 }
 
 void test_DevCom_10116361() {
