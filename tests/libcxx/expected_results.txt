@@ -173,7 +173,7 @@ std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
 
 
-# *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
+# *** INTERACTIONS WITH MSVC THAT UPSTREAM LIKELY WON'T FIX ***
 # These tests set an allocator with a max_size() too small to default construct an unordered container
 # (due to our minimum bucket size).
 std/containers/unord/unord.map/max_size.pass.cpp FAIL
@@ -428,15 +428,75 @@ std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:0 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
 
+# DevCom-10808176 VSO-2319111 MSVC doesn't properly destroy a loop variable in constant evaluation
+# Fixed in VS 2022 17.14 Preview 1.
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:1 FAIL
+std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
+std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:1 FAIL
+std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:0 FAIL
+std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:1 FAIL
+std/containers/sequences/vector.bool/construct_size.pass.cpp:0 FAIL
+std/containers/sequences/vector.bool/construct_size.pass.cpp:1 FAIL
+std/containers/sequences/vector.bool/construct_size_value.pass.cpp:0 FAIL
+std/containers/sequences/vector.bool/construct_size_value.pass.cpp:1 FAIL
+std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:0 FAIL
+std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:1 FAIL
+std/containers/sequences/vector/reverse_iterators.pass.cpp:0 FAIL
+std/containers/sequences/vector/reverse_iterators.pass.cpp:1 FAIL
+std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:0 FAIL
+std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:1 FAIL
+std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:0 FAIL
+std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:1 FAIL
+std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:0 FAIL
+std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:1 FAIL
+std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:0 FAIL
+std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:1 FAIL
+std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:0 FAIL
+std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:1 FAIL
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
+
+# VSO-2338829 constexpr error "subtracting pointers to elements of different arrays" in _String_const_iterator::_Verify_offset()
+std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_erase/iter_iter.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_erase/iter_iter.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_insert/iter_iter_iter.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_insert/iter_iter_iter.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_insert/iter_size_char.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_insert/iter_size_char.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_iter_iter.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_iter_iter.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:1 FAIL
+
+# VSO-2338880 constexpr error in vector::iterator's _Compat() check when using views::transform
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:1 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:2 FAIL
-
-# LLVM-95311 [clang] __has_unique_object_representations gives inconsistent answer based on instantiation order
-# A libc++ product code workaround (using `remove_all_extents_t`) and test coverage were added by LLVM-95314.
-# Fixed by LLVM-95432 in Clang 19.
-std/utilities/meta/meta.unary/meta.unary.prop/has_unique_object_representations.compile.pass.cpp:2 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -446,10 +506,6 @@ std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp
 # Not analyzed. Possibly C++20 equality operator rewrite issues.
 std/utilities/expected/expected.expected/equality/equality.other_expected.pass.cpp:2 FAIL
 std/utilities/expected/expected.void/equality/equality.other_expected.pass.cpp:2 FAIL
-
-# Not analyzed. __cpp_sized_deallocation isn't being defined by Clang.
-std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array.pass.cpp:2 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete.pass.cpp:2 FAIL
 
 
 # *** STL BUGS ***
@@ -533,6 +589,7 @@ std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAI
 # *** VCRUNTIME BUGS ***
 # DevCom-10373274 VSO-1824997 "vcruntime nothrow array operator new falls back on the wrong function"
 # This passes for the :1 (ASan) configuration, surprisingly.
+# Fixed in VS 2022 17.14 Preview 1.
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:0 FAIL
 std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:2 FAIL
 
@@ -889,35 +946,6 @@ std/algorithms/algorithms.results/min_max_result.pass.cpp:1 FAIL
 # Not analyzed.
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 
-# Not analyzed. Possible MSVC constexpr bug.
-# note: failure was caused by a read of a variable outside its lifetime
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_size.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_size.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_size_value.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_size_value.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:1 FAIL
-std/containers/sequences/vector/reverse_iterators.pass.cpp:0 FAIL
-std/containers/sequences/vector/reverse_iterators.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:1 FAIL
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
-
 # Not analyzed. Looks like a test bug, assuming that hash<vector<bool>> is constexpr.
 std/containers/sequences/vector.bool/enabled_hash.pass.cpp FAIL
 std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
@@ -948,28 +976,6 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass
 # MSVC note: failure was caused by a read of an uninitialized symbol
 # Clang error: non-type template argument is not a constant expression
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
-
-# Not analyzed, probably MSVC constexpr issue(s)
-std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_erase/iter_iter.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_erase/iter_iter.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_insert/iter_iter_iter.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_insert/iter_iter_iter.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_insert/iter_size_char.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_insert/iter_size_char.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_iter_iter.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_iter_iter.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:1 FAIL
 
 # Not analyzed, possible path length issue. With a repo root of D:\GitHub\STL (13 characters), fails with:
 # "error RC2136 : missing '=' in EXSTYLE=<flags>" followed by "LINK : fatal error LNK1327: failure during running rc.exe"
@@ -1073,20 +1079,6 @@ std/time/time.syn/formatter.hh_mm_ss.pass.cpp:2 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:2 FAIL
-
-# Not analyzed. constexpr evaluation fails with "vector iterators incompatible".
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:1 FAIL
 
 # Not analyzed. constexpr evaluation fails with note: failure was caused by out of range index MEOW; allowed range is 0 <= index < 2
 std/ranges/range.adaptors/range.join/adaptor.pass.cpp:0 FAIL
@@ -1346,6 +1338,14 @@ std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/ranges.find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.fold/left_folds.pass.cpp:9 SKIPPED
+std/containers/associative/map/map.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/multimap/multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/multiset/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/set/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.map/unord.map.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.multimap/unord.multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.multiset/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.set/insert_range.pass.cpp:9 SKIPPED
 std/depr/depr.c.headers/setjmp_h.compile.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ifstream.members/buffered_reads.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ofstream.members/buffered_writes.pass.cpp:9 SKIPPED
@@ -1355,17 +1355,6 @@ std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPE
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
 std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
-
-# These tests also need ADDITIONAL_COMPILE_FLAGS to silence warnings, but only for Clang 18.
-# TRANSITION, Clang 19
-std/containers/associative/map/map.modifiers/insert_range.pass.cpp:9 SKIPPED
-std/containers/associative/multimap/multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
-std/containers/associative/multiset/insert_range.pass.cpp:9 SKIPPED
-std/containers/associative/set/insert_range.pass.cpp:9 SKIPPED
-std/containers/unord/unord.map/unord.map.modifiers/insert_range.pass.cpp:9 SKIPPED
-std/containers/unord/unord.multimap/unord.multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
-std/containers/unord/unord.multiset/insert_range.pass.cpp:9 SKIPPED
-std/containers/unord/unord.set/insert_range.pass.cpp:9 SKIPPED
 
 # This test is marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED

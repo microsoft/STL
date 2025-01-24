@@ -677,7 +677,9 @@ public:
 private:
     atomic<size_t> _Bottom{0}; // modified by only owning thread
     atomic<size_t> _Top{0}; // modified by all threads
+    // clang-format off: clang-format 19 doesn't understand _Guarded_by_ and will damage the following code
     _Guarded_by_(_Segment_lock) _Circular_buffer<_Ty>* _Segment { _Circular_buffer<_Ty>::_New_circular_buffer() };
+    // clang-format on
     mutex _Segment_lock{};
 };
 

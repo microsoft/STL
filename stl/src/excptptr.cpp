@@ -505,8 +505,10 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
         // Alloc memory on stack for exception object. This might cause a stack overflow SEH exception, or another C++
         // exception when copying the C++ exception object. In that case, we just let that become the thrown exception.
 
-#pragma warning(suppress : 6255) //  _alloca indicates failure by raising a stack overflow exception
+#pragma warning(push)
+#pragma warning(disable : 6255) //  _alloca indicates failure by raising a stack overflow exception
         void* _PExceptionBuffer = alloca(_PType->sizeOrOffset);
+#pragma warning(pop)
         _CopyExceptionObject(_PExceptionBuffer, _CppRecord.params.pExceptionObject, _PType
 #if _EH_RELATIVE_TYPEINFO
             ,

@@ -355,7 +355,7 @@ void t_allocator_traits() { // test allocator_traits
             Mytraits::deallocate(myal, pch, 1);
         }
 
-        CHECK(Mytraits::max_size(myal) == (STD size_t)(-1));
+        CHECK(Mytraits::max_size(myal) == static_cast<STD size_t>(-1));
         CHECK(Mytraits::select_on_container_copy_construction(myal) == myal);
     }
 
@@ -386,7 +386,7 @@ void t_allocator_traits() { // test allocator_traits
         CHECK_INT(*pch, 'x');
         Mytraits::destroy(myal, pch);
         Mytraits::deallocate(myal, pch, 1);
-        CHECK(Mytraits::max_size(myal) == (STD size_t)(-1));
+        CHECK(Mytraits::max_size(myal) == static_cast<STD size_t>(-1));
         CHECK(Mytraits::select_on_container_copy_construction(myal) == myal);
     }
 }

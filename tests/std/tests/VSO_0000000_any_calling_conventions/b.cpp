@@ -8,6 +8,8 @@
 
 std::any __cdecl f(std::any a) {
     std::any b = a;
-    { std::any c = std::move(a); }
+    {
+        std::any c = std::move(a);
+    }
     return small_but_nontrivial{};
 }

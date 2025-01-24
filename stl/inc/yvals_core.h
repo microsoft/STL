@@ -929,8 +929,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 18
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 18.0.0 or newer.");
+#if __clang_major__ < 19
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 19.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1942 // Coarse-grained, not inspecting _MSC_FULL_VER

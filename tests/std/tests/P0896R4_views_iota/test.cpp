@@ -346,7 +346,7 @@ static_assert(!CanUnaryViewsIota<ranges::iota_view<ranges::iterator_t<ranges::io
 static_assert(!CanUnaryViewsIota<ranges::iota_view<int, int>>);
 static_assert(!CanUnaryViewsIota<ranges::iota_view<const char*, const char*>>);
 static_assert(!CanUnaryViewsIota<ranges::iota_view<ranges::iterator_t<ranges::iota_view<long long>>,
-                  ranges::iterator_t<ranges::iota_view<long long>>>>);
+        ranges::iterator_t<ranges::iota_view<long long>>>>);
 
 int main() {
     // Validate standard signed integer types

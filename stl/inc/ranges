@@ -1025,8 +1025,8 @@ namespace ranges {
     };
 
     template <class _Wi, class _Bo>
-        requires (!_Integer_like<_Wi> || !_Integer_like<_Bo>
-                     || (_Signed_integer_like<_Wi> == _Signed_integer_like<_Bo>) )
+        requires (
+            !_Integer_like<_Wi> || !_Integer_like<_Bo> || (_Signed_integer_like<_Wi> == _Signed_integer_like<_Bo>) )
     iota_view(_Wi, _Bo) -> iota_view<_Wi, _Bo>;
 
     template <class _Wi, class _Bo>
@@ -3989,8 +3989,8 @@ namespace ranges {
     lazy_split_view(_Rng&&, _Pat&&) -> lazy_split_view<views::all_t<_Rng>, views::all_t<_Pat>>;
 
     template <input_range _Rng>
-    lazy_split_view(
-        _Rng&&, range_value_t<_Rng>) -> lazy_split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
+    lazy_split_view(_Rng&&, range_value_t<_Rng>)
+        -> lazy_split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
 
 #if _HAS_CXX23
     template <class _Rng, class _Pat>
@@ -7157,13 +7157,9 @@ namespace ranges {
         private:
             friend zip_view;
 
-#if defined(__clang__) && __clang_major__ <= 18 // TRANSITION, Clang 19 (was thought to be LLVM-61763)
-        public:
-#else // ^^^ workaround / no workaround vvv
             template <class _Func, class... _OtherViews>
                 requires _Zip_transform_constraints<_Func, _OtherViews...>
             friend class zip_transform_view;
-#endif // ^^^ no workaround ^^^
 
             using _My_tuple = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
@@ -7982,13 +7978,9 @@ namespace ranges {
         private:
             friend adjacent_view;
 
-#if defined(__clang__) && __clang_major__ <= 18 // TRANSITION, Clang 19 (was thought to be LLVM-61763)
-        public:
-#else // ^^^ workaround / no workaround vvv
             template <class _Vw2, class _Fn, size_t _Nx2>
                 requires _Adjacent_transform_constraints<_Vw2, _Fn, _Nx2>
             friend class adjacent_transform_view;
-#endif // ^^^ no workaround ^^^
 
             using _Base          = _Maybe_const<_Const, _Vw>;
             using _Base_iterator = iterator_t<_Base>;

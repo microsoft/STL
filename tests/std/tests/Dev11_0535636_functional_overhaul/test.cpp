@@ -1017,7 +1017,7 @@ void test_reference_wrapper_invocation() {
     pmf = &Thing::product;
     assert(rw_pmf(sp, 3) == 60000);
 
-    int Thing::*pmd = &Thing::m_x;
+    int Thing::* pmd = &Thing::m_x;
     reference_wrapper<int Thing::*> rw_pmd(pmd);
     assert(rw_pmd(*sp) == 1000);
     assert(rw_pmd(sp.get()) == 1000);

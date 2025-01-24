@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if defined(__clang__) && defined(_M_IX86) // TRANSITION, LLVM-56507
+int main() {}
+#else // ^^^ workaround / no workaround vvv
+
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -152,7 +156,6 @@ void test_weird_reference_types() {
         assert(pos == r.end());
     }
 
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     { // Test with mutable rvalue reference type
         constexpr size_t segment_size = 16;
         auto woof                     = []() -> generator<vector<int>&&> {
@@ -169,10 +172,8 @@ void test_weird_reference_types() {
             assert(vec.size() == segment_size);
         }
     }
-#endif // ^^^ no workaround ^^^
 }
 
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
 generator<int> iota_repeater(const int hi, const int depth) {
     if (depth > 0) {
         co_yield ranges::elements_of(iota_repeater(hi, depth - 1));
@@ -244,7 +245,6 @@ void adl_proof_test() {
     }
     assert(i == 42);
 }
-#endif // ^^^ no workaround ^^^
 #endif // ^^^ no workaround ^^^
 
 // Verify behavior with unerased allocator types
@@ -401,7 +401,6 @@ int main() {
     assert(ranges::equal(co_upto(6), views::iota(0, 6)));
     zip_example();
     test_weird_reference_types();
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     recursive_test();
     arbitrary_range_test();
 
@@ -409,10 +408,10 @@ int main() {
     // Verify generation of a range of pointers-to-incomplete
     adl_proof_test();
 #endif // ^^^ no workaround ^^^
-#endif // ^^^ no workaround ^^^
 
     // Allocator tests
     static_allocator_test();
     dynamic_allocator_test();
     pmr_generator_test();
 }
+#endif // ^^^ no workaround ^^^

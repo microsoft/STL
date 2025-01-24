@@ -2033,14 +2033,14 @@ _NODISCARD constexpr _Ty* end(_Ty (&_Array)[_Size]) noexcept {
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto cbegin(const _Container& _Cont)
-    noexcept(noexcept(_STD begin(_Cont))) -> decltype(_STD begin(_Cont)) {
+_NODISCARD constexpr auto cbegin(const _Container& _Cont) noexcept(noexcept(_STD begin(_Cont)))
+    -> decltype(_STD begin(_Cont)) {
     return _STD begin(_Cont);
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto cend(const _Container& _Cont)
-    noexcept(noexcept(_STD end(_Cont))) -> decltype(_STD end(_Cont)) {
+_NODISCARD constexpr auto cend(const _Container& _Cont) noexcept(noexcept(_STD end(_Cont)))
+    -> decltype(_STD end(_Cont)) {
     return _STD end(_Cont);
 }
 
@@ -4123,10 +4123,9 @@ namespace ranges {
     subrange(_It, _Se, _Make_unsigned_like_t<iter_difference_t<_It>>) -> subrange<_It, _Se, subrange_kind::sized>;
 
     template <borrowed_range _Rng>
-    subrange(_Rng&&)
-        -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
-            (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
-                                                                                          : subrange_kind::unsized>;
+    subrange(_Rng&&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
+        (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
+                                                                                      : subrange_kind::unsized>;
 
     template <borrowed_range _Rng>
     subrange(_Rng&&, _Make_unsigned_like_t<range_difference_t<_Rng>>)

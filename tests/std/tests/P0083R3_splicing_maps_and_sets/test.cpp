@@ -155,8 +155,12 @@ void test_node_handle(NodeHandle& nh1, NodeHandle& nh2, Validator1 v1, Validator
     CHECK_EMPTY(NodeHandle{});
 #ifndef _M_CEE // TRANSITION, VSO-1664382
 #if _HAS_CXX20
-#pragma warning(suppress : 4640) // C4640 emitted by MSVC because 'NodeHandle' type has non-trivial dtor
-    { static constinit NodeHandle static_handle{}; }
+#pragma warning(push)
+#pragma warning(disable : 4640) // C4640 emitted by MSVC because 'NodeHandle' type has non-trivial dtor
+    {
+        static constinit NodeHandle static_handle{};
+    }
+#pragma warning(pop)
 #endif // ^^^ _HAS_CXX20 ^^^
 #endif // ^^^ no workaround ^^^
 
@@ -387,7 +391,7 @@ void test_merge_single() {
             }
         }(1);
         auto const pos     = std::as_const(c1).find(key);
-        auto c2            = extended_merge_ctype<C2, Reverse == should_reverse::yes>{{0, 0}, {3, 3}};
+        auto c2            = extended_merge_ctype<C2, (Reverse == should_reverse::yes)>{{0, 0}, {3, 3}};
         allocation_allowed = false;
         assert(c1.get_allocator() == c2.get_allocator());
         if constexpr (Move == should_move::yes) {
