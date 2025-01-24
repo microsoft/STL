@@ -2476,24 +2476,17 @@ static_assert(test_inherited_constructors());
 template <class T, class E>
 struct ambiguating_expected_copy_constructor_caller {
     struct const_lvalue_taker {
-        const_lvalue_taker(const expected<T, E>&) {}
+        const_lvalue_taker(const expected<T, E>&);
     };
 
-    void operator()(expected<T, E>) {}
-    void operator()(const_lvalue_taker) {}
+    void operator()(expected<T, E>);
+    void operator()(const_lvalue_taker);
 };
 
 template <class T, class E>
 struct ambiguating_expected_assignment_source {
-    operator const expected<T, E>&() && {
-        return ex;
-    }
-
-    operator expected<T, E>&&() && {
-        return move(ex);
-    }
-
-    expected<T, E> ex;
+    operator const expected<T, E>&() &&;
+    operator expected<T, E>&&() &&;
 };
 
 struct move_only {
