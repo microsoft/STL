@@ -173,7 +173,7 @@ std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
 
 
-# *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
+# *** INTERACTIONS WITH MSVC THAT UPSTREAM LIKELY WON'T FIX ***
 # These tests set an allocator with a max_size() too small to default construct an unordered container
 # (due to our minimum bucket size).
 std/containers/unord/unord.map/max_size.pass.cpp FAIL
@@ -1338,6 +1338,14 @@ std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/ranges.find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.fold/left_folds.pass.cpp:9 SKIPPED
+std/containers/associative/map/map.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/multimap/multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/multiset/insert_range.pass.cpp:9 SKIPPED
+std/containers/associative/set/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.map/unord.map.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.multimap/unord.multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.multiset/insert_range.pass.cpp:9 SKIPPED
+std/containers/unord/unord.set/insert_range.pass.cpp:9 SKIPPED
 std/depr/depr.c.headers/setjmp_h.compile.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ifstream.members/buffered_reads.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ofstream.members/buffered_writes.pass.cpp:9 SKIPPED
