@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if defined(__clang__) && defined(_M_IX86) // TRANSITION, LLVM-56507
+int main() {}
+#else // ^^^ workaround / no workaround vvv
+
 #include <cassert>
 #include <concepts>
 #include <cstddef>
@@ -46,14 +50,12 @@ generator<Ref, V, Alloc> generate_one() {
     }
 }
 
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
 template <class Ref, class V, class Alloc>
 generator<Ref, V, Alloc> generate_one_recursively() {
     co_yield ranges::elements_of{generate_zero<Ref, V, Alloc>()};
     co_yield ranges::elements_of{generate_one<Ref, V, Alloc>()};
     co_yield ranges::elements_of{generate_zero<Ref, V, Alloc>()};
 }
-#endif // ^^^ no workaround ^^^
 
 template <class Ref, class V = void, class Alloc = void>
 void test_one() {
@@ -103,7 +105,6 @@ void test_one() {
         }
     }
 
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     { // Test pre-incrementation
         auto g = generate_one_recursively<Ref, V, Alloc>();
         auto i = g.begin();
@@ -121,7 +122,6 @@ void test_one() {
 
         static_assert(is_void_v<decltype(i++)>);
     }
-#endif // ^^^ no workaround ^^^
 
     { // Test equal operator
         auto g1 = generate_one<Ref, V, Alloc>();
@@ -172,3 +172,4 @@ int main() {
     test_with_type<string>();
     test_with_type<MoveOnly>();
 }
+#endif // ^^^ no workaround ^^^

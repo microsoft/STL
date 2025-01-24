@@ -63,7 +63,7 @@ class CustomTestFormat(STLTestFormat):
             if noisyProgress:
                 print('Scanning dependencies...')
             cmd = [test.cxx, *test.flags, *test.compileFlags, *clOptions, '/scanDependencies', '.\\',
-                '/shallowScan', # TRANSITION, VSO-2293247 fixed in VS 2022 17.13 Preview 3 (remove /shallowScan)
+                '/shallowScan', # TRANSITION, VSO-2293247 fixed in VS 2022 17.13 Preview 4 (remove /shallowScan)
                 *allHeaders]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 

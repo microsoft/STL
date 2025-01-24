@@ -9,6 +9,8 @@
 
 #undef _ENFORCE_ONLY_CORE_HEADERS // TRANSITION, <xfacet> should be a core header
 
+#define _SILENCE_LOCALE_EMPTY_DEPRECATION_WARNING
+
 #include <crtdbg.h>
 #include <internal_shared.h>
 #include <xatomic.h>

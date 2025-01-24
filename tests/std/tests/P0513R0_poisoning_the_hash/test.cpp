@@ -52,7 +52,7 @@ constexpr bool standard_hash_enabled() {
         && is_trivially_move_constructible_v<hash<T>> //
         && is_trivially_copy_assignable_v<hash<T>> //
         && is_trivially_move_assignable_v<hash<T>> //
-        && is_trivial_v<hash<T>> // as a consequence of the above
+        && is_trivially_copyable_v<hash<T>> //
         && is_same_v<typename hash<T>::argument_type, T> //
         && is_same_v<typename hash<T>::result_type, size_t> //
         && (noexcept(hash<T>{}(declval<const T&>())) == NoExcept) //

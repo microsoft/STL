@@ -1344,9 +1344,10 @@ public:
         "Bad char_traits for basic_string_view; N4950 [string.view.template.general]/1 "
         "\"The program is ill-formed if traits::char_type is not the same type as charT.\"");
 
-    static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
-        "The character type of basic_string_view must be a non-array trivial standard-layout type. See N4950 "
-        "[strings.general]/1.");
+    static_assert(!is_array_v<_Elem> && is_trivially_copyable_v<_Elem> && is_trivially_default_constructible_v<_Elem>
+                      && is_standard_layout_v<_Elem>,
+        "The character type of basic_string_view must be a non-array trivially copyable standard-layout type T where "
+        "is_trivially_default_constructible_v<T> is true. See N5001 [strings.general]/1.");
 
     using traits_type            = _Traits;
     using value_type             = _Elem;

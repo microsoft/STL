@@ -252,7 +252,8 @@ struct instantiator {
 constexpr bool test_in_value_result() {
     using ranges::in_value_result;
     static_assert(is_aggregate_v<in_value_result<int, int>>);
-    static_assert(is_trivial_v<in_value_result<int, int>>);
+    static_assert(is_trivially_copyable_v<in_value_result<int, int>>);
+    static_assert(is_trivially_default_constructible_v<in_value_result<int, int>>);
 
     in_value_result<int*, int> res = {nullptr, 6};
     { // Validate binding

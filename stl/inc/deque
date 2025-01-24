@@ -1012,7 +1012,7 @@ public:
 
         // deallocate unused blocks, traversing over the circular buffer until the first used block index
         for (auto _Block_idx = _First_unused_block_idx; _Block_idx != _First_used_block_idx;
-             _Block_idx      = static_cast<size_type>((_Block_idx + 1) & _Mask)) {
+            _Block_idx       = static_cast<size_type>((_Block_idx + 1) & _Mask)) {
             auto& _Block_ptr = _Map()[static_cast<_Map_difference_type>(_Block_idx)];
             if (_Block_ptr != nullptr) {
                 _Getal().deallocate(_Block_ptr, _Block_size);

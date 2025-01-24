@@ -282,9 +282,9 @@ inline constexpr unsigned char _Classify_category<strong_ordering> = _Comparison
 
 _EXPORT_STD template <class... _Types>
 using common_comparison_category_t =
-    conditional_t<(_Classify_category<_Types...> & _Comparison_category_none) != 0, void,
-        conditional_t<(_Classify_category<_Types...> & _Comparison_category_partial) != 0, partial_ordering,
-            conditional_t<(_Classify_category<_Types...> & _Comparison_category_weak) != 0, weak_ordering,
+    conditional_t<((_Classify_category<_Types...> & _Comparison_category_none) != 0), void,
+        conditional_t<((_Classify_category<_Types...> & _Comparison_category_partial) != 0), partial_ordering,
+            conditional_t<((_Classify_category<_Types...> & _Comparison_category_weak) != 0), weak_ordering,
                 strong_ordering>>>;
 
 _EXPORT_STD template <class... _Types>

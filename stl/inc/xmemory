@@ -1663,7 +1663,9 @@ _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _No
 #if 0 // TRANSITION, _HAS_CXX26
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX26
-        { return _STD _Copy_memmove(_First, _Last, _Dest); }
+        {
+            return _STD _Copy_memmove(_First, _Last, _Dest);
+        }
     }
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
     for (; _First != _Last; ++_First) {
@@ -1934,7 +1936,9 @@ _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _No
 #if 0 // TRANSITION, _HAS_CXX26
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX26
-        { return _STD _Copy_memmove(_First, _Last, _Dest); }
+        {
+            return _STD _Copy_memmove(_First, _Last, _Dest);
+        }
     }
 
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};

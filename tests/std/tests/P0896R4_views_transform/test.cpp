@@ -879,6 +879,13 @@ void test_gh_3014() { // COMPILE-ONLY
     [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
 }
 
+void test_lwg_4027() { // COMPILE-ONLY
+    auto r     = views::single(0) | views::transform([](int) { return 0; });
+    using CIt1 = decltype(ranges::cbegin(r));
+    using CIt2 = decltype(cbegin(r));
+    static_assert(same_as<CIt1, CIt2>);
+}
+
 int main() {
     { // Validate copyable views
         constexpr span<const int> s{some_ints};

@@ -110,16 +110,18 @@ namespace _Gen_detail {
         }
 
         template <class _Alloc2, class... _Args>
-            requires convertible_to<const _Alloc2&, _Proto_allocator>
         _NODISCARD_RAW_PTR_ALLOC static void* operator new(
             const size_t _Size, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
+            static_assert(convertible_to<const _Alloc2&, _Proto_allocator>,
+                "Allocator argument must be convertible to the allocator type (N5001 [coro.generator.promise]/18)");
             return _Allocate(static_cast<_Alloc>(static_cast<_Proto_allocator>(_Al)), _Size);
         }
 
         template <class _This, class _Alloc2, class... _Args>
-            requires convertible_to<const _Alloc2&, _Proto_allocator>
         _NODISCARD_RAW_PTR_ALLOC static void* operator new(
             const size_t _Size, const _This&, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
+            static_assert(convertible_to<const _Alloc2&, _Proto_allocator>,
+                "Allocator argument must be convertible to the allocator type (N5001 [coro.generator.promise]/18)");
             return _Allocate(static_cast<_Alloc>(static_cast<_Proto_allocator>(_Al)), _Size);
         }
 
@@ -287,11 +289,10 @@ namespace _Gen_detail {
         template <_RANGES input_range _Rng, class _Alloc>
             requires convertible_to<_RANGES range_reference_t<_Rng>, _Yielded>
         _NODISCARD auto yield_value(_RANGES elements_of<_Rng, _Alloc> _Elem) {
-            using _Vty              = _RANGES range_value_t<_Rng>;
-            using _Nested_awaitable = _Nested_awaitable_provider<_Yielded, _Vty, _Alloc>::_Awaitable;
+            using _Nested_awaitable = _Nested_awaitable_provider<_Yielded, void, _Alloc>::_Awaitable;
 
             auto _Lambda = [](allocator_arg_t, _Alloc, _RANGES iterator_t<_Rng> _It,
-                               const _RANGES sentinel_t<_Rng> _Se) -> generator<_Yielded, _Vty, _Alloc> {
+                               const _RANGES sentinel_t<_Rng> _Se) -> generator<_Yielded, void, _Alloc> {
                 for (; _It != _Se; ++_It) {
                     co_yield static_cast<_Yielded>(*_It);
                 }

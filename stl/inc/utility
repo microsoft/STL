@@ -319,7 +319,7 @@ struct pair { // store a pair of values
                      is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
 #endif // ^^^ no workaround ^^^
     constexpr explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
-                       is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>) pair(_Other&& _Right)
+        is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>) pair(_Other&& _Right)
         noexcept(is_nothrow_constructible_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>
                  && is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
         : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {

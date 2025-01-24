@@ -580,7 +580,7 @@ public:
 };
 
 _EXPORT_STD template <class _Rx, class _Ty>
-_NODISCARD _CONSTEXPR20 _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::*_Pm) noexcept {
+_NODISCARD _CONSTEXPR20 _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::* _Pm) noexcept {
     return _Mem_fn<_Rx _Ty::*>(_Pm);
 }
 
@@ -2341,9 +2341,8 @@ _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
 template <size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class... _Unbound>
 constexpr auto _Call_back_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl, _Unbound&&... _Unbargs)
     noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
-        _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)))
-        -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
-            _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)) {
+        _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...))) -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj),
+        _STD forward<_Unbound>(_Unbargs)..., _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)) {
     return _STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
         _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...);
 }

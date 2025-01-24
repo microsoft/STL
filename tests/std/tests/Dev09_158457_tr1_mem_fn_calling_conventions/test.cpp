@@ -200,7 +200,7 @@ STATIC_ASSERT(is_function_v<decltype(z)>);
 // non-viable.)
 
 template <typename R>
-int use_mem_fn(R Cat::*pmf) {
+int use_mem_fn(R Cat::* pmf) {
     Cat cat;
     return mem_fn(pmf)(cat);
 }
