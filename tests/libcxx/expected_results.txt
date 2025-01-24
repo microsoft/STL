@@ -226,49 +226,50 @@ std/depr/depr.c.headers/uchar_h.compile.pass.cpp FAIL
 std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
 # P0429R9 <flat_map>
-std/containers/container.adaptors/flat.map.syn/sorted_unique.pass.cpp FAIL
+# FIXME! Investigate these failures before merging!
 std/containers/container.adaptors/flat.map/flat.map.access/at_transparent.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.access/at.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.access/index_key.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.access/index_rv_key.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.access/index_transparent.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.capacity/empty.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.capacity/max_size.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.capacity/size.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/alloc.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/assign_initializer_list.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/compare.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/containers.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/copy_alloc.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/copy_alloc.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/copy_alloc.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.addressof.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/copy.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/deduct_pmr.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/deduct_pmr.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/deduct_pmr.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/deduct.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/default_noexcept.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/default.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/dtor_noexcept.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/initializer_list.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/initializer_list.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_alloc.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_clears.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_noexcept.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_assign.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_noexcept.pass.cpp:2 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/move_assign.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/move_assign.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_exceptions.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_noexcept.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/pmr.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/range.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/sorted_container.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/sorted_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/sorted_iter_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.erasure/erase_if_exceptions.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.erasure/erase_if.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/sorted_container.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/sorted_container.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/sorted_initializer_list.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/sorted_initializer_list.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/sorted_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/sorted_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.erasure/erase_if_exceptions.pass.cpp:2 FAIL
+std/containers/container.adaptors/flat.map/flat.map.erasure/erase_if.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.erasure/erase_if.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.iterators/iterator_comparison.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.iterators/iterator_concept_conformance.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.iterators/iterator.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.iterators/range_concept_conformance.compile.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.iterators/reverse_iterator.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/clear.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/emplace_hint.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/emplace.pass.cpp FAIL
@@ -294,7 +295,6 @@ std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_free.pass.cpp
 std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_member.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/try_emplace_transparent.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/try_emplace.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.observers/comp.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.observers/keys_values.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.operations/contains_transparent.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.operations/contains.pass.cpp FAIL
@@ -310,7 +310,6 @@ std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound_trans
 std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/incomplete_type.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/op_compare.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/types.compile.pass.cpp FAIL
 
 # P0533R9 constexpr For <cmath> And <cstdlib>
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
