@@ -1917,6 +1917,16 @@ void test_gh_3955() {
     assert(s == t);
 }
 
+void test_gh_5251() {
+    // GH-5251 <string>: ASan annotations do not prevent writing to allocated
+    // but uninitialized basic_string memory
+    std::basic_string<char> myString;
+    myString.reserve(100);
+    char* data = &myString[0];
+    data[50] = 'A';
+    // FIXME: How do I declare this as an expected failure?
+}
+
 int main() {
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
@@ -1930,4 +1940,5 @@ int main() {
     test_DevCom_10109507();
     test_gh_3883();
     test_gh_3955();
+    test_gh_5251();
 }
