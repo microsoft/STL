@@ -412,7 +412,8 @@ set PATH=C:\STL\out\x64\out\bin\amd64;%PATH%
 ## Running Tests With Address Sanitizer (ASan)
 
 You don't need any extra steps to run with test code and the code in STL headers instrumented with [ASan][].
-The test matrices include both ASan and non-ASan configurations.
+The test matrices include both ASan and non-ASan configurations if you don't pass `-Dtags=ASAN` or `-Dnotags=ASAN`
+to exclude one or the other.
 
 However, to instrument the separately-compiled code (the DLL, the satellites, the [Import Library][] - everything that's
 in `/stl/src`), you need to build the STL with ASan. Change the build steps to add `-DSTL_ASAN_BUILD=ON`:
@@ -424,6 +425,8 @@ cmake --build --preset x64
 
 ASan-instrumented STL binaries require that the executable be instrumented as well, so you'll have to skip the non-ASan
 configurations by passing `-Dtags=ASAN` to `stl-lit.py`:
+
+(This example assumes that your current directory is `C:\Dev\STL\out\x64`.)
 
 ```
 python tests\utils\stl-lit\stl-lit.py ..\..\tests\std\tests\VSO_0000000_vector_algorithms -Dtags=ASAN -v
