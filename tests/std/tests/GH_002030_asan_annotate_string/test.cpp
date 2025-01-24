@@ -1882,7 +1882,7 @@ void run_asan_disablement_test() {
     myString.reserve(100);
 
     CharType* data = &myString[0]; // Get a mutable pointer to the string's data
-    data[50] = CharType{'A'}; // TODO: this isn't failing in ASAn due to a newly found bug. Merge that bug fix first.
+    data[50] = CharType{'A'}; // TODO: this isn't failing due to bug: https://github.com/microsoft/STL/issues/5251
 
     // TODO: is it possible to add a 'negative' test case here? One where ASan expectedly fails?
 }
