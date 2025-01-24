@@ -304,7 +304,7 @@ public:
         }
     }
 
-    template <class _Uty = _Ty>
+    template <class _Uty = remove_cv_t<_Ty>>
         requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected>
                      && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
                      && (!is_same_v<remove_cv_t<_Ty>, bool>
@@ -469,7 +469,7 @@ public:
                   && _Trivially_move_constructible_assignable_destructible<_Err>
     = default;
 
-    template <class _Uty = _Ty>
+    template <class _Uty = remove_cv_t<_Ty>>
         requires (!is_same_v<remove_cvref_t<_Uty>, expected> && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
                   && is_constructible_v<_Ty, _Uty> && is_assignable_v<_Ty&, _Uty>
                   && (is_nothrow_constructible_v<_Ty, _Uty> || is_nothrow_move_constructible_v<_Ty>
@@ -730,32 +730,38 @@ public:
         return _STD move(_Unexpected);
     }
 
-    template <class _Uty>
-    _NODISCARD constexpr _Ty value_or(_Uty&& _Other) const& noexcept(
-        is_nothrow_copy_constructible_v<_Ty> && is_nothrow_convertible_v<_Uty, _Ty>) /* strengthened */ {
-        static_assert(
-            is_copy_constructible_v<_Ty>, "is_copy_constructible_v<T> must be true. (N4950 [expected.object.obs]/18)");
-        static_assert(
-            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4950 [expected.object.obs]/18)");
+    template <class _Uty = remove_cv_t<_Ty>>
+    _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Uty&& _Other) const& noexcept(
+        is_nothrow_convertible_v<const _Ty&, remove_cv_t<_Ty>>
+        && is_nothrow_convertible_v<_Uty, remove_cv_t<_Ty>>) /* strengthened */ {
+        static_assert(is_convertible_v<const _Ty&, remove_cv_t<_Ty>>,
+            "is_convertible_v<const T&, remove_cv_t<T>> must be true. "
+            "(N5001 [expected.object.obs]/18 as modified by LWG-3424)");
+        static_assert(is_convertible_v<_Uty, remove_cv_t<_Ty>>,
+            "is_convertible_v<U, remove_cv_t<T>> must be true. "
+            "(N5001 [expected.object.obs]/18 as modified by LWG-3424)");
 
         if (_Has_value) {
             return _Value;
         } else {
-            return static_cast<_Ty>(_STD forward<_Uty>(_Other));
+            return static_cast<remove_cv_t<_Ty>>(_STD forward<_Uty>(_Other));
         }
     }
-    template <class _Uty>
-    _NODISCARD constexpr _Ty value_or(_Uty&& _Other) && noexcept(
-        is_nothrow_move_constructible_v<_Ty> && is_nothrow_convertible_v<_Uty, _Ty>) /* strengthened */ {
-        static_assert(
-            is_move_constructible_v<_Ty>, "is_move_constructible_v<T> must be true. (N4950 [expected.object.obs]/20)");
-        static_assert(
-            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4950 [expected.object.obs]/20)");
+    template <class _Uty = remove_cv_t<_Ty>>
+    _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Uty&& _Other) && noexcept(
+        is_nothrow_convertible_v<_Ty, remove_cv_t<_Ty>>
+        && is_nothrow_convertible_v<_Uty, remove_cv_t<_Ty>>) /* strengthened */ {
+        static_assert(is_convertible_v<_Ty, remove_cv_t<_Ty>>,
+            "is_convertible_v<T, remove_cv_t<T>> must be true. "
+            "(N5001 [expected.object.obs]/20 as modified by LWG-3424)");
+        static_assert(is_convertible_v<_Uty, remove_cv_t<_Ty>>,
+            "is_convertible_v<U, remove_cv_t<T>> must be true. "
+            "(N5001 [expected.object.obs]/20 as modified by LWG-3424)");
 
         if (_Has_value) {
             return _STD move(_Value);
         } else {
-            return static_cast<_Ty>(_STD forward<_Uty>(_Other));
+            return static_cast<remove_cv_t<_Ty>>(_STD forward<_Uty>(_Other));
         }
     }
 

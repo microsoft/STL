@@ -878,7 +878,7 @@ private:
         const size_t _Offset_digit_end = _Parse_hex ? _Offset_hex_digit_end : _Offset_dec_digit_end;
         if (_Grouping.empty()) {
             for (size_t _Idx; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
-                 _Seendigit = true, (void) ++_First) {
+                _Seendigit = true, (void) ++_First) {
                 if (_Significant >= _Max_sig_dig) {
                     ++_Power_of_rep_base; // just scale by 10 or 16
                     if (_Idx > 0) {
@@ -977,7 +977,7 @@ private:
         }
 
         for (size_t _Idx; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_digit_end;
-             _Seendigit = true, (void) ++_First) {
+            _Seendigit = true, (void) ++_First) {
             if (_Significant < _Max_sig_dig) { // save a significant fraction digit
                 *_Ptr++ = _Src[_Idx];
                 ++_Significant;
@@ -1018,7 +1018,7 @@ private:
             }
 
             for (size_t _Idx; _First != _Last && (_Idx = _STD _Find_elem(_Atoms, *_First)) < _Offset_dec_digit_end;
-                 _Seendigit = true, (void) ++_First) {
+                _Seendigit = true, (void) ++_First) {
                 if (_Exponent_part < PTRDIFF_MAX / 10
                     || (_Exponent_part == PTRDIFF_MAX / 10
                         && static_cast<ptrdiff_t>(_Idx) <= PTRDIFF_MAX % 10)) { // save a significant exponent digit
@@ -1091,7 +1091,7 @@ private:
 
             char* const _Rev_begin = _Ptr;
             for (ptrdiff_t _Exponent_part_abs = _STD abs(_Exponent_part); _Exponent_part_abs != 0;
-                 _Exponent_part_abs /= 10) {
+                _Exponent_part_abs /= 10) {
                 *_Ptr++ = static_cast<char>('0' + _Exponent_part_abs % 10);
             }
             _STD reverse(_Rev_begin, _Ptr);

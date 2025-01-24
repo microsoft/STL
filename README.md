@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4993][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N5001][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -141,7 +141,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.13 Preview 2 or later.
+1. Install Visual Studio 2022 17.13 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
@@ -160,7 +160,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.13 Preview 2 or later.
+1. Install Visual Studio 2022 17.13 Preview 3 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
@@ -412,7 +412,8 @@ set PATH=C:\STL\out\x64\out\bin\amd64;%PATH%
 ## Running Tests With Address Sanitizer (ASan)
 
 You don't need any extra steps to run with test code and the code in STL headers instrumented with [ASan][].
-The test matrices include both ASan and non-ASan configurations.
+The test matrices include both ASan and non-ASan configurations if you don't pass `-Dtags=ASAN` or `-Dnotags=ASAN`
+to exclude one or the other.
 
 However, to instrument the separately-compiled code (the DLL, the satellites, the [Import Library][] - everything that's
 in `/stl/src`), you need to build the STL with ASan. Change the build steps to add `-DSTL_ASAN_BUILD=ON`:
@@ -424,6 +425,8 @@ cmake --build --preset x64
 
 ASan-instrumented STL binaries require that the executable be instrumented as well, so you'll have to skip the non-ASan
 configurations by passing `-Dtags=ASAN` to `stl-lit.py`:
+
+(This example assumes that your current directory is `C:\Dev\STL\out\x64`.)
 
 ```
 python tests\utils\stl-lit\stl-lit.py ..\..\tests\std\tests\VSO_0000000_vector_algorithms -Dtags=ASAN -v
@@ -565,7 +568,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4993]: https://wg21.link/N4993
+[N5001]: https://wg21.link/N5001
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"

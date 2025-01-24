@@ -499,17 +499,14 @@ _NODISCARD constexpr decltype(auto) _Variant_raw_get(_Storage&& _Obj) noexcept {
         return _STD _Variant_raw_get<_Idx - 8>(
             static_cast<_Storage&&>(_Obj)._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail);
     } else if constexpr (_Idx < 32) {
-        return _STD _Variant_raw_get<_Idx - 16>(
-            static_cast<_Storage&&>(_Obj)
+        return _STD _Variant_raw_get<_Idx - 16>(static_cast<_Storage&&>(_Obj)
                 ._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail);
     } else if constexpr (_Idx < 64) {
-        return _STD _Variant_raw_get<_Idx - 32>(
-            static_cast<_Storage&&>(_Obj)
+        return _STD _Variant_raw_get<_Idx - 32>(static_cast<_Storage&&>(_Obj)
                 ._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail
                 ._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail);
     } else { // _Idx >= 64
-        return _STD _Variant_raw_get<_Idx - 64>(
-            static_cast<_Storage&&>(_Obj)
+        return _STD _Variant_raw_get<_Idx - 64>(static_cast<_Storage&&>(_Obj)
                 ._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail
                 ._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail
                 ._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail

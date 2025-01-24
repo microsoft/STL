@@ -269,7 +269,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         static_assert(CanMemberCEnd<const R>
                       == (forward_range<const V> && is_reference_v<range_reference_t<const V>>
                           && input_range<range_reference_t<const V>>) );
-        const same_as<const_sentinel_t<R>> auto cs = r.end();
+        const auto cs = r.end();
         if (!is_empty) {
             if constexpr (bidirectional_range<R> && common_range<R>) {
                 assert(*prev(cs) == *prev(end(expected)));

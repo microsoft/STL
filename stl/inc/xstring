@@ -538,9 +538,10 @@ private:
         "N4950 [string.require]/3 requires that the supplied "
         "char_traits character type match the string's character type.");
 
-    static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
-        "The character type of basic_string must be a non-array trivial standard-layout type. See N4950 "
-        "[strings.general]/1.");
+    static_assert(!is_array_v<_Elem> && is_trivially_copyable_v<_Elem> && is_trivially_default_constructible_v<_Elem>
+                      && is_standard_layout_v<_Elem>,
+        "The character type of basic_string must be a non-array trivially copyable standard-layout type T where "
+        "is_trivially_default_constructible_v<T> is true. See N5001 [strings.general]/1.");
 
 public:
     using traits_type    = _Traits;
@@ -573,12 +574,13 @@ private:
     //   _String_val::_Bx::_Ptr (type is pointer)
     //   _String_val::_Mysize   (type is size_type)
     //   _String_val::_Myres    (type is size_type)
-    // N4950 [strings.general]/1 says _Elem must be trivial standard-layout, so memcpy is safe.
+    // N5001 [strings.general]/1 says _Elem must be trivially copyable standard-layout, so memcpy is safe.
     // We need to ask if pointer is safe to memcpy.
     // size_type must be an unsigned integral type so memcpy is safe.
     // We also need to disable memcpy if the user has supplied _Traits, since
     //   they can observe traits::assign and similar.
-    static constexpr bool _Can_memcpy_val = _Is_specialization_v<_Traits, char_traits> && is_trivial_v<pointer>;
+    static constexpr bool _Can_memcpy_val =
+        _Is_specialization_v<_Traits, char_traits> && is_trivially_copyable_v<pointer>;
     // This offset skips over the _Container_base members, if any
     static constexpr size_t _Memcpy_val_offset = _Size_after_ebco_v<_Container_base>;
     static constexpr size_t _Memcpy_val_size   = sizeof(_Scary_val) - _Memcpy_val_offset;
@@ -3081,13 +3083,13 @@ private:
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
-basic_string(
-    _Iter, _Iter, _Alloc = _Alloc()) -> basic_string<_Iter_value_t<_Iter>, char_traits<_Iter_value_t<_Iter>>, _Alloc>;
+basic_string(_Iter, _Iter, _Alloc = _Alloc())
+    -> basic_string<_Iter_value_t<_Iter>, char_traits<_Iter_value_t<_Iter>>, _Alloc>;
 
 template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
-explicit basic_string(
-    basic_string_view<_Elem, _Traits>, const _Alloc& = _Alloc()) -> basic_string<_Elem, _Traits, _Alloc>;
+explicit basic_string(basic_string_view<_Elem, _Traits>, const _Alloc& = _Alloc())
+    -> basic_string<_Elem, _Traits, _Alloc>;
 
 template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
@@ -3096,8 +3098,8 @@ basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Gui
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
-basic_string(from_range_t, _Rng&&,
-    _Alloc = _Alloc()) -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
+basic_string(from_range_t, _Rng&&, _Alloc = _Alloc())
+    -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23
 #endif // _HAS_CXX17
 

@@ -214,16 +214,17 @@ void test_assign() {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wself-move"
 #endif // __clang__
+#pragma warning(push)
+#pragma warning(disable : 26800) // use a moved-from object
     {
         test_function_t f1{small_callable{}};
         test_function_t f2{large_callable{}};
         f1 = move(f1); // deliberate self-move as a test case
-#pragma warning(suppress : 26800) // use a moved-from object
         assert(f1(23, x) == 38);
         f2 = move(f2); // deliberate self-move as a test case
-#pragma warning(suppress : 26800) // use a moved-from object
         assert(f2(23, x) == 39);
     }
+#pragma warning(pop)
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
@@ -294,9 +295,11 @@ void test_empty() {
     assert(nullptr == no_callable);
 
     test_function_t no_callable_moved = move(no_callable);
-#pragma warning(suppress : 26800) // use a moved-from object
+#pragma warning(push)
+#pragma warning(disable : 26800) // use a moved-from object
     assert(!no_callable);
     assert(no_callable == nullptr);
+#pragma warning(pop)
     assert(!no_callable_moved);
     assert(no_callable_moved == nullptr);
 }
@@ -339,9 +342,11 @@ void test_inner() {
     move_only_function<short(long, long)> f1(nullptr);
     move_only_function<int(int, int)> f2 = move(f1);
     assert(!f2);
-#pragma warning(suppress : 26800) // use a moved-from object
+#pragma warning(push)
+#pragma warning(disable : 26800) // use a moved-from object
     f2 = move(f1);
     assert(!f1);
+#pragma warning(pop)
 }
 
 
@@ -498,8 +503,10 @@ static_assert(is_same_v<move_only_function<int(char*) const && noexcept>::result
 
 bool fail_allocations = false;
 
-#pragma warning(suppress : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
+#pragma warning(push)
+#pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 void* operator new(size_t size) {
+#pragma warning(pop)
     if (fail_allocations) {
         throw bad_alloc{};
     }

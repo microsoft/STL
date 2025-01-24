@@ -352,19 +352,12 @@ namespace filesystem {
 
     inline constexpr _Is_slash_oper _Is_slash{};
 
-    template <class _Ty>
-    _NODISCARD _Ty _Unaligned_load(const void* _Ptr) { // load a _Ty from _Ptr
-        static_assert(is_trivial_v<_Ty>, "Unaligned loads require trivial types");
-        _Ty _Tmp;
-        _CSTD memcpy(&_Tmp, _Ptr, sizeof(_Tmp));
-        return _Tmp;
-    }
-
     _NODISCARD inline bool _Is_drive_prefix(const wchar_t* const _First) {
         // test if _First points to a prefix of the form X:
         // pre: _First points to at least 2 wchar_t instances
         // pre: Little endian
-        auto _Value = _Unaligned_load<unsigned int>(_First);
+        unsigned int _Value;
+        _CSTD memcpy(&_Value, _First, sizeof(_Value)); // load from possibly unaligned address
         _Value &= 0xFFFF'FFDFu; // transform lowercase drive letters into uppercase ones
         _Value -= (static_cast<unsigned int>(L':') << (sizeof(wchar_t) * CHAR_BIT)) | L'A';
         return _Value < 26;

@@ -710,8 +710,7 @@ void test_set_or_multiset() {
 }
 
 template <template <typename K, typename V, typename H = hash<K>, typename P = equal_to<K>,
-    typename A = allocator<pair<const K, V>>>
-    typename UM>
+    typename A = allocator<pair<const K, V>>> typename UM>
 void test_unordered_map_or_unordered_multimap() {
     using Purr          = pair<long, char>;
     using CPurr         = pair<const long, char>;

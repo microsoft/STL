@@ -147,7 +147,6 @@ void test_simple_formatting() {
     assert(output_string == STR("true a 0 0 0 s sv 0x0 0x0"));
 
     // Test formatting basic_string(_view) with non-Standard traits_type
-    // TRANSITION, LLVM-54051, DevCom-10255929, should also test class template argument deduction for alias templates
     output_string.clear();
     format_to(move_only_back_inserter{output_string}, STR("{} {} {} {} {} {} {} {} {} {}"), true, charT{'a'}, 0, 0u,
         0.0, STR("s"), alternative_basic_string<charT>{STR("str")}, alternative_basic_string_view<charT>{STR("sv")},

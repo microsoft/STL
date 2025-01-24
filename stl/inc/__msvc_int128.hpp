@@ -23,7 +23,8 @@
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 #define _TEMPLATE_CLASS_INTEGRAL(type) template <class type, enable_if_t<is_integral_v<type>, int> = 0>
 #define _ZERO_OR_NO_INIT \
-    {} // Trivial default initialization is not allowed in constexpr functions before C++20.
+    {                    \
+    } // Trivial default initialization is not allowed in constexpr functions before C++20.
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 #pragma pack(push, _CRT_PACKING)

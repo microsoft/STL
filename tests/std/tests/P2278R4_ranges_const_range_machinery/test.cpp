@@ -127,8 +127,8 @@ namespace test_prvalue_range {
     static_assert(CanRangeConstIterator<Rng>);
     static_assert(CanRangeConstSentinel<Rng>);
     static_assert(CanRangeConstReference<Rng>);
-    static_assert(same_as<ranges::const_iterator_t<Rng>, const_iterator<ranges::iterator_t<Rng>>>);
-    static_assert(same_as<ranges::const_sentinel_t<Rng>, const_iterator<ranges::iterator_t<Rng>>>);
+    static_assert(!same_as<ranges::const_iterator_t<Rng>, const_iterator<ranges::iterator_t<Rng>>>);
+    static_assert(!same_as<ranges::const_sentinel_t<Rng>, const_iterator<ranges::iterator_t<Rng>>>);
     static_assert(same_as<ranges::range_const_reference_t<Rng>, int>);
     static_assert(ranges::constant_range<Rng>);
 

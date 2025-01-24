@@ -2246,7 +2246,8 @@ struct _NODISCARD _Reverse_destroy_multidimensional_n_guard {
 
 template <class _Ty, size_t _Size>
 void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size]) {
-    if constexpr (is_trivial_v<_Ty>) {
+    using _Item = remove_all_extents_t<_Ty>;
+    if constexpr (conjunction_v<is_trivially_copy_constructible<_Item>, is_trivially_destructible<_Item>>) {
         _STD _Copy_memmove_n(_In, _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
@@ -2610,7 +2611,8 @@ struct _NODISCARD _Reverse_destroy_multidimensional_n_al_guard {
 template <class _Ty, size_t _Size, class _Alloc>
 void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size], _Alloc& _Al) {
     using _Item = remove_all_extents_t<_Ty>;
-    if constexpr (conjunction_v<is_trivial<_Ty>, _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
+    if constexpr (conjunction_v<is_trivially_copy_constructible<_Item>, is_trivially_destructible<_Item>,
+                      _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
         _STD _Copy_memmove_n(_In, _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
@@ -3329,9 +3331,17 @@ template <class _Dx2>
 using _Unique_ptr_enable_default_t =
     enable_if_t<conjunction_v<negation<is_pointer<_Dx2>>, is_default_constructible<_Dx2>>, int>;
 
+template <class, class = void>
+constexpr bool _Can_form_pointer = false;
+template <class _Ty>
+constexpr bool _Can_form_pointer<_Ty, void_t<_Ty*>> = true;
+
 _EXPORT_STD template <class _Ty, class _Dx /* = default_delete<_Ty> */>
 class unique_ptr { // non-copyable pointer to an object
 public:
+    static_assert(_Can_form_pointer<_Ty>,
+        "unique_ptr<T, D> requires T* to be a valid type (N5001 [unique.ptr.single.general]/1).");
+
     using pointer      = typename _Get_deleter_pointer_type<_Ty, remove_reference_t<_Dx>>::type;
     using element_type = _Ty;
     using deleter_type = _Dx;

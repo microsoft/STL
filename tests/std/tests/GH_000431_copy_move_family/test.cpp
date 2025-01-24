@@ -37,7 +37,8 @@ struct TrivialStruct {
         return i == right.i;
     }
 };
-STATIC_ASSERT(is_trivial_v<TrivialStruct>);
+STATIC_ASSERT(is_trivially_copyable_v<TrivialStruct>);
+STATIC_ASSERT(is_trivially_default_constructible_v<TrivialStruct>);
 
 struct TriviallyCopyableStruct {
     int i;
@@ -49,7 +50,7 @@ struct TriviallyCopyableStruct {
     }
 };
 STATIC_ASSERT(is_trivially_copyable_v<TriviallyCopyableStruct>);
-STATIC_ASSERT(!is_trivial_v<TriviallyCopyableStruct>);
+STATIC_ASSERT(!is_trivially_default_constructible_v<TriviallyCopyableStruct>);
 
 struct TriviallyMovableStruct {
     int i;
@@ -65,7 +66,7 @@ struct TriviallyMovableStruct {
     }
 };
 STATIC_ASSERT(is_trivially_copyable_v<TriviallyMovableStruct>);
-STATIC_ASSERT(!is_trivial_v<TriviallyMovableStruct>);
+STATIC_ASSERT(!is_trivially_default_constructible_v<TriviallyMovableStruct>);
 
 enum int_enum : int {};
 enum char_enum : char {};
