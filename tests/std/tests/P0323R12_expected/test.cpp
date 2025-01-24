@@ -2505,9 +2505,9 @@ static_assert(
 #ifndef __EDG__ // TRANSITION, VSO-1601179
 static_assert(!is_assignable_v<expected<int, char>&, ambiguating_expected_assignment_source<int, char>>);
 static_assert(!is_assignable_v<expected<void, int>&, ambiguating_expected_assignment_source<void, int>>);
-#endif // ^^^ no workaround ^^^
 static_assert(!is_assignable_v<expected<move_only, char>&, ambiguating_expected_assignment_source<move_only, char>>);
 static_assert(!is_assignable_v<expected<void, move_only>&, ambiguating_expected_assignment_source<void, move_only>>);
+#endif // ^^^ no workaround ^^^
 
 static_assert(test_lwg_3886());
 
