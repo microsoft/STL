@@ -15,12 +15,13 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
-#include <test_death.hpp>
 #include <iterator>
 #include <memory>
 #include <new>
 #include <sstream>
 #include <string>
+
+#include <test_death.hpp>
 #if _HAS_CXX17
 #include <string_view>
 #endif // _HAS_CXX17
@@ -1924,15 +1925,15 @@ void test_gh_5251() {
     std::basic_string<char> myString;
     myString.reserve(100);
     char* data = &myString[0];
-    data[50] = 'A'; // ASan should fire!
+    data[50]   = 'A'; // ASan should fire!
 }
 
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec([] {
         run_allocator_matrix<char>();
-    #ifdef __cpp_char8_t
+#ifdef __cpp_char8_t
         run_allocator_matrix<char8_t>();
-    #endif // __cpp_char8_t
+#endif // __cpp_char8_t
         run_allocator_matrix<char16_t>();
         run_allocator_matrix<char32_t>();
         run_allocator_matrix<wchar_t>();
