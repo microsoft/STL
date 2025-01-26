@@ -4434,7 +4434,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
         _Next();
     }
 
-    _Nfa._Add_rep(_Min, _Max, _Greedy);
+    _Nfa._Add_rep2(_Min, _Max, _Greedy);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
