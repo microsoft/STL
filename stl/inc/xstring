@@ -2391,10 +2391,10 @@ public:
         auto _Arg_size                  = _New_size;
         const auto _Result_size         = _STD move(_Op)(_Arg_ptr, _Arg_size);
         const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
         _STL_VERIFY(_Result_as_size_type <= _New_size, "the returned size can't be greater than the passed size");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _ITERATOR_DEBUG_LEVEL != 0
         _Eos(_Result_as_size_type);
     }
 
