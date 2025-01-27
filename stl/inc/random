@@ -508,6 +508,34 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     }
 }
 
+// Optimized specialization for minstd_rand0
+template <>
+_NODISCARD unsigned int _Next_linear_congruential_value<unsigned int, 16807, 0, 2147483647>(
+    unsigned int _Prev) noexcept {
+    constexpr unsigned long long _All = 16807ULL;  
+    constexpr unsigned long long _Mll = 2147483647ULL;  
+
+    auto _Next = static_cast<unsigned long long>(_Prev) * _All;
+    _Next      = (_Next >> 31) + (_Next & _Mll);
+    _Next      = _Next < _Mll ? _Next : _Next - _Mll;
+
+    return static_cast<unsigned int>(_Next);
+}
+
+// Optimized specialization for minstd_rand
+template <>
+_NODISCARD unsigned int _Next_linear_congruential_value<unsigned int, 48271, 0, 2147483647>(
+    unsigned int _Prev) noexcept {
+    constexpr unsigned long long _All = 48271ULL;  
+    constexpr unsigned long long _Mll = 2147483647ULL;  
+
+    auto _Next  = static_cast<unsigned long long>(_Prev) * _All;
+    _Next       = (_Next >> 31) + (_Next & _Mll);
+    _Next       = _Next < _Mll ? _Next : _Next - _Mll;
+
+    return static_cast<unsigned int>(_Next);
+}
+
 template <class _Seed_seq>
 _NODISCARD constexpr unsigned int _Seed_seq_to_uint(_Seed_seq& _Seq) {
     unsigned int _Arr[4]{};
