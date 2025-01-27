@@ -330,6 +330,7 @@ int main(int argc, char* argv[]) {
         test_case_algorithm_incompatible_different_size,
         test_case_algorithm_incompatible_value_initialized,
         test_case_algorithm_incompatible_transposed,
+        test_case_size_bytes_overflow,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -351,7 +352,6 @@ int main(int argc, char* argv[]) {
         test_case_subspan_excessive_runtime_count_dynamic_extent,
         test_case_subspan_excessive_runtime_offset_static_extent,
         test_case_subspan_excessive_runtime_count_static_extent,
-        test_case_size_bytes_overflow,
         test_case_operator_subscript_out_of_range_dynamic_extent,
         test_case_operator_subscript_out_of_range_static_extent,
         test_case_front_empty_dynamic_extent,
