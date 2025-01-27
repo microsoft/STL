@@ -87,7 +87,7 @@ ios_base::iostate _Print_noformat_nonunicode(ostream& _Ostr, const string_view _
     _TRY_IO_BEGIN
     const auto _Characters_written       = _Ostr.rdbuf()->sputn(_Str.data(), static_cast<streamsize>(_Str.size()));
     const bool _Was_insertion_successful = static_cast<size_t>(_Characters_written) == _Str.size();
-    if (!_Was_insertion_successful) [[unlikely]] {
+    if (!_Was_insertion_successful) {
         _State |= ios_base::badbit;
     }
     _CATCH_IO_(ios_base, _Ostr)
@@ -105,7 +105,7 @@ ios_base::iostate _Print_newline_only_nonunicode(ostream& _Ostr) {
 
     _TRY_IO_BEGIN
     const bool _Was_insertion_successful = _Ostr.rdbuf()->sputc('\n') == '\n';
-    if (!_Was_insertion_successful) [[unlikely]] {
+    if (!_Was_insertion_successful) {
         _State |= ios_base::badbit;
     }
     _CATCH_IO_(ios_base, _Ostr)
@@ -119,9 +119,9 @@ void _Vprint_nonunicode_impl(
     const ostream::sentry _Ok(_Ostr);
     ios_base::iostate _State = ios_base::goodbit;
 
-    if (!_Ok) [[unlikely]] {
+    if (!_Ok) {
         _State |= ios_base::badbit;
-    } else [[likely]] {
+    } else {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_nonunicode()
         // (see N4950 [ostream.formatted.print]/3.2).
         string _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
@@ -178,24 +178,24 @@ ios_base::iostate _Do_on_maybe_unicode_console(
         break;
 
     case __std_win_error::_Not_supported:
-        [[unlikely]] return _State;
+        return _State;
 
     default:
-        [[unlikely]] return ios_base::failbit;
+        return ios_base::failbit;
     }
 #pragma warning(pop)
 
     if (_Is_unicode_console) {
         _TRY_IO_BEGIN
         const bool _Was_flush_successful = _Ostr.rdbuf()->pubsync() != -1;
-        if (!_Was_flush_successful) [[unlikely]] {
+        if (!_Was_flush_successful) {
             _State |= ios_base::badbit;
             return _State;
         }
 
         const __std_win_error _Unicode_console_print_result =
             _Unicode_console_func(_Unicode_console_retrieval_result._Console_handle);
-        if (_Unicode_console_print_result != __std_win_error::_Success) [[unlikely]] {
+        if (_Unicode_console_print_result != __std_win_error::_Success) {
             _State |= ios_base::badbit;
         }
         _CATCH_IO_(ios_base, _Ostr)
@@ -234,9 +234,9 @@ void _Vprint_unicode_impl(
     const ostream::sentry _Ok(_Ostr);
     ios_base::iostate _State = ios_base::goodbit;
 
-    if (!_Ok) [[unlikely]] {
+    if (!_Ok) {
         _State |= ios_base::badbit;
-    } else [[likely]] {
+    } else {
         // This is intentionally kept outside of the try/catch block in _Print_noformat_unicode()
         // (see N4950 [ostream.formatted.print]/3.2).
         string _Output_str = _STD vformat(_Ostr.getloc(), _Fmt_str, _Fmt_args);
@@ -255,9 +255,9 @@ void _Print_noformat(ostream& _Ostr, const string_view _Str) {
     const ostream::sentry _Ok(_Ostr);
     ios_base::iostate _State = ios_base::goodbit;
 
-    if (!_Ok) [[unlikely]] {
+    if (!_Ok) {
         _State |= ios_base::badbit;
-    } else [[likely]] {
+    } else {
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
             _State |= _STD _Print_noformat_unicode(_Ostr, _Str);
         } else {
@@ -302,9 +302,9 @@ void println(ostream& _Ostr) {
     const ostream::sentry _Ok(_Ostr);
     ios_base::iostate _State = ios_base::goodbit;
 
-    if (!_Ok) [[unlikely]] {
+    if (!_Ok) {
         _State |= ios_base::badbit;
-    } else [[likely]] {
+    } else {
         if constexpr (_STD _Is_ordinary_literal_encoding_utf8()) {
             _State |= _STD _Print_newline_only_unicode(_Ostr);
         } else {

@@ -1081,7 +1081,7 @@ public:
         if constexpr (_RANGES contiguous_range<_Range_type>) {
             const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rx));
 
-            if (!_STD in_range<size_t>(_Size)) [[unlikely]] {
+            if (!_STD in_range<size_t>(_Size)) {
                 _Throw_format_error("Formatted range is too long.");
             }
 

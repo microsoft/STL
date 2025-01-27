@@ -61,7 +61,7 @@ private:
 inline void _Print_noformat_nonunicode_nonlocking(FILE* const _Stream, const string_view _Str) {
     const bool _Was_write_successful = _CSTD _fwrite_nolock(_Str.data(), 1, _Str.size(), _Stream) == _Str.size();
 
-    if (!_Was_write_successful) [[unlikely]] {
+    if (!_Was_write_successful) {
         _Throw_system_error(static_cast<errc>(errno));
     }
 }
@@ -99,7 +99,7 @@ inline void _Print_noformat_unicode_to_console_nonlocking(
     const __std_unicode_console_handle _Console_handle, const string_view _Str) {
     const __std_win_error _Console_print_result =
         __std_print_to_unicode_console(_Console_handle, _Str.data(), _Str.size());
-    if (_Console_print_result != __std_win_error::_Success) [[unlikely]] {
+    if (_Console_print_result != __std_win_error::_Success) {
         _STD _Throw_system_error_from_std_win_error(_Console_print_result);
     }
 }
@@ -160,10 +160,10 @@ void _Do_on_maybe_unicode_console(
         break;
 
     case __std_win_error::_Not_supported:
-        [[unlikely]] return;
+        return;
 
     default:
-        [[unlikely]] _STD _Throw_system_error_from_std_win_error(_Unicode_console_retrieval_result._Error);
+        _STD _Throw_system_error_from_std_win_error(_Unicode_console_retrieval_result._Error);
     }
 #pragma warning(pop)
 
@@ -180,7 +180,7 @@ inline void _Vprint_unicode_noformat_impl(FILE* const _Stream, const string_view
         const _Stream_lock_guard _Guard{_Stream};
 
         const bool _Was_flush_successful = _CSTD _fflush_nolock(_Stream) == 0;
-        if (!_Was_flush_successful) [[unlikely]] {
+        if (!_Was_flush_successful) {
             _Throw_system_error(static_cast<errc>(errno));
         }
 
@@ -195,7 +195,7 @@ inline void _Vprint_unicode_noformat_impl(FILE* const _Stream, const string_view
 inline void _Fputc_newline(FILE* const _Stream) {
     const bool _Was_write_successful = _CSTD fputc('\n', _Stream) == '\n';
 
-    if (!_Was_write_successful) [[unlikely]] {
+    if (!_Was_write_successful) {
         _Throw_system_error(static_cast<errc>(errno));
     }
 }
@@ -203,12 +203,12 @@ inline void _Fputc_newline(FILE* const _Stream) {
 inline void _Print_newline_only_unicode(FILE* const _Stream) {
     const auto _Unicode_console = [&](const __std_unicode_console_handle _Console_handle) {
         const bool _Was_flush_successful = _CSTD fflush(_Stream) == 0;
-        if (!_Was_flush_successful) [[unlikely]] {
+        if (!_Was_flush_successful) {
             _Throw_system_error(static_cast<errc>(errno));
         }
 
         const __std_win_error _Console_print_result = __std_print_newline_only_to_unicode_console(_Console_handle);
-        if (_Console_print_result != __std_win_error::_Success) [[unlikely]] {
+        if (_Console_print_result != __std_win_error::_Success) {
             _STD _Throw_system_error_from_std_win_error(_Console_print_result);
         }
     };
@@ -234,7 +234,7 @@ inline void _Vprint_unicode_impl(
         const _Stream_lock_guard _Guard{_Stream};
 
         const bool _Was_flush_successful = _CSTD _fflush_nolock(_Stream) == 0;
-        if (!_Was_flush_successful) [[unlikely]] {
+        if (!_Was_flush_successful) {
             _Throw_system_error(static_cast<errc>(errno));
         }
 
