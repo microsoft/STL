@@ -1738,7 +1738,7 @@ public:
 
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _Mylast, "vector empty before pop");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         _Orphan_range(_Mylast - 1, _Mylast);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
@@ -1953,7 +1953,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *_My_data._Myfirst;
     }
@@ -1962,7 +1962,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *_My_data._Myfirst;
     }
@@ -1971,7 +1971,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _My_data._Mylast[-1];
     }
@@ -1980,7 +1980,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _My_data._Mylast[-1];
     }
@@ -3211,7 +3211,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference operator[](size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         const_iterator _It = begin();
         _It._Advance(_Off);
@@ -3221,7 +3221,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference operator[](size_type _Off) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         iterator _It = begin();
         _It._Advance(_Off);
@@ -3231,7 +3231,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *begin();
     }
@@ -3239,7 +3239,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *begin();
     }
@@ -3247,7 +3247,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *(end() - 1);
     }
@@ -3255,7 +3255,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *(end() - 1);
     }

@@ -1210,7 +1210,7 @@ public:
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myhead->_Next->_Myval;
     }
@@ -1218,7 +1218,7 @@ public:
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myhead->_Next->_Myval;
     }
@@ -1226,7 +1226,7 @@ public:
     _NODISCARD reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myhead->_Prev->_Myval;
     }
@@ -1234,7 +1234,7 @@ public:
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myhead->_Prev->_Myval;
     }
@@ -1255,7 +1255,7 @@ public:
     void pop_front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "pop_front called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         _Unchecked_erase(_Mypair._Myval2._Myhead->_Next);
     }
@@ -1276,7 +1276,7 @@ public:
     void pop_back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "pop_back called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         _Unchecked_erase(_Mypair._Myval2._Myhead->_Prev);
     }

@@ -185,14 +185,14 @@ public:
     _NODISCARD static constexpr size_t static_extent(_In_range_(<, _Rank) const rank_type _Idx) noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < _Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/1)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return _Static_extents[_Idx];
     }
 
     _NODISCARD constexpr index_type extent(_In_range_(<, _Rank) const rank_type _Idx) const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < _Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/3)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         if constexpr (rank_dynamic() == 0) {
             return static_cast<index_type>(_Static_extents[_Idx]);
         } else if constexpr (rank_dynamic() == rank()) {
@@ -465,7 +465,7 @@ struct _Maybe_fully_static_extents<_Extents> {
     constexpr explicit _Maybe_fully_static_extents([[maybe_unused]] const _OtherExtents& _Exts_) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         (void) _Extents{_Exts_}; // NB: temporary created for preconditions check
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
     }
 
     static constexpr _Extents _Exts{};
@@ -1202,7 +1202,7 @@ public:
     _NODISCARD static constexpr size_t static_extent(_In_range_(<, extents_type::_Rank) const rank_type _Idx) noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Idx < extents_type::_Rank, "Index must be less than rank() (N4950 [mdspan.extents.obs]/1)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return extents_type::_Static_extents[_Idx];
     }
 

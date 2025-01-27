@@ -1065,7 +1065,7 @@ public:
     _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(_Pos);
     }
@@ -1073,7 +1073,7 @@ public:
     _NODISCARD reference operator[](size_type _Pos) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(_Pos);
     }
@@ -1097,7 +1097,7 @@ public:
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "front() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(0);
     }
@@ -1105,7 +1105,7 @@ public:
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "front() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(0);
     }
@@ -1113,7 +1113,7 @@ public:
     _NODISCARD reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "back() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(_Mysize() - 1);
     }
@@ -1121,7 +1121,7 @@ public:
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "back() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(_Mysize() - 1);
     }

@@ -365,7 +365,7 @@ public:
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::first(count)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return span<element_type, dynamic_extent>{_Mydata, _Count};
     }
 
@@ -385,7 +385,7 @@ public:
     _NODISCARD constexpr auto last(const size_type _Count) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::last(count)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return span<element_type, dynamic_extent>{_Mydata + (_Mysize - _Count), _Count};
     }
 
@@ -445,7 +445,7 @@ public:
     _NODISCARD constexpr reference operator[](const size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < _Mysize, "span index out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return _Mydata[_Off];
     }
 
@@ -454,14 +454,14 @@ public:
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mysize > 0, "front of empty span");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return _Mydata[0];
     }
 
     _NODISCARD constexpr reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mysize > 0, "back of empty span");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return _Mydata[_Mysize - 1];
     }
 #pragma warning(pop)
