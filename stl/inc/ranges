@@ -4237,7 +4237,7 @@ namespace ranges {
                 requires (input_or_output_iterator<decay_t<_It>> && _Choice<_It>._Strategy != _St::_None)
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_It&& _First,
                 const iter_difference_t<decay_t<_It>> _Count) _CONST_CALL_OPERATOR noexcept(_Choice<_It>._No_throw) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(_Count >= 0, "The size passed to views::counted must be non-negative");
 #endif
                 constexpr _St _Strat = _Choice<_It>._Strategy;
