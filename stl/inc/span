@@ -432,7 +432,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mysize <= dynamic_extent / sizeof(element_type),
             "size of span in bytes exceeds std::numeric_limits<size_t>::max()");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return _Mysize * sizeof(element_type);
     }
 #pragma warning(pop)

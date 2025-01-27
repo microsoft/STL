@@ -1112,7 +1112,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 _STL_VERIFY(_Current < (numeric_limits<_Index_type>::max)(),
                     "cannot increment repeat_view iterator past end (integer overflow)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
                 ++_Current;
                 return *this;
             }
@@ -1769,7 +1769,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
                 _Pred, "N4950 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
                     return _Iterator{*this, this->_Get_cache(_Range)};
@@ -2567,7 +2567,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
                 _Pred, "N4950 [range.drop.while.view]/3 forbids calling begin on a drop_while_view with no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
                     return this->_Get_cache(_Range);
