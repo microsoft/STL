@@ -1759,14 +1759,14 @@ namespace ranges {
         }
 
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(_Pred, "filter_view has no predicate");
 #endif
             return *_Pred;
         }
 
         _NODISCARD constexpr _Iterator begin() {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(
                 _Pred, "N4950 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate");
 #endif
