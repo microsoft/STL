@@ -2223,7 +2223,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(_Pred, "take_while_view has no predicate");
 #endif
             return *_Pred;
@@ -2245,7 +2245,7 @@ namespace ranges {
             noexcept(_RANGES end(_Range)) && is_nothrow_move_constructible_v<_Sentinel<false>>) /* strengthened */
             requires (!_Simple_view<_Vw>)
         {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(_Pred, "cannot call end on a take_while_view with no predicate");
 #endif
             return _Sentinel<false>{_RANGES end(_Range), _STD addressof(*_Pred)};
@@ -2255,7 +2255,7 @@ namespace ranges {
             noexcept(_RANGES end(_Range)) && is_nothrow_move_constructible_v<_Sentinel<true>>) /* strengthened */
             requires range<const _Vw> && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>>
         {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(_Pred, "cannot call end on a take_while_view with no predicate");
 #endif
             return _Sentinel<true>{_RANGES end(_Range), _STD addressof(*_Pred)};
