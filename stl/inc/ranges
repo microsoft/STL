@@ -6927,7 +6927,7 @@ namespace ranges {
         constexpr explicit stride_view(_Vw _Range_, range_difference_t<_Vw> _Stride_)
             noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)), _Stride(_Stride_) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(_Stride > 0, "stride must be greater than 0");
 #endif
         }
