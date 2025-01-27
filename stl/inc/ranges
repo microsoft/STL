@@ -959,34 +959,34 @@ namespace ranges {
         constexpr explicit iota_view(_Wi _Value_)
             noexcept(is_nothrow_move_constructible_v<_Wi> && is_nothrow_default_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
                 _STL_VERIFY(_Value_ <= _Bound, "Per N4981 [range.iota.view]/6, the first argument must not exceed the "
                                                "value-initialized bound when their types are totally ordered.");
             }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _ITERATOR_DEBUG_LEVEL != 0
         }
 
         constexpr explicit iota_view(type_identity_t<_Wi> _Value_, type_identity_t<_Bo> _Bound_)
             noexcept(is_nothrow_move_constructible_v<_Wi> && is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_Value_)), _Bound(_STD move(_Bound_)) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
                 _STL_VERIFY(_Value_ <= _Bound_, "Per N4981 [range.iota.view]/8, the first argument must not exceed the "
                                                 "second when their types are totally ordered.");
             }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _ITERATOR_DEBUG_LEVEL != 0
         }
 
         constexpr explicit iota_view(_It _First, _Se _Last)
             noexcept(is_nothrow_move_constructible_v<_Wi> && is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_First._Current)), _Bound(_STD move(_Bound_from(_Last))) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             if constexpr (totally_ordered_with<_Wi, _Bo>) {
                 _STL_VERIFY(_Value <= _Bound, "Per N4981 [range.iota.view]/8 and /10, the iterator must not exceed the "
                                               "sentinel when their types are totally ordered.");
             }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _ITERATOR_DEBUG_LEVEL != 0
         }
 
         _NODISCARD constexpr _It begin() const noexcept(is_nothrow_copy_constructible_v<_Wi>) /* strengthened */ {
