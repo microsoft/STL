@@ -239,6 +239,7 @@ int main(int argc, char* argv[]) {
         test_case_operator_less_incompatible_value_initialized,
         test_case_remove_prefix_incompatible,
         test_case_remove_suffix_incompatible,
+        test_case_null_constructor,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -251,7 +252,6 @@ int main(int argc, char* argv[]) {
         test_case_remove_prefix_too_large,
         test_case_remove_suffix_too_large,
         test_case_Copy_s,
-        test_case_null_constructor,
     });
 
     return exec.run(argc, argv);

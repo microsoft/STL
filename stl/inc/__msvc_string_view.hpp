@@ -1379,7 +1379,7 @@ public:
     constexpr basic_string_view(
         _In_reads_(_Count) const const_pointer _Cts, const size_type _Count) noexcept // strengthened
         : _Mydata(_Cts), _Mysize(_Count) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Count == 0 || _Cts, "non-zero size null string_view");
 #endif
     }
