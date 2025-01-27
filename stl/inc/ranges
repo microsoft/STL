@@ -6595,14 +6595,14 @@ namespace ranges {
         }
 
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(_Pred, "chunk_by_view has no predicate");
 #endif
             return *_Pred;
         }
 
         _NODISCARD constexpr _Iterator begin() {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(_Pred, "cannot call begin on a chunk_by_view with no predicate");
 #endif
 
