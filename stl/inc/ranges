@@ -9153,7 +9153,7 @@ namespace ranges {
             requires _Cartesian_product_is_sized<_First, _Rest...>
         {
             return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
                 const array _Sizes   = {static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases)))...};
                 const bool _Any_zero = ((_Sizes[_Indices] == 0) || ...);
                 if (_Any_zero) {
@@ -9165,9 +9165,9 @@ namespace ranges {
                 _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4950 "
                                         "[range.cartesian.view]/10).");
                 return _Product;
-#else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
                 return (static_cast<_Size_type<false>>(_RANGES size(_STD get<_Indices>(_Bases))) * ...);
-#endif // ^^^ _CONTAINER_DEBUG_LEVEL == 0 ^^^
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
             }(make_index_sequence<1 + sizeof...(_Rest)>{});
         }
 
@@ -9175,7 +9175,7 @@ namespace ranges {
             requires _Cartesian_product_is_sized<const _First, const _Rest...>
         {
             return [&]<size_t... _Indices>(index_sequence<_Indices...>) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
                 const array _Sizes   = {static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases)))...};
                 const bool _Any_zero = ((_Sizes[_Indices] == 0) || ...);
                 if (_Any_zero) {
@@ -9187,9 +9187,9 @@ namespace ranges {
                 _STL_VERIFY(!_Overflow, "Size of cartesian product cannot be represented by size type (N4950 "
                                         "[range.cartesian.view]/10).");
                 return _Product;
-#else // ^^^ _CONTAINER_DEBUG_LEVEL > 0 / _CONTAINER_DEBUG_LEVEL == 0 vvv
+#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
                 return (static_cast<_Size_type<true>>(_RANGES size(_STD get<_Indices>(_Bases))) * ...);
-#endif // ^^^ _CONTAINER_DEBUG_LEVEL == 0 ^^^
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
             }(make_index_sequence<1 + sizeof...(_Rest)>{});
         }
     };
