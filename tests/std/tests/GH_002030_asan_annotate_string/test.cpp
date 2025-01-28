@@ -1924,8 +1924,8 @@ void test_gh_5251() {
     // but uninitialized basic_string memory
     basic_string<char> myString;
     myString.reserve(100);
-    char* data = &myString[0];
-    data[50]   = 'A'; // ASan should fire!
+    char* myData = &myString[0];
+    myData[50]   = 'A'; // ASan should fire!
 }
 
 int main(int argc, char* argv[]) {
