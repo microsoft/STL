@@ -1922,7 +1922,7 @@ void test_gh_3955() {
 void test_gh_5251() {
     // GH-5251 <string>: ASan annotations do not prevent writing to allocated
     // but uninitialized basic_string memory
-    basic_string<char> myString;
+    string myString;
     myString.reserve(100);
     char* myData = &myString[0];
     myData[50]   = 'A'; // ASan should fire!
