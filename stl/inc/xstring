@@ -632,7 +632,7 @@ private:
             return;
         }
 
-        if constexpr (!_Is_ASan_enabled_for_allocator<allocator_type>) {
+        if constexpr (_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
             return;
         }
 

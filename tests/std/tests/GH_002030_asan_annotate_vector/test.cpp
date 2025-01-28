@@ -274,7 +274,7 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, implicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<wchar_t, implicit_allocator<wchar_t>>> == 2);
 
-// Simple implicit allocator that opts out of ASan annotations (via `_Is_ASan_enabled_for_allocator`)
+// Simple implicit allocator that opts out of ASan annotations (via `_Disable_ASan_container_annotations_for_allocator`)
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Stateless> {
     implicit_allocator_no_asan_annotations() = default;
@@ -292,7 +292,7 @@ struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Sta
 };
 
 template <typename T>
-constexpr bool _Is_ASan_enabled_for_allocator<implicit_allocator_no_asan_annotations<T>> = false;
+constexpr bool _Disable_ASan_container_annotations_for_allocator<implicit_allocator_no_asan_annotations<T>> = true;
 
 template <class Alloc>
 void test_push_pop() {
@@ -1033,7 +1033,7 @@ void run_asan_disablement_test() {
     // We access position (50) of the vector, which is within the capacity of the vector
     // but uninitialized. This would normally trigger an AV because of ASan annotations.
     // However, the allocator has opted out of ASan analysis through,
-    // `_Is_ASan_enabled_for_allocator`, so this should succeed.
+    // `_Disable_ASan_container_annotations_for_allocator`, so this should succeed.
     vec.data()[50] = T();
 
     // TODO: is it possible to add a 'negative' test case here? One where ASan expectedly fails?

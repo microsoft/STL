@@ -807,7 +807,7 @@ _INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
 
 // Represents whether ASan container annotations are enabled a given allocator.
 template <class>
-constexpr bool _Is_ASan_enabled_for_allocator = true;
+constexpr bool _Disable_ASan_container_annotations_for_allocator = false;
 
 struct _Asan_aligned_pointers {
     const void* _First;

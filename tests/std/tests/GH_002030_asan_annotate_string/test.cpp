@@ -287,7 +287,7 @@ STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, implicit_allocator<wchar_t>>>
               == 2);
 
-// Simple implicit allocator that opts out of ASan annotations (via `_Is_ASan_enabled_for_allocator`)
+// Simple implicit allocator that opts out of ASan annotations (via `_Disable_ASan_container_annotations_for_allocator`)
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Stateless> {
     implicit_allocator_no_asan_annotations() = default;
@@ -305,7 +305,7 @@ struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Sta
 };
 
 template <typename T>
-constexpr bool _Is_ASan_enabled_for_allocator<implicit_allocator_no_asan_annotations<T>> = true;
+constexpr bool _Disable_ASan_container_annotations_for_allocator<implicit_allocator_no_asan_annotations<T>> = true;
 
 template <class Alloc>
 void test_construction() {
