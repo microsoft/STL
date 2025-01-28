@@ -1386,6 +1386,10 @@ void libfmt_formatter_test_runtime_width() {
     assert(format(STR("{0:{1}}"), reinterpret_cast<void*>(0xcafe), 10) == STR("    0xcafe"));
     assert(format(STR("{0:{1}}"), 'x', 11) == STR("x          "));
     assert(format(STR("{0:{1}}"), STR("str"), 12) == STR("str         "));
+
+    // Test positive and negative dynamic width:
+    assert(format(STR("{:{}}"), 42, 5) == STR("   42"));
+    throw_helper(STR("{:{}}"), 42, -5);
 }
 
 template <class charT>
@@ -1425,6 +1429,10 @@ void libfmt_formatter_test_runtime_precision() {
     throw_helper(STR("{:.{}f}"), 3.14f, true);
     throw_helper(STR("{:.{}f}"), 3.14f, '0');
     assert(format(STR("{:.{}f}"), 3.14f, static_cast<signed char>(2)) == STR("3.14"));
+
+    // Test positive and negative dynamic precision:
+    assert(format(STR("{:.{}}"), 3.14159265358979, 5) == STR("3.1416"));
+    throw_helper(STR("{:.{}}"), 3.14159265358979, -5);
 }
 
 template <class charT>
