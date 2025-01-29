@@ -1208,7 +1208,7 @@ public:
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_LIST || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty list");
 #endif
 
@@ -1216,7 +1216,7 @@ public:
     }
 
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_LIST || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty list");
 #endif
 
@@ -1224,7 +1224,7 @@ public:
     }
 
     _NODISCARD reference back() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_LIST || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty list");
 #endif
 
@@ -1232,7 +1232,7 @@ public:
     }
 
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_LIST || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty list");
 #endif
 
@@ -1253,7 +1253,7 @@ public:
 #endif // _HAS_CXX23
 
     void pop_front() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_LIST || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "pop_front() called on empty list");
 #endif
 
@@ -1274,7 +1274,7 @@ public:
 #endif // _HAS_CXX23
 
     void pop_back() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_LIST || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "pop_back() called on empty list");
 #endif
 
