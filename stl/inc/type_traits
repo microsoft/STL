@@ -327,32 +327,6 @@ struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
 _EXPORT_STD template <class _From, class _To>
 constexpr bool is_convertible_v = __is_convertible_to(_From, _To);
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1627396
-template <class _Ty>
-struct is_convertible<_Ty&, volatile _Ty&> : true_type {};
-
-template <class _Ty>
-struct is_convertible<volatile _Ty&, volatile _Ty&> : true_type {};
-
-template <class _Ty>
-struct is_convertible<_Ty&, const volatile _Ty&> : true_type {};
-
-template <class _Ty>
-struct is_convertible<volatile _Ty&, const volatile _Ty&> : true_type {};
-
-template <class _Ty>
-constexpr bool is_convertible_v<_Ty&, volatile _Ty&> = true;
-
-template <class _Ty>
-constexpr bool is_convertible_v<volatile _Ty&, volatile _Ty&> = true;
-
-template <class _Ty>
-constexpr bool is_convertible_v<_Ty&, const volatile _Ty&> = true;
-
-template <class _Ty>
-constexpr bool is_convertible_v<volatile _Ty&, const volatile _Ty&> = true;
-#endif // ^^^ workaround ^^^
-
 _EXPORT_STD template <class _Ty>
 struct is_enum : bool_constant<__is_enum(_Ty)> {}; // determine whether _Ty is an enumerated type
 
@@ -2205,13 +2179,7 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _From, class _To>
-concept convertible_to =
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1627396
-    is_convertible_v<_From, _To>
-#else // ^^^ workaround / no workaround vvv
-    __is_convertible_to(_From, _To)
-#endif // ^^^ no workaround ^^^
-    && requires { static_cast<_To>(_STD declval<_From>()); };
+concept convertible_to = __is_convertible_to(_From, _To) && requires { static_cast<_To>(_STD declval<_From>()); };
 
 template <class _RefWrap, class _Ty, class _RefWrapQ, class _TyQ>
 concept _Ref_wrap_common_reference_exists_with = _Is_specialization_v<_RefWrap, reference_wrapper> && requires {
