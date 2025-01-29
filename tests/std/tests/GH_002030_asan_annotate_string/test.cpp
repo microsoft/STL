@@ -20,6 +20,8 @@
 #include <new>
 #include <sstream>
 #include <string>
+
+#include <test_death.hpp>
 #if _HAS_CXX17
 #include <string_view>
 #endif // _HAS_CXX17
@@ -1952,17 +1954,32 @@ void test_gh_3955() {
     assert(s == t);
 }
 
-int main() {
-    run_allocator_matrix<char>();
-#ifdef __cpp_char8_t
-    run_allocator_matrix<char8_t>();
-#endif // __cpp_char8_t
-    run_allocator_matrix<char16_t>();
-    run_allocator_matrix<char32_t>();
-    run_allocator_matrix<wchar_t>();
+void test_gh_5251() {
+    // GH-5251 <string>: ASan annotations do not prevent writing to allocated
+    // but uninitialized basic_string memory
+    string myString;
+    myString.reserve(100);
+    char* myData = &myString[0];
+    myData[50]   = 'A'; // ASan should fire!
+}
 
-    test_DevCom_10116361();
-    test_DevCom_10109507();
-    test_gh_3883();
-    test_gh_3955();
+int main(int argc, char* argv[]) {
+    std_testing::death_test_executive exec([] {
+        run_allocator_matrix<char>();
+#ifdef __cpp_char8_t
+        run_allocator_matrix<char8_t>();
+#endif // __cpp_char8_t
+        run_allocator_matrix<char16_t>();
+        run_allocator_matrix<char32_t>();
+        run_allocator_matrix<wchar_t>();
+
+        test_DevCom_10116361();
+        test_DevCom_10109507();
+        test_gh_3883();
+        test_gh_3955();
+    });
+#ifdef __SANITIZE_ADDRESS__
+    exec.add_death_tests({test_gh_5251});
+#endif // ASan instrumentation enabled
+    return exec.run(argc, argv);
 }
