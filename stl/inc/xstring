@@ -2418,6 +2418,10 @@ public:
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
                 _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
 
+        // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
+        // has size (initialized memory) equal to its new capacity (allocated memory).
+        // This is not true for the `reserve` method, so we modify the ASan annotation.
+        _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _Old_size);
         _Mypair._Myval2._Mysize = _Old_size;
     }
 
@@ -2442,6 +2446,10 @@ public:
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
                     _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
 
+            // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
+            // has size (initialized memory) equal to its new capacity (allocated memory).
+            // This is not true for the `reserve` method, so we modify the ASan annotation.
+            _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _Old_size);
             _Mypair._Myval2._Mysize = _Old_size;
             return;
         }
