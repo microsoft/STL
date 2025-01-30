@@ -289,8 +289,7 @@ STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, implicit_allocator<wchar_t>>>
               == 2);
 
-// Simple implicit allocator that opts out of ASan containers annotations (via
-// `_Disable_ASan_container_annotations_for_allocator`)
+// Simple allocator that opts out of ASan annotations (via `_Disable_ASan_container_annotations_for_allocator`)
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Stateless> {
     implicit_allocator_no_asan_annotations() = default;
@@ -1877,15 +1876,15 @@ void run_tests() {
 #endif // ^^^ no workaround ^^^
 }
 
-// Test that writing to un-initialized memory in a string triggers ASan container-overflow checks.
+// Test that writing to un-initialized memory in a string triggers ASan container-overflow error.
 template <class CharType, class Alloc = std::allocator<CharType>>
 void run_asan_container_overflow_death_test() {
 
-    // We'll give the string capacity 100 (all uninitialized memory).
+    // We'll give the string capacity 100 (all un-initialized memory).
     std::basic_string<CharType, std::char_traits<CharType>, Alloc> myString;
     myString.reserve(100);
 
-    // Write to 50th element to trigger ASan container-overflow check.
+    // Write to the 50th element to trigger ASan container-overflow check.
     CharType* myData = &myString[0];
     myData[50]       = CharType{'A'};
 }
@@ -1894,7 +1893,7 @@ void run_asan_container_overflow_death_test() {
 template <class CharType>
 void run_asan_annotations_disablement_test() {
 
-    // Test that ASan annotations are disabled for the `implicit_allocator_no_asan_annotations` allocator,
+    // ASan annotations are disabled for the `implicit_allocator_no_asan_annotations` allocator,
     // which should make the container-overflow 'death test' pass.
     run_asan_container_overflow_death_test<CharType, implicit_allocator_no_asan_annotations<CharType>>();
 }

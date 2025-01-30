@@ -277,7 +277,7 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, implicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<wchar_t, implicit_allocator<wchar_t>>> == 2);
 
-// Simple implicit allocator that opts out of ASan annotations (via `_Disable_ASan_container_annotations_for_allocator`)
+// Simple allocator that opts out of ASan annotations (via `_Disable_ASan_container_annotations_for_allocator`)
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Stateless> {
     implicit_allocator_no_asan_annotations() = default;
@@ -1026,14 +1026,14 @@ void run_custom_allocator_matrix() {
     run_tests<AllocT<T, false_type, false_type>>();
 }
 
-// Test that writing to un-initialized memory in a string triggers ASan container-overflow checks.
+// Test that writing to un-initialized memory in a string triggers ASan container-overflow error.
 template <class T, class Alloc = std::allocator<T>>
 void run_asan_container_overflow_death_test() {
-    // We'll give the vector capacity 100 (all uninitialized memory).
+    // We'll give the vector capacity 100 (all un0initialized memory).
     std::vector<T, Alloc> vector;
     vector.reserve(100);
 
-    // Write to 50th element to trigger ASan container-overflow check.
+    // Write to the 50th element to trigger ASan container-overflow check.
     vector.data()[50] = T();
 }
 
@@ -1041,7 +1041,7 @@ void run_asan_container_overflow_death_test() {
 template <class T>
 void run_asan_annotations_disablement_test() {
 
-    // Test that ASan annotations are disabled for the `implicit_allocator_no_asan_annotations` allocator,
+    // ASan annotations are disabled for the `implicit_allocator_no_asan_annotations` allocator,
     // which should make the container-overflow 'death test' pass.
     run_asan_container_overflow_death_test<T, implicit_allocator_no_asan_annotations<T>>();
 }
