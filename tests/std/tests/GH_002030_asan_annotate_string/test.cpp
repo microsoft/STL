@@ -289,12 +289,14 @@ STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, implicit_allocator<wchar_t>>>
               == 2);
 
-// Simple implicit allocator that opts out of ASan annotations (via `_Disable_ASan_container_annotations_for_allocator`)
+// Simple implicit allocator that opts out of ASan containers annotations (via
+// `_Disable_ASan_container_annotations_for_allocator`)
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Stateless> {
     implicit_allocator_no_asan_annotations() = default;
     template <class U>
-    constexpr implicit_allocator_no_asan_annotations(const implicit_allocator_no_asan_annotations<U, Pocma, Stateless>&) noexcept {}
+    constexpr implicit_allocator_no_asan_annotations(
+        const implicit_allocator_no_asan_annotations<U, Pocma, Stateless>&) noexcept {}
 
     T* allocate(size_t n) {
         T* mem = new T[n + 1];
@@ -1875,18 +1877,26 @@ void run_tests() {
 #endif // ^^^ no workaround ^^^
 }
 
-// Tests that ASan analysis can be disabled for a vector with an arena allocator.
-template <class CharType>
-void run_asan_disablement_test() {
+// Test that writing to un-initialized memory in a string triggers ASan container-overflow checks.
+template <class CharType, class Alloc = std::allocator<CharType>>
+void run_asan_container_overflow_death_test() {
 
-    // We'll give the string capacity 100
-    std::basic_string<CharType, std::char_traits<CharType>, implicit_allocator_no_asan_annotations<CharType>> myString;
+    // We'll give the string capacity 100 (all uninitialized memory).
+    std::basic_string<CharType, std::char_traits<CharType>, Alloc> myString;
     myString.reserve(100);
 
-    CharType* data = &myString[0]; // Get a mutable pointer to the string's data
-    data[50] = CharType{'A'}; // TODO: this isn't failing due to bug: https://github.com/microsoft/STL/issues/5251
+    // Write to 50th element to trigger ASan container-overflow check.
+    CharType* myData = &myString[0];
+    myData[50]       = CharType{'A'};
+}
 
-    // TODO: is it possible to add a 'negative' test case here? One where ASan expectedly fails?
+// Test that ASan `container-overflow` checks can be disabled for a custom allocator.
+template <class CharType>
+void run_asan_annotations_disablement_test() {
+
+    // Test that ASan annotations are disabled for the `implicit_allocator_no_asan_annotations` allocator,
+    // which should make the container-overflow 'death test' pass.
+    run_asan_container_overflow_death_test<CharType, implicit_allocator_no_asan_annotations<CharType>>();
 }
 
 template <class CharType, template <class, class, class> class Alloc>
@@ -1903,7 +1913,11 @@ void run_allocator_matrix() {
     run_custom_allocator_matrix<CharType, aligned_allocator>();
     run_custom_allocator_matrix<CharType, explicit_allocator>();
     run_custom_allocator_matrix<CharType, implicit_allocator>();
-    run_asan_disablement_test<CharType>();
+
+    // To test ASan annotation disablement, we use an ad-hoc allocator type to avoid disrupting other
+    // tests that depend on annotations being enabled. Therefore, unlike the prior tests,
+    // this test is not parametrized by the allocator type.
+    run_asan_annotations_disablement_test<CharType>();
 }
 
 void test_DevCom_10116361() {
@@ -1954,15 +1968,6 @@ void test_gh_3955() {
     assert(s == t);
 }
 
-void test_gh_5251() {
-    // GH-5251 <string>: ASan annotations do not prevent writing to allocated
-    // but uninitialized basic_string memory
-    string myString;
-    myString.reserve(100);
-    char* myData = &myString[0];
-    myData[50]   = 'A'; // ASan should fire!
-}
-
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec([] {
         run_allocator_matrix<char>();
@@ -1979,7 +1984,11 @@ int main(int argc, char* argv[]) {
         test_gh_3955();
     });
 #ifdef __SANITIZE_ADDRESS__
-    exec.add_death_tests({test_gh_5251});
+#ifdef __cpp_char8_t
+    exec.add_death_tests({run_asan_container_overflow_death_test<char8_t>});
+#endif // __cpp_char8_t
+    exec.add_death_tests({run_asan_container_overflow_death_test<char16_t>,
+        run_asan_container_overflow_death_test<char32_t>, run_asan_container_overflow_death_test<wchar_t>});
 #endif // ASan instrumentation enabled
     return exec.run(argc, argv);
 }
