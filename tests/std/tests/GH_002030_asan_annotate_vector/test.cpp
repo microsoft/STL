@@ -1037,7 +1037,7 @@ void run_asan_container_overflow_death_test() {
     v.reserve(100);
 
     // Write to the element at index 50 to trigger an ASan container-overflow check.
-    v.data()[50] = T();
+    v.data()[50] = T{};
 }
 
 // Test that ASan `container-overflow` checks can be disabled for a custom allocator.
