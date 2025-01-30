@@ -404,7 +404,7 @@ public:
     }
 
     _NODISCARD const _Ty& operator[](size_t _Off) const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VALARRAY || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off < _Mysize, "valarray subscript out of range");
 #endif
 
@@ -412,7 +412,7 @@ public:
     }
 
     _NODISCARD _Ty& operator[](size_t _Off) noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VALARRAY || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off < _Mysize, "valarray subscript out of range");
 #endif
 
