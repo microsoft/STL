@@ -1030,10 +1030,10 @@ void run_custom_allocator_matrix() {
 }
 
 // Test that writing to uninitialized memory in a vector triggers an ASan container-overflow error.
-template <class T, class Alloc = std::allocator<T>>
+template <class T, class Alloc = allocator<T>>
 void run_asan_container_overflow_death_test() {
     // We'll give the vector capacity 100 (all uninitialized memory).
-    std::vector<T, Alloc> v;
+    vector<T, Alloc> v;
     v.reserve(100);
 
     // Write to the element at index 50 to trigger an ASan container-overflow check.

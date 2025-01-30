@@ -1877,11 +1877,11 @@ void run_tests() {
 }
 
 // Test that writing to uninitialized memory in a string triggers an ASan container-overflow error. (See GH-5251.)
-template <class CharType, class Alloc = std::allocator<CharType>>
+template <class CharType, class Alloc = allocator<CharType>>
 void run_asan_container_overflow_death_test() {
 
     // We'll give the string capacity 100 (all uninitialized memory, except for the null terminator).
-    std::basic_string<CharType, std::char_traits<CharType>, Alloc> myString;
+    basic_string<CharType, char_traits<CharType>, Alloc> myString;
     myString.reserve(100);
 
     // Write to the element at index 50 to trigger an ASan container-overflow check.
