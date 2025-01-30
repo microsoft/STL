@@ -181,30 +181,34 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
     }
 
     _NODISCARD constexpr _Ty& operator*() & noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Has_value, "operator*() called on empty optional");
 #endif
+
         return this->_Value;
     }
 
     _NODISCARD constexpr const _Ty& operator*() const& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Has_value, "operator*() called on empty optional");
 #endif
+
         return this->_Value;
     }
 
     _NODISCARD constexpr _Ty&& operator*() && noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Has_value, "operator*() called on empty optional");
 #endif
+
         return _STD move(this->_Value);
     }
 
     _NODISCARD constexpr const _Ty&& operator*() const&& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Has_value, "operator*() called on empty optional");
 #endif
+
         return _STD move(this->_Value);
     }
 };
@@ -376,15 +380,17 @@ public:
     }
 
     _NODISCARD constexpr const _Ty* operator->() const noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Has_value, "operator->() called on empty optional");
 #endif
+
         return _STD addressof(this->_Value);
     }
     _NODISCARD constexpr _Ty* operator->() noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Has_value, "operator->() called on empty optional");
 #endif
+
         return _STD addressof(this->_Value);
     }
 
