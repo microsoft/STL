@@ -1033,11 +1033,11 @@ void run_custom_allocator_matrix() {
 template <class T, class Alloc = std::allocator<T>>
 void run_asan_container_overflow_death_test() {
     // We'll give the vector capacity 100 (all uninitialized memory).
-    std::vector<T, Alloc> vector;
-    vector.reserve(100);
+    std::vector<T, Alloc> v;
+    v.reserve(100);
 
     // Write to the element at index 50 to trigger an ASan container-overflow check.
-    vector.data()[50] = T();
+    v.data()[50] = T();
 }
 
 // Test that ASan `container-overflow` checks can be disabled for a custom allocator.
