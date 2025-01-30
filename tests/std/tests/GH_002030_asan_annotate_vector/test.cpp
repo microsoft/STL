@@ -56,6 +56,9 @@ struct non_trivial_can_throw {
 
     non_trivial_can_throw& operator=(const non_trivial_can_throw&) {
         ++i;
+        if (i == 0) {
+            throw i;
+        }
         return *this;
     }
 
