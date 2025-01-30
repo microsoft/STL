@@ -307,8 +307,10 @@ struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Sta
     }
 };
 
-template <typename T>
-constexpr bool _Disable_ASan_container_annotations_for_allocator<implicit_allocator_no_asan_annotations<T>> = true;
+template <class T, class Pocma, class Stateless>
+constexpr bool
+    _Disable_ASan_container_annotations_for_allocator<implicit_allocator_no_asan_annotations<T, Pocma, Stateless>> =
+        true;
 
 template <class Alloc>
 void test_construction() {
