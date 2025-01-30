@@ -1983,11 +1983,15 @@ int main(int argc, char* argv[]) {
         test_gh_3955();
     });
 #ifdef __SANITIZE_ADDRESS__
+    exec.add_death_tests({
+        run_asan_container_overflow_death_test<char>,
 #ifdef __cpp_char8_t
-    exec.add_death_tests({run_asan_container_overflow_death_test<char8_t>});
+        run_asan_container_overflow_death_test<char8_t>,
 #endif // __cpp_char8_t
-    exec.add_death_tests({run_asan_container_overflow_death_test<char16_t>,
-        run_asan_container_overflow_death_test<char32_t>, run_asan_container_overflow_death_test<wchar_t>});
+        run_asan_container_overflow_death_test<char16_t>,
+        run_asan_container_overflow_death_test<char32_t>,
+        run_asan_container_overflow_death_test<wchar_t>,
+    });
 #endif // ASan instrumentation enabled
     return exec.run(argc, argv);
 }

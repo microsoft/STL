@@ -1085,9 +1085,12 @@ int main(int argc, char* argv[]) {
     });
 
 #ifdef __SANITIZE_ADDRESS__
-    exec.add_death_tests({run_asan_container_overflow_death_test<int>, run_asan_container_overflow_death_test<double>,
+    exec.add_death_tests({
+        run_asan_container_overflow_death_test<int>,
+        run_asan_container_overflow_death_test<double>,
         run_asan_container_overflow_death_test<non_trivial_can_throw>,
-        run_asan_container_overflow_death_test<non_trivial_cannot_throw>});
+        run_asan_container_overflow_death_test<non_trivial_cannot_throw>,
+    });
 #endif // ASan instrumentation enabled
 
     return exec.run(argc, argv);
