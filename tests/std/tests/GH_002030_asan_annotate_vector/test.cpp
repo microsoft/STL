@@ -1029,14 +1029,14 @@ void run_custom_allocator_matrix() {
     run_tests<AllocT<T, false_type, false_type>>();
 }
 
-// Test that writing to un-initialized memory in a string triggers ASan container-overflow error.
+// Test that writing to uninitialized memory in a vector triggers an ASan container-overflow error.
 template <class T, class Alloc = std::allocator<T>>
 void run_asan_container_overflow_death_test() {
-    // We'll give the vector capacity 100 (all un0initialized memory).
+    // We'll give the vector capacity 100 (all uninitialized memory).
     std::vector<T, Alloc> vector;
     vector.reserve(100);
 
-    // Write to the 50th element to trigger ASan container-overflow check.
+    // Write to the element at index 50 to trigger an ASan container-overflow check.
     vector.data()[50] = T();
 }
 
@@ -1058,7 +1058,7 @@ void run_allocator_matrix() {
 
     // To test ASan annotation disablement, we use an ad-hoc allocator type to avoid disrupting other
     // tests that depend on annotations being enabled. Therefore, unlike the prior tests,
-    // this test is not parametrized by the allocator type.
+    // this test is not parameterized by the allocator type.
     run_asan_annotations_disablement_test<T>();
 }
 

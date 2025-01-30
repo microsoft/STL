@@ -1876,15 +1876,15 @@ void run_tests() {
 #endif // ^^^ no workaround ^^^
 }
 
-// Test that writing to un-initialized memory in a string triggers ASan container-overflow error.
+// Test that writing to uninitialized memory in a string triggers an ASan container-overflow error. (See GH-5251.)
 template <class CharType, class Alloc = std::allocator<CharType>>
 void run_asan_container_overflow_death_test() {
 
-    // We'll give the string capacity 100 (all un-initialized memory).
+    // We'll give the string capacity 100 (all uninitialized memory, except for the null terminator).
     std::basic_string<CharType, std::char_traits<CharType>, Alloc> myString;
     myString.reserve(100);
 
-    // Write to the 50th element to trigger ASan container-overflow check.
+    // Write to the element at index 50 to trigger an ASan container-overflow check.
     CharType* myData = &myString[0];
     myData[50]       = CharType{'A'};
 }
@@ -1915,7 +1915,7 @@ void run_allocator_matrix() {
 
     // To test ASan annotation disablement, we use an ad-hoc allocator type to avoid disrupting other
     // tests that depend on annotations being enabled. Therefore, unlike the prior tests,
-    // this test is not parametrized by the allocator type.
+    // this test is not parameterized by the allocator type.
     run_asan_annotations_disablement_test<CharType>();
 }
 
