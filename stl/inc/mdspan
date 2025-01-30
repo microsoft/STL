@@ -1286,14 +1286,14 @@ public:
             "[mdspan.mdspan.cons]/20.1).");
         static_assert(is_constructible_v<extents_type, _OtherExtents>,
             "The extents_type must be constructible from OtherExtents (N4950 [mdspan.mdspan.cons]/20.2).");
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_MDSPAN || _ITERATOR_DEBUG_LEVEL != 0
         for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
             const auto _Static_ext = extents_type::_Static_extents[_Idx];
             _STL_VERIFY(_STD cmp_equal(_Static_ext, dynamic_extent) || _STD cmp_equal(_Static_ext, _Other.extent(_Idx)),
                 "For each rank index r of extents_type, static_extent(r) == dynamic_extent || static_extent(r) == "
                 "other.extent(r) must be true (N4950 [mdspan.mdspan.cons]/21.1).");
         }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_MDSPAN || _ITERATOR_DEBUG_LEVEL != 0
     }
 
     constexpr mdspan& operator=(const mdspan&) = default;
@@ -1434,7 +1434,7 @@ private:
     _NODISCARD constexpr reference _Access_impl(_OtherIndexTypes... _Indices) const
         noexcept(noexcept(this->_Acc.access(_Ptr, static_cast<size_t>(this->_Map(_Indices...))))) {
         _STL_INTERNAL_STATIC_ASSERT(conjunction_v<is_same<_OtherIndexTypes, index_type>...>);
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_MDSPAN || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Map.extents()._Contains_multidimensional_index(make_index_sequence<rank()>{}, _Indices...),
             "mdspan subscript out of range; extents_type::index-cast(std::move(indices)) must be "
             "a multidimensional index in extents() (N5001 [mdspan.mdspan.members]/3).");
