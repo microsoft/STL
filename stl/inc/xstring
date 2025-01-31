@@ -2292,7 +2292,7 @@ public:
     _CONSTEXPR20 void pop_back() noexcept /* strengthened */ {
         const size_type _Old_size = _Mypair._Myval2._Mysize;
 #if _ITERATOR_DEBUG_LEVEL >= 1
-        _STL_VERIFY(_Old_size != 0, "invalid to pop_back empty string");
+        _STL_VERIFY(_Old_size != 0, "pop_back() called on empty string");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
         _Eos(_Old_size - 1);
     }

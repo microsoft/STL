@@ -3824,7 +3824,7 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "front called on empty view_interface");
+            _STL_VERIFY(!_RANGES empty(_Self), "front() called on empty ranges::view_interface");
 #endif
             return *_RANGES begin(_Self);
         }
@@ -3834,7 +3834,7 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "front called on empty view_interface");
+            _STL_VERIFY(!_RANGES empty(_Self), "front() called on empty ranges::view_interface");
 #endif
             return *_RANGES begin(_Self);
         }
@@ -3844,7 +3844,7 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "back called on empty view_interface");
+            _STL_VERIFY(!_RANGES empty(_Self), "back() called on empty ranges::view_interface");
 #endif
             auto _Last = _RANGES end(_Self);
             return *--_Last;
@@ -3855,7 +3855,7 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "back called on empty view_interface");
+            _STL_VERIFY(!_RANGES empty(_Self), "back() called on empty ranges::view_interface");
 #endif
             auto _Last = _RANGES end(_Self);
             return *--_Last;

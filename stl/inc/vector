@@ -1737,7 +1737,7 @@ public:
         pointer& _Mylast = _My_data._Mylast;
 
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_My_data._Myfirst != _Mylast, "vector empty before pop");
+        _STL_VERIFY(_My_data._Myfirst != _Mylast, "pop_back() called on empty vector");
 #endif
 
         _Orphan_range(_Mylast - 1, _Mylast);

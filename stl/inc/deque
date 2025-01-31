@@ -1475,7 +1475,7 @@ public:
     void pop_front() noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL == 2
         if (empty()) {
-            _STL_REPORT_ERROR("deque empty before pop");
+            _STL_REPORT_ERROR("pop_front() called on empty deque");
         } else { // something to erase, do it
             _Orphan_off(_Myoff());
             _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Myoff()));
@@ -1498,7 +1498,7 @@ public:
     void pop_back() noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL == 2
         if (empty()) {
-            _STL_REPORT_ERROR("deque empty before pop");
+            _STL_REPORT_ERROR("pop_back() called on empty deque");
         } else { // something to erase, do it
             size_type _Newoff = _Myoff() + _Mysize() - 1;
             _Orphan_off(_Newoff);

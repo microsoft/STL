@@ -1490,14 +1490,14 @@ public:
 
     _NODISCARD constexpr const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize != 0, "cannot call front on empty string_view");
+        _STL_VERIFY(_Mysize != 0, "front() called on empty string_view");
 #endif
         return _Mydata[0];
     }
 
     _NODISCARD constexpr const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize != 0, "cannot call back on empty string_view");
+        _STL_VERIFY(_Mysize != 0, "back() called on empty string_view");
 #endif
         return _Mydata[_Mysize - 1];
     }

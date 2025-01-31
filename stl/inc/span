@@ -453,14 +453,14 @@ public:
 #pragma warning(disable : 4127) // conditional expression is constant
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize > 0, "front of empty span");
+        _STL_VERIFY(_Mysize > 0, "front() called on empty span");
 #endif
         return _Mydata[0];
     }
 
     _NODISCARD constexpr reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize > 0, "back of empty span");
+        _STL_VERIFY(_Mysize > 0, "back() called on empty span");
 #endif
         return _Mydata[_Mysize - 1];
     }
