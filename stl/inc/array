@@ -708,7 +708,7 @@ public:
 
     _NODISCARD reference operator[](size_type) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array subscript out of range");
+        _STL_REPORT_ERROR("array<T, 0> subscript invalid");
 #endif
 
         return *data();
@@ -716,7 +716,7 @@ public:
 
     _NODISCARD const_reference operator[](size_type) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array subscript out of range");
+        _STL_REPORT_ERROR("array<T, 0> subscript invalid");
 #endif
 
         return *data();
