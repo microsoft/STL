@@ -1504,7 +1504,7 @@ public:
 
     constexpr void remove_prefix(const size_type _Count) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize >= _Count, "cannot remove prefix longer than total size");
+        _STL_VERIFY(_Mysize >= _Count, "cannot remove_prefix() larger than string_view size");
 #endif
         _Mydata += _Count;
         _Mysize -= _Count;
@@ -1512,7 +1512,7 @@ public:
 
     constexpr void remove_suffix(const size_type _Count) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize >= _Count, "cannot remove suffix longer than total size");
+        _STL_VERIFY(_Mysize >= _Count, "cannot remove_suffix() larger than string_view size");
 #endif
         _Mysize -= _Count;
     }
