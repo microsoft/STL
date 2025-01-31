@@ -490,6 +490,16 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
         // numeric_limits<result_type>::max() plus 1." That is: Just do the multiply
         // and let normal unsigned modulo take care of it
         return static_cast<_Uint>(static_cast<_Uint>(_Ax * _Prev) + _Cx);
+    } else if constexpr (_Cx == 0 && _Mx == 2147483647) {
+        // minstd_rand
+        constexpr unsigned long long _All = static_cast<unsigned long long>(_Ax);
+        constexpr unsigned long long _Mll = static_cast<unsigned long long>(_Mx);
+
+        auto _Mul = static_cast<unsigned long long>(_Prev) * _All;
+        _Mul      = (_Mul >> 31) + (_Mul & _Mll);
+        _Mul      = _Mul < _Mll ? _Mul : _Mul - _Mll;
+
+        return static_cast<_Uint>(_Mul);
     } else if constexpr (_Cx <= UINT_MAX && static_cast<_Uint>(_Mx - 1) <= (UINT_MAX - _Cx) / _Ax) {
         // unsigned int is sufficient to store intermediate calculation
         const auto _Mul =
@@ -506,34 +516,6 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
         _MP_Rem(_Wx, _Mx);
         return static_cast<_Uint>(_MP_Get(_Wx));
     }
-}
-
-// Optimized specialization for minstd_rand0
-template <>
-_NODISCARD inline unsigned int _Next_linear_congruential_value<unsigned int, 16807, 0, 2147483647>(
-    unsigned int _Prev) noexcept {
-    constexpr unsigned long long _All = 16807ULL;
-    constexpr unsigned long long _Mll = 2147483647ULL;
-
-    auto _Next = static_cast<unsigned long long>(_Prev) * _All;
-    _Next      = (_Next >> 31) + (_Next & _Mll);
-    _Next      = _Next < _Mll ? _Next : _Next - _Mll;
-
-    return static_cast<unsigned int>(_Next);
-}
-
-// Optimized specialization for minstd_rand
-template <>
-_NODISCARD inline unsigned int _Next_linear_congruential_value<unsigned int, 48271, 0, 2147483647>(
-    unsigned int _Prev) noexcept {
-    constexpr unsigned long long _All = 48271ULL;
-    constexpr unsigned long long _Mll = 2147483647ULL;
-
-    auto _Next = static_cast<unsigned long long>(_Prev) * _All;
-    _Next      = (_Next >> 31) + (_Next & _Mll);
-    _Next      = _Next < _Mll ? _Next : _Next - _Mll;
-
-    return static_cast<unsigned int>(_Next);
 }
 
 template <class _Seed_seq>
