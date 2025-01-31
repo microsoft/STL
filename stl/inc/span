@@ -444,7 +444,7 @@ public:
     // [span.elem] Element access
     _NODISCARD constexpr reference operator[](const size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Off < _Mysize, "span index out of range");
+        _STL_VERIFY(_Off < _Mysize, "span subscript out of range");
 #endif
         return _Mydata[_Off];
     }

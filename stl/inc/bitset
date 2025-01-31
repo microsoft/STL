@@ -120,7 +120,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Pos;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
-        _STL_VERIFY(_Pos < _Bits, "bitset index outside range");
+        _STL_VERIFY(_Pos < _Bits, "bitset subscript out of range");
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
     }
 
