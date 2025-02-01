@@ -622,54 +622,57 @@ private:
 
     static _CONSTEXPR20 void _Apply_annotation(const value_type* const _First, const size_type _Capacity,
         const size_type _Old_size, const size_type _New_size) noexcept {
+        if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return;
-        }
+            if (_STD is_constant_evaluated()) {
+                return;
+            }
 #endif // _HAS_CXX20
-       // Don't annotate small strings; only annotate on the heap.
-        if (_Capacity <= _Small_string_capacity || !_Asan_string_should_annotate) {
-            return;
+
+            // Don't annotate small strings; only annotate on the heap.
+            if (_Capacity <= _Small_string_capacity || !_Asan_string_should_annotate) {
+                return;
+            }
+
+            // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator
+            const void* const _End      = _First + _Capacity + 1;
+            const void* const _Old_last = _First + _Old_size + 1;
+            const void* const _New_last = _First + _New_size + 1;
+
+            constexpr bool _Large_string_always_asan_aligned =
+                (_Container_allocation_minimum_asan_alignment<basic_string>) >= _Asan_granularity;
+
+            // for the non-aligned buffer options, the buffer must always have size >= 9 bytes,
+            // so it will always end at least one shadow memory section.
+
+            _Asan_aligned_pointers _Aligned;
+            if constexpr (_Large_string_always_asan_aligned) {
+                _Aligned = {_First, _STD _Get_asan_aligned_after(_End)};
+            } else {
+                _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
+            }
+            const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
+            const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
+
+            // --- always aligned case ---
+            // old state:
+            //   [_First, _Old_last) valid
+            //   [_Old_last, asan_aligned_after(_End)) poison
+            // new state:
+            //   [_First, _New_last) valid
+            //   [_New_last, asan_aligned_after(_End)) poison
+
+            // --- sometimes non-aligned case ---
+            // old state:
+            //   [_Aligned._First, _Old_fixed) valid
+            //   [_Old_fixed, _Aligned._End) poison
+            //   [_Aligned._End, _End) valid
+            // new state:
+            //   [_Aligned._First, _New_fixed) valid
+            //   [_New_fixed, _Aligned._End) poison
+            //   [_Aligned._End, _End) valid
+            _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
         }
-
-        // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator
-        const void* const _End      = _First + _Capacity + 1;
-        const void* const _Old_last = _First + _Old_size + 1;
-        const void* const _New_last = _First + _New_size + 1;
-
-        constexpr bool _Large_string_always_asan_aligned =
-            (_Container_allocation_minimum_asan_alignment<basic_string>) >= _Asan_granularity;
-
-        // for the non-aligned buffer options, the buffer must always have size >= 9 bytes,
-        // so it will always end at least one shadow memory section.
-
-        _Asan_aligned_pointers _Aligned;
-        if constexpr (_Large_string_always_asan_aligned) {
-            _Aligned = {_First, _STD _Get_asan_aligned_after(_End)};
-        } else {
-            _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
-        }
-        const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
-        const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
-
-        // --- always aligned case ---
-        // old state:
-        //   [_First, _Old_last) valid
-        //   [_Old_last, asan_aligned_after(_End)) poison
-        // new state:
-        //   [_First, _New_last) valid
-        //   [_New_last, asan_aligned_after(_End)) poison
-
-        // --- sometimes non-aligned case ---
-        // old state:
-        //   [_Aligned._First, _Old_fixed) valid
-        //   [_Old_fixed, _Aligned._End) poison
-        //   [_Aligned._End, _End) valid
-        // new state:
-        //   [_Aligned._First, _New_fixed) valid
-        //   [_New_fixed, _Aligned._End) poison
-        //   [_Aligned._End, _End) valid
-        _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
     }
 
 #define _ASAN_STRING_REMOVE(_Str)                       (_Str)._Remove_annotation()
