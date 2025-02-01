@@ -1543,9 +1543,7 @@ public:
         const auto _UFirst = _First._Ptr;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-        if (_UFirst == _Right._Mypair._Myval2._Myhead) {
-            _STL_REPORT_ERROR("list splice iterator outside range");
-        }
+        _STL_VERIFY(_UFirst != _Right._Mypair._Myval2._Myhead, "list splice iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         const auto _ULast = _UFirst->_Next;

@@ -361,12 +361,10 @@ namespace pmr {
 
         void _Deallocate_oversized(void* _Ptr, size_t _Bytes, size_t _Align) noexcept {
             // deallocate a block directly from the upstream resource
-            if (!_Prepare_oversized(_Bytes, _Align)) {
-                // no room for header + alignment padding; this memory WAS NOT allocated by this pool resource
-#ifdef _DEBUG
-                _STL_REPORT_ERROR("Cannot deallocate memory not allocated by this memory pool.");
-#endif // defined(_DEBUG)
-            }
+            [[maybe_unused]] const bool _Has_room_for_padding = _Prepare_oversized(_Bytes, _Align);
+
+            // If there's no room for header + alignment padding, this memory WAS NOT allocated by this pool resource
+            _STL_ASSERT(_Has_room_for_padding, "Cannot deallocate memory not allocated by this memory pool.");
 
             _Oversized_header* _Hdr = reinterpret_cast<_Oversized_header*>(static_cast<char*>(_Ptr) + _Bytes) - 1;
 
