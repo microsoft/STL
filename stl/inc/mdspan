@@ -977,7 +977,8 @@ public:
 
     _NODISCARD constexpr index_type stride(_In_range_(<, extents_type::_Rank) const rank_type _Idx) const noexcept {
         if constexpr (extents_type::rank() == 0) {
-            _STL_VERIFY(false, "The argument to stride must be nonnegative and less than extents_type::rank().");
+            _STL_REPORT_ERROR("The argument to stride must be nonnegative and less than extents_type::rank().");
+            return 1;
         } else {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Idx < extents_type::_Rank,

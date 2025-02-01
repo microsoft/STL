@@ -3683,10 +3683,9 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
         case _N_none:
         default:
 #if _ITERATOR_DEBUG_LEVEL != 0
-            _STL_VERIFY(false, "internal data of regex node corrupted");
-#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
+            _STL_REPORT_ERROR("internal data of regex node corrupted");
+#endif
             return false;
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
         }
 
         if (_Failed) {
