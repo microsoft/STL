@@ -483,48 +483,50 @@ private:
         _STL_INTERNAL_CHECK(_Old_last_ != nullptr);
         _STL_INTERNAL_CHECK(_New_last_ != nullptr);
 
+        if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return;
-        }
+            if (_STD is_constant_evaluated()) {
+                return;
+            }
 #endif // _HAS_CXX20
 
-        if (!_Asan_vector_should_annotate) {
-            return;
-        }
-
-        const void* const _First    = _STD _Unfancy(_First_);
-        const void* const _End      = _STD _Unfancy(_End_);
-        const void* const _Old_last = _STD _Unfancy(_Old_last_);
-        const void* const _New_last = _STD _Unfancy(_New_last_);
-        if constexpr ((_Container_allocation_minimum_asan_alignment<vector>) >= _Asan_granularity) {
-            // old state:
-            //   [_First, _Old_last) valid
-            //   [_Old_last, _End) poison
-            // new state:
-            //   [_First, _New_last) valid
-            //   [_New_last, asan_aligned_after(_End)) poison
-            _CSTD __sanitizer_annotate_contiguous_container(
-                _First, _STD _Get_asan_aligned_after(_End), _Old_last, _New_last);
-        } else {
-            const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
-            if (_Aligned._First == _Aligned._End) {
-                // The buffer does not end at least one shadow memory section; nothing to do.
+            if (!_Asan_vector_should_annotate) {
                 return;
             }
 
-            const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
-            const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
+            const void* const _First    = _STD _Unfancy(_First_);
+            const void* const _End      = _STD _Unfancy(_End_);
+            const void* const _Old_last = _STD _Unfancy(_Old_last_);
+            const void* const _New_last = _STD _Unfancy(_New_last_);
+            if constexpr ((_Container_allocation_minimum_asan_alignment<vector>) >= _Asan_granularity) {
+                // old state:
+                //   [_First, _Old_last) valid
+                //   [_Old_last, _End) poison
+                // new state:
+                //   [_First, _New_last) valid
+                //   [_New_last, asan_aligned_after(_End)) poison
+                _CSTD __sanitizer_annotate_contiguous_container(
+                    _First, _STD _Get_asan_aligned_after(_End), _Old_last, _New_last);
+            } else {
+                const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
+                if (_Aligned._First == _Aligned._End) {
+                    // The buffer does not end at least one shadow memory section; nothing to do.
+                    return;
+                }
 
-            // old state:
-            //   [_Aligned._First, _Old_fixed) valid
-            //   [_Old_fixed, _Aligned._End) poison
-            //   [_Aligned._End, _End) valid
-            // new state:
-            //   [_Aligned._First, _New_fixed) valid
-            //   [_New_fixed, _Aligned._End) poison
-            //   [_Aligned._End, _End) valid
-            _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
+                const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
+                const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
+
+                // old state:
+                //   [_Aligned._First, _Old_fixed) valid
+                //   [_Old_fixed, _Aligned._End) poison
+                //   [_Aligned._End, _End) valid
+                // new state:
+                //   [_Aligned._First, _New_fixed) valid
+                //   [_New_fixed, _Aligned._End) poison
+                //   [_Aligned._End, _End) valid
+                _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
+            }
         }
     }
 
