@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include <test_death.hpp>
+
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 
 #ifdef __clang__
@@ -53,6 +55,10 @@ struct non_trivial_can_throw {
     }
 
     non_trivial_can_throw& operator=(const non_trivial_can_throw&) {
+        ++i;
+        if (i == 0) {
+            throw i;
+        }
         return *this;
     }
 
@@ -273,6 +279,29 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
 };
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, implicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<wchar_t, implicit_allocator<wchar_t>>> == 2);
+
+// Simple allocator that opts out of ASan annotations (via `_Disable_ASan_container_annotations_for_allocator`)
+template <class T, class Pocma = true_type, class Stateless = true_type>
+struct implicit_allocator_no_asan_annotations : implicit_allocator<T, Pocma, Stateless> {
+    implicit_allocator_no_asan_annotations() = default;
+    template <class U>
+    constexpr implicit_allocator_no_asan_annotations(
+        const implicit_allocator_no_asan_annotations<U, Pocma, Stateless>&) noexcept {}
+
+    T* allocate(size_t n) {
+        T* mem = new T[n + 1];
+        return mem + 1;
+    }
+
+    void deallocate(T* p, size_t) noexcept {
+        delete[] (p - 1);
+    }
+};
+
+template <class T, class Pocma, class Stateless>
+constexpr bool
+    _Disable_ASan_container_annotations_for_allocator<implicit_allocator_no_asan_annotations<T, Pocma, Stateless>> =
+        true;
 
 template <class Alloc>
 void test_push_pop() {
@@ -1002,31 +1031,69 @@ void run_custom_allocator_matrix() {
     run_tests<AllocT<T, false_type, false_type>>();
 }
 
+// Test that writing to uninitialized memory in a vector triggers an ASan container-overflow error.
+template <class T, class Alloc = allocator<T>>
+void run_asan_container_overflow_death_test() {
+    // We'll give the vector capacity 100 (all uninitialized memory).
+    vector<T, Alloc> v;
+    v.reserve(100);
+
+    // Write to the element at index 50 to trigger an ASan container-overflow check.
+    v.data()[50] = T{};
+}
+
+// Test that ASan `container-overflow` checks can be disabled for a custom allocator.
+template <class T>
+void run_asan_annotations_disablement_test() {
+
+    // ASan annotations are disabled for the `implicit_allocator_no_asan_annotations` allocator,
+    // which should make the container-overflow 'death test' pass.
+    run_asan_container_overflow_death_test<T, implicit_allocator_no_asan_annotations<T>>();
+}
+
 template <class T>
 void run_allocator_matrix() {
     run_tests<allocator<T>>();
     run_custom_allocator_matrix<T, aligned_allocator>();
     run_custom_allocator_matrix<T, explicit_allocator>();
     run_custom_allocator_matrix<T, implicit_allocator>();
+
+    // To test ASan annotation disablement, we use an ad-hoc allocator type to avoid disrupting other
+    // tests that depend on annotations being enabled. Therefore, unlike the prior tests,
+    // this test is not parameterized by the allocator type.
+    run_asan_annotations_disablement_test<T>();
 }
 
-int main() {
-    // Do some work even when we aren't instrumented
-    run_allocator_matrix<char>();
+int main(int argc, char* argv[]) {
+    std_testing::death_test_executive exec([] {
+        // Do some work even when we aren't instrumented
+        run_allocator_matrix<char>();
 #ifdef __SANITIZE_ADDRESS__
-    run_allocator_matrix<int>();
-    run_allocator_matrix<double>();
-    run_allocator_matrix<non_trivial_can_throw>();
-    run_allocator_matrix<non_trivial_cannot_throw>();
+        run_allocator_matrix<int>();
+        run_allocator_matrix<double>();
+        run_allocator_matrix<non_trivial_can_throw>();
+        run_allocator_matrix<non_trivial_cannot_throw>();
 
 #ifndef __clang__ // TRANSITION, LLVM-35365
-    test_push_back_throw();
-    test_emplace_back_throw();
-    test_insert_range_throw();
-    test_insert_throw();
-    test_emplace_throw();
-    test_resize_throw();
-    test_insert_n_throw();
+        test_push_back_throw();
+        test_emplace_back_throw();
+        test_insert_range_throw();
+        test_insert_throw();
+        test_emplace_throw();
+        test_resize_throw();
+        test_insert_n_throw();
 #endif // ^^^ no workaround ^^^
 #endif // ASan instrumentation enabled
+    });
+
+#ifdef __SANITIZE_ADDRESS__
+    exec.add_death_tests({
+        run_asan_container_overflow_death_test<int>,
+        run_asan_container_overflow_death_test<double>,
+        run_asan_container_overflow_death_test<non_trivial_can_throw>,
+        run_asan_container_overflow_death_test<non_trivial_cannot_throw>,
+    });
+#endif // ASan instrumentation enabled
+
+    return exec.run(argc, argv);
 }

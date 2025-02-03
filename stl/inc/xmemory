@@ -805,6 +805,10 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
 _INLINE_VAR constexpr size_t _Asan_granularity      = 8;
 _INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
 
+// Controls whether ASan `container-overflow` errors are reported for this allocator.
+template <class>
+constexpr bool _Disable_ASan_container_annotations_for_allocator = false;
+
 struct _Asan_aligned_pointers {
     const void* _First;
     const void* _End;
