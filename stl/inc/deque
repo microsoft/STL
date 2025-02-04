@@ -1528,14 +1528,14 @@ public:
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_First <= _Last && begin() <= _First && _Last <= end(), "deque erase iterator outside range");
         _STD _Adl_verify_range(_First, _Last);
+#endif
 
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
-        bool _Moved = _Off > 0 && _Off + _Count < _Mysize();
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-        auto _Off   = static_cast<size_type>(_First - begin());
-        auto _Count = static_cast<size_type>(_Last - _First);
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        const bool _Moved = _Off > 0 && _Off + _Count < _Mysize();
+#endif
 
         if (_Count == 0) {
             return _First;
