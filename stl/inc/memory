@@ -1049,18 +1049,10 @@ public:
     }
 
     _NODISCARD _Ty& operator*() const noexcept {
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Myptr, "auto_ptr not dereferenceable");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
         return *get();
     }
 
     _NODISCARD _Ty* operator->() const noexcept {
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Myptr, "auto_ptr not dereferenceable");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
         return get();
     }
 
