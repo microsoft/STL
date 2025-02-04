@@ -143,7 +143,7 @@ public:
     _NODISCARD reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         const auto _Mycont = static_cast<const _Mylist*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot dereference value-initialized list iterator");
+        _STL_VERIFY(_Mycont, "cannot dereference value-initialized list iterator");
         _STL_VERIFY(this->_Ptr != _Mycont->_Myhead, "cannot dereference end list iterator");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
@@ -157,7 +157,7 @@ public:
     _List_const_iterator& operator++() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         const auto _Mycont = static_cast<const _Mylist*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot increment value-initialized list iterator");
+        _STL_VERIFY(_Mycont, "cannot increment value-initialized list iterator");
         _STL_VERIFY(this->_Ptr != _Mycont->_Myhead, "cannot increment end list iterator");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
@@ -175,7 +175,7 @@ public:
         const auto _New_ptr = this->_Ptr->_Prev;
 #if _ITERATOR_DEBUG_LEVEL == 2
         const auto _Mycont = static_cast<const _Mylist*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot decrement value-initialized list iterator");
+        _STL_VERIFY(_Mycont, "cannot decrement value-initialized list iterator");
         _STL_VERIFY(_New_ptr != _Mycont->_Myhead, "cannot decrement begin list iterator");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
