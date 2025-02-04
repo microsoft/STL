@@ -3443,14 +3443,16 @@ public:
         if (_First != _Last) { // worth doing, copy down over hole
 #if _ITERATOR_DEBUG_LEVEL == 2
             _STL_VERIFY(_Last >= _First && end() >= _Last, "vector<bool> erase iterator outside range");
+#endif
+
             iterator _Next      = _STD copy(_Last, end(), _First);
             const auto _Newsize = static_cast<size_type>(_Next - begin());
+
+#if _ITERATOR_DEBUG_LEVEL == 2
             _Orphan_range(_Newsize, this->_Mysize);
+#endif
+
             _Trim(_Newsize);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-            iterator _Next = _STD copy(_Last, end(), _First);
-            _Trim(static_cast<size_type>(_Next - begin()));
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
         }
         return begin() + _Off;
     }
