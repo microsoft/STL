@@ -99,7 +99,10 @@ struct _Span_iterator {
     }
 
     constexpr _Span_iterator& operator+=(const difference_type _Off) noexcept {
+#if _ITERATOR_DEBUG_LEVEL >= 1
         _Verify_offset(_Off);
+#endif // _ITERATOR_DEBUG_LEVEL >= 1
+
         _Myptr += _Off;
         return *this;
     }
@@ -116,8 +119,11 @@ struct _Span_iterator {
     }
 
     constexpr _Span_iterator& operator-=(const difference_type _Off) noexcept {
+#if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Off != _Min_possible_v<difference_type>, "integer overflow");
         _Verify_offset(-_Off);
+#endif // _ITERATOR_DEBUG_LEVEL >= 1
+
         _Myptr -= _Off;
         return *this;
     }
