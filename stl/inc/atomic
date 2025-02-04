@@ -2328,7 +2328,9 @@ public:
 
     explicit atomic_ref(_Ty& _Value) noexcept /* strengthened */ : _Base(_Value) {
         if constexpr (is_always_lock_free) {
-            _Check_alignment(_Value);
+            _ATOMIC_REF_CHECK_ALIGNMENT(
+                (reinterpret_cast<uintptr_t>(_STD addressof(_Value)) & (required_alignment - 1)) == 0,
+                "atomic_ref underlying object is not aligned as required_alignment");
         } else {
             this->_Init_spinlock_for_ref();
         }
@@ -2435,13 +2437,6 @@ public:
         requires (!is_const_v<_Ty>)
     {
         const_cast<atomic_ref*>(this)->_Base::notify_all();
-    }
-
-private:
-    static void _Check_alignment([[maybe_unused]] const _Ty& _Value) {
-        _ATOMIC_REF_CHECK_ALIGNMENT(
-            (reinterpret_cast<uintptr_t>(_STD addressof(_Value)) & (required_alignment - 1)) == 0,
-            "atomic_ref underlying object is not aligned as required_alignment");
     }
 };
 #endif // _HAS_CXX20
