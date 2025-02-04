@@ -2328,8 +2328,7 @@ public:
 
     explicit atomic_ref(_Ty& _Value) noexcept /* strengthened */ : _Base(_Value) {
         if constexpr (is_always_lock_free) {
-            _ATOMIC_REF_CHECK_ALIGNMENT(
-                (reinterpret_cast<uintptr_t>(_STD addressof(_Value)) & (required_alignment - 1)) == 0,
+            _STL_ASSERT((reinterpret_cast<uintptr_t>(_STD addressof(_Value)) & (required_alignment - 1)) == 0,
                 "atomic_ref underlying object is not aligned as required_alignment");
         } else {
             this->_Init_spinlock_for_ref();
