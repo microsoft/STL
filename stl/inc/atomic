@@ -138,17 +138,16 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     case _Atomic_memory_order_relaxed:                        \
         _Result = __iso_volatile_load##_Width(_Ptr);          \
         break;                                                \
+    case _Atomic_memory_order_release:                        \
+    case _Atomic_memory_order_acq_rel:                        \
+    default:                                                  \
+        _INVALID_MEMORY_ORDER;                                \
+        _FALLTHROUGH;                                         \
     case _Atomic_memory_order_consume:                        \
     case _Atomic_memory_order_acquire:                        \
     case _Atomic_memory_order_seq_cst:                        \
         _Result = __LOAD_ACQUIRE_ARM64(_Width, _Ptr);         \
         _Compiler_barrier();                                  \
-        break;                                                \
-    case _Atomic_memory_order_release:                        \
-    case _Atomic_memory_order_acq_rel:                        \
-    default:                                                  \
-        _Result = __iso_volatile_load##_Width(_Ptr);          \
-        _INVALID_MEMORY_ORDER;                                \
         break;                                                \
     }
 
@@ -158,15 +157,15 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     switch (_Order_var) {                               \
     case _Atomic_memory_order_relaxed:                  \
         break;                                          \
-    case _Atomic_memory_order_consume:                  \
-    case _Atomic_memory_order_acquire:                  \
-    case _Atomic_memory_order_seq_cst:                  \
-        _Compiler_or_memory_barrier();                  \
-        break;                                          \
     case _Atomic_memory_order_release:                  \
     case _Atomic_memory_order_acq_rel:                  \
     default:                                            \
         _INVALID_MEMORY_ORDER;                          \
+        _FALLTHROUGH;                                   \
+    case _Atomic_memory_order_consume:                  \
+    case _Atomic_memory_order_acquire:                  \
+    case _Atomic_memory_order_seq_cst:                  \
+        _Compiler_or_memory_barrier();                  \
         break;                                          \
     }
 
