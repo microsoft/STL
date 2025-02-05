@@ -3580,7 +3580,11 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
                     _Tgt_state = _St;
                     _Failed    = true;
                 } else {
-                    _Tgt_state._Cur = _Ch;
+                    if (_Neg) {
+                        _Tgt_state = _St;
+                    } else {
+                        _Tgt_state._Cur = _Ch;
+                    }
                 }
 
                 break;
