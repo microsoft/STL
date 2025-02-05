@@ -361,8 +361,7 @@ public:
         return span<element_type, _Count>{_Mydata, _Count};
     }
 
-    _NODISCARD constexpr auto first(const size_type _Count) const noexcept
-    /* strengthened */ {
+    _NODISCARD constexpr auto first(const size_type _Count) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::first(count)");
 #endif
