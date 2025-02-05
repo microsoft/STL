@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <cstddef>
 #include <string_view>
 
@@ -237,20 +235,19 @@ int main(int argc, char* argv[]) {
         test_case_operator_equal_incompatible_value_initialized,
         test_case_operator_less_incompatible_different_views,
         test_case_operator_less_incompatible_value_initialized,
+        test_case_operator_subscript_out_of_range,
+        test_case_front_empty,
+        test_case_back_empty,
+        test_case_remove_prefix_too_large,
+        test_case_remove_suffix_too_large,
         test_case_remove_prefix_incompatible,
         test_case_remove_suffix_incompatible,
         test_case_null_constructor,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
+    // basic_string_view::_Copy_s is unconditionally checked.
     exec.add_death_tests({
-        // These tests are turned on for _ITERATOR_DEBUG_LEVEL == 0 as part of
-        // VSO-830211 "Macro to enable runtime bounds checking for subscript operator for STL containers"
-        test_case_operator_subscript_out_of_range,
-        test_case_front_empty,
-        test_case_back_empty,
-        test_case_remove_prefix_too_large,
-        test_case_remove_suffix_too_large,
         test_case_Copy_s,
     });
 
