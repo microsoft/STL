@@ -186,8 +186,7 @@ struct TestCases {
 
     static void add_cases(std_testing::death_test_executive& exec) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        static constexpr std_testing::death_function_t a[] = {
-            // TRANSITION, VSO-847348
+        exec.add_death_tests({
             test_case_operator_dereference_value_initialized_iterator,
             test_case_operator_preincrement_value_initialized_iterator,
             test_case_operator_predecrement_value_initialized_iterator,
@@ -206,27 +205,22 @@ struct TestCases {
             test_case_operator_equal_incompatible_value_initialized,
             test_case_operator_less_incompatible_different_views,
             test_case_operator_less_incompatible_value_initialized,
-        };
-        exec.add_death_tests(a);
+        });
 
         if (Traits::has_arrow) {
-            static constexpr std_testing::death_function_t b[] = {
-                // TRANSITION, VSO-847348
+            exec.add_death_tests({
                 test_case_operator_arrow_value_initialized_iterator,
                 test_case_operator_arrow_end_iterator,
-            };
-            exec.add_death_tests(b);
+            });
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-        static constexpr std_testing::death_function_t c[] = {
-            // TRANSITION, VSO-847348
+        exec.add_death_tests({
             test_case_operator_subscript_out_of_range_empty,
             test_case_operator_subscript_out_of_range,
             test_case_front_empty,
             test_case_back_empty,
-        };
-        exec.add_death_tests(c);
+        });
     }
 };
 
