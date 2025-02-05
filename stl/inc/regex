@@ -3611,6 +3611,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
                 _Node_end_group* _Node = static_cast<_Node_end_group*>(_Nx);
                 _Node_capture* _Node0  = static_cast<_Node_capture*>(_Node->_Back);
                 if (_Cap || _Node0->_Idx != 0) { // update capture data
+                    _Tgt_state._Grp_valid[_Node0->_Idx] = true;
                     _Tgt_state._Grps[_Node0->_Idx]._End = _Tgt_state._Cur;
                 }
                 break;
