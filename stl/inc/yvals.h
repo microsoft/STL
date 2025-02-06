@@ -221,21 +221,32 @@ _EMIT_STL_ERROR(STL1006, "_CONTAINER_DEBUG_LEVEL has been removed. It was supers
 #define _MSVC_STL_HARDENING_VECTOR _MSVC_STL_HARDENING
 #endif
 
-#ifndef _STL_CRT_SECURE_INVALID_PARAMETER
+#ifdef _STL_CRT_SECURE_INVALID_PARAMETER
+_EMIT_STL_ERROR(STL1007, "_STL_CRT_SECURE_INVALID_PARAMETER has been removed. "
+                         "It was superseded by _MSVC_STL_DOOM_FUNCTION.");
+#endif
+
 #ifdef _STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER
-#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CSTD abort()
-#elif defined(_DEBUG) // Avoid emitting unused long strings for function names; see GH-1956.
-// static_cast<unsigned int>(__LINE__) avoids warning C4365 (signed/unsigned mismatch) with the /ZI compiler option.
-#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) \
-    ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, static_cast<unsigned int>(__LINE__), 0)
-#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
-#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
-#endif // ^^^ !defined(_DEBUG) ^^^
-#endif // !defined(_STL_CRT_SECURE_INVALID_PARAMETER)
+_EMIT_STL_ERROR(STL1008, "_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER has been removed. "
+                         "It was superseded by _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION.");
+#endif
+
+// The STL's "doom function" can be replaced. Notes:
+// * It must not throw. (Attempting to throw would slam into noexcept.)
+// * Common case: If it doesn't return, it should be marked as `[[noreturn]]`.
+// * Uncommon case: If it returns, the STL will attempt to "continue on error", behaving as if no checking was done.
+#ifndef _MSVC_STL_DOOM_FUNCTION
+#ifdef _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION
+#define _MSVC_STL_DOOM_FUNCTION(mesg) _CSTD abort()
+#else // ^^^ defined(_MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION) / !defined(_MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION) vvv
+// TRANSITION, GH-4858: after dropping Win7 support, we can directly call __fastfail(FAST_FAIL_INVALID_ARG).
+#define _MSVC_STL_DOOM_FUNCTION(mesg) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
+#endif // ^^^ !defined(_MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION) ^^^
+#endif // ^^^ !defined(_MSVC_STL_DOOM_FUNCTION) ^^^
 
 #define _STL_REPORT_ERROR(mesg) \
     _RPTF0(_CRT_ASSERT, mesg);  \
-    _STL_CRT_SECURE_INVALID_PARAMETER(mesg)
+    _MSVC_STL_DOOM_FUNCTION(mesg)
 
 #define _STL_VERIFY(cond, mesg)  \
     if (!(cond)) {               \
@@ -469,7 +480,7 @@ private:
     }              \
     }
 
-#define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
+#define _RAISE(x) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
 
 #define _RERAISE
 #define _THROW(...) (__VA_ARGS__)._Raise()
