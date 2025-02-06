@@ -259,7 +259,7 @@ void test_case_subspan_excessive_runtime_count_static_extent() {
 }
 
 void test_case_size_bytes_overflow() {
-    span<int> sp(begin(globalArray), static_cast<size_t>(-2)); // undefined behavior, not detected here
+    span<int> sp(begin(globalArray), static_cast<size_t>(-2)); // undefined behavior is detected here
     (void) sp.size_bytes(); // size of span in bytes exceeds std::numeric_limits<size_t>::max()
 }
 

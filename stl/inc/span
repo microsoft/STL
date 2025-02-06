@@ -206,7 +206,10 @@ struct _Span_extent_type {
 
     constexpr _Span_extent_type() noexcept = default;
 
-    constexpr explicit _Span_extent_type(const pointer _Data, size_t) noexcept : _Mydata{_Data} {}
+    constexpr explicit _Span_extent_type(const pointer _Data, size_t) noexcept : _Mydata{_Data} {
+        static_assert(
+            _Mysize <= dynamic_extent / sizeof(_Ty), "size of span in bytes exceeds numeric_limits<size_t>::max()");
+    }
 
     pointer _Mydata{nullptr};
     static constexpr size_t _Mysize = _Extent;
@@ -219,7 +222,12 @@ struct _Span_extent_type<_Ty, dynamic_extent> {
     constexpr _Span_extent_type() noexcept = default;
 
     constexpr explicit _Span_extent_type(const pointer _Data, const size_t _Size) noexcept
-        : _Mydata{_Data}, _Mysize{_Size} {}
+        : _Mydata{_Data}, _Mysize{_Size} {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Mysize <= dynamic_extent / sizeof(_Ty), "size of span in bytes exceeds numeric_limits<size_t>::max()");
+#endif
+    }
 
     pointer _Mydata{nullptr};
     size_t _Mysize{0};
@@ -437,16 +445,10 @@ public:
         return _Mysize;
     }
 
-#pragma warning(push)
-#pragma warning(disable : 4127) // conditional expression is constant
     _NODISCARD constexpr size_type size_bytes() const noexcept {
-#if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Mysize <= dynamic_extent / sizeof(element_type),
-            "size of span in bytes exceeds std::numeric_limits<size_t>::max()");
-#endif
+        // Under _ITERATOR_DEBUG_LEVEL != 0, span's constructors verify that this multiplication won't overflow.
         return _Mysize * sizeof(element_type);
     }
-#pragma warning(pop)
 
     _NODISCARD constexpr bool empty() const noexcept {
         return _Mysize == 0;
