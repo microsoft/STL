@@ -114,7 +114,7 @@ namespace ranges {
                     // We were eligible for the memcpy optimization above, except for both sentinels being unreachable.
                     // The following classic code is doomed, because no exceptions will end the infinite loop.
                     // Following our usual pattern, let's emit a debug assertion, then run the loop anyways.
-                    _STL_ASSERT(false, "Tried to uninitialized_copy two ranges with unreachable sentinels");
+                    _STL_ASSERT(false, "Tried to std::uninitialized_copy() two ranges with unreachable sentinels");
                 }
 
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};

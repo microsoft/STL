@@ -1612,8 +1612,7 @@ namespace chrono {
             _STL_INTERNAL_STATIC_ASSERT(_Duration::period::num > 0); // N5001 [time.duration.general]/3
             _STL_INTERNAL_STATIC_ASSERT(_Duration::period::den > 0); // N5001 [ratio.ratio]/1, /2.2
 
-            auto _Den = _Duration::period::den;
-
+            auto _Den                       = _Duration::period::den;
             unsigned int _Power_of_2_in_den = 0u;
             unsigned int _Power_of_5_in_den = 0u;
             for (; _Den % 2 == 0; _Den /= 2, ++_Power_of_2_in_den) {

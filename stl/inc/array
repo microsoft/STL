@@ -708,7 +708,7 @@ public:
 
     _NODISCARD reference operator[](size_type) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array<T, 0> subscript invalid");
+        _STL_REPORT_ERROR("array<T, 0> subscript is invalid");
 #endif
 
         return *data();
@@ -716,7 +716,7 @@ public:
 
     _NODISCARD const_reference operator[](size_type) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array<T, 0> subscript invalid");
+        _STL_REPORT_ERROR("array<T, 0> subscript is invalid");
 #endif
 
         return *data();
@@ -724,7 +724,7 @@ public:
 
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array<T, 0>::front() invalid");
+        _STL_REPORT_ERROR("array<T, 0>::front() is invalid");
 #endif
 
         return *data();
@@ -732,7 +732,7 @@ public:
 
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array<T, 0>::front() invalid");
+        _STL_REPORT_ERROR("array<T, 0>::front() is invalid");
 #endif
 
         return *data();
@@ -740,7 +740,7 @@ public:
 
     _NODISCARD reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array<T, 0>::back() invalid");
+        _STL_REPORT_ERROR("array<T, 0>::back() is invalid");
 #endif
 
         return *data();
@@ -748,7 +748,7 @@ public:
 
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array<T, 0>::back() invalid");
+        _STL_REPORT_ERROR("array<T, 0>::back() is invalid");
 #endif
 
         return *data();
