@@ -2930,6 +2930,8 @@ namespace {
         return _Result;
     }
 
+    enum class _Find_meow_of_predicate { _Any_of, _None_of };
+
 #ifndef _M_ARM64EC
     namespace __std_find_meow_of_bitmap_details {
         __m256i _Bitmap_step(const __m256i _Bitmap, const __m256i _Data) noexcept {
@@ -3200,7 +3202,7 @@ namespace {
             }
         }
 
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         size_t _Impl_first_avx(const void* const _Haystack, const size_t _Haystack_length, const void* const _Needle,
             const size_t _Needle_length) noexcept {
             using namespace __std_find_meow_of_bitmap_details;
@@ -3214,9 +3216,14 @@ namespace {
 
             const size_t _Haystack_length_vec = _Haystack_length & ~size_t{7};
             for (size_t _Ix = 0; _Ix != _Haystack_length_vec; _Ix += 8) {
-                const __m256i _Data       = _Load_avx_256_8(_Haystack_ptr + _Ix);
-                const __m256i _Mask       = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
-                const unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
+                const __m256i _Data = _Load_avx_256_8(_Haystack_ptr + _Ix);
+                const __m256i _Mask = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
+                unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
+
+                if constexpr (_Pred == _Find_meow_of_predicate::_None_of) {
+                    _Bingo ^= 0xFF;
+                }
+
                 if (_Bingo != 0) {
                     return _Ix + _tzcnt_u32(_Bingo);
                 }
@@ -3227,7 +3234,12 @@ namespace {
                 const unsigned int _Tail_bingo_mask = (1 << _Haystack_length_tail) - 1;
                 const __m256i _Data = _Load_avx_256_8_last(_Haystack_ptr + _Haystack_length_vec, _Haystack_length_tail);
                 const __m256i _Mask = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
-                const unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask)) & _Tail_bingo_mask;
+                unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask)) & _Tail_bingo_mask;
+
+                if constexpr (_Pred == _Find_meow_of_predicate::_None_of) {
+                    _Bingo ^= _Tail_bingo_mask;
+                }
+
                 if (_Bingo != 0) {
                     return _Haystack_length_vec + _tzcnt_u32(_Bingo);
                 }
@@ -3236,7 +3248,7 @@ namespace {
             return static_cast<size_t>(-1);
         }
 
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         size_t _Impl_last_avx(const void* const _Haystack, size_t _Haystack_length, const void* const _Needle,
             const size_t _Needle_length) noexcept {
             using namespace __std_find_meow_of_bitmap_details;
@@ -3250,9 +3262,14 @@ namespace {
 
             while (_Haystack_length >= 8) {
                 _Haystack_length -= 8;
-                const __m256i _Data       = _Load_avx_256_8(_Haystack_ptr + _Haystack_length);
-                const __m256i _Mask       = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
-                const unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
+                const __m256i _Data = _Load_avx_256_8(_Haystack_ptr + _Haystack_length);
+                const __m256i _Mask = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
+                unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
+
+                if constexpr (_Pred == _Find_meow_of_predicate::_None_of) {
+                    _Bingo ^= 0xFF;
+                }
+
                 if (_Bingo != 0) {
                     return _Haystack_length + 31 - _lzcnt_u32(_Bingo);
                 }
@@ -3263,7 +3280,12 @@ namespace {
                 const unsigned int _Tail_bingo_mask = (1 << _Haystack_length_tail) - 1;
                 const __m256i _Data                 = _Load_avx_256_8_last(_Haystack_ptr, _Haystack_length_tail);
                 const __m256i _Mask                 = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
-                const unsigned int _Bingo           = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask)) & _Tail_bingo_mask;
+                unsigned int _Bingo                 = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask)) & _Tail_bingo_mask;
+
+                if constexpr (_Pred == _Find_meow_of_predicate::_None_of) {
+                    _Bingo ^= _Tail_bingo_mask;
+                }
+
                 if (_Bingo != 0) {
                     return 31 - _lzcnt_u32(_Bingo);
                 }
@@ -3309,7 +3331,7 @@ namespace {
         }
 #endif // !_M_ARM64EC
 
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         size_t _Impl_first_scalar(
             const void* const _Haystack, const size_t _Haystack_length, const _Scalar_table_t& _Table) noexcept {
             const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
@@ -3319,19 +3341,29 @@ namespace {
 
                 if constexpr (sizeof(_Val) > 1) {
                     if (_Val >= 256) {
-                        continue;
+                        if constexpr (_Pred == _Find_meow_of_predicate::_Any_of) {
+                            continue;
+                        } else {
+                            return _Ix;
+                        }
                     }
                 }
 
-                if (_Table[_Val]) {
-                    return _Ix;
+                if constexpr (_Pred == _Find_meow_of_predicate::_Any_of) {
+                    if (_Table[_Val]) {
+                        return _Ix;
+                    }
+                } else {
+                    if (!_Table[_Val]) {
+                        return _Ix;
+                    }
                 }
             }
 
             return static_cast<size_t>(-1);
         }
 
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         size_t _Impl_last_scalar(
             const void* const _Haystack, size_t _Haystack_length, const _Scalar_table_t& _Table) noexcept {
             const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
@@ -3343,12 +3375,22 @@ namespace {
 
                 if constexpr (sizeof(_Val) > 1) {
                     if (_Val >= 256) {
-                        continue;
+                        if constexpr (_Pred == _Find_meow_of_predicate::_Any_of) {
+                            continue;
+                        } else {
+                            return _Haystack_length;
+                        }
                     }
                 }
 
-                if (_Table[_Val]) {
-                    return _Haystack_length;
+                if constexpr (_Pred == _Find_meow_of_predicate::_Any_of) {
+                    if (_Table[_Val]) {
+                        return _Haystack_length;
+                    }
+                } else {
+                    if (!_Table[_Val]) {
+                        return _Haystack_length;
+                    }
                 }
             }
 
@@ -3357,7 +3399,7 @@ namespace {
     } // namespace __std_find_meow_of_bitmap
 
     namespace __std_find_first_of {
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         const void* _Fallback(const void* _First1, const void* const _Last1, const void* const _First2,
             const void* const _Last2) noexcept {
             auto _Ptr_haystack           = static_cast<const _Ty*>(_First1);
@@ -3366,8 +3408,22 @@ namespace {
             const auto _Ptr_needle_end   = static_cast<const _Ty*>(_Last2);
 
             for (; _Ptr_haystack != _Ptr_haystack_end; ++_Ptr_haystack) {
-                for (auto _Ptr = _Ptr_needle; _Ptr != _Ptr_needle_end; ++_Ptr) {
-                    if (*_Ptr_haystack == *_Ptr) {
+                if constexpr (_Pred == _Find_meow_of_predicate::_Any_of) {
+                    for (auto _Ptr = _Ptr_needle; _Ptr != _Ptr_needle_end; ++_Ptr) {
+                        if (*_Ptr_haystack == *_Ptr) {
+                            return _Ptr_haystack;
+                        }
+                    }
+                } else {
+                    bool _Match = false;
+                    for (auto _Ptr = _Ptr_needle; _Ptr != _Ptr_needle_end; ++_Ptr) {
+                        if (*_Ptr_haystack == *_Ptr) {
+                            _Match = true;
+                            break;
+                        }
+                    }
+
+                    if (!_Match) {
                         return _Ptr_haystack;
                     }
                 }
@@ -3377,11 +3433,13 @@ namespace {
         }
 
 #ifndef _M_ARM64EC
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         const void* _Impl_pcmpestri(const void* _First1, const size_t _Haystack_length, const void* const _First2,
             const size_t _Needle_length) noexcept {
-            constexpr int _Op =
-                (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT;
+            constexpr int _Op_base =
+                (_Pred == _Find_meow_of_predicate::_Any_of ? _SIDD_POSITIVE_POLARITY : _SIDD_MASKED_NEGATIVE_POLARITY)
+                | (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY;
+            constexpr int _Op           = _Op_base | _SIDD_LEAST_SIGNIFICANT;
             constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
 
             const void* _Stop_at = _First1;
@@ -3437,37 +3495,77 @@ namespace {
                 const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
                 constexpr int _Not_found = 16; // arbitrary value greater than any found value
-
-                int _Found_pos = _Not_found;
-
-                const auto _Step = [&_Found_pos](const __m128i _Data2, const int _Size2, const __m128i _Data1,
-                                       const int _Size1) noexcept {
-                    if (_mm_cmpestrc(_Data2, _Size2, _Data1, _Size1, _Op)) {
-                        const int _Pos = _mm_cmpestri(_Data2, _Size2, _Data1, _Size1, _Op);
-                        if (_Pos < _Found_pos) {
-                            _Found_pos = _Pos;
-                        }
-                    }
-                };
-
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1) noexcept {
-                    const void* _Cur_needle = _First2;
-                    do {
-                        const __m128i _Data2 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
-                        _Step(_Data2, _Part_size_el, _Data1, _Size1);
-                        _Advance_bytes(_Cur_needle, 16);
-                    } while (_Cur_needle != _Last_needle);
+                const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1,
+                                                    const int _Found_pos_init) noexcept {
+                    if constexpr (_Pred == _Find_meow_of_predicate::_Any_of) {
+                        int _Found_pos = _Found_pos_init;
 
-                    if (_Last_needle_length_el != 0) {
-                        _Step(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1);
+                        const auto _Step = [&_Found_pos](const __m128i _Data2, const int _Size2, const __m128i _Data1,
+                                               const int _Size1) noexcept {
+                            if (_mm_cmpestrc(_Data2, _Size2, _Data1, _Size1, _Op)) {
+                                const int _Pos = _mm_cmpestri(_Data2, _Size2, _Data1, _Size1, _Op);
+                                if (_Pos < _Found_pos) {
+                                    _Found_pos = _Pos;
+                                }
+                            }
+                        };
+
+                        const void* _Cur_needle = _First2;
+                        do {
+                            const __m128i _Data2 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+                            _Step(_Data2, _Part_size_el, _Data1, _Size1);
+                            _Advance_bytes(_Cur_needle, 16);
+                        } while (_Cur_needle != _Last_needle);
+
+                        if (_Last_needle_length_el != 0) {
+                            _Step(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1);
+                        }
+
+                        return _Found_pos;
+                    } else {
+                        constexpr int _Op_mask = _Op_base | _SIDD_BIT_MASK;
+
+                        const void* _Cur_needle = _First2;
+
+                        const __m128i _Data2_first = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+
+                        __m128i _Found = _mm_cmpestrm(_Data2_first, _Part_size_el, _Data1, _Size1, _Op_mask);
+                        _Advance_bytes(_Cur_needle, 16);
+
+                        while (_Cur_needle != _Last_needle) {
+                            const __m128i _Data2      = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+                            const __m128i _Found_part = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Size1, _Op_mask);
+                            _Found                    = _mm_and_si128(_Found, _Found_part);
+                            _Advance_bytes(_Cur_needle, 16);
+                        }
+
+                        if (_Last_needle_length_el != 0) {
+                            const __m128i _Found_part =
+                                _mm_cmpestrm(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1, _Op_mask);
+                            _Found = _mm_and_si128(_Found, _Found_part);
+                        }
+
+                        int _Bingo     = _mm_cvtsi128_si32(_Found);
+                        int _Found_pos = _Found_pos_init;
+
+                        if (_Bingo != 0) {
+                            unsigned long _Tmp;
+                            _BitScanForward(&_Tmp, _Bingo);
+                            if (_Found_pos > static_cast<int>(_Tmp)) {
+                                _Found_pos = _Tmp;
+                            }
+                        }
+
+                        return _Found_pos;
                     }
                 };
 #pragma warning(pop)
 
                 while (_First1 != _Stop_at) {
-                    _Test_whole_needle(_mm_loadu_si128(static_cast<const __m128i*>(_First1)), _Part_size_el);
+                    const int _Found_pos = _Test_whole_needle(
+                        _mm_loadu_si128(static_cast<const __m128i*>(_First1)), _Part_size_el, _Not_found);
 
                     if (_Found_pos != _Not_found) {
                         _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
@@ -3484,9 +3582,7 @@ namespace {
                     memcpy(_Tmp1, _First1, _Last_part_size);
                     const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
 
-                    _Found_pos = _Last_part_size_el;
-
-                    _Test_whole_needle(_Data1, _Last_part_size_el);
+                    const int _Found_pos = _Test_whole_needle(_Data1, _Last_part_size_el, _Last_part_size_el);
 
                     _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
                 }
@@ -3711,7 +3807,7 @@ namespace {
 #ifndef _M_ARM64EC
             if constexpr (sizeof(_Ty) <= 2) {
                 if (_Use_sse42()) {
-                    return _Impl_pcmpestri<_Ty>(
+                    return _Impl_pcmpestri<_Ty, _Find_meow_of_predicate::_Any_of>(
                         _First1, _Byte_length(_First1, _Last1), _First2, _Byte_length(_First2, _Last2));
                 }
             } else {
@@ -3722,7 +3818,7 @@ namespace {
             }
 #endif // !_M_ARM64EC
 
-            return _Fallback<_Ty>(_First1, _Last1, _First2, _Last2);
+            return _Fallback<_Ty, _Find_meow_of_predicate::_Any_of>(_First1, _Last1, _First2, _Last2);
         }
 
         template <class _Ty>
@@ -3735,7 +3831,7 @@ namespace {
         }
 
 #ifndef _M_ARM64EC
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         size_t _Dispatch_pos_sse_1_2(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
             using namespace __std_find_meow_of_bitmap;
@@ -3744,13 +3840,13 @@ namespace {
 
             if (_Strat == _Strategy::_Vector_bitmap) {
                 if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
-                    return _Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
+                    return _Impl_first_avx<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
                 }
             } else if (_Strat == _Strategy::_Scalar_bitmap) {
                 if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
                     alignas(32) _Scalar_table_t _Table = {};
                     _Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
-                    return _Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
+                    return _Impl_first_scalar<_Ty, _Pred>(_First1, _Count1, _Table);
                 }
             }
 
@@ -3759,7 +3855,7 @@ namespace {
             const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
 
             return _Pos_from_ptr<_Ty>(
-                _Impl_pcmpestri<_Ty>(_First1, _Size_bytes_1, _First2, _Size_bytes_2), _First1, _Last1);
+                _Impl_pcmpestri<_Ty, _Pred>(_First1, _Size_bytes_1, _First2, _Size_bytes_2), _First1, _Last1);
         }
 
         template <class _Ty>
@@ -3771,13 +3867,13 @@ namespace {
 
             if (_Strat == _Strategy::_Vector_bitmap) {
                 if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
-                    return _Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
+                    return _Impl_first_avx<_Ty, _Find_meow_of_predicate::_Any_of>(_First1, _Count1, _First2, _Count2);
                 }
             } else if (_Strat == _Strategy::_Scalar_bitmap) {
                 if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
                     alignas(32) _Scalar_table_t _Table = {};
                     _Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
-                    return _Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
+                    return _Impl_first_scalar<_Ty, _Find_meow_of_predicate::_Any_of>(_First1, _Count1, _Table);
                 }
             }
 
@@ -3789,42 +3885,44 @@ namespace {
         }
 #endif // !_M_ARM64EC
 
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         size_t _Dispatch_pos_fallback(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
             using namespace __std_find_meow_of_bitmap;
 
             _Scalar_table_t _Table = {};
             if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
-                return _Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
+                return _Impl_first_scalar<_Ty, _Pred>(_First1, _Count1, _Table);
             }
 
             const void* const _Last1 = static_cast<const _Ty*>(_First1) + _Count1;
             const void* const _Last2 = static_cast<const _Ty*>(_First2) + _Count2;
 
-            return _Pos_from_ptr<_Ty>(_Fallback<_Ty>(_First1, _Last1, _First2, _Last2), _First1, _Last1);
+            return _Pos_from_ptr<_Ty>(_Fallback<_Ty, _Pred>(_First1, _Last1, _First2, _Last2), _First1, _Last1);
         }
 
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         size_t _Dispatch_pos(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
 #ifndef _M_ARM64EC
             if constexpr (sizeof(_Ty) <= 2) {
                 if (_Use_sse42()) {
-                    return _Dispatch_pos_sse_1_2<_Ty>(_First1, _Count1, _First2, _Count2);
+                    return _Dispatch_pos_sse_1_2<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
                 }
             } else {
                 if (_Use_avx2()) {
+                    static_assert(_Pred == _Find_meow_of_predicate::_Any_of);
+
                     return _Dispatch_pos_avx_4_8<_Ty>(_First1, _Count1, _First2, _Count2);
                 }
             }
 #endif // !_M_ARM64EC
-            return _Dispatch_pos_fallback<_Ty>(_First1, _Count1, _First2, _Count2);
+            return _Dispatch_pos_fallback<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
         }
     } // namespace __std_find_first_of
 
     namespace __std_find_last_of {
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         size_t __stdcall _Fallback(const void* const _Haystack, const size_t _Haystack_length,
             const void* const _Needle, const size_t _Needle_length) noexcept {
 
@@ -3835,8 +3933,22 @@ namespace {
             while (_Pos != 0) {
                 --_Pos;
 
-                for (auto _Ptr = static_cast<const _Ty*>(_Needle); _Ptr != _Needle_end; ++_Ptr) {
-                    if (_Ptr_haystack[_Pos] == *_Ptr) {
+                if constexpr (_Pred == _Find_meow_of_predicate::_Any_of) {
+                    for (auto _Ptr = static_cast<const _Ty*>(_Needle); _Ptr != _Needle_end; ++_Ptr) {
+                        if (_Ptr_haystack[_Pos] == *_Ptr) {
+                            return _Pos;
+                        }
+                    }
+                } else {
+                    bool _Match = false;
+                    for (auto _Ptr = static_cast<const _Ty*>(_Needle); _Ptr != _Needle_end; ++_Ptr) {
+                        if (_Ptr_haystack[_Pos] == *_Ptr) {
+                            _Match = true;
+                            break;
+                        }
+                    }
+
+                    if (!_Match) {
                         return _Pos;
                     }
                 }
@@ -3846,13 +3958,15 @@ namespace {
         }
 
 #ifndef _M_ARM64EC
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         size_t _Impl(const void* const _Haystack, const size_t _Haystack_length, const void* const _Needle,
             const size_t _Needle_length) noexcept {
             const size_t _Haystack_length_bytes = _Haystack_length * sizeof(_Ty);
 
-            constexpr int _Op =
-                (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_MOST_SIGNIFICANT;
+            constexpr int _Op_base =
+                (_Pred == _Find_meow_of_predicate::_Any_of ? _SIDD_POSITIVE_POLARITY : _SIDD_MASKED_NEGATIVE_POLARITY)
+                | (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY;
+            constexpr int _Op           = _Op_base | _SIDD_MOST_SIGNIFICANT;
             constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
 
             const size_t _Last_part_size = _Haystack_length_bytes & 0xF;
@@ -3913,37 +4027,75 @@ namespace {
                 const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
                 constexpr int _Not_found = -1; // equal to npos when treated as size_t; also less than any found value
-                int _Found_pos           = _Not_found;
-
-                const auto _Step = [&_Found_pos](const __m128i _Data2, const int _Size2, const __m128i _Data1,
-                                       const int _Size1) noexcept {
-                    if (_mm_cmpestrc(_Data2, _Size2, _Data1, _Size1, _Op)) {
-                        const int _Pos = _mm_cmpestri(_Data2, _Size2, _Data1, _Size1, _Op);
-                        if (_Pos > _Found_pos) {
-                            _Found_pos = _Pos;
-                        }
-                    }
-                };
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
                 const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1) noexcept {
-                    const void* _Cur_needle = _Needle;
-                    do {
-                        const __m128i _Data2 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
-                        _Step(_Data2, _Part_size_el, _Data1, _Size1);
-                        _Advance_bytes(_Cur_needle, 16);
-                    } while (_Cur_needle != _Last_needle);
+                    if constexpr (_Pred == _Find_meow_of_predicate::_Any_of) {
+                        int _Found_pos = _Not_found;
 
-                    if (_Last_needle_length_el != 0) {
-                        _Step(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1);
+                        const auto _Step = [&_Found_pos](const __m128i _Data2, const int _Size2, const __m128i _Data1,
+                                               const int _Size1) noexcept {
+                            if (_mm_cmpestrc(_Data2, _Size2, _Data1, _Size1, _Op)) {
+                                const int _Pos = _mm_cmpestri(_Data2, _Size2, _Data1, _Size1, _Op);
+                                if (_Pos > _Found_pos) {
+                                    _Found_pos = _Pos;
+                                }
+                            }
+                        };
+
+                        const void* _Cur_needle = _Needle;
+                        do {
+                            const __m128i _Data2 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+                            _Step(_Data2, _Part_size_el, _Data1, _Size1);
+                            _Advance_bytes(_Cur_needle, 16);
+                        } while (_Cur_needle != _Last_needle);
+
+                        if (_Last_needle_length_el != 0) {
+                            _Step(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1);
+                        }
+
+                        return _Found_pos;
+                    } else {
+                        constexpr int _Op_mask = _Op_base | _SIDD_BIT_MASK;
+
+                        const void* _Cur_needle = _Needle;
+
+                        const __m128i _Data2_first = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+
+                        __m128i _Found = _mm_cmpestrm(_Data2_first, _Part_size_el, _Data1, _Size1, _Op_mask);
+
+                        while (_Cur_needle != _Last_needle) {
+                            const __m128i _Data2      = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+                            const __m128i _Found_part = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Size1, _Op_mask);
+                            _Found                    = _mm_and_si128(_Found, _Found_part);
+                            _Advance_bytes(_Cur_needle, 16);
+                        }
+                        if (_Last_needle_length_el != 0) {
+                            const __m128i _Found_part =
+                                _mm_cmpestrm(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1, _Op_mask);
+                            _Found = _mm_and_si128(_Found, _Found_part);
+                            _Advance_bytes(_Cur_needle, 16);
+                        }
+
+                        const int _Bingo = _mm_cvtsi128_si32(_Found);
+                        int _Found_pos   = _Not_found;
+
+                        if (_Bingo != 0) {
+                            unsigned long _Tmp;
+                            _BitScanReverse(&_Tmp, _Bingo);
+                            _Found_pos = _Tmp;
+                        }
+
+                        return _Found_pos;
                     }
                 };
 #pragma warning(pop)
 
                 while (_Cur != _Stop_at) {
                     _Rewind_bytes(_Cur, 16);
-                    _Test_whole_needle(_mm_loadu_si128(static_cast<const __m128i*>(_Cur)), _Part_size_el);
+                    const int _Found_pos =
+                        _Test_whole_needle(_mm_loadu_si128(static_cast<const __m128i*>(_Cur)), _Part_size_el);
 
                     if (_Found_pos != _Not_found) {
                         return _Byte_length(_Haystack, _Cur) / sizeof(_Ty) + _Found_pos;
@@ -3962,15 +4114,15 @@ namespace {
                         _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
                     }
 
-                    _Test_whole_needle(_Data1, _Last_part_size_el);
+                    return _Test_whole_needle(_Data1, _Last_part_size_el);
                 }
 
-                return static_cast<size_t>(_Found_pos);
+                return static_cast<size_t>(_Not_found);
             }
         }
 #endif // !_M_ARM64EC
 
-        template <class _Ty>
+        template <class _Ty, _Find_meow_of_predicate _Pred>
         size_t _Dispatch_pos(
             const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
             using namespace __std_find_meow_of_bitmap;
@@ -3981,26 +4133,26 @@ namespace {
 
                 if (_Strat == _Strategy::_Vector_bitmap) {
                     if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
-                        return _Impl_last_avx<_Ty>(_First1, _Count1, _First2, _Count2);
+                        return _Impl_last_avx<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
                     }
                 } else if (_Strat == _Strategy::_Scalar_bitmap) {
                     if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
                         alignas(32) _Scalar_table_t _Table = {};
                         _Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
-                        return _Impl_last_scalar<_Ty>(_First1, _Count1, _Table);
+                        return _Impl_last_scalar<_Ty, _Pred>(_First1, _Count1, _Table);
                     }
                 }
 
-                return _Impl<_Ty>(_First1, _Count1, _First2, _Count2);
+                return _Impl<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
             } else
 #endif // !_M_ARM64EC
             {
                 alignas(32) _Scalar_table_t _Table = {};
                 if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
-                    return _Impl_last_scalar<_Ty>(_First1, _Count1, _Table);
+                    return _Impl_last_scalar<_Ty, _Pred>(_First1, _Count1, _Table);
                 }
 
-                return _Fallback<_Ty>(_First1, _Count1, _First2, _Count2);
+                return _Fallback<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
             }
         }
     } // namespace __std_find_last_of
@@ -4581,32 +4733,62 @@ const void* __stdcall __std_find_first_of_trivial_8(
 
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_1(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
-    return __std_find_first_of::_Dispatch_pos<uint8_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_first_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_2(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
-    return __std_find_first_of::_Dispatch_pos<uint16_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_first_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_4(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
-    return __std_find_first_of::_Dispatch_pos<uint32_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_first_of::_Dispatch_pos<uint32_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_8(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
-    return __std_find_first_of::_Dispatch_pos<uint64_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_first_of::_Dispatch_pos<uint64_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_1(const void* const _Haystack,
     const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_last_of::_Dispatch_pos<uint8_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_last_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(const void* const _Haystack,
     const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_last_of::_Dispatch_pos<uint16_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_last_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_1(
+    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_None_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_2(
+    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_None_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_1(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_last_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_None_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_2(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_last_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_None_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 const void* __stdcall __std_search_1(
