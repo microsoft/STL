@@ -2145,6 +2145,8 @@ _NODISCARD _OutputIt _Fmt_write(
     case 'g':
         if (_Precision == -1) {
             _Precision = 6;
+        } else if (_Precision == 0) {
+            _Precision = 1;
         }
         _Format = chars_format::general;
         break;

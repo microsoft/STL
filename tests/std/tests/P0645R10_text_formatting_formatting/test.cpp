@@ -835,6 +835,7 @@ void test_float_specs() {
     assert(format(STR("{:3}"), Float{0}) == STR("  0"));
     assert(format(STR("{:#9G}"), Float{12.2}) == STR("  12.2000"));
     assert(format(STR("{:#12g}"), Float{1'000'000}) == STR(" 1.00000e+06"));
+    assert(format(STR("[{:#6.0g}]"), 1.234e-37) == STR("[1.e-37]"));
 
     // Precision
     Float value = 1234.52734375;
