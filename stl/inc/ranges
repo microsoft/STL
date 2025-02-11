@@ -1112,7 +1112,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 _STL_VERIFY(_Current < (numeric_limits<_Index_type>::max)(),
                     "cannot increment repeat_view iterator past end (integer overflow)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
                 ++_Current;
                 return *this;
             }
@@ -1761,7 +1761,7 @@ namespace ranges {
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "filter_view has no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return *_Pred;
         }
 
@@ -1769,7 +1769,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
                 _Pred, "N4950 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
                     return _Iterator{*this, this->_Get_cache(_Range)};
@@ -1917,7 +1917,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Count_ >= 0, "Number of elements to take must be non-negative (N4971 [range.take.view]/1)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
@@ -2225,7 +2225,7 @@ namespace ranges {
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "take_while_view has no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return *_Pred;
         }
 
@@ -2247,7 +2247,7 @@ namespace ranges {
         {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "cannot call end on a take_while_view with no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return _Sentinel<false>{_RANGES end(_Range), _STD addressof(*_Pred)};
         }
 
@@ -2257,7 +2257,7 @@ namespace ranges {
         {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "cannot call end on a take_while_view with no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return _Sentinel<true>{_RANGES end(_Range), _STD addressof(*_Pred)};
         }
     };
@@ -2337,7 +2337,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Count_ >= 0, "Number of elements to drop must be non-negative (N4971 [range.drop.view]/1)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
@@ -2559,7 +2559,7 @@ namespace ranges {
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "drop_while_view has no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return *_Pred;
         }
 
@@ -2567,7 +2567,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
                 _Pred, "N4950 [range.drop.while.view]/3 forbids calling begin on a drop_while_view with no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
                     return this->_Get_cache(_Range);
@@ -4239,7 +4239,7 @@ namespace ranges {
                 const iter_difference_t<decay_t<_It>> _Count) _CONST_CALL_OPERATOR noexcept(_Choice<_It>._No_throw) {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 _STL_VERIFY(_Count >= 0, "The size passed to views::counted must be non-negative");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
                 constexpr _St _Strat = _Choice<_It>._Strategy;
 
                 if constexpr (_Strat == _St::_Span) {
@@ -5671,7 +5671,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Count > 0, "chunk size must be greater than 0");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
@@ -5944,7 +5944,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Count > 0, "chunk size must be greater than 0");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
@@ -6321,7 +6321,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Count > 0, "The window size must be positive (N4950 [range.slide.view]/1)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) // strengthened
@@ -6597,14 +6597,14 @@ namespace ranges {
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "chunk_by_view has no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return *_Pred;
         }
 
         _NODISCARD constexpr _Iterator begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "cannot call begin on a chunk_by_view with no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
             const auto _First = _RANGES begin(_Range);
             if (this->_Has_cache()) {
@@ -6929,7 +6929,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Stride(_Stride_) {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Stride > 0, "stride must be greater than 0");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) // strengthened

@@ -1737,8 +1737,8 @@ public:
         pointer& _Mylast = _My_data._Mylast;
 
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_My_data._Myfirst != _Mylast, "vector empty before pop");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_My_data._Myfirst != _Mylast, "pop_back() called on empty vector");
+#endif
 
         _Orphan_range(_Mylast - 1, _Mylast);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
@@ -1916,7 +1916,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(
             _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _My_data._Myfirst[_Pos];
     }
@@ -1926,7 +1926,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(
             _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _My_data._Myfirst[_Pos];
     }
@@ -1953,7 +1953,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *_My_data._Myfirst;
     }
@@ -1962,7 +1962,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *_My_data._Myfirst;
     }
@@ -1971,7 +1971,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _My_data._Mylast[-1];
     }
@@ -1980,7 +1980,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _My_data._Mylast[-1];
     }
@@ -3211,7 +3211,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference operator[](size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         const_iterator _It = begin();
         _It._Advance(_Off);
@@ -3221,7 +3221,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference operator[](size_type _Off) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         iterator _It = begin();
         _It._Advance(_Off);
@@ -3231,7 +3231,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *begin();
     }
@@ -3239,7 +3239,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *begin();
     }
@@ -3247,7 +3247,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *(end() - 1);
     }
@@ -3255,7 +3255,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *(end() - 1);
     }
@@ -3422,11 +3422,13 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(end() > _Where, "vector<bool> erase iterator outside range");
+#endif
+
         _STD copy(_Next_iter(_Where), end(), _Where);
+
+#if _ITERATOR_DEBUG_LEVEL == 2
         _Orphan_range(static_cast<size_type>(_Off), this->_Mysize);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-        _STD copy(_Next_iter(_Where), end(), _Where);
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
+#endif
 
         _Trim(this->_Mysize - 1);
         return begin() + _Off;
@@ -3441,14 +3443,16 @@ public:
         if (_First != _Last) { // worth doing, copy down over hole
 #if _ITERATOR_DEBUG_LEVEL == 2
             _STL_VERIFY(_Last >= _First && end() >= _Last, "vector<bool> erase iterator outside range");
+#endif
+
             iterator _Next      = _STD copy(_Last, end(), _First);
             const auto _Newsize = static_cast<size_type>(_Next - begin());
+
+#if _ITERATOR_DEBUG_LEVEL == 2
             _Orphan_range(_Newsize, this->_Mysize);
+#endif
+
             _Trim(_Newsize);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-            iterator _Next = _STD copy(_Last, end(), _First);
-            _Trim(static_cast<size_type>(_Next - begin()));
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
         }
         return begin() + _Off;
     }

@@ -479,14 +479,14 @@ namespace _Gen_detail {
             noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr))) /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(!_Coro.done(), "Can't dereference generator end iterator");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr);
         }
 
         _Iterator& operator++() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(!_Coro.done(), "Can't increment generator end iterator");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             _Coro.promise()._Get_top().resume();
             return *this;
         }
@@ -567,7 +567,7 @@ public:
         // Pre: _Coro is suspended at its initial suspend point
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Coro, "Can't call begin on moved-from generator");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         _Coro.resume();
         return typename _Gen_detail::_Iter_provider<_Value, _Ref>::_Iterator{_Gen_detail::_Secret_tag{},
             coroutine_handle<_Gen_detail::_Promise_base<yielded>>::from_address(_Coro.address())};

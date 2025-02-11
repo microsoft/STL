@@ -1065,7 +1065,7 @@ public:
     _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(_Pos);
     }
@@ -1073,7 +1073,7 @@ public:
     _NODISCARD reference operator[](size_type _Pos) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Mysize(), "deque subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(_Pos);
     }
@@ -1097,7 +1097,7 @@ public:
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "front() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(0);
     }
@@ -1105,7 +1105,7 @@ public:
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "front() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(0);
     }
@@ -1113,7 +1113,7 @@ public:
     _NODISCARD reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "back() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(_Mysize() - 1);
     }
@@ -1121,7 +1121,7 @@ public:
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(!empty(), "back() called on empty deque");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Subscript(_Mysize() - 1);
     }
@@ -1475,7 +1475,7 @@ public:
     void pop_front() noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL == 2
         if (empty()) {
-            _STL_REPORT_ERROR("deque empty before pop");
+            _STL_REPORT_ERROR("pop_front() called on empty deque");
         } else { // something to erase, do it
             _Orphan_off(_Myoff());
             _Alty_traits::destroy(_Getal(), _Get_data()._Address_subscript(_Myoff()));
@@ -1498,7 +1498,7 @@ public:
     void pop_back() noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL == 2
         if (empty()) {
-            _STL_REPORT_ERROR("deque empty before pop");
+            _STL_REPORT_ERROR("pop_back() called on empty deque");
         } else { // something to erase, do it
             size_type _Newoff = _Myoff() + _Mysize() - 1;
             _Orphan_off(_Newoff);
@@ -1528,14 +1528,14 @@ public:
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_First <= _Last && begin() <= _First && _Last <= end(), "deque erase iterator outside range");
         _STD _Adl_verify_range(_First, _Last);
+#endif
 
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
-        bool _Moved = _Off > 0 && _Off + _Count < _Mysize();
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-        auto _Off   = static_cast<size_type>(_First - begin());
-        auto _Count = static_cast<size_type>(_Last - _First);
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+        const bool _Moved = _Off > 0 && _Off + _Count < _Mysize();
+#endif
 
         if (_Count == 0) {
             return _First;

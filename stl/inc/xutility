@@ -3824,8 +3824,8 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "front called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "front() called on empty ranges::view_interface");
+#endif
             return *_RANGES begin(_Self);
         }
 
@@ -3834,8 +3834,8 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "front called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "front() called on empty ranges::view_interface");
+#endif
             return *_RANGES begin(_Self);
         }
 
@@ -3844,8 +3844,8 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "back called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "back() called on empty ranges::view_interface");
+#endif
             auto _Last = _RANGES end(_Self);
             return *--_Last;
         }
@@ -3855,8 +3855,8 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "back called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "back() called on empty ranges::view_interface");
+#endif
             auto _Last = _RANGES end(_Self);
             return *--_Last;
         }
@@ -3868,7 +3868,7 @@ namespace ranges {
             if constexpr (sized_range<_Derived>) {
                 using _U_diff = _Make_unsigned_like_t<range_difference_t<_Rng>>;
                 _STL_VERIFY(static_cast<_U_diff>(_Idx) < static_cast<_U_diff>(_RANGES size(_Self)),
-                    "index out of range for view_interface");
+                    "ranges::view_interface subscript out of range");
             }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _RANGES begin(_Self)[_Idx];
@@ -3881,7 +3881,7 @@ namespace ranges {
             if constexpr (sized_range<_Derived>) {
                 using _U_diff = _Make_unsigned_like_t<range_difference_t<_Rng>>;
                 _STL_VERIFY(static_cast<_U_diff>(_Idx) < static_cast<_U_diff>(_RANGES size(_Self)),
-                    "index out of range for view_interface");
+                    "ranges::view_interface subscript out of range");
             }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _RANGES begin(_Self)[_Idx];

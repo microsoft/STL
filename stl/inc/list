@@ -143,7 +143,7 @@ public:
     _NODISCARD reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         const auto _Mycont = static_cast<const _Mylist*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot dereference value-initialized list iterator");
+        _STL_VERIFY(_Mycont, "cannot dereference value-initialized list iterator");
         _STL_VERIFY(this->_Ptr != _Mycont->_Myhead, "cannot dereference end list iterator");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
@@ -157,7 +157,7 @@ public:
     _List_const_iterator& operator++() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         const auto _Mycont = static_cast<const _Mylist*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot increment value-initialized list iterator");
+        _STL_VERIFY(_Mycont, "cannot increment value-initialized list iterator");
         _STL_VERIFY(this->_Ptr != _Mycont->_Myhead, "cannot increment end list iterator");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
@@ -175,7 +175,7 @@ public:
         const auto _New_ptr = this->_Ptr->_Prev;
 #if _ITERATOR_DEBUG_LEVEL == 2
         const auto _Mycont = static_cast<const _Mylist*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot decrement value-initialized list iterator");
+        _STL_VERIFY(_Mycont, "cannot decrement value-initialized list iterator");
         _STL_VERIFY(_New_ptr != _Mycont->_Myhead, "cannot decrement begin list iterator");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
@@ -1210,7 +1210,7 @@ public:
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myhead->_Next->_Myval;
     }
@@ -1218,7 +1218,7 @@ public:
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myhead->_Next->_Myval;
     }
@@ -1226,7 +1226,7 @@ public:
     _NODISCARD reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myhead->_Prev->_Myval;
     }
@@ -1234,7 +1234,7 @@ public:
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myhead->_Prev->_Myval;
     }
@@ -1254,8 +1254,8 @@ public:
 
     void pop_front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "pop_front called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "pop_front() called on empty list");
+#endif
 
         _Unchecked_erase(_Mypair._Myval2._Myhead->_Next);
     }
@@ -1275,8 +1275,8 @@ public:
 
     void pop_back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "pop_back called on empty list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "pop_back() called on empty list");
+#endif
 
         _Unchecked_erase(_Mypair._Myval2._Myhead->_Prev);
     }
@@ -1543,9 +1543,7 @@ public:
         const auto _UFirst = _First._Ptr;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-        if (_UFirst == _Right._Mypair._Myval2._Myhead) {
-            _STL_REPORT_ERROR("list splice iterator outside range");
-        }
+        _STL_VERIFY(_UFirst != _Right._Mypair._Myval2._Myhead, "list splice iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         const auto _ULast = _UFirst->_Next;

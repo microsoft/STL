@@ -92,24 +92,31 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
-            constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
-            constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-            if constexpr (_Iter_copy_cat<_It, _Out>::_Bitcopy_constructible
-                          && _Sized_or_unreachable_sentinel_for<_Se, _It>
-                          && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+            constexpr bool _Is_sized1  = sized_sentinel_for<_Se, _It>;
+            constexpr bool _Is_sized2  = sized_sentinel_for<_OSe, _Out>;
+            constexpr bool _Can_memcpy = _Iter_copy_cat<_It, _Out>::_Bitcopy_constructible
+                                      && _Sized_or_unreachable_sentinel_for<_Se, _It>
+                                      && _Sized_or_unreachable_sentinel_for<_OSe, _Out>;
+            if constexpr (_Can_memcpy && (_Is_sized1 || _Is_sized2)) {
                 if constexpr (_Is_sized1 && _Is_sized2) {
                     return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                         _RANGES next(_OFirst, _STD move(_OLast)));
                 } else if constexpr (_Is_sized1) {
                     return _RANGES _Copy_memcpy_distance(
                         _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
-                } else if constexpr (_Is_sized2) {
+                } else {
+                    _STL_INTERNAL_STATIC_ASSERT(_Is_sized2);
                     return _RANGES _Copy_memcpy_distance(
                         _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
-                } else {
-                    _STL_ASSERT(false, "Tried to uninitialized_copy two ranges with unreachable sentinels");
                 }
             } else {
+                if constexpr (_Can_memcpy) {
+                    // We were eligible for the memcpy optimization above, except for both sentinels being unreachable.
+                    // The following classic code is doomed, because no exceptions will end the infinite loop.
+                    // Following our usual pattern, let's emit a debug assertion, then run the loop anyways.
+                    _STL_ASSERT(false, "Tried to std::uninitialized_copy() two ranges with unreachable sentinels");
+                }
+
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
                 for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
@@ -1042,18 +1049,10 @@ public:
     }
 
     _NODISCARD _Ty& operator*() const noexcept {
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Myptr, "auto_ptr not dereferenceable");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
         return *get();
     }
 
     _NODISCARD _Ty* operator->() const noexcept {
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Myptr, "auto_ptr not dereferenceable");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
         return get();
     }
 

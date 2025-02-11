@@ -99,7 +99,10 @@ struct _Span_iterator {
     }
 
     constexpr _Span_iterator& operator+=(const difference_type _Off) noexcept {
+#if _ITERATOR_DEBUG_LEVEL >= 1
         _Verify_offset(_Off);
+#endif // _ITERATOR_DEBUG_LEVEL >= 1
+
         _Myptr += _Off;
         return *this;
     }
@@ -116,8 +119,11 @@ struct _Span_iterator {
     }
 
     constexpr _Span_iterator& operator-=(const difference_type _Off) noexcept {
+#if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Off != _Min_possible_v<difference_type>, "integer overflow");
         _Verify_offset(-_Off);
+#endif // _ITERATOR_DEBUG_LEVEL >= 1
+
         _Myptr -= _Off;
         return *this;
     }
@@ -351,32 +357,31 @@ public:
     template <size_t _Count>
     _NODISCARD constexpr auto first() const noexcept /* strengthened */ {
         if constexpr (_Extent != dynamic_extent) {
-            static_assert(_Count <= _Extent, "Count out of range in span::first()");
+            static_assert(_Count <= _Extent, "Count out of range in span::first<Count>()");
         }
 #if _CONTAINER_DEBUG_LEVEL > 0
         else {
-            _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::first()");
+            _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::first<Count>()");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return span<element_type, _Count>{_Mydata, _Count};
     }
 
-    _NODISCARD constexpr auto first(const size_type _Count) const noexcept
-    /* strengthened */ {
+    _NODISCARD constexpr auto first(const size_type _Count) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::first(count)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return span<element_type, dynamic_extent>{_Mydata, _Count};
     }
 
     template <size_t _Count>
     _NODISCARD constexpr auto last() const noexcept /* strengthened */ {
         if constexpr (_Extent != dynamic_extent) {
-            static_assert(_Count <= _Extent, "Count out of range in span::last()");
+            static_assert(_Count <= _Extent, "Count out of range in span::last<Count>()");
         }
 #if _CONTAINER_DEBUG_LEVEL > 0
         else {
-            _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::last()");
+            _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::last<Count>()");
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return span<element_type, _Count>{_Mydata + (_Mysize - _Count), _Count};
@@ -385,23 +390,23 @@ public:
     _NODISCARD constexpr auto last(const size_type _Count) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::last(count)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return span<element_type, dynamic_extent>{_Mydata + (_Mysize - _Count), _Count};
     }
 
     template <size_t _Offset, size_t _Count = dynamic_extent>
     _NODISCARD constexpr auto subspan() const noexcept /* strengthened */ {
         if constexpr (_Extent != dynamic_extent) {
-            static_assert(_Offset <= _Extent, "Offset out of range in span::subspan()");
-            static_assert(
-                _Count == dynamic_extent || _Count <= _Extent - _Offset, "Count out of range in span::subspan()");
+            static_assert(_Offset <= _Extent, "Offset out of range in span::subspan<Offset, Count>()");
+            static_assert(_Count == dynamic_extent || _Count <= _Extent - _Offset,
+                "Count out of range in span::subspan<Offset, Count>()");
         }
 #if _CONTAINER_DEBUG_LEVEL > 0
         else {
-            _STL_VERIFY(_Offset <= _Mysize, "Offset out of range in span::subspan()");
+            _STL_VERIFY(_Offset <= _Mysize, "Offset out of range in span::subspan<Offset, Count>()");
 
             if constexpr (_Count != dynamic_extent) {
-                _STL_VERIFY(_Count <= _Mysize - _Offset, "Count out of range in span::subspan()");
+                _STL_VERIFY(_Count <= _Mysize - _Offset, "Count out of range in span::subspan<Offset, Count>()");
             }
         }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
@@ -432,7 +437,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mysize <= dynamic_extent / sizeof(element_type),
             "size of span in bytes exceeds std::numeric_limits<size_t>::max()");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return _Mysize * sizeof(element_type);
     }
 #pragma warning(pop)
@@ -444,8 +449,8 @@ public:
     // [span.elem] Element access
     _NODISCARD constexpr reference operator[](const size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Off < _Mysize, "span index out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Off < _Mysize, "span subscript out of range");
+#endif
         return _Mydata[_Off];
     }
 
@@ -453,15 +458,15 @@ public:
 #pragma warning(disable : 4127) // conditional expression is constant
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize > 0, "front of empty span");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize > 0, "front() called on empty span");
+#endif
         return _Mydata[0];
     }
 
     _NODISCARD constexpr reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize > 0, "back of empty span");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize > 0, "back() called on empty span");
+#endif
         return _Mydata[_Mysize - 1];
     }
 #pragma warning(pop)
