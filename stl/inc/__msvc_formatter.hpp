@@ -181,10 +181,12 @@ _FMT_P2286_END
 #define _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type)
 #endif // ^^^ !_HAS_CXX23 ^^^
 
-#define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
-    _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type)    \
-    template <_Format_supported_charT _CharT>   \
-    struct formatter<_Type, _CharT> : _Formatter_base<_Type, _CharT, _ArgType> {}
+#define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType)                               \
+    _FORMAT_SPECIALIZE_NONLOCKING_FOR(_Type)                                  \
+    template <>                                                               \
+    struct formatter<_Type, char> : _Formatter_base<_Type, char, _ArgType> {} \
+    template <>                                                               \
+    struct formatter<_Type, wchar_t> : _Formatter_base<_Type, wchar_t, _ArgType> {}
 
 _FORMAT_SPECIALIZE_FOR(int, _Basic_format_arg_type::_Int_type);
 _FORMAT_SPECIALIZE_FOR(unsigned int, _Basic_format_arg_type::_UInt_type);
@@ -208,8 +210,17 @@ _FORMAT_SPECIALIZE_FOR(unsigned char, _Basic_format_arg_type::_UInt_type);
 #undef _FORMAT_SPECIALIZE_NONLOCKING_FOR
 
 // not using the macro because we'd like to add 'set_debug_format' member function in C++23 mode
-template <_Format_supported_charT _CharT>
-struct formatter<char, _CharT> : _Formatter_base<char, _CharT, _Basic_format_arg_type::_Char_type> {
+template <>
+struct formatter<char, char> : _Formatter_base<char, char, _Basic_format_arg_type::_Char_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
+
+template <>
+struct formatter<char, wchar_t> : _Formatter_base<char, wchar_t, _Basic_format_arg_type::_Char_type> {
 #if _HAS_CXX23
     constexpr void set_debug_format() noexcept {
         this->_Set_debug_format();
@@ -229,8 +240,8 @@ struct formatter<wchar_t, wchar_t> : _Formatter_base<wchar_t, wchar_t, _Basic_fo
 
 // We could use the macro for these specializations, but it's confusing to refer to symbols that are defined
 // inside the macro in the macro's "call".
-template <_Format_supported_charT _CharT>
-struct formatter<_CharT*, _CharT> : _Formatter_base<_CharT*, _CharT, _Basic_format_arg_type::_CString_type> {
+template <>
+struct formatter<char*, char> : _Formatter_base<char*, char, _Basic_format_arg_type::_CString_type> {
 #if _HAS_CXX23
     constexpr void set_debug_format() noexcept {
         this->_Set_debug_format();
@@ -238,9 +249,8 @@ struct formatter<_CharT*, _CharT> : _Formatter_base<_CharT*, _CharT, _Basic_form
 #endif // _HAS_CXX23
 };
 
-template <_Format_supported_charT _CharT>
-struct formatter<const _CharT*, _CharT>
-    : _Formatter_base<const _CharT*, _CharT, _Basic_format_arg_type::_CString_type> {
+template <>
+struct formatter<wchar_t*, wchar_t> : _Formatter_base<wchar_t*, wchar_t, _Basic_format_arg_type::_CString_type> {
 #if _HAS_CXX23
     constexpr void set_debug_format() noexcept {
         this->_Set_debug_format();
@@ -248,8 +258,37 @@ struct formatter<const _CharT*, _CharT>
 #endif // _HAS_CXX23
 };
 
-template <_Format_supported_charT _CharT, size_t _Nx>
-struct formatter<_CharT[_Nx], _CharT> : _Formatter_base<_CharT[_Nx], _CharT, _Basic_format_arg_type::_CString_type> {
+template <>
+struct formatter<const char*, char>
+    : _Formatter_base<const char*, char, _Basic_format_arg_type::_CString_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
+
+template <>
+struct formatter<const wchar_t*, wchar_t>
+    : _Formatter_base<const wchar_t*, wchar_t, _Basic_format_arg_type::_CString_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
+
+template <size_t _Nx>
+struct formatter<char[_Nx], char> : _Formatter_base<char[_Nx], char, _Basic_format_arg_type::_CString_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
+
+template <size_t _Nx>
+struct formatter<wchar_t[_Nx], wchar_t> : _Formatter_base<wchar_t[_Nx], wchar_t, _Basic_format_arg_type::_CString_type> {
 #if _HAS_CXX23
     constexpr void set_debug_format() noexcept {
         this->_Set_debug_format();
@@ -263,9 +302,9 @@ class basic_string;
 _EXPORT_STD template <class _Elem, class _Traits>
 class basic_string_view;
 
-template <_Format_supported_charT _CharT, class _Traits, class _Allocator>
-struct formatter<basic_string<_CharT, _Traits, _Allocator>, _CharT>
-    : _Formatter_base<basic_string<_CharT, _Traits, _Allocator>, _CharT, _Basic_format_arg_type::_String_type> {
+template <class _Traits, class _Allocator>
+struct formatter<basic_string<char, _Traits, _Allocator>, char>
+    : _Formatter_base<basic_string<char, _Traits, _Allocator>, char, _Basic_format_arg_type::_String_type> {
 #if _HAS_CXX23
     constexpr void set_debug_format() noexcept {
         this->_Set_debug_format();
@@ -273,9 +312,29 @@ struct formatter<basic_string<_CharT, _Traits, _Allocator>, _CharT>
 #endif // _HAS_CXX23
 };
 
-template <_Format_supported_charT _CharT, class _Traits>
-struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
-    : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {
+template <class _Traits, class _Allocator>
+struct formatter<basic_string<wchar_t, _Traits, _Allocator>, wchar_t>
+    : _Formatter_base<basic_string<wchar_t, _Traits, _Allocator>, wchar_t, _Basic_format_arg_type::_String_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
+
+template <class _Traits>
+struct formatter<basic_string_view<char, _Traits>, char>
+    : _Formatter_base<basic_string_view<char, _Traits>, char, _Basic_format_arg_type::_String_type> {
+#if _HAS_CXX23
+    constexpr void set_debug_format() noexcept {
+        this->_Set_debug_format();
+    }
+#endif // _HAS_CXX23
+};
+
+template <class _Traits>
+struct formatter<basic_string_view<wchar_t, _Traits>, wchar_t>
+    : _Formatter_base<basic_string_view<wchar_t, _Traits>, wchar_t, _Basic_format_arg_type::_String_type> {
 #if _HAS_CXX23
     constexpr void set_debug_format() noexcept {
         this->_Set_debug_format();
@@ -375,23 +434,41 @@ struct formatter<pair<_Ty1, _Ty2>, _CharT>;
 template <_Format_supported_charT _CharT, class... _Types>
 struct formatter<tuple<_Types...>, _CharT>;
 
-template <_Format_supported_charT _CharT>
-constexpr bool enable_nonlocking_formatter_optimization<_CharT> = true;
+template <>
+constexpr bool enable_nonlocking_formatter_optimization<char> = true;
 
-template <_Format_supported_charT _CharT>
-constexpr bool enable_nonlocking_formatter_optimization<_CharT*> = true;
+template <>
+constexpr bool enable_nonlocking_formatter_optimization<wchar_t> = true;
 
-template <_Format_supported_charT _CharT>
-constexpr bool enable_nonlocking_formatter_optimization<const _CharT*> = true;
+template <>
+constexpr bool enable_nonlocking_formatter_optimization<char*> = true;
 
-template <_Format_supported_charT _CharT, size_t _Nx>
-constexpr bool enable_nonlocking_formatter_optimization<_CharT[_Nx]> = true;
+template <>
+constexpr bool enable_nonlocking_formatter_optimization<wchar_t*> = true;
 
-template <_Format_supported_charT _CharT, class _Traits, class _Allocator>
-constexpr bool enable_nonlocking_formatter_optimization<basic_string<_CharT, _Traits, _Allocator>> = true;
+template <>
+constexpr bool enable_nonlocking_formatter_optimization<const char*> = true;
 
-template <_Format_supported_charT _CharT, class _Traits>
-constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<_CharT, _Traits>> = true;
+template <>
+constexpr bool enable_nonlocking_formatter_optimization<const wchar_t*> = true;
+
+template <size_t _Nx>
+constexpr bool enable_nonlocking_formatter_optimization<char[_Nx]> = true;
+
+template <size_t _Nx>
+constexpr bool enable_nonlocking_formatter_optimization<wchar_t[_Nx]> = true;
+
+template <class _Traits, class _Allocator>
+constexpr bool enable_nonlocking_formatter_optimization<basic_string<char, _Traits, _Allocator>> = true;
+
+template <class _Traits, class _Allocator>
+constexpr bool enable_nonlocking_formatter_optimization<basic_string<wchar_t, _Traits, _Allocator>> = true;
+
+template <class _Traits>
+constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<char, _Traits>> = true;
+
+template <class _Traits>
+constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<wchar_t, _Traits>> = true;
 
 template <class _Ty1, class _Ty2>
 constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
