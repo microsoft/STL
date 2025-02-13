@@ -428,35 +428,6 @@ std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:0 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
 
-# DevCom-10808176 VSO-2319111 MSVC doesn't properly destroy a loop variable in constant evaluation
-# Fixed in VS 2022 17.14 Preview 1.
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_size.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_size.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_size_value.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_size_value.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:1 FAIL
-std/containers/sequences/vector/reverse_iterators.pass.cpp:0 FAIL
-std/containers/sequences/vector/reverse_iterators.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:1 FAIL
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
-
 # VSO-2338829 constexpr error "subtracting pointers to elements of different arrays" in _String_const_iterator::_Verify_offset()
 std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:1 FAIL
@@ -1098,6 +1069,10 @@ std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:1 FA
 # Not analyzed. Likely MSVC constexpr bug with negative chars passed to __builtin_memcmp.
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:0 FAIL
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:1 FAIL
+
+# Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of a variable outside its lifetime"
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
 
 # Not analyzed. SKIPPED because this is x86-specific, fatal error C1060: compiler is out of heap space
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.iterator.pass.cpp:0 SKIPPED
