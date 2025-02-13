@@ -116,14 +116,6 @@ public:
     };
 
 private:
-    static constexpr void _Validate(const size_t _Pos) noexcept { // verify that _Pos is within bounds
-#if _ITERATOR_DEBUG_LEVEL == 0
-        (void) _Pos;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
-        _STL_VERIFY(_Pos < _Bits, "bitset subscript out of range");
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
-    }
-
     constexpr bool _Subscript(size_t _Pos) const noexcept {
         return (_Array[_Pos / _Bitsperword] & (_Ty{1} << _Pos % _Bitsperword)) != 0;
     }
@@ -133,12 +125,18 @@ private:
 
 public:
     _NODISCARD constexpr bool operator[](const size_t _Pos) const noexcept /* strengthened */ {
-        _Validate(_Pos);
+#if _MSVC_STL_HARDENING_BITSET || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Pos < _Bits, "bitset subscript out of range");
+#endif
+
         return _Subscript(_Pos);
     }
 
     _NODISCARD _CONSTEXPR23 reference operator[](const size_t _Pos) noexcept /* strengthened */ {
-        _Validate(_Pos);
+#if _MSVC_STL_HARDENING_BITSET || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Pos < _Bits, "bitset subscript out of range");
+#endif
+
         return reference(*this, _Pos);
     }
 

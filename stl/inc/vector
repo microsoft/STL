@@ -1736,7 +1736,7 @@ public:
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
 
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_My_data._Myfirst != _Mylast, "pop_back() called on empty vector");
 #endif
 
@@ -1913,7 +1913,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Ty& operator[](const size_type _Pos) noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
             _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
 #endif
@@ -1923,7 +1923,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 const _Ty& operator[](const size_type _Pos) const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
             _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
 #endif
@@ -1951,7 +1951,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Ty& front() noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
 #endif
 
@@ -1960,7 +1960,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 const _Ty& front() const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
 #endif
 
@@ -1969,7 +1969,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Ty& back() noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
 #endif
 
@@ -1978,7 +1978,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 const _Ty& back() const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
 #endif
 
@@ -3209,7 +3209,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 const_reference operator[](size_type _Off) const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
 #endif
 
@@ -3219,7 +3219,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 reference operator[](size_type _Off) noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
 #endif
 
@@ -3229,7 +3229,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 reference front() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
 #endif
 
@@ -3237,7 +3237,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 const_reference front() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
 #endif
 
@@ -3245,7 +3245,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 reference back() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
 #endif
 
@@ -3253,7 +3253,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 const_reference back() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
 #endif
 
@@ -3272,6 +3272,10 @@ public:
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void pop_back() noexcept /* strengthened */ {
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this->_Mysize != 0, "pop_back() called on empty vector<bool>");
+#endif
+
         erase(end() - 1);
     }
 

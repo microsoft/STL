@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <cassert>
 #include <cstddef>
 #include <ranges>
@@ -105,11 +103,6 @@ int main(int argc, char* argv[]) {
         test_operator_predecrement_before_begin,
         test_operator_postdecrement_value_initialized_iterator,
         test_operator_postdecrement_before_begin,
-    });
-#else // ^^^ test everything / test only _CONTAINER_DEBUG_LEVEL cases vvv
-    exec.add_death_tests({
-        test_view_predicate,
-        test_view_begin,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 

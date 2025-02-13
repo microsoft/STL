@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <array>
 #include <cstddef>
 #include <mdspan>
@@ -41,7 +39,7 @@ void test_construction_from_other_stride_mapping_1() {
     layout_stride::mapping<Ext> m1{Ext{}, array{1, 2}};
     // For all r in the range [0, extents_type::rank()), other.stride(r) must be equal to
     // extents().rev-prod-of-extents(r)
-    layout_right::mapping<Ext> m2{m1};
+    [[maybe_unused]] layout_right::mapping<Ext> m2{m1};
 }
 
 void test_construction_from_other_stride_mapping_2() {
@@ -67,6 +65,8 @@ void test_stride_function() {
 
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
+
+#if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
         test_construction_from_extents_type_with_signed_index_type,
         test_construction_from_extents_type_with_unsigned_index_type,
@@ -77,5 +77,7 @@ int main(int argc, char* argv[]) {
         test_call_operator,
         test_stride_function,
     });
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
     return exec.run(argc, argv);
 }

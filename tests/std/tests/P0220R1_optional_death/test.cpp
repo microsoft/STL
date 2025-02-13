@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <optional>
 #include <utility>
 
@@ -47,6 +45,7 @@ void test_nullopt_operator_star_const_rvalue() {
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
 
+#if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
         test_nullopt_operator_arrow,
         test_nullopt_operator_arrow_const,
@@ -55,6 +54,7 @@ int main(int argc, char* argv[]) {
         test_nullopt_operator_star_rvalue,
         test_nullopt_operator_star_const_rvalue,
     });
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
     return exec.run(argc, argv);
 }

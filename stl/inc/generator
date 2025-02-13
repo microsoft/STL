@@ -477,14 +477,14 @@ namespace _Gen_detail {
 
         _NODISCARD _Ref operator*() const
             noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr))) /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(!_Coro.done(), "Can't dereference generator end iterator");
 #endif
             return static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr);
         }
 
         _Iterator& operator++() {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(!_Coro.done(), "Can't increment generator end iterator");
 #endif
             _Coro.promise()._Get_top().resume();
@@ -565,7 +565,7 @@ public:
 
     _NODISCARD _Gen_detail::_Iter_provider<_Value, _Ref>::_Iterator begin() {
         // Pre: _Coro is suspended at its initial suspend point
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Coro, "Can't call begin on moved-from generator");
 #endif
         _Coro.resume();

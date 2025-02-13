@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <ranges>
 
 #include <test_death.hpp>
@@ -17,11 +15,11 @@ void test_constructor_negative_size() {
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
 
-#ifdef _DEBUG
+#if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
         test_constructor_negative_size,
     });
-#endif // _DEBUG
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
     return exec.run(argc, argv);
 }

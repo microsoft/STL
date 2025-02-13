@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <cassert>
 #include <ranges>
 #include <span>
@@ -109,11 +107,6 @@ int main(int argc, char* argv[]) {
         test_fwd_iterator_advance_past_end,
         test_fwd_iterator_advance_past_end_with_integer_overflow,
         test_fwd_iterator_advance_negative_min,
-    });
-#else // ^^^ test everything / test only _CONTAINER_DEBUG_LEVEL cases vvv
-    exec.add_death_tests({
-        test_view_negative_size_forward_range,
-        test_view_negative_size_input_range,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
