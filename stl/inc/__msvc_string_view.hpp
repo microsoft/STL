@@ -1380,7 +1380,7 @@ public:
         _In_reads_(_Count) const const_pointer _Cts, const size_type _Count) noexcept // strengthened
         : _Mydata(_Cts), _Mysize(_Count) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Count == 0 || _Cts, "non-zero size null string_view");
+        _STL_VERIFY(_Count == 0 || _Cts, "cannot construct a string_view from a null pointer and a non-zero size");
 #endif
     }
 
