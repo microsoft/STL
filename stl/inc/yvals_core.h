@@ -802,6 +802,8 @@
 //                copy/move constructors and copy/move assignment operators are not trivial (/Wall)
 // warning C5246: 'member': the initialization of a subobject should be wrapped in braces (/Wall)
 // warning C5278: adding a specialization for 'type trait' has undefined behavior
+// warning C5280: a static operator '()' requires at least '/std:c++23preview'
+// warning C5281: a static lambda requires at least '/std:c++23preview'
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
@@ -809,7 +811,8 @@
 #define _STL_DISABLED_WARNINGS                        \
     4180 4324 4412 4455 4494 4514 4574 4582 4583 4587 \
     4588 4619 4623 4625 4626 4643 4648 4702 4793 4820 \
-    4868 4988 5026 5027 5045 5220 5246 5278 6294      \
+    4868 4988 5026 5027 5045 5220 5246 5278 5280 5281 \
+    6294                                              \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -820,6 +823,7 @@
 // warning: constexpr if is a C++17 extension [-Wc++17-extensions]
 // warning: explicit(bool) is a C++20 extension [-Wc++20-extensions]
 // warning: declaring overloaded 'operator()' as 'static' is a C++23 extension [-Wc++23-extensions]
+// warning: static lambdas are a C++23 extension [-Wc++23-extensions]
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
 // warning: '#pragma float_control' is not supported on this target - ignored [-Wignored-pragmas]
