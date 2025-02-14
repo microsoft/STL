@@ -324,13 +324,8 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
-# P1169R4 static operator()
-std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 FAIL
-std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp:0 FAIL
-std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp:1 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp:1 FAIL
+
+# None!
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -1266,6 +1261,10 @@ std/containers/sequences/vector/vector.capacity/shrink_to_fit_exceptions.pass.cp
 # Not analyzed. Our stdalign.h doesn't define __alignas_is_defined in C++ mode.
 std/depr/depr.c.headers/stdalign_h.compile.pass.cpp:0 FAIL
 std/depr/depr.c.headers/stdalign_h.compile.pass.cpp:1 FAIL
+
+# Not analyzed. Probably an MSVC compiler bug, as it rejects `n | negate | negate` while Clang accepts.
+std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 FAIL
 
 
 # *** XFAILS WHICH PASS ***
