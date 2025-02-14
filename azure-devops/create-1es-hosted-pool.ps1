@@ -18,7 +18,7 @@ $VMSize = 'Standard_F32as_v6'
 $ProtoVMName = 'PROTOTYPE'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
-$ImageSku = '2025-datacenter-g2'
+$ImageSku = '2025-datacenter-azure-edition'
 
 $ProgressActivity = 'Preparing STL CI pool'
 $TotalProgress = 26
