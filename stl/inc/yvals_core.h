@@ -2014,13 +2014,21 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
-#ifdef __cpp_static_call_operator
-#define _STATIC_CALL_OPERATOR static
-#define _CONST_CALL_OPERATOR
-#else // ^^^ defined(__cpp_static_call_operator) / !defined(__cpp_static_call_operator) vvv
+#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
-#endif // ^^^ !defined(__cpp_static_call_operator) ^^^
+#define _STATIC_LAMBDA
+#else // ^^^ workaround for CUDA / no workaround for CUDA vvv
+#define _STATIC_CALL_OPERATOR static
+#define _CONST_CALL_OPERATOR
+
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2383148, static lambdas aren't accepted by /Zc:lambda-
+#define _STATIC_LAMBDA static
+#else // ^^^ no workaround for MSVC / workaround for MSVC vvv
+#define _STATIC_LAMBDA
+#endif // ^^^ workaround for MSVC ^^^
+
+#endif // ^^^ no workaround for CUDA ^^^
 
 #ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize MSVC __restrict; CUDA __restrict__ is not usable in C++
 #define _RESTRICT

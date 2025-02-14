@@ -337,19 +337,19 @@ constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
 #if _HAS_TZCNT_BSF_INTRINSICS && _HAS_CXX20
     if (!_STD is_constant_evaluated()) {
 #ifdef __AVX2__
-        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_tzcnt(_Val); });
+        return _Callback([](_Ty _Val) _STATIC_LAMBDA { return _Countr_zero_tzcnt(_Val); });
 #else // ^^^ AVX2 / not AVX2 vvv
         const bool _Definitely_have_tzcnt = __isa_available >= _Stl_isa_available_avx2;
         if (_Definitely_have_tzcnt) {
-            return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_tzcnt(_Val); });
+            return _Callback([](_Ty _Val) _STATIC_LAMBDA { return _Countr_zero_tzcnt(_Val); });
         } else {
-            return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_bsf(_Val); });
+            return _Callback([](_Ty _Val) _STATIC_LAMBDA { return _Countr_zero_bsf(_Val); });
         }
 #endif // ^^^ not AVX2 ^^^
     }
 #endif // ^^^ _HAS_TZCNT_BSF_INTRINSICS && _HAS_CXX20 ^^^
     // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
-    return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_fallback(_Val); });
+    return _Callback([](_Ty _Val) _STATIC_LAMBDA { return _Countr_zero_fallback(_Val); });
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
@@ -376,13 +376,13 @@ _CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
 #if !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE
         const bool _Definitely_have_popcnt = __isa_available >= _Stl_isa_available_sse42;
         if (!_Definitely_have_popcnt) {
-            return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Popcount_fallback(_Val); });
+            return _Callback([](_Ty _Val) _STATIC_LAMBDA { return _Popcount_fallback(_Val); });
         }
 #endif // ^^^ !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE ^^^
-        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Unchecked_popcount(_Val); });
+        return _Callback([](_Ty _Val) _STATIC_LAMBDA { return _Unchecked_popcount(_Val); });
     }
 #endif // ^^^ _HAS_POPCNT_INTRINSICS ^^^
-    return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Popcount_fallback(_Val); });
+    return _Callback([](_Ty _Val) _STATIC_LAMBDA { return _Popcount_fallback(_Val); });
 }
 
 #undef _HAS_POPCNT_INTRINSICS

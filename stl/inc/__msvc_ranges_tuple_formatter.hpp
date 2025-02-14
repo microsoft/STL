@@ -241,7 +241,7 @@ public:
         template <class _Ty>
         explicit handle(_Ty& _Val) noexcept
             : _Ptr(_STD addressof(_Val)), _Format([](basic_format_parse_context<_CharType>& _Parse_ctx,
-                                                      _Context& _Format_ctx, const void* _Ptr) _STATIC_CALL_OPERATOR {
+                                                      _Context& _Format_ctx, const void* _Ptr) _STATIC_LAMBDA {
                   using _Td = remove_const_t<_Ty>;
                   // doesn't drop const-qualifier per an unnumbered LWG issue
                   using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
