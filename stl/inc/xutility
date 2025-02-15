@@ -6216,7 +6216,9 @@ namespace ranges {
                         _Count = SIZE_MAX;
                     }
 
-                    // C23 7.32.4.6.9 "The wmemchr generic function"/2 doesn't work with unreachable_sentinel_t.
+                    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
+                    // it reads the characters sequentially and stops as soon as a matching character is found."
+                    // C23 7.32.4.6.9 "The wmemchr generic function"/2 lacks such wording, so we don't use wmemchr().
                     _Result = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
 
                     if constexpr (_Is_sized) {
