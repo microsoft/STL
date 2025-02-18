@@ -2007,5 +2007,6 @@ export const daily_table: DailyRow[] = [
     { date: '2025-02-14', merged: 18.71, pr: 13, cxx20: null, cxx23: 6, cxx26: 58, lwg: 6, issue: 424, bug: 146, sum_age: 22.21, } as DailyRow,
     { date: '2025-02-15', merged: 17.31, pr: 14, cxx20: null, cxx23: 6, cxx26: 58, lwg: 6, issue: 424, bug: 146, sum_age: 22.67, } as DailyRow,
     { date: '2025-02-16', merged: 16.13, pr: 14, cxx20: null, cxx23: 6, cxx26: 62, lwg: 9, issue: 424, bug: 146, sum_age: 23.14, } as DailyRow,
+    { date: '2025-02-17', merged: 14.98, pr: 15, cxx20: null, cxx23: 6, cxx26: 72, lwg: 9, issue: 424, bug: 146, sum_age: 23.61, } as DailyRow,
 ];
 // Generated file - DO NOT EDIT manually!
