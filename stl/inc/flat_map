@@ -810,7 +810,7 @@ protected:
     }
 
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
-    iterator _Emplace_hint(const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
+    iterator _Emplace_hint(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
         _STL_INTERNAL_STATIC_ASSERT(
             is_constructible_v<mapped_type, _MappedArgTypes...>
             && (is_same_v<remove_cvref_t<_OtherKey>, key_type>
@@ -823,7 +823,7 @@ protected:
         const weak_ordering _Hint_order = [&] {
             if constexpr (_IsUnique) {
                 if (_Position == _End || _Key_compare(_Key_val, *_Position._Key_it)) {
-                    if (_Position == _Begin || _Key_compare(_Position._Key_it[-1], _Key_val)) {
+                    if (_Position == _Begin || _Key_compare(*_STD prev(_Position._Key_it), _Key_val)) {
                         return weak_ordering::equivalent;
                     } else {
                         return weak_ordering::greater;
@@ -831,7 +831,7 @@ protected:
                 }
             } else {
                 if (_Position == _End || !_Key_compare(*_Position._Key_it, _Key_val)) {
-                    if (_Position == _Begin || !_Key_compare(_Key_val, _Position._Key_it[-1])) {
+                    if (_Position == _Begin || !_Key_compare(_Key_val, *_STD prev(_Position._Key_it))) {
                         return weak_ordering::equivalent;
                     } else {
                         return weak_ordering::greater;
@@ -843,6 +843,11 @@ protected:
 
         if (_Hint_order == weak_ordering::equivalent) {
             const auto _Dist = _Position._Key_it - _Begin._Key_it;
+            if constexpr (_IsUnique) {
+                if (_Position != _Begin && !_Key_compare(*_STD prev(_Position._Key_it), _Key_val)) {
+                    return begin() + _Dist;
+                }
+            }
             {
                 key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
                 mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
@@ -851,30 +856,35 @@ protected:
             return begin() + _Dist;
         }
 
-        if constexpr (_OverwriteIfExists) {
-            if (_Key_equal(_Key_val, *_Position._Key_it)) {
-                const auto _Dist = _Position._Key_it - _Begin._Key_it;
-                const auto _It   = begin() + _Dist;
-                *_It._Mapped_it  = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
-                return _It;
+        const auto _New_position = _Hint_order == weak_ordering::less ? _STD as_const(*this).lower_bound(_Key_val)
+                                                                      : _STD as_const(*this).upper_bound(_Key_val);
+        if constexpr (_IsUnique) {
+            if (_Hint_order == weak_ordering::less) {
+                if (_New_position != _End && !_Key_compare(_Key_val, *_New_position._Key_it)) {
+                    const auto _Dist = _New_position._Key_it - _Begin._Key_it;
+                    auto _It         = begin() + _Dist;
+                    if constexpr (_OverwriteIfExists) {
+                        *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
+                    }
+                    return _It;
+                }
+            } else {
+                if (_New_position != _Begin && !_Key_compare(*_STD prev(_New_position._Key_it), _Key_val)) {
+                    const auto _Dist = _STD prev(_New_position._Key_it) - _Begin._Key_it;
+                    auto _It         = begin() + _Dist;
+                    if constexpr (_OverwriteIfExists) {
+                        *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
+                    }
+                    return _It;
+                }
             }
-
-            _Position = _Hint_order == weak_ordering::less ? lower_bound(_Key_val) : upper_bound(_Key_val);
-            if (_Position != _End && !_Key_compare(_Key_val, *_Position._Key_it)) {
-                const auto _Dist = _Position._Key_it - _Begin._Key_it;
-                auto _It         = begin() + _Dist;
-                *_It._Mapped_it  = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
-                return _It;
-            }
-        } else {
-            _Position = _Hint_order == weak_ordering::less ? lower_bound(_Key_val) : upper_bound(_Key_val);
         }
 
-        const auto _Dist = _Position._Key_it - _Begin._Key_it;
+        const auto _Dist = _New_position - _Begin;
         {
             key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
             mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
-            _Insert_exact(_Position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
+            _Insert_exact(_New_position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
         }
         return begin() + _Dist;
     }
