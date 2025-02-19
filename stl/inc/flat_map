@@ -138,7 +138,7 @@ struct _Pairing_iterator_provider {
         }
 
         auto operator<=>(const _Iterator& _Right) const {
-            return _Key_it <=> _Right._Key_it;
+            return _Synth_three_way{}(_Key_it, _Right._Key_it);
         }
 
         _Iterator& operator--() {
