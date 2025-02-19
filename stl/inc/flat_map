@@ -978,7 +978,7 @@ private:
     size_type _Erase_key(_KeyTy&& _Key_val) {
         const auto _Equal_pos = equal_range(_STD forward<_KeyTy>(_Key_val));
         const auto _Count     = static_cast<size_type>(_Equal_pos.second - _Equal_pos.first);
-        erase(_Equal_pos.second, _Equal_pos.first);
+        erase(_Equal_pos.first, _Equal_pos.second);
         return _Count;
     }
 
