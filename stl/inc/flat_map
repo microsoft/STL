@@ -112,6 +112,11 @@ struct _Pairing_iterator_provider {
             return reference{*_Key_it, *_Mapped_it};
         }
 
+        friend pair<iter_rvalue_reference_t<_KeyIter>, iter_rvalue_reference_t<_MappedIter>> iter_move(
+            const _Iterator& _It) {
+            return {_RANGES iter_move(_It._Key_it), _RANGES iter_move(_It._Mapped_it)};
+        }
+
         pointer operator->() const {
             return pointer{**this};
         }
