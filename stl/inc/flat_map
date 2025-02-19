@@ -476,12 +476,6 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(
                   _Alloc, _STD move(static_cast<_Flat_map_base&>(_Other)._Data.values))} {}
 
-    _Derived& operator=(initializer_list<value_type> _Ilist) {
-        clear();
-        insert(_Ilist.begin(), _Ilist.end());
-        return static_cast<_Derived&>(*this); // TRANSITION, P0847R7, should use explicit object parameter
-    }
-
     // [container.reqmts] iterators
     _NODISCARD iterator begin() noexcept {
         return iterator{_Data.keys.cbegin(), _Data.values.begin()};
@@ -1087,7 +1081,7 @@ public:
     using typename _MyBase::value_type;
 
     using _MyBase::_MyBase;
-    using _MyBase::operator=;
+    using _MyBase::clear;
     using _MyBase::insert;
 
 #if defined(_MSC_VER) || defined(__clang__) || defined(__EDG__) // TRANSITION, P2582R1
@@ -1097,6 +1091,12 @@ public:
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
     flat_map(flat_map&& _Other, const _Allocator& _Al) : _MyBase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
+
+    flat_map& operator=(initializer_list<value_type> _Ilist) {
+        clear();
+        insert(_Ilist.begin(), _Ilist.end());
+        return *this;
+    }
 
     // [flat.map.access] Access
     _NODISCARD mapped_type& operator[](const key_type& _Key_val) {
@@ -1408,7 +1408,7 @@ public:
     using typename _MyBase::value_type;
 
     using _MyBase::_MyBase;
-    using _MyBase::operator=;
+    using _MyBase::clear;
     using _MyBase::insert;
 
 #if defined(_MSC_VER) || defined(__clang__) || defined(__EDG__) // TRANSITION, P2582R1
@@ -1418,6 +1418,12 @@ public:
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
     flat_multimap(flat_multimap&& _Other, const _Allocator& _Al) : _MyBase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
+
+    flat_multimap& operator=(initializer_list<value_type> _Ilist) {
+        clear();
+        insert(_Ilist.begin(), _Ilist.end());
+        return *this;
+    }
 
     // [flat.multimap.modifiers] Modifiers
     template <class... _ArgTypes>
