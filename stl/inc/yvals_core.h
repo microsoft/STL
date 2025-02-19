@@ -2018,17 +2018,19 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
 #define _STATIC_LAMBDA
-#else // ^^^ workaround for CUDA / no workaround for CUDA vvv
+#elif defined(__clang__) || defined(__EDG__) // no workaround
 #define _STATIC_CALL_OPERATOR static
 #define _CONST_CALL_OPERATOR
-
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2383148, static lambdas aren't accepted by /Zc:lambda-
 #define _STATIC_LAMBDA static
-#else // ^^^ no workaround for MSVC / workaround for MSVC vvv
+#elif _MSC_VER < 1944 // TRANSITION, internal toolset needs to be updated to VS 2022 17.14 Preview 1
+#define _STATIC_CALL_OPERATOR
+#define _CONST_CALL_OPERATOR const
 #define _STATIC_LAMBDA
-#endif // ^^^ workaround for MSVC ^^^
-
-#endif // ^^^ no workaround for CUDA ^^^
+#else // TRANSITION, VSO-2383148, fixed in VS 2022 17.14 Preview 3
+#define _STATIC_CALL_OPERATOR static
+#define _CONST_CALL_OPERATOR
+#define _STATIC_LAMBDA
+#endif // ^^^ workaround ^^^
 
 #ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize MSVC __restrict; CUDA __restrict__ is not usable in C++
 #define _RESTRICT
