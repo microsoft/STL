@@ -1122,10 +1122,14 @@ public:
     }
 
     // [flat.map.access] Access
-    _NODISCARD mapped_type& operator[](const key_type& _Key_val) {
+    _NODISCARD mapped_type& operator[](const key_type& _Key_val)
+        requires is_default_constructible_v<mapped_type>
+    {
         return this->try_emplace(_Key_val).first->second;
     }
-    _NODISCARD mapped_type& operator[](key_type&& _Key_val) {
+    _NODISCARD mapped_type& operator[](key_type&& _Key_val)
+        requires is_default_constructible_v<mapped_type>
+    {
         return this->try_emplace(_STD move(_Key_val)).first->second;
     }
 
