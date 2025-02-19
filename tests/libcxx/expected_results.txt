@@ -1308,6 +1308,7 @@ std/language.support/support.exception/propagation/current_exception.pass.cpp:2 
 # to silence warnings, but the MSVC-internal test harness doesn't yet parse ADDITIONAL_COMPILE_FLAGS.
 std/algorithms/alg.modifying.operations/alg.replace/ranges.replace.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/ranges.find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.fold/left_folds.pass.cpp:9 SKIPPED
