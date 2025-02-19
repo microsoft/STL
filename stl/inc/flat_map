@@ -154,14 +154,14 @@ struct _Pairing_iterator_provider {
         }
 
         _Iterator& operator+=(const difference_type _Off) {
-            _Key_it += _Off;
-            _Mapped_it += _Off;
+            _Key_it += static_cast<iter_difference_t<_KeyIter>>(_Off);
+            _Mapped_it += static_cast<iter_difference_t<_MappedIter>>(_Off);
             return *this;
         }
 
         _Iterator& operator-=(const difference_type _Off) {
-            _Key_it -= _Off;
-            _Mapped_it -= _Off;
+            _Key_it -= static_cast<iter_difference_t<_KeyIter>>(_Off);
+            _Mapped_it -= static_cast<iter_difference_t<_MappedIter>>(_Off);
             return *this;
         }
 
