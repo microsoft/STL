@@ -574,21 +574,21 @@ public:
         return emplace_hint(_Position, _STD forward<_PairValTy>(_Pair_val));
     }
 
-    template <class _InputIterator>
-        requires _Is_iterator_v<_InputIterator>
+    template <_Iterator_for_container _InputIterator>
     void insert(_InputIterator _First, _InputIterator _Last) {
+        _STL_INTERNAL_STATIC_ASSERT(_Iterator_for_container<_InputIterator>);
         _Insert_range<true, _IsUnique>(_First, _Last);
     }
 
-    template <class _InputIterator>
-        requires _Is_iterator_v<_InputIterator>
+    template <_Iterator_for_container _InputIterator>
     void insert(_Sorted_t, _InputIterator _First, _InputIterator _Last) {
+        _STL_INTERNAL_STATIC_ASSERT(_Iterator_for_container<_InputIterator>);
         _Insert_range<false, _IsUnique>(_First, _Last);
     }
 
     template <_Container_compatible_range<value_type> _Rng>
     void insert_range(_Rng&& _Range) {
-        insert(_RANGES begin(_Range), _RANGES end(_Range));
+        _Insert_range<true, _IsUnique>(_RANGES begin(_Range), _RANGES end(_Range));
     }
 
     void insert(initializer_list<value_type> _Ilist) {
@@ -927,14 +927,16 @@ private:
             return this->_Key_equal(_Left.first, _Right.first);
         });
         const auto _Remaining_count = _Subrange.begin() - _Sorted_view.begin();
-        _Data.keys.erase(_Data.keys.begin() + _Remaining_count, _Data.keys.end());
-        _Data.values.erase(_Data.values.begin() + _Remaining_count, _Data.values.end());
+        _Data.keys.erase(_Data.keys.begin() + static_cast<_RANGES range_difference_t<_KeyContainer>>(_Remaining_count),
+            _Data.keys.end());
+        _Data.values.erase(
+            _Data.values.begin() + static_cast<_RANGES range_difference_t<_MappedContainer>>(_Remaining_count),
+            _Data.values.end());
         _Guard._Target = nullptr;
     }
 
-    template <bool _NeedSorting, bool _NeedDeduping, class _InputIterator>
-        requires _Is_iterator_v<_InputIterator>
-    void _Insert_range(_InputIterator _First, _InputIterator _Last) {
+    template <bool _NeedSorting, bool _NeedDeduping, class _InputIterator, class _Sentinel>
+    void _Insert_range(_InputIterator _First, _Sentinel _Last) {
         _Clear_guard _Guard{this};
 
         const auto _Old_distance = static_cast<difference_type>(size());
