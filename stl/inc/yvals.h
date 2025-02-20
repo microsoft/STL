@@ -181,35 +181,15 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ !defined(_DEBUG) ^^^
 #endif // !defined(_STL_CRT_SECURE_INVALID_PARAMETER)
 
-#define _STL_REPORT_ERROR(mesg)                  \
-    do {                                         \
-        _RPTF0(_CRT_ASSERT, mesg);               \
-        _STL_CRT_SECURE_INVALID_PARAMETER(mesg); \
-    } while (false)
+#define _STL_REPORT_ERROR(mesg) \
+    _RPTF0(_CRT_ASSERT, mesg);  \
+    _STL_CRT_SECURE_INVALID_PARAMETER(mesg)
 
-#ifdef __clang__
-#define _STL_VERIFY(cond, mesg)                                                            \
-    _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wassume\"") do { \
-        if (cond) { /* contextually convertible to bool paranoia */                        \
-        } else {                                                                           \
-            _STL_REPORT_ERROR(mesg);                                                       \
-        }                                                                                  \
-                                                                                           \
-        _Analysis_assume_(cond);                                                           \
-    }                                                                                      \
-    while (false)                                                                          \
-    _Pragma("clang diagnostic pop")
-#else // ^^^ Clang / MSVC vvv
-#define _STL_VERIFY(cond, mesg)                                     \
-    do {                                                            \
-        if (cond) { /* contextually convertible to bool paranoia */ \
-        } else {                                                    \
-            _STL_REPORT_ERROR(mesg);                                \
-        }                                                           \
-                                                                    \
-        _Analysis_assume_(cond);                                    \
-    } while (false)
-#endif // ^^^ MSVC ^^^
+#define _STL_VERIFY(cond, mesg)  \
+    if (!(cond)) {               \
+        _STL_REPORT_ERROR(mesg); \
+    }                            \
+    _Analysis_assume_(cond)
 
 #ifdef _DEBUG
 #define _STL_ASSERT(cond, mesg) _STL_VERIFY(cond, mesg)
@@ -222,20 +202,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #else // ^^^ defined(_ENABLE_STL_INTERNAL_CHECK) / !defined(_ENABLE_STL_INTERNAL_CHECK) vvv
 #define _STL_INTERNAL_CHECK(...) _Analysis_assume_(__VA_ARGS__)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
-
-#ifndef _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
-#ifdef _DEBUG
-#define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 1
-#else // ^^^ defined(_DEBUG) / !defined(_DEBUG) vvv
-#define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 0
-#endif // ^^^ !defined(_DEBUG) ^^^
-#endif // !defined(_ENABLE_ATOMIC_REF_ALIGNMENT_CHECK)
-
-#if _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
-#define _ATOMIC_REF_CHECK_ALIGNMENT(cond, mesg) _STL_VERIFY(cond, mesg)
-#else
-#define _ATOMIC_REF_CHECK_ALIGNMENT(cond, mesg) _Analysis_assume_(cond)
-#endif
 
 #include <use_ansi.h>
 

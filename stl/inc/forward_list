@@ -131,7 +131,7 @@ public:
     _NODISCARD reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         const auto _Mycont = static_cast<const _Mylist*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot dereference value-initialized forward_list iterator");
+        _STL_VERIFY(_Mycont, "cannot dereference value-initialized forward_list iterator");
         _STL_VERIFY(this->_Ptr != _Mycont->_Before_head(), "cannot dereference forward_list before_begin");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
@@ -902,7 +902,7 @@ public:
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Myhead != nullptr, "front() called on empty forward_list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myhead->_Myval;
     }
@@ -910,7 +910,7 @@ public:
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Myhead != nullptr, "front() called on empty forward_list");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myhead->_Myval;
     }

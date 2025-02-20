@@ -1381,7 +1381,7 @@ public:
         : _Mydata(_Cts), _Mysize(_Count) {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Count == 0 || _Cts, "non-zero size null string_view");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
     }
 
 #if _HAS_CXX20
@@ -1476,7 +1476,7 @@ public:
     _NODISCARD constexpr const_reference operator[](const size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < _Mysize, "string_view subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         // CodeQL [SM01954] This index is optionally validated above.
         return _Mydata[_Off];
@@ -1490,30 +1490,30 @@ public:
 
     _NODISCARD constexpr const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize != 0, "cannot call front on empty string_view");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize != 0, "front() called on empty string_view");
+#endif
         return _Mydata[0];
     }
 
     _NODISCARD constexpr const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize != 0, "cannot call back on empty string_view");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize != 0, "back() called on empty string_view");
+#endif
         return _Mydata[_Mysize - 1];
     }
 
     constexpr void remove_prefix(const size_type _Count) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize >= _Count, "cannot remove prefix longer than total size");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize >= _Count, "cannot remove_prefix() larger than string_view size");
+#endif
         _Mydata += _Count;
         _Mysize -= _Count;
     }
 
     constexpr void remove_suffix(const size_type _Count) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize >= _Count, "cannot remove suffix longer than total size");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Mysize >= _Count, "cannot remove_suffix() larger than string_view size");
+#endif
         _Mysize -= _Count;
     }
 

@@ -323,13 +323,8 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
-# P1169R4 static operator()
-std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 FAIL
-std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp:0 FAIL
-std/thread/futures/futures.task/futures.task.members/ctad.static.compile.pass.cpp:1 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp:0 FAIL
-std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/ctad.static.compile.pass.cpp:1 FAIL
+
+# None!
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -426,35 +421,6 @@ std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
 # VSO-1948221 x86chk ICE with constexpr type_info: Assertion failed: isIndirection()
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:0 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
-
-# DevCom-10808176 VSO-2319111 MSVC doesn't properly destroy a loop variable in constant evaluation
-# Fixed in VS 2022 17.14 Preview 1.
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_size.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_size.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_size_value.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_size_value.pass.cpp:1 FAIL
-std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector.bool/construct_size_value_alloc.pass.cpp:1 FAIL
-std/containers/sequences/vector/reverse_iterators.pass.cpp:0 FAIL
-std/containers/sequences/vector/reverse_iterators.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value.pass.cpp:1 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:0 FAIL
-std/containers/sequences/vector/vector.cons/construct_size_value_alloc.pass.cpp:1 FAIL
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
 
 # VSO-2338829 constexpr error "subtracting pointers to elements of different arrays" in _String_const_iterator::_Verify_offset()
 std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:0 FAIL
@@ -586,11 +552,8 @@ std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAI
 
 
 # *** VCRUNTIME BUGS ***
-# DevCom-10373274 VSO-1824997 "vcruntime nothrow array operator new falls back on the wrong function"
-# This passes for the :1 (ASan) configuration, surprisingly.
-# Fixed in VS 2022 17.14 Preview 1.
-std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:0 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.replace.indirect.pass.cpp:2 FAIL
+
+# None!
 
 
 # *** CRT BUGS ***
@@ -995,10 +958,12 @@ std/containers/sequences/vector/vector.modifiers/destroy_elements.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/insert_range.pass.cpp FAIL
 std/strings/basic.string/string.modifiers/string_replace/replace_with_range.pass.cpp FAIL
 std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp FAIL
-std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
+
+# Not analyzed, failing due to constexpr step limits. SKIPPED because they occasionally pass in certain configurations.
+std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp SKIPPED
+std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp SKIPPED
+std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp SKIPPED
+std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp SKIPPED
 
 # Not analyzed. In debug mode, looks like a proxy object unexpectedly exhausts an 80-byte buffer.
 # In release mode, fails in a later assertion that appears to be testing libc++-specific behavior.
@@ -1100,6 +1065,10 @@ std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:1 FA
 # Not analyzed. Likely MSVC constexpr bug with negative chars passed to __builtin_memcmp.
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:0 FAIL
 std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:1 FAIL
+
+# Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of a variable outside its lifetime"
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
 
 # Not analyzed. SKIPPED because this is x86-specific, fatal error C1060: compiler is out of heap space
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.iterator.pass.cpp:0 SKIPPED
@@ -1294,6 +1263,10 @@ std/containers/sequences/vector/vector.capacity/shrink_to_fit_exceptions.pass.cp
 std/depr/depr.c.headers/stdalign_h.compile.pass.cpp:0 FAIL
 std/depr/depr.c.headers/stdalign_h.compile.pass.cpp:1 FAIL
 
+# Not analyzed. Probably an MSVC compiler bug, as it rejects `n | negate | negate` while Clang accepts.
+std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 FAIL
+
 
 # *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
@@ -1334,6 +1307,7 @@ std/language.support/support.exception/propagation/current_exception.pass.cpp:2 
 # to silence warnings, but the MSVC-internal test harness doesn't yet parse ADDITIONAL_COMPILE_FLAGS.
 std/algorithms/alg.modifying.operations/alg.replace/ranges.replace.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/ranges.find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.fold/left_folds.pass.cpp:9 SKIPPED
@@ -1380,3 +1354,10 @@ std/containers/sequences/vector/vector.modifiers/assert.push_back.invalidation.p
 # This test is marked as `REQUIRES: has-unix-headers, libcpp-has-abi-bounded-iterators-in-std-array`.
 # Listing these on separate lines would allow magic_comments.txt to recognize it.
 std/containers/sequences/array/assert.iterators.pass.cpp:9 SKIPPED
+
+# These tests emit C5321, which warns when the resolution to CWG-1656 affects a u8 string literal.
+# The conformant behavior is opt-in because it can silently change behavior.
+# warning C5321: nonstandard extension used: encoding '\x80' as a multi-byte utf-8 character. Use \u instead
+# for cross platform compatibility or '/Zc:u8EscapeEncoding' to disable the extension.
+std/utilities/format/format.functions/escaped_output.unicode.pass.cpp:9 SKIPPED
+std/utilities/format/format.functions/fill.unicode.pass.cpp:9 SKIPPED

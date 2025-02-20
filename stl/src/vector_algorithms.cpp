@@ -4481,12 +4481,18 @@ extern "C" {
 
 // TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_1(const void* const _First, const uint8_t _Val) noexcept {
+    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
+    // it reads the characters sequentially and stops as soon as a matching character is found."
     return memchr(_First, _Val, SIZE_MAX);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_2(const void* const _First, const uint16_t _Val) noexcept {
-    return wmemchr(static_cast<const wchar_t*>(_First), static_cast<wchar_t>(_Val), SIZE_MAX);
+    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
+    // it reads the characters sequentially and stops as soon as a matching character is found."
+    // C23 7.32.4.6.9 "The wmemchr generic function"/2 lacks such wording,
+    // so we don't use wmemchr(), avoiding issues with unreachable_sentinel_t.
+    return __std_find_trivial_unsized_impl(_First, _Val);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility

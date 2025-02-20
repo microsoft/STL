@@ -533,7 +533,7 @@ public:
     _NODISCARD _CONSTEXPR17 reference operator[](_In_range_(<, _Size) size_type _Pos) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Size, "array subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Elems[_Pos];
     }
@@ -542,7 +542,7 @@ public:
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Size, "array subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Elems[_Pos];
     }
@@ -708,48 +708,48 @@ public:
 
     _NODISCARD reference operator[](size_type) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_REPORT_ERROR("array<T, 0> subscript is invalid");
+#endif
 
         return *data();
     }
 
     _NODISCARD const_reference operator[](size_type) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_REPORT_ERROR("array<T, 0> subscript is invalid");
+#endif
 
         return *data();
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array<T, 0>::front() invalid");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_REPORT_ERROR("array<T, 0>::front() is invalid");
+#endif
 
         return *data();
     }
 
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array<T, 0>::front() invalid");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_REPORT_ERROR("array<T, 0>::front() is invalid");
+#endif
 
         return *data();
     }
 
     _NODISCARD reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array<T, 0>::back() invalid");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_REPORT_ERROR("array<T, 0>::back() is invalid");
+#endif
 
         return *data();
     }
 
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_REPORT_ERROR("array<T, 0>::back() invalid");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_REPORT_ERROR("array<T, 0>::back() is invalid");
+#endif
 
         return *data();
     }

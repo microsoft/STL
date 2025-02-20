@@ -120,7 +120,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Pos;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
-        _STL_VERIFY(_Pos < _Bits, "bitset index outside range");
+        _STL_VERIFY(_Pos < _Bits, "bitset subscript out of range");
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL != 0 ^^^
     }
 
@@ -132,7 +132,7 @@ private:
     static constexpr unsigned long long _Mask = (1ULL << (_Need_mask ? _Bits : 0)) - 1ULL;
 
 public:
-    _NODISCARD constexpr bool operator[](size_t _Pos) const noexcept /* strengthened */ {
+    _NODISCARD constexpr bool operator[](const size_t _Pos) const noexcept /* strengthened */ {
         _Validate(_Pos);
         return _Subscript(_Pos);
     }

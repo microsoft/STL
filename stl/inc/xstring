@@ -106,9 +106,9 @@ public:
             return;
         }
 
-        _STL_ASSERT(_Ptr, "cannot seek value-initialized string iterator");
+        _STL_VERIFY(_Ptr, "cannot seek value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot seek string iterator because the iterator was "
+        _STL_VERIFY(_Mycont, "cannot seek string iterator because the iterator was "
                              "invalidated (e.g. reallocation occurred, or the string was destroyed)");
         const auto _Contptr = _Mycont->_Myptr();
         const auto _Rawptr  = _Unfancy(_Ptr);
@@ -622,54 +622,57 @@ private:
 
     static _CONSTEXPR20 void _Apply_annotation(const value_type* const _First, const size_type _Capacity,
         const size_type _Old_size, const size_type _New_size) noexcept {
+        if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return;
-        }
+            if (_STD is_constant_evaluated()) {
+                return;
+            }
 #endif // _HAS_CXX20
-       // Don't annotate small strings; only annotate on the heap.
-        if (_Capacity <= _Small_string_capacity || !_Asan_string_should_annotate) {
-            return;
+
+            // Don't annotate small strings; only annotate on the heap.
+            if (_Capacity <= _Small_string_capacity || !_Asan_string_should_annotate) {
+                return;
+            }
+
+            // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator
+            const void* const _End      = _First + _Capacity + 1;
+            const void* const _Old_last = _First + _Old_size + 1;
+            const void* const _New_last = _First + _New_size + 1;
+
+            constexpr bool _Large_string_always_asan_aligned =
+                (_Container_allocation_minimum_asan_alignment<basic_string>) >= _Asan_granularity;
+
+            // for the non-aligned buffer options, the buffer must always have size >= 9 bytes,
+            // so it will always end at least one shadow memory section.
+
+            _Asan_aligned_pointers _Aligned;
+            if constexpr (_Large_string_always_asan_aligned) {
+                _Aligned = {_First, _STD _Get_asan_aligned_after(_End)};
+            } else {
+                _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
+            }
+            const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
+            const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
+
+            // --- always aligned case ---
+            // old state:
+            //   [_First, _Old_last) valid
+            //   [_Old_last, asan_aligned_after(_End)) poison
+            // new state:
+            //   [_First, _New_last) valid
+            //   [_New_last, asan_aligned_after(_End)) poison
+
+            // --- sometimes non-aligned case ---
+            // old state:
+            //   [_Aligned._First, _Old_fixed) valid
+            //   [_Old_fixed, _Aligned._End) poison
+            //   [_Aligned._End, _End) valid
+            // new state:
+            //   [_Aligned._First, _New_fixed) valid
+            //   [_New_fixed, _Aligned._End) poison
+            //   [_Aligned._End, _End) valid
+            _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
         }
-
-        // Note that `_Capacity`, `_Old_size`, and `_New_size` do not include the null terminator
-        const void* const _End      = _First + _Capacity + 1;
-        const void* const _Old_last = _First + _Old_size + 1;
-        const void* const _New_last = _First + _New_size + 1;
-
-        constexpr bool _Large_string_always_asan_aligned =
-            (_Container_allocation_minimum_asan_alignment<basic_string>) >= _Asan_granularity;
-
-        // for the non-aligned buffer options, the buffer must always have size >= 9 bytes,
-        // so it will always end at least one shadow memory section.
-
-        _Asan_aligned_pointers _Aligned;
-        if constexpr (_Large_string_always_asan_aligned) {
-            _Aligned = {_First, _STD _Get_asan_aligned_after(_End)};
-        } else {
-            _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
-        }
-        const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
-        const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
-
-        // --- always aligned case ---
-        // old state:
-        //   [_First, _Old_last) valid
-        //   [_Old_last, asan_aligned_after(_End)) poison
-        // new state:
-        //   [_First, _New_last) valid
-        //   [_New_last, asan_aligned_after(_End)) poison
-
-        // --- sometimes non-aligned case ---
-        // old state:
-        //   [_Aligned._First, _Old_fixed) valid
-        //   [_Old_fixed, _Aligned._End) poison
-        //   [_Aligned._End, _End) valid
-        // new state:
-        //   [_Aligned._First, _New_fixed) valid
-        //   [_New_fixed, _Aligned._End) poison
-        //   [_Aligned._End, _End) valid
-        _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
     }
 
 #define _ASAN_STRING_REMOVE(_Str)                       (_Str)._Remove_annotation()
@@ -1500,7 +1503,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem* const _Ptr,
-                const size_type _Count) _STATIC_CALL_OPERATOR {
+                const size_type _Count) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
                 _Traits::copy(_New_ptr + _Old_size, _Ptr, _Count);
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
@@ -1527,7 +1530,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Count,
-                const _Elem _Ch) _STATIC_CALL_OPERATOR {
+                const _Elem _Ch) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
                 _Traits::assign(_New_ptr + _Old_size, _Count, _Ch);
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
@@ -1605,7 +1608,7 @@ public:
 
         return _Reallocate_for(
             _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _Elem* const _Ptr) _STATIC_CALL_OPERATOR {
+            [](_Elem* const _New_ptr, const size_type _Count, const _Elem* const _Ptr) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Ptr, _Count);
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
@@ -1629,7 +1632,7 @@ public:
 
         return _Reallocate_for(
             _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
+            [](_Elem* const _New_ptr, const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
                 _Traits::assign(_New_ptr, _Count, _Ch);
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
@@ -1745,7 +1748,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const _Elem* const _Ptr, const size_type _Count) _STATIC_CALL_OPERATOR {
+                const _Elem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::copy(_New_ptr + _Off, _Ptr, _Count);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, _Old_size - _Off + 1);
@@ -1776,7 +1779,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
+                const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::assign(_New_ptr + _Off, _Count, _Ch);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, _Old_size - _Off + 1);
@@ -1988,7 +1991,7 @@ public:
         return _Reallocate_grow_by(
             _Growth,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const _Elem* const _Ptr, const size_type _Count) _STATIC_CALL_OPERATOR {
+                const size_type _Nx, const _Elem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::copy(_New_ptr + _Off, _Ptr, _Count);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
@@ -2028,7 +2031,7 @@ public:
         return _Reallocate_grow_by(
             _Count - _Nx,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
+                const size_type _Nx, const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::assign(_New_ptr + _Off, _Count, _Ch);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
@@ -2245,7 +2248,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference operator[](const size_type _Off) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off <= _Mypair._Myval2._Mysize, "string subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return _Mypair._Myval2._Myptr()[_Off];
     }
 
@@ -2253,7 +2256,7 @@ public:
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off <= _Mypair._Myval2._Mysize, "string subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         return _Mypair._Myval2._Myptr()[_Off];
     }
 
@@ -2278,7 +2281,7 @@ public:
         _Reallocate_grow_by(
             1,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem _Ch)
-                _STATIC_CALL_OPERATOR {
+                _STATIC_LAMBDA {
                     _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
                     _Traits::assign(_New_ptr[_Old_size], _Ch);
                     _Traits::assign(_New_ptr[_Old_size + 1], _Elem());
@@ -2289,7 +2292,7 @@ public:
     _CONSTEXPR20 void pop_back() noexcept /* strengthened */ {
         const size_type _Old_size = _Mypair._Myval2._Mysize;
 #if _ITERATOR_DEBUG_LEVEL >= 1
-        _STL_VERIFY(_Old_size != 0, "invalid to pop_back empty string");
+        _STL_VERIFY(_Old_size != 0, "pop_back() called on empty string");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
         _Eos(_Old_size - 1);
     }
@@ -2297,7 +2300,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty string");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myptr()[0];
     }
@@ -2305,7 +2308,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty string");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myptr()[0];
     }
@@ -2313,7 +2316,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty string");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize - 1];
     }
@@ -2321,7 +2324,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty string");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize - 1];
     }
@@ -2378,7 +2381,7 @@ public:
         if (_Mypair._Myval2._Myres < _New_size) {
             _Reallocate_grow_by(_New_size - _Mypair._Myval2._Mysize,
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                    _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
+                    _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
         } else {
             _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
             _Mypair._Myval2._Mysize = _New_size;
@@ -2416,7 +2419,7 @@ public:
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         _Reallocate_grow_by(_Newcap - _Old_size,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
+                _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
 
         // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
         // has size (initialized memory) equal to its new capacity (allocated memory).
@@ -2444,7 +2447,7 @@ public:
             const size_type _Old_size = _Mypair._Myval2._Mysize;
             _Reallocate_grow_by(_Newcap - _Old_size,
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                    _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
+                    _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
 
             // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
             // has size (initialized memory) equal to its new capacity (allocated memory).
