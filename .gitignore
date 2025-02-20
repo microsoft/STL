@@ -8,4 +8,4 @@ __pycache__/
 /out/
 /tools/out/
 /CMakeLists.txt.user
-/*.log
+*.log

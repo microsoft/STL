@@ -553,9 +553,9 @@ namespace pmr {
             // find the pool from which to allocate a block with size _Bytes and alignment _Align
             const size_t _Size      = (_STD max)(_Bytes + sizeof(void*), _Align);
             const auto _Log_of_size = static_cast<unsigned char>(_Ceiling_of_log_2(_Size));
-            return {_STD lower_bound(_Pools.begin(), _Pools.end(), _Log_of_size,
-                        [](const _Pool& _Al, const unsigned char _Log)
-                            _STATIC_CALL_OPERATOR { return _Al._Log_of_size < _Log; }),
+            return {
+                _STD lower_bound(_Pools.begin(), _Pools.end(), _Log_of_size,
+                    [](const _Pool& _Al, const unsigned char _Log) _STATIC_LAMBDA { return _Al._Log_of_size < _Log; }),
                 _Log_of_size};
         }
 

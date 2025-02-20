@@ -1237,7 +1237,7 @@ _NON_MEMBER_CALL(_FUNCTION_POINTER_DEDUCTION_GUIDE, X1, X2, X3)
 template <class _Fx, class _Call_op, class = void>
 struct _Deduce_from_call_operator : _Is_memfunptr<_Call_op>::_Guide_type {}; // N4958 [func.wrap.func.con]/16.1
 
-#ifdef __cpp_static_call_operator
+#if _HAS_CXX23
 template <class>
 struct _Inspect_static_call_operator {};
 
@@ -1257,7 +1257,7 @@ _NON_MEMBER_CALL(_STATIC_CALL_OPERATOR_GUIDES, , , noexcept)
 template <class _Fx, class _Call_op>
 struct _Deduce_from_call_operator<_Fx, _Call_op, void_t<decltype(_STD declval<_Fx>().operator())>>
     : _Inspect_static_call_operator<_Call_op> {}; // N4958 [func.wrap.func.con]/16.2
-#endif // ^^^ defined(__cpp_static_call_operator) ^^^
+#endif // _HAS_CXX23
 
 template <class _Fx, class = void>
 struct _Deduce_signature {}; // can't deduce signature when &_Fx::operator() is missing, inaccessible, or ambiguous
