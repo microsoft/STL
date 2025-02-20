@@ -194,7 +194,8 @@ struct TrivialAccessor {
 };
 
 static_assert(check_accessor_policy_requirements<TrivialAccessor<int>>());
-static_assert(std::is_trivial_v<TrivialAccessor<int>>);
+static_assert(is_trivially_copyable_v<TrivialAccessor<int>>);
+static_assert(is_trivially_default_constructible_v<TrivialAccessor<int>>);
 
 namespace detail {
     template <size_t... Extents, class Fn>
