@@ -851,7 +851,7 @@ public:
     path& append(const basic_string<_Elem, _Traits, _Alloc>& _Str0) { // append arbitrary source string
         string_type _Str(_Str0.size(), L'\0');
         // convert _Elem and '/' to '\'
-        _STD transform(_Str0.begin(), _Str0.end(), _Str.begin(), [](const _Elem _Ch) _STATIC_CALL_OPERATOR {
+        _STD transform(_Str0.begin(), _Str0.end(), _Str.begin(), [](const _Elem _Ch) _STATIC_LAMBDA {
             auto _Wch = static_cast<wchar_t>(_Ch);
             if (_Wch == _FS_SLASH) {
                 _Wch = _FS_PREF;

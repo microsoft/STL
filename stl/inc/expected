@@ -621,39 +621,39 @@ public:
     // [expected.object.obs]
     _NODISCARD constexpr const _Ty* operator->() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Has_value, "operator->() called on a std::expected that contains an error, not a value");
+#endif
         return _STD addressof(_Value);
     }
     _NODISCARD constexpr _Ty* operator->() noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Has_value, "operator->() called on a std::expected that contains an error, not a value");
+#endif
         return _STD addressof(_Value);
     }
 
     _NODISCARD constexpr const _Ty& operator*() const& noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Has_value, "operator*() called on a std::expected that contains an error, not a value");
+#endif
         return _Value;
     }
     _NODISCARD constexpr _Ty& operator*() & noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Has_value, "operator*() called on a std::expected that contains an error, not a value");
+#endif
         return _Value;
     }
     _NODISCARD constexpr const _Ty&& operator*() const&& noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Has_value, "operator*() called on a std::expected that contains an error, not a value");
+#endif
         return _STD move(_Value);
     }
     _NODISCARD constexpr _Ty&& operator*() && noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Has_value, "operator*() called on a std::expected that contains an error, not a value");
+#endif
         return _STD move(_Value);
     }
 
@@ -707,26 +707,26 @@ public:
 
     _NODISCARD constexpr const _Err& error() const& noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
         return _Unexpected;
     }
     _NODISCARD constexpr _Err& error() & noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
         return _Unexpected;
     }
     _NODISCARD constexpr const _Err&& error() const&& noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
         return _STD move(_Unexpected);
     }
     _NODISCARD constexpr _Err&& error() && noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
         return _STD move(_Unexpected);
     }
 
@@ -1469,8 +1469,8 @@ public:
 
     constexpr void operator*() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Has_value, "operator*() called on a std::expected that contains an error, not a value");
+#endif
     }
 
     constexpr void value() const& {
@@ -1490,26 +1490,26 @@ public:
 
     _NODISCARD constexpr const _Err& error() const& noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
         return _Unexpected;
     }
     _NODISCARD constexpr _Err& error() & noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
         return _Unexpected;
     }
     _NODISCARD constexpr const _Err&& error() const&& noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
         return _STD move(_Unexpected);
     }
     _NODISCARD constexpr _Err&& error() && noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
         return _STD move(_Unexpected);
     }
 
