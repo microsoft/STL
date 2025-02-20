@@ -1432,9 +1432,10 @@ private:
         noexcept(noexcept(_Accessor._Acc.access(_Ptr, static_cast<size_t>(_Mapping._Map(_Indices...))))) {
         _STL_INTERNAL_STATIC_ASSERT(conjunction_v<is_same<_OtherIndexTypes, index_type>...>);
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Map.extents()._Contains_multidimensional_index(make_index_sequence<rank()>{}, _Indices...),
-            "mdspan subscript out of range; extents_type::index-cast(std::move(indices)) must be "
-            "a multidimensional index in extents() (N5001 [mdspan.mdspan.members]/3).");
+        _STL_VERIFY(
+            _Mapping._Map.extents()._Contains_multidimensional_index(make_index_sequence<rank()>{}, _Indices...),
+            "mdspan subscript out of range; extents_type::index-cast(std::move(indices)) must be a multidimensional "
+            "index in extents() (N5001 [mdspan.mdspan.members]/3).");
 #endif
 
         return _Accessor._Acc.access(_Ptr, static_cast<size_t>(_Mapping._Map(_Indices...)));
